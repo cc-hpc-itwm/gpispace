@@ -73,7 +73,8 @@ namespace fhg
         , _windows_menu (NULL)
         , _document_specific_action_menu (NULL)
         , _action_save_current_file (NULL)
-        , _action_execute_current_file_locally (NULL)
+        , _action_execute_current_file_locally_via_prompt (NULL)
+        , _action_execute_current_file_locally_from_file (NULL)
       {
         setWindowTitle (tr ("editor_window_title"));
 
@@ -261,7 +262,8 @@ namespace fhg
         }
 
         _action_save_current_file->setEnabled (true);
-        _action_execute_current_file_locally->setEnabled (true);
+        _action_execute_current_file_locally_via_prompt->setEnabled (true);
+        _action_execute_current_file_locally_from_file->setEnabled (true);
       }
 
       void editor_window::create_windows (data::internal_type* data)
@@ -300,7 +302,8 @@ namespace fhg
           else
           {
             _action_save_current_file->setEnabled (false);
-            _action_execute_current_file_locally->setEnabled (false);
+            _action_execute_current_file_locally_via_prompt->setEnabled (false);
+            _action_execute_current_file_locally_from_file->setEnabled (false);
           }
         }
       }
@@ -416,11 +419,23 @@ namespace fhg
         addToolBar (Qt::TopToolBarArea, runtime_toolbar);
         runtime_toolbar->setFloatable (false);
 
-        _action_execute_current_file_locally = runtime_menu->addAction
-          (tr ("execute_locally"), this, SLOT (execute_locally()));
-        _action_execute_current_file_locally->setEnabled (false);
+        _action_execute_current_file_locally_via_prompt = runtime_menu->addAction
+          ( tr ("execute_locally_input_prompt")
+          , this
+          , SLOT (execute_locally_inputs_via_prompt())
+          );
+        _action_execute_current_file_locally_from_file = runtime_menu->addAction
+          ( tr ("execute_locally_input_file")
+          , this
+          , SLOT (execute_locally_inputs_from_file())
+          );
+        _action_execute_current_file_locally_via_prompt->setEnabled (false);
+        _action_execute_current_file_locally_from_file->setEnabled (false);
 
-        runtime_toolbar->addAction (_action_execute_current_file_locally);
+        runtime_toolbar->addAction
+          (_action_execute_current_file_locally_via_prompt);
+        runtime_toolbar->addAction
+          (_action_execute_current_file_locally_from_file);
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)
@@ -685,7 +700,7 @@ namespace fhg
         }
       }
 
-      void editor_window::execute_locally()
+      void editor_window::execute_locally_inputs_via_prompt()
       try
       {
         const temporary_path_type temporary_path;
@@ -729,6 +744,50 @@ namespace fhg
         msgBox.setIcon (QMessageBox::Critical);
         msgBox.exec();
       }
+
+      void editor_window::execute_locally_inputs_from_file()
+      try
+      {
+        const temporary_path_type temporary_path;
+
+        we::mgmt::type::activity_t activity
+          (prepare_activity (_accessed_widgets, temporary_path));
+
+        bool ok;
+        const QString input_filename
+          (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));
+        if (input_filename.isEmpty())
+        {
+          return;
+        }
+
+        std::ifstream input_file (input_filename.toStdString().c_str());
+        if (!input_file)
+        {
+          throw std::runtime_error ("bad input file: opening failed");
+        }
+
+        std::string input_line;
+        while (input_file && getline (input_file, input_line))
+        {
+          const std::string port_name
+            (input_line.substr (0, input_line.find ('=')));
+          const std::string value
+            (input_line.substr (input_line.find ('=') + 1));
+
+          put_token (activity, port_name, value);
+        }
+
+        execute_activity_locally (activity, temporary_path);
+      }
+      catch (const std::runtime_error& e)
+      {
+        QMessageBox msgBox;
+        msgBox.setText (e.what());
+        msgBox.setIcon (QMessageBox::Critical);
+        msgBox.exec();
+      }
+
 
       void editor_window::readSettings()
       {
