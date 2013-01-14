@@ -2,6 +2,9 @@
 set (hdrs
   exception.hpp
   )
+
+add_we_sources(exception.cpp)
+
 install(FILES ${hdrs}
   DESTINATION include/we/expr
   COMPONENT headers)

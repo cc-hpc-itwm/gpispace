@@ -345,7 +345,7 @@ namespace signature
       void operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          (msg + ": try to create a field in a non-strutured " + msg);
+          (msg + ": try to create a field in a non-structured " + msg);
       }
     };
   }
@@ -380,7 +380,7 @@ namespace signature
       desc_t & operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          (msg + ": try to create a field in a non-strutured " + msg);
+          (msg + ": try to create a field in a non-structured " + msg);
       }
     };
 
@@ -418,7 +418,7 @@ namespace signature
       void operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          (msg + ": try to create a field in a non-strutured " + msg);
+          (msg + ": try to create a field in a non-structured " + msg);
       }
     };
   }

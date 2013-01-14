@@ -18,8 +18,7 @@
 #include <util/types.hpp>
 #include <algorithm>
 #include <boost/regex.hpp>
-#include <sys/time.h>
-#include <ctime>
+#include <util/time.hpp>
 
 const int US = 1000000.0L;
 const int MS = 1000.0L;
@@ -33,7 +32,6 @@ const char PAIRSEP = '@';
 std::string DELIMITERS = " \n";
 
 typedef  std::pair<std::string, std::string> key_val_pair_t;
-typedef unsigned long long timestamp_t;
 
 namespace mapreduce
 {
@@ -230,17 +228,6 @@ namespace mapreduce
        return sstr.str();
     }
 
-    std::string get_string(std::vector<int>::iterator& it_first,  std::vector<int>::iterator& it_last)
-    {
-       std::stringstream sstr;
-       for(std::vector<int>::iterator it = it_first; it != it_last; it++)
-       {
-          sstr<<*it<<SPCH;
-       }
-
-       return sstr.str();
-    }
-
     std::vector<std::string> get_list_items(char* local_buff)
     {
       std::string str_buff(local_buff);
@@ -268,33 +255,6 @@ namespace mapreduce
     	return v;
     }
 
-    std::string gen_all_reduce_slots(const int& avail_slots)
-    {
-      std::stringstream sstr;
-      for(int k=0;k<avail_slots;k++)
-      {
-        sstr<<k;
-        if(k<avail_slots-1)
-          sstr<<" ";
-      }
-
-      return sstr.str();
-    }
-
-    template <typename T>
-    void dump_iter_red_info(const std::string& name, const T& t)
-    {
-      std::stringstream sstr;
-      sstr<<"   name:"<<name<<std::endl;
-      sstr<<"   avail_slots = "<<t.avail_slots<<std::endl;
-      sstr<<"   slots_to_reduce = "<<t.slots_to_reduce<<std::endl;
-      sstr<<"   part_used = "<<t.part_used<<std::endl;
-      sstr<<"   red_used = "<<t.red_used<<std::endl;
-      sstr<<"   border_used = "<<t.border_used<<std::endl;
-
-      MLOG(INFO, sstr.str());
-    }
-
     void print_partitions(long handle, long slot_size, const std::string& part_used)
     {
       std::vector<int> arr_used = ::mapreduce::util::get_array(part_used);
@@ -319,7 +279,7 @@ namespace mapreduce
       }
     }
 
-    key_val_pair_t get_key_val(const std::string& str_map)
+    key_val_pair_t str2kvpair(const std::string& str_map)
     {
       size_t split_pos = str_map.find_last_of(PAIRSEP);
       if( split_pos == std::string::npos )
@@ -346,7 +306,26 @@ namespace mapreduce
       return key_val_pair_t(key, str_val);
     }
 
-    std::string make_string(const key_val_pair_t& pair)
+
+    std::string list2str(std::list<std::string>& list_values )
+	{
+		std::ostringstream oss;
+		oss<<"[";
+
+		for( std::list<std::string>::iterator it=list_values.begin(); it!=list_values.end(); it++ )
+		{
+		  oss<<*it;
+
+		  if( boost::next(it) != list_values.end() )
+			  oss<<SPCH;
+		  else
+			  oss<<"]";
+		}
+
+		return oss.str();
+	}
+
+    std::string kvpair2str(const key_val_pair_t& pair)
     {
     	std::ostringstream osstr;
     	osstr<<pair.first<<PAIRSEP<<pair.second;
@@ -360,13 +339,6 @@ namespace mapreduce
     	return (a/b)+rest;
     }
 
-    timestamp_t get_timestamp()
-	{
-    	struct timeval now;
-    	gettimeofday (&now, NULL);
-    	return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
-	}
-
     std::string get_part_filename(const std::string& cfg_out, const int part_id)
     {
     	std::vector<std::string> name_and_ext;
@@ -377,6 +349,50 @@ namespace mapreduce
 
   	    return sstr_part_out_file.str();
     }
+
+    size_t write_to_buff(std::string& key, std::list<std::string>& list_values, char* reduce_buff, size_t last_pos, const long& n_max_size)
+	{
+	  std::stringstream sstr;
+
+	  key_val_pair_t kvp(key, list2str(list_values));
+	  std::string str_pair = kvpair2str(kvp);
+	  size_t item_size = str_pair.size();
+
+	  if(last_pos+item_size>n_max_size)
+	  {
+		  throw(std::runtime_error("Not enough place left for performing a reduce operation!"));
+	  }
+	  else
+	  {
+		  memcpy(reduce_buff+last_pos, str_pair.data(), item_size);
+		  size_t new_pos = last_pos + item_size;
+		  reduce_buff[new_pos++]=SPCH;
+
+		  return new_pos;
+	  }
+	}
+
+	size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t const last_pos, const long& n_max_size, const int sp=SPCH )
+	{
+	  std::stringstream sstr;
+	  size_t item_size = str_pair.size();
+
+	  if(last_pos+item_size>n_max_size)
+	  {
+		  throw(std::runtime_error("Not enough place left for performing a reduce operation!"));
+	  }
+	  else
+	  {
+		  memcpy(reduce_buff+last_pos, str_pair.data(), item_size);
+		  size_t new_pos = last_pos + item_size;
+		  if(sp)
+			  reduce_buff[new_pos++]=sp;
+
+		  return new_pos;
+	  }
+	}
+
+
   }
 }
 

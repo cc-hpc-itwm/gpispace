@@ -24,13 +24,15 @@ namespace petri_net
 
   std::ostream& operator<< (std::ostream& s, const net& n)
   {
-    for (net::place_const_it p (n.places()); p.has_more(); ++p)
+    typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+
+    BOOST_FOREACH (const ip_type& ip, n.places())
       {
-        s << "[" << n.get_place (*p) << ":";
+        s << "[" << ip.second << ":";
 
         typedef boost::unordered_map<token::type, size_t> token_cnt_t;
         token_cnt_t token;
-        BOOST_FOREACH (const token::type& t, n.get_token (*p))
+        BOOST_FOREACH (const token::type& t, n.get_token (ip.first))
           {
             token[t]++;
           }
@@ -49,12 +51,12 @@ namespace petri_net
         s << "]";
       }
 
-      for (net::transition_const_it t (n.transitions()); t.has_more(); ++t)
-      {
-        s << "/";
-        s << n.get_transition (*t);
-        s << "/";
-      }
+    BOOST_FOREACH ( const we::type::transition_t& t
+                  , n.transitions() | boost::adaptors::map_values
+                  )
+    {
+      s << "/" << t << "/";
+    }
 
       return s;
     }

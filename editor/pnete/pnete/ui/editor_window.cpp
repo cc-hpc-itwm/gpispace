@@ -2,23 +2,6 @@
 
 #include <pnete/ui/editor_window.hpp>
 
-#include <QAction>
-#include <QApplication>
-#include <QCloseEvent>
-#include <QDir>
-#include <QFileDialog>
-#include <QGridLayout>
-#include <QMenu>
-#include <QMenuBar>
-#include <QSettings>
-#include <QSpinBox>
-#include <QString>
-#include <QToolBar>
-#include <QTreeView>
-#include <QUndoGroup>
-#include <QUndoView>
-#include <QWidget>
-
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
 #include <pnete/ui/StructureView.hpp>
@@ -33,6 +16,38 @@
 #include <pnete/ui/transition_library_view.hpp>
 
 #include <util/qt/parent.hpp>
+
+#include <we/loader/loader.hpp>
+#include <we/loader/module_call.hpp>
+#include <we/mgmt/context.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/value/read.hpp>
+#include <we/util/token.hpp>
+
+#include <xml/parse/parser.hpp>
+
+#include <fstream>
+#include <sstream>
+
+#include <QAction>
+#include <QApplication>
+#include <QCloseEvent>
+#include <QDir>
+#include <QFileDialog>
+#include <QGridLayout>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSettings>
+#include <QSpinBox>
+#include <QString>
+#include <QToolBar>
+#include <QTreeView>
+#include <QUndoGroup>
+#include <QUndoView>
+#include <QWidget>
 
 namespace fhg
 {
@@ -58,6 +73,7 @@ namespace fhg
         , _windows_menu (NULL)
         , _document_specific_action_menu (NULL)
         , _action_save_current_file (NULL)
+        , _action_execute_current_file_locally (NULL)
       {
         setWindowTitle (tr ("editor_window_title"));
 
@@ -243,6 +259,7 @@ namespace fhg
         }
 
         _action_save_current_file->setEnabled (true);
+        _action_execute_current_file_locally->setEnabled (true);
       }
 
       void editor_window::create_windows (data::internal_type* data)
@@ -281,6 +298,7 @@ namespace fhg
           else
           {
             _action_save_current_file->setEnabled (false);
+            _action_execute_current_file_locally->setEnabled (false);
           }
         }
       }
@@ -389,6 +407,18 @@ namespace fhg
         _document_specific_action_menu =
           menu_bar->addMenu ("document_specific_actions");
         _document_specific_action_menu->menuAction()->setVisible (false);
+
+        QMenu* runtime_menu (new QMenu (tr ("runtime_menu"), menu_bar));
+
+        QToolBar* runtime_toolbar (new QToolBar (tr ("runtime_toolbar"), this));
+        addToolBar (Qt::TopToolBarArea, runtime_toolbar);
+        runtime_toolbar->setFloatable (false);
+
+        _action_execute_current_file_locally = runtime_menu->addAction
+          (tr ("execute_locally"), this, SLOT (execute_locally()));
+        _action_execute_current_file_locally->setEnabled (false);
+
+        runtime_toolbar->addAction (_action_execute_current_file_locally);
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)
@@ -459,6 +489,225 @@ namespace fhg
                 );
 
         update_window_menu();
+      }
+
+      //! \note Context copied from we-eval.
+      class eval_context : public we::mgmt::context
+      {
+      public:
+        eval_context (we::loader::loader& module_loader)
+          : loader (module_loader)
+        { }
+
+        virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
+        {
+          act.inject_input();
+
+          while (act.can_fire())
+          {
+            we::mgmt::type::activity_t sub (act.extract());
+            sub.inject_input();
+            sub.execute (this);
+            act.inject (sub);
+          }
+
+          act.collect_output ();
+
+          return 0;
+        }
+
+        virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+        {
+          module::call (loader, act, mod);
+
+          return 0;
+        }
+
+        virtual int handle_internally (we::mgmt::type::activity_t& , expr_t&)
+        {
+          return 0;
+        }
+
+        virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+        {
+          return handle_internally (act, n);
+        }
+
+        virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+        {
+          return handle_internally (act, mod);
+        }
+
+        virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+        {
+          return handle_internally (act, e);
+        }
+
+      private:
+        we::loader::loader& loader;
+      };
+
+      struct output_port_and_token : std::iterator< std::output_iterator_tag
+                                                  , output_port_and_token
+                                                  >
+      {
+        output_port_and_token const & operator *() const { return *this; }
+        output_port_and_token const & operator++() const { return *this; }
+        output_port_and_token const & operator=
+          (const we::mgmt::type::activity_t::token_on_port_t & subject) const
+        {
+          std::stringstream tmp;
+          tmp << "on " << subject.second << ": " << subject.first;
+          QMessageBox msgBox;
+          msgBox.setText (QString::fromStdString (tmp.str()));
+          msgBox.exec();
+          return *this;
+        }
+      };
+
+      struct delete_directory_on_scope_exit
+      {
+        delete_directory_on_scope_exit (const boost::filesystem::path& path)
+          : _path (path)
+        { }
+
+        ~delete_directory_on_scope_exit()
+        {
+          boost::filesystem::remove_all (_path);
+        }
+
+        boost::filesystem::path _path;
+      };
+
+      void editor_window::execute_locally()
+      try
+      {
+        if (_accessed_widgets.empty())
+        {
+          return;
+        }
+
+        const boost::filesystem::path temporary_path
+          (boost::filesystem::unique_path());
+        boost::filesystem::create_directories (temporary_path);
+
+        const delete_directory_on_scope_exit cleanup (temporary_path);
+
+        xml::parse::state::type state;
+        state.path_to_cpp() = temporary_path.string();
+        //! \todo Add include and link paths
+
+        const xml::parse::id::ref::function function
+          ( data::proxy::function (_accessed_widgets.top()->proxy())
+          .get().clone()
+          );
+        xml::parse::post_processing_passes (function, &state);
+
+        xml::parse::generate_cpp (function, state);
+
+        const boost::filesystem::path make_output
+          (temporary_path / "MAKEOUTPUT");
+
+        if ( system ( ( "make -C "
+                      + temporary_path.string()
+                      + " > "
+                      + make_output.string()
+                      + " 2>&1 "
+                      ).c_str()
+                    )
+           )
+        {
+          //! \todo process:execute fixen und nutzen
+          std::ifstream f (make_output.string().c_str());
+
+          std::stringstream sf;
+          while (f.good() && !f.eof())
+          {
+            sf << (char)f.get();
+          }
+          throw std::runtime_error (sf.str());
+        }
+
+        we::mgmt::type::activity_t activity
+          (xml::parse::xml_to_we (function, state));
+
+        BOOST_FOREACH ( const std::string& port_name
+                      , activity.transition().port_names (we::type::PORT_IN)
+                      )
+        {
+          bool retry (true);
+          while (retry)
+          {
+            bool ok;
+            const std::string value
+              ( QInputDialog::getText ( this
+                                      , tr ("value_for_input_token")
+                                      , tr ("enter_value_for_input_port_%1")
+                                      .arg (QString::fromStdString (port_name))
+                                      , QLineEdit::Normal
+                                      , "[]"
+                                      , &ok
+                                      ).toStdString()
+              );
+            if (!ok)
+            {
+              return;
+            }
+
+            std::size_t k (0);
+            std::string::const_iterator begin (value.begin());
+            fhg::util::parse::position pos (k, begin, value.end());
+
+            try
+            {
+              try
+              {
+                we::util::token::put (activity, port_name, ::value::read (pos));
+                retry = false;
+              }
+              catch (const expr::exception::parse::exception& e)
+              {
+                //! \todo fixed width font
+                std::stringstream temp;
+                temp << e.what() << std::endl;
+                temp << value << std::endl;
+                temp << std::string (e.eaten, ' ') << "^" << std::endl;
+                throw std::runtime_error (temp.str().c_str());
+              }
+            }
+            catch (const std::runtime_error& e)
+            {
+              QMessageBox msgBox;
+              msgBox.setText (e.what());
+              msgBox.setIcon (QMessageBox::Critical);
+              msgBox.exec();
+              retry = true;
+            }
+          }
+        }
+
+        activity.inject_input();
+
+        we::loader::loader loader;
+        loader.append_search_path (temporary_path / "pnetc" / "op");
+
+        eval_context context (loader);
+
+        //! \todo Somehow redirect stdout to buffer
+        activity.execute (&context);
+        activity.collect_output();
+
+        std::copy ( activity.output().begin()
+                  , activity.output().end()
+                  , output_port_and_token()
+                  );
+      }
+      catch (const std::runtime_error& e)
+      {
+        QMessageBox msgBox;
+        msgBox.setText (e.what());
+        msgBox.setIcon (QMessageBox::Critical);
+        msgBox.exec();
       }
 
       void editor_window::readSettings()

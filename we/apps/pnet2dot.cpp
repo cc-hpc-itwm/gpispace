@@ -25,7 +25,7 @@ namespace detail {
 
     we::type::dot::init (a.transition().prop());
 
-    os << "digraph " << a.transition().name() << " {" << std::endl;
+    os << "digraph \"" << a.transition().name() << "\" {" << std::endl;
     os << "compound=true" << std::endl;
     os << "rankdir=LR" << std::endl;
     os << we::type::dot::to_dot (a.transition(), id, pred);
