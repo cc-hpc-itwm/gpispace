@@ -19,22 +19,17 @@ namespace mapreduce
     	  }
 
     	  int i = 0;
-    	  char first_char = key[0];
+    	  char first_char = tolower(key[0]);
 
-    	  if((first_char>='A' && first_char<='Z') )
-    	  {
-    		  i = ((key[0] - 'A')*(N-2))/('Z'-'A');
-    	  }
-    	  else
-    		  if( first_char>='a' && first_char<='z' )
-    		  {
-    			  i = ((key[0] - 'a')*(N-2))/('z'-'a');
-    		  }
-    		  else
-    			  if(is_special_item(key))
-    				  i=N-1;
-    			  else
-    				  i=N-2;
+		  if( first_char>='a' && first_char<='z' )
+		  {
+			  i = ((first_char - 'a')*(N-2))/('z'-'a');
+		  }
+		  else
+			  if(is_special_item(key))
+				  i=N-1;
+			  else
+				  i=N-2;
         return i;
       }
   }
