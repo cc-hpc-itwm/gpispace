@@ -61,37 +61,10 @@ namespace fhg
     {
       namespace type
       {
-        struct function_context_type
-        {
-        private:
-          const ::xml::parse::id::ref::function& _fun;
-          const XMLPARSE(state::key_values_t) & _context;
-
-        public:
-          function_context_type ( const ::xml::parse::id::ref::function& fun
-                                , const XMLPARSE(state::key_values_t) & context
-                                )
-            : _fun (fun)
-            , _context (context)
-          {}
-
-          const ::xml::parse::id::ref::function& fun () const { return _fun; }
-          const XMLPARSE(state::key_values_t) & context () const { return _context; }
-        };
-
-        namespace context
-        {
-          enum
-            { first
-            , open, close, key_value
-            , last
-            };
-        }
-
         namespace transition
         {
           enum
-            { first = context::first + 1
+            { first
             , open, close, name, priority, internal, _inline, properties
             , structs, function, place_map, connection, condition
             , last
@@ -553,24 +526,6 @@ namespace fhg
           WEAVE(tmpl::template_parameter) (t.tmpl_parameter());
           WEAVE(tmpl::function) (t.function());
           WEAVE(tmpl::close)();
-        }
-
-        FUN(context_key_value, ITVAL(XMLPARSE(state::key_values_t)), kv)
-        {
-          WEAVE(context::key_value) (kv);
-        }
-
-        FUN(context, XMLPARSE(state::key_values_t), context)
-        {
-          WEAVE(context::open) (context);
-          WEAVE(context::close)();
-        }
-
-        FUN(function_context, WNAME(function_context_type), fs)
-        {
-          from::function_head (_state, fs.fun());
-          from::context (_state, fs.context());
-          from::function_tail (_state, fs.fun());
         }
 
         FUN(place, ::xml::parse::id::ref::place, place_id)

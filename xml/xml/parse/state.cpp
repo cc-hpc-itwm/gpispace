@@ -3,7 +3,6 @@
 #include <xml/parse/state.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/util/weparse.hpp>
 
 namespace xml
 {
@@ -22,18 +21,6 @@ namespace xml
       typedef std::set<fs::path> dependencies_type;
 
       typedef std::vector<std::string> gen_param_type;
-
-      // ******************************************************************* //
-
-      key_value_t::key_value_t ( const std::string & key
-                               , const std::string & value
-                               )
-        : _key (key)
-        , _value (value)
-      {}
-
-      const std::string & key_value_t::key () const { return _key; }
-      const std::string & key_value_t::value () const { return _value; }
 
       // ******************************************************************* //
 
@@ -60,35 +47,39 @@ namespace xml
       {
         const fs::path absolute (file);
 
-        if (fs::exists (absolute))
+        if (absolute.is_absolute())
         {
-          return absolute;
-        }
-
-        const fs::path from_actual_file
-          (file_in_progress().parent_path() / file);
-
-        if (fs::exists (from_actual_file))
-        {
-          return from_actual_file;
-        }
-
-        for ( search_path_type::const_iterator dir (_search_path.begin())
-            ; dir != _search_path.end()
-            ; ++dir
-            )
-        {
-          if (! fs::exists (*dir))
+          if (fs::exists (absolute))
           {
-            continue;
+            return absolute;
           }
+        }
+        else
+        {
+          const fs::path from_actual_file
+            (file_in_progress().parent_path() / file);
 
-          const fs::path pre (*dir);
-          const fs::path path (pre / file);
-
-          if (fs::exists (path))
+          if (fs::exists (from_actual_file))
           {
-            return path;
+            return from_actual_file;
+          }
+          else
+          {
+            BOOST_FOREACH (const std::string& search_path, _search_path)
+            {
+              if (! fs::exists (search_path))
+              {
+                continue;
+              }
+
+              const fs::path pre (search_path);
+              const fs::path path (pre / file);
+
+              if (fs::exists (path))
+              {
+                return path;
+              }
+            }
           }
         }
 
@@ -119,7 +110,6 @@ namespace xml
         , _Wproperty_overwritten (true)
         , _Wtype_map_duplicate (true)
         , _Wtype_get_duplicate (true)
-        , _Woverwrite_context (true)
         , _Windependent_place (true)
         , _Windependent_transition (true)
         , _Wconflicting_port_types (true)
@@ -167,7 +157,6 @@ namespace xml
         , _OWproperty_overwritten ("Wproperty-overwritten")
         , _OWtype_map_duplicate ("Wtype-map-duplicate")
         , _OWtype_get_duplicate ("Wtype-get-duplicate")
-        , _OWoverwrite_context ("Woverwrite-context")
         , _OWindependent_place ("Windependent-place")
         , _OWindependent_transition ("Windependent-transition")
         , _OWconflicting_port_types ("Wconflicting-port-types")
@@ -246,11 +235,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      const type::context_t & type::context (void) const
-      {
-        return _context;
-      }
-
       const optimize::options::type & type::options_optimize (void) const
       {
         return _options_optimize;
@@ -258,66 +242,43 @@ namespace xml
 
       // ***************************************************************** //
 
-      const key_values_t & type::key_values (void) const
-      {
-        return _key_values;
-      }
-
-      // ***************************************************************** //
-
-      bool type::interpret_context_property ( const property::path_type & path
-                                            , const property::value_type & value
-                                            )
+      void type::interpret_property ( const property::path_type & path
+                                    , const property::value_type & value
+                                    )
       {
         if (path.size() > 0 && path[0] == "pnetc")
         {
-          if (path.size() > 2 && path[1] == "context")
+          if (path.size() > 1 && path[1] == "search_path")
           {
-            try
+            const fs::path absolute (value);
+
+            if (absolute.is_absolute())
             {
-              const value::type & old_val (_context.value (path[2]));
-
-              warn ( overwrite_context ( path[2]
-                                       , value
-                                       , old_val
-                                       , file_in_progress()
-                                       )
-                   );
+              if (fs::exists (absolute))
+              {
+                _search_path.push_back (absolute.string());
+              }
+              else
+              {
+                throw error::file_not_found
+                  ("interpret_property (pnetc.search_path)", value);
+              }
             }
-            catch (const value::container::exception::missing_binding &)
+            else
             {
-              /* do nothing, that's what we want */
+              const fs::path from_actual_file
+                (file_in_progress().parent_path() / value);
+
+              if (fs::exists (from_actual_file))
+              {
+                _search_path.push_back (from_actual_file.string());
+              }
+              else
+              {
+                throw error::file_not_found
+                  ("interpret_property (pnetc.search_path)", value);
+              }
             }
-
-            std::ostringstream s;
-
-            s << "when try to bind context key "
-              << path[2] << " with " << value
-              << " in " << file_in_progress()
-              ;
-
-            const util::we_parser_t parser
-              ( util::generic_we_parse ( "${" + path[2] + "}:=" + value
-                                       , s.str()
-                                       )
-              );
-
-            try
-            {
-              parser.eval_all (_context);
-
-              _key_values.push_back (key_value_t (path[2], value));
-            }
-            catch (const expr::exception::eval::divide_by_zero & e)
-            {
-              throw error::eval_context_bind (s.str(), e.what());
-            }
-            catch (const expr::exception::eval::type_error & e)
-            {
-              throw error::eval_context_bind (s.str(), e.what());
-            }
-
-            return true;
           }
           else if (  path.size() > 2
                   && path[1] == "warning"
@@ -335,8 +296,6 @@ namespace xml
                  );
           }
         }
-
-        return false;
       }
 
       // ***************************************************************** //
@@ -383,38 +342,6 @@ namespace xml
 
 #undef ACCESS
 
-      // ***************************************************************** //
-
-      void type::dump_context (::fhg::util::xml::xmlstream & s) const
-      {
-        typedef key_values_t::const_iterator it_t;
-
-        it_t kv (_key_values.begin());
-        const it_t end (_key_values.end());
-
-        if (kv != end)
-        {
-          s.open ("properties"); s.attr ("name", "pnetc");
-          s.open ("properties"); s.attr ("name", "context");
-
-          while (kv != end)
-          {
-            s.open ("property"); s.attr ("key", kv->key());
-
-            s.content (kv->value());
-
-            s.close();
-
-            ++kv;
-          }
-
-          s.close ();
-          s.close ();
-        }
-      }
-
-      // ***************************************************************** //
-
 #define ACCESST(_t,_x)                                     \
       const _t & type::_x (void) const { return _ ## _x; } \
       _t & type::_x (void){ return _ ## _x; }
@@ -439,7 +366,6 @@ namespace xml
       ACCESS(Wproperty_overwritten)
       ACCESS(Wtype_map_duplicate)
       ACCESS(Wtype_get_duplicate)
-      ACCESS(Woverwrite_context)
       ACCESS(Windependent_place)
       ACCESS(Windependent_transition)
       ACCESS(Wconflicting_port_types)
@@ -482,7 +408,6 @@ namespace xml
       WARN(property_overwritten)
       WARN(type_map_duplicate)
       WARN(type_get_duplicate)
-      WARN(overwrite_context)
       WARN(independent_place)
       WARN(independent_transition)
       WARN(conflicting_port_types)
@@ -598,10 +523,6 @@ namespace xml
           ( _OWtype_get_duplicate.c_str()
           , BOOLVAL(Wtype_get_duplicate)
           , "warn about duplicate type gets"
-          )
-          ( _OWoverwrite_context.c_str()
-          , BOOLVAL(Woverwrite_context)
-          , "warn when overwriting values in global context"
           )
           ( _OWindependent_place.c_str()
           , BOOLVAL(Windependent_place)

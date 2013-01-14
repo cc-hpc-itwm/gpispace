@@ -2422,20 +2422,6 @@ namespace xml
 
         void dump ( ::fhg::util::xml::xmlstream & s
                   , const function_type & f
-                  , const state::type & state
-                  )
-        {
-          dump_before_property (s, f);
-
-          state.dump_context (s);
-
-          ::we::type::property::dump::dump (s, f.properties());
-
-          dump_after_property (s, f);
-        }
-
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const function_type & f
                   )
         {
           dump_before_property (s, f);

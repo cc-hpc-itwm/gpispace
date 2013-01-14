@@ -86,7 +86,7 @@ namespace xml
 
             try
             {
-              state::type::context_t context (state.context());
+              expr::eval::context context;
 
               const value::type v (parser.eval_all (context));
               const signature::type sig (signature);

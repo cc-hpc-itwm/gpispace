@@ -34,9 +34,6 @@ namespace fhg
         explicit internal_type (const QString& filename);
 
         const ::xml::parse::id::ref::function& function() const;
-        const ::xml::parse::state::key_values_t & context () const;
-        const ::xml::parse::state::type & state () const;
-        ::xml::parse::state::type & state ();
         change_manager_t& change_manager();
         const proxy::type& root_proxy() const;
         proxy::type& root_proxy();

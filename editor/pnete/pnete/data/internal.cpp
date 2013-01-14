@@ -83,20 +83,7 @@ namespace fhg
       {
         return _function;
       }
-
-      const ::xml::parse::state::key_values_t & internal_type::context () const
-      {
-        return _state.key_values();
-      }
-      const ::xml::parse::state::type & internal_type::state () const
-      {
-        return _state;
-      }
-      ::xml::parse::state::type & internal_type::state ()
-      {
-        return _state;
-      }
-      change_manager_t& internal_type::change_manager ()
+      change_manager_t& internal_type::change_manager()
       {
         return _change_manager;
       }
