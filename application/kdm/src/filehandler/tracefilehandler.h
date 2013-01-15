@@ -142,11 +142,11 @@ public:
 
   unsigned long TotNofTraces;
   // number of current trace
-  int tracl;
+  // unused:  int tracl;
   FILE_MODE F_MODE;
   int endianess;
 
-  //  
+  //
 };
 
 #endif
