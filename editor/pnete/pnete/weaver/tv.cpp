@@ -622,15 +622,6 @@ namespace fhg
         {
           append (boost::format("use: %s") % name);
         }
-
-        WSIG(tv, context::open, XMLPARSE(state::key_values_t), context)
-        {
-          xs ("context", context, from::context_key_value);
-        }
-        WSIG(tv, context::key_value, XMLPARSE(state::key_value_t), kv)
-        {
-          append_key_value (kv.key(), "%s", kv.value());
-        }
       }
 
       namespace treeview
@@ -638,10 +629,7 @@ namespace fhg
         void function (QStandardItem* tree_root, data::internal_type* data)
         {
           weaver::tv w (tree_root);
-          weaver::from::function_context
-            ( &w
-            , type::function_context_type (data->function(), data->context())
-            );
+          weaver::from::function (&w, data->function());
         }
       }
     }

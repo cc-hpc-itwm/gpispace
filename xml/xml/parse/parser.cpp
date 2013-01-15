@@ -1689,7 +1689,7 @@ namespace xml
 
       fhg::util::xml::xmlstream s (stream);
 
-      type::dump::dump (s, function.get(), state);
+      type::dump::dump (s, function.get());
     }
 
     we::mgmt::type::activity_t xml_to_we

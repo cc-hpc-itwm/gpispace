@@ -324,11 +324,6 @@ namespace xml
       {
         void dump ( ::fhg::util::xml::xmlstream & s
                   , const function_type & f
-                  , const state::type & state
-                  );
-
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const function_type & f
                   );
       } // namespace dump
     }

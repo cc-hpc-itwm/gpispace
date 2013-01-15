@@ -41,28 +41,8 @@ namespace xml
 
       // ******************************************************************* //
 
-      struct key_value_t
-      {
-      private:
-        const property::key_type _key;
-        const property::value_type _value;
-
-      public:
-        key_value_t (const std::string & key, const std::string & value);
-
-        const std::string & key () const;
-        const std::string & value () const;
-      };
-
-      typedef std::list<key_value_t> key_values_t;
-
-      // ******************************************************************* //
-
       struct type
       {
-      public:
-        typedef expr::eval::context context_t;
-
       private:
         ::xml::parse::type::requirements_type _requirements;
         search_path_type _search_path;
@@ -71,8 +51,6 @@ namespace xml
         in_progress_type _in_progress;
         dependencies_type _dependencies;
         property::path_type _prop_path;
-        context_t _context;
-        key_values_t _key_values;
         optimize::options::type _options_optimize;
         bool _ignore_properties;
         bool _Werror;
@@ -92,7 +70,6 @@ namespace xml
         bool _Wproperty_overwritten;
         bool _Wtype_map_duplicate;
         bool _Wtype_get_duplicate;
-        bool _Woverwrite_context;
         bool _Windependent_place;
         bool _Windependent_transition;
         bool _Wconflicting_port_types;
@@ -140,7 +117,6 @@ namespace xml
         std::string _OWproperty_overwritten;
         std::string _OWtype_map_duplicate;
         std::string _OWtype_get_duplicate;
-        std::string _OWoverwrite_context;
         std::string _OWindependent_place;
         std::string _OWindependent_transition;
         std::string _OWconflicting_port_types;
@@ -201,18 +177,13 @@ namespace xml
 
         // ***************************************************************** //
 
-        const context_t & context (void) const;
         const optimize::options::type & options_optimize (void) const;
 
         // ***************************************************************** //
 
-        const key_values_t & key_values (void) const;
-
-        // ***************************************************************** //
-
-        bool interpret_context_property ( const property::path_type & path
-                                        , const property::value_type & value
-                                        );
+        void interpret_property ( const property::path_type & path
+                                , const property::value_type & value
+                                );
 
         // ***************************************************************** //
 
@@ -244,10 +215,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        void dump_context (xml_util::xmlstream & s) const;
-
-        // ***************************************************************** //
-
 #define ACCESST(_t,_x)                                  \
         const _t & _x (void) const;                     \
         _t & _x (void);
@@ -272,7 +239,6 @@ namespace xml
         ACCESS(Wproperty_overwritten)
         ACCESS(Wtype_map_duplicate)
         ACCESS(Wtype_get_duplicate)
-        ACCESS(Woverwrite_context)
         ACCESS(Windependent_place)
         ACCESS(Windependent_transition)
         ACCESS(Wconflicting_port_types)
@@ -311,7 +277,6 @@ namespace xml
         WARN(property_overwritten)
         WARN(type_map_duplicate)
         WARN(type_get_duplicate)
-        WARN(overwrite_context)
         WARN(independent_place)
         WARN(independent_transition)
         WARN(conflicting_port_types)

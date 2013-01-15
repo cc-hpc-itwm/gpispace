@@ -58,7 +58,8 @@ namespace fhg
         void focus_changed (QWidget*, QWidget*);
         void update_window_menu();
 
-        void execute_locally();
+        void execute_locally_inputs_via_prompt();
+        void execute_locally_inputs_from_file();
 
       protected:
         virtual void closeEvent (QCloseEvent*);
@@ -74,7 +75,8 @@ namespace fhg
         QMenu* _windows_menu;
         QMenu* _document_specific_action_menu;
         QAction* _action_save_current_file;
-        QAction* _action_execute_current_file_locally;
+        QAction* _action_execute_current_file_locally_via_prompt;
+        QAction* _action_execute_current_file_locally_from_file;
 
         QStack<document_view*> _accessed_widgets;
 

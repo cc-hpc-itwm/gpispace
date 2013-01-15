@@ -73,7 +73,8 @@ namespace fhg
         , _windows_menu (NULL)
         , _document_specific_action_menu (NULL)
         , _action_save_current_file (NULL)
-        , _action_execute_current_file_locally (NULL)
+        , _action_execute_current_file_locally_via_prompt (NULL)
+        , _action_execute_current_file_locally_from_file (NULL)
       {
         setWindowTitle (tr ("editor_window_title"));
 
@@ -197,14 +198,14 @@ namespace fhg
           document_view* operator() (expression_proxy& proxy) const
           {
             return new document_view
-              ( function (_proxy)
+              ( data::proxy::function (_proxy)
               , _proxy
               , QObject::tr ("<<anonymous expression>>")
               , new expression_widget
                 ( data::handle::expression ( proxy.data()
                                            , root (_proxy)->change_manager()
                                            )
-                , function (_proxy)
+                , data::proxy::function (_proxy)
                 )
               );
           }
@@ -212,17 +213,19 @@ namespace fhg
           document_view* operator() (mod_proxy& proxy) const
           {
             return new document_view
-              ( function (_proxy)
+              ( data::proxy::function (_proxy)
               , _proxy
               , QObject::tr ("<<anonymous module call>>")
-              , new module_call_widget (proxy.data(), function (_proxy))
+              , new module_call_widget ( proxy.data()
+                                       , data::proxy::function (_proxy)
+                                       )
               );
           }
 
           document_view* operator() (net_proxy& proxy) const
           {
             return new document_view
-              ( function (_proxy)
+              ( data::proxy::function (_proxy)
               , _proxy
               , QObject::tr ("<<anonymous net>>")
               , new graph_view (proxy.display())
@@ -259,7 +262,8 @@ namespace fhg
         }
 
         _action_save_current_file->setEnabled (true);
-        _action_execute_current_file_locally->setEnabled (true);
+        _action_execute_current_file_locally_via_prompt->setEnabled (true);
+        _action_execute_current_file_locally_from_file->setEnabled (true);
       }
 
       void editor_window::create_windows (data::internal_type* data)
@@ -298,7 +302,8 @@ namespace fhg
           else
           {
             _action_save_current_file->setEnabled (false);
-            _action_execute_current_file_locally->setEnabled (false);
+            _action_execute_current_file_locally_via_prompt->setEnabled (false);
+            _action_execute_current_file_locally_from_file->setEnabled (false);
           }
         }
       }
@@ -414,11 +419,23 @@ namespace fhg
         addToolBar (Qt::TopToolBarArea, runtime_toolbar);
         runtime_toolbar->setFloatable (false);
 
-        _action_execute_current_file_locally = runtime_menu->addAction
-          (tr ("execute_locally"), this, SLOT (execute_locally()));
-        _action_execute_current_file_locally->setEnabled (false);
+        _action_execute_current_file_locally_via_prompt = runtime_menu->addAction
+          ( tr ("execute_locally_input_prompt")
+          , this
+          , SLOT (execute_locally_inputs_via_prompt())
+          );
+        _action_execute_current_file_locally_from_file = runtime_menu->addAction
+          ( tr ("execute_locally_input_file")
+          , this
+          , SLOT (execute_locally_inputs_from_file())
+          );
+        _action_execute_current_file_locally_via_prompt->setEnabled (false);
+        _action_execute_current_file_locally_from_file->setEnabled (false);
 
-        runtime_toolbar->addAction (_action_execute_current_file_locally);
+        runtime_toolbar->addAction
+          (_action_execute_current_file_locally_via_prompt);
+        runtime_toolbar->addAction
+          (_action_execute_current_file_locally_from_file);
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)
@@ -491,145 +508,231 @@ namespace fhg
         update_window_menu();
       }
 
-      //! \note Context copied from we-eval.
-      class eval_context : public we::mgmt::context
+      namespace
       {
-      public:
-        eval_context (we::loader::loader& module_loader)
-          : loader (module_loader)
-        { }
-
-        virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
+        //! \note Context copied from we-eval.
+        class eval_context : public we::mgmt::context
         {
-          act.inject_input();
+        public:
+          eval_context (we::loader::loader& module_loader)
+            : loader (module_loader)
+          { }
 
-          while (act.can_fire())
+          virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
           {
-            we::mgmt::type::activity_t sub (act.extract());
-            sub.inject_input();
-            sub.execute (this);
-            act.inject (sub);
+            act.inject_input();
+
+            while (act.can_fire())
+            {
+              we::mgmt::type::activity_t sub (act.extract());
+              sub.inject_input();
+              sub.execute (this);
+              act.inject (sub);
+            }
+
+            act.collect_output ();
+
+            return 0;
           }
 
-          act.collect_output ();
+          virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+          {
+            module::call (loader, act, mod);
 
-          return 0;
-        }
+            return 0;
+          }
 
-        virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+          virtual int handle_internally (we::mgmt::type::activity_t& , expr_t&)
+          {
+            return 0;
+          }
+
+          virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+          {
+            return handle_internally (act, n);
+          }
+
+          virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+          {
+            return handle_internally (act, mod);
+          }
+
+          virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+          {
+            return handle_internally (act, e);
+          }
+
+        private:
+          we::loader::loader& loader;
+        };
+
+        struct temporary_path_type
         {
-          module::call (loader, act, mod);
+          temporary_path_type()
+            : _path (boost::filesystem::unique_path())
+          {
+            boost::filesystem::create_directories (_path);
+          }
 
-          return 0;
-        }
+          ~temporary_path_type()
+          {
+            boost::filesystem::remove_all (_path);
+          }
 
-        virtual int handle_internally (we::mgmt::type::activity_t& , expr_t&)
+          operator boost::filesystem::path() const
+          {
+            return _path;
+          }
+
+          boost::filesystem::path _path;
+        };
+
+        boost::optional<std::string> get_env (const std::string& name)
         {
-          return 0;
+          const char *var (getenv (name.c_str()));
+          if (var)
+          {
+            return std::string (var);
+          }
+          return boost::none;
         }
 
-        virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+        we::mgmt::type::activity_t prepare_activity
+          ( const QStack<document_view*>& accessed_widgets
+          , const boost::filesystem::path& temporary_path
+          )
         {
-          return handle_internally (act, n);
+          if (accessed_widgets.empty())
+          {
+            throw std::runtime_error ("no active widget");
+          }
+
+          xml::parse::state::type state;
+          state.path_to_cpp() = temporary_path.string();
+          boost::optional<std::string> SDPA_HOME (get_env ("SDPA_HOME"));
+          if (SDPA_HOME)
+          {
+            const boost::filesystem::path sdpa_home (*SDPA_HOME);
+            const boost::filesystem::path sdpa_include (sdpa_home / "include");
+            const boost::filesystem::path sdpa_lib (sdpa_home / "lib");
+            state.gen_cxxflags().push_back ( ( boost::format ("-I\"%1%\"")
+                                             % sdpa_include
+                                             ).str()
+                                           );
+            state.gen_ldflags().push_back ( ( boost::format ("-L\"%1%\"")
+                                            % sdpa_lib
+                                            ).str()
+                                          );
+          }
+          //! \todo Add include and link paths
+
+          const xml::parse::id::ref::function function
+            ( data::proxy::function (accessed_widgets.top()->proxy())
+            .get().clone()
+            );
+          xml::parse::post_processing_passes (function, &state);
+
+          xml::parse::generate_cpp (function, state);
+
+          const boost::filesystem::path make_output
+            (temporary_path / "MAKEOUTPUT");
+
+          if ( system ( ( "make -C "
+                        + temporary_path.string()
+                        + " > "
+                        + make_output.string()
+                        + " 2>&1 "
+                        ).c_str()
+                      )
+             )
+          {
+            //! \todo process:execute fixen und nutzen
+            std::ifstream f (make_output.string().c_str());
+
+            std::stringstream sf;
+            while (f.good() && !f.eof())
+            {
+              sf << (char)f.get();
+            }
+            throw std::runtime_error (sf.str());
+          }
+
+          return xml::parse::xml_to_we (function, state);
         }
 
-        virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+        bool put_token ( we::mgmt::type::activity_t& activity
+                       , const std::string& port_name
+                       , const std::string& value
+                       )
         {
-          return handle_internally (act, mod);
+          try
+          {
+            std::size_t k (0);
+            std::string::const_iterator begin (value.begin());
+            fhg::util::parse::position pos (k, begin, value.end());
+
+            try
+            {
+              we::util::token::put (activity, port_name, ::value::read (pos));
+            }
+            catch (const expr::exception::parse::exception& e)
+            {
+              //! \todo fixed width font
+              std::stringstream temp;
+              temp << e.what() << std::endl;
+              temp << value << std::endl;
+              temp << std::string (e.eaten, ' ') << "^" << std::endl;
+              throw std::runtime_error (temp.str().c_str());
+            }
+          }
+          catch (const std::runtime_error& e)
+          {
+            QMessageBox msgBox;
+            msgBox.setText (e.what());
+            msgBox.setIcon (QMessageBox::Critical);
+            msgBox.exec();
+            return true;
+          }
+          return false;
         }
 
-        virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+        void execute_activity_locally
+          ( we::mgmt::type::activity_t activity
+          , const boost::filesystem::path& temporary_path
+          )
         {
-          return handle_internally (act, e);
+          activity.inject_input();
+
+          we::loader::loader loader;
+          loader.append_search_path (temporary_path / "pnetc" / "op");
+
+          eval_context context (loader);
+
+          //! \todo Somehow redirect stdout to buffer
+          activity.execute (&context);
+          activity.collect_output();
+
+          BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
+                        , activity.output()
+                        )
+          {
+            std::stringstream tmp;
+            tmp << "on " << activity.transition().get_port (top.second).name()
+                << ": " << top.first;
+            QMessageBox msgBox;
+            msgBox.setText (QString::fromStdString (tmp.str()));
+            msgBox.exec();
+          }
         }
+      }
 
-      private:
-        we::loader::loader& loader;
-      };
-
-      struct output_port_and_token : std::iterator< std::output_iterator_tag
-                                                  , output_port_and_token
-                                                  >
-      {
-        output_port_and_token const & operator *() const { return *this; }
-        output_port_and_token const & operator++() const { return *this; }
-        output_port_and_token const & operator=
-          (const we::mgmt::type::activity_t::token_on_port_t & subject) const
-        {
-          std::stringstream tmp;
-          tmp << "on " << subject.second << ": " << subject.first;
-          QMessageBox msgBox;
-          msgBox.setText (QString::fromStdString (tmp.str()));
-          msgBox.exec();
-          return *this;
-        }
-      };
-
-      struct delete_directory_on_scope_exit
-      {
-        delete_directory_on_scope_exit (const boost::filesystem::path& path)
-          : _path (path)
-        { }
-
-        ~delete_directory_on_scope_exit()
-        {
-          boost::filesystem::remove_all (_path);
-        }
-
-        boost::filesystem::path _path;
-      };
-
-      void editor_window::execute_locally()
+      void editor_window::execute_locally_inputs_via_prompt()
       try
       {
-        if (_accessed_widgets.empty())
-        {
-          return;
-        }
-
-        const boost::filesystem::path temporary_path
-          (boost::filesystem::unique_path());
-        boost::filesystem::create_directories (temporary_path);
-
-        const delete_directory_on_scope_exit cleanup (temporary_path);
-
-        xml::parse::state::type state;
-        state.path_to_cpp() = temporary_path.string();
-        //! \todo Add include and link paths
-
-        const xml::parse::id::ref::function function
-          ( data::proxy::function (_accessed_widgets.top()->proxy())
-          .get().clone()
-          );
-        xml::parse::post_processing_passes (function, &state);
-
-        xml::parse::generate_cpp (function, state);
-
-        const boost::filesystem::path make_output
-          (temporary_path / "MAKEOUTPUT");
-
-        if ( system ( ( "make -C "
-                      + temporary_path.string()
-                      + " > "
-                      + make_output.string()
-                      + " 2>&1 "
-                      ).c_str()
-                    )
-           )
-        {
-          //! \todo process:execute fixen und nutzen
-          std::ifstream f (make_output.string().c_str());
-
-          std::stringstream sf;
-          while (f.good() && !f.eof())
-          {
-            sf << (char)f.get();
-          }
-          throw std::runtime_error (sf.str());
-        }
+        const temporary_path_type temporary_path;
 
         we::mgmt::type::activity_t activity
-          (xml::parse::xml_to_we (function, state));
+          (prepare_activity (_accessed_widgets, temporary_path));
 
         BOOST_FOREACH ( const std::string& port_name
                       , activity.transition().port_names (we::type::PORT_IN)
@@ -654,53 +757,11 @@ namespace fhg
               return;
             }
 
-            std::size_t k (0);
-            std::string::const_iterator begin (value.begin());
-            fhg::util::parse::position pos (k, begin, value.end());
-
-            try
-            {
-              try
-              {
-                we::util::token::put (activity, port_name, ::value::read (pos));
-                retry = false;
-              }
-              catch (const expr::exception::parse::exception& e)
-              {
-                //! \todo fixed width font
-                std::stringstream temp;
-                temp << e.what() << std::endl;
-                temp << value << std::endl;
-                temp << std::string (e.eaten, ' ') << "^" << std::endl;
-                throw std::runtime_error (temp.str().c_str());
-              }
-            }
-            catch (const std::runtime_error& e)
-            {
-              QMessageBox msgBox;
-              msgBox.setText (e.what());
-              msgBox.setIcon (QMessageBox::Critical);
-              msgBox.exec();
-              retry = true;
-            }
+            retry = put_token (activity, port_name, value);
           }
         }
 
-        activity.inject_input();
-
-        we::loader::loader loader;
-        loader.append_search_path (temporary_path / "pnetc" / "op");
-
-        eval_context context (loader);
-
-        //! \todo Somehow redirect stdout to buffer
-        activity.execute (&context);
-        activity.collect_output();
-
-        std::copy ( activity.output().begin()
-                  , activity.output().end()
-                  , output_port_and_token()
-                  );
+        execute_activity_locally (activity, temporary_path);
       }
       catch (const std::runtime_error& e)
       {
@@ -709,6 +770,50 @@ namespace fhg
         msgBox.setIcon (QMessageBox::Critical);
         msgBox.exec();
       }
+
+      void editor_window::execute_locally_inputs_from_file()
+      try
+      {
+        const temporary_path_type temporary_path;
+
+        we::mgmt::type::activity_t activity
+          (prepare_activity (_accessed_widgets, temporary_path));
+
+        bool ok;
+        const QString input_filename
+          (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));
+        if (input_filename.isEmpty())
+        {
+          return;
+        }
+
+        std::ifstream input_file (input_filename.toStdString().c_str());
+        if (!input_file)
+        {
+          throw std::runtime_error ("bad input file: opening failed");
+        }
+
+        std::string input_line;
+        while (input_file && getline (input_file, input_line))
+        {
+          const std::string port_name
+            (input_line.substr (0, input_line.find ('=')));
+          const std::string value
+            (input_line.substr (input_line.find ('=') + 1));
+
+          put_token (activity, port_name, value);
+        }
+
+        execute_activity_locally (activity, temporary_path);
+      }
+      catch (const std::runtime_error& e)
+      {
+        QMessageBox msgBox;
+        msgBox.setText (e.what());
+        msgBox.setIcon (QMessageBox::Critical);
+        msgBox.exec();
+      }
+
 
       void editor_window::readSettings()
       {
