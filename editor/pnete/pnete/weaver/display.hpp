@@ -25,7 +25,6 @@ namespace fhg
         void transition ( const ::xml::parse::id::ref::transition&
                         , data::internal_type*
                         , ui::graph::scene_type*
-                        , ui::graph::transition_item*
                         );
 
         void place (const ::xml::parse::id::ref::place&, ui::graph::place_item*);

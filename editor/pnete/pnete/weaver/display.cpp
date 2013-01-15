@@ -17,6 +17,8 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/weaver/weaver.hpp>
 
+#include <util/qt/cast.hpp>
+
 #include <we/type/property.hpp>
 
 #include <boost/unordered_map.hpp>
@@ -82,9 +84,9 @@ namespace fhg
         public:
           explicit transition ( data::internal_type*
                               , ui::graph::scene_type*
-                              , ui::graph::transition_item*
                               , const ::xml::parse::id::ref::net&
                               , item_by_name_type&
+                              , const ::xml::parse::id::ref::transition&
                               );
 
           template<int Type, typename T> void weave (const T & x) {}
@@ -202,6 +204,33 @@ namespace fhg
               item->set_just_pos_but_not_in_property (item->pos().x(), 0.0);
             }
           }
+
+          template<>
+          void maybe_set_position ( ui::graph::base_item* item
+                                  , const ::xml::parse::id::ref::transition& id
+                                  )
+          {
+            bool either ( !id.get().properties().has ("fhg.pnete.position.x")
+                       || !id.get().properties().has ("fhg.pnete.position.y")
+                        );
+            if (!id.get().properties().has ("fhg.pnete.position.x"))
+            {
+              id.get_ref().properties().set ("fhg.pnete.position.x", "0");
+              item->set_just_pos_but_not_in_property (0.0, item->pos().y());
+            }
+            if (!id.get().properties().has ("fhg.pnete.position.y"))
+            {
+              id.get_ref().properties().set ("fhg.pnete.position.y", "0");
+              item->set_just_pos_but_not_in_property (item->pos().x(), 0.0);
+            }
+            if (either)
+            {
+              fhg::util::qt::throwing_qobject_cast<ui::graph::transition_item*>
+                (item)->repositionChildrenAndResize();
+            }
+          }
+
+
         }
 
         function::function ( const ::xml::parse::id::ref::function& function
@@ -263,18 +292,25 @@ namespace fhg
 
         transition::transition ( data::internal_type* root
                                , ui::graph::scene_type* scene
-                               , ui::graph::transition_item* transition
                                , const ::xml::parse::id::ref::net& net
                                , item_by_name_type& place_item_by_name
+                               , const ::xml::parse::id::ref::transition& id
                                )
           : _scene (scene)
-          , _transition (transition)
+          , _transition ( new ui::graph::transition_item
+                          ( data::handle::transition (id, root->change_manager())
+                          , _root
+                          )
+                        )
           , _net (net)
           , _place_item_by_name (place_item_by_name)
           , _port_in_item_by_name ()
           , _port_out_item_by_name ()
           , _root (root)
-        {}
+        {
+          maybe_set_position (_transition, id);
+          _scene->addItem (_transition);
+        }
 
         namespace
         {
@@ -307,14 +343,11 @@ namespace fhg
             , fun
             )
         {
-          const ::xml::parse::id::ref::function function
-            (boost::apply_visitor (get_function (_net), fun));
-
-          weaver::function sub (function, _root);
-
-          _transition->set_proxy (sub.proxy());
-
-          from::many (this, function.get().ports().ids(), from::port);
+          from::many
+            ( this
+            , boost::apply_visitor (get_function (_net), fun).get().ports().ids()
+            , from::port
+            );
         }
         WSIG(transition, port::open, ::xml::parse::id::ref::port, port)
         {
@@ -503,17 +536,11 @@ namespace fhg
         }
         WSIG(net, transition::open, ::xml::parse::id::ref::transition, id)
         {
-          ui::graph::transition_item* trans
-            ( new ui::graph::transition_item
-            (data::handle::transition (id, _root->change_manager()))
-            );
-          maybe_set_position (trans, id);
-          _scene->addItem (trans);
           weaver::transition wt ( _root
                                 , _scene
-                                , trans
                                 , _net
                                 , _place_item_by_name
+                                , id
                                 );
           from::transition (&wt, id);
         }
@@ -630,16 +657,15 @@ namespace fhg
         void transition ( const ::xml::parse::id::ref::transition& transition_id
                         , data::internal_type* root
                         , ui::graph::scene_type* scene
-                        , ui::graph::transition_item* item
                         )
         {
           item_by_name_type places (name_map_for_items (scene->all_places()));
           weaver::transition wt
             ( root
             , scene
-            , item
             , transition_id.get().parent()->make_reference_id()
             , places
+            , transition_id
             );
           from::transition (&wt, transition_id);
         }

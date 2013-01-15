@@ -1093,20 +1093,11 @@ namespace fhg
         {
           if (is_in_my_net (transition))
           {
-            transition_item* item (new transition_item (transition));
-            addItem (item);
-
             weaver::display::transition
               ( transition.id()
               , _internal
               , this
-              , item
               );
-
-            if (origin == this)
-            {
-              item->repositionChildrenAndResize();
-            }
           }
         }
 

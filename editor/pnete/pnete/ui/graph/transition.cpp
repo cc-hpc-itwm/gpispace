@@ -30,11 +30,14 @@ namespace fhg
       namespace graph
       {
         transition_item::transition_item
-          (const data::handle::transition& handle, base_item* parent)
-          : base_item (parent)
-          , _size (size::transition::width(), size::transition::height())
-          , _handle (handle)
-          , _proxy (NULL)
+          ( const data::handle::transition& handle
+          , data::internal_type* document_root
+          , base_item* parent
+          )
+            : base_item (parent)
+            , _size (size::transition::width(), size::transition::height())
+            , _handle (handle)
+            , _document_root (document_root)
         {
           //            new cogwheel_button (this);
           setFlag (ItemIsSelectable);
@@ -144,13 +147,9 @@ namespace fhg
                                   );
         }
 
-        void transition_item::set_proxy (data::proxy::type* proxy_)
+        data::internal_type* transition_item::document_root() const
         {
-          _proxy = proxy_;
-        }
-        data::proxy::type* transition_item::proxy () const
-        {
-          return _proxy;
+          return _document_root;
         }
 
         QRectF transition_item::rectangle () const
