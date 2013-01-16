@@ -3,15 +3,14 @@
 #ifndef FHG_PNETE_WEAVER_DISPLAY_HPP
 #define FHG_PNETE_WEAVER_DISPLAY_HPP
 
-#include <pnete/data/internal.fwd.hpp>
-#include <pnete/data/handle/net.fwd.hpp>
 #include <pnete/data/handle/function.fwd.hpp>
-#include <pnete/data/proxy.fwd.hpp>
+#include <pnete/data/handle/net.fwd.hpp>
+#include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/port.fwd.hpp>
+#include <pnete/data/handle/transition.fwd.hpp>
 #include <pnete/ui/graph/place.fwd.hpp>
 #include <pnete/ui/graph/scene.fwd.hpp>
 #include <pnete/ui/graph/transition.fwd.hpp>
-
-#include <xml/parse/id/types.fwd.hpp>
 
 namespace fhg
 {
@@ -21,25 +20,12 @@ namespace fhg
     {
       namespace display
       {
-        data::proxy::type function
-          (const ::xml::parse::id::ref::function&, data::internal_type*);
+        ui::graph::scene_type* net
+          (const data::handle::net&, const data::handle::function& parent);
 
-        ui::graph::scene_type* net ( const data::handle::net& net
-                                   , const data::handle::function& parent
-                                   );
-
-        void transition ( const ::xml::parse::id::ref::transition&
-                        , data::internal_type*
-                        , ui::graph::scene_type*
-                        );
-
-        void place (const ::xml::parse::id::ref::place&, ui::graph::place_item*);
-
-        void top_level_port ( const ::xml::parse::id::ref::port&
-                            , ui::graph::scene_type*
-                            , data::internal_type*
-                            );
-
+        void transition (const data::handle::transition&, ui::graph::scene_type*);
+        void place (const data::handle::place&, ui::graph::scene_type*);
+        void top_level_port (const data::handle::port&, ui::graph::scene_type*);
       }
     }
   }

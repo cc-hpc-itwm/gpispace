@@ -7,8 +7,6 @@
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/port.hpp>
-#include <pnete/data/internal.hpp>
-#include <pnete/data/proxy.hpp>
 #include <pnete/ui/graph/base_item.fwd.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/place.hpp>
@@ -37,26 +35,6 @@ namespace fhg
         typedef boost::unordered_map< std::string
                                     , ui::graph::connectable_item*
                                     > item_by_name_type;
-
-        class function
-        {
-        public:
-          explicit function ( const ::xml::parse::id::ref::function&
-                            , data::internal_type*
-                            );
-
-          template<int Type, typename T> void weave (const T & x) {}
-          template<int Type> void weave () {}
-
-          data::proxy::type* proxy () const;
-
-        private:
-          data::proxy::type* _proxy;
-          ::xml::parse::id::ref::function _function;
-
-          ui::graph::scene_type* _scene;
-          data::internal_type* _root;
-        };
 
         class net
         {
@@ -233,46 +211,6 @@ namespace fhg
 
 
         }
-
-        function::function ( const ::xml::parse::id::ref::function& function
-                           , data::internal_type* root
-                           )
-          : _proxy (NULL)
-          , _function (function)
-          , _scene (NULL)
-          , _root (root)
-        {
-          from::function (this, _function);
-        }
-        data::proxy::type* function::proxy () const { return _proxy; }
-
-        WSIG(function, expression::open, ::xml::parse::id::ref::expression, id)
-        {
-          _proxy = new data::proxy::type
-            (data::proxy::expression_proxy (data::handle::expression (id, _root)));
-        }
-        WSIG(function, mod::open, ::xml::parse::id::ref::module, id)
-        {
-          _proxy = new data::proxy::type
-            (data::proxy::mod_proxy (data::handle::module (id, _root)));
-        }
-        WSIG(function, net::open, ::xml::parse::id::ref::net, id)
-        {
-          _scene = new ui::graph::scene_type
-            ( data::handle::net (id, _root)
-            , data::handle::function (_function, _root)
-            );
-          _proxy = new data::proxy::type
-            (data::proxy::net_proxy (data::handle::net (id, _root), _scene));
-
-          weaver::net wn (_root, _scene, id, _function);
-          from::net (&wn, id);
-        }
-        WSIG(function, function::fun, XMLTYPE(function_type::content_type), fun)
-        {
-          from::variant (this, fun);
-        }
-
 
         transition::transition ( data::internal_type* root
                                , ui::graph::scene_type* scene
@@ -620,12 +558,6 @@ namespace fhg
 
       namespace display
       {
-        data::proxy::type function
-          (const ::xml::parse::id::ref::function& fun, data::internal_type* data)
-        {
-          return *weaver::function (fun, data).proxy();
-        }
-
         ui::graph::scene_type* net ( const data::handle::net& net
                                    , const data::handle::function& parent
                                    )
@@ -638,41 +570,41 @@ namespace fhg
           return scene;
         }
 
-        void transition ( const ::xml::parse::id::ref::transition& transition_id
-                        , data::internal_type* root
+        void transition ( const data::handle::transition& transition
                         , ui::graph::scene_type* scene
                         )
         {
           item_by_name_type places (name_map_for_items (scene->all_places()));
           weaver::transition wt
-            ( root
+            ( transition.document()
             , scene
-            , transition_id.get().parent()->make_reference_id()
+            , transition.get().parent()->make_reference_id()
             , places
-            , transition_id
+            , transition.id()
             );
-          from::transition (&wt, transition_id);
+          from::transition (&wt, transition.id());
         }
 
-        void place ( const ::xml::parse::id::ref::place& place_id
-                   , ui::graph::place_item* item
+        void place ( const data::handle::place& place
+                   , ui::graph::scene_type* scene
                    )
         {
           //! \note Does not need actual list, as it only adds itself.
           item_by_name_type place_by_name;
 
+          ui::graph::place_item* item (new ui::graph::place_item (place));
+          scene->addItem (item);
           weaver::place wp (item, place_by_name);
-          from::place (&wp, place_id);
+          from::place (&wp, place.id());
         }
 
-        void top_level_port ( const ::xml::parse::id::ref::port& port_id
+        void top_level_port ( const data::handle::port& port
                             , ui::graph::scene_type* scene
-                            , data::internal_type* root
                             )
         {
           item_by_name_type places (name_map_for_items (scene->all_places()));
-          weaver::port_toplevel wptl (scene, places, root);
-          from::port (&wptl, port_id);
+          weaver::port_toplevel wptl (scene, places, port.document());
+          from::port (&wptl, port.id());
         }
       }
     }

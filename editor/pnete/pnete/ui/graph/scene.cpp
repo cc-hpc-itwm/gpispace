@@ -19,12 +19,16 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/util/action.hpp>
 #include <pnete/weaver/display.hpp>
-#include <pnete/weaver/weaver.hpp>
 
 #include <util/graphviz.hpp>
 #include <util/qt/boost_connect.hpp>
 #include <util/qt/cast.hpp>
 #include <util/qt/parent.hpp>
+
+#include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/transition.hpp>
 
 #include <list>
 
@@ -1111,8 +1115,7 @@ namespace fhg
         {
           if (is_in_my_net (transition))
           {
-            weaver::display::transition
-              (transition.id(), transition.document(), this);
+            weaver::display::transition (transition, this);
           }
         }
 
@@ -1128,10 +1131,7 @@ namespace fhg
         {
           if (is_in_my_net (place))
           {
-            place_item* item (new place_item (place));
-            addItem (item);
-
-            weaver::display::place (place.id(), item);
+            weaver::display::place (place, this);
           }
         }
 
@@ -1148,7 +1148,7 @@ namespace fhg
         {
           if (is_in_my_net (port))
           {
-            weaver::display::top_level_port (port.id(), this, port.document());
+            weaver::display::top_level_port (port, this);
           }
         }
 
