@@ -26,10 +26,6 @@ namespace fhg
         )
           : QWidget (parent)
       {
-        QGroupBox* group_box (new QGroupBox (tr ("module call")));
-        QHBoxLayout* group_box_layout (new QHBoxLayout());
-        group_box->setLayout (group_box_layout);
-
         QSplitter* splitter (new QSplitter ());
         splitter->addWidget (new port_lists_widget (function, QStringList()));
 
@@ -37,10 +33,8 @@ namespace fhg
         edit->setText (QString ("<<module foo>>"));
         splitter->addWidget (edit);
 
-        group_box_layout->addWidget (splitter);
-
         QHBoxLayout* hbox (new QHBoxLayout ());
-        hbox->addWidget (group_box);
+        hbox->addWidget (splitter);
         setLayout (hbox);
       }
     }
