@@ -5,7 +5,10 @@
 
 #include <pnete/data/handle/function.fwd.hpp>
 
+#include <pnete/data/handle/expression.fwd.hpp>
 #include <pnete/data/handle/meta_base.hpp>
+#include <pnete/data/handle/module.fwd.hpp>
+#include <pnete/data/handle/net.fwd.hpp>
 
 #include <we/type/port.hpp>
 
@@ -13,6 +16,7 @@
 #include <xml/parse/type/function.fwd.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
+#include <boost/variant/variant_fwd.hpp>
 
 class QObject;
 class QString;
@@ -44,6 +48,8 @@ namespace fhg
                         , const we::type::PortDirection&
                         , const boost::optional<QPointF>&
                         ) const;
+
+          boost::variant<expression, module, net> content_handle() const;
 
           using function_meta_base::operator==;
         };

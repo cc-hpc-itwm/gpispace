@@ -3,6 +3,13 @@
 #include <pnete/data/handle/function.hpp>
 
 #include <pnete/data/change_manager.hpp>
+#include <pnete/data/handle/expression.hpp>
+#include <pnete/data/handle/module.hpp>
+#include <pnete/data/handle/net.hpp>
+
+#include <xml/parse/type/function.hpp>
+
+#include <boost/variant.hpp>
 
 namespace fhg
 {
@@ -37,6 +44,41 @@ namespace fhg
                                 ) const
         {
           change_manager().add_port (origin, *this, direction, position);
+        }
+
+        namespace
+        {
+          typedef boost::variant<expression, module, net> variant_type;
+
+          class wrap_with_handle : public boost::static_visitor<variant_type>
+          {
+          public:
+            wrap_with_handle (internal_type* document)
+              : _document (document)
+            { }
+
+#define CASE(NAME)                                                \
+            variant_type operator()                               \
+              (const ::xml::parse::id::ref::NAME& id) const       \
+            {                                                     \
+              return NAME (id, _document);                        \
+            }
+
+            CASE (expression);
+            CASE (module);
+            CASE (net);
+
+#undef CASE
+
+          private:
+            internal_type* _document;
+          };
+        }
+
+        variant_type function::content_handle() const
+        {
+          return boost::apply_visitor
+            (wrap_with_handle (document()), get().content());
         }
       }
     }
