@@ -124,6 +124,16 @@ namespace fhg
           change_manager_t& _change_manager;        \
           const QObject* _origin
 
+#define ACTION_UNDO_ARGS                        \
+        _change_manager, NULL
+
+#define ACTION_REDO_ARGS                        \
+        _change_manager, _origin
+
+#define ACTION_CTOR_ARGS                        \
+        change_manager, origin
+
+
         template<typename T>
           ::we::type::property::value_type to_property_type (const T& t)
         {
@@ -139,11 +149,10 @@ namespace fhg
         }
 
         template<typename HANDLE_TYPE>
-          void set_property ( const HANDLE_TYPE& handle
+          void set_property ( ACTION_ARG_LIST
+                            , const HANDLE_TYPE& handle
                             , const ::we::type::property::key_type& key
                             , const ::we::type::property::value_type& val
-                            , change_manager_t& change_manager
-                            , const QObject* origin
                             )
         {
           typedef HANDLE_TYPE handle_type;
@@ -169,15 +178,12 @@ namespace fhg
         public:
           meta_set_property
             ( const char* name
-            , change_manager_t& change_manager
-            , const QObject* origin
+            , ACTION_ARG_LIST
             , const handle_type& handle
             , const ::we::type::property::key_type& key
             , const ::we::type::property::value_type& val
             )
-              : QUndoCommand (QObject::tr (name))
-              , _change_manager (change_manager)
-              , _origin (origin)
+              : ACTION_INIT (name)
               , _handle (handle)
               , _key (key)
               , _new_value (val)
@@ -186,12 +192,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_property (_handle, _key, _old_value, _change_manager, NULL);
+            set_property (ACTION_UNDO_ARGS, _handle, _key, _old_value);
           }
 
           virtual void redo()
           {
-            set_property (_handle, _key, _new_value, _change_manager, _origin);
+            set_property (ACTION_REDO_ARGS, _handle, _key, _new_value);
             _origin = NULL;
           }
 
@@ -206,8 +212,7 @@ namespace fhg
           }
 
         private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
+          ACTION_MEMBERS;
           const handle_type _handle;
           const ::we::type::property::key_type _key;
           ::we::type::property::value_type _new_value;
@@ -226,7 +231,7 @@ namespace fhg
             , const QString&
             );
 
-          change_manager.emit_signal<signal_type> 
+          change_manager.emit_signal<signal_type>
             (&signal::type_set, origin, handle, type);
         }
 
@@ -248,12 +253,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_type_impl (_change_manager, NULL, _handle, _old_type);
+            set_type_impl (ACTION_UNDO_ARGS, _handle, _old_type);
           }
 
           virtual void redo()
           {
-            set_type_impl (_change_manager, _origin, _handle, _new_type);
+            set_type_impl (ACTION_REDO_ARGS, _handle, _new_type);
             _origin = NULL;
           }
 
@@ -298,12 +303,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_name_impl (_change_manager, NULL, _handle, _old_name);
+            set_name_impl (ACTION_UNDO_ARGS, _handle, _old_name);
           }
 
           virtual void redo()
           {
-            set_name_impl (_change_manager, _origin, _handle, _new_name);
+            set_name_impl (ACTION_REDO_ARGS, _handle, _new_name);
             _origin = NULL;
           }
 
@@ -325,26 +330,23 @@ namespace fhg
           meta_move_item
             ( const char* name
             , int id
-            , change_manager_t& change_manager
-            , const QObject* origin
+            , ACTION_ARG_LIST
             , const handle_type& handle
             , const QPointF& position
             )
-              : QUndoCommand (QObject::tr (name))
+              : ACTION_INIT (name)
               , _id (id)
-              , _change_manager (change_manager)
-              , _origin (origin)
               , _handle (handle)
               , _set_x_action ( new action::meta_set_property<handle_type>
                                 ( "set_transition_property_action"
-                                , change_manager, origin, handle
+                                , ACTION_CTOR_ARGS, handle
                                 , "fhg.pnete.position.x"
                                 , to_property_type (position.x())
                                 )
                               )
               , _set_y_action ( new action::meta_set_property<handle_type>
                                 ( "set_transition_property_action"
-                                , change_manager, origin, handle
+                                , ACTION_CTOR_ARGS, handle
                                 , "fhg.pnete.position.y"
                                 , to_property_type (position.y())
                                 )
@@ -386,9 +388,8 @@ namespace fhg
           }
 
         private:
+          ACTION_MEMBERS;
           int _id;
-          change_manager_t& _change_manager;
-          const QObject* _origin;
           const handle_type _handle;
           boost::scoped_ptr<meta_set_property<handle_type> > _set_x_action;
           boost::scoped_ptr<meta_set_property<handle_type> > _set_y_action;
@@ -444,14 +445,12 @@ namespace fhg
 
           virtual void undo()
           {
-            remove_connection_impl
-              (_change_manager, NULL, _transition, _connect);
+            remove_connection_impl (ACTION_UNDO_ARGS, _transition, _connect);
           }
 
           virtual void redo()
           {
-            add_connection_impl
-              (_change_manager, _origin, _transition, _connect);
+            add_connection_impl (ACTION_REDO_ARGS, _transition, _connect);
             _origin = NULL;
           }
 
@@ -473,14 +472,12 @@ namespace fhg
 
           virtual void undo()
           {
-            add_connection_impl
-              (_change_manager, NULL, _transition, _connect);
+            add_connection_impl (ACTION_UNDO_ARGS, _transition, _connect);
           }
 
           virtual void redo()
           {
-            remove_connection_impl
-              (_change_manager, _origin, _transition, _connect);
+            remove_connection_impl (ACTION_REDO_ARGS, _transition, _connect);
             _origin = NULL;
           }
 
@@ -515,13 +512,13 @@ namespace fhg
           virtual void undo()
           {
             connection_is_read_impl
-              (_change_manager, NULL, _connect, _old_value);
+              (ACTION_UNDO_ARGS, _connect, _old_value);
           }
 
           virtual void redo()
           {
             connection_is_read_impl
-              (_change_manager, NULL, _connect, _new_value);
+              (ACTION_UNDO_ARGS, _connect, _new_value);
             _origin = NULL;
           }
 
@@ -537,16 +534,13 @@ namespace fhg
         {
         public:
           add_transition
-            ( change_manager_t& change_manager
-            , const QObject* origin
+            ( ACTION_ARG_LIST
             , const ::xml::parse::id::ref::net& net
             , const ::xml::parse::id::ref::transition& transition
             )
-            : QUndoCommand (QObject::tr ("add_transition_action"))
-            , _change_manager (change_manager)
-            , _origin (origin)
-            , _transition (transition)
-            , _net (net)
+              : ACTION_INIT ("add_transition_action")
+              , _transition (transition)
+              , _net (net)
           { }
 
           virtual void undo()
@@ -574,8 +568,7 @@ namespace fhg
           }
 
         private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
+          ACTION_MEMBERS;
           ::xml::parse::id::ref::transition _transition;
           ::xml::parse::id::ref::net _net;
         };
@@ -583,14 +576,10 @@ namespace fhg
         class remove_transition : public QUndoCommand
         {
         public:
-          remove_transition
-            ( change_manager_t& change_manager
-            , const QObject* origin
-            , const ::xml::parse::id::ref::transition& transition
-            )
-            : QUndoCommand (QObject::tr ("remove_transition_action"))
-            , _change_manager (change_manager)
-            , _origin (origin)
+          remove_transition ( ACTION_ARG_LIST
+                            , const ::xml::parse::id::ref::transition& transition
+                            )
+            : ACTION_INIT ("remove_transition_action")
             , _transition (transition)
             , _net (_transition.get().parent()->make_reference_id())
           { }
@@ -620,8 +609,7 @@ namespace fhg
           }
 
         private:
-          change_manager_t& _change_manager;
-          const QObject* _origin;
+          ACTION_MEMBERS;
           ::xml::parse::id::ref::transition _transition;
           ::xml::parse::id::ref::net _net;
         };
@@ -669,12 +657,12 @@ namespace fhg
 
           virtual void undo()
           {
-            remove_place_impl (_change_manager, NULL, _net, _place);
+            remove_place_impl (ACTION_UNDO_ARGS, _net, _place);
           }
 
           virtual void redo()
           {
-            add_place_impl (_change_manager, _origin, _net, _place);
+            add_place_impl (ACTION_REDO_ARGS, _net, _place);
             _origin = NULL;
           }
 
@@ -696,12 +684,12 @@ namespace fhg
 
           virtual void undo()
           {
-            add_place_impl (_change_manager, NULL, _net, _place);
+            add_place_impl (ACTION_UNDO_ARGS, _net, _place);
           }
 
           virtual void redo()
           {
-            remove_place_impl (_change_manager, _origin, _net, _place);
+            remove_place_impl (ACTION_REDO_ARGS, _net, _place);
             _origin = NULL;
           }
 
@@ -755,12 +743,12 @@ namespace fhg
 
           virtual void undo()
           {
-            remove_port_impl (_change_manager, NULL, _function, _port);
+            remove_port_impl (ACTION_UNDO_ARGS, _function, _port);
           }
 
           virtual void redo()
           {
-            add_port_impl (_change_manager, _origin, _function, _port);
+            add_port_impl (ACTION_REDO_ARGS, _function, _port);
             _origin = NULL;
           }
 
@@ -781,12 +769,12 @@ namespace fhg
 
           virtual void undo()
           {
-            add_port_impl (_change_manager, NULL, _function, _port);
+            add_port_impl (ACTION_UNDO_ARGS, _function, _port);
           }
 
           virtual void redo()
           {
-            remove_port_impl (_change_manager, _origin, _function, _port);
+            remove_port_impl (ACTION_REDO_ARGS, _function, _port);
             _origin = NULL;
           }
 
@@ -823,14 +811,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_place_association_impl
-              (_change_manager, NULL, _port, _old_place);
+            set_place_association_impl (ACTION_UNDO_ARGS, _port, _old_place);
           }
 
           virtual void redo()
           {
-            set_place_association_impl
-              (_change_manager, _origin, _port, _new_place);
+            set_place_association_impl (ACTION_REDO_ARGS, _port, _new_place);
             _origin = NULL;
           }
 
@@ -875,14 +861,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_function_name_impl
-              (_change_manager, NULL, _function, _old_name);
+            set_function_name_impl (ACTION_UNDO_ARGS, _function, _old_name);
           }
 
           virtual void redo()
           {
-            set_function_name_impl
-              (_change_manager, _origin, _function, _new_name);
+            set_function_name_impl (ACTION_REDO_ARGS, _function, _new_name);
             _origin = NULL;
           }
 
@@ -934,13 +918,13 @@ namespace fhg
           virtual void undo()
           {
             set_expression_content_impl
-              (_change_manager, NULL, _expression, _old_content);
+              (ACTION_UNDO_ARGS, _expression, _old_content);
           }
 
           virtual void redo()
           {
             set_expression_content_impl
-              (_change_manager, _origin, _expression, _new_content);
+              (ACTION_REDO_ARGS, _expression, _new_content);
             _origin = NULL;
           }
 
@@ -954,6 +938,9 @@ namespace fhg
 #undef ACTION_ARG_LIST
 #undef ACTION_INIT
 #undef ACTION_MEMBERS
+#undef ACTION_UNDO_ARGS
+#undef ACTION_REDO_ARGS
+#undef ACTION_CTOR_ARGS
 
       }
 
@@ -1152,7 +1139,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (connect, key, val, *this, origin);
+        action::set_property (*this, origin, connect, key, val);
       }
 
       // -- transition -----------------------------------------------
@@ -1286,7 +1273,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (transition, key, val, *this, origin);
+        action::set_property (*this, origin, transition, key, val);
       }
 
       void change_manager_t::move_item ( const QObject* origin
@@ -1307,17 +1294,17 @@ namespace fhg
         , const QPointF& position
         )
       {
-         action::set_property ( transition
+         action::set_property ( *this
+                              , origin
+                              , transition
                               , "fhg.pnete.position.x"
                               , action::to_property_type (position.x())
-                              , *this
-                              , origin
                               );
-         action::set_property ( transition
+         action::set_property ( *this
+                              , origin
+                              , transition
                               , "fhg.pnete.position.y"
                               , action::to_property_type (position.y())
-                              , *this
-                              , origin
                               );
       }
 
@@ -1488,7 +1475,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (place, key, val, *this, origin);
+        action::set_property (*this, origin, place, key, val);
       }
 
       void change_manager_t::move_item ( const QObject* origin
@@ -1509,17 +1496,17 @@ namespace fhg
         , const QPointF& position
         )
       {
-         action::set_property ( place
+         action::set_property ( *this
+                              , origin
+                              , place
                               , "fhg.pnete.position.x"
                               , action::to_property_type (position.x())
-                              , *this
-                              , origin
                               );
-         action::set_property ( place
+         action::set_property ( *this
+                              , origin
+                              , place
                               , "fhg.pnete.position.y"
                               , action::to_property_type (position.y())
-                              , *this
-                              , origin
                               );
       }
 
@@ -1632,9 +1619,7 @@ namespace fhg
         )
       {
         push ( new action::meta_set_property<handle::port>
-               ( "set_port_property_action"
-               , *this, origin, port, key, val
-               )
+               ("set_port_property_action", *this, origin, port, key, val)
              );
       }
 
@@ -1645,7 +1630,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (port, key, val, *this, origin);
+        action::set_property (*this, origin, port, key, val);
       }
 
       void change_manager_t::set_name ( const QObject* origin
@@ -1717,17 +1702,17 @@ namespace fhg
         , const QPointF& position
         )
       {
-         action::set_property ( port
+         action::set_property ( *this
+                              , origin
+                              , port
                               , "fhg.pnete.position.x"
                               , action::to_property_type (position.x())
-                              , *this
-                              , origin
                               );
-         action::set_property ( port
+         action::set_property ( *this
+                              , origin
+                              , port
                               , "fhg.pnete.position.y"
                               , action::to_property_type (position.y())
-                              , *this
-                              , origin
                               );
       }
 
@@ -1762,7 +1747,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (function, key, val, *this, origin);
+        action::set_property (*this, origin, function, key, val);
       }
 
       // - expression ------------------------------------------------
