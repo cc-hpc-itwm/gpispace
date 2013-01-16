@@ -12,7 +12,6 @@
 #include <pnete/data/handle/place.fwd.hpp>
 #include <pnete/data/handle/port.fwd.hpp>
 #include <pnete/data/handle/transition.fwd.hpp>
-#include <pnete/data/internal.fwd.hpp>
 #include <pnete/ui/graph/base_item.fwd.hpp>
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 #include <pnete/ui/graph/connection.fwd.hpp>
@@ -50,7 +49,6 @@ namespace fhg
         public:
           explicit scene_type ( const data::handle::net& net
                               , const data::handle::function& function
-                              , data::internal_type* internal
                               , QObject* parent = NULL
                               );
 
@@ -136,7 +134,6 @@ namespace fhg
 
           data::handle::net _net;
           data::handle::function _function;
-          data::internal_type* _internal;
 
           QAction* _add_transition_action;
           QAction* _add_place_action;

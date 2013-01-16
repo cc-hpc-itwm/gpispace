@@ -265,7 +265,6 @@ namespace fhg
           _scene = new ui::graph::scene_type
             ( data::handle::net (id, _root)
             , data::handle::function (_function, _root)
-            , _root
             );
           _proxy = new data::proxy::type
             ( data::proxy::net_proxy

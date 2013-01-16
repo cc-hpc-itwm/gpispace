@@ -98,7 +98,6 @@ namespace fhg
 
         scene_type::scene_type ( const data::handle::net& net
                                , const data::handle::function& function
-                               , data::internal_type* internal
                                , QObject* parent
                                )
           : QGraphicsScene (parent)
@@ -106,7 +105,6 @@ namespace fhg
           , _mouse_position (QPointF (0.0, 0.0))
           , _net (net)
           , _function (function)
-          , _internal (internal)
           //! \todo Don't default to center of scene, but center of visible scene!
           , _add_transition_action
             ( connect_action ( new QAction (tr ("new_transition"), this)
@@ -891,8 +889,7 @@ namespace fhg
 
             foreach (const QString& path, paths)
             {
-              data::internal_type* data
-                (data::manager::instance().load (path));
+              data::internal_type* data (data::manager::instance().load (path));
 
               net().add_transition
                 ( this
@@ -1126,10 +1123,7 @@ namespace fhg
           if (is_in_my_net (transition))
           {
             weaver::display::transition
-              ( transition.id()
-              , _internal
-              , this
-              );
+              (transition.id(), transition.document(), this);
           }
         }
 
@@ -1165,11 +1159,7 @@ namespace fhg
         {
           if (is_in_my_net (port))
           {
-            weaver::display::top_level_port
-              ( port.id()
-              , this
-              , _internal
-              );
+            weaver::display::top_level_port (port.id(), this, port.document());
           }
         }
 
