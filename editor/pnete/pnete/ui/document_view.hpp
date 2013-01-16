@@ -6,6 +6,7 @@
 #include <pnete/ui/document_view.fwd.hpp>
 
 #include <pnete/data/handle/function.hpp>
+#include <pnete/data/internal.hpp>
 #include <pnete/data/proxy.hpp>
 #include <pnete/ui/dock_widget.hpp>
 
@@ -37,8 +38,9 @@ namespace fhg
 
         QList<QAction*> actions() const;
 
-        const data::proxy::type& proxy() const;
+        data::internal_type* document() const;
         const data::handle::function& function() const;
+        const data::proxy::type& proxy() const;
 
       protected:
         void set_title (const boost::optional<std::string>&);

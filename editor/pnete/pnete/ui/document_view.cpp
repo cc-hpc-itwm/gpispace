@@ -51,14 +51,17 @@ namespace fhg
         return widget()->actions();
       }
 
-      const data::proxy::type& document_view::proxy() const
+      data::internal_type* document_view::document() const
       {
-        return _proxy;
+        return data::proxy::root (_proxy);
       }
-
       const data::handle::function& document_view::function() const
       {
         return _function;
+      }
+      const data::proxy::type& document_view::proxy() const
+      {
+        return _proxy;
       }
 
       void document_view::function_name_changed

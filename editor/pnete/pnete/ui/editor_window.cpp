@@ -165,7 +165,7 @@ namespace fhg
         }
 
         data::manager::instance().save
-          (data::proxy::root (_accessed_widgets.top()->proxy()), filename);
+          (_accessed_widgets.top()->document(), filename);
       }
 
       void editor_window::close_document()
@@ -627,9 +627,7 @@ namespace fhg
           //! \todo Add include and link paths
 
           const xml::parse::id::ref::function function
-            ( data::proxy::function (accessed_widgets.top()->proxy())
-            .get().clone()
-            );
+            (accessed_widgets.top()->function().get().clone());
           xml::parse::post_processing_passes (function, &state);
 
           xml::parse::generate_cpp (function, state);
