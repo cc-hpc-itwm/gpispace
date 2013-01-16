@@ -300,7 +300,7 @@ namespace fhg
           : _scene (scene)
           , _transition ( new ui::graph::transition_item
                           ( data::handle::transition (id, root->change_manager())
-                          , _root
+                          , root
                           )
                         )
           , _net (net)
