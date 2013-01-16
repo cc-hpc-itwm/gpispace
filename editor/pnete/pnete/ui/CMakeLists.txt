@@ -10,6 +10,7 @@ set(ui_SRCS
   dock_widget.cpp
   document_view.cpp
   module_call_widget.cpp
+  net_widget.cpp
   expression_widget.cpp
   port_lists_widget.cpp
   ComboItemDelegate.cpp
@@ -32,6 +33,7 @@ set(ui_HDRS
   PropertiesEditor.hpp
   StructureEditor.hpp
   module_call_widget.hpp
+  net_widget.hpp
   expression_widget.hpp
   port_lists_widget.hpp
   size.hpp
@@ -53,6 +55,7 @@ set(ui_TOMOC
   document_view.hpp
 
   module_call_widget.hpp
+  net_widget.hpp
   expression_widget.hpp
   port_lists_widget.hpp
 

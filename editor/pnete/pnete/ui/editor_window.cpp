@@ -13,11 +13,10 @@
 #include <pnete/ui/document_view.hpp>
 #include <pnete/ui/expression_widget.hpp>
 #include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/graph_view.hpp>
 #include <pnete/ui/module_call_widget.hpp>
+#include <pnete/ui/net_widget.hpp>
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
-#include <pnete/weaver/display.hpp>
 
 #include <util/qt/parent.hpp>
 
@@ -220,7 +219,7 @@ namespace fhg
             return new document_view
               ( _function
               , QObject::tr ("<<anonymous net>>")
-              , new graph_view (weaver::display::net (net, _function))
+              , new net_widget (net, _function)
               );
           }
         };
