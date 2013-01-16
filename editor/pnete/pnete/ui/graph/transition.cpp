@@ -31,13 +31,11 @@ namespace fhg
       {
         transition_item::transition_item
           ( const data::handle::transition& handle
-          , data::internal_type* document_root
           , base_item* parent
           )
             : base_item (parent)
             , _size (size::transition::width(), size::transition::height())
             , _handle (handle)
-            , _document_root (document_root)
         {
           //            new cogwheel_button (this);
           setFlag (ItemIsSelectable);
@@ -99,11 +97,6 @@ namespace fhg
           return handle().get().name();
         }
 
-        // void slot_change_name (QString name)
-        // {
-        //   internal()->change_manager().set_transition_name (reference(), name);
-        // }
-
         void transition_item::repositionChildrenAndResize()
         {
           const qreal padding (10.0); // hardcoded constant
@@ -145,11 +138,6 @@ namespace fhg
                                                 )
                                          )
                                   );
-        }
-
-        data::internal_type* transition_item::document_root() const
-        {
-          return _document_root;
         }
 
         QRectF transition_item::rectangle () const

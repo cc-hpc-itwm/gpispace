@@ -6,7 +6,6 @@
 #include <pnete/ui/graph/transition.fwd.hpp>
 
 #include <pnete/data/handle/transition.hpp>
-#include <pnete/data/internal.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 
 #include <QPainterPath>
@@ -34,7 +33,6 @@ namespace fhg
 
         public:
           explicit transition_item ( const data::handle::transition& handle
-                                   , data::internal_type* document_root
                                    , base_item* parent = NULL
                                    );
 
@@ -46,8 +44,6 @@ namespace fhg
           std::string name() const;
 
           void repositionChildrenAndResize();
-
-          data::internal_type* document_root() const;
 
           enum { Type = transition_graph_type };
           virtual int type() const { return Type; }
@@ -76,8 +72,6 @@ namespace fhg
           QSizeF _size;
 
           data::handle::transition _handle;
-
-          data::internal_type* _document_root;
         };
       }
     }

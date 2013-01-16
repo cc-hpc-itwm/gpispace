@@ -333,18 +333,15 @@ namespace fhg
           }
 
           void dive_into_transition ( const data::handle::transition& handle
-                                    , const transition_item* item
                                     , QWidget* widget
                                     )
           {
             fhg::util::qt::first_parent_being_a<editor_window> (widget)->
               create_widget ( data::handle::function
                               ( handle.get().resolved_function()
-                              , item->document_root()
+                              , handle.document()
                               )
-                              //! \todo Don't get document root from
-                              //! transition, but from handle.
-                            , item->document_root()
+                            , handle.document()
                             );
           }
 
@@ -483,12 +480,7 @@ namespace fhg
                 ( menu->addAction (tr ("dive_into_transition"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind ( dive_into_transition
-                              , handle
-                              , fhg::util::qt::throwing_qgraphicsitem_cast
-                                <transition_item*> (item_below_cursor)
-                              , event->widget()
-                              )
+                , boost::bind (dive_into_transition, handle, event->widget())
                 );
             }
             break;

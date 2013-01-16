@@ -288,7 +288,7 @@ namespace fhg
                                )
           : _scene (scene)
           , _transition ( new ui::graph::transition_item
-                          (data::handle::transition (id, root), root)
+                          (data::handle::transition (id, root))
                         )
           , _net (net)
           , _place_item_by_name (place_item_by_name)
