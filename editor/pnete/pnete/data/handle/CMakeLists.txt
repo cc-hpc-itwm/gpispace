@@ -6,6 +6,7 @@ set (pnete_data_handle_headers
   expression.hpp
   function.hpp
   meta_base.hpp
+  module.hpp
   net.hpp
   place.hpp
   port.hpp
@@ -18,6 +19,7 @@ set (pnete_data_handle_fwd_headers
   expression.fwd.hpp
   function.fwd.hpp
   meta_base.fwd.hpp
+  module.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
   port.fwd.hpp
@@ -29,6 +31,7 @@ set (handle_SRCS
   connect.cpp
   expression.cpp
   function.cpp
+  module.cpp
   net.cpp
   place.cpp
   port.cpp
