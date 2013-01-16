@@ -7,6 +7,7 @@
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
+#include <pnete/ui/editor_window.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
@@ -23,6 +24,7 @@
 #include <util/graphviz.hpp>
 #include <util/qt/boost_connect.hpp>
 #include <util/qt/cast.hpp>
+#include <util/qt/parent.hpp>
 
 #include <list>
 
@@ -332,6 +334,22 @@ namespace fhg
             }
           }
 
+          void dive_into_transition ( const data::handle::transition& handle
+                                    , const transition_item* item
+                                    , QWidget* widget
+                                    )
+          {
+            fhg::util::qt::first_parent_being_a<editor_window> (widget)->
+              create_widget ( data::handle::function
+                              ( handle.get().resolved_function()
+                              , item->document_root()->change_manager()
+                              )
+                              //! \todo Don't get document root from
+                              //! transition, but from handle.
+                            , item->document_root()
+                            );
+          }
+
           void nyi (const QString& what)
           {
             qDebug() << "NYI:" << what;
@@ -459,6 +477,20 @@ namespace fhg
                 , SIGNAL (triggered())
                 , item_below_cursor
                 , boost::bind (&data::handle::transition::remove, handle, this)
+                );
+
+              menu->addSeparator();
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu->addAction (tr ("dive_into_transition"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind ( dive_into_transition
+                              , handle
+                              , fhg::util::qt::throwing_qgraphicsitem_cast
+                                <transition_item*> (item_below_cursor)
+                              , event->widget()
+                              )
                 );
             }
             break;
