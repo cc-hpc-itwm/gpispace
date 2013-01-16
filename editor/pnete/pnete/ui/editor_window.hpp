@@ -6,7 +6,6 @@
 #include <pnete/ui/dock_widget.fwd.hpp>
 
 #include <pnete/data/handle/function.fwd.hpp>
-#include <pnete/data/internal.fwd.hpp>
 #include <pnete/data/proxy.fwd.hpp>
 #include <pnete/ui/document_view.fwd.hpp>
 
@@ -86,7 +85,7 @@ namespace fhg
         void setup_file_actions (QMenuBar* menu_bar);
         void setup_window_actions (QMenuBar* menu_bar);
 
-        void create_windows (data::internal_type* data);
+        void create_windows (const data::handle::function&);
 
         QMenu* update_window_menu (QMenu*);
 

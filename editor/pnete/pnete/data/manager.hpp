@@ -11,6 +11,7 @@
 
 #include <boost/optional.hpp>
 
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/internal.hpp>
 
 #include <QString>
@@ -38,8 +39,8 @@ namespace fhg
       public:
         static manager& instance();
 
-        internal_type* load (const QString& filename);
-        internal_type* create (const internal_type::kind&);
+        handle::function load (const QString& filename);
+        handle::function create (const internal_type::kind&);
         void save ( internal_type* data
                   , const boost::optional<const QString&> filename = boost::none
                   ) const;

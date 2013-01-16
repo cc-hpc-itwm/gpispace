@@ -263,10 +263,10 @@ namespace fhg
         _action_execute_current_file_locally_from_file->setEnabled (true);
       }
 
-      void editor_window::create_windows (data::internal_type* data)
+      void editor_window::create_windows (const data::handle::function& function)
       {
-        create_widget (data::handle::function (data->function(), data));
-        _structure_view->append (data::handle::function (data->function(), data));
+        create_widget (function);
+        _structure_view->append (function);
       }
 
       void editor_window::duplicate_active_widget()

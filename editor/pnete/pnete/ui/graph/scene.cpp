@@ -882,7 +882,7 @@ namespace fhg
             {
               net().add_transition
                 ( this
-                , data::manager::instance().load (path)->function().get().clone
+                , data::manager::instance().load (path).get().clone
                   (boost::none, net().id().id_mapper())
                 , event->scenePos()
                 );
