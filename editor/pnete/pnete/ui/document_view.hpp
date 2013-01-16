@@ -7,7 +7,6 @@
 
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/internal.hpp>
-#include <pnete/data/proxy.hpp>
 #include <pnete/ui/dock_widget.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
@@ -29,7 +28,7 @@ namespace fhg
 
       public:
         document_view ( const data::handle::function&
-                      , const data::proxy::type&
+                      , data::internal_type* document
                       , const QString& fallback_title
                       , QWidget*
                       );
@@ -54,7 +53,7 @@ namespace fhg
       private:
         QSet<QAction*> _actions;
         data::handle::function _function;
-        data::proxy::type _proxy;
+        data::internal_type* _document;
         QString _fallback_title;
       };
     }

@@ -200,7 +200,7 @@ namespace fhg
           {
             return new document_view
               ( data::proxy::function (_proxy)
-              , _proxy
+              , data::proxy::root (_proxy)
               , QObject::tr ("<<anonymous expression>>")
               , new expression_widget
                 ( data::handle::expression ( proxy.data()
@@ -215,7 +215,7 @@ namespace fhg
           {
             return new document_view
               ( data::proxy::function (_proxy)
-              , _proxy
+              , data::proxy::root (_proxy)
               , QObject::tr ("<<anonymous module call>>")
               , new module_call_widget ( proxy.data()
                                        , data::proxy::function (_proxy)
@@ -227,7 +227,7 @@ namespace fhg
           {
             return new document_view
               ( data::proxy::function (_proxy)
-              , _proxy
+              , data::proxy::root (_proxy)
               , QObject::tr ("<<anonymous net>>")
               , new graph_view (proxy.display())
               );
