@@ -3,7 +3,7 @@
 #include <pnete/weaver/tv.hpp>
 #include <pnete/weaver/weaver.hpp>
 
-#include <pnete/data/internal.hpp>
+#include <pnete/data/handle/function.hpp>
 
 #include <QStandardItem>
 
@@ -72,6 +72,7 @@ namespace fhg
             QStandardItem* append (const std::pair<U,V>& x);
 
           template<typename IT>
+
             void xs ( const QString & header
                     , IT pos
                     , const IT & end
@@ -626,10 +627,12 @@ namespace fhg
 
       namespace treeview
       {
-        void function (QStandardItem* tree_root, data::internal_type* data)
+        void function ( QStandardItem* tree_root
+                      , const data::handle::function& data
+                      )
         {
           weaver::tv w (tree_root);
-          weaver::from::function (&w, data->function());
+          weaver::from::function (&w, data.id());
         }
       }
     }

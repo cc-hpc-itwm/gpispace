@@ -3,10 +3,10 @@
 #ifndef _FHG_PNETE_UI_STRUCTURE_VIEW_HPP
 #define _FHG_PNETE_UI_STRUCTURE_VIEW_HPP 1
 
-#include <pnete/data/internal.fwd.hpp>
+#include <pnete/data/handle/function.hpp>
 
+#include <QList>
 #include <QTreeView>
-#include <QVector>
 
 class QStandardItem;
 class QStandardItemModel;
@@ -26,14 +26,12 @@ namespace fhg
         QStandardItemModel* _model;
         QStandardItem* _root;
 
-        typedef QVector<data::internal_type*> datas_type;
-
-        datas_type _datas;
+        QList<data::handle::function> _functions;
 
       public:
         StructureView (QWidget* parent = 0);
 
-        void append (data::internal_type* data);
+        void append (const data::handle::function&);
         void clear();
 
       protected slots:

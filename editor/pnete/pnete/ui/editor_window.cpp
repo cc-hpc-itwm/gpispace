@@ -283,7 +283,7 @@ namespace fhg
         create_widget ( data::handle::function (data->function(), data)
                       , data
                       );
-        _structure_view->append (data);
+        _structure_view->append (data::handle::function (data->function(), data));
       }
 
       void editor_window::duplicate_active_widget()
