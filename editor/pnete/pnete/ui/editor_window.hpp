@@ -52,7 +52,7 @@ namespace fhg
         void close_document();
         void quit();
 
-        void create_widget (data::proxy::type &);
+        void create_widget (const data::proxy::type &);
         void duplicate_active_widget();
         void current_widget_close();
         void focus_changed (QWidget*, QWidget*);

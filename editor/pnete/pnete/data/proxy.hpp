@@ -43,7 +43,7 @@ namespace fhg
             return _function;
           }
 
-          data_type& data()
+          const data_type& data() const
           {
             return _data;
           }

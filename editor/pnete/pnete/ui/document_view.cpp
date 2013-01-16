@@ -19,7 +19,7 @@ namespace fhg
     namespace ui
     {
       document_view::document_view ( const data::handle::function& function
-                                   , data::proxy::type& proxy
+                                   , const data::proxy::type& proxy
                                    , const QString& fallback_title
                                    , QWidget* widget
                                    )
@@ -51,7 +51,7 @@ namespace fhg
         return widget()->actions();
       }
 
-      data::proxy::type& document_view::proxy()
+      const data::proxy::type& document_view::proxy() const
       {
         return _proxy;
       }

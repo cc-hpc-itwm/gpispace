@@ -188,14 +188,14 @@ namespace fhg
           : public boost::static_visitor<document_view*>
         {
         private:
-          type& _proxy;
+          const type& _proxy;
 
         public:
-          document_view_for_proxy (type& proxy)
+          document_view_for_proxy (const type& proxy)
             : _proxy (proxy)
           { }
 
-          document_view* operator() (expression_proxy& proxy) const
+          document_view* operator() (const expression_proxy& proxy) const
           {
             return new document_view
               ( data::proxy::function (_proxy)
@@ -210,7 +210,7 @@ namespace fhg
               );
           }
 
-          document_view* operator() (mod_proxy& proxy) const
+          document_view* operator() (const mod_proxy& proxy) const
           {
             return new document_view
               ( data::proxy::function (_proxy)
@@ -222,7 +222,7 @@ namespace fhg
               );
           }
 
-          document_view* operator() (net_proxy& proxy) const
+          document_view* operator() (const net_proxy& proxy) const
           {
             return new document_view
               ( data::proxy::function (_proxy)
@@ -233,13 +233,13 @@ namespace fhg
           }
         };
 
-        document_view* document_view_factory (type& proxy)
+        document_view* document_view_factory (const type& proxy)
         {
           return boost::apply_visitor (document_view_for_proxy (proxy), proxy);
         }
       }
 
-      void editor_window::create_widget (data::proxy::type& proxy)
+      void editor_window::create_widget (const data::proxy::type& proxy)
       {
         _undo_group->addStack (&data::proxy::root (proxy)->change_manager());
 
