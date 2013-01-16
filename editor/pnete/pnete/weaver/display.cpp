@@ -626,6 +626,18 @@ namespace fhg
           return *weaver::function (fun, data).proxy();
         }
 
+        ui::graph::scene_type* net ( const data::handle::net& net
+                                   , const data::handle::function& parent
+                                   )
+        {
+          ui::graph::scene_type* scene (new ui::graph::scene_type (net, parent));
+
+          weaver::net wn (net.document(), scene, net.id(), parent.id());
+          from::net (&wn, net.id());
+
+          return scene;
+        }
+
         void transition ( const ::xml::parse::id::ref::transition& transition_id
                         , data::internal_type* root
                         , ui::graph::scene_type* scene

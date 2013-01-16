@@ -4,6 +4,8 @@
 #define FHG_PNETE_WEAVER_DISPLAY_HPP
 
 #include <pnete/data/internal.fwd.hpp>
+#include <pnete/data/handle/net.fwd.hpp>
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/proxy.fwd.hpp>
 #include <pnete/ui/graph/place.fwd.hpp>
 #include <pnete/ui/graph/scene.fwd.hpp>
@@ -21,6 +23,10 @@ namespace fhg
       {
         data::proxy::type function
           (const ::xml::parse::id::ref::function&, data::internal_type*);
+
+        ui::graph::scene_type* net ( const data::handle::net& net
+                                   , const data::handle::function& parent
+                                   );
 
         void transition ( const ::xml::parse::id::ref::transition&
                         , data::internal_type*
