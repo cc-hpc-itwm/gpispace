@@ -189,24 +189,29 @@ namespace fhg
           : public boost::static_visitor<document_view*>
         {
         private:
-          const type& _proxy;
+          const data::handle::function& _function;
+          data::internal_type* _document;
 
         public:
-          document_view_for_proxy (const type& proxy)
-            : _proxy (proxy)
+          document_view_for_proxy ( const data::handle::function& function
+                                  , data::internal_type* document
+                                  )
+
+            : _function (function)
+            , _document (document)
           { }
 
           document_view* operator() (const expression_proxy& proxy) const
           {
             return new document_view
-              ( data::proxy::function (_proxy)
-              , data::proxy::root (_proxy)
+              ( _function
+              , _document
               , QObject::tr ("<<anonymous expression>>")
               , new expression_widget
                 ( data::handle::expression ( proxy.data()
-                                           , root (_proxy)->change_manager()
+                                           , _document->change_manager()
                                            )
-                , data::proxy::function (_proxy)
+                , _function
                 )
               );
           }
@@ -214,37 +219,45 @@ namespace fhg
           document_view* operator() (const mod_proxy& proxy) const
           {
             return new document_view
-              ( data::proxy::function (_proxy)
-              , data::proxy::root (_proxy)
+              ( _function
+              , _document
               , QObject::tr ("<<anonymous module call>>")
-              , new module_call_widget ( proxy.data()
-                                       , data::proxy::function (_proxy)
-                                       )
+              , new module_call_widget (proxy.data(), _function)
               );
           }
 
           document_view* operator() (const net_proxy& proxy) const
           {
             return new document_view
-              ( data::proxy::function (_proxy)
-              , data::proxy::root (_proxy)
+              ( _function
+              , _document
               , QObject::tr ("<<anonymous net>>")
               , new graph_view (proxy.display())
               );
           }
         };
 
-        document_view* document_view_factory (const type& proxy)
+        document_view* document_view_factory
+          ( const data::handle::function& function
+          , data::internal_type* document
+          )
         {
-          return boost::apply_visitor (document_view_for_proxy (proxy), proxy);
+          const data::proxy::type proxy
+            (weaver::display::function (function.id(), document));
+          return boost::apply_visitor
+            (document_view_for_proxy (function, document), proxy);
         }
       }
 
-      void editor_window::create_widget (const data::proxy::type& proxy)
+      void editor_window::create_widget
+        ( const data::handle::function& function
+        , data::internal_type* document
+        )
       {
-        _undo_group->addStack (&data::proxy::root (proxy)->change_manager());
+        _undo_group->addStack (&document->change_manager());
 
-        document_view* doc_view (document_view_factory (proxy));
+        document_view* doc_view (document_view_factory (function, document));
+
         if (!_accessed_widgets.empty())
         {
           tabifyDockWidget (_accessed_widgets.top(), doc_view);
@@ -269,7 +282,11 @@ namespace fhg
 
       void editor_window::create_windows (data::internal_type* data)
       {
-        create_widget (data->root_proxy());
+        create_widget ( data::handle::function ( data->function()
+                                               , data->change_manager()
+                                               )
+                      , data
+                      );
         _structure_view->append (data);
       }
 
@@ -277,10 +294,8 @@ namespace fhg
       {
         if (!_accessed_widgets.empty())
         {
-          create_widget ( weaver::display::function
-                          ( _accessed_widgets.top()->function().id()
-                          , _accessed_widgets.top()->document()
-                          )
+          create_widget ( _accessed_widgets.top()->function()
+                        , _accessed_widgets.top()->document()
                         );
         }
       }

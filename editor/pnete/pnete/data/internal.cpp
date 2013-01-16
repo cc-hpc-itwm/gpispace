@@ -66,7 +66,6 @@ namespace fhg
                       ).make_reference_id()
                     )
         , _change_manager (NULL)
-        , _root_proxy (weaver::display::function (_function, this))
       {}
 
       internal_type::internal_type (const QString& filename)
@@ -76,7 +75,6 @@ namespace fhg
                                                )
                     )
         , _change_manager (NULL)
-        , _root_proxy (weaver::display::function (_function, this))
       {}
 
       const ::xml::parse::id::ref::function& internal_type::function() const
@@ -86,14 +84,6 @@ namespace fhg
       change_manager_t& internal_type::change_manager()
       {
         return _change_manager;
-      }
-      const proxy::type& internal_type::root_proxy() const
-      {
-        return _root_proxy;
-      }
-      proxy::type& internal_type::root_proxy()
-      {
-        return _root_proxy;
       }
     }
   }

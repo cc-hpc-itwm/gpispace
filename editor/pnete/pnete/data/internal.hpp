@@ -9,7 +9,6 @@
 #include <xml/parse/state.hpp>
 
 #include <pnete/data/change_manager.hpp>
-#include <pnete/data/proxy.hpp>
 
 class QString;
 
@@ -25,7 +24,6 @@ namespace fhg
         ::xml::parse::state::type _state;
         ::xml::parse::id::ref::function _function;
         change_manager_t _change_manager;
-        proxy::type _root_proxy;
 
       public:
         enum kind {expression, module_call, net};
@@ -35,8 +33,6 @@ namespace fhg
 
         const ::xml::parse::id::ref::function& function() const;
         change_manager_t& change_manager();
-        const proxy::type& root_proxy() const;
-        proxy::type& root_proxy();
       };
     }
   }

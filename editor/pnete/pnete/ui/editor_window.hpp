@@ -5,6 +5,7 @@
 
 #include <pnete/ui/dock_widget.fwd.hpp>
 
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/internal.fwd.hpp>
 #include <pnete/data/proxy.fwd.hpp>
 #include <pnete/ui/document_view.fwd.hpp>
@@ -52,7 +53,7 @@ namespace fhg
         void close_document();
         void quit();
 
-        void create_widget (const data::proxy::type &);
+        void create_widget (const data::handle::function&, data::internal_type*);
         void duplicate_active_widget();
         void current_widget_close();
         void focus_changed (QWidget*, QWidget*);

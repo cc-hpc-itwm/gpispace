@@ -8,6 +8,7 @@
 #include <pnete/data/handle/place.hpp>
 #include <pnete/data/handle/port.hpp>
 #include <pnete/data/internal.hpp>
+#include <pnete/data/proxy.hpp>
 #include <pnete/ui/graph/base_item.fwd.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/place.hpp>
