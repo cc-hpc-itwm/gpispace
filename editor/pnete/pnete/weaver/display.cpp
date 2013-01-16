@@ -250,14 +250,14 @@ namespace fhg
         {
           _proxy = new data::proxy::type
             ( data::proxy::expression_proxy
-              (_root, data::handle::function (_function, _root), id)
+              (_root, data::handle::function (_function, _root), data::handle::expression (id, _root))
             );
         }
         WSIG(function, mod::open, ::xml::parse::id::ref::module, id)
         {
           _proxy = new data::proxy::type
             ( data::proxy::mod_proxy
-              (_root, data::handle::function (_function, _root), id)
+              (_root, data::handle::function (_function, _root), data::handle::module (id, _root))
             );
         }
         WSIG(function, net::open, ::xml::parse::id::ref::net, id)
@@ -268,7 +268,7 @@ namespace fhg
             );
           _proxy = new data::proxy::type
             ( data::proxy::net_proxy
-              (_root, data::handle::function (_function, _root), id, _scene)
+              (_root, data::handle::function (_function, _root), data::handle::net (id, _root), _scene)
             );
 
           weaver::net wn (_root, _scene, id, _function);

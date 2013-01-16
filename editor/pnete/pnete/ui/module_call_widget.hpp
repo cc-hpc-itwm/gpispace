@@ -4,8 +4,7 @@
 #define _PNETE_UI_MODULE_CALL_WIDGET_HPP 1
 
 #include <pnete/data/handle/function.fwd.hpp>
-
-#include <xml/parse/id/types.fwd.hpp>
+#include <pnete/data/handle/module.fwd.hpp>
 
 #include <QWidget>
 
@@ -20,7 +19,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        module_call_widget ( const ::xml::parse::id::ref::module&
+        module_call_widget ( const data::handle::module&
                            , const data::handle::function&
                            , QWidget* parent = NULL
                            );

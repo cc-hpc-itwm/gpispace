@@ -20,7 +20,7 @@ namespace fhg
     namespace ui
     {
       module_call_widget::module_call_widget
-        ( const ::xml::parse::id::ref::module& mod
+        ( const data::handle::module& mod
         , const data::handle::function& function
         , QWidget* parent
         )

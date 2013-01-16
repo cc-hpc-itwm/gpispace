@@ -206,10 +206,7 @@ namespace fhg
             return new document_view
               ( _function
               , QObject::tr ("<<anonymous expression>>")
-              , new expression_widget
-                ( data::handle::expression (proxy.data(), _document)
-                , _function
-                )
+              , new expression_widget (proxy.data(), _function)
               );
           }
 
