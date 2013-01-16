@@ -4,7 +4,6 @@ set(data_SRCS
   change_manager.cpp
   internal.cpp
   manager.cpp
-  proxy.cpp
 )
 
 set(data_HDRS

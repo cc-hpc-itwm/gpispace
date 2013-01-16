@@ -5,6 +5,7 @@
 
 #include <pnete/data/proxy.hpp>
 #include <pnete/data/handle/expression.hpp>
+#include <pnete/data/handle/function.hpp>
 
 #include <boost/optional.hpp>
 
