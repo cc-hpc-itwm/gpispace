@@ -20,19 +20,19 @@ namespace fhg
     {
       class internal_type
       {
-      private:
-        ::xml::parse::state::type _state;
-        ::xml::parse::id::ref::function _function;
-        change_manager_t _change_manager;
-
       public:
         enum kind {expression, module_call, net};
 
-        explicit internal_type (const kind& = internal_type::expression);
+        explicit internal_type (const kind&);
         explicit internal_type (const QString& filename);
 
         const ::xml::parse::id::ref::function& function() const;
         change_manager_t& change_manager();
+
+      private:
+        ::xml::parse::state::type _state;
+        ::xml::parse::id::ref::function _function;
+        change_manager_t _change_manager;
       };
     }
   }

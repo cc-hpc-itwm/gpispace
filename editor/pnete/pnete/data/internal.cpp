@@ -2,8 +2,6 @@
 
 #include <pnete/data/internal.hpp>
 
-#include <pnete/weaver/display.hpp>
-
 #include <xml/parse/parser.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/function.hpp>
