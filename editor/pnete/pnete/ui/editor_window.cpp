@@ -183,43 +183,41 @@ namespace fhg
 
       namespace
       {
-        using namespace data::proxy;
-
-        class document_view_for_proxy
+        class document_view_for_handle
           : public boost::static_visitor<document_view*>
         {
         private:
           const data::handle::function& _function;
 
         public:
-          document_view_for_proxy (const data::handle::function& function)
+          document_view_for_handle (const data::handle::function& function)
             : _function (function)
           { }
 
-          document_view* operator() (const expression_proxy& proxy) const
+          document_view* operator() (const data::handle::expression& expr) const
           {
             return new document_view
               ( _function
               , QObject::tr ("<<anonymous expression>>")
-              , new expression_widget (proxy.data(), _function)
+              , new expression_widget (expr, _function)
               );
           }
 
-          document_view* operator() (const mod_proxy& proxy) const
+          document_view* operator() (const data::handle::module& module) const
           {
             return new document_view
               ( _function
               , QObject::tr ("<<anonymous module call>>")
-              , new module_call_widget (proxy.data(), _function)
+              , new module_call_widget (module, _function)
               );
           }
 
-          document_view* operator() (const net_proxy& proxy) const
+          document_view* operator() (const data::handle::net& net) const
           {
             return new document_view
               ( _function
               , QObject::tr ("<<anonymous net>>")
-              , new graph_view (proxy.display())
+              , new graph_view (weaver::display::net (net, _function))
               );
           }
         };
@@ -227,10 +225,13 @@ namespace fhg
         document_view* document_view_factory
           (const data::handle::function& function)
         {
-          const data::proxy::type proxy
-            (weaver::display::function (function.id(), function.document()));
+          //! \todo Why is putting a temporary into apply_visitor impossible?!
+          const boost::variant < data::handle::expression
+                               , data::handle::module
+                               , data::handle::net
+                               > content (function.content_handle());
           return boost::apply_visitor
-            (document_view_for_proxy (function), proxy);
+            (document_view_for_handle (function), content);
         }
       }
 
