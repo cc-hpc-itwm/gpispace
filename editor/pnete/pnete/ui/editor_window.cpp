@@ -14,6 +14,7 @@
 #include <pnete/ui/module_call_widget.hpp>
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
+#include <pnete/weaver/display.hpp>
 
 #include <util/qt/parent.hpp>
 
@@ -276,7 +277,11 @@ namespace fhg
       {
         if (!_accessed_widgets.empty())
         {
-          create_widget (_accessed_widgets.top()->proxy());
+          create_widget ( weaver::display::function
+                          ( _accessed_widgets.top()->function().id()
+                          , _accessed_widgets.top()->document()
+                          )
+                        );
         }
       }
 

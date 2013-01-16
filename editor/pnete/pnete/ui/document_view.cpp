@@ -59,10 +59,6 @@ namespace fhg
       {
         return _function;
       }
-      const data::proxy::type& document_view::proxy() const
-      {
-        return _proxy;
-      }
 
       void document_view::function_name_changed
         ( const QObject*

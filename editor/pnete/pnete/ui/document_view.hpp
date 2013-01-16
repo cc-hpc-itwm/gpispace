@@ -40,7 +40,6 @@ namespace fhg
 
         data::internal_type* document() const;
         const data::handle::function& function() const;
-        const data::proxy::type& proxy() const;
 
       protected:
         void set_title (const boost::optional<std::string>&);
