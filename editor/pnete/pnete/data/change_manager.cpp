@@ -156,9 +156,7 @@ namespace fhg
 
           handle.get_ref().properties().set (key, val);
           change_manager.emit_signal<signal_type>
-            ( &signal::property_changed, origin
-            , handle, key, val
-            );
+            (&signal::property_changed, origin, handle, key, val);
         }
 
         // ## editing actions ########################################
@@ -193,8 +191,7 @@ namespace fhg
 
           virtual void redo()
           {
-            set_property
-              (_handle, _key, _new_value, _change_manager, _origin);
+            set_property (_handle, _key, _new_value, _change_manager, _origin);
             _origin = NULL;
           }
 
@@ -229,7 +226,7 @@ namespace fhg
             , const QString&
             );
 
-          change_manager.emit_signal<signal_type>
+          change_manager.emit_signal<signal_type> 
             (&signal::type_set, origin, handle, type);
         }
 
