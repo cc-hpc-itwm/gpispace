@@ -31,9 +31,7 @@ namespace fhg
         class function : public function_meta_base
         {
         public:
-          function ( const function_meta_base::id_type& id
-                   , change_manager_t& change_manager
-                   );
+          function (const function_meta_base::id_type&, internal_type*);
 
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&

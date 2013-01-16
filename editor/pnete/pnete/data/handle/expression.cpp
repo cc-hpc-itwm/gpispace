@@ -13,9 +13,9 @@ namespace fhg
       namespace handle
       {
         expression::expression ( const expression_meta_base::id_type& id
-                               , change_manager_t& change_manager
+                               , internal_type* document
                                )
-          : expression_meta_base (id, change_manager)
+          : expression_meta_base (id, document)
         { }
 
         void expression::set_content

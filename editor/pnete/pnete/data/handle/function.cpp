@@ -13,9 +13,9 @@ namespace fhg
       namespace handle
       {
         function::function ( const function_meta_base::id_type& id
-                           , change_manager_t& change_manager
+                           , internal_type* document
                            )
-          : function_meta_base (id, change_manager)
+          : function_meta_base (id, document)
         { }
 
         void function::set_property ( const QObject* sender

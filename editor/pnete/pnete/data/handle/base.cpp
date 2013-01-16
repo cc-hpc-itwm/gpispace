@@ -3,6 +3,7 @@
 #include <pnete/data/handle/base.hpp>
 
 #include <pnete/data/change_manager.hpp>
+#include <pnete/data/internal.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
 
@@ -16,8 +17,8 @@ namespace fhg
     {
       namespace handle
       {
-        base::base (change_manager_t& change_manager)
-          : _change_manager (change_manager)
+        base::base (internal_type* document)
+          : _document (document)
         { }
 
         void base::set_property ( const QObject* sender
@@ -49,7 +50,11 @@ namespace fhg
 
         change_manager_t& base::change_manager() const
         {
-          return _change_manager;
+          return document()->change_manager();
+        }
+        internal_type* base::document() const
+        {
+          return _document;
         }
 
         void base::connect_to_change_mgr ( const QObject* object

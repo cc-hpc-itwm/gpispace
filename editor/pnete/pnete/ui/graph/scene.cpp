@@ -342,7 +342,7 @@ namespace fhg
             fhg::util::qt::first_parent_being_a<editor_window> (widget)->
               create_widget ( data::handle::function
                               ( handle.get().resolved_function()
-                              , item->document_root()->change_manager()
+                              , item->document_root()
                               )
                               //! \todo Don't get document root from
                               //! transition, but from handle.

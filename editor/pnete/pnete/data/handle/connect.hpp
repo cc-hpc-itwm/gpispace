@@ -5,7 +5,6 @@
 
 #include <pnete/data/handle/connect.fwd.hpp>
 
-#include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/meta_base.hpp>
 
 #include <xml/parse/id/types.hpp>
@@ -27,9 +26,7 @@ namespace fhg
         class connect : public connect_meta_base
         {
         public:
-          connect ( const connect_meta_base::id_type& id
-                  , change_manager_t& change_manager
-                  );
+          connect (const connect_meta_base::id_type&, internal_type*);
 
           bool is_in() const;
           bool is_out() const;

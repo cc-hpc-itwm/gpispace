@@ -17,9 +17,9 @@ namespace fhg
       namespace handle
       {
         transition::transition ( const transition_meta_base::id_type& id
-                               , change_manager_t& change_manager
+                               , internal_type* document
                                )
-          : transition_meta_base (id, change_manager)
+          : transition_meta_base (id, document)
         { }
 
         void transition::remove (const QObject* sender) const
@@ -58,7 +58,7 @@ namespace fhg
 
         net transition::parent() const
         {
-          return net (get().parent()->make_reference_id(), change_manager());
+          return net (get().parent()->make_reference_id(), document());
         }
       }
     }

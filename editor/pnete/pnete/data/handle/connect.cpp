@@ -15,9 +15,9 @@ namespace fhg
       namespace handle
       {
         connect::connect ( const connect_meta_base::id_type& id
-                         , change_manager_t& change_manager
+                         , internal_type* document
                          )
-          : connect_meta_base (id, change_manager)
+          : connect_meta_base (id, document)
         { }
 
         bool connect::is_in() const

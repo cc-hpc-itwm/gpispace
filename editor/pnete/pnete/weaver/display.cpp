@@ -250,36 +250,26 @@ namespace fhg
         {
           _proxy = new data::proxy::type
             ( data::proxy::expression_proxy
-              ( _root
-              , data::handle::function (_function, _root->change_manager())
-              , id
-              )
+              (_root, data::handle::function (_function, _root), id)
             );
         }
         WSIG(function, mod::open, ::xml::parse::id::ref::module, id)
         {
           _proxy = new data::proxy::type
             ( data::proxy::mod_proxy
-              ( _root
-              , data::handle::function (_function, _root->change_manager())
-              , id
-              )
+              (_root, data::handle::function (_function, _root), id)
             );
         }
         WSIG(function, net::open, ::xml::parse::id::ref::net, id)
         {
           _scene = new ui::graph::scene_type
-            ( data::handle::net (id, _root->change_manager())
-            , data::handle::function (_function, _root->change_manager())
+            ( data::handle::net (id, _root)
+            , data::handle::function (_function, _root)
             , _root
             );
           _proxy = new data::proxy::type
             ( data::proxy::net_proxy
-              ( _root
-              , data::handle::function (_function, _root->change_manager())
-              , id
-              , _scene
-              )
+              (_root, data::handle::function (_function, _root), id, _scene)
             );
 
           weaver::net wn (_root, _scene, id, _function);
@@ -299,9 +289,7 @@ namespace fhg
                                )
           : _scene (scene)
           , _transition ( new ui::graph::transition_item
-                          ( data::handle::transition (id, root->change_manager())
-                          , root
-                          )
+                          (data::handle::transition (id, root), root)
                         )
           , _net (net)
           , _place_item_by_name (place_item_by_name)
@@ -354,9 +342,7 @@ namespace fhg
         {
           ui::graph::port_item* item
             ( new ui::graph::port_item
-              ( data::handle::port (port, _root->change_manager())
-              , _transition
-              )
+              (data::handle::port (port, _root), _transition)
             );
           maybe_set_position (item, port);
           weaver::port wp ( item
@@ -487,7 +473,7 @@ namespace fhg
               std::runtime_error ("connection: place " + _place + " not found");
           }
 
-          data::handle::connect handle (*_id, _root->change_manager());
+          data::handle::connect handle (*_id, _root);
           if (!is_out)
           {
             _scene->create_connection
@@ -527,9 +513,7 @@ namespace fhg
         WSIG(net, place::open, ::xml::parse::id::ref::place, place)
         {
           ui::graph::place_item* place_item
-            ( new ui::graph::place_item
-              (data::handle::place (place, _root->change_manager()))
-            );
+            (new ui::graph::place_item (data::handle::place (place, _root)));
           weaver::place wp (place_item, _place_item_by_name);
           maybe_set_position (place_item, place);
           _scene->addItem (place_item);
@@ -537,15 +521,9 @@ namespace fhg
         }
         WSIG(net, transition::open, ::xml::parse::id::ref::transition, id)
         {
-          weaver::transition wt ( _root
-                                , _scene
-                                , _net
-                                , _place_item_by_name
-                                , id
-                                );
+          weaver::transition wt (_root, _scene, _net, _place_item_by_name, id);
           from::transition (&wt, id);
         }
-
 
         port::port ( ui::graph::port_item* port
                    , item_by_name_type& port_item_by_name
@@ -598,7 +576,7 @@ namespace fhg
         WSIG(port_toplevel, port::open, ::xml::parse::id::ref::port, id)
         {
           _port_item = new ui::graph::top_level_port_item
-            (data::handle::port (id, _root->change_manager()));
+            (data::handle::port (id, _root));
           maybe_set_position (_port_item, id);
           _scene->addItem (_port_item);
         }

@@ -208,9 +208,7 @@ namespace fhg
               , _document
               , QObject::tr ("<<anonymous expression>>")
               , new expression_widget
-                ( data::handle::expression ( proxy.data()
-                                           , _document->change_manager()
-                                           )
+                ( data::handle::expression (proxy.data(), _document)
                 , _function
                 )
               );
@@ -282,9 +280,7 @@ namespace fhg
 
       void editor_window::create_windows (data::internal_type* data)
       {
-        create_widget ( data::handle::function ( data->function()
-                                               , data->change_manager()
-                                               )
+        create_widget ( data::handle::function (data->function(), data)
                       , data
                       );
         _structure_view->append (data);

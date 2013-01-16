@@ -27,9 +27,7 @@ namespace fhg
         class expression : public expression_meta_base
         {
         public:
-          expression ( const expression_meta_base::id_type& id
-                     , change_manager_t& change_manager
-                     );
+          expression (const expression_meta_base::id_type&, internal_type*);
 
           void set_content (const QObject* sender, const QString& content);
 

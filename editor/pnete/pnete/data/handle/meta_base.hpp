@@ -5,7 +5,6 @@
 
 #include <pnete/data/handle/meta_base.fwd.hpp>
 
-#include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/base.hpp>
 
 namespace fhg
@@ -24,8 +23,8 @@ namespace fhg
           typedef XML_TYPE xml_type;
 
         public:
-          meta_base (const id_type& id, change_manager_t& change_manager)
-            : base (change_manager)
+          meta_base (const id_type& id, internal_type* document)
+            : base (document)
             , _id (id)
           { }
 

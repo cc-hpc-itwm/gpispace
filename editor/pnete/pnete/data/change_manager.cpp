@@ -113,25 +113,28 @@ namespace fhg
       {
 #define ACTION_ARG_LIST                             \
               change_manager_t& change_manager      \
+            , internal_type* document               \
             , const QObject* origin
 
 #define ACTION_INIT(NAME)                           \
                 QUndoCommand (QObject::tr (NAME))   \
               , _change_manager (change_manager)    \
+              , _document (document)                \
               , _origin (origin)
 
 #define ACTION_MEMBERS                              \
           change_manager_t& _change_manager;        \
+          internal_type* _document;                 \
           const QObject* _origin
 
 #define ACTION_UNDO_ARGS                        \
-        _change_manager, NULL
+        _change_manager, _document, NULL
 
 #define ACTION_REDO_ARGS                        \
-        _change_manager, _origin
+        _change_manager, _document, _origin
 
 #define ACTION_CTOR_ARGS                        \
-        change_manager, origin
+        change_manager, document, origin
 
 
         template<typename T>
@@ -406,7 +409,7 @@ namespace fhg
           change_manager.emit_signal
             ( &signal::connection_removed
             , origin
-            , handle::connect (connect, change_manager)
+            , handle::connect (connect, document)
             );
 
           transition.get_ref().remove_connection (connect);
@@ -422,11 +425,9 @@ namespace fhg
 
           change_manager.emit_signal
             ( &signal::connection_added, origin
-            , handle::connect (connection, change_manager)
-            , handle::place ( *connection.get().resolved_place()
-                            , change_manager
-                            )
-            , handle::port (*connection.get().resolved_port(), change_manager)
+            , handle::connect (connection, document)
+            , handle::place (*connection.get().resolved_place(), document)
+            , handle::port (*connection.get().resolved_port(), document)
             );
         }
 
@@ -548,7 +549,7 @@ namespace fhg
             _change_manager.emit_signal
               ( &signal::transition_deleted
               , NULL
-              , handle::transition (_transition, _change_manager)
+              , handle::transition (_transition, _document)
               );
 
             _net.get_ref().erase_transition (_transition);
@@ -561,7 +562,7 @@ namespace fhg
             _change_manager.emit_signal
               ( &signal::transition_added
               , _origin
-              , handle::transition (_transition, _change_manager)
+              , handle::transition (_transition, _document)
               );
 
             _origin = NULL;
@@ -591,7 +592,7 @@ namespace fhg
             _change_manager.emit_signal
               ( &signal::transition_added
               , NULL
-              , handle::transition (_transition, _change_manager)
+              , handle::transition (_transition, _document)
               );
           }
 
@@ -600,7 +601,7 @@ namespace fhg
             _change_manager.emit_signal
               ( &signal::transition_deleted
               , _origin
-              , handle::transition (_transition, _change_manager)
+              , handle::transition (_transition, _document)
               );
 
             _net.get_ref().erase_transition (_transition);
@@ -623,10 +624,7 @@ namespace fhg
           net.get_ref().push_place (place);
 
           change_manager.emit_signal
-            ( &signal::place_added
-            , origin
-            , handle::place (place, change_manager)
-            );
+            (&signal::place_added, origin, handle::place (place, document));
         }
 
         void remove_place_impl ( ACTION_ARG_LIST
@@ -635,10 +633,7 @@ namespace fhg
                                )
         {
           change_manager.emit_signal
-            ( &signal::place_deleted
-            , origin
-            , handle::place (place, change_manager)
-            );
+            (&signal::place_deleted, origin, handle::place (place, document));
 
           net.get_ref().erase_place (place);
         }
@@ -708,7 +703,7 @@ namespace fhg
           function.get_ref().push_port (port);
 
           change_manager.emit_signal
-            (&signal::port_added, origin, handle::port (port, change_manager));
+            (&signal::port_added, origin, handle::port (port, document));
         }
 
         void remove_port_impl ( ACTION_ARG_LIST
@@ -717,7 +712,7 @@ namespace fhg
                               )
         {
           change_manager.emit_signal
-            (&signal::port_deleted, origin, handle::port (port, change_manager));
+            (&signal::port_deleted, origin, handle::port (port, document));
 
           if (function.get().ports().has (port))
           {
@@ -944,6 +939,8 @@ namespace fhg
 
       }
 
+#define ACTION_CTOR_ARGS(HANDLE) *this, HANDLE.document(), origin
+
       // ## editing methods ##########################################
       // - net -------------------------------------------------------
       // -- connection -----------------------------------------------
@@ -995,6 +992,7 @@ namespace fhg
             change_manager.push
               ( new action::add_connection
                 ( change_manager
+                , place.document()
                 , origin
                 , transition_of_fun_of_port
                 , ::xml::parse::type::connect_type
@@ -1073,9 +1071,9 @@ namespace fhg
         place.get_ref().properties().set
           ("fhg.pnete.is_implicit_place", "true");
 
-        push (new action::add_place (*this, origin, net.id(), place));
+        push (new action::add_place (ACTION_CTOR_ARGS (net), net.id(), place));
 
-        handle::place place_handle (place, *this);
+        handle::place place_handle (place, net.document());
         add_connection (origin, from, place_handle, true);
         add_connection (origin, place_handle, to, true);
 
@@ -1091,14 +1089,18 @@ namespace fhg
 
         if (connect.get().resolved_place())
         {
-          const handle::place place (*connect.get().resolved_place(), *this);
+          const handle::place place
+            (*connect.get().resolved_place(), connect.document());
           if (place.is_implicit())
           {
             make_explicit (this, place);
           }
         }
 
-        push (new action::remove_connection (*this, origin, connect.id()));
+        push ( new action::remove_connection ( ACTION_CTOR_ARGS (connect)
+                                             , connect.id()
+                                             )
+             );
 
         endMacro();
       }
@@ -1114,7 +1116,11 @@ namespace fhg
           throw std::runtime_error ("tried setting is_read on out-connection");
         }
 
-        push (new action::connection_is_read (*this, origin, connect, read));
+        push ( new action::connection_is_read ( ACTION_CTOR_ARGS (connect)
+                                              , connect
+                                              , read
+                                              )
+             );
       }
 
 
@@ -1127,7 +1133,7 @@ namespace fhg
       {
         push ( new action::meta_set_property<handle::connect>
                ( "set_connect_property_action"
-               , *this, origin, connect, key, val
+               , ACTION_CTOR_ARGS (connect), connect, key, val
                )
              );
       }
@@ -1139,7 +1145,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (*this, origin, connect, key, val);
+        action::set_property (ACTION_CTOR_ARGS (connect), connect, key, val);
       }
 
       // -- transition -----------------------------------------------
@@ -1168,11 +1174,15 @@ namespace fhg
         transition.get_ref().name (name);
 
         no_undo_move_item ( this
-                          , handle::transition (transition, *this)
+                          , handle::transition (transition, net.document())
                           , position.get_value_or (QPointF())
                           );
 
-        push (new action::add_transition (*this, origin, net.id(), transition));
+        push ( new action::add_transition ( ACTION_CTOR_ARGS (net)
+                                          , net.id()
+                                          , transition
+                                          )
+             );
       }
 
       void change_manager_t::add_transition
@@ -1208,11 +1218,15 @@ namespace fhg
         transition.get_ref().name (name);
 
         no_undo_move_item ( this
-                          , handle::transition (transition, *this)
+                          , handle::transition (transition, net.document())
                           , position.get_value_or (QPointF())
                           );
 
-        push (new action::add_transition (*this, origin, net.id(), transition));
+        push ( new action::add_transition ( ACTION_CTOR_ARGS (net)
+                                          , net.id()
+                                          , transition
+                                          )
+             );
       }
 
       void change_manager_t::delete_transition
@@ -1229,10 +1243,13 @@ namespace fhg
 
         BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
         {
-          remove_connection (this, handle::connect (c, *this));
+          remove_connection (this, handle::connect (c, transition.document()));
         }
 
-        push (new action::remove_transition (*this, origin, transition.id()));
+        push ( new action::remove_transition ( ACTION_CTOR_ARGS (transition)
+                                             , transition.id()
+                                             )
+             );
 
         endMacro();
       }
@@ -1244,8 +1261,7 @@ namespace fhg
       {
         push ( new action::meta_set_name<handle::transition>
                ( "transition_set_name_action"
-               , *this
-               , origin
+               , ACTION_CTOR_ARGS (transition)
                , transition
                , name
                )
@@ -1261,7 +1277,7 @@ namespace fhg
       {
         push ( new action::meta_set_property<handle::transition>
                ( "set_transition_property_action"
-               , *this, origin, transition, key, val
+               , ACTION_CTOR_ARGS (transition), transition, key, val
                )
              );
       }
@@ -1273,7 +1289,8 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (*this, origin, transition, key, val);
+        action::set_property
+          (ACTION_CTOR_ARGS (transition), transition, key, val);
       }
 
       void change_manager_t::move_item ( const QObject* origin
@@ -1283,7 +1300,7 @@ namespace fhg
       {
         push ( new action::meta_move_item<handle::transition>
                ( "move_transition_item_action", ids::move_transition_item
-               , *this, origin, transition, position
+               , ACTION_CTOR_ARGS (transition), transition, position
                )
              );
       }
@@ -1294,18 +1311,16 @@ namespace fhg
         , const QPointF& position
         )
       {
-         action::set_property ( *this
-                              , origin
-                              , transition
-                              , "fhg.pnete.position.x"
-                              , action::to_property_type (position.x())
-                              );
-         action::set_property ( *this
-                              , origin
-                              , transition
-                              , "fhg.pnete.position.y"
-                              , action::to_property_type (position.y())
-                              );
+        action::set_property ( ACTION_CTOR_ARGS (transition)
+                             , transition
+                             , "fhg.pnete.position.x"
+                             , action::to_property_type (position.x())
+                             );
+        action::set_property ( ACTION_CTOR_ARGS (transition)
+                             , transition
+                             , "fhg.pnete.position.y"
+                             , action::to_property_type (position.y())
+                             );
       }
 
 
@@ -1335,11 +1350,11 @@ namespace fhg
           );
 
         no_undo_move_item ( this
-                          , handle::place (place, *this)
+                          , handle::place (place, net.document())
                           , position.get_value_or (QPointF())
                           );
 
-        push (new action::add_place (*this, origin, net.id(), place));
+        push (new action::add_place (ACTION_CTOR_ARGS (net), net.id(), place));
       }
 
       namespace
@@ -1398,7 +1413,7 @@ namespace fhg
 
           BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
           {
-            remove_connection (this, handle::connect (c, *this));
+            remove_connection (this, handle::connect (c, place.document()));
           }
 
           if (net.has_parent())
@@ -1410,12 +1425,12 @@ namespace fhg
                           )
             {
               set_place_association
-                (this, handle::port (port, *this), boost::none);
+                (this, handle::port (port, place.document()), boost::none);
             }
           }
         }
 
-        push (new action::remove_place (*this, origin, place.id()));
+        push (new action::remove_place (ACTION_CTOR_ARGS (place), place.id()));
 
         endMacro();
       }
@@ -1425,12 +1440,8 @@ namespace fhg
                                       , const QString& name
                                       )
       {
-        push ( new action::meta_set_name<handle::place> ( "place_set_name_action"
-                                                        , *this
-                                                        , origin
-                                                        , place
-                                                        , name
-                                                        )
+        push ( new action::meta_set_name<handle::place>
+               ("place_set_name_action", ACTION_CTOR_ARGS (place), place, name)
              );
       }
 
@@ -1439,12 +1450,8 @@ namespace fhg
                                       , const QString& type
                                       )
       {
-        push ( new action::meta_set_type<handle::place> ( "place_set_type_action"
-                                                        , *this
-                                                        , origin
-                                                        , place
-                                                        , type
-                                                        )
+        push ( new action::meta_set_type<handle::place>
+               ("place_set_type_action", ACTION_CTOR_ARGS (place), place, type)
              );
       }
 
@@ -1463,7 +1470,7 @@ namespace fhg
       {
         push ( new action::meta_set_property<handle::place>
                ( "set_place_property_action"
-               , *this, origin, place, key, val
+               , ACTION_CTOR_ARGS (place), place, key, val
                )
              );
       }
@@ -1475,7 +1482,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (*this, origin, place, key, val);
+        action::set_property (ACTION_CTOR_ARGS (place), place, key, val);
       }
 
       void change_manager_t::move_item ( const QObject* origin
@@ -1485,7 +1492,7 @@ namespace fhg
       {
         push ( new action::meta_move_item<handle::place>
                ( "move_place_item_action", ids::move_place_item
-               , *this, origin, place, position
+               , ACTION_CTOR_ARGS (place), place, position
                )
              );
       }
@@ -1496,18 +1503,16 @@ namespace fhg
         , const QPointF& position
         )
       {
-         action::set_property ( *this
-                              , origin
-                              , place
-                              , "fhg.pnete.position.x"
-                              , action::to_property_type (position.x())
-                              );
-         action::set_property ( *this
-                              , origin
-                              , place
-                              , "fhg.pnete.position.y"
-                              , action::to_property_type (position.y())
-                              );
+        action::set_property ( ACTION_CTOR_ARGS (place)
+                             , place
+                             , "fhg.pnete.position.x"
+                             , action::to_property_type (position.x())
+                             );
+        action::set_property ( ACTION_CTOR_ARGS (place)
+                             ,  place
+                             , "fhg.pnete.position.y"
+                             , action::to_property_type (position.y())
+                             );
       }
 
       // - port ------------------------------------------------------
@@ -1556,11 +1561,15 @@ namespace fhg
           );
 
         no_undo_move_item ( this
-                          , handle::port (port, *this)
+                          , handle::port (port, function.document())
                           , position.get_value_or (QPointF())
                           );
 
-        push (new action::add_port (*this, origin, function.id(), port));
+        push ( new action::add_port ( ACTION_CTOR_ARGS (function)
+                                    , function.id()
+                                    , port
+                                    )
+             );
       }
 
       namespace
@@ -1602,11 +1611,11 @@ namespace fhg
 
           BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
           {
-            remove_connection (this, handle::connect (c, *this));
+            remove_connection (this, handle::connect (c, port.document()));
           }
         }
 
-        push (new action::remove_port (*this, origin, port.id()));
+        push (new action::remove_port (ACTION_CTOR_ARGS (port), port.id()));
 
         endMacro();
       }
@@ -1619,7 +1628,7 @@ namespace fhg
         )
       {
         push ( new action::meta_set_property<handle::port>
-               ("set_port_property_action", *this, origin, port, key, val)
+               ("set_port_property_action", ACTION_CTOR_ARGS (port), port, key, val)
              );
       }
 
@@ -1630,7 +1639,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (*this, origin, port, key, val);
+        action::set_property (ACTION_CTOR_ARGS (port), port, key, val);
       }
 
       void change_manager_t::set_name ( const QObject* origin
@@ -1638,12 +1647,8 @@ namespace fhg
                                       , const QString& name
                                       )
       {
-        push ( new action::meta_set_name<handle::port> ( "port_set_name_action"
-                                                       , *this
-                                                       , origin
-                                                       , port
-                                                       , name
-                                                       )
+        push ( new action::meta_set_name<handle::port>
+               ("port_set_name_action", ACTION_CTOR_ARGS (port), port, name)
              );
       }
 
@@ -1652,12 +1657,8 @@ namespace fhg
                                       , const QString& type
                                       )
       {
-        push ( new action::meta_set_type<handle::port> ( "port_set_type_action"
-                                                       , *this
-                                                       , origin
-                                                       , port
-                                                       , type
-                                                       )
+        push ( new action::meta_set_type<handle::port>
+               ("port_set_type_action", ACTION_CTOR_ARGS (port), port, type)
              );
       }
 
@@ -1671,14 +1672,19 @@ namespace fhg
 
         if (port.get().place && !place)
         {
-          const handle::place place (*port.get().resolved_place(), *this);
+          const handle::place place
+            (*port.get().resolved_place(), port.document());
           if (place.is_implicit())
           {
             make_explicit (this, place);
           }
         }
 
-        push (new action::set_place_association (*this, origin, port, place));
+        push ( new action::set_place_association ( ACTION_CTOR_ARGS (port)
+                                                 , port
+                                                 , place
+                                                 )
+             );
 
         endMacro();
       }
@@ -1691,7 +1697,7 @@ namespace fhg
       {
         push ( new action::meta_move_item<handle::port>
                ( "move_port_item_action", ids::move_port_item
-               , *this, origin, port, position
+               , ACTION_CTOR_ARGS (port), port, position
                )
              );
       }
@@ -1702,18 +1708,16 @@ namespace fhg
         , const QPointF& position
         )
       {
-         action::set_property ( *this
-                              , origin
-                              , port
-                              , "fhg.pnete.position.x"
-                              , action::to_property_type (position.x())
-                              );
-         action::set_property ( *this
-                              , origin
-                              , port
-                              , "fhg.pnete.position.y"
-                              , action::to_property_type (position.y())
-                              );
+        action::set_property ( ACTION_CTOR_ARGS (port)
+                             , port
+                             , "fhg.pnete.position.x"
+                             , action::to_property_type (position.x())
+                             );
+        action::set_property ( ACTION_CTOR_ARGS (port)
+                             , port
+                             , "fhg.pnete.position.y"
+                             , action::to_property_type (position.y())
+                             );
       }
 
       // - function --------------------------------------------------
@@ -1723,7 +1727,7 @@ namespace fhg
         , const QString& name
         )
       {
-        push (new action::set_function_name (*this, origin, fun, name));
+        push (new action::set_function_name (ACTION_CTOR_ARGS (fun), fun, name));
       }
 
       void change_manager_t::set_property
@@ -1735,7 +1739,7 @@ namespace fhg
       {
         push ( new action::meta_set_property<handle::function>
                ( "set_function_property_action"
-               , *this, origin, function, key, val
+               , ACTION_CTOR_ARGS (function), function, key, val
                )
              );
       }
@@ -1747,7 +1751,7 @@ namespace fhg
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (*this, origin, function, key, val);
+        action::set_property (ACTION_CTOR_ARGS (function), function, key, val);
       }
 
       // - expression ------------------------------------------------
@@ -1758,9 +1762,11 @@ namespace fhg
         )
       {
         push ( new action::set_expression_content
-               (*this, origin, expression, text)
+               (ACTION_CTOR_ARGS (expression), expression, text)
              );
       }
+
+#undef ACTION_CTOR_ARGS
 
 #define EMITTER_ARGS(Z,N,TEXT) BOOST_PP_COMMA_IF(N)                     \
       typename boost::mpl::at_c                                         \
