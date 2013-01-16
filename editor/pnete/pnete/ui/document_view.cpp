@@ -19,14 +19,12 @@ namespace fhg
     namespace ui
     {
       document_view::document_view ( const data::handle::function& function
-                                   , data::internal_type* document
                                    , const QString& fallback_title
                                    , QWidget* widget
                                    )
         : dock_widget()
         , _actions()
         , _function (function)
-        , _document (document)
         , _fallback_title (fallback_title)
       {
         connect ( this
@@ -51,10 +49,6 @@ namespace fhg
         return widget()->actions();
       }
 
-      data::internal_type* document_view::document() const
-      {
-        return _document;
-      }
       const data::handle::function& document_view::function() const
       {
         return _function;

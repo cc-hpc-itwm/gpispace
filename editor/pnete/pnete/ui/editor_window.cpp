@@ -166,7 +166,7 @@ namespace fhg
         }
 
         data::manager::instance().save
-          (_accessed_widgets.top()->document(), filename);
+          (_accessed_widgets.top()->function().document(), filename);
       }
 
       void editor_window::close_document()
@@ -205,7 +205,6 @@ namespace fhg
           {
             return new document_view
               ( _function
-              , _document
               , QObject::tr ("<<anonymous expression>>")
               , new expression_widget
                 ( data::handle::expression (proxy.data(), _document)
@@ -218,7 +217,6 @@ namespace fhg
           {
             return new document_view
               ( _function
-              , _document
               , QObject::tr ("<<anonymous module call>>")
               , new module_call_widget (proxy.data(), _function)
               );
@@ -228,7 +226,6 @@ namespace fhg
           {
             return new document_view
               ( _function
-              , _document
               , QObject::tr ("<<anonymous net>>")
               , new graph_view (proxy.display())
               );
@@ -291,7 +288,7 @@ namespace fhg
         if (!_accessed_widgets.empty())
         {
           create_widget ( _accessed_widgets.top()->function()
-                        , _accessed_widgets.top()->document()
+                        , _accessed_widgets.top()->function().document()
                         );
         }
       }
