@@ -881,11 +881,9 @@ namespace fhg
 
             foreach (const QString& path, paths)
             {
-              data::internal_type* data (data::manager::instance().load (path));
-
               net().add_transition
                 ( this
-                , data->function().get().clone
+                , data::manager::instance().load (path)->function().get().clone
                   (boost::none, net().id().id_mapper())
                 , event->scenePos()
                 );
