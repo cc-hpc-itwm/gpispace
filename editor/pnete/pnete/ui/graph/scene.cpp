@@ -341,7 +341,6 @@ namespace fhg
                               ( handle.get().resolved_function()
                               , handle.document()
                               )
-                            , handle.document()
                             );
           }
 

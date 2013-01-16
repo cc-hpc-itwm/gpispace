@@ -190,15 +190,10 @@ namespace fhg
         {
         private:
           const data::handle::function& _function;
-          data::internal_type* _document;
 
         public:
-          document_view_for_proxy ( const data::handle::function& function
-                                  , data::internal_type* document
-                                  )
-
+          document_view_for_proxy (const data::handle::function& function)
             : _function (function)
-            , _document (document)
           { }
 
           document_view* operator() (const expression_proxy& proxy) const
@@ -230,25 +225,21 @@ namespace fhg
         };
 
         document_view* document_view_factory
-          ( const data::handle::function& function
-          , data::internal_type* document
-          )
+          (const data::handle::function& function)
         {
           const data::proxy::type proxy
-            (weaver::display::function (function.id(), document));
+            (weaver::display::function (function.id(), function.document()));
           return boost::apply_visitor
-            (document_view_for_proxy (function, document), proxy);
+            (document_view_for_proxy (function), proxy);
         }
       }
 
       void editor_window::create_widget
-        ( const data::handle::function& function
-        , data::internal_type* document
-        )
+        (const data::handle::function& function)
       {
-        _undo_group->addStack (&document->change_manager());
+        _undo_group->addStack (&function.document()->change_manager());
 
-        document_view* doc_view (document_view_factory (function, document));
+        document_view* doc_view (document_view_factory (function));
 
         if (!_accessed_widgets.empty())
         {
@@ -274,9 +265,7 @@ namespace fhg
 
       void editor_window::create_windows (data::internal_type* data)
       {
-        create_widget ( data::handle::function (data->function(), data)
-                      , data
-                      );
+        create_widget (data::handle::function (data->function(), data));
         _structure_view->append (data::handle::function (data->function(), data));
       }
 
@@ -284,9 +273,7 @@ namespace fhg
       {
         if (!_accessed_widgets.empty())
         {
-          create_widget ( _accessed_widgets.top()->function()
-                        , _accessed_widgets.top()->function().document()
-                        );
+          create_widget (_accessed_widgets.top()->function());
         }
       }
 
