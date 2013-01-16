@@ -6,7 +6,6 @@
 #include <pnete/ui/dock_widget.fwd.hpp>
 
 #include <pnete/data/handle/function.fwd.hpp>
-#include <pnete/data/proxy.fwd.hpp>
 #include <pnete/ui/document_view.fwd.hpp>
 
 #include <QMainWindow>

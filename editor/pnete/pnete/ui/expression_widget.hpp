@@ -3,7 +3,6 @@
 #ifndef _PNETE_UI_EXPRESSION_WIDGET_HPP
 #define _PNETE_UI_EXPRESSION_WIDGET_HPP 1
 
-#include <pnete/data/proxy.hpp>
 #include <pnete/data/handle/expression.hpp>
 #include <pnete/data/handle/function.hpp>
 

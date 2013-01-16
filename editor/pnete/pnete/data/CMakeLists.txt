@@ -10,13 +10,11 @@ set(data_HDRS
   change_manager.hpp
   internal.hpp
   manager.hpp
-  proxy.hpp
 )
 
 set (data_FWDS
   change_manager.fwd.hpp
   internal.fwd.hpp
-  proxy.fwd.hpp
 )
 
 set(data_TOMOC

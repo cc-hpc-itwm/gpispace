@@ -2,7 +2,6 @@
 
 #include <pnete/data/internal.hpp>
 
-#include <pnete/data/proxy.hpp>
 #include <pnete/weaver/display.hpp>
 
 #include <xml/parse/parser.hpp>

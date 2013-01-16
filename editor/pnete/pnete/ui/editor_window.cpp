@@ -2,6 +2,9 @@
 
 #include <pnete/ui/editor_window.hpp>
 
+#include <pnete/data/handle/expression.hpp>
+#include <pnete/data/handle/module.hpp>
+#include <pnete/data/handle/net.hpp>
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
 #include <pnete/ui/StructureView.hpp>
