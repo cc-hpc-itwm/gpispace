@@ -392,7 +392,21 @@ namespace mapreduce
 	  }
 	}
 
+    void write_to_stringstream(std::string& key, std::list<std::string>& list_values, std::ostringstream& oss, const long& n_max_size )
+	{
+	  key_val_pair_t kvp(key, list2str(list_values));
+	  std::string str_pair = kvpair2str(kvp);
+	  size_t item_size = str_pair.size();
 
+	  if(oss.str().size()+item_size>n_max_size)
+	  {
+		  throw(std::runtime_error("Not enough place left for performing a reduce operation!"));
+	  }
+	  else
+	  {
+		 oss<<str_pair<<SPCH;
+	  }
+	}
   }
 }
 
