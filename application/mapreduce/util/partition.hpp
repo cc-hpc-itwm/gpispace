@@ -11,7 +11,7 @@ namespace mapreduce
 {
   namespace util
   {
-      int hash(const std::string& key, const int N)
+      int hash_1(const std::string& key, const int N)
       {
     	  if(N<3)
     	  {
@@ -32,6 +32,45 @@ namespace mapreduce
 				  i=N-2;
         return i;
       }
+
+      int hash_2(const std::string& key, const int N)
+	  {
+		 if(key.empty())
+		 {
+			 throw std::runtime_error("Invalid key (empty). Cannot compute the hash value!");
+		 }
+
+		  int i = 0;
+		  int hash_val;
+		  int K = 256;
+
+		  if(key.size()==1)
+			  hash_val = tolower(key[0])*K+tolower(key[0]);
+		  else
+			  hash_val = tolower(key[0])*K+tolower(key[1]);
+
+		  int low = 'a'*K+'a';
+		  int high = 'z'*K+'z';
+
+		  if( hash_val>= low && hash_val<=high )
+		  {
+			  i = ((hash_val - low)*(N-2))/(high-low);
+		  }
+		  else
+			  if(is_special_item(key))
+				  i=N-1;
+			  else
+				  i=N-2;
+		 return i;
+	  }
+
+      int hash(const std::string& key, const int N)
+	  {
+    	  if(N<=28)
+    		  return hash_1(key, N);
+    	  else
+    		  return hash_2(key, N);
+	  }
   }
 }
 
