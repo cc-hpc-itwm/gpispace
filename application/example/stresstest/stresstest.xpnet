@@ -1,29 +1,4 @@
 <defun name="stresstest">
-  <properties name="pnetc">
-    <properties name="context">
-      <property key="MILLI" value="1000"/>
-      <property key="SECOND" value="${MILLI} * 1000"/>
-      <property key="KIBI" value="2^10"/>
-      <property key="MIBI" value="2^20"/>
-      <property key="GIBI" value="2^30"/>
-      <property key="SIZE_OF_LONG" value="8"/>
-
-      <property key="outer" value="5"/>
-      <property key="inner" value="5"/>
-      <property key="seed" value="long(1000.0 * pi)"/>
-      <property key="bytes_to_transfer" value="192 * ${MIBI}"/>
-
-      <!-- when true, the full shmem segment is verified, not only the data -->
-      <property key="verify_all_mem" value="false"/>
-      <property key="verify" value="true"/>
-      <property key="communicate" value="true"/>
-
-      <property key="num_long_to_transfer"
-                value="${bytes_to_transfer} div ${SIZE_OF_LONG}"
-                />
-    </properties>
-  </properties>
-
   <in name="outer" type="long" place="N"/>
   <in name="inner" type="long" place="M"/>
   <in name="sleeptime" type="long" place="sleeptime"/>
@@ -46,14 +21,14 @@
       <field name="communicate" type="bool"/>
     </struct>
 
-    <place name="sleeptime" type="long"><token><value>0 * ${MILLI}</value></token></place>
-    <place name="N" type="long"><token><value>${outer}</value></token></place>
-    <place name="M" type="long"><token><value>${inner}</value></token></place>
-    <place name="num_long" type="long"><token><value>${num_long_to_transfer}</value></token></place>
-    <place name="seed" type="long"><token><value>${seed}</value></token></place>
-    <place name="verify_all_mem" type="bool"><token><value>${verify_all_mem}</value></token></place>
-    <place name="verify" type="bool"><token><value>${verify}</value></token></place>
-    <place name="communicate" type="bool"><token><value>${communicate}</value></token></place>
+    <place name="sleeptime" type="long"><token><value>0</value></token></place>
+    <place name="N" type="long"><token><value>5</value></token></place>
+    <place name="M" type="long"><token><value>5</value></token></place>
+    <place name="num_long" type="long"><token><value>(192*2^20) div 8</value></token></place>
+    <place name="seed" type="long"><token><value>3141</value></token></place>
+    <place name="verify_all_mem" type="bool"><token><value>true</value></token></place>
+    <place name="verify" type="bool"><token><value>true</value></token></place>
+    <place name="communicate" type="bool"><token><value>true</value></token></place>
     <place name="Nstep" type="long"/>
     <place name="wait" type="long"/>
 

@@ -49,10 +49,9 @@ namespace xml
                               = property::value_type()
                               )
         {
-          if (!state.interpret_context_property (path, value))
-            {
-              ::xml::parse::util::property::set (state, prop, path, value);
-            }
+          state.interpret_property (path, value);
+
+          ::xml::parse::util::property::set (state, prop, path, value);
         }
 
         inline void join ( const state::type & state

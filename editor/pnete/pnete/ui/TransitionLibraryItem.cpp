@@ -2,6 +2,7 @@
 
 #include <pnete/ui/TransitionLibraryItem.hpp>
 
+#include <pnete/data/handle/function.hpp>
 #include <pnete/data/manager.hpp>
 
 #include <QtAlgorithms>
@@ -35,7 +36,7 @@ namespace fhg
                 ? _fileinfo.baseName()
                 : QString::fromStdString
                   ( data::manager::instance().load (_fileinfo.absoluteFilePath())
-                  ->function().get().name().get_value_or ("<<anonymous>>")
+                  .get().name().get_value_or ("<<anonymous>>")
                   )
                 )
         , _children ()

@@ -250,7 +250,6 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
     int m_nResults;
 
     std::string m_wfid;
-    int* m_arrPartialRes;
     matrix_t m_product, m_expectedProduct;
 };
 

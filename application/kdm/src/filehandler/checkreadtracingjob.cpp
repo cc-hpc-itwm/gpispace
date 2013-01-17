@@ -88,8 +88,8 @@ int CheckReadTracingJob::ReadConfigFileXML(char* ConfigFileName, TracingJob& Job
   float dzSrc;
   success = success && ReadXML(Reader, "RayTracing/TTTables/dz", dzSrc);
   Job.dxSrc = point3D<float>(0, 0, dzSrc);
-  
-  float X1Srcz;
+
+  float X1Srcz (0.0f);
   success = success && ReadXML(Reader, "RayTracing/TTTables/zMinDepth", X1Srcz);
   Job.X0Src = point3D<float>(0, 0, -(X1Srcz + (Job.NSrc[2]-1)*Job.dxSrc[2])); 
 
@@ -144,7 +144,7 @@ int CheckReadTracingJob::ReadConfigFileXML(char* ConfigFileName, TracingJob& Job
   success = success && ReadXML(Reader, "RayTracing/VelocityModel/dz", dzVel);
   Job.dxVel = point3D<float>(0, 0, dzVel);
 
-  float X1Velz;
+  float X1Velz (0.0f);
   success = success && ReadXML(Reader, "RayTracing/VelocityModel/zMinDepth", X1Velz);
   Job.X0Vel = point3D<float>(0, 0, -(X1Velz + (Job.NVel[2]-1) * Job.dxVel[2])); 
 
@@ -283,7 +283,7 @@ int CheckReadTracingJob::ReadConfigFileXML(char* ConfigFileName, TracingJob& Job
   else
       sprintf(Job.SmoothedTTI_BetaFileName, "%s/%s_smoothedBetaVel", Job.TTDirName, Job.JobName);
 
-  float MaxTracingTime;
+  float MaxTracingTime (0.0f);
   success = success && ReadXML(Reader, "RayTracing/Parameters/MaxTracingTime", MaxTracingTime);
   success = success && ReadXML(Reader, "RayTracing/Parameters/TracingStepSize", Job.g_TSTEPSIZE);
   Job.g_MAXTSTEP = (int)(MaxTracingTime/Job.g_TSTEPSIZE + 0.5);

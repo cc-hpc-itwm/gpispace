@@ -9,7 +9,6 @@
 #include <xml/parse/state.hpp>
 
 #include <pnete/data/change_manager.hpp>
-#include <pnete/data/proxy.hpp>
 
 class QString;
 
@@ -21,25 +20,19 @@ namespace fhg
     {
       class internal_type
       {
+      public:
+        enum kind {expression, module_call, net};
+
+        explicit internal_type (const kind&);
+        explicit internal_type (const QString& filename);
+
+        const ::xml::parse::id::ref::function& function() const;
+        change_manager_t& change_manager();
+
       private:
         ::xml::parse::state::type _state;
         ::xml::parse::id::ref::function _function;
         change_manager_t _change_manager;
-        proxy::type _root_proxy;
-
-      public:
-        enum kind {expression, module_call, net};
-
-        explicit internal_type (const kind& = internal_type::expression);
-        explicit internal_type (const QString& filename);
-
-        const ::xml::parse::id::ref::function& function() const;
-        const ::xml::parse::state::key_values_t & context () const;
-        const ::xml::parse::state::type & state () const;
-        ::xml::parse::state::type & state ();
-        change_manager_t& change_manager();
-        const proxy::type& root_proxy() const;
-        proxy::type& root_proxy();
       };
     }
   }

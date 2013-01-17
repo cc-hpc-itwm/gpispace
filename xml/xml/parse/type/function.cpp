@@ -2382,25 +2382,22 @@ namespace xml
           };
         }
 
-        void dump_before_property ( ::fhg::util::xml::xmlstream & s
-                                  , const function_type & f
-                                  )
+        void dump ( ::fhg::util::xml::xmlstream & s
+                  , const function_type & f
+                  )
         {
           s.open ("defun");
           s.attr ("name", f.name());
           s.attr ("internal", f.internal);
-        }
 
-        void dump_after_property ( ::fhg::util::xml::xmlstream & s
-                                 , const function_type & f
-                                 )
-        {
+          ::we::type::property::dump::dump (s, f.properties());
+
           BOOST_FOREACH (const std::string& tn, f.typenames())
-            {
-              s.open ("template-parameter");
-              s.attr ("type", tn);
-              s.close();
-            }
+          {
+            s.open ("template-parameter");
+            s.attr ("type", tn);
+            s.close();
+          }
 
           dumps (s, f.structs.begin(), f.structs.end());
 
@@ -2418,31 +2415,6 @@ namespace xml
           }
 
           s.close ();
-        }
-
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const function_type & f
-                  , const state::type & state
-                  )
-        {
-          dump_before_property (s, f);
-
-          state.dump_context (s);
-
-          ::we::type::property::dump::dump (s, f.properties());
-
-          dump_after_property (s, f);
-        }
-
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const function_type & f
-                  )
-        {
-          dump_before_property (s, f);
-
-          ::we::type::property::dump::dump (s, f.properties());
-
-          dump_after_property (s, f);
         }
       } // namespace dump
     }

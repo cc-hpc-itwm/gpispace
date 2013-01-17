@@ -1,7 +1,7 @@
 #!/bin/bash
 
-GSPC_DOC_SHORT_DESCRIPTION="examine the current status of a GPI-Space topology"
-GSPC_IMPORTANT_API_COMMAND=false
+GSPC_API_COMMAND_SHORT_DESCRIPTION="examine the current status of a GPI-Space topology"
+GSPC_API_COMMAND_LEVEL=2
 
 . $(gspc --exec-path)/gspc-sh-setup
 
@@ -17,7 +17,7 @@ Options:
 EOF
 }
 
-TEMP=`getopt -o h --long help,kvs-host:,kvs-port: -n 'topology' -- "$@"`
+TEMP=`getopt -o hq --long help,quiet,kvs-host:,kvs-port: -n 'topology' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -25,6 +25,7 @@ eval set -- "$TEMP"
 
 kvs_host=
 kvs_port=
+quiet=false
 
 while true ; do
     case "$1" in
@@ -37,6 +38,10 @@ while true ; do
             kvs_port="$2"
             shift ; shift
             ;;
+        -q|--quiet)
+            quiet=true
+            shift
+            ;;
         --) shift; break ;;
         *) gspc_log_error topology "Internal error on argument: '$1'"; exit 1 ;;
     esac
@@ -44,10 +49,10 @@ done
 
 function action_status ()
 {
-    local component_to_check=("$@")
+    local to_check=("$@")
     local component_info=()
 
-    component_info=($(gspc topology --kvs-host "$kvs_host" --kvs-port "$kvs_port" list --no-header))
+    component_info=($(gspc topology --kvs-host "$kvs_host" --kvs-port "$kvs_port" list --no-header "${to_check[@]}"))
     ec=$?
     if [ $ec -ne 0 ] ; then
         return $ec
@@ -85,30 +90,52 @@ function action_status ()
         bg_pid_name+=( "$name" )
     done
 
+    num_to_check=${#to_check[@]}
+    num_up=0
+    num_dn=0
     col=0
     for ((i=0 ; i < ${#bg_pid[@]} ; ++i))
     do
         if wait ${bg_pid[i]}
         then
             state="UP"; color="$color_up"
+            num_up+=1
         else
             state="DN"; color="$color_dn"
+            num_dn+=1
         fi
-        printf "[${color}%-2s${color_off}] %-20s" "$state" "${bg_pid_name[i]}"
+
+        if ! $quiet ; then
+            printf "[${color}%-2s${color_off}] %-20s" "$state" "${bg_pid_name[i]}"
+        fi
         col=$((col + 1))
         if [ $col -ge $columns ] ; then
-            printf "\n"
+            if ! $quiet ; then
+                printf "\n"
+            fi
             col=0
         else
-            printf " "
+            if ! $quiet ; then
+                printf " "
+            fi
         fi
     done
     if [ $col -gt 0 ] ; then
-        printf "\n"
+        if ! $quiet ; then
+            printf "\n"
+        fi
         col=0
     fi
 
-    return 0
+    if [ $num_to_check -gt 0 ] ; then
+        if [ $num_up -lt $num_to_check ] ; then
+            return 1
+        else
+            return 0
+        fi
+    fi
+
+    return $(( num_dn > 0 ? 1 : 0 ))
 }
 
 action_status "${@}"

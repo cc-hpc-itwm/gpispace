@@ -1,0 +1,129 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="start GPI-Space components"
+GSPC_API_COMMAND_LEVEL=2
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: topology-start [-h|--help] [options]
+
+Options:
+
+   --kvs-host <host>     specify the kvs-host to use
+   --kvs-port <port>     specify the kvs-port to use
+
+   --type <type>         type of component to start:
+
+                             frontend - interface to the user
+                                agent - workflow execution
+                               worker - actually executes code
+                                  vmm - memory manager layer
+
+   --name <name>         the name of the component
+   --host <host>         on which host shall the component be started
+EOF
+}
+
+TEMP=`getopt -o h --long help,kvs-host:,kvs-port:,type:,name:,host: -n 'topology' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+kvs_host=
+kvs_port=
+type=
+name=
+host=
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --kvs-host)
+            kvs_host="$2"
+            shift; shift
+            ;;
+        --kvs-port)
+            kvs_port="$2"
+            shift; shift
+            ;;
+        --type)
+            type="$2"
+            shift; shift
+            ;;
+        --name)
+            name="$2"
+            shift; shift
+            ;;
+        --host)
+            name="$2"
+            shift; shift
+            ;;
+        --) shift; break ;;
+        *) gspc_log_error topology "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+ec=0
+case "$type" in
+    '')
+        gspc_log_error topology "'type' must not be empty"
+        ec+=1
+        ;;
+    orchestrator|agent|worker)
+        ;;
+    *)
+        gspc_log_error topology "invalid type: '$type'. Consult help for a list of valid types."
+        ec+=1
+        ;;
+esac
+
+if [ -z "$name" ] ; then
+    gspc_log_error topology "'name' must not be empty"
+    ec+=1
+fi
+if [ -z "$host" ] ; then
+    host="$(hostname -f)"
+fi
+
+if [ $ec -gt 0 ] ; then
+    exit 1
+fi
+
+function gspc_require_kvs ()
+{
+    if ! gspc kvs --host="${kvs_host}" --port="${kvs_port}" --status ; then
+        exit 1
+    fi
+}
+
+gspc_require_kvs
+
+gspc_log_trace topology "checking if '$name' already exists..."
+
+if gspc topology status -q "^$name$" ; then
+    gspc_log_error topology "'$name' is still running"
+    gspc_log_info topology "<host> <port> <pid>:" $(gspc topology list --no-header "^$name$")
+    exit 1
+fi
+
+gspc_log_trace topology "adding '$name' as '$type' to state"
+
+args=()
+binary=
+case "$type" in
+    orchestrator)
+        binary=orchestrator
+        args+=( --daemonize )
+        ;;
+    *)
+        gspc_log_error topology "Internal error: '$type' not yet implemented"
+        exit 1
+        ;;
+esac
+
+gspc_log_trace topology "starting '$name' on '$host'"
+gspc rexec "$host" "$(gspc --bin-path)/$binary" "${args[@]}"

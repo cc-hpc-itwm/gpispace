@@ -16,10 +16,8 @@ namespace fhg
     {
       namespace handle
       {
-        port::port ( const port_meta_base::id_type& id
-                   , change_manager_t& change_manager
-                   )
-          : port_meta_base (id, change_manager)
+        port::port (const port_meta_base::id_type& id, internal_type* document)
+          : port_meta_base (id, document)
         { }
 
         void port::remove (const QObject* sender) const
@@ -66,7 +64,7 @@ namespace fhg
 
         function port::parent() const
         {
-          return function (get().parent()->make_reference_id(), change_manager());
+          return function (get().parent()->make_reference_id(), document());
         }
       }
     }

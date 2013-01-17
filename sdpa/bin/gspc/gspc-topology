@@ -1,7 +1,7 @@
 #!/bin/bash
 
-GSPC_DOC_SHORT_DESCRIPTION="manage the GPI-Space topology"
-GSPC_IMPORTANT_API_COMMAND=true
+GSPC_API_COMMAND_SHORT_DESCRIPTION="manage the GPI-Space topology"
+GSPC_API_COMMAND_LEVEL=1
 
 . $(gspc --exec-path)/gspc-sh-setup
 
@@ -17,8 +17,7 @@ Options:
 
 Actions:
 
-   list                  list the current topology
-   status                print status of each component
+$(gspc --no-alias list-commands --prefix=topology --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
 EOF
 }
 
@@ -37,10 +36,6 @@ while true ; do
             shift ; shift
             ;;
         --) shift; break ;;
-        -*)
-            echo >&2 "topology: invalid option: $1"
-            exit 1
-            ;;
         *) break ;;
     esac
 done

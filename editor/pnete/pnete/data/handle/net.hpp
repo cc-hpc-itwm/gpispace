@@ -5,7 +5,6 @@
 
 #include <pnete/data/handle/net.fwd.hpp>
 
-#include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
 #include <pnete/data/handle/port.fwd.hpp>
@@ -29,9 +28,7 @@ namespace fhg
         class net : public net_meta_base
         {
         public:
-          net ( const net_meta_base::id_type& id
-              , change_manager_t& change_manager
-              );
+          net (const net_meta_base::id_type&, internal_type*);
 
           void add_transition ( const QObject* sender
                               , const boost::optional<QPointF>&

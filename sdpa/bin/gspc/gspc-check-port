@@ -2,7 +2,8 @@
 
 . $(gspc --exec-path)/gspc-sh-setup
 
-GSPC_DOC_SHORT_DESCRIPTION="checks whether a given port is open"
+GSPC_API_COMMAND_SHORT_DESCRIPTION="checks whether a given port is open"
+GSPC_API_COMMAND_LEVEL=-1
 
 # return codes: 0 => port is open
 #               1 => usage error
@@ -25,9 +26,9 @@ fi
 node="${1}"; shift
 port="${1}"; shift
 
-nc=$(which netcat)
+nc=$(which netcat 2>/dev/null)
 if [ -z "$nc" ] ; then
-    nc=$(which nc)
+    nc=$(which nc 2>/dev/null)
     if [ -z "$nc" ] ; then
         gspc_log_error check-port "Neither 'netcat' nor 'nc' is available"
         exit 2

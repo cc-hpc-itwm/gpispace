@@ -30,11 +30,12 @@ namespace fhg
       namespace graph
       {
         transition_item::transition_item
-          (const data::handle::transition& handle, base_item* parent)
-          : base_item (parent)
-          , _size (size::transition::width(), size::transition::height())
-          , _handle (handle)
-          , _proxy (NULL)
+          ( const data::handle::transition& handle
+          , base_item* parent
+          )
+            : base_item (parent)
+            , _size (size::transition::width(), size::transition::height())
+            , _handle (handle)
         {
           //            new cogwheel_button (this);
           setFlag (ItemIsSelectable);
@@ -96,11 +97,6 @@ namespace fhg
           return handle().get().name();
         }
 
-        // void slot_change_name (QString name)
-        // {
-        //   internal()->change_manager().set_transition_name (reference(), name);
-        // }
-
         void transition_item::repositionChildrenAndResize()
         {
           const qreal padding (10.0); // hardcoded constant
@@ -142,15 +138,6 @@ namespace fhg
                                                 )
                                          )
                                   );
-        }
-
-        void transition_item::set_proxy (data::proxy::type* proxy_)
-        {
-          _proxy = proxy_;
-        }
-        data::proxy::type* transition_item::proxy () const
-        {
-          return _proxy;
         }
 
         QRectF transition_item::rectangle () const

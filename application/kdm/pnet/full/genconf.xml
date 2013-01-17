@@ -14,21 +14,13 @@
           "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model"
           "/fhgfs/HPC/rahn/kdm/Kirchhoff_C3NA.rahn"
 -->
-    <properties name="pnetc">
-      <properties name="context">
-        <property key="file">
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL"
-
-        </property>
-      </properties>
-    </properties>
 
     <place name="file_config" type="string">
-      <token><value>${file} + ".xml"</value></token>
+      <token><value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"</value></token>
     </place>
 
     <place name="file_out" type="string">
-      <token><value>${file} + ".param.text"</value></token>
+      <token><value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.param.text"</value></token>
     </place>
 
     <place name="memsizeGPI" type="long">

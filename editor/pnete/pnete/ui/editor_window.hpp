@@ -5,8 +5,7 @@
 
 #include <pnete/ui/dock_widget.fwd.hpp>
 
-#include <pnete/data/internal.fwd.hpp>
-#include <pnete/data/proxy.fwd.hpp>
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/ui/document_view.fwd.hpp>
 
 #include <QMainWindow>
@@ -52,13 +51,14 @@ namespace fhg
         void close_document();
         void quit();
 
-        void create_widget (data::proxy::type &);
+        void create_widget (const data::handle::function&);
         void duplicate_active_widget();
         void current_widget_close();
         void focus_changed (QWidget*, QWidget*);
         void update_window_menu();
 
-        void execute_locally();
+        void execute_locally_inputs_via_prompt();
+        void execute_locally_inputs_from_file();
 
       protected:
         virtual void closeEvent (QCloseEvent*);
@@ -74,7 +74,8 @@ namespace fhg
         QMenu* _windows_menu;
         QMenu* _document_specific_action_menu;
         QAction* _action_save_current_file;
-        QAction* _action_execute_current_file_locally;
+        QAction* _action_execute_current_file_locally_via_prompt;
+        QAction* _action_execute_current_file_locally_from_file;
 
         QStack<document_view*> _accessed_widgets;
 
@@ -83,7 +84,7 @@ namespace fhg
         void setup_file_actions (QMenuBar* menu_bar);
         void setup_window_actions (QMenuBar* menu_bar);
 
-        void create_windows (data::internal_type* data);
+        void create_windows (const data::handle::function&);
 
         QMenu* update_window_menu (QMenu*);
 

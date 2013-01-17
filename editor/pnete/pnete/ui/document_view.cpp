@@ -19,14 +19,12 @@ namespace fhg
     namespace ui
     {
       document_view::document_view ( const data::handle::function& function
-                                   , data::proxy::type& proxy
                                    , const QString& fallback_title
                                    , QWidget* widget
                                    )
         : dock_widget()
         , _actions()
         , _function (function)
-        , _proxy (proxy)
         , _fallback_title (fallback_title)
       {
         connect ( this
@@ -49,11 +47,6 @@ namespace fhg
       QList<QAction*> document_view::actions() const
       {
         return widget()->actions();
-      }
-
-      data::proxy::type& document_view::proxy()
-      {
-        return _proxy;
       }
 
       const data::handle::function& document_view::function() const

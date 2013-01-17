@@ -20,10 +20,8 @@ namespace fhg
     {
       namespace handle
       {
-        place::place ( const place_meta_base::id_type& id
-                     , change_manager_t& change_manager
-                     )
-          : place_meta_base (id, change_manager)
+        place::place (const place_meta_base::id_type& id, internal_type* doc)
+          : place_meta_base (id, doc)
         { }
 
         void place::remove (const QObject* sender) const
@@ -66,7 +64,7 @@ namespace fhg
 
         net place::parent() const
         {
-          return net (get().parent()->make_reference_id(), change_manager());
+          return net (get().parent()->make_reference_id(), document());
         }
 
         bool place::is_implicit() const

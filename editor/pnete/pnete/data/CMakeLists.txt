@@ -4,20 +4,17 @@ set(data_SRCS
   change_manager.cpp
   internal.cpp
   manager.cpp
-  proxy.cpp
 )
 
 set(data_HDRS
   change_manager.hpp
   internal.hpp
   manager.hpp
-  proxy.hpp
 )
 
 set (data_FWDS
   change_manager.fwd.hpp
   internal.fwd.hpp
-  proxy.fwd.hpp
 )
 
 set(data_TOMOC

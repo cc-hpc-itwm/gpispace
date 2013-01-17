@@ -6,7 +6,6 @@
 #include <pnete/ui/graph/transition.fwd.hpp>
 
 #include <pnete/data/handle/transition.hpp>
-#include <pnete/data/proxy.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 
 #include <QPainterPath>
@@ -46,9 +45,6 @@ namespace fhg
 
           void repositionChildrenAndResize();
 
-          void set_proxy (data::proxy::type*);
-          data::proxy::type* proxy () const;
-
           enum { Type = transition_graph_type };
           virtual int type() const { return Type; }
 
@@ -76,8 +72,6 @@ namespace fhg
           QSizeF _size;
 
           data::handle::transition _handle;
-
-          data::proxy::type* _proxy;
         };
       }
     }
