@@ -124,7 +124,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        signature::type type_of_place (const place_type&) const;
+        boost::optional<signature::type> signature (const std::string&) const;
 
         // ***************************************************************** //
 

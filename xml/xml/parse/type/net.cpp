@@ -381,22 +381,18 @@ namespace xml
 
       // ***************************************************************** //
 
-      signature::type net_type::type_of_place (const place_type& place) const
+      boost::optional<signature::type>
+      net_type::signature (const std::string& type) const
       {
-        if (literal::valid_name (place.type))
-        {
-          return signature::type (place.type);
-        }
-
         const xml::parse::structure_type::set_type::const_iterator sig
-          (structs_resolved.find (place.type));
+          (structs_resolved.find (type));
 
-        if (sig == structs_resolved.end())
+        if (sig != structs_resolved.end())
         {
-          throw error::place_type_unknown (place.name(), place.type, path());
+          return signature::type (sig->second.signature(), sig->second.name());
         }
 
-        return signature::type (sig->second.signature(), sig->second.name());
+        return boost::none;
       }
 
       // ***************************************************************** //
@@ -553,7 +549,6 @@ namespace xml
 
         BOOST_FOREACH(place_type& place, places().values())
         {
-          place.sig = type_of_place (place);
           place.translate (path(), state);
         }
       }
@@ -722,60 +717,54 @@ namespace xml
         pid_of_place_type pid_of_place;
 
         BOOST_FOREACH (const place_type& place, net.places().values())
+        {
+          if (!state.synthesize_virtual_places() && place.is_virtual())
+          {
+            const pid_of_place_type::const_iterator pid
+              (place_map_map.find (place.name()));
+
+            if (pid == place_map_map.end())
             {
-              const signature::type type (net.type_of_place (place));
-
-              if (!state.synthesize_virtual_places() && place.is_virtual())
-                {
-                  // try to find a mapping
-                  const place_map_map_type::const_iterator pid
-                    (place_map_map.find (place.name()));
-
-                  if (pid == place_map_map.end())
-                    {
-                      throw error::no_map_for_virtual_place
-                        (place.name(), state.file_in_progress());
-                    }
-
-                  pid_of_place.insert (std::make_pair ( place.name()
-                                                      , pid->second
-                                                      )
-                                      );
-
-                  const place::type place_real
-                    (we_net.get_place (pid->second));
-
-                  if (not (place_real.signature() == place.sig))
-                    {
-                      throw error::port_tunneled_type_error
-                        ( place.name()
-                        , place.sig
-                        , place_real.name()
-                        , place_real.signature()
-                        , state.file_in_progress()
-                        );
-                    }
-                }
-              else
-                {
-                  we::type::property::type prop (place.properties());
-
-                  if (place.is_virtual())
-                    {
-                      prop.set ("virtual", "true");
-                    }
-
-                  const petri_net::place_id_type pid
-                    ( we_net.add_place ( place::type ( place.name()
-                                                     , type
-                                                     , prop
-                                                     )
-                                       )
-                    );
-
-                  pid_of_place.insert (std::make_pair (place.name(), pid));
-                }
+              throw error::no_map_for_virtual_place
+                (place.name(), state.file_in_progress());
             }
+
+            pid_of_place.insert (std::make_pair (place.name(), pid->second));
+
+            const place::type place_real (we_net.get_place (pid->second));
+
+            if (!(place_real.signature() == place.signature_or_throw()))
+            {
+              throw error::port_tunneled_type_error
+                ( place.name()
+                , place.signature_or_throw()
+                , place_real.name()
+                , place_real.signature()
+                , state.file_in_progress()
+                );
+            }
+          }
+          else
+          {
+            we::type::property::type prop (place.properties());
+
+            if (place.is_virtual())
+            {
+              prop.set ("virtual", "true");
+            }
+
+            const petri_net::place_id_type pid
+              ( we_net.add_place ( place::type
+                                   ( place.name()
+                                   , place.signature_or_throw()
+                                   , prop
+                                   )
+                                 )
+              );
+
+            pid_of_place.insert (std::make_pair (place.name(), pid));
+          }
+        }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
                       , net.transitions().ids()
