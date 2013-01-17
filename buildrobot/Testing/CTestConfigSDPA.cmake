@@ -13,6 +13,8 @@ set(CTEST_DROP_METHOD "http")
 set(CTEST_DROP_SITE "pubdoc.itwm.fhg.de")
 set(CTEST_DROP_LOCATION "/p/hpc/pspro/cdash/submit.php?project=${CTEST_PROJECT_NAME}")
 set(CTEST_DROP_SITE_CDASH TRUE)
+set(CTEST_USE_LAUNCHERS 0)
+set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA")
 
 set(CTEST_PROJECT_SUBPROJECTS
 main
@@ -22,10 +24,8 @@ seda
 
 site_name(CTEST_SITE)
 
-set(_git_branch "develop")
-set(_git_branch "master")
+#set(_git_branch "develop")
+#set(_git_branch "master")
 set(GIT_UPDATE_OPTIONS "pull")
 
 set(_projectNameDir "${CTEST_PROJECT_NAME}")
-set(_srcDir "srcdir")
-set(_buildDir "builddir")
