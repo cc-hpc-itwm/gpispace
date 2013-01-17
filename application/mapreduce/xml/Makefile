@@ -22,18 +22,18 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 ###############################################################################
 
-PUT_PORT += input_file=\"/fhgfs/HPC/rotaru/data/american.300\"
+PUT_PORT += input_file=\"/fhgfs/HPC/rotaru/data/american.1000\"
 PUT_PORT += output_file=\"/fhgfs/HPC/rotaru/data/out.txt\"
-PUT_PORT += read_chunk_size=8194304
-#PUT_PORT += map_chunk_size=4194304
-PUT_PORT += map_chunk_size=12582912
-PUT_PORT += partition_slot_size=33554432
-#PUT_PORT += partition_slot_size=16777216
-#PUT_PORT += reduce_slot_size=33554432
-PUT_PORT += reduce_slot_size=67108864
-PUT_PORT += n_part=26
+PUT_PORT += read_chunk_size=35943004
+PUT_PORT += map_chunk_size=49943004
+#PUT_PORT += map_chunk_size=35582912
+#PUT_PORT += partition_slot_size=33554432
+PUT_PORT += partition_slot_size=40777216
+#PUT_PORT += reduce_slot_size=61777216
+PUT_PORT += reduce_slot_size=140008864
+PUT_PORT += n_part=32
 PUT_PORT += input_n_read_slots=100
-PUT_PORT += input_n_map_slots=50
+PUT_PORT += input_n_map_slots=100
 -include example.mk
 
 ###############################################################################
