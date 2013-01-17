@@ -47,20 +47,22 @@ fi
 check_host
 
 export LANG=en_US.UTF-8
-export CTEST=/usr/bin/ctest
+export CTEST="/usr/bin/ctest"
 
 unset http_proxy
 
 echo "Running ctest"
 
 # compile with clang
-$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly-clang.cmake
+$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly.cmake,compiler=clang,_git_branch=master
+$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly.cmake,compiler=clang
 
-# compile with cgcc
-$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly-gcc.cmake
+# compile with gcc
+$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly.cmake,_git_branch=master
+$CTEST -V -VV -S ${HOME}/sdpa/buildrobot/Testing/SDPANightly.cmake
 
-if [ "$have_intel" = "yes" ]; then
-  if [ -x /home/toolsLinux/compiler/config.icc1181 ]; then
+if [ "${have_intel}" = "yes" ]; then
+  if [ -f /home/toolsLinux/compiler/config.icc1181 ]; then
     echo compile with intel
     # now compile with intel compiler
     . /home/toolsLinux/compiler/config.icc1181
