@@ -2203,29 +2203,27 @@ namespace xml
 
       namespace
       {
-        void to_cpp (const structure_type& s, const state::type & state)
-        {
-          namespace cpp_util = ::fhg::util::cpp;
-
-          typedef boost::filesystem::path path_t;
-
-          const path_t prefix (state.path_to_cpp());
-          const path_t file
-            (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name()));
-
-          util::check_no_change_fstream stream (state, file);
-
-          signature::cpp::cpp_header
-            (stream, s.signature(), s.name(), s.path(), cpp_util::path::type());
-
-          stream.commit();
-        }
-
         void to_cpp (const structs_type& structs, const state::type& state)
         {
           BOOST_FOREACH (const structure_type& structure, structs)
           {
-            to_cpp (structure, state);
+            const boost::filesystem::path prefix (state.path_to_cpp());
+            const boost::filesystem::path file
+              ( prefix
+              / ::fhg::util::cpp::path::type()
+              / ::fhg::util::cpp::make::hpp (structure.name())
+              );
+
+            util::check_no_change_fstream stream (state, file);
+
+            signature::cpp::cpp_header ( stream
+                                       , structure.signature()
+                                       , structure.name()
+                                       , structure.path()
+                                       , ::fhg::util::cpp::path::type()
+                                       );
+
+            stream.commit();
           }
         }
 
