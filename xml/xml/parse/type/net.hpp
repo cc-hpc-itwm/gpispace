@@ -165,8 +165,6 @@ namespace xml
         structs_type structs;
         bool contains_a_module_call;
 
-        //        xml::parse::structure_type::set_type structs_resolved;
-
       private:
         we::type::property::type _properties;
 

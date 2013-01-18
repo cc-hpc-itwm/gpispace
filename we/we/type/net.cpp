@@ -1,63 +1,440 @@
+// mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/net.hpp>
 
-#include <ostream>
+#include <fhg/assert.hpp>
+
+#include <boost/function.hpp>
+#include <boost/range/adaptor/map.hpp>
+
+#include <stack>
 
 namespace petri_net
 {
   namespace
   {
-    const net::tokens_type& no_tokens()
+    typedef boost::unordered_map< place_id_type
+                                , std::vector<token::type>
+                                > token_by_place_id_t;
+  }
+
+  place_id_type net::add_place (const place::type& place)
+  {
+    const place_id_type pid (_place_id++);
+
+    _pmap.insert (std::make_pair (pid, place));
+
+    return pid;
+  }
+
+  transition_id_type
+  net::add_transition (const we::type::transition_t& transition)
+  {
+    const transition_id_type tid (_transition_id++);
+
+    _tmap.insert (std::make_pair (tid, transition));
+
+    return tid;
+  }
+
+  void net::add_connection (const connection_t& connection)
+  {
+    if (edge::is_PT (connection.type))
     {
-      static const net::tokens_type x;
+      _adj_pt.set_adjacent ( connection.pid
+                           , connection.tid
+                           , connection
+                           , "add_connection"
+                           );
+    }
+    else
+    {
+      _adj_tp.set_adjacent ( connection.tid
+                           , connection.pid
+                           , connection
+                           , "add_connection"
+                           );
+    }
+
+    if (edge::is_PT (connection.type))
+    {
+      update_enabled (connection.tid);
+    }
+  }
+
+  void net::set_transition_priority ( const transition_id_type& tid
+                                    , const priority_type& prio
+                                    )
+  {
+    _enabled.set_priority (tid, prio);
+  }
+
+  priority_type
+  net::get_transition_priority (const transition_id_type& tid) const
+  {
+    return _enabled.get_priority (tid);
+  }
+
+  namespace
+  {
+    template<class MAP>
+    const typename MAP::mapped_type& get ( const MAP& m
+                                         , const typename MAP::key_type& key
+                                         , const std::string& msg
+                                         )
+    {
+      const typename MAP::const_iterator pos (m.find (key));
+
+      if (pos == m.end())
+        {
+          throw we::container::exception::no_such (msg);
+        }
+
+      return pos->second;
+    }
+  }
+
+  const place::type& net::get_place (const place_id_type& pid) const
+  {
+    return get (_pmap, pid, "get_place");
+  }
+
+  const we::type::transition_t&
+  net::get_transition (const transition_id_type& tid) const
+  {
+    return get (_tmap, tid, "get_transition");
+  }
+
+  const boost::unordered_map<place_id_type,place::type>& net::places() const
+  {
+    return _pmap;
+  }
+
+  const boost::unordered_map<transition_id_type,we::type::transition_t>&
+  net::transitions() const
+  {
+    return _tmap;
+  }
+
+  //! \todo Implement more efficient if necessary
+  const boost::unordered_set<connection_t> net::connections() const
+  {
+    boost::unordered_set<connection_t> s;
+
+    BOOST_FOREACH (const connection_t& connection, _adj_tp.adjacencies())
+    {
+      s.insert (connection);
+    }
+    BOOST_FOREACH (const connection_t& connection, _adj_pt.adjacencies())
+    {
+      s.insert (connection);
+    }
+
+    return s;
+  }
+
+  const boost::unordered_map<place_id_type, connection_t>&
+  net::out_of_transition (const transition_id_type& tid) const
+  {
+    return _adj_tp.col_adj_tab (tid);
+  }
+  const boost::unordered_map<place_id_type, connection_t>&
+  net::in_to_transition (const transition_id_type& tid) const
+  {
+    return _adj_pt.row_adj_tab (tid);
+  }
+  const boost::unordered_map<transition_id_type, connection_t>&
+  net::out_of_place (const place_id_type& pid) const
+  {
+    return _adj_pt.col_adj_tab (pid);
+  }
+  const boost::unordered_map<transition_id_type, connection_t>&
+  net::in_to_place (const place_id_type& pid) const
+  {
+    return _adj_tp.row_adj_tab (pid);
+  }
+
+  connection_t net::get_connection_out ( const transition_id_type& tid
+                                       , const place_id_type& pid
+                                       ) const
+  {
+    return _adj_tp.get_adjacent (tid, pid, "get_connection_out");
+  }
+  connection_t net::get_connection_in ( const transition_id_type& tid
+                                      , const place_id_type& pid
+                                      ) const
+  {
+    return _adj_pt.get_adjacent (pid, tid, "get_connection_in");
+  }
+  bool net::is_read_connection ( const transition_id_type& tid
+                               , const place_id_type& pid
+                               ) const
+  {
+    return edge::is_pt_read
+      (_adj_pt.get_adjacent (pid, tid, "is_read_connection").type);
+  }
+
+  void net::delete_edge_out ( const transition_id_type& tid
+                            , const place_id_type& pid
+                            )
+  {
+    _adj_tp.clear_adjacent (tid, pid);
+  }
+  void net::delete_edge_in ( const transition_id_type& tid
+                           , const place_id_type& pid
+                           )
+  {
+    _adj_pt.clear_adjacent (pid, tid);
+
+    update_enabled (tid);
+  }
+
+  void net::delete_place (const place_id_type& pid)
+  {
+    // make the token deletion visible to delete_connection
+    _token_by_place_id.erase (pid);
+
+    std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
+    std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
+
+    BOOST_FOREACH ( const transition_id_type& tid
+                  , out_of_place (pid) | boost::adaptors::map_keys
+                  )
+    {
+      stack_in.push (std::make_pair (tid, pid));
+      // TODO: get port and remove place from there
+    }
+
+    BOOST_FOREACH ( const transition_id_type& transition_id
+                  , in_to_place (pid) | boost::adaptors::map_keys
+                  )
+    {
+      stack_out.push (std::make_pair (transition_id, pid));
+      // TODO: get port and remove place from there
+      // transition_t::port_id_t portId = transition->transition().input_port_by_pid(place_.id()).first;
+    }
+
+    while (!stack_out.empty())
+    {
+      delete_edge_out (stack_out.top().first, stack_out.top().second);
+      stack_out.pop();
+    }
+    while (!stack_in.empty())
+    {
+      delete_edge_in (stack_in.top().first, stack_in.top().second);
+      stack_in.pop();
+    }
+
+    _pmap.erase (pid);
+  }
+
+  void net::delete_transition (const transition_id_type& tid)
+  {
+    std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
+    std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
+
+    BOOST_FOREACH ( const place_id_type& place_id
+                  , out_of_transition (tid) | boost::adaptors::map_keys
+                  )
+    {
+      stack_out.push (std::make_pair (tid, place_id));
+    }
+
+    BOOST_FOREACH ( const place_id_type& place_id
+                  , in_to_transition (tid) | boost::adaptors::map_keys
+                  )
+    {
+      stack_in.push (std::make_pair (tid, place_id));
+    }
+
+    while (!stack_out.empty())
+    {
+      delete_edge_out (stack_out.top().first, stack_out.top().second);
+      stack_out.pop();
+    }
+    while (!stack_in.empty())
+    {
+      delete_edge_in (stack_in.top().first, stack_in.top().second);
+      stack_in.pop();
+    }
+
+    _tmap.erase (tid);
+
+    _enabled.erase (tid);
+    _enabled.erase_priority (tid);
+    _enabled_choice_consume.erase (tid);
+    _enabled_choice_read.erase (tid);
+  }
+
+  place_id_type net::modify_place ( const place_id_type& pid
+                                  , const place::type& place
+                                  )
+  {
+    _pmap[pid] = place;
+
+    return pid;
+  }
+
+  transition_id_type
+  net::modify_transition ( const transition_id_type& tid
+                         , const we::type::transition_t& transition
+                         )
+  {
+    _tmap[tid] = transition;
+
+    return tid;
+  }
+
+  void net::put_token (const place_id_type& pid, const token::type& token)
+  {
+    _token_by_place_id[pid].push_back (token);
+
+    BOOST_FOREACH ( const transition_id_type& tid
+                  , out_of_place (pid) | boost::adaptors::map_keys
+                  )
+    {
+      update_enabled (tid);
+    }
+  }
+
+  namespace
+  {
+    const std::vector<token::type>& no_tokens()
+    {
+      static const std::vector<token::type> x;
 
       return x;
     }
   }
 
-  const net::tokens_type& net::get_token (const place_id_type& pid) const
+  const std::vector<token::type>&
+  net::get_token (const place_id_type& pid) const
   {
-    token_place_rel_t::const_iterator pos (_token_place_rel.find (pid));
+    token_by_place_id_t::const_iterator pos (_token_by_place_id.find (pid));
 
-    return (pos != _token_place_rel.end()) ? pos->second : no_tokens();
+    return (pos != _token_by_place_id.end()) ? pos->second : no_tokens();
   }
 
-  std::ostream& operator<< (std::ostream& s, const net& n)
+  void net::delete_all_token (const place_id_type& pid)
   {
-    typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+    _token_by_place_id.erase (pid);
 
-    BOOST_FOREACH (const ip_type& ip, n.places())
-      {
-        s << "[" << ip.second << ":";
-
-        typedef boost::unordered_map<token::type, size_t> token_cnt_t;
-        token_cnt_t token;
-        BOOST_FOREACH (const token::type& t, n.get_token (ip.first))
-          {
-            token[t]++;
-          }
-
-        for (token_cnt_t::const_iterator t (token.begin()); t != token.end(); ++t)
-        {
-          if (t->second > 1)
-          {
-            s << " " << t->second << "x " << t->first;
-          }
-          else
-          {
-            s << " " << t->first;
-          }
-        }
-        s << "]";
-      }
-
-    BOOST_FOREACH ( const we::type::transition_t& t
-                  , n.transitions() | boost::adaptors::map_values
+    BOOST_FOREACH ( const transition_id_type& tid
+                  , out_of_place (pid) | boost::adaptors::map_keys
                   )
     {
-      s << "/" << t << "/";
+      update_enabled (tid);
+    }
+  }
+
+  bool net::can_fire() const
+  {
+    return not _enabled.empty();
+  }
+
+  void net::update_enabled (const transition_id_type& tid)
+  {
+    token_by_place_id_t token_by_place_id;
+
+    BOOST_FOREACH ( const place_id_type& place_id
+                  , in_to_transition (tid) | boost::adaptors::map_keys
+                  )
+    {
+      if (_token_by_place_id[place_id].empty())
+      {
+        _enabled.erase (tid);
+
+        return;
+      }
+      else
+      {
+        token_by_place_id[place_id] = _token_by_place_id[place_id];
+      }
     }
 
-      return s;
+    cross::cross<token_by_place_id_t> cs (token_by_place_id);
+
+    if (not get_transition (tid).condition()(cs))
+    {
+      _enabled.erase (tid);
     }
+    else
+    {
+      _enabled.insert (tid);
+
+      _enabled_choice_consume[tid].clear();
+      _enabled_choice_read[tid].clear();
+
+      for ( cross::iterator<token_by_place_id_t> choice (*cs)
+          ; choice.has_more()
+          ; ++choice
+          )
+      {
+        if (is_read_connection (tid, choice.key()))
+        {
+          _enabled_choice_read[tid].push_back (*choice);
+        }
+        else
+        {
+          _enabled_choice_consume[tid].push_back (*choice);
+        }
+      }
+    }
+  }
+
+  we::mgmt::type::activity_t
+  net::extract_activity (const transition_id_type& tid)
+  {
+    const we::type::transition_t& transition (get_transition (tid));
+    we::mgmt::type::activity_t act (transition);
+
+    const choice_iterator_t choice_consume (_enabled_choice_consume.find(tid));
+    const choice_iterator_t choice_read (_enabled_choice_read.find(tid));
+
+    assert (  (choice_consume != _enabled_choice_consume.end())
+           || (choice_read != _enabled_choice_read.end())
+           );
+
+    const choice_vec_t choice_vec_consume (choice_consume->second);
+    _enabled_choice_consume.erase (choice_consume);
+    const choice_vec_t choice_vec_read (choice_read->second);
+
+    for ( choice_vec_t::const_iterator choice (choice_vec_consume.begin())
+        ; choice != choice_vec_consume.end()
+        ; ++choice
+        )
+    {
+      const place_id_type& pid (choice->first);
+      const token::type& token (choice->second);
+
+      act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
+
+      assert (not is_read_connection (tid, pid));
+
+      std::vector<token::type>& tokens (_token_by_place_id[pid]);
+      tokens.erase (std::find (tokens.begin(), tokens.end(), token));
+
+      BOOST_FOREACH ( const transition_id_type& t
+                    , out_of_place (pid) | boost::adaptors::map_keys
+                    )
+      {
+        update_enabled (t);
+      }
+    }
+
+    for ( choice_vec_t::const_iterator choice (choice_vec_read.begin())
+        ; choice != choice_vec_read.end()
+        ; ++choice
+        )
+    {
+      const place_id_type& pid (choice->first);
+      const token::type& token (choice->second);
+
+      assert (is_read_connection (tid, pid));
+
+      act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
+    }
+
+    return act;
+  }
 } // namespace petri_net
