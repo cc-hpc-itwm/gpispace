@@ -123,12 +123,12 @@ namespace we
 
           activity_t operator() (petri_net::net& net) const
           {
-            const petri_net::net::activity_t net_act
+            const petri_net::activity_t net_act
               (net.extract_activity_random (_engine));
 
             activity_t act (net.get_transition (net_act.tid)) ;
 
-            BOOST_FOREACH ( const petri_net::net::token_input_t& inp
+            BOOST_FOREACH ( const petri_net::token_input_t& inp
                           , net_act.input
                           )
               {
