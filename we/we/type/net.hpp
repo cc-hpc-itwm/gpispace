@@ -202,8 +202,6 @@ namespace petri_net
 
       _tmap.insert (tmap_type::value_type (tid, transition));
 
-      update_enabled (tid);
-
       return tid;
     }
 
