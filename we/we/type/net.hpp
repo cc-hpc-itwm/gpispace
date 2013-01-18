@@ -236,7 +236,7 @@ namespace petri_net
     }
 
     const boost::unordered_map<transition_id_type,we::type::transition_t>&
-    transitions () const
+    transitions() const
     {
       return _tmap;
     }
