@@ -103,47 +103,46 @@ namespace petri_net
                     , in_to_transition (tid) | boost::adaptors::map_keys
                     )
       {
-        if (_token_place_rel[place_id].size() > 0)
+        if (_token_place_rel[place_id].empty())
+        {
+          _enabled.erase (tid);
+
+          return;
+        }
+        else
         {
           tokens_by_place_id[place_id] = _token_place_rel[place_id];
         }
       }
 
-      if (tokens_by_place_id.size() != in_to_transition (tid).size())
-        {
-          _enabled.erase (tid);
-        }
+      cross::cross<tokens_by_place_id_t> cs (tokens_by_place_id);
+
+      if (not get_transition (tid).condition()(cs))
+      {
+        _enabled.erase (tid);
+      }
       else
+      {
+        _enabled.insert (tid);
+
+        _enabled_choice_consume[tid].clear();
+        _enabled_choice_read[tid].clear();
+
+        for ( cross::iterator<tokens_by_place_id_t> choice (*cs)
+            ; choice.has_more()
+            ; ++choice
+            )
         {
-          cross::cross<tokens_by_place_id_t> cs (tokens_by_place_id);
-
-          if (not get_transition (tid).condition()(cs))
-            {
-              _enabled.erase (tid);
-            }
+          if (is_read_connection (tid, choice.key()))
+          {
+            _enabled_choice_read[tid].push_back (*choice);
+          }
           else
-            {
-              _enabled.insert (tid);
-
-              _enabled_choice_consume[tid].clear();
-              _enabled_choice_read[tid].clear();
-
-              for ( cross::iterator<tokens_by_place_id_t> choice (*cs)
-                  ; choice.has_more()
-                  ; ++choice
-                  )
-                {
-                  if (is_read_connection (tid, choice.key()))
-                    {
-                      _enabled_choice_read[tid].push_back (*choice);
-                    }
-                  else
-                    {
-                      _enabled_choice_consume[tid].push_back (*choice);
-                    }
-                }
-            }
+          {
+            _enabled_choice_consume[tid].push_back (*choice);
+          }
         }
+      }
     }
 
     // ********************************************************************* //
