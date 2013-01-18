@@ -3,7 +3,7 @@
 #ifndef FHG_PNETE_WEAVER_TV_HPP
 #define FHG_PNETE_WEAVER_TV_HPP
 
-#include <pnete/data/internal.fwd.hpp>
+#include <pnete/data/handle/function.fwd.hpp>
 
 class QStandardItem;
 
@@ -15,7 +15,7 @@ namespace fhg
     {
       namespace treeview
       {
-        void function (QStandardItem*, data::internal_type*);
+        void function (QStandardItem*, const data::handle::function&);
       }
     }
   }

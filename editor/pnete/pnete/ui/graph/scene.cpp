@@ -7,6 +7,7 @@
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
+#include <pnete/ui/editor_window.hpp>
 #include <pnete/ui/graph/base_item.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
@@ -18,11 +19,16 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/util/action.hpp>
 #include <pnete/weaver/display.hpp>
-#include <pnete/weaver/weaver.hpp>
 
 #include <util/graphviz.hpp>
 #include <util/qt/boost_connect.hpp>
 #include <util/qt/cast.hpp>
+#include <util/qt/parent.hpp>
+
+#include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/transition.hpp>
 
 #include <list>
 
@@ -96,7 +102,6 @@ namespace fhg
 
         scene_type::scene_type ( const data::handle::net& net
                                , const data::handle::function& function
-                               , data::internal_type* internal
                                , QObject* parent
                                )
           : QGraphicsScene (parent)
@@ -104,7 +109,6 @@ namespace fhg
           , _mouse_position (QPointF (0.0, 0.0))
           , _net (net)
           , _function (function)
-          , _internal (internal)
           //! \todo Don't default to center of scene, but center of visible scene!
           , _add_transition_action
             ( connect_action ( new QAction (tr ("new_transition"), this)
@@ -332,6 +336,18 @@ namespace fhg
             }
           }
 
+          void dive_into_transition ( const data::handle::transition& handle
+                                    , QWidget* widget
+                                    )
+          {
+            fhg::util::qt::first_parent_being_a<editor_window> (widget)->
+              create_widget ( data::handle::function
+                              ( handle.get().resolved_function()
+                              , handle.document()
+                              )
+                            );
+          }
+
           void nyi (const QString& what)
           {
             qDebug() << "NYI:" << what;
@@ -459,6 +475,15 @@ namespace fhg
                 , SIGNAL (triggered())
                 , item_below_cursor
                 , boost::bind (&data::handle::transition::remove, handle, this)
+                );
+
+              menu->addSeparator();
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu->addAction (tr ("dive_into_transition"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind (dive_into_transition, handle, event->widget())
                 );
             }
             break;
@@ -859,12 +884,9 @@ namespace fhg
 
             foreach (const QString& path, paths)
             {
-              data::internal_type* data
-                (data::manager::instance().load (path));
-
               net().add_transition
                 ( this
-                , data->function().get().clone
+                , data::manager::instance().load (path).get().clone
                   (boost::none, net().id().id_mapper())
                 , event->scenePos()
                 );
@@ -1093,20 +1115,7 @@ namespace fhg
         {
           if (is_in_my_net (transition))
           {
-            transition_item* item (new transition_item (transition));
-            addItem (item);
-
-            weaver::display::transition
-              ( transition.id()
-              , _internal
-              , this
-              , item
-              );
-
-            if (origin == this)
-            {
-              item->repositionChildrenAndResize();
-            }
+            weaver::display::transition (transition, this);
           }
         }
 
@@ -1122,10 +1131,7 @@ namespace fhg
         {
           if (is_in_my_net (place))
           {
-            place_item* item (new place_item (place));
-            addItem (item);
-
-            weaver::display::place (place.id(), item);
+            weaver::display::place (place, this);
           }
         }
 
@@ -1142,11 +1148,7 @@ namespace fhg
         {
           if (is_in_my_net (port))
           {
-            weaver::display::top_level_port
-              ( port.id()
-              , this
-              , _internal
-              );
+            weaver::display::top_level_port (port, this);
           }
         }
 

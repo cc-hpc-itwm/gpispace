@@ -144,6 +144,8 @@ namespace xml
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
 
+        boost::optional<signature::type> signature (const std::string&) const;
+
         const unique_key_type& unique_key() const;
 
         id::ref::transition clone

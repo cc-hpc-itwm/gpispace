@@ -1,17 +1,22 @@
 # -*- mode: cmake; -*-
 
-set(KDE_CTEST_BUILD_SUFFIX "gcc")
+include(Tools.cmake)
+my_ctest_setup()
 include(CTestConfigSDPA.cmake)
 include(SDPAConfig.cmake)
+set(_ctest_type "Nightly")
+# set(_ctest_type "Continuous")
+# set(_ctest_type "Coverage")
 
-set(KDE_CTEST_PARALLEL_LEVEL 8)
-execute_process(COMMAND uname -n OUTPUT_VARIABLE CMAKE_HOST_NAME)
+set(URL "krueger@login.itwm.fhg.de:/p/hpc/sdpa/repo/sdpa.git")
 
-set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/nightly")
-set(CTEST_BASE_DIRECTORY "${KDE_CTEST_DASHBOARD_DIR}/${_projectNameDir}")
-set(CTEST_SOURCE_DIRECTORY "${CTEST_BASE_DIRECTORY}/${_srcDir}" )
+set(CTEST_BASE_DIRECTORY "${KDE_CTEST_DASHBOARD_DIR}/${_projectNameDir}/${_ctest_type}")
+set(CTEST_SOURCE_DIRECTORY "${CTEST_BASE_DIRECTORY}/${_srcDir}-${_git_branch}" )
 set(CTEST_BINARY_DIRECTORY "${CTEST_BASE_DIRECTORY}/${_buildDir}-${CTEST_BUILD_NAME}")
 set(CTEST_INSTALL_DIRECTORY "${CTEST_BASE_DIRECTORY}/install-${CTEST_BUILD_NAME}")
+set(KDE_CTEST_VCS "git")
+set(KDE_CTEST_VCS_REPOSITORY ${URL})
+set(KDE_CTEST_PARALLEL_LEVEL 8)
 
 #if(NOT CTEST_BUILD_NAME)
 #  set(CTEST_BUILD_NAME ${CMAKE_SYSTEM_NAME}-CMake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}${KDE_C)
@@ -21,28 +26,29 @@ set(CMAKE_INSTALL_PREFIX "/usr")
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 #set(CTEST_BUILD_CONFIGURATION "Profiling")
 
-# generic support code, provides the kde_ctest_setup() macro, which sets up everything required:
-get_filename_component(_currentDir "${CMAKE_CURRENT_LIST_FILE}" PATH)
-include( "${_currentDir}/KDECTestNightly.cmake")
+configure_ctest_config(${KDE_CTEST_VCS_REPOSITORY} "CTestConfigSDPA.cmake")
 kde_ctest_setup()
 
-function(create_project_xml)
-  file(WRITE "${CTEST_BINARY_DIRECTORY}/Project.xml" "")
-  foreach(subproject ${CTEST_PROJECT_SUBPROJECTS})
-    file(APPEND "${CTEST_BINARY_DIRECTORY}/Project.xml"
-      "<Project name=\"${subproject}\">
-<SubProject name=\"${subproject}\">
-")
-  endforeach()
-  # ctest_submit(FILES "${CTEST_BINARY_DIRECTORY}/Project.xml") 
-endfunction()
+FindOS(OS_NAME OS_VERSION)
 
 set(ctest_config ${CTEST_BASE_DIRECTORY}/CTestConfig.cmake)
 #######################################################################
-#ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
 
 
-set(URL "krueger@login.itwm.fhg.de:/p/hpc/sdpa/repo/sdpa.git")
+#execute_process(COMMAND uname -n OUTPUT_VARIABLE CMAKE_HOST_NAME)
+
+#set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/nightly")
+
+## generic support code, provides the kde_ctest_setup() macro, which sets up everything required:
+#include(CTestConfigSDPA.cmake)
+
+#set(ctest_config ${CTEST_BASE_DIRECTORY}/CTestConfig.cmake)
+#######################################################################
+foreach(subproject ${CTEST_PROJECT_SUBPROJECTS})
+  ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY}/${subproject})
+endforeach()
+ctest_empty_binary_directory("${CTEST_BINARY_DIRECTORY}")
+
 find_program(CTEST_GIT_COMMAND NAMES git)
 set(CTEST_UPDATE_TYPE git)
 
@@ -54,9 +60,6 @@ endif(NOT EXISTS "${CTEST_SOURCE_DIRECTORY}/.git/HEAD")
 create_project_xml()
 
 configure_file("CTestConfigSDPA.cmake" ${CTEST_BASE_DIRECTORY}/CTestConfig.cmake COPYONLY)
-ctest_empty_binary_directory("${CTEST_BINARY_DIRECTORY}")
-set(_ctest_type "Nightly")
-#set(_ctest_type "Continious")
 ctest_start(${_ctest_type})
 ctest_update(SOURCE "${CTEST_SOURCE_DIRECTORY}")
 ctest_submit(PARTS Update)
@@ -73,15 +76,6 @@ include(${ctest_config})
 set(CMAKE_ADDITIONAL_PATH ${CTEST_INSTALL_DIRECTORY})
 set(CMAKE_BUILD_TYPE Release)
 set(WE_PRECOMPILE Off)
-
-#foreach(subproject ${CTEST_PROJECT_SUBPROJECTS})
-#  set_property(GLOBAL PROPERTY SubProject ${subproject})
-#  set_property (GLOBAL PROPERTY Label ${subproject})
-
-#  #set(CTEST_SOURCE_DIRECTORY "${CTEST_BASE_DIRECTORY}/${_srcDir}/hostsoftware/${subproject}")
-#  #set(CTEST_BINARY_DIRECTORY "${CTEST_BASE_DIRECTORY}/${_buildDir}-${CTEST_BUILD_NAME}/${subproject}")
-#  file(MAKE_DIRECTORY "${CTEST_BINARY_DIRECTORY}/${subproject}")
-#  #ctest_start(${_ctest_type})
 
 kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
         BOOST_ROOT SMC_HOME ENABLE_SDPA_GPI ENABLE_GPI_SPACE
@@ -116,7 +110,7 @@ kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
 
 message("====> ${CTEST_BUILD_FLAGS}")
 set(ENV{MAKELEVEL} "1")
-set(ENV{MAKEFLAGS} "-j8")
+set(ENV{MAKEFLAGS} "-j${KDE_CTEST_PARALLEL_LEVEL}")
 
   set(CTEST_BUILD_TARGET ${subproject})
   ctest_build(BUILD ${CTEST_BINARY_DIRECTORY} 
@@ -126,7 +120,7 @@ set(ENV{MAKEFLAGS} "-j8")
   message("====> BUILD: ${build_res}")
 
   ctest_test(BUILD "${CTEST_BINARY_DIRECTORY}"
-    PARALLEL_LEVEL 8
+    PARALLEL_LEVEL ${KDE_CTEST_PARALLEL_LEVEL}
 #    INCLUDE_LABEL "${subproject}"
   )
 

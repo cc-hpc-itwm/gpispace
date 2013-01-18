@@ -2,17 +2,17 @@
 
 #include <pnete/data/manager.hpp>
 
+#include <pnete/data/handle/function.hpp>
+
 #include <xml/parse/type/function.hpp>
-#include <xml/parse/state.hpp>
 
 #include <fhg/util/xml.hpp>
 
-#include <QString>
 #include <QObject>
-
-#include <stdexcept>
+#include <QString>
 
 #include <fstream>
+#include <stdexcept>
 
 namespace fhg
 {
@@ -31,13 +31,13 @@ namespace fhg
         return _instance;
       }
 
-      internal_type* manager::load (const QString& filename)
+      handle::function manager::load (const QString& filename)
       {
         bimap_type::left_map::iterator pos (_files.left.find (filename));
 
         if (pos != _files.left.end())
         {
-          return pos->second;
+          return handle::function (pos->second->function(), pos->second);
         }
         else
         {
@@ -45,11 +45,11 @@ namespace fhg
 
           _files.insert (bimap_type::value_type (filename, ret));
 
-          return ret;
+          return handle::function (ret->function(), ret);
         }
       }
 
-      internal_type* manager::create (const internal_type::kind& kind)
+      handle::function manager::create (const internal_type::kind& kind)
       {
         const QString filename ( QObject::tr ("unnamed-%1.xml")
                                . arg (++_unnamed_current)
@@ -59,7 +59,7 @@ namespace fhg
 
         _files.insert (bimap_type::value_type (filename, ret));
 
-        return ret;
+        return handle::function (ret->function(), ret);
       }
 
       void manager::save ( internal_type* data

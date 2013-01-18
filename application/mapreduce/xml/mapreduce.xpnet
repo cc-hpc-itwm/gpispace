@@ -643,7 +643,7 @@
              
             char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
             
-		  	if(arr_part_used[part_id]>avail_shmem)
+		  	if( arr_part_used[part_id]>avail_shmem )
 		  	{
 		  		throw std::runtime_error("The amount of shared memory should be larger than the partition used space!" );
 		  	}
@@ -678,7 +678,7 @@
                 {
                     // put it into the right partition
                     int part_id = ::mapreduce::util::hash(key, config.num.part);
-                    //MLOG(INFO,"The pair "<<str_keyval_pair<<", with the key "<<key<<" goes into partition "<<part_id);
+                    // MLOG(INFO,"The pair "<<str_keyval_pair<<", with the key "<<key<<" goes into partition "<<part_id);
                     
                      if( part_id == partition_info.part_id )
                         last_pos = ::mapreduce::util::write_to_buff(str_keyval_pair, ptr_shmem, last_pos, config.size.partition.slot);
@@ -974,27 +974,35 @@
 			      			
 					// read into local_buff from vm the reduce slot reduce_slot.id ((size: pre_reduce_info.red_used)
 		            long reduce_offset = pre_reduce_info.part_id*config.size.reduce.slot;
-		
-		            MLOG(INFO, "Get the content of the reduce slot from VM ...");
+		   			MLOG(INFO, "Get the content of the reduce slot from VM ...");
 		            waitComm ( fvmGetGlobalData
 		            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
-		                                                , reduce_offset
-		                                                , pre_reduce_info.red_used
+		                                                , reduce_offset+pre_reduce_info.old_red_used
+		                                                , pre_reduce_info.red_used - pre_reduce_info.old_red_used
 		                                                , 0
 		                                                , 0
 		                                            )
 		            );
 		            
-		            ptr_shmem[pre_reduce_info.red_used] = 0;
-		          		            
-		            std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem+pre_reduce_info.old_red_used);
-					timestamp_t time_start_sort_part = ::mapreduce::util::get_timestamp();
+		            ptr_shmem[pre_reduce_info.red_used-pre_reduce_info.old_red_used] = 0;
+		            std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
+		            
+					/*timestamp_t time_start_sort_part = ::mapreduce::util::get_timestamp();
 					sort(arr_part_items.begin(), arr_part_items.end()); 
 					timestamp_t time_end_sort_part = ::mapreduce::util::get_timestamp();
-					MLOG(INFO, "Sorting the partition vector took "<<(time_end_sort_part - time_start_sort_part)/MS<<"ms");    
+					MLOG(INFO, "Sorting the partition vector took "<<(time_end_sort_part - time_start_sort_part)/MS<<"ms");  */
+					
+					std::vector<std::string>::iterator iter_middle( arr_part_items.begin() ); 
+	                std::advance(iter_middle, arr_part_items.size()/2);
+	                boost::thread thread0( boost::bind( &::mapreduce::util::my_sort, arr_part_items.begin(), iter_middle) );
+	                boost::thread thread1( boost::bind( &::mapreduce::util::my_sort, iter_middle, arr_part_items.end()) );  
 		             
 		            if( pre_reduce_info.old_red_used == 0 )
 					{
+					 	thread0.join();
+						thread1.join();
+						std::inplace_merge( arr_part_items.begin(), iter_middle, arr_part_items.end());
+						
 			            MLOG(INFO, "Effectively call reduce on the resulted sorted array ...");
 						timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
 	                	::mapreduce::util::reduce_arr_buff(pre_reduce_info.part_id, config.size.reduce.slot, arr_part_items, ptr_shmem, last_pos );
@@ -1003,23 +1011,35 @@
 		            }
 		            else // pre_reduce_info.old_red_used > 0
 		            {						
-						ptr_shmem[pre_reduce_info.old_red_used] = 0;
-						
+		            	bzero(ptr_shmem, pre_reduce_info.red_used);
+						MLOG(INFO, "Get the content of the reduce slot from VM ...");
+			            waitComm ( fvmGetGlobalData
+			            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
+			                                                , reduce_offset
+			                                                , pre_reduce_info.old_red_used
+			                                                , 0
+			                                                , 0
+			                                            )
+			            );
+			            
+			            //ptr_shmem[pre_reduce_info.old_red_used] = 0;
+			            
 						// these items are supposed to be already sorted!
 						std::vector<std::string> arr_old_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
 						
-						// call here combine
-						timestamp_t time_start_combine = ::mapreduce::util::get_timestamp();
-						std::vector<std::string> arr_part_items_items_sorted;
-						::mapreduce::util::combine(arr_part_items, arr_part_items_items_sorted);
-						timestamp_t time_end_combine = ::mapreduce::util::get_timestamp();
-	                	MLOG(INFO, "Combine took "<<(time_end_combine - time_start_combine)/MS<<"ms");     
-	                	
-	                	timestamp_t time_start_merge = ::mapreduce::util::get_timestamp();
-						::mapreduce::util::merge_and_reduce_arr_buff( pre_reduce_info.part_id, config.size.reduce.slot, arr_old_red_items, 
-						                                              arr_part_items_items_sorted, ptr_shmem, last_pos );	
-						timestamp_t time_end_merge = ::mapreduce::util::get_timestamp();
-	                	MLOG(INFO, "merge_and_reduce took "<<(time_end_merge - time_start_merge)/MS<<"ms");                	
+						thread0.join();
+						thread1.join();
+						std::inplace_merge( arr_part_items.begin(), iter_middle, arr_part_items.end());
+
+	                	std::vector<std::string> arr_items(arr_old_red_items.size() + arr_part_items.size()); 
+	                	timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
+                    	std::merge( arr_old_red_items.begin(), arr_old_red_items.end(), arr_part_items.begin(), arr_part_items.end(), arr_items.begin() );   
+                    	
+	                	::mapreduce::util::reduce_arr_buff(pre_reduce_info.part_id, config.size.reduce.slot, arr_items, ptr_shmem, last_pos );
+		                	                		                	
+	                	timestamp_t time_end_red_arr = ::mapreduce::util::get_timestamp();
+	                	MLOG(INFO, "merge and reduce took "<<(time_end_red_arr - time_start_red_arr)/MS<<"ms"); 
+						
 		            }
 																						
 					if(last_pos>config.size.reduce.slot)

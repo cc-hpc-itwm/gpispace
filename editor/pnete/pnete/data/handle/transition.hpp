@@ -5,7 +5,6 @@
 
 #include <pnete/data/handle/transition.fwd.hpp>
 
-#include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 
@@ -29,9 +28,7 @@ namespace fhg
         class transition : public transition_meta_base
         {
         public:
-          transition ( const transition_meta_base::id_type& id
-                     , change_manager_t& change_manager
-                     );
+          transition (const transition_meta_base::id_type&, internal_type*);
 
           void remove (const QObject* sender) const;
 

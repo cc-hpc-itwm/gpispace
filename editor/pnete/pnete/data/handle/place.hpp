@@ -5,7 +5,6 @@
 
 #include <pnete/data/handle/place.fwd.hpp>
 
-#include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 
@@ -29,9 +28,7 @@ namespace fhg
         class place : public place_meta_base
         {
         public:
-          place ( const place_meta_base::id_type& id
-                , change_manager_t& change_manager
-                );
+          place (const place_meta_base::id_type&, internal_type*);
 
           void remove (const QObject* sender) const;
 

@@ -215,7 +215,6 @@ namespace xml
                              , const std::string& type
                              , const std::list<token_type>& tokens
                              , const values_type& values
-                             , const signature::type& sig
                              , const we::type::property::type& properties
                              )
         : ID_INITIALIZE()
@@ -225,7 +224,6 @@ namespace xml
         , type (type)
         , tokens (tokens)
         , values (values)
-        , sig (sig)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
@@ -250,6 +248,41 @@ namespace xml
         return name_impl (name);
       }
 
+      boost::optional<signature::type> place_type::signature() const
+      {
+        if (literal::valid_name (type_GET()))
+        {
+          return signature::type (type_GET());
+        }
+
+        if (not parent())
+        {
+          return boost::none;
+        }
+
+        return parent()->signature (type_GET());
+      }
+      signature::type place_type::signature_or_throw() const
+      {
+        const boost::optional<signature::type> s (signature());
+
+        if (not s)
+        {
+          throw error::place_type_unknown ( name()
+                                          , type_GET()
+                                          //! \todo own LOCATION
+                                          , parent()->path()
+                                          );
+        }
+
+        return *s;
+      }
+
+      const std::string& place_type::type_GET() const
+      {
+        return /*! \todo _*/type;
+      }
+
       void place_type::push_token (const token_type & t)
       {
         tokens.push_back (t);
@@ -263,7 +296,7 @@ namespace xml
         {
           values.push_back
             (boost::apply_visitor ( construct_value (name(), path, "", state)
-                                  , sig.desc()
+                                  , signature_or_throw().desc()
                                   , token
                                   )
             );
@@ -322,7 +355,6 @@ namespace xml
           , type
           , tokens
           , values
-          , sig
           , _properties
           ).make_reference_id();
       }

@@ -5,7 +5,6 @@
 
 #include <pnete/data/handle/port.fwd.hpp>
 
-#include <pnete/data/change_manager.fwd.hpp>
 #include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/function.fwd.hpp>
 
@@ -29,9 +28,7 @@ namespace fhg
         class port : public port_meta_base
         {
         public:
-          port ( const port_meta_base::id_type& id
-               , change_manager_t& change_manager
-               );
+          port (const port_meta_base::id_type&, internal_type*);
 
           void remove (const QObject* sender) const;
 

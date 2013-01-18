@@ -55,12 +55,14 @@ namespace xml
                    , const std::string& type
                    , const std::list<token_type>& tokens
                    , const values_type& values
-                   , const signature::type& sig
                    , const we::type::property::type& properties
                    );
 
         const std::string& name() const;
         const std::string& name (const std::string& name);
+
+        boost::optional<signature::type> signature() const;
+        signature::type signature_or_throw() const;
 
       private:
         friend struct net_type;
@@ -100,7 +102,8 @@ namespace xml
         std::string type;
         std::list<token_type> tokens;
         values_type values;
-        signature::type sig;
+
+        const std::string& type_GET() const;
 
       private:
         we::type::property::type _properties;

@@ -63,13 +63,8 @@ namespace fhg
         splitter->addWidget (_port_lists);
         splitter->addWidget (exp_splitter);
 
-        QGroupBox* group_box (new QGroupBox (tr ("expression")));
-        QHBoxLayout* group_box_layout (new QHBoxLayout());
-        group_box->setLayout (group_box_layout);
-        group_box_layout->addWidget (splitter);
-
         QHBoxLayout* hbox (new QHBoxLayout ());
-        hbox->addWidget (group_box);
+        hbox->addWidget (splitter);
         setLayout (hbox);
 
         _function.connect_to_change_mgr

@@ -55,6 +55,9 @@ namespace xml
         const std::string& name() const;
         const std::string& name (const std::string& name);
 
+        boost::optional<signature::type> signature() const;
+        signature::type signature_or_throw() const;
+
         const we::type::PortDirection& direction() const;
         const we::type::PortDirection& direction (const we::type::PortDirection&);
 
@@ -84,6 +87,8 @@ namespace xml
       public:
         std::string type;
         boost::optional<std::string> place;
+
+        const std::string& type_GET() const;
 
       private:
         we::type::PortDirection _direction;

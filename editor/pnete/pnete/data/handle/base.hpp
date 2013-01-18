@@ -6,6 +6,7 @@
 #include <pnete/data/handle/base.fwd.hpp>
 
 #include <pnete/data/change_manager.fwd.hpp>
+#include <pnete/data/internal.fwd.hpp>
 
 #include <we/type/property.fwd.hpp>
 
@@ -23,7 +24,7 @@ namespace fhg
         class base
         {
         public:
-          base (change_manager_t& change_manager );
+          base (internal_type* document);
           virtual ~base() { }
 
           virtual void set_property ( const QObject* sender
@@ -51,9 +52,10 @@ namespace fhg
                                      ) const;
 
           change_manager_t& change_manager() const;
+          internal_type* document() const;
 
         private:
-          change_manager_t& _change_manager;
+          internal_type* _document;
         };
       }
     }

@@ -11,10 +11,6 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace data
-    {
-      class internal_type;
-    }
     namespace ui
     {
       class TransitionLibraryItem : public QObject

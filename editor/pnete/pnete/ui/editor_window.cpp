@@ -2,6 +2,9 @@
 
 #include <pnete/ui/editor_window.hpp>
 
+#include <pnete/data/handle/expression.hpp>
+#include <pnete/data/handle/module.hpp>
+#include <pnete/data/handle/net.hpp>
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
 #include <pnete/ui/StructureView.hpp>
@@ -10,8 +13,8 @@
 #include <pnete/ui/document_view.hpp>
 #include <pnete/ui/expression_widget.hpp>
 #include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/graph_view.hpp>
 #include <pnete/ui/module_call_widget.hpp>
+#include <pnete/ui/net_widget.hpp>
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
 
@@ -110,19 +113,19 @@ namespace fhg
       void editor_window::slot_new_expression()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal_type::expression)
+                       . create (data::internal_type::expression)
                        );
       }
       void editor_window::slot_new_module_call()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal_type::module_call)
+                       . create (data::internal_type::module_call)
                        );
       }
       void editor_window::slot_new_net()
       {
         create_windows ( data::manager::instance()
-                       . create(data::internal_type::net)
+                       . create (data::internal_type::net)
                        );
       }
 
@@ -165,7 +168,7 @@ namespace fhg
         }
 
         data::manager::instance().save
-          (data::proxy::root (_accessed_widgets.top()->proxy()), filename);
+          (_accessed_widgets.top()->function().document(), filename);
       }
 
       void editor_window::close_document()
@@ -182,68 +185,65 @@ namespace fhg
 
       namespace
       {
-        using namespace data::proxy;
-
-        class document_view_for_proxy
+        class document_view_for_handle
           : public boost::static_visitor<document_view*>
         {
         private:
-          type& _proxy;
+          const data::handle::function& _function;
 
         public:
-          document_view_for_proxy (type& proxy)
-            : _proxy (proxy)
+          document_view_for_handle (const data::handle::function& function)
+            : _function (function)
           { }
 
-          document_view* operator() (expression_proxy& proxy) const
+          document_view* operator() (const data::handle::expression& expr) const
           {
             return new document_view
-              ( data::proxy::function (_proxy)
-              , _proxy
+              ( _function
               , QObject::tr ("<<anonymous expression>>")
-              , new expression_widget
-                ( data::handle::expression ( proxy.data()
-                                           , root (_proxy)->change_manager()
-                                           )
-                , data::proxy::function (_proxy)
-                )
+              , new expression_widget (expr, _function)
               );
           }
 
-          document_view* operator() (mod_proxy& proxy) const
+          document_view* operator() (const data::handle::module& module) const
           {
             return new document_view
-              ( data::proxy::function (_proxy)
-              , _proxy
+              ( _function
               , QObject::tr ("<<anonymous module call>>")
-              , new module_call_widget ( proxy.data()
-                                       , data::proxy::function (_proxy)
-                                       )
+              , new module_call_widget (module, _function)
               );
           }
 
-          document_view* operator() (net_proxy& proxy) const
+          document_view* operator() (const data::handle::net& net) const
           {
             return new document_view
-              ( data::proxy::function (_proxy)
-              , _proxy
+              ( _function
               , QObject::tr ("<<anonymous net>>")
-              , new graph_view (proxy.display())
+              , new net_widget (net, _function)
               );
           }
         };
 
-        document_view* document_view_factory (type& proxy)
+        document_view* document_view_factory
+          (const data::handle::function& function)
         {
-          return boost::apply_visitor (document_view_for_proxy (proxy), proxy);
+          //! \todo Why is putting a temporary into apply_visitor impossible?!
+          const boost::variant < data::handle::expression
+                               , data::handle::module
+                               , data::handle::net
+                               > content (function.content_handle());
+          return boost::apply_visitor
+            (document_view_for_handle (function), content);
         }
       }
 
-      void editor_window::create_widget (data::proxy::type& proxy)
+      void editor_window::create_widget
+        (const data::handle::function& function)
       {
-        _undo_group->addStack (&data::proxy::root (proxy)->change_manager());
+        _undo_group->addStack (&function.document()->change_manager());
 
-        document_view* doc_view (document_view_factory (proxy));
+        document_view* doc_view (document_view_factory (function));
+
         if (!_accessed_widgets.empty())
         {
           tabifyDockWidget (_accessed_widgets.top(), doc_view);
@@ -266,17 +266,17 @@ namespace fhg
         _action_execute_current_file_locally_from_file->setEnabled (true);
       }
 
-      void editor_window::create_windows (data::internal_type* data)
+      void editor_window::create_windows (const data::handle::function& function)
       {
-        create_widget (data->root_proxy());
-        _structure_view->append (data);
+        create_widget (function);
+        _structure_view->append (function);
       }
 
       void editor_window::duplicate_active_widget()
       {
         if (!_accessed_widgets.empty())
         {
-          create_widget (_accessed_widgets.top()->proxy());
+          create_widget (_accessed_widgets.top()->function());
         }
       }
 
@@ -627,9 +627,7 @@ namespace fhg
           //! \todo Add include and link paths
 
           const xml::parse::id::ref::function function
-            ( data::proxy::function (accessed_widgets.top()->proxy())
-            .get().clone()
-            );
+            (accessed_widgets.top()->function().get().clone());
           xml::parse::post_processing_passes (function, &state);
 
           xml::parse::generate_cpp (function, state);

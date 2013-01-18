@@ -3,14 +3,9 @@
 #include <pnete/ui/StructureView.hpp>
 
 #include <pnete/weaver/tv.hpp>
-#include <pnete/weaver/weaver.hpp>
 
-#include <QStandardItemModel>
 #include <QHeaderView>
-
-#include <pnete/data/internal.hpp>
-
-#include <QDebug>
+#include <QStandardItemModel>
 
 namespace fhg
 {
@@ -36,11 +31,11 @@ namespace fhg
                 );
       }
 
-      void StructureView::append (data::internal_type* data)
+      void StructureView::append (const data::handle::function& function)
       {
-        _datas.push_back (data);
+        _functions.push_back (function);
 
-        weaver::treeview::function (_root, data);
+        weaver::treeview::function (_root, function);
       }
 
       void StructureView::doubleClicked (const QModelIndex& index)
@@ -53,7 +48,7 @@ namespace fhg
 
         const int row (item->row());
 
-        weaver::treeview::function (_root, _datas.at (row));
+        weaver::treeview::function (_root, _functions.at (row));
 
         _model->setItem (row, _model->takeItem (_model->rowCount() - 1));
         _model->setRowCount (_model->rowCount() - 1);
@@ -63,7 +58,7 @@ namespace fhg
       {
         setModel (_model = new QStandardItemModel (this));
         _root = _model->invisibleRootItem();
-        _datas.clear();
+        _functions.clear();
       }
     }
   }
