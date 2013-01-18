@@ -93,7 +93,6 @@ namespace xml
                       , const conditions_type&
                       , const requirements_type& requirements
                       , const content_type& content
-                      , const xml::parse::structure_type::set_type& resolved
                       , const we::type::property::type& properties
                       , const boost::filesystem::path& path
                       );
@@ -180,20 +179,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        void resolve ( const state::type & state
-                     , const xml::parse::structure_type::forbidden_type & forbidden
-                     );
-        void resolve
-          ( const xml::parse::structure_type::set_type & global
-          , const state::type & state
-          , const xml::parse::structure_type::forbidden_type & forbidden
-          );
-
-        // ***************************************************************** //
-
-        signature::type type_of_port ( const we::type::PortDirection & dir
-                                     , const port_type & port
-                                     ) const;
+        boost::optional<signature::type> signature (const std::string&) const;
 
         // ***************************************************************** //
 
@@ -258,15 +244,12 @@ namespace xml
 
       private:
         content_type _content;
-
-      public:
-        xml::parse::structure_type::set_type structs_resolved;
-
-      private:
         we::type::property::type _properties;
 
       public:
         boost::filesystem::path path;
+
+        const boost::filesystem::path& path_GET() const;
       };
 
       // ***************************************************************** //

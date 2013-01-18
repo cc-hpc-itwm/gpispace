@@ -113,7 +113,6 @@ namespace xml
         , const conditions_type& conditions
         , const requirements_type& requirements
         , const content_type& content
-        , const xml::parse::structure_type::set_type& structs_resolved
         , const we::type::property::type& properties
         , const boost::filesystem::path& path
         )
@@ -128,7 +127,6 @@ namespace xml
         , _conditions (conditions)
         , requirements (requirements)
         , _content (reparent (content, _id))
-        , structs_resolved (structs_resolved)
         , _properties (properties)
         , path (path)
       {
@@ -147,6 +145,11 @@ namespace xml
         function_type::content (const content_type& content_)
       {
         return _content = reparent (content_, id());
+      }
+
+      const boost::filesystem::path& function_type::path_GET() const
+      {
+        return /*! \todo _*/path;
       }
 
       // ******************************************************************* //
@@ -517,96 +520,42 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::resolve ( const state::type & state
-                                  , const xml::parse::structure_type::forbidden_type & forbidden
-                                  )
+      boost::optional<signature::type>
+      function_type::signature (const std::string& type) const
       {
-        const xml::parse::structure_type::set_type empty;
+        const structs_type::const_iterator pos
+          ( std::find_if ( structs.begin()
+                         , structs.end()
+                         , boost::bind ( parse::structure_type::struct_by_name
+                                       , type
+                                       , _1
+                                       )
+                         )
+          );
 
-        resolve (empty, state, forbidden);
-      }
-
-      namespace
-      {
-        class function_resolve : public boost::static_visitor<void>
+        if (pos != structs.end())
         {
-        private:
-          const xml::parse::structure_type::set_type global;
-          const state::type & state;
-          const xml::parse::structure_type::forbidden_type & forbidden;
-
-        public:
-          function_resolve
-            ( const xml::parse::structure_type::set_type & _global
-            , const state::type & _state
-            , const xml::parse::structure_type::forbidden_type & _forbidden
-            )
-              : global (_global)
-              , state (_state)
-              , forbidden (_forbidden)
-          {}
-
-          void operator () (id::ref::expression &) const { return; }
-          void operator () (id::ref::module &) const { return; }
-          void operator () (id::ref::net & id) const
-          {
-            id.get_ref().resolve (global, state, forbidden);
-          }
-        };
-      }
-
-      void function_type::resolve
-        ( const xml::parse::structure_type::set_type & global
-        , const state::type & state
-        , const xml::parse::structure_type::forbidden_type & forbidden
-        )
-      {
-        namespace st = xml::parse::structure_type;
-
-        structs_resolved =
-          st::join (global, st::make (structs), forbidden, state);
-
-        for ( st::set_type::iterator pos (structs_resolved.begin())
-            ; pos != structs_resolved.end()
-            ; ++pos
-            )
-        {
-          boost::apply_visitor
-            ( st::resolve (structs_resolved, pos->second.path())
-            , pos->second.signature()
+          return signature::type
+            ( parse::structure_type::resolve_with_fun
+              (*pos, boost::bind (&function_type::signature, *this, _1))
+            , pos->name()
             );
         }
 
-        boost::apply_visitor
-          (function_resolve ( structs_resolved
-                            , state
-                            , forbidden_below()
-                            )
-          , content()
-          );
-      }
-
-      // ***************************************************************** //
-
-      signature::type function_type::type_of_port ( const we::type::PortDirection & dir
-                                                  , const port_type & port
-                                                  ) const
-      {
-        if (literal::valid_name (port.type))
+        if (parent_transition())
         {
-          return signature::type (port.type);
+          return parent_transition()->get().signature (type);
+        }
+        else if (parent_tmpl())
+        {
+          return parent_tmpl()->get().signature (type);
+        }
+        else if (parent_net())
+        {
+          return parent_net()->get().signature (type);
         }
 
-        xml::parse::structure_type::set_type::const_iterator sig
-          (structs_resolved.find (port.type));
-
-        if (sig == structs_resolved.end())
-        {
-          throw error::port_with_unknown_type
-            (dir, port.name(), port.type, path);
-        }
-
-        return signature::type (sig->second.signature(), sig->second.name());
+        return boost::none;
       }
 
       // ***************************************************************** //
@@ -710,11 +659,8 @@ namespace xml
         {
           BOOST_FOREACH (const port_type& port, ports.values())
             {
-              const signature::type type
-                (fun.type_of_port (port.direction(), port));
-
               trans.add_port ( port.name()
-                             , type
+                             , port.signature_or_throw()
                              , port.direction()
                              , port.properties()
                              );
@@ -738,13 +684,10 @@ namespace xml
         {
           BOOST_FOREACH (const port_type& port, ports.values())
             {
-              const signature::type type
-                (fun.type_of_port (port.direction(), port));
-
               if (not port.place)
                 {
                   trans.add_port ( port.name()
-                                 , type
+                                 , port.signature_or_throw()
                                  , port.direction()
                                  , port.properties()
                                  );
@@ -756,7 +699,7 @@ namespace xml
                   // connect to
 
                   trans.add_port ( port.name()
-                                 , type
+                                 , port.signature_or_throw()
                                  , port.direction()
                                  , get_pid (pid_of_place, *port.place)
                                  , port.properties()
@@ -1054,7 +997,6 @@ namespace xml
           , _conditions
           , requirements
           , boost::apply_visitor (visitor_clone (new_id, new_mapper), content())
-          , structs_resolved
           , _properties
           , path
           ).make_reference_id();

@@ -88,6 +88,16 @@ namespace xml
         return boost::none;
       }
 
+      boost::optional<signature::type>
+      tmpl_type::signature (const std::string& type) const
+      {
+        if (has_parent())
+        {
+          return parent()->signature (type);
+        }
+        return boost::none;
+      }
+
       const tmpl_type::unique_key_type& tmpl_type::unique_key() const
       {
         //! \note Anonymous templates can't be stored in unique, thus

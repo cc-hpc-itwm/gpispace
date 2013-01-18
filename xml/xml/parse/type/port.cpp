@@ -4,6 +4,7 @@
 
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/error.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 
@@ -51,6 +52,42 @@ namespace xml
         }
 
         return name_impl (name);
+      }
+
+      const std::string& port_type::type_GET() const
+      {
+        return /*! \todo _*/type;
+      }
+
+      boost::optional<signature::type> port_type::signature() const
+      {
+        if (literal::valid_name (type_GET()))
+        {
+          return signature::type (type_GET());
+        }
+
+        if (not parent())
+        {
+          return boost::none;
+        }
+
+        return parent()->signature (type_GET());
+      }
+      signature::type port_type::signature_or_throw() const
+      {
+        const boost::optional<signature::type> s (signature());
+
+        if (not s)
+        {
+          throw error::port_with_unknown_type ( direction()
+                                              , name()
+                                              , type_GET()
+                                              //! \todo own LOCATION
+                                              , parent()->path_GET()
+                                              );
+        }
+
+        return *s;
       }
 
       void port_type::specialize ( const type::type_map_type & map_in
