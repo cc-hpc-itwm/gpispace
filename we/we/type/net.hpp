@@ -67,8 +67,6 @@ namespace petri_net
     typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
     typedef enabled_choice_t::iterator choice_iterator_t;
 
-    typedef boost::unordered_map<transition_id_type,tokens_by_place_id_t> in_map_t;
-
     // ********************************************************************* //
 
     place_id_type _place_id;
@@ -86,8 +84,6 @@ namespace petri_net
     enabled_choice_t _enabled_choice_consume;
     enabled_choice_t _enabled_choice_read;
 
-    in_map_t _in_map;
-
     // ********************************************************************* //
 
     friend class boost::serialization::access;
@@ -104,25 +100,31 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP(_enabled);
       ar & BOOST_SERIALIZATION_NVP(_enabled_choice_consume);
       ar & BOOST_SERIALIZATION_NVP(_enabled_choice_read);
-      ar & BOOST_SERIALIZATION_NVP(_in_map);
     }
 
     // ********************************************************************* //
 
-    void update_set_of_tid_in ( const transition_id_type& tid
-                              , const tokens_by_place_id_t& tokens_by_place_id
-                              )
+    void update_enabled (const transition_id_type& tid)
     {
+      tokens_by_place_id_t tokens_by_place_id;
+
+      BOOST_FOREACH ( const place_id_type& place_id
+                    , in_to_transition (tid) | boost::adaptors::map_keys
+                    )
+      {
+        if (_token_place_rel[place_id].size() > 0)
+        {
+          tokens_by_place_id[place_id] = _token_place_rel[place_id];
+        }
+      }
+
       if (tokens_by_place_id.size() != in_to_transition (tid).size())
         {
           _enabled.erase (tid);
         }
       else
         {
-          cross::cross<tokens_by_place_id_t> cs (_in_map.at (tid));
-
-          // call the global condition function here, that sets the
-          // cross product either to the end or to some valid choice
+          cross::cross<tokens_by_place_id_t> cs (tokens_by_place_id);
 
           if (not get_transition (tid).condition()(cs))
             {
@@ -151,24 +153,6 @@ namespace petri_net
                 }
             }
         }
-    }
-
-    void recalculate_enabled ( const transition_id_type& tid
-                             , const place_id_type& pid
-                             )
-    {
-      tokens_by_place_id_t& tokens_by_place_id (_in_map[tid]);
-
-      if (has_token (pid))
-        {
-          tokens_by_place_id[pid] = get_token (pid);
-        }
-      else
-        {
-          tokens_by_place_id.erase (pid);
-        }
-
-      update_set_of_tid_in (tid, tokens_by_place_id);
     }
 
     // ********************************************************************* //
@@ -223,20 +207,7 @@ namespace petri_net
 
       _tmap.insert (tmap_type::value_type (tid, transition));
 
-      tokens_by_place_id_t& tokens_by_place_id (_in_map[tid]);
-
-      BOOST_FOREACH ( const place_id_type& place_id
-                    , in_to_transition (tid) | boost::adaptors::map_keys
-                    )
-        {
-          if (has_token (place_id))
-            {
-              tokens_by_place_id.insert
-                (tokens_by_place_id_t::value_type (place_id, get_token (place_id)));
-            }
-        }
-
-      update_set_of_tid_in (tid, tokens_by_place_id);
+      update_enabled (tid);
 
       return tid;
     }
@@ -262,7 +233,7 @@ namespace petri_net
 
       if (edge::is_PT (connection.type))
         {
-          recalculate_enabled (connection.tid, connection.pid);
+          update_enabled (connection.tid);
         }
     }
 
@@ -348,11 +319,7 @@ namespace petri_net
     {
       _adj_pt.clear_adjacent (pid, tid);
 
-      tokens_by_place_id_t& tokens_by_place_id (_in_map[tid]);
-
-      tokens_by_place_id.erase (pid);
-
-      update_set_of_tid_in (tid, tokens_by_place_id);
+      update_enabled (tid);
     }
 
     void delete_place (const place_id_type& pid)
@@ -428,7 +395,6 @@ namespace petri_net
 
       _enabled.erase (tid);
       _enabled.erase_priority (tid);
-      _in_map.erase (tid);
       _enabled_choice_consume.erase (tid);
       _enabled_choice_read.erase (tid);
     }
@@ -459,11 +425,7 @@ namespace petri_net
                     , out_of_place (pid) | boost::adaptors::map_keys
                     )
         {
-          tokens_by_place_id_t& tokens_by_place_id (_in_map[tid]);
-
-          tokens_by_place_id[pid].push_back (token);
-
-          update_set_of_tid_in (tid, tokens_by_place_id);
+          update_enabled (tid);
         }
     }
 
@@ -487,7 +449,7 @@ namespace petri_net
                     , out_of_place (pid) | boost::adaptors::map_keys
                     )
       {
-        recalculate_enabled (tid, pid);
+        update_enabled (tid);
       }
     }
 
@@ -511,6 +473,15 @@ namespace petri_net
     };
 
   private:
+    class token_eq
+    {
+    private:
+      const token::type& _token;
+    public:
+      token_eq (const token::type& token) : _token (token) {}
+      bool operator() (const token::type& other) { return other == _token; }
+    };
+
     activity_t extract_activity (const transition_id_type tid)
     {
       input_t input;
@@ -539,30 +510,18 @@ namespace petri_net
 
           assert (not is_read_connection (tid, pid));
 
+          tokens_type& tokens (_token_place_rel[pid]);
+          tokens.erase (find_if ( tokens.begin()
+                                , tokens.end()
+                                , token_eq (token)
+                                )
+                       );
+
           BOOST_FOREACH ( const transition_id_type& t
                         , out_of_place (pid) | boost::adaptors::map_keys
                         )
             {
-              tokens_by_place_id_t& tokens_by_place_id (_in_map[t]);
-              tokens_type& tokens (tokens_by_place_id[pid]);
-              tokens_type::iterator it (tokens.begin());
-
-              while (it != tokens.end() && *it != token)
-                {
-                  ++it;
-                }
-
-              if (it != tokens.end())
-                {
-                  tokens.erase (it);
-                }
-
-              if (tokens.empty())
-                {
-                  tokens_by_place_id.erase (pid);
-                }
-
-              update_set_of_tid_in (t, tokens_by_place_id);
+              update_enabled (t);
             }
         }
 
