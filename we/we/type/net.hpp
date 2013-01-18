@@ -15,6 +15,8 @@
 
 #include <we/type/transition.hpp>
 
+#include <we/mgmt/type/activity.hpp>
+
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -22,21 +24,6 @@
 
 namespace petri_net
 {
-  typedef std::pair<token::type, place_id_type> token_input_t;
-  typedef std::vector<token_input_t> input_t;
-
-  struct activity_t
-  {
-  public:
-    const transition_id_type tid;
-    const input_t input;
-
-    activity_t (const transition_id_type _tid, const input_t& _input)
-      : tid (_tid)
-      , input (_input)
-    {}
-  };
-
   class net
   {
   public:
@@ -99,7 +86,7 @@ namespace petri_net
     bool can_fire() const;
 
     template<typename Engine>
-    activity_t extract_activity_random (Engine& engine)
+    we::mgmt::type::activity_t extract_activity_random (Engine& engine)
     {
       return extract_activity (_enabled.random (engine));
     }
@@ -144,7 +131,7 @@ namespace petri_net
     }
 
     void update_enabled (const transition_id_type&);
-    activity_t extract_activity (const transition_id_type&);
+    we::mgmt::type::activity_t extract_activity (const transition_id_type&);
   };
 }
 

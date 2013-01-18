@@ -382,9 +382,11 @@ namespace petri_net
     }
   }
 
-  activity_t net::extract_activity (const transition_id_type& tid)
+  we::mgmt::type::activity_t
+  net::extract_activity (const transition_id_type& tid)
   {
-    input_t input;
+    const we::type::transition_t& transition (get_transition (tid));
+    we::mgmt::type::activity_t act (transition);
 
     const choice_iterator_t choice_consume (_enabled_choice_consume.find(tid));
     const choice_iterator_t choice_read (_enabled_choice_read.find(tid));
@@ -405,7 +407,7 @@ namespace petri_net
       const place_id_type& pid (choice->first);
       const token::type& token (choice->second);
 
-      input.push_back (token_input_t (token, pid));
+      act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
 
       assert (not is_read_connection (tid, pid));
 
@@ -430,9 +432,9 @@ namespace petri_net
 
       assert (is_read_connection (tid, pid));
 
-      input.push_back (token_input_t (token, pid));
+      act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
     }
 
-    return activity_t (tid, input);
+    return act;
   }
 } // namespace petri_net
