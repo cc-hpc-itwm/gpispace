@@ -37,10 +37,8 @@ namespace petri_net
   class net
   {
   public:
-    typedef boost::unordered_map<place_id_type,place::type> pmap_type;
-
     typedef boost::unordered_map< transition_id_type
-                                , we::type::transition
+                                , we::type::transition_t
                                 > tmap_type;
 
     typedef std::vector<token::type> tokens_type;
@@ -63,7 +61,7 @@ namespace petri_net
     // ********************************************************************* //
 
     place_id_type _place_id;
-    pmap_type _pmap;
+    boost::unordered_map<place_id_type,place::type> _pmap;
 
     transition_id_type _transition_id;
     tmap_type _tmap;
@@ -150,37 +148,41 @@ namespace petri_net
 
     // ********************************************************************* //
 
-  public:
-    const place::type& get_place (const place_id_type& pid) const
+    template<class MAP>
+    const typename MAP::mapped_type& get ( const MAP& m
+                                         , const typename MAP::key_type& key
+                                         , const std::string& msg
+                                         ) const
     {
-      const pmap_type::const_iterator pos (_pmap.find (pid));
+      const typename MAP::const_iterator pos (m.find (key));
 
-      if (pos == _pmap.end())
+      if (pos == m.end())
         {
-          throw we::container::exception::no_such ("get_place");
+          throw we::container::exception::no_such (msg);
         }
 
       return pos->second;
     }
 
-    const we::type::transition&
+    // ********************************************************************* //
+
+  public:
+    const place::type& get_place (const place_id_type& pid) const
+    {
+      return get (_pmap, pid, "get_place");
+    }
+
+    const we::type::transition_t&
     get_transition (const transition_id_type& tid) const
     {
-      const tmap_type::const_iterator pos (_tmap.find (tid));
-
-      if (pos == _tmap.end())
-        {
-          throw we::container::exception::no_such ("get_transition");
-        }
-
-      return pos->second;
+      return get (_tmap, tid, "get_transition");
     }
 
     place_id_type add_place (const place::type& place)
     {
       const place_id_type pid (_place_id++);
 
-      _pmap.insert (pmap_type::value_type (pid, place));
+      _pmap.insert (std::make_pair (pid, place));
 
       return pid;
     }
@@ -195,7 +197,7 @@ namespace petri_net
       return _enabled.get_priority (tid);
     }
 
-    transition_id_type add_transition (const we::type::transition& transition)
+    transition_id_type add_transition (const we::type::transition_t& transition)
     {
       const transition_id_type tid (_transition_id++);
 
@@ -236,7 +238,7 @@ namespace petri_net
       return _pmap;
     }
 
-    const boost::unordered_map<transition_id_type,we::type::transition>&
+    const boost::unordered_map<transition_id_type,we::type::transition_t>&
     transitions () const
     {
       return _tmap;
@@ -404,7 +406,7 @@ namespace petri_net
 
     transition_id_type
     modify_transition ( const transition_id_type& tid
-                      , const we::type::transition& transition
+                      , const we::type::transition_t& transition
                       )
     {
       _tmap[tid] = transition;
