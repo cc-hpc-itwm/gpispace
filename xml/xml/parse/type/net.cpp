@@ -2,11 +2,14 @@
 
 #include <xml/parse/type/net.hpp>
 
+#include <xml/parse/error.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/id/mapper.hpp>
+#include <xml/parse/util/weparse.hpp>
 
-#include <we/type/place.hpp>
+#include <we/type/literal/default.hpp>
 #include <we/type/net.fwd.hpp>
+#include <we/type/place.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
 
@@ -670,6 +673,173 @@ namespace xml
 
       // ******************************************************************* //
 
+      namespace
+      {
+        class default_construct_value : public boost::static_visitor<value::type>
+        {
+        public:
+          value::type
+          operator () (const literal::type_name_t & type_name) const
+          {
+            return literal::of_type (type_name);
+          }
+
+          value::type
+          operator () (const signature::structured_t & signature) const
+          {
+            value::structured_t val;
+
+            for ( signature::structured_t::const_iterator sig (signature.begin())
+                ; sig != signature.end()
+                ; ++sig
+                )
+            {
+              const signature::field_name_t field (sig->first);
+              const signature::desc_t desc (sig->second);
+
+              val[field] = boost::apply_visitor (*this, desc);
+            }
+
+            return val;
+          }
+        };
+
+        class construct_value : public boost::static_visitor<value::type>
+        {
+        private:
+          const std::string & place_name;
+          const boost::filesystem::path & path;
+          const signature::field_name_t field_name;
+          const state::type & state;
+
+        public:
+          construct_value ( const std::string & _place_name
+                          , const boost::filesystem::path & _path
+                          , const signature::field_name_t & _field_name
+                          , const state::type & _state
+                          )
+            : place_name (_place_name)
+            , path (_path)
+            , field_name (_field_name)
+            , state (_state)
+          {}
+
+          value::type operator () ( const literal::type_name_t & signature
+                                  , const literal::type_name_t & value
+                                  ) const
+          {
+            std::ostringstream s;
+
+            s << "when parsing the value "
+              << " of field " << field_name
+              << " of place " << place_name
+              << " of type " << signature
+              << " in " << path
+              ;
+
+            const util::we_parser_t parser
+              (util::generic_we_parse (value, s.str()));
+
+            try
+            {
+              expr::eval::context context;
+
+              const value::type v (parser.eval_all (context));
+              const signature::type sig (signature);
+
+              return boost::apply_visitor
+                ( value::visitor::require_type (field_name)
+                , sig.desc()
+                , v
+                );
+            }
+            catch (const expr::exception::eval::divide_by_zero & e)
+            {
+              throw error::parse_lift (place_name, field_name, path, e.what());
+            }
+            catch (const expr::exception::eval::type_error & e)
+            {
+              throw error::parse_lift (place_name, field_name, path, e.what());
+            }
+            catch (const ::type::error & e)
+            {
+              throw error::parse_lift (place_name, field_name, path, e.what());
+            }
+          }
+
+          value::type operator () ( const signature::structured_t & signature
+                                  , const signature::structured_t & value
+                                  ) const
+          {
+            value::structured_t val;
+
+            for ( signature::structured_t::const_iterator sig (signature.begin())
+                ; sig != signature.end()
+                ; ++sig
+                )
+            {
+              const signature::field_name_t field (sig->first);
+              const signature::desc_t desc (sig->second);
+              const std::string field_deeper
+                ((field_name == "") ? field : (field_name + "." + field));
+
+              if (value.has_field (field))
+              {
+                val[field] = boost::apply_visitor
+                  ( construct_value (place_name, path, field_deeper, state)
+                  , desc
+                  , value.field(field)
+                  );
+              }
+              else
+              {
+                state.warn (warning::default_construction ( place_name
+                                                          , field_deeper
+                                                          , path
+                                                          )
+                           );
+
+                val[field] = boost::apply_visitor
+                  (default_construct_value(), desc);
+              }
+            }
+
+            if (state.Wunused_field())
+            {
+              for ( signature::structured_t::const_iterator pos (value.begin())
+                  ; pos != value.end()
+                  ; ++pos
+                  )
+              {
+                const signature::field_name_t field (pos->first);
+                const std::string field_deeper
+                  ((field_name == "") ? field : (field_name + "." + field));
+
+                if (!signature.has_field (field))
+                {
+                  state.warn (warning::unused_field ( place_name
+                                                    , field_deeper
+                                                    , path
+                                                    )
+                             );
+                }
+              }
+            }
+
+            return val;
+          }
+
+          template<typename SIG, typename VAL>
+          value::type operator () ( const SIG & signature
+                                  , const VAL & value
+                                  ) const
+          {
+            throw error::parse_type_mismatch
+              (place_name, field_name, signature, value, path);
+          }
+        };
+      }
+
       boost::unordered_map<std::string, petri_net::place_id_type>
       net_synthesize ( petri_net::net& we_net
                      , const place_map_map_type & place_map_map
@@ -677,13 +847,6 @@ namespace xml
                      , const state::type & state
                      )
       {
-        //! \todo drunk: call this on all places, so that tokens get
-        //! translated from string to values
-        // BOOST_FOREACH(place_type& place, places().values())
-        // {
-        //   place.translate (path(), state);
-        // }
-
         typedef boost::unordered_map< std::string
                                     , petri_net::place_id_type
                                     > pid_of_place_type;
@@ -753,32 +916,32 @@ namespace xml
           }
 
         BOOST_FOREACH (const place_type& place, net.places().values())
+        {
+          const petri_net::place_id_type pid (pid_of_place.at (place.name()));
+
+          BOOST_FOREACH (const place_type::token_type& token, place.tokens)
           {
-            const petri_net::place_id_type pid (pid_of_place.at (place.name()));
+            token::put ( we_net
+                       , pid
+                       , boost::apply_visitor
+                         ( construct_value (place.name(), net.path(), "", state)
+                         , place.signature_or_throw().desc()
+                         , token
+                         )
+                       );
+          }
 
-            for ( place_type::values_type::const_iterator val (place.values.begin())
-                ; val != place.values.end()
-                ; ++val
-                )
-                {
-                  token::put (we_net, pid, *val);
-                }
+          if (  (we_net.in_to_place (pid).size() == 0)
+             && (we_net.out_of_place (pid).size() == 0)
+             && (!place.is_virtual())
+             )
+          {
+            state.warn
+              (warning::independent_place (place.name(), state.file_in_progress()));
+          }
+        }
 
-              if (  (we_net.in_to_place (pid).size() == 0)
-                 && (we_net.out_of_place (pid).size() == 0)
-                 && (!place.is_virtual())
-                 )
-                {
-                  state.warn
-                    ( warning::independent_place ( place.name()
-                                                 , state.file_in_progress()
-                                                 )
-                    )
-                    ;
-                }
-            }
-
-          return pid_of_place;
+        return pid_of_place;
       };
 
       namespace dump
