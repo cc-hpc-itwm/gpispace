@@ -12,7 +12,6 @@
 #include <we/type/id.hpp>
 #include <we/type/token.hpp>
 #include <we/type/place.hpp>
-#include <we/util/cross.hpp>
 
 #include <we/type/transition.hpp>
 
@@ -107,11 +106,7 @@ namespace petri_net
     }
 
   private:
-    typedef boost::unordered_map< place_id_type
-                                , std::vector<token::type>
-                                > token_by_place_id_t;
-
-    typedef cross::Traits<token_by_place_id_t>::vec_t choice_vec_t;
+    typedef std::vector<std::pair<place_id_type,token::type> > choice_vec_t;
     typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
     typedef enabled_choice_t::iterator choice_iterator_t;
 
@@ -124,7 +119,9 @@ namespace petri_net
     adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
     adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
 
-    token_by_place_id_t _token_by_place_id;
+    boost::unordered_map< place_id_type
+                        , std::vector<token::type>
+                        > _token_by_place_id;
 
     priostore::type<transition_id_type> _enabled;
 

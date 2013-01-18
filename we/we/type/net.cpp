@@ -11,6 +11,13 @@
 
 namespace petri_net
 {
+  namespace
+  {
+    typedef boost::unordered_map< place_id_type
+                                , std::vector<token::type>
+                                > token_by_place_id_t;
+  }
+
   place_id_type net::add_place (const place::type& place)
   {
     const place_id_type pid (_place_id++);
@@ -364,8 +371,8 @@ namespace petri_net
       _enabled_choice_read[tid].clear();
 
       for ( cross::iterator<token_by_place_id_t> choice (*cs)
-              ; choice.has_more()
-              ; ++choice
+          ; choice.has_more()
+          ; ++choice
           )
       {
         if (is_read_connection (tid, choice.key()))
