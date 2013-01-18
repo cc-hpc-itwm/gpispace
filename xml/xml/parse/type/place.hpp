@@ -35,7 +35,6 @@ namespace xml
         typedef std::string unique_key_type;
 
         typedef signature::desc_t token_type;
-        typedef std::list<value::type> values_type;
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
@@ -54,7 +53,6 @@ namespace xml
                    , const std::string& name
                    , const std::string& type
                    , const std::list<token_type>& tokens
-                   , const values_type& values
                    , const we::type::property::type& properties
                    );
 
@@ -70,10 +68,6 @@ namespace xml
 
       public:
         void push_token (const token_type & t);
-
-        void translate ( const boost::filesystem::path & path
-                       , const state::type & state
-                       );
 
         void specialize ( const type::type_map_type & map_in
                         , const state::type &
@@ -101,7 +95,6 @@ namespace xml
       public:
         std::string type;
         std::list<token_type> tokens;
-        values_type values;
 
         const std::string& type_GET() const;
 
