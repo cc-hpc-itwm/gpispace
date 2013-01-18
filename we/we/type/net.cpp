@@ -7,19 +7,20 @@ namespace petri_net
 {
   namespace
   {
-    const net::tokens_type& no_tokens()
+    const std::vector<token::type>& no_tokens()
     {
-      static const net::tokens_type x;
+      static const std::vector<token::type> x;
 
       return x;
     }
   }
 
-  const net::tokens_type& net::get_token (const place_id_type& pid) const
+  const std::vector<token::type>&
+  net::get_token (const place_id_type& pid) const
   {
-    token_place_rel_t::const_iterator pos (_token_place_rel.find (pid));
+    token_by_place_id_t::const_iterator pos (_token_by_place_id.find (pid));
 
-    return (pos != _token_place_rel.end()) ? pos->second : no_tokens();
+    return (pos != _token_by_place_id.end()) ? pos->second : no_tokens();
   }
 
   std::ostream& operator<< (std::ostream& s, const net& n)

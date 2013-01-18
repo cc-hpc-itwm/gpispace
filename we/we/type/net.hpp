@@ -37,24 +37,15 @@ namespace petri_net
   class net
   {
   public:
-    typedef boost::unordered_map< transition_id_type
-                                , we::type::transition_t
-                                > tmap_type;
-
-    typedef std::vector<token::type> tokens_type;
-    typedef boost::unordered_map<place_id_type, tokens_type> token_place_rel_t;
-
     typedef std::pair<token::type, place_id_type> token_input_t;
     typedef std::vector<token_input_t> input_t;
 
-    typedef boost::unordered_map< petri_net::place_id_type
-                                , tokens_type
-                                > tokens_by_place_id_t;
-
-    typedef priostore::type<transition_id_type> enabled_t;
-
   private:
-    typedef cross::Traits<tokens_by_place_id_t>::vec_t choice_vec_t;
+    typedef boost::unordered_map< place_id_type
+                                , std::vector<token::type>
+                                > token_by_place_id_t;
+
+    typedef cross::Traits<token_by_place_id_t>::vec_t choice_vec_t;
     typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
     typedef enabled_choice_t::iterator choice_iterator_t;
 
@@ -64,14 +55,15 @@ namespace petri_net
     boost::unordered_map<place_id_type,place::type> _pmap;
 
     transition_id_type _transition_id;
-    tmap_type _tmap;
+    boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
 
     adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
     adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
 
-    token_place_rel_t _token_place_rel;
+    token_by_place_id_t _token_by_place_id;
 
-    enabled_t _enabled;
+    priostore::type<transition_id_type> _enabled;
+
     enabled_choice_t _enabled_choice_consume;
     enabled_choice_t _enabled_choice_read;
 
@@ -87,7 +79,7 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP(_tmap);
       ar & BOOST_SERIALIZATION_NVP(_adj_pt);
       ar & BOOST_SERIALIZATION_NVP(_adj_tp);
-      ar & BOOST_SERIALIZATION_NVP(_token_place_rel);
+      ar & BOOST_SERIALIZATION_NVP(_token_by_place_id);
       ar & BOOST_SERIALIZATION_NVP(_enabled);
       ar & BOOST_SERIALIZATION_NVP(_enabled_choice_consume);
       ar & BOOST_SERIALIZATION_NVP(_enabled_choice_read);
@@ -97,13 +89,13 @@ namespace petri_net
 
     void update_enabled (const transition_id_type& tid)
     {
-      tokens_by_place_id_t tokens_by_place_id;
+      token_by_place_id_t token_by_place_id;
 
       BOOST_FOREACH ( const place_id_type& place_id
                     , in_to_transition (tid) | boost::adaptors::map_keys
                     )
       {
-        if (_token_place_rel[place_id].empty())
+        if (_token_by_place_id[place_id].empty())
         {
           _enabled.erase (tid);
 
@@ -111,11 +103,11 @@ namespace petri_net
         }
         else
         {
-          tokens_by_place_id[place_id] = _token_place_rel[place_id];
+          token_by_place_id[place_id] = _token_by_place_id[place_id];
         }
       }
 
-      cross::cross<tokens_by_place_id_t> cs (tokens_by_place_id);
+      cross::cross<token_by_place_id_t> cs (token_by_place_id);
 
       if (not get_transition (tid).condition()(cs))
       {
@@ -128,7 +120,7 @@ namespace petri_net
         _enabled_choice_consume[tid].clear();
         _enabled_choice_read[tid].clear();
 
-        for ( cross::iterator<tokens_by_place_id_t> choice (*cs)
+        for ( cross::iterator<token_by_place_id_t> choice (*cs)
             ; choice.has_more()
             ; ++choice
             )
@@ -200,7 +192,7 @@ namespace petri_net
     {
       const transition_id_type tid (_transition_id++);
 
-      _tmap.insert (tmap_type::value_type (tid, transition));
+      _tmap.insert (std::make_pair (tid, transition));
 
       return tid;
     }
@@ -318,7 +310,7 @@ namespace petri_net
     void delete_place (const place_id_type& pid)
     {
       // make the token deletion visible to delete_connection
-      _token_place_rel.erase (pid);
+      _token_by_place_id.erase (pid);
 
       std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
       std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
@@ -413,7 +405,7 @@ namespace petri_net
 
     void put_token (const place_id_type& pid, const token::type& token)
     {
-      _token_place_rel[pid].push_back (token);
+      _token_by_place_id[pid].push_back (token);
 
       BOOST_FOREACH ( const transition_id_type& tid
                     , out_of_place (pid) | boost::adaptors::map_keys
@@ -428,11 +420,11 @@ namespace petri_net
       put_token (pid, token::type());
     }
 
-    const tokens_type& get_token (const place_id_type&) const;
+    const std::vector<token::type>& get_token (const place_id_type&) const;
 
     void delete_all_token (const place_id_type& pid)
     {
-      _token_place_rel.erase (pid);
+      _token_by_place_id.erase (pid);
 
       BOOST_FOREACH ( const transition_id_type& tid
                     , out_of_place (pid) | boost::adaptors::map_keys
@@ -490,7 +482,7 @@ namespace petri_net
 
           assert (not is_read_connection (tid, pid));
 
-          tokens_type& tokens (_token_place_rel[pid]);
+          std::vector<token::type>& tokens (_token_by_place_id[pid]);
           tokens.erase (std::find (tokens.begin(), tokens.end(), token));
 
           BOOST_FOREACH ( const transition_id_type& t
@@ -501,8 +493,7 @@ namespace petri_net
             }
         }
 
-      for ( choice_vec_t::const_iterator choice
-              (choice_vec_read.begin())
+      for ( choice_vec_t::const_iterator choice (choice_vec_read.begin())
           ; choice != choice_vec_read.end()
           ; ++choice
           )
