@@ -435,19 +435,11 @@ namespace petri_net
       _enabled_choice_read.erase (tid);
     }
 
-    // erased in case of conflict after modification
     place_id_type modify_place ( const place_id_type& pid
                                , const place::type& place
                                )
     {
       _pmap[pid] = place;
-
-      BOOST_FOREACH ( const transition_id_type& tid
-                    , out_of_place (pid) | boost::adaptors::map_keys
-                    )
-      {
-        recalculate_enabled (tid, pid);
-      }
 
       return pid;
     }
