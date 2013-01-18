@@ -95,9 +95,6 @@ namespace we
         std::ostream& print (std::ostream&, const token_on_port_list_t&) const;
 
       private:
-        friend std::ostream& operator<< (std::ostream&, const activity_t&);
-        void writeTo (std::ostream&) const;
-
         void lock();
         void unlock();
 

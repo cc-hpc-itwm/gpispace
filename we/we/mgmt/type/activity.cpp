@@ -594,30 +594,9 @@ namespace we
         return os;
       }
 
-      void activity_t::writeTo (std::ostream& os) const
-      {
-        unique_lock_t lock (_mutex);
-
-        os << "{";
-
-        os << "act, " << flags() << ", " << transition() << ", ";
-
-        os << "{input, "; print (os, input()); os << "}";
-        os << ", {pending, "; print (os, pending_input()); os << "}";
-        os << ", {output, "; print (os, output()); os << "}";
-
-        os << "}";
-      }
-
       bool operator== (const activity_t& a, const activity_t& b)
       {
         return a.id() == b.id();
-      }
-
-      std::ostream& operator<< (std::ostream& os, const activity_t& act)
-      {
-        act.writeTo (os);
-        return os;
       }
     }
   }

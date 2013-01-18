@@ -120,7 +120,6 @@ int main (int, char **)
     ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
   ;
 
-  std::cout << "tnet: " << std::endl << tnet << std::endl;
   {
     std::ostringstream oss;
     {
@@ -137,7 +136,6 @@ int main (int, char **)
         ia >> BOOST_SERIALIZATION_NVP (tnet_d);
       }
     }
-    std::cout << "tnet (deserialized): " << std::endl << tnet_d << std::endl;
   }
 
   transition_t t1 ("t1", we::type::module_call_t ("m", "f"));
@@ -171,9 +169,6 @@ int main (int, char **)
   t2.add_port
     ("sum", "long", we::type::PORT_IN)
   ;
-
-  std::cout << "t1=" << t1 << std::endl;
-  std::cout << "t2=" << t2 << std::endl;
 
   {
     std::ostringstream oss;

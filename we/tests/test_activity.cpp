@@ -144,21 +144,11 @@ int main (int, char **)
 
   activity_t act ( tnet );
 
-  std::cout << "act (original):"
-            << std::endl
-            << act
-            << std::endl;
   {
     std::string act_encoded (act.to_string());
     std::cout << "act (serialized):"
               << std::endl
               << act_encoded
-              << std::endl;
-
-    activity_t act_d (act_encoded);
-    std::cout << "act (deserialized):"
-              << std::endl
-              << act_d
               << std::endl;
   }
 
@@ -168,27 +158,13 @@ int main (int, char **)
     activity_t sub = act.extract ();
     sub.inject_input ();
 
-    std::cout << "***** sub-act (pre-execute):"
-              << std::endl
-              << sub
-              << std::endl;
-
     exec_context ctxt;
     sub.execute (&ctxt);
 
-    std::cout << "***** sub-act (post-execute):"
-              << std::endl
-              << sub
-              << std::endl;
     act.inject (sub);
   }
 
   act.collect_output();
-
-  std::cout << "act (finished) = "
-            << std::endl
-            << act
-            << std::endl;
 
   if ( act.output().empty() )
   {

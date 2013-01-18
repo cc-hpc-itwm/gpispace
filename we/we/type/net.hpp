@@ -516,8 +516,6 @@ namespace petri_net
       return extract_activity (_enabled.random (engine));
     }
   };
-
-  std::ostream& operator<< (std::ostream&, const net&);
 }
 
 #endif

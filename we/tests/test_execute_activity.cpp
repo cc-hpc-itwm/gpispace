@@ -125,31 +125,12 @@ struct exec_context : public we::mgmt::context
     // submit to self
     while (act.can_fire())
     {
-      std::cout << "***** act (pre-extract):"
-                << std::endl
-                << act
-                << std::endl;
-
       activity_t sub = act.extract ();
-
-      std::cout << "***** sub-act (pre-execute):"
-                << std::endl
-                << sub
-                << std::endl;
 
       sub.execute (this);
 
-      std::cout << "***** sub-act (post-execute):"
-                << std::endl
-                << sub
-                << std::endl;
-
       act.inject (sub);
 
-      std::cout << "***** act (post-inject):"
-                << std::endl
-                << act
-                << std::endl;
     }
 
     act.collect_output();
@@ -219,18 +200,8 @@ int main (int ac, char ** av)
 
   activity_t act (ifs);
 
-  std::cout << "act (initial):"
-            << std::endl
-            << act
-            << std::endl;
-
   exec_context ctxt;
   act.execute (&ctxt);
-
-  std::cout << "act (final):"
-            << std::endl
-            << act
-            << std::endl;
 
   if (act.output().empty() )
   {
