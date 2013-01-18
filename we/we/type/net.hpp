@@ -92,7 +92,6 @@ namespace petri_net
                                          );
 
     void put_token (const place_id_type&, const token::type&);
-    void put_token (const place_id_type&);
 
     const std::vector<token::type>& get_token (const place_id_type&) const;
 
