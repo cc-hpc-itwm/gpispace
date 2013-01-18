@@ -470,15 +470,6 @@ namespace petri_net
     };
 
   private:
-    class token_eq
-    {
-    private:
-      const token::type& _token;
-    public:
-      token_eq (const token::type& token) : _token (token) {}
-      bool operator() (const token::type& other) { return other == _token; }
-    };
-
     activity_t extract_activity (const transition_id_type tid)
     {
       input_t input;
@@ -508,11 +499,7 @@ namespace petri_net
           assert (not is_read_connection (tid, pid));
 
           tokens_type& tokens (_token_place_rel[pid]);
-          tokens.erase (find_if ( tokens.begin()
-                                , tokens.end()
-                                , token_eq (token)
-                                )
-                       );
+          tokens.erase (std::find (tokens.begin(), tokens.end(), token));
 
           BOOST_FOREACH ( const transition_id_type& t
                         , out_of_place (pid) | boost::adaptors::map_keys
