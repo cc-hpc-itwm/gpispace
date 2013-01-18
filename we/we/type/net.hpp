@@ -58,16 +58,16 @@ namespace petri_net
 
     typedef boost::unordered_map< petri_net::place_id_type
                                 , tokens_type
-                                > pid_in_map_t;
+                                > tokens_by_place_id_t;
 
     typedef priostore::type<transition_id_type> enabled_t;
 
   private:
-    typedef cross::Traits<pid_in_map_t>::vec_t choice_vec_t;
+    typedef cross::Traits<tokens_by_place_id_t>::vec_t choice_vec_t;
     typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
     typedef enabled_choice_t::iterator choice_iterator_t;
 
-    typedef boost::unordered_map<transition_id_type,pid_in_map_t> in_map_t;
+    typedef boost::unordered_map<transition_id_type,tokens_by_place_id_t> in_map_t;
 
     // ********************************************************************* //
 
@@ -110,16 +110,16 @@ namespace petri_net
     // ********************************************************************* //
 
     void update_set_of_tid_in ( const transition_id_type& tid
-                              , const pid_in_map_t& pid_in_map
+                              , const tokens_by_place_id_t& tokens_by_place_id
                               )
     {
-      if (pid_in_map.size() != in_to_transition (tid).size())
+      if (tokens_by_place_id.size() != in_to_transition (tid).size())
         {
           _enabled.erase (tid);
         }
       else
         {
-          cross::cross<pid_in_map_t> cs (_in_map.at (tid));
+          cross::cross<tokens_by_place_id_t> cs (_in_map.at (tid));
 
           // call the global condition function here, that sets the
           // cross product either to the end or to some valid choice
@@ -135,7 +135,7 @@ namespace petri_net
               _enabled_choice_consume[tid].clear();
               _enabled_choice_read[tid].clear();
 
-              for ( cross::iterator<pid_in_map_t> choice (*cs)
+              for ( cross::iterator<tokens_by_place_id_t> choice (*cs)
                   ; choice.has_more()
                   ; ++choice
                   )
@@ -157,18 +157,18 @@ namespace petri_net
                              , const place_id_type& pid
                              )
     {
-      pid_in_map_t& pid_in_map (_in_map[tid]);
+      tokens_by_place_id_t& tokens_by_place_id (_in_map[tid]);
 
       if (has_token (pid))
         {
-          pid_in_map[pid] = get_token (pid);
+          tokens_by_place_id[pid] = get_token (pid);
         }
       else
         {
-          pid_in_map.erase (pid);
+          tokens_by_place_id.erase (pid);
         }
 
-      update_set_of_tid_in (tid, pid_in_map);
+      update_set_of_tid_in (tid, tokens_by_place_id);
     }
 
     // ********************************************************************* //
@@ -223,7 +223,7 @@ namespace petri_net
 
       _tmap.insert (tmap_type::value_type (tid, transition));
 
-      pid_in_map_t& pid_in_map (_in_map[tid]);
+      tokens_by_place_id_t& tokens_by_place_id (_in_map[tid]);
 
       BOOST_FOREACH ( const place_id_type& place_id
                     , in_to_transition (tid) | boost::adaptors::map_keys
@@ -231,12 +231,12 @@ namespace petri_net
         {
           if (has_token (place_id))
             {
-              pid_in_map.insert
-                (pid_in_map_t::value_type (place_id, get_token (place_id)));
+              tokens_by_place_id.insert
+                (tokens_by_place_id_t::value_type (place_id, get_token (place_id)));
             }
         }
 
-      update_set_of_tid_in (tid, pid_in_map);
+      update_set_of_tid_in (tid, tokens_by_place_id);
 
       return tid;
     }
@@ -348,11 +348,11 @@ namespace petri_net
     {
       _adj_pt.clear_adjacent (pid, tid);
 
-      pid_in_map_t& pid_in_map (_in_map[tid]);
+      tokens_by_place_id_t& tokens_by_place_id (_in_map[tid]);
 
-      pid_in_map.erase (pid);
+      tokens_by_place_id.erase (pid);
 
-      update_set_of_tid_in (tid, pid_in_map);
+      update_set_of_tid_in (tid, tokens_by_place_id);
     }
 
     void delete_place (const place_id_type& pid)
@@ -459,11 +459,11 @@ namespace petri_net
                     , out_of_place (pid) | boost::adaptors::map_keys
                     )
         {
-          pid_in_map_t& pid_in_map (_in_map[tid]);
+          tokens_by_place_id_t& tokens_by_place_id (_in_map[tid]);
 
-          pid_in_map[pid].push_back (token);
+          tokens_by_place_id[pid].push_back (token);
 
-          update_set_of_tid_in (tid, pid_in_map);
+          update_set_of_tid_in (tid, tokens_by_place_id);
         }
     }
 
@@ -543,8 +543,8 @@ namespace petri_net
                         , out_of_place (pid) | boost::adaptors::map_keys
                         )
             {
-              pid_in_map_t& pid_in_map (_in_map[t]);
-              tokens_type& tokens (pid_in_map[pid]);
+              tokens_by_place_id_t& tokens_by_place_id (_in_map[t]);
+              tokens_type& tokens (tokens_by_place_id[pid]);
               tokens_type::iterator it (tokens.begin());
 
               while (it != tokens.end() && *it != token)
@@ -559,10 +559,10 @@ namespace petri_net
 
               if (tokens.empty())
                 {
-                  pid_in_map.erase (pid);
+                  tokens_by_place_id.erase (pid);
                 }
 
-              update_set_of_tid_in (t, pid_in_map);
+              update_set_of_tid_in (t, tokens_by_place_id);
             }
         }
 

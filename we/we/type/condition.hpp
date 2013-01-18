@@ -174,7 +174,7 @@ namespace condition
 
     typedef boost::unordered_map< petri_net::place_id_type
                                 , std::vector<token::type>
-                                > pid_in_map_t;
+                                > tokens_by_place_id_t;
 
   public:
     type ( const std::string & _expression
@@ -199,7 +199,7 @@ namespace condition
       , translate (_translate)
     {}
 
-    bool operator () (cross::cross<pid_in_map_t>& choices) const
+    bool operator () (cross::cross<tokens_by_place_id_t>& choices) const
     {
 #ifdef STATISTICS_CONDITION
       unsigned long eval (0);
@@ -226,7 +226,7 @@ namespace condition
 
       for (; choices.has_more(); ++choices)
         {
-          for ( cross::iterator<pid_in_map_t> choice (*choices)
+          for ( cross::iterator<tokens_by_place_id_t> choice (*choices)
               ; choice.has_more()
               ; ++choice
               )
