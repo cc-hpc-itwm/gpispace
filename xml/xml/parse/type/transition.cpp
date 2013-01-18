@@ -508,8 +508,7 @@ namespace xml
         const port_type& port (id_port->get());
         const place_type& place (id_place->get());
 
-        // typecheck connect.place.type vs connect.port.type
-        if (place.type != port.type)
+        if (place.signature() != port.signature())
         {
           throw error::connect_type_error ( direction
                                           , name()
@@ -690,7 +689,9 @@ namespace xml
             const boost::optional<const id::ref::port&> id_port_out
               (fun.get_port_out (port_in.name()));
 
-            if (id_port_out && id_port_out->get().type != port_in.type)
+            if (  id_port_out
+               && id_port_out->get().signature() != port_in.signature()
+               )
             {
               state.warn
                 ( warning::conflicting_port_types ( id_transition

@@ -342,7 +342,7 @@ namespace xml
                          )
             );
 
-          if (id_other && id.get().type != id_other->get().type)
+          if (id_other && id.get().type() != id_other->get().type())
           {
             throw error::port_type_mismatch (id, *id_other, path);
           }
@@ -512,7 +512,7 @@ namespace xml
 
         BOOST_FOREACH (const port_type& port, ports().values())
         {
-          forbidden.insert (std::make_pair (port.type, port.name()));
+          forbidden.insert (std::make_pair (port.type(), port.name()));
         }
 
         return forbidden;
@@ -1991,8 +1991,8 @@ namespace xml
 
               const port_type& port (id_port->get());
 
-              port_return = port_with_type (*mod.port_return, port.type);
-              types.insert (port.type);
+              port_return = port_with_type (*mod.port_return, port.type());
+              types.insert (port.type());
             }
 
             for ( module_type::port_args_type::const_iterator name (mod.port_arg.begin())
@@ -2014,13 +2014,13 @@ namespace xml
                    && (*mod.port_return == port_in.name())
                    )
                 {
-                  ports_const.push_back (port_with_type (*name, port_in.type));
-                  types.insert (port_in.type);
+                  ports_const.push_back (port_with_type (*name, port_in.type()));
+                  types.insert (port_in.type());
                 }
                 else
                 {
-                  ports_mutable.push_back (port_with_type (*name, port_in.type));
-                  types.insert (port_in.type);
+                  ports_mutable.push_back (port_with_type (*name, port_in.type()));
+                  types.insert (port_in.type());
                 }
               }
               else if (_id_function.get().is_known_port_in (*name))
@@ -2030,8 +2030,8 @@ namespace xml
 
                 const port_type& port_in (id_port_in->get());
 
-                ports_const.push_back (port_with_type (*name, port_in.type));
-                types.insert (port_in.type);
+                ports_const.push_back (port_with_type (*name, port_in.type()));
+                types.insert (port_in.type());
               }
               else if (_id_function.get().is_known_port_out (*name))
               {
@@ -2048,8 +2048,8 @@ namespace xml
                 }
                 else
                 {
-                  ports_out.push_back (port_with_type (*name, port_out.type));
-                  types.insert (port_out.type);
+                  ports_out.push_back (port_with_type (*name, port_out.type()));
+                  types.insert (port_out.type());
                 }
               }
             }

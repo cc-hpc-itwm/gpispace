@@ -17,7 +17,7 @@ namespace xml
       port_type::port_type ( ID_CONS_PARAM(port)
                            , PARENT_CONS_PARAM(function)
                            , const std::string & name
-                           , const std::string & _type
+                           , const std::string & type
                            , const boost::optional<std::string> & _place
                            , const we::type::PortDirection& direction
                            , const we::type::property::type& properties
@@ -25,7 +25,7 @@ namespace xml
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
-        , type (_type)
+        , _type (type)
         , place (_place)
         , _direction (direction)
         , _properties (properties)
@@ -54,16 +54,20 @@ namespace xml
         return name_impl (name);
       }
 
-      const std::string& port_type::type_GET() const
+      const std::string& port_type::type() const
       {
-        return /*! \todo _*/type;
+        return _type;
+      }
+      const std::string& port_type::type (const std::string& type_)
+      {
+        return _type = type_;
       }
 
       boost::optional<signature::type> port_type::signature() const
       {
-        if (literal::valid_name (type_GET()))
+        if (literal::valid_name (type()))
         {
-          return signature::type (type_GET());
+          return signature::type (type());
         }
 
         if (not parent())
@@ -71,7 +75,7 @@ namespace xml
           return boost::none;
         }
 
-        return parent()->signature (type_GET());
+        return parent()->signature (type());
       }
       signature::type port_type::signature_or_throw() const
       {
@@ -81,7 +85,7 @@ namespace xml
         {
           throw error::port_with_unknown_type ( direction()
                                               , name()
-                                              , type_GET()
+                                              , type()
                                               //! \todo own LOCATION
                                               , parent()->path_GET()
                                               );
@@ -95,11 +99,11 @@ namespace xml
                                  )
       {
         const type::type_map_type::const_iterator
-          mapped (map_in.find (type));
+          mapped (map_in.find (type()));
 
         if (mapped != map_in.end())
         {
-          type = mapped->second;
+          type (mapped->second);
         }
       }
 
@@ -146,7 +150,7 @@ namespace xml
                 throw error::port_connected_place_nonexistent (_port, _path);
               }
 
-              if (place->get().type != _port.get().type)
+              if (place->get().type() != _port.get().type())
               {
                 throw error::port_connected_type_error (_port, *place, _path);
               }
@@ -250,7 +254,7 @@ namespace xml
           , new_mapper
           , parent
           , _name
-          , type
+          , _type
           , place
           , _direction
           , _properties
@@ -263,7 +267,7 @@ namespace xml
         {
           s.open (we::type::enum_to_string (p.direction()));
           s.attr ("name", p.name());
-          s.attr ("type", p.type);
+          s.attr ("type", p.type());
           s.attr ("place", p.place);
 
           ::we::type::property::dump::dump (s, p.properties());

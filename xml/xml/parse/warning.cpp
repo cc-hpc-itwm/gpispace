@@ -42,8 +42,8 @@ namespace xml
                                     )
                     % in.get().name()
                     % transition.get().name()
-                    % in.get().type
-                    % out.get().type
+                    % in.get().type()
+                    % out.get().type()
                     % path
                     )
           , _transition (transition)
