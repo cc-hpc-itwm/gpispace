@@ -17,6 +17,8 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 #include "PetriNet.h"
 
 namespace jpna {

@@ -13,6 +13,8 @@
 
 #include <rewrite/validprefix.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 namespace we { namespace type {
     namespace optimize
     {

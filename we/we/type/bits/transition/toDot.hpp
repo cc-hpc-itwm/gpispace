@@ -8,6 +8,7 @@
 #include <we/type/net.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace we { namespace type {
 
