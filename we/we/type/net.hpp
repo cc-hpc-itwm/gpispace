@@ -56,11 +56,10 @@ namespace petri_net
     typedef std::pair<token::type, place_id_type> token_input_t;
     typedef std::vector<token_input_t> input_t;
 
-    //! \todo traits should be template parameters (with default values)
-    typedef Function::Condition::Traits cd_traits;
-
-    typedef cd_traits::pid_in_map_t pid_in_map_t;
-    typedef cd_traits::choices_t choices_t;
+    typedef boost::unordered_map< petri_net::place_id_type
+                                , std::vector<token::type>
+                                > pid_in_map_t;
+    typedef cross::cross<pid_in_map_t> choices_t;
 
     typedef priostore::type<transition_id_type> enabled_t;
 
