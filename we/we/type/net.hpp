@@ -57,9 +57,8 @@ namespace petri_net
     typedef std::vector<token_input_t> input_t;
 
     typedef boost::unordered_map< petri_net::place_id_type
-                                , std::vector<token::type>
+                                , tokens_type
                                 > pid_in_map_t;
-    typedef cross::cross<pid_in_map_t> choices_t;
 
     typedef priostore::type<transition_id_type> enabled_t;
 
@@ -120,7 +119,7 @@ namespace petri_net
         }
       else
         {
-          choices_t cs (_in_map.at (tid));
+          cross::cross<pid_in_map_t> cs (_in_map.at (tid));
 
           // call the global condition function here, that sets the
           // cross product either to the end or to some valid choice
