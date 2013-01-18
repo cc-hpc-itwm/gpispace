@@ -34,13 +34,6 @@
 
 namespace petri_net
 {
-// WORK HERE: Performance: collect map<transition_id_type,X>, map<transition_id_type,Y> into a
-// single map<transition_id_type,(X,Y)>?
-
-// WORK HERE: Performance: The update mechanism is not optimal in all
-// cases, e.g. if a token is putted to a place, re-evaluting the
-// condition of already enabled transitions is not neccessary
-
   class net
   {
   public:
