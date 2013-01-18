@@ -37,11 +37,11 @@ namespace petri_net
   class net
   {
   public:
-    typedef we::type::transition_t transition_type;
-
     typedef boost::unordered_map<place_id_type,place::type> pmap_type;
 
-    typedef boost::unordered_map<transition_id_type,transition_type> tmap_type;
+    typedef boost::unordered_map< transition_id_type
+                                , we::type::transition
+                                > tmap_type;
 
     typedef std::vector<token::type> tokens_type;
     typedef boost::unordered_map<place_id_type, tokens_type> token_place_rel_t;
@@ -163,7 +163,8 @@ namespace petri_net
       return pos->second;
     }
 
-    const transition_type& get_transition (const transition_id_type& tid) const
+    const we::type::transition&
+    get_transition (const transition_id_type& tid) const
     {
       const tmap_type::const_iterator pos (_tmap.find (tid));
 
@@ -194,7 +195,7 @@ namespace petri_net
       return _enabled.get_priority (tid);
     }
 
-    transition_id_type add_transition (const transition_type& transition)
+    transition_id_type add_transition (const we::type::transition& transition)
     {
       const transition_id_type tid (_transition_id++);
 
@@ -235,7 +236,7 @@ namespace petri_net
       return _pmap;
     }
 
-    const boost::unordered_map<transition_id_type,transition_type>&
+    const boost::unordered_map<transition_id_type,we::type::transition>&
     transitions () const
     {
       return _tmap;
@@ -401,9 +402,10 @@ namespace petri_net
       return pid;
     }
 
-    transition_id_type modify_transition ( const transition_id_type& tid
-                                         , const transition_type& transition
-                                         )
+    transition_id_type
+    modify_transition ( const transition_id_type& tid
+                      , const we::type::transition& transition
+                      )
     {
       _tmap[tid] = transition;
 
