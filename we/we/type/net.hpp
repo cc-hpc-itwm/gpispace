@@ -430,11 +430,6 @@ namespace petri_net
 
     const tokens_type& get_token (const place_id_type&) const;
 
-    bool has_token (const place_id_type& pid) const
-    {
-      return _token_place_rel.find (pid) != _token_place_rel.end();
-    }
-
     void delete_all_token (const place_id_type& pid)
     {
       _token_place_rel.erase (pid);
