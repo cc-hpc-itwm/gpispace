@@ -342,7 +342,7 @@ namespace xml
                          )
             );
 
-          if (id_other && id.get().type() != id_other->get().type())
+          if (id_other && id.get().signature() != id_other->get().signature())
           {
             throw error::port_type_mismatch (id, *id_other, path);
           }
