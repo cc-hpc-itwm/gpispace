@@ -116,7 +116,12 @@ namespace fhg
         class port
         {
         public:
-          explicit port (ui::graph::port_item*, item_by_name_type&);
+          explicit port ( ui::graph::port_item* port
+                        , item_by_name_type& port_item_by_name
+                        )
+            : _port (port)
+            , _port_item_by_name (port_item_by_name)
+          { }
 
           template<int Type, typename T> void weave (const T & x) {}
           template<int Type> void weave () {}
@@ -127,33 +132,30 @@ namespace fhg
           item_by_name_type& _port_item_by_name;
         };
 
-        port::port ( ui::graph::port_item* port
-                   , item_by_name_type& port_item_by_name
-                   )
-          : _port (port)
-          , _port_item_by_name (port_item_by_name)
-        {}
+        WSIG (port, port::open, xml::parse::id::ref::port, id)
+        {
+          const ::xml::parse::type::port_type& port (id.get());
+          _port_item_by_name[port.name()] = _port;
 
-        WSIG(port, port::name, std::string, name)
-        {
-          _port_item_by_name[name] = _port;
-        }
-        WSIG(port, port::properties, WETYPE(property::type), props)
-        {
           weaver::property wp (_port);
-
-          from::properties (&wp, props);
+          from::properties (&wp, port.properties());
         }
 
         class connection
         {
         public:
-          explicit connection ( ui::graph::scene_type*
+          explicit connection ( ui::graph::scene_type* scene
                               , item_by_name_type& place_item_by_name
                               , item_by_name_type& ports_in
                               , item_by_name_type& ports_out
                               , data::internal_type* root
-                              );
+                              )
+            : _scene (scene)
+            , _place_item_by_name (place_item_by_name)
+            , _ports_in (ports_in)
+            , _ports_out (ports_out)
+            , _root (root)
+          { }
 
           template<int Type, typename T> void weave (const T & x) {}
           template<int Type> void weave () {}
@@ -163,62 +165,32 @@ namespace fhg
           item_by_name_type& _place_item_by_name;
           item_by_name_type& _ports_in;
           item_by_name_type& _ports_out;
-          std::string _port;
-          std::string _place;
-          boost::optional< ::xml::parse::id::ref::connect> _id;
           data::internal_type* _root;
         };
 
-        connection::connection ( ui::graph::scene_type* scene
-                               , item_by_name_type& place_item_by_name
-                               , item_by_name_type& ports_in
-                               , item_by_name_type& ports_out
-                               , data::internal_type* root
-                               )
-          : _scene (scene)
-          , _place_item_by_name (place_item_by_name)
-          , _ports_in (ports_in)
-          , _ports_out (ports_out)
-          , _port ()
-          , _place ()
-          , _id (boost::none)
-          , _root (root)
-        {}
-
         WSIG (connection, connection::open, ::xml::parse::id::ref::connect, id)
         {
-          _id = id;
-        }
+          const ::xml::parse::type::connect_type& connection (id.get());
 
-        WSIG(connection, connection::port, std::string, port)
-        {
-          _port = port;
-        }
-        WSIG(connection, connection::place, std::string, place)
-        {
-          _place = place;
-        }
-        WSIGE(connection, connection::close)
-        {
-          const bool is_out (!petri_net::edge::is_PT (_id->get().direction()));
+          const bool is_out (!petri_net::edge::is_PT (connection.direction()));
 
           typedef item_by_name_type::iterator iterator_type;
 
           const iterator_type port_pos
-            ((is_out ? _ports_out : _ports_in).find (_port));
+            ((is_out ? _ports_out : _ports_in).find (connection.port()));
           if (port_pos == (is_out ? _ports_out : _ports_in).end())
           {
-            throw std::runtime_error ("connection: port " + _port + " not found");
+            throw std::runtime_error ("connection: port " + connection.port() + " not found");
           }
 
-          const iterator_type place_pos (_place_item_by_name.find (_place));
+          const iterator_type place_pos (_place_item_by_name.find (connection.place()));
           if (place_pos == _place_item_by_name.end())
           {
             throw
-              std::runtime_error ("connection: place " + _place + " not found");
+              std::runtime_error ("connection: place " + connection.place() + " not found");
           }
 
-          data::handle::connect handle (*_id, _root);
+          data::handle::connect handle (id, _root);
           if (!is_out)
           {
             _scene->create_connection
@@ -234,12 +206,23 @@ namespace fhg
         class transition
         {
         public:
-          explicit transition ( data::internal_type*
-                              , ui::graph::scene_type*
-                              , const ::xml::parse::id::ref::net&
-                              , item_by_name_type&
-                              , const ::xml::parse::id::ref::transition&
-                              );
+          explicit transition ( data::internal_type* root
+                              , ui::graph::scene_type* scene
+                              , item_by_name_type& place_item_by_name
+                              , const ::xml::parse::id::ref::transition& id
+                              )
+            : _scene (scene)
+            , _transition ( new ui::graph::transition_item
+                            (data::handle::transition (id, root))
+                          )
+            , _place_item_by_name (place_item_by_name)
+            , _port_in_item_by_name ()
+            , _port_out_item_by_name ()
+            , _root (root)
+          {
+            maybe_set_position (_transition, id);
+            _scene->addItem (_transition);
+          }
 
           template<int Type, typename T> void weave (const T & x) {}
           template<int Type> void weave () {}
@@ -247,7 +230,6 @@ namespace fhg
         private:
           ui::graph::scene_type* _scene;
           ui::graph::transition_item* _transition;
-          ::xml::parse::id::ref::net _net;
 
           item_by_name_type& _place_item_by_name;
           item_by_name_type _port_in_item_by_name;
@@ -255,69 +237,41 @@ namespace fhg
           data::internal_type* _root;
         };
 
-        transition::transition ( data::internal_type* root
-                               , ui::graph::scene_type* scene
-                               , const ::xml::parse::id::ref::net& net
-                               , item_by_name_type& place_item_by_name
-                               , const ::xml::parse::id::ref::transition& id
-                               )
-          : _scene (scene)
-          , _transition ( new ui::graph::transition_item
-                          (data::handle::transition (id, root))
-                        )
-          , _net (net)
-          , _place_item_by_name (place_item_by_name)
-          , _port_in_item_by_name ()
-          , _port_out_item_by_name ()
-          , _root (root)
+        WSIG (transition, transition::open, xml::parse::id::ref::transition, id)
         {
-          maybe_set_position (_transition, id);
-          _scene->addItem (_transition);
-        }
+          const ::xml::parse::type::transition_type& trans (id.get());
+          weaver::property wp (_transition);
 
-        namespace
-        {
-          class get_function
-            : public boost::static_visitor< ::xml::parse::id::ref::function>
-          {
-          private:
-            ::xml::parse::id::ref::net _net;
+          from::properties (&wp, trans.properties());
 
-          public:
-            get_function (const ::xml::parse::id::ref::net& id) : _net (id) {}
-
-            ::xml::parse::id::ref::function
-              operator() (const xml::parse::id::ref::function& fun) const
-            {
-              return fun;
-            }
-
-            ::xml::parse::id::ref::function
-              operator() (const xml::parse::id::ref::use& use) const
-            {
-              return *_net.get().get_function (use.get().name());
-            }
-          };
-        }
-
-        WSIG( transition
-            , transition::function
-            , ::xml::parse::type::transition_type::function_or_use_type
-            , fun
-            )
-        {
           from::many
             ( this
-            , boost::apply_visitor (get_function (_net), fun).get().ports().ids()
+            , trans.resolved_function().get().ports().ids()
             , from::port
             );
+
+          weaver::connection wc ( _scene
+                                , _place_item_by_name
+                                , _port_in_item_by_name
+                                , _port_out_item_by_name
+                                , _root
+                                );
+
+          from::many (&wc, trans.connections().ids(), from::connection);
+
+          //! \todo do something if not already set
+          //        _transition->repositionChildrenAndResize();
+
         }
-        WSIG(transition, port::open, ::xml::parse::id::ref::port, port)
+
+        WSIG (transition, port::open, ::xml::parse::id::ref::port, port)
         {
           ui::graph::port_item* item
             ( new ui::graph::port_item
               (data::handle::port (port, _root), _transition)
             );
+          //! \todo This sets the wrong position: differentiate
+          //! between ports on transition and ports in net (inner, outer)
           maybe_set_position (item, port);
           weaver::port wp ( item
                           , port.get().direction() == we::type::PORT_IN
@@ -327,37 +281,112 @@ namespace fhg
 
           from::port (&wp, port);
         }
-        WSIGE(transition, transition::close)
-        {
-          //! \todo do something if not already set
-          //        _transition->repositionChildrenAndResize();
-        }
-        WSIG(transition, transition::connection, XMLTYPE(transition_type::connections_type), cs)
-        {
-          weaver::connection wc ( _scene
-                                , _place_item_by_name
-                                , _port_in_item_by_name
-                                , _port_out_item_by_name
-                                , _root
-                                );
 
-          from::many (&wc, cs.ids(), from::connection);
-        }
-        WSIG(transition, transition::properties, WETYPE(property::type), props)
+        class port_toplevel
         {
-          weaver::property wp (_transition);
+        public:
+          explicit port_toplevel ( ui::graph::scene_type* scene
+                                 , item_by_name_type& place_item_by_name
+                                 , data::internal_type* root
+                                 )
+            : _scene (scene)
+            , _place_item_by_name (place_item_by_name)
+            , _name ()
+            , _port_item ()
+            , _root (root)
+          { }
 
-          from::properties (&wp, props);
+          template<int Type, typename T> void weave (const T & x) {}
+          template<int Type> void weave () {}
+
+        private:
+          ui::graph::scene_type* _scene;
+          item_by_name_type& _place_item_by_name;
+          std::string _name;
+          ui::graph::port_item* _port_item;
+          data::internal_type* _root;
+        };
+
+        WSIG (port_toplevel, port::open, ::xml::parse::id::ref::port, id)
+        {
+          const ::xml::parse::type::port_type& port (id.get());
+
+          _port_item = new ui::graph::top_level_port_item
+            (data::handle::port (id, _root));
+          maybe_set_position (_port_item, id);
+          _scene->addItem (_port_item);
+
+          _name = port.name();
+
+          if (port.place)
+          {
+            const item_by_name_type::iterator place_pos
+              (_place_item_by_name.find (*port.place));
+
+            if (place_pos == _place_item_by_name.end())
+            {
+              throw
+                std::runtime_error ("connection: place " + *port.place + " not found");
+            }
+
+            _scene->addItem
+              ( new ui::graph::port_place_association
+                ( _port_item
+                , qgraphicsitem_cast<ui::graph::place_item*> (place_pos->second)
+                , _port_item->handle()
+                )
+              );
+          }
+
+          weaver::property wp (_port_item);
+
+          from::properties (&wp, port.properties());
+        }
+
+        class place
+        {
+        public:
+          explicit place ( ui::graph::place_item* place
+                         , item_by_name_type& place_item_by_name
+                         )
+            : _place (place)
+            , _place_item_by_name (place_item_by_name)
+          { }
+
+          template<int Type, typename T> void weave (const T & x) {}
+          template<int Type> void weave () {}
+
+        private:
+          ui::graph::place_item* _place;
+
+          item_by_name_type& _place_item_by_name;
+        };
+
+        WSIG (place, place::open, ::xml::parse::id::ref::place, id)
+        {
+          const ::xml::parse::type::place_type& place (id.get());
+
+          _place_item_by_name[place.name()] = _place;
+
+          weaver::property wp (_place);
+
+          from::properties (&wp, place.properties());
         }
 
         class net
         {
         public:
-          explicit net ( data::internal_type*
+          explicit net ( data::internal_type* root
                        , ui::graph::scene_type* scene
                        , const ::xml::parse::id::ref::net& net
                        , const ::xml::parse::id::ref::function& function
-                       );
+                       )
+            : _scene (scene)
+            , _net (net)
+            , _function (function)
+            , _place_item_by_name ()
+            , _root (root)
+          { }
 
           template<int Type, typename T> void weave (const T & x) {}
           template<int Type> void weave () {}
@@ -372,75 +401,30 @@ namespace fhg
           data::internal_type* _root;
         };
 
-        class port_toplevel
+        WSIG (net, net::open, ::xml::parse::id::ref::net, id)
         {
-        public:
-          explicit port_toplevel ( ui::graph::scene_type*
-                                 , item_by_name_type& place_item_by_name
-                                 , data::internal_type* root
-                                 );
+          const ::xml::parse::type::net_type& net (id.get());
+          from::many (this, net.places().ids(), from::place);
+          from::many (this, net.transitions().ids(), from::transition);
 
-          template<int Type, typename T> void weave (const T & x) {}
-          template<int Type> void weave () {}
-
-        private:
-          ui::graph::scene_type* _scene;
-          item_by_name_type& _place_item_by_name;
-          std::string _name;
-          ui::graph::port_item* _port_item;
-          data::internal_type* _root;
-        };
-
-        port_toplevel::port_toplevel
-          ( ui::graph::scene_type* scene
-          , item_by_name_type& place_item_by_name
-          , data::internal_type* root
-          )
-            : _scene (scene)
-            , _place_item_by_name (place_item_by_name)
-            , _name ()
-            , _port_item ()
-            , _root (root)
-        {}
-
-        WSIG(port_toplevel, port::open, ::xml::parse::id::ref::port, id)
-        {
-          _port_item = new ui::graph::top_level_port_item
-            (data::handle::port (id, _root));
-          maybe_set_position (_port_item, id);
-          _scene->addItem (_port_item);
+          weaver::port_toplevel wptl (_scene, _place_item_by_name, _root);
+          from::many (&wptl, _function.get().ports().ids(), from::port);
         }
-        WSIG(port_toplevel, port::name, std::string, name)
+
+        WSIG (net, transition::open, ::xml::parse::id::ref::transition, id)
         {
-          _name = name;
+          weaver::transition wt (_root, _scene, _place_item_by_name, id);
+          from::transition (&wt, id);
         }
-        WSIG(port_toplevel, port::place, boost::optional<std::string>, place)
+
+        WSIG (net, place::open, ::xml::parse::id::ref::place, place)
         {
-          if (place)
-          {
-            const item_by_name_type::iterator place_pos
-              (_place_item_by_name.find (*place));
-
-            if (place_pos == _place_item_by_name.end())
-            {
-              throw
-                std::runtime_error ("connection: place " + *place + " not found");
-            }
-
-            _scene->addItem
-              ( new ui::graph::port_place_association
-                ( _port_item
-                , qgraphicsitem_cast<ui::graph::place_item*> (place_pos->second)
-                , _port_item->handle()
-                )
-              );
-          }
-        }
-        WSIG(port_toplevel, port::properties, WETYPE(property::type), props)
-        {
-          weaver::property wp (_port_item);
-
-          from::properties (&wp, props);
+          ui::graph::place_item* place_item
+            (new ui::graph::place_item (data::handle::place (place, _root)));
+          weaver::place wp (place_item, _place_item_by_name);
+          maybe_set_position (place_item, place);
+          _scene->addItem (place_item);
+          from::place (&wp, place);
         }
 
         template<typename item_type>
@@ -452,77 +436,6 @@ namespace fhg
             result[item->handle().get().name()] = item;
           }
           return result;
-        }
-
-        class place
-        {
-        public:
-          explicit place (ui::graph::place_item*, item_by_name_type&);
-
-          template<int Type, typename T> void weave (const T & x) {}
-          template<int Type> void weave () {}
-
-        private:
-          ui::graph::place_item* _place;
-
-          item_by_name_type& _place_item_by_name;
-        };
-
-        place::place ( ui::graph::place_item* place
-                     , item_by_name_type& place_item_by_name
-                     )
-          : _place (place)
-          , _place_item_by_name (place_item_by_name)
-        {}
-
-        WSIG(place, place::name, std::string, name)
-        {
-          _place_item_by_name[name] = _place;
-        }
-        WSIG(place, place::properties, WETYPE(property::type), props)
-        {
-          weaver::property wp (_place);
-
-          from::properties (&wp, props);
-        }
-
-        net::net ( data::internal_type* root
-                 , ui::graph::scene_type* scene
-                 , const ::xml::parse::id::ref::net& net
-                 , const ::xml::parse::id::ref::function& function
-                 )
-          : _scene (scene)
-          , _net (net)
-          , _function (function)
-          , _place_item_by_name ()
-          , _root (root)
-        {}
-        WSIGE(net, net::close)
-        {
-          weaver::port_toplevel wptl (_scene, _place_item_by_name, _root);
-          from::many (&wptl, _function.get().ports().ids(), from::port);
-        }
-        WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
-        {
-          from::many (this, transitions.ids(), from::transition);
-        }
-        WSIG(net, net::places, XMLTYPE(net_type::places_type), places)
-        {
-          from::many (this, places.ids(), from::place);
-        }
-        WSIG(net, place::open, ::xml::parse::id::ref::place, place)
-        {
-          ui::graph::place_item* place_item
-            (new ui::graph::place_item (data::handle::place (place, _root)));
-          weaver::place wp (place_item, _place_item_by_name);
-          maybe_set_position (place_item, place);
-          _scene->addItem (place_item);
-          from::place (&wp, place);
-        }
-        WSIG(net, transition::open, ::xml::parse::id::ref::transition, id)
-        {
-          weaver::transition wt (_root, _scene, _net, _place_item_by_name, id);
-          from::transition (&wt, id);
         }
       }
 
@@ -546,12 +459,7 @@ namespace fhg
         {
           item_by_name_type places (name_map_for_items (scene->all_places()));
           weaver::transition wt
-            ( transition.document()
-            , scene
-            , transition.get().parent()->make_reference_id()
-            , places
-            , transition.id()
-            );
+            (transition.document(), scene, places, transition.id());
           from::transition (&wt, transition.id());
         }
 
