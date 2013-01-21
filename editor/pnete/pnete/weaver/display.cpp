@@ -198,8 +198,7 @@ namespace fhg
 
         WSIG (net, transition::open, ::xml::parse::id::ref::transition, id)
         {
-          weaver::transition wt (_root, _scene, id);
-          from::transition (&wt, id);
+          display::transition (data::handle::transition (id, _root), _scene);
         }
 
         WSIG (net, place::open, ::xml::parse::id::ref::place, id)
