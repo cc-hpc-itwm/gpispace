@@ -132,7 +132,7 @@ namespace fhg
       void editor_window::open()
       {
         QString filename (QFileDialog::getOpenFileName
-           (this, tr ("Load net"), QDir::homePath(), tr ("XML files (*.xml);;All (*)")));
+           (this, tr ("Load net"), QDir::homePath(), tr ("XPNET files (*.xpnet);;All (*)")));
 
         if (filename.isEmpty())
         {
@@ -153,7 +153,7 @@ namespace fhg
                            ( this
                            , tr ("Save")
                            , QDir::homePath()
-                           , tr ("XML files (*.xml);; All files (*)")
+                           , tr ("XPNET files (*.xpnet);; All files (*)")
                            )
                          );
 
@@ -162,9 +162,9 @@ namespace fhg
           return;
         }
 
-        if (!filename.endsWith (".xml"))
+        if (!filename.endsWith (".xpnet"))
         {
-          filename.append (".xml");
+          filename.append (".xpnet");
         }
 
         data::manager::instance().save
