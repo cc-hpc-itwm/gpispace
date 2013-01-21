@@ -43,7 +43,7 @@ namespace xml
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
                    , const std::string & name
-                   , const std::string & _type
+                   , const std::string & type
                    , const boost::optional<bool> is_virtual
                    );
 
@@ -58,6 +58,9 @@ namespace xml
 
         const std::string& name() const;
         const std::string& name (const std::string& name);
+
+        const std::string& type() const;
+        const std::string& type (const std::string&);
 
         boost::optional<signature::type> signature() const;
         signature::type signature_or_throw() const;
@@ -90,13 +93,11 @@ namespace xml
         boost::optional<bool> _is_virtual;
 
         std::string _name;
+        std::string _type;
 
         //! \todo All these should be private with accessors.
       public:
-        std::string type;
         std::list<token_type> tokens;
-
-        const std::string& type_GET() const;
 
       private:
         we::type::property::type _properties;

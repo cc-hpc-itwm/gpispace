@@ -125,18 +125,6 @@ namespace xml
         bool operator () (literal::type_name_t & t) const;
         bool operator () (signature::structured_t & map) const;
       };
-
-      class specialize : public boost::static_visitor<signature::desc_t>
-      {
-      private:
-        const type::type_map_type & map_in;
-
-      public:
-        specialize (const type::type_map_type & _map_in);
-
-        signature::desc_t operator () (literal::type_name_t & t) const;
-        signature::desc_t operator () (signature::structured_t & map) const;
-      };
     }
   }
 }

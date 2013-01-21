@@ -55,6 +55,9 @@ namespace xml
         const std::string& name() const;
         const std::string& name (const std::string& name);
 
+        const std::string& type() const;
+        const std::string& type (const std::string&);
+
         boost::optional<signature::type> signature() const;
         signature::type signature_or_throw() const;
 
@@ -82,13 +85,11 @@ namespace xml
 
       private:
         std::string _name;
+        std::string _type;
 
         //! \todo All these should be private with accessors.
       public:
-        std::string type;
         boost::optional<std::string> place;
-
-        const std::string& type_GET() const;
 
       private:
         we::type::PortDirection _direction;

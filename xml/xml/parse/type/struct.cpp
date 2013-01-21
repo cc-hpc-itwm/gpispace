@@ -303,38 +303,6 @@ namespace xml
         }
         return true;
       }
-
-      // ******************************************************************* //
-
-      specialize::specialize (const type::type_map_type & _map_in)
-        : map_in (_map_in)
-      {}
-
-      signature::desc_t specialize::operator () (literal::type_name_t & t) const
-      {
-        const type::type_map_type::const_iterator mapped (map_in.find (t));
-
-        return (mapped != map_in.end()) ? mapped->second : t;
-      }
-
-      signature::desc_t specialize::operator () (signature::structured_t & map) const
-      {
-        for ( signature::structured_t::map_t::iterator pos (map.begin())
-            ; pos != map.end()
-            ; ++pos
-            )
-        {
-          const type::type_map_type::const_iterator mapped
-            (map_in.find (pos->first));
-
-          pos->second = (mapped != map_in.end())
-            ? mapped->second
-            : boost::apply_visitor (*this, pos->second)
-            ;
-        }
-
-          return map;
-      }
     }
   }
 }

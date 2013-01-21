@@ -392,7 +392,7 @@ namespace fhg
           WEAVE(port::open) (id);
           const ::xml::parse::type::port_type& port (id.get());
           WEAVE(port::name) (port.name());
-          WEAVE(port::type) (port.type);
+          WEAVE(port::type) (port.type());
           WEAVE(port::place) (port.place);
           WEAVE(port::properties) (port.properties());
           WEAVE(port::close)();
@@ -533,7 +533,7 @@ namespace fhg
           WEAVE(place::open) (place_id);
           const ::xml::parse::type::place_type& place (place_id.get());
           WEAVE(place::name) (place.name());
-          WEAVE(place::type) (place.type);
+          WEAVE(place::type) (place.type());
           WEAVE(place::is_virtual) (place.is_virtual());
           WEAVE(place::properties) (place.properties());
 

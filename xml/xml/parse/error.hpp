@@ -1010,9 +1010,9 @@ namespace xml
           s << "in transition " << trans << " in " << path << ": "
             << "type error: connect-" << direction
             << " place " << place.name()
-            << " of type " << place.type
+            << " of type " << place.type()
             << " with port " << port.name()
-            << " of type " << port.type
+            << " of type " << port.type()
             ;
 
           return s.str();

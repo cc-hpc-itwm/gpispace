@@ -342,7 +342,7 @@ namespace xml
                          )
             );
 
-          if (id_other && id.get().type != id_other->get().type)
+          if (id_other && id.get().signature() != id_other->get().signature())
           {
             throw error::port_type_mismatch (id, *id_other, path);
           }
@@ -512,7 +512,7 @@ namespace xml
 
         BOOST_FOREACH (const port_type& port, ports().values())
         {
-          forbidden.insert (std::make_pair (port.type, port.name()));
+          forbidden.insert (std::make_pair (port.type(), port.name()));
         }
 
         return forbidden;
@@ -1991,8 +1991,8 @@ namespace xml
 
               const port_type& port (id_port->get());
 
-              port_return = port_with_type (*mod.port_return, port.type);
-              types.insert (port.type);
+              port_return = port_with_type (*mod.port_return, port.type());
+              types.insert (port.type());
             }
 
             for ( module_type::port_args_type::const_iterator name (mod.port_arg.begin())
@@ -2014,13 +2014,13 @@ namespace xml
                    && (*mod.port_return == port_in.name())
                    )
                 {
-                  ports_const.push_back (port_with_type (*name, port_in.type));
-                  types.insert (port_in.type);
+                  ports_const.push_back (port_with_type (*name, port_in.type()));
+                  types.insert (port_in.type());
                 }
                 else
                 {
-                  ports_mutable.push_back (port_with_type (*name, port_in.type));
-                  types.insert (port_in.type);
+                  ports_mutable.push_back (port_with_type (*name, port_in.type()));
+                  types.insert (port_in.type());
                 }
               }
               else if (_id_function.get().is_known_port_in (*name))
@@ -2030,8 +2030,8 @@ namespace xml
 
                 const port_type& port_in (id_port_in->get());
 
-                ports_const.push_back (port_with_type (*name, port_in.type));
-                types.insert (port_in.type);
+                ports_const.push_back (port_with_type (*name, port_in.type()));
+                types.insert (port_in.type());
               }
               else if (_id_function.get().is_known_port_out (*name))
               {
@@ -2048,8 +2048,8 @@ namespace xml
                 }
                 else
                 {
-                  ports_out.push_back (port_with_type (*name, port_out.type));
-                  types.insert (port_out.type);
+                  ports_out.push_back (port_with_type (*name, port_out.type()));
+                  types.insert (port_out.type());
                 }
               }
             }
@@ -2203,29 +2203,27 @@ namespace xml
 
       namespace
       {
-        void to_cpp (const structure_type& s, const state::type & state)
-        {
-          namespace cpp_util = ::fhg::util::cpp;
-
-          typedef boost::filesystem::path path_t;
-
-          const path_t prefix (state.path_to_cpp());
-          const path_t file
-            (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name()));
-
-          util::check_no_change_fstream stream (state, file);
-
-          signature::cpp::cpp_header
-            (stream, s.signature(), s.name(), s.path(), cpp_util::path::type());
-
-          stream.commit();
-        }
-
         void to_cpp (const structs_type& structs, const state::type& state)
         {
           BOOST_FOREACH (const structure_type& structure, structs)
           {
-            to_cpp (structure, state);
+            const boost::filesystem::path prefix (state.path_to_cpp());
+            const boost::filesystem::path file
+              ( prefix
+              / ::fhg::util::cpp::path::type()
+              / ::fhg::util::cpp::make::hpp (structure.name())
+              );
+
+            util::check_no_change_fstream stream (state, file);
+
+            signature::cpp::cpp_header ( stream
+                                       , structure.signature()
+                                       , structure.name()
+                                       , structure.path()
+                                       , ::fhg::util::cpp::path::type()
+                                       );
+
+            stream.commit();
           }
         }
 
