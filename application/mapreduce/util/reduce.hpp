@@ -17,8 +17,9 @@
 #include <stdexcept>
 #include <boost/filesystem.hpp>
 #include <util/time.hpp>
+#include <util/helper.hpp>
+#include <fhglog/fhglog.hpp>
 #include <vector>
-
 
 using namespace std;
 
@@ -38,7 +39,7 @@ namespace mapreduce
 
     	  BOOST_FOREACH(const std::string& str_item, list_in_values)
     	  {
-    		  std:string str_val(str_item);
+    		  std::string str_val(str_item);
     		  while( boost::algorithm::starts_with(str_val, "[") && boost::algorithm::ends_with(str_val, "]") )
 			  {
 				  std::string val = str_val.substr(1, str_val.size()-2);
@@ -137,61 +138,6 @@ namespace mapreduce
 		  }
       }
 
-      void reduce_arr_stringstream(const int part_id, const size_t red_slot_size, const std::vector<std::string>& arr_items, std::ostringstream* ptr_oss )
-	  {
-		  std::list<std::string> list_in_values;
-		  key_val_pair_t kv_pair, kv_pair_next;
-
-		  try {
-			  kv_pair = str2kvpair(arr_items[0]);
-		  }
-		  catch(const std::exception& exc ){
-			  throw std::runtime_error("Invalid key-value pair ("+ arr_items[0] + ") :" + +exc.what());
-		  }
-
-		  std::string last_key = kv_pair.first;
-
-		  for(std::vector<std::string>::const_iterator it=arr_items.begin(); it != arr_items.end(); it++ )
-		  {
-			  try {
-				  kv_pair_next = ::mapreduce::util::str2kvpair(*it);
-			  }
-			  catch(const std::exception& exc ){
-				  throw std::runtime_error("Invalid key-value pair ("+ *it + ") :" +exc.what());
-			  }
-
-			  if( kv_pair_next.first != last_key )
-			  {
-				  std::list<std::string> list_out_values = ::mapreduce::util::reduce(last_key, list_in_values);
-
-				  try {
-					  ::mapreduce::util::write_to_stringstream( last_key, list_out_values, *ptr_oss, red_slot_size );
-				  }
-				  catch(const std::exception& exc) {
-					  throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(part_id)+":"+exc.what());
-				  }
-
-					last_key = kv_pair_next.first;
-					list_in_values.clear();
-					list_in_values.push_back(kv_pair_next.second);
-				}
-				else
-				  list_in_values.push_back(kv_pair_next.second);
-		  }
-
-		  if(!list_in_values.empty())
-		  {
-			  std::list<std::string> list_out_values = ::mapreduce::util::reduce( last_key, list_in_values );
-
-			  try {
-				 ::mapreduce::util::write_to_stringstream( last_key, list_out_values, *ptr_oss, red_slot_size);
-			  }
-			  catch(const std::exception& exc) {
-				  throw std::runtime_error("Reduce slot "+boost::lexical_cast<std::string>(part_id)+":"+exc.what());
-			  }
-		  }
-	  }
-
       // assume that the both input arrays are sorted reduced !!!!
       void merge_and_reduce_arr_buff(const int part_id, const size_t red_slot_size, const std::vector<std::string>& arr_items_1, const std::vector<std::string>& arr_items_2, char* ptr_shmem, size_t& last_pos )
    	  {
@@ -205,7 +151,7 @@ namespace mapreduce
    		  key_val_pair_t kv_pair_arr_2 = str2kvpair(*it_2);
 
    		  // the array and the file are already reduced
-   		  std:string str_pair;
+   		  std::string str_pair;
    		  while( it_1 != arr_items_1.end() && it_2 != arr_items_2.end() )
    		  {
    			  str_pair="";
@@ -274,6 +220,64 @@ namespace mapreduce
    				  last_pos = ::mapreduce::util::write_to_buff( *it_1++, ptr_shmem, last_pos, red_slot_size );
    		  }
    	  }
+
+  	// assume that the both input arrays are sorted reduced !!!!
+	size_t merge_and_reduce_arr_buff_rep( const int part_id,
+										const size_t red_slot_size,
+										const std::vector<std::string>& arr_items_1,
+										const std::vector<std::string>& arr_items_2,
+										char* reduce_buff )
+	{
+		std::list<std::string> list_in_values;
+		size_t last_pos = 0;
+
+		MLOG(INFO, "Merge and reduce ...");
+		std::vector<std::string>::const_iterator it_1 = arr_items_1.begin();
+		std::vector<std::string>::const_iterator it_2 = arr_items_2.begin();
+
+		key_val_pair_t kv_pair_arr_1 = str2kvpair(*it_1);
+		key_val_pair_t kv_pair_arr_2 = str2kvpair(*it_2);
+
+		// the array and the file are already reduced
+		std::string str_pair, curr_item;
+		std::string curr_key, last_key, curr_val;
+
+		while( it_1 != arr_items_1.end() || it_2 != arr_items_2.end() )
+		{
+			if( it_1 != arr_items_1.end() && it_2 != arr_items_2.end() )
+				curr_item = (key(*it_1)<key(*it_2))?*it_1++:*it_2++;
+			else
+				curr_item = (it_2!=arr_items_2.end())?*it_2++:*it_1++;
+
+			key_val_pair_t kv_pair = str2kvpair(curr_item);
+			curr_key = kv_pair.first;
+			curr_val = kv_pair.second;
+
+			if( curr_key != last_key )
+			{
+				if( !list_in_values.empty() )
+				{
+					std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+					last_pos = ::mapreduce::util::write_to_buff( last_key, list_out_values, reduce_buff, last_pos, red_slot_size );
+					list_in_values.clear();
+				}
+
+				last_key = curr_key;
+			}
+
+			list_in_values.push_back(curr_val);
+		}
+
+		if( !list_in_values.empty() )
+		{
+			std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+			last_pos = ::mapreduce::util::write_to_buff( last_key, list_out_values, reduce_buff, last_pos, red_slot_size );
+			list_in_values.clear();
+		}
+
+		return last_pos;
+	}
+
 
       void reduce_arr_file(const std::vector<std::string>& arr_items,  const std::string& str_part_in_file )
       {
@@ -384,43 +388,6 @@ namespace mapreduce
 				  throw std::runtime_error(std::string("Combine exception: ")+exc.what());
 			  }
 		  }
-	  }
-
-      void combine_mt(const std::vector<std::string>& arr_part_items, std::vector<std::string>& arr_part_comb )
-	  {
-    	  //combine(arr_part_items, arr_part_comb );
-
-		std::vector<std::string> arr_part_items_left, arr_part_items_right, arr_part_comb_left, arr_part_comb_right;
-
-		int i;
-   		for(i=0; i<arr_part_items.size()/2;i++)
-   			arr_part_items_left.push_back(arr_part_items[i]);
-
-   		while(i>0 && i<arr_part_items.size())
-   			if(arr_part_items[i] == arr_part_items[i-1] )
-   				arr_part_items_left.push_back(arr_part_items[i++]);
-
-   		for(int j=i;j<arr_part_items.size(); j++)
-   			arr_part_items_right.push_back(arr_part_items[j]);
-
-   		/*
-   		boost::thread thread_comb_0( boost::bind( &mapreduce::util::combine, arr_part_items_left, arr_part_comb_left ));
-   		boost::thread thread_comb_1( boost::bind( &mapreduce::util::combine, arr_part_items_right, arr_part_comb_right ));
-
-   		thread_comb_0.join();
-   		thread_comb_1.join();*/
-
-   		mapreduce::util::combine(arr_part_items_left, arr_part_comb_left );
-   		mapreduce::util::combine( arr_part_items_right, arr_part_comb_right );
-
-		/*arr_part_comb.insert(arr_part_comb.end(), arr_part_comb_left.begin(), arr_part_comb_left.end());
-		arr_part_comb.insert(arr_part_comb.end(), arr_part_comb_right.begin(), arr_part_comb_right.end());*/
-
-		BOOST_FOREACH(std::string str_item, arr_part_comb_left)
-			arr_part_comb.push_back(str_item);
-		BOOST_FOREACH(std::string str_item, arr_part_comb_right)
-			arr_part_comb.push_back(str_item);
-
 	  }
 
       bool file_exists(const std::string& filename)
