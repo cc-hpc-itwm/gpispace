@@ -13,6 +13,8 @@
 
 #include <rewrite/validprefix.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 namespace we { namespace type {
     namespace optimize
     {
@@ -114,7 +116,7 @@ namespace we { namespace type {
         const std::string name_A (net.get_place (pid_A).name());
         const std::string name_B (net.get_place (pid_B).name());
 
-        petri_net::net::tokens_type tokens (net.get_token (pid_B));
+        std::vector<token::type> tokens (net.get_token (pid_B));
 
         net.delete_place (pid_B);
 

@@ -126,20 +126,6 @@ namespace statistics
 }
 #endif
 
-namespace Function { namespace Condition
-{
-  struct Traits
-  {
-  public:
-    typedef boost::unordered_map< petri_net::place_id_type
-                                , std::vector<token::type>
-                                > pid_in_map_t;
-
-    typedef cross::cross<pid_in_map_t> choices_t;
-    typedef cross::iterator<pid_in_map_t> choice_it_t;
-  };
-}}
-
 namespace condition
 {
   namespace exception
@@ -170,8 +156,6 @@ namespace condition
     typedef boost::function<std::string (const petri_net::place_id_type &)> translate_t;
     translate_t translate;
 
-    typedef Function::Condition::Traits traits;
-
     friend class boost::serialization::access;
     template<typename Archive>
     void save(Archive & ar, const unsigned int) const
@@ -187,6 +171,11 @@ namespace condition
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     friend std::ostream & operator<<(std::ostream &, const type &);
+
+    typedef boost::unordered_map< petri_net::place_id_type
+                                , std::vector<token::type>
+                                > tokens_by_place_id_t;
+
   public:
     type ( const std::string & _expression
          , const translate_t & _translate = &no_trans
@@ -210,7 +199,7 @@ namespace condition
       , translate (_translate)
     {}
 
-    bool operator () (traits::choices_t & choices) const
+    bool operator () (cross::cross<tokens_by_place_id_t>& choices) const
     {
 #ifdef STATISTICS_CONDITION
       unsigned long eval (0);
@@ -237,7 +226,7 @@ namespace condition
 
       for (; choices.has_more(); ++choices)
         {
-          for ( traits::choice_it_t choice (*choices)
+          for ( cross::iterator<tokens_by_place_id_t> choice (*choices)
               ; choice.has_more()
               ; ++choice
               )

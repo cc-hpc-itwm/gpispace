@@ -42,9 +42,9 @@ namespace xml
                                     "%2% (%3%) and %4% (%5%) in %6%"
                                     )
                     % port.get().name()
-                    % port.get().type
+                    % port.get().type()
                     % we::type::enum_to_string (port.get().direction())
-                    % other_port.get().type
+                    % other_port.get().type()
                     % we::type::enum_to_string (other_port.get().direction())
                     % path
                     )
@@ -74,9 +74,9 @@ namespace xml
                                     )
                     % we::type::enum_to_string (port.get().direction())
                     % port.get().name()
-                    % port.get().type
+                    % port.get().type()
                     % place.get().name()
-                    % place.get().type
+                    % place.get().type()
                     % path
                     )
         , _port (port)

@@ -397,60 +397,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      void transition_type::resolve ( const state::type & state
-                                    , const xml::parse::structure_type::forbidden_type & forbidden
-                                    )
-      {
-        const xml::parse::structure_type::set_type empty;
-
-        resolve (empty, state, forbidden);
-      }
-
-      namespace
-      {
-        class transition_resolve : public boost::static_visitor<void>
-        {
-        private:
-          const xml::parse::structure_type::set_type global;
-          const state::type & state;
-          const xml::parse::structure_type::forbidden_type & forbidden;
-
-        public:
-          transition_resolve
-            ( const xml::parse::structure_type::set_type & _global
-            , const state::type & _state
-            , const xml::parse::structure_type::forbidden_type & _forbidden
-            )
-              : global (_global)
-              , state (_state)
-              , forbidden (_forbidden)
-          { }
-
-          void operator () (const id::ref::use&) const { return; }
-          void operator () (const id::ref::function& id_function) const
-          {
-            id_function.get_ref().resolve (global, state, forbidden);
-          }
-        };
-      }
-
-      // ******************************************************************* //
-
-
-
-      void transition_type::resolve ( const xml::parse::structure_type::set_type & global
-                                    , const state::type & state
-                                    , const xml::parse::structure_type::forbidden_type & forbidden
-                                    )
-      {
-        boost::apply_visitor
-          ( transition_resolve (global, state, forbidden)
-          , function_or_use()
-          );
-      }
-
-      // ***************************************************************** //
-
       namespace
       {
         class transition_specialize : public boost::static_visitor<void>
@@ -562,8 +508,7 @@ namespace xml
         const port_type& port (id_port->get());
         const place_type& place (id_place->get());
 
-        // typecheck connect.place.type vs connect.port.type
-        if (place.type != port.type)
+        if (place.signature() != port.signature())
         {
           throw error::connect_type_error ( direction
                                           , name()
@@ -611,6 +556,18 @@ namespace xml
       we::type::property::type& transition_type::properties()
       {
         return _properties;
+      }
+
+      // ******************************************************************* //
+
+      boost::optional<signature::type>
+      transition_type::signature (const std::string& type) const
+      {
+        if (has_parent())
+        {
+          return parent()->signature (type);
+        }
+        return boost::none;
       }
 
       // ******************************************************************* //
@@ -732,7 +689,9 @@ namespace xml
             const boost::optional<const id::ref::port&> id_port_out
               (fun.get_port_out (port_in.name()));
 
-            if (id_port_out && id_port_out->get().type != port_in.type)
+            if (  id_port_out
+               && id_port_out->get().signature() != port_in.signature()
+               )
             {
               state.warn
                 ( warning::conflicting_port_types ( id_transition
@@ -841,16 +800,13 @@ namespace xml
             {
               if (port.direction() == we::type::PORT_IN)
               {
-                const signature::type type
-                  (fun.type_of_port (we::type::PORT_IN, port));
-
                 trans_in.add_port ( port.name()
-                                  , type
+                                  , port.signature_or_throw()
                                   , we::type::PORT_IN
                                   , port.properties()
                                   );
                 trans_in.add_port ( port.name()
-                                  , type
+                                  , port.signature_or_throw()
                                   , we::type::PORT_OUT
                                   , port.properties()
                                   );
@@ -937,16 +893,13 @@ namespace xml
             {
               if (port.direction() == we::type::PORT_OUT)
               {
-                const signature::type type
-                  (fun.type_of_port (we::type::PORT_OUT, port));
-
                 trans_out.add_port ( port.name()
-                                   , type
+                                   , port.signature_or_throw()
                                    , we::type::PORT_IN
                                    , port.properties()
                                    );
                 trans_out.add_port ( port.name()
-                                   , type
+                                   , port.signature_or_throw()
                                    , we::type::PORT_OUT
                                    , port.properties()
                                    );

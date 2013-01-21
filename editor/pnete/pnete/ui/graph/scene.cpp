@@ -398,7 +398,7 @@ namespace fhg
                               , tr ("port_set_type_dialog_title_for_%1").arg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("port_set_type_prompt")
-                              , QString::fromStdString (handle.get().type)
+                              , QString::fromStdString (handle.get().type())
                               , event->widget()
                               , this
                               )
@@ -431,7 +431,7 @@ namespace fhg
                               , tr ("port_set_type_dialog_title_for_%1").arg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("port_set_type_prompt")
-                              , QString::fromStdString (handle.get().type)
+                              , QString::fromStdString (handle.get().type())
                               , event->widget()
                               , this
                               )
@@ -531,7 +531,7 @@ namespace fhg
                                 , tr ("place_set_type_dialog_title_for_%1").arg
                                   (QString::fromStdString (handle.get().name()))
                                 , tr ("place_set_type_prompt")
-                                , QString::fromStdString (handle.get().type)
+                                , QString::fromStdString (handle.get().type())
                                 , event->widget()
                                 , this
                                 )

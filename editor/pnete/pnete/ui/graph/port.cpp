@@ -243,7 +243,7 @@ namespace fhg
         }
         const std::string& port_item::we_type() const
         {
-          return connectable_item::we_type (handle().get().type);
+          return connectable_item::we_type (handle().get().type());
         }
 
         port::orientation::type port_item::orientation() const

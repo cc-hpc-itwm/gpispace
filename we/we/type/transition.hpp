@@ -926,67 +926,6 @@ namespace we { namespace type {
       return hasher(t.name());
     }
 
-    namespace detail
-    {
-      class transition_visitor_show : public boost::static_visitor<std::string>
-      {
-      public:
-        std::string operator () (const expression_t & expr) const
-        {
-          return "{expr, " + fhg::util::show (expr) + "}";
-        }
-
-        std::string operator () (const module_call_t & mod_call) const
-        {
-          return "{mod, " + fhg::util::show (mod_call) + "}";
-        }
-
-        std::string operator () ( const petri_net::net& net
-                                ) const
-        {
-          return std::string("{net, ") + fhg::util::show(net) + "}";
-        }
-      };
-    }
-
-    inline std::ostream & operator<< ( std::ostream & s
-                                     , const transition_t & t
-                                     )
-    {
-      typedef transition_t trans_t;
-      s << "{";
-      s << "trans";
-      s << ", ";
-      s << t.name();
-      s << ", ";
-      s << (t.is_internal() ? "intern" : "extern");
-      s << ", ";
-      s << boost::apply_visitor (detail::transition_visitor_show(), t.data());
-      s << ", {cond, " << t.condition() << "}";
-      s << ", {ports, ";
-      s << "[";
-      for ( trans_t::port_map_t::const_iterator p (t.ports_.begin())
-          ; p != t.ports_.end()
-          ; ++p
-          )
-      {
-        if (p != t.ports_.begin())
-          s << ", ";
-
-        s << "(";
-        s << p->first;
-        s << ", ";
-        s << p->second;
-        s << ")";
-      }
-
-      s << "]";
-      s << "}";
-
-      s << "}";
-      return s;
-    }
-
     // ********************************************************************* //
 
     namespace content

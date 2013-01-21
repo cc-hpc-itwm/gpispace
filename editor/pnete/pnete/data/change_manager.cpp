@@ -226,7 +226,7 @@ namespace fhg
         void set_type_impl
           (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& type)
         {
-          handle.get_ref().type = type.toStdString();
+          handle.get_ref().type (type.toStdString());
 
           typedef void (change_manager_t::* signal_type)
             ( const QObject*
@@ -250,7 +250,7 @@ namespace fhg
             )
               : ACTION_INIT (name)
               , _handle (handle)
-              , _old_type (QString::fromStdString (handle.get().type))
+              , _old_type (QString::fromStdString (handle.get().type()))
               , _new_type (type)
           { }
 
@@ -1044,7 +1044,7 @@ namespace fhg
       {
         //! \todo Check for ports being in that or in transitions of that net?
 
-        if (from.get().type != to.get().type)
+        if (from.get().signature() != to.get().signature())
         {
           throw std::runtime_error ("different types for connected ports");
         }
@@ -1063,7 +1063,7 @@ namespace fhg
             , net.id().id_mapper()
             , boost::none
             , name
-            , from.get().type
+            , from.get().type()
             , boost::none
             ).make_reference_id()
           );

@@ -2,11 +2,14 @@
 
 #include <xml/parse/type/net.hpp>
 
+#include <xml/parse/error.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/id/mapper.hpp>
+#include <xml/parse/util/weparse.hpp>
 
-#include <we/type/place.hpp>
+#include <we/type/literal/default.hpp>
 #include <we/type/net.fwd.hpp>
+#include <we/type/place.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
 
@@ -36,7 +39,6 @@ namespace xml
                          , const transitions_type& transitions
                          , const structs_type& structs
                          , const bool& contains_a_module_call
-                         , const xml::parse::structure_type::set_type& resol
                          , const we::type::property::type& properties
                          , const boost::filesystem::path& path
                          )
@@ -49,7 +51,6 @@ namespace xml
         , _transitions (transitions, _id)
         , structs (structs)
         , contains_a_module_call (contains_a_module_call)
-        , structs_resolved (resol)
         , _properties (properties)
         , _path (path)
       {
@@ -381,22 +382,34 @@ namespace xml
 
       // ***************************************************************** //
 
-      signature::type net_type::type_of_place (const place_type& place) const
+      boost::optional<signature::type>
+      net_type::signature (const std::string& type) const
       {
-        if (literal::valid_name (place.type))
+        const structs_type::const_iterator pos
+          ( std::find_if ( structs.begin()
+                         , structs.end()
+                         , boost::bind ( parse::structure_type::struct_by_name
+                                       , type
+                                       , _1
+                                       )
+                         )
+          );
+
+        if (pos != structs.end())
         {
-          return signature::type (place.type);
+          return signature::type
+            ( parse::structure_type::resolve_with_fun
+              (*pos, boost::bind (&net_type::signature, *this, _1))
+            , pos->name()
+            );
         }
 
-        const xml::parse::structure_type::set_type::const_iterator sig
-          (structs_resolved.find (place.type));
-
-        if (sig == structs_resolved.end())
+        if (has_parent())
         {
-          throw error::place_type_unknown (place.name(), place.type, path());
+          return parent()->signature (type);
         }
 
-        return signature::type (sig->second.signature(), sig->second.name());
+        return boost::none;
       }
 
       // ***************************************************************** //
@@ -509,53 +522,6 @@ namespace xml
         }
 
         specialize_structs (map, structs, state);
-      }
-
-      // ***************************************************************** //
-
-      void net_type::resolve ( const state::type & state
-                             , const xml::parse::structure_type::forbidden_type & forbidden
-                             )
-      {
-        resolve (xml::parse::structure_type::set_type(), state, forbidden);
-      }
-
-      void net_type::resolve ( const xml::parse::structure_type::set_type & global
-                             , const state::type & state
-                             , const xml::parse::structure_type::forbidden_type & forbidden
-                             )
-      {
-        namespace st = xml::parse::structure_type;
-
-        structs_resolved =
-          st::join (global, st::make (structs), forbidden, state);
-
-        for ( st::set_type::iterator pos (structs_resolved.begin())
-            ; pos != structs_resolved.end()
-            ; ++pos
-            )
-        {
-          boost::apply_visitor
-            ( st::resolve (structs_resolved, pos->second.path())
-            , pos->second.signature()
-            );
-        }
-
-        BOOST_FOREACH (function_type& function, functions().values())
-        {
-          function.resolve (structs_resolved, state, st::forbidden_type());
-        }
-
-        BOOST_FOREACH (transition_type& transition, transitions().values())
-        {
-          transition.resolve (structs_resolved, state, st::forbidden_type());
-        }
-
-        BOOST_FOREACH(place_type& place, places().values())
-        {
-          place.sig = type_of_place (place);
-          place.translate (path(), state);
-        }
       }
 
       // ***************************************************************** //
@@ -700,13 +666,179 @@ namespace xml
           , _transitions.clone (new_id, new_mapper)
           , structs
           , contains_a_module_call
-          , structs_resolved
           , _properties
           , _path
           ).make_reference_id();
       }
 
       // ******************************************************************* //
+
+      namespace
+      {
+        class default_construct_value : public boost::static_visitor<value::type>
+        {
+        public:
+          value::type
+          operator () (const literal::type_name_t & type_name) const
+          {
+            return literal::of_type (type_name);
+          }
+
+          value::type
+          operator () (const signature::structured_t & signature) const
+          {
+            value::structured_t val;
+
+            for ( signature::structured_t::const_iterator sig (signature.begin())
+                ; sig != signature.end()
+                ; ++sig
+                )
+            {
+              const signature::field_name_t field (sig->first);
+              const signature::desc_t desc (sig->second);
+
+              val[field] = boost::apply_visitor (*this, desc);
+            }
+
+            return val;
+          }
+        };
+
+        class construct_value : public boost::static_visitor<value::type>
+        {
+        private:
+          const std::string & place_name;
+          const boost::filesystem::path & path;
+          const signature::field_name_t field_name;
+          const state::type & state;
+
+        public:
+          construct_value ( const std::string & _place_name
+                          , const boost::filesystem::path & _path
+                          , const signature::field_name_t & _field_name
+                          , const state::type & _state
+                          )
+            : place_name (_place_name)
+            , path (_path)
+            , field_name (_field_name)
+            , state (_state)
+          {}
+
+          value::type operator () ( const literal::type_name_t & signature
+                                  , const literal::type_name_t & value
+                                  ) const
+          {
+            std::ostringstream s;
+
+            s << "when parsing the value "
+              << " of field " << field_name
+              << " of place " << place_name
+              << " of type " << signature
+              << " in " << path
+              ;
+
+            const util::we_parser_t parser
+              (util::generic_we_parse (value, s.str()));
+
+            try
+            {
+              expr::eval::context context;
+
+              const value::type v (parser.eval_all (context));
+              const signature::type sig (signature);
+
+              return boost::apply_visitor
+                ( value::visitor::require_type (field_name)
+                , sig.desc()
+                , v
+                );
+            }
+            catch (const expr::exception::eval::divide_by_zero & e)
+            {
+              throw error::parse_lift (place_name, field_name, path, e.what());
+            }
+            catch (const expr::exception::eval::type_error & e)
+            {
+              throw error::parse_lift (place_name, field_name, path, e.what());
+            }
+            catch (const ::type::error & e)
+            {
+              throw error::parse_lift (place_name, field_name, path, e.what());
+            }
+          }
+
+          value::type operator () ( const signature::structured_t & signature
+                                  , const signature::structured_t & value
+                                  ) const
+          {
+            value::structured_t val;
+
+            for ( signature::structured_t::const_iterator sig (signature.begin())
+                ; sig != signature.end()
+                ; ++sig
+                )
+            {
+              const signature::field_name_t field (sig->first);
+              const signature::desc_t desc (sig->second);
+              const std::string field_deeper
+                ((field_name == "") ? field : (field_name + "." + field));
+
+              if (value.has_field (field))
+              {
+                val[field] = boost::apply_visitor
+                  ( construct_value (place_name, path, field_deeper, state)
+                  , desc
+                  , value.field(field)
+                  );
+              }
+              else
+              {
+                state.warn (warning::default_construction ( place_name
+                                                          , field_deeper
+                                                          , path
+                                                          )
+                           );
+
+                val[field] = boost::apply_visitor
+                  (default_construct_value(), desc);
+              }
+            }
+
+            if (state.Wunused_field())
+            {
+              for ( signature::structured_t::const_iterator pos (value.begin())
+                  ; pos != value.end()
+                  ; ++pos
+                  )
+              {
+                const signature::field_name_t field (pos->first);
+                const std::string field_deeper
+                  ((field_name == "") ? field : (field_name + "." + field));
+
+                if (!signature.has_field (field))
+                {
+                  state.warn (warning::unused_field ( place_name
+                                                    , field_deeper
+                                                    , path
+                                                    )
+                             );
+                }
+              }
+            }
+
+            return val;
+          }
+
+          template<typename SIG, typename VAL>
+          value::type operator () ( const SIG & signature
+                                  , const VAL & value
+                                  ) const
+          {
+            throw error::parse_type_mismatch
+              (place_name, field_name, signature, value, path);
+          }
+        };
+      }
 
       boost::unordered_map<std::string, petri_net::place_id_type>
       net_synthesize ( petri_net::net& we_net
@@ -722,60 +854,54 @@ namespace xml
         pid_of_place_type pid_of_place;
 
         BOOST_FOREACH (const place_type& place, net.places().values())
+        {
+          if (!state.synthesize_virtual_places() && place.is_virtual())
+          {
+            const pid_of_place_type::const_iterator pid
+              (place_map_map.find (place.name()));
+
+            if (pid == place_map_map.end())
             {
-              const signature::type type (net.type_of_place (place));
-
-              if (!state.synthesize_virtual_places() && place.is_virtual())
-                {
-                  // try to find a mapping
-                  const place_map_map_type::const_iterator pid
-                    (place_map_map.find (place.name()));
-
-                  if (pid == place_map_map.end())
-                    {
-                      throw error::no_map_for_virtual_place
-                        (place.name(), state.file_in_progress());
-                    }
-
-                  pid_of_place.insert (std::make_pair ( place.name()
-                                                      , pid->second
-                                                      )
-                                      );
-
-                  const place::type place_real
-                    (we_net.get_place (pid->second));
-
-                  if (not (place_real.signature() == place.sig))
-                    {
-                      throw error::port_tunneled_type_error
-                        ( place.name()
-                        , place.sig
-                        , place_real.name()
-                        , place_real.signature()
-                        , state.file_in_progress()
-                        );
-                    }
-                }
-              else
-                {
-                  we::type::property::type prop (place.properties());
-
-                  if (place.is_virtual())
-                    {
-                      prop.set ("virtual", "true");
-                    }
-
-                  const petri_net::place_id_type pid
-                    ( we_net.add_place ( place::type ( place.name()
-                                                     , type
-                                                     , prop
-                                                     )
-                                       )
-                    );
-
-                  pid_of_place.insert (std::make_pair (place.name(), pid));
-                }
+              throw error::no_map_for_virtual_place
+                (place.name(), state.file_in_progress());
             }
+
+            pid_of_place.insert (std::make_pair (place.name(), pid->second));
+
+            const place::type place_real (we_net.get_place (pid->second));
+
+            if (!(place_real.signature() == place.signature_or_throw()))
+            {
+              throw error::port_tunneled_type_error
+                ( place.name()
+                , place.signature_or_throw()
+                , place_real.name()
+                , place_real.signature()
+                , state.file_in_progress()
+                );
+            }
+          }
+          else
+          {
+            we::type::property::type prop (place.properties());
+
+            if (place.is_virtual())
+            {
+              prop.set ("virtual", "true");
+            }
+
+            const petri_net::place_id_type pid
+              ( we_net.add_place ( place::type
+                                   ( place.name()
+                                   , place.signature_or_throw()
+                                   , prop
+                                   )
+                                 )
+              );
+
+            pid_of_place.insert (std::make_pair (place.name(), pid));
+          }
+        }
 
         BOOST_FOREACH ( const id::ref::transition& id_transition
                       , net.transitions().ids()
@@ -790,32 +916,32 @@ namespace xml
           }
 
         BOOST_FOREACH (const place_type& place, net.places().values())
+        {
+          const petri_net::place_id_type pid (pid_of_place.at (place.name()));
+
+          BOOST_FOREACH (const place_type::token_type& token, place.tokens)
           {
-            const petri_net::place_id_type pid (pid_of_place.at (place.name()));
+            token::put ( we_net
+                       , pid
+                       , boost::apply_visitor
+                         ( construct_value (place.name(), net.path(), "", state)
+                         , place.signature_or_throw().desc()
+                         , token
+                         )
+                       );
+          }
 
-            for ( place_type::values_type::const_iterator val (place.values.begin())
-                ; val != place.values.end()
-                ; ++val
-                )
-                {
-                  token::put (we_net, pid, *val);
-                }
+          if (  (we_net.in_to_place (pid).size() == 0)
+             && (we_net.out_of_place (pid).size() == 0)
+             && (!place.is_virtual())
+             )
+          {
+            state.warn
+              (warning::independent_place (place.name(), state.file_in_progress()));
+          }
+        }
 
-              if (  (we_net.in_to_place (pid).size() == 0)
-                 && (we_net.out_of_place (pid).size() == 0)
-                 && (!place.is_virtual())
-                 )
-                {
-                  state.warn
-                    ( warning::independent_place ( place.name()
-                                                 , state.file_in_progress()
-                                                 )
-                    )
-                    ;
-                }
-            }
-
-          return pid_of_place;
+        return pid_of_place;
       };
 
       namespace dump

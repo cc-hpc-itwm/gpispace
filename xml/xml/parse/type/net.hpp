@@ -54,7 +54,6 @@ namespace xml
                  , const transitions_type& transitions
                  , const structs_type& structs
                  , const bool& contains_a_module_call
-                 , const xml::parse::structure_type::set_type& resol
                  , const we::type::property::type& properties
                  , const boost::filesystem::path& path
                  );
@@ -124,7 +123,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        signature::type type_of_place (const place_type&) const;
+        boost::optional<signature::type> signature (const std::string&) const;
 
         // ***************************************************************** //
 
@@ -137,17 +136,6 @@ namespace xml
                         , const xml::parse::structure_type::set_type & known_structs
                         , state::type & state
                         );
-
-        // ***************************************************************** //
-
-        void resolve ( const state::type & state
-                     , const xml::parse::structure_type::forbidden_type & forbidden
-                     );
-
-        void resolve ( const xml::parse::structure_type::set_type & global
-                     , const state::type & state
-                     , const xml::parse::structure_type::forbidden_type & forbidden
-                     );
 
         // ***************************************************************** //
 
@@ -176,8 +164,6 @@ namespace xml
       public:
         structs_type structs;
         bool contains_a_module_call;
-
-        xml::parse::structure_type::set_type structs_resolved;
 
       private:
         we::type::property::type _properties;

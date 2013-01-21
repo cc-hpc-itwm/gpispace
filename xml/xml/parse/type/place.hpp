@@ -35,7 +35,6 @@ namespace xml
         typedef std::string unique_key_type;
 
         typedef signature::desc_t token_type;
-        typedef std::list<value::type> values_type;
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
@@ -44,7 +43,7 @@ namespace xml
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
                    , const std::string & name
-                   , const std::string & _type
+                   , const std::string & type
                    , const boost::optional<bool> is_virtual
                    );
 
@@ -54,13 +53,17 @@ namespace xml
                    , const std::string& name
                    , const std::string& type
                    , const std::list<token_type>& tokens
-                   , const values_type& values
-                   , const signature::type& sig
                    , const we::type::property::type& properties
                    );
 
         const std::string& name() const;
         const std::string& name (const std::string& name);
+
+        const std::string& type() const;
+        const std::string& type (const std::string&);
+
+        boost::optional<signature::type> signature() const;
+        signature::type signature_or_throw() const;
 
       private:
         friend struct net_type;
@@ -68,10 +71,6 @@ namespace xml
 
       public:
         void push_token (const token_type & t);
-
-        void translate ( const boost::filesystem::path & path
-                       , const state::type & state
-                       );
 
         void specialize ( const type::type_map_type & map_in
                         , const state::type &
@@ -94,13 +93,11 @@ namespace xml
         boost::optional<bool> _is_virtual;
 
         std::string _name;
+        std::string _type;
 
         //! \todo All these should be private with accessors.
       public:
-        std::string type;
         std::list<token_type> tokens;
-        values_type values;
-        signature::type sig;
 
       private:
         we::type::property::type _properties;
