@@ -336,21 +336,27 @@ namespace fhg
             , ACTION_ARG_LIST
             , const handle_type& handle
             , const QPointF& position
+            , const bool outer
             )
               : ACTION_INIT (name)
               , _id (id)
               , _handle (handle)
+              , _outer (outer)
               , _set_x_action ( new action::meta_set_property<handle_type>
                                 ( "set_transition_property_action"
                                 , ACTION_CTOR_ARGS, handle
-                                , "fhg.pnete.position.x"
+                                , !_outer
+                                ? "fhg.pnete.position.x"
+                                : "fhg.pnete.outer_position.x"
                                 , to_property_type (position.x())
                                 )
                               )
               , _set_y_action ( new action::meta_set_property<handle_type>
                                 ( "set_transition_property_action"
                                 , ACTION_CTOR_ARGS, handle
-                                , "fhg.pnete.position.y"
+                                , !_outer
+                                ? "fhg.pnete.position.y"
+                                : "fhg.pnete.outer_position.y"
                                 , to_property_type (position.y())
                                 )
                               )
@@ -379,7 +385,7 @@ namespace fhg
             {
               const meta_move_item<handle_type>* other
                 (static_cast<const meta_move_item<handle_type>*> (other_));
-              if (_handle == other->_handle)
+              if (_handle == other->_handle && _outer == other->_outer)
               {
                 _set_x_action->new_value (other->_set_x_action->new_value());
                 _set_y_action->new_value (other->_set_y_action->new_value());
@@ -394,6 +400,7 @@ namespace fhg
           ACTION_MEMBERS;
           int _id;
           const handle_type _handle;
+          const bool _outer;
           boost::scoped_ptr<meta_set_property<handle_type> > _set_x_action;
           boost::scoped_ptr<meta_set_property<handle_type> > _set_y_action;
         };
@@ -1296,11 +1303,12 @@ namespace fhg
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::transition& transition
                                        , const QPointF& position
+                                       , const bool outer
                                        )
       {
         push ( new action::meta_move_item<handle::transition>
                ( "move_transition_item_action", ids::move_transition_item
-               , ACTION_CTOR_ARGS (transition), transition, position
+               , ACTION_CTOR_ARGS (transition), transition, position, outer
                )
              );
       }
@@ -1488,11 +1496,12 @@ namespace fhg
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::place& place
                                        , const QPointF& position
+                                       , const bool outer
                                        )
       {
         push ( new action::meta_move_item<handle::place>
                ( "move_place_item_action", ids::move_place_item
-               , ACTION_CTOR_ARGS (place), place, position
+               , ACTION_CTOR_ARGS (place), place, position, outer
                )
              );
       }
@@ -1693,11 +1702,12 @@ namespace fhg
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::port& port
                                        , const QPointF& position
+                                       , const bool outer
                                        )
       {
         push ( new action::meta_move_item<handle::port>
                ( "move_port_item_action", ids::move_port_item
-               , ACTION_CTOR_ARGS (port), port, position
+               , ACTION_CTOR_ARGS (port), port, position, outer
                )
              );
       }

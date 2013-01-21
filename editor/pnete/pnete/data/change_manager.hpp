@@ -114,6 +114,7 @@ namespace fhg
         void move_item ( const QObject*
                        , const handle::transition&
                        , const QPointF&
+                       , const bool outer = false
                        );
         void no_undo_move_item ( const QObject*
                                , const handle::transition&
@@ -150,6 +151,7 @@ namespace fhg
         void move_item ( const QObject*
                        , const handle::place&
                        , const QPointF&
+                       , const bool outer = false
                        );
         void no_undo_move_item ( const QObject*
                                , const handle::place&
@@ -189,6 +191,7 @@ namespace fhg
         void move_item ( const QObject*
                        , const handle::port&
                        , const QPointF&
+                       , const bool outer = false
                        );
         void no_undo_move_item ( const QObject*
                                , const handle::port&

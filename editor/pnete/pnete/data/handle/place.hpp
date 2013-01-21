@@ -42,6 +42,7 @@ namespace fhg
 
           virtual void move ( const QObject* sender
                             , const QPointF& position
+                            , const bool outer
                             ) const;
 
           virtual void no_undo_move ( const QObject* sender

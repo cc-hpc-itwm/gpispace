@@ -78,14 +78,15 @@ namespace fhg
 
         void port_item::setPos_no_collision_detection (const QPointF& new_position)
         {
-          connectable_item::setPos (new_position);
+          const bool outer (parentItem() != NULL);
+          connectable_item::setPos (new_position, outer);
         }
 
         void port_item::setPos (const QPointF& new_position)
         {
           const QPointF old_position (pos());
 
-          connectable_item::setPos (fitting_position (new_position));
+          setPos_no_collision_detection (fitting_position (new_position));
 
           // do not move, when now colliding with a different port
           foreach (QGraphicsItem* collidingItem, collidingItems())
@@ -94,7 +95,7 @@ namespace fhg
                && collidingItem->parentItem() == parentItem()
                )
             {
-              connectable_item::setPos (old_position);
+              setPos_no_collision_detection (old_position);
 
               return;
             }
@@ -105,7 +106,7 @@ namespace fhg
             {
               if (parentItem() != transition)
               {
-                connectable_item::setPos (old_position);
+                setPos_no_collision_detection (old_position);
 
                 return;
               }
@@ -448,7 +449,40 @@ namespace fhg
         {
           if (origin != this && changed_handle == handle())
           {
-            handle_property_change (key, value);
+            const std::string required_position_variable
+              ( parentItem() == NULL
+              ? "fhg.pnete.position"
+              : "fhg.pnete.outer_position"
+              );
+
+            const ::we::type::property::path_type path
+              (we::type::property::util::split (key));
+
+            if ( path.size() == 4
+               && path[0] == "fhg" && path[1] == "pnete"
+               && (path[2] == "position" || path[2] == "outer_position")
+               )
+            {
+              if (  (parentItem() == NULL && path[2] == "position")
+                 || (parentItem() != NULL && path[2] == "outer_position")
+                 )
+              {
+                if (path[3] == "x")
+                {
+                  set_just_pos_but_not_in_property
+                    (boost::lexical_cast<qreal>(value), pos().y());
+                }
+                else if (path[3] == "y")
+                {
+                  set_just_pos_but_not_in_property
+                    (pos().x(), boost::lexical_cast<qreal>(value));
+                }
+              }
+            }
+            else
+            {
+              handle_property_change (key, value);
+            }
           }
         }
       }

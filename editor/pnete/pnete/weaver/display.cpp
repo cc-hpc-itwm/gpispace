@@ -35,22 +35,28 @@ namespace fhg
         template<typename ID_TYPE>
           void initialize_and_set_position ( ui::graph::base_item* item
                                            , const ID_TYPE& id
+                                           , const bool outer = false
                                            )
         {
-          if (!id.get().properties().has ("fhg.pnete.position.x"))
+          const std::string var_name ( !outer
+                                     ? "fhg.pnete.position"
+                                     : "fhg.pnete.outer_position"
+                                     );
+
+          if (!id.get().properties().has (var_name + ".x"))
           {
-            id.get_ref().properties().set ("fhg.pnete.position.x", "0.0");
+            id.get_ref().properties().set (var_name + ".x", "0.0");
           }
-          if (!id.get().properties().has ("fhg.pnete.position.y"))
+          if (!id.get().properties().has (var_name + ".y"))
           {
-            id.get_ref().properties().set ("fhg.pnete.position.y", "0.0");
+            id.get_ref().properties().set (var_name + ".y", "0.0");
           }
 
           item->set_just_pos_but_not_in_property
             ( boost::lexical_cast<qreal>
-              (id.get().properties().get ("fhg.pnete.position.x"))
+              (id.get().properties().get (var_name + ".x"))
             , boost::lexical_cast<qreal>
-              (id.get().properties().get ("fhg.pnete.position.y"))
+              (id.get().properties().get (var_name + ".y"))
             );
         }
 
@@ -107,9 +113,7 @@ namespace fhg
               (data::handle::port (id, _root), _transition)
             );
 
-          //! \todo This sets the wrong position: differentiate
-          //! between ports on transition and ports in net (inner, outer)
-          initialize_and_set_position (item, id);
+          initialize_and_set_position (item, id, true);
         }
 
         class port_toplevel

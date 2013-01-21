@@ -33,6 +33,7 @@ namespace fhg
 
         void base::move ( const QObject* sender
                         , const QPointF& position
+                        , const bool outer
                         ) const
         {
           throw fhg::util::backtracing_exception

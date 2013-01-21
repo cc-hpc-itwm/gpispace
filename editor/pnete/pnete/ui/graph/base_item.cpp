@@ -43,9 +43,13 @@ namespace fhg
 
         void base_item::setPos (const QPointF& new_pos)
         {
+          setPos (new_pos, false);
+        }
+        void base_item::setPos (const QPointF& new_pos, bool outer)
+        {
           QPointF snapped (style::raster::snap (new_pos));
 
-          handle().move (this, new_pos);
+          handle().move (this, new_pos, outer);
 
           set_just_pos_but_not_in_property (snapped);
         }
