@@ -296,7 +296,6 @@ namespace fhg
                                  )
             : _scene (scene)
             , _place_item_by_name (place_item_by_name)
-            , _name ()
             , _port_item ()
             , _root (root)
           { }
@@ -307,7 +306,6 @@ namespace fhg
         private:
           ui::graph::scene_type* _scene;
           item_by_name_type& _place_item_by_name;
-          std::string _name;
           ui::graph::port_item* _port_item;
           data::internal_type* _root;
         };
@@ -320,8 +318,6 @@ namespace fhg
             (data::handle::port (id, _root));
           initialize_and_set_position (_port_item, id);
           _scene->addItem (_port_item);
-
-          _name = port.name();
 
           if (port.place)
           {
