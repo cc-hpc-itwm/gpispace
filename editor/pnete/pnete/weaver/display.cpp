@@ -168,11 +168,9 @@ namespace fhg
         public:
           explicit net ( data::internal_type* root
                        , ui::graph::scene_type* scene
-                       , const ::xml::parse::id::ref::net& net
                        , const ::xml::parse::id::ref::function& function
                        )
             : _scene (scene)
-            , _net (net)
             , _function (function)
             , _root (root)
           { }
@@ -183,7 +181,6 @@ namespace fhg
         private:
           ui::graph::scene_type* _scene;
 
-          ::xml::parse::id::ref::net _net;
           ::xml::parse::id::ref::function _function;
 
           data::internal_type* _root;
@@ -219,7 +216,7 @@ namespace fhg
         {
           ui::graph::scene_type* scene (new ui::graph::scene_type (net, parent));
 
-          weaver::net wn (net.document(), scene, net.id(), parent.id());
+          weaver::net wn (net.document(), scene, parent.id());
           from::net (&wn, net.id());
 
           return scene;
