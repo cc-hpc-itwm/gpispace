@@ -53,14 +53,8 @@ namespace fhg
                               );
 
           void create_pending_connection (connectable_item* item);
-          void create_connection ( connectable_item* from
-                                 , connectable_item* to
-                                 , const data::handle::connect& handle
-                                 );
-
-
-          //! \note Used by weaver to connect ports and places by name.
-          QList<place_item*> all_places() const;
+          void create_connection (const data::handle::connect&);
+          void create_port_place_association (const data::handle::port&);
 
           QList<QAction*> actions() const;
 

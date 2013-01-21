@@ -725,17 +725,57 @@ namespace fhg
           update (_pending_connection->boundingRect());
         }
 
-        void scene_type::create_connection ( connectable_item* from
-                                           , connectable_item* to
-                                           , const data::handle::connect& handle
-                                           )
+        void scene_type::create_connection (const data::handle::connect& handle)
         {
+          const ::xml::parse::type::connect_type& connection (handle.get());
+
+          connectable_item* port
+            ( item_with_handle<port_item>
+              ( data::handle::port ( *connection.resolved_port()
+                                   , handle.document()
+                                   )
+              )
+            );
+
+          connectable_item* place
+            ( item_with_handle<place_item>
+              ( data::handle::place ( *connection.resolved_place()
+                                    , handle.document()
+                                    )
+              )
+            );
+
+          const bool is_in (petri_net::edge::is_PT (connection.direction()));
+          connectable_item* from (is_in ? place : port);
+          connectable_item* to (is_in ? port : place);
+
           if (!to->is_connectable_with (from))
           {
             throw std::runtime_error
               ("tried hard-connecting non-connectable items.");
           }
           addItem (new connection_item (from, to, handle));
+        }
+
+        void scene_type::create_port_place_association
+          (const data::handle::port& port)
+        {
+          if (!port.get().place)
+          {
+            return;
+          }
+
+          addItem
+            ( new ui::graph::port_place_association
+              ( item_with_handle<top_level_port_item> (port)
+              , item_with_handle<place_item> ( data::handle::place
+                                               ( *port.get().resolved_place()
+                                               , port.document()
+                                               )
+                                             )
+              , port
+              )
+            );
         }
 
         void scene_type::remove_pending_connection()
@@ -1050,11 +1090,6 @@ namespace fhg
           return result;
         }
 
-        QList<place_item*> scene_type::all_places() const
-        {
-          return items_of_type<place_item>();
-        }
-
         template<typename item_type, typename handle_type>
           void scene_type::remove_item_for_handle (const handle_type& handle)
         {
@@ -1077,29 +1112,7 @@ namespace fhg
         {
           if (is_in_my_net (place))
           {
-            //! \todo Weaver.
-            //! \note This can't be easily weaved, as 'ports'
-            //! needs to contain only the ports of the transition
-            //! where the connection's port is in. Getting children
-            //! ports of the scene will yield wrong ones. The weaver
-            //! normally is started inside a transition, thus
-            //! correctly only knows ports inside that transition.
-            if (petri_net::edge::is_PT (connection.get().direction()))
-            {
-              create_connection ( item_with_handle<place_item> (place)
-                                , item_with_handle<port_item> (port)
-                                , connection
-                                );
-            }
-            else
-            {
-              create_connection ( item_with_handle<port_item> (port)
-                                , item_with_handle<place_item> (place)
-                                , connection
-                                );
-            }
-
-
+            create_connection (connection);
           }
         }
 

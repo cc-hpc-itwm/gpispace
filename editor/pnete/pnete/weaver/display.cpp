@@ -32,10 +32,6 @@ namespace fhg
     {
       namespace
       {
-        typedef boost::unordered_map< std::string
-                                    , ui::graph::connectable_item*
-                                    > item_by_name_type;
-
         template<typename ID_TYPE>
           void initialize_and_set_position ( ui::graph::base_item* item
                                            , const ID_TYPE& id
@@ -62,15 +58,9 @@ namespace fhg
         {
         public:
           explicit connection ( ui::graph::scene_type* scene
-                              , item_by_name_type& place_item_by_name
-                              , item_by_name_type& ports_in
-                              , item_by_name_type& ports_out
                               , data::internal_type* root
                               )
             : _scene (scene)
-            , _place_item_by_name (place_item_by_name)
-            , _ports_in (ports_in)
-            , _ports_out (ports_out)
             , _root (root)
           { }
 
@@ -79,45 +69,12 @@ namespace fhg
 
         private:
           ui::graph::scene_type* _scene;
-          item_by_name_type& _place_item_by_name;
-          item_by_name_type& _ports_in;
-          item_by_name_type& _ports_out;
           data::internal_type* _root;
         };
 
         WSIG (connection, connection::open, ::xml::parse::id::ref::connect, id)
         {
-          const ::xml::parse::type::connect_type& connection (id.get());
-
-          const bool is_out (!petri_net::edge::is_PT (connection.direction()));
-
-          typedef item_by_name_type::iterator iterator_type;
-
-          const iterator_type port_pos
-            ((is_out ? _ports_out : _ports_in).find (connection.port()));
-          if (port_pos == (is_out ? _ports_out : _ports_in).end())
-          {
-            throw std::runtime_error ("connection: port " + connection.port() + " not found");
-          }
-
-          const iterator_type place_pos (_place_item_by_name.find (connection.place()));
-          if (place_pos == _place_item_by_name.end())
-          {
-            throw
-              std::runtime_error ("connection: place " + connection.place() + " not found");
-          }
-
-          data::handle::connect handle (id, _root);
-          if (!is_out)
-          {
-            _scene->create_connection
-              (place_pos->second, port_pos->second, handle);
-          }
-          else
-          {
-            _scene->create_connection
-              (port_pos->second, place_pos->second, handle);
-          }
+          _scene->create_connection (data::handle::connect (id, _root));
         }
 
         class transition
@@ -125,16 +82,12 @@ namespace fhg
         public:
           explicit transition ( data::internal_type* root
                               , ui::graph::scene_type* scene
-                              , item_by_name_type& place_item_by_name
                               , const ::xml::parse::id::ref::transition& id
                               )
             : _scene (scene)
             , _transition ( new ui::graph::transition_item
                             (data::handle::transition (id, root))
                           )
-            , _place_item_by_name (place_item_by_name)
-            , _port_in_item_by_name ()
-            , _port_out_item_by_name ()
             , _root (root)
           {
             initialize_and_set_position (_transition, id);
@@ -147,10 +100,6 @@ namespace fhg
         private:
           ui::graph::scene_type* _scene;
           ui::graph::transition_item* _transition;
-
-          item_by_name_type& _place_item_by_name;
-          item_by_name_type _port_in_item_by_name;
-          item_by_name_type _port_out_item_by_name;
           data::internal_type* _root;
         };
 
@@ -163,13 +112,7 @@ namespace fhg
                      , from::port
                      );
 
-          weaver::connection wc ( _scene
-                                , _place_item_by_name
-                                , _port_in_item_by_name
-                                , _port_out_item_by_name
-                                , _root
-                                );
-
+          weaver::connection wc (_scene, _root);
           from::many (&wc, trans.connections().ids(), from::connection);
 
           //! \todo do something if not already set
@@ -189,27 +132,15 @@ namespace fhg
           //! \todo This sets the wrong position: differentiate
           //! between ports on transition and ports in net (inner, outer)
           initialize_and_set_position (item, id);
-
-          if (port.direction() == we::type::PORT_IN)
-          {
-            _port_in_item_by_name[port.name()] = item;
-          }
-          else
-          {
-            _port_out_item_by_name[port.name()] = item;
-          }
         }
 
         class port_toplevel
         {
         public:
           explicit port_toplevel ( ui::graph::scene_type* scene
-                                 , item_by_name_type& place_item_by_name
                                  , data::internal_type* root
                                  )
             : _scene (scene)
-            , _place_item_by_name (place_item_by_name)
-            , _port_item ()
             , _root (root)
           { }
 
@@ -218,39 +149,18 @@ namespace fhg
 
         private:
           ui::graph::scene_type* _scene;
-          item_by_name_type& _place_item_by_name;
-          ui::graph::port_item* _port_item;
           data::internal_type* _root;
         };
 
         WSIG (port_toplevel, port::open, ::xml::parse::id::ref::port, id)
         {
-          const ::xml::parse::type::port_type& port (id.get());
+          ui::graph::port_item* port_item
+            (new ui::graph::top_level_port_item (data::handle::port (id, _root)));
 
-          _port_item = new ui::graph::top_level_port_item
-            (data::handle::port (id, _root));
-          initialize_and_set_position (_port_item, id);
-          _scene->addItem (_port_item);
+          initialize_and_set_position (port_item, id);
+          _scene->addItem (port_item);
 
-          if (port.place)
-          {
-            const item_by_name_type::iterator place_pos
-              (_place_item_by_name.find (*port.place));
-
-            if (place_pos == _place_item_by_name.end())
-            {
-              throw
-                std::runtime_error ("connection: place " + *port.place + " not found");
-            }
-
-            _scene->addItem
-              ( new ui::graph::port_place_association
-                ( _port_item
-                , qgraphicsitem_cast<ui::graph::place_item*> (place_pos->second)
-                , _port_item->handle()
-                )
-              );
-          }
+          _scene->create_port_place_association (data::handle::port (id, _root));
         }
 
         class net
@@ -264,7 +174,6 @@ namespace fhg
             : _scene (scene)
             , _net (net)
             , _function (function)
-            , _place_item_by_name ()
             , _root (root)
           { }
 
@@ -277,7 +186,6 @@ namespace fhg
           ::xml::parse::id::ref::net _net;
           ::xml::parse::id::ref::function _function;
 
-          item_by_name_type _place_item_by_name;
           data::internal_type* _root;
         };
 
@@ -287,13 +195,13 @@ namespace fhg
           from::many (this, net.places().ids(), from::place);
           from::many (this, net.transitions().ids(), from::transition);
 
-          weaver::port_toplevel wptl (_scene, _place_item_by_name, _root);
+          weaver::port_toplevel wptl (_scene, _root);
           from::many (&wptl, _function.get().ports().ids(), from::port);
         }
 
         WSIG (net, transition::open, ::xml::parse::id::ref::transition, id)
         {
-          weaver::transition wt (_root, _scene, _place_item_by_name, id);
+          weaver::transition wt (_root, _scene, id);
           from::transition (&wt, id);
         }
 
@@ -306,19 +214,6 @@ namespace fhg
 
           initialize_and_set_position (place_item, id);
           _scene->addItem (place_item);
-
-          _place_item_by_name[place.name()] = place_item;
-        }
-
-        template<typename item_type>
-          item_by_name_type name_map_for_items (const QList<item_type*>& items)
-        {
-          weaver::item_by_name_type result;
-          foreach (item_type* item, items)
-          {
-            result[item->handle().get().name()] = item;
-          }
-          return result;
         }
       }
 
@@ -340,9 +235,7 @@ namespace fhg
                         , ui::graph::scene_type* scene
                         )
         {
-          item_by_name_type places (name_map_for_items (scene->all_places()));
-          weaver::transition wt
-            (transition.document(), scene, places, transition.id());
+          weaver::transition wt (transition.document(), scene, transition.id());
           from::transition (&wt, transition.id());
         }
 
@@ -359,8 +252,7 @@ namespace fhg
                             , ui::graph::scene_type* scene
                             )
         {
-          item_by_name_type places (name_map_for_items (scene->all_places()));
-          weaver::port_toplevel wptl (scene, places, port.document());
+          weaver::port_toplevel wptl (scene, port.document());
           from::port (&wptl, port.id());
         }
       }
