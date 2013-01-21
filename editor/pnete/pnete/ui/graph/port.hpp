@@ -46,7 +46,6 @@ namespace fhg
           const std::string& we_type () const;
 
           port::orientation::type orientation() const;
-          const port::orientation::type& orientation(const port::orientation::type&);
 
           virtual bool is_connectable_with (const connectable_item*) const;
 
@@ -59,9 +58,6 @@ namespace fhg
           virtual QPainterPath shape() const;
           virtual void
           paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
-
-          void
-          set_just_orientation_but_not_in_property (const port::orientation::type&);
 
           virtual void setPos (const QPointF&);
 
@@ -85,8 +81,6 @@ namespace fhg
           data::handle::port _handle;
 
           QPointF fitting_position (QPointF position);
-
-          port::orientation::type _orientation;
 
           qreal _length;
         };

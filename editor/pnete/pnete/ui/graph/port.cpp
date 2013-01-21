@@ -29,17 +29,6 @@ namespace fhg
     {
       namespace graph
       {
-        // namespace detail
-        // {
-        //   static void set_orientation ( ::we::type::property::type* prop
-        //                               , const port::orientation::type& o
-        //                               )
-        //   {
-        //     static util::property::setter s ("orientation");
-        //     s.set (prop, port::orientation::show (o));
-        //   }
-        // }
-
         port_item::port_item
           ( const data::handle::port& handle
           , transition_item* parent
@@ -50,7 +39,6 @@ namespace fhg
                                , parent
                                )
             , _handle (handle)
-            , _orientation ()
             , _length (size::port::width())
         {
           handle.connect_to_change_mgr
@@ -71,11 +59,6 @@ namespace fhg
             , "data::handle::port, QString"
             );
 
-          set_just_orientation_but_not_in_property
-            ( handle.get().direction() == we::type::PORT_IN
-            ? port::orientation::WEST
-            : port::orientation::EAST
-            );
 
           //            setAcceptHoverEvents (true);
           //! \todo verbose name
@@ -101,7 +84,6 @@ namespace fhg
         void port_item::setPos (const QPointF& new_position)
         {
           const QPointF old_position (pos());
-          const port::orientation::type old_orientation (orientation());
 
           connectable_item::setPos (fitting_position (new_position));
 
@@ -112,7 +94,6 @@ namespace fhg
                && collidingItem->parentItem() == parentItem()
                )
             {
-              orientation (old_orientation);
               connectable_item::setPos (old_position);
 
               return;
@@ -124,7 +105,6 @@ namespace fhg
             {
               if (parentItem() != transition)
               {
-                orientation (old_orientation);
                 connectable_item::setPos (old_position);
 
                 return;
@@ -190,22 +170,23 @@ namespace fhg
             const qreal to_top (quad (position.y() - bounding.top()));
             const qreal to_bottom (quad (position.y() - bounding.bottom()));
 
-            orientation ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
-                        ? ( to_top < to_bottom
-                          ? port::orientation::NORTH
-                          : port::orientation::SOUTH
-                          )
-                        : ( to_left < to_right
-                          ? port::orientation::WEST
-                          : port::orientation::EAST
-                          )
-                        );
+            port::orientation::type orientation
+              ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
+              ? ( to_top < to_bottom
+                ? port::orientation::NORTH
+                : port::orientation::SOUTH
+                )
+              : ( to_left < to_right
+                ? port::orientation::WEST
+                : port::orientation::EAST
+                )
+              );
 
-            if(  orientation() == port::orientation::WEST
-              || orientation() == port::orientation::EAST
+            if(  orientation == port::orientation::WEST
+              || orientation == port::orientation::EAST
               )
             {
-              position.setX ( orientation() == port::orientation::WEST
+              position.setX ( orientation == port::orientation::WEST
                             ? bounding.left()
                             : bounding.right()
                             );
@@ -222,7 +203,7 @@ namespace fhg
                                      , bounding.right() - minimum_distance.x()
                                      )
                             );
-              position.setY ( orientation() == port::orientation::NORTH
+              position.setY ( orientation == port::orientation::NORTH
                             ? bounding.top()
                             : bounding.bottom()
                             );
@@ -248,24 +229,35 @@ namespace fhg
 
         port::orientation::type port_item::orientation() const
         {
-          return parentItem() == NULL
-            ? port::orientation::invert (_orientation)
-            : _orientation;
-        }
-        const port::orientation::type&
-        port_item::orientation (const port::orientation::type& orientation_)
-        {
-          _orientation = orientation_;
+          if ( const transition_item* transition
+             = qgraphicsitem_cast<const transition_item*> (parentItem())
+             )
+          {
+            const QRectF bounding (transition->rectangle());
 
-          // detail::set_orientation (&_port.prop, orientation());
+            const qreal to_left (quad (pos().x() - bounding.left()));
+            const qreal to_right (quad (pos().x() - bounding.right()));
+            const qreal to_top (quad (pos().y() - bounding.top()));
+            const qreal to_bottom (quad (pos().y() - bounding.bottom()));
 
-          return _orientation;
-        }
-
-        void port_item::set_just_orientation_but_not_in_property
-        (const port::orientation::type& orientation_)
-        {
-          _orientation = orientation_;
+            return
+              ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
+              ? ( to_top < to_bottom
+                ? port::orientation::NORTH
+                : port::orientation::SOUTH
+                )
+              : ( to_left < to_right
+                ? port::orientation::WEST
+                : port::orientation::EAST
+                )
+              );
+          }
+          //! \note Top level port
+          else
+          {
+            return handle().get().direction() == we::type::PORT_IN
+              ? port::orientation::EAST : port::orientation::WEST;
+          }
         }
 
         // void port_item::delete_connection()

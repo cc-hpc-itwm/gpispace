@@ -88,14 +88,6 @@ namespace fhg
         }
         WSIG(property, property::value, WETYPE(property::value_type), value)
         {
-          if (_path.size() > 1 && _path[0] == "fhg" && _path[1] == "pnete")
-          {
-            if (_path.size() > 2 && _path[2] == "orientation")
-            {
-              _item->set_just_orientation_but_not_in_property
-                (ui::graph::port::orientation::read (value));
-            }
-          }
         }
 
         class port
