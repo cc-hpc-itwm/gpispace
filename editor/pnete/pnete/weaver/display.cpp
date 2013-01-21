@@ -53,31 +53,6 @@ namespace fhg
           }
         }
 
-        template<>
-          void maybe_set_position ( ui::graph::base_item* item
-                                  , const ::xml::parse::id::ref::transition& id
-                                  )
-        {
-          bool either ( !id.get().properties().has ("fhg.pnete.position.x")
-                      || !id.get().properties().has ("fhg.pnete.position.y")
-                      );
-          if (!id.get().properties().has ("fhg.pnete.position.x"))
-          {
-            id.get_ref().properties().set ("fhg.pnete.position.x", "0");
-            item->set_just_pos_but_not_in_property (0.0, item->pos().y());
-          }
-          if (!id.get().properties().has ("fhg.pnete.position.y"))
-          {
-            id.get_ref().properties().set ("fhg.pnete.position.y", "0");
-            item->set_just_pos_but_not_in_property (item->pos().x(), 0.0);
-          }
-          if (either)
-          {
-            fhg::util::qt::throwing_qobject_cast<ui::graph::transition_item*>
-              (item)->repositionChildrenAndResize();
-          }
-        }
-
         class property
         {
         public:
