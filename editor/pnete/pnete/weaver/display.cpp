@@ -82,17 +82,10 @@ namespace fhg
         public:
           explicit transition ( data::internal_type* root
                               , ui::graph::scene_type* scene
-                              , const ::xml::parse::id::ref::transition& id
                               )
             : _scene (scene)
-            , _transition ( new ui::graph::transition_item
-                            (data::handle::transition (id, root))
-                          )
             , _root (root)
-          {
-            initialize_and_set_position (_transition, id);
-            _scene->addItem (_transition);
-          }
+          { }
 
           template<int Type, typename T> void weave (const T & x) {}
           template<int Type> void weave () {}
@@ -106,6 +99,12 @@ namespace fhg
         WSIG (transition, transition::open, xml::parse::id::ref::transition, id)
         {
           const ::xml::parse::type::transition_type& trans (id.get());
+
+          _transition = new ui::graph::transition_item
+            (data::handle::transition (id, _root));
+
+          initialize_and_set_position (_transition, id);
+          _scene->addItem (_transition);
 
           from::many ( this
                      , trans.resolved_function().get().ports().ids()
@@ -225,7 +224,7 @@ namespace fhg
                         , ui::graph::scene_type* scene
                         )
         {
-          weaver::transition wt (transition.document(), scene, transition.id());
+          weaver::transition wt (transition.document(), scene);
           from::transition (&wt, transition.id());
         }
 
