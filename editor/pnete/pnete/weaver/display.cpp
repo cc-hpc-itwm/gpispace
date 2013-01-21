@@ -54,29 +54,6 @@ namespace fhg
             );
         }
 
-        class connection
-        {
-        public:
-          explicit connection ( ui::graph::scene_type* scene
-                              , data::internal_type* root
-                              )
-            : _scene (scene)
-            , _root (root)
-          { }
-
-          template<int Type, typename T> void weave (const T & x) {}
-          template<int Type> void weave () {}
-
-        private:
-          ui::graph::scene_type* _scene;
-          data::internal_type* _root;
-        };
-
-        WSIG (connection, connection::open, ::xml::parse::id::ref::connect, id)
-        {
-          _scene->create_connection (data::handle::connect (id, _root));
-        }
-
         class transition
         {
         public:
@@ -111,12 +88,16 @@ namespace fhg
                      , from::port
                      );
 
-          weaver::connection wc (_scene, _root);
-          from::many (&wc, trans.connections().ids(), from::connection);
+          from::many (this, trans.connections().ids(), from::connection);
 
           //! \todo do something if not already set
           //        _transition->repositionChildrenAndResize();
 
+        }
+
+        WSIG (transition, connection::open, ::xml::parse::id::ref::connect, id)
+        {
+          _scene->create_connection (data::handle::connect (id, _root));
         }
 
         WSIG (transition, port::open, ::xml::parse::id::ref::port, id)
@@ -190,9 +171,7 @@ namespace fhg
           const ::xml::parse::type::net_type& net (id.get());
           from::many (this, net.places().ids(), from::place);
           from::many (this, net.transitions().ids(), from::transition);
-
-          weaver::port_toplevel wptl (_scene, _root);
-          from::many (&wptl, _function.get().ports().ids(), from::port);
+          from::many (this, _function.get().ports().ids(), from::port);
         }
 
         WSIG (net, transition::open, ::xml::parse::id::ref::transition, id)
@@ -203,6 +182,11 @@ namespace fhg
         WSIG (net, place::open, ::xml::parse::id::ref::place, id)
         {
           display::place (data::handle::place (id, _root), _scene);
+        }
+
+        WSIG (net, port::open, ::xml::parse::id::ref::port, id)
+        {
+          display::top_level_port (data::handle::port (id, _root), _scene);
         }
       }
 
