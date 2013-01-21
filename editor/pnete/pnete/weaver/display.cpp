@@ -253,32 +253,6 @@ namespace fhg
           }
         }
 
-        class place
-        {
-        public:
-          explicit place ( ui::graph::place_item* place
-                         , item_by_name_type& place_item_by_name
-                         )
-            : _place (place)
-            , _place_item_by_name (place_item_by_name)
-          { }
-
-          template<int Type, typename T> void weave (const T & x) {}
-          template<int Type> void weave () {}
-
-        private:
-          ui::graph::place_item* _place;
-
-          item_by_name_type& _place_item_by_name;
-        };
-
-        WSIG (place, place::open, ::xml::parse::id::ref::place, id)
-        {
-          const ::xml::parse::type::place_type& place (id.get());
-
-          _place_item_by_name[place.name()] = _place;
-        }
-
         class net
         {
         public:
@@ -323,14 +297,17 @@ namespace fhg
           from::transition (&wt, id);
         }
 
-        WSIG (net, place::open, ::xml::parse::id::ref::place, place)
+        WSIG (net, place::open, ::xml::parse::id::ref::place, id)
         {
+          const ::xml::parse::type::place_type& place (id.get());
+
           ui::graph::place_item* place_item
-            (new ui::graph::place_item (data::handle::place (place, _root)));
-          weaver::place wp (place_item, _place_item_by_name);
-          initialize_and_set_position (place_item, place);
+            (new ui::graph::place_item (data::handle::place (id, _root)));
+
+          initialize_and_set_position (place_item, id);
           _scene->addItem (place_item);
-          from::place (&wp, place);
+
+          _place_item_by_name[place.name()] = place_item;
         }
 
         template<typename item_type>
@@ -373,13 +350,9 @@ namespace fhg
                    , ui::graph::scene_type* scene
                    )
         {
-          //! \note Does not need actual list, as it only adds itself.
-          item_by_name_type place_by_name;
-
           ui::graph::place_item* item (new ui::graph::place_item (place));
+          initialize_and_set_position (item, place.id());
           scene->addItem (item);
-          weaver::place wp (item, place_by_name);
-          from::place (&wp, place.id());
         }
 
         void top_level_port ( const data::handle::port& port
