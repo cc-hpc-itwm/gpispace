@@ -207,13 +207,7 @@ namespace fhg
 
         WSIG (net, place::open, ::xml::parse::id::ref::place, id)
         {
-          const ::xml::parse::type::place_type& place (id.get());
-
-          ui::graph::place_item* place_item
-            (new ui::graph::place_item (data::handle::place (id, _root)));
-
-          initialize_and_set_position (place_item, id);
-          _scene->addItem (place_item);
+          display::place (data::handle::place (id, _root), _scene);
         }
       }
 
