@@ -58,38 +58,6 @@ namespace fhg
             );
         }
 
-        class property
-        {
-        public:
-          explicit property (ui::graph::base_item*);
-          template<int Type, typename T> void weave (const T & x) {}
-          template<int Type> void weave () {}
-
-        private:
-          ui::graph::base_item* _item;
-          ::we::type::property::path_type _path;
-        };
-
-        property::property (ui::graph::base_item* item)
-          : _item (item)
-          , _path ()
-        {}
-        WSIG(property, properties::open, WETYPE(property::type), props)
-        {
-          from::many (this, props.get_map(), from::property);
-        }
-        WSIG(property, property::open, WETYPE(property::key_type), key)
-        {
-          _path.push_back (key);
-        }
-        WSIGE(property, property::close)
-        {
-          _path.pop_back();
-        }
-        WSIG(property, property::value, WETYPE(property::value_type), value)
-        {
-        }
-
         class port
         {
         public:
@@ -113,9 +81,6 @@ namespace fhg
         {
           const ::xml::parse::type::port_type& port (id.get());
           _port_item_by_name[port.name()] = _port;
-
-          weaver::property wp (_port);
-          from::properties (&wp, port.properties());
         }
 
         class connection
@@ -217,9 +182,6 @@ namespace fhg
         WSIG (transition, transition::open, xml::parse::id::ref::transition, id)
         {
           const ::xml::parse::type::transition_type& trans (id.get());
-          weaver::property wp (_transition);
-
-          from::properties (&wp, trans.properties());
 
           from::many
             ( this
@@ -310,10 +272,6 @@ namespace fhg
                 )
               );
           }
-
-          weaver::property wp (_port_item);
-
-          from::properties (&wp, port.properties());
         }
 
         class place
@@ -340,10 +298,6 @@ namespace fhg
           const ::xml::parse::type::place_type& place (id.get());
 
           _place_item_by_name[place.name()] = _place;
-
-          weaver::property wp (_place);
-
-          from::properties (&wp, place.properties());
         }
 
         class net
