@@ -158,11 +158,10 @@ namespace fhg
         {
           const ::xml::parse::type::transition_type& trans (id.get());
 
-          from::many
-            ( this
-            , trans.resolved_function().get().ports().ids()
-            , from::port
-            );
+          from::many ( this
+                     , trans.resolved_function().get().ports().ids()
+                     , from::port
+                     );
 
           weaver::connection wc ( _scene
                                 , _place_item_by_name
