@@ -58,31 +58,6 @@ namespace fhg
             );
         }
 
-        class port
-        {
-        public:
-          explicit port ( ui::graph::port_item* port
-                        , item_by_name_type& port_item_by_name
-                        )
-            : _port (port)
-            , _port_item_by_name (port_item_by_name)
-          { }
-
-          template<int Type, typename T> void weave (const T & x) {}
-          template<int Type> void weave () {}
-
-        private:
-          ui::graph::port_item* _port;
-
-          item_by_name_type& _port_item_by_name;
-        };
-
-        WSIG (port, port::open, xml::parse::id::ref::port, id)
-        {
-          const ::xml::parse::type::port_type& port (id.get());
-          _port_item_by_name[port.name()] = _port;
-        }
-
         class connection
         {
         public:
@@ -203,22 +178,27 @@ namespace fhg
 
         }
 
-        WSIG (transition, port::open, ::xml::parse::id::ref::port, port)
+        WSIG (transition, port::open, ::xml::parse::id::ref::port, id)
         {
+          const ::xml::parse::type::port_type& port (id.get());
+
           ui::graph::port_item* item
             ( new ui::graph::port_item
-              (data::handle::port (port, _root), _transition)
+              (data::handle::port (id, _root), _transition)
             );
+
           //! \todo This sets the wrong position: differentiate
           //! between ports on transition and ports in net (inner, outer)
-          initialize_and_set_position (item, port);
-          weaver::port wp ( item
-                          , port.get().direction() == we::type::PORT_IN
-                          ? _port_in_item_by_name
-                          : _port_out_item_by_name
-                          );
+          initialize_and_set_position (item, id);
 
-          from::port (&wp, port);
+          if (port.direction() == we::type::PORT_IN)
+          {
+            _port_in_item_by_name[port.name()] = item;
+          }
+          else
+          {
+            _port_out_item_by_name[port.name()] = item;
+          }
         }
 
         class port_toplevel
