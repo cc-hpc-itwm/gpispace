@@ -41,7 +41,9 @@ namespace fhg
         vbox->addWidget
           (new port_lists_widget (_function, QStringList(), exp_widget));
 
-        new graph_view (weaver::display::net (net, function), this);
+        const graph_view* const gv
+          (new graph_view (weaver::display::net (net, function), this));
+        addActions (gv->actions());
 
         _function.connect_to_change_mgr
           ( this
