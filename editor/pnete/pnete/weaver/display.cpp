@@ -95,26 +95,6 @@ namespace fhg
               _item->set_just_orientation_but_not_in_property
                 (ui::graph::port::orientation::read (value));
             }
-            if (_path.size() > 2 && _path[2] == "position")
-            {
-              if (_path.size() > 3)
-              {
-                if (_path[3] == "x")
-                {
-                  _item->set_just_pos_but_not_in_property
-                    ( boost::lexical_cast<qreal>(value)
-                    , _item->pos().y()
-                    );
-                }
-                else if (_path[3] == "y")
-                {
-                  _item->set_just_pos_but_not_in_property
-                    ( _item->pos().x()
-                    , boost::lexical_cast<qreal>(value)
-                    );
-                }
-              }
-            }
           }
         }
 
