@@ -83,10 +83,8 @@ namespace fhg
           initialize_and_set_position (_transition, id);
           _scene->addItem (_transition);
 
-          from::many ( this
-                     , trans.resolved_function().get().ports().ids()
-                     , from::port
-                     );
+          from::many
+            (this, trans.resolved_function().get().ports().ids(), from::port);
 
           from::many (this, trans.connections().ids(), from::connection);
 
