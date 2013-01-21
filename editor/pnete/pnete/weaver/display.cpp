@@ -37,20 +37,25 @@ namespace fhg
                                     > item_by_name_type;
 
         template<typename ID_TYPE>
-          void maybe_set_position ( ui::graph::base_item* item
-                                  , const ID_TYPE& id
-                                  )
+          void initialize_and_set_position ( ui::graph::base_item* item
+                                           , const ID_TYPE& id
+                                           )
         {
           if (!id.get().properties().has ("fhg.pnete.position.x"))
           {
-            id.get_ref().properties().set ("fhg.pnete.position.x", "0");
-            item->set_just_pos_but_not_in_property (0.0, item->pos().y());
+            id.get_ref().properties().set ("fhg.pnete.position.x", "0.0");
           }
           if (!id.get().properties().has ("fhg.pnete.position.y"))
           {
-            id.get_ref().properties().set ("fhg.pnete.position.y", "0");
-            item->set_just_pos_but_not_in_property (item->pos().x(), 0.0);
+            id.get_ref().properties().set ("fhg.pnete.position.y", "0.0");
           }
+
+          item->set_just_pos_but_not_in_property
+            ( boost::lexical_cast<qreal>
+              (id.get().properties().get ("fhg.pnete.position.x"))
+            , boost::lexical_cast<qreal>
+              (id.get().properties().get ("fhg.pnete.position.y"))
+            );
         }
 
         class property
@@ -220,7 +225,7 @@ namespace fhg
             , _port_out_item_by_name ()
             , _root (root)
           {
-            maybe_set_position (_transition, id);
+            initialize_and_set_position (_transition, id);
             _scene->addItem (_transition);
           }
 
@@ -272,7 +277,7 @@ namespace fhg
             );
           //! \todo This sets the wrong position: differentiate
           //! between ports on transition and ports in net (inner, outer)
-          maybe_set_position (item, port);
+          initialize_and_set_position (item, port);
           weaver::port wp ( item
                           , port.get().direction() == we::type::PORT_IN
                           ? _port_in_item_by_name
@@ -313,7 +318,7 @@ namespace fhg
 
           _port_item = new ui::graph::top_level_port_item
             (data::handle::port (id, _root));
-          maybe_set_position (_port_item, id);
+          initialize_and_set_position (_port_item, id);
           _scene->addItem (_port_item);
 
           _name = port.name();
@@ -422,7 +427,7 @@ namespace fhg
           ui::graph::place_item* place_item
             (new ui::graph::place_item (data::handle::place (place, _root)));
           weaver::place wp (place_item, _place_item_by_name);
-          maybe_set_position (place_item, place);
+          initialize_and_set_position (place_item, place);
           _scene->addItem (place_item);
           from::place (&wp, place);
         }
