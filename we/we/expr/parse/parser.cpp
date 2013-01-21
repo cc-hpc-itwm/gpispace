@@ -104,6 +104,13 @@ namespace expr
       return value::function::is_true(v);
     }
 
+    value::type parser::eval_all() const
+    {
+      eval::context c;
+
+      return eval_all (c);
+    }
+
     void parser::rename ( const key_vec_t::value_type & from
                         , const key_vec_t::value_type & to
                         )
