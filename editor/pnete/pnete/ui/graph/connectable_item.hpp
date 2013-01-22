@@ -50,7 +50,6 @@ namespace fhg
 
           const QSet<association*>& associations() const;
           const connectable::direction::type& direction() const;
-          const connectable::direction::type& direction (const connectable::direction::type&);
 
           virtual const std::string& we_type() const = 0;
 

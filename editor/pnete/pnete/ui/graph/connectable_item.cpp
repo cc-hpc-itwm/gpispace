@@ -59,10 +59,6 @@ namespace fhg
         {
           return _direction;
         }
-        const connectable::direction::type& connectable_item::direction (const connectable::direction::type& direction_)
-        {
-          return _direction = direction_;
-        }
 
         const std::string& connectable_item::we_type (const std::string& unmapped) const
         {
