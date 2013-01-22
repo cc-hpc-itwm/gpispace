@@ -244,10 +244,7 @@ namespace fhg
                           )
           {
             return !handle.get().parent()->ports().has
-              ( std::make_pair ( name.toStdString()
-                               , handle.get().direction()
-                               )
-              );
+              (std::make_pair (name.toStdString(), handle.get().direction()));
           }
 
           bool can_rename ( const data::handle::transition& handle

@@ -23,13 +23,12 @@ namespace fhg
     {
       namespace graph
       {
-        place_item::place_item
-          ( const data::handle::place& handle
-          , base_item* parent
-          )
-            : connectable_item (connectable::direction::BOTH, parent)
-            , _handle (handle)
-            , _content()
+        place_item::place_item ( const data::handle::place& handle
+                               , base_item* parent
+                               )
+          : connectable_item (connectable_item::direction::BOTH, parent)
+          , _handle (handle)
+          , _content()
         {
           refresh_content();
 

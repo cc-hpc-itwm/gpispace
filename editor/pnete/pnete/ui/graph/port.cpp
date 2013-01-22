@@ -29,17 +29,16 @@ namespace fhg
     {
       namespace graph
       {
-        port_item::port_item
-          ( const data::handle::port& handle
-          , transition_item* parent
-          )
-            : connectable_item ( handle.get().direction() == we::type::PORT_IN
-                               ? connectable::direction::IN
-                               : connectable::direction::OUT
-                               , parent
-                               )
-            , _handle (handle)
-            , _length (size::port::width())
+        port_item::port_item ( const data::handle::port& handle
+                             , transition_item* parent
+                             )
+          : connectable_item ( handle.get().direction() == we::type::PORT_IN
+                             ? connectable::direction::IN
+                             : connectable::direction::OUT
+                             , parent
+                             )
+          , _handle (handle)
+          , _length (size::port::width())
         {
           handle.connect_to_change_mgr
             ( this
