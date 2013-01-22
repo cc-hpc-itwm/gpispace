@@ -330,6 +330,8 @@ namespace xml
           throw error::duplicate_port (id, id_old, path);
         }
 
+        id.get_ref().parent (_id);
+
         if (id.get().direction() != we::type::PORT_TUNNEL)
         {
           boost::optional<const id::ref::port&> id_other
@@ -347,8 +349,6 @@ namespace xml
             throw error::port_type_mismatch (id, *id_other, path);
           }
         }
-
-        id.get_ref().parent (_id);
       }
 
       void function_type::remove_port (const id::ref::port& id)
