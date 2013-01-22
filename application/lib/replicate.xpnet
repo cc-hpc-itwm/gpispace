@@ -1,0 +1,40 @@
+<template name="replicate">
+  <template-parameter type="T"/>
+  <defun>
+    <in name="n" type="long" place="n"/>
+    <in name="x" type="T" place="x"/>
+    <tunnel name="obj" type="T" place="obj"/>
+    <net>
+      <place name="n" type="long"/>
+      <place name="x" type="T"/>
+      <place name="obj" type="T" virtual="true"/>
+      <transition name="done">
+        <defun>
+          <in name="n" type="long"/>
+          <in name="x" type="T"/>
+          <expression/>
+          <condition>
+            ${n} :le: 0
+          </condition>
+        </defun>
+        <connect-in port="n" place="n"/>
+        <connect-in port="x" place="x"/>
+      </transition>
+      <transition name="replicate">
+        <defun>
+          <inout name="n" type="long"/>
+          <inout name="x" type="T"/>
+          <expression>
+            ${n} := ${n} - 1;
+          </expression>
+          <condition>
+            ${n} :gt: 0
+          </condition>
+        </defun>
+        <connect-inout port="n" place="n"/>
+        <connect-read port="x" place="x"/>
+        <connect-out port="x" place="obj"/>
+      </transition>
+    </net>
+  </defun>
+</template>

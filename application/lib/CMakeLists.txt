@@ -5,6 +5,7 @@ set (xmls
   dup.xml
   eatN.xml
   make_pair.xml
+  replicate.xpnet
   sequence_bounded.xml
   sequence.xml
   sequence_control.xml
