@@ -48,8 +48,6 @@ namespace fhg
           void add_connection_with_implicit_place
             (const QObject*, const port&, const port&) const;
           void add_connection_or_association
-            (const QObject*, const port&, const place&) const;
-          void add_connection_or_association
             (const QObject*, const place&, const port&) const;
 
           using net_meta_base::operator==;

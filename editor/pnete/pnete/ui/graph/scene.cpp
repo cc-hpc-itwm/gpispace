@@ -826,32 +826,16 @@ namespace fhg
 
               if (as_port && pending_as_port)
               {
-                if (as_port->handle().get().direction() == we::type::PORT_IN)
-                {
-                  net().add_connection_with_implicit_place
-                    (this, pending_as_port->handle(), as_port->handle());
-                }
-                else
-                {
-                  net().add_connection_with_implicit_place
-                    (this, as_port->handle(), pending_as_port->handle());
-                }
+                net().add_connection_with_implicit_place
+                  (this, pending_as_port->handle(), as_port->handle());
               }
               else
               {
                 const port_item* port (as_port ? as_port : pending_as_port);
                 const place_item* place (as_place ? as_place : pending_as_place);
 
-                if (port->handle().get().direction() == we::type::PORT_IN)
-                {
-                  net().add_connection_or_association
-                    (this, place->handle(), port->handle());
-                }
-                else
-                {
-                  net().add_connection_or_association
-                    (this, port->handle(), place->handle());
-                }
+                net().add_connection_or_association
+                  (this, place->handle(), port->handle());
               }
 
               event->accept();

@@ -53,19 +53,12 @@ namespace fhg
         // - net -----------------------------------------------------
 
         // -- connection ---------------------------------------------
-        //! \note port <- place (in)
         void add_connection ( const QObject*
                             , const data::handle::place&
                             , const data::handle::port&
                             , bool no_make_explicit = false
                             );
-        //! \note port -> place (out)
-        void add_connection ( const QObject*
-                            , const data::handle::port&
-                            , const data::handle::place&
-                            , bool no_make_explicit = false
-                            );
-        //! \note port -> implicit_place -> port (convenience)
+        //! \note port <-> implicit_place <-> port (convenience)
         void add_connection ( const QObject*
                             , const data::handle::port&
                             , const data::handle::port&
