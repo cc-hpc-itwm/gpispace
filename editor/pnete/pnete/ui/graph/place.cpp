@@ -26,7 +26,7 @@ namespace fhg
         place_item::place_item ( const data::handle::place& handle
                                , base_item* parent
                                )
-          : connectable_item (connectable_item::direction::BOTH, parent)
+          : connectable_item (parent)
           , _handle (handle)
           , _content()
         {

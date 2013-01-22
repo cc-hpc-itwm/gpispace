@@ -32,11 +32,7 @@ namespace fhg
         port_item::port_item ( const data::handle::port& handle
                              , transition_item* parent
                              )
-          : connectable_item ( handle.get().direction() == we::type::PORT_IN
-                             ? connectable::direction::IN
-                             : connectable::direction::OUT
-                             , parent
-                             )
+          : connectable_item (parent)
           , _handle (handle)
           , _length (size::port::width())
         {
@@ -116,9 +112,9 @@ namespace fhg
         namespace
         {
           bool is_opposite_type_or_direction
-            (const port_item* lhs, const connectable_item* rhs)
+            (const port_item* lhs, const connectable_item* rhs_)
           {
-            if (qobject_cast<const port_item*> (rhs))
+            if (const port_item* rhs = qobject_cast<const port_item*> (rhs_))
             {
               const bool lhs_is_top_level
                 (qobject_cast<const top_level_port_item*> (lhs));
@@ -128,7 +124,9 @@ namespace fhg
               const bool both_non_top_level
                 (!lhs_is_top_level && !rhs_is_top_level);
               const bool same_level (both_top_level || both_non_top_level);
-              const bool same_direction (lhs->direction() == rhs->direction());
+              const bool same_direction (  lhs->handle().get().direction()
+                                        == rhs->handle().get().direction()
+                                        );
 
               return same_level ? !same_direction : same_direction;
             }
@@ -301,7 +299,7 @@ namespace fhg
                                               , const QPointF& pos
                                               ) const
         {
-          if (direction() == connectable::direction::IN)
+          if (handle().get().direction() == we::type::PORT_IN)
           {
             cap::add_incoming (poly, pos);
           }
@@ -315,7 +313,7 @@ namespace fhg
                                                         , const QPointF& pos
                                                         ) const
         {
-          if (direction() == connectable::direction::IN)
+          if (handle().get().direction() == we::type::PORT_IN)
           {
             cap::add_outgoing (poly, pos);
           }

@@ -826,7 +826,7 @@ namespace fhg
 
               if (as_port && pending_as_port)
               {
-                if (as_port->direction() == connectable::direction::IN)
+                if (as_port->handle().get().direction() == we::type::PORT_IN)
                 {
                   net().add_connection_with_implicit_place
                     (this, pending_as_port->handle(), as_port->handle());
@@ -842,7 +842,7 @@ namespace fhg
                 const port_item* port (as_port ? as_port : pending_as_port);
                 const place_item* place (as_place ? as_place : pending_as_place);
 
-                if (port->direction() == connectable::direction::IN)
+                if (port->handle().get().direction() == we::type::PORT_IN)
                 {
                   net().add_connection_or_association
                     (this, place->handle(), port->handle());

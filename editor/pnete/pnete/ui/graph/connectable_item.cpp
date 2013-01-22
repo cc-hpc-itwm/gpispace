@@ -16,13 +16,9 @@ namespace fhg
     {
       namespace graph
       {
-        connectable_item::connectable_item
-          ( connectable::direction::type direction
-          , base_item* parent
-          )
+        connectable_item::connectable_item (base_item* parent)
           : base_item (parent)
           , _associations ()
-          , _direction (direction)
         {}
 
         void connectable_item::add_association (association* c)
@@ -53,11 +49,6 @@ namespace fhg
         const QSet<association*>& connectable_item::associations() const
         {
           return _associations;
-        }
-
-        const connectable::direction::type& connectable_item::direction() const
-        {
-          return _direction;
         }
 
         const std::string& connectable_item::we_type (const std::string& unmapped) const

@@ -114,7 +114,7 @@ namespace fhg
           {
             if (port_item* p = qgraphicsitem_cast<port_item*> (child))
             {
-              if (p->direction() == connectable::direction::IN)
+              if (p->handle().get().direction() == we::type::PORT_IN)
               {
                 p->no_undo_setPos
                   (style::raster::snap (positionIn));
