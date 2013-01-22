@@ -986,11 +986,6 @@
 		            
 		            ptr_shmem[pre_reduce_info.red_used-pre_reduce_info.old_red_used] = 0;
 		            std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
-		            
-					/*timestamp_t time_start_sort_part = ::mapreduce::util::get_timestamp();
-					sort(arr_part_items.begin(), arr_part_items.end()); 
-					timestamp_t time_end_sort_part = ::mapreduce::util::get_timestamp();
-					MLOG(INFO, "Sorting the partition vector took "<<(time_end_sort_part - time_start_sort_part)/MS<<"ms");  */
 					
 					std::vector<std::string>::iterator iter_middle( arr_part_items.begin() ); 
 	                std::advance(iter_middle, arr_part_items.size()/2);
@@ -1011,7 +1006,6 @@
 		            }
 		            else // pre_reduce_info.old_red_used > 0
 		            {						
-		            	bzero(ptr_shmem, pre_reduce_info.red_used);
 						MLOG(INFO, "Get the content of the reduce slot from VM ...");
 			            waitComm ( fvmGetGlobalData
 			            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
@@ -1022,23 +1016,24 @@
 			                                            )
 			            );
 			            
-			            //ptr_shmem[pre_reduce_info.old_red_used] = 0;
+			            ptr_shmem[pre_reduce_info.old_red_used] = 0;
 			            
 						// these items are supposed to be already sorted!
+						timestamp_t time_start_parse = ::mapreduce::util::get_timestamp();
 						std::vector<std::string> arr_old_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
+						timestamp_t time_end_parse = ::mapreduce::util::get_timestamp();
+						MLOG(INFO, "parsing and tokenization took "<<(time_end_parse - time_start_parse)/MS<<"ms"); 
 						
 						thread0.join();
 						thread1.join();
+						
 						std::inplace_merge( arr_part_items.begin(), iter_middle, arr_part_items.end());
-
-	                	std::vector<std::string> arr_items(arr_old_red_items.size() + arr_part_items.size()); 
-	                	timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
-                    	std::merge( arr_old_red_items.begin(), arr_old_red_items.end(), arr_part_items.begin(), arr_part_items.end(), arr_items.begin() );   
-                    	
-	                	::mapreduce::util::reduce_arr_buff(pre_reduce_info.part_id, config.size.reduce.slot, arr_items, ptr_shmem, last_pos );
+	                	
+	                	timestamp_t time_start_mrg_red_arr = ::mapreduce::util::get_timestamp();
+	                	last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(pre_reduce_info.part_id, config.size.reduce.slot, arr_old_red_items, arr_part_items, ptr_shmem );
 		                	                		                	
-	                	timestamp_t time_end_red_arr = ::mapreduce::util::get_timestamp();
-	                	MLOG(INFO, "merge and reduce took "<<(time_end_red_arr - time_start_red_arr)/MS<<"ms"); 
+	                	timestamp_t time_end_mrg_red_arr = ::mapreduce::util::get_timestamp();
+	                	MLOG(INFO, "merge and reduce array took "<<(time_end_mrg_red_arr - time_start_mrg_red_arr)/MS<<"ms"); 
 						
 		            }
 																						
@@ -1237,9 +1232,12 @@
         <out name="special_partition_info" type="partition_info"/>
         <out name="special_reduce_info" type="reduce_info"/>
         <out name="reduce_and_write_done" type="control"/>
-         <module name="recover_border_keys" function="reduce_last_partition(config, partition_info, reduce_info,
-         																	 special_partition_info, special_reduce_info,
-         																	 reduce_and_write_done)">
+         <module name="recover_border_keys" function="reduce_last_partition(	config, 
+         																		partition_info, 
+         																		reduce_info,
+         																	 	special_partition_info, 
+         																	 	special_reduce_info,
+         																	 	reduce_and_write_done)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
@@ -1428,8 +1426,8 @@
       <condition>
         ${reduce_info.part_id}:eq:${config.num.part}-1
       </condition>
-      <connect-read port="partition_info" place="partition_info"/>
-      <connect-read port="reduce_info" place="reduce_info"/>
+      <connect-in port="partition_info" place="partition_info"/>
+      <connect-in port="reduce_info" place="reduce_info"/>
       <connect-read port="config" place="config"/>
       <connect-in port="all_chunks_done_border" place="all_chunks_done_border"/>
       <connect-out port="special_partition_info" place="special_partition_info"/> 
@@ -1583,15 +1581,16 @@
 	            std::string str_part_out_file = ::mapreduce::util::get_part_filename(config.file.output, partition_info.part_id);              
 	           	MLOG(INFO, "Write the partition "<<partition_info.part_id<<" into the file "<<str_part_out_file);
 	           
+	            // either this 
 	           	// should do a merge_and_reduce here instead of just reduce_and_write
-				std::vector<std::string> arr_reduced_items;
-	           	::mapreduce::util::combine(arr_items, arr_reduced_items);
+				//std::vector<std::string> arr_reduced_items;
+	           	//::mapreduce::util::combine(arr_items, arr_reduced_items);
 	           	
 	           	// create new file
 	           	//::mapreduce::util::reduce_arr_file(arr_reduced_items, str_part_out_file);
 	           	
-	           	// or ... perform a disk reduction
-	           	::mapreduce::util::merge_and_reduce_arr_file(arr_reduced_items, str_part_out_file);
+	           	// or this
+	           	::mapreduce::util::merge_and_reduce_arr_file(arr_items, str_part_out_file);
             }
             
             reduce_and_write_done = control();
