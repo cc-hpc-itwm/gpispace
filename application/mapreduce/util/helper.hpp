@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <boost/regex.hpp>
 #include <util/time.hpp>
+#include <fstream>
 
 
 const int US = 1000000.0L;
@@ -66,9 +67,17 @@ namespace mapreduce
   		  return oss.str();
 	  }
 
+  	  bool my_comp(const std::string& lhs, const std::string& rhs)
+  	  {
+  		  std::string key_l(lhs);
+  		  std::string key_r(rhs);
+
+  		  return key_l.compare(key_r)<0;
+  	  }
+
   	  void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
   	  {
-  		  std::sort(iter_beg, iter_end);
+  		  std::sort(iter_beg, iter_end, my_comp);
   	  }
 
   	  template <typename T>
@@ -166,16 +175,6 @@ namespace mapreduce
         return false;
     }
 
-    bool comp (const std::string& l, const std::string& r)
-    {
-      size_t l_pos = l.find(PAIRSEP);
-      size_t r_pos = l.find(PAIRSEP);
-      std:: string l_pref = l.substr(0, l_pos);
-      std:: string r_pref = r.substr(0, r_pos);
-
-      return string_comp(l_pref, r_pref);
-    }
-
     std::vector<int> get_array(const std::string& str_input)
     {
       boost::char_separator<char> sep(DELIMITERS.c_str());
@@ -233,11 +232,6 @@ namespace mapreduce
     key_val_pair_t str2kvpair(const std::string& str_map)
     {
       size_t split_pos = str_map.find_last_of(PAIRSEP);
-      if( split_pos == std::string::npos )
-      {
-    	  MLOG(FATAL, "No value specified for the key "<<str_map);
-    	  throw std::runtime_error(std::string("Invalid key-value pair:") + str_map);
-      }
 
       std::string key = str_map.substr(0,split_pos);
       if(key.empty())
@@ -259,33 +253,10 @@ namespace mapreduce
 
     std::string kvpair2str(const key_val_pair_t& pair)
 	{
-    	std::ostringstream osstr;
-    	osstr<<pair.first<<PAIRSEP<<pair.second;
-
-    	return osstr.str();
+    	return pair.first+PAIRSEP+pair.second;
 	}
 
     /*
-    key_val_pair_t str2kvpair(const std::string& str_enc)
-	{
-    	key_val_pair_t pair;
-    	std::istringstream iss(str_enc);
-    	boost::archive::text_iarchive ia(iss);
-    	ia>>pair.first;
-    	ia>>pair.second;
-
-    	return pair;
-	}
-
-	std::string kvpair2str(const key_val_pair_t& pair)
-	{
-		std::ostringstream oss;
-		boost::archive::text_oarchive oa(oss);
-		oa<<pair.first<<pair.second;
-
-		return oss.str();
-	}
-
     bool is_special_item(const std::string& str_item)
     {
     	// further checks are necessary
@@ -307,11 +278,13 @@ namespace mapreduce
 			return false;
 
 		// further checks are necessary
-		std::ostringstream oss;
-		oss<<SHRPCH<<PAIRSEP;
-		boost::char_separator<char> sep(oss.str().data());
-		boost::tokenizer<boost::char_separator<char> > tok(str_item, sep);
-		std::vector<std::string> u(3, "");
+		key_val_pair_t kvp = str2kvpair(str_item);
+
+		char szsep[2];
+		szsep[0]=SHRPCH;szsep[1]='\0';
+		boost::char_separator<char> sep(szsep);
+		boost::tokenizer<boost::char_separator<char> > tok(kvp.first, sep);
+		std::vector<std::string> u(2, "");
 		u.assign(tok.begin(), tok.end());
 
 		try {
@@ -414,6 +387,14 @@ namespace mapreduce
 		  return new_pos;
 	  }
 	}
+
+	void write_to_stream(std::string& key, std::list<std::string>& list_values, std::ofstream& ofs )
+	{
+		key_val_pair_t kvp(key, list2str(list_values));
+		std::string str_pair = kvpair2str(kvp);
+		ofs<<str_pair<<std::endl;
+	}
+
   }
 }
 
