@@ -114,16 +114,14 @@ namespace fhg
           {
             if (port_item* p = qgraphicsitem_cast<port_item*> (child))
             {
-              if (p->direction() == connectable::direction::IN)
+              if (p->handle().get().direction() == we::type::PORT_IN)
               {
-                p->orientation (port::orientation::WEST);
                 p->no_undo_setPos
                   (style::raster::snap (positionIn));
                 positionIn.ry() += step + padding;
               }
               else
               {
-                p->orientation (port::orientation::EAST);
                 p->no_undo_setPos
                   (style::raster::snap (positionOut));
                 positionOut.ry() += step + padding;

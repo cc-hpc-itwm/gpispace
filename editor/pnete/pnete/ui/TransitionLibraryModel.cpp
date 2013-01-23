@@ -83,7 +83,7 @@ namespace fhg
         }
 
         foreach ( QFileInfo fileinfo
-                , directory.entryInfoList( QStringList("*.xml")
+                , directory.entryInfoList( QStringList("*.xpnet")
                                          , QDir::Files
                                          | QDir::NoSymLinks
                                          | QDir::NoDotAndDotDot

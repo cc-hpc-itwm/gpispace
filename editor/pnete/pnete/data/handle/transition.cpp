@@ -44,9 +44,10 @@ namespace fhg
 
         void transition::move ( const QObject* sender
                               , const QPointF& position
+                              , const bool outer
                               ) const
         {
-          change_manager().move_item (sender, *this, position);
+          change_manager().move_item (sender, *this, position, outer);
         }
 
         void transition::no_undo_move ( const QObject* sender

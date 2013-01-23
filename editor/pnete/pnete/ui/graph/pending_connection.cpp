@@ -3,7 +3,9 @@
 #include <pnete/ui/graph/pending_connection.hpp>
 
 #include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/style/association.hpp>
+#include <xml/parse/type/port.hpp>
 
 namespace fhg
 {
@@ -28,17 +30,26 @@ namespace fhg
         QPainterPath pending_connection::shape() const
         {
           QList<QPointF> points;
-          points.push_back
-            ( _fixed_end->direction() == connectable::direction::OUT
-            ? _fixed_end->scenePos()
-            : _open_end
-            );
+
           //! \todo automatic orthogonal lines
-          points.push_back
-            ( _fixed_end->direction() == connectable::direction::OUT
-            ? _open_end
-            : _fixed_end->scenePos()
-            );
+          if (const port_item* fix = qobject_cast<const port_item*> (_fixed_end))
+          {
+            if (fix->handle().get().direction() == we::type::PORT_OUT)
+            {
+              points.push_back (_fixed_end->scenePos());
+              points.push_back (_open_end);
+            }
+            else
+            {
+              points.push_back (_open_end);
+              points.push_back (_fixed_end->scenePos());
+            }
+          }
+          else
+          {
+            points.push_back (_fixed_end->scenePos());
+            points.push_back (_open_end);
+          }
 
           return style::association::shape (points);
         }

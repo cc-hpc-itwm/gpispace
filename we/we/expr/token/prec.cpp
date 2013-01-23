@@ -33,10 +33,6 @@ namespace expr
         case token::_pow:
         case token::_powint: return 24;
         case token::neg: return 25;
-        case token::_if:
-        case token::_then:
-        case token::_else:
-        case token::_endif: return -99;
         case token::define: return -98;
         default: throw exception::strange ("prec " + fhg::util::show(token));
         }

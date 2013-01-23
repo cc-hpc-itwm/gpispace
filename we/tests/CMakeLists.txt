@@ -16,7 +16,6 @@ set(tc_srcs
     test_cross.cpp
     test_execute_activity.cpp
     test_expr_parser.cpp
-    test_expr_parser_ite.cpp
     test_expr_rename.cpp
     test_expr_get_names.cpp
     test_expr_simplify.cpp

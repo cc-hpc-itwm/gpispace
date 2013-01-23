@@ -72,33 +72,6 @@ namespace expr
             return shift;
           }
 
-        if (inp == token::_if)
-          return shift;
-
-        if (top == token::_if)
-          {
-            if (inp == token::_then)
-              return shift;
-
-            return reduce;
-          }
-
-        if (top == token::_then)
-          {
-            if (inp == token::_else)
-              return shift;
-
-            return reduce;
-          }
-
-        if (top == token::_else)
-          {
-            if (inp == token::_endif)
-              return reduce;
-
-            return shift;
-          }
-
         if (top == token::sep)
           {
             if (inp == token::eof)

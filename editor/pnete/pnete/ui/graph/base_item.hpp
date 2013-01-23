@@ -60,6 +60,7 @@ namespace fhg
           (const port::orientation::type&) {}
 
           virtual void setPos (const QPointF&);
+          virtual void setPos (const QPointF&, bool outer);
           virtual void setPos (qreal, qreal);
 
           virtual void no_undo_setPos (const QPointF&);

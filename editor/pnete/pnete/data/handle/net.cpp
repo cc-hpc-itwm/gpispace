@@ -45,12 +45,6 @@ namespace fhg
         }
 
         void net::add_connection_or_association
-          (const QObject* origin, const port& left, const place& right) const
-        {
-          change_manager().add_connection (origin, left, right);
-        }
-
-        void net::add_connection_or_association
           (const QObject* origin, const place& left, const port& right) const
         {
           change_manager().add_connection (origin, left, right);
