@@ -120,20 +120,6 @@ namespace expr
         {
           switch (t.token)
             {
-            case expr::token::_ite:
-              if ( value::function::is_true ( boost::apply_visitor ( *this
-                                                                   , t.child0
-                                                                   )
-                                            )
-                 )
-                {
-                  return boost::apply_visitor (*this, t.child1);
-                }
-              else
-                {
-                  return boost::apply_visitor (*this, t.child2);
-                }
-              break;
             case expr::token::_map_assign:
               {
                 value::type c0 (boost::apply_visitor (*this, t.child0));

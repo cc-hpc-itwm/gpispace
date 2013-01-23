@@ -179,18 +179,7 @@ namespace expr
                     ("'iv' or 'ouble'", pos());
                 }
             break;
-          case 'e':
-            ++pos;
-            if (is_eof())
-              set_E();
-            else
-              switch (*pos)
-                {
-                case 'l': ++pos; require("se"); token = _else; break;
-                case 'n': ++pos; require("dif"); token = _endif; break;
-                default: set_E(); break;
-                }
-            break;
+          case 'e': ++pos; set_E(); break;
           case 'f':
             ++pos;
             if (is_eof())
@@ -206,8 +195,7 @@ namespace expr
                   throw exception::parse::expected ("'loor' or 'alse'", pos());
                 }
             break;
-          case 'i': ++pos; require ("f"); token = _if; break;
-          case 'l':
+         case 'l':
             ++pos;
             if (is_eof())
               throw exception::parse::expected
@@ -394,13 +382,12 @@ namespace expr
           case 't':
             ++pos;
             if (is_eof())
-              throw exception::parse::expected ("'hen' or 'rue'", pos());
+              throw exception::parse::expected ("rue", pos());
             else
               switch (*pos)
                 {
-                case 'h': ++pos; require("en"); token = _then; break;
                 case 'r': ++pos; require("ue"); token = val; tokval = true; break;
-                default: throw exception::parse::expected ("'hen' or 'rue'", pos());
+                default: throw exception::parse::expected ("rue", pos());
                 }
             break;
           case '|': ++pos; require ("|"); token = _or; break;

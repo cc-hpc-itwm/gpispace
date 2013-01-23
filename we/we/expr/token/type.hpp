@@ -49,8 +49,6 @@ namespace expr
 
     , define                  // prec -99, right associative
 
-    , _if, _then, _else, _endif, _ite
-
     , eof
     , _token_end = eof
     };

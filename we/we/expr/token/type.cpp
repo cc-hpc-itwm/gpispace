@@ -82,11 +82,6 @@ namespace expr
         case ref: return s << "<ref>";
         case eof: return s << "<eof>";
         case define: return s << " := ";
-        case _if: return s << "if ";
-        case _then: return s << " then ";
-        case _else: return s << " else ";
-        case _endif: return s << " endif";
-        case _ite: return s << "_ite";
         default: throw  exception::strange ("<< (unknown token)");
         }
     }
