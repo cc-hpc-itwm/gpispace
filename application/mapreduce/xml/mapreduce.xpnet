@@ -1439,15 +1439,17 @@
       <require key="GPI" />
       <require key="WRITE" />
       <defun>
-        <in name="map_slots_released" type="control"/>
-        <in name="read_slots_released" type="control"/>
+        
+        <!-- <in name="map_slots_released" type="control"/>
+        <in name="read_slots_released" type="control"/> -->
+        
         <in name="special_partition_info" type="partition_info"/>
         <in name="special_reduce_info" type="reduce_info"/>
         <in name="partition_info" type="partition_info"/>
         <in name="reduce_info" type="reduce_info"/>
         <in name="config" type="config"/>
         <out name="reduce_and_write_done" type="control"/>
-	     <module name="mapred" function="reduce_and_write(  config, map_slots_released, read_slots_released, 
+	     <module name="mapred" function="reduce_and_write(  config, 
 	     													special_partition_info, special_reduce_info,
 	     													partition_info, reduce_info,
 	     													reduce_and_write_done)">
@@ -1511,7 +1513,10 @@
                 ptr_shmem[partition_info.part_used] = 0;
                 std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
                                     
-                boost::thread thread0( boost::bind( &mapreduce::util::my_sort, arr_part_items.begin(), arr_part_items.end()) );
+            	std::vector<std::string>::iterator iter_middle( arr_part_items.begin() ); 
+                std::advance(iter_middle, arr_part_items.size()/2);
+                boost::thread thread0( boost::bind( &::mapreduce::util::my_sort, arr_part_items.begin(), iter_middle) );
+                boost::thread thread1( boost::bind( &::mapreduce::util::my_sort, iter_middle, arr_part_items.end()) );  
                              
                 if(reduce_info.red_used)
                 {
@@ -1537,8 +1542,10 @@
                 // these sub-arrays are delimited by specific separators
                 // when you do reduce, just get these sorted sub-arrays and 
                 // merge them with the reduce-slot 
-                
-                thread0.join();
+                                  
+			 	thread0.join();
+				thread1.join();
+				std::inplace_merge( arr_part_items.begin(), iter_middle, arr_part_items.end());
                 
                 if(!arr_red_items.empty())
                 {
@@ -1604,8 +1611,10 @@
       <condition>
         ${reduce_info.part_id}:eq:${partition_info.part_id}
       </condition>
-      <connect-read port="map_slots_released" place="map_slots_released"/>
-      <connect-read port="read_slots_released" place="read_slots_released"/>
+      
+      <!-- <connect-read port="map_slots_released" place="map_slots_released"/>
+      <connect-read port="read_slots_released" place="read_slots_released"/> -->
+      
       <connect-read port="special_partition_info" place="special_partition_info"/>
       <connect-read port="special_reduce_info" place="special_reduce_info"/>
       <connect-in port="partition_info" place="partition_info"/>
