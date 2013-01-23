@@ -104,6 +104,13 @@ namespace expr
       return value::function::is_true(v);
     }
 
+    value::type parser::eval_all() const
+    {
+      eval::context c;
+
+      return eval_all (c);
+    }
+
     void parser::rename ( const key_vec_t::value_type & from
                         , const key_vec_t::value_type & to
                         )
@@ -197,36 +204,6 @@ namespace expr
       tmp_stack.push_back (node::ternary_t (token, f, s, t));
     }
 
-    void parser::ite (const std::size_t k)
-    {
-      if (tmp_stack.empty())
-        throw exception::parse::missing_operand (k, "else expression");
-
-      nd_t f (tmp_stack.back()); tmp_stack.pop_back();
-
-      if (tmp_stack.empty())
-        throw exception::parse::missing_operand (k, "then expression");
-
-      nd_t t (tmp_stack.back()); tmp_stack.pop_back();
-
-      if (tmp_stack.empty())
-        throw exception::parse::missing_operand (k, "condition");
-
-      nd_t c (tmp_stack.back()); tmp_stack.pop_back();
-
-      if (constant_folding() && node::is_value(c))
-        {
-          if (value::function::is_true(boost::get<value::type> (c)))
-            tmp_stack.push_back (t);
-          else
-            tmp_stack.push_back (f);
-        }
-      else
-        {
-          tmp_stack.push_back (node::ternary_t (token::_ite,  c, t, f));
-        }
-    }
-
     void parser::reduce (const std::size_t k)
     {
       switch (op_stack.top())
@@ -294,7 +271,6 @@ namespace expr
         case token::abs: unary (op_stack.top(), k); break;
         case token::rpr: op_stack.pop(); break;
         case token::define: binary (op_stack.top(), k); break;
-        case token::_else: ite (k); break;
         default: break;
         }
       op_stack.pop();

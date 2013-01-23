@@ -32,11 +32,8 @@ namespace xml
       class get_literal_type_name;
 
       class resolve;
-
-      class specialize;
     }
   }
 }
 
 #endif
-

@@ -8,9 +8,7 @@
 #include <pnete/data/handle/place.fwd.hpp>
 #include <pnete/data/handle/port.fwd.hpp>
 #include <pnete/data/handle/transition.fwd.hpp>
-#include <pnete/ui/graph/place.fwd.hpp>
 #include <pnete/ui/graph/scene.fwd.hpp>
-#include <pnete/ui/graph/transition.fwd.hpp>
 
 namespace fhg
 {

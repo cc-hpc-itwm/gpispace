@@ -26,14 +26,14 @@ namespace xml
       place_type::place_type ( ID_CONS_PARAM(place)
                              , PARENT_CONS_PARAM(net)
                              , const std::string & name
-                             , const std::string & _type
+                             , const std::string & type
                              , const boost::optional<bool> is_virtual
                              )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _is_virtual (is_virtual)
         , _name (name)
-        , type (_type)
+        , _type (type)
       {
         _id_mapper->put (_id, *this);
       }
@@ -50,7 +50,7 @@ namespace xml
         , PARENT_INITIALIZE()
         , _is_virtual (is_virtual)
         , _name (name)
-        , type (type)
+        , _type (type)
         , tokens (tokens)
         , _properties (properties)
       {
@@ -76,11 +76,20 @@ namespace xml
         return name_impl (name);
       }
 
+      const std::string& place_type::type() const
+      {
+        return _type;
+      }
+      const std::string& place_type::type (const std::string& type_)
+      {
+        return _type = type_;
+      }
+
       boost::optional<signature::type> place_type::signature() const
       {
-        if (literal::valid_name (type_GET()))
+        if (literal::valid_name (type()))
         {
-          return signature::type (type_GET());
+          return signature::type (type());
         }
 
         if (not parent())
@@ -88,7 +97,7 @@ namespace xml
           return boost::none;
         }
 
-        return parent()->signature (type_GET());
+        return parent()->signature (type());
       }
       signature::type place_type::signature_or_throw() const
       {
@@ -97,18 +106,13 @@ namespace xml
         if (not s)
         {
           throw error::place_type_unknown ( name()
-                                          , type_GET()
+                                          , type()
                                           //! \todo own LOCATION
                                           , parent()->path()
                                           );
         }
 
         return *s;
-      }
-
-      const std::string& place_type::type_GET() const
-      {
-        return /*! \todo _*/type;
       }
 
       void place_type::push_token (const token_type & t)
@@ -121,11 +125,11 @@ namespace xml
                                   )
       {
         const type::type_map_type::const_iterator
-          mapped (map_in.find (type));
+          mapped (map_in.find (type()));
 
         if (mapped != map_in.end())
         {
-          type = mapped->second;
+          type (mapped->second);
         }
       }
 
@@ -165,7 +169,7 @@ namespace xml
           , parent
           , _is_virtual
           , _name
-          , type
+          , _type
           , tokens
           , _properties
           ).make_reference_id();
@@ -177,7 +181,7 @@ namespace xml
         {
           s.open ("place");
           s.attr ("name", p.name());
-          s.attr ("type", p.type);
+          s.attr ("type", p.type());
           s.attr ("virtual", p.get_is_virtual());
 
           ::we::type::property::dump::dump (s, p.properties());

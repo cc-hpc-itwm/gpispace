@@ -226,7 +226,7 @@ namespace fhg
         void set_type_impl
           (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& type)
         {
-          handle.get_ref().type = type.toStdString();
+          handle.get_ref().type (type.toStdString());
 
           typedef void (change_manager_t::* signal_type)
             ( const QObject*
@@ -250,7 +250,7 @@ namespace fhg
             )
               : ACTION_INIT (name)
               , _handle (handle)
-              , _old_type (QString::fromStdString (handle.get().type))
+              , _old_type (QString::fromStdString (handle.get().type()))
               , _new_type (type)
           { }
 
@@ -336,21 +336,27 @@ namespace fhg
             , ACTION_ARG_LIST
             , const handle_type& handle
             , const QPointF& position
+            , const bool outer
             )
               : ACTION_INIT (name)
               , _id (id)
               , _handle (handle)
+              , _outer (outer)
               , _set_x_action ( new action::meta_set_property<handle_type>
                                 ( "set_transition_property_action"
                                 , ACTION_CTOR_ARGS, handle
-                                , "fhg.pnete.position.x"
+                                , !_outer
+                                ? "fhg.pnete.position.x"
+                                : "fhg.pnete.outer_position.x"
                                 , to_property_type (position.x())
                                 )
                               )
               , _set_y_action ( new action::meta_set_property<handle_type>
                                 ( "set_transition_property_action"
                                 , ACTION_CTOR_ARGS, handle
-                                , "fhg.pnete.position.y"
+                                , !_outer
+                                ? "fhg.pnete.position.y"
+                                : "fhg.pnete.outer_position.y"
                                 , to_property_type (position.y())
                                 )
                               )
@@ -379,7 +385,7 @@ namespace fhg
             {
               const meta_move_item<handle_type>* other
                 (static_cast<const meta_move_item<handle_type>*> (other_));
-              if (_handle == other->_handle)
+              if (_handle == other->_handle && _outer == other->_outer)
               {
                 _set_x_action->new_value (other->_set_x_action->new_value());
                 _set_y_action->new_value (other->_set_y_action->new_value());
@@ -394,6 +400,7 @@ namespace fhg
           ACTION_MEMBERS;
           int _id;
           const handle_type _handle;
+          const bool _outer;
           boost::scoped_ptr<meta_set_property<handle_type> > _set_x_action;
           boost::scoped_ptr<meta_set_property<handle_type> > _set_y_action;
         };
@@ -944,13 +951,11 @@ namespace fhg
       // ## editing methods ##########################################
       // - net -------------------------------------------------------
       // -- connection -----------------------------------------------
-      void add_connection_impl_choose ( const QObject* origin
-                                      , change_manager_t& change_manager
-                                      , const data::handle::place& place
-                                      , const data::handle::port& port
-                                      , const petri_net::edge::type& direction
-                                      , bool no_make_explicit
-                                      )
+      void change_manager_t::add_connection ( const QObject* origin
+                                            , const data::handle::place& place
+                                            , const data::handle::port& port
+                                            , bool no_make_explicit
+                                            )
       {
         const ::xml::parse::id::ref::net net_of_place
           (place.get().parent()->make_reference_id());
@@ -963,17 +968,16 @@ namespace fhg
 
         if (function_of_net_of_place == function_of_port)
         {
-          change_manager.beginMacro ("set_place_association_action");
+          beginMacro ("set_place_association_action");
 
           if (place.is_implicit() && !no_make_explicit)
           {
-            change_manager.make_explicit (&change_manager, place);
+            make_explicit (this, place);
           }
 
-          change_manager.set_place_association
-            (origin, port, place.get().name());
+          set_place_association (origin, port, place.get().name());
 
-          change_manager.endMacro();
+          endMacro();
         }
         else
         {
@@ -982,31 +986,30 @@ namespace fhg
 
           if (net_of_place == transition_of_fun_of_port.get().parent()->id())
           {
-            change_manager.beginMacro ("add_connection_action");
+            beginMacro ("add_connection_action");
 
             if (place.is_implicit() && !no_make_explicit)
             {
-              change_manager.make_explicit (&change_manager, place);
+              make_explicit (this, place);
             }
 
-            change_manager.push
-              ( new action::add_connection
-                ( change_manager
-                , place.document()
-                , origin
-                , transition_of_fun_of_port
-                , ::xml::parse::type::connect_type
-                  ( transition_of_fun_of_port.id_mapper()->next_id()
-                  , transition_of_fun_of_port.id_mapper()
-                  , boost::none
-                  , place.get().name()
-                  , port.get().name()
-                  , direction
-                  ).make_reference_id()
-                )
-              );
+            push ( new action::add_connection
+                   ( ACTION_CTOR_ARGS (place)
+                   , transition_of_fun_of_port
+                   , ::xml::parse::type::connect_type
+                     ( transition_of_fun_of_port.id_mapper()->next_id()
+                     , transition_of_fun_of_port.id_mapper()
+                     , boost::none
+                     , place.get().name()
+                     , port.get().name()
+                     , port.get().direction() == we::type::PORT_IN
+                     ? petri_net::edge::PT
+                     : petri_net::edge::TP
+                     ).make_reference_id()
+                   )
+                 );
 
-            change_manager.endMacro();
+            endMacro();
           }
           else
           {
@@ -1017,34 +1020,14 @@ namespace fhg
       }
 
       void change_manager_t::add_connection ( const QObject* origin
-                                            , const data::handle::place& place
-                                            , const data::handle::port& port
-                                            , bool no_make_explicit
-                                            )
-      {
-        add_connection_impl_choose
-          (origin, *this, place, port, petri_net::edge::PT, no_make_explicit);
-      }
-
-      void change_manager_t::add_connection ( const QObject* origin
-                                            , const data::handle::port& port
-                                            , const data::handle::place& place
-                                            , bool no_make_explicit
-                                            )
-      {
-        add_connection_impl_choose
-          (origin, *this, place, port, petri_net::edge::TP, no_make_explicit);
-      }
-
-      void change_manager_t::add_connection ( const QObject* origin
-                                            , const data::handle::port& from
-                                            , const data::handle::port& to
+                                            , const data::handle::port& port_a
+                                            , const data::handle::port& port_b
                                             , const data::handle::net& net
                                             )
       {
         //! \todo Check for ports being in that or in transitions of that net?
 
-        if (from.get().type != to.get().type)
+        if (port_a.get().signature() != port_b.get().signature())
         {
           throw std::runtime_error ("different types for connected ports");
         }
@@ -1063,7 +1046,7 @@ namespace fhg
             , net.id().id_mapper()
             , boost::none
             , name
-            , from.get().type
+            , port_a.get().type()
             , boost::none
             ).make_reference_id()
           );
@@ -1074,8 +1057,9 @@ namespace fhg
         push (new action::add_place (ACTION_CTOR_ARGS (net), net.id(), place));
 
         handle::place place_handle (place, net.document());
-        add_connection (origin, from, place_handle, true);
-        add_connection (origin, place_handle, to, true);
+
+        add_connection (origin, place_handle, port_a, true);
+        add_connection (origin, place_handle, port_b, true);
 
         endMacro();
       }
@@ -1296,11 +1280,12 @@ namespace fhg
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::transition& transition
                                        , const QPointF& position
+                                       , const bool outer
                                        )
       {
         push ( new action::meta_move_item<handle::transition>
                ( "move_transition_item_action", ids::move_transition_item
-               , ACTION_CTOR_ARGS (transition), transition, position
+               , ACTION_CTOR_ARGS (transition), transition, position, outer
                )
              );
       }
@@ -1488,11 +1473,12 @@ namespace fhg
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::place& place
                                        , const QPointF& position
+                                       , const bool outer
                                        )
       {
         push ( new action::meta_move_item<handle::place>
                ( "move_place_item_action", ids::move_place_item
-               , ACTION_CTOR_ARGS (place), place, position
+               , ACTION_CTOR_ARGS (place), place, position, outer
                )
              );
       }
@@ -1693,11 +1679,12 @@ namespace fhg
       void change_manager_t::move_item ( const QObject* origin
                                        , const handle::port& port
                                        , const QPointF& position
+                                       , const bool outer
                                        )
       {
         push ( new action::meta_move_item<handle::port>
                ( "move_port_item_action", ids::move_port_item
-               , ACTION_CTOR_ARGS (port), port, position
+               , ACTION_CTOR_ARGS (port), port, position, outer
                )
              );
       }

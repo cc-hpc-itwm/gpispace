@@ -2,6 +2,11 @@
 #ifndef _H_MAPREDUCE_UTIL_HELPER
 #define _H_MAPREDUCE_UTIL_HELPER 1
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/assume_abstract.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -14,11 +19,12 @@
 #include <boost/algorithm/string/iter_find.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <fvm-pc/pc.hpp>
 #include <util/types.hpp>
 #include <algorithm>
 #include <boost/regex.hpp>
 #include <util/time.hpp>
+#include <fstream>
+
 
 const int US = 1000000.0L;
 const int MS = 1000.0L;
@@ -30,8 +36,6 @@ const char SPCH = ' ';
 const char PAIRSEP = '@';
 
 std::string DELIMITERS = " \n";
-
-typedef  std::pair<std::string, std::string> key_val_pair_t;
 
 namespace mapreduce
 {
@@ -63,9 +67,17 @@ namespace mapreduce
   		  return oss.str();
 	  }
 
+  	  bool my_comp(const std::string& lhs, const std::string& rhs)
+  	  {
+  		  std::string key_l(lhs);
+  		  std::string key_r(rhs);
+
+  		  return key_l.compare(key_r)<0;
+  	  }
+
   	  void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
   	  {
-  		  std::sort(iter_beg, iter_end);
+  		  std::sort(iter_beg, iter_end, my_comp);
   	  }
 
   	  template <typename T>
@@ -143,34 +155,6 @@ namespace mapreduce
   	  }
 
 
-  	  bool is_special_item(const std::string& str_item)
-  	  {
-  		  // to do: use regex here
-  		  if (str_item[0] != SHRPCH)
-  			  return false;
-
-  		  // further checks are necessary
-  		 std::ostringstream oss;
-  		 oss<<SHRPCH<<PAIRSEP;
-  		 boost::char_separator<char> sep(oss.str().data());
-  		 boost::tokenizer<boost::char_separator<char> > tok(str_item, sep);
-  		 std::vector<std::string> u(3, "");
-  		 u.assign(tok.begin(), tok.end());
-
-  		 try {
-  			  int u0 = boost::lexical_cast<long>(u[0]);
-  			  int u1 = boost::lexical_cast<long>(u[1]);
-  			  return true;
-  		 }
-  		 catch(const boost::bad_lexical_cast& ex)
-  		 {
-  			 return false;
-  		 }
-
-  		 // const boost::regex pattern("#\\d+#\\d+:\\w*");
-  		 // return boost::regex_match(str_item, pattern);
-  	  }
-
     bool is_delimiter(char x)
     {
       bool b = (DELIMITERS.find(x) != std::string::npos);
@@ -189,16 +173,6 @@ namespace mapreduce
           return true;
 
         return false;
-    }
-
-    bool comp (const std::string& l, const std::string& r)
-    {
-      size_t l_pos = l.find(PAIRSEP);
-      size_t r_pos = l.find(PAIRSEP);
-      std:: string l_pref = l.substr(0, l_pos);
-      std:: string r_pref = r.substr(0, r_pos);
-
-      return string_comp(l_pref, r_pref);
     }
 
     std::vector<int> get_array(const std::string& str_input)
@@ -255,38 +229,9 @@ namespace mapreduce
     	return v;
     }
 
-    void print_partitions(long handle, long slot_size, const std::string& part_used)
-    {
-      std::vector<int> arr_used = ::mapreduce::util::get_array(part_used);
-      for(int k=0; k<arr_used.size(); k++)
-      {
-        long vm_part_offset = k*slot_size;
-
-        char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
-        bzero(ptr_shmem, arr_used[k]+1);
-
-        waitComm ( fvmGetGlobalData
-        ( static_cast<fvmAllocHandle_t> (handle)
-                          , vm_part_offset
-                          , arr_used[k]
-                          , 0
-                          , 0
-                        )
-        );
-
-        std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
-        MLOG(INFO,"Partition "<<k<<", of size "<<arr_used[k]<<", contains "<<arr_items.size()<<" items: "<<ptr_shmem<<std::endl);
-      }
-    }
-
     key_val_pair_t str2kvpair(const std::string& str_map)
     {
       size_t split_pos = str_map.find_last_of(PAIRSEP);
-      if( split_pos == std::string::npos )
-      {
-    	  MLOG(FATAL, "No value specified for the key "<<str_map);
-    	  throw std::runtime_error(std::string("Invalid key-value pair:") + str_map);
-      }
 
       std::string key = str_map.substr(0,split_pos);
       if(key.empty())
@@ -306,6 +251,52 @@ namespace mapreduce
       return key_val_pair_t(key, str_val);
     }
 
+    std::string kvpair2str(const key_val_pair_t& pair)
+	{
+    	return pair.first+PAIRSEP+pair.second;
+	}
+
+    /*
+    bool is_special_item(const std::string& str_item)
+    {
+    	// further checks are necessary
+		key_val_pair_t kv_pair = str2kvpair(str_item);
+		if (kv_pair.first[0] != SHRPCH)
+			return false;
+
+		std::ostringstream oss;
+		oss<<SHRPCH<<"\\d+"<<SHRPCH<<"\\d+"<<std::endl;
+		const boost::regex pattern(oss.str().data());
+		return boost::regex_match(kv_pair.first, pattern);
+	}
+    */
+
+    bool is_special_item(const std::string& str_item)
+	{
+		// to do: use regex here
+		if (str_item[0] != SHRPCH)
+			return false;
+
+		// further checks are necessary
+		key_val_pair_t kvp = str2kvpair(str_item);
+
+		char szsep[2];
+		szsep[0]=SHRPCH;szsep[1]='\0';
+		boost::char_separator<char> sep(szsep);
+		boost::tokenizer<boost::char_separator<char> > tok(kvp.first, sep);
+		std::vector<std::string> u(2, "");
+		u.assign(tok.begin(), tok.end());
+
+		try {
+			int u0 = boost::lexical_cast<long>(u[0]);
+			int u1 = boost::lexical_cast<long>(u[1]);
+			return true;
+		}
+		catch(const boost::bad_lexical_cast& ex)
+		{
+			return false;
+		}
+	}
 
     std::string list2str(std::list<std::string>& list_values )
 	{
@@ -325,13 +316,18 @@ namespace mapreduce
 		return oss.str();
 	}
 
-    std::string kvpair2str(const key_val_pair_t& pair)
-    {
-    	std::ostringstream osstr;
-    	osstr<<pair.first<<PAIRSEP<<pair.second;
+    std::string key(const std::string& str)
+	{
+    	key_val_pair_t kv_pair = str2kvpair(str);
+    	return kv_pair.first;
+	}
 
-    	return osstr.str();
+    std::string val(const std::string& str)
+    {
+    	key_val_pair_t kv_pair = str2kvpair(str);
+		return kv_pair.second;
     }
+
 
     long ceil(long a, long b)
     {
@@ -350,7 +346,7 @@ namespace mapreduce
   	    return sstr_part_out_file.str();
     }
 
-    size_t write_to_buff(std::string& key, std::list<std::string>& list_values, char* reduce_buff, size_t last_pos, const long& n_max_size)
+    size_t write_to_buff(std::string& key, std::list<std::string>& list_values, char* reduce_buff, size_t last_pos, const size_t& n_max_size)
 	{
 	  std::stringstream sstr;
 
@@ -372,7 +368,7 @@ namespace mapreduce
 	  }
 	}
 
-	size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t const last_pos, const long& n_max_size, const int sp=SPCH )
+	size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t last_pos, const size_t& n_max_size, const int sp=SPCH )
 	{
 	  std::stringstream sstr;
 	  size_t item_size = str_pair.size();
@@ -392,21 +388,13 @@ namespace mapreduce
 	  }
 	}
 
-    void write_to_stringstream(std::string& key, std::list<std::string>& list_values, std::ostringstream& oss, const long& n_max_size )
+	void write_to_stream(std::string& key, std::list<std::string>& list_values, std::ofstream& ofs )
 	{
-	  key_val_pair_t kvp(key, list2str(list_values));
-	  std::string str_pair = kvpair2str(kvp);
-	  size_t item_size = str_pair.size();
-
-	  if(oss.str().size()+item_size>n_max_size)
-	  {
-		  throw(std::runtime_error("Not enough place left for performing a reduce operation!"));
-	  }
-	  else
-	  {
-		 oss<<str_pair<<SPCH;
-	  }
+		key_val_pair_t kvp(key, list2str(list_values));
+		std::string str_pair = kvpair2str(kvp);
+		ofs<<str_pair<<std::endl;
 	}
+
   }
 }
 

@@ -93,14 +93,6 @@ namespace expr
           {
             switch (t.token)
               {
-              case token::_ite:
-                s << "(" << token::_if << t.child0
-                         << token::_then << t.child1
-                         << token::_else << t.child2
-                         << token::_endif
-                  << ")"
-                  ;
-                break;
               case token::_map_assign:
                 s << token::_map_assign
                   << "(" << t.child0

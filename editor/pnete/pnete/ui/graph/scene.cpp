@@ -244,10 +244,7 @@ namespace fhg
                           )
           {
             return !handle.get().parent()->ports().has
-              ( std::make_pair ( name.toStdString()
-                               , handle.get().direction()
-                               )
-              );
+              (std::make_pair (name.toStdString(), handle.get().direction()));
           }
 
           bool can_rename ( const data::handle::transition& handle
@@ -398,7 +395,7 @@ namespace fhg
                               , tr ("port_set_type_dialog_title_for_%1").arg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("port_set_type_prompt")
-                              , QString::fromStdString (handle.get().type)
+                              , QString::fromStdString (handle.get().type())
                               , event->widget()
                               , this
                               )
@@ -431,7 +428,7 @@ namespace fhg
                               , tr ("port_set_type_dialog_title_for_%1").arg
                                 (QString::fromStdString (handle.get().name()))
                               , tr ("port_set_type_prompt")
-                              , QString::fromStdString (handle.get().type)
+                              , QString::fromStdString (handle.get().type())
                               , event->widget()
                               , this
                               )
@@ -531,7 +528,7 @@ namespace fhg
                                 , tr ("place_set_type_dialog_title_for_%1").arg
                                   (QString::fromStdString (handle.get().name()))
                                 , tr ("place_set_type_prompt")
-                                , QString::fromStdString (handle.get().type)
+                                , QString::fromStdString (handle.get().type())
                                 , event->widget()
                                 , this
                                 )
@@ -725,17 +722,57 @@ namespace fhg
           update (_pending_connection->boundingRect());
         }
 
-        void scene_type::create_connection ( connectable_item* from
-                                           , connectable_item* to
-                                           , const data::handle::connect& handle
-                                           )
+        void scene_type::create_connection (const data::handle::connect& handle)
         {
+          const ::xml::parse::type::connect_type& connection (handle.get());
+
+          connectable_item* port
+            ( item_with_handle<port_item>
+              ( data::handle::port ( *connection.resolved_port()
+                                   , handle.document()
+                                   )
+              )
+            );
+
+          connectable_item* place
+            ( item_with_handle<place_item>
+              ( data::handle::place ( *connection.resolved_place()
+                                    , handle.document()
+                                    )
+              )
+            );
+
+          const bool is_in (petri_net::edge::is_PT (connection.direction()));
+          connectable_item* from (is_in ? place : port);
+          connectable_item* to (is_in ? port : place);
+
           if (!to->is_connectable_with (from))
           {
             throw std::runtime_error
               ("tried hard-connecting non-connectable items.");
           }
           addItem (new connection_item (from, to, handle));
+        }
+
+        void scene_type::create_port_place_association
+          (const data::handle::port& port)
+        {
+          if (!port.get().place)
+          {
+            return;
+          }
+
+          addItem
+            ( new ui::graph::port_place_association
+              ( item_with_handle<top_level_port_item> (port)
+              , item_with_handle<place_item> ( data::handle::place
+                                               ( *port.get().resolved_place()
+                                               , port.document()
+                                               )
+                                             )
+              , port
+              )
+            );
         }
 
         void scene_type::remove_pending_connection()
@@ -789,32 +826,16 @@ namespace fhg
 
               if (as_port && pending_as_port)
               {
-                if (as_port->direction() == connectable::direction::IN)
-                {
-                  net().add_connection_with_implicit_place
-                    (this, pending_as_port->handle(), as_port->handle());
-                }
-                else
-                {
-                  net().add_connection_with_implicit_place
-                    (this, as_port->handle(), pending_as_port->handle());
-                }
+                net().add_connection_with_implicit_place
+                  (this, pending_as_port->handle(), as_port->handle());
               }
               else
               {
                 const port_item* port (as_port ? as_port : pending_as_port);
                 const place_item* place (as_place ? as_place : pending_as_place);
 
-                if (port->direction() == connectable::direction::IN)
-                {
-                  net().add_connection_or_association
-                    (this, place->handle(), port->handle());
-                }
-                else
-                {
-                  net().add_connection_or_association
-                    (this, port->handle(), place->handle());
-                }
+                net().add_connection_or_association
+                  (this, place->handle(), port->handle());
               }
 
               event->accept();
@@ -1050,11 +1071,6 @@ namespace fhg
           return result;
         }
 
-        QList<place_item*> scene_type::all_places() const
-        {
-          return items_of_type<place_item>();
-        }
-
         template<typename item_type, typename handle_type>
           void scene_type::remove_item_for_handle (const handle_type& handle)
         {
@@ -1077,29 +1093,7 @@ namespace fhg
         {
           if (is_in_my_net (place))
           {
-            //! \todo Weaver.
-            //! \note This can't be easily weaved, as 'ports'
-            //! needs to contain only the ports of the transition
-            //! where the connection's port is in. Getting children
-            //! ports of the scene will yield wrong ones. The weaver
-            //! normally is started inside a transition, thus
-            //! correctly only knows ports inside that transition.
-            if (petri_net::edge::is_PT (connection.get().direction()))
-            {
-              create_connection ( item_with_handle<place_item> (place)
-                                , item_with_handle<port_item> (port)
-                                , connection
-                                );
-            }
-            else
-            {
-              create_connection ( item_with_handle<port_item> (port)
-                                , item_with_handle<place_item> (place)
-                                , connection
-                                );
-            }
-
-
+            create_connection (connection);
           }
         }
 

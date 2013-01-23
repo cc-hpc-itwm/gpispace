@@ -1,9 +1,9 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <fhg/util/parse/position.hpp>
 #include <we/type/literal.hpp>
 #include <we/util/token.hpp>
-#include <we/type/value/read.hpp>
+#include <we/expr/parse/parser.hpp>
+
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 #include <we/mgmt/type/activity.hpp>
@@ -111,10 +111,7 @@ try
       const std::string value
         ( inp->substr (inp->find('=')+1) );
 
-      std::size_t k (0);
-      std::string::const_iterator begin (value.begin());
-      fhg::util::parse::position pos (k, begin, value.end());
-      const value::type val (value::read (pos));
+      const value::type val (expr::parse::parser (value).eval_all());
 
       if (not we::type::content::is_subnet (act.transition()))
         {

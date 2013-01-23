@@ -21,27 +21,12 @@ namespace fhg
     {
       namespace graph
       {
-        namespace connectable
-        {
-          namespace direction
-          {
-            enum type
-              { IN   = 1 << 0
-              , OUT  = 1 << 1
-              , BOTH = IN | OUT
-              };
-          }
-        }
-
         class connectable_item : public base_item
         {
           Q_OBJECT;
 
         public:
-          connectable_item
-            ( connectable::direction::type direction
-            , base_item* parent = NULL
-            );
+          connectable_item (base_item* parent = NULL);
 
           void add_association (association* c);
           void remove_association (association * c);
@@ -49,8 +34,6 @@ namespace fhg
           virtual bool is_connectable_with (const connectable_item*) const;
 
           const QSet<association*>& associations() const;
-          const connectable::direction::type& direction() const;
-          const connectable::direction::type& direction (const connectable::direction::type&);
 
           virtual const std::string& we_type() const = 0;
 
@@ -64,7 +47,6 @@ namespace fhg
 
         protected:
           QSet<association*> _associations;
-          connectable::direction::type _direction;
 
           const std::string& we_type (const std::string&) const;
         };
