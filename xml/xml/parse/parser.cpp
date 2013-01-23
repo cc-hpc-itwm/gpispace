@@ -152,57 +152,49 @@ namespace xml
       type::structure_type struct_type (const xml_node_type*, state::type&);
       type::structs_type structs_type (const xml_node_type*, state::type&);
 
-
-      id::ref::function parse_function (std::istream& f, state::type& state)
-      {
-        return generic_parse<id::ref::function>
-          (function_type, f, state, "defun", "parse_function");
-      }
-
-      id::ref::tmpl parse_template (std::istream& f, state::type& state)
-      {
-        return generic_parse<id::ref::tmpl>
-          (tmpl_type, f, state, "template", "parse_template");
-      }
-
-      type::structs_type parse_structs (std::istream& f, state::type& state)
-      {
-        return generic_parse<type::structs_type>
-          (structs_type, f, state, "structs", "parse_structs");
-      }
-
-      we::type::property::type
-      parse_props (std::istream& f, state::type& state)
-      {
-        return generic_parse<we::type::property::type>
-          (property_maps_type, f, state, "props", "parse_props");
-      }
-
       // ******************************************************************* //
 
-      id::ref::function
-        function_include (const std::string& file, state::type& state)
+      template<typename return_type>
+        return_type generic_include
+        ( const std::string& file
+        , state::type& state
+        , boost::function<return_type (const xml_node_type*, state::type&)> fun
+        , const std::string& wanted
+        , const std::string& pre
+        )
       {
-        return state.generic_include<id::ref::function> (parse_function, file);
+        return state.generic_include<return_type>
+          ( boost::bind (generic_parse<return_type>, fun, _1, _2, wanted, pre)
+          , file
+          );
       }
 
-      id::ref::tmpl template_include (const std::string& file, state::type& state)
+      id::ref::function function_include
+        (const std::string& file, state::type& state)
       {
-        return state.generic_include<id::ref::tmpl> (parse_template, file);
+        return generic_include<id::ref::function>
+          (file, state, function_type, "defun", "parse_function");
       }
 
-      type::structs_type structs_include ( const std::string& file
-                                         , state::type& state
-                                         )
+      id::ref::tmpl template_include
+        (const std::string& file, state::type& state)
       {
-        return state.generic_include<type::structs_type> (parse_structs, file);
+        return generic_include<id::ref::tmpl>
+          (file, state, tmpl_type, "template", "parse_template");
       }
 
-      we::type::property::type
-        properties_include (const std::string& file, state::type& state)
+      type::structs_type structs_include
+        (const std::string& file, state::type& state)
       {
-        return
-          state.generic_include<we::type::property::type> (parse_props, file);
+        return generic_include<type::structs_type>
+          (file, state, structs_type, "structs", "parse_structs");
+      }
+
+      we::type::property::type properties_include
+        (const std::string& file, state::type& state)
+      {
+        return generic_include<we::type::property::type>
+          (file, state, property_maps_type, "props", "parse_props");
       }
 
       // ******************************************************************* //
@@ -1638,7 +1630,13 @@ namespace xml
     {
       state.set_input (input);
 
-      return state.generic_parse<id::ref::function> (parse_function, input);
+      return state.generic_parse<id::ref::function>
+        ( boost::bind ( generic_parse<id::ref::function>
+                      , function_type, _1, _2
+                      , "defun", "parse_function"
+                      )
+        , input
+        );
     }
 
     void post_processing_passes ( const id::ref::function& function
