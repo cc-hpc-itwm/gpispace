@@ -781,7 +781,7 @@
         <in name="reduce_info" type="reduce_info"/>
         <in name="config" type="config"/>
         <out name="partition_copy_result" type="partition_copy_result"/>
-        <module name="copy_partition" function="copy_partition_into_the_reduce_slot(config, partition_result, reduce_info, partition_copy_result)">
+        <module name="shuffle" function="shuffle(config, partition_result, reduce_info, partition_copy_result)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
@@ -859,6 +859,23 @@
 	                }
 	                else
 	                {
+	                	ptr_shmem[ partition_result.partition_info.part_used] = 0;
+		            	std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
+					
+						std::vector<std::string>::iterator iter_middle( arr_part_items.begin() ); 
+	                	std::advance(iter_middle, arr_part_items.size()/2);
+	                	boost::thread thread0( boost::bind( &::mapreduce::util::my_sort, arr_part_items.begin(), iter_middle) );
+	                	boost::thread thread1( boost::bind( &::mapreduce::util::my_sort, iter_middle, arr_part_items.end()) );  
+		             
+					 	thread0.join();
+						thread1.join();
+						
+						std::inplace_merge( arr_part_items.begin(), iter_middle, arr_part_items.end());
+						
+						timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
+          				::mapreduce::util::write_arr_to_buff( arr_part_items, ptr_shmem, last_pos, config.size.reduce.slot );
+	                	timestamp_t time_end_red_arr = ::mapreduce::util::get_timestamp();
+						
 			             waitComm ( fvmPutGlobalData
 			             ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
 			                                                , reduce_info.part_id*config.size.reduce.slot + reduce_info.red_used
@@ -987,17 +1004,8 @@
 		            ptr_shmem[pre_reduce_info.red_used-pre_reduce_info.old_red_used] = 0;
 		            std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
 					
-					std::vector<std::string>::iterator iter_middle( arr_part_items.begin() ); 
-	                std::advance(iter_middle, arr_part_items.size()/2);
-	                boost::thread thread0( boost::bind( &::mapreduce::util::my_sort, arr_part_items.begin(), iter_middle) );
-	                boost::thread thread1( boost::bind( &::mapreduce::util::my_sort, iter_middle, arr_part_items.end()) );  
-		             
 		            if( pre_reduce_info.old_red_used == 0 )
 					{
-					 	thread0.join();
-						thread1.join();
-						std::inplace_merge( arr_part_items.begin(), iter_middle, arr_part_items.end());
-						
 			            MLOG(INFO, "Effectively call reduce on the resulted sorted array ...");
 						timestamp_t time_start_red_arr = ::mapreduce::util::get_timestamp();
 	                	::mapreduce::util::reduce_arr_buff(pre_reduce_info.part_id, config.size.reduce.slot, arr_part_items, ptr_shmem, last_pos );
@@ -1023,12 +1031,7 @@
 						std::vector<std::string> arr_old_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
 						timestamp_t time_end_parse = ::mapreduce::util::get_timestamp();
 						MLOG(INFO, "parsing and tokenization took "<<(time_end_parse - time_start_parse)/MS<<"ms"); 
-						
-						thread0.join();
-						thread1.join();
-						
-						std::inplace_merge( arr_part_items.begin(), iter_middle, arr_part_items.end());
-	                	
+							                	
 	                	timestamp_t time_start_mrg_red_arr = ::mapreduce::util::get_timestamp();
 	                	last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(pre_reduce_info.part_id, config.size.reduce.slot, arr_old_red_items, arr_part_items, ptr_shmem );
 		                	                		                	
@@ -1126,9 +1129,6 @@
 		            
 	            ptr_shmem[partition_copy_result.reduce_info.red_used] = 0;
 	            
-				// do it simple this time, sort the whole content
-				// afterwards, consider that the partition and the reduce slot are
-				// already sorted and do a simple merge of both arrays
 				
 				MLOG(INFO, "Get the list of items corresponding to the reduce slot ...");
 	            std::vector<std::string> arr_items = ::mapreduce::util::get_list_items(ptr_shmem);
@@ -1223,7 +1223,7 @@
     <place name="special_reduce_info" type="reduce_info"/>  
     <transition name="recover_border_keys">
       <require key="GPI" />
-      <require key="PAR" />
+      <require key="RED" />
       <defun>
         <in name="partition_info" type="partition_info"/>
         <in name="reduce_info" type="reduce_info"/>
@@ -1250,7 +1250,7 @@
           <cinclude href="cstdio"/>
           <cinclude href="algorithm"/>
 
-          <code><![CDATA[
+       <code><![CDATA[
               
             MLOG (INFO, "Recover the border keys, partition "<<partition_info.part_id<<", partition space used: "
                         <<partition_info.part_used<<", reduce space used: "<<reduce_info.red_used);
