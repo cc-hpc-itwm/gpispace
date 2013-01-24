@@ -7,6 +7,7 @@
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/transition.hpp>
 
+#include <util/qt/cast.hpp>
 #include <util/qt/scoped_property_setter.hpp>
 
 #include <xml/parse/type/place.hpp>
@@ -23,6 +24,24 @@ namespace fhg
     {
       namespace graph
       {
+        namespace
+        {
+          boost::optional<const Qt::PenStyle&> pen_style (const base_item* item)
+          {
+            if ( fhg::util::qt::throwing_qobject_cast<const place_item*>
+                 (item)->handle().is_virtual()
+               )
+            {
+              static Qt::PenStyle why_is_the_return_value_a_reference
+                (Qt::DashLine);
+
+              return why_is_the_return_value_a_reference;
+            }
+
+            return boost::none;
+          }
+        }
+
         place_item::place_item ( const data::handle::place& handle
                                , base_item* parent
                                )
@@ -64,6 +83,8 @@ namespace fhg
                   );
 
           update_implicity();
+
+          _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, pen_style);
         }
 
         const data::handle::place& place_item::handle() const
