@@ -280,11 +280,10 @@ namespace expr
                 case 'i': ++pos; require ("n"); unary (_sin, "sin"); break;
                 case 'q': ++pos; require ("rt"); unary (_sqrt, "sqrt"); break;
                 case 'u': ++pos; require ("bstr"); token = _substr; break;
-                case 'e': ++pos;
-                  require ("t_");
+                case 'e': ++pos; require ("t_");
                   if (is_eof())
                     throw exception::parse::expected
-                      ("'insert', 'erase', 'is_element', 'pop', 'top', 'empty' or 'size'", pos());
+                      ("'insert', 'erase', 'is_element', 'is_subset', 'pop', 'top', 'empty' or 'size'", pos());
                   else
                     switch (*pos)
                       {
@@ -305,15 +304,28 @@ namespace expr
                       case 'i': ++pos;
                         if (is_eof())
                           throw exception::parse::expected
-                            ("'nsert' or 's_element'", pos());
+                            ("'nsert', 's_subset' or 's_element'", pos());
                         else
                           switch (*pos)
                             {
                             case 'n': ++pos; require ("sert"); token = _set_insert; break;
-                            case 's': ++pos; require ("_element"); token = _set_is_element; break;
+                            case 's': ++pos; require ("_");
+                              if (is_eof())
+                                throw exception::parse::expected
+                                  ("'subset' or 'element'", pos());
+                              else
+                                switch (*pos)
+                                {
+                                case 's': ++pos; require ("ubset"); token = _set_is_subset; break;
+                                case 'e': ++pos; require ("lement"); token = _set_is_element; break;
+                                default:
+                                  throw exception::parse::expected
+                                    ("'subset' or 'element'", pos());
+                                }
+                              break;
                             default:
                               throw exception::parse::expected
-                                ("'nsert' or 's_element'", pos());
+                                ("'nsert', 's_subset' or 's_element'", pos());
                             }
                         break;
                       case 'p': ++pos; require ("op");  unary (_set_pop, "set_pop"); break;
@@ -321,7 +333,7 @@ namespace expr
                       case 't': ++pos; require ("op");  unary (_set_top, "set_top"); break;
                       default:
                         throw exception::parse::expected
-                          ("'insert', 'erase', 'is_element', 'pop_front', 'pop_back', 'top_front' or 'top_back'", pos());
+                          ("'insert', 'erase', 'is_element', 'is_subset', 'pop', 'top', 'empty' or 'size'", pos());
                       }
                   break;
                 case 't':
