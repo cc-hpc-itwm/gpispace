@@ -366,7 +366,7 @@ namespace fhg
                           , size::port::height()
                           );
           default:
-            throw std::runtime_error("invalid port direction!");
+            throw std::runtime_error("invalid port orientation");
           }
         }
 
