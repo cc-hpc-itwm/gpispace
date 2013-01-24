@@ -7,6 +7,7 @@
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/place_map.hpp>
 #include <pnete/data/handle/port.hpp>
 #include <pnete/data/handle/transition.hpp>
 
@@ -1130,6 +1131,41 @@ namespace fhg
         )
       {
         action::set_property (ACTION_CTOR_ARGS (connect), connect, key, val);
+      }
+
+      // -- place_map -----------------------------------------------
+      // void change_manager_t::remove_place_map
+      //   ( const QObject* origin
+      //   , const handle::place_map& place_map
+      //   )
+      // {
+      //   push ( new action::remove_place_map
+      //          (ACTION_CTOR_ARGS (place_map), place_map.id())
+      //        );
+      // }
+
+      void change_manager_t::set_property
+        ( const QObject* origin
+        , const data::handle::place_map& place_map
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        push ( new action::meta_set_property<handle::place_map>
+               ( "set_place_map_property_action"
+               , ACTION_CTOR_ARGS (place_map), place_map, key, val
+               )
+             );
+      }
+
+      void change_manager_t::no_undo_set_property
+        ( const QObject* origin
+        , const data::handle::place_map& place_map
+        , const ::we::type::property::key_type& key
+        , const ::we::type::property::value_type& val
+        )
+      {
+        action::set_property (ACTION_CTOR_ARGS (place_map), place_map, key, val);
       }
 
       // -- transition -----------------------------------------------

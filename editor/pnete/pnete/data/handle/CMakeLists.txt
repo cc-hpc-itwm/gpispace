@@ -9,6 +9,7 @@ set (pnete_data_handle_headers
   module.hpp
   net.hpp
   place.hpp
+  place_map.hpp
   port.hpp
   transition.hpp
 )
@@ -22,6 +23,7 @@ set (pnete_data_handle_fwd_headers
   module.fwd.hpp
   net.fwd.hpp
   place.fwd.hpp
+  place_map.fwd.hpp
   port.fwd.hpp
   transition.fwd.hpp
 )
@@ -34,6 +36,7 @@ set (handle_SRCS
   module.cpp
   net.cpp
   place.cpp
+  place_map.cpp
   port.cpp
   transition.cpp
 )
