@@ -93,6 +93,7 @@ namespace fhg
             (this, trans.resolved_function().get().ports().ids(), from::port);
 
           from::many (this, trans.connections().ids(), from::connection);
+          from::many (this, trans.place_map().ids(), from::place_map);
 
           //! \todo do something if not already set
           //        _transition->repositionChildrenAndResize();
@@ -102,6 +103,11 @@ namespace fhg
         WSIG (transition, connection::open, ::xml::parse::id::ref::connect, id)
         {
           _scene->create_connection (data::handle::connect (id, _root));
+        }
+
+        WSIG (transition, place_map::open, ::xml::parse::id::ref::place_map, id)
+        {
+         _scene->create_place_map (data::handle::place_map (id, _root));
         }
 
         WSIG (transition, port::open, ::xml::parse::id::ref::port, id)

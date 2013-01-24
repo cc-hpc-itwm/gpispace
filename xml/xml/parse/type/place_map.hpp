@@ -47,7 +47,12 @@ namespace xml
         const std::string& place_real_impl (const std::string&);
 
       public:
+        boost::optional<const id::ref::place&> resolved_virtual_place() const;
+        boost::optional<const id::ref::port&> resolved_tunnel_port() const;
+        boost::optional<const id::ref::place&> resolved_real_place() const;
+
         const we::type::property::type& properties() const;
+        we::type::property::type& properties();
 
         unique_key_type unique_key() const;
 
