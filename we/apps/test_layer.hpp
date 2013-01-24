@@ -39,6 +39,8 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
+#include <boost/foreach.hpp>
+
 #include <list>
 
 namespace test {
@@ -279,9 +281,14 @@ namespace test {
       {
         we::mgmt::type::activity_t act (desc);
 
-        std::cout << "finished [" << id << "] = ";
-        act.print (std::cout, act.output());
-        std::cout << std::endl;
+        std::cout << "finished [" << id << "]" << std::endl;
+        BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
+                      , act.output()
+                      )
+        {
+          std::cout << act.transition().name_of_port (top.second)
+                    << " => " << top.first << std::endl;
+        }
       }
       return true;
     }
