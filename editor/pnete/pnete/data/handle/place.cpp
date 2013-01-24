@@ -89,6 +89,11 @@ namespace fhg
         {
           change_manager().make_explicit (origin, *this);
         }
+
+        bool place::is_virtual() const
+        {
+          return get().is_virtual();
+        }
       }
     }
   }
