@@ -97,17 +97,24 @@ namespace mapreduce
   	  }
 
 
-  	  std::string match_keys(const std::string& keyval_pair, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
+  	  std::string match_keys(const std::string& str_item, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
   	  {
   		  // to do: use regex here
   		  std::string w;
   		  bool bMatching = false;
 
   		  //MLOG(INFO, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
+
+  		  // further checks are necessary
+  		  /*key_val_pair_t kvp = str2kvpair(str_item);
+  		  char szsep[2];
+  		  szsep[0]=SHRPCH;szsep[1]='\0';
+  		  boost::char_separator<char> sep(szsep);*/
+
   		  std::ostringstream oss;
   		  oss<<SHRPCH<<PAIRSEP;
   		  boost::char_separator<char> sep(oss.str().data());
-  		  boost::tokenizer<boost::char_separator<char> > tok_v(keyval_pair, sep);
+  		  boost::tokenizer<boost::char_separator<char> > tok_v(str_item, sep);
   		  std::vector<std::string> v(3,"");
   		  v.assign(tok_v.begin(), tok_v.end());
 
@@ -395,6 +402,12 @@ namespace mapreduce
 		ofs<<str_pair<<std::endl;
 	}
 
+	void write_arr_to_buff( const std::vector<std::string>& arr_items, char* ptr_shmem, size_t& last_pos, const size_t max_size )
+	{
+		last_pos = 0;
+		for(std::vector<std::string>::const_iterator it=arr_items.begin(); it != arr_items.end(); it++ )
+			last_pos = ::mapreduce::util::write_to_buff( *it, ptr_shmem, last_pos, max_size );
+	}
   }
 }
 

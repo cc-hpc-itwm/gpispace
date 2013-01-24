@@ -42,6 +42,7 @@ namespace expr
         case _set_insert:
         case _set_erase:
         case _set_is_element:
+        case _set_is_subset:
         case _substr:
         case abs: return true;
         default: return false;
