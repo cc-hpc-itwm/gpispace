@@ -31,9 +31,8 @@ namespace fhg
             : association (port, place)
             , _handle (handle)
         {
-          //! \todo Getting direction should be encapsuled in handle.
           //! \todo Add handling of port direction getting changed!
-          if (handle.get().direction() == we::type::PORT_OUT)
+          if (handle.is_output())
           {
             invert();
           }

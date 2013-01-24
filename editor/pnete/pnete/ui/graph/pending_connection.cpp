@@ -34,15 +34,19 @@ namespace fhg
           //! \todo automatic orthogonal lines
           if (const port_item* fix = qobject_cast<const port_item*> (_fixed_end))
           {
-            if (fix->handle().get().direction() == we::type::PORT_OUT)
+            if (fix->handle().is_input())
+            {
+              points.push_back (_open_end);
+              points.push_back (_fixed_end->scenePos());
+            }
+            else if (fix->handle().is_output())
             {
               points.push_back (_fixed_end->scenePos());
               points.push_back (_open_end);
             }
-            else
+            else if (fix->handle().is_tunnel())
             {
-              points.push_back (_open_end);
-              points.push_back (_fixed_end->scenePos());
+              //! \todo Separate shape (no pointer) for tunnels.
             }
           }
           else

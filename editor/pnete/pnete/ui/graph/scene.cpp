@@ -244,8 +244,7 @@ namespace fhg
                           , const QString& name
                           )
           {
-            return !handle.get().parent()->ports().has
-              (std::make_pair (name.toStdString(), handle.get().direction()));
+            return handle.can_rename_to (name);
           }
 
           bool can_rename ( const data::handle::transition& handle
