@@ -21,111 +21,6 @@
 #include <fhglog/macros.hpp>
 #include <iomanip>
 
-#ifdef STATISTICS_CONDITION
-namespace statistics
-{
-  static inline double current_time()
-  {
-    struct timeval tv;
-
-    gettimeofday (&tv, NULL);
-
-    return (double(tv.tv_sec) + double (tv.tv_usec) * 1E-6);
-  }
-
-  typedef boost::unordered_map<std::string, double> time_map_t;
-  typedef boost::unordered_map<std::string, unsigned long> cnt_map_t;
-
-  static inline time_map_t & get_time_map ()
-  {
-    static time_map_t time_map;
-
-    return time_map;
-  }
-
-  static inline cnt_map_t & get_call_map ()
-  {
-    static cnt_map_t map;
-
-    return map;
-  }
-
-  static inline cnt_map_t & get_eval_map ()
-  {
-    static cnt_map_t map;
-
-    return map;
-  }
-
-  static inline cnt_map_t & get_false_map ()
-  {
-    static cnt_map_t map;
-
-    return map;
-  }
-
-  static inline cnt_map_t & get_true_map ()
-  {
-    static cnt_map_t map;
-
-    return map;
-  }
-
-  static inline cnt_map_t & get_max_eval_map ()
-  {
-    static cnt_map_t map;
-
-    return map;
-  }
-
-  static inline cnt_map_t & get_max_size_map ()
-  {
-    static cnt_map_t map;
-
-    return map;
-  }
-
-  static inline unsigned long value (const cnt_map_t & m, const std::string & key)
-  {
-    cnt_map_t::const_iterator pos (m.find (key));
-
-    return (pos == m.end()) ? 0 : pos->second;
-  }
-
-  static inline void reset_maps ()
-  {
-    get_time_map().clear();
-    get_call_map().clear();
-    get_eval_map().clear();
-    get_false_map().clear();
-    get_true_map().clear();
-    get_max_eval_map().clear();
-    get_max_size_map().clear();
-  }
-
-  static inline void dump_maps ()
-  {
-    for ( time_map_t::const_iterator pos (get_time_map().begin())
-        ; pos != get_time_map().end()
-        ; ++pos
-        )
-      {
-        LOG( INFO
-           , "stat_map "
-           << std::setw(12) << std::setprecision(5) << pos->second
-           << " call " << std::setw(10) << value (get_call_map(), pos->first)
-           << " eval " << std::setw(10) << value (get_eval_map(), pos->first)
-           << " max_eval " << std::setw(10) << value (get_max_eval_map(), pos->first)
-           << " max_size " << std::setw(10) << value (get_max_size_map(), pos->first)
-           << " true " << std::setw(10) << value (get_true_map(), pos->first)
-           << " false " << std::setw(10) << value (get_false_map(), pos->first)
-           << " " << pos->first
-           );
-      }
-  }
-}
-#endif
-
 namespace condition
 {
   namespace exception
@@ -201,26 +96,8 @@ namespace condition
 
     bool operator () (cross::cross<tokens_by_place_id_t>& choices) const
     {
-#ifdef STATISTICS_CONDITION
-      unsigned long eval (0);
-
-      statistics::get_call_map()[expression_] += 1;
-
-      statistics::get_max_size_map()[expression_]
-        = std::max ( statistics::get_max_size_map()[expression_]
-                   , choices.size()
-                   );
-        ;
-      statistics::get_time_map()[expression_] -= statistics::current_time();
-#endif
-
       if (expression_ == "true")
         {
-#ifdef STATISTICS_CONDITION
-          statistics::get_time_map()[expression_] += statistics::current_time();
-          statistics::get_true_map()[expression_] += 1;
-#endif
-
           return true;
         }
 
@@ -237,36 +114,11 @@ namespace condition
               context.bind (translate (pid), token.value);
             }
 
-#ifdef STATISTICS_CONDITION
-          statistics::get_eval_map()[expression_] += 1;
-          eval += 1;
-#endif
-
           if (parser.eval_all_bool (context))
             {
-#ifdef STATISTICS_CONDITION
-              statistics::get_time_map()[expression_] += statistics::current_time();
-
-              statistics::get_true_map()[expression_] += 1;
-              statistics::get_max_eval_map()[expression_]
-                = std::max ( statistics::get_max_eval_map()[expression_]
-                           , eval
-                           );
-#endif
-
               return true;
             }
         }
-
-#ifdef STATISTICS_CONDITION
-      statistics::get_time_map()[expression_] += statistics::current_time();
-
-      statistics::get_false_map()[expression_] += 1;
-      statistics::get_max_eval_map()[expression_]
-        = std::max ( statistics::get_max_eval_map()[expression_]
-                   , eval
-                   );
-#endif
 
       return false;
     }
