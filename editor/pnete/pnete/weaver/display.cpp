@@ -6,6 +6,7 @@
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/place_map.hpp>
 #include <pnete/data/handle/port.hpp>
 #include <pnete/ui/graph/base_item.fwd.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
