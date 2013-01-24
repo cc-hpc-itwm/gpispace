@@ -14,6 +14,8 @@
 
 #include <math.h>
 
+#include <boost/foreach.hpp>
+
 namespace literal
 {
   namespace function
@@ -212,6 +214,29 @@ namespace literal
       const expr::token::type & token;
     public:
       binary (const expr::token::type & _token) : token (_token) {}
+
+      literal::type operator() ( literal::set_type& l
+                               , literal::set_type& r
+                               ) const
+      {
+        switch (token)
+        {
+        case expr::token::_set_is_subset:
+          BOOST_FOREACH (const long& lv, l)
+          {
+            if (!r.count (lv))
+            {
+              return false;
+            }
+          }
+          return true;
+        default:
+          throw expr::exception::eval::type_error
+            ( fhg::util::show (token) +
+              "(" + literal::show (l) + "," + literal::show (r) + ")"
+            );
+        }
+      }
 
       literal::type operator () (literal::set_type & s, long & k) const
       {

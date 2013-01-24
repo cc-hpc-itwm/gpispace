@@ -242,6 +242,7 @@ namespace expr
         case token::_map_empty: unary (op_stack.top(),k); break;
         case token::_set_insert:
         case token::_set_erase:
+        case token::_set_is_subset:
         case token::_set_is_element: binary (op_stack.top(), k); break;
         case token::_set_pop:
         case token::_set_top:

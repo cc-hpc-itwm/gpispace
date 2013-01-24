@@ -38,6 +38,7 @@ namespace expr
     , _map_size, _map_empty
     , _set_insert, _set_erase, _set_is_element
     , _set_pop, _set_top, _set_empty, _set_size
+    , _set_is_subset
     , _len
     , _substr
 
