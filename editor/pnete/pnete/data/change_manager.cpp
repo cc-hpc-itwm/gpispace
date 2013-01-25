@@ -64,6 +64,10 @@ namespace fhg
           EXPOSE (connection_direction_changed);
           EXPOSE (property_changed);
 
+          // -- place_map ----------------------------------------------
+          EXPOSE (place_map_added);
+          EXPOSE (place_map_removed);
+
           // -- transition ---------------------------------------------
           EXPOSE (transition_added);
           EXPOSE (transition_deleted);
@@ -536,6 +540,93 @@ namespace fhg
           const handle::connect _connect;
           const bool _old_value;
           const bool _new_value;
+        };
+
+        // -- place_map ----------------------------------------------
+        void remove_place_map_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::transition& transition
+          , const ::xml::parse::id::ref::place_map& place_map
+          )
+        {
+          change_manager.emit_signal
+            ( &signal::place_map_removed
+            , origin
+            , handle::place_map (place_map, document)
+            );
+
+          transition.get_ref().remove_place_map (place_map);
+        }
+
+        void add_place_map_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::transition& transition
+          , const ::xml::parse::id::ref::place_map& place_map
+          )
+        {
+          transition.get_ref().push_place_map (place_map);
+
+          change_manager.emit_signal
+            ( &signal::place_map_added, origin
+            , handle::place_map (place_map, document)
+            );
+        }
+
+        class add_place_map : public QUndoCommand
+        {
+        public:
+          add_place_map
+            ( ACTION_ARG_LIST
+            , const ::xml::parse::id::ref::transition& transition
+            , const ::xml::parse::id::ref::place_map& place_map
+            )
+              : ACTION_INIT ("add_place_map_action")
+              , _transition (transition)
+              , _place_map (place_map)
+          { }
+
+          virtual void undo()
+          {
+            remove_place_map_impl (ACTION_UNDO_ARGS, _transition, _place_map);
+          }
+
+          virtual void redo()
+          {
+            add_place_map_impl (ACTION_REDO_ARGS, _transition, _place_map);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const ::xml::parse::id::ref::transition _transition;
+          const ::xml::parse::id::ref::place_map _place_map;
+        };
+
+        class remove_place_map : public QUndoCommand
+        {
+        public:
+          remove_place_map
+            (ACTION_ARG_LIST, const ::xml::parse::id::ref::place_map& place_map)
+              : ACTION_INIT ("remove_place_map_action")
+              , _place_map (place_map)
+              , _transition (_place_map.get().parent()->make_reference_id())
+          { }
+
+          virtual void undo()
+          {
+            add_place_map_impl (ACTION_UNDO_ARGS, _transition, _place_map);
+          }
+
+          virtual void redo()
+          {
+            remove_place_map_impl (ACTION_REDO_ARGS, _transition, _place_map);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const ::xml::parse::id::ref::place_map _place_map;
+          const ::xml::parse::id::ref::transition _transition;
         };
 
         // -- transition ---------------------------------------------
@@ -1134,15 +1225,15 @@ namespace fhg
       }
 
       // -- place_map -----------------------------------------------
-      // void change_manager_t::remove_place_map
-      //   ( const QObject* origin
-      //   , const handle::place_map& place_map
-      //   )
-      // {
-      //   push ( new action::remove_place_map
-      //          (ACTION_CTOR_ARGS (place_map), place_map.id())
-      //        );
-      // }
+      void change_manager_t::remove_place_map
+        ( const QObject* origin
+        , const handle::place_map& place_map
+        )
+      {
+        push ( new action::remove_place_map
+               (ACTION_CTOR_ARGS (place_map), place_map.id())
+             );
+      }
 
       void change_manager_t::set_property
         ( const QObject* origin

@@ -28,7 +28,7 @@ namespace fhg
         public:
           place_map (const place_map_meta_base::id_type&, internal_type*);
 
-          // void remove (const QObject* sender) const;
+          void remove (const QObject* sender) const;
 
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&
