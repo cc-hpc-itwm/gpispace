@@ -94,6 +94,7 @@ namespace xml
         const place_maps_type& place_map() const;
 
         void remove_connection (const id::ref::connect&);
+        void remove_place_map (const id::ref::place_map&);
 
         void push_connection (const id::ref::connect&);
         void push_place_map (const id::ref::place_map&);
