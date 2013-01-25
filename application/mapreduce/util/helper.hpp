@@ -363,7 +363,7 @@ namespace mapreduce
 
 	  if(last_pos+item_size>n_max_size)
 	  {
-		  throw(std::runtime_error("Not enough place left for performing a reduce operation!"));
+		  throw(std::runtime_error("Not enough shared memory!"));
 	  }
 	  else
 	  {
@@ -382,7 +382,7 @@ namespace mapreduce
 
 	  if(last_pos+item_size>n_max_size)
 	  {
-		  throw(std::runtime_error("Not enough place left for performing a reduce operation!"));
+		  throw(std::runtime_error("Not enough shared memory!"));
 	  }
 	  else
 	  {
