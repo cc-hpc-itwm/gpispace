@@ -568,9 +568,9 @@
               map_chnk_info.used = last_pos; //ptr_next-ptr_shmem;
               map_chnk_info.part_used = ::mapreduce::util::get_string(arr_part_used);
     
-              if(map_chnk_info.used > config.size.chunk.map)
-              {
-                MLOG(ERROR, "The map operation for the chunk "<<map_chnk_info.chunk_id<<" and the map slot "<<map_chnk_info.map_slot_id
+			  if(map_chnk_info.used > config.size.chunk.map)
+			  {
+				MLOG(ERROR, "The map operation for the chunk "<<map_chnk_info.chunk_id<<" and the map slot "<<map_chnk_info.map_slot_id
                              <<"cannot continue! (not enough virtual memory allocated for a map slot)");
                              
                 throw std::runtime_error("The operation cannot continue; not enough virtual memory allocated to a map slot!");
@@ -588,8 +588,13 @@
               // release the read_slot_id
               read_slot_id = read_chunk_info.read_slot_id;
               
-              for(int k=0; k<config.num.part; k++ )
-                 map_chnk_info.unhandled_part_set.insert(k); 
+              for(long k=0; k<config.num.part; k++ )
+              {
+              	if(arr_part_used[k])
+              	{
+                 	map_chnk_info.unhandled_part_set.insert(k);
+				}
+              }
                               
               return map_chnk_info;
           ]]></code>
@@ -600,18 +605,34 @@
       <connect-in port="read_chunk_info" place="read_chunk_info"/>
       <connect-out port="read_slot_id" place="read_slot_id"/>
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
-    </transition>
-          <place name="partition_result" type="partition_result"/>
-    <transition name="copy_into_partition_slot" inline="true">
+      </transition>
+      
+      <place name="map_chunk_info_new" type="map_chunk_info"/>
+                            
+		<transition name="update_map_chunk_info" inline="true">
+	    	<defun>
+	        <in name="map_chunk_info_new" type="map_chunk_info"/>
+	        <out name="map_chunk_info" type="map_chunk_info"/> 
+		    <expression>			  
+		        ${map_chunk_info} := ${map_chunk_info_new}
+	        </expression>
+	      	</defun>
+	         <connect-in port="map_chunk_info_new" place="map_chunk_info_new"/>
+	     	<connect-out port="map_chunk_info" place="map_chunk_info"/> 
+   		</transition> 
+   	
+      <place name="partition_result" type="partition_result"/>
+      <transition name="copy_into_partition_slot" inline="true">
       <require key="GPI" />
       <require key="PAR" />
-    <defun>
+      <defun>
         <in name="map_chunk_info" type="map_chunk_info"/>
         <in name="partition_info" type="partition_info"/>
         <in name="config" type="config"/>
         <out name="partition_result" type="partition_result"/>
-        <module name="store_into_partition_slot" function="store_partition(map_chunk_info, partition_info, config, partition_result)">
-           <cinclude href="fhglog/fhglog.hpp"/>
+        <out name="map_chunk_info_new" type="map_chunk_info"/>
+        <module name="update_partition" function="update_partition(map_chunk_info, partition_info, config, partition_result, map_chunk_info_new)">
+          <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="sstream"/>
           <cinclude href="ctype.h"/>
@@ -630,7 +651,10 @@
             size_t avail_shmem(fvmGetShmemSize());
 			  	
             // initialize partition_result
-            partition_result.map_chunk_info = map_chunk_info;
+            //partition_result.map_chunk_info = map_chunk_info;
+            
+            map_chunk_info_new = map_chunk_info;
+            
             partition_result.partition_info = partition_info;
             partition_result.succeeded = 0;
             
@@ -709,8 +733,9 @@
                 }
 	                    
                 partition_result.partition_info.part_used += needed; 
-                partition_result.map_chunk_info.unhandled_part_set.erase(partition_info.part_id);
                 partition_result.succeeded = 1;
+                
+                map_chunk_info_new.unhandled_part_set.erase(partition_info.part_id);
             }
             else // the partitioning didn't succeed -> should do a reduction first and emptying the partition
             {
@@ -732,8 +757,9 @@
     <connect-in port="partition_info" place="partition_info"/>
     <connect-read port="config" place="config"/>
     <connect-out port="partition_result" place="partition_result"/>
+    <connect-out port="map_chunk_info_new" place="map_chunk_info_new"/>
     </transition>
-      
+          
     <transition name="check_partitions_done" inline="true" >
       <defun>
         <in name="map_chunk_info" type="map_chunk_info" />
@@ -753,14 +779,12 @@
     </transition>
 
     <place name="chunk_partitioned" type="control"/>
-    <transition name="post_partition" inline="true">
+    <transition name="post_partition_update" inline="true">
       <defun>
         <in name="partition_result" type="partition_result"/>
-        <out name="map_chunk_info" type="map_chunk_info"/>
         <out name="partition_info" type="partition_info"/>
 
 	    <expression>			  
-	        ${map_chunk_info} := ${partition_result.map_chunk_info};
 		  	${partition_info} := ${partition_result.partition_info}  
         </expression>
         <condition>
@@ -768,20 +792,20 @@
         </condition>
       </defun>
       <connect-in port="partition_result" place="partition_result"/>
-      <connect-out port="map_chunk_info" place="map_chunk_info"/>
       <connect-out port="partition_info" place="partition_info"/>
     </transition> 
+
     
-     <place name="partition_copy_result" type="partition_copy_result"/>
+    <place name="partition_copy_result" type="partition_copy_result"/>
     <transition name="copy_partition_into_the_reduce_slot" inline="true">
       <require key="GPI" />
-      <require key="PAR" />
+      <require key="RED" />
       <defun>
         <in name="partition_result" type="partition_result"/>
         <in name="reduce_info" type="reduce_info"/>
         <in name="config" type="config"/>
         <out name="partition_copy_result" type="partition_copy_result"/>
-        <module name="shuffle" function="shuffle(config, partition_result, reduce_info, partition_copy_result)">
+        <module name="copy_partition" function="copy_partition_into_the_reduce_slot(config, partition_result, reduce_info, partition_copy_result)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
@@ -810,7 +834,7 @@
                 
                 partition_copy_result.reduce_info = reduce_info;
              	partition_copy_result.partition_info = partition_result.partition_info;
-             	partition_copy_result.map_chunk_info = partition_result.map_chunk_info;
+             	//partition_copy_result.map_chunk_info = partition_result.map_chunk_info;
              	partition_copy_result.succeeded = 0;
 			}
 			else
@@ -854,7 +878,7 @@
 		                    
 		             	partition_copy_result.reduce_info = reduce_info;
 		             	partition_copy_result.partition_info = partition_result.partition_info;
-		             	partition_copy_result.map_chunk_info = partition_result.map_chunk_info;
+		             	//partition_copy_result.map_chunk_info = partition_result.map_chunk_info;
 		             	partition_copy_result.succeeded = 0;
 	                }
 	                else
@@ -893,7 +917,8 @@
 			             MLOG(INFO, "The new size of the reduce slot "<<partition_copy_result.reduce_info.part_id<< " is "<<partition_copy_result.reduce_info.red_used);
 			             
 			             partition_copy_result.partition_info = partition_result.partition_info;
-			             partition_copy_result.map_chunk_info = partition_result.map_chunk_info;
+			            
+			            // partition_copy_result.map_chunk_info = partition_result.map_chunk_info;
 			             
 			             partition_copy_result.succeeded = 1;
 		            }
@@ -902,7 +927,7 @@
 	            { 
 	             	partition_copy_result.reduce_info = reduce_info;
 	             	partition_copy_result.partition_info = partition_result.partition_info;
-	             	partition_copy_result.map_chunk_info = partition_result.map_chunk_info;
+	             	// partition_copy_result.map_chunk_info = partition_result.map_chunk_info;
 	             	partition_copy_result.succeeded = 0;
 	             	
 	                MLOG_IF (WARN, partition_result.succeeded, "condition is incorrect");
@@ -933,12 +958,10 @@
       <defun>
         <in name="partition_copy_result" type="partition_copy_result"/>
         <out name="partition_info" type="partition_info"/>
-        <out name="map_chunk_info" type="map_chunk_info"/>
         <out name="pre_reduce_info" type="reduce_info"/>
         <expression>
         	${partition_info.part_id}:=${partition_copy_result.partition_info.part_id};
         	${partition_info.part_used}:=0L;
-        	${map_chunk_info}:=${partition_copy_result.map_chunk_info};
         	${pre_reduce_info}:=${partition_copy_result.reduce_info}
         </expression>
         <condition>
@@ -947,7 +970,6 @@
       </defun>
       <connect-in port="partition_copy_result" place="partition_copy_result"/>
       <connect-out port="partition_info" place="partition_info"/>
-      <connect-out port="map_chunk_info" place="map_chunk_info"/>
       <connect-out port="pre_reduce_info" place="pre_reduce_info"/>
     </transition> 
     
@@ -1147,7 +1169,7 @@
             new_reduce_info.red_used = 0; // free the reduce slot
             
             reduce_result.partition_info = partition_copy_result.partition_info;
-            reduce_result.map_chunk_info = partition_copy_result.map_chunk_info;
+            //reduce_result.map_chunk_info = partition_copy_result.map_chunk_info;
             reduce_result.partition_locked = 1 - partition_copy_result.succeeded;
 		
         	timestamp_t time_end_reduce = ::mapreduce::util::get_timestamp();
@@ -1171,7 +1193,6 @@
         <out name="partition_result" type="partition_result"/>
         <expression>
         	${partition_result.partition_info}:=${reduce_result.partition_info};
-        	${partition_result.map_chunk_info}:=${reduce_result.map_chunk_info};
         	${partition_result.succeeded}:=1L
         </expression>
       </defun>
@@ -1439,10 +1460,6 @@
       <require key="GPI" />
       <require key="WRITE" />
       <defun>
-        
-        <!-- <in name="map_slots_released" type="control"/>
-        <in name="read_slots_released" type="control"/> -->
-        
         <in name="special_partition_info" type="partition_info"/>
         <in name="special_reduce_info" type="reduce_info"/>
         <in name="partition_info" type="partition_info"/>
@@ -1611,9 +1628,6 @@
       <condition>
         ${reduce_info.part_id}:eq:${partition_info.part_id}
       </condition>
-      
-      <!-- <connect-read port="map_slots_released" place="map_slots_released"/>
-      <connect-read port="read_slots_released" place="read_slots_released"/> -->
       
       <connect-read port="special_partition_info" place="special_partition_info"/>
       <connect-read port="special_reduce_info" place="special_reduce_info"/>
