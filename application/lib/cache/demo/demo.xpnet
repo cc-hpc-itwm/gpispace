@@ -1,0 +1,78 @@
+<defun name="demo">
+  <include-structs href="../type.xpnet"/>
+  <in name="num_slots" type="long" place="num_slots"/>
+  <in name="num_id" type="long" place="num_id"/>
+  <in name="multiplicity" type="long" place="multiplicity"/>
+  <out name="id" type="long" place="id_done"/>
+  <net>
+    <place name="num_slots" type="long"/>
+    <place name="num_id" type="long"/>
+    <place name="multiplicity" type="long"/>
+    <transition name="init_cache" inline="true">
+      <include-function href="../init.xpnet"/>
+      <connect-in port="num_slots" place="num_slots"/>
+      <connect-out port="cache" place="cache"/>
+    </transition>
+    <place name="cache" type="cache_type"/>
+    <place name="n_id" type="long"/>
+    <include-template href="lib/replicate.xpnet"/>
+    <specialize use="replicate" name="rep_long">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <transition name="multiply" inline="true">
+      <use name="rep_long"/>
+      <connect-in port="n" place="multiplicity"/>
+      <connect-in port="x" place="num_id"/>
+      <place-map virtual="obj" real="n_id"/>
+    </transition>
+    <transition name="generate_id" inline="true">
+      <include-function href="lib/sequence.xml"/>
+      <connect-in port="amount" place="n_id"/>
+      <connect-out port="out" place="id"/>
+    </transition>
+    <place name="id" type="long"/>
+    <transition name="get_slot_for_id">
+      <include-function href="../get_slot_for_id.xpnet"/>
+      <connect-in port="id" place="id"/>
+      <connect-out port="slot" place="slot"/>
+      <place-map virtual="cache" real="cache"/>
+    </transition>
+    <place name="slot" type="long"/>
+    <transition name="work">
+      <defun>
+        <in name="cache" type="cache_type"/>
+        <inout name="slot" type="long"/>
+        <out name="id" type="long"/>
+        <module name="demo" function="id work (cache, slot)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="stdlib.h"/>
+          <code><![CDATA[
+            const long id (cache.by_slot.id.at (slot));
+            srand (time(NULL) * id * slot);
+            const int t (rand() % 4);
+
+            LOG (INFO, "WORK on id " << id
+                    << " in slot " << slot
+                    << ", sleep for " << t << " secs"
+                );
+
+            sleep (t);
+
+            return id;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="cache" place="cache"/>
+      <connect-in port="slot" place="slot"/>
+      <connect-out port="slot" place="slot_done"/>
+      <connect-out port="id" place="id_done"/>
+    </transition>
+    <place name="id_done" type="long"/>
+    <place name="slot_done" type="long"/>
+    <transition name="done_with_slot" inline="true">
+      <include-function href="../done_with_slot.xpnet"/>
+      <connect-in port="slot" place="slot_done"/>
+      <place-map virtual="cache" real="cache"/>
+    </transition>
+  </net>
+</defun>
