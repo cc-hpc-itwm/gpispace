@@ -22,6 +22,7 @@ install (FILES ${xmls}
   COMPONENT examples
   )
 
-add_subdirectory (sequence)
-add_subdirectory (point)
 add_subdirectory (cache)
+add_subdirectory (grid)
+add_subdirectory (point)
+add_subdirectory (sequence)
