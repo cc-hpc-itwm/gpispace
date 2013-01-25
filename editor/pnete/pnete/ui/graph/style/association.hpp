@@ -21,6 +21,7 @@ namespace fhg
           namespace association
           {
             QPainterPath shape (const QList<QPointF>& points);
+            QPainterPath shape_no_cap (const QList<QPointF>& points);
           }
         }
       }
