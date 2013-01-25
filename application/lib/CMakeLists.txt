@@ -23,3 +23,4 @@ install (FILES ${xmls}
   )
 
 add_subdirectory (sequence)
+add_subdirectory (point)
