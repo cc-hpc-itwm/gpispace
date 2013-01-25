@@ -18,6 +18,7 @@
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
+#include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/transition.hpp>
 
 #include <we/expr/parse/parser.hpp>
@@ -1078,30 +1079,58 @@ namespace fhg
 
           if (net_of_place == transition_of_fun_of_port.get().parent()->id())
           {
-            beginMacro ("add_connection_action");
-
-            if (place.is_implicit() && !no_make_explicit)
+            if (port.is_tunnel())
             {
-              make_explicit (this, place);
+              beginMacro ("add_place_map_action");
+
+              if (place.is_implicit() && !no_make_explicit)
+              {
+                make_explicit (this, place);
+              }
+
+              push ( new action::add_place_map
+                     ( ACTION_CTOR_ARGS (place)
+                     , transition_of_fun_of_port
+                     , ::xml::parse::type::place_map_type
+                       ( transition_of_fun_of_port.id_mapper()->next_id()
+                       , transition_of_fun_of_port.id_mapper()
+                       , boost::none
+                       , port.get().name()
+                       , place.get().name()
+                       , we::type::property::type()
+                       ).make_reference_id()
+                     )
+                   );
+
+              endMacro();
             }
+            else
+            {
+              beginMacro ("add_connection_action");
 
-            push ( new action::add_connection
-                   ( ACTION_CTOR_ARGS (place)
-                   , transition_of_fun_of_port
-                   , ::xml::parse::type::connect_type
-                     ( transition_of_fun_of_port.id_mapper()->next_id()
-                     , transition_of_fun_of_port.id_mapper()
-                     , boost::none
-                     , place.get().name()
-                     , port.get().name()
-                     , port.get().direction() == we::type::PORT_IN
-                     ? petri_net::edge::PT
-                     : petri_net::edge::TP
-                     ).make_reference_id()
-                   )
-                 );
+              if (place.is_implicit() && !no_make_explicit)
+              {
+                make_explicit (this, place);
+              }
 
-            endMacro();
+              push ( new action::add_connection
+                     ( ACTION_CTOR_ARGS (place)
+                     , transition_of_fun_of_port
+                     , ::xml::parse::type::connect_type
+                       ( transition_of_fun_of_port.id_mapper()->next_id()
+                       , transition_of_fun_of_port.id_mapper()
+                       , boost::none
+                       , place.get().name()
+                       , port.get().name()
+                       , port.is_input()
+                       ? petri_net::edge::PT
+                       : petri_net::edge::TP
+                       ).make_reference_id()
+                     )
+                   );
+
+              endMacro();
+            }
           }
           else
           {
