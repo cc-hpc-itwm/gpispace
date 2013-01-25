@@ -1508,6 +1508,14 @@ namespace fhg
             && *id.get().resolved_place() == place;
         }
 
+        bool is_mapping_place ( const ::xml::parse::id::ref::place_map& id
+                              , const ::xml::parse::id::ref::place& place
+                              )
+        {
+          return id.get().resolved_real_place()
+            && *id.get().resolved_real_place() == place;
+        }
+
         bool is_associated_with ( const ::xml::parse::id::ref::port& port
                                 , const ::xml::parse::id::ref::place& place
                                 )
@@ -1536,7 +1544,10 @@ namespace fhg
         {
           const ::xml::parse::type::net_type& net (place.get().parent().get());
 
-          boost::unordered_set< ::xml::parse::id::ref::connect> to_delete;
+          boost::unordered_set< ::xml::parse::id::ref::connect>
+            connections_to_delete;
+          boost::unordered_set< ::xml::parse::id::ref::place_map>
+            place_maps_to_delete;
 
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
@@ -1545,16 +1556,30 @@ namespace fhg
                         )
           {
             throw_into_set
-              ( to_delete
+              ( connections_to_delete
               , trans.connections().ids()
               | boost::adaptors::filtered
                 (boost::bind (is_connected_to_place, _1, place.id()))
               );
+            throw_into_set
+              ( place_maps_to_delete
+              , trans.place_map().ids()
+              | boost::adaptors::filtered
+                (boost::bind (is_mapping_place, _1, place.id()))
+              );
           }
 
-          BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+          BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
+                        , connections_to_delete
+                        )
           {
             remove_connection (this, handle::connect (c, place.document()));
+          }
+          BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& pm
+                        , place_maps_to_delete
+                        )
+          {
+            remove_place_map (this, handle::place_map (pm, place.document()));
           }
 
           if (net.has_parent())
@@ -1722,6 +1747,14 @@ namespace fhg
         {
           return id.get().resolved_port() && *id.get().resolved_port() == port;
         }
+
+        bool is_mapping_through_port ( const ::xml::parse::id::ref::place_map& id
+                                     , const ::xml::parse::id::ref::port& port
+                                     )
+        {
+          return id.get().resolved_tunnel_port()
+            && *id.get().resolved_tunnel_port() == port;
+        }
       }
 
       void change_manager_t::delete_port
@@ -1741,19 +1774,36 @@ namespace fhg
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
           typedef boost::unordered_set< ::xml::parse::id::ref::connect>
-            to_delete_type;
+            connections_to_delete_type;
+          typedef boost::unordered_set< ::xml::parse::id::ref::place_map>
+            place_maps_to_delete_type;
 
-          to_delete_type to_delete
-            ( boost::copy_range<to_delete_type>
+          connections_to_delete_type connections_to_delete
+            ( boost::copy_range<connections_to_delete_type>
               ( port.get().parent()->parent_transition()->get().connections().ids()
               | boost::adaptors::filtered
                 (boost::bind (is_connected_to_port, _1, port.id()))
               )
             );
+          place_maps_to_delete_type place_maps_to_delete
+            ( boost::copy_range<place_maps_to_delete_type>
+              ( port.get().parent()->parent_transition()->get().place_map().ids()
+              | boost::adaptors::filtered
+                (boost::bind (is_mapping_through_port, _1, port.id()))
+              )
+            );
 
-          BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+          BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
+                        , connections_to_delete
+                        )
           {
             remove_connection (this, handle::connect (c, port.document()));
+          }
+          BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& pm
+                        , place_maps_to_delete
+                        )
+          {
+            remove_place_map (this, handle::place_map (pm, port.document()));
           }
         }
 
