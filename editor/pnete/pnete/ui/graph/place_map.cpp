@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <pnete/ui/graph/port_place_association.hpp>
+#include <pnete/ui/graph/place_map.hpp>
 
 #include <pnete/ui/graph/place.hpp>
 #include <pnete/ui/graph/port.hpp>
@@ -27,33 +27,24 @@ namespace fhg
           }
         }
 
-        port_place_association::port_place_association
-          (port_item* port, place_item* place, const data::handle::port& handle)
+        place_map::place_map ( port_item* port
+                             , place_item* place
+                             , const data::handle::place_map& handle
+                             )
             : association (port, place)
             , _handle (handle)
         {
-          //! \todo Add handling of port direction getting changed!
-          if (handle.is_output())
-          {
-            invert();
-          }
-
           _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, pen_style);
         }
 
-        const data::handle::port& port_place_association::handle() const
+        const data::handle::place_map& place_map::handle() const
         {
           return _handle;
         }
 
-        QPainterPath port_place_association::shape() const
+        QPainterPath place_map::shape() const
         {
-          if (handle().is_tunnel())
-          {
-            return style::association::shape_no_cap (all_points());
-          }
-
-          return association::shape();
+          return style::association::shape_no_cap (all_points());
         }
       }
     }

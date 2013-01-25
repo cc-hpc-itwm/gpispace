@@ -81,7 +81,7 @@ namespace fhg
                                   );
 
         // -- place_map ------------------------------------------------
-        // void remove_place_map (const QObject*, const data::handle::place_map&);
+        void remove_place_map (const QObject*, const data::handle::place_map&);
 
         void set_property ( const QObject*
                           , const data::handle::place_map&
@@ -275,9 +275,12 @@ namespace fhg
                               , const we::type::property::key_type&
                               , const we::type::property::value_type&
                               );
-        // void place_map_removed ( const QObject*
-        //                        , const data::handle::place_map&
-        //                        );
+        void place_map_added ( const QObject*
+                             , const data::handle::place_map&
+                             );
+        void place_map_removed ( const QObject*
+                               , const data::handle::place_map&
+                               );
 
         // -- transition ---------------------------------------------
         void transition_added ( const QObject*

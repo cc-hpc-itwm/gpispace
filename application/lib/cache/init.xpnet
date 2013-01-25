@@ -1,0 +1,71 @@
+<defun>
+  <in name="num_slots" type="long" place="num_slots"/>
+  <out name="cache" type="cache_type" place="cache"/>
+  <net>
+    <place name="num_slots" type="long"/>
+    <place name="cache" type="cache_type"/>
+    <place name="n" type="long"/>
+    <place name="g" type="long"/>
+    <transition name="scatter_and_construct">
+      <defun>
+        <in name="x" type="long"/>
+        <out name="y" type="long"/>
+        <out name="z" type="long"/>
+        <out name="cache" type="cache_type"/>
+        <expression>
+          ${z} := ${y} := ${x};
+
+          ${cache.by_id.slot}            := {||};
+
+          ${cache.by_slot.id}            := {||};
+          ${cache.by_slot.num_users}     := {||};
+
+          ${cache.slots.empty}           := {::};
+          ${cache.slots.available}       := {::};
+          ${cache.slots.filled}          := {::};
+          ${cache.slots.started_to_fill} := {::};
+        </expression>
+      </defun>
+      <connect-in port="x" place="num_slots"/>
+      <connect-out port="y" place="n"/>
+      <connect-out port="z" place="g"/>
+      <connect-out port="cache" place="cache_accu"/>
+    </transition>
+    <place name="cache_accu" type="cache_type"/>
+    <transition name="generate_slot_id" inline="true">
+      <include-function href="lib/sequence.xml"/>
+      <connect-in port="amount" place="g"/>
+      <connect-out port="out" place="id"/>
+    </transition>
+    <place name="id" type="long"/>
+    <transition name="take_id">
+      <defun>
+        <inout name="cache" type="cache_type"/>
+        <inout name="n" type="long"/>
+        <in name="id" type="long"/>
+        <expression>
+          ${cache.slots.empty} := set_insert ( ${cache.slots.empty}
+                                             , ${id}
+                                             );
+          ${n} := ${n} - 1
+        </expression>
+      </defun>
+      <connect-inout port="cache" place="cache_accu"/>
+      <connect-in port="id" place="id"/>
+      <connect-inout port="n" place="n"/>
+    </transition>
+    <transition name="done">
+      <defun>
+        <inout name="cache" type="cache_type"/>
+        <in name="n" type="long"/>
+        <expression/>
+        <condition>
+          ${n} :le: 0
+        </condition>
+      </defun>
+      <connect-in port="cache" place="cache_accu"/>
+      <connect-out port="cache" place="cache"/>
+      <connect-in port="n" place="n"/>
+    </transition>
+  </net>
+</defun>

@@ -20,10 +20,10 @@ namespace fhg
           : place_map_meta_base (id, document)
         { }
 
-        // void place_map::remove (const QObject* sender) const
-        // {
-        //   change_manager().remove_place_map (sender, *this);
-        // }
+        void place_map::remove (const QObject* sender) const
+        {
+          change_manager().remove_place_map (sender, *this);
+        }
 
         void place_map::set_property
           ( const QObject* sender

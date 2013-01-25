@@ -78,6 +78,7 @@ namespace xml
 
         const boost::optional<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
+        void set_virtual (bool);
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();

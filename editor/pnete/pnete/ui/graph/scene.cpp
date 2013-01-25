@@ -14,6 +14,7 @@
 #include <pnete/ui/graph/connection.hpp>
 #include <pnete/ui/graph/pending_connection.hpp>
 #include <pnete/ui/graph/place.hpp>
+#include <pnete/ui/graph/place_map.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/port_place_association.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
@@ -212,6 +213,11 @@ namespace fhg
             );
           _net.connect_to_change_mgr
             (this, "connection_removed", "data::handle::connect");
+
+          _net.connect_to_change_mgr
+            (this, "place_map_added", "data::handle::place_map");
+          _net.connect_to_change_mgr
+            (this, "place_map_removed", "data::handle::place_map");
 
           // top-level-ports
           _net.connect_to_change_mgr
@@ -599,6 +605,23 @@ namespace fhg
 
             break;
 
+            case base_item::place_map_graph_type:
+            {
+              const data::handle::place_map handle
+                ( fhg::util::qt::throwing_qgraphicsitem_cast<place_map*>
+                  (item_below_cursor)->handle()
+                );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu->addAction (tr ("place_map_delete"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind (&data::handle::place_map::remove, handle, this)
+                );
+            }
+
+            break;
+
             default:
               //! \note Unknown item type hit. Should not happen, I guess.
               event->ignore();
@@ -782,10 +805,10 @@ namespace fhg
           const data::handle::place place
             (*map.get().resolved_real_place(), map.document());
 
-          addItem ( new ui::graph::port_place_association
+          addItem ( new ui::graph::place_map
                     ( item_with_handle<port_item> (port)
                     , item_with_handle<place_item> (place)
-                    , port
+                    , map
                     )
                   );
         }
@@ -1039,6 +1062,12 @@ namespace fhg
         {
           return handle.get().parent()->id() == function().id();
         }
+        template<>
+          bool scene_type::is_in_my_net (const data::handle::place_map& handle)
+        {
+          return handle.get().resolved_real_place()->get().parent()->id()
+            == net().id();
+        }
 
         const data::handle::net& scene_type::net() const
         {
@@ -1116,6 +1145,23 @@ namespace fhg
           (const QObject* origin, const data::handle::connect& connection)
         {
           remove_item_for_handle<connection_item> (connection);
+        }
+
+        // # place_map ##############################################
+        //! \todo Don't pass from and to. Pass net.
+        void scene_type::place_map_added
+          (const QObject* origin, const data::handle::place_map& place_map)
+        {
+          if (is_in_my_net (place_map))
+          {
+            create_place_map (place_map);
+          }
+        }
+
+        void scene_type::place_map_removed
+          (const QObject* origin, const data::handle::place_map& handle)
+        {
+          remove_item_for_handle<place_map> (handle);
         }
 
         // # transition ##############################################

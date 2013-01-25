@@ -1,0 +1,69 @@
+<defun name="gen_grid_points">
+  <include-structs href="lib/point/type.xpnet"/>
+  <include-structs href="../type.xpnet"/>
+
+  <in name="grid" type="grid_type" place="grid"/>
+  <out name="point" type="point_type" place="point"/>
+
+  <net>
+
+    <place name="grid" type="grid_type"/>
+    <place name="point" type="point_type"/>
+
+    <place name="grid_calculate_size" type="grid_type"/>
+    <place name="grid_replicate" type="grid_type"/>
+    <place name="grid_get_point" type="grid_type"/>
+    <place name="size" type="long"/>
+    <place name="size_generate" type="long"/>
+    <place name="size_replicate" type="long"/>
+    <place name="n" type="long"/>
+
+    <include-template href="lib/dup.xml" as="dup"/>
+    <specialize name="dup_grid_type" use="dup">
+      <type-map replace="T" with="grid_type"/>
+    </specialize>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <include-template href="lib/replicate.xpnet" as="replicate"/>
+    <specialize name="replicate_grid_type" use="replicate">
+      <type-map replace="T" with="grid_type"/>
+    </specialize>
+
+    <transition name="dup_grid" inline="true">
+      <use name="dup_grid_type"/>
+      <connect-in port="in" place="grid"/>
+      <connect-out port="one" place="grid_calculate_size"/>
+      <connect-out port="two" place="grid_replicate"/>
+    </transition>
+    <transition name="calculate_size" inline="true">
+      <include-function href="../size.xpnet"/>
+      <connect-in port="grid" place="grid_calculate_size"/>
+      <connect-out port="size" place="size"/>
+    </transition>
+    <transition name="dup_size" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="size"/>
+      <connect-out port="one" place="size_generate"/>
+      <connect-out port="two" place="size_replicate"/>
+    </transition>
+    <transition name="replicate" inline="true">
+      <use name="replicate_grid_type"/>
+      <connect-in port="n" place="size_replicate"/>
+      <connect-in port="x" place="grid_replicate"/>
+      <place-map virtual="obj" real="grid_get_point"/>
+    </transition>
+    <transition name="generate" inline="true">
+      <include-function href="lib/sequence.xml"/>
+      <connect-in port="amount" place="size_generate"/>
+      <connect-out port="out" place="n"/>
+    </transition>
+    <transition name="get_point" inline="true">
+      <include-function href="../nth.xpnet"/>
+      <connect-in port="grid" place="grid_get_point"/>
+      <connect-in port="n" place="n"/>
+      <connect-out port="point" place="point"/>
+    </transition>
+  </net>
+</defun>

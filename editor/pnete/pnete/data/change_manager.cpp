@@ -18,6 +18,7 @@
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
+#include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/transition.hpp>
 
 #include <we/expr/parse/parser.hpp>
@@ -63,6 +64,10 @@ namespace fhg
           EXPOSE (connection_removed);
           EXPOSE (connection_direction_changed);
           EXPOSE (property_changed);
+
+          // -- place_map ----------------------------------------------
+          EXPOSE (place_map_added);
+          EXPOSE (place_map_removed);
 
           // -- transition ---------------------------------------------
           EXPOSE (transition_added);
@@ -538,6 +543,93 @@ namespace fhg
           const bool _new_value;
         };
 
+        // -- place_map ----------------------------------------------
+        void remove_place_map_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::transition& transition
+          , const ::xml::parse::id::ref::place_map& place_map
+          )
+        {
+          change_manager.emit_signal
+            ( &signal::place_map_removed
+            , origin
+            , handle::place_map (place_map, document)
+            );
+
+          transition.get_ref().remove_place_map (place_map);
+        }
+
+        void add_place_map_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::transition& transition
+          , const ::xml::parse::id::ref::place_map& place_map
+          )
+        {
+          transition.get_ref().push_place_map (place_map);
+
+          change_manager.emit_signal
+            ( &signal::place_map_added, origin
+            , handle::place_map (place_map, document)
+            );
+        }
+
+        class add_place_map : public QUndoCommand
+        {
+        public:
+          add_place_map
+            ( ACTION_ARG_LIST
+            , const ::xml::parse::id::ref::transition& transition
+            , const ::xml::parse::id::ref::place_map& place_map
+            )
+              : ACTION_INIT ("add_place_map_action")
+              , _transition (transition)
+              , _place_map (place_map)
+          { }
+
+          virtual void undo()
+          {
+            remove_place_map_impl (ACTION_UNDO_ARGS, _transition, _place_map);
+          }
+
+          virtual void redo()
+          {
+            add_place_map_impl (ACTION_REDO_ARGS, _transition, _place_map);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const ::xml::parse::id::ref::transition _transition;
+          const ::xml::parse::id::ref::place_map _place_map;
+        };
+
+        class remove_place_map : public QUndoCommand
+        {
+        public:
+          remove_place_map
+            (ACTION_ARG_LIST, const ::xml::parse::id::ref::place_map& place_map)
+              : ACTION_INIT ("remove_place_map_action")
+              , _place_map (place_map)
+              , _transition (_place_map.get().parent()->make_reference_id())
+          { }
+
+          virtual void undo()
+          {
+            add_place_map_impl (ACTION_UNDO_ARGS, _transition, _place_map);
+          }
+
+          virtual void redo()
+          {
+            remove_place_map_impl (ACTION_REDO_ARGS, _transition, _place_map);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          const ::xml::parse::id::ref::place_map _place_map;
+          const ::xml::parse::id::ref::transition _transition;
+        };
+
         // -- transition ---------------------------------------------
         class add_transition : public QUndoCommand
         {
@@ -987,30 +1079,58 @@ namespace fhg
 
           if (net_of_place == transition_of_fun_of_port.get().parent()->id())
           {
-            beginMacro ("add_connection_action");
-
-            if (place.is_implicit() && !no_make_explicit)
+            if (port.is_tunnel())
             {
-              make_explicit (this, place);
+              beginMacro ("add_place_map_action");
+
+              if (place.is_implicit() && !no_make_explicit)
+              {
+                make_explicit (this, place);
+              }
+
+              push ( new action::add_place_map
+                     ( ACTION_CTOR_ARGS (place)
+                     , transition_of_fun_of_port
+                     , ::xml::parse::type::place_map_type
+                       ( transition_of_fun_of_port.id_mapper()->next_id()
+                       , transition_of_fun_of_port.id_mapper()
+                       , boost::none
+                       , port.get().name()
+                       , place.get().name()
+                       , we::type::property::type()
+                       ).make_reference_id()
+                     )
+                   );
+
+              endMacro();
             }
+            else
+            {
+              beginMacro ("add_connection_action");
 
-            push ( new action::add_connection
-                   ( ACTION_CTOR_ARGS (place)
-                   , transition_of_fun_of_port
-                   , ::xml::parse::type::connect_type
-                     ( transition_of_fun_of_port.id_mapper()->next_id()
-                     , transition_of_fun_of_port.id_mapper()
-                     , boost::none
-                     , place.get().name()
-                     , port.get().name()
-                     , port.get().direction() == we::type::PORT_IN
-                     ? petri_net::edge::PT
-                     : petri_net::edge::TP
-                     ).make_reference_id()
-                   )
-                 );
+              if (place.is_implicit() && !no_make_explicit)
+              {
+                make_explicit (this, place);
+              }
 
-            endMacro();
+              push ( new action::add_connection
+                     ( ACTION_CTOR_ARGS (place)
+                     , transition_of_fun_of_port
+                     , ::xml::parse::type::connect_type
+                       ( transition_of_fun_of_port.id_mapper()->next_id()
+                       , transition_of_fun_of_port.id_mapper()
+                       , boost::none
+                       , place.get().name()
+                       , port.get().name()
+                       , port.is_input()
+                       ? petri_net::edge::PT
+                       : petri_net::edge::TP
+                       ).make_reference_id()
+                     )
+                   );
+
+              endMacro();
+            }
           }
           else
           {
@@ -1134,15 +1254,15 @@ namespace fhg
       }
 
       // -- place_map -----------------------------------------------
-      // void change_manager_t::remove_place_map
-      //   ( const QObject* origin
-      //   , const handle::place_map& place_map
-      //   )
-      // {
-      //   push ( new action::remove_place_map
-      //          (ACTION_CTOR_ARGS (place_map), place_map.id())
-      //        );
-      // }
+      void change_manager_t::remove_place_map
+        ( const QObject* origin
+        , const handle::place_map& place_map
+        )
+      {
+        push ( new action::remove_place_map
+               (ACTION_CTOR_ARGS (place_map), place_map.id())
+             );
+      }
 
       void change_manager_t::set_property
         ( const QObject* origin
@@ -1388,6 +1508,14 @@ namespace fhg
             && *id.get().resolved_place() == place;
         }
 
+        bool is_mapping_place ( const ::xml::parse::id::ref::place_map& id
+                              , const ::xml::parse::id::ref::place& place
+                              )
+        {
+          return id.get().resolved_real_place()
+            && *id.get().resolved_real_place() == place;
+        }
+
         bool is_associated_with ( const ::xml::parse::id::ref::port& port
                                 , const ::xml::parse::id::ref::place& place
                                 )
@@ -1416,7 +1544,10 @@ namespace fhg
         {
           const ::xml::parse::type::net_type& net (place.get().parent().get());
 
-          boost::unordered_set< ::xml::parse::id::ref::connect> to_delete;
+          boost::unordered_set< ::xml::parse::id::ref::connect>
+            connections_to_delete;
+          boost::unordered_set< ::xml::parse::id::ref::place_map>
+            place_maps_to_delete;
 
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
@@ -1425,16 +1556,30 @@ namespace fhg
                         )
           {
             throw_into_set
-              ( to_delete
+              ( connections_to_delete
               , trans.connections().ids()
               | boost::adaptors::filtered
                 (boost::bind (is_connected_to_place, _1, place.id()))
               );
+            throw_into_set
+              ( place_maps_to_delete
+              , trans.place_map().ids()
+              | boost::adaptors::filtered
+                (boost::bind (is_mapping_place, _1, place.id()))
+              );
           }
 
-          BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+          BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
+                        , connections_to_delete
+                        )
           {
             remove_connection (this, handle::connect (c, place.document()));
+          }
+          BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& pm
+                        , place_maps_to_delete
+                        )
+          {
+            remove_place_map (this, handle::place_map (pm, place.document()));
           }
 
           if (net.has_parent())
@@ -1602,6 +1747,14 @@ namespace fhg
         {
           return id.get().resolved_port() && *id.get().resolved_port() == port;
         }
+
+        bool is_mapping_through_port ( const ::xml::parse::id::ref::place_map& id
+                                     , const ::xml::parse::id::ref::port& port
+                                     )
+        {
+          return id.get().resolved_tunnel_port()
+            && *id.get().resolved_tunnel_port() == port;
+        }
       }
 
       void change_manager_t::delete_port
@@ -1621,19 +1774,36 @@ namespace fhg
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
           typedef boost::unordered_set< ::xml::parse::id::ref::connect>
-            to_delete_type;
+            connections_to_delete_type;
+          typedef boost::unordered_set< ::xml::parse::id::ref::place_map>
+            place_maps_to_delete_type;
 
-          to_delete_type to_delete
-            ( boost::copy_range<to_delete_type>
+          connections_to_delete_type connections_to_delete
+            ( boost::copy_range<connections_to_delete_type>
               ( port.get().parent()->parent_transition()->get().connections().ids()
               | boost::adaptors::filtered
                 (boost::bind (is_connected_to_port, _1, port.id()))
               )
             );
+          place_maps_to_delete_type place_maps_to_delete
+            ( boost::copy_range<place_maps_to_delete_type>
+              ( port.get().parent()->parent_transition()->get().place_map().ids()
+              | boost::adaptors::filtered
+                (boost::bind (is_mapping_through_port, _1, port.id()))
+              )
+            );
 
-          BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+          BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
+                        , connections_to_delete
+                        )
           {
             remove_connection (this, handle::connect (c, port.document()));
+          }
+          BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& pm
+                        , place_maps_to_delete
+                        )
+          {
+            remove_place_map (this, handle::place_map (pm, port.document()));
           }
         }
 

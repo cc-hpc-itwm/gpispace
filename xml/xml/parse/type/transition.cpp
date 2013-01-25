@@ -269,6 +269,10 @@ namespace xml
       {
         _connections.erase (id);
       }
+      void transition_type::remove_place_map (const id::ref::place_map& id)
+      {
+        _place_map.erase (id);
+      }
 
       void transition_type::push_connection (const id::ref::connect& connect_id)
       {

@@ -141,6 +141,10 @@ namespace xml
       {
         return _is_virtual.get_value_or (false);
       }
+      void place_type::set_virtual (bool is)
+      {
+        _is_virtual = boost::make_optional (is, true);
+      }
 
       const we::type::property::type& place_type::properties() const
       {

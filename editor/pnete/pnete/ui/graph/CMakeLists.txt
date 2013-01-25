@@ -10,6 +10,7 @@ set(graph_SRCS
 
   connection.cpp
   place.cpp
+  place_map.cpp
   port.cpp
   port_place_association.cpp
   scene.cpp
@@ -29,6 +30,7 @@ set(graph_HDRS
 
   connection.hpp
   place.hpp
+  place_map.hpp
   port.hpp
   port_place_association.hpp
   scene.hpp
@@ -45,6 +47,7 @@ set(graph_TOMOC
 
   connection.hpp
   place.hpp
+  place_map.hpp
   port.hpp
   port_place_association.hpp
   scene.hpp
