@@ -14,6 +14,7 @@
 #include <pnete/ui/graph/connection.hpp>
 #include <pnete/ui/graph/pending_connection.hpp>
 #include <pnete/ui/graph/place.hpp>
+#include <pnete/ui/graph/place_map.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/port_place_association.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
@@ -782,10 +783,10 @@ namespace fhg
           const data::handle::place place
             (*map.get().resolved_real_place(), map.document());
 
-          addItem ( new ui::graph::port_place_association
+          addItem ( new ui::graph::place_map
                     ( item_with_handle<port_item> (port)
                     , item_with_handle<place_item> (place)
-                    , port
+                    , map
                     )
                   );
         }
