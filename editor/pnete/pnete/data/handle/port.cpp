@@ -40,6 +40,34 @@ namespace fhg
           change_manager().set_place_association (sender, *this, boost::none);
         }
 
+        bool port::is_input() const
+        {
+          return get().direction() == we::type::PORT_IN;
+        }
+        bool port::is_output() const
+        {
+          return get().direction() == we::type::PORT_OUT;
+        }
+        bool port::is_tunnel() const
+        {
+          return get().direction() == we::type::PORT_TUNNEL;
+        }
+
+        bool port::is_connectable (const port& other) const
+        {
+          return get().parent() && other.get().parent()
+            && ( get().parent()->id() == other.get().parent()->id()
+               ? get().direction() != other.get().direction()
+               : get().direction() == other.get().direction()
+               );
+        }
+
+        bool port::can_rename_to (const QString& name) const
+        {
+          return !get().parent()->ports().has
+            (std::make_pair (name.toStdString(), get().direction()));
+        }
+
         void port::set_property ( const QObject* sender
                                 , const ::we::type::property::key_type& key
                                 , const ::we::type::property::value_type& val

@@ -165,7 +165,6 @@ namespace test {
     explicit
     sdpa_daemon(std::size_t num_worker = 1)
       : mgmt_layer_(this, boost::bind(&sdpa_daemon::gen_id, this))
-      , next_worker_(0)
     {
       start(num_worker);
     }
@@ -175,9 +174,8 @@ namespace test {
       stop();
     }
 
-    void start(const std::size_t num_worker = 1)
+    void start (const std::size_t num_worker = 1)
     {
-      jobs_ = new job_q_t[num_worker];
       for (std::size_t n (0); n < num_worker; ++n)
       {
         worker_.push_back( new boost::thread( boost::bind(&this_type::worker, this, n)));
@@ -193,22 +191,29 @@ namespace test {
         delete (*it);
       }
       worker_.clear();
-      delete [] jobs_;
-      jobs_ = NULL;
     }
 
     void worker(const std::size_t rank)
     {
-      std::cout << "SDPA Layer worker-" << rank << " started." << std::endl;
+      MLOG (INFO, "SDPA layer worker-" << rank << " started");
+
       for (;;)
       {
-        job_type job (jobs_[rank].get());
+        MLOG (TRACE, "worker-" << rank << " idle");
+
+        job_type job (jobs_.get());
 
         we::mgmt::type::activity_t act (job.desc);
+
+        MLOG ( TRACE
+             , "worker-" << rank << " busy with " << act.transition ().name ()
+             );
+
         detail::context<this_type, id_type> ctxt (*this, job.id);
         act.execute (&ctxt);
       }
-      std::cout << "SDPA Layer worker-" << rank << " stopped." << std::endl;
+
+      MLOG (INFO, "SDPA layer worker-" << rank << " stopped");
     }
 
     id_type gen_id()
@@ -239,8 +244,8 @@ namespace test {
                )
     {
       job_type job (id, desc);
-      jobs_[next_worker_] .put(job);
-      next_worker_ = (next_worker_ + 1) % worker_.size();
+
+      jobs_.put (job);
     }
 
     bool cancel(const id_type & id, const std::string & desc)
@@ -339,9 +344,8 @@ namespace test {
     boost::recursive_mutex mutex_;
     detail::id_generator<id_type> id_;
     layer_type mgmt_layer_;
-    std::size_t next_worker_;
     id_map_t  id_map_;
-    job_q_t *jobs_;
+    job_q_t jobs_;
     worker_list_t worker_;
     we::loader::loader loader_;
   };

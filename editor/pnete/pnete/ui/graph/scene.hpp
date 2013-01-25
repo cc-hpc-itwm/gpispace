@@ -10,6 +10,7 @@
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/place_map.fwd.hpp>
 #include <pnete/data/handle/port.fwd.hpp>
 #include <pnete/data/handle/transition.fwd.hpp>
 #include <pnete/ui/graph/base_item.fwd.hpp>
@@ -55,6 +56,7 @@ namespace fhg
           void create_pending_connection (connectable_item* item);
           void create_connection (const data::handle::connect&);
           void create_port_place_association (const data::handle::port&);
+          void create_place_map (const data::handle::place_map&);
 
           QList<QAction*> actions() const;
 

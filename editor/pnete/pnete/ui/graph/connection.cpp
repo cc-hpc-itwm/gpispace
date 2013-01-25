@@ -4,8 +4,6 @@
 
 #include <util/qt/cast.hpp>
 
-#include <QDebug>
-
 namespace fhg
 {
   namespace pnete
@@ -18,13 +16,13 @@ namespace fhg
         {
           boost::optional<const Qt::PenStyle&> pen_style (const base_item* item)
           {
-            static Qt::PenStyle why_is_the_return_value_a_reference
-              (Qt::DashLine);
-
             if ( fhg::util::qt::throwing_qobject_cast<const connection_item*>
                  (item)->handle().is_read()
                )
             {
+              static Qt::PenStyle why_is_the_return_value_a_reference
+                (Qt::DashLine);
+
               return why_is_the_return_value_a_reference;
             }
 

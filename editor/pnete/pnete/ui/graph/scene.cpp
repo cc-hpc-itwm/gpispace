@@ -3,6 +3,7 @@
 #include <pnete/ui/graph/scene.hpp>
 
 #include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/place_map.hpp>
 #include <pnete/data/handle/transition.hpp>
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
@@ -243,8 +244,7 @@ namespace fhg
                           , const QString& name
                           )
           {
-            return !handle.get().parent()->ports().has
-              (std::make_pair (name.toStdString(), handle.get().direction()));
+            return handle.can_rename_to (name);
           }
 
           bool can_rename ( const data::handle::transition& handle
@@ -773,6 +773,21 @@ namespace fhg
               , port
               )
             );
+        }
+
+        void scene_type::create_place_map (const data::handle::place_map& map)
+        {
+          const data::handle::port port
+            (*map.get().resolved_tunnel_port(), map.document());
+          const data::handle::place place
+            (*map.get().resolved_real_place(), map.document());
+
+          addItem ( new ui::graph::port_place_association
+                    ( item_with_handle<port_item> (port)
+                    , item_with_handle<place_item> (place)
+                    , port
+                    )
+                  );
         }
 
         void scene_type::remove_pending_connection()

@@ -109,39 +109,12 @@ namespace fhg
           }
         }
 
-        namespace
-        {
-          bool is_opposite_type_or_direction
-            (const port_item* lhs, const connectable_item* rhs_)
-          {
-            if (const port_item* rhs = qobject_cast<const port_item*> (rhs_))
-            {
-              const bool lhs_is_top_level
-                (qobject_cast<const top_level_port_item*> (lhs));
-              const bool rhs_is_top_level
-                (qobject_cast<const top_level_port_item*> (rhs));
-              const bool both_top_level (lhs_is_top_level && rhs_is_top_level);
-              const bool both_non_top_level
-                (!lhs_is_top_level && !rhs_is_top_level);
-              const bool same_level (both_top_level || both_non_top_level);
-              const bool same_direction (  lhs->handle().get().direction()
-                                        == rhs->handle().get().direction()
-                                        );
-
-              return same_level ? !same_direction : same_direction;
-            }
-            else
-            {
-              return true;
-            }
-          }
-        }
-
         bool port_item::is_connectable_with (const connectable_item* item) const
         {
+          const port_item* rhs (qobject_cast<const port_item*> (item));
           //! \note Only allow one connection.
           return _associations.isEmpty()
-            && is_opposite_type_or_direction (this, item)
+            && (!rhs || handle().is_connectable (rhs->handle()))
             && connectable_item::is_connectable_with (item);
         }
 
@@ -253,7 +226,7 @@ namespace fhg
           //! \note Top level port
           else
           {
-            return handle().get().direction() == we::type::PORT_IN
+            return handle().is_input()
               ? port::orientation::EAST : port::orientation::WEST;
           }
         }
@@ -299,13 +272,17 @@ namespace fhg
                                               , const QPointF& pos
                                               ) const
         {
-          if (handle().get().direction() == we::type::PORT_IN)
+          if (handle().is_input())
           {
             cap::add_incoming (poly, pos);
           }
-          else
+          else if (handle().is_output())
           {
             cap::add_outgoing (poly, pos);
+          }
+          else
+          {
+            //! \todo Cap for tunnel ports.
           }
         }
 
@@ -313,13 +290,17 @@ namespace fhg
                                                         , const QPointF& pos
                                                         ) const
         {
-          if (handle().get().direction() == we::type::PORT_IN)
+          if (handle().is_input())
           {
             cap::add_outgoing (poly, pos);
           }
-          else
+          else if (handle().is_output())
           {
             cap::add_incoming (poly, pos);
+          }
+          else
+          {
+            //! \todo Cap for tunnel ports.
           }
         }
 
@@ -385,7 +366,7 @@ namespace fhg
                           , size::port::height()
                           );
           default:
-            throw std::runtime_error("invalid port direction!");
+            throw std::runtime_error("invalid port orientation");
           }
         }
 

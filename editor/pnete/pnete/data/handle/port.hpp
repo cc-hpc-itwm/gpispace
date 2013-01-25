@@ -37,6 +37,14 @@ namespace fhg
 
           void remove_place_association (const QObject* sender) const;
 
+          bool is_input() const;
+          bool is_output() const;
+          bool is_tunnel() const;
+
+          bool is_connectable (const port&) const;
+
+          bool can_rename_to (const QString&) const;
+
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&

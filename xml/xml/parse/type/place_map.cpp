@@ -3,6 +3,7 @@
 #include <xml/parse/type/place_map.hpp>
 
 #include <xml/parse/id/mapper.hpp>
+#include <xml/parse/type/net.hpp>
 #include <xml/parse/type/transition.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -50,7 +51,37 @@ namespace xml
         return place_real_impl (v);
       }
 
+      boost::optional<const id::ref::place&>
+        place_map_type::resolved_virtual_place() const
+      {
+        boost::optional<const id::ref::net&> net
+          (parent()->resolved_function().get().get_net());
+
+        if (!net)
+        {
+          return boost::none;
+        }
+
+        return net->get().places().get (place_virtual());
+      }
+      boost::optional<const id::ref::port&>
+        place_map_type::resolved_tunnel_port() const
+      {
+        return parent()->resolved_function().get().ports().get
+          (std::make_pair (place_virtual(), we::type::PORT_TUNNEL));
+      }
+      boost::optional<const id::ref::place&>
+        place_map_type::resolved_real_place() const
+      {
+        //! \todo Go deeper, if that one is virtual too?
+        return parent()->parent()->places().get (place_real());
+      }
+
       const we::type::property::type& place_map_type::properties() const
+      {
+        return _properties;
+      }
+      we::type::property::type& place_map_type::properties()
       {
         return _properties;
       }

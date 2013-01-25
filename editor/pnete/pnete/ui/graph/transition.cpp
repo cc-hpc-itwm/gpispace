@@ -114,17 +114,21 @@ namespace fhg
           {
             if (port_item* p = qgraphicsitem_cast<port_item*> (child))
             {
-              if (p->handle().get().direction() == we::type::PORT_IN)
+              if (p->handle().is_input())
               {
                 p->no_undo_setPos
                   (style::raster::snap (positionIn));
                 positionIn.ry() += step + padding;
               }
-              else
+              else if (p->handle().is_output())
               {
                 p->no_undo_setPos
                   (style::raster::snap (positionOut));
                 positionOut.ry() += step + padding;
+              }
+              else
+              {
+                //! \todo tunnel ports at bottom?
               }
             }
           }

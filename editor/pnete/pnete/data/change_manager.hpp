@@ -10,6 +10,7 @@
 #include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/place_map.fwd.hpp>
 #include <pnete/data/handle/port.fwd.hpp>
 #include <pnete/data/handle/transition.fwd.hpp>
 
@@ -75,6 +76,20 @@ namespace fhg
                           );
         void no_undo_set_property ( const QObject*
                                   , const data::handle::connect&
+                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::value_type&
+                                  );
+
+        // -- place_map ------------------------------------------------
+        // void remove_place_map (const QObject*, const data::handle::place_map&);
+
+        void set_property ( const QObject*
+                          , const data::handle::place_map&
+                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::value_type&
+                          );
+        void no_undo_set_property ( const QObject*
+                                  , const data::handle::place_map&
                                   , const ::we::type::property::key_type&
                                   , const ::we::type::property::value_type&
                                   );
@@ -253,6 +268,16 @@ namespace fhg
                                 );
         void connection_direction_changed
           (const QObject*, const data::handle::connect&);
+
+        // -- place_map ---------------------------------------------
+        void property_changed ( const QObject*
+                              , const data::handle::place_map&
+                              , const we::type::property::key_type&
+                              , const we::type::property::value_type&
+                              );
+        // void place_map_removed ( const QObject*
+        //                        , const data::handle::place_map&
+        //                        );
 
         // -- transition ---------------------------------------------
         void transition_added ( const QObject*
