@@ -4,6 +4,7 @@
 
 #include <pnete/ui/graph/place.hpp>
 #include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/style/association.hpp>
 
 #include <xml/parse/type/port.hpp>
 
@@ -43,6 +44,16 @@ namespace fhg
         const data::handle::port& port_place_association::handle() const
         {
           return _handle;
+        }
+
+        QPainterPath port_place_association::shape() const
+        {
+          if (handle().is_tunnel())
+          {
+            return style::association::shape_no_cap (all_points());
+          }
+
+          return association::shape();
         }
       }
     }
