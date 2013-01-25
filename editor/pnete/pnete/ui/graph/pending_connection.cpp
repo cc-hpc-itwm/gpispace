@@ -65,7 +65,10 @@ namespace fhg
             }
             else if (fix->handle().is_tunnel())
             {
-              //! \todo Separate shape (no pointer) for tunnels.
+              points.push_back (_fixed_end->scenePos());
+              points.push_back (_open_end);
+
+              return style::association::shape_no_cap (points);
             }
           }
           else
