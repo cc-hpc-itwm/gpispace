@@ -4,6 +4,7 @@
 
 #include <pnete/ui/graph/place.hpp>
 #include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/style/association.hpp>
 
 #include <xml/parse/type/port.hpp>
 
@@ -39,6 +40,11 @@ namespace fhg
         const data::handle::place_map& place_map::handle() const
         {
           return _handle;
+        }
+
+        QPainterPath place_map::shape() const
+        {
+          return style::association::shape_no_cap (all_points());
         }
       }
     }

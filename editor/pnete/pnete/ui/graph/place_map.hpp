@@ -37,6 +37,8 @@ namespace fhg
 
           virtual const data::handle::place_map& handle() const;
 
+          virtual QPainterPath shape() const;
+
           enum { Type = place_map_graph_type };
           virtual int type() const { return Type; }
 
