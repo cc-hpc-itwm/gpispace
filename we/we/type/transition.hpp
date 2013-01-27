@@ -126,7 +126,7 @@ namespace we { namespace type {
       {
         // should correspond!
         explicit preparsed_condition ( const std::string& _expr
-                                     , const condition::type::parser_t& _parser
+                                     , const expr::parse::parser& _parser
                                      )
           : expr(_expr)
           , parser(_parser)
@@ -137,13 +137,13 @@ namespace we { namespace type {
           return expr;
         }
 
-        operator condition::type::parser_t const & () const
+        operator expr::parse::parser const & () const
         {
           return parser;
         }
 
         const std::string expr;
-        const condition::type::parser_t parser;
+        const expr::parse::parser parser;
       };
     }
 

@@ -38,12 +38,9 @@ namespace condition
 
   class type
   {
-  public:
-    typedef expr::parse::parser parser_t;
-
   private:
     std::string expression_;
-    parser_t parser;
+    expr::parse::parser parser;
 
     typedef boost::function<std::string (const petri_net::place_id_type &)> translate_t;
     translate_t translate;
@@ -81,7 +78,7 @@ namespace condition
 
     // should correspond!
     type ( const std::string & _expression
-         , const parser_t & _parser
+         , const expr::parse::parser& _parser
          , const translate_t & _translate = &no_trans
          )
       : expression_ (_expression)
