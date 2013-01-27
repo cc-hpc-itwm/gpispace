@@ -1,13 +1,16 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/net.hpp>
+#include <we/type/condition.hpp>
 
-#include <we/util/cross.hpp>
+#include <we/expr/parse/parser.hpp>
+#include <we/expr/eval/context.hpp>
 
 #include <fhg/assert.hpp>
 
-#include <boost/function.hpp>
+#include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <stack>
 
@@ -333,6 +336,102 @@ namespace petri_net
     return not _enabled.empty();
   }
 
+  namespace cross
+  {
+    class iterators_type
+    {
+    public:
+      explicit iterators_type (const std::vector<token::type>& tokens)
+        : _begin (tokens.begin())
+        , _end (tokens.end())
+        , _pos (tokens.begin())
+      {}
+      const std::vector<token::type>::const_iterator& end() const
+      {
+        return _end;
+      }
+      const std::vector<token::type>::const_iterator& pos() const
+      {
+        return _pos;
+      }
+      void operator++()
+      {
+        ++_pos;
+      }
+      void rewind()
+      {
+        _pos = _begin;
+      }
+      bool empty() const
+      {
+        return _begin == _end;
+      }
+
+    private:
+      std::vector<token::type>::const_iterator _begin;
+      std::vector<token::type>::const_iterator _end;
+      std::vector<token::type>::const_iterator _pos;
+    };
+
+    typedef boost::unordered_map< petri_net::place_id_type
+                                , iterators_type
+                                > map_type;
+
+    bool step (map_type::iterator slot, const map_type::iterator& end)
+    {
+      ++slot->second;
+
+      if (slot->second.pos() == slot->second.end())
+      {
+        slot->second.rewind();
+
+        ++slot;
+
+        if (slot == end)
+        {
+          return false;
+        }
+        else
+        {
+          return step (slot, end);
+        }
+      }
+
+      return true;
+    }
+
+    bool eval (const map_type& m, const we::type::transition_t& transition)
+    {
+      if (transition.condition().expression() == "true")
+      {
+        return true;
+      }
+
+      expr::eval::context context;
+
+      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, m)
+      {
+        context.bind ( transition.name_of_place (pits.first)
+                     , pits.second.pos()->value
+                     );
+      }
+
+      return transition.condition().parser().eval_all_bool (context);
+    }
+
+    void write_to ( const map_type& m
+                  , std::vector<std::pair<place_id_type,token::type> >& choice
+                  )
+    {
+      choice.clear();
+
+      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, m)
+      {
+        choice.push_back (std::make_pair (pits.first, *pits.second.pos()));
+      }
+    }
+  }
+
   void net::update_enabled (const transition_id_type& tid)
   {
     cross::map_type m;
@@ -364,21 +463,12 @@ namespace petri_net
       {
         _enabled.insert (tid);
 
-        choice_vec_t& choice (_enabled_choice[tid]);
-
-        choice.clear();
-
-        BOOST_FOREACH ( const cross::map_type::const_iterator::value_type& pits
-                      , m
-                      )
-        {
-          choice.push_back (std::make_pair (pits.first, *pits.second.pos()));
-        }
+        cross::write_to (m, _enabled_choice[tid]);
 
         return;
       }
 
-      has_more = cross::step (m);
+      has_more = cross::step (m.begin(), m.end());
     }
 
     _enabled.erase (tid);
