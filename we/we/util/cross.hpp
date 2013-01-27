@@ -3,8 +3,6 @@
 #ifndef _UTIL_CROSS_HPP
 #define _UTIL_CROSS_HPP
 
-#include <we/util/it.hpp>
-
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
@@ -31,37 +29,6 @@ namespace cross
     typedef typename MAP::const_iterator map_it_t;
     typedef std::pair<key_t,val_t> ret_t;
     typedef std::vector<ret_t> vec_t;
-  };
-
-  template<typename MAP>
-  struct iterator
-  {
-  private:
-    typedef typename Traits<MAP>::map_it_t map_it_t;
-    typedef typename Traits<MAP>::ret_t ret_t;
-    typedef typename Traits<MAP>::key_t key_t;
-    typedef typename Traits<MAP>::val_t val_t;
-
-    map_it_t pos;
-    const map_it_t end;
-    pos_t::const_iterator state;
-
-  public:
-    iterator (const MAP & map, const pos_t & _pos)
-      : pos (map.begin())
-      , end (map.end())
-      , state(_pos.begin())
-    {}
-
-    bool has_more (void) const { return pos != end; }
-
-    void operator ++ (void) { if (has_more()) { ++pos; ++state; } }
-    const key_t & key (void) const { return pos->first; }
-    const val_t & val (void) const
-    {
-      return pos->second[*state % pos->second.size()];
-    }
-    ret_t operator * (void) const { return ret_t (key(), val()); }
   };
 
   namespace pred
@@ -183,8 +150,6 @@ namespace cross
                              , binop::product<unsigned long, MAP>
                              );
     }
-
-    iterator<MAP> operator * (void) const { return iterator<MAP> (map, pos); }
 
     bool eval
     ( const expr::parse::parser& parser
