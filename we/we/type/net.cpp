@@ -472,6 +472,7 @@ namespace petri_net
     }
 
     _enabled.erase (tid);
+    _enabled_choice.erase (tid);
   }
 
   we::mgmt::type::activity_t
