@@ -262,7 +262,8 @@ namespace petri_net
 
     _enabled.erase (tid);
     _enabled.erase_priority (tid);
-    _enabled_choice.erase (tid);
+    _enabled_choice_consume.erase (tid);
+    _enabled_choice_read.erase (tid);
   }
 
   place_id_type net::modify_place ( const place_id_type& pid
@@ -353,37 +354,32 @@ namespace petri_net
 
     cross::cross<token_by_place_id_t> cs (token_by_place_id);
 
-    const we::type::transition_t& transition (get_transition (tid));
-    const condition::type& condition (transition.condition());
-
-    if (condition.expression() == "true")
+    if (not get_transition (tid).condition()(cs))
+    {
+      _enabled.erase (tid);
+    }
+    else
     {
       _enabled.insert (tid);
 
-      cs.write_to (_enabled_choice[tid]);
+      _enabled_choice_consume[tid].clear();
+      _enabled_choice_read[tid].clear();
 
-      return;
-    }
-
-    for (; cs.has_more(); ++cs)
-    {
-      if (cs.eval ( condition.parser()
-                  , boost::bind ( &we::type::transition_t::name_of_place
-                                , &transition
-                                , _1
-                                )
-                  )
-         )
+      for ( cross::iterator<token_by_place_id_t> choice (*cs)
+          ; choice.has_more()
+          ; ++choice
+          )
       {
-        _enabled.insert (tid);
-
-        cs.write_to (_enabled_choice[tid]);
-
-        return;
+        if (is_read_connection (tid, choice.key()))
+        {
+          _enabled_choice_read[tid].push_back (*choice);
+        }
+        else
+        {
+          _enabled_choice_consume[tid].push_back (*choice);
+        }
       }
     }
-
-    _enabled.erase (tid);
   }
 
   we::mgmt::type::activity_t
@@ -392,38 +388,51 @@ namespace petri_net
     const we::type::transition_t& transition (get_transition (tid));
     we::mgmt::type::activity_t act (transition);
 
-    const choice_iterator_t choice_pos (_enabled_choice.find (tid));
+    const choice_iterator_t choice_consume (_enabled_choice_consume.find(tid));
+    const choice_iterator_t choice_read (_enabled_choice_read.find(tid));
 
-    assert (choice_pos != _enabled_choice.end());
+    assert (  (choice_consume != _enabled_choice_consume.end())
+           || (choice_read != _enabled_choice_read.end())
+           );
 
-    boost::unordered_set<transition_id_type> transitions_to_update;
+    const choice_vec_t choice_vec_consume (choice_consume->second);
+    _enabled_choice_consume.erase (choice_consume);
+    const choice_vec_t choice_vec_read (choice_read->second);
 
-    typedef std::pair<place_id_type, token::type> place_and_token_type;
-
-    BOOST_FOREACH (const place_and_token_type& pt, choice_pos->second)
+    for ( choice_vec_t::const_iterator choice (choice_vec_consume.begin())
+        ; choice != choice_vec_consume.end()
+        ; ++choice
+        )
     {
-      const place_id_type& pid (pt.first);
-      const token::type& token (pt.second);
+      const place_id_type& pid (choice->first);
+      const token::type& token (choice->second);
 
       act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
 
-      if (!is_read_connection (tid, pid))
-      {
-        std::vector<token::type>& tokens (_token_by_place_id[pid]);
-        tokens.erase (std::find (tokens.begin(), tokens.end(), token));
+      assert (not is_read_connection (tid, pid));
 
-        BOOST_FOREACH ( const transition_id_type& t
-                      , out_of_place (pid) | boost::adaptors::map_keys
-                      )
-        {
-          transitions_to_update.insert (t);
-        }
+      std::vector<token::type>& tokens (_token_by_place_id[pid]);
+      tokens.erase (std::find (tokens.begin(), tokens.end(), token));
+
+      BOOST_FOREACH ( const transition_id_type& t
+                    , out_of_place (pid) | boost::adaptors::map_keys
+                    )
+      {
+        update_enabled (t);
       }
     }
 
-    BOOST_FOREACH (const transition_id_type& t, transitions_to_update)
+    for ( choice_vec_t::const_iterator choice (choice_vec_read.begin())
+        ; choice != choice_vec_read.end()
+        ; ++choice
+        )
     {
-      update_enabled (t);
+      const place_id_type& pid (choice->first);
+      const token::type& token (choice->second);
+
+      assert (is_read_connection (tid, pid));
+
+      act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
     }
 
     return act;

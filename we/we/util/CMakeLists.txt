@@ -1,6 +1,7 @@
 # -*- mode: cmake; -*-
 set (hdrs
   cross.hpp
+  it.hpp
   stat.hpp
   token.hpp
   )

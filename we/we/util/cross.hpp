@@ -3,10 +3,7 @@
 #ifndef _UTIL_CROSS_HPP
 #define _UTIL_CROSS_HPP
 
-#include <we/expr/parse/parser.hpp>
-#include <we/expr/eval/context.hpp>
-
-#include <we/type/id.hpp>
+#include <we/util/it.hpp>
 
 #include <numeric>
 #include <vector>
@@ -14,7 +11,6 @@
 #include <fhg/assert.hpp>
 
 #include <boost/random.hpp>
-#include <boost/function.hpp>
 
 namespace cross
 {
@@ -29,6 +25,37 @@ namespace cross
     typedef typename MAP::const_iterator map_it_t;
     typedef std::pair<key_t,val_t> ret_t;
     typedef std::vector<ret_t> vec_t;
+  };
+
+  template<typename MAP>
+  struct iterator
+  {
+  private:
+    typedef typename Traits<MAP>::map_it_t map_it_t;
+    typedef typename Traits<MAP>::ret_t ret_t;
+    typedef typename Traits<MAP>::key_t key_t;
+    typedef typename Traits<MAP>::val_t val_t;
+
+    map_it_t pos;
+    const map_it_t end;
+    pos_t::const_iterator state;
+
+  public:
+    iterator (const MAP & map, const pos_t & _pos)
+      : pos (map.begin())
+      , end (map.end())
+      , state(_pos.begin())
+    {}
+
+    bool has_more (void) const { return pos != end; }
+
+    void operator ++ (void) { if (has_more()) { ++pos; ++state; } }
+    const key_t & key (void) const { return pos->first; }
+    const val_t & val (void) const
+    {
+      return pos->second[*state % pos->second.size()];
+    }
+    ret_t operator * (void) const { return ret_t (key(), val()); }
   };
 
   namespace pred
@@ -151,50 +178,7 @@ namespace cross
                              );
     }
 
-    bool eval
-    ( const expr::parse::parser& parser
-    , boost::function<std::string (const petri_net::place_id_type&)> translate
-    ) const
-    {
-      expr::eval::context context;
-
-      typename Traits<MAP>::map_it_t mpos (map.begin());
-      const typename Traits<MAP>::map_it_t mend (map.end());
-      pos_t::const_iterator state (pos.begin());
-
-      while (mpos != mend)
-      {
-        context.bind ( translate (mpos->first)
-                     , mpos->second[*state % mpos->second.size()].value
-                     );
-
-        ++mpos;
-        ++state;
-      }
-
-      return parser.eval_all_bool (context);
-    }
-
-    void write_to (std::vector<typename Traits<MAP>::ret_t>& v) const
-    {
-      v.clear();
-
-      typename Traits<MAP>::map_it_t mpos (map.begin());
-      const typename Traits<MAP>::map_it_t mend (map.end());
-      pos_t::const_iterator state (pos.begin());
-
-      while (mpos != mend)
-      {
-        v.push_back ( typename Traits<MAP>::ret_t
-                      ( mpos->first
-                      , mpos->second[*state % mpos->second.size()]
-                      )
-                    );
-
-        ++mpos;
-        ++state;
-      }
-    }
+    iterator<MAP> operator * (void) const { return iterator<MAP> (map, pos); }
   };
 }
 
