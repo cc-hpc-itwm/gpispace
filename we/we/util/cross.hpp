@@ -129,20 +129,6 @@ namespace cross
 
       return transition.condition().parser().eval_all_bool (context);
     }
-
-    void write_to ( std::vector<std::pair< petri_net::place_id_type
-                                         , token::type
-                                         >
-                               >& v
-                  ) const
-    {
-      v.clear();
-
-      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _map)
-      {
-        v.push_back (std::make_pair (pits.first, *pits.second.pos()));
-      }
-    }
   };
 }
 
