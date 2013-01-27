@@ -111,8 +111,7 @@ namespace petri_net
 
     priostore::type<transition_id_type> _enabled;
 
-    enabled_choice_t _enabled_choice_consume;
-    enabled_choice_t _enabled_choice_read;
+    enabled_choice_t _enabled_choice;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -126,8 +125,7 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP(_adj_tp);
       ar & BOOST_SERIALIZATION_NVP(_token_by_place_id);
       ar & BOOST_SERIALIZATION_NVP(_enabled);
-      ar & BOOST_SERIALIZATION_NVP(_enabled_choice_consume);
-      ar & BOOST_SERIALIZATION_NVP(_enabled_choice_read);
+      ar & BOOST_SERIALIZATION_NVP(_enabled_choice);
     }
 
     void update_enabled (const transition_id_type&);
