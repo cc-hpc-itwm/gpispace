@@ -9,8 +9,6 @@
 #include <we/type/token.hpp>
 #include <we/type/signature.hpp>
 
-#include <we/util/cross.hpp>
-
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>
 
