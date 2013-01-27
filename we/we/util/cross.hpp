@@ -40,23 +40,20 @@ namespace cross
   private:
     const token_by_place_id_t& map;
     pos_t pos;
-    pos_t shift;
     bool _has_more;
 
     void step ( std::size_t slot
               , token_by_place_id_t::const_iterator it
-              , pos_t::const_iterator s
               )
     {
       ++pos[slot];
 
-      if (pos[slot] == it->second.size() + *s)
+      if (pos[slot] == it->second.size())
         {
-          pos[slot] = *s;
+          pos[slot] = 0;
 
           ++slot;
           ++it;
-          ++s;
 
           if (it == map.end())
             {
@@ -64,7 +61,7 @@ namespace cross
             }
           else
             {
-              step (slot, it, s);
+              step (slot, it);
             }
         }
     }
@@ -84,52 +81,11 @@ namespace cross
     explicit cross (const token_by_place_id_t& _map)
       : map (_map)
       , pos (map.size(), 0)
-      , shift (map.size(), 0)
       , _has_more (determine_has_more())
     {}
 
-    // const and non-const version since the compiler chooses the
-    // non-template function first
-    cross (const token_by_place_id_t& _map, const pos_t & _shift)
-      : map (_map)
-      , pos (_shift)
-      , shift (_shift)
-      , _has_more (determine_has_more())
-    {
-      assert (shift.size() == map.size());
-    }
-
-    cross (const token_by_place_id_t& _map, pos_t & _shift)
-      : map (_map)
-      , pos (_shift)
-      , shift (_shift)
-      , _has_more (determine_has_more())
-    {
-      assert (shift.size() == map.size());
-    }
-
-    template<typename Engine>
-    cross (const token_by_place_id_t& _map, Engine & engine)
-      : map (_map)
-      , pos (map.size())
-      , shift (map.size())
-      , _has_more (determine_has_more())
-    {
-      pos_t::iterator s (shift.begin());
-      pos_t::iterator p (pos.begin());
-
-      BOOST_FOREACH ( const std::vector<token::type>& tokens
-                    , map | boost::adaptors::map_values
-                    )
-      {
-        boost::uniform_int<> dist (0, tokens.size() - 1);
-        *s = dist (engine);
-        *p++ = *s++;
-      }
-    }
-
     bool has_more (void) const { return _has_more; }
-    void operator ++ () { step (0, map.begin(), shift.begin()); }
+    void operator ++ () { step (0, map.begin()); }
 
     bool eval
     ( const condition::type& condition
