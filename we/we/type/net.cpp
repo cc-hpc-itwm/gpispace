@@ -358,7 +358,16 @@ namespace petri_net
       {
         _enabled.insert (tid);
 
-        cs.write_to (_enabled_choice[tid]);
+        choice_vec_t& choice (_enabled_choice[tid]);
+
+        choice.clear();
+
+        BOOST_FOREACH ( const cross::map_type::const_iterator::value_type& pits
+                      , m
+                      )
+        {
+          choice.push_back (std::make_pair (pits.first, *pits.second.pos()));
+        }
 
         return;
       }
