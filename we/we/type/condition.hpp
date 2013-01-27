@@ -22,29 +22,11 @@
 
 namespace condition
 {
-  namespace exception
-  {
-    class no_translator_given : std::runtime_error
-    {
-    public:
-      no_translator_given() : std::runtime_error ("no translator given") {};
-    };
-  }
-
-  static inline std::string no_trans (const petri_net::place_id_type&)
-  {
-    throw exception::no_translator_given();
-  }
-
   class type
   {
   private:
     std::string _expression;
     expr::parse::parser _parser;
-
-    typedef boost::function<std::string (const petri_net::place_id_type&)> translate_t;
-
-    translate_t _translate;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -67,24 +49,19 @@ namespace condition
                                 > tokens_by_place_id_t;
 
   public:
-    type ( const std::string& exp
-         , const translate_t& trans = &no_trans
-         )
+    type ( const std::string& exp)
       : _expression (exp)
         //! \todo do not initialize parser immediately, think of some other way
         // (pnetput should not parse the whole net just to put some tokens)
       , _parser (exp)
-      , _translate (trans)
     {}
 
     // should correspond!
     type ( const std::string& exp
          , const expr::parse::parser& p
-         , const translate_t& trans = &no_trans
          )
       : _expression (exp)
       , _parser (p)
-      , _translate (trans)
     {}
 
     const std::string& expression() const
