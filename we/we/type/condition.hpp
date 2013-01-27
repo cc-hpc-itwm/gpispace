@@ -115,6 +115,12 @@ namespace condition
       return _parser;
     }
 
+    const boost::function<std::string (const petri_net::place_id_type&)>&
+    translate() const
+    {
+      return _translate;
+    }
+
     bool is_const_true() const
     {
       try
