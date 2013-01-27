@@ -338,66 +338,77 @@ namespace petri_net
 
   namespace cross
   {
-    class iterators_type
+    namespace
     {
-    public:
-      explicit iterators_type (const std::vector<token::type>& tokens)
-        : _begin (tokens.begin())
-        , _end (tokens.end())
-        , _pos (tokens.begin())
-      {}
-      const std::vector<token::type>::const_iterator& end() const
+      class iterators_type
       {
-        return _end;
-      }
-      const std::vector<token::type>::const_iterator& pos() const
-      {
-        return _pos;
-      }
-      void operator++()
-      {
-        ++_pos;
-      }
-      void rewind()
-      {
-        _pos = _begin;
-      }
-      bool empty() const
-      {
-        return _begin == _end;
-      }
+      public:
+        explicit iterators_type (const std::vector<token::type>& tokens)
+          : _begin (tokens.begin())
+          , _end (tokens.end())
+          , _pos (tokens.begin())
+        {}
+        const std::vector<token::type>::const_iterator& end() const
+        {
+          return _end;
+        }
+        const std::vector<token::type>::const_iterator& pos() const
+        {
+          return _pos;
+        }
+        void operator++()
+        {
+          ++_pos;
+        }
+        void rewind()
+        {
+          _pos = _begin;
+        }
+        bool empty() const
+        {
+          return _begin == _end;
+        }
 
-    private:
-      std::vector<token::type>::const_iterator _begin;
-      std::vector<token::type>::const_iterator _end;
-      std::vector<token::type>::const_iterator _pos;
-    };
+      private:
+        std::vector<token::type>::const_iterator _begin;
+        std::vector<token::type>::const_iterator _end;
+        std::vector<token::type>::const_iterator _pos;
+      };
+    }
 
     typedef boost::unordered_map< petri_net::place_id_type
                                 , iterators_type
                                 > map_type;
 
-    bool step (map_type::iterator slot, const map_type::iterator& end)
+    namespace
     {
-      ++slot->second;
-
-      if (slot->second.pos() == slot->second.end())
+      bool step (map_type::iterator slot, const map_type::iterator& end)
       {
-        slot->second.rewind();
+        ++slot->second;
 
-        ++slot;
+        if (slot->second.pos() == slot->second.end())
+        {
+          slot->second.rewind();
 
-        if (slot == end)
-        {
-          return false;
+          ++slot;
+
+          if (slot == end)
+          {
+            return false;
+          }
+          else
+          {
+            return step (slot, end);
+          }
         }
-        else
-        {
-          return step (slot, end);
-        }
+
+        return true;
       }
+    }
 
-      return true;
+    bool step (map_type& m)
+    {
+      return step (m.begin(), m.end());
     }
 
     bool eval (const map_type& m, const we::type::transition_t& transition)
@@ -430,6 +441,14 @@ namespace petri_net
         choice.push_back (std::make_pair (pits.first, *pits.second.pos()));
       }
     }
+
+    void push ( map_type& m
+              , const place_id_type& place_id
+              , const std::vector<token::type>& tokens
+              )
+    {
+      m.insert (std::make_pair (place_id, iterators_type (tokens)));
+    }
   }
 
   void net::update_enabled (const transition_id_type& tid)
@@ -450,7 +469,7 @@ namespace petri_net
         return;
       }
 
-      m.insert (std::make_pair (place_id, cross::iterators_type (tokens)));
+      cross::push (m, place_id, tokens);
     }
 
     bool has_more (!m.empty());
@@ -468,7 +487,7 @@ namespace petri_net
         return;
       }
 
-      has_more = cross::step (m.begin(), m.end());
+      has_more = cross::step (m);
     }
 
     _enabled.erase (tid);
