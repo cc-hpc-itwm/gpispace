@@ -27,11 +27,11 @@ namespace condition
     class no_translator_given : std::runtime_error
     {
     public:
-      no_translator_given () : std::runtime_error ("no translator given") {};
+      no_translator_given() : std::runtime_error ("no translator given") {};
     };
   }
 
-  static inline std::string no_trans (const petri_net::place_id_type &)
+  static inline std::string no_trans (const petri_net::place_id_type&)
   {
     throw exception::no_translator_given();
   }
@@ -39,63 +39,64 @@ namespace condition
   class type
   {
   private:
-    std::string expression_;
-    expr::parse::parser parser;
+    std::string _expression;
+    expr::parse::parser _parser;
 
-    typedef boost::function<std::string (const petri_net::place_id_type &)> translate_t;
-    translate_t translate;
+    typedef boost::function<std::string (const petri_net::place_id_type&)> translate_t;
+
+    translate_t _translate;
 
     friend class boost::serialization::access;
     template<typename Archive>
-    void save(Archive & ar, const unsigned int) const
+    void save(Archive& ar, const unsigned int) const
     {
-      ar & BOOST_SERIALIZATION_NVP(expression_);
+      ar & BOOST_SERIALIZATION_NVP (_expression);
     }
     template <typename Archive>
-    void load(Archive & ar, const unsigned int)
+    void load(Archive& ar, const unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(expression_);
-      parser = expr::parse::parser(expression_);
+      ar & BOOST_SERIALIZATION_NVP (_expression);
+      _parser = expr::parse::parser (_expression);
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-    friend std::ostream & operator<<(std::ostream &, const type &);
+    friend std::ostream& operator<< (std::ostream&, const type&);
 
     typedef boost::unordered_map< petri_net::place_id_type
                                 , std::vector<token::type>
                                 > tokens_by_place_id_t;
 
   public:
-    type ( const std::string & _expression
-         , const translate_t & _translate = &no_trans
+    type ( const std::string& exp
+         , const translate_t& trans = &no_trans
          )
-      : expression_ (_expression)
+      : _expression (exp)
         //! \todo do not initialize parser immediately, think of some other way
         // (pnetput should not parse the whole net just to put some tokens)
-      , parser (_expression)
-      , translate (_translate)
+      , _parser (exp)
+      , _translate (trans)
     {}
 
     // should correspond!
-    type ( const std::string & _expression
-         , const expr::parse::parser& _parser
-         , const translate_t & _translate = &no_trans
+    type ( const std::string& exp
+         , const expr::parse::parser& p
+         , const translate_t& trans = &no_trans
          )
-      : expression_ (_expression)
-      , parser (_parser)
-      , translate (_translate)
+      : _expression (exp)
+      , _parser (p)
+      , _translate (trans)
     {}
 
-    bool operator () (cross::cross<tokens_by_place_id_t>& choices) const
+    bool operator() (cross::cross<tokens_by_place_id_t>& choices) const
     {
-      if (expression_ == "true")
+      if (_expression == "true")
         {
           return true;
         }
 
       for (; choices.has_more(); ++choices)
         {
-          if (choices.eval (parser, translate))
+          if (choices.eval (_parser, _translate))
           {
             return true;
           }
@@ -104,31 +105,31 @@ namespace condition
       return false;
     }
 
-    const std::string & expression() const
+    const std::string& expression() const
     {
-      return expression_;
+      return _expression;
     }
 
-    bool is_const_true () const
+    bool is_const_true() const
     {
       try
         {
-          return parser.eval_all_bool ();
+          return _parser.eval_all_bool();
         }
-      catch (const expr::exception::eval::type_error &)
+      catch (const expr::exception::eval::type_error&)
         {
           return false;
         }
-      catch (const value::container::exception::missing_binding &)
+      catch (const value::container::exception::missing_binding&)
         {
           return false;
         }
     }
   };
 
-  inline std::ostream & operator << (std::ostream & os, const type & c)
+  inline std::ostream& operator << (std::ostream& os, const type& c)
   {
-    return os << c.expression_;
+    return os << c._expression;
   }
 }
 
