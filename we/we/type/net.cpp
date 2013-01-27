@@ -335,25 +335,20 @@ namespace petri_net
 
   void net::update_enabled (const transition_id_type& tid)
   {
-    token_by_place_id_t token_by_place_id;
+    cross::map_type m;
 
     BOOST_FOREACH ( const place_id_type& place_id
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      if (_token_by_place_id[place_id].empty())
-      {
-        _enabled.erase (tid);
-
-        return;
-      }
-      else
-      {
-        token_by_place_id[place_id] = _token_by_place_id[place_id];
-      }
+      m.insert ( std::make_pair
+                 ( place_id
+                 , cross::iterators_type (_token_by_place_id[place_id])
+                 )
+               );
     }
 
-    cross::cross cs (token_by_place_id);
+    cross::cross cs (m);
 
     const we::type::transition_t& transition (get_transition (tid));
 

@@ -17,43 +17,76 @@
 
 namespace cross
 {
+  class iterators_type
+  {
+  public:
+    explicit iterators_type (const std::vector<token::type>& tokens)
+      : _begin (tokens.begin())
+      , _end (tokens.end())
+      , _pos (tokens.begin())
+    {}
+    const std::vector<token::type>::const_iterator& end() const
+    {
+      return _end;
+    }
+    const std::vector<token::type>::const_iterator& pos() const
+    {
+      return _pos;
+    }
+    void operator++()
+    {
+      ++_pos;
+    }
+    void rewind()
+    {
+      _pos = _begin;
+    }
+    bool empty() const
+    {
+      return _begin == _end;
+    }
+
+  private:
+    std::vector<token::type>::const_iterator _begin;
+    std::vector<token::type>::const_iterator _end;
+    std::vector<token::type>::const_iterator _pos;
+  };
+
   typedef boost::unordered_map< petri_net::place_id_type
-                              , std::vector<token::type>
-                              > token_by_place_id_t;
+                              , iterators_type
+                              > map_type;
 
   namespace pred
   {
-    bool second_empty (const token_by_place_id_t::const_iterator::value_type& v)
+    bool second_empty (const map_type::const_iterator::value_type& pits)
     {
-      return v.second.empty();
+      return pits.second.empty();
     }
   }
 
   class cross
   {
   private:
-    const token_by_place_id_t& _map;
-    std::vector<std::size_t> _pos;
+    map_type& _map;
     bool _has_more;
 
-    void step (std::size_t slot, token_by_place_id_t::const_iterator it)
+    void step (map_type::iterator slot)
     {
-      ++_pos[slot];
+      ++slot->second;
 
-      if (_pos[slot] == it->second.size())
+      if (slot->second.pos() == slot->second.end())
         {
-          _pos[slot] = 0;
+          slot->second.rewind();
 
           ++slot;
-          ++it;
 
-          if (it == _map.end())
+          if (slot == _map.end())
             {
-              _has_more = false;
+              _has_more= false;
             }
           else
             {
-              step (slot, it);
+              step (slot);
             }
         }
     }
@@ -70,14 +103,13 @@ namespace cross
     }
 
   public:
-    explicit cross (const token_by_place_id_t& map)
+    explicit cross (map_type& map)
       : _map (map)
-      , _pos (_map.size(), 0)
       , _has_more (determine_has_more())
     {}
 
     bool has_more() const { return _has_more; }
-    void operator++() { step (0, _map.begin()); }
+    void operator++() { step (_map.begin()); }
 
     bool eval
     ( const condition::type& condition
@@ -91,18 +123,9 @@ namespace cross
 
       expr::eval::context context;
 
-      token_by_place_id_t::const_iterator mpos (_map.begin());
-      const token_by_place_id_t::const_iterator mend (_map.end());
-      std::vector<std::size_t>::const_iterator state (_pos.begin());
-
-      while (mpos != mend)
+      BOOST_FOREACH (const map_type::const_iterator::value_type pits, _map)
       {
-        context.bind ( translate (mpos->first)
-                     , mpos->second[*state % mpos->second.size()].value
-                     );
-
-        ++mpos;
-        ++state;
+        context.bind (translate (pits.first), pits.second.pos()->value);
       }
 
       return condition.parser().eval_all_bool (context);
@@ -116,20 +139,9 @@ namespace cross
     {
       v.clear();
 
-      token_by_place_id_t::const_iterator mpos (_map.begin());
-      const token_by_place_id_t::const_iterator mend (_map.end());
-      std::vector<std::size_t>::const_iterator state (_pos.begin());
-
-      while (mpos != mend)
+      BOOST_FOREACH (const map_type::const_iterator::value_type pits, _map)
       {
-        v.push_back ( std::make_pair
-                      ( mpos->first
-                      , mpos->second[*state % mpos->second.size()]
-                      )
-                    );
-
-        ++mpos;
-        ++state;
+        v.push_back (std::make_pair (pits.first, *pits.second.pos()));
       }
     }
   };
