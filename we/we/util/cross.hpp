@@ -34,15 +34,6 @@ namespace cross
     }
   }
 
-  namespace binop
-  {
-    template<typename T, typename MAP>
-    T product (T x, const typename MAP::const_iterator::value_type& v)
-    {
-      return x * v.second.size();
-    }
-  }
-
   class cross
   {
   private:
@@ -135,14 +126,6 @@ namespace cross
 
     bool has_more (void) const { return _has_more; }
     void operator ++ () { step (0, map.begin(), shift.begin()); }
-
-    unsigned long size (void) const
-    {
-      return std::accumulate ( map.begin(), map.end()
-                             , 1UL
-                             , binop::product<unsigned long, token_by_place_id_t>
-                             );
-    }
 
     bool eval
     ( const condition::type& condition
