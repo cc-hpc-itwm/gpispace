@@ -353,7 +353,7 @@ namespace petri_net
       }
     }
 
-    cross::cross<token_by_place_id_t> cs (token_by_place_id);
+    cross::cross cs (token_by_place_id);
 
     const we::type::transition_t& transition (get_transition (tid));
 

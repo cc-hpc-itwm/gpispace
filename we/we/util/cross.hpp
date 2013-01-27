@@ -19,18 +19,11 @@
 
 namespace cross
 {
-  typedef std::vector<std::size_t> pos_t;
+  typedef boost::unordered_map< petri_net::place_id_type
+                              , std::vector<token::type>
+                              > token_by_place_id_t;
 
-  template<typename MAP>
-  struct Traits
-  {
-  public:
-    typedef typename MAP::mapped_type::value_type val_t;
-    typedef typename MAP::key_type key_t;
-    typedef typename MAP::const_iterator map_it_t;
-    typedef std::pair<key_t,val_t> ret_t;
-    typedef std::vector<ret_t> vec_t;
-  };
+  typedef std::vector<std::size_t> pos_t;
 
   namespace pred
   {
@@ -50,16 +43,15 @@ namespace cross
     }
   }
 
-  template<typename MAP>
   class cross
   {
   private:
-    const MAP & map;
+    const token_by_place_id_t& map;
     pos_t pos;
     pos_t shift;
     bool _has_more;
 
-    typedef typename Traits<MAP>::map_it_t it_t;
+    typedef token_by_place_id_t::const_iterator it_t;
 
     void step (std::size_t slot, it_t it, pos_t::const_iterator s)
     {
@@ -89,14 +81,14 @@ namespace cross
       return
         (not map.empty())
         &&
-        (  std::find_if (map.begin(), map.end(), pred::second_empty<MAP>)
+        (  std::find_if (map.begin(), map.end(), pred::second_empty<token_by_place_id_t>)
         == map.end()
         )
         ;
     }
 
   public:
-    explicit cross (const MAP & _map)
+    explicit cross (const token_by_place_id_t& _map)
       : map (_map)
       , pos (map.size(), 0)
       , shift (map.size(), 0)
@@ -105,7 +97,7 @@ namespace cross
 
     // const and non-const version since the compiler chooses the
     // non-template function first
-    cross (const MAP & _map, const pos_t & _shift)
+    cross (const token_by_place_id_t& _map, const pos_t & _shift)
       : map (_map)
       , pos (_shift)
       , shift (_shift)
@@ -114,7 +106,7 @@ namespace cross
       assert (shift.size() == map.size());
     }
 
-    cross (const MAP & _map, pos_t & _shift)
+    cross (const token_by_place_id_t& _map, pos_t & _shift)
       : map (_map)
       , pos (_shift)
       , shift (_shift)
@@ -124,7 +116,7 @@ namespace cross
     }
 
     template<typename Engine>
-    cross (const MAP & _map, Engine & engine)
+    cross (const token_by_place_id_t& _map, Engine & engine)
       : map (_map)
       , pos (map.size())
       , shift (map.size())
@@ -148,7 +140,7 @@ namespace cross
     {
       return std::accumulate ( map.begin(), map.end()
                              , 1UL
-                             , binop::product<unsigned long, MAP>
+                             , binop::product<unsigned long, token_by_place_id_t>
                              );
     }
 
@@ -164,8 +156,8 @@ namespace cross
 
       expr::eval::context context;
 
-      typename Traits<MAP>::map_it_t mpos (map.begin());
-      const typename Traits<MAP>::map_it_t mend (map.end());
+      token_by_place_id_t::const_iterator mpos (map.begin());
+      const token_by_place_id_t::const_iterator mend (map.end());
       pos_t::const_iterator state (pos.begin());
 
       while (mpos != mend)
@@ -181,17 +173,21 @@ namespace cross
       return condition.parser().eval_all_bool (context);
     }
 
-    void write_to (std::vector<typename Traits<MAP>::ret_t>& v) const
+    void write_to ( std::vector<std::pair< petri_net::place_id_type
+                                         , token::type
+                                         >
+                               >& v
+                  ) const
     {
       v.clear();
 
-      typename Traits<MAP>::map_it_t mpos (map.begin());
-      const typename Traits<MAP>::map_it_t mend (map.end());
+      token_by_place_id_t::const_iterator mpos (map.begin());
+      const token_by_place_id_t::const_iterator mend (map.end());
       pos_t::const_iterator state (pos.begin());
 
       while (mpos != mend)
       {
-        v.push_back ( typename Traits<MAP>::ret_t
+        v.push_back ( std::make_pair
                       ( mpos->first
                       , mpos->second[*state % mpos->second.size()]
                       )
