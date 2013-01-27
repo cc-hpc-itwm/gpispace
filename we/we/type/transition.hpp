@@ -122,6 +122,7 @@ namespace we { namespace type {
         static const bool value = false;
       };
 
+      //! \todo eliminate this class and use we::type::condition instead
       struct preparsed_condition
       {
         // should correspond!
