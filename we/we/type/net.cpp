@@ -353,16 +353,31 @@ namespace petri_net
 
     cross::cross<token_by_place_id_t> cs (token_by_place_id);
 
-    if (not get_transition (tid).condition()(cs))
-    {
-      _enabled.erase (tid);
-    }
-    else
+    const we::type::transition_t& transition (get_transition (tid));
+    const condition::type& condition (transition.condition());
+
+    if (condition.expression() == "true")
     {
       _enabled.insert (tid);
 
       cs.write_to (_enabled_choice[tid]);
+
+      return;
     }
+
+    for (; cs.has_more(); ++cs)
+    {
+      if (cs.eval (condition.parser(), condition.translate()))
+      {
+        _enabled.insert (tid);
+
+        cs.write_to (_enabled_choice[tid]);
+
+        return;
+      }
+    }
+
+    _enabled.erase (tid);
   }
 
   we::mgmt::type::activity_t
