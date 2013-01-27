@@ -5,12 +5,18 @@
 
 #include <we/util/it.hpp>
 
+#include <we/expr/parse/parser.hpp>
+#include <we/expr/eval/context.hpp>
+
+#include <we/type/id.hpp>
+
 #include <numeric>
 #include <vector>
 
 #include <fhg/assert.hpp>
 
 #include <boost/random.hpp>
+#include <boost/function.hpp>
 
 namespace cross
 {
@@ -179,6 +185,30 @@ namespace cross
     }
 
     iterator<MAP> operator * (void) const { return iterator<MAP> (map, pos); }
+
+    bool eval
+    ( const expr::parse::parser& parser
+    , boost::function<std::string (const petri_net::place_id_type&)> translate
+    ) const
+    {
+      expr::eval::context context;
+
+      typename Traits<MAP>::map_it_t mpos (map.begin());
+      const typename Traits<MAP>::map_it_t mend (map.end());
+      pos_t::const_iterator state (pos.begin());
+
+      while (mpos != mend)
+      {
+        context.bind ( translate (mpos->first)
+                     , mpos->second[*state % mpos->second.size()].value
+                     );
+
+        ++mpos;
+        ++state;
+      }
+
+      return parser.eval_all_bool (context);
+    }
 
     void write_to (std::vector<typename Traits<MAP>::ret_t>& v) const
     {
