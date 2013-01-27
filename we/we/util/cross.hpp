@@ -16,6 +16,8 @@
 
 #include <boost/random.hpp>
 #include <boost/function.hpp>
+#include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace cross
 {
@@ -41,9 +43,10 @@ namespace cross
     pos_t shift;
     bool _has_more;
 
-    typedef token_by_place_id_t::const_iterator it_t;
-
-    void step (std::size_t slot, it_t it, pos_t::const_iterator s)
+    void step ( std::size_t slot
+              , token_by_place_id_t::const_iterator it
+              , pos_t::const_iterator s
+              )
     {
       ++pos[slot];
 
@@ -115,12 +118,14 @@ namespace cross
       pos_t::iterator s (shift.begin());
       pos_t::iterator p (pos.begin());
 
-      for (it_t m (map.begin()), end (map.end()); m != end; ++m)
-        {
-          boost::uniform_int<> dist (0, m->second.size() - 1);
-          *s = dist (engine);
-          *p++ = *s++;
-        }
+      BOOST_FOREACH ( const std::vector<token::type>& tokens
+                    , map | boost::adaptors::map_values
+                    )
+      {
+        boost::uniform_int<> dist (0, tokens.size() - 1);
+        *s = dist (engine);
+        *p++ = *s++;
+      }
     }
 
     bool has_more (void) const { return _has_more; }
