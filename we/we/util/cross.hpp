@@ -9,12 +9,8 @@
 #include <we/type/id.hpp>
 #include <we/type/condition.hpp>
 
-#include <numeric>
 #include <vector>
 
-#include <fhg/assert.hpp>
-
-#include <boost/random.hpp>
 #include <boost/function.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
