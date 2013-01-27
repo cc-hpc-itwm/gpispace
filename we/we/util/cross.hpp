@@ -179,6 +179,27 @@ namespace cross
     }
 
     iterator<MAP> operator * (void) const { return iterator<MAP> (map, pos); }
+
+    void write_to (std::vector<typename Traits<MAP>::ret_t>& v) const
+    {
+      v.clear();
+
+      typename Traits<MAP>::map_it_t mpos (map.begin());
+      const typename Traits<MAP>::map_it_t mend (map.end());
+      pos_t::const_iterator state (pos.begin());
+
+      while (mpos != mend)
+      {
+        v.push_back ( typename Traits<MAP>::ret_t
+                      ( mpos->first
+                      , mpos->second[*state % mpos->second.size()]
+                      )
+                    );
+
+        ++mpos;
+        ++state;
+      }
+    }
   };
 }
 
