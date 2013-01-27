@@ -15,6 +15,7 @@
 #include <boost/serialization/access.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/random.hpp>
 
 #include <vector>
 
