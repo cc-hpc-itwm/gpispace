@@ -123,7 +123,7 @@ namespace cross
 
       expr::eval::context context;
 
-      BOOST_FOREACH (const map_type::const_iterator::value_type pits, _map)
+      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _map)
       {
         context.bind (translate (pits.first), pits.second.pos()->value);
       }
@@ -139,7 +139,7 @@ namespace cross
     {
       v.clear();
 
-      BOOST_FOREACH (const map_type::const_iterator::value_type pits, _map)
+      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _map)
       {
         v.push_back (std::make_pair (pits.first, *pits.second.pos()));
       }
