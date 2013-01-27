@@ -111,6 +111,13 @@ namespace expr
       return eval_all (c);
     }
 
+    bool parser::eval_all_bool() const
+    {
+      eval::context c;
+
+      return eval_all_bool (c);
+    }
+
     void parser::rename ( const key_vec_t::value_type & from
                         , const key_vec_t::value_type & to
                         )
