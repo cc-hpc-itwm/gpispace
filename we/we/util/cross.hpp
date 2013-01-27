@@ -27,8 +27,7 @@ namespace cross
 
   namespace pred
   {
-    template<typename MAP>
-    bool second_empty (const typename MAP::const_iterator::value_type& v)
+    bool second_empty (const token_by_place_id_t::const_iterator::value_type& v)
     {
       return v.second.empty();
     }
@@ -72,7 +71,7 @@ namespace cross
       return
         (not map.empty())
         &&
-        (  std::find_if (map.begin(), map.end(), pred::second_empty<token_by_place_id_t>)
+        (  std::find_if (map.begin(), map.end(), pred::second_empty)
         == map.end()
         )
         ;
