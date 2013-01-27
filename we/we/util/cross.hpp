@@ -8,10 +8,10 @@
 
 #include <we/type/id.hpp>
 #include <we/type/condition.hpp>
+#include <we/type/transition.hpp>
 
 #include <vector>
 
-#include <boost/function.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 
@@ -111,12 +111,9 @@ namespace cross
     bool has_more() const { return _has_more; }
     void operator++() { step (_map.begin()); }
 
-    bool eval
-    ( const condition::type& condition
-    , boost::function<std::string (const petri_net::place_id_type&)> translate
-    ) const
+    bool eval (const we::type::transition_t& transition) const
     {
-      if (condition.expression() == "true")
+      if (transition.condition().expression() == "true")
       {
         return true;
       }
@@ -125,10 +122,12 @@ namespace cross
 
       BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _map)
       {
-        context.bind (translate (pits.first), pits.second.pos()->value);
+        context.bind ( transition.name_of_place (pits.first)
+                     , pits.second.pos()->value
+                     );
       }
 
-      return condition.parser().eval_all_bool (context);
+      return transition.condition().parser().eval_all_bool (context);
     }
 
     void write_to ( std::vector<std::pair< petri_net::place_id_type
