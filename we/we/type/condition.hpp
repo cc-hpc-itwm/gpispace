@@ -87,24 +87,6 @@ namespace condition
       , _translate (trans)
     {}
 
-    bool operator() (cross::cross<tokens_by_place_id_t>& choices) const
-    {
-      if (_expression == "true")
-        {
-          return true;
-        }
-
-      for (; choices.has_more(); ++choices)
-        {
-          if (choices.eval (_parser, _translate))
-          {
-            return true;
-          }
-        }
-
-      return false;
-    }
-
     const std::string& expression() const
     {
       return _expression;
