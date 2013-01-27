@@ -4,7 +4,6 @@
 #define _WE_TYPE_CONDITION_HPP
 
 #include <we/expr/parse/parser.hpp>
-#include <we/expr/eval/context.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/token.hpp>
@@ -41,12 +40,10 @@ namespace condition
   {
   public:
     typedef expr::parse::parser parser_t;
-    typedef expr::eval::context context_t;
 
   private:
     std::string expression_;
     parser_t parser;
-    mutable context_t context;
 
     typedef boost::function<std::string (const petri_net::place_id_type &)> translate_t;
     translate_t translate;
@@ -79,7 +76,6 @@ namespace condition
         //! \todo do not initialize parser immediately, think of some other way
         // (pnetput should not parse the whole net just to put some tokens)
       , parser (_expression)
-      , context ()
       , translate (_translate)
     {}
 
@@ -90,7 +86,6 @@ namespace condition
          )
       : expression_ (_expression)
       , parser (_parser)
-      , context ()
       , translate (_translate)
     {}
 
@@ -121,9 +116,7 @@ namespace condition
     {
       try
         {
-          context_t empty_context;
-
-          return parser.eval_all_bool (empty_context);
+          return parser.eval_all_bool ();
         }
       catch (const expr::exception::eval::type_error &)
         {
