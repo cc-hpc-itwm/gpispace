@@ -21,8 +21,6 @@ namespace cross
                               , std::vector<token::type>
                               > token_by_place_id_t;
 
-  typedef std::vector<std::size_t> pos_t;
-
   namespace pred
   {
     bool second_empty (const token_by_place_id_t::const_iterator::value_type& v)
@@ -35,7 +33,7 @@ namespace cross
   {
   private:
     const token_by_place_id_t& _map;
-    pos_t _pos;
+    std::vector<std::size_t> _pos;
     bool _has_more;
 
     void step (std::size_t slot, token_by_place_id_t::const_iterator it)
@@ -95,7 +93,7 @@ namespace cross
 
       token_by_place_id_t::const_iterator mpos (_map.begin());
       const token_by_place_id_t::const_iterator mend (_map.end());
-      pos_t::const_iterator state (_pos.begin());
+      std::vector<std::size_t>::const_iterator state (_pos.begin());
 
       while (mpos != mend)
       {
@@ -120,7 +118,7 @@ namespace cross
 
       token_by_place_id_t::const_iterator mpos (_map.begin());
       const token_by_place_id_t::const_iterator mend (_map.end());
-      pos_t::const_iterator state (_pos.begin());
+      std::vector<std::size_t>::const_iterator state (_pos.begin());
 
       while (mpos != mend)
       {
