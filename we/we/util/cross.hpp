@@ -34,24 +34,22 @@ namespace cross
   class cross
   {
   private:
-    const token_by_place_id_t& map;
-    pos_t pos;
+    const token_by_place_id_t& _map;
+    pos_t _pos;
     bool _has_more;
 
-    void step ( std::size_t slot
-              , token_by_place_id_t::const_iterator it
-              )
+    void step (std::size_t slot, token_by_place_id_t::const_iterator it)
     {
-      ++pos[slot];
+      ++_pos[slot];
 
-      if (pos[slot] == it->second.size())
+      if (_pos[slot] == it->second.size())
         {
-          pos[slot] = 0;
+          _pos[slot] = 0;
 
           ++slot;
           ++it;
 
-          if (it == map.end())
+          if (it == _map.end())
             {
               _has_more = false;
             }
@@ -62,26 +60,26 @@ namespace cross
         }
     }
 
-    bool determine_has_more (void) const
+    bool determine_has_more() const
     {
       return
-        (not map.empty())
+        (not _map.empty())
         &&
-        (  std::find_if (map.begin(), map.end(), pred::second_empty)
-        == map.end()
+        (  std::find_if (_map.begin(), _map.end(), pred::second_empty)
+        == _map.end()
         )
         ;
     }
 
   public:
-    explicit cross (const token_by_place_id_t& _map)
-      : map (_map)
-      , pos (map.size(), 0)
+    explicit cross (const token_by_place_id_t& map)
+      : _map (map)
+      , _pos (_map.size(), 0)
       , _has_more (determine_has_more())
     {}
 
-    bool has_more (void) const { return _has_more; }
-    void operator ++ () { step (0, map.begin()); }
+    bool has_more() const { return _has_more; }
+    void operator++() { step (0, _map.begin()); }
 
     bool eval
     ( const condition::type& condition
@@ -95,9 +93,9 @@ namespace cross
 
       expr::eval::context context;
 
-      token_by_place_id_t::const_iterator mpos (map.begin());
-      const token_by_place_id_t::const_iterator mend (map.end());
-      pos_t::const_iterator state (pos.begin());
+      token_by_place_id_t::const_iterator mpos (_map.begin());
+      const token_by_place_id_t::const_iterator mend (_map.end());
+      pos_t::const_iterator state (_pos.begin());
 
       while (mpos != mend)
       {
@@ -120,9 +118,9 @@ namespace cross
     {
       v.clear();
 
-      token_by_place_id_t::const_iterator mpos (map.begin());
-      const token_by_place_id_t::const_iterator mend (map.end());
-      pos_t::const_iterator state (pos.begin());
+      token_by_place_id_t::const_iterator mpos (_map.begin());
+      const token_by_place_id_t::const_iterator mend (_map.end());
+      pos_t::const_iterator state (_pos.begin());
 
       while (mpos != mend)
       {
