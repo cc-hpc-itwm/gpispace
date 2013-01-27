@@ -753,7 +753,7 @@ namespace we { namespace type {
         return get_port (port).name();
       }
 
-      const std::string& name_of_place (const petri_net::place_id_type& pid)
+      const std::string& name_of_place (const petri_net::place_id_type& pid) const
       {
         return get_port (outer_to_inner (pid)).name();
       }
