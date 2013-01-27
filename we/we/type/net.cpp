@@ -367,7 +367,13 @@ namespace petri_net
 
     for (; cs.has_more(); ++cs)
     {
-      if (cs.eval (condition.parser(), condition.translate()))
+      if (cs.eval ( condition.parser()
+                  , boost::bind ( &we::type::transition_t::name_of_place
+                                , &transition
+                                , _1
+                                )
+                  )
+         )
       {
         _enabled.insert (tid);
 
