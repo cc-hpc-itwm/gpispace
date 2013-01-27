@@ -7,6 +7,7 @@
 #include <we/expr/eval/context.hpp>
 
 #include <we/type/id.hpp>
+#include <we/type/condition.hpp>
 
 #include <numeric>
 #include <vector>
@@ -152,10 +153,15 @@ namespace cross
     }
 
     bool eval
-    ( const expr::parse::parser& parser
+    ( const condition::type& condition
     , boost::function<std::string (const petri_net::place_id_type&)> translate
     ) const
     {
+      if (condition.expression() == "true")
+      {
+        return true;
+      }
+
       expr::eval::context context;
 
       typename Traits<MAP>::map_it_t mpos (map.begin());
@@ -172,7 +178,7 @@ namespace cross
         ++state;
       }
 
-      return parser.eval_all_bool (context);
+      return condition.parser().eval_all_bool (context);
     }
 
     void write_to (std::vector<typename Traits<MAP>::ret_t>& v) const

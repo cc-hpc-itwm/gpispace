@@ -2,6 +2,8 @@
 
 #include <we/type/net.hpp>
 
+#include <we/util/cross.hpp>
+
 #include <fhg/assert.hpp>
 
 #include <boost/function.hpp>
@@ -354,20 +356,10 @@ namespace petri_net
     cross::cross<token_by_place_id_t> cs (token_by_place_id);
 
     const we::type::transition_t& transition (get_transition (tid));
-    const condition::type& condition (transition.condition());
 
-    if (condition.expression() == "true")
+    while (cs.has_more())
     {
-      _enabled.insert (tid);
-
-      cs.write_to (_enabled_choice[tid]);
-
-      return;
-    }
-
-    for (; cs.has_more(); ++cs)
-    {
-      if (cs.eval ( condition.parser()
+      if (cs.eval ( transition.condition()
                   , boost::bind ( &we::type::transition_t::name_of_place
                                 , &transition
                                 , _1
@@ -381,6 +373,8 @@ namespace petri_net
 
         return;
       }
+
+      ++cs;
     }
 
     _enabled.erase (tid);
