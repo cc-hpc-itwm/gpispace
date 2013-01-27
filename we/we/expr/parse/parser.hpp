@@ -111,6 +111,7 @@ namespace expr
       bool eval_all_bool (eval::context & context) const;
 
       value::type eval_all() const;
+      bool eval_all_bool() const;
 
       void rename ( const key_vec_t::value_type & from
                   , const key_vec_t::value_type & to
