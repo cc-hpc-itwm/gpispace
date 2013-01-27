@@ -21,6 +21,8 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-format-zero-length")
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
+set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-attributes")
+
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wnon-virtual-dtor")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-system-headers")
 
