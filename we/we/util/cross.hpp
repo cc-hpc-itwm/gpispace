@@ -82,7 +82,7 @@ namespace cross
 
           if (slot == _map.end())
             {
-              _has_more= false;
+              _has_more = false;
             }
           else
             {
