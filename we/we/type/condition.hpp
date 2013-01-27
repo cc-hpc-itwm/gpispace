@@ -103,21 +103,10 @@ namespace condition
 
       for (; choices.has_more(); ++choices)
         {
-          for ( cross::iterator<tokens_by_place_id_t> choice (*choices)
-              ; choice.has_more()
-              ; ++choice
-              )
-            {
-              const petri_net::place_id_type & pid (choice.key());
-              const token::type & token (choice.val());
-
-              context.bind (translate (pid), token.value);
-            }
-
-          if (parser.eval_all_bool (context))
-            {
-              return true;
-            }
+          if (choices.eval (parser, translate))
+          {
+            return true;
+          }
         }
 
       return false;
