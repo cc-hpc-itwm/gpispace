@@ -56,80 +56,52 @@ namespace cross
                               , iterators_type
                               > map_type;
 
-  namespace pred
+  inline bool step (map_type::iterator slot, const map_type::iterator& end)
   {
-    bool second_empty (const map_type::const_iterator::value_type& pits)
+    ++slot->second;
+
+    if (slot->second.pos() == slot->second.end())
     {
-      return pits.second.empty();
+      slot->second.rewind();
+
+      ++slot;
+
+      if (slot == end)
+      {
+        return false;
+      }
+      else
+      {
+        return step (slot, end);
+      }
     }
+
+    return true;
   }
 
-  class cross
+  inline bool step (map_type& m)
   {
-  private:
-    map_type& _map;
-    bool _has_more;
+    return step (m.begin(), m.end());
+  }
 
-    void step (map_type::iterator slot)
+  inline bool eval (const map_type& m, const we::type::transition_t& transition)
+  {
+    if (transition.condition().expression() == "true")
     {
-      ++slot->second;
-
-      if (slot->second.pos() == slot->second.end())
-        {
-          slot->second.rewind();
-
-          ++slot;
-
-          if (slot == _map.end())
-            {
-              _has_more = false;
-            }
-          else
-            {
-              step (slot);
-            }
-        }
+      return true;
     }
 
-    bool determine_has_more() const
+    expr::eval::context context;
+
+    BOOST_FOREACH (const map_type::const_iterator::value_type& pits, m)
     {
-      return
-        (not _map.empty())
-        &&
-        (  std::find_if (_map.begin(), _map.end(), pred::second_empty)
-        == _map.end()
-        )
-        ;
+      context.bind ( transition.name_of_place (pits.first)
+                   , pits.second.pos()->value
+                   );
     }
 
-  public:
-    explicit cross (map_type& map)
-      : _map (map)
-      , _has_more (determine_has_more())
-    {}
-
-    bool has_more() const { return _has_more; }
-    void operator++() { step (_map.begin()); }
-
-    bool eval (const we::type::transition_t& transition) const
-    {
-      if (transition.condition().expression() == "true")
-      {
-        return true;
-      }
-
-      expr::eval::context context;
-
-      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _map)
-      {
-        context.bind ( transition.name_of_place (pits.first)
-                     , pits.second.pos()->value
-                     );
-      }
-
-      return transition.condition().parser().eval_all_bool (context);
-    }
-  };
+    return transition.condition().parser().eval_all_bool (context);
+  }
 }
 
 #endif

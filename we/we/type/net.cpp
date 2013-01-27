@@ -341,20 +341,26 @@ namespace petri_net
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      m.insert ( std::make_pair
-                 ( place_id
-                 , cross::iterators_type (_token_by_place_id[place_id])
-                 )
-               );
+      const std::vector<token::type>& tokens (_token_by_place_id[place_id]);
+
+      if (tokens.empty())
+      {
+        _enabled.erase (tid);
+        _enabled_choice.erase (tid);
+
+        return;
+      }
+
+      m.insert (std::make_pair (place_id, cross::iterators_type (tokens)));
     }
 
-    cross::cross cs (m);
+    bool has_more (!m.empty());
 
     const we::type::transition_t& transition (get_transition (tid));
 
-    while (cs.has_more())
+    while (has_more)
     {
-      if (cs.eval (transition))
+      if (cross::eval (m, transition))
       {
         _enabled.insert (tid);
 
@@ -372,7 +378,7 @@ namespace petri_net
         return;
       }
 
-      ++cs;
+      has_more = cross::step (m);
     }
 
     _enabled.erase (tid);
