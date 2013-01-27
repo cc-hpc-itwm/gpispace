@@ -110,6 +110,11 @@ namespace condition
       return _expression;
     }
 
+    const expr::parse::parser& parser() const
+    {
+      return _parser;
+    }
+
     bool is_const_true() const
     {
       try
