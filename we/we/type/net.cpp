@@ -361,15 +361,7 @@ namespace petri_net
     {
       _enabled.insert (tid);
 
-      _enabled_choice[tid].clear();
-
-      for ( cross::iterator<token_by_place_id_t> choice (*cs)
-          ; choice.has_more()
-          ; ++choice
-          )
-      {
-        _enabled_choice[tid].push_back (*choice);
-      }
+      cs.write_to (_enabled_choice[tid]);
     }
   }
 
