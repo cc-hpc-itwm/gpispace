@@ -300,7 +300,10 @@ namespace fhg
           }
           else
           {
-            //! \todo Cap for tunnel ports.
+            throw std::runtime_error ( "requested cap for non-input, non-output "
+                                       "port (i.e. tunnel), while tunnels should"
+                                       " not be drawn on top level!"
+                                     );
           }
         }
 
