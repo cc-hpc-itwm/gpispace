@@ -15,6 +15,8 @@
 
 #include <we/type/transition.hpp>
 
+#include <we/util/cross.fwd.hpp>
+
 #include <we/mgmt/type/activity.hpp>
 
 #include <boost/serialization/nvp.hpp>
@@ -130,6 +132,7 @@ namespace petri_net
 
     void update_enabled (const transition_id_type&);
     we::mgmt::type::activity_t extract_activity (const transition_id_type&);
+    void eval_cross (const transition_id_type&, we::util::cross_type&);
   };
 }
 

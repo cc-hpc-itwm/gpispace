@@ -335,24 +335,10 @@ namespace petri_net
     return not _enabled.empty();
   }
 
-  void net::update_enabled (const transition_id_type& tid)
+  void net::eval_cross ( const transition_id_type& tid
+                       , we::util::cross_type& cross
+                       )
   {
-    we::util::cross_type cross;
-
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , in_to_transition (tid) | boost::adaptors::map_keys
-                  )
-    {
-      const std::vector<token::type>& tokens (_token_by_place_id[place_id]);
-
-      if (tokens.empty())
-      {
-        goto DISABLE;
-      }
-
-      cross.push (place_id, tokens);
-    }
-
     if (!cross.empty())
     {
       const we::type::transition_t& transition (get_transition (tid));
@@ -371,9 +357,32 @@ namespace petri_net
       while (cross.step());
     }
 
-  DISABLE:
     _enabled.erase (tid);
     _enabled_choice.erase (tid);
+  }
+
+  void net::update_enabled (const transition_id_type& tid)
+  {
+    we::util::cross_type cross;
+
+    BOOST_FOREACH ( const place_id_type& place_id
+                  , in_to_transition (tid) | boost::adaptors::map_keys
+                  )
+    {
+      const std::vector<token::type>& tokens (_token_by_place_id[place_id]);
+
+      if (tokens.empty())
+      {
+        _enabled.erase (tid);
+        _enabled_choice.erase (tid);
+
+        return;
+      }
+
+      cross.push (place_id, tokens);
+    }
+
+    eval_cross (tid, cross);
   }
 
   we::mgmt::type::activity_t
