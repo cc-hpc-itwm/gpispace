@@ -32,10 +32,6 @@ namespace we
       std::vector<token::type>::const_iterator _pos;
     };
 
-    typedef boost::unordered_map< petri_net::place_id_type
-                                , iterators_type
-                                > map_type;
-
     class cross_type
     {
     public:
@@ -50,7 +46,7 @@ namespace we
                 , const std::vector<token::type>&
                 );
     private:
-      map_type _m;
+      boost::unordered_map<petri_net::place_id_type, iterators_type> _m;
     };
   }
 }

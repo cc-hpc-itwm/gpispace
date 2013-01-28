@@ -41,6 +41,10 @@ namespace we
 
     namespace
     {
+      typedef boost::unordered_map< petri_net::place_id_type
+                                  , iterators_type
+                                  > map_type;
+
       bool do_step (map_type::iterator slot, const map_type::iterator& end)
       {
         ++slot->second;
