@@ -3,6 +3,8 @@
 #ifndef _WE_UTIL_CROSS_HPP
 #define _WE_UTIL_CROSS_HPP
 
+#include <we/util/cross.fwd.hpp>
+
 #include <we/type/token.hpp>
 #include <we/type/id.hpp>
 
