@@ -422,9 +422,7 @@ namespace petri_net
 
     typedef std::pair<place_id_type, token::type> place_and_token_type;
 
-    BOOST_FOREACH ( const place_and_token_type& pt
-                  , _enabled_choice.find (tid)->second
-                  )
+    BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
       const place_id_type& pid (pt.first);
       const token::type& token (pt.second);
