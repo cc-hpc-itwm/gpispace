@@ -1210,6 +1210,11 @@ namespace fhg
         void scene_type::port_deleted
           (const QObject* origin, const data::handle::port& port)
         {
+          if (port.is_tunnel())
+          {
+            return;
+          }
+
           remove_item_for_handle<port_item> (port);
         }
 
@@ -1219,6 +1224,11 @@ namespace fhg
           , const boost::optional<std::string>& place
           )
         {
+          if (port.is_tunnel())
+          {
+            return;
+          }
+
           if (place)
           {
             port_place_association* assoc_item
