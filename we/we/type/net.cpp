@@ -414,6 +414,12 @@ namespace petri_net
     eval_cross (tid, cross);
   }
 
+  void net::disable (const transition_id_type& tid)
+  {
+    _enabled.erase (tid);
+    _enabled_choice.erase (tid);
+  }
+
   we::mgmt::type::activity_t
   net::extract_activity (const transition_id_type& tid)
   {

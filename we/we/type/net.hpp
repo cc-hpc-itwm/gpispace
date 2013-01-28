@@ -134,6 +134,8 @@ namespace petri_net
     void update_enabled_put_token
       (const transition_id_type&, const place_id_type&, const token::type&);
 
+    void disable (const transition_id_type&);
+
     we::mgmt::type::activity_t extract_activity (const transition_id_type&);
     void eval_cross (const transition_id_type&, we::util::cross_type&);
   };
