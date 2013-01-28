@@ -296,7 +296,7 @@ namespace petri_net
                   , out_of_place (pid) | boost::adaptors::map_keys
                   )
     {
-      update_enabled (tid);
+      update_enabled_put_token (tid, pid, token);
     }
   }
 
