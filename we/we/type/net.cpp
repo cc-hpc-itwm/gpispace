@@ -357,8 +357,7 @@ namespace petri_net
       while (cross.step());
     }
 
-    _enabled.erase (tid);
-    _enabled_choice.erase (tid);
+    disable (tid);
   }
 
   void net::update_enabled (const transition_id_type& tid)
@@ -373,8 +372,7 @@ namespace petri_net
 
       if (tokens.empty())
       {
-        _enabled.erase (tid);
-        _enabled_choice.erase (tid);
+        disable (tid);
 
         return;
       }
@@ -402,8 +400,7 @@ namespace petri_net
 
       if (tokens.empty())
       {
-        _enabled.erase (tid);
-        _enabled_choice.erase (tid);
+        disable (tid);
 
         return;
       }
