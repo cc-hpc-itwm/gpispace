@@ -1,0 +1,68 @@
+<defun name="cross">
+  <in name="n" type="long" place="n"/>
+  <out name="done" type="control" place="done"/>
+  <net>
+    <place name="n" type="long"/>
+    <place name="done" type="control"/>
+    <include-template href="4.xml"/>
+    <specialize name="scatter_long" use="quad">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <transition name="scatter" inline="true">
+      <use name="scatter_long"/>
+      <connect-in port="in" place="n"/>
+      <connect-out port="one" place="n1"/>
+      <connect-out port="two" place="n2"/>
+      <connect-out port="three" place="n3"/>
+      <connect-out port="four" place="x"/>
+    </transition>
+    <place name="n1" type="long"/>
+    <place name="n2" type="long"/>
+    <place name="n3" type="long"/>
+    <place name="x" type="long"/>
+    <transition name="generate1" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="n1"/>
+      <connect-out port="out" place="v1"/>
+    </transition>
+    <transition name="generate2" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="n2"/>
+      <connect-out port="out" place="v2"/>
+    </transition>
+    <transition name="generate3" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="n3"/>
+      <connect-out port="out" place="v3"/>
+    </transition>
+    <place name="v1" type="long"/>
+    <place name="v2" type="long"/>
+    <place name="v3" type="long"/>
+    <transition name="step">
+      <defun>
+        <in name="v1" type="long"/>
+        <in name="v2" type="long"/>
+        <in name="v3" type="long"/>
+        <in name="x" type="long"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <condition>
+        ${x} :eq: ${v1} + 1
+      </condition>
+      <condition>
+        ${x} :eq: ${v2} + 1
+      </condition>
+      <condition>
+        ${x} :eq: ${v3} + 1
+      </condition>
+      <connect-in port="v1" place="v1"/>
+      <connect-in port="v2" place="v2"/>
+      <connect-in port="v3" place="v3"/>
+      <connect-in port="x" place="x"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>
