@@ -42,7 +42,10 @@ namespace we
       bool empty() const;
       bool step();
       bool eval (const we::type::transition_t&) const;
-      void write_to (tokens_on_places_type&) const;
+      void write_to (boost::unordered_map< petri_net::place_id_type
+                                         , token::type
+                                         >&
+                    ) const;
       void push ( const petri_net::place_id_type&
                 , const std::vector<token::type>&
                 );

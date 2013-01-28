@@ -110,7 +110,9 @@ namespace petri_net
     priostore::type<transition_id_type> _enabled;
 
     boost::unordered_map< transition_id_type
-                        , we::util::tokens_on_places_type
+                        , boost::unordered_map< petri_net::place_id_type
+                                              , token::type
+                                              >
                         > _enabled_choice;
 
     friend class boost::serialization::access;

@@ -92,13 +92,14 @@ namespace we
 
       return transition.condition().parser().eval_all_bool (context);
     }
-    void cross_type::write_to (tokens_on_places_type& choice) const
+    void cross_type::write_to
+      (boost::unordered_map<petri_net::place_id_type,token::type>& choice) const
     {
       choice.clear();
 
       BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _m)
       {
-        choice.push_back (std::make_pair (pits.first, *pits.second.pos()));
+        choice.insert (std::make_pair (pits.first, *pits.second.pos()));
       }
     }
     void cross_type::push ( const petri_net::place_id_type& place_id
