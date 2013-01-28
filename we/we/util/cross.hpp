@@ -36,17 +36,16 @@ namespace we
                                 , iterators_type
                                 > map_type;
 
+    typedef std::pair<petri_net::place_id_type,token::type> token_on_place_type;
+    typedef std::vector<token_on_place_type> tokens_on_places_type;
+
     class cross_type
     {
     public:
       bool empty() const;
       bool step();
       bool eval (const we::type::transition_t&) const;
-      void write_to (std::vector<std::pair< petri_net::place_id_type
-                                          ,token::type
-                                          >
-                                >&
-                    ) const;
+      void write_to (tokens_on_places_type&) const;
       void push ( const petri_net::place_id_type&
                 , const std::vector<token::type>&
                 );

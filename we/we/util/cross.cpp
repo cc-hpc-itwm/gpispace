@@ -92,12 +92,7 @@ namespace we
 
       return transition.condition().parser().eval_all_bool (context);
     }
-    void cross_type::write_to
-      (std::vector<std::pair< petri_net::place_id_type
-                            , token::type
-                            >
-                  >& choice
-     ) const
+    void cross_type::write_to (tokens_on_places_type& choice) const
     {
       choice.clear();
 
@@ -106,7 +101,6 @@ namespace we
         choice.push_back (std::make_pair (pits.first, *pits.second.pos()));
       }
     }
-
     void cross_type::push ( const petri_net::place_id_type& place_id
                           , const std::vector<token::type>& tokens
                           )
