@@ -3,8 +3,7 @@
 #include <we/type/net.hpp>
 #include <we/type/condition.hpp>
 
-#include <we/expr/parse/parser.hpp>
-#include <we/expr/eval/context.hpp>
+#include <we/util/cross.hpp>
 
 #include <fhg/assert.hpp>
 
@@ -336,133 +335,9 @@ namespace petri_net
     return not _enabled.empty();
   }
 
-  namespace
-  {
-    namespace
-    {
-      class iterators_type
-      {
-      public:
-        explicit iterators_type (const std::vector<token::type>& tokens)
-          : _begin (tokens.begin())
-          , _end (tokens.end())
-          , _pos (tokens.begin())
-        {}
-        const std::vector<token::type>::const_iterator& end() const
-        {
-          return _end;
-        }
-        const std::vector<token::type>::const_iterator& pos() const
-        {
-          return _pos;
-        }
-        void operator++()
-        {
-          ++_pos;
-        }
-        void rewind()
-        {
-          _pos = _begin;
-        }
-
-      private:
-        std::vector<token::type>::const_iterator _begin;
-        std::vector<token::type>::const_iterator _end;
-        std::vector<token::type>::const_iterator _pos;
-      };
-
-      typedef boost::unordered_map< petri_net::place_id_type
-                                  , iterators_type
-                                  > map_type;
-
-      bool do_step (map_type::iterator slot, const map_type::iterator& end)
-      {
-        ++slot->second;
-
-        if (slot->second.pos() == slot->second.end())
-        {
-          slot->second.rewind();
-
-          ++slot;
-
-          if (slot == end)
-          {
-            return false;
-          }
-          else
-          {
-            return do_step (slot, end);
-          }
-        }
-
-        return true;
-      }
-    }
-
-    class cross_type
-    {
-    public:
-      bool empty() const;
-      bool step();
-      bool eval (const we::type::transition_t&) const;
-      void write_to (std::vector<std::pair<place_id_type,token::type> >&) const;
-      void push (const place_id_type&, const std::vector<token::type>&);
-    private:
-      map_type _m;
-    };
-
-    bool cross_type::empty() const
-    {
-      return _m.empty();
-    }
-
-    bool cross_type::step()
-    {
-      return do_step (_m.begin(), _m.end());
-    }
-
-    bool cross_type::eval (const we::type::transition_t& transition) const
-    {
-      //! \todo use is_const_true and boost::optional...
-      if (transition.condition().expression() == "true")
-      {
-        return true;
-      }
-
-      expr::eval::context context;
-
-      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _m)
-      {
-        context.bind ( transition.name_of_place (pits.first)
-                     , pits.second.pos()->value
-                     );
-      }
-
-      return transition.condition().parser().eval_all_bool (context);
-    }
-
-    void cross_type::write_to
-      (std::vector<std::pair<place_id_type,token::type> >& choice) const
-    {
-      choice.clear();
-
-      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _m)
-      {
-        choice.push_back (std::make_pair (pits.first, *pits.second.pos()));
-      }
-    }
-
-    void cross_type::push ( const place_id_type& place_id
-                          , const std::vector<token::type>& tokens
-                          )
-    {
-      _m.insert (std::make_pair (place_id, iterators_type (tokens)));
-    }
-  }
-
   void net::update_enabled (const transition_id_type& tid)
   {
-    cross_type cross;
+    we::util::cross_type cross;
 
     BOOST_FOREACH ( const place_id_type& place_id
                   , in_to_transition (tid) | boost::adaptors::map_keys
