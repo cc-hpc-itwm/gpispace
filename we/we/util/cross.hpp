@@ -36,9 +36,6 @@ namespace we
                                 , iterators_type
                                 > map_type;
 
-    typedef std::pair<petri_net::place_id_type,token::type> token_on_place_type;
-    typedef std::vector<token_on_place_type> tokens_on_places_type;
-
     class cross_type
     {
     public:
