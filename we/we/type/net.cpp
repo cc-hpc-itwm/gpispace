@@ -336,7 +336,7 @@ namespace petri_net
     return not _enabled.empty();
   }
 
-  namespace cross
+  namespace
   {
     namespace
     {
@@ -374,15 +374,12 @@ namespace petri_net
         std::vector<token::type>::const_iterator _end;
         std::vector<token::type>::const_iterator _pos;
       };
-    }
 
-    typedef boost::unordered_map< petri_net::place_id_type
-                                , iterators_type
-                                > map_type;
+      typedef boost::unordered_map< petri_net::place_id_type
+                                  , iterators_type
+                                  > map_type;
 
-    namespace
-    {
-      bool step (map_type::iterator slot, const map_type::iterator& end)
+      bool do_step (map_type::iterator slot, const map_type::iterator& end)
       {
         ++slot->second;
 
@@ -398,7 +395,7 @@ namespace petri_net
           }
           else
           {
-            return step (slot, end);
+            return do_step (slot, end);
           }
         }
 
@@ -406,12 +403,29 @@ namespace petri_net
       }
     }
 
-    bool step (map_type& m)
+    class cross_type
     {
-      return step (m.begin(), m.end());
+    public:
+      bool empty() const;
+      bool step();
+      bool eval (const we::type::transition_t&) const;
+      void write_to (std::vector<std::pair<place_id_type,token::type> >&) const;
+      void push (const place_id_type&, const std::vector<token::type>&);
+    private:
+      map_type _m;
+    };
+
+    bool cross_type::empty() const
+    {
+      return _m.empty();
     }
 
-    bool eval (const map_type& m, const we::type::transition_t& transition)
+    bool cross_type::step()
+    {
+      return do_step (_m.begin(), _m.end());
+    }
+
+    bool cross_type::eval (const we::type::transition_t& transition) const
     {
       if (transition.condition().expression() == "true")
       {
@@ -420,7 +434,7 @@ namespace petri_net
 
       expr::eval::context context;
 
-      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, m)
+      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _m)
       {
         context.bind ( transition.name_of_place (pits.first)
                      , pits.second.pos()->value
@@ -430,30 +444,28 @@ namespace petri_net
       return transition.condition().parser().eval_all_bool (context);
     }
 
-    void write_to ( const map_type& m
-                  , std::vector<std::pair<place_id_type,token::type> >& choice
-                  )
+    void cross_type::write_to
+      (std::vector<std::pair<place_id_type,token::type> >& choice) const
     {
       choice.clear();
 
-      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, m)
+      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _m)
       {
         choice.push_back (std::make_pair (pits.first, *pits.second.pos()));
       }
     }
 
-    void push ( map_type& m
-              , const place_id_type& place_id
-              , const std::vector<token::type>& tokens
-              )
+    void cross_type::push ( const place_id_type& place_id
+                          , const std::vector<token::type>& tokens
+                          )
     {
-      m.insert (std::make_pair (place_id, iterators_type (tokens)));
+      _m.insert (std::make_pair (place_id, iterators_type (tokens)));
     }
   }
 
   void net::update_enabled (const transition_id_type& tid)
   {
-    cross::map_type m;
+    cross_type cross;
 
     BOOST_FOREACH ( const place_id_type& place_id
                   , in_to_transition (tid) | boost::adaptors::map_keys
@@ -466,27 +478,28 @@ namespace petri_net
         goto DISABLE;
       }
 
-      cross::push (m, place_id, tokens);
+      cross.push (place_id, tokens);
     }
 
-    bool has_more (!m.empty());
-
-    const we::type::transition_t& transition (get_transition (tid));
-
-    while (has_more)
+    if (!cross.empty())
     {
-      if (cross::eval (m, transition))
+      const we::type::transition_t& transition (get_transition (tid));
+
+      do
       {
-        _enabled.insert (tid);
+        if (cross.eval (transition))
+        {
+          _enabled.insert (tid);
 
-        cross::write_to (m, _enabled_choice[tid]);
+          cross.write_to (_enabled_choice[tid]);
 
-        return;
+          return;
+        }
       }
-
-      has_more = cross::step (m);
+      while (cross.step());
     }
 
+  DISABLE:
     _enabled.erase (tid);
     _enabled_choice.erase (tid);
   }
@@ -499,7 +512,6 @@ namespace petri_net
 
     const choice_iterator_t choice_pos (_enabled_choice.find (tid));
 
-  DISABLE:
     assert (choice_pos != _enabled_choice.end());
 
     boost::unordered_set<transition_id_type> transitions_to_update;
