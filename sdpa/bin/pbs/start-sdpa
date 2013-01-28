@@ -327,7 +327,7 @@ function start_workers_for_capability
                                               -m aggregator $caps_arg \
                                               -s "$state_dir" \
                                               -F "$config_file" \
-                                              -M "$shm_size" \
+                                              -M "$shm_size"
             id=$(( id + 1 ))
         done
 
