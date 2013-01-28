@@ -1,5 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#ifndef _WE_UTIL_CROSS_HPP
+#define _WE_UTIL_CROSS_HPP
+
 #include <we/type/token.hpp>
 #include <we/type/id.hpp>
 
@@ -50,3 +53,5 @@ namespace we
     };
   }
 }
+
+#endif
