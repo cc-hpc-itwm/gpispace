@@ -423,15 +423,15 @@ namespace petri_net
     const we::type::transition_t& transition (get_transition (tid));
     we::mgmt::type::activity_t act (transition);
 
-    const choice_iterator_t choice_pos (_enabled_choice.find (tid));
+    const enabled_choice_t::const_iterator es (_enabled_choice.find (tid));
 
-    assert (choice_pos != _enabled_choice.end());
+    assert (es != _enabled_choice.end());
 
     boost::unordered_set<transition_id_type> transitions_to_update;
 
     typedef std::pair<place_id_type, token::type> place_and_token_type;
 
-    BOOST_FOREACH (const place_and_token_type& pt, choice_pos->second)
+    BOOST_FOREACH (const place_and_token_type& pt, es->second)
     {
       const place_id_type& pid (pt.first);
       const token::type& token (pt.second);
