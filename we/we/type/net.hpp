@@ -96,7 +96,6 @@ namespace petri_net
   private:
     typedef std::vector<std::pair<place_id_type,token::type> > choice_vec_t;
     typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
-    typedef enabled_choice_t::iterator choice_iterator_t;
 
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
