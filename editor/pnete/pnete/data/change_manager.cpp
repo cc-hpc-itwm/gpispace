@@ -94,7 +94,7 @@ namespace fhg
 #undef EXPOSE
         };
 
-        std::string inc (const std::string& s)
+        std::string next (const std::string& s)
         {
           unsigned long num (0);
 
@@ -102,16 +102,67 @@ namespace fhg
           std::string::const_reverse_iterator pos (s.rbegin());
 
           while (pos != s.rend() && isdigit (*pos))
-            {
-              num *= 10;
-              num += *pos - '0';
-              --end; ++pos;
-            }
+          {
+            num *= 10;
+            num += *pos - '0';
+            --end; ++pos;
+          }
 
           return std::string (s.begin(), end)
             + ((end == s.end()) ? "_" : "")
             + boost::lexical_cast<std::string> (num + 1)
             ;
+        }
+
+        template<typename NET_TYPE> std::string unique_name_for_place
+          (const NET_TYPE& net, std::string prefix = "place")
+        {
+          while (net.get().has_place (prefix))
+          {
+            prefix = next (prefix);
+          }
+          return prefix;
+        }
+
+        template<typename NET_TYPE> std::string unique_name_for_transition
+          (const NET_TYPE& net, std::string prefix = "transition")
+        {
+          while (net.get().has_transition (prefix))
+          {
+            prefix = next (prefix);
+          }
+          return prefix;
+        }
+
+        template<typename FUNCTION_TYPE> std::string unique_name_for_port
+          ( const FUNCTION_TYPE& function
+          , const we::type::PortDirection& direction
+          , std::string prefix = "port"
+          )
+        {
+          //! \note If we add a in-port with type t and a out-port with
+          //! type u, it would find the same name for them, but will
+          //! fail on inserting, as in- and out-ports with same name
+          //! need same type.
+          if (direction == we::type::PORT_IN || direction == we::type::PORT_OUT)
+          {
+            while (  function.get().ports().has
+                      (std::make_pair (prefix, we::type::PORT_IN))
+                  || function.get().ports().has
+                      (std::make_pair (prefix, we::type::PORT_OUT))
+                  )
+            {
+              prefix = next (prefix);
+            }
+          }
+          else
+          {
+            while (function.get().ports().has (std::make_pair (prefix, direction)))
+            {
+              prefix = next (prefix);
+            }
+          }
+          return prefix;
         }
       }
 
@@ -1155,18 +1206,12 @@ namespace fhg
 
         beginMacro ("add_connection_with_implicit_place_action");
 
-        std::string name ("implicit");
-        while (net.get().has_place (name))
-        {
-          name = inc (name);
-        }
-
         const ::xml::parse::id::ref::place place
           ( ::xml::parse::type::place_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
-            , name
+            , unique_name_for_place (net, "implicit")
             , port_a.get().type()
             , boost::none
             ).make_reference_id()
@@ -1305,13 +1350,10 @@ namespace fhg
             ).make_reference_id()
           );
 
-        std::string name (fun.get().name() ? *fun.get().name() : "transition");
-        //! \todo Don't check for duplicate names when fun.name is set?
-        while (net.get().has_transition (name))
-        {
-          name = inc (name);
-        }
-        transition.get_ref().name (name);
+        transition.get_ref().name
+          ( unique_name_for_transition
+            (net, fun.get().name().get_value_or ("transition"))
+          );
 
         no_undo_move_item ( this
                           , handle::transition (transition, net.document())
@@ -1349,13 +1391,7 @@ namespace fhg
             ).make_reference_id()
           );
 
-        std::string name ("transition");
-        //! \todo Don't check for duplicate names when fun.name is set?
-        while (net.get().has_transition (name))
-        {
-          name = inc (name);
-        }
-        transition.get_ref().name (name);
+        transition.get_ref().name (unique_name_for_transition (net));
 
         no_undo_move_item ( this
                           , handle::transition (transition, net.document())
@@ -1464,7 +1500,6 @@ namespace fhg
                              );
       }
 
-
       // -- place ----------------------------------------------------
       void change_manager_t::add_place
         ( const QObject* origin
@@ -1472,18 +1507,12 @@ namespace fhg
         , const boost::optional<QPointF>& position
         )
       {
-        std::string name ("place");
-        while (net.get().has_place (name))
-        {
-          name = inc (name);
-        }
-
         const ::xml::parse::id::ref::place place
           ( ::xml::parse::type::place_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
-            , name
+            , unique_name_for_place (net)
             //! \todo: default type to something useful?
             , ""
             , boost::none
@@ -1690,36 +1719,12 @@ namespace fhg
         , const boost::optional<QPointF>& position
         )
       {
-        std::string name ("port");
-        //! \note If we add a in-port with type t and a out-port with
-        //! type u, it would find the same name for them, but will
-        //! fail on inserting, as in- and out-ports with same name
-        //! need same type.
-        if (direction == we::type::PORT_IN || direction == we::type::PORT_OUT)
-        {
-          while (  function.get().ports().has
-                    (std::make_pair (name, we::type::PORT_IN))
-                || function.get().ports().has
-                    (std::make_pair (name, we::type::PORT_OUT))
-                )
-          {
-            name = inc (name);
-          }
-        }
-        else
-        {
-          while (function.get().ports().has (std::make_pair (name, direction)))
-          {
-            name = inc (name);
-          }
-        }
-
         const ::xml::parse::id::ref::port port
           ( ::xml::parse::type::port_type
             ( function.id().id_mapper()->next_id()
             , function.id().id_mapper()
             , boost::none
-            , name
+            , unique_name_for_port (function, direction)
             //! \todo Default type?
             , ""
             , boost::none
