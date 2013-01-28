@@ -463,10 +463,7 @@ namespace petri_net
 
       if (tokens.empty())
       {
-        _enabled.erase (tid);
-        _enabled_choice.erase (tid);
-
-        return;
+        goto DISABLE;
       }
 
       cross::push (m, place_id, tokens);
@@ -502,6 +499,7 @@ namespace petri_net
 
     const choice_iterator_t choice_pos (_enabled_choice.find (tid));
 
+  DISABLE:
     assert (choice_pos != _enabled_choice.end());
 
     boost::unordered_set<transition_id_type> transitions_to_update;
