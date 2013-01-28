@@ -94,9 +94,6 @@ namespace petri_net
     }
 
   private:
-    typedef std::vector<std::pair<place_id_type,token::type> > choice_vec_t;
-    typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
-
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
 
@@ -112,7 +109,9 @@ namespace petri_net
 
     priostore::type<transition_id_type> _enabled;
 
-    enabled_choice_t _enabled_choice;
+    boost::unordered_map< transition_id_type
+                        , we::util::tokens_on_places_type
+                        > _enabled_choice;
 
     friend class boost::serialization::access;
     template<typename Archive>
