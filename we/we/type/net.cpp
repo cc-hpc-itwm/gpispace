@@ -364,10 +364,6 @@ namespace petri_net
         {
           _pos = _begin;
         }
-        bool empty() const
-        {
-          return _begin == _end;
-        }
 
       private:
         std::vector<token::type>::const_iterator _begin;
