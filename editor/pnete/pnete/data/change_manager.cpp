@@ -164,6 +164,20 @@ namespace fhg
           }
           return prefix;
         }
+
+        template<typename FUNCTION_TYPE>
+          std::string unique_name_for_tunnel_port_and_place
+            (const FUNCTION_TYPE& function, std::string prefix = "tunnel")
+        {
+          while ( function.get().ports().has
+                  (std::make_pair (prefix, we::type::PORT_TUNNEL))
+                || function.get().get_net()->get().has_place (prefix)
+                )
+          {
+            prefix = next (prefix);
+          }
+          return prefix;
+        }
       }
 
       namespace action
@@ -1577,6 +1591,7 @@ namespace fhg
             connections_to_delete;
           boost::unordered_set< ::xml::parse::id::ref::place_map>
             place_maps_to_delete;
+          boost::unordered_set< ::xml::parse::id::ref::port> ports_to_delete;
 
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
@@ -1598,6 +1613,27 @@ namespace fhg
               );
           }
 
+          if (net.has_parent())
+          {
+            BOOST_FOREACH ( const ::xml::parse::id::ref::port& port
+                          , net.parent()->ports().ids()
+                          | boost::adaptors::filtered
+                            (boost::bind (is_associated_with, _1, place.id()))
+                          )
+            {
+              handle::port handle (port, place.document());
+
+              if (handle.is_tunnel())
+              {
+                ports_to_delete.insert (port);
+              }
+              else
+              {
+                set_place_association (this, handle, boost::none);
+              }
+            }
+          }
+
           BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
                         , connections_to_delete
                         )
@@ -1610,18 +1646,9 @@ namespace fhg
           {
             remove_place_map (this, handle::place_map (pm, place.document()));
           }
-
-          if (net.has_parent())
+          BOOST_FOREACH (const ::xml::parse::id::ref::port& id, ports_to_delete)
           {
-            BOOST_FOREACH ( const ::xml::parse::id::ref::port& port
-                          , net.parent()->ports().ids()
-                          | boost::adaptors::filtered
-                            (boost::bind (is_associated_with, _1, place.id()))
-                          )
-            {
-              set_place_association
-                (this, handle::port (port, place.document()), boost::none);
-            }
+            delete_port (this, handle::port (id, place.document()));
           }
         }
 
@@ -1635,9 +1662,27 @@ namespace fhg
                                       , const QString& name
                                       )
       {
+        beginMacro (tr ("place_set_name_action"));
+
+        if ( origin != this
+           && place.is_virtual()
+           && place.get().has_parent() && place.get().parent().get().has_parent()
+           )
+        {
+          const handle::port handle
+            ( *place.get().parent().get().parent().get().ports().get
+              (std::make_pair (place.get().name(), we::type::PORT_TUNNEL))
+            , place.document()
+            );
+          set_name (this, handle, name);
+          set_place_association (this, handle, name.toStdString());
+        }
+
         push ( new action::meta_set_name<handle::place>
                ("place_set_name_action", ACTION_CTOR_ARGS (place), place, name)
              );
+
+        endMacro();
       }
 
       void change_manager_t::set_type ( const QObject* origin
@@ -1645,9 +1690,26 @@ namespace fhg
                                       , const QString& type
                                       )
       {
+        beginMacro (tr ("place_set_type_action"));
+
+        if ( origin != this
+           && place.is_virtual()
+           && place.get().has_parent() && place.get().parent().get().has_parent()
+           )
+        {
+          const handle::port handle
+            ( *place.get().parent().get().parent().get().ports().get
+              (std::make_pair (place.get().name(), we::type::PORT_TUNNEL))
+            , place.document()
+            );
+          set_type (this, handle, type);
+        }
+
         push ( new action::meta_set_type<handle::place>
                ("place_set_type_action", ACTION_CTOR_ARGS (place), place, type)
              );
+
+        endMacro();
       }
 
       void change_manager_t::make_explicit
@@ -1719,15 +1781,50 @@ namespace fhg
         , const boost::optional<QPointF>& position
         )
       {
+        beginMacro (tr ("add_port_action"));
+
+        const std::string name
+          ( direction == we::type::PORT_TUNNEL
+          ? unique_name_for_tunnel_port_and_place (function)
+          : unique_name_for_port (function, direction)
+          );
+
+        //! \todo Default type?
+        const std::string type ("");
+
+        if (direction == we::type::PORT_TUNNEL)
+        {
+          const ::xml::parse::id::ref::place place
+            ( ::xml::parse::type::place_type
+              ( function.id().id_mapper()->next_id()
+              , function.id().id_mapper()
+              , boost::none
+              , name
+              , type
+              , true
+              ).make_reference_id()
+            );
+
+          no_undo_move_item ( this
+                            , handle::place (place, function.document())
+                            , position.get_value_or (QPointF())
+                            );
+
+          push ( new action::add_place ( ACTION_CTOR_ARGS (function)
+                                       , *function.get().get_net()
+                                       , place
+                                       )
+               );
+        }
+
         const ::xml::parse::id::ref::port port
           ( ::xml::parse::type::port_type
             ( function.id().id_mapper()->next_id()
             , function.id().id_mapper()
             , boost::none
-            , unique_name_for_port (function, direction)
-            //! \todo Default type?
-            , ""
-            , boost::none
+            , name
+            , type
+            , name
             , direction
             ).make_reference_id()
           );
@@ -1742,6 +1839,8 @@ namespace fhg
                                     , port
                                     )
              );
+
+        endMacro();
       }
 
       namespace
@@ -1760,6 +1859,10 @@ namespace fhg
           return id.get().resolved_tunnel_port()
             && *id.get().resolved_tunnel_port() == port;
         }
+
+        //! \todo Member of change manager, removing virtual flag from
+        //! place. Removing virutal also removed the tunnel port.
+        template<typename T, typename U> void make_real(T,U){}
       }
 
       void change_manager_t::delete_port
@@ -1812,6 +1915,16 @@ namespace fhg
           }
         }
 
+        if (port.is_tunnel())
+        {
+          const boost::optional<xml::parse::id::ref::place> place
+            (port.get().resolved_place());
+          if (place)
+          {
+            make_real (this, handle::place (*place, port.document()));
+          }
+        }
+
         push (new action::remove_port (ACTION_CTOR_ARGS (port), port.id()));
 
         endMacro();
@@ -1844,9 +1957,21 @@ namespace fhg
                                       , const QString& name
                                       )
       {
+        beginMacro (tr ("port_set_name_action"));
+
+        if (origin != this && port.is_tunnel())
+        {
+          const handle::place handle
+            (*port.get().resolved_place(), port.document());
+          set_name (this, handle, name);
+          set_place_association (this, port, name.toStdString());
+        }
+
         push ( new action::meta_set_name<handle::port>
                ("port_set_name_action", ACTION_CTOR_ARGS (port), port, name)
              );
+
+        endMacro();
       }
 
       void change_manager_t::set_type ( const QObject* origin
@@ -1854,9 +1979,20 @@ namespace fhg
                                       , const QString& type
                                       )
       {
+        beginMacro (tr ("port_set_type_action"));
+
+        if (origin != this && port.is_tunnel())
+        {
+          const handle::place handle
+            (*port.get().resolved_place(), port.document());
+          set_type (this, handle, type);
+        }
+
         push ( new action::meta_set_type<handle::port>
                ("port_set_type_action", ACTION_CTOR_ARGS (port), port, type)
              );
+
+        endMacro();
       }
 
       void change_manager_t::set_place_association
