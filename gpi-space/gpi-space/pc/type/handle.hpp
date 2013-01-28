@@ -6,7 +6,6 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/nvp.hpp>
-#include <boost/functional/hash.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
 
@@ -50,7 +49,6 @@ namespace gpi
         operator handle_id_t () const { return handle; }
         bool operator== (const handle_id_t o) const {return handle == o;}
         bool operator<  (const handle_id_t o) const {return handle < o; }
-        friend std::size_t hash_value (const handle_t &);
 
         union
         {
@@ -93,13 +91,6 @@ namespace gpi
       {
         boost::hash<handle_id_t> hasher;
         return hasher (x.handle);
-      }
-
-      inline
-      size_t hash_value (const handle_t & hdl)
-      {
-        boost::hash<handle_id_t> h;
-        return h (hdl.handle);
       }
 
       inline
