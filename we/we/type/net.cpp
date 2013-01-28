@@ -385,6 +385,35 @@ namespace petri_net
     eval_cross (tid, cross);
   }
 
+  void net::update_enabled_put_token ( const transition_id_type& tid
+                                     , const place_id_type& pid
+                                     , const token::type& token
+                                     )
+  {
+    we::util::cross_type cross;
+    std::vector<token::type> special (1, token);
+
+    BOOST_FOREACH ( const place_id_type& place_id
+                  , in_to_transition (tid) | boost::adaptors::map_keys
+                  )
+    {
+      const std::vector<token::type>& tokens
+        (place_id == pid ? special : _token_by_place_id[place_id]);
+
+      if (tokens.empty())
+      {
+        _enabled.erase (tid);
+        _enabled_choice.erase (tid);
+
+        return;
+      }
+
+      cross.push (place_id, tokens);
+    }
+
+    eval_cross (tid, cross);
+  }
+
   we::mgmt::type::activity_t
   net::extract_activity (const transition_id_type& tid)
   {
