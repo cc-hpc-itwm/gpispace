@@ -83,7 +83,9 @@ namespace we
 
       expr::eval::context context;
 
-      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _m)
+      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
+
+      BOOST_FOREACH (const pits_type& pits, _m)
       {
         context.bind ( transition.name_of_place (pits.first)
                      , pits.second.pos()->value
@@ -97,7 +99,9 @@ namespace we
     {
       choice.clear();
 
-      BOOST_FOREACH (const map_type::const_iterator::value_type& pits, _m)
+      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
+
+      BOOST_FOREACH (const pits_type& pits, _m)
       {
         choice.insert (std::make_pair (pits.first, *pits.second.pos()));
       }
