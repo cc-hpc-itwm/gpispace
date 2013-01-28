@@ -423,6 +423,7 @@ namespace petri_net
 
     bool cross_type::eval (const we::type::transition_t& transition) const
     {
+      //! \todo use is_const_true and boost::optional...
       if (transition.condition().expression() == "true")
       {
         return true;
