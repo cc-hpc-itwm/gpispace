@@ -438,13 +438,7 @@ namespace petri_net
                       , out_of_place (pid) | boost::adaptors::map_keys
                       )
         {
-          if (_enabled_choice.find (t) != _enabled_choice.end())
-          {
-            if (_enabled_choice.at (t).at (pid) == token)
-            {
-              transitions_to_update.insert (t);
-            }
-          }
+          transitions_to_update.insert (t);
         }
       }
     }
