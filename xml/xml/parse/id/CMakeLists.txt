@@ -11,12 +11,6 @@ set (xml_parse_id_fwd_headers
   mapper.fwd.hpp
 )
 
-add_xml_sources (
-  types.cpp
-  mapper.cpp
-  generic.cpp
-)
-
 install (FILES ${xml_parse_id_headers} ${xml_parse_id_fwd_headers}
   DESTINATION include/xml/parse/id
   COMPONENT headers)

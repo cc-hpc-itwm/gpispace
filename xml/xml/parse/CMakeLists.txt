@@ -19,13 +19,6 @@ set (fwd_hdrs
   state.fwd.hpp
 )
 
-add_xml_sources (
-  error.cpp
-  parser.cpp
-  state.cpp
-  warning.cpp
-)
-
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
                 ${CMAKE_CURRENT_BINARY_DIR}/includes.hpp
                 @ONLY
