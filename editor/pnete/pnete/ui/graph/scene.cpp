@@ -1231,12 +1231,11 @@ namespace fhg
 
           if (place)
           {
-            port_place_association* assoc_item
-              (item_with_handle<port_place_association> (port));
-
             top_level_port_item* port_item (NULL);
 
-            if (assoc_item)
+            if ( port_place_association* assoc_item
+               = item_with_handle<port_place_association> (port)
+               )
             {
               port_item =
                 fhg::util::qt::throwing_qobject_cast<top_level_port_item*>
@@ -1255,13 +1254,11 @@ namespace fhg
               }
             }
 
-            foreach (place_item* place_item, items_of_type<place_item>())
+            foreach (place_item* item, items_of_type<place_item>())
             {
-              if (place_item->handle().get().name() == *place)
+              if (item->handle().get().name() == *place)
               {
-                assoc_item = new port_place_association
-                  (port_item, place_item, port);
-                addItem (assoc_item);
+                addItem (new port_place_association (port_item, item, port));
                 return;
               }
             }
