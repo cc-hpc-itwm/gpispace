@@ -9,15 +9,6 @@ set (hdrs
   util.hpp
   )
 
-add_we_sources (
-  constant_propagation.cpp
-  copy_propagation.cpp
-  dead_code_elimination.cpp
-  expression_list.cpp
-  simplify.cpp
-  util.cpp
-  )
-
 install(FILES ${hdrs}
   DESTINATION include/we/expr/parse/simplify
   COMPONENT headers)

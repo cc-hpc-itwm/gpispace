@@ -19,15 +19,6 @@ set (hdrs
   value.hpp
   requirement.hpp
   )
-add_we_sources (
-  property.cpp
-  port.cpp
-  id.cpp
-  place.cpp
-  connection.cpp
-  expression.cpp
-  net.cpp
-)
 
 install(FILES ${hdrs}
   DESTINATION include/we/type

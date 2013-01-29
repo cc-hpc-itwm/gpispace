@@ -5,12 +5,6 @@ set (hdrs
   parser.hpp
   )
 
-add_we_sources (
-  parser.cpp
-  node.cpp
-  action.cpp
-)
-
 install(FILES ${hdrs}
   DESTINATION include/we/expr/parse
   COMPONENT headers)

@@ -8,10 +8,6 @@ set (hdrs
   signal.hpp
   )
 
-add_we_sources (
-  descriptor.cpp
-)
-
 install(FILES ${hdrs}
   DESTINATION include/we/mgmt/bits
   COMPONENT headers)

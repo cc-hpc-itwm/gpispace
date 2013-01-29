@@ -4,11 +4,6 @@ set (hdrs
   flags.hpp
   )
 
-add_we_sources (
-  flags.cpp
-  activity.cpp
-)
-
 install(FILES ${hdrs}
   DESTINATION include/we/mgmt/type
   COMPONENT headers)

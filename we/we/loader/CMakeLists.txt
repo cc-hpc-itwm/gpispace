@@ -12,10 +12,6 @@ set (hdrs
   api-guard.hpp
   )
 
-add_we_sources (
-  loader.cpp
-)
-
 install(FILES ${hdrs}
   DESTINATION include/we/loader
   COMPONENT headers)
