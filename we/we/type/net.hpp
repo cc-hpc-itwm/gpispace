@@ -15,6 +15,8 @@
 
 #include <we/type/transition.hpp>
 
+#include <we/util/cross.fwd.hpp>
+
 #include <we/mgmt/type/activity.hpp>
 
 #include <boost/serialization/nvp.hpp>
@@ -92,10 +94,6 @@ namespace petri_net
     }
 
   private:
-    typedef std::vector<std::pair<place_id_type,token::type> > choice_vec_t;
-    typedef boost::unordered_map<transition_id_type, choice_vec_t> enabled_choice_t;
-    typedef enabled_choice_t::iterator choice_iterator_t;
-
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
 
@@ -111,7 +109,11 @@ namespace petri_net
 
     priostore::type<transition_id_type> _enabled;
 
-    enabled_choice_t _enabled_choice;
+    boost::unordered_map< transition_id_type
+                        , boost::unordered_map< petri_net::place_id_type
+                                              , token::type
+                                              >
+                        > _enabled_choice;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -129,7 +131,13 @@ namespace petri_net
     }
 
     void update_enabled (const transition_id_type&);
+    void update_enabled_put_token
+      (const transition_id_type&, const place_id_type&, const token::type&);
+
+    void disable (const transition_id_type&);
+
     we::mgmt::type::activity_t extract_activity (const transition_id_type&);
+    void eval_cross (const transition_id_type&, we::util::cross_type&);
   };
 }
 
