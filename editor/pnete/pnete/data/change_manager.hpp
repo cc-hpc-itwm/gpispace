@@ -236,11 +236,9 @@ namespace fhg
 
 #define EMITTER_BODY(Z,ARGC,TEXT)                                       \
       template<typename Fun>                                            \
-      void emit_signal                                                  \
+      void BOOST_PP_CAT (emit_signal, ARGC)                             \
         ( Fun fun                                                       \
-        , BOOST_PP_REPEAT ( BOOST_PP_ADD (1, ARGC)                      \
-                          , EMITTER_ARGS, BOOST_PP_EMPTY                \
-                          )                                             \
+        , BOOST_PP_REPEAT (ARGC, EMITTER_ARGS, BOOST_PP_EMPTY)          \
         );
 
       BOOST_PP_REPEAT_FROM_TO (1, 10, EMITTER_BODY, BOOST_PP_EMPTY)

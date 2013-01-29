@@ -29,6 +29,18 @@
 
 #include <QPointF>
 
+#define VARIADIC_SIZE(...) VARIADIC_SIZE_I(__VA_ARGS__, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,)
+#define VARIADIC_SIZE_I(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e60, e61, e62, e63, size, ...) size
+
+#define EMIT_SIGNAL_CALL_NAME___(x) change_manager.emit_signal ## x
+#define EMIT_SIGNAL_CALL_NAME__(x) EMIT_SIGNAL_CALL_NAME___ (x)
+#define EMIT_SIGNAL_CALL_NAME_(x) EMIT_SIGNAL_CALL_NAME__ (x)
+#define EMIT_SIGNAL_CALL_NAME(...)                      \
+  EMIT_SIGNAL_CALL_NAME_ (VARIADIC_SIZE (__VA_ARGS__))
+
+#define EMIT_SIGNAL(SIGNAL,...)                             \
+  EMIT_SIGNAL_CALL_NAME (__VA_ARGS__) (SIGNAL,__VA_ARGS__)
+
 namespace fhg
 {
   namespace pnete
@@ -238,8 +250,9 @@ namespace fhg
             );
 
           handle.get_ref().properties().set (key, val);
-          change_manager.emit_signal<signal_type>
-            (&signal::property_changed, origin, handle, key, val);
+          EMIT_SIGNAL ( static_cast<signal_type> (&signal::property_changed)
+                      , origin, handle, key, val
+                      );
         }
 
         // ## editing actions ########################################
@@ -305,8 +318,9 @@ namespace fhg
             , const QString&
             );
 
-          change_manager.emit_signal<signal_type>
-            (&signal::type_set, origin, handle, type);
+          EMIT_SIGNAL ( static_cast<signal_type> (&signal::type_set)
+                      , origin, handle, type
+                      );
         }
 
         template<typename HANDLE_TYPE>
@@ -355,8 +369,9 @@ namespace fhg
             , const QString&
             );
 
-          change_manager.emit_signal<signal_type>
-            (&signal::name_set, origin, handle, name);
+          EMIT_SIGNAL ( static_cast<signal_type> (&signal::name_set)
+                      , origin, handle, name
+                      );
         }
 
         template<typename HANDLE_TYPE>
@@ -484,11 +499,10 @@ namespace fhg
           , const ::xml::parse::id::ref::connect& connect
           )
         {
-          change_manager.emit_signal
-            ( &signal::connection_removed
-            , origin
-            , handle::connect (connect, document)
-            );
+          EMIT_SIGNAL ( &signal::connection_removed
+                      , origin
+                      , handle::connect (connect, document)
+                      );
 
           transition.get_ref().remove_connection (connect);
         }
@@ -501,8 +515,9 @@ namespace fhg
         {
           transition.get_ref().push_connection (connection);
 
-          change_manager.emit_signal
-            ( &signal::connection_added, origin
+          EMIT_SIGNAL
+            ( &signal::connection_added
+            , origin
             , handle::connect (connection, document)
             , handle::place (*connection.get().resolved_place(), document)
             , handle::port (*connection.get().resolved_port(), document)
@@ -573,8 +588,7 @@ namespace fhg
                                       ? petri_net::edge::PT_READ
                                       : petri_net::edge::PT
                                       );
-          change_manager.emit_signal
-            (&signal::connection_direction_changed, origin, connect);
+          EMIT_SIGNAL (&signal::connection_direction_changed, origin, connect);
         }
 
         class connection_is_read : public QUndoCommand
@@ -615,11 +629,10 @@ namespace fhg
           , const ::xml::parse::id::ref::place_map& place_map
           )
         {
-          change_manager.emit_signal
-            ( &signal::place_map_removed
-            , origin
-            , handle::place_map (place_map, document)
-            );
+          EMIT_SIGNAL ( &signal::place_map_removed
+                      , origin
+                      , handle::place_map (place_map, document)
+                      );
 
           transition.get_ref().remove_place_map (place_map);
         }
@@ -632,10 +645,9 @@ namespace fhg
         {
           transition.get_ref().push_place_map (place_map);
 
-          change_manager.emit_signal
-            ( &signal::place_map_added, origin
-            , handle::place_map (place_map, document)
-            );
+          EMIT_SIGNAL ( &signal::place_map_added, origin
+                      , handle::place_map (place_map, document)
+                      );
         }
 
         class add_place_map : public QUndoCommand
@@ -696,6 +708,33 @@ namespace fhg
         };
 
         // -- transition ---------------------------------------------
+        void remove_transition_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::net& net
+          , const ::xml::parse::id::ref::transition& transition
+          )
+        {
+          EMIT_SIGNAL ( &signal::transition_deleted
+                      , NULL
+                      , handle::transition (transition, document)
+                      );
+
+          net.get_ref().erase_transition (transition);
+        }
+
+        void add_transition_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::net& net
+          , const ::xml::parse::id::ref::transition& transition
+          )
+        {
+          net.get_ref().push_transition (transition);
+
+          EMIT_SIGNAL ( &signal::transition_added, origin
+                      , handle::transition (transition, document)
+                      );
+        }
+
         class add_transition : public QUndoCommand
         {
         public:
@@ -711,25 +750,12 @@ namespace fhg
 
           virtual void undo()
           {
-            _change_manager.emit_signal
-              ( &signal::transition_deleted
-              , NULL
-              , handle::transition (_transition, _document)
-              );
-
-            _net.get_ref().erase_transition (_transition);
+            remove_transition_impl (ACTION_UNDO_ARGS, _net, _transition);
           }
 
           virtual void redo()
           {
-            _net.get_ref().push_transition (_transition);
-
-            _change_manager.emit_signal
-              ( &signal::transition_added
-              , _origin
-              , handle::transition (_transition, _document)
-              );
-
+            add_transition_impl (ACTION_REDO_ARGS, _net, _transition);
             _origin = NULL;
           }
 
@@ -752,25 +778,12 @@ namespace fhg
 
           virtual void undo()
           {
-            _net.get_ref().push_transition (_transition);
-
-            _change_manager.emit_signal
-              ( &signal::transition_added
-              , NULL
-              , handle::transition (_transition, _document)
-              );
+            add_transition_impl (ACTION_UNDO_ARGS, _net, _transition);
           }
 
           virtual void redo()
           {
-            _change_manager.emit_signal
-              ( &signal::transition_deleted
-              , _origin
-              , handle::transition (_transition, _document)
-              );
-
-            _net.get_ref().erase_transition (_transition);
-
+            remove_transition_impl (ACTION_REDO_ARGS, _net, _transition);
             _origin = NULL;
           }
 
@@ -788,7 +801,7 @@ namespace fhg
         {
           net.get_ref().push_place (place);
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::place_added, origin, handle::place (place, document));
         }
 
@@ -797,7 +810,7 @@ namespace fhg
                                , const ::xml::parse::id::ref::place& place
                                )
         {
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::place_deleted, origin, handle::place (place, document));
 
           net.get_ref().erase_place (place);
@@ -867,7 +880,7 @@ namespace fhg
         {
           function.get_ref().push_port (port);
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::port_added, origin, handle::port (port, document));
         }
 
@@ -876,7 +889,7 @@ namespace fhg
                               , const ::xml::parse::id::ref::port& port
                               )
         {
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::port_deleted, origin, handle::port (port, document));
 
           if (function.get().ports().has (port))
@@ -951,7 +964,7 @@ namespace fhg
           )
         {
           port.get_ref().place = place;
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::place_association_set, origin, port, place);
         }
 
@@ -996,7 +1009,7 @@ namespace fhg
         {
           function.get_ref().name (name);
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             ( &signal::function_name_changed
             , origin
             , function
@@ -1046,14 +1059,14 @@ namespace fhg
         {
           expression.get_ref().set (content);
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             ( &signal::signal_set_expression
             , origin
             , expression
             , QString::fromStdString (content)
             );
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             ( &signal::signal_set_expression_parse_result
             , origin
             , expression
@@ -2102,6 +2115,11 @@ namespace fhg
 
 #undef ACTION_CTOR_ARGS
 
+#undef EMIT_SIGNAL
+#undef EMIT_SIGNAL_CALL_NAME
+#undef EMIT_SIGNAL_CALL_NAME_
+#undef EMIT_SIGNAL_CALL_NAME__
+
 #define EMITTER_ARGS(Z,N,TEXT) BOOST_PP_COMMA_IF(N)                     \
       typename boost::mpl::at_c                                         \
         < boost::function_types::parameter_types<Fun>                   \
@@ -2110,15 +2128,13 @@ namespace fhg
 
 #define EMITTER_BODY(Z,ARGC,TEXT)                                       \
       template<typename Fun>                                            \
-      void change_manager_t::emit_signal                                \
+      void change_manager_t::BOOST_PP_CAT (emit_signal, ARGC)           \
         ( Fun fun                                                       \
-        , BOOST_PP_REPEAT ( BOOST_PP_ADD (1, ARGC)                      \
-                          , EMITTER_ARGS, BOOST_PP_EMPTY                \
-                          )                                             \
+        , BOOST_PP_REPEAT (ARGC, EMITTER_ARGS, BOOST_PP_EMPTY)          \
         )                                                               \
       {                                                                 \
         emit (this->*fun)                                               \
-          (BOOST_PP_ENUM_PARAMS (BOOST_PP_ADD (1, ARGC), arg));         \
+          (BOOST_PP_ENUM_PARAMS (ARGC, arg));                           \
       }
 
       BOOST_PP_REPEAT_FROM_TO (1, 10, EMITTER_BODY, BOOST_PP_EMPTY)
