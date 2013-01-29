@@ -24,6 +24,10 @@
           ${cache.slots.available}       := {::};
           ${cache.slots.filled}          := {::};
           ${cache.slots.started_to_fill} := {::};
+
+          ${cache.stat.hit}              := 0;
+          ${cache.stat.miss.empty}       := 0;
+          ${cache.stat.miss.available}   := 0;
         </expression>
       </defun>
       <connect-in port="x" place="num_slots"/>
