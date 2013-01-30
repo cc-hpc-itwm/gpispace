@@ -83,7 +83,6 @@ namespace fhg
 
           // # place #################################################
           void place_added (const QObject*, const data::handle::place&);
-          void place_deleted (const QObject*, const data::handle::place&);
 
           // # top-level-port ########################################
           void port_added (const QObject*, const data::handle::port&);

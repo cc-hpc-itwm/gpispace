@@ -194,8 +194,6 @@ namespace fhg
           // place
           _net.connect_to_change_mgr
             (this, "place_added", "data::handle::place");
-          _net.connect_to_change_mgr
-            (this, "place_deleted", "data::handle::place");
 
           // connections
           //! \note This is not really in responsibility of the net,
@@ -1210,13 +1208,6 @@ namespace fhg
             weaver::display::place (place, this);
           }
         }
-
-        void scene_type::place_deleted
-          (const QObject* origin, const data::handle::place& place)
-        {
-          remove_item_for_handle<place_item> (place);
-        }
-
 
         // # port ####################################################
         void scene_type::port_added

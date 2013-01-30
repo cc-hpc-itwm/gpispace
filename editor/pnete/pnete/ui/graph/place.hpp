@@ -53,6 +53,8 @@ namespace fhg
         public slots:
           void refresh_content();
 
+          void place_deleted (const QObject*, const data::handle::place&);
+
           void type_or_name_changed
             (const QObject*, const data::handle::place&, const QString&);
 

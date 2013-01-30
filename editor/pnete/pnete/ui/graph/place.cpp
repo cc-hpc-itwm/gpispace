@@ -72,6 +72,9 @@ namespace fhg
           handle.connect_to_change_mgr
             (this, "place_is_virtual_changed", "data::handle::place, bool");
 
+          handle.connect_to_change_mgr
+            (this, "place_deleted", "data::handle::place");
+
           connect ( this, SIGNAL (association_added (association*))
                   , this, SLOT (slot_association_added (association*))
                   );
@@ -180,6 +183,17 @@ namespace fhg
 
               return;
             }
+          }
+        }
+
+        void place_item::place_deleted ( const QObject* origin
+                                       , const data::handle::place& changed
+                                       )
+        {
+          if (changed == handle())
+          {
+            scene()->removeItem (this);
+            deleteLater();
           }
         }
 
