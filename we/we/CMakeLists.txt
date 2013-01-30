@@ -48,8 +48,8 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 install (FILES
-  util/cross.hpp
   util/token.hpp
+  util/cross.hpp
   DESTINATION include/we/util
   COMPONENT headers
 )
@@ -66,7 +66,6 @@ install (FILES
   loader/api-guard.hpp
   loader/exceptions.hpp
   loader/IModule.hpp
-  loader/loader.hpp
   loader/macros.hpp
   loader/module_call.hpp
   loader/Module.hpp
@@ -85,54 +84,6 @@ install (FILES
 )
 
 install (FILES
-  expr/eval/context.hpp
-  expr/eval/eval.hpp
-  DESTINATION include/we/expr/eval
-  COMPONENT headers
-)
-
-install (FILES
-  expr/token/assoc.hpp
-  expr/token/prec.hpp
-  expr/token/prop.hpp
-  expr/token/tokenizer.hpp
-  expr/token/type.hpp
-  DESTINATION include/we/expr/token
-  COMPONENT headers
-)
-
-install (FILES
-  expr/exception.hpp
-  DESTINATION include/we/expr
-  COMPONENT headers
-)
-
-install (FILES
-  expr/parse/action.hpp
-  expr/parse/node.hpp
-  expr/parse/parser.hpp
-  DESTINATION include/we/expr/parse
-  COMPONENT headers
-)
-
-install (FILES
-  expr/parse/simplify/constant_propagation.hpp
-  expr/parse/simplify/copy_propagation.hpp
-  expr/parse/simplify/dead_code_elimination.hpp
-  expr/parse/simplify/expression_list.hpp
-  expr/parse/simplify/simplify.hpp
-  expr/parse/simplify/util.hpp
-  DESTINATION include/we/expr/parse/simplify/
-  COMPONENT headers
-)
-
-install (FILES
-  expr/parse/util/get_names.hpp
-  DESTINATION include/we/expr/parse/util
-  COMPONENT headers
-)
-
-install (FILES
   mgmt/basic_layer.hpp
   mgmt/context.hpp
   mgmt/exception.hpp
@@ -143,19 +94,11 @@ install (FILES
 
 install (FILES
   mgmt/bits/commands.hpp
-  mgmt/bits/descriptor.hpp
   mgmt/bits/execution_policy.hpp
   mgmt/bits/queue.hpp
   mgmt/bits/set.hpp
   mgmt/bits/signal.hpp
   DESTINATION include/we/mgmt/bits/
-  COMPONENT headers
-)
-
-install (FILES
-  mgmt/type/activity.hpp
-  mgmt/type/flags.hpp
-  DESTINATION include/we/mgmt/type
   COMPONENT headers
 )
 
@@ -180,16 +123,10 @@ install (FILES
   type/bitsetofint.hpp
   type/bytearray.hpp
   type/condition.hpp
-  type/connection.hpp
   type/control.hpp
   type/error.hpp
-  type/expression.hpp
-  type/id.hpp
   type/literal.hpp
   type/module_call.hpp
-  type/place.hpp
-  type/port.hpp
-  type/property.hpp
   type/requirement.hpp
   type/signature.hpp
   type/token.hpp
