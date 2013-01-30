@@ -1196,43 +1196,29 @@ namespace fhg
         void scene_type::place_association_set
           ( const QObject* origin
           , const data::handle::port& port
-          , const boost::optional<std::string>& place
+          , const boost::optional<std::string>& place_name
           )
         {
-          if (is_in_my_net (port) && !port.is_tunnel() && place)
+          if ( is_in_my_net (port) && !port.is_tunnel()
+             && place_name && port.get().resolved_place()
+             )
           {
-            top_level_port_item* port_item (NULL);
+            const data::handle::place place
+              (*port.get().resolved_place(), port.document());
 
-            if ( port_place_association* assoc_item
-               = item_with_handle<port_place_association> (port)
-               )
+            if (!is_in_my_net (place))
             {
-              port_item =
-                fhg::util::qt::throwing_qobject_cast<top_level_port_item*>
-                  (assoc_item->start());
-
-              removeItem (assoc_item);
-              delete assoc_item;
+              return;
             }
 
-            if (!port_item)
-            {
-              port_item = item_with_handle<top_level_port_item> (port);
-              if (!port_item)
-              {
-                throw std::runtime_error ("place_association for unknown port");
-              }
-            }
+            delete item_with_handle<port_place_association> (port);
 
-            foreach (place_item* item, items_of_type<place_item>())
-            {
-              if (item->handle().get().name() == *place)
-              {
-                addItem (new port_place_association (port_item, item, port));
-                return;
-              }
-            }
-            throw std::runtime_error ("place_association to unknown place");
+            addItem ( new port_place_association
+                      ( item_with_handle<top_level_port_item> (port)
+                      , item_with_handle<place_item> (place)
+                      , port
+                      )
+                    );
           }
         }
       }
