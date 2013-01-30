@@ -1894,7 +1894,7 @@ namespace fhg
             , boost::none
             , name
             , type
-            , name
+            , boost::make_optional (direction == we::type::PORT_TUNNEL, name)
             , direction
             ).make_reference_id()
           );
