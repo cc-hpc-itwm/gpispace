@@ -210,8 +210,6 @@ namespace fhg
 
           _net.connect_to_change_mgr
             (this, "place_map_added", "data::handle::place_map");
-          _net.connect_to_change_mgr
-            (this, "place_map_removed", "data::handle::place_map");
 
           // top-level-ports
           _net.connect_to_change_mgr
@@ -1165,12 +1163,6 @@ namespace fhg
           {
             create_place_map (place_map);
           }
-        }
-
-        void scene_type::place_map_removed
-          (const QObject* origin, const data::handle::place_map& handle)
-        {
-          remove_item_for_handle<place_map> (handle);
         }
 
         // # transition ##############################################

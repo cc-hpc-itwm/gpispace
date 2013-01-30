@@ -35,6 +35,9 @@ namespace fhg
             , _handle (handle)
         {
           _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, pen_style);
+
+          handle.connect_to_change_mgr
+            (this, "place_map_removed", "data::handle::place_map");
         }
 
         const data::handle::place_map& place_map::handle() const
@@ -45,6 +48,16 @@ namespace fhg
         QPainterPath place_map::shape() const
         {
           return style::association::shape_no_cap (all_points());
+        }
+
+        void place_map::place_map_removed
+          (const QObject*, const data::handle::place_map& changed)
+        {
+          if (changed == handle())
+          {
+            scene()->removeItem (this);
+            deleteLater();
+          }
         }
       }
     }

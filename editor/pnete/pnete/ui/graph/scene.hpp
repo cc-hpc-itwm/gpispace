@@ -72,7 +72,6 @@ namespace fhg
 
           // # place_map #############################################
           void place_map_added (const QObject*, const data::handle::place_map&);
-          void place_map_removed (const QObject*, const data::handle::place_map&);
 
           // # transition ############################################
           void transition_added (const QObject*, const data::handle::transition&);
