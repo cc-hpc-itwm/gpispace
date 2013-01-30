@@ -1,8 +1,10 @@
 <defun>
-  <tunnel name="cache" type="cache_type" place="cache"/>
+  <in name="cache" type="cache_type" place="cache_in"/>
+  <out name="cache" type="cache_type" place="cache_out"/>
   <in name="slot" type="long" place="slot"/>
   <net>
-    <place name="cache" type="cache_type" virtual="true"/>
+    <place name="cache_in" type="cache_type"/>
+    <place name="cache_out" type="cache_type"/>
     <place name="slot" type="long"/>
     <transition name="slot_done_still_users">
       <defun>
@@ -22,7 +24,8 @@
           map_get_assignment (${cache.by_slot.num_users}, ${slot}) :gt: 1
         </condition>
       </defun>
-      <connect-inout port="cache" place="cache"/>
+      <connect-in port="cache" place="cache_in"/>
+      <connect-out port="cache" place="cache_out"/>
       <connect-in port="slot" place="slot"/>
     </transition>
     <transition name="slot_done_no_more_users">
@@ -42,7 +45,8 @@
           map_get_assignment (${cache.by_slot.num_users}, ${slot}) :le: 1
         </condition>
       </defun>
-      <connect-inout port="cache" place="cache"/>
+      <connect-in port="cache" place="cache_in"/>
+      <connect-out port="cache" place="cache_out"/>
       <connect-in port="slot" place="slot"/>
     </transition>
   </net>

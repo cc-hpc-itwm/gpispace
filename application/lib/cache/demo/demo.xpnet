@@ -72,7 +72,7 @@
     <transition name="done_with_slot" inline="true">
       <include-function href="../done_with_slot.xpnet"/>
       <connect-in port="slot" place="slot_done"/>
-      <place-map virtual="cache" real="cache"/>
+      <connect-inout port="cache" place="cache"/>
     </transition>
   </net>
 </defun>
