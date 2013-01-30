@@ -47,6 +47,8 @@ set (hdrs
   threadname.hpp
 
   remove_prefix.hpp
+
+  stat.hpp
 )
 
 set (srcs
@@ -55,6 +57,7 @@ set (srcs
   threadname.cpp
   remove_prefix.cpp
   read_bool.cpp
+  stat.cpp
 )
 
 add_library (fhg-util ${srcs})
