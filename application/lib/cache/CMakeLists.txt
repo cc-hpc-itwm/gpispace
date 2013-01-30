@@ -12,5 +12,4 @@ install (FILES ${xmls}
   COMPONENT examples
   )
 
-add_subdirectory (get)
 add_subdirectory (demo)
