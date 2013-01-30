@@ -13,6 +13,13 @@
       <field name="filled" type="set"/>
       <field name="started_to_fill" type="set"/>
     </struct>
+    <struct name="stat">
+      <field name="hit" type="long"/>
+      <struct name="miss">
+        <field name="empty" type="long"/>
+        <field name="available" type="long"/>
+      </struct>
+    </struct>
   </struct>
 
   <struct name="slot_and_id_type">

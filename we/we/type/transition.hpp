@@ -122,11 +122,12 @@ namespace we { namespace type {
         static const bool value = false;
       };
 
+      //! \todo eliminate this class and use we::type::condition instead
       struct preparsed_condition
       {
         // should correspond!
         explicit preparsed_condition ( const std::string& _expr
-                                     , const condition::type::parser_t& _parser
+                                     , const expr::parse::parser& _parser
                                      )
           : expr(_expr)
           , parser(_parser)
@@ -137,13 +138,13 @@ namespace we { namespace type {
           return expr;
         }
 
-        operator condition::type::parser_t const & () const
+        operator expr::parse::parser const & () const
         {
           return parser;
         }
 
         const std::string expr;
-        const condition::type::parser_t parser;
+        const expr::parse::parser parser;
       };
     }
 
@@ -188,9 +189,7 @@ namespace we { namespace type {
         : name_ ("<<transition unknown>>")
         , data_ (expression_t())
         , internal_ (true)
-        , condition_( "true"
-                    , boost::bind (&transition_t::name_of_place, this, _1)
-                    )
+        , condition_("true")
         , outer_to_inner_()
         , inner_to_outer_()
         , ports_()
@@ -207,9 +206,7 @@ namespace we { namespace type {
         : name_ (name)
         , data_ (typ)
         , internal_ (detail::is_internal<Type>::value)
-        , condition_( _condition
-                    , boost::bind (&transition_t::name_of_place, this, _1)
-                    )
+        , condition_(_condition)
         , outer_to_inner_()
         , inner_to_outer_()
         , ports_()
@@ -226,10 +223,7 @@ namespace we { namespace type {
         : name_ (name)
         , data_ (typ)
         , internal_ (detail::is_internal<Type>::value)
-        , condition_( _condition
-                    , _condition
-                    , boost::bind (&transition_t::name_of_place, this, _1)
-                    )
+        , condition_(_condition, _condition)
         , outer_to_inner_()
         , inner_to_outer_()
         , ports_()
@@ -247,9 +241,7 @@ namespace we { namespace type {
         : name_ (name)
         , data_ (typ)
         , internal_ (intern)
-        , condition_( _condition
-                    , boost::bind (&transition_t::name_of_place, this, _1)
-                    )
+        , condition_(_condition)
         , outer_to_inner_()
         , inner_to_outer_()
         , ports_()
@@ -269,10 +261,7 @@ namespace we { namespace type {
         : name_ (name)
         , data_ (typ)
         , internal_ (intern)
-        , condition_( _condition
-                    , _condition
-                    , boost::bind (&transition_t::name_of_place, this, _1)
-                    )
+        , condition_(_condition, _condition)
         , outer_to_inner_()
         , inner_to_outer_()
         , ports_()
@@ -285,9 +274,7 @@ namespace we { namespace type {
         : name_(other.name_)
         , data_(other.data_)
         , internal_ (other.internal_)
-        , condition_( other.condition_.expression()
-                    , boost::bind (&transition_t::name_of_place, this, _1)
-                    )
+        , condition_( other.condition_.expression())
         , outer_to_inner_(other.outer_to_inner_)
         , inner_to_outer_(other.inner_to_outer_)
         , ports_(other.ports_)
@@ -347,10 +334,7 @@ namespace we { namespace type {
           ports_ = other.ports_;
           data_ = other.data_;
           port_id_counter_ = other.port_id_counter_;
-          condition_ = condition::type
-            ( other.condition_.expression()
-            , boost::bind (&transition_t::name_of_place, this, _1)
-            );
+          condition_ = condition::type (other.condition_.expression());
           prop_ = other.prop_;
           _requirements = other._requirements;
         }
@@ -753,7 +737,7 @@ namespace we { namespace type {
         return get_port (port).name();
       }
 
-      const std::string& name_of_place (const petri_net::place_id_type& pid)
+      const std::string& name_of_place (const petri_net::place_id_type& pid) const
       {
         return get_port (outer_to_inner (pid)).name();
       }
@@ -899,9 +883,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(internal_);
         std::string cond_expr;
         ar & boost::serialization::make_nvp("condition", cond_expr);
-        condition_ = condition::type ( cond_expr
-                                     , boost::bind (&transition_t::name_of_place, this, _1)
-                                     );
+        condition_ = condition::type (cond_expr);
         ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);

@@ -29,6 +29,18 @@
 
 #include <QPointF>
 
+#define VARIADIC_SIZE(...) VARIADIC_SIZE_I(__VA_ARGS__, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,)
+#define VARIADIC_SIZE_I(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e60, e61, e62, e63, size, ...) size
+
+#define EMIT_SIGNAL_CALL_NAME___(x) change_manager.emit_signal ## x
+#define EMIT_SIGNAL_CALL_NAME__(x) EMIT_SIGNAL_CALL_NAME___ (x)
+#define EMIT_SIGNAL_CALL_NAME_(x) EMIT_SIGNAL_CALL_NAME__ (x)
+#define EMIT_SIGNAL_CALL_NAME(...)                      \
+  EMIT_SIGNAL_CALL_NAME_ (VARIADIC_SIZE (__VA_ARGS__))
+
+#define EMIT_SIGNAL(SIGNAL,...)                             \
+  EMIT_SIGNAL_CALL_NAME (__VA_ARGS__) (SIGNAL,__VA_ARGS__)
+
 namespace fhg
 {
   namespace pnete
@@ -94,7 +106,7 @@ namespace fhg
 #undef EXPOSE
         };
 
-        std::string inc (const std::string& s)
+        std::string next (const std::string& s)
         {
           unsigned long num (0);
 
@@ -102,16 +114,81 @@ namespace fhg
           std::string::const_reverse_iterator pos (s.rbegin());
 
           while (pos != s.rend() && isdigit (*pos))
-            {
-              num *= 10;
-              num += *pos - '0';
-              --end; ++pos;
-            }
+          {
+            num *= 10;
+            num += *pos - '0';
+            --end; ++pos;
+          }
 
           return std::string (s.begin(), end)
             + ((end == s.end()) ? "_" : "")
             + boost::lexical_cast<std::string> (num + 1)
             ;
+        }
+
+        template<typename NET_TYPE> std::string unique_name_for_place
+          (const NET_TYPE& net, std::string prefix = "place")
+        {
+          while (net.get().has_place (prefix))
+          {
+            prefix = next (prefix);
+          }
+          return prefix;
+        }
+
+        template<typename NET_TYPE> std::string unique_name_for_transition
+          (const NET_TYPE& net, std::string prefix = "transition")
+        {
+          while (net.get().has_transition (prefix))
+          {
+            prefix = next (prefix);
+          }
+          return prefix;
+        }
+
+        template<typename FUNCTION_TYPE> std::string unique_name_for_port
+          ( const FUNCTION_TYPE& function
+          , const we::type::PortDirection& direction
+          , std::string prefix = "port"
+          )
+        {
+          //! \note If we add a in-port with type t and a out-port with
+          //! type u, it would find the same name for them, but will
+          //! fail on inserting, as in- and out-ports with same name
+          //! need same type.
+          if (direction == we::type::PORT_IN || direction == we::type::PORT_OUT)
+          {
+            while (  function.get().ports().has
+                      (std::make_pair (prefix, we::type::PORT_IN))
+                  || function.get().ports().has
+                      (std::make_pair (prefix, we::type::PORT_OUT))
+                  )
+            {
+              prefix = next (prefix);
+            }
+          }
+          else
+          {
+            while (function.get().ports().has (std::make_pair (prefix, direction)))
+            {
+              prefix = next (prefix);
+            }
+          }
+          return prefix;
+        }
+
+        template<typename FUNCTION_TYPE>
+          std::string unique_name_for_tunnel_port_and_place
+            (const FUNCTION_TYPE& function, std::string prefix = "tunnel")
+        {
+          while ( function.get().ports().has
+                  (std::make_pair (prefix, we::type::PORT_TUNNEL))
+                || function.get().get_net()->get().has_place (prefix)
+                )
+          {
+            prefix = next (prefix);
+          }
+          return prefix;
         }
       }
 
@@ -173,8 +250,9 @@ namespace fhg
             );
 
           handle.get_ref().properties().set (key, val);
-          change_manager.emit_signal<signal_type>
-            (&signal::property_changed, origin, handle, key, val);
+          EMIT_SIGNAL ( static_cast<signal_type> (&signal::property_changed)
+                      , origin, handle, key, val
+                      );
         }
 
         // ## editing actions ########################################
@@ -240,8 +318,9 @@ namespace fhg
             , const QString&
             );
 
-          change_manager.emit_signal<signal_type>
-            (&signal::type_set, origin, handle, type);
+          EMIT_SIGNAL ( static_cast<signal_type> (&signal::type_set)
+                      , origin, handle, type
+                      );
         }
 
         template<typename HANDLE_TYPE>
@@ -290,8 +369,9 @@ namespace fhg
             , const QString&
             );
 
-          change_manager.emit_signal<signal_type>
-            (&signal::name_set, origin, handle, name);
+          EMIT_SIGNAL ( static_cast<signal_type> (&signal::name_set)
+                      , origin, handle, name
+                      );
         }
 
         template<typename HANDLE_TYPE>
@@ -419,11 +499,10 @@ namespace fhg
           , const ::xml::parse::id::ref::connect& connect
           )
         {
-          change_manager.emit_signal
-            ( &signal::connection_removed
-            , origin
-            , handle::connect (connect, document)
-            );
+          EMIT_SIGNAL ( &signal::connection_removed
+                      , origin
+                      , handle::connect (connect, document)
+                      );
 
           transition.get_ref().remove_connection (connect);
         }
@@ -436,8 +515,9 @@ namespace fhg
         {
           transition.get_ref().push_connection (connection);
 
-          change_manager.emit_signal
-            ( &signal::connection_added, origin
+          EMIT_SIGNAL
+            ( &signal::connection_added
+            , origin
             , handle::connect (connection, document)
             , handle::place (*connection.get().resolved_place(), document)
             , handle::port (*connection.get().resolved_port(), document)
@@ -508,8 +588,7 @@ namespace fhg
                                       ? petri_net::edge::PT_READ
                                       : petri_net::edge::PT
                                       );
-          change_manager.emit_signal
-            (&signal::connection_direction_changed, origin, connect);
+          EMIT_SIGNAL (&signal::connection_direction_changed, origin, connect);
         }
 
         class connection_is_read : public QUndoCommand
@@ -550,11 +629,10 @@ namespace fhg
           , const ::xml::parse::id::ref::place_map& place_map
           )
         {
-          change_manager.emit_signal
-            ( &signal::place_map_removed
-            , origin
-            , handle::place_map (place_map, document)
-            );
+          EMIT_SIGNAL ( &signal::place_map_removed
+                      , origin
+                      , handle::place_map (place_map, document)
+                      );
 
           transition.get_ref().remove_place_map (place_map);
         }
@@ -567,10 +645,9 @@ namespace fhg
         {
           transition.get_ref().push_place_map (place_map);
 
-          change_manager.emit_signal
-            ( &signal::place_map_added, origin
-            , handle::place_map (place_map, document)
-            );
+          EMIT_SIGNAL ( &signal::place_map_added, origin
+                      , handle::place_map (place_map, document)
+                      );
         }
 
         class add_place_map : public QUndoCommand
@@ -631,6 +708,33 @@ namespace fhg
         };
 
         // -- transition ---------------------------------------------
+        void remove_transition_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::net& net
+          , const ::xml::parse::id::ref::transition& transition
+          )
+        {
+          EMIT_SIGNAL ( &signal::transition_deleted
+                      , NULL
+                      , handle::transition (transition, document)
+                      );
+
+          net.get_ref().erase_transition (transition);
+        }
+
+        void add_transition_impl
+          ( ACTION_ARG_LIST
+          , const ::xml::parse::id::ref::net& net
+          , const ::xml::parse::id::ref::transition& transition
+          )
+        {
+          net.get_ref().push_transition (transition);
+
+          EMIT_SIGNAL ( &signal::transition_added, origin
+                      , handle::transition (transition, document)
+                      );
+        }
+
         class add_transition : public QUndoCommand
         {
         public:
@@ -646,25 +750,12 @@ namespace fhg
 
           virtual void undo()
           {
-            _change_manager.emit_signal
-              ( &signal::transition_deleted
-              , NULL
-              , handle::transition (_transition, _document)
-              );
-
-            _net.get_ref().erase_transition (_transition);
+            remove_transition_impl (ACTION_UNDO_ARGS, _net, _transition);
           }
 
           virtual void redo()
           {
-            _net.get_ref().push_transition (_transition);
-
-            _change_manager.emit_signal
-              ( &signal::transition_added
-              , _origin
-              , handle::transition (_transition, _document)
-              );
-
+            add_transition_impl (ACTION_REDO_ARGS, _net, _transition);
             _origin = NULL;
           }
 
@@ -687,25 +778,12 @@ namespace fhg
 
           virtual void undo()
           {
-            _net.get_ref().push_transition (_transition);
-
-            _change_manager.emit_signal
-              ( &signal::transition_added
-              , NULL
-              , handle::transition (_transition, _document)
-              );
+            add_transition_impl (ACTION_UNDO_ARGS, _net, _transition);
           }
 
           virtual void redo()
           {
-            _change_manager.emit_signal
-              ( &signal::transition_deleted
-              , _origin
-              , handle::transition (_transition, _document)
-              );
-
-            _net.get_ref().erase_transition (_transition);
-
+            remove_transition_impl (ACTION_REDO_ARGS, _net, _transition);
             _origin = NULL;
           }
 
@@ -723,7 +801,7 @@ namespace fhg
         {
           net.get_ref().push_place (place);
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::place_added, origin, handle::place (place, document));
         }
 
@@ -732,7 +810,7 @@ namespace fhg
                                , const ::xml::parse::id::ref::place& place
                                )
         {
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::place_deleted, origin, handle::place (place, document));
 
           net.get_ref().erase_place (place);
@@ -802,7 +880,7 @@ namespace fhg
         {
           function.get_ref().push_port (port);
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::port_added, origin, handle::port (port, document));
         }
 
@@ -811,7 +889,7 @@ namespace fhg
                               , const ::xml::parse::id::ref::port& port
                               )
         {
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::port_deleted, origin, handle::port (port, document));
 
           if (function.get().ports().has (port))
@@ -886,7 +964,7 @@ namespace fhg
           )
         {
           port.get_ref().place = place;
-          change_manager.emit_signal
+          EMIT_SIGNAL
             (&signal::place_association_set, origin, port, place);
         }
 
@@ -931,7 +1009,7 @@ namespace fhg
         {
           function.get_ref().name (name);
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             ( &signal::function_name_changed
             , origin
             , function
@@ -981,14 +1059,14 @@ namespace fhg
         {
           expression.get_ref().set (content);
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             ( &signal::signal_set_expression
             , origin
             , expression
             , QString::fromStdString (content)
             );
 
-          change_manager.emit_signal
+          EMIT_SIGNAL
             ( &signal::signal_set_expression_parse_result
             , origin
             , expression
@@ -1155,18 +1233,12 @@ namespace fhg
 
         beginMacro ("add_connection_with_implicit_place_action");
 
-        std::string name ("implicit");
-        while (net.get().has_place (name))
-        {
-          name = inc (name);
-        }
-
         const ::xml::parse::id::ref::place place
           ( ::xml::parse::type::place_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
-            , name
+            , unique_name_for_place (net, "implicit")
             , port_a.get().type()
             , boost::none
             ).make_reference_id()
@@ -1305,13 +1377,10 @@ namespace fhg
             ).make_reference_id()
           );
 
-        std::string name (fun.get().name() ? *fun.get().name() : "transition");
-        //! \todo Don't check for duplicate names when fun.name is set?
-        while (net.get().has_transition (name))
-        {
-          name = inc (name);
-        }
-        transition.get_ref().name (name);
+        transition.get_ref().name
+          ( unique_name_for_transition
+            (net, fun.get().name().get_value_or ("transition"))
+          );
 
         no_undo_move_item ( this
                           , handle::transition (transition, net.document())
@@ -1349,13 +1418,7 @@ namespace fhg
             ).make_reference_id()
           );
 
-        std::string name ("transition");
-        //! \todo Don't check for duplicate names when fun.name is set?
-        while (net.get().has_transition (name))
-        {
-          name = inc (name);
-        }
-        transition.get_ref().name (name);
+        transition.get_ref().name (unique_name_for_transition (net));
 
         no_undo_move_item ( this
                           , handle::transition (transition, net.document())
@@ -1464,7 +1527,6 @@ namespace fhg
                              );
       }
 
-
       // -- place ----------------------------------------------------
       void change_manager_t::add_place
         ( const QObject* origin
@@ -1472,18 +1534,12 @@ namespace fhg
         , const boost::optional<QPointF>& position
         )
       {
-        std::string name ("place");
-        while (net.get().has_place (name))
-        {
-          name = inc (name);
-        }
-
         const ::xml::parse::id::ref::place place
           ( ::xml::parse::type::place_type
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
-            , name
+            , unique_name_for_place (net)
             //! \todo: default type to something useful?
             , ""
             , boost::none
@@ -1548,6 +1604,7 @@ namespace fhg
             connections_to_delete;
           boost::unordered_set< ::xml::parse::id::ref::place_map>
             place_maps_to_delete;
+          boost::unordered_set< ::xml::parse::id::ref::port> ports_to_delete;
 
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
@@ -1569,6 +1626,27 @@ namespace fhg
               );
           }
 
+          if (net.has_parent())
+          {
+            BOOST_FOREACH ( const ::xml::parse::id::ref::port& port
+                          , net.parent()->ports().ids()
+                          | boost::adaptors::filtered
+                            (boost::bind (is_associated_with, _1, place.id()))
+                          )
+            {
+              handle::port handle (port, place.document());
+
+              if (handle.is_tunnel())
+              {
+                ports_to_delete.insert (port);
+              }
+              else
+              {
+                set_place_association (this, handle, boost::none);
+              }
+            }
+          }
+
           BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
                         , connections_to_delete
                         )
@@ -1581,18 +1659,9 @@ namespace fhg
           {
             remove_place_map (this, handle::place_map (pm, place.document()));
           }
-
-          if (net.has_parent())
+          BOOST_FOREACH (const ::xml::parse::id::ref::port& id, ports_to_delete)
           {
-            BOOST_FOREACH ( const ::xml::parse::id::ref::port& port
-                          , net.parent()->ports().ids()
-                          | boost::adaptors::filtered
-                            (boost::bind (is_associated_with, _1, place.id()))
-                          )
-            {
-              set_place_association
-                (this, handle::port (port, place.document()), boost::none);
-            }
+            delete_port (this, handle::port (id, place.document()));
           }
         }
 
@@ -1606,9 +1675,27 @@ namespace fhg
                                       , const QString& name
                                       )
       {
+        beginMacro (tr ("place_set_name_action"));
+
+        if ( origin != this
+           && place.is_virtual()
+           && place.get().has_parent() && place.get().parent().get().has_parent()
+           )
+        {
+          const handle::port handle
+            ( *place.get().parent().get().parent().get().ports().get
+              (std::make_pair (place.get().name(), we::type::PORT_TUNNEL))
+            , place.document()
+            );
+          set_name (this, handle, name);
+          set_place_association (this, handle, name.toStdString());
+        }
+
         push ( new action::meta_set_name<handle::place>
                ("place_set_name_action", ACTION_CTOR_ARGS (place), place, name)
              );
+
+        endMacro();
       }
 
       void change_manager_t::set_type ( const QObject* origin
@@ -1616,9 +1703,26 @@ namespace fhg
                                       , const QString& type
                                       )
       {
+        beginMacro (tr ("place_set_type_action"));
+
+        if ( origin != this
+           && place.is_virtual()
+           && place.get().has_parent() && place.get().parent().get().has_parent()
+           )
+        {
+          const handle::port handle
+            ( *place.get().parent().get().parent().get().ports().get
+              (std::make_pair (place.get().name(), we::type::PORT_TUNNEL))
+            , place.document()
+            );
+          set_type (this, handle, type);
+        }
+
         push ( new action::meta_set_type<handle::place>
                ("place_set_type_action", ACTION_CTOR_ARGS (place), place, type)
              );
+
+        endMacro();
       }
 
       void change_manager_t::make_explicit
@@ -1690,28 +1794,40 @@ namespace fhg
         , const boost::optional<QPointF>& position
         )
       {
-        std::string name ("port");
-        //! \note If we add a in-port with type t and a out-port with
-        //! type u, it would find the same name for them, but will
-        //! fail on inserting, as in- and out-ports with same name
-        //! need same type.
-        if (direction == we::type::PORT_IN || direction == we::type::PORT_OUT)
+        beginMacro (tr ("add_port_action"));
+
+        const std::string name
+          ( direction == we::type::PORT_TUNNEL
+          ? unique_name_for_tunnel_port_and_place (function)
+          : unique_name_for_port (function, direction)
+          );
+
+        //! \todo Default type?
+        const std::string type ("");
+
+        if (direction == we::type::PORT_TUNNEL)
         {
-          while (  function.get().ports().has
-                    (std::make_pair (name, we::type::PORT_IN))
-                || function.get().ports().has
-                    (std::make_pair (name, we::type::PORT_OUT))
-                )
-          {
-            name = inc (name);
-          }
-        }
-        else
-        {
-          while (function.get().ports().has (std::make_pair (name, direction)))
-          {
-            name = inc (name);
-          }
+          const ::xml::parse::id::ref::place place
+            ( ::xml::parse::type::place_type
+              ( function.id().id_mapper()->next_id()
+              , function.id().id_mapper()
+              , boost::none
+              , name
+              , type
+              , true
+              ).make_reference_id()
+            );
+
+          no_undo_move_item ( this
+                            , handle::place (place, function.document())
+                            , position.get_value_or (QPointF())
+                            );
+
+          push ( new action::add_place ( ACTION_CTOR_ARGS (function)
+                                       , *function.get().get_net()
+                                       , place
+                                       )
+               );
         }
 
         const ::xml::parse::id::ref::port port
@@ -1720,9 +1836,8 @@ namespace fhg
             , function.id().id_mapper()
             , boost::none
             , name
-            //! \todo Default type?
-            , ""
-            , boost::none
+            , type
+            , name
             , direction
             ).make_reference_id()
           );
@@ -1737,6 +1852,8 @@ namespace fhg
                                     , port
                                     )
              );
+
+        endMacro();
       }
 
       namespace
@@ -1755,6 +1872,10 @@ namespace fhg
           return id.get().resolved_tunnel_port()
             && *id.get().resolved_tunnel_port() == port;
         }
+
+        //! \todo Member of change manager, removing virtual flag from
+        //! place. Removing virutal also removed the tunnel port.
+        template<typename T, typename U> void make_real(T,U){}
       }
 
       void change_manager_t::delete_port
@@ -1807,6 +1928,16 @@ namespace fhg
           }
         }
 
+        if (port.is_tunnel())
+        {
+          const boost::optional<xml::parse::id::ref::place> place
+            (port.get().resolved_place());
+          if (place)
+          {
+            make_real (this, handle::place (*place, port.document()));
+          }
+        }
+
         push (new action::remove_port (ACTION_CTOR_ARGS (port), port.id()));
 
         endMacro();
@@ -1839,9 +1970,21 @@ namespace fhg
                                       , const QString& name
                                       )
       {
+        beginMacro (tr ("port_set_name_action"));
+
+        if (origin != this && port.is_tunnel())
+        {
+          const handle::place handle
+            (*port.get().resolved_place(), port.document());
+          set_name (this, handle, name);
+          set_place_association (this, port, name.toStdString());
+        }
+
         push ( new action::meta_set_name<handle::port>
                ("port_set_name_action", ACTION_CTOR_ARGS (port), port, name)
              );
+
+        endMacro();
       }
 
       void change_manager_t::set_type ( const QObject* origin
@@ -1849,9 +1992,20 @@ namespace fhg
                                       , const QString& type
                                       )
       {
+        beginMacro (tr ("port_set_type_action"));
+
+        if (origin != this && port.is_tunnel())
+        {
+          const handle::place handle
+            (*port.get().resolved_place(), port.document());
+          set_type (this, handle, type);
+        }
+
         push ( new action::meta_set_type<handle::port>
                ("port_set_type_action", ACTION_CTOR_ARGS (port), port, type)
              );
+
+        endMacro();
       }
 
       void change_manager_t::set_place_association
@@ -1961,6 +2115,11 @@ namespace fhg
 
 #undef ACTION_CTOR_ARGS
 
+#undef EMIT_SIGNAL
+#undef EMIT_SIGNAL_CALL_NAME
+#undef EMIT_SIGNAL_CALL_NAME_
+#undef EMIT_SIGNAL_CALL_NAME__
+
 #define EMITTER_ARGS(Z,N,TEXT) BOOST_PP_COMMA_IF(N)                     \
       typename boost::mpl::at_c                                         \
         < boost::function_types::parameter_types<Fun>                   \
@@ -1969,15 +2128,13 @@ namespace fhg
 
 #define EMITTER_BODY(Z,ARGC,TEXT)                                       \
       template<typename Fun>                                            \
-      void change_manager_t::emit_signal                                \
+      void change_manager_t::BOOST_PP_CAT (emit_signal, ARGC)           \
         ( Fun fun                                                       \
-        , BOOST_PP_REPEAT ( BOOST_PP_ADD (1, ARGC)                      \
-                          , EMITTER_ARGS, BOOST_PP_EMPTY                \
-                          )                                             \
+        , BOOST_PP_REPEAT (ARGC, EMITTER_ARGS, BOOST_PP_EMPTY)          \
         )                                                               \
       {                                                                 \
         emit (this->*fun)                                               \
-          (BOOST_PP_ENUM_PARAMS (BOOST_PP_ADD (1, ARGC), arg));         \
+          (BOOST_PP_ENUM_PARAMS (ARGC, arg));                           \
       }
 
       BOOST_PP_REPEAT_FROM_TO (1, 10, EMITTER_BODY, BOOST_PP_EMPTY)

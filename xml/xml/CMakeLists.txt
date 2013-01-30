@@ -1,15 +1,31 @@
-function (add_xml_sources)
-  foreach (source ${ARGN})
-    set (XML_SOURCES ${XML_SOURCES}
-      ${CMAKE_CURRENT_SOURCE_DIR}/${source}
-      CACHE INTERNAL "xml_sources" FORCE
-    )
-  endforeach()
-endfunction()
 
 add_subdirectory (parse)
 
-add_library (xml ${XML_SOURCES})
+add_library (xml
+  parse/error.cpp
+  parse/id/generic.cpp
+  parse/id/mapper.cpp
+  parse/id/types.cpp
+  parse/parser.cpp
+  parse/state.cpp
+  parse/type/connect.cpp
+  parse/type/expression.cpp
+  parse/type/function.cpp
+  parse/type/mod.cpp
+  parse/type/net.cpp
+  parse/type/place.cpp
+  parse/type/place_map.cpp
+  parse/type/port.cpp
+  parse/type/require.cpp
+  parse/type/specialize.cpp
+  parse/type/struct.cpp
+  parse/type/template.cpp
+  parse/type/transition.cpp
+  parse/type/use.cpp
+  parse/util/mk_fstream.cpp
+  parse/util/valid_name.cpp
+  parse/warning.cpp
+)
 target_link_libraries (xml
   fhg-util
   ${Boost_LIBRARIES}
