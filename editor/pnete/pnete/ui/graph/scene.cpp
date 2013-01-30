@@ -207,8 +207,6 @@ namespace fhg
             , "connection_added"
             , "data::handle::connect, data::handle::place, data::handle::port"
             );
-          _net.connect_to_change_mgr
-            (this, "connection_removed", "data::handle::connect");
 
           _net.connect_to_change_mgr
             (this, "place_map_added", "data::handle::place_map");
@@ -1156,12 +1154,6 @@ namespace fhg
           {
             create_connection (connection);
           }
-        }
-
-        void scene_type::connection_removed
-          (const QObject* origin, const data::handle::connect& connection)
-        {
-          remove_item_for_handle<connection_item> (connection);
         }
 
         // # place_map ##############################################

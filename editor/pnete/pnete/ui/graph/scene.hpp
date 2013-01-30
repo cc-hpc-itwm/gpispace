@@ -69,9 +69,6 @@ namespace fhg
                                 , const data::handle::place&
                                 , const data::handle::port&
                                 );
-          void connection_removed ( const QObject*
-                                  , const data::handle::connect&
-                                  );
 
           // # place_map #############################################
           void place_map_added (const QObject*, const data::handle::place_map&);
