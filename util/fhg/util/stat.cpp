@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <ostream>
 
+#include <sys/time.h>
+
 namespace fhg
 {
   namespace util
@@ -16,34 +18,55 @@ namespace fhg
     {
       namespace
       {
-        typedef boost::unordered_map<std::string, long> cnt_map_type;
+        typedef boost::unordered_map<std::string, long> count_map_type;
+        typedef boost::unordered_map<std::string, double> time_map_type;
 
-        boost::unordered_map<std::string, cnt_map_type>& stat_map()
+        count_map_type& count_map()
         {
-          static boost::unordered_map<std::string, cnt_map_type> m;
+          static count_map_type m;
 
           return m;
         }
+        time_map_type& time_map()
+        {
+          static time_map_type m;
+
+          return m;
+        }
+
+        double current_time()
+        {
+          struct timeval tv;
+
+          gettimeofday (&tv, NULL);
+
+          return (double(tv.tv_sec) + double (tv.tv_usec) * 1E-6);
+        }
       }
-      void inc (const std::string& k, const std::string& s)
+      void inc (const std::string& k)
       {
-        ++stat_map()[k][s];
+        ++count_map()[k];
+      }
+      void start (const std::string& k)
+      {
+        time_map()[k] -= current_time();
+      }
+      void stop (const std::string& k)
+      {
+        time_map()[k] += current_time();
       }
       void out (std::ostream& s)
       {
-        typedef std::pair<std::string, cnt_map_type> scm_type;
+        typedef std::pair<std::string, long> sl_type;
 
-        BOOST_FOREACH (const scm_type& scm, stat_map())
+        BOOST_FOREACH (const sl_type& sl, count_map())
         {
-          s << scm.first << std::endl;
-
-          typedef std::pair<std::string, long> sl_type;
-
-          BOOST_FOREACH (const sl_type& sl, scm.second)
-          {
-            s << "  " << std::setw(12) << sl.second
-              << " " << sl.first << std::endl;
-          }
+          s << "STAT"
+            << " " << std::setw(12) << sl.second
+            << " " << std::setw(12) << time_map()[sl.first]
+            << " " << sl.first
+            << std::endl
+            ;
         }
       }
     }

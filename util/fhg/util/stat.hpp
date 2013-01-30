@@ -14,7 +14,9 @@ namespace fhg
     namespace stat
     {
       void out (std::ostream&);
-      void inc (const std::string&, const std::string&);
+      void inc (const std::string&);
+      void start (const std::string&);
+      void stop (const std::string&);
     }
   }
 }
