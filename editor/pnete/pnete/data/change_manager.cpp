@@ -1778,14 +1778,59 @@ namespace fhg
       void change_manager_t::make_virtual
         (const QObject* origin, const data::handle::place& p)
       {
-      //! \todo Add tunnel port.
+        if (p.is_virtual())
+        {
+          return;
+        }
+
+        beginMacro (tr ("make_virtual_action"));
+
+        const ::xml::parse::id::ref::port port
+          ( ::xml::parse::type::port_type
+            ( p.id().id_mapper()->next_id()
+            , p.id().id_mapper()
+            , boost::none
+            , p.get().name()
+            , p.get().type()
+            , p.get().name()
+            , we::type::PORT_TUNNEL
+            ).make_reference_id()
+          );
+
+        no_undo_move_item (this, handle::port (port, p.document()), QPointF());
+
+        push ( new action::add_port
+               ( ACTION_CTOR_ARGS (p)
+               , p.get().parent()->parent().get().make_reference_id()
+               , port
+               )
+             );
+
         push (new action::place_set_virtual (ACTION_CTOR_ARGS (p), p.id(), true));
+
+        endMacro();
       }
       void change_manager_t::make_real
         (const QObject* origin, const data::handle::place& p)
       {
-      //! \todo Remove tunnel port.
+        if (!p.is_virtual())
+        {
+          return;
+        }
+
+        beginMacro (tr ("make_real_action"));
+
+        delete_port
+          ( this
+          , handle::port ( *p.get().parent()->parent().get().ports().get
+                           (std::make_pair (p.get().name(), we::type::PORT_TUNNEL))
+                         , p.document()
+                         )
+          );
+
         push (new action::place_set_virtual (ACTION_CTOR_ARGS (p), p.id(), false));
+
+        endMacro();
       }
 
       void change_manager_t::set_property
