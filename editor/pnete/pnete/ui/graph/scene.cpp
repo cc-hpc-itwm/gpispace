@@ -188,8 +188,6 @@ namespace fhg
           // transition
           _net.connect_to_change_mgr
             (this, "transition_added", "data::handle::transition");
-          _net.connect_to_change_mgr
-            (this, "transition_deleted", "data::handle::transition");
 
           // place
           _net.connect_to_change_mgr
@@ -1191,12 +1189,6 @@ namespace fhg
           {
             weaver::display::transition (transition, this);
           }
-        }
-
-        void scene_type::transition_deleted
-          (const QObject* origin, const data::handle::transition& transition)
-        {
-          remove_item_for_handle<transition_item> (transition);
         }
 
         // # place ###################################################

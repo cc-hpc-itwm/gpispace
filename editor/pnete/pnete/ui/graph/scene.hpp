@@ -79,7 +79,6 @@ namespace fhg
 
           // # transition ############################################
           void transition_added (const QObject*, const data::handle::transition&);
-          void transition_deleted (const QObject*, const data::handle::transition&);
 
           // # place #################################################
           void place_added (const QObject*, const data::handle::place&);

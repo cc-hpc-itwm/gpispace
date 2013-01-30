@@ -51,6 +51,9 @@ namespace fhg
           virtual void setPos (const QPointF&);
 
         public slots:
+          void transition_deleted
+            (const QObject*, const data::handle::transition&);
+
           void property_changed
             ( const QObject* origin
             , const data::handle::transition& changed_handle

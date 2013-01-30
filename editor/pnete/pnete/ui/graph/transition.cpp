@@ -52,6 +52,9 @@ namespace fhg
             , "data::handle::transition, "
               "we::type::property::key_type, we::type::property::value_type"
             );
+
+          handle.connect_to_change_mgr
+            (this, "transition_deleted", "data::handle::transition");
         }
 
         const data::handle::transition& transition_item::handle() const
@@ -185,6 +188,16 @@ namespace fhg
                             , Qt::AlignCenter | Qt::TextWordWrap
                             , QString::fromStdString (name())
                             );
+        }
+
+        void transition_item::transition_deleted
+          (const QObject*, const data::handle::transition& changed)
+        {
+          if (changed == handle())
+          {
+            scene()->removeItem (this);
+            deleteLater();
+          }
         }
 
         void transition_item::name_changed
