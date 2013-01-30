@@ -43,6 +43,13 @@ namespace fhg
           enum { Type = port_place_association_graph_type };
           virtual int type() const { return Type; }
 
+        public slots:
+          void place_association_set
+            ( const QObject*
+            , const data::handle::port&
+            , const boost::optional<std::string>& place
+            );
+
         private:
           data::handle::port _handle;
         };

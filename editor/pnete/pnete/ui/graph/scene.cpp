@@ -1199,12 +1199,7 @@ namespace fhg
           , const boost::optional<std::string>& place
           )
         {
-          if (port.is_tunnel())
-          {
-            return;
-          }
-
-          if (place)
+          if (is_in_my_net (port) && !port.is_tunnel() && place)
           {
             top_level_port_item* port_item (NULL);
 
@@ -1238,10 +1233,6 @@ namespace fhg
               }
             }
             throw std::runtime_error ("place_association to unknown place");
-          }
-          else
-          {
-            remove_item_for_handle<port_place_association> (port);
           }
         }
       }
