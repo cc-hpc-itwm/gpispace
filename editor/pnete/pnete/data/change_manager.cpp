@@ -1485,12 +1485,22 @@ namespace fhg
 
         //! \note remove_connection will modify transition's
         //! connections, thus copy out of there first, then modify.
-        boost::unordered_set< ::xml::parse::id::ref::connect> to_delete
-          (transition.get().connections().ids());
+        boost::unordered_set< ::xml::parse::id::ref::connect>
+          connections_to_delete (transition.get().connections().ids());
+        boost::unordered_set< ::xml::parse::id::ref::place_map>
+          place_maps_to_delete (transition.get().place_map().ids());
 
-        BOOST_FOREACH (const ::xml::parse::id::ref::connect& c, to_delete)
+        BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
+                      , connections_to_delete
+                      )
         {
           remove_connection (this, handle::connect (c, transition.document()));
+        }
+        BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& c
+                      , place_maps_to_delete
+                      )
+        {
+          remove_place_map (this, handle::place_map (c, transition.document()));
         }
 
         push ( new action::remove_transition ( ACTION_CTOR_ARGS (transition)
