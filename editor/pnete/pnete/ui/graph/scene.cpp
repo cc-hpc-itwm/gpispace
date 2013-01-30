@@ -1126,18 +1126,6 @@ namespace fhg
           return result;
         }
 
-        template<typename item_type, typename handle_type>
-          void scene_type::remove_item_for_handle (const handle_type& handle)
-        {
-          if (is_in_my_net (handle))
-          {
-            item_type* item (item_with_handle<item_type> (handle));
-            removeItem (item);
-            delete item;
-          }
-        }
-
-        // # connection ##############################################
         //! \todo Don't pass from and to. Pass net.
         void scene_type::connection_added
           ( const QObject* origin
@@ -1152,8 +1140,6 @@ namespace fhg
           }
         }
 
-        // # place_map ##############################################
-        //! \todo Don't pass from and to. Pass net.
         void scene_type::place_map_added
           (const QObject* origin, const data::handle::place_map& place_map)
         {
@@ -1163,7 +1149,6 @@ namespace fhg
           }
         }
 
-        // # transition ##############################################
         void scene_type::transition_added
           (const QObject* origin, const data::handle::transition& transition)
         {
@@ -1173,7 +1158,6 @@ namespace fhg
           }
         }
 
-        // # place ###################################################
         void scene_type::place_added
           (const QObject* origin, const data::handle::place& place)
         {
@@ -1183,7 +1167,6 @@ namespace fhg
           }
         }
 
-        // # port ####################################################
         void scene_type::port_added
           (const QObject* origin, const data::handle::port& port)
         {

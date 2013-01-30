@@ -63,25 +63,16 @@ namespace fhg
         public slots:
           void auto_layout();
 
-          // # connection ############################################
           void connection_added ( const QObject*
                                 , const data::handle::connect&
                                 , const data::handle::place&
                                 , const data::handle::port&
                                 );
-
-          // # place_map #############################################
           void place_map_added (const QObject*, const data::handle::place_map&);
-
-          // # transition ############################################
-          void transition_added (const QObject*, const data::handle::transition&);
-
-          // # place #################################################
+          void transition_added
+            (const QObject*, const data::handle::transition&);
           void place_added (const QObject*, const data::handle::place&);
-
-          // # top-level-port ########################################
           void port_added (const QObject*, const data::handle::port&);
-
           void place_association_set
             ( const QObject* origin
             , const data::handle::port& port
@@ -108,13 +99,8 @@ namespace fhg
           template<typename item_type> QList<item_type*> items_of_type
             (const QPointF&) const;
 
-          template<typename item_type, typename handle_type>
-            void remove_item_for_handle (const handle_type& handle);
-
           const data::handle::net& net() const;
           const data::handle::function& function() const;
-
-          void remove_transition_item (transition_item*);
 
           void remove_pending_connection();
 
