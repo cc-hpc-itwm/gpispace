@@ -28,6 +28,8 @@
             := set_erase (${cache.slots.available}, ${slot});
 
           ${cache.stat.hit} := ${cache.stat.hit} + 1;
+
+          ${cache.num.user} := ${cache.num.user} + 1;
         </expression>
         <condition>
           map_is_assigned (${cache.by_id.slot}, ${id})
@@ -56,7 +58,9 @@
           ${cache.by_slot.num_users}
             := map_assign (${cache.by_slot.num_users}, ${slot}, 1);
 
-          ${cache.stat.miss.empty} := ${cache.stat.miss.empty} + 1
+          ${cache.stat.miss.empty} := ${cache.stat.miss.empty} + 1;
+
+          ${cache.num.user} := ${cache.num.user} + 1;
         </expression>
         <condition>
           (!map_is_assigned (${cache.by_id.slot}, ${id}))
@@ -94,7 +98,9 @@
           ${cache.by_slot.num_users}
             := map_assign (${cache.by_slot.num_users}, ${slot}, 1);
 
-          ${cache.stat.miss.available} := ${cache.stat.miss.available} + 1
+          ${cache.stat.miss.available} := ${cache.stat.miss.available} + 1;
+
+          ${cache.num.user} := ${cache.num.user} + 1;
         </expression>
         <condition>
           (!map_is_assigned (${cache.by_id.slot}, ${id}))

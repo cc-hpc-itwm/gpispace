@@ -20,6 +20,9 @@
         <field name="available" type="long"/>
       </struct>
     </struct>
+    <struct name="num">
+      <field name="user" type="long"/>
+    </struct>
   </struct>
 
   <struct name="slot_and_id_type">
