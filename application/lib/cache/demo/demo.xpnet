@@ -36,6 +36,7 @@
       <connect-in port="id" place="id"/>
       <connect-out port="slot" place="slot"/>
       <place-map virtual="cache" real="cache"/>
+      <place-map virtual="cache_assigned" real="cache"/>
     </transition>
     <place name="slot" type="long"/>
     <transition name="work">

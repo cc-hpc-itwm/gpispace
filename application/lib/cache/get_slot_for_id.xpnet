@@ -1,9 +1,11 @@
 <defun>
   <tunnel name="cache" type="cache_type" place="cache"/>
+  <tunnel name="cache_assigned" type="cache_type" place="cache_assigned"/>
   <in name="id" type="long" place="id"/>
   <out name="slot" type="long" place="slot"/>
   <net>
     <place name="cache" type="cache_type" virtual="true"/>
+    <place name="cache_assigned" type="cache_type" virtual="true"/>
     <place name="id" type="long"/>
     <place name="slot" type="long"/>
 
@@ -35,7 +37,8 @@
           map_is_assigned (${cache.by_id.slot}, ${id})
         </condition>
       </defun>
-      <connect-inout port="cache" place="cache"/>
+      <connect-in port="cache" place="cache"/>
+      <connect-out port="cache" place="cache_assigned"/>
       <connect-in port="id" place="id"/>
       <connect-out port="slot" place="slot"/>
     </transition>
@@ -68,7 +71,8 @@
           (!set_empty (${cache.slots.empty}))
         </condition>
       </defun>
-      <connect-inout port="cache" place="cache"/>
+      <connect-in port="cache" place="cache"/>
+      <connect-out port="cache" place="cache_assigned"/>
       <connect-in port="id" place="id"/>
       <connect-out port="slot" place="slot"/>
     </transition>
@@ -110,7 +114,8 @@
           (!set_empty (${cache.slots.available}))
         </condition>
       </defun>
-      <connect-inout port="cache" place="cache"/>
+      <connect-in port="cache" place="cache"/>
+      <connect-out port="cache" place="cache_assigned"/>
       <connect-in port="id" place="id"/>
       <connect-out port="slot" place="slot"/>
     </transition>
