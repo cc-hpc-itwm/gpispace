@@ -55,6 +55,8 @@ namespace fhg
           void make_explicit (const QObject*) const;
 
           bool is_virtual() const;
+          void make_virtual (const QObject*) const;
+          void make_real (const QObject*) const;
 
           using place_meta_base::operator==;
         };

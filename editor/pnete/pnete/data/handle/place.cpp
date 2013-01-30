@@ -94,6 +94,15 @@ namespace fhg
         {
           return get().is_virtual();
         }
+
+        void place::make_virtual (const QObject* origin) const
+        {
+          change_manager().make_virtual (origin, *this);
+        }
+        void place::make_real (const QObject* origin) const
+        {
+          change_manager().make_real (origin, *this);
+        }
       }
     }
   }

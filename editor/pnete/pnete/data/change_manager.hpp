@@ -146,6 +146,9 @@ namespace fhg
 
         void make_explicit (const QObject*, const data::handle::place&);
 
+        void make_virtual (const QObject*, const data::handle::place&);
+        void make_real (const QObject*, const data::handle::place&);
+
         void set_property ( const QObject*
                           , const data::handle::place&
                           , const ::we::type::property::key_type&
@@ -298,6 +301,8 @@ namespace fhg
         // -- place --------------------------------------------------
         void place_added (const QObject*, const data::handle::place&);
         void place_deleted (const QObject*, const data::handle::place&);
+        void place_is_virtual_changed
+          (const QObject*, const data::handle::place&, bool);
         void property_changed ( const QObject*
                               , const data::handle::place&
                               , const we::type::property::key_type&

@@ -69,6 +69,9 @@ namespace fhg
             , "data::handle::place, QString"
             );
 
+          handle.connect_to_change_mgr
+            (this, "place_is_virtual_changed", "data::handle::place, bool");
+
           connect ( this, SIGNAL (association_added (association*))
                   , this, SLOT (slot_association_added (association*))
                   );
@@ -217,6 +220,16 @@ namespace fhg
           else
           {
             setOpacity (1.0);
+          }
+        }
+
+        void place_item::place_is_virtual_changed
+          (const QObject*, const data::handle::place& changed_handle, bool)
+        {
+          if (changed_handle == handle())
+          {
+            clear_style_cache();
+            update();
           }
         }
 

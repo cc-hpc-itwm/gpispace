@@ -63,6 +63,9 @@ namespace fhg
             , const we::type::property::value_type& value
             );
 
+          void place_is_virtual_changed
+            (const QObject*, const data::handle::place&, bool);
+
           void slot_association_added (association* c);
           void slot_association_removed (association* c);
           void association_changed_in_any_way();

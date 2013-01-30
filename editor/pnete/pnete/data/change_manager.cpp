@@ -89,6 +89,7 @@ namespace fhg
           // -- place --------------------------------------------------
           EXPOSE (place_added);
           EXPOSE (place_deleted);
+          EXPOSE (place_is_virtual_changed);
           EXPOSE (type_set);
 
           // - port ----------------------------------------------------
@@ -870,6 +871,49 @@ namespace fhg
           ACTION_MEMBERS;
           ::xml::parse::id::ref::place _place;
           ::xml::parse::id::ref::net _net;
+        };
+
+        void place_set_virtual_impl
+          (ACTION_ARG_LIST, const ::xml::parse::id::ref::place& place, bool val)
+        {
+          place.get_ref().set_virtual (val);
+
+          EMIT_SIGNAL ( &signal::place_is_virtual_changed
+                      , origin
+                      , handle::place (place, document)
+                      , val
+                      );
+        }
+
+        class place_set_virtual : public QUndoCommand
+        {
+        public:
+          place_set_virtual ( ACTION_ARG_LIST
+                            , const ::xml::parse::id::ref::place& place
+                            , bool new_value
+                            )
+            : ACTION_INIT ("place_set_virtual_action")
+            , _place (place)
+            , _old_value (_place.get().is_virtual())
+            , _new_value (new_value)
+          { }
+
+          virtual void undo()
+          {
+            place_set_virtual_impl (ACTION_UNDO_ARGS, _place, _old_value);
+          }
+
+          virtual void redo()
+          {
+            place_set_virtual_impl (ACTION_UNDO_ARGS, _place, _new_value);
+            _origin = NULL;
+          }
+
+        private:
+          ACTION_MEMBERS;
+          ::xml::parse::id::ref::place _place;
+          bool _old_value;
+          bool _new_value;
         };
 
         // -- port --------------------------------------------------
@@ -1731,6 +1775,19 @@ namespace fhg
         set_property (origin, place, "fhg.pnete.is_implicit_place", "false");
       }
 
+      void change_manager_t::make_virtual
+        (const QObject* origin, const data::handle::place& p)
+      {
+      //! \todo Add tunnel port.
+        push (new action::place_set_virtual (ACTION_CTOR_ARGS (p), p.id(), true));
+      }
+      void change_manager_t::make_real
+        (const QObject* origin, const data::handle::place& p)
+      {
+      //! \todo Remove tunnel port.
+        push (new action::place_set_virtual (ACTION_CTOR_ARGS (p), p.id(), false));
+      }
+
       void change_manager_t::set_property
         ( const QObject* origin
         , const data::handle::place& place
@@ -1872,10 +1929,6 @@ namespace fhg
           return id.get().resolved_tunnel_port()
             && *id.get().resolved_tunnel_port() == port;
         }
-
-        //! \todo Member of change manager, removing virtual flag from
-        //! place. Removing virutal also removed the tunnel port.
-        template<typename T, typename U> void make_real(T,U){}
       }
 
       void change_manager_t::delete_port

@@ -539,6 +539,27 @@ namespace fhg
                                 , this
                                 )
                   );
+
+                if (handle.is_virtual())
+                {
+                  fhg::util::qt::boost_connect<void()>
+                    ( menu->addAction (tr ("place_make_real"))
+                    , SIGNAL (triggered())
+                    , item_below_cursor
+                    , boost::bind
+                      (&data::handle::place::make_real, handle, this)
+                    );
+                }
+                else
+                {
+                  fhg::util::qt::boost_connect<void()>
+                    ( menu->addAction (tr ("place_make_virtual"))
+                    , SIGNAL (triggered())
+                    , item_below_cursor
+                    , boost::bind
+                      (&data::handle::place::make_virtual, handle, this)
+                    );
+                }
               }
 
               menu->addSeparator();
