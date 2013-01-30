@@ -67,6 +67,8 @@ namespace fhg
           void slot_set_type();
           void refresh_content();
 
+          void port_deleted (const QObject*, const data::handle::port&);
+
           void type_or_name_changed
             (const QObject*, const data::handle::port&, const QString&);
 

@@ -214,8 +214,6 @@ namespace fhg
           // top-level-ports
           _net.connect_to_change_mgr
             (this, "port_added", "data::handle::port");
-          _net.connect_to_change_mgr
-            (this, "port_deleted", "data::handle::port");
 
           _net.connect_to_change_mgr
             ( this
@@ -1193,17 +1191,6 @@ namespace fhg
           {
             weaver::display::top_level_port (port, this);
           }
-        }
-
-        void scene_type::port_deleted
-          (const QObject* origin, const data::handle::port& port)
-        {
-          if (port.is_tunnel())
-          {
-            return;
-          }
-
-          remove_item_for_handle<port_item> (port);
         }
 
         void scene_type::place_association_set

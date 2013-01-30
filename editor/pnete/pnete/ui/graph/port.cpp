@@ -54,6 +54,8 @@ namespace fhg
             , "data::handle::port, QString"
             );
 
+          handle.connect_to_change_mgr
+            (this, "port_deleted", "data::handle::port");
 
           //            setAcceptHoverEvents (true);
           //! \todo verbose name
@@ -405,6 +407,16 @@ namespace fhg
           else
           {
             painter->drawText(area, Qt::AlignCenter, QString::fromStdString (name()));
+          }
+        }
+
+        void port_item::port_deleted
+          (const QObject*, const data::handle::port& changed)
+        {
+          if (changed == handle())
+          {
+            scene()->removeItem (this);
+            deleteLater();
           }
         }
 
