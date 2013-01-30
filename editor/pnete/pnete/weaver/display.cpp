@@ -143,13 +143,19 @@ namespace fhg
 
         WSIG (port_toplevel, port::open, ::xml::parse::id::ref::port, id)
         {
-          ui::graph::port_item* port_item
-            (new ui::graph::top_level_port_item (data::handle::port (id, _root)));
+          data::handle::port port (id, _root);
 
-          initialize_and_set_position (port_item, id);
-          _scene->addItem (port_item);
+          if (port.is_tunnel())
+          {
+            return;
+          }
 
-          _scene->create_port_place_association (data::handle::port (id, _root));
+          ui::graph::base_item* item (new ui::graph::top_level_port_item (port));
+
+          initialize_and_set_position (item, id);
+          _scene->addItem (item);
+
+          _scene->create_port_place_association (port);
         }
 
         class net

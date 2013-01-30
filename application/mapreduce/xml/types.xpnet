@@ -75,19 +75,9 @@
   </struct>
   
    <struct name="reduce_result">
-	<field name="partition_locked" type="long"/>
     <field name="partition_info" type="partition_info"/>
   </struct>
  
-    <struct name="iterator_red_info">
-    	<field name="avail_slots" type="long"/>
-    	<field name="slots_to_reduce" type="string"/>
-    	<field name="part_used" type="string"/>
-    	<field name="red_used" type="string"/>
-    	<!-- new added -->
-    	<field name="border_used" type="long"/>
-   </struct>
-
  	<struct name="reduce_slot">
      <field name="id" type="long"/>
      <field name="part_used" type="long"/>

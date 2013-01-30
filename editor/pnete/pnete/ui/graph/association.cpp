@@ -76,15 +76,15 @@ namespace fhg
           std::swap (_start, _end);
         }
 
-        QPainterPath association::shape () const
+        QPainterPath association::shape() const
         {
           return style::association::shape (all_points());
         }
 
         void association::paint ( QPainter* painter
-                                    , const QStyleOptionGraphicsItem*
-                                    , QWidget*
-                                    )
+                                , const QStyleOptionGraphicsItem*
+                                , QWidget*
+                                )
         {
           style::draw_shape (this, painter);
         }

@@ -1161,7 +1161,6 @@
             new_reduce_info.red_used = 0; // free the reduce slot
             
             reduce_result.partition_info = partition_copy_result.partition_info;
-            reduce_result.partition_locked = 1 - partition_copy_result.succeeded;
 		
         	timestamp_t time_end_reduce = ::mapreduce::util::get_timestamp();
 			MLOG(INFO, "The reduce operation took "<<(time_end_reduce - time_start_reduce)/MS<<"ms");
@@ -1184,7 +1183,7 @@
         <out name="partition_result" type="partition_result"/>
         <expression>
         	${partition_result.partition_info}:=${reduce_result.partition_info};
-        	${partition_result.succeeded}:=1L
+        	${partition_result.succeeded}:=0L
         </expression>
       </defun>
       <connect-in port="reduce_result" place="reduce_result"/>
@@ -1643,7 +1642,6 @@
       <connect-out port="done" place="write_done"/>
     </transition>
     
-
     
     <transition name="finalize">
       <require key="GPI" />
