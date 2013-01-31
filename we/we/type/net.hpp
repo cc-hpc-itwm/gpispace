@@ -152,7 +152,10 @@ namespace petri_net
 
     void update_enabled (const transition_id_type&);
     void update_enabled_put_token
-      (const transition_id_type&, const place_id_type&, const token::type&);
+      ( const transition_id_type&
+      , const place_id_type&
+      , const std::list<token::type>::iterator&
+      );
 
     void disable (const transition_id_type&);
 
