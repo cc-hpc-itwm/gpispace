@@ -10,7 +10,7 @@
 
 #include <we/type/transition.fwd.hpp>
 
-#include <vector>
+#include <list>
 
 #include <boost/unordered_map.hpp>
 
