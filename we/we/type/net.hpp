@@ -22,7 +22,7 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <vector>
+#include <list>
 
 namespace petri_net
 {
@@ -82,7 +82,7 @@ namespace petri_net
 
     void put_token (const place_id_type&, const token::type&);
 
-    const std::vector<token::type>& get_token (const place_id_type&) const;
+    const std::list<token::type>& get_token (const place_id_type&) const;
 
     void delete_all_token (const place_id_type&);
     bool can_fire() const;
@@ -104,7 +104,7 @@ namespace petri_net
     adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
 
     boost::unordered_map< place_id_type
-                        , std::vector<token::type>
+                        , std::list<token::type>
                         > _token_by_place_id;
 
     priostore::type<transition_id_type> _enabled;

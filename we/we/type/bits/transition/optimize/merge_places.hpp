@@ -116,7 +116,7 @@ namespace we { namespace type {
         const std::string name_A (net.get_place (pid_A).name());
         const std::string name_B (net.get_place (pid_B).name());
 
-        std::vector<token::type> tokens (net.get_token (pid_B));
+        std::list<token::type> tokens (net.get_token (pid_B));
 
         net.delete_place (pid_B);
 

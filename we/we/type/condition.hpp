@@ -43,7 +43,7 @@ namespace condition
     friend std::ostream& operator<< (std::ostream&, const type&);
 
     typedef boost::unordered_map< petri_net::place_id_type
-                                , std::vector<token::type>
+                                , std::list<token::type>
                                 > tokens_by_place_id_t;
 
   public:

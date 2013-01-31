@@ -293,19 +293,19 @@ namespace petri_net
 
   namespace
   {
-    const std::vector<token::type>& no_tokens()
+    const std::list<token::type>& no_tokens()
     {
-      static const std::vector<token::type> x;
+      static const std::list<token::type> x;
 
       return x;
     }
   }
 
-  const std::vector<token::type>&
+  const std::list<token::type>&
   net::get_token (const place_id_type& pid) const
   {
     typedef boost::unordered_map< place_id_type
-                                , std::vector<token::type>
+                                , std::list<token::type>
                                 > token_by_place_id_t;
 
     token_by_place_id_t::const_iterator pos (_token_by_place_id.find (pid));
@@ -363,7 +363,7 @@ namespace petri_net
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      const std::vector<token::type>& tokens (_token_by_place_id[place_id]);
+      const std::list<token::type>& tokens (_token_by_place_id[place_id]);
 
       if (tokens.empty())
       {
@@ -384,13 +384,13 @@ namespace petri_net
                                      )
   {
     we::util::cross_type cross;
-    std::vector<token::type> special (1, token);
+    std::list<token::type> special (1, token);
 
     BOOST_FOREACH ( const place_id_type& place_id
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      const std::vector<token::type>& tokens
+      const std::list<token::type>& tokens
         (place_id == pid ? special : _token_by_place_id[place_id]);
 
       if (tokens.empty())
@@ -431,7 +431,7 @@ namespace petri_net
 
       if (!is_read_connection (tid, pid))
       {
-        std::vector<token::type>& tokens (_token_by_place_id[pid]);
+        std::list<token::type>& tokens (_token_by_place_id[pid]);
         tokens.erase (std::find (tokens.begin(), tokens.end(), token));
 
         BOOST_FOREACH ( const transition_id_type& t
