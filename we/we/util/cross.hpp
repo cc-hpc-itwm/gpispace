@@ -42,6 +42,10 @@ namespace we
                                          , token::type
                                          >&
                     ) const;
+      void write_to (boost::unordered_map< petri_net::place_id_type
+                                         , std::list<token::type>::iterator
+                                         >&
+                    ) const;
       void push ( const petri_net::place_id_type&
                 , std::list<token::type>&
                 );
