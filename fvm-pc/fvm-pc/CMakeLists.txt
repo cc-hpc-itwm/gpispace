@@ -5,10 +5,10 @@ set (hdrs
   util.hpp
   )
 
-if (WITH_DEPRECATED_FVM_PC)
-  if (WITH_FAKE_PC)
+if (ENABLE_DEPRECATED_FVM_PC)
+  if (ENABLE_FAKE_PC)
     add_subdirectory(fake)
-  endif (WITH_FAKE_PC)
+  endif (ENABLE_FAKE_PC)
 
 #  set (srcs
 #    pc.cpp

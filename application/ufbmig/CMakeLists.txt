@@ -6,7 +6,7 @@ endif(POLICY CMP0011)
 
 project (ufbmig)
 
-option(ENABLE_UFBMIGD "Compile UfbMigDaemon" OFF)
+option(ENABLE_UFBMIGD "Compile UfbMigDaemon" ON)
 
 add_subdirectory(xml)
 if (ENABLE_UFBMIGD)

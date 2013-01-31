@@ -12,8 +12,8 @@ add_subdirectory(selftest)
 add_subdirectory(transform_file)
 add_subdirectory(mapreduce)
 
-option(WITH_APPLICATION_UFBMIG "Compile UfbMig Application" OFF)
-if (WITH_APPLICATION_UFBMIG)
+option(ENABLE_APPLICATION_UFBMIG "Compile UfbMig Application" ON)
+if (ENABLE_APPLICATION_UFBMIG)
    add_subdirectory(ufbmig)
 endif()
 

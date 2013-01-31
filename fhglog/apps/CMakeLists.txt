@@ -1,6 +1,6 @@
 # -*- mode: cmake; -*-
 
-if (WITH_REMOTE_LOGGING)
+if (ENABLE_REMOTE_LOGGING)
   add_executable(fhglogd fhglog-server.cpp)
   add_executable(fhglogc fhglog-client.cpp)
   add_executable(fhglog-dump fhglog-dump.cpp)
@@ -13,4 +13,4 @@ if (WITH_REMOTE_LOGGING)
     RUNTIME
     DESTINATION bin
     COMPONENT runtime)
-endif (WITH_REMOTE_LOGGING)
+endif (ENABLE_REMOTE_LOGGING)
