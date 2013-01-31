@@ -170,7 +170,7 @@ install (FILES
 
 install (FILES
   type/value/cpp/get.hpp
-  DESTINATION include/we/tpe/value/cpp
+  DESTINATION include/we/type/value/cpp
   COMPONENT headers
 )
 
