@@ -19,6 +19,8 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -107,17 +109,9 @@ namespace petri_net
                         , std::list<token::type>
                         > _token_by_place_id;
 
-    priostore::type<transition_id_type> _enabled;
-
-    boost::unordered_map< transition_id_type
-                        , boost::unordered_map< petri_net::place_id_type
-                                              , token::type
-                                              >
-                        > _enabled_choice;
-
     friend class boost::serialization::access;
     template<typename Archive>
-    void serialize (Archive& ar, const unsigned int)
+    void save (Archive& ar, const unsigned int) const
     {
       ar & BOOST_SERIALIZATION_NVP(_place_id);
       ar & BOOST_SERIALIZATION_NVP(_pmap);
@@ -126,9 +120,34 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP(_adj_pt);
       ar & BOOST_SERIALIZATION_NVP(_adj_tp);
       ar & BOOST_SERIALIZATION_NVP(_token_by_place_id);
-      ar & BOOST_SERIALIZATION_NVP(_enabled);
-      ar & BOOST_SERIALIZATION_NVP(_enabled_choice);
     }
+    template<typename Archive>
+    void load (Archive& ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP(_place_id);
+      ar & BOOST_SERIALIZATION_NVP(_pmap);
+      ar & BOOST_SERIALIZATION_NVP(_transition_id);
+      ar & BOOST_SERIALIZATION_NVP(_tmap);
+      ar & BOOST_SERIALIZATION_NVP(_adj_pt);
+      ar & BOOST_SERIALIZATION_NVP(_adj_tp);
+      ar & BOOST_SERIALIZATION_NVP(_token_by_place_id);
+
+      BOOST_FOREACH ( const transition_id_type& tid
+                    , _tmap | boost::adaptors::map_keys
+                    )
+      {
+        update_enabled (tid);
+      }
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+    priostore::type<transition_id_type> _enabled;
+
+    boost::unordered_map< transition_id_type
+                        , boost::unordered_map< petri_net::place_id_type
+                                              , token::type
+                                              >
+                        > _enabled_choice;
 
     void update_enabled (const transition_id_type&);
     void update_enabled_put_token
