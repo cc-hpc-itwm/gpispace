@@ -17,10 +17,24 @@ namespace we
 {
   namespace util
   {
+    namespace
+    {
+      template<typename IT>
+      IT succ (IT it)
+      {
+        return ++it;
+      }
+    }
+
     iterators_type::iterators_type (std::list<token::type>& tokens)
       : _begin (tokens.begin())
       , _end (tokens.end())
       , _pos (tokens.begin())
+    {}
+    iterators_type::iterators_type (const std::list<token::type>::iterator& token)
+        : _begin (token)
+        , _end (succ (token))
+        , _pos (token)
     {}
     const std::list<token::type>::iterator& iterators_type::end() const
     {
@@ -99,18 +113,6 @@ namespace we
       return transition.condition().parser().eval_all_bool (context);
     }
     void cross_type::write_to
-      (boost::unordered_map<petri_net::place_id_type,token::type>& choice) const
-    {
-      choice.clear();
-
-      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
-
-      BOOST_FOREACH (const pits_type& pits, _m)
-      {
-        choice.insert (std::make_pair (pits.first, *pits.second.pos()));
-      }
-    }
-    void cross_type::write_to
       (boost::unordered_map< petri_net::place_id_type
                            , std::list<token::type>::iterator
                            >& choice
@@ -130,6 +132,12 @@ namespace we
                           )
     {
       _m.insert (std::make_pair (place_id, iterators_type (tokens)));
+    }
+    void cross_type::push ( const petri_net::place_id_type& place_id
+                          , const std::list<token::type>::iterator& token
+                          )
+    {
+      _m.insert (std::make_pair (place_id, iterators_type (token)));
     }
   }
 }

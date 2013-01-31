@@ -22,6 +22,7 @@ namespace we
     {
     public:
       iterators_type (std::list<token::type>&);
+      iterators_type (const std::list<token::type>::iterator&);
       const std::list<token::type>::iterator& end() const;
       const std::list<token::type>::iterator& pos() const;
       void operator++();
@@ -39,15 +40,14 @@ namespace we
       bool step();
       bool eval (const we::type::transition_t&) const;
       void write_to (boost::unordered_map< petri_net::place_id_type
-                                         , token::type
-                                         >&
-                    ) const;
-      void write_to (boost::unordered_map< petri_net::place_id_type
                                          , std::list<token::type>::iterator
                                          >&
                     ) const;
       void push ( const petri_net::place_id_type&
                 , std::list<token::type>&
+                );
+      void push ( const petri_net::place_id_type&
+                , const std::list<token::type>::iterator&
                 );
     private:
       boost::unordered_map<petri_net::place_id_type, iterators_type> _m;

@@ -384,23 +384,28 @@ namespace petri_net
                                      )
   {
     we::util::cross_type cross;
-    std::list<token::type> special (1, token);
 
     BOOST_FOREACH ( const place_id_type& place_id
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      std::list<token::type>& tokens
-        (place_id == pid ? special : _token_by_place_id[place_id]);
+      std::list<token::type>& tokens (_token_by_place_id[place_id]);
 
-      if (tokens.empty())
+      if (place_id == pid)
       {
-        disable (tid);
-
-        return;
+        cross.push (place_id, std::find (tokens.begin(), tokens.end(), token));
       }
+      else
+      {
+        if (tokens.empty())
+        {
+          disable (tid);
 
-      cross.push (place_id, tokens);
+          return;
+        }
+
+        cross.push (place_id, tokens);
+      }
     }
 
     eval_cross (tid, cross);
@@ -420,19 +425,18 @@ namespace petri_net
 
     boost::unordered_set<transition_id_type> transitions_to_update;
 
-    typedef std::pair<place_id_type, token::type> place_and_token_type;
+    typedef std::pair<place_id_type, std::list<token::type>::iterator> place_and_token_type;
 
     BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
       const place_id_type& pid (pt.first);
-      const token::type& token (pt.second);
+      const std::list<token::type>::iterator& token (pt.second);
 
-      act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
+      act.add_input (std::make_pair (*token, transition.outer_to_inner (pid)));
 
       if (!is_read_connection (tid, pid))
       {
-        std::list<token::type>& tokens (_token_by_place_id[pid]);
-        tokens.erase (std::find (tokens.begin(), tokens.end(), token));
+        _token_by_place_id.at (pid).erase (token);
 
         BOOST_FOREACH ( const transition_id_type& t
                       , out_of_place (pid) | boost::adaptors::map_keys
