@@ -185,36 +185,19 @@ namespace fhg
                        )
                      )
         {
-          // transition
           _net.connect_to_change_mgr
             (this, "transition_added", "data::handle::transition");
-
-          // place
           _net.connect_to_change_mgr
             (this, "place_added", "data::handle::place");
-
-          // connections
-          //! \note This is not really in responsibility of the net,
-          // but we would need to connect every transition being added
-          // to the signal/slot again, which would be a lot of
-          // reconnection happening, every time when adding or
-          // removing transitions. Thus we just use the net's change
-          // manager (as that should be the same as the transitions'
-          // one) and hook for any connection changing in any
-          // transition.
           _net.connect_to_change_mgr
             ( this
             , "connection_added"
             , "data::handle::connect, data::handle::place, data::handle::port"
             );
-
           _net.connect_to_change_mgr
             (this, "place_map_added", "data::handle::place_map");
-
-          // top-level-ports
           _net.connect_to_change_mgr
             (this, "port_added", "data::handle::port");
-
           _net.connect_to_change_mgr
             ( this
             , "place_association_set"
