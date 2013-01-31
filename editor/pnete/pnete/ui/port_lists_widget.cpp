@@ -172,17 +172,11 @@ namespace fhg
           QTableView* table (new QTableView);
 
           table->setModel (new detail::ports_model (function, which, table));
-
           table->setItemDelegateForColumn
             (1, new ComboBoxItemDelegate (types, table));
-
           table->verticalHeader()->hide();
-
-          int row (0);
-
           table->resizeRowsToContents();
           table->resizeColumnsToContents();
-
           table->setSelectionMode (QAbstractItemView::NoSelection);
 
           QGroupBox* group_box
