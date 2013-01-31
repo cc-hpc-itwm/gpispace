@@ -52,7 +52,7 @@ if (HAVE_SYSLOG_H)
   set(srcs ${srcs} "nonportable/SyslogAppender.cpp")
 endif (HAVE_SYSLOG_H)
 
-if (WITH_REMOTE_LOGGING)
+if (ENABLE_REMOTE_LOGGING)
   add_subdirectory(remote)
   set (remote_hdrs
     remote/LogServer.hpp
@@ -65,7 +65,7 @@ if (WITH_REMOTE_LOGGING)
   install(FILES ${remote_hdrs}
     DESTINATION include/fhglog/remote
     COMPONENT runtime-headers)
-endif (WITH_REMOTE_LOGGING)
+endif (ENABLE_REMOTE_LOGGING)
 
 ADD_LIBRARY(fhglog ${hdrs} ${srcs} ${remote_srcs} ${remote_hdrs})
 ADD_LIBRARY(fhglog-shared SHARED ${hdrs} ${srcs} ${remote_srcs} ${remote_hdrs})
