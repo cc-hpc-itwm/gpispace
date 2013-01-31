@@ -49,7 +49,6 @@ endif (BUILD_TESTING)
 
 install (FILES
   util/token.hpp
-  util/cross.hpp
   DESTINATION include/we/util
   COMPONENT headers
 )
