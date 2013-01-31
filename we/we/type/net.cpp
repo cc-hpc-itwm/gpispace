@@ -363,7 +363,7 @@ namespace petri_net
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      const std::list<token::type>& tokens (_token_by_place_id[place_id]);
+      std::list<token::type>& tokens (_token_by_place_id[place_id]);
 
       if (tokens.empty())
       {
@@ -390,7 +390,7 @@ namespace petri_net
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      const std::list<token::type>& tokens
+      std::list<token::type>& tokens
         (place_id == pid ? special : _token_by_place_id[place_id]);
 
       if (tokens.empty())

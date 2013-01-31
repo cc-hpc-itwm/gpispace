@@ -21,15 +21,15 @@ namespace we
     class iterators_type
     {
     public:
-      iterators_type (const std::list<token::type>&);
-      const std::list<token::type>::const_iterator& end() const;
-      const std::list<token::type>::const_iterator& pos() const;
+      iterators_type (std::list<token::type>&);
+      const std::list<token::type>::iterator& end() const;
+      const std::list<token::type>::iterator& pos() const;
       void operator++();
       void rewind();
     private:
-      std::list<token::type>::const_iterator _begin;
-      std::list<token::type>::const_iterator _end;
-      std::list<token::type>::const_iterator _pos;
+      std::list<token::type>::iterator _begin;
+      std::list<token::type>::iterator _end;
+      std::list<token::type>::iterator _pos;
     };
 
     class cross_type
@@ -43,7 +43,7 @@ namespace we
                                          >&
                     ) const;
       void push ( const petri_net::place_id_type&
-                , const std::list<token::type>&
+                , std::list<token::type>&
                 );
     private:
       boost::unordered_map<petri_net::place_id_type, iterators_type> _m;
