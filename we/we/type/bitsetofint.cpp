@@ -22,19 +22,7 @@
 
 namespace bitsetofint
 {
-  namespace
-  {
-    inline std::size_t the_container (const unsigned long& x)
-    {
-      return (x >> 6);
-    }
-    inline std::size_t the_slot (const unsigned long& x)
-    {
-      return (x & 63);
-    }
-  }
-
- type::type (const std::size_t n)
+  type::type (const std::size_t n)
     : _container (n)
   {}
 
@@ -45,38 +33,45 @@ namespace bitsetofint
 
   type& type::ins (const unsigned long& x)
   {
-    if (the_container(x) >= _container.size())
+    if ((x >> 6) >= _container.size())
     {
-      _container.resize(the_container(x) + 1, 0);
+      _container.resize((x >> 6) + 1, 0);
     }
-    _container[the_container(x)] |= (1UL << the_slot(x));
+    _container[x >> 6] |= (1UL << (x & 63));
 
     return *this;
   }
   type& type::del (const unsigned long& x)
   {
-    if (the_container(x) < _container.size())
+    if ((x >> 6) < _container.size())
     {
-      _container[the_container(x)] &= ~(1UL << the_slot(x));
+      _container[(x >> 6)] &= ~(1UL << (x & 63));
     }
 
     return *this;
   }
   bool type::is_element (const unsigned long& x) const
   {
-    return (the_container(x) < _container.size())
-      && ((_container[the_container(x)] & (1UL << the_slot(x))) != 0);
+    return ((x >> 6) < _container.size())
+      && ((_container[(x >> 6)] & (1UL << (x & 63))) != 0);
   }
   std::size_t type::count() const
   {
     std::size_t cnt (0);
 
-    BOOST_FOREACH (const uint64_t block, _container)
+    BOOST_FOREACH (uint64_t block, _container)
     {
-      for (size_t bit (0); bit < 64; ++bit)
-      {
-        cnt += (block >> bit) & 0x1;
-      }
+      // http://en.wikipedia.org/wiki/Hamming_weight
+
+      const uint64_t m1  (0x5555555555555555);
+      const uint64_t m2  (0x3333333333333333);
+      const uint64_t m4  (0x0f0f0f0f0f0f0f0f);
+      const uint64_t h01 (0x0101010101010101);
+
+      block -= (block >> 1) & m1;
+      block = (block & m2) + ((block >> 2) & m2);
+      block = (block + (block >> 4)) & m4;
+      cnt += (block * h01) >> 56;
     }
 
     return cnt;
