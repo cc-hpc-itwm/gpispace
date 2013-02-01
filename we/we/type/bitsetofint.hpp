@@ -30,6 +30,8 @@ namespace bitsetofint
     explicit type (const std::vector<uint64_t>&);
     explicit type (const std::size_t = 0);
 
+    void push_back (uint64_t);
+
     type& ins (const unsigned long&);
     type& del (const unsigned long&);
     bool is_element (const unsigned long&) const;

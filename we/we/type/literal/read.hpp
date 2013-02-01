@@ -397,17 +397,17 @@ namespace literal
               break;
             default:
               {
-                std::vector<uint64_t> container;
+                bitsetofint::type bs;
                 long l;
 
                 while (read_list_item (l, pos))
                   {
-                    container.push_back (l);
+                    bs.push_back (l);
                   }
 
                 require ("}", pos);
 
-                v = bitsetofint::type (container);
+                v = bs;
               }
             }
         break;

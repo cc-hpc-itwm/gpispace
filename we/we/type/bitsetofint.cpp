@@ -41,6 +41,11 @@ namespace bitsetofint
     : _container (n)
   {}
 
+  void type::push_back (uint64_t v)
+  {
+    _container.push_back (v);
+  }
+
   type& type::ins (const unsigned long& x)
   {
     if (the_container(x) >= _container.size())
