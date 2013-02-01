@@ -1039,30 +1039,6 @@ namespace fhg
           return NULL;
         }
 
-        template<typename handle_type>
-          bool scene_type::is_in_my_net (const handle_type& handle)
-        {
-          return handle.get().parent()->id() == net().id();
-        }
-
-        template<>
-          bool scene_type::is_in_my_net (const data::handle::connect& handle)
-        {
-          return handle.get().parent()->parent()->id() == net().id();
-        }
-
-        template<>
-          bool scene_type::is_in_my_net (const data::handle::port& handle)
-        {
-          return handle.get().parent()->id() == function().id();
-        }
-        template<>
-          bool scene_type::is_in_my_net (const data::handle::place_map& handle)
-        {
-          return handle.get().resolved_real_place()->get().parent()->id()
-            == net().id();
-        }
-
         const data::handle::net& scene_type::net() const
         {
           return _net;

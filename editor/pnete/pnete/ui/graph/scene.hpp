@@ -92,9 +92,6 @@ namespace fhg
           template<typename item_type, typename handle_type>
             item_type* item_with_handle (const handle_type&);
 
-          template<typename handle_type>
-            bool is_in_my_net (const handle_type&);
-
           template<typename item_type> QList<item_type*> items_of_type() const;
           template<typename item_type> QList<item_type*> items_of_type
             (const QPointF&) const;
