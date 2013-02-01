@@ -22,8 +22,6 @@
 
 namespace bitsetofint
 {
-  typedef unsigned long element_type;
-
   struct type
   {
   public:
