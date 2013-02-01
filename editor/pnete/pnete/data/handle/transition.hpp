@@ -48,6 +48,7 @@ namespace fhg
                                     , const QPointF& position
                                     ) const;
 
+          bool parent_is (const net&) const;
           net parent() const;
 
           using transition_meta_base::operator==;

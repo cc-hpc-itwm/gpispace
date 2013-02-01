@@ -6,6 +6,7 @@
 #include <pnete/data/handle/place_map.fwd.hpp>
 
 #include <pnete/data/handle/meta_base.hpp>
+#include <pnete/data/handle/place.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/place_map.fwd.hpp>
@@ -34,6 +35,8 @@ namespace fhg
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
+
+          place resolved_real_place() const;
 
           using place_map_meta_base::operator==;
         };

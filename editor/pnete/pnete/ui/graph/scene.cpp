@@ -1117,7 +1117,7 @@ namespace fhg
           , const data::handle::port& port
           )
         {
-          if (is_in_my_net (place))
+          if (place.parent_is (net()))
           {
             create_connection (connection);
           }
@@ -1126,7 +1126,7 @@ namespace fhg
         void scene_type::place_map_added
           (const QObject* origin, const data::handle::place_map& place_map)
         {
-          if (is_in_my_net (place_map))
+          if (place_map.resolved_real_place().parent_is (net()))
           {
             create_place_map (place_map);
           }
@@ -1135,7 +1135,7 @@ namespace fhg
         void scene_type::transition_added
           (const QObject* origin, const data::handle::transition& transition)
         {
-          if (is_in_my_net (transition))
+          if (transition.parent_is (net()))
           {
             weaver::display::transition (transition, this);
           }
@@ -1144,7 +1144,7 @@ namespace fhg
         void scene_type::place_added
           (const QObject* origin, const data::handle::place& place)
         {
-          if (is_in_my_net (place))
+          if (place.parent_is (net()))
           {
             weaver::display::place (place, this);
           }
@@ -1153,7 +1153,7 @@ namespace fhg
         void scene_type::port_added
           (const QObject* origin, const data::handle::port& port)
         {
-          if (is_in_my_net (port))
+          if (port.parent_is (function()))
           {
             weaver::display::top_level_port (port, this);
           }
@@ -1165,14 +1165,14 @@ namespace fhg
           , const boost::optional<std::string>& place_name
           )
         {
-          if ( is_in_my_net (port) && !port.is_tunnel()
+          if ( port.parent_is (function()) && !port.is_tunnel()
              && place_name && port.get().resolved_place()
              )
           {
             const data::handle::place place
               (*port.get().resolved_place(), port.document());
 
-            if (!is_in_my_net (place))
+            if (!place.parent_is (net()))
             {
               return;
             }

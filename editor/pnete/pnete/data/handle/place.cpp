@@ -63,11 +63,6 @@ namespace fhg
           change_manager().no_undo_move_item (sender, *this, position);
         }
 
-        net place::parent() const
-        {
-          return net (get().parent()->make_reference_id(), document());
-        }
-
         bool place::is_implicit() const
         {
           try
@@ -102,6 +97,16 @@ namespace fhg
         void place::make_real (const QObject* origin) const
         {
           change_manager().make_real (origin, *this);
+        }
+
+        bool place::parent_is (const net& net) const
+        {
+          return get().parent() && get().parent()->id() == net.id();
+        }
+
+        net place::parent() const
+        {
+          return net (get().parent()->make_reference_id(), document());
         }
       }
     }

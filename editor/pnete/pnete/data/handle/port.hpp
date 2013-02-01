@@ -59,6 +59,7 @@ namespace fhg
                                     , const QPointF& position
                                     ) const;
 
+          bool parent_is (const function&) const;
           function parent() const;
 
           using port_meta_base::operator==;

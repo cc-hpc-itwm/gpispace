@@ -3,6 +3,7 @@
 #include <pnete/data/handle/place_map.hpp>
 
 #include <pnete/data/change_manager.hpp>
+#include <pnete/data/handle/place.hpp>
 
 #include <xml/parse/type/place_map.hpp>
 
@@ -32,6 +33,11 @@ namespace fhg
           ) const
         {
           change_manager().set_property (sender, *this, key, val);
+        }
+
+        place place_map::resolved_real_place() const
+        {
+          return place (*get().resolved_real_place(), document());
         }
       }
     }

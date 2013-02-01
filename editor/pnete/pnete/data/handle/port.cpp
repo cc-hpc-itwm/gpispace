@@ -91,6 +91,11 @@ namespace fhg
           change_manager().no_undo_move_item (sender, *this, position);
         }
 
+        bool port::parent_is (const function& function) const
+        {
+          return get().parent() && get().parent()->id() == function.id();
+        }
+
         function port::parent() const
         {
           return function (get().parent()->make_reference_id(), document());

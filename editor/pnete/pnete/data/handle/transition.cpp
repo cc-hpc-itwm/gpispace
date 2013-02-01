@@ -57,6 +57,11 @@ namespace fhg
           change_manager().no_undo_move_item (sender, *this, position);
         }
 
+        bool transition::parent_is (const net& net) const
+        {
+          return get().parent() && get().parent()->id() == net.id();
+        }
+
         net transition::parent() const
         {
           return net (get().parent()->make_reference_id(), document());

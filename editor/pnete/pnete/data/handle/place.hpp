@@ -49,14 +49,15 @@ namespace fhg
                                     , const QPointF& position
                                     ) const;
 
-          net parent() const;
-
           bool is_implicit() const;
           void make_explicit (const QObject*) const;
 
           bool is_virtual() const;
           void make_virtual (const QObject*) const;
           void make_real (const QObject*) const;
+
+          bool parent_is (const net&) const;
+          net parent() const;
 
           using place_meta_base::operator==;
         };
