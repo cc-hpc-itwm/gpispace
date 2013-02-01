@@ -41,8 +41,9 @@ namespace fhg
 
         bool place::can_rename_to (const QString& name) const
         {
-          return
-            !(get().parent() && get().parent()->has_place (name.toStdString()));
+          return get().name() == name.toStdString()
+            || !get().parent()
+            || !get().parent()->has_place (name.toStdString());
         }
 
         void place::set_property

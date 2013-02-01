@@ -64,8 +64,10 @@ namespace fhg
 
         bool port::can_rename_to (const QString& name) const
         {
-          return !get().parent()->ports().has
-            (std::make_pair (name.toStdString(), get().direction()));
+          return get().name() == name.toStdString()
+            || !get().parent()
+            || !get().parent()->ports().has
+                 (std::make_pair (name.toStdString(), get().direction()));
         }
 
         void port::set_property ( const QObject* sender

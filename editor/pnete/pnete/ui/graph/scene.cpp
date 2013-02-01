@@ -234,9 +234,7 @@ namespace fhg
               );
             if (ok)
             {
-              if ( handle.get().name() == name.toStdString()
-                 || handle.can_rename_to (name)
-                 )
+              if (handle.can_rename_to (name))
               {
                 handle.set_name (origin, name);
               }

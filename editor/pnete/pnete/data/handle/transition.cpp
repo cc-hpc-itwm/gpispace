@@ -35,9 +35,9 @@ namespace fhg
 
         bool transition::can_rename_to (const QString& name) const
         {
-          return !( get().parent()
-                  && get().parent()->has_transition (name.toStdString())
-                  );
+          return get().name() == name.toStdString()
+            || !get().parent()
+            || !get().parent()->has_transition (name.toStdString());
         }
 
         void transition::set_property
