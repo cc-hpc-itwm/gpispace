@@ -5,8 +5,9 @@
 
 #include <pnete/data/handle/port.fwd.hpp>
 
-#include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/function.fwd.hpp>
+#include <pnete/data/handle/meta_base.hpp>
+#include <pnete/data/handle/place.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/port.fwd.hpp>
@@ -44,6 +45,7 @@ namespace fhg
           bool is_connectable (const port&) const;
 
           bool is_connected() const;
+          place connected_place() const;
 
           bool can_rename_to (const QString&) const;
 

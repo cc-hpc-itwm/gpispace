@@ -4,6 +4,7 @@
 
 #include <pnete/data/change_manager.hpp>
 #include <pnete/data/handle/function.hpp>
+#include <pnete/data/handle/place.hpp>
 
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/port.hpp>
@@ -65,6 +66,10 @@ namespace fhg
         bool port::is_connected() const
         {
           return get().place;
+        }
+        place port::connected_place() const
+        {
+          return place (*get().resolved_place(), document());
         }
 
         bool port::can_rename_to (const QString& name) const

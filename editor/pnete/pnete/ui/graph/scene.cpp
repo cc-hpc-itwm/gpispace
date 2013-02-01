@@ -746,11 +746,7 @@ namespace fhg
           addItem
             ( new ui::graph::port_place_association
               ( item_with_handle<top_level_port_item> (port)
-              , item_with_handle<place_item> ( data::handle::place
-                                               ( *port.get().resolved_place()
-                                               , port.document()
-                                               )
-                                             )
+              , item_with_handle<place_item> (port.connected_place())
               , port
               )
             );
