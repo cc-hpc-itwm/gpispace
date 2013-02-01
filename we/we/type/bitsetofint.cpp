@@ -34,10 +34,7 @@ namespace bitsetofint
     }
   }
 
-  type::type (const std::vector<uint64_t>& c)
-    : _container (c)
-  {}
-  type::type (const std::size_t n)
+ type::type (const std::size_t n)
     : _container (n)
   {}
 

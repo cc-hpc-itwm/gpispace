@@ -27,7 +27,6 @@ namespace bitsetofint
   struct type
   {
   public:
-    explicit type (const std::vector<uint64_t>&);
     explicit type (const std::size_t = 0);
 
     void push_back (uint64_t);
