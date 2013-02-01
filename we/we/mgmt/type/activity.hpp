@@ -27,8 +27,6 @@ namespace we
   {
     namespace type
     {
-      //! \todo the whole principle of having two kinds of activities
-      //! is broken, merge them! (the other is petri_net::net::activity_t)
       class activity_t
       {
       public:
