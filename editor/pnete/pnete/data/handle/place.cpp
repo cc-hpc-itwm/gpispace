@@ -39,6 +39,12 @@ namespace fhg
           change_manager().set_type (sender, *this, type);
         }
 
+        bool place::can_rename_to (const QString& name) const
+        {
+          return
+            !(get().parent() && get().parent()->has_place (name.toStdString()));
+        }
+
         void place::set_property
           ( const QObject* sender
           , const ::we::type::property::key_type& key

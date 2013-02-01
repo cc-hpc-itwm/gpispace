@@ -33,6 +33,13 @@ namespace fhg
           change_manager().set_name (sender, *this, name);
         }
 
+        bool transition::can_rename_to (const QString& name) const
+        {
+          return !( get().parent()
+                  && get().parent()->has_transition (name.toStdString())
+                  );
+        }
+
         void transition::set_property
           ( const QObject* sender
           , const ::we::type::property::key_type& key

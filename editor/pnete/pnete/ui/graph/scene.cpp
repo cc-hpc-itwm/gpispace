@@ -212,27 +212,6 @@ namespace fhg
 
         namespace
         {
-          bool can_rename ( const data::handle::place& handle
-                          , const QString& name
-                          )
-          {
-            return !handle.get().parent()->has_place (name.toStdString());
-          }
-
-          bool can_rename ( const data::handle::port& handle
-                          , const QString& name
-                          )
-          {
-            return handle.can_rename_to (name);
-          }
-
-          bool can_rename ( const data::handle::transition& handle
-                          , const QString& name
-                          )
-          {
-            return !handle.get().parent()->has_transition (name.toStdString());
-          }
-
           template<typename handle_type>
           void set_name_for_handle ( const handle_type& handle
                                    , const QString& dialog_title
@@ -256,7 +235,7 @@ namespace fhg
             if (ok)
             {
               if ( handle.get().name() == name.toStdString()
-                 || can_rename (handle, name)
+                 || handle.can_rename_to (name)
                  )
               {
                 handle.set_name (origin, name);

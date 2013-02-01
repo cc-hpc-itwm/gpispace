@@ -34,6 +34,8 @@ namespace fhg
 
           void set_name (const QObject* sender, const QString& type) const;
 
+          bool can_rename_to (const QString&) const;
+
           virtual void set_property ( const QObject* sender
                                     , const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
