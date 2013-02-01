@@ -31,6 +31,7 @@ add_library (we
   type/port.cpp
   type/property.cpp
   util/cross.cpp
+  type/bitsetofint.cpp
 )
 
 target_link_libraries (we
@@ -120,7 +121,6 @@ install (FILES
 )
 
 install (FILES
-  type/bitsetofint.hpp
   type/bytearray.hpp
   type/condition.hpp
   type/error.hpp

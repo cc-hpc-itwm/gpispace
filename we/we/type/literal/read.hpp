@@ -397,7 +397,7 @@ namespace literal
               break;
             default:
               {
-                bitsetofint::type::container_type container;
+                bitsetofint::container_type container;
                 long l;
 
                 while (read_list_item (l, pos))
