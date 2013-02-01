@@ -4,14 +4,9 @@
 
 #include <algorithm>
 #include <stdexcept>
-#include <vector>
-
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/vector.hpp>
 
 #include <boost/functional/hash.hpp>
 
-#include <boost/optional.hpp>
 #include <boost/foreach.hpp>
 
 #include <iostream>

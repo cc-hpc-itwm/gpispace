@@ -3,20 +3,14 @@
 #ifndef _BITSETOFINT_HPP
 #define _BITSETOFINT_HPP
 
-#include <algorithm>
-#include <stdexcept>
 #include <vector>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <boost/functional/hash.hpp>
-
 #include <boost/optional.hpp>
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
+#include <iosfwd>
 
 #include <stdint.h>
 
