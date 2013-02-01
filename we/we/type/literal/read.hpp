@@ -294,18 +294,16 @@ namespace literal
         {
           require ("(", pos);
 
-          bytearray::type::container_type container;
-
+          v = bytearray::type();
+          bytearray::type& ba (boost::get<bytearray::type&> (v));
           long l;
 
           while (read_list_item (l, pos))
             {
-              container.push_back (l);
+              ba.push_back (l);
             }
 
           require (")", pos);
-
-          v = bytearray::type (container);
         }
         break;
       case '[':
@@ -316,7 +314,8 @@ namespace literal
 
       case '@': ++pos;
         {
-          literal::stack_type s;
+          v = literal::stack_type();
+          literal::stack_type& s (boost::get<literal::stack_type&> (v));
           long l;
 
           while (read_list_item (l, pos))
@@ -324,7 +323,7 @@ namespace literal
               s.push_front (l);
             }
 
-          require ("@", pos); v = s;
+          require ("@", pos);
         }
         break;
       case '\'':
@@ -353,7 +352,8 @@ namespace literal
 
           ++pos;
 
-          std::string s;
+          v = std::string();
+          std::string& s (boost::get<std::string&> (v));
 
           while (!pos.end() && *pos != '"')
           {
@@ -366,8 +366,6 @@ namespace literal
           }
 
           ++pos;
-
-          v = s;
         }
         break;
       case '{': ++pos;
@@ -378,7 +376,8 @@ namespace literal
             {
             case ':': ++pos;
               {
-                literal::set_type s;
+                v = literal::set_type();
+                literal::set_type& s (boost::get<literal::set_type&> (v));
                 long l;
 
                 while (read_list_item (l, pos))
@@ -386,26 +385,28 @@ namespace literal
                     s.insert (l);
                   }
 
-                require (":}", pos); v = s;
+                require (":}", pos);
               }
               break;
             case '|': ++pos;
               {
-                literal::map_type m;
+                v = literal::map_type();
+                literal::map_type& m (boost::get<literal::map_type&> (v));
                 long key;
                 long val;
 
                 while (read_map_item (key, val, pos))
                   {
-                    m[key] = val;
+                    m.insert (std::make_pair (key, val));
                   }
 
-                require ("|}", pos); v = m;
+                require ("|}", pos);
               }
               break;
             default:
               {
-                bitsetofint::type bs;
+                v = bitsetofint::type();
+                bitsetofint::type& bs (boost::get<bitsetofint::type&> (v));
                 long l;
 
                 while (read_list_item (l, pos))
@@ -414,8 +415,6 @@ namespace literal
                   }
 
                 require ("}", pos);
-
-                v = bs;
               }
             }
         break;
