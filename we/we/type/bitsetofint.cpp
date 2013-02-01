@@ -186,7 +186,7 @@ namespace bitsetofint
     {
       std::advance (pos, 2);
 
-      std::vector<uint64_t> container;
+      type bs;
 
       while (pos != end && *pos == '/')
       {
@@ -206,16 +206,16 @@ namespace bitsetofint
 
           if (iss.fail() && !iss.eof())
           {
-            return type (container);
+            return bs;
           }
 
-          container.push_back (value);
+          bs.push_back (value);
 
           std::advance (pos, 16);
         }
       }
 
-      return type (container);
+      return bs;
     }
 
     return boost::none;
