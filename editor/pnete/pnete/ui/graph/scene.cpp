@@ -738,7 +738,7 @@ namespace fhg
         void scene_type::create_port_place_association
           (const data::handle::port& port)
         {
-          if (!port.get().place)
+          if (!port.is_connected())
           {
             return;
           }

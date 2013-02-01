@@ -43,6 +43,8 @@ namespace fhg
 
           bool is_connectable (const port&) const;
 
+          bool is_connected() const;
+
           bool can_rename_to (const QString&) const;
 
           virtual void set_property ( const QObject* sender

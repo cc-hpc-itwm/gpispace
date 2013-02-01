@@ -62,6 +62,11 @@ namespace fhg
                );
         }
 
+        bool port::is_connected() const
+        {
+          return get().place;
+        }
+
         bool port::can_rename_to (const QString& name) const
         {
           return get().name() == name.toStdString()
