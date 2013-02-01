@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_CONTROL_HPP
-#define _WE_TYPE_CONTROL_HPP
+#ifndef _WE_TYPE_LITERAL_CONTROL_HPP
+#define _WE_TYPE_LITERAL_CONTROL_HPP
 
 #include <iosfwd>
 
