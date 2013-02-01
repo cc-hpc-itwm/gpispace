@@ -23,6 +23,7 @@ add_library (we
   mgmt/type/activity.cpp
   mgmt/type/flags.cpp
   type/connection.cpp
+  type/control.cpp
   type/expression.cpp
   type/id.cpp
   type/net.cpp
@@ -122,7 +123,6 @@ install (FILES
   type/bitsetofint.hpp
   type/bytearray.hpp
   type/condition.hpp
-  type/control.hpp
   type/error.hpp
   type/literal.hpp
   type/module_call.hpp
