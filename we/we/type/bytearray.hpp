@@ -28,6 +28,11 @@ namespace bytearray
     explicit type (const container_type & v) : _v (v) {}
     type (const type & other) : _v (other._v) {}
 
+    void push_back (char c)
+    {
+      _v.push_back (c);
+    }
+
     type (const char * const buf, const std::size_t size) : _v()
     {
       std::copy (buf, buf + size, std::back_inserter (_v));
