@@ -25,7 +25,6 @@ namespace bytearray
     typedef std::vector<char> container_type;
 
     type () : _v () {}
-    explicit type (const container_type & v) : _v (v) {}
     type (const type & other) : _v (other._v) {}
 
     void push_back (char c)
