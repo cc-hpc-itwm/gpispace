@@ -397,7 +397,7 @@ namespace literal
               break;
             default:
               {
-                bitsetofint::container_type container;
+                std::vector<uint64_t> container;
                 long l;
 
                 while (read_list_item (l, pos))

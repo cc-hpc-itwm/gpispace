@@ -23,12 +23,11 @@
 namespace bitsetofint
 {
   typedef unsigned long element_type;
-  typedef std::vector<uint64_t> container_type;
 
   struct type
   {
   public:
-    explicit type (const container_type&);
+    explicit type (const std::vector<uint64_t>&);
     explicit type (const std::size_t = 0);
 
     type& ins (const unsigned long&);
@@ -47,7 +46,7 @@ namespace bitsetofint
     friend std::string to_hex (const type&);
 
   private:
-    container_type _container;
+    std::vector<uint64_t> _container;
 
     friend class boost::serialization::access;
     template<class Archive>

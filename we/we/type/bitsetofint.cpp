@@ -34,7 +34,7 @@ namespace bitsetofint
     }
   }
 
-  type::type (const container_type& c)
+  type::type (const std::vector<uint64_t>& c)
     : _container (c)
   {}
   type::type (const std::size_t n)
@@ -181,7 +181,7 @@ namespace bitsetofint
     {
       std::advance (pos, 2);
 
-      container_type container;
+      std::vector<uint64_t> container;
 
       while (pos != end && *pos == '/')
       {
@@ -241,17 +241,17 @@ namespace bitsetofint
 
   std::size_t hash_value (const type& t)
   {
-    boost::hash<container_type> h;
+    boost::hash<std::vector<uint64_t> > h;
 
     return h(t._container);
   }
 
   bool operator== (const type& x, const type& y)
   {
-    container_type::const_iterator pos_x (x._container.begin());
-    const container_type::const_iterator& end_x (x._container.end());
-    container_type::const_iterator pos_y (y._container.begin());
-    const container_type::const_iterator& end_y (y._container.end());
+    std::vector<uint64_t>::const_iterator pos_x (x._container.begin());
+    const std::vector<uint64_t>::const_iterator& end_x (x._container.end());
+    std::vector<uint64_t>::const_iterator pos_y (y._container.begin());
+    const std::vector<uint64_t>::const_iterator& end_y (y._container.end());
 
     while (pos_x != end_x && pos_y != end_y)
     {
