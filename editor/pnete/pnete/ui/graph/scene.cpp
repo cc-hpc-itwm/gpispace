@@ -718,27 +718,14 @@ namespace fhg
 
         void scene_type::create_connection (const data::handle::connect& handle)
         {
-          const ::xml::parse::type::connect_type& connection (handle.get());
-
           connectable_item* port
-            ( item_with_handle<port_item>
-              ( data::handle::port ( *connection.resolved_port()
-                                   , handle.document()
-                                   )
-              )
-            );
+            (item_with_handle<port_item> (handle.resolved_port()));
 
           connectable_item* place
-            ( item_with_handle<place_item>
-              ( data::handle::place ( *connection.resolved_place()
-                                    , handle.document()
-                                    )
-              )
-            );
+            (item_with_handle<place_item> (handle.resolved_place()));
 
-          const bool is_in (petri_net::edge::is_PT (connection.direction()));
-          connectable_item* from (is_in ? place : port);
-          connectable_item* to (is_in ? port : place);
+          connectable_item* from (handle.is_in() ? place : port);
+          connectable_item* to (handle.is_in() ? port : place);
 
           if (!to->is_connectable_with (from))
           {

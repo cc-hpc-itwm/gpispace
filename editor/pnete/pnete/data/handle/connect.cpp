@@ -3,6 +3,8 @@
 #include <pnete/data/handle/connect.hpp>
 
 #include <pnete/data/change_manager.hpp>
+#include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/port.hpp>
 
 #include <xml/parse/type/connect.hpp>
 
@@ -36,6 +38,15 @@ namespace fhg
         void connect::is_read (const QObject* origin, const bool& s) const
         {
           change_manager().connection_is_read (origin, *this, s);
+        }
+
+        port connect::resolved_port() const
+        {
+          return port (*get().resolved_port(), document());
+        }
+        place connect::resolved_place() const
+        {
+          return place (*get().resolved_place(), document());
         }
 
         void connect::remove (const QObject* sender) const

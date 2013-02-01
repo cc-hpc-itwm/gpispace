@@ -6,6 +6,8 @@
 #include <pnete/data/handle/connect.fwd.hpp>
 
 #include <pnete/data/handle/meta_base.hpp>
+#include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/port.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/connect.fwd.hpp>
@@ -33,6 +35,9 @@ namespace fhg
           bool is_read() const;
 
           void is_read (const QObject* origin, const bool& s) const;
+
+          port resolved_port() const;
+          place resolved_place() const;
 
           void remove (const QObject* sender) const;
 
