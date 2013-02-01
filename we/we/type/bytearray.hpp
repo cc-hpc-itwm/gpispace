@@ -14,6 +14,8 @@
 
 #include <boost/functional/hash.hpp>
 
+#include <boost/foreach.hpp>
+
 #include <iostream>
 #include <sstream>
 
@@ -22,8 +24,6 @@ namespace bytearray
   class type
   {
   public:
-    typedef std::vector<char> container_type;
-
     type () : _v () {}
     type (const type & other) : _v (other._v) {}
 
@@ -70,7 +70,7 @@ namespace bytearray
     }
 
     std::size_t size () const { return _v.size(); }
-    const container_type & container () const { return _v; }
+    const std::vector<char>& container () const { return _v; }
 
     friend std::ostream & operator << (std::ostream &, const type &);
     friend std::size_t hash_value (const type &);
@@ -100,7 +100,7 @@ namespace bytearray
     }
 
   private:
-    container_type _v;
+    std::vector<char> _v;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -113,21 +113,16 @@ namespace bytearray
   inline std::ostream & operator << (std::ostream & s, const type & t)
   {
     s << "y(";
-    for ( type::container_type::const_iterator it (t._v.begin())
-        ; it != t._v.end()
-        ; ++it
-        )
+    BOOST_FOREACH (const char c, t._v)
       {
-        s << " " << int (*it);
+        s << " " << int (c);
       }
     return s << ")";
   }
 
   inline std::size_t hash_value (const type & t)
   {
-    boost::hash<type::container_type> h;
-
-    return h(t._v);
+    return boost::hash<std::vector<char> >()(t._v);
   }
 
   inline bool operator == (const type & x, const type & y)
