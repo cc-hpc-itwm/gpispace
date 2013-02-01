@@ -194,7 +194,9 @@ namespace literal
 
         // consume a trailing 'L'
         if (!pos.end() && *pos == 'L')
+        {
           ++pos;
+        }
       }
     else
       {
@@ -279,8 +281,10 @@ namespace literal
   static void read (type & v, fhg::util::parse::position & pos)
   {
     if (pos.end())
+    {
       throw expr::exception::parse::expected
         ("long or double or char or string", pos());
+    }
 
     switch (*pos)
       {
@@ -352,10 +356,14 @@ namespace literal
           std::string s;
 
           while (!pos.end() && *pos != '"')
+          {
             s.push_back (read_quoted_char (pos));
+          }
 
           if (pos.end())
+          {
             throw expr::exception::parse::unterminated ("\"", open, pos());
+          }
 
           ++pos;
 
