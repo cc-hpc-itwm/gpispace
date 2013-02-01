@@ -6,7 +6,7 @@
 #include <boost/unordered_map.hpp>
 
 #include <we/type/signature.hpp>
-#include <we/type/control.hpp>
+#include <we/type/literal/control.hpp>
 #include <we/type/bitsetofint.hpp>
 #include <we/type/bytearray.hpp>
 
@@ -20,7 +20,7 @@ namespace literal
   {
     default_t dflt;
 
-    dflt[CONTROL()] = control();
+    dflt[CONTROL()] = we::type::literal::control();
     dflt[BOOL()] = bool();
     dflt[LONG()] = long();
     dflt[DOUBLE()] = double();

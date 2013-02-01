@@ -201,7 +201,7 @@ static void run ( void *
 
   usleep (sleeptime);
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 // ************************************************************************* //
@@ -226,7 +226,7 @@ static void finalize ( void *
       fvmGlobalFree (scratch);
     }
 
-  put (output, "trigger", control());
+  put (output, "trigger", we::type::literal::control());
 }
 
 // ************************************************************************* //

@@ -5,7 +5,7 @@
 
 #include <we/type/literal.hpp>
 
-#include <we/type/control.hpp>
+#include <we/type/literal/control.hpp>
 
 #include <boost/functional/hash.hpp>
 
@@ -16,7 +16,7 @@ namespace literal
     class hash : public boost::static_visitor<std::size_t>
     {
     public:
-      std::size_t operator () (const control &) const
+      std::size_t operator () (const we::type::literal::control &) const
       {
         return 42;
       }

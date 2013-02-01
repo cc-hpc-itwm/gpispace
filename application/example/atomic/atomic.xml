@@ -92,7 +92,7 @@
 
 	  	LOG(INFO, "<<< finished A(" << id << ", " << filename << ")");
 
-                return control();
+                return we::type::literal::control();
 	  ]]></code>
 	</module>
       </defun>
@@ -163,7 +163,7 @@
 
 	  		LOG(INFO, "<<< finished B(" << id << ", " << filename << ")");
 
-                        return control();
+                        return we::type::literal::control();
 	  ]]></code>
 	</module>
       </defun>

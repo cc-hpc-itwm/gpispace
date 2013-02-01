@@ -55,7 +55,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
   MLOG (INFO, "loadTT: id " << id);
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -118,7 +118,7 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
   MLOG (INFO, "finalize: config " << config);
 
-  put (output, "trigger", control());
+  put (output, "trigger", we::type::literal::control());
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)

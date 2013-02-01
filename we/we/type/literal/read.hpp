@@ -304,7 +304,12 @@ namespace literal
           v = bytearray::type (container);
         }
         break;
-      case '[': ++pos; require ("]", pos); v = control(); break;
+      case '[':
+        ++pos;
+        require ("]", pos);
+        v = we::type::literal::control();
+        break;
+
       case '@': ++pos;
         {
           literal::stack_type s;

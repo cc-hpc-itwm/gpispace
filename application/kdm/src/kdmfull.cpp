@@ -372,7 +372,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
   TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, id, parallel, handle_TT);
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 // ************************************************************************* //
@@ -722,7 +722,7 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
   fvmGlobalFree (get<long> (config, "handle.bunch"));
   fvmGlobalFree (get<long> (config, "handle.TT"));
 
-  put (output, "trigger", control());
+  put (output, "trigger", we::type::literal::control());
 }
 
 // ************************************************************************* //

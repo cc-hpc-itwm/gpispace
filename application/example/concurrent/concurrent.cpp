@@ -32,7 +32,7 @@ static void fun ( void *
 
   ++call_cnt_map[x];
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 static unsigned long call_cnt_A = 0;
@@ -47,7 +47,7 @@ static void A ( void *
 
   ++call_cnt_A;
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 static unsigned long call_cnt_B = 0;
@@ -62,7 +62,7 @@ static void B ( void *
 
   ++call_cnt_B;
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 static unsigned long call_cnt_C = 0;
@@ -77,7 +77,7 @@ static void C ( void *
 
   ++call_cnt_C;
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 static unsigned long call_cnt_D = 0;
@@ -92,7 +92,7 @@ static void D ( void *
 
   ++call_cnt_D;
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 static void finalize ( void *
@@ -113,7 +113,7 @@ static void finalize ( void *
   MLOG (INFO, "call_cnt_C = " << call_cnt_C);
   MLOG (INFO, "call_cnt_D = " << call_cnt_D);
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 WE_MOD_INITIALIZE_START (concurrent);

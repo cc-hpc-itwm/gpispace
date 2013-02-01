@@ -54,7 +54,7 @@ namespace token
 
   public:
     type ()
-      : value (control())
+      : value (we::type::literal::control())
       , hash (boost::apply_visitor (value::visitor::hash(), value))
     {}
 
@@ -116,7 +116,7 @@ namespace token
   template<typename NET>
   void put ( NET & net
            , const petri_net::place_id_type & pid
-           , const value::type & v = control()
+           , const value::type & v = we::type::literal::control()
            )
   {
     net.put_token ( pid

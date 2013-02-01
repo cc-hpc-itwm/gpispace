@@ -23,7 +23,7 @@ add_library (we
   mgmt/type/activity.cpp
   mgmt/type/flags.cpp
   type/connection.cpp
-  type/control.cpp
+  type/literal/control.cpp
   type/expression.cpp
   type/id.cpp
   type/net.cpp

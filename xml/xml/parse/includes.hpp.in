@@ -11,7 +11,7 @@
 #include <we/loader/types.hpp>
 #include <we/type/bitsetofint.hpp>
 #include <we/type/bytearray.hpp>
-#include <we/type/control.hpp>
+#include <we/type/literal/control.hpp>
 #include <we/type/literal.hpp>
 #include <we/type/literal/show.hpp>
 #include <we/type/signature/types.hpp>
@@ -54,7 +54,7 @@ namespace pnetc
           _names.push_back (fs::path ("we/loader/types.hpp"));
           _names.push_back (fs::path ("we/type/bitsetofint.hpp"));
           _names.push_back (fs::path ("we/type/bytearray.hpp"));
-          _names.push_back (fs::path ("we/type/control.hpp"));
+          _names.push_back (fs::path ("we/type/literal/control.hpp"));
           _names.push_back (fs::path ("we/type/literal.hpp"));
           _names.push_back (fs::path ("we/type/signature/types.hpp"));
           _names.push_back (fs::path ("we/type/value.hpp"));

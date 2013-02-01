@@ -25,7 +25,7 @@
 
       std::cout << "...[done]" << std::endl;
 
-      return control();
+      return we::type::literal::control();
     ]]></code>
   </module>
 

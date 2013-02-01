@@ -50,7 +50,7 @@ namespace value
               {
                 ++pos;
 
-                return control();
+                return we::type::literal::control();
               }
             else if (*pos == '.')
               {

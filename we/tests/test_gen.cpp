@@ -2,7 +2,7 @@
 #include <we/type/value/show.hpp>
 
 #include <we/type/bitsetofint.hpp>
-#include <we/type/control.hpp>
+#include <we/type/literal/control.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/cpp/get.hpp>
 #include <string>

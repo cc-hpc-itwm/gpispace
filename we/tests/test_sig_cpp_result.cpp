@@ -14,7 +14,7 @@ main ()
 
   c._bool = true;
   c._char = 'a';
-  c._control = control();
+  c._control = we::type::literal::control();
   c._long = 23;
   c._double = -42.3141;
   c.bitset.ins (23);

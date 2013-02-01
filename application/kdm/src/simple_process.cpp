@@ -271,7 +271,7 @@ static void finalize ( void * state
   fvmGlobalFree (handle_data);
   fvmGlobalFree (handle_scratch);
 
-  put (output, "done", control());
+  put (output, "done", we::type::literal::control());
 }
 
 // ************************************************************************* //
@@ -331,7 +331,7 @@ static void write ( void * state
   const value::type & config (get<value::type> (input, "config"));
   const long & part (get<long> (input, "part_in_store", "id.part"));
   const long & store (get<long> (input, "part_in_store", "id.store"));
-  const control & credit (get<control> (input, "credit"));
+  const we::type::literal::control & credit (get<we::type::literal::control> (input, "credit"));
 
   MLOG (INFO, "write: part " << part << ", store " << store << ", config " << config);
 

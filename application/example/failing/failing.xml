@@ -53,7 +53,7 @@
 	         ("app_fail::maybe_fail failed due to the butterfly effect");
 	    }
 	  }
-	  return control();
+	  return we::type::literal::control();
 	  ]]></code>
 	</module>
       </defun>

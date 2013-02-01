@@ -24,7 +24,7 @@ namespace literal
     public:
       info (void) : trans (), inc ()
       {
-        trans[literal::CONTROL()]   = "control";
+        trans[literal::CONTROL()]   = "we::type::literal::control";
         trans[literal::BOOL()]      = "bool";
         trans[literal::LONG()]      = "long";
         trans[literal::DOUBLE()]    = "double";
@@ -36,7 +36,7 @@ namespace literal
         trans[literal::SET()]       = "std::set<long>";
         trans[literal::BYTEARRAY()] = "bytearray::type";
 
-        inc[literal::CONTROL()]   = "we/type/control.hpp";
+        inc[literal::CONTROL()]   = "we/type/literal/control.hpp";
         inc[literal::BOOL()]      = "";
         inc[literal::LONG()]      = "";
         inc[literal::DOUBLE()]    = "";

@@ -6,7 +6,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/error.hpp>
 
-#include <we/type/control.hpp>
+#include <we/type/literal/control.hpp>
 #include <we/type/bitsetofint.hpp>
 #include <we/type/bytearray.hpp>
 #include <we/type/literal.hpp>
@@ -19,7 +19,10 @@ namespace literal
     class type_name : public boost::static_visitor<type_name_t>
     {
     public:
-      type_name_t operator () (const control &) const { return CONTROL(); }
+      type_name_t operator () (const we::type::literal::control&) const
+      {
+        return CONTROL();
+      }
       type_name_t operator () (const bool &) const { return BOOL(); }
       type_name_t operator () (const long &) const { return LONG(); }
       type_name_t operator () (const double &) const { return DOUBLE(); }

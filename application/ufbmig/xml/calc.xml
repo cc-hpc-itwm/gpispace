@@ -198,7 +198,7 @@
 
 //                  progress_finalize ("ufbmig");
 
-                  return control();
+                  return we::type::literal::control();
                 ]]></code>
               </module>
             </defun>

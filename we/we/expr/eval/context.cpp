@@ -35,7 +35,7 @@ namespace expr
     value::type context::clear()
     {
       container.clear();
-      return control();
+      return we::type::literal::control();
     }
 
     context::const_iterator context::begin() const
