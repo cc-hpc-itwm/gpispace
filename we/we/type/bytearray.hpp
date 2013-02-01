@@ -24,19 +24,23 @@ namespace bytearray
   class type
   {
   public:
-    type () : _v () {}
-    type (const type & other) : _v (other._v) {}
-
     void push_back (char c)
     {
       _v.push_back (c);
     }
 
-    type (const char * const buf, const std::size_t size) : _v()
+    type ()
+      : _v ()
+    {}
+    type (const type& other)
+      : _v (other._v)
+    {}
+    type (const char* const buf, const std::size_t size)
+      : _v()
     {
       std::copy (buf, buf + size, std::back_inserter (_v));
     }
-    std::size_t copy (char * const buf, const std::size_t size) const
+    std::size_t copy (char* const buf, const std::size_t size) const
     {
       const std::size_t s (std::min (_v.size(), size));
 
@@ -46,12 +50,13 @@ namespace bytearray
     }
 
     template<typename T>
-    explicit type (const T * const x) : _v ()
+    explicit type (const T* const x)
+      : _v()
     {
       std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
     }
     template<typename T>
-    std::size_t copy (T * const x) const
+    std::size_t copy (T* const x) const
     {
       const std::size_t s (std::min (_v.size(), sizeof (*x)));
 
@@ -60,7 +65,7 @@ namespace bytearray
       return s;
     }
     template<typename T>
-    operator T () const
+    operator T() const
     {
       T x;
 
@@ -69,14 +74,20 @@ namespace bytearray
       return x;
     }
 
-    std::size_t size () const { return _v.size(); }
-    const std::vector<char>& container () const { return _v; }
+    std::size_t size() const
+    {
+      return _v.size();
+    }
+    const std::vector<char>& container() const
+    {
+      return _v;
+    }
 
-    friend std::ostream & operator << (std::ostream &, const type &);
-    friend std::size_t hash_value (const type &);
-    friend bool operator == (const type &, const type &);
+    friend std::ostream& operator<< (std::ostream&, const type&);
+    friend std::size_t hash_value (const type&);
+    friend bool operator== (const type&, const type&);
 
-    type & operator = (const type & other)
+    type& operator = (const type& other)
     {
       if (this != &other)
         {
@@ -104,13 +115,13 @@ namespace bytearray
 
     friend class boost::serialization::access;
     template<typename Archive>
-    void serialize (Archive & ar, const unsigned int)
+    void serialize (Archive& ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(_v);
     }
   };
 
-  inline std::ostream & operator << (std::ostream & s, const type & t)
+  inline std::ostream & operator << (std::ostream& s, const type& t)
   {
     s << "y(";
     BOOST_FOREACH (const char c, t._v)
@@ -120,24 +131,27 @@ namespace bytearray
     return s << ")";
   }
 
-  inline std::size_t hash_value (const type & t)
+  inline std::size_t hash_value (const type& t)
   {
     return boost::hash<std::vector<char> >()(t._v);
   }
 
-  inline bool operator == (const type & x, const type & y)
+  inline bool operator == (const type& x, const type& y)
   {
     return x._v == y._v;
   }
-
 
   template<typename T, typename Archive = boost::archive::binary_oarchive>
   class encoder
   {
   public:
-    const type & bytearray () const { return _encoded; }
+    const type& bytearray() const
+    {
+      return _encoded;
+    }
 
-    explicit encoder (const T & x) : _encoded ()
+    explicit encoder (const T& x)
+      : _encoded()
     {
       std::ostringstream oss;
 
@@ -156,10 +170,17 @@ namespace bytearray
   class decoder
   {
   public:
-    const T & value () const { return _x; }
-    T & value () { return _x; }
+    const T& value() const
+    {
+      return _x;
+    }
+    T& value()
+    {
+      return _x;
+    }
 
-    explicit decoder (const type & ba) : _x ()
+    explicit decoder (const type& ba)
+      : _x()
     {
       std::istringstream iss (std::string (&ba.container()[0], ba.size()));
 
