@@ -39,6 +39,7 @@ add_library (we
   type/literal/name.cpp
   type/literal/function.cpp
   type/literal/show.cpp
+  type/literal/require_type.cpp
 )
 
 target_link_libraries (we
@@ -144,7 +145,6 @@ install (FILES
 
 install (FILES
   type/literal/cpp.hpp
-  type/literal/require_type.hpp
   DESTINATION include/we/type/literal
   COMPONENT headers
 )
