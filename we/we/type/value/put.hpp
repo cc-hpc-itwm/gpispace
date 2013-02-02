@@ -25,7 +25,7 @@ namespace value
       {
         put ( pos + 1
             , end
-            , field (*pos, value::visitor::mk_structured_or_keep (store))
+            , field (*pos, value::mk_structured_or_keep (store))
             , value
             );
       }

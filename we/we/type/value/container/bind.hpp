@@ -21,7 +21,7 @@ namespace value
                      )
     {
       value::put ( path
-                 , value::visitor::mk_structured_or_keep (container[key])
+                 , value::mk_structured_or_keep (container[key])
                  , value
                  );
     }
@@ -39,7 +39,7 @@ namespace value
       value::put
         ( key_vec.begin() + 1
         , key_vec.end()
-        , value::visitor::mk_structured_or_keep (container[key_vec[0]])
+        , value::mk_structured_or_keep (container[key_vec[0]])
         , value
         );
     }

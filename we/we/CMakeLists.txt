@@ -46,6 +46,7 @@ add_library (we
   type/value/read.cpp
   type/value/show.cpp
   type/value/require_type.cpp
+  type/value/mk_structured.cpp
 )
 
 target_link_libraries (we
@@ -177,7 +178,6 @@ install (FILES
   type/value/function.hpp
   type/value/get.hpp
   type/value/hash.hpp
-  type/value/mk_structured.hpp
   type/value/put.hpp
   DESTINATION include/we/type/value
   COMPONENT headers
