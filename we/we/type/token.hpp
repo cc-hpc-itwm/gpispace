@@ -97,10 +97,7 @@ namespace token
 
   inline bool operator == (const type & a, const type & b)
   {
-    return
-      (a.hash == b.hash)
-      &&
-      boost::apply_visitor (value::visitor::eq(), a.value, b.value);
+    return a.hash == b.hash && value::eq (a.value, b.value);
   }
 
   inline bool operator != (const type & a, const type & b)

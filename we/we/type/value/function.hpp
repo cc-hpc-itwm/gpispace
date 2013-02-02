@@ -74,7 +74,7 @@ namespace value
       {
         switch (token)
           {
-          case expr::token::eq: return value::visitor::eq()(x, y);
+          case expr::token::eq: return value::eq (x, y);
           default:
             throw expr::exception::eval::type_error
               (fhg::util::show (token) + " for structured values");
