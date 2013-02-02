@@ -42,6 +42,7 @@ add_library (we
   type/literal/require_type.cpp
   type/literal/cpp.cpp
   type/value/eq.cpp
+  type/value/field.cpp
 )
 
 target_link_libraries (we
@@ -170,7 +171,6 @@ install (FILES
 )
 
 install (FILES
-  type/value/field.hpp
   type/value/function.hpp
   type/value/get.hpp
   type/value/hash.hpp

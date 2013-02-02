@@ -25,10 +25,7 @@ namespace value
       {
         put ( pos + 1
             , end
-            , boost::apply_visitor
-              ( visitor::field (*pos)
-              , value::visitor::mk_structured_or_keep (store)
-              )
+            , field (*pos, value::visitor::mk_structured_or_keep (store))
             , value
             );
       }
