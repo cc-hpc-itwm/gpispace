@@ -33,6 +33,7 @@ add_library (we
   util/cross.cpp
   type/bitsetofint.cpp
   type/bytearray.cpp
+  type/literal/read.cpp
 )
 
 target_link_libraries (we
@@ -142,7 +143,6 @@ install (FILES
   type/literal/function.hpp
   type/literal/hash.hpp
   type/literal/name.hpp
-  type/literal/read.hpp
   type/literal/require_type.hpp
   type/literal/show.hpp
   type/literal/valid_name.hpp
