@@ -67,7 +67,8 @@ namespace value
               }
             else
               {
-                structured_t m;
+                v = structured_t();
+                structured_t& m (boost::get<structured_t&> (v));
 
                 bool struct_closed (false);
 
@@ -113,18 +114,14 @@ namespace value
                         throw expr::exception::parse::expected (", or ]", pos());
                       }
                   }
-
-                v = m;
               }
             break;
 
           default:
             {
-              literal::type lit;
+              v = literal::type();
 
-              literal::read (lit, pos);
-
-              v = lit;
+              literal::read (boost::get<literal::type&>(v), pos);
             }
           }
       }
