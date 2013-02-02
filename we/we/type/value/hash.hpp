@@ -6,7 +6,6 @@
 #include <we/type/value.hpp>
 
 #include <we/type/literal.hpp>
-#include <we/type/literal/hash.hpp>
 
 #include <boost/functional/hash.hpp>
 
@@ -20,7 +19,7 @@ namespace value
     public:
       std::size_t operator () (const literal::type & v) const
       {
-        return boost::hash_value(v);
+        return boost::hash<literal::type>()(v);
       }
 
       std::size_t operator () (const structured_t & map) const

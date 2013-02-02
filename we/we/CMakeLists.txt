@@ -141,7 +141,6 @@ install (FILES
   type/literal/cpp.hpp
   type/literal/default.hpp
   type/literal/function.hpp
-  type/literal/hash.hpp
   type/literal/name.hpp
   type/literal/require_type.hpp
   type/literal/show.hpp
