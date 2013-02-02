@@ -37,6 +37,7 @@ add_library (we
   type/literal/valid_name.cpp
   type/literal/default.cpp
   type/literal/name.cpp
+  type/literal/function.cpp
 )
 
 target_link_libraries (we
@@ -142,7 +143,6 @@ install (FILES
 
 install (FILES
   type/literal/cpp.hpp
-  type/literal/function.hpp
   type/literal/require_type.hpp
   type/literal/show.hpp
   DESTINATION include/we/type/literal

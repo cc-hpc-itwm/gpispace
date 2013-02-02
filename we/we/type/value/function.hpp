@@ -47,7 +47,7 @@ namespace value
 
       type operator () (literal::type & x) const
       {
-        return boost::apply_visitor (literal::function::unary (token), x);
+        return literal::function::unary (token, x);
       }
 
       type operator () (structured_t &) const
@@ -67,7 +67,7 @@ namespace value
 
       type operator () (literal::type & x, literal::type & y) const
       {
-        return boost::apply_visitor (literal::function::binary (token), x, y);
+        return literal::function::binary (token, x, y);
       }
 
       type operator () (structured_t & x, structured_t & y) const
