@@ -39,9 +39,7 @@ namespace expr
         {
           value::type c0 (boost::apply_visitor (*this, u.child));
 
-          return boost::apply_visitor ( value::function::unary (u.token)
-                                      , c0
-                                      );
+          return value::function::unary (u.token, c0);
         }
 
         value::type operator () (const expr::parse::node::binary_t& b) const
@@ -62,11 +60,7 @@ namespace expr
                 {
                   value::type c1 (boost::apply_visitor (*this, b.r));
 
-                  return boost::apply_visitor
-                    ( value::function::binary (b.token)
-                    , c0
-                    , c1
-                    );
+                  return value::function::binary (b.token, c0, c1);
                 }
               else
                 {
@@ -81,11 +75,7 @@ namespace expr
                 {
                   value::type c1 (boost::apply_visitor (*this, b.r));
 
-                  return boost::apply_visitor
-                    ( value::function::binary (b.token)
-                    , c0
-                    , c1
-                    );
+                  return value::function::binary (b.token, c0, c1);
                 }
               else
                 {
@@ -101,16 +91,14 @@ namespace expr
                   value::type c0 (boost::apply_visitor (*this, b.l));
                   value::type c1 (boost::apply_visitor (*this, b.r));
 
-                  return boost::apply_visitor
-                    (value::function::binary (b.token), c0, c1);
+                  return value::function::binary (b.token, c0, c1);
                 }
               else
                 {
                   value::type c1 (boost::apply_visitor (*this, b.r));
                   value::type c0 (boost::apply_visitor (*this, b.l));
 
-                  return boost::apply_visitor
-                    (value::function::binary (b.token), c0, c1);
+                  return value::function::binary (b.token, c0, c1);
                 }
             }
 

@@ -144,10 +144,7 @@ namespace expr
       if (constant_folding() && node::is_value (c))
         {
           tmp_stack.push_back
-            (boost::apply_visitor ( value::function::unary (token)
-                                  , boost::get<value::type> (c)
-                                  )
-            );
+            (value::function::unary (token, boost::get<value::type> (c)));
         }
       else
         {
@@ -178,12 +175,12 @@ namespace expr
 
       if (constant_folding() && node::is_value(l) && node::is_value(r))
         {
-          tmp_stack.push_back
-            (boost::apply_visitor ( value::function::binary (token)
-                                  , boost::get<value::type> (l)
-                                  , boost::get<value::type> (r)
-                                  )
-            );
+          tmp_stack.push_back ( value::function::binary
+                                ( token
+                                , boost::get<value::type> (l)
+                                , boost::get<value::type> (r)
+                                )
+                              );
         }
       else
         {
