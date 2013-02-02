@@ -19,6 +19,11 @@ namespace we
       {
         return os << std::string("[]");
       }
+
+      std::size_t hash_value (const control&)
+      {
+        return 42;
+      }
     }
   }
 }

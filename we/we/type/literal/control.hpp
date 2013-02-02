@@ -23,6 +23,8 @@ namespace we
         void serialize (Archive& , const unsigned int)
         {
         }
+
+        friend std::size_t hash_value (const control&);
       };
     }
   }
