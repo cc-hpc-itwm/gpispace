@@ -30,6 +30,14 @@ namespace fhg
         void operator ++ (void) { ++_k; ++_pos; }
         bool end (void) const { return _pos == _end; }
         const std::size_t & operator () (void) const { return _k; }
+
+        void skip_spaces()
+        {
+          while (_pos != _end && isspace (*_pos))
+          {
+            ++_pos;
+          }
+        }
       };
     }
   }
