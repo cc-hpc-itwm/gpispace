@@ -52,8 +52,7 @@ namespace bytearray
       return x;
     }
 
-    std::size_t size() const;
-    const std::vector<char>& container() const;
+    std::string to_string() const;
 
     friend std::ostream& operator<< (std::ostream&, const type&);
     friend std::size_t hash_value (const type&);
@@ -126,7 +125,7 @@ namespace bytearray
     explicit decoder (const type& ba)
       : _x()
     {
-      std::istringstream iss (std::string (&ba.container()[0], ba.size()));
+      std::istringstream iss (ba.to_string());
 
       Archive ia (iss, boost::archive::no_header);
 

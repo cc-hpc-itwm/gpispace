@@ -33,13 +33,9 @@ namespace bytearray
 
     return s;
   }
-  std::size_t type::size() const
+  std::string type::to_string() const
   {
-    return _v.size();
-  }
-  const std::vector<char>& type::container() const
-  {
-    return _v;
+    return std::string (&_v[0], _v.size());
   }
   type& type::operator= (const type& other)
   {
