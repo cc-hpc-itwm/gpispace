@@ -7,6 +7,7 @@
 #include <we/type/signature/types.hpp>
 
 #include <we/type/literal/name.hpp>
+#include <we/type/value/show.hpp>
 #include <fhg/util/show.hpp>
 
 #include <boost/variant.hpp>

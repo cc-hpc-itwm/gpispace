@@ -10,6 +10,7 @@
 #include <we/type/literal/default.hpp>
 #include <we/type/net.fwd.hpp>
 #include <we/type/place.hpp>
+#include <we/type/error.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
 
@@ -747,11 +748,7 @@ namespace xml
               const value::type v (parser.eval_all (context));
               const signature::type sig (signature);
 
-              return boost::apply_visitor
-                ( value::visitor::require_type (field_name)
-                , sig.desc()
-                , v
-                );
+              return value::require_type (field_name, sig, v);
             }
             catch (const expr::exception::eval::divide_by_zero & e)
             {
