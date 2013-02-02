@@ -8,6 +8,8 @@
 #include <we/type/literal.hpp>
 #include <we/type/literal/function.hpp>
 
+#include <fhg/util/show.hpp>
+
 namespace value
 {
   namespace function
