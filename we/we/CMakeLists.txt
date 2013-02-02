@@ -35,6 +35,7 @@ add_library (we
   type/bytearray.cpp
   type/literal/read.cpp
   type/literal/valid_name.cpp
+  type/literal/default.cpp
 )
 
 target_link_libraries (we
@@ -140,7 +141,6 @@ install (FILES
 
 install (FILES
   type/literal/cpp.hpp
-  type/literal/default.hpp
   type/literal/function.hpp
   type/literal/name.hpp
   type/literal/require_type.hpp
