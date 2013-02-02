@@ -202,21 +202,13 @@ namespace literal
       }
     }
 
-    void skip_spaces (fhg::util::parse::position & pos)
-    {
-      while (!pos.end() && isspace (*pos))
-      {
-        ++pos;
-      }
-    }
-
     void skip_sep (const char & sep, fhg::util::parse::position & pos)
     {
       if (!pos.end())
       {
         if (*pos == sep)
         {
-          ++pos; skip_spaces (pos);
+          ++pos; pos.skip_spaces();
         }
       }
     }
@@ -230,7 +222,7 @@ namespace literal
 
       ++pos;
 
-      skip_spaces (pos);
+      pos.skip_spaces();
 
       l = read_long (pos);
 
@@ -264,11 +256,11 @@ namespace literal
         return false;
       }
 
-      key = read_long (pos); skip_spaces (pos);
+      key = read_long (pos); pos.skip_spaces();
 
-      require ("->", pos); skip_spaces (pos);
+      require ("->", pos); pos.skip_spaces();
 
-      val = read_long (pos); skip_spaces (pos);
+      val = read_long (pos); pos.skip_spaces();
 
       skip_sep (',', pos);
 

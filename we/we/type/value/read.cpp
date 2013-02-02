@@ -9,22 +9,11 @@
 
 namespace value
 {
-  namespace
-  {
-    void skip_spaces (fhg::util::parse::position& pos)
-    {
-      while (!pos.end() && isspace (*pos))
-      {
-        ++pos;
-      }
-    }
-  }
-
   type read (fhg::util::parse::position& pos)
   {
     type v;
 
-    skip_spaces (pos);
+    pos.skip_spaces();
 
     if (not pos.end())
     {
@@ -70,7 +59,7 @@ namespace value
               throw expr::exception::parse::expected ("identifier", pos());
             }
 
-            skip_spaces (pos);
+            pos.skip_spaces();
 
             if (pos.end() or *pos != ':')
             {
@@ -88,7 +77,7 @@ namespace value
 
             m[name] = read (pos);
 
-            skip_spaces (pos);
+            pos.skip_spaces();
 
             if (pos.end())
             {
@@ -120,7 +109,7 @@ namespace value
 
   std::string identifier (fhg::util::parse::position& pos)
   {
-    skip_spaces (pos);
+    pos.skip_spaces();
 
     return literal::identifier (pos);
   }
