@@ -20,11 +20,6 @@ namespace literal
 {
   namespace function
   {
-    bool is_zero (const double& x)
-    {
-      return (fabs (x) < 1e-6);
-    }
-
     namespace
     {
       class visitor_is_true : public boost::static_visitor<bool>
@@ -42,15 +37,12 @@ namespace literal
             ("is_true for something that is not of type bool");
         }
       };
-    }
 
-    bool is_true (const literal::type& v)
-    {
-      return boost::apply_visitor (visitor_is_true(), v);
-    }
+      bool is_zero (const double& x)
+      {
+        return (fabs (x) < 1e-6);
+      }
 
-    namespace
-    {
       class visitor_unary : public boost::static_visitor<literal::type>
       {
       private:
@@ -510,6 +502,11 @@ namespace literal
             );
         }
       };
+    }
+
+    bool is_true (const literal::type& v)
+    {
+      return boost::apply_visitor (visitor_is_true(), v);
     }
 
     literal::type unary (const expr::token::type& token, literal::type& x)

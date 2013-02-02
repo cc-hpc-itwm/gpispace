@@ -11,7 +11,6 @@ namespace literal
 {
   namespace function
   {
-    bool is_zero (const double&);
     bool is_true (const literal::type&);
 
     literal::type unary (const expr::token::type&, literal::type&);
