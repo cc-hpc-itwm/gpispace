@@ -6,7 +6,6 @@
 #include <we/type/literal/show.hpp>
 
 #include <stdexcept>
-#include <sstream>
 
 namespace value
 {
@@ -29,13 +28,9 @@ namespace value
 
       type& operator() (literal::type& l) const
       {
-        std::ostringstream s;
-
-        s << "cannot get field " << name
-          << " from the literal " << literal::show (l)
-          ;
-
-        throw std::runtime_error (s.str());
+        throw std::runtime_error ( "cannot get field " + name
+                                 + " from the literal " + literal::show (l)
+                                 );
       }
     };
   }
