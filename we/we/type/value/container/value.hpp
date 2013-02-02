@@ -27,12 +27,9 @@ namespace value
           }
         else
           {
-            value::visitor::get_field get (fhg::util::show (*pos));
+            const std::string& field (*pos);
 
-            return find ( pos + 1
-                        , end
-                        , boost::apply_visitor (get, store)
-                        );
+            return find (pos + 1, end, value::get_field (field, store));
           }
       }
     }

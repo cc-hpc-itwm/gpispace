@@ -50,6 +50,7 @@ add_library (we
   type/value/hash.cpp
   type/value/put.cpp
   type/value/function.cpp
+  type/value/get.cpp
 )
 
 target_link_libraries (we
@@ -168,17 +169,5 @@ install (FILES
   type/value/container/type.hpp
   type/value/container/value.hpp
   DESTINATION include/we/type/value/container
-  COMPONENT headers
-)
-
-install (FILES
-  type/value/cpp/get.hpp
-  DESTINATION include/we/type/value/cpp
-  COMPONENT headers
-)
-
-install (FILES
-  type/value/get.hpp
-  DESTINATION include/we/type/value
   COMPONENT headers
 )
