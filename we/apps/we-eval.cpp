@@ -16,13 +16,7 @@
 
 #include <we/mgmt/layer.hpp>
 #include <we/type/expression.fwd.hpp>
-#include <we/type/literal.hpp>
-#include <we/type/literal/read.hpp>
 #include <we/type/module_call.fwd.hpp>
-#include <we/type/net.fwd.hpp>
-#include <we/type/value.hpp>
-#include <we/type/value/read.hpp>
-#include <we/util/token.hpp>
 
 #include <fhg/revision.hpp>
 #include <fhg/util/getenv.hpp>
@@ -103,7 +97,6 @@ try
   std::string path_to_act ("-");
   std::string mod_path;
   std::vector<std::string> mods_to_load;
-  std::vector<std::string> input_spec;
   std::string output ("/dev/stdout");
   std::size_t num_worker (1);
   bool show_dots (false);
@@ -128,10 +121,6 @@ try
     ( "load"
     , po::value<std::vector<std::string> > (&mods_to_load)
     , "modules to load a priori"
-    )
-    ( "input,i"
-    , po::value<std::vector<std::string> > (&input_spec)
-    , "input token to the activity: <port>=<value>"
     )
     ( "output,o"
     , po::value<std::string> (&output)->default_value(output)
@@ -194,19 +183,6 @@ try
     ? we::mgmt::type::activity_t (std::cin)
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
-
-  BOOST_FOREACH (const std::string& inp, input_spec)
-  {
-    const std::string port_name (inp.substr (0, inp.find ('=')));
-    const std::string value (inp.substr (inp.find ('=') + 1));
-
-    std::size_t k (0);
-    std::string::const_iterator begin (value.begin());
-    fhg::util::parse::position pos (k, begin, value.end());
-
-    we::util::token::put (act, port_name, ::value::read (pos));
-  }
-
 
   try
   {
