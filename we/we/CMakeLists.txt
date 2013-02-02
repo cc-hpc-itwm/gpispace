@@ -44,6 +44,7 @@ add_library (we
   type/value/eq.cpp
   type/value/field.cpp
   type/value/read.cpp
+  type/value/show.cpp
 )
 
 target_link_libraries (we
@@ -178,7 +179,6 @@ install (FILES
   type/value/mk_structured.hpp
   type/value/put.hpp
   type/value/require_type.hpp
-  type/value/show.hpp
   DESTINATION include/we/type/value
   COMPONENT headers
 )

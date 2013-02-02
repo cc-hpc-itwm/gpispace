@@ -64,7 +64,7 @@ namespace expr
 
           void operator () (const value::type & v) const
           {
-            boost::apply_visitor (value::visitor::show (s), v);
+            s << v;
           }
 
           void operator () (const key_vec_t & key) const
