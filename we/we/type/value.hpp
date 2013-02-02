@@ -51,6 +51,8 @@ namespace value
       return map[field_name];
     }
 
+    std::size_t size() const { return map.size(); }
+
     const_iterator begin (void) const { return map.begin(); }
     const_iterator end (void) const { return map.end(); }
     const_iterator find (const signature::field_name_t & field_name) const

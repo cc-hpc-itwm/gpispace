@@ -4,8 +4,6 @@
 
 #include <we/type/literal.hpp>
 
-#include <algorithm>
-
 namespace value
 {
   namespace
@@ -24,16 +22,17 @@ namespace value
         structured_t::const_iterator pos_y (y.begin());
         const structured_t::const_iterator end_x (x.end());
 
-        bool all_eq (  std::distance(pos_x, end_x)
-                    == std::distance(pos_y, y.end())
-                    );
+        bool all_eq (x.size() == y.size());
 
-        for ( ; all_eq && pos_x != end_x; ++pos_x, ++pos_y)
+        while (all_eq && pos_x != end_x)
           {
             all_eq =
-              (pos_x->first == pos_y->first)
+              pos_x->first == pos_y->first
               &&
               boost::apply_visitor (*this, pos_x->second, pos_y->second);
+
+            ++pos_x;
+            ++pos_y;
           }
 
         return all_eq;
