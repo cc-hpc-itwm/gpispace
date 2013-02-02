@@ -12,11 +12,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 
-#include <boost/functional/hash.hpp>
-
-#include <boost/foreach.hpp>
-
-#include <iostream>
+#include <iosfwd>
 #include <sstream>
 
 namespace bytearray
@@ -24,30 +20,12 @@ namespace bytearray
   class type
   {
   public:
-    void push_back (char c)
-    {
-      _v.push_back (c);
-    }
+    void push_back (char c);
 
-    type ()
-      : _v ()
-    {}
-    type (const type& other)
-      : _v (other._v)
-    {}
-    type (const char* const buf, const std::size_t size)
-      : _v()
-    {
-      std::copy (buf, buf + size, std::back_inserter (_v));
-    }
-    std::size_t copy (char* const buf, const std::size_t size) const
-    {
-      const std::size_t s (std::min (_v.size(), size));
-
-      std::copy (_v.begin(), _v.begin() + s, buf);
-
-      return s;
-    }
+    type();
+    type (const type&);
+    type (const char* const, const std::size_t);
+    std::size_t copy (char* const buf, const std::size_t size) const;
 
     template<typename T>
     explicit type (const T* const x)
@@ -74,28 +52,14 @@ namespace bytearray
       return x;
     }
 
-    std::size_t size() const
-    {
-      return _v.size();
-    }
-    const std::vector<char>& container() const
-    {
-      return _v;
-    }
+    std::size_t size() const;
+    const std::vector<char>& container() const;
 
     friend std::ostream& operator<< (std::ostream&, const type&);
     friend std::size_t hash_value (const type&);
     friend bool operator== (const type&, const type&);
 
-    type& operator = (const type& other)
-    {
-      if (this != &other)
-        {
-          _v = other._v;
-        }
-
-      return *this;
-    }
+    type& operator= (const type& other);
 
     template<typename T>
     type& operator= (const T& other)
@@ -120,26 +84,6 @@ namespace bytearray
       ar & BOOST_SERIALIZATION_NVP(_v);
     }
   };
-
-  inline std::ostream & operator << (std::ostream& s, const type& t)
-  {
-    s << "y(";
-    BOOST_FOREACH (const char c, t._v)
-      {
-        s << " " << int (c);
-      }
-    return s << ")";
-  }
-
-  inline std::size_t hash_value (const type& t)
-  {
-    return boost::hash<std::vector<char> >()(t._v);
-  }
-
-  inline bool operator == (const type& x, const type& y)
-  {
-    return x._v == y._v;
-  }
 
   template<typename T, typename Archive = boost::archive::binary_oarchive>
   class encoder

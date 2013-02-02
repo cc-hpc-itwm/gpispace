@@ -32,6 +32,7 @@ add_library (we
   type/property.cpp
   util/cross.cpp
   type/bitsetofint.cpp
+  type/bytearray.cpp
 )
 
 target_link_libraries (we
@@ -44,6 +45,7 @@ target_link_libraries (generate_parser_action_table we)
 
 if (BUILD_TESTING)
   add_executable (test_we_type_bytearray type/test/test_bytearray.cpp)
+  target_link_libraries(test_we_type_bytearray we)
   target_link_libraries(test_we_type_bytearray ${Boost_UNIT_TEST_LIBRARIES})
   target_link_libraries(test_we_type_bytearray ${Boost_LIBRARIES})
   add_test ("test_we_type_bytearray" test_we_type_bytearray)
@@ -121,7 +123,6 @@ install (FILES
 )
 
 install (FILES
-  type/bytearray.hpp
   type/condition.hpp
   type/error.hpp
   type/literal.hpp
