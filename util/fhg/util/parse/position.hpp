@@ -31,22 +31,6 @@ namespace fhg
         bool end (void) const { return _pos == _end; }
         const std::size_t & operator () (void) const { return _k; }
       };
-
-      class simple_position
-      {
-      private:
-        std::string::const_iterator _pos;
-        const std::string::const_iterator _end;
-      public:
-        simple_position (const std::string & s)
-          : _pos (s.begin()), _end (s.end())
-        {}
-
-        std::string rest (void) { return std::string (_pos, _end); }
-        char operator * (void) const { return *_pos; }
-        void operator ++ (void) { ++_pos; }
-        bool end (void) const { return _pos == _end; }
-      };
     }
   }
 }
