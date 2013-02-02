@@ -621,12 +621,8 @@ namespace signature
       cpp_util::header_gen_full (os);
       cpp_util::include_guard_begin (os, "PNETC_TYPE_" + n);
 
-      cpp_util::include (os, "we/type/bitsetofint.hpp");
-      cpp_util::include (os, "we/type/bytearray.hpp");
-      cpp_util::include (os, "we/type/literal/control.hpp");
       cpp_util::include (os, "we/type/value.hpp");
       cpp_util::include (os, "we/type/value/cpp/get.hpp");
-      cpp_util::include (os, "string");
 
       // for serialization
       cpp_util::include (os, "boost/serialization/nvp.hpp");
