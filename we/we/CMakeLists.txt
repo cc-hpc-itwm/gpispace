@@ -34,6 +34,7 @@ add_library (we
   type/bitsetofint.cpp
   type/bytearray.cpp
   type/literal/read.cpp
+  type/literal/valid_name.cpp
 )
 
 target_link_libraries (we
@@ -144,7 +145,6 @@ install (FILES
   type/literal/name.hpp
   type/literal/require_type.hpp
   type/literal/show.hpp
-  type/literal/valid_name.hpp
   DESTINATION include/we/type/literal
   COMPONENT headers
 )

@@ -27,6 +27,7 @@ add_library (xml
   parse/warning.cpp
 )
 target_link_libraries (xml
+  we
   fhg-util
   ${Boost_LIBRARIES}
 )
