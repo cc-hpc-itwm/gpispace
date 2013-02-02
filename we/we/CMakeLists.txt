@@ -40,6 +40,7 @@ add_library (we
   type/literal/function.cpp
   type/literal/show.cpp
   type/literal/require_type.cpp
+  type/literal/cpp.cpp
 )
 
 target_link_libraries (we
@@ -140,12 +141,6 @@ install (FILES
   type/transition.hpp
   type/value.hpp
   DESTINATION include/we/type
-  COMPONENT headers
-)
-
-install (FILES
-  type/literal/cpp.hpp
-  DESTINATION include/we/type/literal
   COMPONENT headers
 )
 
