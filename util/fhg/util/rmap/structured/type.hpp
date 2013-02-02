@@ -41,6 +41,11 @@ namespace fhg
             return boost::none;
           }
 
+          const map_type& map() const
+          {
+            return _map;
+          }
+
         private:
           map_type _map;
 
