@@ -55,7 +55,7 @@ namespace token
   public:
     type ()
       : value (we::type::literal::control())
-      , hash (boost::apply_visitor (value::visitor::hash(), value))
+      , hash (value::hash_value (value))
     {}
 
     // construct from value, require type from signature
@@ -64,7 +64,7 @@ namespace token
          , const value::type & v
          )
       : value (value::require_type (field, signature, v))
-      , hash (boost::apply_visitor (value::visitor::hash(), value))
+      , hash (value::hash_value (value))
     {}
 
     // construct from context, use information from signature
@@ -73,7 +73,7 @@ namespace token
          , const context_t & context
          )
       : value (value::require_type (field, signature, context.value (field)))
-      , hash (boost::apply_visitor (value::visitor::hash(), value))
+      , hash (value::hash_value (value))
     {}
 
     friend inline std::ostream & operator << (std::ostream &, const type &);
