@@ -82,7 +82,7 @@ namespace fhg
         void ports_model::port_added
           (const QObject*, const data::handle::port& handle)
         {
-          if ( handle.get().parent()->id() == _function.id()
+          if ( handle.parent_is (_function)
              && same_direction (handle.id(), _direction)
              )
           {
