@@ -2,6 +2,7 @@
 
 #include <we/type/literal/control.hpp>
 
+#include <iostream>
 #include <string>
 
 namespace we
