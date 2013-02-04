@@ -293,6 +293,13 @@ namespace petri_net
     }
   }
 
+  void net::put_value (const place_id_type& pid, const value::type& value)
+  {
+    const place::type& place (get_place (pid));
+
+    put_token (pid, token::type (place.name(), place.signature(), value));
+  }
+
   namespace
   {
     const std::list<token::type>& no_tokens()

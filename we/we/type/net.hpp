@@ -11,6 +11,7 @@
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/type/token.hpp>
+#include <we/type/value.hpp>
 #include <we/type/place.hpp>
 
 #include <we/type/transition.hpp>
@@ -83,6 +84,7 @@ namespace petri_net
                                          );
 
     void put_token (const place_id_type&, const token::type&);
+    void put_value (const place_id_type&, const value::type&);
 
     const std::list<token::type>& get_token (const place_id_type&) const;
 
