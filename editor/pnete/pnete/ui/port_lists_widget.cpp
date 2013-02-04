@@ -4,15 +4,19 @@
 
 #include <pnete/ui/ComboItemDelegate.hpp>
 
+#include <util/qt/boost_connect.hpp>
+
 #include <xml/parse/type/function.hpp>
 
 #include <boost/foreach.hpp>
 
+#include <QAction>
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QObject>
 #include <QSplitter>
 #include <QTableWidget>
+#include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -219,13 +223,57 @@ namespace fhg
           (port_list_box (we::type::PORT_IN, function, types));
         splitter->addWidget
           (port_list_box (we::type::PORT_OUT, function, types));
-        splitter->addWidget
-          (port_list_box (we::type::PORT_TUNNEL, function, types));
+
+        if (function.content_is_net())
+        {
+          splitter->addWidget
+            (port_list_box (we::type::PORT_TUNNEL, function, types));
+        }
 
         QVBoxLayout* vbox (new QVBoxLayout());
+
+        QToolBar* bar (new QToolBar (QObject::tr ("dummy"), this));
+
+        fhg::util::qt::boost_connect<void()>
+          ( bar->addAction (QObject::tr ("add_in_port"))
+          , SIGNAL (triggered())
+          , this
+          , boost::bind ( &data::handle::function::add_port
+                        , function
+                        , we::type::PORT_IN
+                        , boost::none
+                        )
+          );
+
+        fhg::util::qt::boost_connect<void()>
+          ( bar->addAction (QObject::tr ("add_out_port"))
+          , SIGNAL (triggered())
+          , this
+          , boost::bind ( &data::handle::function::add_port
+                        , function
+                        , we::type::PORT_OUT
+                        , boost::none
+                        )
+          );
+
+        if (function.content_is_net())
+        {
+          fhg::util::qt::boost_connect<void()>
+            ( bar->addAction (QObject::tr ("add_tunnel_port"))
+            , SIGNAL (triggered())
+            , this
+            , boost::bind ( &data::handle::function::add_port
+                          , function
+                          , we::type::PORT_TUNNEL
+                          , boost::none
+                          )
+            );
+        }
+
+        vbox->addWidget (bar);
         vbox->addWidget (splitter);
         vbox->setContentsMargins (0, 0, 0, 0);
-        setLayout(vbox);
+        setLayout (vbox);
       }
     }
   }
