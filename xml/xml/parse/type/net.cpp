@@ -12,6 +12,10 @@
 #include <we/type/place.hpp>
 #include <we/type/error.hpp>
 
+#include <we/type/value/require_type.hpp>
+
+#include <we/expr/eval/context.hpp>
+
 #include <fhg/util/remove_prefix.hpp>
 
 namespace xml
