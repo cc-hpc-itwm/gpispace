@@ -32,6 +32,7 @@ set(tc_srcs
     test_sig_cpp.cpp
     test_try_gen.cpp
     test_gen.cpp
+    test_context.cpp
    )
 
 # answer module
