@@ -112,17 +112,35 @@ BOOST_AUTO_TEST_CASE (reference)
 
   context_t c;
 
-  key_vec_t key_a;
-  key_a.push_back ("a");
-
+  const std::string key_a ("a");
   const std::string key_b ("b");
+  const std::string key_c ("c");
 
   const value::type value_a (0.0);
   const value::type value_b ("a_string");
+  const value::type value_c (value::read ("[x:=1,y:=[a:=2,b:=3]]"));
 
   c.bind_ref (key_a, value_a);
   c.bind_ref (key_b, value_b);
+  c.bind_ref (key_c, value_c);
 
   BOOST_REQUIRE (value::eq (c.value (key_a), value_a));
   BOOST_REQUIRE (value::eq (c.value (key_b), value_b));
+  BOOST_REQUIRE (value::eq (c.value (key_c), value_c));
+
+  key_vec_t key_c_x;
+  key_c_x.push_back ("c");
+  key_c_x.push_back ("x");
+  key_vec_t key_c_y_a;
+  key_c_y_a.push_back ("c");
+  key_c_y_a.push_back ("y");
+  key_c_y_a.push_back ("a");
+  key_vec_t key_c_y_b;
+  key_c_y_b.push_back ("c");
+  key_c_y_b.push_back ("y");
+  key_c_y_b.push_back ("b");
+
+  BOOST_REQUIRE (value::eq (c.value (key_c_x), 1L));
+  BOOST_REQUIRE (value::eq (c.value (key_c_y_a), 2L));
+  BOOST_REQUIRE (value::eq (c.value (key_c_y_b), 3L));
 }

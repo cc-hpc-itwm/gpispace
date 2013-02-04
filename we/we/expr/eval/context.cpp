@@ -22,14 +22,9 @@ namespace expr
       value::container::bind (container, key, value);
     }
 
-    void context::bind_ref (const key_vec_t& key_vec, const value::type& value)
-    {
-      _ref_container.bind (key_vec, &value);
-    }
-
     void context::bind_ref (const std::string& key, const value::type& value)
     {
-      _ref_container.bind (key, &value);
+      _ref_container.insert (std::make_pair (key, &value));
     }
 
     const value::type& context::value (const std::string& key) const
@@ -40,12 +35,11 @@ namespace expr
       }
       catch (const std::runtime_error&)
       {
-        const boost::optional<const value::type*> ptr_value
-          (_ref_container.value (key));
+        ref_container_type::const_iterator pos (_ref_container.find (key));
 
-        if (ptr_value)
+        if (pos != _ref_container.end())
         {
-          return **ptr_value;
+          return *pos->second;
         }
 
         throw;
@@ -62,23 +56,22 @@ namespace expr
       {
         if (key_vec.size() > 0)
         {
-          key_vec_t::const_iterator pos (key_vec.begin());
-          const std::string& key (*pos); ++pos;
+          key_vec_t::const_iterator key_pos (key_vec.begin());
+          const std::string& key (*key_pos); ++key_pos;
 
-          const boost::optional<const value::type*> ptr_value
-            (_ref_container.value (key));
+          ref_container_type::const_iterator pos (_ref_container.find (key));
 
-          if (ptr_value)
+          if (pos != _ref_container.end())
           {
-            if (pos == key_vec.end())
+            if (key_pos == key_vec.end())
             {
-              return **ptr_value;
+              return *pos->second;
             }
             else
             {
-              return value::container::detail::find ( pos
+              return value::container::detail::find ( key_pos
                                                     , key_vec.end()
-                                                    , **ptr_value
+                                                    , *pos->second
                                                     );
             }
           }

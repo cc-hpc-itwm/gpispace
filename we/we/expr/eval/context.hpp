@@ -7,7 +7,7 @@
 
 #include <we/type/value/container/container.hpp>
 
-#include <fhg/util/rmap.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <iosfwd>
 
@@ -21,11 +21,11 @@ namespace expr
       typedef value::container::type container_t;
       container_t container;
 
-      typedef fhg::util::rmap::traits< std::string
-                                     , value::type const*
-                                     > ref_traits;
+      typedef boost::unordered_map< std::string
+                                  , value::type const*
+                                  > ref_container_type;
 
-      ref_traits::rmap_type _ref_container;
+      ref_container_type _ref_container;
 
     public:
       typedef value::container::key_vec_t key_vec_t;
@@ -34,7 +34,6 @@ namespace expr
       void bind (const key_vec_t&, const value::type&);
       void bind (const std::string&, const value::type&);
 
-      void bind_ref (const key_vec_t&, const value::type&);
       void bind_ref (const std::string&, const value::type&);
 
       const value::type& value (const std::string&) const;
