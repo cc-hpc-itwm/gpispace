@@ -95,13 +95,7 @@ namespace value
         break;
 
       default:
-        {
-          literal::type l;
-
-          literal::read (l, pos);
-
-          return l;
-        }
+        return literal::read (pos);
       }
     }
 

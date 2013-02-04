@@ -181,24 +181,24 @@ namespace literal
       return d;
     }
 
-    void read_num (type & v, fhg::util::parse::position & pos)
+    type read_num (fhg::util::parse::position & pos)
     {
       long i (read_long (pos));
 
       if (pos.end() || *pos != '.')
       {
-        v = i;
-
         // consume a trailing 'L'
         if (!pos.end() && *pos == 'L')
         {
           ++pos;
         }
+
+        return i;
       }
       else
       {
         ++pos;
-        v = read_fraction (i, pos);
+        return read_fraction (i, pos);
       }
     }
 
@@ -268,7 +268,7 @@ namespace literal
     }
   }
 
-  void read (type & v, fhg::util::parse::position & pos)
+  type read (fhg::util::parse::position & pos)
   {
     if (pos.end())
     {
@@ -278,14 +278,13 @@ namespace literal
 
     switch (*pos)
     {
-    case 't': ++pos; require ("rue", pos); v = true; break;
-    case 'f': ++pos; require ("alse", pos); v = false; break;
+    case 't': ++pos; require ("rue", pos); return true;
+    case 'f': ++pos; require ("alse", pos); return false;
     case 'y': ++pos;
       {
         require ("(", pos);
 
-        v = bytearray::type();
-        bytearray::type& ba (boost::get<bytearray::type&> (v));
+        bytearray::type ba;
         long l;
 
         while (read_list_item (l, pos))
@@ -294,18 +293,13 @@ namespace literal
         }
 
         require (")", pos);
-      }
-      break;
-    case '[':
-      ++pos;
-      require ("]", pos);
-      v = we::type::literal::control();
-      break;
 
+        return ba;
+      }
+    case '[': ++pos; require ("]", pos); return we::type::literal::control();
     case '@': ++pos;
       {
-        v = literal::stack_type();
-        literal::stack_type& s (boost::get<literal::stack_type&> (v));
+        literal::stack_type s;
         long l;
 
         while (read_list_item (l, pos))
@@ -314,8 +308,9 @@ namespace literal
         }
 
         require ("@", pos);
+
+        return s;
       }
-      break;
     case '\'':
       {
         const std::size_t open (pos());
@@ -328,22 +323,22 @@ namespace literal
         if (*pos == '\'')
           throw expr::exception::parse::exception ("'' with no content", pos());
 
-        v = read_quoted_char (pos);
+        char c (read_quoted_char (pos));
 
         if (pos.end() || *pos != '\'')
           throw expr::exception::parse::unterminated ("'", open, pos());
 
         ++pos;
+
+        return c;
       }
-      break;
     case '"':
       {
         const std::size_t open (pos());
 
         ++pos;
 
-        v = std::string();
-        std::string& s (boost::get<std::string&> (v));
+        std::string s;
 
         while (!pos.end() && *pos != '"')
         {
@@ -356,8 +351,9 @@ namespace literal
         }
 
         ++pos;
+
+        return s;
       }
-      break;
     case '{': ++pos;
       if (pos.end())
         throw expr::exception::parse::expected ("'}' or ':' or '|'", pos());
@@ -366,8 +362,7 @@ namespace literal
         {
         case ':': ++pos;
           {
-            v = literal::set_type();
-            literal::set_type& s (boost::get<literal::set_type&> (v));
+            literal::set_type s;
             long l;
 
             while (read_list_item (l, pos))
@@ -376,12 +371,12 @@ namespace literal
             }
 
             require (":}", pos);
+
+            return s;
           }
-          break;
         case '|': ++pos;
           {
-            v = literal::map_type();
-            literal::map_type& m (boost::get<literal::map_type&> (v));
+            literal::map_type m;
             long key;
             long val;
 
@@ -391,12 +386,12 @@ namespace literal
             }
 
             require ("|}", pos);
+
+            return m;
           }
-          break;
         default:
           {
-            v = bitsetofint::type();
-            bitsetofint::type& bs (boost::get<bitsetofint::type&> (v));
+            bitsetofint::type bs;
             long l;
 
             while (read_list_item (l, pos))
@@ -405,11 +400,12 @@ namespace literal
             }
 
             require ("}", pos);
+
+            return bs;
           }
         }
-      break;
     default:
-      read_num (v, pos);
+      return read_num (pos);
     }
   }
 }

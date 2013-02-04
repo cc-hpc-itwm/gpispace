@@ -10,7 +10,7 @@
 namespace literal
 {
   std::string identifier (fhg::util::parse::position&);
-  void read (type&, fhg::util::parse::position& pos);
+  type read (fhg::util::parse::position& pos);
 }
 
 #endif
