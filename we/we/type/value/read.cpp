@@ -11,8 +11,6 @@ namespace value
 {
   type read (fhg::util::parse::position& pos)
   {
-    type v;
-
     pos.skip_spaces();
 
     if (not pos.end())
@@ -45,8 +43,7 @@ namespace value
         }
         else
         {
-          v = structured_t();
-          structured_t& m (boost::get<structured_t&> (v));
+          structured_t m;
 
           bool struct_closed (false);
 
@@ -92,19 +89,23 @@ namespace value
               throw expr::exception::parse::expected (", or ]", pos());
             }
           }
+
+          return m;
         }
         break;
 
       default:
         {
-          v = literal::type();
+          literal::type l;
 
-          literal::read (boost::get<literal::type&>(v), pos);
+          literal::read (l, pos);
+
+          return l;
         }
       }
     }
 
-    return v;
+    return type();
   }
 
   std::string identifier (fhg::util::parse::position& pos)
