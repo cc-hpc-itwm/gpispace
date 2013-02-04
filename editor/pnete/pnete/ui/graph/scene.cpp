@@ -754,14 +754,9 @@ namespace fhg
 
         void scene_type::create_place_map (const data::handle::place_map& map)
         {
-          const data::handle::port port
-            (*map.get().resolved_tunnel_port(), map.document());
-          const data::handle::place place
-            (*map.get().resolved_real_place(), map.document());
-
           addItem ( new ui::graph::place_map
-                    ( item_with_handle<port_item> (port)
-                    , item_with_handle<place_item> (place)
+                    ( item_with_handle<port_item> (map.tunnel_port())
+                    , item_with_handle<place_item> (map.resolved_real_place())
                     , map
                     )
                   );

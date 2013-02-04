@@ -7,6 +7,7 @@
 
 #include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
+#include <pnete/data/handle/port.fwd.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/place_map.fwd.hpp>
@@ -37,6 +38,7 @@ namespace fhg
                                     ) const;
 
           place resolved_real_place() const;
+          port tunnel_port() const;
 
           using place_map_meta_base::operator==;
         };

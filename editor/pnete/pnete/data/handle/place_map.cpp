@@ -4,6 +4,7 @@
 
 #include <pnete/data/change_manager.hpp>
 #include <pnete/data/handle/place.hpp>
+#include <pnete/data/handle/port.hpp>
 
 #include <xml/parse/type/place_map.hpp>
 
@@ -38,6 +39,11 @@ namespace fhg
         place place_map::resolved_real_place() const
         {
           return place (*get().resolved_real_place(), document());
+        }
+
+        port place_map::tunnel_port() const
+        {
+          return port (*get().resolved_tunnel_port(), document());
         }
       }
     }
