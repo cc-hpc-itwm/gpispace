@@ -81,6 +81,11 @@ namespace fhg
             (wrap_with_handle (document()), get().content());
         }
 
+        bool function::content_is_net() const
+        {
+          return get().is_net();
+        }
+
         namespace
         {
           bool same_direction ( const ::xml::parse::id::ref::port& id

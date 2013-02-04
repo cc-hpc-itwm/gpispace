@@ -51,6 +51,8 @@ namespace fhg
                         ) const;
 
           boost::variant<expression, module, net> content_handle() const;
+          bool content_is_net() const;
+
           QList<port> ports (const we::type::PortDirection&) const;
 
           using function_meta_base::operator==;
