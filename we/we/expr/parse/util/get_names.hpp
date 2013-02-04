@@ -20,8 +20,6 @@ namespace expr
       name_set_t get_names (const parser&);
 
       std::string write_key_vec (const name_set_t::value_type&);
-
-      node::key_vec_t get_normal_name (node::key_vec_t);
     }
 
     std::ostream& operator<< (std::ostream&, util::name_set_t::value_type);

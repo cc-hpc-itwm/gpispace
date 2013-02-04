@@ -93,24 +93,6 @@ namespace expr
         }
         return name;
       }
-
-      node::key_vec_t get_normal_name (node::key_vec_t ssa_name)
-      {
-        if (ssa_name[1] == ".temp")
-        {
-          ssa_name.erase (ssa_name.begin());
-          return ssa_name;
-        }
-
-        //! \note Yes, a size_t would be nicer, but would get termination-problems.
-        signed long i = ssa_name.size() - 1;
-        while (i >= 0)
-        {
-          ssa_name.erase (ssa_name.begin() + i);
-          i -= 2;
-        }
-        return ssa_name;
-      }
     }
 
     std::ostream& operator<< ( std::ostream& stream
