@@ -67,40 +67,29 @@ namespace value
         return v;
       }
 
-      template<typename T>
-      type operator () (const T & t, const literal::type & u) const
+      type operator () ( const signature::structured_t& signature
+                       , const literal::type& u
+                       ) const
       {
         std::ostringstream s;
 
         s << "incompatible types:"
-          << " wanted type " << fhg::util::show (t)
-          << " given value " << literal::show (u)
+          << " wanted a structured value of type " << fhg::util::show (signature)
+          << " but got the literal value" << literal::show (u)
           ;
 
         throw ::type::error (s.str());
       }
 
-      template<typename U>
-      type operator () (const literal::type & t, const U & u) const
+      type operator () ( const literal::type_name_t& type_name
+                       , const structured_t& v
+                       ) const
       {
         std::ostringstream s;
 
         s << "incompatible types:"
-          << " wanted type " << literal::show (t)
-          << " given value " << fhg::util::show (u)
-          ;
-
-        throw ::type::error (s.str());
-      }
-
-      template<typename T, typename U>
-      type operator () (const T & t, const U & u) const
-      {
-        std::ostringstream s;
-
-        s << "incompatible types:"
-          << " wanted type " << fhg::util::show (t)
-          << " given value " << fhg::util::show (u)
+          << " wanted a literal value of type " << fhg::util::show (type_name)
+          << " but got the structured value " << fhg::util::show (v)
           ;
 
         throw ::type::error (s.str());
