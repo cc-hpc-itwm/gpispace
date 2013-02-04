@@ -34,10 +34,9 @@ namespace fhg
 
       template<typename Key, typename Mapped>
       typename traits<Key, Mapped>::query_result_type
-      get_mapped (const typename traits<Key, Mapped>::variant_type& variant)
+      get_mapped (const typename traits<Key, Mapped>::node_type& node)
       {
-        return boost::apply_visitor
-          (visitor::get_mapped<Key, Mapped>(), variant);
+        return boost::apply_visitor (visitor::get_mapped<Key, Mapped>(), node);
       }
     }
   }

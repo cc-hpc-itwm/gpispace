@@ -18,14 +18,14 @@ namespace fhg
       template<typename Key, typename Mapped>
       std::ostream&
       write_to ( std::ostream&
-               , const typename traits<Key, Mapped>::variant_type&
+               , const typename traits<Key, Mapped>::node_type&
                , unsigned int
                );
 
       template<typename Key, typename Mapped>
       std::ostream& operator<< (std::ostream& os, const type<Key, Mapped>& x)
       {
-        return write_to<Key, Mapped> (os, x._variant, 0);
+        return write_to<Key, Mapped> (os, x._node, 0);
       }
 
       namespace visitor
@@ -48,11 +48,11 @@ namespace fhg
           }
           std::ostream& operator() (const structured_type& s) const
           {
-            BOOST_FOREACH (const kv_type& kv, s.map())
+            BOOST_FOREACH (const key_node_type& kn, s.map())
             {
               add_header();
-              _os << kv.first << ":" << std::endl;
-              write_to<Key, Mapped> (_os, kv.second, _level + 1);
+              _os << kn.first << ":" << std::endl;
+              write_to<Key, Mapped> (_os, kn.second, _level + 1);
             }
 
             return _os;
@@ -75,12 +75,12 @@ namespace fhg
       template<typename Key, typename Mapped>
       std::ostream&
       write_to ( std::ostream& os
-               , const typename traits<Key, Mapped>::variant_type& variant
+               , const typename traits<Key, Mapped>::node_type& node
                , unsigned int level
                )
       {
         return boost::apply_visitor
-          (visitor::writer<Key, Mapped> (os, level), variant);
+          (visitor::writer<Key, Mapped> (os, level), node);
       }
     }
   }

@@ -39,10 +39,10 @@ namespace fhg
 
       template<typename Key, typename Mapped>
       boost::optional<const structured::type<Key, Mapped>&>
-      get_structured (const typename traits<Key, Mapped>::variant_type& variant)
+      get_structured (const typename traits<Key, Mapped>::node_type& node)
       {
         return boost::apply_visitor
-          (visitor::get_structured<Key, Mapped>(), variant);
+          (visitor::get_structured<Key, Mapped>(), node);
       }
     }
   }

@@ -30,39 +30,39 @@ namespace fhg
         FHG_UTIL_RMAP_TRAITS();
 
         type()
-          : _variant()
+          : _node()
         {}
 
         template<typename T>
         type (const T& x)
-          : _variant (x)
+          : _node (x)
         {}
 
         const_ref_mapped_type bind ( const keys_type& keys
                                    , const_ref_mapped_type mapped
                                    )
         {
-          return bind (keys.begin(), keys.end(), mapped, _variant);
+          return bind (keys.begin(), keys.end(), mapped, _node);
         }
         const_ref_mapped_type bind ( const key_type& key
                                    , const_ref_mapped_type mapped
                                    )
         {
           return boost::get<const_ref_mapped_type>
-            (structured (_variant)[key] = mapped);
+            (structured (_node)[key] = mapped);
         }
         query_result_type value (const keys_type& keys) const
         {
-          return value (keys.begin(), keys.end(), _variant);
+          return value (keys.begin(), keys.end(), _node);
         }
         query_result_type value (const key_type& key) const
         {
           boost::optional<const structured_type&>
-            s (get_structured<Key, Mapped> (_variant));
+            s (get_structured<Key, Mapped> (_node));
 
           if (s)
           {
-            const boost::optional<const variant_type&> slot (s->get (key));
+            const boost::optional<const node_type&> slot (s->get (key));
 
             if (slot)
             {
@@ -74,27 +74,27 @@ namespace fhg
         }
 
       private:
-        variant_type _variant;
+        node_type _node;
 
         typedef typename keys_type::const_iterator keys_iterator_type;
 
         query_result_type value ( keys_iterator_type pos
                                 , const keys_iterator_type& end
-                                , const variant_type& variant
+                                , const node_type& node
                                 ) const
         {
           if (pos == end)
           {
-            return get_mapped<Key, Mapped> (variant);
+            return get_mapped<Key, Mapped> (node);
           }
           else
           {
             boost::optional<const structured_type&>
-              s (get_structured<Key, Mapped> (variant));
+              s (get_structured<Key, Mapped> (node));
 
             if (s)
             {
-              const boost::optional<const variant_type&> slot (s->get (*pos));
+              const boost::optional<const node_type&> slot (s->get (*pos));
 
               if (slot)
               {
@@ -108,27 +108,27 @@ namespace fhg
           return boost::none;
         }
 
-        structured_type& structured (variant_type& v)
+        structured_type& structured (node_type& node)
         {
           return boost::get<structured_type&>
-            (structured::construct<Key, Mapped> (v));
+            (structured::construct<Key, Mapped> (node));
         }
 
         const_ref_mapped_type bind ( keys_iterator_type pos
                                    , const keys_iterator_type& end
                                    , const_ref_mapped_type mapped
-                                   , variant_type& variant
+                                   , node_type& node
                                    )
         {
           if (pos == end)
           {
-            return boost::get<const_ref_mapped_type>(variant = mapped);
+            return boost::get<const_ref_mapped_type>(node = mapped);
           }
           else
           {
             const key_type& key (*pos); ++pos;
 
-            return bind (pos, end, mapped, structured(variant)[key]);
+            return bind (pos, end, mapped, structured(node)[key]);
           }
         }
 
@@ -136,7 +136,7 @@ namespace fhg
         template<typename Archive>
         void serialize (Archive& ar, const unsigned int)
         {
-          ar & BOOST_SERIALIZATION_NVP (_variant);
+          ar & BOOST_SERIALIZATION_NVP (_node);
         }
 
         template<typename K, typename M>

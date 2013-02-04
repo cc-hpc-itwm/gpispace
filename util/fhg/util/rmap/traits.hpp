@@ -23,35 +23,36 @@ namespace fhg
       class traits
       {
       public:
-        typedef Key key_type;
-        typedef Mapped mapped_type;
-        typedef typename std::list<key_type> keys_type;
+        typedef Key                                    key_type;
+        typedef Mapped                                 mapped_type;
+        typedef typename std::list<key_type>           keys_type;
         typedef typename boost::add_reference<const Mapped>::type
-                                                      const_ref_mapped_type;
-        typedef typename boost::add_reference<Mapped>::type ref_mapped_type;
+                                                       const_ref_mapped_type;
         typedef typename structured::type<Key, Mapped> structured_type;
         typedef boost::variant< Mapped
                               , boost::recursive_wrapper<structured_type>
-                              > variant_type;
-        typedef std::map<key_type, variant_type> map_type;
-        typedef std::pair<key_type, variant_type> kv_type;
+                              >                        node_type;
+        typedef std::map<key_type, node_type>          map_type;
+        typedef std::pair<key_type, node_type>         key_node_type;
         typedef boost::optional<const_ref_mapped_type> query_result_type;
-        typedef type<Key, Mapped> rmap_type;
+        typedef type<Key, Mapped>                      rmap_type;
       };
 
 #define FHG_UTIL_RMAP_TRAITS()                                          \
+    private:                                                            \
       typedef traits<Key,Mapped> traits_type;                           \
                                                                         \
+    public:                                                             \
       typedef typename traits_type::key_type              key_type;     \
       typedef typename traits_type::mapped_type           mapped_type;  \
-      typedef typename traits_type::kv_type               kv_type;      \
-      typedef typename traits_type::structured_type       structured_type; \
       typedef typename traits_type::keys_type             keys_type;    \
       typedef typename traits_type::const_ref_mapped_type const_ref_mapped_type; \
-      typedef typename traits_type::ref_mapped_type       ref_mapped_type; \
-      typedef typename traits_type::variant_type          variant_type; \
+      typedef typename traits_type::structured_type       structured_type; \
+      typedef typename traits_type::node_type             node_type;    \
       typedef typename traits_type::map_type              map_type;     \
-      typedef typename traits_type::query_result_type     query_result_type
+      typedef typename traits_type::key_node_type         key_node_type; \
+      typedef typename traits_type::query_result_type     query_result_type; \
+      typedef typename traits_type::rmap_type             rmap_type
     }
   }
 }

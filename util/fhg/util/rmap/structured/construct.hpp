@@ -18,34 +18,34 @@ namespace fhg
         {
           template<typename Key, typename Mapped>
           class construct : public boost::static_visitor
-                          <typename traits<Key, Mapped>::variant_type&>
+                          <typename traits<Key, Mapped>::node_type&>
           {
           public:
             FHG_UTIL_RMAP_TRAITS();
 
-            construct (variant_type& variant)
-              : _variant (variant)
+            construct (node_type& node)
+              : _node (node)
             {}
-            variant_type& operator() (structured_type& s) const
+            node_type& operator() (structured_type& s) const
             {
-              return _variant;
+              return _node;
             }
-            variant_type& operator() (mapped_type&) const
+            node_type& operator() (mapped_type&) const
             {
-              return _variant = structured_type();
+              return _node = structured_type();
             }
 
           private:
-            variant_type& _variant;
+            node_type& _node;
           };
         }
 
         template<typename Key, typename Mapped>
-        typename traits<Key, Mapped>::variant_type& construct
-        (typename traits<Key, Mapped>::variant_type& variant)
+        typename traits<Key, Mapped>::node_type& construct
+        (typename traits<Key, Mapped>::node_type& node)
         {
           return boost::apply_visitor
-            (visitor::construct<Key, Mapped> (variant), variant);
+            (visitor::construct<Key, Mapped> (node), node);
         }
       }
     }

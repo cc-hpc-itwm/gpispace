@@ -25,11 +25,11 @@ namespace fhg
         public:
           FHG_UTIL_RMAP_TRAITS();
 
-          variant_type& operator[] (const key_type& key)
+          node_type& operator[] (const key_type& key)
           {
             return _map[key];
           }
-          boost::optional<const variant_type&> get (const key_type& key) const
+          boost::optional<const node_type&> get (const key_type& key) const
           {
             const typename map_type::const_iterator pos (_map.find (key));
 
