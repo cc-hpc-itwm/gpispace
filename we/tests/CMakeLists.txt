@@ -39,6 +39,7 @@ set(tc_srcs
 add_library(answer SHARED answer.cpp)
 add_library(question SHARED question.cpp)
 target_link_libraries(question answer)
+target_link_libraries(answer we)
 
 function(construct_tests )
   foreach (tc_src ${ARGN})
