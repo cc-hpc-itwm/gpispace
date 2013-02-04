@@ -101,29 +101,6 @@ namespace token
   {
     return s << t.value;
   }
-
-  template<typename NET>
-  void put ( NET & net
-           , const petri_net::place_id_type & pid
-           , const value::type & v = we::type::literal::control()
-           )
-  {
-    net.put_token ( pid
-                  , type ( net.get_place(pid).name()
-                         , net.get_place(pid).signature()
-                         , v
-                         )
-                  );
-  }
-
-  template<typename NET>
-  void put ( NET & net
-           , const petri_net::place_id_type & pid
-           , const type & t
-           )
-  {
-    put (net, pid, t.value);
-  }
 }
 
 #endif
