@@ -9,6 +9,8 @@
 #include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
 
+#include <we/type/port.hpp>
+
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 
@@ -41,6 +43,7 @@ namespace fhg
           bool is_input() const;
           bool is_output() const;
           bool is_tunnel() const;
+          bool direction_is (const we::type::PortDirection&) const;
 
           bool is_connectable (const port&) const;
 

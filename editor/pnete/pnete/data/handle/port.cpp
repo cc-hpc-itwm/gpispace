@@ -43,15 +43,19 @@ namespace fhg
 
         bool port::is_input() const
         {
-          return get().direction() == we::type::PORT_IN;
+          return direction_is (we::type::PORT_IN);
         }
         bool port::is_output() const
         {
-          return get().direction() == we::type::PORT_OUT;
+          return direction_is (we::type::PORT_OUT);
         }
         bool port::is_tunnel() const
         {
-          return get().direction() == we::type::PORT_TUNNEL;
+          return direction_is (we::type::PORT_TUNNEL);
+        }
+        bool port::direction_is (const we::type::PortDirection& direction) const
+        {
+          return get().direction() == direction;
         }
 
         bool port::is_connectable (const port& other) const
