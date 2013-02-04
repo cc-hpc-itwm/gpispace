@@ -27,9 +27,9 @@ namespace value
           }
         else
           {
-            const std::string& field (*pos);
+            const std::string& field (*pos); ++pos;
 
-            return find (pos + 1, end, value::get_field (field, store));
+            return find (pos, end, value::get_field (field, store));
           }
       }
     }
@@ -44,15 +44,18 @@ namespace value
           throw std::runtime_error ("value::container::value []");
         default:
           {
-            const type::const_iterator pos (container.find (key_vec[0]));
+            key_vec_t::const_iterator key_pos (key_vec.begin());
+            const std::string& key (*key_pos); ++key_pos;
+
+            const type::const_iterator pos (container.find (key));
 
             if (pos == container.end())
               {
-                throw exception::missing_binding (key_vec[0]);
+                throw exception::missing_binding (key);
               }
             else
               {
-                return detail::find ( key_vec.begin() + 1
+                return detail::find ( key_pos
                                     , key_vec.end()
                                     , pos->second
                                     );

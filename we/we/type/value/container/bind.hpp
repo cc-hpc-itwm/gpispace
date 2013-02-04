@@ -36,10 +36,13 @@ namespace value
           throw std::runtime_error ("value::container::bind []");
         }
 
+      key_vec_t::const_iterator pos (key_vec.begin());
+      const std::string& key (*pos); ++pos;
+
       value::put
-        ( key_vec.begin() + 1
+        ( pos
         , key_vec.end()
-        , value::mk_structured_or_keep (container[key_vec[0]])
+        , value::mk_structured_or_keep (container[key])
         , value
         );
     }

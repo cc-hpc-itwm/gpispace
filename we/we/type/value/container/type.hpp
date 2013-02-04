@@ -7,7 +7,7 @@
 
 #include <we/type/value.hpp>
 
-#include <vector>
+#include <list>
 
 namespace value
 {
@@ -15,7 +15,7 @@ namespace value
   {
     typedef boost::unordered_map<std::string, value::type> type;
 
-    typedef std::vector<std::string> key_vec_t;
+    typedef std::list<std::string> key_vec_t;
   }
 }
 

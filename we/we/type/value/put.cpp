@@ -20,9 +20,11 @@ namespace value
       }
     else
       {
-        put ( pos + 1
+        const std::string& f (*pos); ++pos;
+
+        put ( pos
             , end
-            , field (*pos, value::mk_structured_or_keep (store))
+            , field (f, value::mk_structured_or_keep (store))
             , value
             );
       }

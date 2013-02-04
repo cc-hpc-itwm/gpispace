@@ -195,9 +195,9 @@ namespace expr
 
           void operator () (key_vec_t & v) const
           {
-            if (v.size() > 0 && v[0] == from)
+            if (v.size() > 0 && *v.begin() == from)
               {
-                v[0] = to;
+                *v.begin() = to;
               }
           }
 

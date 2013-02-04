@@ -69,7 +69,8 @@ namespace expr
 
         for ( parser::nd_const_it_t it (p.begin()), end (p.end())
             ; it != end
-            ; ++it )
+            ; ++it
+            )
         {
           boost::apply_visitor (detail::get_names (names), *it);
         }
@@ -80,13 +81,14 @@ namespace expr
       std::string write_key_vec (const name_set_t::value_type& vec)
       {
         std::string name;
-        for ( name_set_t::value_type::const_iterator it (vec.begin()), end (vec.end())
-            ; it != end
-            ; ++it
-            )
+        name_set_t::value_type::const_iterator it (vec.begin());
+        const name_set_t::value_type::const_iterator end (vec.end());
+
+        while (it != end)
         {
           name += *it;
-          if (it + 1 != end)
+          ++it;
+          if (it != end)
           {
             name += ".";
           }

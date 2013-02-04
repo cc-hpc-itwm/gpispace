@@ -8,7 +8,7 @@
 
 #include <string>
 #include <map>
-#include <vector>
+#include <list>
 
 #include <boost/variant.hpp>
 
@@ -17,7 +17,7 @@
 
 namespace value
 {
-  typedef std::vector<signature::field_name_t> path_type;
+  typedef std::list<signature::field_name_t> path_type;
 
   struct structured_t;
 
