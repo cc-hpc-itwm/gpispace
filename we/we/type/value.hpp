@@ -25,45 +25,27 @@ namespace value
                         , boost::recursive_wrapper<structured_t>
                         > type;
 
+  typedef std::map<signature::field_name_t, type> map_type;
+
   struct structured_t
   {
-  public:
-    // NOTE! sorted container neccessary for operator ==
-    typedef std::map<signature::field_name_t, type> map_t;
-    typedef map_t::const_iterator const_iterator;
-    typedef map_t::const_iterator iterator;
-
   private:
-    map_t map;
+    map_type _map;
 
     friend class boost::serialization::access;
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(map);
+      ar & BOOST_SERIALIZATION_NVP(_map);
     }
 
   public:
-    structured_t () : map () {}
-
     type & operator [] (const signature::field_name_t & field_name)
     {
-      return map[field_name];
+      return _map[field_name];
     }
 
-    std::size_t size() const { return map.size(); }
-
-    const_iterator begin (void) const { return map.begin(); }
-    const_iterator end (void) const { return map.end(); }
-    const_iterator find (const signature::field_name_t & field_name) const
-    {
-      return map.find (field_name);
-    }
-
-    bool has_field (const signature::field_name_t & field_name) const
-    {
-      return map.find (field_name) != map.end();
-    }
+    const map_type& map() const { return _map; }
   };
 }
 

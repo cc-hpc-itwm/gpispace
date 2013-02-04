@@ -28,11 +28,11 @@ namespace value
       {
         s << "[";
 
-        for ( structured_t::const_iterator field (map.begin())
-            ; field != map.end()
+        for ( map_type::const_iterator field (map.map().begin())
+            ; field != map.map().end()
             ; ++field
             )
-          s << ((field != map.begin()) ? ", " : "")
+          s << ((field != map.map().begin()) ? ", " : "")
             << field->first << " := " << field->second
             ;
 

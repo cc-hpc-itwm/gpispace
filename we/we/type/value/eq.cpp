@@ -18,11 +18,11 @@ namespace value
 
       bool operator() (const structured_t& x, const structured_t& y) const
       {
-        structured_t::const_iterator pos_x (x.begin());
-        structured_t::const_iterator pos_y (y.begin());
-        const structured_t::const_iterator end_x (x.end());
+        map_type::const_iterator pos_x (x.map().begin());
+        map_type::const_iterator pos_y (y.map().begin());
+        const map_type::const_iterator end_x (x.map().end());
 
-        bool all_eq (x.size() == y.size());
+        bool all_eq (x.map().size() == y.map().size());
 
         while (all_eq && pos_x != end_x)
           {

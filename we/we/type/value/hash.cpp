@@ -26,7 +26,7 @@ namespace value
 
         typedef std::pair<signature::field_name_t, type> st_type;
 
-        BOOST_FOREACH (const st_type& st, map)
+        BOOST_FOREACH (const st_type& st, map.map())
         {
           std::size_t hash_field (0);
 

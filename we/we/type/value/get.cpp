@@ -52,9 +52,9 @@ namespace value
         throw exception::empty_path();
       }
 
-      structured_t::const_iterator field (s.find (*_pos));
+      map_type::const_iterator field (s.map().find (*_pos));
 
-      if (field == s.end())
+      if (field == s.map().end())
       {
         throw exception::missing_field (name());
       }

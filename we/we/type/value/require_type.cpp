@@ -41,9 +41,9 @@ namespace value
             ; ++sig
             )
           {
-            const structured_t::const_iterator pos (v.find (sig->first));
+            const map_type::const_iterator pos (v.map().find (sig->first));
 
-            if (!v.has_field (sig->first))
+            if (pos == v.map().end())
               {
                 throw ::type::error
                   ( "require_field: missing (or uninitialized) field "
@@ -57,8 +57,8 @@ namespace value
                                 );
           }
 
-        for ( structured_t::const_iterator field (v.begin())
-            ; field != v.end()
+        for ( map_type::const_iterator field (v.map().begin())
+            ; field != v.map().end()
             ; ++field
             )
           if (!signature.has_field (field->first))
