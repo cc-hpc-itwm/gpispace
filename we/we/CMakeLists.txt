@@ -1,5 +1,5 @@
 
-add_library (we
+set (we_srcs
   expr/eval/context.cpp
   expr/eval/eval.cpp
   expr/exception.cpp
@@ -32,9 +32,11 @@ add_library (we
   util/cross.cpp
 )
 
+add_library (we ${we_srcs})
+add_library (we-shared SHARED ${we_srcs})
+
 target_link_libraries (we
   fhg-util
-  ${Boost_LIBRARIES}
 )
 
 add_executable (generate_parser_action_table expr/parse/table.cpp)
