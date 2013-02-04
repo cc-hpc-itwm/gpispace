@@ -61,6 +61,8 @@ namespace fhg
 
           void name_changed (const data::handle::transition&, const QString&);
 
+          void port_added (const data::handle::port&);
+
         protected:
           virtual void paint ( QPainter *painter
                              , const QStyleOptionGraphicsItem *option

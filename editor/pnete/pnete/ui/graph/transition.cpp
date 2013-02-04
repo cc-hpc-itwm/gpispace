@@ -2,24 +2,24 @@
 
 #include <pnete/ui/graph/transition.hpp>
 
-#include <QGraphicsScene>
-#include <QPainter>
-#include <QGraphicsSceneContextMenuEvent>
-#include <QAction>
-#include <QToolButton>
-#include <QGraphicsProxyWidget>
-#include <QPushButton>
-
-#include <pnete/ui/graph/port.hpp>
-#include <pnete/ui/graph/place.hpp>
 // #include <pnete/ui/graph/cogwheel_button.hpp>
 #include <pnete/ui/graph/connection.hpp>
-
+#include <pnete/ui/graph/place.hpp>
+#include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/style/predicate.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/style/size.hpp>
-#include <pnete/ui/graph/style/predicate.hpp>
+#include <pnete/weaver/display.hpp>
 
 #include <xml/parse/type/transition.hpp>
+
+#include <QAction>
+#include <QGraphicsProxyWidget>
+#include <QGraphicsScene>
+#include <QGraphicsSceneContextMenuEvent>
+#include <QPainter>
+#include <QPushButton>
+#include <QToolButton>
 
 namespace fhg
 {
@@ -55,6 +55,9 @@ namespace fhg
 
           handle.connect_to_change_mgr
             (this, "transition_deleted", "data::handle::transition");
+
+          handle.connect_to_change_mgr
+            (this, "port_added", "data::handle::port");
         }
 
         const data::handle::transition& transition_item::handle() const
@@ -219,6 +222,14 @@ namespace fhg
           if (changed_handle == handle())
           {
             handle_property_change (key, value);
+          }
+        }
+
+        void transition_item::port_added (const data::handle::port& port)
+        {
+          if (port.parent_is (handle().function()))
+          {
+            weaver::display::port (port, this);
           }
         }
       }
