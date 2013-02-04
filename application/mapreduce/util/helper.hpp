@@ -156,7 +156,17 @@ namespace mapreduce
   		  }
 
   		  if(w.empty())
-  			  MLOG(INFO, "No matching pair was found!");
+  		  {
+  			  std::ostringstream oss;
+  			  oss<<"{";
+  			  BOOST_FOREACH(const std::string& key, list_border_keys)
+			  {
+  				  oss<<key<<std::endl;
+			  }
+  			  oss<<"}";
+
+  			  MLOG(INFO, "No matching pair was found! The list of border keys is: "<<oss.str());
+  		  }
 
   		  return w;
   	  }
