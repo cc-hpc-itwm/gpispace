@@ -438,31 +438,12 @@ namespace we { namespace type {
 
               if (opts.show_token)
                 {
-                  typedef boost::unordered_map<token::type, size_t> token_cnt_t;
-                  token_cnt_t token_cnt;
-
-                  BOOST_FOREACH ( const token::type& token
+                  BOOST_FOREACH ( const token::type& t
                                 , net.get_token (place_id)
                                 )
-                    {
-                      ++token_cnt[token];
-                    }
-
-                  for ( typename token_cnt_t::const_iterator
-                          tok (token_cnt.begin())
-                      ; tok != token_cnt.end()
-                      ; ++tok
-                      )
-                    {
-                      token << endl;
-
-                      if (tok->second > 1)
-                        {
-                          token << tok->second << " x ";
-                        }
-
-                      token << quote (fhg::util::show (tok->first));
-                    }
+                  {
+                    token << endl << quote (fhg::util::show (t));
+                  }
                 }
 
               std::ostringstream virt;
