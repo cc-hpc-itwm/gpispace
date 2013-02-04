@@ -294,11 +294,7 @@ namespace fhg
                                     )
           {
             fhg::util::qt::first_parent_being_a<editor_window> (widget)->
-              create_widget ( data::handle::function
-                              ( handle.get().resolved_function()
-                              , handle.document()
-                              )
-                            );
+              create_widget (handle.function());
           }
 
           void nyi (const QString& what)

@@ -3,6 +3,7 @@
 #include <pnete/data/handle/transition.hpp>
 
 #include <pnete/data/change_manager.hpp>
+#include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.hpp>
 
 #include <xml/parse/type/net.hpp>
@@ -62,6 +63,11 @@ namespace fhg
                                       ) const
         {
           change_manager().no_undo_move_item (sender, *this, position);
+        }
+
+        function transition::function() const
+        {
+          return handle::function (get().resolved_function(), document());
         }
 
         bool transition::parent_is (const net& net) const

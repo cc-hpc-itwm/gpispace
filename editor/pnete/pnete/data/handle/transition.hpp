@@ -5,6 +5,7 @@
 
 #include <pnete/data/handle/transition.fwd.hpp>
 
+#include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 
@@ -49,6 +50,8 @@ namespace fhg
           virtual void no_undo_move ( const QObject* sender
                                     , const QPointF& position
                                     ) const;
+
+          function function() const;
 
           bool parent_is (const net&) const;
           net parent() const;
