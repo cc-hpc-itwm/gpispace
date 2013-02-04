@@ -91,10 +91,22 @@ namespace fhg
         {
           return 2;
         }
+        Qt::ItemFlags ports_model::flags (const QModelIndex& index) const
+        {
+          if (!index.isValid())
+          {
+            return Qt::ItemIsEnabled;
+          }
+
+          return QAbstractTableModel::flags (index) | Qt::ItemIsEditable;
+        }
+
 
         QVariant ports_model::data (const QModelIndex& index, int role) const
         {
-          if (index.isValid() && role == Qt::DisplayRole)
+          if ( index.isValid()
+             && (role == Qt::DisplayRole || role == Qt::EditRole)
+             )
           {
             switch (index.column())
             {
@@ -127,6 +139,32 @@ namespace fhg
           }
 
           return QVariant();
+        }
+
+        bool ports_model::setData ( const QModelIndex& index
+                                  , const QVariant& value
+                                  , int role
+                                  )
+        {
+          if (!index.isValid() || role != Qt::EditRole)
+          {
+            return false;
+          }
+
+          switch (index.column())
+          {
+          case 0:
+            _ports.at (index.row()).set_name (value.toString());
+            break;
+          case 1:
+            _ports.at (index.row()).set_type (value.toString());
+            break;
+          default:
+            return false;
+          }
+
+          emit dataChanged (index, index);
+          return true;
         }
       }
 

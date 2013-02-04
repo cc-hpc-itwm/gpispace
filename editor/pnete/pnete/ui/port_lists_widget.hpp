@@ -35,9 +35,12 @@ namespace fhg
 
           int rowCount (const QModelIndex& = QModelIndex()) const;
           int columnCount (const QModelIndex& = QModelIndex()) const;
+          Qt::ItemFlags flags (const QModelIndex&) const;
 
           QVariant data (const QModelIndex&, int = Qt::DisplayRole) const;
           QVariant headerData (int, Qt::Orientation, int = Qt::DisplayRole) const;
+
+          bool setData (const QModelIndex&, const QVariant&, int = Qt::EditRole);
 
         public slots:
           void port_added (const data::handle::port&);
