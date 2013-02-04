@@ -24,16 +24,14 @@ namespace value
       {
         std::size_t v (0);
 
-        typedef std::pair<signature::field_name_t, type> st_type;
-
-        BOOST_FOREACH (const st_type& st, map.map())
+        BOOST_FOREACH (const key_node_type& kn, map.map())
         {
           std::size_t hash_field (0);
 
-          boost::hash_combine (hash_field, st.first);
+          boost::hash_combine (hash_field, kn.first);
 
           boost::hash_combine ( hash_field
-                              , boost::apply_visitor (*this, st.second)
+                              , boost::apply_visitor (*this, kn.second)
                               );
 
           v += hash_field;

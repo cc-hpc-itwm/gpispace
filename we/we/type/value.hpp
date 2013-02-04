@@ -26,6 +26,7 @@ namespace value
                         > type;
 
   typedef std::map<signature::field_name_t, type> map_type;
+  typedef std::pair<std::string, type> key_node_type;
 
   struct structured_t
   {
