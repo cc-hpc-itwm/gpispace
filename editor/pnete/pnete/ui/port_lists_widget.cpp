@@ -7,7 +7,6 @@
 #include <xml/parse/type/function.hpp>
 
 #include <boost/foreach.hpp>
-#include <boost/range/adaptor/filtered.hpp>
 
 #include <QGroupBox>
 #include <QHeaderView>
@@ -25,22 +24,6 @@ namespace fhg
     {
       namespace detail
       {
-        namespace
-        {
-          bool same_direction ( const ::xml::parse::id::ref::port& id
-                              , const we::type::PortDirection& direction
-                              )
-          {
-            return id.get().direction() == direction;
-          }
-          data::handle::port make_handle ( const ::xml::parse::id::ref::port& id
-                                         , const data::handle::function& function
-                                         )
-          {
-            return data::handle::port (id, function.document());
-          }
-        }
-
         ports_model::ports_model ( const data::handle::function& function
                                  , const we::type::PortDirection& direction
                                  , QObject* parent
@@ -48,21 +31,14 @@ namespace fhg
           : QAbstractTableModel (parent)
           , _function (function)
           , _direction (direction)
+          , _ports (function.ports (_direction))
         {
           function.connect_to_change_mgr
             (this, "port_added", "data::handle::port");
 
 
-          BOOST_FOREACH ( const data::handle::port& handle
-                        , function.get().ports().ids()
-                        | boost::adaptors::filtered
-                          (boost::bind (same_direction, _1, _direction))
-                        | boost::adaptors::transformed
-                          (boost::bind (make_handle, _1, _function))
-                        )
+          BOOST_FOREACH (const data::handle::port& handle, _ports)
           {
-            _ports << handle;
-
             handle.connect_to_change_mgr
               ( this
               , "name_set", "type_or_name_changed"
@@ -83,7 +59,7 @@ namespace fhg
           (const QObject*, const data::handle::port& handle)
         {
           if ( handle.parent_is (_function)
-             && same_direction (handle.id(), _direction)
+             && handle.get().direction() == _direction
              )
           {
             _ports << handle;

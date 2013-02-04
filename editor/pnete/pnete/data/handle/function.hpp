@@ -9,6 +9,7 @@
 #include <pnete/data/handle/meta_base.hpp>
 #include <pnete/data/handle/module.fwd.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
+#include <pnete/data/handle/port.hpp>
 
 #include <we/type/port.hpp>
 
@@ -17,6 +18,8 @@
 
 #include <boost/optional/optional_fwd.hpp>
 #include <boost/variant/variant_fwd.hpp>
+
+#include <QList>
 
 class QObject;
 class QString;
@@ -50,6 +53,7 @@ namespace fhg
                         ) const;
 
           boost::variant<expression, module, net> content_handle() const;
+          QList<port> ports (const we::type::PortDirection&) const;
 
           using function_meta_base::operator==;
         };

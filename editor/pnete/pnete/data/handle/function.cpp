@@ -9,6 +9,8 @@
 
 #include <xml/parse/type/function.hpp>
 
+#include <boost/foreach.hpp>
+#include <boost/range/adaptor/filtered.hpp>
 #include <boost/variant.hpp>
 
 namespace fhg
@@ -79,6 +81,40 @@ namespace fhg
         {
           return boost::apply_visitor
             (wrap_with_handle (document()), get().content());
+        }
+
+        namespace
+        {
+          bool same_direction ( const ::xml::parse::id::ref::port& id
+                              , const we::type::PortDirection& direction
+                              )
+          {
+            return id.get().direction() == direction;
+          }
+          port make_handle ( const ::xml::parse::id::ref::port& id
+                           , const data::handle::function& function
+                           )
+          {
+            return port (id, function.document());
+          }
+        }
+
+        QList<port> function::ports (const we::type::PortDirection& dir) const
+        {
+          QList<port> ports;
+
+          BOOST_FOREACH ( const data::handle::port& handle
+                        , get().ports().ids()
+                        | boost::adaptors::filtered
+                          (boost::bind (same_direction, _1, dir))
+                        | boost::adaptors::transformed
+                          (boost::bind (make_handle, _1, *this))
+                        )
+          {
+            ports << handle;
+          }
+
+          return ports;
         }
       }
     }
