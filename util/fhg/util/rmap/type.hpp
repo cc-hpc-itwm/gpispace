@@ -73,6 +73,15 @@ namespace fhg
           return boost::none;
         }
 
+        operator const node_type&() const
+        {
+          return _node;
+        }
+        operator node_type&()
+        {
+          return _node;
+        }
+
       private:
         node_type _node;
 

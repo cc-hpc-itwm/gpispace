@@ -25,7 +25,7 @@ namespace fhg
       template<typename Key, typename Mapped>
       std::ostream& operator<< (std::ostream& os, const type<Key, Mapped>& x)
       {
-        return write_to<Key, Mapped> (os, x._node, 0);
+        return write_to<Key, Mapped> (os, x, 0);
       }
 
       namespace visitor
