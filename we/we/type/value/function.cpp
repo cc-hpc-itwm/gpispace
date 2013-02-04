@@ -10,8 +10,6 @@
 
 #include <we/expr/exception.hpp>
 
-#include <fhg/util/show.hpp>
-
 namespace value
 {
   namespace function
@@ -36,7 +34,7 @@ namespace value
         type operator() (structured_t&) const
         {
           throw expr::exception::eval::type_error
-            (fhg::util::show (_token) + " for a structured value");
+            (boost::format ("%1% for a structured value") % _token);
         }
       };
 
@@ -62,7 +60,7 @@ namespace value
           case expr::token::eq: return value::eq (x, y);
           default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (_token) + " for structured values");
+              (boost::format ("%1% for a structured value") % _token);
           }
         }
 
@@ -70,7 +68,9 @@ namespace value
         type operator () (A&, B&) const
         {
           throw expr::exception::eval::type_error
-            (fhg::util::show (_token) + " for literal and structured value");
+            ( boost::format ("%1% for a literal and a structured value")
+                            % _token
+            );
         }
       };
 
