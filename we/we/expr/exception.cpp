@@ -53,6 +53,9 @@ namespace expr
       type_error::type_error (const std::string& msg)
         : std::runtime_error ("type error: " + msg)
       {}
+      type_error::type_error (const boost::format& msg)
+        : std::runtime_error ("type error: " + msg.str())
+      {}
 
       negative_exponent::negative_exponent()
         : std::runtime_error ("negative exponent")

@@ -3,6 +3,8 @@
 #ifndef _WE_EXPR_EXCEPTION_HPP
 #define _WE_EXPR_EXCEPTION_HPP
 
+#include <boost/format.hpp>
+
 #include <stdexcept>
 
 namespace expr
@@ -64,6 +66,7 @@ namespace expr
       {
       public:
         type_error (const std::string&);
+        type_error (const boost::format&);
       };
 
       class negative_exponent : public std::runtime_error
