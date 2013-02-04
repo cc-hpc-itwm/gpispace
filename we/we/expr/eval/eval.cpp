@@ -123,7 +123,7 @@ namespace expr
 
                     m[k] = v;
 
-                    return m;
+                    return c0;
                   }
                 catch (...)
                   {
