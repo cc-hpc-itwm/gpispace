@@ -14,9 +14,8 @@
 BOOST_AUTO_TEST_CASE (basic)
 {
   typedef fhg::util::rmap::traits<std::string,long> rmap_traits;
-  typedef fhg::util::rmap::type<std::string,long> rmap_type;
 
-  rmap_type rmap;
+  rmap_traits::rmap_type rmap;
   rmap_traits::keys_type keys_empty;
 
   rmap_traits::keys_type keys_a;

@@ -7,6 +7,7 @@
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
 
+#include <fhg/util/rmap/type.fwd.hpp>
 #include <fhg/util/rmap/structured/type.fwd.hpp>
 
 #include <map>
@@ -34,6 +35,7 @@ namespace fhg
                               > variant_type;
         typedef std::map<key_type, variant_type> map_type;
         typedef boost::optional<const_ref_mapped_type> query_result_type;
+        typedef type<Key, Mapped> rmap_type;
       };
 
 #define FHG_UTIL_RMAP_TRAITS()                                          \

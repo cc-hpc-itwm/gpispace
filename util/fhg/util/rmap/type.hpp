@@ -3,6 +3,8 @@
 #ifndef _FHG_UTIL_RMAP_TYPE_HPP
 #define _FHG_UTIL_RMAP_TYPE_HPP
 
+#include <fhg/util/rmap/type.fwd.hpp>
+
 #include <fhg/util/rmap/traits.hpp>
 #include <fhg/util/rmap/structured/construct.hpp>
 #include <fhg/util/rmap/structured/type.hpp>
