@@ -55,10 +55,7 @@ namespace fhg
       }
 
       void document_view::function_name_changed
-        ( const QObject*
-        , const data::handle::function& function
-        , const QString& name
-        )
+        (const data::handle::function& function, const QString& name)
       {
         if (function == _function)
         {

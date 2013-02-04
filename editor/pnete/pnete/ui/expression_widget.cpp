@@ -99,10 +99,7 @@ namespace fhg
       }
 
       void expression_widget::slot_set_function_name
-        ( const QObject*
-        , const data::handle::function& fun
-        , const QString& name
-        )
+        (const data::handle::function& fun, const QString& name)
       {
         if (is_my_function (fun))
         {
@@ -111,10 +108,7 @@ namespace fhg
       }
 
       void expression_widget::slot_set_expression
-        ( const QObject*
-        , const data::handle::expression& expression
-        , const QString& text
-        )
+        (const data::handle::expression& expression, const QString& text)
       {
         if (is_my_expression (expression))
         {
@@ -123,10 +117,7 @@ namespace fhg
       }
 
       void expression_widget::slot_set_expression_parse_result
-        ( const QObject*
-        , const data::handle::expression& expression
-        , const QString& text
-        )
+        (const data::handle::expression& expression, const QString& text)
       {
         if (is_my_expression (expression))
         {
@@ -164,12 +155,12 @@ namespace fhg
       }
       void expression_widget::name_changed (const QString& name)
       {
-        _function.set_name (this, name);
+        _function.set_name (name);
       }
 
       void expression_widget::expression_changed ()
       {
-        _expression.set_content (this, _expression_edit->toPlainText());
+        _expression.set_content (_expression_edit->toPlainText());
       }
 
       bool expression_widget::is_my_function

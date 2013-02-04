@@ -197,28 +197,22 @@ namespace fhg
       {
 #define ACTION_ARG_LIST                             \
               change_manager_t& change_manager      \
-            , internal_type* document               \
-            , const QObject* origin
+            , internal_type* document
 
 #define ACTION_INIT(NAME)                           \
                 QUndoCommand (QObject::tr (NAME))   \
               , _change_manager (change_manager)    \
-              , _document (document)                \
-              , _origin (origin)
+              , _document (document)
 
 #define ACTION_MEMBERS                              \
           change_manager_t& _change_manager;        \
-          internal_type* _document;                 \
-          const QObject* _origin
+          internal_type* _document;
 
-#define ACTION_UNDO_ARGS                        \
-        _change_manager, _document, NULL
-
-#define ACTION_REDO_ARGS                        \
-        _change_manager, _document, _origin
+#define ACTION_IMPL_ARGS                        \
+        _change_manager, _document
 
 #define ACTION_CTOR_ARGS                        \
-        change_manager, document, origin
+        change_manager, document
 
 
         template<typename T>
@@ -244,15 +238,14 @@ namespace fhg
         {
           typedef HANDLE_TYPE handle_type;
           typedef void (change_manager_t::* signal_type)
-            ( const QObject*
-            , const handle_type&
+            ( const handle_type&
             , const ::we::type::property::key_type&
             , const ::we::type::property::value_type&
             );
 
           handle.get_ref().properties().set (key, val);
           EMIT_SIGNAL ( static_cast<signal_type> (&signal::property_changed)
-                      , origin, handle, key, val
+                      , handle, key, val
                       );
         }
 
@@ -280,13 +273,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_property (ACTION_UNDO_ARGS, _handle, _key, _old_value);
+            set_property (ACTION_IMPL_ARGS, _handle, _key, _old_value);
           }
 
           virtual void redo()
           {
-            set_property (ACTION_REDO_ARGS, _handle, _key, _new_value);
-            _origin = NULL;
+            set_property (ACTION_IMPL_ARGS, _handle, _key, _new_value);
           }
 
           const ::we::type::property::value_type& new_value
@@ -314,14 +306,10 @@ namespace fhg
           handle.get_ref().type (type.toStdString());
 
           typedef void (change_manager_t::* signal_type)
-            ( const QObject*
-            , const HANDLE_TYPE&
-            , const QString&
-            );
+            (const HANDLE_TYPE&, const QString&);
 
-          EMIT_SIGNAL ( static_cast<signal_type> (&signal::type_set)
-                      , origin, handle, type
-                      );
+          EMIT_SIGNAL
+            (static_cast<signal_type> (&signal::type_set), handle, type);
         }
 
         template<typename HANDLE_TYPE>
@@ -342,13 +330,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_type_impl (ACTION_UNDO_ARGS, _handle, _old_type);
+            set_type_impl (ACTION_IMPL_ARGS, _handle, _old_type);
           }
 
           virtual void redo()
           {
-            set_type_impl (ACTION_REDO_ARGS, _handle, _new_type);
-            _origin = NULL;
+            set_type_impl (ACTION_IMPL_ARGS, _handle, _new_type);
           }
 
         private:
@@ -365,14 +352,10 @@ namespace fhg
           handle.get_ref().name (name.toStdString());
 
           typedef void (change_manager_t::* signal_type)
-            ( const QObject*
-            , const HANDLE_TYPE&
-            , const QString&
-            );
+            (const HANDLE_TYPE&, const QString&);
 
-          EMIT_SIGNAL ( static_cast<signal_type> (&signal::name_set)
-                      , origin, handle, name
-                      );
+          EMIT_SIGNAL
+            (static_cast<signal_type> (&signal::name_set), handle, name);
         }
 
         template<typename HANDLE_TYPE>
@@ -393,13 +376,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_name_impl (ACTION_UNDO_ARGS, _handle, _old_name);
+            set_name_impl (ACTION_IMPL_ARGS, _handle, _old_name);
           }
 
           virtual void redo()
           {
-            set_name_impl (ACTION_REDO_ARGS, _handle, _new_name);
-            _origin = NULL;
+            set_name_impl (ACTION_IMPL_ARGS, _handle, _new_name);
           }
 
         private:
@@ -500,10 +482,8 @@ namespace fhg
           , const ::xml::parse::id::ref::connect& connect
           )
         {
-          EMIT_SIGNAL ( &signal::connection_removed
-                      , origin
-                      , handle::connect (connect, document)
-                      );
+          EMIT_SIGNAL
+            (&signal::connection_removed, handle::connect (connect, document));
 
           transition.get_ref().remove_connection (connect);
         }
@@ -518,7 +498,6 @@ namespace fhg
 
           EMIT_SIGNAL
             ( &signal::connection_added
-            , origin
             , handle::connect (connection, document)
             , handle::place (*connection.get().resolved_place(), document)
             , handle::port (*connection.get().resolved_port(), document)
@@ -540,13 +519,12 @@ namespace fhg
 
           virtual void undo()
           {
-            remove_connection_impl (ACTION_UNDO_ARGS, _transition, _connect);
+            remove_connection_impl (ACTION_IMPL_ARGS, _transition, _connect);
           }
 
           virtual void redo()
           {
-            add_connection_impl (ACTION_REDO_ARGS, _transition, _connect);
-            _origin = NULL;
+            add_connection_impl (ACTION_IMPL_ARGS, _transition, _connect);
           }
 
         private:
@@ -567,13 +545,12 @@ namespace fhg
 
           virtual void undo()
           {
-            add_connection_impl (ACTION_UNDO_ARGS, _transition, _connect);
+            add_connection_impl (ACTION_IMPL_ARGS, _transition, _connect);
           }
 
           virtual void redo()
           {
-            remove_connection_impl (ACTION_REDO_ARGS, _transition, _connect);
-            _origin = NULL;
+            remove_connection_impl (ACTION_IMPL_ARGS, _transition, _connect);
           }
 
         private:
@@ -589,7 +566,7 @@ namespace fhg
                                       ? petri_net::edge::PT_READ
                                       : petri_net::edge::PT
                                       );
-          EMIT_SIGNAL (&signal::connection_direction_changed, origin, connect);
+          EMIT_SIGNAL (&signal::connection_direction_changed, connect);
         }
 
         class connection_is_read : public QUndoCommand
@@ -605,15 +582,12 @@ namespace fhg
 
           virtual void undo()
           {
-            connection_is_read_impl
-              (ACTION_UNDO_ARGS, _connect, _old_value);
+            connection_is_read_impl (ACTION_IMPL_ARGS, _connect, _old_value);
           }
 
           virtual void redo()
           {
-            connection_is_read_impl
-              (ACTION_UNDO_ARGS, _connect, _new_value);
-            _origin = NULL;
+            connection_is_read_impl (ACTION_IMPL_ARGS, _connect, _new_value);
           }
 
         private:
@@ -631,7 +605,6 @@ namespace fhg
           )
         {
           EMIT_SIGNAL ( &signal::place_map_removed
-                      , origin
                       , handle::place_map (place_map, document)
                       );
 
@@ -646,7 +619,7 @@ namespace fhg
         {
           transition.get_ref().push_place_map (place_map);
 
-          EMIT_SIGNAL ( &signal::place_map_added, origin
+          EMIT_SIGNAL ( &signal::place_map_added
                       , handle::place_map (place_map, document)
                       );
         }
@@ -666,13 +639,12 @@ namespace fhg
 
           virtual void undo()
           {
-            remove_place_map_impl (ACTION_UNDO_ARGS, _transition, _place_map);
+            remove_place_map_impl (ACTION_IMPL_ARGS, _transition, _place_map);
           }
 
           virtual void redo()
           {
-            add_place_map_impl (ACTION_REDO_ARGS, _transition, _place_map);
-            _origin = NULL;
+            add_place_map_impl (ACTION_IMPL_ARGS, _transition, _place_map);
           }
 
         private:
@@ -693,13 +665,12 @@ namespace fhg
 
           virtual void undo()
           {
-            add_place_map_impl (ACTION_UNDO_ARGS, _transition, _place_map);
+            add_place_map_impl (ACTION_IMPL_ARGS, _transition, _place_map);
           }
 
           virtual void redo()
           {
-            remove_place_map_impl (ACTION_REDO_ARGS, _transition, _place_map);
-            _origin = NULL;
+            remove_place_map_impl (ACTION_IMPL_ARGS, _transition, _place_map);
           }
 
         private:
@@ -716,7 +687,6 @@ namespace fhg
           )
         {
           EMIT_SIGNAL ( &signal::transition_deleted
-                      , NULL
                       , handle::transition (transition, document)
                       );
 
@@ -731,7 +701,7 @@ namespace fhg
         {
           net.get_ref().push_transition (transition);
 
-          EMIT_SIGNAL ( &signal::transition_added, origin
+          EMIT_SIGNAL ( &signal::transition_added
                       , handle::transition (transition, document)
                       );
         }
@@ -751,13 +721,12 @@ namespace fhg
 
           virtual void undo()
           {
-            remove_transition_impl (ACTION_UNDO_ARGS, _net, _transition);
+            remove_transition_impl (ACTION_IMPL_ARGS, _net, _transition);
           }
 
           virtual void redo()
           {
-            add_transition_impl (ACTION_REDO_ARGS, _net, _transition);
-            _origin = NULL;
+            add_transition_impl (ACTION_IMPL_ARGS, _net, _transition);
           }
 
         private:
@@ -779,13 +748,12 @@ namespace fhg
 
           virtual void undo()
           {
-            add_transition_impl (ACTION_UNDO_ARGS, _net, _transition);
+            add_transition_impl (ACTION_IMPL_ARGS, _net, _transition);
           }
 
           virtual void redo()
           {
-            remove_transition_impl (ACTION_REDO_ARGS, _net, _transition);
-            _origin = NULL;
+            remove_transition_impl (ACTION_IMPL_ARGS, _net, _transition);
           }
 
         private:
@@ -802,8 +770,7 @@ namespace fhg
         {
           net.get_ref().push_place (place);
 
-          EMIT_SIGNAL
-            (&signal::place_added, origin, handle::place (place, document));
+          EMIT_SIGNAL (&signal::place_added, handle::place (place, document));
         }
 
         void remove_place_impl ( ACTION_ARG_LIST
@@ -811,8 +778,7 @@ namespace fhg
                                , const ::xml::parse::id::ref::place& place
                                )
         {
-          EMIT_SIGNAL
-            (&signal::place_deleted, origin, handle::place (place, document));
+          EMIT_SIGNAL (&signal::place_deleted, handle::place (place, document));
 
           net.get_ref().erase_place (place);
         }
@@ -831,13 +797,12 @@ namespace fhg
 
           virtual void undo()
           {
-            remove_place_impl (ACTION_UNDO_ARGS, _net, _place);
+            remove_place_impl (ACTION_IMPL_ARGS, _net, _place);
           }
 
           virtual void redo()
           {
-            add_place_impl (ACTION_REDO_ARGS, _net, _place);
-            _origin = NULL;
+            add_place_impl (ACTION_IMPL_ARGS, _net, _place);
           }
 
         private:
@@ -858,13 +823,12 @@ namespace fhg
 
           virtual void undo()
           {
-            add_place_impl (ACTION_UNDO_ARGS, _net, _place);
+            add_place_impl (ACTION_IMPL_ARGS, _net, _place);
           }
 
           virtual void redo()
           {
-            remove_place_impl (ACTION_REDO_ARGS, _net, _place);
-            _origin = NULL;
+            remove_place_impl (ACTION_IMPL_ARGS, _net, _place);
           }
 
         private:
@@ -879,7 +843,6 @@ namespace fhg
           place.get_ref().set_virtual (val);
 
           EMIT_SIGNAL ( &signal::place_is_virtual_changed
-                      , origin
                       , handle::place (place, document)
                       , val
                       );
@@ -900,13 +863,12 @@ namespace fhg
 
           virtual void undo()
           {
-            place_set_virtual_impl (ACTION_UNDO_ARGS, _place, _old_value);
+            place_set_virtual_impl (ACTION_IMPL_ARGS, _place, _old_value);
           }
 
           virtual void redo()
           {
-            place_set_virtual_impl (ACTION_UNDO_ARGS, _place, _new_value);
-            _origin = NULL;
+            place_set_virtual_impl (ACTION_IMPL_ARGS, _place, _new_value);
           }
 
         private:
@@ -924,8 +886,7 @@ namespace fhg
         {
           function.get_ref().push_port (port);
 
-          EMIT_SIGNAL
-            (&signal::port_added, origin, handle::port (port, document));
+          EMIT_SIGNAL (&signal::port_added, handle::port (port, document));
         }
 
         void remove_port_impl ( ACTION_ARG_LIST
@@ -933,8 +894,7 @@ namespace fhg
                               , const ::xml::parse::id::ref::port& port
                               )
         {
-          EMIT_SIGNAL
-            (&signal::port_deleted, origin, handle::port (port, document));
+          EMIT_SIGNAL (&signal::port_deleted, handle::port (port, document));
 
           if (function.get().ports().has (port))
           {
@@ -960,13 +920,12 @@ namespace fhg
 
           virtual void undo()
           {
-            remove_port_impl (ACTION_UNDO_ARGS, _function, _port);
+            remove_port_impl (ACTION_IMPL_ARGS, _function, _port);
           }
 
           virtual void redo()
           {
-            add_port_impl (ACTION_REDO_ARGS, _function, _port);
-            _origin = NULL;
+            add_port_impl (ACTION_IMPL_ARGS, _function, _port);
           }
 
         private:
@@ -986,13 +945,12 @@ namespace fhg
 
           virtual void undo()
           {
-            add_port_impl (ACTION_UNDO_ARGS, _function, _port);
+            add_port_impl (ACTION_IMPL_ARGS, _function, _port);
           }
 
           virtual void redo()
           {
-            remove_port_impl (ACTION_REDO_ARGS, _function, _port);
-            _origin = NULL;
+            remove_port_impl (ACTION_IMPL_ARGS, _function, _port);
           }
 
         private:
@@ -1008,8 +966,7 @@ namespace fhg
           )
         {
           port.get_ref().place = place;
-          EMIT_SIGNAL
-            (&signal::place_association_set, origin, port, place);
+          EMIT_SIGNAL (&signal::place_association_set, port, place);
         }
 
         class set_place_association : public QUndoCommand
@@ -1028,13 +985,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_place_association_impl (ACTION_UNDO_ARGS, _port, _old_place);
+            set_place_association_impl (ACTION_IMPL_ARGS, _port, _old_place);
           }
 
           virtual void redo()
           {
-            set_place_association_impl (ACTION_REDO_ARGS, _port, _new_place);
-            _origin = NULL;
+            set_place_association_impl (ACTION_IMPL_ARGS, _port, _new_place);
           }
 
         private:
@@ -1055,7 +1011,6 @@ namespace fhg
 
           EMIT_SIGNAL
             ( &signal::function_name_changed
-            , origin
             , function
             , QString::fromStdString (name.get_value_or (""))
             );
@@ -1078,13 +1033,12 @@ namespace fhg
 
           virtual void undo()
           {
-            set_function_name_impl (ACTION_UNDO_ARGS, _function, _old_name);
+            set_function_name_impl (ACTION_IMPL_ARGS, _function, _old_name);
           }
 
           virtual void redo()
           {
-            set_function_name_impl (ACTION_REDO_ARGS, _function, _new_name);
-            _origin = NULL;
+            set_function_name_impl (ACTION_IMPL_ARGS, _function, _new_name);
           }
 
         private:
@@ -1105,14 +1059,12 @@ namespace fhg
 
           EMIT_SIGNAL
             ( &signal::signal_set_expression
-            , origin
             , expression
             , QString::fromStdString (content)
             );
 
           EMIT_SIGNAL
             ( &signal::signal_set_expression_parse_result
-            , origin
             , expression
             , QString::fromStdString (expr::parse::parse_result (content))
             );
@@ -1135,14 +1087,13 @@ namespace fhg
           virtual void undo()
           {
             set_expression_content_impl
-              (ACTION_UNDO_ARGS, _expression, _old_content);
+              (ACTION_IMPL_ARGS, _expression, _old_content);
           }
 
           virtual void redo()
           {
             set_expression_content_impl
-              (ACTION_REDO_ARGS, _expression, _new_content);
-            _origin = NULL;
+              (ACTION_IMPL_ARGS, _expression, _new_content);
           }
 
         private:
@@ -1155,19 +1106,17 @@ namespace fhg
 #undef ACTION_ARG_LIST
 #undef ACTION_INIT
 #undef ACTION_MEMBERS
-#undef ACTION_UNDO_ARGS
-#undef ACTION_REDO_ARGS
+#undef ACTION_IMPL_ARGS
 #undef ACTION_CTOR_ARGS
 
       }
 
-#define ACTION_CTOR_ARGS(HANDLE) *this, HANDLE.document(), origin
+#define ACTION_CTOR_ARGS(HANDLE) *this, HANDLE.document()
 
       // ## editing methods ##########################################
       // - net -------------------------------------------------------
       // -- connection -----------------------------------------------
-      void change_manager_t::add_connection ( const QObject* origin
-                                            , const data::handle::place& place
+      void change_manager_t::add_connection ( const data::handle::place& place
                                             , const data::handle::port& port
                                             , bool no_make_explicit
                                             )
@@ -1187,10 +1136,10 @@ namespace fhg
 
           if (place.is_implicit() && !no_make_explicit)
           {
-            make_explicit (this, place);
+            make_explicit (place);
           }
 
-          set_place_association (origin, port, place.get().name());
+          set_place_association (port, place.get().name());
 
           endMacro();
         }
@@ -1207,7 +1156,7 @@ namespace fhg
 
               if (place.is_implicit() && !no_make_explicit)
               {
-                make_explicit (this, place);
+                make_explicit (place);
               }
 
               push ( new action::add_place_map
@@ -1232,7 +1181,7 @@ namespace fhg
 
               if (place.is_implicit() && !no_make_explicit)
               {
-                make_explicit (this, place);
+                make_explicit (place);
               }
 
               push ( new action::add_connection
@@ -1262,8 +1211,7 @@ namespace fhg
         }
       }
 
-      void change_manager_t::add_connection ( const QObject* origin
-                                            , const data::handle::port& port_a
+      void change_manager_t::add_connection ( const data::handle::port& port_a
                                             , const data::handle::port& port_b
                                             , const data::handle::net& net
                                             )
@@ -1295,16 +1243,13 @@ namespace fhg
 
         handle::place place_handle (place, net.document());
 
-        add_connection (origin, place_handle, port_a, true);
-        add_connection (origin, place_handle, port_b, true);
+        add_connection (place_handle, port_a, true);
+        add_connection (place_handle, port_b, true);
 
         endMacro();
       }
 
-      void change_manager_t::remove_connection
-        ( const QObject* origin
-        , const handle::connect& connect
-        )
+      void change_manager_t::remove_connection (const handle::connect& connect)
       {
         beginMacro ("remove_connection_action");
 
@@ -1314,7 +1259,7 @@ namespace fhg
             (*connect.get().resolved_place(), connect.document());
           if (place.is_implicit())
           {
-            make_explicit (this, place);
+            make_explicit (place);
           }
         }
 
@@ -1327,10 +1272,7 @@ namespace fhg
       }
 
       void change_manager_t::connection_is_read
-        ( const QObject* origin
-        , const data::handle::connect& connect
-        , const bool& read
-        )
+        (const data::handle::connect& connect, const bool& read)
       {
         if (connect.is_out())
         {
@@ -1346,8 +1288,7 @@ namespace fhg
 
 
       void change_manager_t::set_property
-        ( const QObject* origin
-        , const data::handle::connect& connect
+        ( const data::handle::connect& connect
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -1360,8 +1301,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_set_property
-        ( const QObject* origin
-        , const data::handle::connect& connect
+        ( const data::handle::connect& connect
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -1370,10 +1310,7 @@ namespace fhg
       }
 
       // -- place_map -----------------------------------------------
-      void change_manager_t::remove_place_map
-        ( const QObject* origin
-        , const handle::place_map& place_map
-        )
+      void change_manager_t::remove_place_map (const handle::place_map& place_map)
       {
         push ( new action::remove_place_map
                (ACTION_CTOR_ARGS (place_map), place_map.id())
@@ -1381,8 +1318,7 @@ namespace fhg
       }
 
       void change_manager_t::set_property
-        ( const QObject* origin
-        , const data::handle::place_map& place_map
+        ( const data::handle::place_map& place_map
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -1395,8 +1331,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_set_property
-        ( const QObject* origin
-        , const data::handle::place_map& place_map
+        ( const data::handle::place_map& place_map
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -1406,8 +1341,7 @@ namespace fhg
 
       // -- transition -----------------------------------------------
       void change_manager_t::add_transition
-        ( const QObject* origin
-        , const ::xml::parse::id::ref::function& fun
+        ( const ::xml::parse::id::ref::function& fun
         , const handle::net& net
         , const boost::optional<QPointF>& position
         )
@@ -1426,8 +1360,7 @@ namespace fhg
             (net, fun.get().name().get_value_or ("transition"))
           );
 
-        no_undo_move_item ( this
-                          , handle::transition (transition, net.document())
+        no_undo_move_item ( handle::transition (transition, net.document())
                           , position.get_value_or (QPointF())
                           );
 
@@ -1439,10 +1372,7 @@ namespace fhg
       }
 
       void change_manager_t::add_transition
-        ( const QObject* origin
-        , const handle::net& net
-        , const boost::optional<QPointF>& position
-        )
+        (const handle::net& net, const boost::optional<QPointF>& position)
       {
         const ::xml::parse::id::ref::transition transition
           ( ::xml::parse::type::transition_type
@@ -1464,8 +1394,7 @@ namespace fhg
 
         transition.get_ref().name (unique_name_for_transition (net));
 
-        no_undo_move_item ( this
-                          , handle::transition (transition, net.document())
+        no_undo_move_item ( handle::transition (transition, net.document())
                           , position.get_value_or (QPointF())
                           );
 
@@ -1477,9 +1406,7 @@ namespace fhg
       }
 
       void change_manager_t::delete_transition
-        ( const QObject* origin
-        , const handle::transition& transition
-        )
+        (const handle::transition& transition)
       {
         beginMacro ("remove_transition_and_connections_action");
 
@@ -1494,13 +1421,13 @@ namespace fhg
                       , connections_to_delete
                       )
         {
-          remove_connection (this, handle::connect (c, transition.document()));
+          remove_connection (handle::connect (c, transition.document()));
         }
         BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& c
                       , place_maps_to_delete
                       )
         {
-          remove_place_map (this, handle::place_map (c, transition.document()));
+          remove_place_map (handle::place_map (c, transition.document()));
         }
 
         push ( new action::remove_transition ( ACTION_CTOR_ARGS (transition)
@@ -1511,10 +1438,8 @@ namespace fhg
         endMacro();
       }
 
-      void change_manager_t::set_name ( const QObject* origin
-                                      , const data::handle::transition& transition
-                                      , const QString& name
-                                      )
+      void change_manager_t::set_name
+        (const data::handle::transition& transition, const QString& name)
       {
         push ( new action::meta_set_name<handle::transition>
                ( "transition_set_name_action"
@@ -1526,8 +1451,7 @@ namespace fhg
       }
 
       void change_manager_t::set_property
-        ( const QObject* origin
-        , const data::handle::transition& transition
+        ( const data::handle::transition& transition
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -1540,8 +1464,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_set_property
-        ( const QObject* origin
-        , const data::handle::transition& transition
+        ( const data::handle::transition& transition
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -1550,8 +1473,7 @@ namespace fhg
           (ACTION_CTOR_ARGS (transition), transition, key, val);
       }
 
-      void change_manager_t::move_item ( const QObject* origin
-                                       , const handle::transition& transition
+      void change_manager_t::move_item ( const handle::transition& transition
                                        , const QPointF& position
                                        , const bool outer
                                        )
@@ -1564,10 +1486,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_move_item
-        ( const QObject* origin
-        , const handle::transition& transition
-        , const QPointF& position
-        )
+        (const handle::transition& transition, const QPointF& position)
       {
         action::set_property ( ACTION_CTOR_ARGS (transition)
                              , transition
@@ -1583,10 +1502,7 @@ namespace fhg
 
       // -- place ----------------------------------------------------
       void change_manager_t::add_place
-        ( const QObject* origin
-        , const handle::net& net
-        , const boost::optional<QPointF>& position
-        )
+        (const handle::net& net, const boost::optional<QPointF>& position)
       {
         const ::xml::parse::id::ref::place place
           ( ::xml::parse::type::place_type
@@ -1600,8 +1516,7 @@ namespace fhg
             ).make_reference_id()
           );
 
-        no_undo_move_item ( this
-                          , handle::place (place, net.document())
+        no_undo_move_item ( handle::place (place, net.document())
                           , position.get_value_or (QPointF())
                           );
 
@@ -1643,10 +1558,7 @@ namespace fhg
         }
       }
 
-      void change_manager_t::delete_place
-        ( const QObject* origin
-        , const handle::place& place
-        )
+      void change_manager_t::delete_place (const handle::place& place)
       {
         beginMacro ("remove_place_and_connections_action");
 
@@ -1696,7 +1608,7 @@ namespace fhg
               }
               else
               {
-                set_place_association (this, handle, boost::none);
+                set_place_association (handle, boost::none);
               }
             }
           }
@@ -1705,17 +1617,17 @@ namespace fhg
                         , connections_to_delete
                         )
           {
-            remove_connection (this, handle::connect (c, place.document()));
+            remove_connection (handle::connect (c, place.document()));
           }
           BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& pm
                         , place_maps_to_delete
                         )
           {
-            remove_place_map (this, handle::place_map (pm, place.document()));
+            remove_place_map (handle::place_map (pm, place.document()));
           }
           BOOST_FOREACH (const ::xml::parse::id::ref::port& id, ports_to_delete)
           {
-            delete_port (this, handle::port (id, place.document()));
+            delete_port (handle::port (id, place.document()));
           }
         }
 
@@ -1724,25 +1636,26 @@ namespace fhg
         endMacro();
       }
 
-      void change_manager_t::set_name ( const QObject* origin
-                                      , const data::handle::place& place
-                                      , const QString& name
-                                      )
+      void change_manager_t::set_name
+        (const data::handle::place& place, const QString& name)
       {
         beginMacro (tr ("place_set_name_action"));
 
-        if ( origin != this
-           && place.is_virtual()
+        if ( place.is_virtual()
            && place.get().has_parent() && place.get().parent().get().has_parent()
            )
         {
-          const handle::port handle
+          const handle::port port
             ( *place.get().parent().get().parent().get().ports().get
               (std::make_pair (place.get().name(), we::type::PORT_TUNNEL))
             , place.document()
             );
-          set_name (this, handle, name);
-          set_place_association (this, handle, name.toStdString());
+
+          push ( new action::meta_set_name<handle::port>
+                 ("port_set_name_action", ACTION_CTOR_ARGS (port), port, name)
+               );
+
+          set_place_association (port, name.toStdString());
         }
 
         push ( new action::meta_set_name<handle::place>
@@ -1752,24 +1665,24 @@ namespace fhg
         endMacro();
       }
 
-      void change_manager_t::set_type ( const QObject* origin
-                                      , const data::handle::place& place
-                                      , const QString& type
-                                      )
+      void change_manager_t::set_type
+        (const data::handle::place& place, const QString& type)
       {
         beginMacro (tr ("place_set_type_action"));
 
-        if ( origin != this
-           && place.is_virtual()
+        if ( place.is_virtual()
            && place.get().has_parent() && place.get().parent().get().has_parent()
            )
         {
-          const handle::port handle
+          const handle::port port
             ( *place.get().parent().get().parent().get().ports().get
               (std::make_pair (place.get().name(), we::type::PORT_TUNNEL))
             , place.document()
             );
-          set_type (this, handle, type);
+
+          push ( new action::meta_set_type<handle::port>
+                 ("port_set_type_action", ACTION_CTOR_ARGS (port), port, type)
+               );
         }
 
         push ( new action::meta_set_type<handle::place>
@@ -1779,14 +1692,12 @@ namespace fhg
         endMacro();
       }
 
-      void change_manager_t::make_explicit
-        (const QObject* origin, const data::handle::place& place)
+      void change_manager_t::make_explicit (const data::handle::place& place)
       {
-        set_property (origin, place, "fhg.pnete.is_implicit_place", "false");
+        set_property (place, "fhg.pnete.is_implicit_place", "false");
       }
 
-      void change_manager_t::make_virtual
-        (const QObject* origin, const data::handle::place& p)
+      void change_manager_t::make_virtual (const data::handle::place& p)
       {
         if (p.is_virtual())
         {
@@ -1807,7 +1718,7 @@ namespace fhg
             ).make_reference_id()
           );
 
-        no_undo_move_item (this, handle::port (port, p.document()), QPointF());
+        no_undo_move_item (handle::port (port, p.document()), QPointF());
 
         push ( new action::add_port
                ( ACTION_CTOR_ARGS (p)
@@ -1820,8 +1731,7 @@ namespace fhg
 
         endMacro();
       }
-      void change_manager_t::make_real
-        (const QObject* origin, const data::handle::place& p)
+      void change_manager_t::make_real (const data::handle::place& p)
       {
         if (!p.is_virtual())
         {
@@ -1831,8 +1741,7 @@ namespace fhg
         beginMacro (tr ("make_real_action"));
 
         delete_port
-          ( this
-          , handle::port ( *p.get().parent()->parent().get().ports().get
+          ( handle::port ( *p.get().parent()->parent().get().ports().get
                            (std::make_pair (p.get().name(), we::type::PORT_TUNNEL))
                          , p.document()
                          )
@@ -1844,8 +1753,7 @@ namespace fhg
       }
 
       void change_manager_t::set_property
-        ( const QObject* origin
-        , const data::handle::place& place
+        ( const data::handle::place& place
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -1858,8 +1766,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_set_property
-        ( const QObject* origin
-        , const data::handle::place& place
+        ( const data::handle::place& place
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -1867,8 +1774,7 @@ namespace fhg
         action::set_property (ACTION_CTOR_ARGS (place), place, key, val);
       }
 
-      void change_manager_t::move_item ( const QObject* origin
-                                       , const handle::place& place
+      void change_manager_t::move_item ( const handle::place& place
                                        , const QPointF& position
                                        , const bool outer
                                        )
@@ -1881,10 +1787,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_move_item
-        ( const QObject* origin
-        , const handle::place& place
-        , const QPointF& position
-        )
+        (const handle::place& place, const QPointF& position)
       {
         action::set_property ( ACTION_CTOR_ARGS (place)
                              , place
@@ -1900,8 +1803,7 @@ namespace fhg
 
       // - port ------------------------------------------------------
       void change_manager_t::add_port
-        ( const QObject* origin
-        , const handle::function& function
+        ( const handle::function& function
         , const we::type::PortDirection& direction
         , const boost::optional<QPointF>& position
         )
@@ -1930,8 +1832,7 @@ namespace fhg
               ).make_reference_id()
             );
 
-          no_undo_move_item ( this
-                            , handle::place (place, function.document())
+          no_undo_move_item ( handle::place (place, function.document())
                             , position.get_value_or (QPointF())
                             );
 
@@ -1954,8 +1855,7 @@ namespace fhg
             ).make_reference_id()
           );
 
-        no_undo_move_item ( this
-                          , handle::port (port, function.document())
+        no_undo_move_item ( handle::port (port, function.document())
                           , position.get_value_or (QPointF())
                           );
 
@@ -1986,16 +1886,13 @@ namespace fhg
         }
       }
 
-      void change_manager_t::delete_port
-        ( const QObject* origin
-        , const handle::port& port
-        )
+      void change_manager_t::delete_port (const handle::port& port)
       {
         beginMacro ("remove_port_and_connections_action");
 
         if (port.get().place)
         {
-          set_place_association (this, port, boost::none);
+          set_place_association (port, boost::none);
         }
 
         if (port.get().has_parent() && port.get().parent()->parent_transition())
@@ -2026,13 +1923,13 @@ namespace fhg
                         , connections_to_delete
                         )
           {
-            remove_connection (this, handle::connect (c, port.document()));
+            remove_connection (handle::connect (c, port.document()));
           }
           BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& pm
                         , place_maps_to_delete
                         )
           {
-            remove_place_map (this, handle::place_map (pm, port.document()));
+            remove_place_map (handle::place_map (pm, port.document()));
           }
         }
 
@@ -2042,7 +1939,7 @@ namespace fhg
             (port.get().resolved_place());
           if (place)
           {
-            make_real (this, handle::place (*place, port.document()));
+            make_real (handle::place (*place, port.document()));
           }
         }
 
@@ -2052,8 +1949,7 @@ namespace fhg
       }
 
       void change_manager_t::set_property
-        ( const QObject* origin
-        , const data::handle::port& port
+        ( const data::handle::port& port
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -2064,8 +1960,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_set_property
-        ( const QObject* origin
-        , const data::handle::port& port
+        ( const data::handle::port& port
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -2073,19 +1968,21 @@ namespace fhg
         action::set_property (ACTION_CTOR_ARGS (port), port, key, val);
       }
 
-      void change_manager_t::set_name ( const QObject* origin
-                                      , const data::handle::port& port
-                                      , const QString& name
-                                      )
+      void change_manager_t::set_name
+        (const data::handle::port& port, const QString& name)
       {
         beginMacro (tr ("port_set_name_action"));
 
-        if (origin != this && port.is_tunnel())
+        if (port.is_tunnel())
         {
-          const handle::place handle
+          const handle::place place
             (*port.get().resolved_place(), port.document());
-          set_name (this, handle, name);
-          set_place_association (this, port, name.toStdString());
+
+          push ( new action::meta_set_name<handle::place>
+                 ("place_set_name_action", ACTION_CTOR_ARGS (place), place, name)
+               );
+
+          set_place_association (port, name.toStdString());
         }
 
         push ( new action::meta_set_name<handle::port>
@@ -2095,18 +1992,19 @@ namespace fhg
         endMacro();
       }
 
-      void change_manager_t::set_type ( const QObject* origin
-                                      , const data::handle::port& port
-                                      , const QString& type
-                                      )
+      void change_manager_t::set_type
+        (const data::handle::port& port, const QString& type)
       {
         beginMacro (tr ("port_set_type_action"));
 
-        if (origin != this && port.is_tunnel())
+        if (port.is_tunnel())
         {
-          const handle::place handle
+          const handle::place place
             (*port.get().resolved_place(), port.document());
-          set_type (this, handle, type);
+
+          push ( new action::meta_set_type<handle::place>
+                 ("place_set_type_action", ACTION_CTOR_ARGS (place), place, type)
+               );
         }
 
         push ( new action::meta_set_type<handle::port>
@@ -2117,8 +2015,7 @@ namespace fhg
       }
 
       void change_manager_t::set_place_association
-        ( const QObject* origin
-        , const data::handle::port& port
+        ( const data::handle::port& port
         , const boost::optional<std::string>& place
         )
       {
@@ -2130,7 +2027,7 @@ namespace fhg
             (*port.get().resolved_place(), port.document());
           if (place.is_implicit())
           {
-            make_explicit (this, place);
+            make_explicit (place);
           }
         }
 
@@ -2144,8 +2041,7 @@ namespace fhg
       }
 
 
-      void change_manager_t::move_item ( const QObject* origin
-                                       , const handle::port& port
+      void change_manager_t::move_item ( const handle::port& port
                                        , const QPointF& position
                                        , const bool outer
                                        )
@@ -2158,10 +2054,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_move_item
-        ( const QObject* origin
-        , const handle::port& port
-        , const QPointF& position
-        )
+        (const handle::port& port, const QPointF& position)
       {
         action::set_property ( ACTION_CTOR_ARGS (port)
                              , port
@@ -2177,17 +2070,13 @@ namespace fhg
 
       // - function --------------------------------------------------
       void change_manager_t::set_function_name
-        ( const QObject* origin
-        , const data::handle::function& fun
-        , const QString& name
-        )
+        (const data::handle::function& fun, const QString& name)
       {
         push (new action::set_function_name (ACTION_CTOR_ARGS (fun), fun, name));
       }
 
       void change_manager_t::set_property
-        ( const QObject* origin
-        , const data::handle::function& function
+        ( const data::handle::function& function
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -2200,8 +2089,7 @@ namespace fhg
       }
 
       void change_manager_t::no_undo_set_property
-        ( const QObject* origin
-        , const data::handle::function& function
+        ( const data::handle::function& function
         , const ::we::type::property::key_type& key
         , const ::we::type::property::value_type& val
         )
@@ -2211,10 +2099,7 @@ namespace fhg
 
       // - expression ------------------------------------------------
       void change_manager_t::set_expression
-        ( const QObject* origin
-        , data::handle::expression& expression
-        , const QString& text
-        )
+        (data::handle::expression& expression, const QString& text)
       {
         push ( new action::set_expression_content
                (ACTION_CTOR_ARGS (expression), expression, text)

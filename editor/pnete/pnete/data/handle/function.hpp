@@ -40,15 +40,13 @@ namespace fhg
         public:
           function (const function_meta_base::id_type&, internal_type*);
 
-          virtual void set_property ( const QObject* sender
-                                    , const ::we::type::property::key_type&
+          virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
 
-          void set_name (const QObject* sender, const QString& name) const;
+          void set_name (const QString& name) const;
 
-          void add_port ( const QObject* origin
-                        , const we::type::PortDirection&
+          void add_port ( const we::type::PortDirection&
                         , const boost::optional<QPointF>&
                         ) const;
 

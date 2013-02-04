@@ -21,24 +21,24 @@ namespace fhg
           : port_meta_base (id, document)
         { }
 
-        void port::remove (const QObject* sender) const
+        void port::remove() const
         {
-          change_manager().delete_port (sender, *this);
+          change_manager().delete_port (*this);
         }
 
-        void port::set_name (const QObject* sender, const QString& name) const
+        void port::set_name (const QString& name) const
         {
-          change_manager().set_name (sender, *this, name);
+          change_manager().set_name (*this, name);
         }
 
-        void port::set_type (const QObject* sender, const QString& type) const
+        void port::set_type (const QString& type) const
         {
-          change_manager().set_type (sender, *this, type);
+          change_manager().set_type (*this, type);
         }
 
-        void port::remove_place_association (const QObject* sender) const
+        void port::remove_place_association() const
         {
-          change_manager().set_place_association (sender, *this, boost::none);
+          change_manager().set_place_association (*this, boost::none);
         }
 
         bool port::is_input() const
@@ -84,27 +84,21 @@ namespace fhg
                  (std::make_pair (name.toStdString(), get().direction()));
         }
 
-        void port::set_property ( const QObject* sender
-                                , const ::we::type::property::key_type& key
+        void port::set_property ( const ::we::type::property::key_type& key
                                 , const ::we::type::property::value_type& val
                                 ) const
         {
-          change_manager().set_property (sender, *this, key, val);
+          change_manager().set_property (*this, key, val);
         }
 
-        void port::move ( const QObject* sender
-                        , const QPointF& position
-                        , const bool outer
-                        ) const
+        void port::move (const QPointF& position, const bool outer) const
         {
-          change_manager().move_item (sender, *this, position, outer);
+          change_manager().move_item (*this, position, outer);
         }
 
-        void port::no_undo_move ( const QObject* sender
-                                , const QPointF& position
-                                ) const
+        void port::no_undo_move (const QPointF& position) const
         {
-          change_manager().no_undo_move_item (sender, *this, position);
+          change_manager().no_undo_move_item (*this, position);
         }
 
         bool port::parent_is (const function& function) const

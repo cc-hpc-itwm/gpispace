@@ -21,8 +21,7 @@ namespace fhg
           : _document (document)
         { }
 
-        void base::set_property ( const QObject* sender
-                                , const ::we::type::property::key_type&
+        void base::set_property ( const ::we::type::property::key_type&
                                 , const ::we::type::property::value_type&
                                 ) const
         {
@@ -31,18 +30,13 @@ namespace fhg
             "of overloaded version.");
         }
 
-        void base::move ( const QObject* sender
-                        , const QPointF& position
-                        , const bool outer
-                        ) const
+        void base::move (const QPointF& position, const bool outer) const
         {
           throw fhg::util::backtracing_exception
             ("handle::base::move() called instead of overloaded version.");
         }
 
-        void base::no_undo_move ( const QObject* sender
-                                , const QPointF& position
-                                ) const
+        void base::no_undo_move (const QPointF& position) const
         {
           throw fhg::util::backtracing_exception
             ("handle::base::no_undo_move() called instead of "
@@ -71,12 +65,12 @@ namespace fhg
           QObject::connect ( &change_manager()
                            , ( std::string (STRINGIFY (QSIGNAL_CODE))
                              + signal
-                             + "(const QObject*," + arguments + ")"
+                             + "(" + arguments + ")"
                              ).c_str()
                            , object
                            , ( std::string (STRINGIFY (QSLOT_CODE))
                              + slot
-                             + "(const QObject*," + arguments + ")"
+                             + "(" + arguments + ")"
                              ).c_str()
                            , Qt::DirectConnection
                            );

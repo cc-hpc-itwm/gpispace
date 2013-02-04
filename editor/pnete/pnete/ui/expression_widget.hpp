@@ -43,19 +43,12 @@ namespace fhg
         void name_changed (const QString& name_);
         void expression_changed ();
 
-        void slot_set_function_name ( const QObject*
-                                    , const data::handle::function&
-                                    , const QString&
-                                    );
-        void slot_set_expression ( const QObject*
-                                 , const data::handle::expression&
-                                 , const QString&
-                                 );
+        void slot_set_function_name
+          (const data::handle::function&, const QString&);
+        void slot_set_expression
+          (const data::handle::expression&, const QString&);
         void slot_set_expression_parse_result
-             ( const QObject*
-             , const data::handle::expression&
-             , const QString&
-             );
+          (const data::handle::expression&, const QString&);
 
       private:
         bool is_my_function (const data::handle::function&);

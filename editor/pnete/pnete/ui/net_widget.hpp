@@ -30,8 +30,7 @@ namespace fhg
 
       private slots:
         void name_edit_changed (const QString&);
-        void name_changed
-          (const QObject*, const data::handle::function&, const QString&);
+        void name_changed (const data::handle::function&, const QString&);
 
       private:
         bool is_my_function (const data::handle::function&);

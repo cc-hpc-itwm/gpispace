@@ -63,8 +63,7 @@ namespace fhg
         }
 
         void port_place_association::place_association_set
-          ( const QObject*
-          , const data::handle::port& changed_handle
+          ( const data::handle::port& changed_handle
           , const boost::optional<std::string>& place
           )
         {

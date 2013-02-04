@@ -51,7 +51,7 @@ namespace fhg
         }
 
         void place_map::place_map_removed
-          (const QObject*, const data::handle::place_map& changed)
+          (const data::handle::place_map& changed)
         {
           if (changed == handle())
           {

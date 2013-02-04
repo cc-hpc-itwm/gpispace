@@ -53,7 +53,7 @@ namespace fhg
         }
 
         void connection_item::connection_removed
-          (const QObject*, const data::handle::connect& changed)
+          (const data::handle::connect& changed)
         {
           if (changed == handle())
           {
@@ -63,7 +63,7 @@ namespace fhg
         }
 
         void connection_item::connection_direction_changed
-          (const QObject*, const data::handle::connect& changed_handle)
+          (const data::handle::connect& changed_handle)
         {
           if (changed_handle == handle())
           {

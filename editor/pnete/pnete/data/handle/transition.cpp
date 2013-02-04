@@ -23,15 +23,14 @@ namespace fhg
           : transition_meta_base (id, document)
         { }
 
-        void transition::remove (const QObject* sender) const
+        void transition::remove() const
         {
-          change_manager().delete_transition (sender, *this);
+          change_manager().delete_transition (*this);
         }
 
-        void transition::set_name
-          (const QObject* sender, const QString& name) const
+        void transition::set_name (const QString& name) const
         {
-          change_manager().set_name (sender, *this, name);
+          change_manager().set_name (*this, name);
         }
 
         bool transition::can_rename_to (const QString& name) const
@@ -42,27 +41,21 @@ namespace fhg
         }
 
         void transition::set_property
-          ( const QObject* sender
-          , const ::we::type::property::key_type& key
+          ( const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& val
           ) const
         {
-          change_manager().set_property (sender, *this, key, val);
+          change_manager().set_property (*this, key, val);
         }
 
-        void transition::move ( const QObject* sender
-                              , const QPointF& position
-                              , const bool outer
-                              ) const
+        void transition::move (const QPointF& position, const bool outer) const
         {
-          change_manager().move_item (sender, *this, position, outer);
+          change_manager().move_item (*this, position, outer);
         }
 
-        void transition::no_undo_move ( const QObject* sender
-                                      , const QPointF& position
-                                      ) const
+        void transition::no_undo_move (const QPointF& position) const
         {
-          change_manager().no_undo_move_item (sender, *this, position);
+          change_manager().no_undo_move_item (*this, position);
         }
 
         function transition::function() const

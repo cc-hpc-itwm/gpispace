@@ -29,7 +29,7 @@ namespace fhg
         public:
           expression (const expression_meta_base::id_type&, internal_type*);
 
-          void set_content (const QObject* sender, const QString& content);
+          void set_content (const QString&);
           QString content() const;
 
           using expression_meta_base::operator==;

@@ -67,14 +67,13 @@ namespace fhg
           void slot_set_type();
           void refresh_content();
 
-          void port_deleted (const QObject*, const data::handle::port&);
+          void port_deleted (const data::handle::port&);
 
           void type_or_name_changed
-            (const QObject*, const data::handle::port&, const QString&);
+            (const data::handle::port&, const QString&);
 
           void property_changed
-            ( const QObject*
-            , const data::handle::port&
+            ( const data::handle::port&
             , const we::type::property::key_type&
             , const we::type::property::value_type&
             );

@@ -51,18 +51,15 @@ namespace fhg
           virtual void setPos (const QPointF&);
 
         public slots:
-          void transition_deleted
-            (const QObject*, const data::handle::transition&);
+          void transition_deleted (const data::handle::transition&);
 
           void property_changed
-            ( const QObject*
-            , const data::handle::transition&
+            ( const data::handle::transition&
             , const we::type::property::key_type&
             , const we::type::property::value_type&
             );
 
-          void name_changed
-            (const QObject*, const data::handle::transition&, const QString&);
+          void name_changed (const data::handle::transition&, const QString&);
 
         protected:
           virtual void paint ( QPainter *painter

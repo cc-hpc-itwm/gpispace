@@ -81,7 +81,6 @@ namespace fhg
           void set_function_name ( const data::handle::function& handle
                                  , const QString& dialog_title
                                  , const QString& prompt
-                                 , QObject* origin
                                  )
           {
             bool ok;
@@ -97,7 +96,7 @@ namespace fhg
               );
             if (ok)
             {
-              handle.set_name (origin, name);
+              handle.set_name (name);
             }
           }
         }
@@ -116,7 +115,6 @@ namespace fhg
             ( connect_action ( new QAction (tr ("new_transition"), this)
                              , boost::bind ( &data::handle::net::add_transition
                                            , _net
-                                           , this
                                            , boost::none
                                            )
                              )
@@ -125,7 +123,6 @@ namespace fhg
             ( connect_action ( new QAction (tr ("new_place"), this)
                              , boost::bind ( &data::handle::net::add_place
                                            , _net
-                                           , this
                                            , boost::none
                                            )
                              )
@@ -134,7 +131,6 @@ namespace fhg
             ( connect_action ( new QAction (tr ("new_top_level_port_in"), this)
                              , boost::bind ( &data::handle::function::add_port
                                            , _function
-                                           , this
                                            , we::type::PORT_IN
                                            , boost::none
                                            )
@@ -144,7 +140,6 @@ namespace fhg
             ( connect_action ( new QAction (tr ("new_top_level_port_out"), this)
                              , boost::bind ( &data::handle::function::add_port
                                            , _function
-                                           , this
                                            , we::type::PORT_OUT
                                            , boost::none
                                            )
@@ -154,7 +149,6 @@ namespace fhg
             ( connect_action ( new QAction (tr ("new_top_level_port_tunnel"), this)
                              , boost::bind ( &data::handle::function::add_port
                                            , _function
-                                           , this
                                            , we::type::PORT_TUNNEL
                                            , boost::none
                                            )
@@ -180,7 +174,6 @@ namespace fhg
                                      , _function
                                      , tr ("set_function_name_title")
                                      , tr ("set_function_name_prompt")
-                                     , this
                                      )
                        )
                      )
@@ -218,7 +211,6 @@ namespace fhg
                                    , const QString& prompt
                                    , const QString& current_name
                                    , QWidget* widget
-                                   , QObject* origin
                                    )
           {
             bool ok;
@@ -236,7 +228,7 @@ namespace fhg
             {
               if (handle.can_rename_to (name))
               {
-                handle.set_name (origin, name);
+                handle.set_name (name);
               }
               else
               {
@@ -256,7 +248,6 @@ namespace fhg
                                       , prompt
                                       , name
                                       , widget
-                                      , origin
                                       );
                 }
               }
@@ -269,7 +260,6 @@ namespace fhg
                                       , const QString& prompt
                                       , const QString& current_type
                                       , QWidget* widget
-                                      , QObject* origin
                                       )
           {
             bool ok;
@@ -285,7 +275,7 @@ namespace fhg
               );
             if (ok && !text.isEmpty())
             {
-              handle.set_type (origin, text);
+              handle.set_type (text);
             }
           }
 
@@ -334,7 +324,6 @@ namespace fhg
                               , tr ("port_set_name_prompt")
                               , QString::fromStdString (handle.get().name())
                               , event->widget()
-                              , this
                               )
                 );
 
@@ -349,7 +338,6 @@ namespace fhg
                               , tr ("port_set_type_prompt")
                               , QString::fromStdString (handle.get().type())
                               , event->widget()
-                              , this
                               )
                 );
 
@@ -359,7 +347,7 @@ namespace fhg
                 ( menu->addAction (tr ("port_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::port::remove, handle, this)
+                , boost::bind (&data::handle::port::remove, handle)
                 );
             }
             break;
@@ -382,7 +370,6 @@ namespace fhg
                               , tr ("port_set_type_prompt")
                               , QString::fromStdString (handle.get().type())
                               , event->widget()
-                              , this
                               )
                 );
             }
@@ -413,7 +400,6 @@ namespace fhg
                               , tr ("transition_set_name_prompt")
                               , QString::fromStdString (handle.get().name())
                               , event->widget()
-                              , this
                               )
                 );
 
@@ -423,7 +409,7 @@ namespace fhg
                 ( menu->addAction (tr ("transition_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::transition::remove, handle, this)
+                , boost::bind (&data::handle::transition::remove, handle)
                 );
 
               menu->addSeparator();
@@ -450,8 +436,7 @@ namespace fhg
                   ( menu->addAction (tr ("place_make_explicit"))
                   , SIGNAL (triggered())
                   , item_below_cursor
-                  , boost::bind
-                    (&data::handle::place::make_explicit, handle, this)
+                  , boost::bind (&data::handle::place::make_explicit, handle)
                   );
               }
               else
@@ -467,7 +452,6 @@ namespace fhg
                                 , tr ("place_set_name_prompt")
                                 , QString::fromStdString (handle.get().name())
                                 , event->widget()
-                                , this
                                 )
                   );
 
@@ -482,7 +466,6 @@ namespace fhg
                                 , tr ("place_set_type_prompt")
                                 , QString::fromStdString (handle.get().type())
                                 , event->widget()
-                                , this
                                 )
                   );
 
@@ -492,8 +475,7 @@ namespace fhg
                     ( menu->addAction (tr ("place_make_real"))
                     , SIGNAL (triggered())
                     , item_below_cursor
-                    , boost::bind
-                      (&data::handle::place::make_real, handle, this)
+                    , boost::bind (&data::handle::place::make_real, handle)
                     );
                 }
                 else
@@ -502,8 +484,7 @@ namespace fhg
                     ( menu->addAction (tr ("place_make_virtual"))
                     , SIGNAL (triggered())
                     , item_below_cursor
-                    , boost::bind
-                      (&data::handle::place::make_virtual, handle, this)
+                    , boost::bind (&data::handle::place::make_virtual, handle)
                     );
                 }
               }
@@ -514,7 +495,7 @@ namespace fhg
                 ( menu->addAction (tr ("place_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::place::remove, handle, this)
+                , boost::bind (&data::handle::place::remove, handle)
                 );
             }
             break;
@@ -535,9 +516,8 @@ namespace fhg
                 fhg::util::qt::boost_connect<void (bool)>
                   ( action_read
                   , SIGNAL (toggled (bool))
-                , item_below_cursor
-                  , boost::bind
-                    (&data::handle::connect::is_read, handle, this, _1)
+                  , item_below_cursor
+                  , boost::bind (&data::handle::connect::is_read, handle, _1)
                   );
 
                 menu->addSeparator();
@@ -547,7 +527,7 @@ namespace fhg
                 ( menu->addAction (tr ("connection_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::connect::remove, handle, this)
+                , boost::bind (&data::handle::connect::remove, handle)
                 );
             }
             break;
@@ -563,10 +543,8 @@ namespace fhg
                 ( menu->addAction (tr ("port_place_assoc_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind ( &data::handle::port::remove_place_association
-                              , handle
-                              , this
-                              )
+                , boost::bind
+                  (&data::handle::port::remove_place_association, handle)
                 );
             }
 
@@ -583,7 +561,7 @@ namespace fhg
                 ( menu->addAction (tr ("place_map_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::place_map::remove, handle, this)
+                , boost::bind (&data::handle::place_map::remove, handle)
                 );
             }
 
@@ -604,22 +582,16 @@ namespace fhg
                 ( menu_new->addAction (tr ("new_transition"))
                 , SIGNAL (triggered())
                 , this
-                , boost::bind ( &data::handle::net::add_transition
-                              , net()
-                              , this
-                              , event->scenePos()
-                              )
+                , boost::bind
+                  (&data::handle::net::add_transition, net(), event->scenePos())
                 );
 
               fhg::util::qt::boost_connect<void()>
                 ( menu_new->addAction (tr ("new_place"))
                 , SIGNAL (triggered())
                 , this
-                , boost::bind ( &data::handle::net::add_place
-                              , net()
-                              , this
-                              , event->scenePos()
-                              )
+                , boost::bind
+                  (&data::handle::net::add_place, net(), event->scenePos())
                 );
 
               fhg::util::qt::boost_connect<void()>
@@ -628,7 +600,6 @@ namespace fhg
                 , this
                 , boost::bind ( &data::handle::function::add_port
                               , function()
-                              , this
                               , we::type::PORT_IN
                               , event->scenePos()
                               )
@@ -640,7 +611,6 @@ namespace fhg
                 , this
                 , boost::bind ( &data::handle::function::add_port
                               , function()
-                              , this
                               , we::type::PORT_OUT
                               , event->scenePos()
                               )
@@ -652,7 +622,6 @@ namespace fhg
                 , this
                 , boost::bind ( &data::handle::function::add_port
                               , function()
-                              , this
                               , we::type::PORT_TUNNEL
                               , event->scenePos()
                               )
@@ -683,7 +652,6 @@ namespace fhg
                             , function()
                             , tr ("set_function_name_title")
                             , tr ("set_function_name_prompt")
-                            , this
                             )
               );
 
@@ -810,7 +778,7 @@ namespace fhg
               if (as_port && pending_as_port)
               {
                 net().add_connection_with_implicit_place
-                  (this, pending_as_port->handle(), as_port->handle());
+                  (pending_as_port->handle(), as_port->handle());
               }
               else
               {
@@ -818,7 +786,7 @@ namespace fhg
                 const place_item* place (as_place ? as_place : pending_as_place);
 
                 net().add_connection_or_association
-                  (this, place->handle(), port->handle());
+                  (place->handle(), port->handle());
               }
 
               event->accept();
@@ -889,8 +857,7 @@ namespace fhg
             foreach (const QString& path, paths)
             {
               net().add_transition
-                ( this
-                , data::manager::instance().load (path).get().clone
+                ( data::manager::instance().load (path).get().clone
                   (boost::none, net().id().id_mapper())
                 , event->scenePos()
                 );
@@ -1038,8 +1005,7 @@ namespace fhg
 
         //! \todo Don't pass from and to. Pass net.
         void scene_type::connection_added
-          ( const QObject*
-          , const data::handle::connect& connection
+          ( const data::handle::connect& connection
           , const data::handle::place& place
           , const data::handle::port& port
           )
@@ -1051,7 +1017,7 @@ namespace fhg
         }
 
         void scene_type::place_map_added
-          (const QObject*, const data::handle::place_map& place_map)
+          (const data::handle::place_map& place_map)
         {
           if (place_map.resolved_real_place().parent_is (net()))
           {
@@ -1060,7 +1026,7 @@ namespace fhg
         }
 
         void scene_type::transition_added
-          (const QObject*, const data::handle::transition& transition)
+          (const data::handle::transition& transition)
         {
           if (transition.parent_is (net()))
           {
@@ -1069,7 +1035,7 @@ namespace fhg
         }
 
         void scene_type::place_added
-          (const QObject*, const data::handle::place& place)
+          (const data::handle::place& place)
         {
           if (place.parent_is (net()))
           {
@@ -1078,7 +1044,7 @@ namespace fhg
         }
 
         void scene_type::port_added
-          (const QObject*, const data::handle::port& port)
+          (const data::handle::port& port)
         {
           if (port.parent_is (function()))
           {
@@ -1087,8 +1053,7 @@ namespace fhg
         }
 
         void scene_type::place_association_set
-          ( const QObject*
-          , const data::handle::port& port
+          ( const data::handle::port& port
           , const boost::optional<std::string>& place_name
           )
         {

@@ -22,18 +22,17 @@ namespace fhg
           : place_map_meta_base (id, document)
         { }
 
-        void place_map::remove (const QObject* sender) const
+        void place_map::remove() const
         {
-          change_manager().remove_place_map (sender, *this);
+          change_manager().remove_place_map (*this);
         }
 
         void place_map::set_property
-          ( const QObject* sender
-          , const ::we::type::property::key_type& key
+          ( const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& val
           ) const
         {
-          change_manager().set_property (sender, *this, key, val);
+          change_manager().set_property (*this, key, val);
         }
 
         place place_map::resolved_real_place() const

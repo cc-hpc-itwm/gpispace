@@ -33,12 +33,12 @@ namespace fhg
         public:
           port (const port_meta_base::id_type&, internal_type*);
 
-          void remove (const QObject* sender) const;
+          void remove() const;
 
-          void set_name (const QObject* sender, const QString& type) const;
-          void set_type (const QObject* sender, const QString& type) const;
+          void set_name (const QString&) const;
+          void set_type (const QString&) const;
 
-          void remove_place_association (const QObject* sender) const;
+          void remove_place_association() const;
 
           bool is_input() const;
           bool is_output() const;
@@ -52,19 +52,12 @@ namespace fhg
 
           bool can_rename_to (const QString&) const;
 
-          virtual void set_property ( const QObject* sender
-                                    , const ::we::type::property::key_type&
+          virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
 
-          virtual void move ( const QObject* sender
-                            , const QPointF& position
-                            , const bool outer
-                            ) const;
-
-          virtual void no_undo_move ( const QObject* sender
-                                    , const QPointF& position
-                                    ) const;
+          virtual void move (const QPointF& position, const bool outer) const;
+          virtual void no_undo_move (const QPointF& position) const;
 
           bool parent_is (const function&) const;
           function parent() const;

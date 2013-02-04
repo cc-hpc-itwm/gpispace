@@ -55,8 +55,7 @@ namespace fhg
           }
         }
 
-        void ports_model::port_added
-          (const QObject*, const data::handle::port& handle)
+        void ports_model::port_added (const data::handle::port& handle)
         {
           if (handle.parent_is (_function) && handle.direction_is (_direction))
           {
@@ -65,8 +64,7 @@ namespace fhg
           }
         }
 
-        void ports_model::port_deleted
-          (const QObject*, const data::handle::port& changed)
+        void ports_model::port_deleted (const data::handle::port& changed)
         {
           if (_ports.contains (changed))
           {
@@ -76,7 +74,7 @@ namespace fhg
         }
 
         void ports_model::type_or_name_changed
-          (const QObject*, const data::handle::port& changed, const QString&)
+          (const data::handle::port& changed, const QString&)
         {
           if (_ports.contains (changed))
           {

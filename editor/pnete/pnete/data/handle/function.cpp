@@ -27,25 +27,23 @@ namespace fhg
           : function_meta_base (id, document)
         { }
 
-        void function::set_property ( const QObject* sender
-                                    , const ::we::type::property::key_type& key
+        void function::set_property ( const ::we::type::property::key_type& key
                                     , const ::we::type::property::value_type& val
                                     ) const
         {
-          change_manager().set_property (sender, *this, key, val);
+          change_manager().set_property (*this, key, val);
         }
 
-        void function::set_name (const QObject* sender, const QString& name) const
+        void function::set_name (const QString& name) const
         {
-          change_manager().set_function_name (sender, *this, name);
+          change_manager().set_function_name (*this, name);
         }
 
-        void function::add_port ( const QObject* origin
-                                , const we::type::PortDirection& direction
+        void function::add_port ( const we::type::PortDirection& direction
                                 , const boost::optional<QPointF>& position
                                 ) const
         {
-          change_manager().add_port (origin, *this, direction, position);
+          change_manager().add_port (*this, direction, position);
         }
 
         namespace

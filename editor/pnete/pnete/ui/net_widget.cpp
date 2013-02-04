@@ -68,14 +68,11 @@ namespace fhg
 
       void net_widget::name_edit_changed (const QString& name)
       {
-        _function.set_name (this, name);
+        _function.set_name (name);
       }
 
       void net_widget::name_changed
-        ( const QObject*
-        , const data::handle::function& fun
-        , const QString& name
-        )
+        (const data::handle::function& fun, const QString& name)
       {
         if (is_my_function (fun))
         {

@@ -20,10 +20,9 @@ namespace fhg
           : expression_meta_base (id, document)
         { }
 
-        void expression::set_content
-          (const QObject* sender, const QString& content)
+        void expression::set_content (const QString& content)
         {
-          change_manager().set_expression (sender, *this, content);
+          change_manager().set_expression (*this, content);
         }
         QString expression::content() const
         {

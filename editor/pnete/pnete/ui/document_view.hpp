@@ -42,7 +42,7 @@ namespace fhg
 
       public slots:
         void function_name_changed
-          (const QObject*, const data::handle::function&, const QString&);
+          (const data::handle::function&, const QString&);
 
       private slots:
         void visibility_changed (bool);

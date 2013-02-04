@@ -45,8 +45,7 @@ namespace fhg
 
         public slots:
           void place_association_set
-            ( const QObject*
-            , const data::handle::port&
+            ( const data::handle::port&
             , const boost::optional<std::string>& place
             );
 

@@ -191,7 +191,7 @@ namespace fhg
         }
 
         void transition_item::transition_deleted
-          (const QObject*, const data::handle::transition& changed)
+          (const data::handle::transition& changed)
         {
           if (changed == handle())
           {
@@ -201,10 +201,7 @@ namespace fhg
         }
 
         void transition_item::name_changed
-          ( const QObject*
-          , const data::handle::transition& changed_handle
-          , const QString&
-          )
+          (const data::handle::transition& changed_handle, const QString&)
         {
           if (changed_handle == handle())
           {
@@ -214,8 +211,7 @@ namespace fhg
         }
 
         void transition_item::property_changed
-          ( const QObject*
-          , const data::handle::transition& changed_handle
+          ( const data::handle::transition& changed_handle
           , const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& value
           )

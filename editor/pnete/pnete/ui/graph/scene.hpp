@@ -63,19 +63,16 @@ namespace fhg
         public slots:
           void auto_layout();
 
-          void connection_added ( const QObject*
-                                , const data::handle::connect&
+          void connection_added ( const data::handle::connect&
                                 , const data::handle::place&
                                 , const data::handle::port&
                                 );
-          void place_map_added (const QObject*, const data::handle::place_map&);
-          void transition_added
-            (const QObject*, const data::handle::transition&);
-          void place_added (const QObject*, const data::handle::place&);
-          void port_added (const QObject*, const data::handle::port&);
+          void place_map_added (const data::handle::place_map&);
+          void transition_added (const data::handle::transition&);
+          void place_added (const data::handle::place&);
+          void port_added (const data::handle::port&);
           void place_association_set
-            ( const QObject*
-            , const data::handle::port&
+            ( const data::handle::port&
             , const boost::optional<std::string>& place
             );
 

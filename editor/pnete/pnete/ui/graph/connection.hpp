@@ -43,10 +43,9 @@ namespace fhg
           virtual int type() const { return Type; }
 
         public slots:
-          void connection_removed (const QObject*, const data::handle::connect&);
+          void connection_removed (const data::handle::connect&);
 
-          void connection_direction_changed
-            (const QObject*, const data::handle::connect&);
+          void connection_direction_changed (const data::handle::connect&);
 
         private:
           data::handle::connect _handle;

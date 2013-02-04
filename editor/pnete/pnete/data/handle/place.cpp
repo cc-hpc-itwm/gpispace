@@ -24,19 +24,19 @@ namespace fhg
           : place_meta_base (id, doc)
         { }
 
-        void place::remove (const QObject* sender) const
+        void place::remove() const
         {
-          change_manager().delete_place (sender, *this);
+          change_manager().delete_place (*this);
         }
 
-        void place::set_name (const QObject* sender, const QString& name) const
+        void place::set_name (const QString& name) const
         {
-          change_manager().set_name (sender, *this, name);
+          change_manager().set_name (*this, name);
         }
 
-        void place::set_type (const QObject* sender, const QString& type) const
+        void place::set_type (const QString& type) const
         {
-          change_manager().set_type (sender, *this, type);
+          change_manager().set_type (*this, type);
         }
 
         bool place::can_rename_to (const QString& name) const
@@ -47,27 +47,23 @@ namespace fhg
         }
 
         void place::set_property
-          ( const QObject* sender
-          , const ::we::type::property::key_type& key
+          ( const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& val
           ) const
         {
-          change_manager().set_property (sender, *this, key, val);
+          change_manager().set_property (*this, key, val);
         }
 
-        void place::move ( const QObject* sender
-                         , const QPointF& position
+        void place::move ( const QPointF& position
                          , const bool outer
                          ) const
         {
-          change_manager().move_item (sender, *this, position, outer);
+          change_manager().move_item (*this, position, outer);
         }
 
-        void place::no_undo_move ( const QObject* sender
-                                 , const QPointF& position
-                                 ) const
+        void place::no_undo_move (const QPointF& position) const
         {
-          change_manager().no_undo_move_item (sender, *this, position);
+          change_manager().no_undo_move_item (*this, position);
         }
 
         bool place::is_implicit() const
@@ -87,9 +83,9 @@ namespace fhg
           }
         }
 
-        void place::make_explicit (const QObject* origin) const
+        void place::make_explicit() const
         {
-          change_manager().make_explicit (origin, *this);
+          change_manager().make_explicit (*this);
         }
 
         bool place::is_virtual() const
@@ -97,13 +93,13 @@ namespace fhg
           return get().is_virtual();
         }
 
-        void place::make_virtual (const QObject* origin) const
+        void place::make_virtual() const
         {
-          change_manager().make_virtual (origin, *this);
+          change_manager().make_virtual (*this);
         }
-        void place::make_real (const QObject* origin) const
+        void place::make_real() const
         {
-          change_manager().make_real (origin, *this);
+          change_manager().make_real (*this);
         }
 
         bool place::parent_is (const net& net) const

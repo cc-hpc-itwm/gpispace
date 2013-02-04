@@ -34,15 +34,14 @@ namespace fhg
           bool is_out() const;
           bool is_read() const;
 
-          void is_read (const QObject* origin, const bool& s) const;
+          void is_read (const bool& s) const;
 
           port resolved_port() const;
           place resolved_place() const;
 
-          void remove (const QObject* sender) const;
+          void remove() const;
 
-          virtual void set_property ( const QObject* sender
-                                    , const ::we::type::property::key_type&
+          virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
 

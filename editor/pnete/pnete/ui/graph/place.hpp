@@ -53,20 +53,18 @@ namespace fhg
         public slots:
           void refresh_content();
 
-          void place_deleted (const QObject*, const data::handle::place&);
+          void place_deleted (const data::handle::place&);
 
           void type_or_name_changed
-            (const QObject*, const data::handle::place&, const QString&);
+            (const data::handle::place&, const QString&);
 
           void property_changed
-            ( const QObject*
-            , const data::handle::place&
+            ( const data::handle::place&
             , const we::type::property::key_type&
             , const we::type::property::value_type&
             );
 
-          void place_is_virtual_changed
-            (const QObject*, const data::handle::place&, bool);
+          void place_is_virtual_changed (const data::handle::place&, bool);
 
           void slot_association_added (association* c);
           void slot_association_removed (association* c);

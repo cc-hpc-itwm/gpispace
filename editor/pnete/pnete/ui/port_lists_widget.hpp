@@ -40,10 +40,9 @@ namespace fhg
           QVariant headerData (int, Qt::Orientation, int = Qt::DisplayRole) const;
 
         public slots:
-          void port_added (const QObject*, const data::handle::port&);
-          void type_or_name_changed
-            (const QObject*, const data::handle::port&, const QString&);
-          void port_deleted (const QObject*, const data::handle::port&);
+          void port_added (const data::handle::port&);
+          void type_or_name_changed (const data::handle::port&, const QString&);
+          void port_deleted (const data::handle::port&);
 
         private:
           data::handle::function _function;

@@ -30,10 +30,9 @@ namespace fhg
         public:
           place_map (const place_map_meta_base::id_type&, internal_type*);
 
-          void remove (const QObject* sender) const;
+          void remove() const;
 
-          virtual void set_property ( const QObject* sender
-                                    , const ::we::type::property::key_type&
+          virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
                                     ) const;
 

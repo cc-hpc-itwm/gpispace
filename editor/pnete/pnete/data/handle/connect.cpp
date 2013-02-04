@@ -35,9 +35,9 @@ namespace fhg
           return petri_net::edge::is_pt_read (get().direction());
         }
 
-        void connect::is_read (const QObject* origin, const bool& s) const
+        void connect::is_read (const bool& s) const
         {
-          change_manager().connection_is_read (origin, *this, s);
+          change_manager().connection_is_read (*this, s);
         }
 
         port connect::resolved_port() const
@@ -49,18 +49,17 @@ namespace fhg
           return place (*get().resolved_place(), document());
         }
 
-        void connect::remove (const QObject* sender) const
+        void connect::remove() const
         {
-          change_manager().remove_connection (sender, *this);
+          change_manager().remove_connection (*this);
         }
 
         void connect::set_property
-          ( const QObject* sender
-          , const ::we::type::property::key_type& key
+          ( const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& val
           ) const
         {
-          change_manager().set_property (sender, *this, key, val);
+          change_manager().set_property (*this, key, val);
         }
       }
     }
