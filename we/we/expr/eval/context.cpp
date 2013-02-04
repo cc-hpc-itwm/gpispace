@@ -60,12 +60,28 @@ namespace expr
       }
       catch (const std::runtime_error&)
       {
-        const boost::optional<const value::type*> ptr_value
-          (_ref_container.value (key_vec));
-
-        if (ptr_value)
+        if (key_vec.size() > 0)
         {
-          return **ptr_value;
+          key_vec_t::const_iterator pos (key_vec.begin());
+          const std::string& key (*pos); ++pos;
+
+          const boost::optional<const value::type*> ptr_value
+            (_ref_container.value (key));
+
+          if (ptr_value)
+          {
+            if (pos == key_vec.end())
+            {
+              return **ptr_value;
+            }
+            else
+            {
+              return value::container::detail::find ( pos
+                                                    , key_vec.end()
+                                                    , **ptr_value
+                                                    );
+            }
+          }
         }
 
         throw;
