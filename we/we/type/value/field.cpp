@@ -5,6 +5,8 @@
 #include <we/type/literal.hpp>
 #include <we/type/literal/show.hpp>
 
+#include <boost/format.hpp>
+
 #include <stdexcept>
 
 namespace value
@@ -28,9 +30,12 @@ namespace value
 
       type& operator() (literal::type& l) const
       {
-        throw std::runtime_error ( "cannot get field " + name
-                                 + " from the literal " + literal::show (l)
-                                 );
+        throw std::runtime_error
+          ( ( boost::format ("cannot get field %1% from the literal %2%")
+            % name
+            % l
+            ).str()
+          );
       }
     };
   }

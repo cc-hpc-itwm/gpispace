@@ -21,7 +21,7 @@ namespace value
 
       std::ostream& operator() (const literal::type& v) const
       {
-        return s << literal::show (v);
+        return s << v;
       }
 
       std::ostream& operator() (const structured_t& map) const

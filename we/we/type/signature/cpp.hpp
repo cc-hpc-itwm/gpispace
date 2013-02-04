@@ -513,10 +513,9 @@ namespace signature
 
           if (literal::cpp::known (t))
             {
-              this->s << cpp_util::access::make ("","literal","show")
-                << "(" << cpp_util::access::make ("", "literal", "type")
+              this->s << cpp_util::access::make ("", "literal", "type")
                 << "(x" << fhg::util::show (field_global) << ")"
-                << ") << std::endl"
+                << std::endl
                 ;
             }
           else

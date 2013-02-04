@@ -12,15 +12,6 @@ namespace literal
 {
   namespace
   {
-    namespace detail
-    {
-      template<typename T>
-      std::string show (const T& x)
-      {
-        std::ostringstream s; s << x; return s.str();
-      }
-    }
-
     class visitor_show : public boost::static_visitor<std::ostream&>
     {
     private:
@@ -31,6 +22,11 @@ namespace literal
         : _os (os)
       {}
 
+      std::ostream& operator() (const we::type::literal::control& c) const
+      {
+        return _os << c;
+      }
+
       std::ostream& operator() (const bool& x) const
       {
         return _os << (x ? "true" : "false");
@@ -38,17 +34,7 @@ namespace literal
 
       std::ostream& operator() (const long& x) const
       {
-        return _os << detail::show (x) << "L";
-      }
-
-      std::ostream& operator() (const char& x) const
-      {
-        return _os << "'" << detail::show (x) << "'";
-      }
-
-      std::ostream& operator() (const std::string& x) const
-      {
-        return _os << "\"" << x << "\"";
+        return _os << x << "L";
       }
 
       std::ostream& operator() (const double& d) const
@@ -56,53 +42,39 @@ namespace literal
         return _os << std::showpoint << d;
       }
 
+      std::ostream& operator() (const char& x) const
+      {
+        return _os << "'" << x << "'";
+      }
+
+      std::ostream& operator() (const std::string& x) const
+      {
+        return _os << "\"" << x << "\"";
+      }
+
+      std::ostream& operator() (const bitsetofint::type& bs) const
+      {
+        return _os << bs;
+      }
+
       std::ostream& operator() (const literal::stack_type& stack) const
       {
-        _os << "@";
-
-        literal::stack_type c (stack);
-
-        while (!c.empty())
-          {
-            _os << " " << c.back(); c.pop_back();
-          }
-
-        return _os << "@";
+        return _os << stack;
       }
 
       std::ostream& operator() (const literal::map_type& map) const
       {
-        _os << "{|";
-
-        for ( literal::map_type::const_iterator pos (map.begin())
-            ; pos != map.end()
-            ; ++pos
-            )
-          {
-            _os << (pos != map.begin() ? ", " : "")
-                << pos->first << " -> " << pos->second
-              ;
-          }
-
-        return _os << "|}";
+        return _os << map;
       }
 
       std::ostream& operator() (const literal::set_type& set) const
       {
-        _os << "{:";
-
-        BOOST_FOREACH (const long& v, set)
-          {
-            _os << " " << v;
-          }
-
-        return _os << ":}";
+        return _os << set;
       }
 
-      template<typename T>
-      std::ostream& operator() (const T& x) const
+      std::ostream& operator() (const bytearray::type& ba) const
       {
-        return _os << detail::show (x);
+        return _os << ba;
       }
     };
   }
@@ -111,11 +83,50 @@ namespace literal
   {
     return boost::apply_visitor (visitor_show (os), v);
   }
+}
 
-  std::string show (const type& v)
+namespace std
+{
+  std::ostream& operator<< (std::ostream& os, const literal::stack_type& s)
   {
-    std::ostringstream oss;
-    oss << v;
-    return oss.str();
+    os << "@";
+
+    literal::stack_type c (s);
+
+    while (!c.empty())
+    {
+      os << " " << c.back(); c.pop_back();
+    }
+
+    return os << "@";
+  }
+
+  std::ostream& operator<< (std::ostream& os, const literal::map_type& m)
+  {
+    os << "{|";
+
+    for ( literal::map_type::const_iterator pos (m.begin())
+        ; pos != m.end()
+        ; ++pos
+        )
+    {
+      os << (pos != m.begin() ? ", " : "")
+          << pos->first << " -> " << pos->second
+        ;
+    }
+
+    return os << "|}";
+  }
+
+  std::ostream& operator<< (std::ostream& os, const literal::set_type& s)
+  {
+    os << "{:";
+
+    BOOST_FOREACH (const long& v, s)
+    {
+      os << " " << v;
+    }
+
+    return os << ":}";
   }
 }
