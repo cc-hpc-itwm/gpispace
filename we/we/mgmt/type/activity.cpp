@@ -163,10 +163,10 @@ namespace we
               {
                 try
                   {
-                    token::put ( parent
-                               , _child.transition().inner_to_outer (top.second)
-                               , top.first
-                               );
+                    parent.put_value
+                      ( _child.transition().inner_to_outer (top.second)
+                      , top.first.value
+                      );
                   }
                 catch (const we::type::exception::not_connected<petri_net::port_id_type>&)
                   {
@@ -222,10 +222,9 @@ namespace we
 
                 if (_transition.get_port (port_id).has_associated_place())
                   {
-                    token::put
-                      ( net
-                      , _transition.get_port (port_id).associated_place()
-                      , inp.first
+                    net.put_value
+                      ( _transition.get_port (port_id).associated_place()
+                      , inp.first.value
                       );
                   }
               }

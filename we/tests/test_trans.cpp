@@ -97,7 +97,7 @@ int main (int, char **)
   net.add_connection (connection_t (PT_READ, tid, pid_vid));
   net.add_connection (connection_t (TP, tid, pid_pair));
 
-  token::put (net, pid_vid, literal::type(0L));
+  net.put_value (pid_vid, literal::type(0L));
 
   {
     value::structured_t m;
@@ -105,7 +105,7 @@ int main (int, char **)
     m["bid"] = 0L;
     m["seen"] = bitsetofint::type(0);
 
-    token::put (net, pid_store, m);
+    net.put_value (pid_store, m);
   }
   // ************************************ //
 

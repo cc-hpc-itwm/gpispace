@@ -918,14 +918,14 @@ namespace xml
 
           BOOST_FOREACH (const place_type::token_type& token, place.tokens)
           {
-            token::put ( we_net
-                       , pid
-                       , boost::apply_visitor
-                         ( construct_value (place.name(), net.path(), "", state)
-                         , place.signature_or_throw().desc()
-                         , token
-                         )
-                       );
+            we_net.put_value
+              ( pid
+              , boost::apply_visitor
+                ( construct_value (place.name(), net.path(), "", state)
+                , place.signature_or_throw().desc()
+                , token
+                )
+              );
           }
 
           if (  (we_net.in_to_place (pid).size() == 0)
