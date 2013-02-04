@@ -4,6 +4,8 @@
 
 #include <pnete/data/change_manager.hpp>
 
+#include <xml/parse/type/expression.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -22,6 +24,10 @@ namespace fhg
           (const QObject* sender, const QString& content)
         {
           change_manager().set_expression (sender, *this, content);
+        }
+        QString expression::content() const
+        {
+          return QString::fromStdString (get().expression ("\n"));
         }
       }
     }
