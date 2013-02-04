@@ -108,7 +108,7 @@ namespace fhg
 
         WSIG (transition, place_map::open, ::xml::parse::id::ref::place_map, id)
         {
-         _scene->create_place_map (data::handle::place_map (id, _root));
+          _scene->create_place_map (data::handle::place_map (id, _root));
         }
 
         WSIG (transition, port::open, ::xml::parse::id::ref::port, id)
