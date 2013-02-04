@@ -104,3 +104,25 @@ BOOST_AUTO_TEST_CASE (basic)
     /* expected */
   }
 }
+
+BOOST_AUTO_TEST_CASE (reference)
+{
+  typedef expr::eval::context context_t;
+  typedef context_t::key_vec_t key_vec_t;
+
+  context_t c;
+
+  key_vec_t key_a;
+  key_a.push_back ("a");
+
+  const std::string key_b ("b");
+
+  const value::type value_a (0.0);
+  const value::type value_b ("a_string");
+
+  c.bind_ref (key_a, value_a);
+  c.bind_ref (key_b, value_b);
+
+  BOOST_REQUIRE (value::eq (c.value (key_a), value_a));
+  BOOST_REQUIRE (value::eq (c.value (key_b), value_b));
+}

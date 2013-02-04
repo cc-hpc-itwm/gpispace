@@ -22,14 +22,54 @@ namespace expr
       value::container::bind (container, key, value);
     }
 
+    void context::bind_ref (const key_vec_t& key_vec, const value::type& value)
+    {
+      _ref_container.bind (key_vec, &value);
+    }
+
+    void context::bind_ref (const std::string& key, const value::type& value)
+    {
+      _ref_container.bind (key, &value);
+    }
+
     const value::type& context::value (const std::string& key) const
     {
-      return value::container::value (container, key);
+      try
+      {
+        return value::container::value (container, key);
+      }
+      catch (const std::runtime_error&)
+      {
+        const boost::optional<const value::type*> ptr_value
+          (_ref_container.value (key));
+
+        if (ptr_value)
+        {
+          return **ptr_value;
+        }
+
+        throw;
+      }
     }
 
     const value::type& context::value (const key_vec_t& key_vec) const
     {
-      return value::container::value (container, key_vec);
+      try
+      {
+        return value::container::value (container, key_vec);
+      }
+      catch (const std::runtime_error&)
+      {
+        const boost::optional<const value::type*> ptr_value
+          (_ref_container.value (key_vec));
+
+        if (ptr_value)
+        {
+          return **ptr_value;
+        }
+
+        throw;
+      }
     }
 
     value::type context::clear()
