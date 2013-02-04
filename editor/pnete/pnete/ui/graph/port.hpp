@@ -73,10 +73,10 @@ namespace fhg
             (const QObject*, const data::handle::port&, const QString&);
 
           void property_changed
-            ( const QObject* origin
-            , const data::handle::port& changed_handle
-            , const we::type::property::key_type& key
-            , const we::type::property::value_type& value
+            ( const QObject*
+            , const data::handle::port&
+            , const we::type::property::key_type&
+            , const we::type::property::value_type&
             );
 
         private:

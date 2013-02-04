@@ -421,7 +421,7 @@ namespace fhg
         }
 
         void port_item::type_or_name_changed
-          ( const QObject* origin
+          ( const QObject*
           , const data::handle::port& changed_handle
           , const QString&
           )
@@ -434,13 +434,13 @@ namespace fhg
         }
 
         void port_item::property_changed
-          ( const QObject* origin
+          ( const QObject*
           , const data::handle::port& changed_handle
           , const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& value
           )
         {
-          if (origin != this && changed_handle == handle())
+          if (changed_handle == handle())
           {
             const std::string required_position_variable
               ( parentItem() == NULL

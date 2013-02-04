@@ -201,7 +201,7 @@ namespace fhg
         }
 
         void transition_item::name_changed
-          ( const QObject* origin
+          ( const QObject*
           , const data::handle::transition& changed_handle
           , const QString&
           )
@@ -214,13 +214,13 @@ namespace fhg
         }
 
         void transition_item::property_changed
-          ( const QObject* origin
+          ( const QObject*
           , const data::handle::transition& changed_handle
           , const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& value
           )
         {
-          if (origin != this && changed_handle == handle())
+          if (changed_handle == handle())
           {
             handle_property_change (key, value);
           }

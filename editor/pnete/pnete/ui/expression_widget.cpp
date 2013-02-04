@@ -99,27 +99,27 @@ namespace fhg
       }
 
       void expression_widget::slot_set_function_name
-        ( const QObject* origin
+        ( const QObject*
         , const data::handle::function& fun
         , const QString& name
         )
       {
-        if (origin != this && is_my_function (fun))
-          {
-            set_name (name);
-          }
+        if (is_my_function (fun))
+        {
+          set_name (name);
+        }
       }
 
       void expression_widget::slot_set_expression
-        ( const QObject* origin
+        ( const QObject*
         , const data::handle::expression& expression
         , const QString& text
         )
       {
-        if (origin != this && is_my_expression (expression))
-          {
-            set_expression (text);
-          }
+        if (is_my_expression (expression))
+        {
+          set_expression (text);
+        }
       }
 
       void expression_widget::slot_set_expression_parse_result
@@ -129,9 +129,9 @@ namespace fhg
         )
       {
         if (is_my_expression (expression))
-          {
-            set_expression_parse_result (text);
-          }
+        {
+          set_expression_parse_result (text);
+        }
       }
 
       void

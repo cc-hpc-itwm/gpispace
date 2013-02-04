@@ -1038,7 +1038,7 @@ namespace fhg
 
         //! \todo Don't pass from and to. Pass net.
         void scene_type::connection_added
-          ( const QObject* origin
+          ( const QObject*
           , const data::handle::connect& connection
           , const data::handle::place& place
           , const data::handle::port& port
@@ -1051,7 +1051,7 @@ namespace fhg
         }
 
         void scene_type::place_map_added
-          (const QObject* origin, const data::handle::place_map& place_map)
+          (const QObject*, const data::handle::place_map& place_map)
         {
           if (place_map.resolved_real_place().parent_is (net()))
           {
@@ -1060,7 +1060,7 @@ namespace fhg
         }
 
         void scene_type::transition_added
-          (const QObject* origin, const data::handle::transition& transition)
+          (const QObject*, const data::handle::transition& transition)
         {
           if (transition.parent_is (net()))
           {
@@ -1069,7 +1069,7 @@ namespace fhg
         }
 
         void scene_type::place_added
-          (const QObject* origin, const data::handle::place& place)
+          (const QObject*, const data::handle::place& place)
         {
           if (place.parent_is (net()))
           {
@@ -1078,7 +1078,7 @@ namespace fhg
         }
 
         void scene_type::port_added
-          (const QObject* origin, const data::handle::port& port)
+          (const QObject*, const data::handle::port& port)
         {
           if (port.parent_is (function()))
           {
@@ -1087,7 +1087,7 @@ namespace fhg
         }
 
         void scene_type::place_association_set
-          ( const QObject* origin
+          ( const QObject*
           , const data::handle::port& port
           , const boost::optional<std::string>& place_name
           )

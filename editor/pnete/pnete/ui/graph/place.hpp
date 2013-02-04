@@ -59,10 +59,10 @@ namespace fhg
             (const QObject*, const data::handle::place&, const QString&);
 
           void property_changed
-            ( const QObject* origin
-            , const data::handle::place& changed_handle
-            , const we::type::property::key_type& key
-            , const we::type::property::value_type& value
+            ( const QObject*
+            , const data::handle::place&
+            , const we::type::property::key_type&
+            , const we::type::property::value_type&
             );
 
           void place_is_virtual_changed

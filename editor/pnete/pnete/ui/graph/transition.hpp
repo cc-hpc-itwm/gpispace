@@ -55,10 +55,10 @@ namespace fhg
             (const QObject*, const data::handle::transition&);
 
           void property_changed
-            ( const QObject* origin
-            , const data::handle::transition& changed_handle
-            , const we::type::property::key_type& key
-            , const we::type::property::value_type& value
+            ( const QObject*
+            , const data::handle::transition&
+            , const we::type::property::key_type&
+            , const we::type::property::value_type&
             );
 
           void name_changed

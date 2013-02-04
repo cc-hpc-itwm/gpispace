@@ -186,7 +186,7 @@ namespace fhg
           }
         }
 
-        void place_item::place_deleted ( const QObject* origin
+        void place_item::place_deleted ( const QObject*
                                        , const data::handle::place& changed
                                        )
         {
@@ -198,7 +198,7 @@ namespace fhg
         }
 
         void place_item::type_or_name_changed
-          ( const QObject* origin
+          ( const QObject*
           , const data::handle::place& changed_handle
           , const QString&
           )
@@ -211,13 +211,13 @@ namespace fhg
         }
 
         void place_item::property_changed
-          ( const QObject* origin
+          ( const QObject*
           , const data::handle::place& changed_handle
           , const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& value
           )
         {
-          if (origin != this && changed_handle == handle())
+          if (changed_handle == handle())
           {
             handle_property_change (key, value);
           }
