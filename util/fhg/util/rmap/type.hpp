@@ -29,6 +29,15 @@ namespace fhg
       public:
         FHG_UTIL_RMAP_TRAITS();
 
+        type()
+          : _variant()
+        {}
+
+        template<typename T>
+        type (const T& x)
+          : _variant (x)
+        {}
+
         const_ref_mapped_type bind ( const keys_type& keys
                                    , const_ref_mapped_type mapped
                                    )
