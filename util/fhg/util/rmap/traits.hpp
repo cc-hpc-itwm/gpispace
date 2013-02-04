@@ -29,11 +29,12 @@ namespace fhg
         typedef typename boost::add_reference<const Mapped>::type
                                                       const_ref_mapped_type;
         typedef typename boost::add_reference<Mapped>::type ref_mapped_type;
-        typedef structured::type<Key, Mapped> structured_type;
+        typedef typename structured::type<Key, Mapped> structured_type;
         typedef boost::variant< Mapped
                               , boost::recursive_wrapper<structured_type>
                               > variant_type;
         typedef std::map<key_type, variant_type> map_type;
+        typedef std::pair<key_type, variant_type> kv_type;
         typedef boost::optional<const_ref_mapped_type> query_result_type;
         typedef type<Key, Mapped> rmap_type;
       };
@@ -43,6 +44,8 @@ namespace fhg
                                                                         \
       typedef typename traits_type::key_type              key_type;     \
       typedef typename traits_type::mapped_type           mapped_type;  \
+      typedef typename traits_type::kv_type               kv_type;      \
+      typedef typename traits_type::structured_type       structured_type; \
       typedef typename traits_type::keys_type             keys_type;    \
       typedef typename traits_type::const_ref_mapped_type const_ref_mapped_type; \
       typedef typename traits_type::ref_mapped_type       ref_mapped_type; \

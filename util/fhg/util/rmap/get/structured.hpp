@@ -24,8 +24,6 @@ namespace fhg
         public:
           FHG_UTIL_RMAP_TRAITS();
 
-          typedef structured::type<Key, Mapped> structured_type;
-
           boost::optional<const structured_type&>
           operator() (const structured_type& s) const
           {

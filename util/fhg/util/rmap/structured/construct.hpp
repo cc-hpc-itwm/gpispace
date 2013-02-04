@@ -23,8 +23,6 @@ namespace fhg
           public:
             FHG_UTIL_RMAP_TRAITS();
 
-            typedef type<Key, Mapped> structured_type;
-
             construct (variant_type& variant)
               : _variant (variant)
             {}

@@ -4,6 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/util/rmap.hpp>
+#include <fhg/util/rmap/write.hpp>
 
 #include <boost/unordered_map.hpp>
 
