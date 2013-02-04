@@ -113,14 +113,7 @@ namespace fhg
 
         WSIG (transition, port::open, ::xml::parse::id::ref::port, id)
         {
-          const ::xml::parse::type::port_type& port (id.get());
-
-          ui::graph::port_item* item
-            ( new ui::graph::port_item
-              (data::handle::port (id, _root), _transition)
-            );
-
-          initialize_and_set_position (item, id, true);
+          display::port (data::handle::port (id, _root), _transition);
         }
 
         class port_toplevel
@@ -242,6 +235,13 @@ namespace fhg
         {
           weaver::port_toplevel wptl (scene, port.document());
           from::port (&wptl, port.id());
+        }
+
+        void port (const data::handle::port& port, ui::graph::transition_item* i)
+        {
+          ui::graph::port_item* item (new ui::graph::port_item (port, i));
+
+          initialize_and_set_position (item, port, true);
         }
       }
     }
