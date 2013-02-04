@@ -105,9 +105,9 @@ namespace we
 
       BOOST_FOREACH (const pits_type& pits, _m)
       {
-        context.bind ( transition.name_of_place (pits.first)
-                     , pits.second.pos()->value
-                     );
+        context.bind_ref ( transition.name_of_place (pits.first)
+                         , pits.second.pos()->value
+                         );
       }
 
       return transition.condition().parser().eval_all_bool (context);
