@@ -1093,22 +1093,14 @@ namespace fhg
           )
         {
           if ( port.parent_is (function()) && !port.is_tunnel()
-             && place_name && port.get().resolved_place()
+             && place_name && port.connected_place().parent_is (net())
              )
           {
-            const data::handle::place place
-              (*port.get().resolved_place(), port.document());
-
-            if (!place.parent_is (net()))
-            {
-              return;
-            }
-
             delete item_with_handle<port_place_association> (port);
 
             addItem ( new port_place_association
                       ( item_with_handle<top_level_port_item> (port)
-                      , item_with_handle<place_item> (place)
+                      , item_with_handle<place_item> (port.connected_place())
                       , port
                       )
                     );
