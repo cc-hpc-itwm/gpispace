@@ -149,7 +149,6 @@ install (FILES
   type/module_call.hpp
   type/requirement.hpp
   type/signature.hpp
-  type/token.hpp
   type/transition.hpp
   type/value.hpp
   DESTINATION include/we/type
