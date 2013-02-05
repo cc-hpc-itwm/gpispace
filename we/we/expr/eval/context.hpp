@@ -48,8 +48,6 @@ namespace expr
       const value::type& value (const std::string&) const;
       const value::type& value (const std::list<std::string>&) const;
 
-      value::type clear();
-
       const_iterator begin() const;
       const_iterator end() const;
       std::size_t size() const;

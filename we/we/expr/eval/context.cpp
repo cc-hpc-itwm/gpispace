@@ -121,13 +121,6 @@ namespace expr
       throw value::exception::missing_binding (key);
     }
 
-    value::type context::clear()
-    {
-      _container.clear();
-      _ref_container.clear();
-      return we::type::literal::control();
-    }
-
     context::const_iterator context::begin() const
     {
       return _container.begin();
