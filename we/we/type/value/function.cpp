@@ -4,7 +4,6 @@
 #define _TYPE_VALUE_FUNCTION_HPP
 
 #include <we/type/value.hpp>
-#include <we/type/value/eq.hpp>
 #include <we/type/literal.hpp>
 #include <we/type/literal/function.hpp>
 
@@ -57,7 +56,7 @@ namespace value
         {
           switch (_token)
           {
-          case expr::token::eq: return value::eq (x, y);
+          case expr::token::eq: return x == y;
           default:
             throw expr::exception::eval::type_error
               (boost::format ("%1% for a structured value") % _token);
