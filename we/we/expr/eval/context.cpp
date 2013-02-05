@@ -2,11 +2,13 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we/type/value/container.hpp>
 #include <we/type/value/find.hpp>
 #include <we/type/value/put.hpp>
+#include <we/type/value/show.hpp>
 #include <we/type/value/mk_structured.hpp>
 #include <we/type/value/missing_binding.hpp>
+
+#include <boost/foreach.hpp>
 
 #include <iostream>
 
@@ -122,7 +124,19 @@ namespace expr
 
     std::ostream& operator<< (std::ostream& s, const context& cntx)
     {
-      return s << cntx._container;
+      typedef std::pair<std::string, value::type> kv_type;
+      typedef std::pair<std::string, value::type const*> kp_type;
+
+      BOOST_FOREACH (const kv_type& kv, cntx._container)
+      {
+        s << kv.first << " := " << kv.second << std::endl;
+      }
+      BOOST_FOREACH (const kp_type& kp, cntx._ref_container)
+      {
+        s << kp.first << " -> " << kp.second << std::endl;
+      }
+
+      return s;
     }
 
     parse::node::type refnode_value ( const context& context
