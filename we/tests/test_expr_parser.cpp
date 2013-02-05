@@ -79,7 +79,9 @@ int main (int ac, char **)
                  << std::boolalpha << constant_folding << std::noboolalpha
                  << endl;
             break;
-          case '#': context.clear(); cout << "context deleted" << endl; break;
+          case '#':
+            context = context_t(); cout << "context deleted" << endl;
+            break;
           default:
             try
               {
