@@ -15,9 +15,4 @@
 
 #include <iostream>
 
-namespace token
-{
-  typedef value::type type;
-}
-
 #endif
