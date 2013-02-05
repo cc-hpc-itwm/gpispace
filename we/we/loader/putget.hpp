@@ -14,16 +14,6 @@ namespace we
 {
   namespace loader
   {
-    template<typename Path>
-    void put ( output_t& o
-             , const std::string& key
-             , const Path& path
-             , const value::type& value
-             )
-    {
-      o.bind (key, path, value);
-    }
-
     // get with an additional path into the value
     template<typename T, typename Path>
     const T& get ( const input_t& i

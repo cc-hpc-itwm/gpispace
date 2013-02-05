@@ -43,14 +43,6 @@ namespace we
     typedef std::list<std::string> param_names_list_t;
     typedef std::pair<WrapperFunction, param_names_list_t> parameterized_function_t;
 
-    inline void put ( output_t& o
-                    , const std::string& key
-                    , const value::type& val
-                    )
-    {
-      o.bind (key, val);
-    }
-
     // getting something means to get a literal value...
     template <typename T>
     inline typename value::cpp::get<T const &>::result_type
