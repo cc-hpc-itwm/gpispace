@@ -58,7 +58,14 @@ namespace we
     inline typename value::cpp::get<T const &>::result_type
     get (const input_t & i, const std::string & key)
     {
-      return value::get<T>(value::container::value (i, key));
+      const input_t::const_iterator pos (i.find (key));
+
+      if (pos != i.end())
+      {
+        return value::get<T>(pos->second);
+      }
+
+      throw value::container::exception::missing_binding (key);
     }
 
     // ...but not when stated explicitely be a value::type
@@ -66,7 +73,14 @@ namespace we
     inline const value::type &
     get<value::type> (const input_t & i, const std::string & key)
     {
-      return value::container::value (i, key);
+      const input_t::const_iterator pos (i.find (key));
+
+      if (pos != i.end())
+      {
+        return pos->second;
+      }
+
+      throw value::container::exception::missing_binding (key);
     }
   }
 }

@@ -34,7 +34,14 @@ namespace we
                  , const Path& path_in_value
                  )
     {
-      return value::get<T>(path_in_value, value::container::value (i, key));
+      const input_t::const_iterator pos (i.find (key));
+
+      if (pos != i.end())
+      {
+        return value::get<T>(path_in_value, pos->second);
+      }
+
+      throw value::container::exception::missing_binding (key);
     }
 
     // get from an earlier extracted value::type

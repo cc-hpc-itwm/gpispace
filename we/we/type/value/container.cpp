@@ -6,28 +6,6 @@
 
 #include <iostream>
 
-namespace value
-{
-  namespace container
-  {
-    const value::type& value ( const type& container
-                             , const std::string& key
-                             )
-    {
-      const type::const_iterator pos (container.find (key));
-
-      if (pos == container.end())
-      {
-        throw exception::missing_binding (key);
-      }
-      else
-      {
-        return pos->second;
-      }
-    }
-  }
-}
-
 namespace std
 {
   std::ostream& operator<< (std::ostream& s, const value::container::type& t)
