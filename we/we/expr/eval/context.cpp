@@ -44,11 +44,15 @@ namespace expr
 
     const value::type& context::value (const std::string& key) const
     {
-      try
       {
-        return value::container::value (_container, key);
+        const container_type::const_iterator pos (_container.find (key));
+
+        if (pos != _container.end())
+        {
+          return pos->second;
+        }
       }
-      catch (const std::runtime_error&)
+
       {
         ref_container_type::const_iterator pos (_ref_container.find (key));
 
@@ -56,9 +60,9 @@ namespace expr
         {
           return *pos->second;
         }
-
-        throw;
       }
+
+      throw value::container::exception::missing_binding (key);
     }
 
     const value::type& context::value (const std::list<std::string>& key_vec) const
