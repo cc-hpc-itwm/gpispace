@@ -1,8 +1,6 @@
 #include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
 
-#include <we/type/value/container.hpp>
-
 #include "answer.hpp"
 
 static void question (void *, const we::loader::input_t & input, we::loader::output_t & output)

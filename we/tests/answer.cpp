@@ -1,8 +1,6 @@
 #include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
 
-#include <we/type/value/container.hpp>
-
 #include "answer.hpp"
 
 int the_answer;

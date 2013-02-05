@@ -49,7 +49,6 @@ set (we_srcs
   type/value/put.cpp
   type/value/function.cpp
   type/value/get.cpp
-  type/value/container.cpp
   type/value/find.cpp
   expr/eval/refnode.cpp
 )
