@@ -19,17 +19,6 @@ namespace value
   {
     typedef boost::unordered_map<std::string, value::type> type;
     typedef std::list<std::string> key_vec_t;
-
-    namespace exception
-    {
-      class missing_binding : public std::runtime_error
-      {
-      public:
-        explicit missing_binding (const std::string& key)
-          : std::runtime_error ("missing binding for: ${" + key + "}")
-        {};
-      };
-    }
   }
 }
 
