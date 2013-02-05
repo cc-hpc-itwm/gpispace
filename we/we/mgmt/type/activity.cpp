@@ -414,9 +414,10 @@ namespace we
                 ; ++top
                 )
               {
-                context.bind ( _activity.transition().name_of_port (top->second)
-                             , top->first
-                             );
+                context.bind_ref
+                  ( _activity.transition().name_of_port (top->second)
+                  , top->first
+                  );
               }
 
             expr.ast ().eval_all (context);
