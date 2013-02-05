@@ -1,4 +1,10 @@
 
+set (we_dev_srcs
+  type/bitsetofint.cpp
+  type/bytearray.cpp
+  type/literal/control.cpp
+)
+
 set (we_srcs
   expr/eval/context.cpp
   expr/eval/eval.cpp
@@ -23,7 +29,6 @@ set (we_srcs
   mgmt/type/activity.cpp
   mgmt/type/flags.cpp
   type/connection.cpp
-  type/literal/control.cpp
   type/expression.cpp
   type/id.cpp
   type/net.cpp
@@ -31,8 +36,9 @@ set (we_srcs
   type/port.cpp
   type/property.cpp
   util/cross.cpp
-  type/bitsetofint.cpp
-  type/bytearray.cpp
+
+  ${we_dev_srcs}
+
   type/literal/read.cpp
   type/literal/valid_name.cpp
   type/literal/default.cpp
@@ -55,9 +61,24 @@ set (we_srcs
 
 add_library (we ${we_srcs})
 add_library (we-shared SHARED ${we_srcs})
+set_target_properties(we-shared PROPERTIES OUTPUT_NAME we)
+
+add_library (we-dev ${we_dev_srcs})
+add_library (we-dev-shared SHARED ${we_dev_srcs})
+set_target_properties(we-dev-shared PROPERTIES OUTPUT_NAME we-dev)
 
 target_link_libraries (we
   fhg-util
+)
+
+install (TARGETS we-dev
+  ARCHIVE DESTINATION lib
+  COMPONENT runtime
+)
+
+install (TARGETS we-dev-shared
+  LIBRARY DESTINATION lib
+  COMPONENT runtime
 )
 
 add_executable (generate_parser_action_table expr/parse/table.cpp)
