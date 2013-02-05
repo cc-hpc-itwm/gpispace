@@ -27,15 +27,6 @@
 
 namespace token
 {
-  namespace exception
-  {
-    class unknown_field : public std::runtime_error
-    {
-    public:
-      unknown_field (const std::string & what) : std::runtime_error (what) {}
-    };
-  }
-
   typedef expr::eval::context context_t;
 
   class type
