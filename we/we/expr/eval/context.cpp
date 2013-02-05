@@ -2,8 +2,10 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we/type/value/container/bind.hpp>
+#include <we/type/value/container.hpp>
 #include <we/type/value/find.hpp>
+#include <we/type/value/put.hpp>
+#include <we/type/value/mk_structured.hpp>
 
 #include <iostream>
 
@@ -15,7 +17,19 @@ namespace expr
                        , const value::type& value
                        )
     {
-      value::container::bind (_container, key_vec, value);
+      if (key_vec.empty())
+      {
+        throw std::runtime_error ("context::bind []");
+      }
+
+      std::list<std::string>::const_iterator pos (key_vec.begin());
+      const std::string& key (*pos); ++pos;
+
+      value::put ( pos
+                 , key_vec.end()
+                 , value::mk_structured_or_keep (_container[key])
+                 , value
+                 );
     }
 
     void context::bind (const std::string& key, const value::type& value)
