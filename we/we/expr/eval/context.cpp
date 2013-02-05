@@ -69,10 +69,10 @@ namespace expr
             }
             else
             {
-              return value::container::detail::find ( key_pos
-                                                    , key_vec.end()
-                                                    , *pos->second
-                                                    );
+              return value::container::find ( key_pos
+                                            , key_vec.end()
+                                            , *pos->second
+                                            );
             }
           }
         }

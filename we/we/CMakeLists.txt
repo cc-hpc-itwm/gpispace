@@ -49,6 +49,7 @@ set (we_srcs
   type/value/put.cpp
   type/value/function.cpp
   type/value/get.cpp
+  type/value/container/value.cpp
 )
 
 add_library (we ${we_srcs})
@@ -167,7 +168,6 @@ install (FILES
   type/value/container/exception.hpp
   type/value/container/show.hpp
   type/value/container/type.hpp
-  type/value/container/value.hpp
   DESTINATION include/we/type/value/container
   COMPONENT headers
 )
