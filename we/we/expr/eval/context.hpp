@@ -3,9 +3,12 @@
 #ifndef _EXPR_EVAL_CONTEXT_HPP
 #define _EXPR_EVAL_CONTEXT_HPP
 
-#include <we/expr/parse/node.hpp>
+#include <we/type/value.hpp>
 
 #include <boost/unordered_map.hpp>
+
+#include <list>
+#include <string>
 
 #include <iosfwd>
 
@@ -55,11 +58,6 @@ namespace expr
     };
 
     std::ostream& operator<< (std::ostream&, const context&);
-
-    parse::node::type refnode_value ( const context&
-                                    , const std::list<std::string>&
-                                    );
-    parse::node::type refnode_name (const std::list<std::string>&);
   }
 }
 

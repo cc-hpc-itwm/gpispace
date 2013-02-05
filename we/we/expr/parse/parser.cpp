@@ -10,6 +10,7 @@
 #include <we/type/value/function.hpp>
 
 #include <we/expr/eval/context.hpp>
+#include <we/expr/eval/refnode.hpp>
 #include <we/expr/eval/eval.hpp>
 
 #include <fhg/util/show.hpp>
