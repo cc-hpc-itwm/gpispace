@@ -27,14 +27,6 @@ namespace token
       : _value (value)
     {}
 
-    // construct from value, require type from signature
-    type ( const signature::field_name_t& field
-         , const signature::type& signature
-         , const value::type& value
-         )
-      : _value (value::require_type (field, signature, value))
-    {}
-
     const value::type& value() const { return _value; }
 
   private:
