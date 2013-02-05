@@ -68,6 +68,11 @@ endif()
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
 
+add_library (wfhd SHARED wfhd.c)
+install (TARGETS wfhd
+  LIBRARY DESTINATION lib
+  )
+
 #add_custom_target(increment-build-counter ALL
 #  COMMAND echo "${FHG_BUILD_COUNT}" > "${CMAKE_BINARY_DIR}/build.counter"
 #  COMMENT "Incrementing build counter to ${FHG_BUILD_COUNT}"
@@ -80,6 +85,7 @@ install (FILES revision.hpp
                assert_helper.hpp
                assertion_failed.hpp
                error_codes.hpp
+               wfhd.h
   DESTINATION include/fhg
   COMPONENT headers
   )

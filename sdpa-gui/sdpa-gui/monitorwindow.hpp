@@ -1,6 +1,8 @@
 #ifndef MONITORWINDOW_HPP
 #define MONITORWINDOW_HPP
 
+#ifndef Q_MOC_RUN
+
 #include <QMainWindow>
 #include <QtGui>
 
@@ -9,7 +11,6 @@
 #include <fhglog/fhglog.hpp>
 
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
 
 #include "portfolioeval.hpp"
 #include "task.h"
@@ -17,6 +18,8 @@
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/mgmt/type/activity.hpp>
+
+#endif
 
 class QGraphicsView;
 class QGraphicsScene;
