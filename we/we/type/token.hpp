@@ -3,21 +3,13 @@
 #ifndef _WE_TYPE_TOKEN_HPP
 #define _WE_TYPE_TOKEN_HPP
 
-#include <we/expr/eval/context.hpp>
+#include <we/type/literal/control.hpp>
 
-#include <we/type/literal.hpp>
-#include <we/type/place.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/value.hpp>
-#include <we/type/id.hpp>
 
 #include <we/type/value/require_type.hpp>
 #include <we/type/value/show.hpp>
-
-#include <string>
-#include <stdexcept>
-
-#include <boost/variant.hpp>
 
 #include <boost/serialization/nvp.hpp>
 
