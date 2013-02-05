@@ -5,8 +5,6 @@
 
 #include <we/expr/parse/node.hpp>
 
-#include <we/type/value/container.hpp>
-
 #include <boost/unordered_map.hpp>
 
 #include <iosfwd>
