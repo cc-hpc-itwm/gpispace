@@ -40,14 +40,6 @@ namespace token
       : _value (value::require_type (field, signature, value))
     {}
 
-    // construct from context, use information from signature
-    type ( const signature::field_name_t& field
-         , const signature::type& signature
-         , const expr::eval::context& context
-         )
-      : _value (value::require_type (field, signature, context.value (field)))
-    {}
-
     const value::type& value() const { return _value; }
 
   private:

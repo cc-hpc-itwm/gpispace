@@ -430,12 +430,12 @@ namespace we
                   {
                     _activity.add_output
                       ( type::activity_t::output_t::value_type
-                      ( token::type ( port_it->second.name()
-                                    , port_it->second.signature()
-                                    , context
-                                    )
-                      , port_it->first
-                      )
+                        ( token::type ( port_it->second.name()
+                                      , port_it->second.signature()
+                                      , context.value (port_it->second.name())
+                                      )
+                        , port_it->first
+                        )
                       );
                   }
               }
