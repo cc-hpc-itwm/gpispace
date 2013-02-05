@@ -50,7 +50,7 @@ namespace we
                     , const value::type & val
                     )
     {
-      value::container::bind (o, key, val);
+      o[key] = val;
     }
 
     // getting something means to get a literal value...

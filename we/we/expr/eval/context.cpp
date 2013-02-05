@@ -34,7 +34,7 @@ namespace expr
 
     void context::bind (const std::string& key, const value::type& value)
     {
-      value::container::bind (_container, key, value);
+      _container[key] = value;
     }
 
     void context::bind_ref (const std::string& key, const value::type& value)
