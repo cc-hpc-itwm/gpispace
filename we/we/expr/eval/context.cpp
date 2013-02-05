@@ -154,7 +154,7 @@ namespace expr
       }
       BOOST_FOREACH (const kp_type& kp, cntx._ref_container)
       {
-        s << kp.first << " -> " << kp.second << std::endl;
+        s << kp.first << " -> " << *kp.second << std::endl;
       }
 
       return s;
