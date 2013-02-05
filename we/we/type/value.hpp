@@ -48,6 +48,25 @@ namespace value
 
     const map_type& map() const { return _map; }
   };
+
+  inline bool operator== (const structured_t& x, const structured_t& y)
+  {
+    map_type::const_iterator pos_x (x.map().begin());
+    map_type::const_iterator pos_y (y.map().begin());
+    const map_type::const_iterator end_x (x.map().end());
+
+    bool all_eq (x.map().size() == y.map().size());
+
+    while (all_eq && pos_x != end_x)
+    {
+      all_eq = pos_x->first == pos_y->first && pos_x->second == pos_y->second;
+
+      ++pos_x;
+      ++pos_y;
+    }
+
+    return all_eq;
+  }
 }
 
 #endif
