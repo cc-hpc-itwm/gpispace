@@ -43,10 +43,6 @@ namespace token
     {
       ar & BOOST_SERIALIZATION_NVP (_value);
     }
-
-    friend std::ostream& operator<< (std::ostream&, const type&);
-    friend bool operator== (const type&, const type&);
-    friend bool operator!= (const type&, const type&);
   };
 
   inline bool operator== (const type& a, const type& b)
