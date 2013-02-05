@@ -26,16 +26,14 @@ namespace module
     typedef we::type::transition_t::const_iterator port_iterator;
 
     context_t context;
-    for ( input_t::const_iterator top (act.input().begin())
-        ; top != act.input().end()
-        ; ++top
-        )
-    {
-      const value::type token = top->first;
-      const petri_net::port_id_type port_id = top->second;
 
-      we::loader::put
-        (context, act.transition().name_of_port (port_id), token);
+    typedef std::pair<value::type, petri_net::port_id_type> tp_type;
+
+    BOOST_FOREACH (const tp_type& tp, act.input())
+    {
+      context.bind ( act.transition().name_of_port (tp.second)
+                   , tp.first
+                   );
     }
 
     typedef we::loader::output_t mod_output_t;
