@@ -8,8 +8,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/put.hpp>
 #include <we/type/value/get.hpp>
-
-#include <we/type/value/container/bind.hpp>
+#include <we/type/value/mk_structured.hpp>
 
 namespace we
 {
@@ -19,10 +18,13 @@ namespace we
     void put ( output_t& o
              , const std::string& key
              , const Path& path
-             , const value::type& val
+             , const value::type& value
              )
     {
-      value::container::bind (o, key, path, val);
+      value::put ( path
+                 , value::mk_structured_or_keep (o[key])
+                 , value
+                 );
     }
 
     // get with an additional path into the value
