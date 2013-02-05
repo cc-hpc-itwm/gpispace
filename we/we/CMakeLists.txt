@@ -51,6 +51,8 @@ set (we_srcs
   type/value/get.cpp
   type/value/container/value.cpp
   type/value/container/bind.cpp
+  type/value/container.cpp
+  type/value/find.cpp
 )
 
 add_library (we ${we_srcs})
@@ -159,14 +161,5 @@ install (FILES
   type/signature/cpp.hpp
   type/signature/types.hpp
   DESTINATION include/we/type/signature
-  COMPONENT headers
-)
-
-install (FILES
-  type/value/container/container.hpp
-  type/value/container/exception.hpp
-  type/value/container/show.hpp
-  type/value/container/type.hpp
-  DESTINATION include/we/type/value/container
   COMPONENT headers
 )

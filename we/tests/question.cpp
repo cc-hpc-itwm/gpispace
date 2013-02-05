@@ -1,13 +1,13 @@
 #include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
 
-#include <we/type/value/container/show.hpp>
+#include <we/type/value/container.hpp>
 
 #include "answer.hpp"
 
 static void question (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  std::cerr << "input := "; value::container::show (std::cerr, input); std::cerr << std::endl;
+  std::cerr << "input := " << input << std::endl;
   we::loader::put (output, "out", (long)get_answer());
   std::cerr << "answer := " << get_answer() << std::endl;
 }

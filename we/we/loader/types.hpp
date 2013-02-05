@@ -22,7 +22,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/cpp/get.hpp>
 
-#include <we/type/value/container/container.hpp>
+#include <we/type/value/container.hpp>
 
 #include <we/type/literal.hpp>
 

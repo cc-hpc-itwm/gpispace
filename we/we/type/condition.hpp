@@ -9,7 +9,7 @@
 #include <we/type/value.hpp>
 #include <we/type/signature.hpp>
 
-#include <we/type/value/container/exception.hpp>
+#include <we/type/value/container.hpp>
 
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>

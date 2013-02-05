@@ -2,9 +2,10 @@
 
 #include <we/expr/eval/context.hpp>
 
+#include <we/type/value/container.hpp>
 #include <we/type/value/container/bind.hpp>
 #include <we/type/value/container/value.hpp>
-#include <we/type/value/container/show.hpp>
+#include <we/type/value/find.hpp>
 
 #include <iostream>
 
@@ -69,10 +70,7 @@ namespace expr
             }
             else
             {
-              return value::container::find ( key_pos
-                                            , key_vec.end()
-                                            , *pos->second
-                                            );
+              return value::find (key_pos, key_vec.end(), *pos->second);
             }
           }
         }
@@ -104,9 +102,7 @@ namespace expr
 
     std::ostream& operator<< (std::ostream& s, const context& cntx)
     {
-      value::container::show (s, cntx.container);
-
-      return s;
+      return s << cntx.container;
     }
 
     parse::node::type refnode_value ( const context& context

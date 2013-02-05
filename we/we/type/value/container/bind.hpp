@@ -3,7 +3,7 @@
 #ifndef _WE_TYPE_VALUE_CONTAINER_BIND_HPP
 #define _WE_TYPE_VALUE_CONTAINER_BIND_HPP 1
 
-#include <we/type/value/container/type.hpp>
+#include <we/type/value/container.hpp>
 
 namespace value
 {

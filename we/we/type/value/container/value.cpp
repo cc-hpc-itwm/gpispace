@@ -2,31 +2,12 @@
 
 #include <we/type/value/container/value.hpp>
 
-#include <we/type/value/container/exception.hpp>
-
-#include <we/type/value/get.hpp>
+#include <we/type/value/find.hpp>
 
 namespace value
 {
   namespace container
   {
-    const value::type& find ( key_vec_t::const_iterator pos
-                            , const key_vec_t::const_iterator end
-                            , const value::type& store
-                            )
-    {
-      if (pos == end)
-      {
-        return store;
-      }
-      else
-      {
-        const std::string& field (*pos); ++pos;
-
-        return find (pos, end, value::get_field (field, store));
-      }
-    }
-
     const value::type& value ( const type& container
                              , const key_vec_t& key_vec
                              )
@@ -47,7 +28,7 @@ namespace value
       }
       else
       {
-        return find (key_pos, key_vec.end(), pos->second);
+        return value::find (key_pos, key_vec.end(), pos->second);
       }
     }
   }
