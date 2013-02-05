@@ -61,6 +61,32 @@ namespace expr
                  );
     }
 
+    void context::bind_and_discard_ref ( const std::list<std::string>& key_vec
+                                       , const value::type& value
+                                       )
+    {
+      if (key_vec.empty())
+      {
+        throw std::runtime_error ("context::bind []");
+      }
+
+      std::list<std::string>::const_iterator key_pos (key_vec.begin());
+      const std::string& key (*key_pos); ++key_pos;
+
+      value::type& store (value::mk_structured_or_keep (_container[key]));
+
+      const ref_container_type::const_iterator ref_pos
+        (_ref_container.find (key));
+
+      if (ref_pos != _ref_container.end())
+      {
+        store = *ref_pos->second;
+        _ref_container.erase (ref_pos);
+      }
+
+      value::put (key_pos, key_vec.end(), store, value);
+    }
+
     void context::bind_ref (const std::string& key, const value::type& value)
     {
       _ref_container.insert (std::make_pair (key, &value));

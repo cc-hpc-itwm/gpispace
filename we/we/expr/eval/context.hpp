@@ -43,6 +43,10 @@ namespace expr
                 , const value::type&
                 );
 
+      void bind_and_discard_ref ( const std::list<std::string>&
+                                , const value::type&
+                                );
+
       void bind_ref (const std::string&, const value::type&);
 
       const value::type& value (const std::string&) const;
