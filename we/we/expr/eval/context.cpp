@@ -4,7 +4,6 @@
 
 #include <we/type/value/container.hpp>
 #include <we/type/value/container/bind.hpp>
-#include <we/type/value/container/value.hpp>
 #include <we/type/value/find.hpp>
 
 #include <iostream>
@@ -51,7 +50,24 @@ namespace expr
     {
       try
       {
-        return value::container::value (container, key_vec);
+        if (key_vec.empty())
+        {
+          throw std::runtime_error ("value::container::value []");
+        }
+
+        key_vec_t::const_iterator key_pos (key_vec.begin());
+        const std::string& key (*key_pos); ++key_pos;
+
+        const value::container::type::const_iterator pos (container.find (key));
+
+        if (pos == container.end())
+        {
+          throw value::container::exception::missing_binding (key);
+        }
+        else
+        {
+          return value::find (key_pos, key_vec.end(), pos->second);
+        }
       }
       catch (const std::runtime_error&)
       {
