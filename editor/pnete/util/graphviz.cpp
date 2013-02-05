@@ -18,7 +18,7 @@ namespace fhg
   {
     namespace graphviz
     {
-      namespace internal
+      namespace
       {
         class unsafe
         {
@@ -69,9 +69,9 @@ namespace fhg
 
 
       node_type::node_type (Agraph_t* graph, const QString& name)
-        : _node (agnode (graph, internal::unsafe (name)))
+        : _node (agnode (graph, unsafe (name)))
       {
-        internal::set_attribute (_node, "label", "");
+        set_attribute (_node, "label", "");
       }
       Agnode_t* node_type::node () const
       {
@@ -81,29 +81,26 @@ namespace fhg
       {
         //! \todo correct dpi factor
         const qreal factor (1.0 / 50.0);
-        internal::set_attribute ( _node
-                                , "width"
-                                , QString::number (size.width() * factor)
-                                .replace(',', '.')
-                                );
-        internal::set_attribute ( _node
-                                , "height"
-                                , QString::number (size.height() * factor)
-                                .replace(',', '.')
-                                );
+        set_attribute ( _node
+                      , "width"
+                      , QString::number (size.width() * factor)
+                      .replace(',', '.')
+                      );
+        set_attribute ( _node
+                      , "height"
+                      , QString::number (size.height() * factor)
+                      .replace(',', '.')
+                      );
       }
 
       void node_type::fixed_size (const bool& set)
       {
-        internal::set_attribute ( _node
-                                , "fixedsize"
-                                , set ? "true" : "false"
-                                );
+        set_attribute (_node, "fixedsize", set ? "true" : "false");
       }
 
       void node_type::shape (const QString& shape)
       {
-        internal::set_attribute (_node, "shape", shape);
+        set_attribute (_node, "shape", shape);
       }
 
       template<typename T>
@@ -115,7 +112,7 @@ namespace fhg
       QPointF node_type::position() const
       {
         const QStringList position_strings
-          (QString (internal::get_attribute (_node, "pos")).split (","));
+          (QString (get_attribute (_node, "pos")).split (","));
 
         if (position_strings.length() < 2)
           {
@@ -140,7 +137,7 @@ namespace fhg
         QList<QPointF> points;
 
         const QStringList position_strings
-          (QString (internal::get_attribute (_edge, "pos")).split(" "));
+          (QString (get_attribute (_edge, "pos")).split(" "));
 
         foreach (const QString& point_string, position_strings)
           {
@@ -166,7 +163,7 @@ namespace fhg
       }
 
       graph_type::graph_type (context_type& context, const QString& name)
-        : _graph (agopen (internal::unsafe (name), AGDIGRAPH))
+        : _graph (agopen (unsafe (name), AGDIGRAPH))
         , _context (context)
       {}
 
@@ -178,12 +175,12 @@ namespace fhg
 
       void graph_type::rankdir (const QString& dir)
       {
-        internal::set_attribute (_graph, "rankdir", dir);
+        set_attribute (_graph, "rankdir", dir);
       }
 
       void graph_type::splines (const QString& mode)
       {
-        internal::set_attribute (_graph, "splines", mode);
+        set_attribute (_graph, "splines", mode);
       }
 
       node_type graph_type::add_node (const QString& name)
@@ -193,7 +190,7 @@ namespace fhg
 
       node_type graph_type::add_node (const QGraphicsItem* const item)
       {
-        node_type node (_graph, internal::unique_name (item));
+        node_type node (_graph, unique_name (item));
         node.size (item->boundingRect().size());
         node.fixed_size (true);
         node.shape ("rectangle");
@@ -209,8 +206,8 @@ namespace fhg
 
       void graph_type::layout (const QString& engine)
       {
-        gvLayout (_context._context, _graph, internal::unsafe (engine));
-        gvRender (_context._context, _graph, internal::unsafe (engine), NULL);
+        gvLayout (_context._context, _graph, unsafe (engine));
+        gvRender (_context._context, _graph, unsafe (engine), NULL);
       }
     }
   }
