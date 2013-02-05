@@ -8,6 +8,7 @@
 #include <we/type/module_call.hpp>
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
+#include <we/type/value/require_type.hpp>
 
 #include <we/mgmt/type/activity.hpp>
 
@@ -56,9 +57,10 @@ namespace module
 
         act.add_output
           ( output_t::value_type
-            ( token::type ( port.name()
-                          , port.signature()
-                          , ton->second
+            ( token::type ( value::require_type ( port.name()
+                                                , port.signature()
+                                                , ton->second
+                                                )
                           )
             , port_id
             )

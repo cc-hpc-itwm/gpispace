@@ -3,6 +3,7 @@
 #include <we/type/net.hpp>
 
 #include <we/type/transition.hpp>
+#include <we/type/value/require_type.hpp>
 
 #include <we/expr/eval/context.hpp>
 
@@ -430,10 +431,12 @@ namespace we
                   {
                     _activity.add_output
                       ( type::activity_t::output_t::value_type
-                        ( token::type ( port_it->second.name()
-                                      , port_it->second.signature()
-                                      , context.value (port_it->second.name())
-                                      )
+                        ( token::type
+                          ( value::require_type ( port_it->second.name()
+                                                , port_it->second.signature()
+                                                , context.value (port_it->second.name())
+                                                )
+                          )
                         , port_it->first
                         )
                       );

@@ -2,7 +2,7 @@
 
 #include <we/type/net.hpp>
 #include <we/type/condition.hpp>
-
+#include <we/type/value/require_type.hpp>
 #include <we/util/cross.hpp>
 
 #include <boost/foreach.hpp>
@@ -297,7 +297,12 @@ namespace petri_net
   {
     const place::type& place (get_place (pid));
 
-    put_token (pid, token::type (place.name(), place.signature(), value));
+    put_token (pid, token::type (value::require_type ( place.name()
+                                                     , place.signature()
+                                                     , value
+                                                     )
+                                )
+              );
   }
 
   namespace

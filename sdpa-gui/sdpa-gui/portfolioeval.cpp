@@ -22,6 +22,7 @@ double simulation_result_t::gTotalVega 	= 0.0;
 
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/token.hpp>
+#include <we/type/value/require_type.hpp>
 
 #include <boost/optional.hpp>
 
@@ -334,7 +335,7 @@ static token::type make_token( const QString& qstrBackend, portfolio_data_t& job
   param["FixingsProJahr"]=job_data.arr_row_params[row].Fixings();
   param["nThreads"]=nThreads;
 
-  return token::type ( "param", sig, value::type(param) );
+  return token::type (value::require_type ("param", sig, value::type(param)));
 }
 
 std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
