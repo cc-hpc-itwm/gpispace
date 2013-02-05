@@ -22,7 +22,7 @@ namespace we
              , const value::type& val
              )
     {
-      value::container::bind<Path> (o, key, path, val);
+      value::container::bind (o, key, path, val);
     }
 
     // get with an additional path into the value

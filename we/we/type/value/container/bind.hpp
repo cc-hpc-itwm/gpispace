@@ -13,10 +13,9 @@ namespace value
 {
   namespace container
   {
-    template<typename Path>
     inline void bind ( type & container
                      , const std::string & key
-                     , const Path & path
+                     , const std::list<std::string>& path
                      , const value::type & value
                      )
     {
@@ -25,7 +24,17 @@ namespace value
                  , value
                  );
     }
-
+    inline void bind ( type & container
+                     , const std::string & key
+                     , const std::string& path
+                     , const value::type & value
+                     )
+    {
+      value::put ( path
+                 , value::mk_structured_or_keep (container[key])
+                 , value
+                 );
+    }
     inline void bind ( type & container
                      , const key_vec_t & key_vec
                      , const value::type & value
