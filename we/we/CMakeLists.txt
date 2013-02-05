@@ -41,7 +41,6 @@ set (we_srcs
   type/literal/show.cpp
   type/literal/require_type.cpp
   type/literal/cpp.cpp
-  type/value/eq.cpp
   type/value/field.cpp
   type/value/read.cpp
   type/value/show.cpp
