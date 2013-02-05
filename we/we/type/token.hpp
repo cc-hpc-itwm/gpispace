@@ -23,6 +23,9 @@ namespace token
     type ()
       : _value (we::type::literal::control())
     {}
+    type (const value::type& value)
+      : _value (value)
+    {}
 
     // construct from value, require type from signature
     type ( const signature::field_name_t& field
