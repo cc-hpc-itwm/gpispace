@@ -6,48 +6,87 @@
     <place name="cache_in" type="cache_type"/>
     <place name="cache_out" type="cache_type"/>
     <place name="slot" type="long"/>
+    <place name="slot_to_check" type="long"/>
+    <place name="credit" type="control">
+      <token><value>[]</value></token>
+    </place>
+    <place name="slot_got_assignment" type="long"/>
+    <place name="num_user" type="long"/>
+    <place name="cache_got_assignment" type="cache_type"/>
+
+    <transition name="select_slot">
+      <defun>
+        <inout name="slot" type="long"/>
+        <in name="credit" type="control"/>
+        <expression/>
+      </defun>
+      <connect-in port="slot" place="slot"/>
+      <connect-out port="slot" place="slot_to_check"/>
+      <connect-in port="credit" place="credit"/>
+    </transition>
+
+    <transition name="get_assignment">
+      <defun>
+        <inout name="slot" type="long"/>
+        <inout name="cache" type="cache_type"/>
+        <out name="num_user" type="long"/>
+        <expression>
+          ${num_user}
+            := map_get_assignment (${cache.by_slot.num_users}, ${slot}) - 1;
+
+          ${cache.by_slot.num_users}
+            := map_assign (${cache.by_slot.num_users}, ${slot}, ${num_user});
+
+          ${cache.num.user} := ${cache.num.user} - 1;
+        </expression>
+      </defun>
+      <connect-in port="slot" place="slot_to_check"/>
+      <connect-out port="slot" place="slot_got_assignment"/>
+      <connect-in port="cache" place="cache_in"/>
+      <connect-out port="cache" place="cache_got_assignment"/>
+      <connect-out port="num_user" place="num_user"/>
+    </transition>
+
     <transition name="slot_done_still_users">
       <defun>
         <inout name="cache" type="cache_type"/>
         <in name="slot" type="long"/>
+        <in name="num_user" type="long"/>
+        <out name="next" type="control"/>
         <expression>
-          ${cache.by_slot.num_users}
-            := map_assign ( ${cache.by_slot.num_users}, ${slot}
-                          , map_get_assignment ( ${cache.by_slot.num_users}
-                                               , ${slot}
-                                               ) - 1
-                          );
-
-          ${cache.num.user} := ${cache.num.user} - 1;
+          ${next} := [];
         </expression>
         <condition>
-          map_get_assignment (${cache.by_slot.num_users}, ${slot}) :gt: 1
+          ${num_user} :gt: 0
         </condition>
       </defun>
-      <connect-in port="cache" place="cache_in"/>
+      <connect-in port="cache" place="cache_got_assignment"/>
       <connect-out port="cache" place="cache_out"/>
-      <connect-in port="slot" place="slot"/>
+      <connect-in port="slot" place="slot_got_assignment"/>
+      <connect-out port="next" place="credit"/>
+      <connect-in port="num_user" place="num_user"/>
     </transition>
     <transition name="slot_done_no_more_users">
       <defun>
         <inout name="cache" type="cache_type"/>
         <in name="slot" type="long"/>
+        <in name="num_user" type="long"/>
+        <out name="next" type="control"/>
         <expression>
-          ${cache.by_slot.num_users}
-            := map_assign (${cache.by_slot.num_users}, ${slot}, 0);
-
           ${cache.slots.available}
             := set_insert (${cache.slots.available}, ${slot});
 
-          ${cache.num.user} := ${cache.num.user} - 1;
+          ${next} := [];
         </expression>
         <condition>
-          map_get_assignment (${cache.by_slot.num_users}, ${slot}) :le: 1
+          ${num_user} :le: 0
         </condition>
       </defun>
-      <connect-in port="cache" place="cache_in"/>
+      <connect-in port="cache" place="cache_got_assignment"/>
       <connect-out port="cache" place="cache_out"/>
-      <connect-in port="slot" place="slot"/>
+      <connect-in port="slot" place="slot_got_assignment"/>
+      <connect-out port="next" place="credit"/>
+      <connect-in port="num_user" place="num_user"/>
     </transition>
   </net>
 </defun>
