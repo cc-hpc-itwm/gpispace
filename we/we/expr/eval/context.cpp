@@ -65,53 +65,36 @@ namespace expr
       throw value::container::exception::missing_binding (key);
     }
 
-    const value::type& context::value (const std::list<std::string>& key_vec) const
+    const value::type&
+    context::value (const std::list<std::string>& key_vec) const
     {
-      try
+      if (key_vec.empty())
       {
-        if (key_vec.empty())
-        {
-          throw std::runtime_error ("value::container::value []");
-        }
+        throw std::runtime_error ("context::value []");
+      }
 
-        std::list<std::string>::const_iterator key_pos (key_vec.begin());
-        const std::string& key (*key_pos); ++key_pos;
+      std::list<std::string>::const_iterator key_pos (key_vec.begin());
+      const std::string& key (*key_pos); ++key_pos;
 
-        const value::container::type::const_iterator pos (_container.find (key));
+      {
+        const container_type::const_iterator pos (_container.find (key));
 
-        if (pos == _container.end())
-        {
-          throw value::container::exception::missing_binding (key);
-        }
-        else
+        if (pos != _container.end())
         {
           return value::find (key_pos, key_vec.end(), pos->second);
         }
       }
-      catch (const std::runtime_error&)
+
       {
-        if (key_vec.size() > 0)
+        ref_container_type::const_iterator pos (_ref_container.find (key));
+
+        if (pos != _ref_container.end())
         {
-          std::list<std::string>::const_iterator key_pos (key_vec.begin());
-          const std::string& key (*key_pos); ++key_pos;
-
-          ref_container_type::const_iterator pos (_ref_container.find (key));
-
-          if (pos != _ref_container.end())
-          {
-            if (key_pos == key_vec.end())
-            {
-              return *pos->second;
-            }
-            else
-            {
-              return value::find (key_pos, key_vec.end(), *pos->second);
-            }
-          }
+          return value::find (key_pos, key_vec.end(), *pos->second);
         }
-
-        throw;
       }
+
+      throw value::container::exception::missing_binding (key);
     }
 
     value::type context::clear()
