@@ -12,7 +12,6 @@
 #include <we/type/id.hpp>
 
 #include <we/type/value/eq.hpp>
-#include <we/type/value/hash.hpp>
 #include <we/type/value/require_type.hpp>
 #include <we/type/value/show.hpp>
 
@@ -31,20 +30,17 @@ namespace token
   {
   public:
     value::type value;
-    std::size_t hash;
 
     friend class boost::serialization::access;
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(value);
-      ar & BOOST_SERIALIZATION_NVP(hash);
     }
 
   public:
     type ()
       : value (we::type::literal::control())
-      , hash (value::hash_value (value))
     {}
 
     // construct from value, require type from signature
@@ -53,7 +49,6 @@ namespace token
          , const value::type & v
          )
       : value (value::require_type (field, signature, v))
-      , hash (value::hash_value (value))
     {}
 
     // construct from context, use information from signature
@@ -62,23 +57,16 @@ namespace token
          , const expr::eval::context & context
          )
       : value (value::require_type (field, signature, context.value (field)))
-      , hash (value::hash_value (value))
     {}
 
     friend inline std::ostream & operator << (std::ostream &, const type &);
     friend bool operator == (const type &, const type &);
     friend bool operator != (const type &, const type &);
-    friend std::size_t hash_value (const type &);
   };
-
-  inline std::size_t hash_value (const type & t)
-  {
-    return t.hash;
-  }
 
   inline bool operator == (const type & a, const type & b)
   {
-    return a.hash == b.hash && value::eq (a.value, b.value);
+    return value::eq (a.value, b.value);
   }
 
   inline bool operator != (const type & a, const type & b)
