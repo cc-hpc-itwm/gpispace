@@ -17,8 +17,8 @@
 #include <we/type/signature/types.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/missing_binding.hpp>
-#include <we/type/value/container.hpp>
 #include <we/type/value/cpp/get.hpp>
+#include <we/expr/eval/context.hpp>
 
 #include <list>
 
@@ -58,8 +58,8 @@ namespace pnetc
           _names.push_back (fs::path ("we/type/signature/types.hpp"));
           _names.push_back (fs::path ("we/type/value.hpp"));
           _names.push_back (fs::path ("we/type/value/missing_binding.hpp"));
-          _names.push_back (fs::path ("we/type/value/container.hpp"));
           _names.push_back (fs::path ("we/type/value/cpp/get.hpp"));
+          _names.push_back (fs::path ("we/expr/eval/context.hpp"));
 
           // for operator <<
           _names.push_back (fs::path ("we/type/literal/show.hpp"));

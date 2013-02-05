@@ -21,27 +21,17 @@ namespace we
              , const value::type& value
              )
     {
-      value::put ( path
-                 , value::mk_structured_or_keep (o[key])
-                 , value
-                 );
+      o.bind (key, path, value);
     }
 
     // get with an additional path into the value
     template<typename T, typename Path>
     const T& get ( const input_t& i
                  , const std::string& key
-                 , const Path& path_in_value
+                 , const Path& path
                  )
     {
-      const input_t::const_iterator pos (i.find (key));
-
-      if (pos != i.end())
-      {
-        return value::get<T>(path_in_value, pos->second);
-      }
-
-      throw value::exception::missing_binding (key);
+      return value::get<T> (path, i.value (key));
     }
 
     // get from an earlier extracted value::type
