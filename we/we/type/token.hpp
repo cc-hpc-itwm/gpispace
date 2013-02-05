@@ -57,17 +57,17 @@ namespace token
     friend bool operator!= (const type&, const type&);
   };
 
-  inline bool operator == (const type& a, const type& b)
+  inline bool operator== (const type& a, const type& b)
   {
     return a.value() == b.value();
   }
 
-  inline bool operator != (const type& a, const type& b)
+  inline bool operator!= (const type& a, const type& b)
   {
     return !(a == b);
   }
 
-  inline std::ostream& operator << (std::ostream& s, const type& t)
+  inline std::ostream& operator<< (std::ostream& s, const type& t)
   {
     return s << t.value();
   }
