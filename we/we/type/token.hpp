@@ -17,45 +17,7 @@
 
 namespace token
 {
-  class type
-  {
-  public:
-    type ()
-      : _value (we::type::literal::control())
-    {}
-    type (const value::type& value)
-      : _value (value)
-    {}
-
-    operator const value::type&() const { return _value; }
-
-    const value::type& value() const { return _value; }
-
-  private:
-    value::type _value;
-
-    friend class boost::serialization::access;
-    template<typename Archive>
-    void serialize (Archive& ar, const unsigned int)
-    {
-      ar & BOOST_SERIALIZATION_NVP (_value);
-    }
-  };
-
-  inline bool operator== (const type& a, const type& b)
-  {
-    return a.value() == b.value();
-  }
-
-  inline bool operator!= (const type& a, const type& b)
-  {
-    return !(a == b);
-  }
-
-  inline std::ostream& operator<< (std::ostream& s, const type& t)
-  {
-    return s << t.value();
-  }
+  typedef value::type type;
 }
 
 #endif
