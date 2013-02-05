@@ -41,7 +41,7 @@ namespace we
         return value::get<T>(path_in_value, pos->second);
       }
 
-      throw value::container::exception::missing_binding (key);
+      throw value::exception::missing_binding (key);
     }
 
     // get from an earlier extracted value::type

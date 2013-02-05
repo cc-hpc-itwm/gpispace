@@ -23,6 +23,7 @@
 #include <we/type/value/cpp/get.hpp>
 
 #include <we/type/value/container.hpp>
+#include <we/type/value/missing_binding.hpp>
 
 #include <we/type/literal.hpp>
 
@@ -65,7 +66,7 @@ namespace we
         return value::get<T>(pos->second);
       }
 
-      throw value::container::exception::missing_binding (key);
+      throw value::exception::missing_binding (key);
     }
 
     // ...but not when stated explicitely be a value::type
@@ -80,7 +81,7 @@ namespace we
         return pos->second;
       }
 
-      throw value::container::exception::missing_binding (key);
+      throw value::exception::missing_binding (key);
     }
   }
 }

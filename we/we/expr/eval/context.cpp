@@ -6,6 +6,7 @@
 #include <we/type/value/find.hpp>
 #include <we/type/value/put.hpp>
 #include <we/type/value/mk_structured.hpp>
+#include <we/type/value/missing_binding.hpp>
 
 #include <iostream>
 
@@ -62,7 +63,7 @@ namespace expr
         }
       }
 
-      throw value::container::exception::missing_binding (key);
+      throw value::exception::missing_binding (key);
     }
 
     const value::type&
@@ -94,7 +95,7 @@ namespace expr
         }
       }
 
-      throw value::container::exception::missing_binding (key);
+      throw value::exception::missing_binding (key);
     }
 
     value::type context::clear()

@@ -4,6 +4,7 @@
 #include <we/expr/eval/context.hpp>
 
 #include <we/type/value/show.hpp>
+#include <we/type/value/missing_binding.hpp>
 
 #include "timer.hpp"
 
@@ -96,7 +97,7 @@ int main (int ac, char **)
                              << parser.eval_front (context)
                              << endl;
                       }
-                    catch (const value::container::exception::missing_binding & e)
+                    catch (const value::exception::missing_binding & e)
                       {
                         cout << e.what() << endl;
                       }
