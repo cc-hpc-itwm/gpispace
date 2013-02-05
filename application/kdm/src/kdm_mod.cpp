@@ -21,7 +21,6 @@
 #include "sinc_mod.hpp"
 
 using we::loader::get;
-using we::loader::put;
 
 // ************************************************************************* //
 
@@ -187,21 +186,21 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   LOG (DEBUG, "handle_TT " << handle_TT);
 
-  put (output, "config", "handle_Job", static_cast<long>(handle_Job));
-  put (output, "config", "scratch_Job", static_cast<long>(scratch_Job));
-  put (output, "config", "handle_TT", static_cast<long>(handle_TT));
-  put (output, "config", "NThreads", static_cast<long>(NThreads));
+  output.bind ("config", "handle_Job", static_cast<long>(handle_Job));
+  output.bind ("config", "scratch_Job", static_cast<long>(scratch_Job));
+  output.bind ("config", "handle_TT", static_cast<long>(handle_TT));
+  output.bind ("config", "NThreads", static_cast<long>(NThreads));
 
-  put (output, "config", "OFFSETS", static_cast<long>(Job.n_offset));
-  put (output, "config", "SUBVOLUMES_PER_OFFSET", static_cast<long>(Job.NSubVols));
-  put (output, "config", "BUNCHES_PER_OFFSET", static_cast<long>(Nbid_in_pid (1, 1, Job)));
-  put (output, "config", "PARALLEL_LOADTT", static_cast<long>(fvmGetNodeCount()));
+  output.bind ("config", "OFFSETS", static_cast<long>(Job.n_offset));
+  output.bind ("config", "SUBVOLUMES_PER_OFFSET", static_cast<long>(Job.NSubVols));
+  output.bind ("config", "BUNCHES_PER_OFFSET", static_cast<long>(Nbid_in_pid (1, 1, Job)));
+  output.bind ("config", "PARALLEL_LOADTT", static_cast<long>(fvmGetNodeCount()));
 
-  put (output, "config", "VOLUME_CREDITS", 4 * static_cast<long>(fvmGetNodeCount()));
+  output.bind ("config", "VOLUME_CREDITS", 4 * static_cast<long>(fvmGetNodeCount()));
 
-  put (output, "config", "filter.clip", static_cast<double>(Job.clip));
-  put (output, "config", "filter.trap", static_cast<double>(Job.trap));
-  put (output, "config", "filter.tpow", static_cast<double>(Job.tpow));
+  output.bind ("config", "filter.clip", static_cast<double>(Job.clip));
+  output.bind ("config", "filter.trap", static_cast<double>(Job.trap));
+  output.bind ("config", "filter.tpow", static_cast<double>(Job.tpow));
 
   LOG (DEBUG, "initialize: config = " << get<value::type>(output, "config"));
 }
@@ -498,7 +497,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
   kdm_loadTT (config, TT);
 
-  put (output, "done", we::type::literal::control());
+  output.bind ("done", we::type::literal::control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -506,7 +505,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   const value::type & config (get<value::type> (input, "config"));
   const value::type & bunch (get<value::type> (input, "bunch"));
   kdm_load (config, bunch);
-  put (output, "bunch", bunch);
+  output.bind ("bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -516,7 +515,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
   kdm_process (config, bunch);
 
-  put (output, "bunch", bunch);
+  output.bind ("bunch", bunch);
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -526,7 +525,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
   kdm_write (config, volume);
 
-  put (output, "volume", volume);
+  output.bind ("volume", volume);
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -535,7 +534,7 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
   kdm_finalize (config);
 
-  put (output, "trigger", we::type::literal::control());
+  output.bind ("trigger", we::type::literal::control());
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -545,14 +544,14 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
   kdm_init_volume (config, volume);
 
-  put (output, "volume", volume);
+  output.bind ("volume", volume);
 }
 
 static void debug (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   LOG (INFO, "DEBUG: volume " << get<value::type>(input, "volume"));
 
-  put (output, "volume", get<value::type>(input, "volume"));
+  output.bind ("volume", get<value::type>(input, "volume"));
 }
 
 // ************************************************************************* //

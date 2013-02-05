@@ -10,7 +10,7 @@
 static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
 {
   std::cerr << "rank := " << fvmGetRank() << std::endl;
-  we::loader::put (output, "result", 0L);
+  output.bind ("result", 0L);
 }
 
 // ************************************************************************* //

@@ -14,8 +14,6 @@
 #include <stdexcept>
 #include <unistd.h>
 
-using we::loader::put;
-
 // ************************************************************************* //
 
 #include <boost/random.hpp>
@@ -128,7 +126,7 @@ static void initialize ( void *
 
   MLOG (INFO, "initialize: config " << config);
 
-  put (output, "config", config);
+  output.bind ("config", config);
 }
 
 // ************************************************************************* //
@@ -201,7 +199,7 @@ static void run ( void *
 
   usleep (sleeptime);
 
-  put (output, "done", we::type::literal::control());
+  output.bind ("done", we::type::literal::control());
 }
 
 // ************************************************************************* //
@@ -226,7 +224,7 @@ static void finalize ( void *
       fvmGlobalFree (scratch);
     }
 
-  put (output, "trigger", we::type::literal::control());
+  output.bind ("trigger", we::type::literal::control());
 }
 
 // ************************************************************************* //

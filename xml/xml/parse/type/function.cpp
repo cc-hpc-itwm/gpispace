@@ -1789,8 +1789,8 @@ namespace xml
             {
               first_put = false;
 
-              s << "::we::loader::put (_pnetc_output"
-                << ", \"" << (*port_return).name << "\""
+              s << "_pnetc_output.bind ("
+                << "\"" << (*port_return).name << "\""
                 << ", "
                 ;
 
@@ -1869,8 +1869,8 @@ namespace xml
                 }
 
               s << "      "
-                << "  ::we::loader::put (_pnetc_output"
-                << ", \"" << port->name << "\""
+                << "  _pnetc_output.bind ("
+                << "\"" << port->name << "\""
                 << ", " << mk_value (*port)
                 << ")"
                 << ";"
@@ -1891,8 +1891,8 @@ namespace xml
                 }
 
               s << "      "
-                << "  ::we::loader::put (_pnetc_output"
-                << ", \"" << port->name << "\""
+                << "  _pnetc_output.bind ("
+                << "\"" << port->name << "\""
                 << ", " << mk_value (*port)
                 << ")"
                 << ";"

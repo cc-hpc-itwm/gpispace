@@ -7,7 +7,6 @@
 #include <fvm-pc/util.hpp>
 
 using we::loader::get;
-using we::loader::put;
 
 static void run ( void *
                 , const we::loader::input_t & input
@@ -101,19 +100,19 @@ static void run ( void *
   // *********************************************************************** //
   // put a literal via a path on a port
 
-  put (output, "b", "end.x", stretch * a_end_x);
+  output.bind ("b", "end.x", stretch * a_end_x);
 
   // also by a value::path
   {
     value::path_type path; path.push_back ("end"); path.push_back ("y");
 
-    put (output, "b", path, stretch * get<double> (input, "a", "end.y"));
+    output.bind ("b", path, stretch * get<double> (input, "a", "end.y"));
   }
 
   // *********************************************************************** //
   // put a complete subtoken via a path on a port
 
-  put (output, "b", "start", b_start);
+  output.bind ("b", "start", b_start);
 
   // *********************************************************************** //
   // put a complete value on a port (here grab it from the already
@@ -121,8 +120,8 @@ static void run ( void *
 
   value::type b (get<value::type> (output, "b"));
 
-  put (output, "c", "start", get<value::type> (b, "end"));
-  put (output, "c", "end", get<value::type> (b, "start"));
+  output.bind ("c", "start", get<value::type> (b, "end"));
+  output.bind ("c", "end", get<value::type> (b, "start"));
 
 }
 

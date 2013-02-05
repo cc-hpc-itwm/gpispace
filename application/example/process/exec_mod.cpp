@@ -18,7 +18,6 @@
 
 #include "process.hpp"
 
-using we::loader::put;
 using we::loader::get;
 
 // ************************************************************************* //
@@ -35,7 +34,7 @@ static void exec_wrapper ( void *
   long ec = process::execute (command, 0, 0, 0, 0);
 
   MLOG (INFO, "process returned with: " << ec);
-  put (output, "ec", ec);
+  output.bind ("ec", ec);
 }
 
 // ************************************************************************* //

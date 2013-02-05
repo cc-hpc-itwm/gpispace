@@ -28,7 +28,6 @@
 // ************************************************************************* //
 
 using we::loader::get;
-using we::loader::put;
 
 // ************************************************************************* //
 
@@ -53,14 +52,14 @@ static void init ( void * state
   // set default params
   value::type param;
 
-  put (output, "config", "param.tpow.tpow", -1.0);
-  put (output, "config", "param.clip.c", -1.0);
-  put (output, "config", "param.trap.t", -1.0);
-  put (output, "config", "param.bandpass.frequ1", -1.0);
-  put (output, "config", "param.bandpass.frequ2", -1.0);
-  put (output, "config", "param.bandpass.frequ3", -1.0);
-  put (output, "config", "param.bandpass.frequ4", -1.0);
-  put (output, "config", "exec.su", std::string(""));
+  output.bind ("config", "param.tpow.tpow", -1.0);
+  output.bind ("config", "param.clip.c", -1.0);
+  output.bind ("config", "param.trap.t", -1.0);
+  output.bind ("config", "param.bandpass.frequ1", -1.0);
+  output.bind ("config", "param.bandpass.frequ2", -1.0);
+  output.bind ("config", "param.bandpass.frequ3", -1.0);
+  output.bind ("config", "param.bandpass.frequ4", -1.0);
+  output.bind ("config", "exec.su", std::string(""));
 
   while (!file.eof())
     {
@@ -78,7 +77,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              put (output, "config", s, v);
+              output.bind ("config", s, v);
             }
 	  else if (fhg::util::starts_with ("param", s))
 	    {
@@ -87,7 +86,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              put (output, "config", s, v);
+              output.bind ("config", s, v);
 	    }
           else if (fhg::util::starts_with ("exec", s))
             {
@@ -110,7 +109,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << coll.substr(0,coll.size()-1));
 
-              put (output, "config", s, coll.substr(0,coll.size()-1));
+              output.bind ("config", s, coll.substr(0,coll.size()-1));
             }
           else
             {
@@ -119,7 +118,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              put (output, "config", s, v);
+              output.bind ("config", s, v);
             }
         }
     }
@@ -156,8 +155,8 @@ static void init ( void * state
 
         determine_size (inp, t, num, size);
 
-        put (output, "config", "trace_detect.number", num);
-        put (output, "config", "trace_detect.size_in_bytes", size);
+        output.bind ("config", "trace_detect.number", num);
+        output.bind ("config", "trace_detect.size_in_bytes", size);
       }
 
     try
@@ -166,12 +165,12 @@ static void init ( void * state
 	const long & memsize (get<long> (output, "config", "tune.memsize"));
 	const long trace_per_bunch ((memsize/slots_per_node) / size);
 
-	put (output, "config", "tune.trace_per_bunch", trace_per_bunch);
+	output.bind ("config", "tune.trace_per_bunch", trace_per_bunch);
       }
     catch (...)
       {
 	// do nothing, slots_per_node is not set
-	put (output, "config", "tune.slots_per_node", 1L);
+	output.bind ("config", "tune.slots_per_node", 1L);
       }
   }
 
@@ -240,16 +239,16 @@ static void init ( void * state
 
   close (outp_des);
 
-  put (output, "config", "data.size", trace_size_in_bytes * trace_num);
+  output.bind ("config", "data.size", trace_size_in_bytes * trace_num);
 
-  put (output, "config", "bunchbuffer.size", sizeofBunchBuffer);
-  put (output, "config", "num.store", (num_slot_per_node - 1) * node_count);
-  put (output, "config", "num.part", num_part);
-  put (output, "config", "num.write_credit", node_count);
-  put (output, "config", "num.load_credit", node_count);
+  output.bind ("config", "bunchbuffer.size", sizeofBunchBuffer);
+  output.bind ("config", "num.store", (num_slot_per_node - 1) * node_count);
+  output.bind ("config", "num.part", num_part);
+  output.bind ("config", "num.write_credit", node_count);
+  output.bind ("config", "num.load_credit", node_count);
 
-  put (output, "config", "handle.data", static_cast<long>(handle_data));
-  put (output, "config", "handle.scratch", static_cast<long>(handle_scratch));
+  output.bind ("config", "handle.data", static_cast<long>(handle_data));
+  output.bind ("config", "handle.scratch", static_cast<long>(handle_scratch));
 
   MLOG (INFO, "init: got config " << get<value::type>(output, "config"));
 }
@@ -271,7 +270,7 @@ static void finalize ( void * state
   fvmGlobalFree (handle_data);
   fvmGlobalFree (handle_scratch);
 
-  put (output, "done", we::type::literal::control());
+  output.bind ("done", we::type::literal::control());
 }
 
 // ************************************************************************* //
@@ -317,8 +316,8 @@ static void load ( void * state
                              )
            );
 
-  put (output, "part_loaded", "id.part", part);
-  put (output, "part_loaded", "id.store", store);
+  output.bind ("part_loaded", "id.part", part);
+  output.bind ("part_loaded", "id.store", store);
 }
 
 // ************************************************************************* //
@@ -365,9 +364,9 @@ static void write ( void * state
 
   do_write (filename, type, part, sizeofBunchBuffer, size, num, fvmGetShmemPtr());
 
-  put (output, "part", part);
-  put (output, "store", store);
-  put (output, "credit", credit);
+  output.bind ("part", part);
+  output.bind ("store", store);
+  output.bind ("credit", credit);
 }
 
 // ************************************************************************* //
