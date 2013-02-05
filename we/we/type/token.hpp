@@ -11,7 +11,6 @@
 #include <we/type/value.hpp>
 #include <we/type/id.hpp>
 
-#include <we/type/value/eq.hpp>
 #include <we/type/value/require_type.hpp>
 #include <we/type/value/show.hpp>
 
@@ -66,7 +65,7 @@ namespace token
 
   inline bool operator == (const type & a, const type & b)
   {
-    return value::eq (a.value, b.value);
+    return a.value == b.value;
   }
 
   inline bool operator != (const type & a, const type & b)
