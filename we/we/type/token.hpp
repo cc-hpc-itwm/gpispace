@@ -27,6 +27,8 @@ namespace token
       : _value (value)
     {}
 
+    operator const value::type&() const { return _value; }
+
     const value::type& value() const { return _value; }
 
   private:
