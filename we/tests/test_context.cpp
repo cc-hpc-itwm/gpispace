@@ -5,8 +5,9 @@
 
 #include <we/expr/eval/context.hpp>
 
+#include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
-#include <we/type/value/eq.hpp>
+#include <we/type/value/show.hpp>
 
 BOOST_AUTO_TEST_CASE (basic)
 {
@@ -41,11 +42,11 @@ BOOST_AUTO_TEST_CASE (basic)
   c.bind ("y", y);
   c.bind ("z", z);
 
-  BOOST_REQUIRE (value::eq (c.value ("x"), x));
-  BOOST_REQUIRE (value::eq (c.value ("y"), y));
-  BOOST_REQUIRE (value::eq (c.value ("z"), z));
-  BOOST_REQUIRE (value::eq (c.value (key_z_x), z_x));
-  BOOST_REQUIRE (value::eq (c.value (key_z_y), z_y));
+  BOOST_REQUIRE_EQUAL (c.value ("x"), x);
+  BOOST_REQUIRE_EQUAL (c.value ("y"), y);
+  BOOST_REQUIRE_EQUAL (c.value ("z"), z);
+  BOOST_REQUIRE_EQUAL (c.value (key_z_x), z_x);
+  BOOST_REQUIRE_EQUAL (c.value (key_z_y), z_y);
 
   try
   {
@@ -71,7 +72,7 @@ BOOST_AUTO_TEST_CASE (basic)
 
     c.bind (key_z_x, z_x_new);
 
-    BOOST_REQUIRE (value::eq (c.value (key_z_x), z_x_new));
+    BOOST_REQUIRE_EQUAL (c.value (key_z_x), value::type (z_x_new));
   }
 
   {
@@ -79,11 +80,11 @@ BOOST_AUTO_TEST_CASE (basic)
 
     c.bind ("z", z_new);
 
-    BOOST_REQUIRE (value::eq (c.value ("z"), z_new));
+    BOOST_REQUIRE_EQUAL (c.value ("z"), value::type (z_new));
   }
 
-  BOOST_REQUIRE (value::eq (c.value ("x"), x));
-  BOOST_REQUIRE (value::eq (c.value ("y"), y));
+  BOOST_REQUIRE_EQUAL (c.value ("x"), x);
+  BOOST_REQUIRE_EQUAL (c.value ("y"), y);
 
   try
   {
@@ -124,9 +125,9 @@ BOOST_AUTO_TEST_CASE (reference)
   c.bind_ref (key_b, value_b);
   c.bind_ref (key_c, value_c);
 
-  BOOST_REQUIRE (value::eq (c.value (key_a), value_a));
-  BOOST_REQUIRE (value::eq (c.value (key_b), value_b));
-  BOOST_REQUIRE (value::eq (c.value (key_c), value_c));
+  BOOST_REQUIRE_EQUAL (c.value (key_a), value_a);
+  BOOST_REQUIRE_EQUAL (c.value (key_b), value_b);
+  BOOST_REQUIRE_EQUAL (c.value (key_c), value_c);
 
   key_vec_t key_c_x;
   key_c_x.push_back ("c");
@@ -140,7 +141,7 @@ BOOST_AUTO_TEST_CASE (reference)
   key_c_y_b.push_back ("y");
   key_c_y_b.push_back ("b");
 
-  BOOST_REQUIRE (value::eq (c.value (key_c_x), 1L));
-  BOOST_REQUIRE (value::eq (c.value (key_c_y_a), 2L));
-  BOOST_REQUIRE (value::eq (c.value (key_c_y_b), 3L));
+  BOOST_REQUIRE_EQUAL (c.value (key_c_x), value::type (1L));
+  BOOST_REQUIRE_EQUAL (c.value (key_c_y_a), value::type (2L));
+  BOOST_REQUIRE_EQUAL (c.value (key_c_y_b), value::type (3L));
 }
