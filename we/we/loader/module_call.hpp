@@ -30,9 +30,9 @@ namespace module
 
     BOOST_FOREACH (const tp_type& tp, act.input())
     {
-      context.bind ( act.transition().name_of_port (tp.second)
-                   , tp.first
-                   );
+      context.bind_ref ( act.transition().name_of_port (tp.second)
+                       , tp.first
+                       );
     }
 
     we::loader::output_t mod_output;
