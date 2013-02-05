@@ -27,8 +27,6 @@
 
 namespace token
 {
-  typedef expr::eval::context context_t;
-
   class type
   {
   public:
@@ -61,7 +59,7 @@ namespace token
     // construct from context, use information from signature
     type ( const signature::field_name_t & field
          , const signature::type & signature
-         , const context_t & context
+         , const expr::eval::context & context
          )
       : value (value::require_type (field, signature, context.value (field)))
       , hash (value::hash_value (value))
