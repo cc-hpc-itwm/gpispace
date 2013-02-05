@@ -33,6 +33,12 @@ namespace expr
 
       void bind (const std::list<std::string>&, const value::type&);
       void bind (const std::string&, const value::type&);
+      void bind ( const std::string&, const std::list<std::string>&
+                , const value::type&
+                );
+      void bind ( const std::string&, const std::string&
+                , const value::type&
+                );
 
       void bind_ref (const std::string&, const value::type&);
 

@@ -40,6 +40,27 @@ namespace expr
       _container[key] = value;
     }
 
+    void context::bind ( const std::string& key
+                       , const std::list<std::string>& path
+                       , const value::type& value
+                       )
+    {
+      value::put ( path
+                 , value::mk_structured_or_keep (_container[key])
+                 , value
+                 );
+    }
+    void context::bind ( const std::string& key
+                       , const std::string& path
+                       , const value::type& value
+                       )
+    {
+      value::put ( path
+                 , value::mk_structured_or_keep (_container[key])
+                 , value
+                 );
+    }
+
     void context::bind_ref (const std::string& key, const value::type& value)
     {
       _ref_container.insert (std::make_pair (key, &value));
