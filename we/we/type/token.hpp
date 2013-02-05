@@ -28,54 +28,56 @@ namespace token
   class type
   {
   public:
-    value::type value;
-
-    friend class boost::serialization::access;
-    template<typename Archive>
-    void serialize (Archive & ar, const unsigned int)
-    {
-      ar & BOOST_SERIALIZATION_NVP(value);
-    }
-
-  public:
     type ()
-      : value (we::type::literal::control())
+      : _value (we::type::literal::control())
     {}
 
     // construct from value, require type from signature
-    type ( const signature::field_name_t & field
-         , const signature::type & signature
-         , const value::type & v
+    type ( const signature::field_name_t& field
+         , const signature::type& signature
+         , const value::type& value
          )
-      : value (value::require_type (field, signature, v))
+      : _value (value::require_type (field, signature, value))
     {}
 
     // construct from context, use information from signature
-    type ( const signature::field_name_t & field
-         , const signature::type & signature
-         , const expr::eval::context & context
+    type ( const signature::field_name_t& field
+         , const signature::type& signature
+         , const expr::eval::context& context
          )
-      : value (value::require_type (field, signature, context.value (field)))
+      : _value (value::require_type (field, signature, context.value (field)))
     {}
 
-    friend inline std::ostream & operator << (std::ostream &, const type &);
-    friend bool operator == (const type &, const type &);
-    friend bool operator != (const type &, const type &);
+    const value::type& value() const { return _value; }
+
+  private:
+    value::type _value;
+
+    friend class boost::serialization::access;
+    template<typename Archive>
+    void serialize (Archive& ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP (_value);
+    }
+
+    friend std::ostream& operator<< (std::ostream&, const type&);
+    friend bool operator== (const type&, const type&);
+    friend bool operator!= (const type&, const type&);
   };
 
-  inline bool operator == (const type & a, const type & b)
+  inline bool operator == (const type& a, const type& b)
   {
-    return a.value == b.value;
+    return a.value() == b.value();
   }
 
-  inline bool operator != (const type & a, const type & b)
+  inline bool operator != (const type& a, const type& b)
   {
     return !(a == b);
   }
 
-  inline std::ostream & operator << (std::ostream & s, const type & t)
+  inline std::ostream& operator << (std::ostream& s, const type& t)
   {
-    return s << t.value;
+    return s << t.value();
   }
 }
 
