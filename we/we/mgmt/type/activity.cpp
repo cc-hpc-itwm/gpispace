@@ -4,6 +4,8 @@
 
 #include <we/type/transition.hpp>
 
+#include <we/expr/eval/context.hpp>
+
 #include <we/mgmt/context.hpp>
 
 #include <we/mgmt/type/activity.hpp>
