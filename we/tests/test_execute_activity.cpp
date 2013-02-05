@@ -11,6 +11,8 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
+#include <we/expr/eval/context.hpp>
+
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
@@ -82,10 +84,10 @@ namespace module
         ; ++top
         )
     {
-      const token::type token = top->first;
-      const petri_net::port_id_type port_id = top->second;
+      const token::type& token (top->first);
+      const petri_net::port_id_type& port_id (top->second);
 
-      context.bind (act.transition().name_of_port (port_id), token.value);
+      context.bind (act.transition().name_of_port (port_id), token.value());
     }
 
     typedef std::vector <std::pair<value::type, std::string> > mod_output_t;
