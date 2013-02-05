@@ -47,7 +47,6 @@ set (we_srcs
   type/value/show.cpp
   type/value/require_type.cpp
   type/value/mk_structured.cpp
-  type/value/hash.cpp
   type/value/put.cpp
   type/value/function.cpp
   type/value/get.cpp
