@@ -3,7 +3,8 @@
 #ifndef WE_EXPR_PARSE_SIMPLIFY_UTIL_HPP
 #define WE_EXPR_PARSE_SIMPLIFY_UTIL_HPP
 
-#include <we/type/value/container.hpp>
+#include <list>
+#include <string>
 
 namespace expr
 {
@@ -11,7 +12,7 @@ namespace expr
   {
     namespace simplify
     {
-      typedef ::value::container::key_vec_t key_type;
+      typedef std::list<std::string> key_type;
 
       namespace util
       {

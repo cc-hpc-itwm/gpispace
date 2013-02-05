@@ -571,7 +571,7 @@ namespace expr
       get();
     }
 
-    const key_vec_t& tokenizer::get_ref() const
+    const std::list<std::string>& tokenizer::get_ref() const
     {
       return _ref;
     }

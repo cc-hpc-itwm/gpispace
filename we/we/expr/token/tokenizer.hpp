@@ -6,17 +6,17 @@
 #include <we/expr/token/type.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/container.hpp>
 
 #include <fhg/util/parse/position.hpp>
 
 #include <string>
+#include <list>
 
 namespace expr
 {
   namespace token
   {
-    typedef value::container::key_vec_t key_vec_t;
+    typedef std::list<std::string> key_vec_t;
 
     struct tokenizer
     {
@@ -25,7 +25,7 @@ namespace expr
 
       token::type token;
       value::type tokval;
-      key_vec_t _ref;
+      std::list<std::string> _ref;
 
       inline void set_E();
       inline void set_PI();
@@ -44,7 +44,7 @@ namespace expr
       const value::type& operator()() const;
       const token::type& operator*() const;
       void operator++();
-      const key_vec_t& get_ref() const;
+      const std::list<std::string>& get_ref() const;
     };
   }
 }

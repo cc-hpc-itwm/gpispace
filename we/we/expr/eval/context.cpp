@@ -2,7 +2,6 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we/type/value/container.hpp>
 #include <we/type/value/container/bind.hpp>
 #include <we/type/value/find.hpp>
 
@@ -12,14 +11,16 @@ namespace expr
 {
   namespace eval
   {
-    void context::bind (const key_vec_t& key_vec, const value::type& value)
+    void context::bind ( const std::list<std::string>& key_vec
+                       , const value::type& value
+                       )
     {
-      value::container::bind (container, key_vec, value);
+      value::container::bind (_container, key_vec, value);
     }
 
     void context::bind (const std::string& key, const value::type& value)
     {
-      value::container::bind (container, key, value);
+      value::container::bind (_container, key, value);
     }
 
     void context::bind_ref (const std::string& key, const value::type& value)
@@ -31,7 +32,7 @@ namespace expr
     {
       try
       {
-        return value::container::value (container, key);
+        return value::container::value (_container, key);
       }
       catch (const std::runtime_error&)
       {
@@ -46,7 +47,7 @@ namespace expr
       }
     }
 
-    const value::type& context::value (const key_vec_t& key_vec) const
+    const value::type& context::value (const std::list<std::string>& key_vec) const
     {
       try
       {
@@ -55,12 +56,12 @@ namespace expr
           throw std::runtime_error ("value::container::value []");
         }
 
-        key_vec_t::const_iterator key_pos (key_vec.begin());
+        std::list<std::string>::const_iterator key_pos (key_vec.begin());
         const std::string& key (*key_pos); ++key_pos;
 
-        const value::container::type::const_iterator pos (container.find (key));
+        const value::container::type::const_iterator pos (_container.find (key));
 
-        if (pos == container.end())
+        if (pos == _container.end())
         {
           throw value::container::exception::missing_binding (key);
         }
@@ -73,7 +74,7 @@ namespace expr
       {
         if (key_vec.size() > 0)
         {
-          key_vec_t::const_iterator key_pos (key_vec.begin());
+          std::list<std::string>::const_iterator key_pos (key_vec.begin());
           const std::string& key (*key_pos); ++key_pos;
 
           ref_container_type::const_iterator pos (_ref_container.find (key));
@@ -97,38 +98,39 @@ namespace expr
 
     value::type context::clear()
     {
-      container.clear();
+      _container.clear();
+      _ref_container.clear();
       return we::type::literal::control();
     }
 
     context::const_iterator context::begin() const
     {
-      return container.begin();
+      return _container.begin();
     }
 
     context::const_iterator context::end() const
     {
-      return container.end();
+      return _container.end();
     }
 
     std::size_t context::size() const
     {
-      return container.size();
+      return _container.size();
     }
 
     std::ostream& operator<< (std::ostream& s, const context& cntx)
     {
-      return s << cntx.container;
+      return s << cntx._container;
     }
 
     parse::node::type refnode_value ( const context& context
-                                    , const context::key_vec_t& key_vec
+                                    , const std::list<std::string>& key_vec
                                     )
     {
       return parse::node::type (context.value (key_vec));
     }
 
-    parse::node::type refnode_name (const context::key_vec_t& key_vec)
+    parse::node::type refnode_name (const std::list<std::string>& key_vec)
     {
       return parse::node::type (key_vec);
     }

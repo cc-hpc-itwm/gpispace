@@ -18,26 +18,28 @@ namespace expr
     struct context
     {
     private:
-      typedef value::container::type container_t;
-      container_t container;
+      typedef boost::unordered_map< std::string
+                                  , value::type
+                                  > container_type;
 
       typedef boost::unordered_map< std::string
                                   , value::type const*
                                   > ref_container_type;
 
+      container_type _container;
       ref_container_type _ref_container;
 
     public:
-      typedef value::container::key_vec_t key_vec_t;
-      typedef container_t::const_iterator const_iterator;
+      typedef std::list<std::string> key_vec_t;
+      typedef container_type::const_iterator const_iterator;
 
-      void bind (const key_vec_t&, const value::type&);
+      void bind (const std::list<std::string>&, const value::type&);
       void bind (const std::string&, const value::type&);
 
       void bind_ref (const std::string&, const value::type&);
 
       const value::type& value (const std::string&) const;
-      const value::type& value (const key_vec_t&) const;
+      const value::type& value (const std::list<std::string>&) const;
 
       value::type clear();
 
@@ -51,9 +53,9 @@ namespace expr
     std::ostream& operator<< (std::ostream&, const context&);
 
     parse::node::type refnode_value ( const context&
-                                    , const context::key_vec_t&
+                                    , const std::list<std::string>&
                                     );
-    parse::node::type refnode_name (const context::key_vec_t&);
+    parse::node::type refnode_name (const std::list<std::string>&);
   }
 }
 
