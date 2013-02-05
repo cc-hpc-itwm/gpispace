@@ -53,16 +53,6 @@ namespace we
       value::container::bind (o, key, val);
     }
 
-    // on port, complete literal
-    template <typename T>
-    inline void put ( output_t & o
-                    , const std::string & key
-                    , const T & val
-                    )
-    {
-      put (o, key, value::type (val));
-    }
-
     // getting something means to get a literal value...
     template <typename T>
     inline typename value::cpp::get<T const &>::result_type

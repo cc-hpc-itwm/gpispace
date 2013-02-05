@@ -87,7 +87,7 @@ namespace we
             )
         {
           if (out->second == port_id)
-            tokens.push_back (out->first.value());
+            tokens.push_back (out->first);
         }
 
         return tokens;
@@ -104,7 +104,7 @@ namespace we
             )
         {
           const std::string port_name (act.transition().get_port(in->second).name());
-          m[port_name].push_back (in->first.value());
+          m[port_name].push_back (in->first);
         }
 
         return m;
@@ -121,7 +121,7 @@ namespace we
             )
         {
           const std::string port_name (act.transition().get_port(out->second).name());
-          m[port_name].push_back (out->first.value());
+          m[port_name].push_back (out->first);
         }
 
         return m;

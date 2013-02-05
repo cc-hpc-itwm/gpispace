@@ -261,12 +261,12 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
         using namespace we::loader;
         token::type token (it->first);
 
-        long rowId (get<long>(token.value(), "rowID"));
-        double pv (get<double>(token.value(), "pv"));
-        double stddev(get<double>(token.value(), "stddev"));
-        double Delta(get<double>(token.value(), "Delta"));
-        double Gamma(get<double>(token.value(), "Gamma"));
-        double Vega(get<double>(token.value(), "Vega"));
+        long rowId (get<long>(token, "rowID"));
+        double pv (get<double>(token, "pv"));
+        double stddev(get<double>(token, "stddev"));
+        double Delta(get<double>(token, "Delta"));
+        double Gamma(get<double>(token, "Gamma"));
+        double Vega(get<double>(token, "Vega"));
 
         simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
         m_portfolio_->ShowResult(sim_res);

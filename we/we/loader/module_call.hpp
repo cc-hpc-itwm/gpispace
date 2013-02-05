@@ -33,7 +33,7 @@ namespace module
       const petri_net::port_id_type port_id = top->second;
 
       we::loader::put
-        (context, act.transition().name_of_port (port_id), token.value());
+        (context, act.transition().name_of_port (port_id), token);
     }
 
     typedef we::loader::output_t mod_output_t;

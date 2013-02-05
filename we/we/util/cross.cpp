@@ -106,7 +106,7 @@ namespace we
       BOOST_FOREACH (const pits_type& pits, _m)
       {
         context.bind_ref ( transition.name_of_place (pits.first)
-                         , pits.second.pos()->value()
+                         , *pits.second.pos()
                          );
       }
 
