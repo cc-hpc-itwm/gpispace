@@ -10,16 +10,6 @@ namespace value
 {
   namespace container
   {
-    value::type bind ( type& container
-                     , const std::string& key
-                     , const value::type& value
-                     )
-    {
-      container[key] = value;
-
-      return value;
-    }
-
     const value::type& value ( const type& container
                              , const std::string& key
                              )

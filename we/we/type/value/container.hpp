@@ -20,7 +20,6 @@ namespace value
     typedef boost::unordered_map<std::string, value::type> type;
     typedef std::list<std::string> key_vec_t;
 
-    value::type bind (type&, const std::string&, const value::type&);
     const value::type& value (const type&, const std::string&);
 
     namespace exception
