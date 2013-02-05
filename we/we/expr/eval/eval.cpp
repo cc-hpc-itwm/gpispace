@@ -48,7 +48,8 @@ namespace expr
             {
               value::type c1 (boost::apply_visitor (*this, b.r));
 
-              c.bind (boost::get<expr::parse::node::key_vec_t>(b.l), c1);
+              c.bind_and_discard_ref
+                (boost::get<expr::parse::node::key_vec_t>(b.l), c1);
 
               return c1;
             }
