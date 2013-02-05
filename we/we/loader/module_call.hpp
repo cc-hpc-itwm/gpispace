@@ -20,7 +20,6 @@ namespace module
   {
     // construct context
     typedef we::loader::input_t context_t;
-    typedef we::mgmt::type::activity_t::input_t input_t;
     typedef we::mgmt::type::activity_t::output_t output_t;
     typedef we::type::port_t port_t;
     typedef we::type::transition_t::const_iterator port_iterator;
@@ -36,9 +35,7 @@ namespace module
                    );
     }
 
-    typedef we::loader::output_t mod_output_t;
-
-    mod_output_t mod_output;
+    we::loader::output_t mod_output;
 
     loader[module_call.module()] (module_call.function(), context, mod_output);
 
@@ -51,8 +48,7 @@ namespace module
         const petri_net::port_id_type& port_id
           (act.transition().output_port_by_name (kv.first));
 
-        const port_t & port =
-          act.transition().get_port (port_id);
+        const port_t& port (act.transition().get_port (port_id));
 
         act.add_output
           ( output_t::value_type
