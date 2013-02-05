@@ -29,7 +29,7 @@ namespace module
         ; ++top
         )
     {
-      const token::type token = top->first;
+      const value::type token = top->first;
       const petri_net::port_id_type port_id = top->second;
 
       we::loader::put
@@ -57,11 +57,10 @@ namespace module
 
         act.add_output
           ( output_t::value_type
-            ( token::type ( value::require_type ( port.name()
-                                                , port.signature()
-                                                , ton->second
-                                                )
-                          )
+            ( value::require_type ( port.name()
+                                  , port.signature()
+                                  , ton->second
+                                  )
             , port_id
             )
           );

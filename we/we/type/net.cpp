@@ -279,10 +279,10 @@ namespace petri_net
     return tid;
   }
 
-  void net::put_token (const place_id_type& pid, const token::type& token)
+  void net::put_token (const place_id_type& pid, const value::type& token)
   {
-    std::list<token::type>& tokens (_token_by_place_id[pid]);
-    const std::list<token::type>::iterator
+    std::list<value::type>& tokens (_token_by_place_id[pid]);
+    const std::list<value::type>::iterator
       tokenpos (tokens.insert (tokens.end(), token));
 
     BOOST_FOREACH ( const transition_id_type& tid
@@ -297,29 +297,28 @@ namespace petri_net
   {
     const place::type& place (get_place (pid));
 
-    put_token (pid, token::type (value::require_type ( place.name()
-                                                     , place.signature()
-                                                     , value
-                                                     )
-                                )
+    put_token (pid, value::require_type ( place.name()
+                                        , place.signature()
+                                        , value
+                                        )
               );
   }
 
   namespace
   {
-    const std::list<token::type>& no_tokens()
+    const std::list<value::type>& no_tokens()
     {
-      static const std::list<token::type> x;
+      static const std::list<value::type> x;
 
       return x;
     }
   }
 
-  const std::list<token::type>&
+  const std::list<value::type>&
   net::get_token (const place_id_type& pid) const
   {
     typedef boost::unordered_map< place_id_type
-                                , std::list<token::type>
+                                , std::list<value::type>
                                 > token_by_place_id_t;
 
     token_by_place_id_t::const_iterator pos (_token_by_place_id.find (pid));
@@ -377,7 +376,7 @@ namespace petri_net
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      std::list<token::type>& tokens (_token_by_place_id[place_id]);
+      std::list<value::type>& tokens (_token_by_place_id[place_id]);
 
       if (tokens.empty())
       {
@@ -395,7 +394,7 @@ namespace petri_net
   void net::update_enabled_put_token
     ( const transition_id_type& tid
     , const place_id_type& pid
-    , const std::list<token::type>::iterator& token
+    , const std::list<value::type>::iterator& token
     )
   {
     we::util::cross_type cross;
@@ -410,7 +409,7 @@ namespace petri_net
       }
       else
       {
-        std::list<token::type>& tokens (_token_by_place_id[place_id]);
+        std::list<value::type>& tokens (_token_by_place_id[place_id]);
 
         if (tokens.empty())
         {
@@ -440,12 +439,12 @@ namespace petri_net
 
     boost::unordered_set<transition_id_type> transitions_to_update;
 
-    typedef std::pair<place_id_type, std::list<token::type>::iterator> place_and_token_type;
+    typedef std::pair<place_id_type, std::list<value::type>::iterator> place_and_token_type;
 
     BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
       const place_id_type& pid (pt.first);
-      const std::list<token::type>::iterator& token (pt.second);
+      const std::list<value::type>::iterator& token (pt.second);
 
       act.add_input (std::make_pair (*token, transition.outer_to_inner (pid)));
 

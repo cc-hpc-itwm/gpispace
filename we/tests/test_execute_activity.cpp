@@ -6,7 +6,7 @@
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
-#include <we/type/token.hpp>
+#include <we/type/value.hpp>
 #include <we/type/port.hpp>
 #include <we/type/value/require_type.hpp>
 #include <we/mgmt/type/activity.hpp>
@@ -85,7 +85,7 @@ namespace module
         ; ++top
         )
     {
-      const token::type& token (top->first);
+      const value::type& token (top->first);
       const petri_net::port_id_type& port_id (top->second);
 
       context.bind (act.transition().name_of_port (port_id), token);
@@ -108,11 +108,10 @@ namespace module
 
       act.add_output
         ( output_t::value_type
-          ( token::type ( value::require_type ( port.name()
-                                              , port.signature()
-                                              , ton->first
-                                              )
-                        )
+          ( value::require_type ( port.name()
+                                , port.signature()
+                                , ton->first
+                                )
           , port_id
           )
         );

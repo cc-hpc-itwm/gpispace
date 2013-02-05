@@ -3,7 +3,7 @@
 
 #include <list>
 
-#include <we/type/token.hpp>
+#include <we/type/value.hpp>
 #include <we/type/id.hpp>
 #include <we/type/value/require_type.hpp>
 
@@ -39,11 +39,10 @@ namespace we
         // }
 
         act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        (::token::type (value::require_type ( port
-                                                            , port_signature
-                                                            , value
-                                                            )
-                                       )
+                        ( value::require_type ( port
+                                              , port_signature
+                                              , value
+                                              )
                         , pid
                         )
                       );

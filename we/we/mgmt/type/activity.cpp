@@ -283,7 +283,7 @@ namespace we
                         const petri_net::port_id_type port_id (port_it->first);
                         const petri_net::place_id_type pid (port_it->second.associated_place());
 
-                        BOOST_FOREACH (const token::type& token, net.get_token (pid))
+                        BOOST_FOREACH (const value::type& token, net.get_token (pid))
                           {
                             _activity.add_output (activity_t::output_t::value_type (token, port_id));
                           }
@@ -431,12 +431,10 @@ namespace we
                   {
                     _activity.add_output
                       ( type::activity_t::output_t::value_type
-                        ( token::type
-                          ( value::require_type ( port_it->second.name()
-                                                , port_it->second.signature()
-                                                , context.value (port_it->second.name())
-                                                )
-                          )
+                        ( value::require_type ( port_it->second.name()
+                                              , port_it->second.signature()
+                                              , context.value (port_it->second.name())
+                                              )
                         , port_it->first
                         )
                       );

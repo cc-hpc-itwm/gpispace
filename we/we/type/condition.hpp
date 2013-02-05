@@ -6,7 +6,7 @@
 #include <we/expr/parse/parser.hpp>
 
 #include <we/type/id.hpp>
-#include <we/type/token.hpp>
+#include <we/type/value.hpp>
 #include <we/type/signature.hpp>
 
 #include <we/type/value/container/exception.hpp>
@@ -45,7 +45,7 @@ namespace condition
     friend std::ostream& operator<< (std::ostream&, const type&);
 
     typedef boost::unordered_map< petri_net::place_id_type
-                                , std::list<token::type>
+                                , std::list<value::type>
                                 > tokens_by_place_id_t;
 
   public:

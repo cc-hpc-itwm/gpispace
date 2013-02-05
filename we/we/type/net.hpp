@@ -10,7 +10,6 @@
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
-#include <we/type/token.hpp>
 #include <we/type/value.hpp>
 #include <we/type/place.hpp>
 
@@ -83,10 +82,10 @@ namespace petri_net
                                          , const we::type::transition_t&
                                          );
 
-    void put_token (const place_id_type&, const token::type&);
+    void put_token (const place_id_type&, const value::type&);
     void put_value (const place_id_type&, const value::type&);
 
-    const std::list<token::type>& get_token (const place_id_type&) const;
+    const std::list<value::type>& get_token (const place_id_type&) const;
 
     void delete_all_token (const place_id_type&);
     bool can_fire() const;
@@ -108,7 +107,7 @@ namespace petri_net
     adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
 
     boost::unordered_map< place_id_type
-                        , std::list<token::type>
+                        , std::list<value::type>
                         > _token_by_place_id;
 
     friend class boost::serialization::access;
@@ -148,7 +147,7 @@ namespace petri_net
     boost::unordered_map
       < transition_id_type
       , boost::unordered_map< petri_net::place_id_type
-                            , std::list<token::type>::iterator
+                            , std::list<value::type>::iterator
                             >
       > _enabled_choice;
 
@@ -156,7 +155,7 @@ namespace petri_net
     void update_enabled_put_token
       ( const transition_id_type&
       , const place_id_type&
-      , const std::list<token::type>::iterator&
+      , const std::list<value::type>::iterator&
       );
 
     void disable (const transition_id_type&);

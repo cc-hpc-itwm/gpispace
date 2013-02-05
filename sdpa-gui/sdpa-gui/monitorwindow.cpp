@@ -29,7 +29,7 @@
 #include <we/type/net.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/loader/putget.hpp>
-#include <we/type/token.hpp>
+#include <we/type/value.hpp>
 
 #include <sdpa-gui/taskview/taskscene.hpp>
 #include <sdpa-gui/taskview/taskview.hpp>
@@ -259,7 +259,7 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
           )
       {
         using namespace we::loader;
-        token::type token (it->first);
+        value::type token (it->first);
 
         long rowId (get<long>(token, "rowID"));
         double pv (get<double>(token, "pv"));

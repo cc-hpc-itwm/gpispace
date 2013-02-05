@@ -438,7 +438,7 @@ namespace we { namespace type {
 
               if (opts.show_token)
                 {
-                  BOOST_FOREACH ( const token::type& t
+                  BOOST_FOREACH ( const value::type& t
                                 , net.get_token (place_id)
                                 )
                   {
