@@ -383,11 +383,42 @@ namespace fhg
                 );
 
               fhg::util::qt::boost_connect<void()>
-                ( menu->addAction (tr ("transition_add_port"))
+                ( menu->addAction (tr ("new_port_in"))
                 , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind (nyi, "transition: add port")
+                , this
+                , boost::bind ( &data::handle::function::add_port
+                              , handle.function()
+                              , we::type::PORT_IN
+                              , boost::none
+                              )
                 );
+
+              fhg::util::qt::boost_connect<void()>
+                ( menu->addAction (tr ("new_port_out"))
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &data::handle::function::add_port
+                              , handle.function()
+                              , we::type::PORT_OUT
+                              , boost::none
+                              )
+                );
+
+              if (handle.function().content_is_net())
+              {
+                fhg::util::qt::boost_connect<void()>
+                  ( menu->addAction (tr ("new_port_tunnel"))
+                  , SIGNAL (triggered())
+                  , this
+                  , boost::bind ( &data::handle::function::add_port
+                                , handle.function()
+                                , we::type::PORT_TUNNEL
+                                , boost::none
+                                )
+                  );
+              }
+
+              menu->addSeparator();
 
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction(tr ("transition_set_name"))
