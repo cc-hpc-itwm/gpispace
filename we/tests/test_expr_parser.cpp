@@ -56,7 +56,7 @@ int main (int ac, char **)
     cout << "enter expression, ^D to start measurement" << endl;
     cout << "clear context: #" << endl;
     cout << "list state: ?" << endl;
-    cout << "switch constant folding: f" << endl;
+    cout << "switch constant folding: g" << endl;
     typedef expr::eval::context context_t;
     context_t context;
     std::string input;
@@ -72,8 +72,8 @@ int main (int ac, char **)
                  << endl;
             cout << "context (delete with #): " << endl << context;
             break;
-          case 'f':
-          case 'F':
+          case 'g':
+          case 'G':
             constant_folding = not constant_folding;
             cout << "constant_folding: "
                  << std::boolalpha << constant_folding << std::noboolalpha
