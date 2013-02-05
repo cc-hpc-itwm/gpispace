@@ -50,6 +50,7 @@ set (we_srcs
   type/value/function.cpp
   type/value/get.cpp
   type/value/container/value.cpp
+  type/value/container/bind.cpp
 )
 
 add_library (we ${we_srcs})
@@ -163,7 +164,6 @@ install (FILES
 )
 
 install (FILES
-  type/value/container/bind.hpp
   type/value/container/container.hpp
   type/value/container/exception.hpp
   type/value/container/show.hpp
