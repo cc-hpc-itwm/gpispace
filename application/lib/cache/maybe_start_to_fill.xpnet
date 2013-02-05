@@ -1,0 +1,98 @@
+<defun>
+  <tunnel name="cache" type="cache_type" place="cache"/>
+  <tunnel name="slot_to_fill" type="long" place="slot_to_fill"/>
+  <in name="slot" type="long" place="slot_in"/>
+  <out name="slot" type="long" place="slot_out"/>
+  <net>
+    <place name="cache" type="cache_type" virtual="true"/>
+    <place name="slot_in" type="long"/>
+    <place name="slot_out" type="long"/>
+    <place name="slot_to_fill" type="long" virtual="true"/>
+
+    <place name="credit" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <place name="cache_selected" type="cache_type"/>
+    <place name="slot_selected" type="long"/>
+
+    <transition name="select">
+      <defun>
+        <inout name="slot" type="long"/>
+        <inout name="cache" type="cache_type"/>
+        <in name="credit" type="control"/>
+        <out name="filled" type="bool"/>
+        <out name="started_to_fill" type="bool"/>
+        <expression>
+          ${filled}
+          := set_is_element (${cache.slots.filled}, ${slot});
+
+          ${started_to_fill}
+          := set_is_element (${cache.slots.started_to_fill}, ${slot});
+        </expression>
+      </defun>
+      <connect-in port="slot" place="slot_in"/>
+      <connect-out port="slot" place="slot_selected"/>
+      <connect-in port="cache" place="cache"/>
+      <connect-out port="cache" place="cache_selected"/>
+      <connect-in port="credit" place="credit"/>
+      <connect-out port="filled" place="filled"/>
+      <connect-out port="started_to_fill" place="started_to_fill"/>
+    </transition>
+
+    <place name="filled" type="bool"/>
+    <place name="started_to_fill" type="bool"/>
+
+    <transition name="already_filled_or_started_to_fill">
+      <defun>
+        <inout name="slot" type="long"/>
+        <inout name="cache" type="cache_type"/>
+        <in name="filled" type="bool"/>
+        <in name="started_to_fill" type="bool"/>
+        <out name="next" type="control"/>
+        <expression>
+          ${next} := []
+        </expression>
+        <condition>
+          ${filled} :or: ${started_to_fill}
+        </condition>
+      </defun>
+      <connect-in port="cache" place="cache_selected"/>
+      <connect-out port="cache" place="cache"/>
+      <connect-in port="slot" place="slot_selected"/>
+      <connect-out port="slot" place="slot_out"/>
+      <connect-in port="filled" place="filled"/>
+      <connect-in port="started_to_fill" place="started_to_fill"/>
+      <connect-out port="next" place="credit"/>
+    </transition>
+    <transition name="start_to_fill">
+      <defun>
+        <inout name="slot" type="long"/>
+        <inout name="cache" type="cache_type"/>
+        <out name="slot_to_fill" type="long"/>
+        <in name="filled" type="bool"/>
+        <in name="started_to_fill" type="bool"/>
+        <out name="next" type="control"/>
+        <expression>
+          ${slot_to_fill} := ${slot};
+
+          ${cache.slots.started_to_fill}
+          := set_insert (${cache.slots.started_to_fill}, ${slot});
+
+          ${next} := []
+        </expression>
+        <condition>
+          !${filled} :and: !${started_to_fill}
+        </condition>
+      </defun>
+      <connect-in port="cache" place="cache_selected"/>
+      <connect-out port="cache" place="cache"/>
+      <connect-in port="slot" place="slot_selected"/>
+      <connect-out port="slot" place="slot_out"/>
+      <connect-out port="slot_to_fill" place="slot_to_fill"/>
+      <connect-in port="filled" place="filled"/>
+      <connect-in port="started_to_fill" place="started_to_fill"/>
+      <connect-out port="next" place="credit"/>
+    </transition>
+  </net>
+</defun>
