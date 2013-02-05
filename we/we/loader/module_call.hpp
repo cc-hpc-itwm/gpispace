@@ -12,6 +12,8 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace module
 {
   static void call (we::loader::loader & loader, we::mgmt::type::activity_t & act, const we::type::module_call_t & module_call)
@@ -42,15 +44,14 @@ namespace module
 
     loader[module_call.module()] (module_call.function(), context, mod_output);
 
-    for ( mod_output_t::const_iterator ton (mod_output.begin())
-        ; ton != mod_output.end()
-        ; ++ton
-        )
+    typedef std::pair<std::string, value::type> kv_type;
+
+    BOOST_FOREACH (const kv_type& kv, mod_output.values())
     {
       try
       {
         const petri_net::port_id_type& port_id
-          (act.transition().output_port_by_name (ton->first));
+          (act.transition().output_port_by_name (kv.first));
 
         const port_t & port =
           act.transition().get_port (port_id);
@@ -59,7 +60,7 @@ namespace module
           ( output_t::value_type
             ( value::require_type ( port.name()
                                   , port.signature()
-                                  , ton->second
+                                  , kv.second
                                   )
             , port_id
             )

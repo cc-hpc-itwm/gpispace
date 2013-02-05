@@ -121,19 +121,10 @@ namespace expr
       throw value::exception::missing_binding (key);
     }
 
-    context::const_iterator context::begin() const
+    const boost::unordered_map<std::string,value::type>&
+    context::values() const
     {
-      return _container.begin();
-    }
-
-    context::const_iterator context::end() const
-    {
-      return _container.end();
-    }
-
-    std::size_t context::size() const
-    {
-      return _container.size();
+      return _container;
     }
 
     std::ostream& operator<< (std::ostream& s, const context& cntx)

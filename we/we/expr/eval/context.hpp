@@ -48,9 +48,7 @@ namespace expr
       const value::type& value (const std::string&) const;
       const value::type& value (const std::list<std::string>&) const;
 
-      const_iterator begin() const;
-      const_iterator end() const;
-      std::size_t size() const;
+      const boost::unordered_map<std::string,value::type>& values() const;
 
       friend std::ostream& operator<< (std::ostream&, const context&);
     };
