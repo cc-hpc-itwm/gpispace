@@ -18,8 +18,7 @@ public:
 
   void update_task_state (sdpa::daemon::NotificationEvent::state_t);
 
-protected:
-  void advance (int step);
+  void advance (const qreal scene_width);
 
 private:
   bool _do_advance;

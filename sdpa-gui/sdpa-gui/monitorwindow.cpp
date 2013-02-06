@@ -193,9 +193,17 @@ void MonitorWindow::advance()
   scene_rect.setWidth(scene_rect.width() + 1.0);
   scene_rect.setHeight(m_components.size() * 8);
   m_scene->setSceneRect(scene_rect);
-  // TODO: do not call scene::advance but just advance all 'active' elements
-  //       i.e. keep a list of currently active elements
-  m_scene->advance();
+
+  //! \todo do not call advance on all last tasks, but just advance
+  // all 'active' elements.  i.e.  keep a list of currently active
+  // elements
+  BOOST_FOREACH (const std::string& component, m_components)
+  {
+    if (!m_tasks_list[component].empty())
+    {
+      m_tasks_list[component].back()->advance (scene_rect.width());
+    }
+  }
 
   if (m_follow_execution)
     m_view->horizontalScrollBar()->setValue(m_view->horizontalScrollBar()->maximum());

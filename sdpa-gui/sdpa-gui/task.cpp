@@ -50,12 +50,12 @@ void Task::update_task_state (sdpa::daemon::NotificationEvent::state_t state)
   _do_advance = state < sdpa::daemon::NotificationEvent::STATE_FINISHED;
 }
 
-void Task::advance (int step)
+void Task::advance (const qreal scene_width)
 {
-  if (!_do_advance || !step)
-    return;
+  if (_do_advance)
+  {
+    static const qreal height (8.0);
 
-  static const qreal height (8.0);
-
-  setRect (0.0, 0.0, std::floor (scene()->width() - pos().x() + 0.5), height);
+    setRect (0.0, 0.0, std::floor (scene_width - pos().x() + 0.5), height);
+  }
 }
