@@ -24,6 +24,8 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/utility.hpp>
 
+#include <string>
+
 namespace sdpa { namespace daemon {
   class NotificationEvent
   {
