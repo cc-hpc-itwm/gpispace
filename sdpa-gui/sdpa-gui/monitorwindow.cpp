@@ -36,8 +36,11 @@
 using namespace std;
 using namespace boost;
 
-static const int EXTERNAL_EVENT_EXECUTION = 1001;
-static const int EXTERNAL_EVENT_LOGGING = 1002;
+enum external_events
+{
+  EXTERNAL_EVENT_EXECUTION = QEvent::User + 1,
+  EXTERNAL_EVENT_LOGGING,
+};
 
 MonitorWindow::MonitorWindow( unsigned short exe_port
                             , unsigned short log_port
@@ -289,7 +292,7 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
     we::mgmt::type::activity_t act (notification.activity());
 
     UpdateExecutionView(notification, act);
-    QApplication::postEvent (this, new PortFolioEvent(1001, notification, act));
+    QApplication::postEvent (this, new PortFolioEvent(EXTERNAL_EVENT_EXECUTION, notification, act));
   }
   else
   {
@@ -490,26 +493,25 @@ MonitorWindow::handle_external_event ( int type
   QApplication::postEvent (this, new LogEventWrapper(type, evt));
 }
 
-bool
-MonitorWindow::event (QEvent *e)
+bool MonitorWindow::event (QEvent* event)
 {
-  if (e->type() == 1001)
+  switch (event->type())
   {
-    e->accept ();
-    PortFolioEvent *evt = (PortFolioEvent*)(e);
-    UpdatePortfolioView(evt->notification, evt->activity);
+  case EXTERNAL_EVENT_EXECUTION:
+    event->accept();
+    {
+      PortFolioEvent* evt (static_cast<PortFolioEvent*> (event));
+      UpdatePortfolioView (evt->notification, evt->activity);
+    }
     return true;
-  }
-  if (e->type() == 1002)
-  {
-    e->accept ();
-    LogEventWrapper *logevt = (LogEventWrapper*)(e);
-    append_log (logevt->log_event);
+
+  case EXTERNAL_EVENT_LOGGING:
+    event->accept();
+    append_log (static_cast<LogEventWrapper*> (event)->log_event);
     return true;
-  }
-  else
-  {
-   return QWidget::event(e);
+
+  default:
+    return QWidget::event (event);
   }
 }
 
