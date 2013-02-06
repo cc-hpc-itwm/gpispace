@@ -75,9 +75,9 @@ private:
   mutable mutex_type m_task_struct_mutex;
 
   boost::asio::io_service m_io_service;
-  boost::thread m_io_thread;
   fhg::log::remote::LogServer m_log_server;
   fhg::log::remote::LogServer m_exe_server;
+  boost::thread m_io_thread;
   bool m_follow_logging;
   bool m_follow_execution;
   std::vector<fhg::log::LogEvent> m_log_events;

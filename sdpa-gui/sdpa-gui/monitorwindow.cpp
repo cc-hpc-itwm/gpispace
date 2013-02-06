@@ -45,7 +45,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                             )
   : QMainWindow(parent)
   , ui(new Ui::MonitorWindow)
-  , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
   , m_log_server ( fhg::log::Appender::ptr_t
                    ( new WindowAppender
                      ( boost::bind
@@ -64,6 +63,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                    )
                  , m_io_service, exe_port
                  )
+  , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
   , m_follow_logging (true)
   , m_follow_execution (true)
   , m_portfolio_(new Portfolio(ui))
