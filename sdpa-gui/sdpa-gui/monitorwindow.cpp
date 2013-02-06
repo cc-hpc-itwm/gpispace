@@ -177,20 +177,18 @@ void MonitorWindow::advance()
   scene_update_list_t updates;
   {
     lock_type lock (m_task_view_mutex);
-    updates.swap(m_scene_updates);
-  }
-  for ( scene_update_list_t::iterator update (updates.begin())
-      ; update != updates.end()
-      ; ++update
-      )
-  {
-    update->second->addItem (update->first);
+    updates.swap (m_scene_updates);
   }
 
-  QRectF scene_rect = m_scene->sceneRect();
-  scene_rect.setWidth(scene_rect.width() + 1.0);
-  scene_rect.setHeight(m_components.size() * 8);
-  m_scene->setSceneRect(scene_rect);
+  BOOST_FOREACH (const scene_update_list_t::value_type& update, updates)
+  {
+    update.second->addItem (update.first);
+  }
+
+  QRectF scene_rect (m_scene->sceneRect());
+  scene_rect.setWidth (scene_rect.width() + 1.0);
+  scene_rect.setHeight (m_components.size() * 8);
+  m_scene->setSceneRect (scene_rect);
 
   //! \todo do not call advance on all last tasks, but just advance
   // all 'active' elements.  i.e.  keep a list of currently active
@@ -204,13 +202,18 @@ void MonitorWindow::advance()
   }
 
   if (m_follow_execution)
-    m_view->horizontalScrollBar()->setValue(m_view->horizontalScrollBar()->maximum());
+  {
+    m_view->horizontalScrollBar()->setValue
+      (m_view->horizontalScrollBar()->maximum());
+  }
 }
 
-static QColor severityToColor (const fhg::log::LogLevel lvl)
+namespace
 {
-  switch (lvl.lvl ())
+  QColor severityToColor (const fhg::log::LogLevel lvl)
   {
+    switch (lvl.lvl())
+    {
     case fhg::log::LogLevel::TRACE:
       return QColor (205, 183, 158);
     case fhg::log::LogLevel::DEBUG:
@@ -225,15 +228,16 @@ static QColor severityToColor (const fhg::log::LogLevel lvl)
       return QColor (165,42,42);
     default:
       return QColor (0,0,0);
+    }
   }
-}
 
-template <typename T>
-void decode (const std::string& strMsg, T& t)
-{
-  std::stringstream sstr(strMsg);
-  boost::archive::text_iarchive ar(sstr);
-  ar >> t;
+  template <typename T>
+    void decode (const std::string& strMsg, T& t)
+  {
+    std::stringstream sstr(strMsg);
+    boost::archive::text_iarchive ar(sstr);
+    ar >> t;
+  }
 }
 
 void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
