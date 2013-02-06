@@ -45,6 +45,25 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                             )
   : QMainWindow(parent)
   , ui(new Ui::MonitorWindow)
+  , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
+  , m_log_server ( fhg::log::Appender::ptr_t
+                   ( new WindowAppender
+                     ( boost::bind
+                        ( &MonitorWindow::handle_external_event
+                        , this
+                        , EXTERNAL_EVENT_LOGGING
+                        , _1
+                        )
+                     )
+                   )
+                 , m_io_service, log_port
+                 )
+  , m_exe_server ( fhg::log::Appender::ptr_t
+                   ( new WindowAppender
+                     (boost::bind (&MonitorWindow::append_exe, this, _1))
+                   )
+                 , m_io_service, exe_port
+                 )
   , m_follow_logging (true)
   , m_follow_execution (true)
   , m_portfolio_(new Portfolio(ui))
@@ -118,42 +137,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     //    m_view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     //    m_view->setDragMode(QGraphicsView::ScrollHandDrag);
 
-    m_exe_server = logserver_t
-        (new fhg::log::remote::LogServer
-            (fhg::log::Appender::ptr_t
-                (new WindowAppender
-                    (boost::bind
-                        ( &MonitorWindow::append_exe
-                        , this
-                        , _1
-                        )
-                    )
-                )
-            , m_io_service, exe_port
-            )
-        );
-
-    m_log_server = logserver_t
-        (new fhg::log::remote::LogServer
-            (fhg::log::Appender::ptr_t
-                (new WindowAppender
-                    (boost::bind
-                        ( &MonitorWindow::handle_external_event
-                        , this
-                        , EXTERNAL_EVENT_LOGGING
-                        , _1
-                        )
-                    )
-                )
-            , m_io_service, log_port
-            )
-        );
-
-    m_io_thread = thread_t
-        (new boost::thread
-         (boost::bind
-          (&boost::asio::io_service::run, &m_io_service)));
-
     QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(advance()));
     QObject::connect( m_view->verticalScrollBar(), SIGNAL(valueChanged(int))
                     , m_component_view->verticalScrollBar(), SLOT(setValue(int))
@@ -166,9 +149,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 MonitorWindow::~MonitorWindow()
 {
   m_io_service.stop();
-  m_io_thread->join ();
-  m_io_thread.reset ();
-  m_log_server.reset ();
+  m_io_thread.join();
   delete ui;
 }
 
