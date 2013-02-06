@@ -41,7 +41,6 @@ QT4_WRAP_CPP(sdpa-gui_SRCS_MOC ${sdpa-gui_TOMOC} ${sdpa-gui_UIS_H})
 qt4_automoc(${sdpa-gui_SRCS_MOC})
 add_executable (sdpa-gui ${sdpa-gui_SRCS} ${sdpa-gui_SRCS_MOC} ${util-sources})
 target_link_libraries (sdpa-gui
-        task-view
         we
 	sdpa-client
 	sdpa
@@ -69,5 +68,3 @@ install(TARGETS sdpa-gui
   RUNTIME
   DESTINATION bin
   COMPONENT runtime)
-
-add_subdirectory(taskview)

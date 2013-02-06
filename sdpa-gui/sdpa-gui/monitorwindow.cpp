@@ -31,9 +31,6 @@
 #include <we/loader/putget.hpp>
 #include <we/type/value.hpp>
 
-#include <sdpa-gui/taskview/taskscene.hpp>
-#include <sdpa-gui/taskview/taskview.hpp>
-
 #include "portfolioevent.hpp"
 
 using namespace std;
@@ -62,18 +59,21 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     ui->m_drop_filtered->setCheckState(Qt::Checked);
     m_portfolio_->Init();
 
-    m_scene = new fhg::taskview::TaskScene (this);
-    m_view = new fhg::taskview::TaskView(m_scene);
+    m_scene = new QGraphicsScene (this);
+    m_view = new QGraphicsView (m_scene);
 
-    m_component_scene = new QGraphicsScene();
-    m_component_view = new QGraphicsView();
+    m_view->setTransformationAnchor (QGraphicsView::AnchorViewCenter);
+    m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
+    m_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+    m_view->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+    m_view->setCacheMode (QGraphicsView::CacheNone);
+    m_view->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+    m_view->setDragMode (QGraphicsView::ScrollHandDrag);
 
-    //    m_scene->setSceneRect(0,0,0,0);
-    //    m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    //    m_view->setScene (m_scene);
-    //    m_view->setAttribute (Qt::WA_AlwaysShowToolTips);
 
-    m_component_view->setScene(m_component_scene);
+    m_component_scene = new QGraphicsScene (this);
+    m_component_view = new QGraphicsView (m_component_scene);
+
     {
       QSplitter *splitter = new QSplitter (Qt::Horizontal);
       QHBoxLayout *l = new QHBoxLayout;
@@ -392,7 +392,7 @@ void MonitorWindow::clearActivityLog()
   lock_type struct_lock(m_task_struct_mutex);
 
   delete m_scene; delete m_component_scene;
-  m_scene = new fhg::taskview::TaskScene(this);
+  m_scene = new QGraphicsScene (this);
   m_component_scene = new QGraphicsScene();
 
   m_view->setScene(m_scene);
