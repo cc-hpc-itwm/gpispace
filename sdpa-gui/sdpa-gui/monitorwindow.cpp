@@ -66,8 +66,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
     m_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
     m_view->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
-    m_view->setCacheMode (QGraphicsView::CacheNone);
-    m_view->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
     m_view->setDragMode (QGraphicsView::ScrollHandDrag);
 
 
