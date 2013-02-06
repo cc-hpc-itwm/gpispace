@@ -25,35 +25,32 @@ class QGraphicsView;
 class QGraphicsScene;
 
 namespace Ui {
-    class MonitorWindow;
+  class MonitorWindow;
 }
 
 class MonitorWindow : public QMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT;
 
-    typedef boost::recursive_mutex mutex_type;
+  typedef boost::recursive_mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
 
 public:
-    explicit MonitorWindow( unsigned short exe_port
-                          , unsigned short log_port
-                          , QWidget *parent = 0
-                          );
-    ~MonitorWindow();
-    void append_log (const fhg::log::LogEvent &);
-    void append_exe (const fhg::log::LogEvent &);
-
-// portfolio evaluation
-public:
+  explicit MonitorWindow( unsigned short exe_port
+                        , unsigned short log_port
+                        , QWidget *parent = 0
+                        );
+  ~MonitorWindow();
+  void append_log (const fhg::log::LogEvent &);
+  void append_exe (const fhg::log::LogEvent &);
 
 public slots:
-    void clearLogging();
-    void toggleFollowLogging(bool checked);
-    void toggleFollowTaskView(bool checked);
-    void levelFilterChanged (int lvl);
-    void save ();
-    // portfolio related slots
+  void clearLogging();
+  void toggleFollowLogging(bool checked);
+  void toggleFollowTaskView(bool checked);
+  void levelFilterChanged (int lvl);
+  void save ();
+  // portfolio related slots
   void ClearTable() { m_portfolio_->ClearTable(); }
   void SubmitPortfolio() { m_portfolio_->SubmitPortfolio(); }
   void resizePortfolio(int k) { m_portfolio_->Resize(k); }
@@ -66,7 +63,7 @@ public slots:
 private:
   void handle_external_event (int type, const fhg::log::LogEvent &);
 
-    bool event (QEvent *event);
+  bool event (QEvent *event);
   void UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
                           , we::mgmt::type::activity_t const & act
                           );
@@ -77,13 +74,13 @@ private:
   mutable mutex_type m_task_view_mutex;
   mutable mutex_type m_task_struct_mutex;
 
-    boost::asio::io_service m_io_service;
-    boost::thread m_io_thread;
-    fhg::log::remote::LogServer m_log_server;
-    fhg::log::remote::LogServer m_exe_server;
-    bool m_follow_logging;
-    bool m_follow_execution;
-    std::vector<fhg::log::LogEvent> m_log_events;
+  boost::asio::io_service m_io_service;
+  boost::thread m_io_thread;
+  fhg::log::remote::LogServer m_log_server;
+  fhg::log::remote::LogServer m_exe_server;
+  bool m_follow_logging;
+  bool m_follow_execution;
+  std::vector<fhg::log::LogEvent> m_log_events;
 
   Portfolio *m_portfolio_;
   QGraphicsScene *m_scene;
