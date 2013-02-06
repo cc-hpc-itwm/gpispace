@@ -314,21 +314,21 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
   }
 }
 
-void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
-                                       , we::mgmt::type::activity_t const & act
-                                       )
+void MonitorWindow::UpdateExecutionView
+  ( const sdpa::daemon::NotificationEvent& event
+  , const we::mgmt::type::activity_t& activity
+  )
 {
-  static const int task_height (8);
+  static const qreal task_height (8.0);
 
-  std::string const & component (evt.component());
-  std::string         activity_name (evt.activity_name());
-  std::string const & activity_id (evt.activity_id());
-  sdpa::daemon::NotificationEvent::state_t activity_state (evt.activity_state());
+  const std::string& component (event.component());
+  std::string activity_name (event.activity_name());
+  const std::string& activity_id (event.activity_id());
 
   try
   {
-    we::type::module_call_t mod_call
-      (boost::get<we::type::module_call_t>(act.transition().data()));
+    const we::type::module_call_t mod_call
+      (boost::get<we::type::module_call_t> (activity.transition().data()));
     activity_name = mod_call.module() + ":" + mod_call.function();
   }
   catch (boost::bad_get const &)
@@ -336,65 +336,58 @@ void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const &
     // do nothing, i.e. take the activity name as it was
   }
 
-  lock_type lock(m_task_struct_mutex);
+  const lock_type lock (m_task_struct_mutex);
 
-  // look for component
-  qreal       y_coord = -1;
-  const qreal x_coord = m_scene->width();
+  const std::vector<std::string>::iterator comp
+    (std::find (m_components.begin(), m_components.end(), component));
 
-  for ( std::vector<std::string>::iterator comp = m_components.begin()
-      ; comp != m_components.end()
-      ; ++comp
-      )
+  const qreal x_coord (m_scene->width());
+  const qreal y_coord ( comp != m_components.end()
+                      ? std::distance (m_components.begin(), comp) * task_height
+                      : m_components.size() * task_height
+                      );
+
+  if (comp == m_components.end())
   {
-    if (*comp == component)
-    {
-      y_coord = (comp - m_components.begin()) * task_height;
-      break;
-    }
-  }
-
-  if (y_coord < 0)
-  {
-    y_coord = m_components.size() * task_height;
     m_components.push_back (component);
 
-    QGraphicsSimpleTextItem *c_label = new QGraphicsSimpleTextItem(QString(component.c_str()));
-    QFont font = c_label->font();
-    font.setPointSize(6);
-    c_label->setFont (font);
-    c_label->setPos(0, y_coord);
+    QGraphicsSimpleTextItem* label
+      (new QGraphicsSimpleTextItem (QString::fromStdString (component)));
 
-    m_scene_updates.push_back (std::make_pair(c_label, m_component_scene));
+    QFont font (label->font());
+    font.setPointSize (6);
+    label->setFont (font);
+    label->setPos (0, y_coord);
+
+    m_scene_updates.push_back (std::make_pair (label, m_component_scene));
   }
 
-  // look for activity in activity-id map
-  id_to_task_map_t & id_to_task = m_tasks_grid[component];
-  id_to_task_map_t::iterator task_it = id_to_task.find(activity_id);
-
-  Task *task = 0;
-
-  if (task_it == id_to_task.end())
+  if ( m_tasks_grid[component].find (activity_id)
+     == m_tasks_grid[component].end()
+     )
   {
-    task = new Task(component.c_str(), activity_name.c_str(), activity_id.c_str());
-    task->setPos(x_coord, y_coord);
-    id_to_task[activity_id] = task;
+    Task* task ( new Task ( QString::fromStdString (component)
+                          , QString::fromStdString (activity_name)
+                          , QString::fromStdString (activity_id)
+                          )
+               );
+    task->setPos (x_coord, y_coord);
+    m_tasks_grid[component][activity_id] = task;
 
     // new task, make sure to close previous task -> asume finished
-    if (! m_tasks_list[component].empty())
+    if (!m_tasks_list[component].empty())
     {
-      m_tasks_list[component].back()->update_task_state(sdpa::daemon::NotificationEvent::STATE_FINISHED);
+      m_tasks_list[component].back()->update_task_state
+        (sdpa::daemon::NotificationEvent::STATE_FINISHED);
     }
-    m_tasks_list[component].push_back(task);
+    m_tasks_list[component].push_back (task);
 
     lock_type lock (m_task_view_mutex);
-    m_scene_updates.push_back (std::make_pair(task, m_scene));
+    m_scene_updates.push_back (std::make_pair (task, m_scene));
   }
-  else
-  {
-    task = task_it->second;
-  }
-  task->update_task_state(activity_state);
+
+  m_tasks_grid[component][activity_id]->update_task_state
+    (event.activity_state());
 }
 
 void MonitorWindow::clearActivityLog()

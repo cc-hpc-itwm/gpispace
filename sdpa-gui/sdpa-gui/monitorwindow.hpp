@@ -70,9 +70,8 @@ private:
   void UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
                           , we::mgmt::type::activity_t const & act
                           );
-  void UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
-                          , we::mgmt::type::activity_t const & act
-                          );
+  void UpdateExecutionView
+    (const sdpa::daemon::NotificationEvent&, const we::mgmt::type::activity_t&);
 
   Ui::MonitorWindow *ui;
   mutable mutex_type m_task_view_mutex;
