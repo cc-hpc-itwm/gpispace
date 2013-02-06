@@ -9,10 +9,6 @@ set(sdpa-gui_SRCS
   task.cpp
 )
 
-set(sdpa-gui_UIS
-  monitorwindow.ui
-  )
-
 set(sdpa-gui_HDRS
   monitorwindow.hpp
   logeventwrapper.hpp
@@ -32,8 +28,7 @@ set(util-sources
 )
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-QT4_WRAP_UI(sdpa-gui_UIS_H ${sdpa-gui_UIS})
-QT4_WRAP_CPP(sdpa-gui_SRCS_MOC ${sdpa-gui_TOMOC} ${sdpa-gui_UIS_H})
+QT4_WRAP_CPP(sdpa-gui_SRCS_MOC ${sdpa-gui_TOMOC})
 
 qt4_automoc(${sdpa-gui_SRCS_MOC})
 add_executable (sdpa-gui ${sdpa-gui_SRCS} ${sdpa-gui_SRCS_MOC} ${util-sources})

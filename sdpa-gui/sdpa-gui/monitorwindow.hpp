@@ -23,10 +23,6 @@
 class QGraphicsView;
 class QGraphicsScene;
 
-namespace Ui {
-  class MonitorWindow;
-}
-
 class MonitorWindow : public QMainWindow
 {
   Q_OBJECT;
@@ -62,7 +58,6 @@ private:
   void UpdateExecutionView
     (const sdpa::daemon::NotificationEvent&, const we::mgmt::type::activity_t&);
 
-  Ui::MonitorWindow *ui;
   mutable mutex_type m_task_view_mutex;
   mutable mutex_type m_task_struct_mutex;
 
@@ -96,6 +91,11 @@ private:
   component_to_task_list_t m_tasks_list;
 
   QString m_logfile;
+
+  QCheckBox* m_drop_filtered;
+  QComboBox* m_level_filter_selector;
+  QTableWidget* m_log_table;
+  QWidget* task_view_widget;
 };
 
 #endif // MONITORWINDOW_HPP
