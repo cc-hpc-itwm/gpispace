@@ -142,7 +142,9 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                     , m_component_view->verticalScrollBar(), SLOT(setValue(int))
                     );
 
-    m_timer.start((int)(std::floor (1000 / 26. + 0.5)));
+    static const int updates_per_second (30);
+
+    m_timer.start (1000 / updates_per_second);
     m_portfolio_->InitTable();
 }
 
