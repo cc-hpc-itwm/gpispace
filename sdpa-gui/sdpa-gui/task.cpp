@@ -1,16 +1,42 @@
 #include "task.h"
 
-#include <sdpa/daemon/NotificationEvent.hpp>
-
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QPainter>
 #include <QStyleOption>
 #include <QDebug>
-#include <cmath>
-#include <math.h>
 
+#include <cmath>
+
+#include <stdexcept>
 //! [0]
+namespace
+{
+  QColor color_for_state (const sdpa::daemon::NotificationEvent::state_t& state)
+  {
+    typedef sdpa::daemon::NotificationEvent event;
+    switch (state)
+    {
+    case event::STATE_CREATED:
+      return QColor (128, 128, 128); // grey
+
+    case event::STATE_STARTED:
+      return QColor (255, 255, 0);   // yellow
+
+    case event::STATE_FINISHED:
+      return QColor (0, 200, 0);     // green
+
+    case event::STATE_FAILED:
+      return QColor (255, 0, 0);     // red
+
+    case event::STATE_CANCELLED:
+      return QColor (165, 42, 42);   // violet
+    }
+
+    throw std::runtime_error ("invalid state");
+  }
+}
+
 Task::Task( QString const & _c
           , QString const & _n
           , QString const & _id
@@ -20,21 +46,11 @@ Task::Task( QString const & _c
   , m_component(_c)
   , m_name (_n)
   , m_id (_id)
-  , text(0)
-  , color(128, 128, 128)
   , length (1)
-  , m_state (0)
+  , m_state (sdpa::daemon::NotificationEvent::STATE_CREATED)
+  , color (color_for_state (m_state))
 {
-  /*
-  text = new QGraphicsSimpleTextItem(m_name, this);
-  QFont font = text->font();
-  font.setPointSize(7);
-  text->setFont (font);
-  */
-
   setToolTip(m_name+" on "+m_component+" (id = "+m_id+")");
-
-  update_task_state(sdpa::daemon::NotificationEvent::STATE_CREATED);
 }
 
 QRectF Task::boundingRect() const
@@ -46,28 +62,8 @@ QRectF Task::boundingRect() const
 
 void Task::update_task_state(int state)
 {
-  typedef sdpa::daemon::NotificationEvent event_t;
-  switch (state)
-  {
-  case event_t::STATE_STARTED:
-    color = QColor(255,255,0);  // yellow
-    break;
-  case event_t::STATE_FINISHED:
-    color = QColor(0,200,0);    // green
-    break;
-  case event_t::STATE_FAILED:
-    color = QColor(255,0,0);    // red
-    break;
-  case event_t::STATE_CANCELLED:
-    color = QColor(165,42,42);  // violett
-    break;
-  case event_t::STATE_CREATED:
-  default:
-    color = QColor(128,128,128); // grey
-    break;
-  }
-
-  m_state = state;
+  m_state = sdpa::daemon::NotificationEvent::state_t (state);
+  color = color_for_state (m_state);
 }
 
 void Task::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)

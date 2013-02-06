@@ -1,9 +1,10 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include <sdpa/daemon/NotificationEvent.hpp>
+
 #include <QString>
 #include <QGraphicsItem>
-#include <QGraphicsSimpleTextItem>
 
 //! [0]
 class Task : public QGraphicsItem
@@ -31,11 +32,10 @@ private:
   QString m_component;
   QString m_name;
   QString m_id;
-  QGraphicsSimpleTextItem *text;
+
+  sdpa::daemon::NotificationEvent::state_t m_state;
   QColor color;
   qreal length;
-
-  int m_state;
 };
 //! [0]
 
