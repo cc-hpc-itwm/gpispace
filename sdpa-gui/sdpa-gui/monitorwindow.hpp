@@ -12,7 +12,6 @@
 
 #include <boost/thread.hpp>
 
-#include "portfolioeval.hpp"
 #include "task.h"
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -50,10 +49,6 @@ public slots:
   void toggleFollowTaskView(bool checked);
   void levelFilterChanged (int lvl);
   void save ();
-  // portfolio related slots
-  void ClearTable() { m_portfolio_->ClearTable(); }
-  void SubmitPortfolio() { m_portfolio_->SubmitPortfolio(); }
-  void resizePortfolio(int k) { m_portfolio_->Resize(k); }
 
   // execution view
   void clearActivityLog();
@@ -64,9 +59,6 @@ private:
   void handle_external_event (int type, const fhg::log::LogEvent &);
 
   bool event (QEvent *event);
-  void UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
-                          , we::mgmt::type::activity_t const & act
-                          );
   void UpdateExecutionView
     (const sdpa::daemon::NotificationEvent&, const we::mgmt::type::activity_t&);
 
@@ -82,7 +74,6 @@ private:
   bool m_follow_execution;
   std::vector<fhg::log::LogEvent> m_log_events;
 
-  Portfolio *m_portfolio_;
   QGraphicsScene *m_scene;
   QGraphicsView *m_view;
 

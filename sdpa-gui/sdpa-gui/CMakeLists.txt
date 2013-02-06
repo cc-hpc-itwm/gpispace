@@ -6,7 +6,6 @@ set(sdpa-gui_SRCS
   main.cpp
   monitorwindow.cpp
   logeventwrapper.cpp
-  portfolioeval.cpp
   task.cpp
 )
 
@@ -18,12 +17,10 @@ set(sdpa-gui_HDRS
   monitorwindow.hpp
   logeventwrapper.hpp
   windowappender.hpp
-  portfolioeval.hpp
 )
 
 set (sdpa-gui_TOMOC
   monitorwindow.hpp
-  portfolioeval.hpp
 )
 
 # FIXME: I get a linker error, when I try to link against sdpa-util (Bad value),

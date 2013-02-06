@@ -19,11 +19,14 @@
 #include <list>
 #include <sstream>
 #include <cmath>
+#include <fstream>
 
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/bind.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
@@ -31,15 +34,12 @@
 #include <we/loader/putget.hpp>
 #include <we/type/value.hpp>
 
-#include "portfolioevent.hpp"
-
 using namespace std;
 using namespace boost;
 
 enum external_events
 {
-  EXTERNAL_EVENT_EXECUTION = QEvent::User + 1,
-  EXTERNAL_EVENT_LOGGING,
+  EXTERNAL_EVENT_LOGGING = QEvent::User + 1,
 };
 
 MonitorWindow::MonitorWindow( unsigned short exe_port
@@ -69,7 +69,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
   , m_follow_logging (true)
   , m_follow_execution (true)
-  , m_portfolio_(new Portfolio(ui))
   , m_current_scale (1.0)
 {
     ui->setupUi(this);
@@ -79,7 +78,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
     ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
     ui->m_drop_filtered->setCheckState(Qt::Checked);
-    m_portfolio_->Init();
 
     m_scene = new QGraphicsScene (this);
     m_view = new QGraphicsView (m_scene);
@@ -148,7 +146,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     static const int updates_per_second (30);
 
     m_timer.start (1000 / updates_per_second);
-    m_portfolio_->InitTable();
 }
 
 MonitorWindow::~MonitorWindow()
@@ -226,55 +223,6 @@ namespace
   }
 }
 
-void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
-                                       , we::mgmt::type::activity_t const & act
-                                       )
-{
-  if (evt.activity_state() != sdpa::daemon::NotificationEvent::STATE_FINISHED)
-  {
-    return;
-  }
-
-  try
-  {
-    we::type::module_call_t mod_call
-      (boost::get<we::type::module_call_t>(act.transition().data()));
-    if (mod_call.module() == "asian")
-    {
-      int val = ui->m_progressBar->value()+1;
-      ui->m_progressBar->setValue(val);
-    }
-
-    if (mod_call.function() == "done")
-    {
-      we::mgmt::type::activity_t::output_t output (act.output());
-
-      for ( we::mgmt::type::activity_t::output_t::const_iterator it(output.begin())
-          ; it != output.end()
-          ; ++it
-          )
-      {
-        using namespace we::loader;
-        value::type token (it->first);
-
-        long rowId (get<long>(token, "rowID"));
-        double pv (get<double>(token, "pv"));
-        double stddev(get<double>(token, "stddev"));
-        double Delta(get<double>(token, "Delta"));
-        double Gamma(get<double>(token, "Gamma"));
-        double Vega(get<double>(token, "Vega"));
-
-        simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
-        m_portfolio_->ShowResult(sim_res);
-      }
-    }
-  }
-  catch (std::exception const &ex)
-  {
-    // ignore non module calls...
-  }
-}
-
 void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
 {
   sdpa::daemon::NotificationEvent notification;
@@ -292,7 +240,6 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
     we::mgmt::type::activity_t act (notification.activity());
 
     UpdateExecutionView(notification, act);
-    QApplication::postEvent (this, new PortFolioEvent(EXTERNAL_EVENT_EXECUTION, notification, act));
   }
   else
   {
@@ -497,14 +444,6 @@ bool MonitorWindow::event (QEvent* event)
 {
   switch (event->type())
   {
-  case EXTERNAL_EVENT_EXECUTION:
-    event->accept();
-    {
-      PortFolioEvent* evt (static_cast<PortFolioEvent*> (event));
-      UpdatePortfolioView (evt->notification, evt->activity);
-    }
-    return true;
-
   case EXTERNAL_EVENT_LOGGING:
     event->accept();
     append_log (static_cast<LogEventWrapper*> (event)->log_event);
