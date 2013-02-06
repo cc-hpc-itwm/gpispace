@@ -124,21 +124,46 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   QVBoxLayout* verticalLayout_3 = new QVBoxLayout(groupBox_5);
   verticalLayout_3->setSpacing(6);
   verticalLayout_3->setContentsMargins(11, 11, 11, 11);
-  QDial* log_filter_dial = new QDial(groupBox_5);
-  log_filter_dial->setMaximum(5);
-  log_filter_dial->setValue(2);
-  log_filter_dial->setSliderPosition(2);
-  log_filter_dial->setOrientation(Qt::Horizontal);
-  log_filter_dial->setInvertedAppearance(false);
-  log_filter_dial->setInvertedControls(false);
 
-  verticalLayout_3->addWidget(log_filter_dial);
 
-  m_level_filter_selector = new QComboBox(groupBox_5);
+  QDial* log_filter_dial (new QDial (groupBox_5));
+  log_filter_dial->setOrientation (Qt::Horizontal);
 
-  verticalLayout_3->addWidget(m_level_filter_selector);
+  m_level_filter_selector = new QComboBox (groupBox_5);
+  m_level_filter_selector->setToolTip (tr ("Filter events according to level"));
 
-  verticalLayout_5->addWidget(groupBox_5);
+  log_filter_dial->setMaximum (5);
+  m_level_filter_selector->insertItems ( 0
+                                       , QStringList()
+                                       << tr ("Trace")
+                                       << tr ("Debug")
+                                       << tr ("Info")
+                                       << tr ("Warn")
+                                       << tr ("Error")
+                                       << tr ("Fatal")
+                                       );
+
+  log_filter_dial->setValue (2);
+  log_filter_dial->setSliderPosition (2);
+  m_level_filter_selector->setCurrentIndex (2);
+
+  connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
+          , this, SLOT (levelFilterChanged(int))
+          );
+
+  connect ( log_filter_dial, SIGNAL (valueChanged(int))
+          , m_level_filter_selector, SLOT (setCurrentIndex(int))
+          );
+  connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
+          , log_filter_dial, SLOT (setValue(int))
+          );
+
+  verticalLayout_3->addWidget (log_filter_dial);
+  verticalLayout_3->addWidget (m_level_filter_selector);
+
+
+  verticalLayout_5->addWidget (groupBox_5);
+
 
   QSpacerItem* verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
@@ -276,16 +301,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
         groupBox_3->setTitle(tr ("Event Log"));
         groupBox_5->setTitle(tr ("Filter"));
-        m_level_filter_selector->clear();
-        m_level_filter_selector->insertItems(0, QStringList()
-         << tr ("Trace")
-         << tr ("Debug")
-         << tr ("Info")
-         << tr ("Warn")
-         << tr ("Error")
-         << tr ("Fatal")
-        );
-        m_level_filter_selector->setToolTip(tr ("Filter events according to level"));
         groupBox_4->setTitle(tr ("Control"));
         clear_log_button->setToolTip(tr ("Clear all events"));
         clear_log_button->setText(tr ("Clear"));
@@ -305,15 +320,11 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         QObject::connect(clear_log_button, SIGNAL(clicked()), this, SLOT(clearLogging()));
 
         QObject::connect(follow_logging_cb, SIGNAL(toggled(bool)), this, SLOT(toggleFollowLogging(bool)));
-        QObject::connect(m_level_filter_selector, SIGNAL(currentIndexChanged(int)), this, SLOT(levelFilterChanged(int)));
-        QObject::connect(log_filter_dial, SIGNAL(valueChanged(int)), m_level_filter_selector, SLOT(setCurrentIndex(int)));
-        QObject::connect(m_level_filter_selector, SIGNAL(currentIndexChanged(int)), log_filter_dial, SLOT(setValue(int)));
         QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(clearActivityLog()));
         QObject::connect(m_cb_follow_task_view, SIGNAL(toggled(bool)), this, SLOT(toggleFollowTaskView(bool)));
         QObject::connect(m_task_view_zoom_slider, SIGNAL(valueChanged(int)), this, SLOT(changeTaskViewZoom(int)));
 
         SDPAGUI->setCurrentIndex(2);
-        m_level_filter_selector->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(this);
