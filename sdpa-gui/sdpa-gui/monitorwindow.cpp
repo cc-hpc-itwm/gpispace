@@ -70,15 +70,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   , m_current_scale (1.0)
 {
 {
-  setObjectName(QString::fromUtf8("MonitorWindow"));
-  resize(1278, 1022);
 
-  QAction* actionExit = new QAction(this);
-  actionExit->setObjectName(QString::fromUtf8("actionExit"));
-  QAction* actionSave = new QAction(this);
-  actionSave->setObjectName(QString::fromUtf8("actionSave"));
-  QAction* actionClear_Logs = new QAction(this);
-  actionClear_Logs->setObjectName(QString::fromUtf8("actionClear_Logs"));
   QWidget* centralWidget = new QWidget(this);
   centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
   QGridLayout* gridLayout_9 = new QGridLayout(centralWidget);
@@ -104,27 +96,31 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
 
   m_log_table = new QTableWidget(groupBox_3);
-  m_log_table->setColumnCount(4);
-
-  m_log_table->setHorizontalHeaderItem(0, new QTableWidgetItem());
-  m_log_table->setHorizontalHeaderItem(1, new QTableWidgetItem());
-  m_log_table->setHorizontalHeaderItem(2, new QTableWidgetItem());
-  m_log_table->setHorizontalHeaderItem(3, new QTableWidgetItem());
-  m_log_table->setObjectName(QString::fromUtf8("m_log_table"));
-  m_log_table->setEnabled(true);
-  m_log_table->setAutoFillBackground(false);
-  m_log_table->setLineWidth(0);
-  m_log_table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  m_log_table->setEditTriggers(QAbstractItemView::SelectedClicked);
   m_log_table->setAlternatingRowColors(false);
-  m_log_table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-  m_log_table->setShowGrid(false);
-  m_log_table->setGridStyle(Qt::NoPen);
-  m_log_table->setSortingEnabled(false);
-  m_log_table->setWordWrap(false);
-  m_log_table->setCornerButtonEnabled(false);
-  m_log_table->setRowCount(0);
+  m_log_table->setAutoFillBackground(false);
   m_log_table->setColumnCount(4);
+  m_log_table->setCornerButtonEnabled(false);
+  m_log_table->setEditTriggers(QAbstractItemView::SelectedClicked);
+  m_log_table->setEnabled(true);
+  m_log_table->setGridStyle(Qt::NoPen);
+  m_log_table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+  m_log_table->setLineWidth(0);
+  m_log_table->setRowCount(0);
+  m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
+  m_log_table->setShowGrid(false);
+  m_log_table->setSortingEnabled(false);
+  m_log_table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  m_log_table->setWordWrap(false);
+
+  m_log_table->verticalHeader()->setVisible (false);
+
+  m_log_table->setHorizontalHeaderLabels ( QStringList()
+                                         << tr ("Time")
+                                         << tr ("Source")
+                                         << tr ("Location")
+                                         << tr ("Message")
+                                         );
+  m_log_table->horizontalHeader()->setStretchLastSection(true);
 
   gridLayout_3->addWidget(m_log_table, 0, 0, 1, 1);
   gridLayout_4->addWidget(groupBox_3, 0, 0, 1, 1);
@@ -178,7 +174,9 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   verticalLayout_6->addWidget(follow_logging_cb);
 
   m_drop_filtered = new QCheckBox(groupBox_4);
-  m_drop_filtered->setObjectName(QString::fromUtf8("m_drop_filtered"));
+  m_drop_filtered->setCheckState(Qt::Checked);
+  m_drop_filtered->setToolTip(tr ("Drop filtered events instead of keeping them"));
+  m_drop_filtered->setText(tr ("drop filtered"));
 
   verticalLayout_6->addWidget(m_drop_filtered);
 
@@ -296,36 +294,19 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   gridLayout_9->addWidget(SDPAGUI, 0, 0, 1, 1);
 
   setCentralWidget(centralWidget);
-  QMenuBar* menuBar = new QMenuBar(this);
-  menuBar->setObjectName(QString::fromUtf8("menuBar"));
-  menuBar->setGeometry(QRect(0, 0, 1278, 21));
-  QMenu* menuFile = new QMenu(menuBar);
-  menuFile->setObjectName(QString::fromUtf8("menuFile"));
-  setMenuBar(menuBar);
-        QStatusBar* statusBar = new QStatusBar(this);
-        statusBar->setObjectName(QString::fromUtf8("statusBar"));
-        setStatusBar(statusBar);
 
-        menuBar->addAction(menuFile->menuAction());
-        menuFile->addAction(actionSave);
-        menuFile->addSeparator();
-        menuFile->addAction(actionExit);
+  setMenuBar (new QMenuBar (this));
+
+  QMenu* menuFile (menuBar()->addMenu (tr ("File")));
+  menuFile->addAction (tr ("Save"), this, SLOT (save()), QKeySequence::Save);
+  menuFile->addSeparator();
+  menuFile->addAction (tr ("Exit"), this, SLOT (close()), QKeySequence::Quit);
+
+
 
         setWindowTitle(tr ("SDPA Graphical Monitor"));
-        actionExit->setText(tr ("Exit"));
-        actionExit->setShortcut(tr ("Ctrl+Q"));
-        actionSave->setText(tr ("Save"));
-        actionClear_Logs->setText(tr ("Clear Logs"));
-        actionClear_Logs->setToolTip(tr ("Clear logs"));
+
         groupBox_3->setTitle(tr ("Event Log"));
-        QTableWidgetItem *___qtablewidgetitem = m_log_table->horizontalHeaderItem(0);
-        ___qtablewidgetitem->setText(tr ("Time"));
-        QTableWidgetItem *___qtablewidgetitem1 = m_log_table->horizontalHeaderItem(1);
-        ___qtablewidgetitem1->setText(tr ("Source"));
-        QTableWidgetItem *___qtablewidgetitem2 = m_log_table->horizontalHeaderItem(2);
-        ___qtablewidgetitem2->setText(tr ("Location"));
-        QTableWidgetItem *___qtablewidgetitem3 = m_log_table->horizontalHeaderItem(3);
-        ___qtablewidgetitem3->setText(tr ("Message"));
         groupBox_5->setTitle(tr ("Filter"));
         m_level_filter_selector->clear();
         m_level_filter_selector->insertItems(0, QStringList()
@@ -342,8 +323,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         clear_log_button->setText(tr ("Clear"));
         follow_logging_cb->setToolTip(tr ("Follow the stream of log events and automatically scroll the view, drop events otherwise"));
         follow_logging_cb->setText(tr ("follow"));
-        m_drop_filtered->setToolTip(tr ("Drop filtered events instead of keeping them"));
-        m_drop_filtered->setText(tr ("drop filtered"));
         SDPAGUI->setTabText(SDPAGUI->indexOf(logging_tab), tr ("Logging"));
         groupBox_6->setTitle(tr ("Activity Log"));
         groupBox->setTitle(tr ("Legend"));
@@ -354,13 +333,10 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         m_cb_follow_task_view->setText(tr ("follow"));
         pushButton->setText(tr ("Clear"));
         SDPAGUI->setTabText(SDPAGUI->indexOf(execution_tab), tr ("Execution Monitor"));
-        menuFile->setTitle(tr ("File"));
 
-        QObject::connect(actionExit, SIGNAL(activated()), this, SLOT(close()));
-        QObject::connect(actionSave, SIGNAL(activated()), this, SLOT(save()));
-        QObject::connect(clear_log_button, SIGNAL(clicked()), actionClear_Logs, SLOT(trigger()));
+        QObject::connect(clear_log_button, SIGNAL(clicked()), this, SLOT(clearLogging()));
+
         QObject::connect(follow_logging_cb, SIGNAL(toggled(bool)), this, SLOT(toggleFollowLogging(bool)));
-        QObject::connect(actionClear_Logs, SIGNAL(activated()), this, SLOT(clearLogging()));
         QObject::connect(m_level_filter_selector, SIGNAL(currentIndexChanged(int)), this, SLOT(levelFilterChanged(int)));
         QObject::connect(log_filter_dial, SIGNAL(valueChanged(int)), m_level_filter_selector, SLOT(setCurrentIndex(int)));
         QObject::connect(m_level_filter_selector, SIGNAL(currentIndexChanged(int)), log_filter_dial, SLOT(setValue(int)));
@@ -376,12 +352,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     }
 
 
-    m_log_table->verticalHeader ()->setVisible (false);
-    m_log_table->horizontalHeader ()->setVisible (true);
-    m_log_table->horizontalHeader ()->setStretchLastSection(true);
-    m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
-    m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
-    m_drop_filtered->setCheckState(Qt::Checked);
 
     m_scene = new QGraphicsScene (this);
     m_view = new QGraphicsView (m_scene);
