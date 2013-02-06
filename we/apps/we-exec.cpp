@@ -17,6 +17,8 @@
 #include <boost/foreach.hpp>
 #include "test_layer.hpp"
 
+#include <fhg/util/stat.hpp>
+
 using namespace test;
 namespace po = boost::program_options;
 
@@ -219,6 +221,8 @@ try
 #endif
 
   std::cerr << "Everything done." << std::endl;
+
+  fhg::util::stat::out (std::cerr);
 
   return ((jobs.size() == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 }

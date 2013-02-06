@@ -11,6 +11,8 @@
 
 #include <stack>
 
+#include <fhg/util/stat.hpp>
+
 namespace petri_net
 {
   place_id_type net::add_place (const place::type& place)
@@ -351,18 +353,28 @@ namespace petri_net
     {
       const we::type::transition_t& transition (get_transition (tid));
 
+      fhg::util::stat::start ("eval    " + transition.name());
+
       do
       {
+        fhg::util::stat::inc ("eval    " + transition.name());
+
         if (cross.eval (transition))
         {
           _enabled.insert (tid);
 
           cross.write_to (_enabled_choice[tid]);
 
+          fhg::util::stat::inc  ("enable  " + transition.name());
+          fhg::util::stat::stop ("eval    " + transition.name());
+
           return;
         }
       }
       while (cross.step());
+
+      fhg::util::stat::inc  ("disable " + transition.name());
+      fhg::util::stat::stop ("eval    " + transition.name());
     }
 
     disable (tid);
