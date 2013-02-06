@@ -3,40 +3,26 @@
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
+#include <QGraphicsRectItem>
 #include <QString>
-#include <QGraphicsItem>
 
-//! [0]
-class Task : public QGraphicsItem
+class Task : public QGraphicsRectItem
 {
 public:
-  Task( QString const & component
-      , QString const & name
-      , QString const & id
-      , QGraphicsItem * parent = 0
-      );
+  Task ( const QString& component
+       , const QString& name
+       , const QString& id
+       , QGraphicsItem* parent = NULL
+       );
   virtual ~Task () {}
 
-  QRectF boundingRect() const;
-  void paint( QPainter *painter
-            , const QStyleOptionGraphicsItem *option
-            , QWidget *widget
-            );
+  void update_task_state (sdpa::daemon::NotificationEvent::state_t);
 
-  void update_task_state (int state);
-
- protected:
-  void advance(int step);
+protected:
+  void advance (int step);
 
 private:
-  QString m_component;
-  QString m_name;
-  QString m_id;
-
-  sdpa::daemon::NotificationEvent::state_t m_state;
-  QColor color;
-  qreal length;
+  bool _do_advance;
 };
-//! [0]
 
 #endif
