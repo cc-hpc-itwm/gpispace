@@ -72,28 +72,21 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 {
 
   QWidget* centralWidget = new QWidget(this);
-  centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
   QGridLayout* gridLayout_9 = new QGridLayout(centralWidget);
   gridLayout_9->setSpacing(6);
   gridLayout_9->setContentsMargins(11, 11, 11, 11);
-  gridLayout_9->setObjectName(QString::fromUtf8("gridLayout_9"));
   QTabWidget* SDPAGUI = new QTabWidget(centralWidget);
-  SDPAGUI->setObjectName(QString::fromUtf8("SDPAGUI"));
   SDPAGUI->setEnabled(true);
   SDPAGUI->setAutoFillBackground(true);
   SDPAGUI->setDocumentMode(false);
   QWidget* logging_tab = new QWidget();
-  logging_tab->setObjectName(QString::fromUtf8("logging_tab"));
   QGridLayout* gridLayout_4 = new QGridLayout(logging_tab);
   gridLayout_4->setSpacing(6);
   gridLayout_4->setContentsMargins(11, 11, 11, 11);
-  gridLayout_4->setObjectName(QString::fromUtf8("gridLayout_4"));
   QGroupBox* groupBox_3 = new QGroupBox(logging_tab);
-  groupBox_3->setObjectName(QString::fromUtf8("groupBox_3"));
   QGridLayout* gridLayout_3 = new QGridLayout(groupBox_3);
   gridLayout_3->setSpacing(6);
   gridLayout_3->setContentsMargins(11, 11, 11, 11);
-  gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
 
   m_log_table = new QTableWidget(groupBox_3);
   m_log_table->setAlternatingRowColors(false);
@@ -127,15 +120,11 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
   QVBoxLayout* verticalLayout_5 = new QVBoxLayout();
   verticalLayout_5->setSpacing(6);
-  verticalLayout_5->setObjectName(QString::fromUtf8("verticalLayout_5"));
   QGroupBox* groupBox_5 = new QGroupBox(logging_tab);
-  groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
   QVBoxLayout* verticalLayout_3 = new QVBoxLayout(groupBox_5);
   verticalLayout_3->setSpacing(6);
   verticalLayout_3->setContentsMargins(11, 11, 11, 11);
-  verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
   QDial* log_filter_dial = new QDial(groupBox_5);
-  log_filter_dial->setObjectName(QString::fromUtf8("log_filter_dial"));
   log_filter_dial->setMaximum(5);
   log_filter_dial->setValue(2);
   log_filter_dial->setSliderPosition(2);
@@ -146,7 +135,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   verticalLayout_3->addWidget(log_filter_dial);
 
   m_level_filter_selector = new QComboBox(groupBox_5);
-  m_level_filter_selector->setObjectName(QString::fromUtf8("m_level_filter_selector"));
 
   verticalLayout_3->addWidget(m_level_filter_selector);
 
@@ -157,18 +145,14 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   verticalLayout_5->addItem(verticalSpacer_2);
 
   QGroupBox* groupBox_4 = new QGroupBox(logging_tab);
-  groupBox_4->setObjectName(QString::fromUtf8("groupBox_4"));
   QVBoxLayout* verticalLayout_6 = new QVBoxLayout(groupBox_4);
   verticalLayout_6->setSpacing(6);
   verticalLayout_6->setContentsMargins(11, 11, 11, 11);
-  verticalLayout_6->setObjectName(QString::fromUtf8("verticalLayout_6"));
   QPushButton* clear_log_button = new QPushButton(groupBox_4);
-  clear_log_button->setObjectName(QString::fromUtf8("clear_log_button"));
 
   verticalLayout_6->addWidget(clear_log_button);
 
   QCheckBox* follow_logging_cb = new QCheckBox(groupBox_4);
-  follow_logging_cb->setObjectName(QString::fromUtf8("follow_logging_cb"));
   follow_logging_cb->setChecked(true);
 
   verticalLayout_6->addWidget(follow_logging_cb);
@@ -188,19 +172,14 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
   SDPAGUI->addTab(logging_tab, QString());
   QWidget* execution_tab = new QWidget();
-  execution_tab->setObjectName(QString::fromUtf8("execution_tab"));
   QGridLayout* gridLayout_5 = new QGridLayout(execution_tab);
   gridLayout_5->setSpacing(6);
   gridLayout_5->setContentsMargins(11, 11, 11, 11);
-  gridLayout_5->setObjectName(QString::fromUtf8("gridLayout_5"));
   QGroupBox* groupBox_6 = new QGroupBox(execution_tab);
-  groupBox_6->setObjectName(QString::fromUtf8("groupBox_6"));
   QGridLayout* gridLayout_7 = new QGridLayout(groupBox_6);
   gridLayout_7->setSpacing(6);
   gridLayout_7->setContentsMargins(11, 11, 11, 11);
-  gridLayout_7->setObjectName(QString::fromUtf8("gridLayout_7"));
   task_view_widget = new QWidget(groupBox_6);
-  task_view_widget->setObjectName(QString::fromUtf8("task_view_widget"));
   QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
   sizePolicy.setHorizontalStretch(0);
   sizePolicy.setVerticalStretch(0);
@@ -210,7 +189,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   gridLayout_7->addWidget(task_view_widget, 0, 0, 1, 1);
 
   QGroupBox* groupBox = new QGroupBox(groupBox_6);
-  groupBox->setObjectName(QString::fromUtf8("groupBox"));
   QSizePolicy sizePolicy1(QSizePolicy::Minimum, QSizePolicy::Preferred);
   sizePolicy1.setHorizontalStretch(0);
   sizePolicy1.setVerticalStretch(0);
@@ -220,23 +198,19 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   QVBoxLayout* verticalLayout_2 = new QVBoxLayout(groupBox);
   verticalLayout_2->setSpacing(6);
   verticalLayout_2->setContentsMargins(11, 11, 11, 11);
-  verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
   QLabel* label_2 = new QLabel(groupBox);
-  label_2->setObjectName(QString::fromUtf8("label_2"));
   label_2->setAutoFillBackground(false);
   label_2->setStyleSheet(QString::fromUtf8("background-color: rgb(255, 255, 0)"));
 
   verticalLayout_2->addWidget(label_2);
 
   QLabel* label = new QLabel(groupBox);
-  label->setObjectName(QString::fromUtf8("label"));
   label->setAutoFillBackground(false);
   label->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 255, 0);"));
 
   verticalLayout_2->addWidget(label);
 
   QLabel* label_3 = new QLabel(groupBox);
-  label_3->setObjectName(QString::fromUtf8("label_3"));
   label_3->setStyleSheet(QString::fromUtf8("background-color: rgb(255, 0, 0);"));
 
   verticalLayout_2->addWidget(label_3);
@@ -246,13 +220,10 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   verticalLayout_2->addItem(verticalSpacer);
 
   QGroupBox* groupBox_2 = new QGroupBox(groupBox);
-  groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
   QVBoxLayout* verticalLayout_4 = new QVBoxLayout(groupBox_2);
   verticalLayout_4->setSpacing(6);
   verticalLayout_4->setContentsMargins(11, 11, 11, 11);
-  verticalLayout_4->setObjectName(QString::fromUtf8("verticalLayout_4"));
   QCheckBox* m_cb_follow_task_view = new QCheckBox(groupBox_2);
-  m_cb_follow_task_view->setObjectName(QString::fromUtf8("m_cb_follow_task_view"));
   m_cb_follow_task_view->setChecked(true);
   m_cb_follow_task_view->setTristate(false);
 
@@ -260,9 +231,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
   QVBoxLayout* verticalLayout = new QVBoxLayout();
   verticalLayout->setSpacing(6);
-  verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
   QSlider* m_task_view_zoom_slider = new QSlider(groupBox_2);
-  m_task_view_zoom_slider->setObjectName(QString::fromUtf8("m_task_view_zoom_slider"));
   m_task_view_zoom_slider->setMinimum(1);
   m_task_view_zoom_slider->setMaximum(800);
   m_task_view_zoom_slider->setValue(100);
@@ -276,7 +245,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   verticalLayout_4->addLayout(verticalLayout);
 
   QPushButton* pushButton = new QPushButton(groupBox_2);
-  pushButton->setObjectName(QString::fromUtf8("pushButton"));
 
   verticalLayout_4->addWidget(pushButton);
 
