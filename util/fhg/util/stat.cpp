@@ -4,6 +4,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <iomanip>
 #include <ostream>
@@ -57,14 +58,27 @@ namespace fhg
       }
       void out (std::ostream& s)
       {
-        typedef std::pair<std::string, long> sl_type;
+        std::set<std::string> keys;
 
-        BOOST_FOREACH (const sl_type& sl, count_map())
+        BOOST_FOREACH ( const std::string& key
+                      , count_map() | boost::adaptors::map_keys
+                      )
+        {
+          keys.insert (key);
+        }
+        BOOST_FOREACH ( const std::string& key
+                      , time_map() | boost::adaptors::map_keys
+                      )
+        {
+          keys.insert (key);
+        }
+
+        BOOST_FOREACH (const std::string& key, keys)
         {
           s << "STAT"
-            << " " << std::setw(12) << sl.second
-            << " " << std::setw(12) << time_map()[sl.first]
-            << " " << sl.first
+            << " " << std::setw(12) << count_map()[key]
+            << " " << std::setw(12) << time_map()[key]
+            << " " << key
             << std::endl
             ;
         }
