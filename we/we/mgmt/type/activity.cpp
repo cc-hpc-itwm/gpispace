@@ -410,7 +410,6 @@ namespace we
           {
             FHG_UTIL_STAT_INC ("expr " + expr.expression());
             FHG_UTIL_STAT_START ("expr " + expr.expression());
-            FHG_UTIL_STAT_START ("expr-bind " + expr.expression());
 
             expr::eval::context context;
 
@@ -426,7 +425,6 @@ namespace we
                   );
               }
 
-            FHG_UTIL_STAT_STOP ("expr-bind " + expr.expression());
             FHG_UTIL_STAT_START ("expr-eval " + expr.expression());
 
             expr.ast ().eval_all (context);
