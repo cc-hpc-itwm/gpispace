@@ -13,6 +13,8 @@
 
 #include <fhg/util/show.hpp>
 
+#include <fhg/util/stat.hpp>
+
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/foreach.hpp>
@@ -406,6 +408,10 @@ namespace we
 
           int operator() (we::type::expression_t & expr) const
           {
+            fhg::util::stat::inc ("expr " + expr.expression());
+            fhg::util::stat::start ("expr " + expr.expression());
+            fhg::util::stat::start ("expr-bind " + expr.expression());
+
             expr::eval::context context;
 
             for ( type::activity_t::input_t::const_iterator top
@@ -420,7 +426,13 @@ namespace we
                   );
               }
 
+            fhg::util::stat::stop ("expr-bind " + expr.expression());
+            fhg::util::stat::start ("expr-eval " + expr.expression());
+
             expr.ast ().eval_all (context);
+
+            fhg::util::stat::stop ("expr-eval " + expr.expression());
+            fhg::util::stat::start ("expr-put " + expr.expression());
 
             for ( we::type::transition_t::const_iterator port_it
                     (_activity.transition().ports_begin())
@@ -441,6 +453,9 @@ namespace we
                       );
                   }
               }
+
+            fhg::util::stat::stop ("expr-put " + expr.expression());
+            fhg::util::stat::stop ("expr " + expr.expression());
 
             return _ctxt->handle_internally (_activity, expr);
           }
