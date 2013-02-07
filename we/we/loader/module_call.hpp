@@ -10,8 +10,6 @@
 #include <we/type/port.hpp>
 #include <we/type/value/require_type.hpp>
 
-#include <we/mgmt/type/activity.hpp>
-
 #include <boost/foreach.hpp>
 
 namespace module
