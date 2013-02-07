@@ -353,11 +353,11 @@ namespace petri_net
     {
       const we::type::transition_t& transition (get_transition (tid));
 
-      fhg::util::stat::start ("eval    " + transition.name());
+      FHG_UTIL_STAT_START ("eval    " + transition.name());
 
       do
       {
-        fhg::util::stat::inc ("eval    " + transition.name());
+        FHG_UTIL_STAT_INC ("eval    " + transition.name());
 
         if (cross.eval (transition))
         {
@@ -365,16 +365,16 @@ namespace petri_net
 
           cross.write_to (_enabled_choice[tid]);
 
-          fhg::util::stat::inc  ("enable  " + transition.name());
-          fhg::util::stat::stop ("eval    " + transition.name());
+          FHG_UTIL_STAT_INC  ("enable  " + transition.name());
+          FHG_UTIL_STAT_STOP ("eval    " + transition.name());
 
           return;
         }
       }
       while (cross.step());
 
-      fhg::util::stat::inc  ("disable " + transition.name());
-      fhg::util::stat::stop ("eval    " + transition.name());
+      FHG_UTIL_STAT_INC  ("disable " + transition.name());
+      FHG_UTIL_STAT_STOP ("eval    " + transition.name());
     }
 
     disable (tid);

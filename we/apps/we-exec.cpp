@@ -222,7 +222,7 @@ try
 
   std::cerr << "Everything done." << std::endl;
 
-  fhg::util::stat::out (std::cerr);
+  FHG_UTIL_STAT_OUT (std::cerr);
 
   return ((jobs.size() == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 }

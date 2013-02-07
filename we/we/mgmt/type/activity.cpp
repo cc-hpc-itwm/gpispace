@@ -408,9 +408,9 @@ namespace we
 
           int operator() (we::type::expression_t & expr) const
           {
-            fhg::util::stat::inc ("expr " + expr.expression());
-            fhg::util::stat::start ("expr " + expr.expression());
-            fhg::util::stat::start ("expr-bind " + expr.expression());
+            FHG_UTIL_STAT_INC ("expr " + expr.expression());
+            FHG_UTIL_STAT_START ("expr " + expr.expression());
+            FHG_UTIL_STAT_START ("expr-bind " + expr.expression());
 
             expr::eval::context context;
 
@@ -426,13 +426,13 @@ namespace we
                   );
               }
 
-            fhg::util::stat::stop ("expr-bind " + expr.expression());
-            fhg::util::stat::start ("expr-eval " + expr.expression());
+            FHG_UTIL_STAT_STOP ("expr-bind " + expr.expression());
+            FHG_UTIL_STAT_START ("expr-eval " + expr.expression());
 
             expr.ast ().eval_all (context);
 
-            fhg::util::stat::stop ("expr-eval " + expr.expression());
-            fhg::util::stat::start ("expr-put " + expr.expression());
+            FHG_UTIL_STAT_STOP ("expr-eval " + expr.expression());
+            FHG_UTIL_STAT_START ("expr-put " + expr.expression());
 
             for ( we::type::transition_t::const_iterator port_it
                     (_activity.transition().ports_begin())
@@ -454,8 +454,8 @@ namespace we
                   }
               }
 
-            fhg::util::stat::stop ("expr-put " + expr.expression());
-            fhg::util::stat::stop ("expr " + expr.expression());
+            FHG_UTIL_STAT_STOP ("expr-put " + expr.expression());
+            FHG_UTIL_STAT_STOP ("expr " + expr.expression());
 
             return _ctxt->handle_internally (_activity, expr);
           }
