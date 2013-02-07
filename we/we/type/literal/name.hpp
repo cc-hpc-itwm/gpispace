@@ -9,7 +9,7 @@ namespace literal
 {
   typedef std::string type_name_t;
 
-#define CONST(name) const std::string name ()
+#define CONST(name) const std::string& name()
 
   CONST (CONTROL);
   CONST (BOOL);
