@@ -19,9 +19,9 @@ namespace fhg
       void stop (const std::string&);
 
 #ifndef NSTATISTICS
-#define FHG_UTIL_STAT_START(key)  ::fhg::util::stat::stop (key)
+#define FHG_UTIL_STAT_START(key)  ::fhg::util::stat::start (key)
 #define FHG_UTIL_STAT_STOP(key)   ::fhg::util::stat::stop (key)
-#define FHG_UTIL_STAT_INC(key)    ::fhg::util::stat::stop (key)
+#define FHG_UTIL_STAT_INC(key)    ::fhg::util::stat::inc (key)
 #define FHG_UTIL_STAT_OUT(stream) ::fhg::util::stat::out (stream)
 #else
 #define FHG_UTIL_STAT_START(key)
