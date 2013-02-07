@@ -10,8 +10,8 @@
 namespace literal
 {
   const type& require_type ( const signature::field_name_t& field
-                            , const type_name_t& req
-                            , const type& x
+                           , const type_name_t& req
+                           , const type& x
                            );
 }
 
