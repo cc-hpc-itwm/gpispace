@@ -5,7 +5,7 @@
 namespace literal
 {
 #define CONST(name,value)                 \
-  const std::string name()                \
+  const std::string& name()               \
   {                                       \
     static const std::string x (value);   \
                                           \
