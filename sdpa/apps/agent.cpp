@@ -20,6 +20,8 @@
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/read_bool.hpp>
 
+#include <fhg/util/stat.hpp>
+
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -290,6 +292,14 @@ int main (int argc, char **argv)
           }
 
           LOG(INFO, "terminating...");
+
+          {
+            std::ostringstream oss;
+
+            fhg::util::stat::out (oss);
+
+            LOG (INFO, oss.str());
+          }
 
           ptrAgent->shutdown();
         }
