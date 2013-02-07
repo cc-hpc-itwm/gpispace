@@ -57,6 +57,7 @@ set (we_srcs
   type/value/get.cpp
   type/value/find.cpp
   expr/eval/refnode.cpp
+  type/transition.cpp
 )
 
 add_library (we ${we_srcs})

@@ -47,6 +47,7 @@
 #include <boost/serialization/version.hpp>
 
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
 
 namespace we { namespace type {
     namespace exception {
@@ -282,6 +283,8 @@ namespace we { namespace type {
         , prop_ (other.prop_)
         , _requirements (other._requirements)
       { }
+
+      boost::optional<const expression_t&> expression() const;
 
       const condition::type & condition() const
       {
