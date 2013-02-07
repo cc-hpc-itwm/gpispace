@@ -9,10 +9,10 @@
 
 namespace value
 {
-  type require_type ( const signature::field_name_t&
-                    , const signature::type&
-                    , const value::type&
-                    );
+  const type& require_type ( const signature::field_name_t&
+                           , const signature::type&
+                           , const value::type&
+                           );
 }
 
 #endif

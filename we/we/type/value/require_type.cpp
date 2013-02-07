@@ -15,26 +15,32 @@ namespace value
 {
   namespace
   {
-    class visitor_require_type : public boost::static_visitor<type>
+    class visitor_require_type : public boost::static_visitor<const type&>
     {
     private:
       const signature::field_name_t & field_name;
+      const type& _value;
 
     public:
-      visitor_require_type (const signature::field_name_t & _field_name)
+      visitor_require_type ( const signature::field_name_t & _field_name
+                           , const type& value
+                           )
         : field_name (_field_name)
+        , _value (value)
       {}
 
-      type operator () ( const literal::type_name_t & type_name
-                       , const literal::type & v
-                       ) const
+      const type& operator () ( const literal::type_name_t& type_name
+                              , const literal::type& v
+                              ) const
       {
-        return literal::require_type (field_name, type_name, v);
+        literal::require_type (field_name, type_name, v);
+
+        return _value;
       }
 
-      type operator () ( const signature::structured_t & signature
-                       , const structured_t & v
-                       ) const
+      const type& operator () ( const signature::structured_t & signature
+                              , const structured_t& v
+                              ) const
       {
         for ( signature::structured_t::const_iterator sig (signature.begin())
             ; sig != signature.end()
@@ -64,12 +70,12 @@ namespace value
           if (!signature.has_field (field->first))
             throw ::type::error ("unknown field " + field->first);
 
-        return v;
+        return _value;
       }
 
-      type operator () ( const signature::structured_t& signature
-                       , const literal::type& u
-                       ) const
+      const type& operator () ( const signature::structured_t& signature
+                              , const literal::type& u
+                              ) const
       {
         std::ostringstream s;
 
@@ -81,9 +87,9 @@ namespace value
         throw ::type::error (s.str());
       }
 
-      type operator () ( const literal::type_name_t& type_name
-                       , const structured_t& v
-                       ) const
+      const type& operator () ( const literal::type_name_t& type_name
+                              , const structured_t& v
+                              ) const
       {
         std::ostringstream s;
 
@@ -97,11 +103,14 @@ namespace value
     };
   }
 
-  type require_type ( const signature::field_name_t& field
-                    , const signature::type& sig
-                    , const value::type& v
-                    )
+  const type& require_type ( const signature::field_name_t& field
+                           , const signature::type& sig
+                           , const value::type& v
+                           )
   {
-    return boost::apply_visitor (visitor_require_type (field), sig.desc(), v);
+    return boost::apply_visitor ( visitor_require_type (field, v)
+                                , sig.desc()
+                                , v
+                                );
   }
 }
