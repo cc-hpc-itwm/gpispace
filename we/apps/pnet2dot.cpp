@@ -18,8 +18,11 @@
 // ************************************************************************* //
 
 namespace detail {
-  template<typename Activity, typename Pred>
-  void to_dot (std::ostream & os, const Activity & a, const Pred & pred)
+  template<typename Pred>
+  void to_dot ( std::ostream & os
+              , const we::mgmt::type::activity_t& a
+              , const Pred & pred
+              )
   {
     we::type::dot::id_type id (0);
 
