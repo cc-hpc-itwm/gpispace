@@ -316,7 +316,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
   setCentralWidget (tab_widget);
   setWindowTitle(tr ("SDPA Graphical Monitor"));
-  tab_widget->setCurrentIndex (2);
+  tab_widget->setCurrentIndex (1);
 
   setMenuBar (new QMenuBar (this));
 
