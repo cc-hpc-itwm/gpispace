@@ -9,8 +9,7 @@ class WindowAppender : public fhg::log::Appender
 public:
   typedef boost::function<void (fhg::log::LogEvent const &)> event_handler_t;
 
-  template <typename F>
-  WindowAppender (F handler)
+  WindowAppender (const event_handler_t& handler)
     : fhg::log::Appender ("event-handler")
     , m_handler (handler)
  {}
