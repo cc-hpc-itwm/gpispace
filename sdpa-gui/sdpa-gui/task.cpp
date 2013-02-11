@@ -1,6 +1,7 @@
 #include "task.h"
 
 #include <QGraphicsScene>
+#include <QSettings>
 
 #include <cmath>
 #include <stdexcept>
@@ -10,22 +11,25 @@ namespace
   QColor color_for_state (const sdpa::daemon::NotificationEvent::state_t& state)
   {
     typedef sdpa::daemon::NotificationEvent event;
+
+    QSettings settings;
+
     switch (state)
     {
     case event::STATE_CREATED:
-      return QColor (128, 128, 128); // grey
+      return settings.value ("gantt/created").value<QColor>();
 
     case event::STATE_STARTED:
-      return QColor (255, 255, 0);   // yellow
+      return settings.value ("gantt/started").value<QColor>();
 
     case event::STATE_FINISHED:
-      return QColor (0, 200, 0);     // green
+      return settings.value ("gantt/finished").value<QColor>();
 
     case event::STATE_FAILED:
-      return QColor (255, 0, 0);     // red
+      return settings.value ("gantt/failed").value<QColor>();
 
     case event::STATE_CANCELLED:
-      return QColor (165, 42, 42);   // violet
+      return settings.value ("gantt/cancelled").value<QColor>();
     }
 
     throw std::runtime_error ("invalid state");

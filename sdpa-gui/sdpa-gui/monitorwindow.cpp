@@ -247,18 +247,26 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     QGroupBox* legend_box (new QGroupBox (tr ("Legend"), execution_tab));
     QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
 
-    //! \todo Same colors as in gantt. Also, all possible states.
-    QLabel* running (new QLabel (tr ("Running"), legend_box));
-    running->setStyleSheet ("background-color: rgb(255, 255, 0)");
-    legend_box_layout->addWidget (running);
+    {
+      QSettings settings;
+      settings.beginGroup ("gantt");
 
-    QLabel* finished (new QLabel (tr ("Finished"), legend_box));
-    finished->setStyleSheet ("background-color: rgb(255, 0, 0)");
-    legend_box_layout->addWidget (finished);
+      foreach ( const QString& state
+              , QStringList()
+              << "created" << "started" << "finished" << "failed" << "cancelled"
+              )
+      {
+        int r, g, b;
+        settings.value (state).value<QColor>().getRgb (&r, &g, &b);
 
-    QLabel* failed (new QLabel (tr ("Failed"), legend_box));
-    failed->setStyleSheet ("background-color: rgb(0, 255, 0)");
-    legend_box_layout->addWidget (failed);
+        QLabel* label (new QLabel (state, legend_box));
+        label->setStyleSheet
+          (QString ("background-color: rgb(%1, %2, %3)").arg (r).arg (g).arg (b));
+        legend_box_layout->addWidget (label);
+      }
+
+      settings.endGroup();
+    }
 
     execution_sidebar_layout->addWidget (legend_box);
 
