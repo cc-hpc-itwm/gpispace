@@ -44,6 +44,11 @@ namespace fhg
           return (double(tv.tv_sec) + double (tv.tv_usec) * 1E-6);
         }
       }
+      void reset ()
+      {
+        count_map ().clear ();
+        time_map ().clear ();
+      }
       void inc (const std::string& k)
       {
         ++count_map()[k];
