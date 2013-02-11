@@ -296,7 +296,7 @@ int main (int argc, char **argv)
           {
             std::ostringstream oss;
 
-            fhg::util::stat::out (oss);
+            FHG_UTIL_STAT_OUT (oss);
 
             LOG (INFO, oss.str());
           }
