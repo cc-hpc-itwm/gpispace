@@ -591,11 +591,6 @@ static const int TABLE_COL_MESSAGE = 3;
 
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
 {
-  if (not m_follow_logging)
-  {
-    return;
-  }
-
   if ( evt.severity() < m_level_filter_selector->currentIndex ()
      && m_drop_filtered->isChecked()
      )
