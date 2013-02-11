@@ -507,25 +507,25 @@ void MonitorWindow::UpdateExecutionView
 
 void MonitorWindow::clearActivityLog()
 {
-  lock_type struct_lock(m_task_struct_mutex);
+  lock_type struct_lock (m_task_struct_mutex);
 
-  delete m_scene; delete m_component_scene;
+  delete m_scene;
+  delete m_component_scene;
   m_scene = new QGraphicsScene (this);
-  m_component_scene = new QGraphicsScene();
+  m_component_scene = new QGraphicsScene (this);
 
-  m_view->setScene(m_scene);
-  m_component_view->setScene(m_component_scene);
+  m_view->setScene (m_scene);
+  m_component_view->setScene (m_component_scene);
 
   m_tasks_grid.clear();
   m_tasks_list.clear();
   m_components.clear();
 
   {
-    lock_type update_lock(m_task_view_mutex);
+    lock_type update_lock (m_task_view_mutex);
     while (!m_scene_updates.empty())
     {
-      QGraphicsItem *t = m_scene_updates.front().first;
-      delete t;
+      delete m_scene_updates.front().first;
       m_scene_updates.pop_front();
     }
   }
