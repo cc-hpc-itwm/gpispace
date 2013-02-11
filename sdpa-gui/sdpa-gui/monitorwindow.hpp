@@ -51,6 +51,8 @@ public slots:
   void advance();
   void changeTaskViewZoom(int);    // from slider
 
+  void change_gantt_color (const QString&);
+
 private:
   void handle_external_event (int type, const fhg::log::LogEvent &);
 

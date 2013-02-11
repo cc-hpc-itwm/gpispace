@@ -248,6 +248,11 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     QGroupBox* legend_box (new QGroupBox (tr ("Legend"), execution_tab));
     QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
 
+    QSignalMapper* legend_label_click (new QSignalMapper (this));
+    connect ( legend_label_click, SIGNAL (mapped (QString))
+            , this, SLOT (change_gantt_color (QString))
+            );
+
     {
       QSettings settings;
       settings.beginGroup ("gantt");
@@ -260,10 +265,13 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         int r, g, b;
         settings.value (state).value<QColor>().getRgb (&r, &g, &b);
 
-        QLabel* label (new QLabel (state, legend_box));
+        QPushButton* label (new QPushButton (state, legend_box));
         label->setStyleSheet
           (QString ("background-color: rgb(%1, %2, %3)").arg (r).arg (g).arg (b));
         legend_box_layout->addWidget (label);
+
+        connect (label, SIGNAL (clicked()), legend_label_click, SLOT (map()));
+        legend_label_click->setMapping (label, state);
       }
 
       settings.endGroup();
@@ -344,6 +352,34 @@ MonitorWindow::~MonitorWindow()
 {
   m_io_service.stop();
   m_io_thread.join();
+}
+
+void MonitorWindow::change_gantt_color (const QString& state)
+{
+  QSettings settings;
+
+  QColor new_color
+    ( QColorDialog::getColor ( settings.value ("gantt/" + state).value<QColor>()
+                             , this
+                             , tr ("Select new color for state %1").arg (state)
+                             )
+    );
+
+  if (new_color.isValid())
+  {
+    settings.setValue ("gantt/" + state, new_color);
+
+    int r, g, b;
+    new_color.getRgb (&r, &g, &b);
+
+    //! \todo This is _really_ ugly code. Any way to solve this more nicely?
+    qobject_cast<QWidget*>
+      (qobject_cast<QSignalMapper*> (sender())->mapping (state))->setStyleSheet
+      (QString ("background-color: rgb(%1, %2, %3)").arg (r).arg (g).arg (b));
+
+    //! \todo Update already added items? Needs storing state in items
+    //! and looping over them.
+  }
 }
 
 void MonitorWindow::advance()
