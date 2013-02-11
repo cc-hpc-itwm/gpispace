@@ -45,7 +45,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                             , unsigned short log_port
                             , QWidget *parent
                             )
-  : QMainWindow(parent)
+  : QMainWindow (parent)
   , m_log_server ( fhg::log::Appender::ptr_t
                    ( new WindowAppender
                      ( boost::bind
@@ -67,226 +67,256 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
   , m_follow_logging (true)
   , m_follow_execution (true)
+  , m_scene (new QGraphicsScene (this))
+  , m_view (new QGraphicsView (m_scene))
+  , m_component_scene (new QGraphicsScene (this))
+  , m_component_view (new QGraphicsView (m_component_scene))
   , m_current_scale (1.0)
+  , m_drop_filtered (new QCheckBox (tr ("drop filtered"), this))
+  , m_level_filter_selector (new QComboBox (this))
+  , m_log_table (new QTableWidget (this))
 {
-{
+  QTabWidget* tab_widget (new QTabWidget (this));
+  tab_widget->setEnabled (true);
+  tab_widget->setAutoFillBackground (true);
+  tab_widget->setDocumentMode (false);
 
-  QWidget* centralWidget = new QWidget(this);
-  QGridLayout* gridLayout_9 = new QGridLayout(centralWidget);
-  gridLayout_9->setSpacing(6);
-  gridLayout_9->setContentsMargins(11, 11, 11, 11);
-  QTabWidget* SDPAGUI = new QTabWidget(centralWidget);
-  SDPAGUI->setEnabled(true);
-  SDPAGUI->setAutoFillBackground(true);
-  SDPAGUI->setDocumentMode(false);
-  QWidget* logging_tab = new QWidget();
-  QGridLayout* gridLayout_4 = new QGridLayout(logging_tab);
-  gridLayout_4->setSpacing(6);
-  gridLayout_4->setContentsMargins(11, 11, 11, 11);
-  QGroupBox* groupBox_3 = new QGroupBox(logging_tab);
-  QGridLayout* gridLayout_3 = new QGridLayout(groupBox_3);
-  gridLayout_3->setSpacing(6);
-  gridLayout_3->setContentsMargins(11, 11, 11, 11);
+  // --- logging tab
+  {
+    QWidget* logging_tab (new QWidget);
+    QGridLayout* logging_tab_layout (new QGridLayout (logging_tab));
 
-  m_log_table = new QTableWidget(groupBox_3);
-  m_log_table->setAlternatingRowColors(false);
-  m_log_table->setAutoFillBackground(false);
-  m_log_table->setColumnCount(4);
-  m_log_table->setCornerButtonEnabled(false);
-  m_log_table->setEditTriggers(QAbstractItemView::SelectedClicked);
-  m_log_table->setEnabled(true);
-  m_log_table->setGridStyle(Qt::NoPen);
-  m_log_table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-  m_log_table->setLineWidth(0);
-  m_log_table->setRowCount(0);
-  m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
-  m_log_table->setShowGrid(false);
-  m_log_table->setSortingEnabled(false);
-  m_log_table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  m_log_table->setWordWrap(false);
+    logging_tab_layout->setSpacing (6);
+    logging_tab_layout->setContentsMargins (11, 11, 11, 11);
 
-  m_log_table->verticalHeader()->setVisible (false);
+    m_log_table->setAlternatingRowColors (false);
+    m_log_table->setAutoFillBackground (false);
+    m_log_table->setColumnCount (4);
+    m_log_table->setCornerButtonEnabled (false);
+    m_log_table->setEditTriggers (QAbstractItemView::SelectedClicked);
+    m_log_table->setEnabled (true);
+    m_log_table->setGridStyle (Qt::NoPen);
+    m_log_table->setHorizontalScrollMode (QAbstractItemView::ScrollPerPixel);
+    m_log_table->setLineWidth (0);
+    m_log_table->setRowCount (0);
+    m_log_table->setSelectionMode (QAbstractItemView::NoSelection);
+    m_log_table->setShowGrid (false);
+    m_log_table->setSortingEnabled (false);
+    m_log_table->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+    m_log_table->setWordWrap (false);
 
-  m_log_table->setHorizontalHeaderLabels ( QStringList()
-                                         << tr ("Time")
-                                         << tr ("Source")
-                                         << tr ("Location")
-                                         << tr ("Message")
+    m_log_table->verticalHeader()->setVisible (false);
+
+    m_log_table->setHorizontalHeaderLabels ( QStringList()
+                                           << tr ("Time")
+                                           << tr ("Source")
+                                           << tr ("Location")
+                                           << tr ("Message")
+                                           );
+    m_log_table->horizontalHeader()->setStretchLastSection (true);
+
+    logging_tab_layout->addWidget (m_log_table, 0, 0);
+
+    QVBoxLayout* log_sidebar_layout (new QVBoxLayout);
+    log_sidebar_layout->setSpacing (6);
+
+    QGroupBox* log_filter_box (new QGroupBox (tr ("Filter"), logging_tab));
+
+    QDial* log_filter_dial (new QDial (log_filter_box));
+    log_filter_dial->setOrientation (Qt::Horizontal);
+
+    m_level_filter_selector->setToolTip (tr ("Filter events according to level"));
+
+    log_filter_dial->setMaximum (5);
+    m_level_filter_selector->insertItems ( 0
+                                         , QStringList()
+                                         << tr ("Trace")
+                                         << tr ("Debug")
+                                         << tr ("Info")
+                                         << tr ("Warn")
+                                         << tr ("Error")
+                                         << tr ("Fatal")
                                          );
-  m_log_table->horizontalHeader()->setStretchLastSection(true);
 
-  gridLayout_3->addWidget(m_log_table, 0, 0, 1, 1);
-  gridLayout_4->addWidget(groupBox_3, 0, 0, 1, 1);
+    log_filter_dial->setValue (2);
+    log_filter_dial->setSliderPosition (2);
+    m_level_filter_selector->setCurrentIndex (2);
 
-  QVBoxLayout* verticalLayout_5 = new QVBoxLayout();
-  verticalLayout_5->setSpacing(6);
-  QGroupBox* groupBox_5 = new QGroupBox(logging_tab);
-  QVBoxLayout* verticalLayout_3 = new QVBoxLayout(groupBox_5);
-  verticalLayout_3->setSpacing(6);
-  verticalLayout_3->setContentsMargins(11, 11, 11, 11);
+    connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
+            , this, SLOT (levelFilterChanged(int))
+            );
 
+    connect ( log_filter_dial, SIGNAL (valueChanged(int))
+            , m_level_filter_selector, SLOT (setCurrentIndex(int))
+            );
+    connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
+            , log_filter_dial, SLOT (setValue(int))
+            );
 
-  QDial* log_filter_dial (new QDial (groupBox_5));
-  log_filter_dial->setOrientation (Qt::Horizontal);
-
-  m_level_filter_selector = new QComboBox (groupBox_5);
-  m_level_filter_selector->setToolTip (tr ("Filter events according to level"));
-
-  log_filter_dial->setMaximum (5);
-  m_level_filter_selector->insertItems ( 0
-                                       , QStringList()
-                                       << tr ("Trace")
-                                       << tr ("Debug")
-                                       << tr ("Info")
-                                       << tr ("Warn")
-                                       << tr ("Error")
-                                       << tr ("Fatal")
-                                       );
-
-  log_filter_dial->setValue (2);
-  log_filter_dial->setSliderPosition (2);
-  m_level_filter_selector->setCurrentIndex (2);
-
-  connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
-          , this, SLOT (levelFilterChanged(int))
-          );
-
-  connect ( log_filter_dial, SIGNAL (valueChanged(int))
-          , m_level_filter_selector, SLOT (setCurrentIndex(int))
-          );
-  connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
-          , log_filter_dial, SLOT (setValue(int))
-          );
-
-  verticalLayout_3->addWidget (log_filter_dial);
-  verticalLayout_3->addWidget (m_level_filter_selector);
+    m_drop_filtered->setCheckState (Qt::Checked);
+    m_drop_filtered->setToolTip
+      (tr ("Drop filtered events instead of keeping them"));
 
 
-  verticalLayout_5->addWidget (groupBox_5);
+    QVBoxLayout* log_filter_layout (new QVBoxLayout (log_filter_box));
+    log_filter_layout->setSpacing (6);
+    log_filter_layout->setContentsMargins (11, 11, 11, 11);
+
+    log_filter_layout->addWidget (log_filter_dial);
+    log_filter_layout->addWidget (m_level_filter_selector);
+
+    log_filter_layout->addWidget (m_drop_filtered);
 
 
-  QSpacerItem* verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    log_sidebar_layout->addWidget (log_filter_box);
 
-  verticalLayout_5->addItem(verticalSpacer_2);
+    log_sidebar_layout->addSpacerItem
+      (new QSpacerItem (20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
 
-  QGroupBox* groupBox_4 = new QGroupBox(logging_tab);
-  QVBoxLayout* verticalLayout_6 = new QVBoxLayout(groupBox_4);
-  verticalLayout_6->setSpacing(6);
-  verticalLayout_6->setContentsMargins(11, 11, 11, 11);
-  QPushButton* clear_log_button = new QPushButton(groupBox_4);
+    QGroupBox* control_box (new QGroupBox (tr ("Control"), logging_tab));
 
-  verticalLayout_6->addWidget(clear_log_button);
+    QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
 
-  QCheckBox* follow_logging_cb = new QCheckBox(groupBox_4);
-  follow_logging_cb->setChecked(true);
+    QPushButton* clear_log_button (new QPushButton (tr ("Clear"), control_box));
+    clear_log_button->setToolTip (tr ("Clear all events"));
+    connect (clear_log_button, SIGNAL (clicked()), this, SLOT (clearLogging()));
 
-  verticalLayout_6->addWidget(follow_logging_cb);
+    control_box_layout->addWidget(clear_log_button);
 
-  m_drop_filtered = new QCheckBox(groupBox_4);
-  m_drop_filtered->setCheckState(Qt::Checked);
-  m_drop_filtered->setToolTip(tr ("Drop filtered events instead of keeping them"));
-  m_drop_filtered->setText(tr ("drop filtered"));
+    QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), control_box));
+    follow_logging_cb->setChecked (true);
+    follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
+                                         "automatically scroll the view, drop "
+                                         "events otherwise"
+                                       )
+                                  );
+    connect ( follow_logging_cb, SIGNAL (toggled (bool))
+            , this, SLOT (toggleFollowLogging (bool))
+            );
 
-  verticalLayout_6->addWidget(m_drop_filtered);
+    control_box_layout->addWidget (follow_logging_cb);
 
+    log_sidebar_layout->addWidget (control_box);
 
-  verticalLayout_5->addWidget(groupBox_4);
+    logging_tab_layout->addLayout (log_sidebar_layout, 0, 1);
 
+    tab_widget->addTab (logging_tab, tr ("Logging"));
 
-  gridLayout_4->addLayout(verticalLayout_5, 0, 1, 1, 1);
+  }
 
-  SDPAGUI->addTab(logging_tab, QString());
-  QWidget* execution_tab = new QWidget();
-  QGridLayout* gridLayout_5 = new QGridLayout(execution_tab);
-  gridLayout_5->setSpacing(6);
-  gridLayout_5->setContentsMargins(11, 11, 11, 11);
-  QGroupBox* groupBox_6 = new QGroupBox(execution_tab);
-  QGridLayout* gridLayout_7 = new QGridLayout(groupBox_6);
-  gridLayout_7->setSpacing(6);
-  gridLayout_7->setContentsMargins(11, 11, 11, 11);
-  task_view_widget = new QWidget(groupBox_6);
-  QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-  sizePolicy.setHorizontalStretch(0);
-  sizePolicy.setVerticalStretch(0);
-  sizePolicy.setHeightForWidth(task_view_widget->sizePolicy().hasHeightForWidth());
-  task_view_widget->setSizePolicy(sizePolicy);
+  // --- execution monitor tab
+  {
+    QWidget* execution_tab (new QWidget);
+    QGridLayout* execution_tab_layout (new QGridLayout (execution_tab));
 
-  gridLayout_7->addWidget(task_view_widget, 0, 0, 1, 1);
+    execution_tab_layout->setSpacing (6);
+    execution_tab_layout->setContentsMargins (11, 11, 11, 11);
 
-  QGroupBox* groupBox = new QGroupBox(groupBox_6);
-  QSizePolicy sizePolicy1(QSizePolicy::Minimum, QSizePolicy::Preferred);
-  sizePolicy1.setHorizontalStretch(0);
-  sizePolicy1.setVerticalStretch(0);
-  sizePolicy1.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
-  groupBox->setSizePolicy(sizePolicy1);
-  groupBox->setMaximumSize(QSize(150, 16777215));
-  QVBoxLayout* verticalLayout_2 = new QVBoxLayout(groupBox);
-  verticalLayout_2->setSpacing(6);
-  verticalLayout_2->setContentsMargins(11, 11, 11, 11);
-  QLabel* label_2 = new QLabel(groupBox);
-  label_2->setAutoFillBackground(false);
-  label_2->setStyleSheet(QString::fromUtf8("background-color: rgb(255, 255, 0)"));
+    m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
+    m_view->setDragMode (QGraphicsView::ScrollHandDrag);
+    m_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+    m_view->setTransformationAnchor (QGraphicsView::AnchorViewCenter);
+    m_view->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
 
-  verticalLayout_2->addWidget(label_2);
+    m_component_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
+    m_component_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+    m_component_view->setRenderHint (QPainter::Antialiasing);
+    m_component_view->setTransformationAnchor (QGraphicsView::NoAnchor);
+    m_component_view->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
 
-  QLabel* label = new QLabel(groupBox);
-  label->setAutoFillBackground(false);
-  label->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 255, 0);"));
-
-  verticalLayout_2->addWidget(label);
-
-  QLabel* label_3 = new QLabel(groupBox);
-  label_3->setStyleSheet(QString::fromUtf8("background-color: rgb(255, 0, 0);"));
-
-  verticalLayout_2->addWidget(label_3);
-
-  QSpacerItem* verticalSpacer = new QSpacerItem(118, 68, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-  verticalLayout_2->addItem(verticalSpacer);
-
-  QGroupBox* groupBox_2 = new QGroupBox(groupBox);
-  QVBoxLayout* verticalLayout_4 = new QVBoxLayout(groupBox_2);
-  verticalLayout_4->setSpacing(6);
-  verticalLayout_4->setContentsMargins(11, 11, 11, 11);
-  QCheckBox* m_cb_follow_task_view = new QCheckBox(groupBox_2);
-  m_cb_follow_task_view->setChecked(true);
-  m_cb_follow_task_view->setTristate(false);
-
-  verticalLayout_4->addWidget(m_cb_follow_task_view);
-
-  QVBoxLayout* verticalLayout = new QVBoxLayout();
-  verticalLayout->setSpacing(6);
-  QSlider* m_task_view_zoom_slider = new QSlider(groupBox_2);
-  m_task_view_zoom_slider->setMinimum(1);
-  m_task_view_zoom_slider->setMaximum(800);
-  m_task_view_zoom_slider->setValue(100);
-  m_task_view_zoom_slider->setOrientation(Qt::Horizontal);
-  m_task_view_zoom_slider->setTickPosition(QSlider::TicksAbove);
-  m_task_view_zoom_slider->setTickInterval(100);
-
-  verticalLayout->addWidget(m_task_view_zoom_slider);
+    connect ( m_view->verticalScrollBar(), SIGNAL (valueChanged (int))
+            , m_component_view->verticalScrollBar(), SLOT (setValue (int))
+            );
 
 
-  verticalLayout_4->addLayout(verticalLayout);
+    QSplitter* task_view_widget (new QSplitter (Qt::Horizontal, execution_tab));
+    QHBoxLayout *task_view_widget_layout (new QHBoxLayout);
+    task_view_widget_layout->setSpacing (0);
+    task_view_widget_layout->setContentsMargins (0, 0, 0, 0);
 
-  QPushButton* pushButton = new QPushButton(groupBox_2);
+    task_view_widget->addWidget (m_component_view);
+    task_view_widget->addWidget (m_view);
+    task_view_widget->setLayout (task_view_widget_layout);
 
-  verticalLayout_4->addWidget(pushButton);
-
-
-  verticalLayout_2->addWidget(groupBox_2);
-
-
-  gridLayout_7->addWidget(groupBox, 0, 1, 1, 1);
+    task_view_widget->setSizes (QList<int>() << 0 << 1);
 
 
-  gridLayout_5->addWidget(groupBox_6, 0, 0, 1, 1);
+    QVBoxLayout* execution_sidebar_layout (new QVBoxLayout);
+    execution_sidebar_layout->setSpacing (6);
 
-  SDPAGUI->addTab(execution_tab, QString());
+    QGroupBox* legend_box (new QGroupBox (tr ("Legend"), execution_tab));
+    QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
 
-  gridLayout_9->addWidget(SDPAGUI, 0, 0, 1, 1);
+    //! \todo Same colors as in gantt. Also, all possible states.
+    QLabel* running (new QLabel (tr ("Running"), legend_box));
+    running->setStyleSheet ("background-color: rgb(255, 255, 0)");
+    legend_box_layout->addWidget (running);
 
-  setCentralWidget(centralWidget);
+    QLabel* finished (new QLabel (tr ("Finished"), legend_box));
+    finished->setStyleSheet ("background-color: rgb(255, 0, 0)");
+    legend_box_layout->addWidget (finished);
+
+    QLabel* failed (new QLabel (tr ("Failed"), legend_box));
+    failed->setStyleSheet ("background-color: rgb(0, 255, 0)");
+    legend_box_layout->addWidget (failed);
+
+    execution_sidebar_layout->addWidget (legend_box);
+
+    execution_sidebar_layout->addSpacerItem
+      (new QSpacerItem (20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    QGroupBox* control_box (new QGroupBox (tr ("Control"), execution_tab));
+
+    QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
+
+    QPushButton* clear_log_button (new QPushButton (tr ("Clear"), control_box));
+    clear_log_button->setToolTip (tr ("Clear all events"));
+    connect ( clear_log_button, SIGNAL (clicked())
+            , this, SLOT (clearActivityLog())
+            );
+
+    control_box_layout->addWidget(clear_log_button);
+
+    QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), control_box));
+    follow_logging_cb->setChecked (true);
+    follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
+                                         "automatically scroll the view"
+                                       )
+                                  );
+    connect ( follow_logging_cb, SIGNAL (toggled (bool))
+            , this, SLOT (toggleFollowTaskView (bool))
+            );
+
+    control_box_layout->addWidget (follow_logging_cb);
+
+    QSlider* m_task_view_zoom_slider (new QSlider (control_box));
+    m_task_view_zoom_slider->setMinimum (1);
+    m_task_view_zoom_slider->setMaximum (800);
+    m_task_view_zoom_slider->setValue (100);
+    m_task_view_zoom_slider->setOrientation (Qt::Horizontal);
+    m_task_view_zoom_slider->setTickPosition (QSlider::TicksAbove);
+    m_task_view_zoom_slider->setTickInterval (100);
+
+    connect ( m_task_view_zoom_slider, SIGNAL(valueChanged(int))
+            , this, SLOT(changeTaskViewZoom(int))
+            );
+
+    control_box_layout->addWidget (m_task_view_zoom_slider);
+
+    execution_sidebar_layout->addWidget (control_box);
+
+    execution_tab_layout->addWidget (task_view_widget, 0, 0);
+
+    execution_tab_layout->addLayout (execution_sidebar_layout, 0, 1);
+
+    tab_widget->addTab (execution_tab, tr ("Execution Monitor"));
+  }
+
+  // --- meta
+
+  setCentralWidget (tab_widget);
+  setWindowTitle(tr ("SDPA Graphical Monitor"));
+  tab_widget->setCurrentIndex (2);
 
   setMenuBar (new QMenuBar (this));
 
@@ -295,110 +325,10 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   menuFile->addSeparator();
   menuFile->addAction (tr ("Exit"), this, SLOT (close()), QKeySequence::Quit);
 
+  connect (&m_timer, SIGNAL(timeout()), this, SLOT(advance()));
 
-
-        setWindowTitle(tr ("SDPA Graphical Monitor"));
-
-        groupBox_3->setTitle(tr ("Event Log"));
-        groupBox_5->setTitle(tr ("Filter"));
-        groupBox_4->setTitle(tr ("Control"));
-        clear_log_button->setToolTip(tr ("Clear all events"));
-        clear_log_button->setText(tr ("Clear"));
-        follow_logging_cb->setToolTip(tr ("Follow the stream of log events and automatically scroll the view, drop events otherwise"));
-        follow_logging_cb->setText(tr ("follow"));
-        SDPAGUI->setTabText(SDPAGUI->indexOf(logging_tab), tr ("Logging"));
-        groupBox_6->setTitle(tr ("Activity Log"));
-        groupBox->setTitle(tr ("Legend"));
-        label_2->setText(tr ("Running"));
-        label->setText(tr ("Finished"));
-        label_3->setText(tr ("Failed"));
-        groupBox_2->setTitle(tr ("Control"));
-        m_cb_follow_task_view->setText(tr ("follow"));
-        pushButton->setText(tr ("Clear"));
-        SDPAGUI->setTabText(SDPAGUI->indexOf(execution_tab), tr ("Execution Monitor"));
-
-        QObject::connect(clear_log_button, SIGNAL(clicked()), this, SLOT(clearLogging()));
-
-        QObject::connect(follow_logging_cb, SIGNAL(toggled(bool)), this, SLOT(toggleFollowLogging(bool)));
-        QObject::connect(pushButton, SIGNAL(clicked()), this, SLOT(clearActivityLog()));
-        QObject::connect(m_cb_follow_task_view, SIGNAL(toggled(bool)), this, SLOT(toggleFollowTaskView(bool)));
-        QObject::connect(m_task_view_zoom_slider, SIGNAL(valueChanged(int)), this, SLOT(changeTaskViewZoom(int)));
-
-        SDPAGUI->setCurrentIndex(2);
-
-
-        QMetaObject::connectSlotsByName(this);
-    }
-
-
-
-    m_scene = new QGraphicsScene (this);
-    m_view = new QGraphicsView (m_scene);
-
-    m_view->setTransformationAnchor (QGraphicsView::AnchorViewCenter);
-    m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
-    m_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
-    m_view->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
-    m_view->setDragMode (QGraphicsView::ScrollHandDrag);
-
-
-    m_component_scene = new QGraphicsScene (this);
-    m_component_view = new QGraphicsView (m_component_scene);
-
-    {
-      QSplitter *splitter = new QSplitter (Qt::Horizontal);
-      QHBoxLayout *l = new QHBoxLayout;
-      l->setSpacing(0);
-      l->setContentsMargins(0,0,0,0);
-      /*
-      m_component_view->setSizePolicy( QSizePolicy( QSizePolicy::Minimum
-                                                  , QSizePolicy::Minimum
-                                                  )
-                                     );
-      m_view->setSizePolicy(QSizePolicy( QSizePolicy::Maximum
-                                      , QSizePolicy::Maximum)
-                          );
-      m_view->setMinimumWidth(300);
-      */
-      splitter->addWidget(m_component_view);
-      splitter->addWidget(m_view);
-      splitter->setLayout(l);
-
-      QList<int> sizes;
-      sizes << 0 << 1;
-      splitter->setSizes(sizes);
-
-      l = new QHBoxLayout;
-      l->addWidget(splitter);
-      task_view_widget->setLayout(l);
-    }
-
-    m_component_view->setAlignment(Qt::AlignRight | Qt::AlignTop);
-    m_component_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    m_component_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_component_view->setRenderHint(QPainter::Antialiasing);
-    m_component_view->setTransformationAnchor(QGraphicsView::NoAnchor);
-
-    //    m_view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    //    m_view->setAlignment(Qt::AlignRight | Qt::AlignTop);
-    //    m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    //    m_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    //m_view->setRenderHint(QPainter::Antialiasing);
-
-    //    m_view->setCacheMode(QGraphicsView::CacheNone);
-    //m_view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    //m_view->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
-    //    m_view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    //    m_view->setDragMode(QGraphicsView::ScrollHandDrag);
-
-    QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(advance()));
-    QObject::connect( m_view->verticalScrollBar(), SIGNAL(valueChanged(int))
-                    , m_component_view->verticalScrollBar(), SLOT(setValue(int))
-                    );
-
-    static const int updates_per_second (30);
-
-    m_timer.start (1000 / updates_per_second);
+  static const int updates_per_second (30);
+  m_timer.start (1000 / updates_per_second);
 }
 
 MonitorWindow::~MonitorWindow()

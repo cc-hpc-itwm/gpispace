@@ -95,7 +95,6 @@ private:
   QCheckBox* m_drop_filtered;
   QComboBox* m_level_filter_selector;
   QTableWidget* m_log_table;
-  QWidget* task_view_widget;
 };
 
 #endif // MONITORWINDOW_HPP
