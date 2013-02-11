@@ -377,8 +377,16 @@ void MonitorWindow::change_gantt_color (const QString& state)
       (qobject_cast<QSignalMapper*> (sender())->mapping (state))->setStyleSheet
       (QString ("background-color: rgb(%1, %2, %3)").arg (r).arg (g).arg (b));
 
-    //! \todo Update already added items? Needs storing state in items
-    //! and looping over them.
+    {
+      lock_type lock (m_task_view_mutex);
+      foreach (QGraphicsItem* item, m_scene->items())
+      {
+        if (Task* task = qgraphicsitem_cast<Task*> (item))
+        {
+          task->reset_color();
+        }
+      }
+    }
   }
 }
 

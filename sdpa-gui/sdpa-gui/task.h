@@ -20,8 +20,14 @@ public:
 
   void advance (const qreal scene_width);
 
+  void reset_color();
+
+  enum { Type = UserType + 1 };
+  int type() const { return Type; }
+
 private:
   bool _do_advance;
+  sdpa::daemon::NotificationEvent::state_t _state;
 };
 
 #endif

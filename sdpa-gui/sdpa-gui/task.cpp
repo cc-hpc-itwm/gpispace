@@ -50,8 +50,14 @@ Task::Task ( const QString& component
 
 void Task::update_task_state (sdpa::daemon::NotificationEvent::state_t state)
 {
-  setBrush (color_for_state (state));
-  _do_advance = state < sdpa::daemon::NotificationEvent::STATE_FINISHED;
+  _state = state;
+  _do_advance = _state < sdpa::daemon::NotificationEvent::STATE_FINISHED;
+  reset_color();
+}
+
+void Task::reset_color()
+{
+  setBrush (color_for_state (_state));
 }
 
 void Task::advance (const qreal scene_width)
