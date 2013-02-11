@@ -12,7 +12,6 @@ set(sdpa-gui_SRCS
 set(sdpa-gui_HDRS
   monitorwindow.hpp
   logeventwrapper.hpp
-  windowappender.hpp
 )
 
 set (sdpa-gui_TOMOC

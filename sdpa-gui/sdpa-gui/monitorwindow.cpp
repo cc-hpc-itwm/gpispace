@@ -1,7 +1,8 @@
 #include "monitorwindow.hpp"
 #include "logeventwrapper.hpp"
-#include "windowappender.hpp"
 #include "task.h"
+
+#include <fhglog/Appender.hpp>
 
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/loader/putget.hpp>
@@ -13,6 +14,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
+#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/tokenizer.hpp>
@@ -42,28 +44,54 @@ enum external_events
   EXTERNAL_EVENT_LOGGING = QEvent::User + 1,
 };
 
+namespace
+{
+  class function_call_appender : public fhg::log::Appender
+  {
+  public:
+    typedef boost::function<void (const fhg::log::LogEvent&)> event_handler_t;
+
+    function_call_appender (const event_handler_t& handler)
+      : fhg::log::Appender ("event-handler")
+      , m_handler (handler)
+    { }
+
+    void append (const fhg::log::LogEvent& evt)
+    {
+      m_handler (evt);
+    }
+
+    void flush()
+    {
+    }
+
+  private:
+    event_handler_t m_handler;
+  };
+
+  template<typename T>
+    fhg::log::Appender::ptr_t appender_with
+    ( void (T::* function)(const fhg::log::LogEvent&)
+    , T* that
+    )
+  {
+    return fhg::log::Appender::ptr_t
+      (new function_call_appender (boost::bind (function, that, _1)));
+  }
+}
+
 MonitorWindow::MonitorWindow( unsigned short exe_port
                             , unsigned short log_port
                             , QWidget *parent
                             )
   : QMainWindow (parent)
-  , m_log_server ( fhg::log::Appender::ptr_t
-                   ( new WindowAppender
-                     ( boost::bind
-                        ( &MonitorWindow::handle_external_event
-                        , this
-                        , EXTERNAL_EVENT_LOGGING
-                        , _1
-                        )
-                     )
-                   )
-                 , m_io_service, log_port
+  , m_log_server ( appender_with (&MonitorWindow::handle_external_event, this)
+                 , m_io_service
+                 , log_port
                  )
-  , m_exe_server ( fhg::log::Appender::ptr_t
-                   ( new WindowAppender
-                     (boost::bind (&MonitorWindow::append_exe, this, _1))
-                   )
-                 , m_io_service, exe_port
+  , m_exe_server ( appender_with (&MonitorWindow::append_exe, this)
+                 , m_io_service
+                 , exe_port
                  )
   , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
   , m_follow_logging (true)
@@ -662,12 +690,10 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
     m_log_table->setRowHidden (row, false);
 }
 
-void
-MonitorWindow::handle_external_event ( int type
-                                     , const fhg::log::LogEvent & evt
-                                     )
+void MonitorWindow::handle_external_event (const fhg::log::LogEvent & evt)
 {
-  QApplication::postEvent (this, new LogEventWrapper(type, evt));
+  QApplication::postEvent
+    (this, new LogEventWrapper (EXTERNAL_EVENT_LOGGING, evt));
 }
 
 bool MonitorWindow::event (QEvent* event)

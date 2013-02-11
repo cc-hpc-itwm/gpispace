@@ -54,7 +54,7 @@ public slots:
   void change_gantt_color (const QString&);
 
 private:
-  void handle_external_event (int type, const fhg::log::LogEvent &);
+  void handle_external_event (const fhg::log::LogEvent &);
 
   bool event (QEvent *event);
   void UpdateExecutionView
