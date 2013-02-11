@@ -20,7 +20,7 @@ namespace fhg
       void reset ();
 
 #ifndef NSTATISTICS
-#define FHG_UTIL_STAT_RESET()
+#define FHG_UTIL_STAT_RESET()     ::fhg::util::stat::reset ()
 #define FHG_UTIL_STAT_START(key)  ::fhg::util::stat::start (key)
 #define FHG_UTIL_STAT_STOP(key)   ::fhg::util::stat::stop (key)
 #define FHG_UTIL_STAT_INC(key)    ::fhg::util::stat::inc (key)
