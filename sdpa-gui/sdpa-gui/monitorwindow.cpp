@@ -2,36 +2,37 @@
 #include "logeventwrapper.hpp"
 #include "windowappender.hpp"
 #include "task.h"
-#include <QHeaderView>
-#include <QApplication>
-#include <QDebug>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QDoubleSpinBox>
-#include <QSlider>
-#include <QSplitter>
-#include <QMessageBox>
-#include <QScrollBar>
-#include <QFileDialog>
-
-#include <boost/lexical_cast.hpp>
-#include <list>
-#include <sstream>
-#include <cmath>
-#include <fstream>
-
-#include <boost/foreach.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/bind.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 //! \todo eliminate this include (that completes type transition_t::data)
-#include <we/type/net.hpp>
-#include <we/mgmt/type/activity.hpp>
 #include <we/loader/putget.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/net.hpp>
 #include <we/type/value.hpp>
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/bind.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/tokenizer.hpp>
+
+#include <QApplication>
+#include <QDebug>
+#include <QDoubleSpinBox>
+#include <QFileDialog>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QScrollBar>
+#include <QSlider>
+#include <QSplitter>
+#include <QVBoxLayout>
+
+#include <cmath>
+#include <fstream>
+#include <list>
+#include <sstream>
 
 using namespace std;
 using namespace boost;
