@@ -107,7 +107,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   // --- logging tab
   {
     QWidget* logging_tab (new QWidget);
-    QGridLayout* logging_tab_layout (new QGridLayout (logging_tab));
 
     m_log_table->setAlternatingRowColors (false);
     m_log_table->setAutoFillBackground (false);
@@ -134,10 +133,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                                            << tr ("Message")
                                            );
     m_log_table->horizontalHeader()->setStretchLastSection (true);
-
-    logging_tab_layout->addWidget (m_log_table, 0, 0);
-
-    QVBoxLayout* log_sidebar_layout (new QVBoxLayout);
 
     QGroupBox* log_filter_box (new QGroupBox (tr ("Filter"), logging_tab));
 
@@ -177,27 +172,11 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
       (tr ("Drop filtered events instead of keeping them"));
 
 
-    QVBoxLayout* log_filter_layout (new QVBoxLayout (log_filter_box));
-
-    log_filter_layout->addWidget (log_filter_dial);
-    log_filter_layout->addWidget (m_level_filter_selector);
-
-    log_filter_layout->addWidget (m_drop_filtered);
-
-
-    log_sidebar_layout->addWidget (log_filter_box);
-
-    log_sidebar_layout->addStretch();
-
     QGroupBox* control_box (new QGroupBox (tr ("Control"), logging_tab));
-
-    QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
 
     QPushButton* clear_log_button (new QPushButton (tr ("Clear"), control_box));
     clear_log_button->setToolTip (tr ("Clear all events"));
     connect (clear_log_button, SIGNAL (clicked()), this, SLOT (clearLogging()));
-
-    control_box_layout->addWidget(clear_log_button);
 
     QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), control_box));
     follow_logging_cb->setChecked (true);
@@ -210,20 +189,32 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
             , this, SLOT (toggleFollowLogging (bool))
             );
 
-    control_box_layout->addWidget (follow_logging_cb);
 
+    QVBoxLayout* log_filter_layout (new QVBoxLayout (log_filter_box));
+    log_filter_layout->addWidget (log_filter_dial);
+    log_filter_layout->addWidget (m_level_filter_selector);
+    log_filter_layout->addWidget (m_drop_filtered);
+
+    QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
+    control_box_layout->addWidget (follow_logging_cb);
+    control_box_layout->addWidget (clear_log_button);
+
+    QVBoxLayout* log_sidebar_layout (new QVBoxLayout);
+    log_sidebar_layout->addWidget (log_filter_box);
+    log_sidebar_layout->addStretch();
     log_sidebar_layout->addWidget (control_box);
 
+    QGridLayout* logging_tab_layout (new QGridLayout (logging_tab));
+    logging_tab_layout->addWidget (m_log_table, 0, 0);
     logging_tab_layout->addLayout (log_sidebar_layout, 0, 1);
 
-    tab_widget->addTab (logging_tab, tr ("Logging"));
 
+    tab_widget->addTab (logging_tab, tr ("Logging"));
   }
 
   // --- execution monitor tab
   {
     QWidget* execution_tab (new QWidget);
-    QGridLayout* execution_tab_layout (new QGridLayout (execution_tab));
 
     m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
     m_view->setDragMode (QGraphicsView::ScrollHandDrag);
@@ -243,19 +234,13 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
 
     QSplitter* task_view_widget (new QSplitter (Qt::Horizontal, execution_tab));
-    QHBoxLayout *task_view_widget_layout (new QHBoxLayout);
 
     task_view_widget->addWidget (m_component_view);
     task_view_widget->addWidget (m_view);
-    task_view_widget->setLayout (task_view_widget_layout);
 
     task_view_widget->setSizes (QList<int>() << 0 << 1);
 
-
-    QVBoxLayout* execution_sidebar_layout (new QVBoxLayout);
-
     QGroupBox* legend_box (new QGroupBox (tr ("Legend"), execution_tab));
-    QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
 
     QSignalMapper* legend_label_click (new QSignalMapper (this));
     connect ( legend_label_click, SIGNAL (mapped (QString))
@@ -263,6 +248,8 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
             );
 
     {
+      QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
+
       QSettings settings;
       settings.beginGroup ("gantt");
 
@@ -286,21 +273,13 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
       settings.endGroup();
     }
 
-    execution_sidebar_layout->addWidget (legend_box);
-
-    execution_sidebar_layout->addStretch();
-
     QGroupBox* control_box (new QGroupBox (tr ("Control"), execution_tab));
-
-    QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
 
     QPushButton* clear_log_button (new QPushButton (tr ("Clear"), control_box));
     clear_log_button->setToolTip (tr ("Clear all events"));
     connect ( clear_log_button, SIGNAL (clicked())
             , this, SLOT (clearActivityLog())
             );
-
-    control_box_layout->addWidget(clear_log_button);
 
     QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), control_box));
     follow_logging_cb->setChecked (true);
@@ -311,8 +290,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     connect ( follow_logging_cb, SIGNAL (toggled (bool))
             , this, SLOT (toggleFollowTaskView (bool))
             );
-
-    control_box_layout->addWidget (follow_logging_cb);
 
     QSlider* m_task_view_zoom_slider (new QSlider (control_box));
     m_task_view_zoom_slider->setMinimum (1);
@@ -326,13 +303,21 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
             , this, SLOT(changeTaskViewZoom(int))
             );
 
+
+    QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
+    control_box_layout->addWidget (clear_log_button);
+    control_box_layout->addWidget (follow_logging_cb);
     control_box_layout->addWidget (m_task_view_zoom_slider);
 
+    QVBoxLayout* execution_sidebar_layout (new QVBoxLayout);
+    execution_sidebar_layout->addWidget (legend_box);
+    execution_sidebar_layout->addStretch();
     execution_sidebar_layout->addWidget (control_box);
 
+    QGridLayout* execution_tab_layout (new QGridLayout (execution_tab));
     execution_tab_layout->addWidget (task_view_widget, 0, 0);
-
     execution_tab_layout->addLayout (execution_sidebar_layout, 0, 1);
+
 
     tab_widget->addTab (execution_tab, tr ("Execution Monitor"));
   }
