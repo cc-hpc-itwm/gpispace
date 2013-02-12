@@ -8,6 +8,7 @@
 #include <pnete/ui/graph/style/store.hpp>
 #include <pnete/ui/graph/mode.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <QGraphicsItem>
@@ -82,6 +83,16 @@ namespace fhg
             void clear_cache (const type& x);
           }
 
+          namespace
+          {
+            template<typename VALUE>
+              boost::optional<VALUE> constant
+              (const VALUE& val, const base_item*)
+            {
+              return val;
+            }
+          }
+
           class type
           {
           private:
@@ -140,6 +151,15 @@ namespace fhg
                         ;
                     }
                 }
+            }
+
+            template<typename VALUE>
+              void push ( const key_type& key
+                        , const mode::type& mode
+                        , const VALUE& value
+                        )
+            {
+              push<VALUE> (key, mode, boost::bind (constant<VALUE>, value, _1));
             }
 
             template<typename T>
