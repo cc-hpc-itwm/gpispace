@@ -106,7 +106,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
   // --- logging tab
   {
-    QWidget* logging_tab (new QWidget);
+    QWidget* logging_tab (new QWidget (this));
 
     m_log_table->setAlternatingRowColors (false);
     m_log_table->setAutoFillBackground (false);
@@ -134,9 +134,9 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                                            );
     m_log_table->horizontalHeader()->setStretchLastSection (true);
 
-    QGroupBox* log_filter_box (new QGroupBox (tr ("Filter"), logging_tab));
+    QGroupBox* log_filter_box (new QGroupBox (tr ("Filter"), this));
 
-    QDial* log_filter_dial (new QDial (log_filter_box));
+    QDial* log_filter_dial (new QDial (this));
     log_filter_dial->setOrientation (Qt::Horizontal);
 
     m_level_filter_selector->setToolTip (tr ("Filter events according to level"));
@@ -172,13 +172,13 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
       (tr ("Drop filtered events instead of keeping them"));
 
 
-    QGroupBox* control_box (new QGroupBox (tr ("Control"), logging_tab));
+    QGroupBox* control_box (new QGroupBox (tr ("Control"), this));
 
-    QPushButton* clear_log_button (new QPushButton (tr ("Clear"), control_box));
+    QPushButton* clear_log_button (new QPushButton (tr ("Clear"), this));
     clear_log_button->setToolTip (tr ("Clear all events"));
     connect (clear_log_button, SIGNAL (clicked()), this, SLOT (clearLogging()));
 
-    QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), control_box));
+    QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), this));
     follow_logging_cb->setChecked (true);
     follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
                                          "automatically scroll the view, drop "
@@ -214,7 +214,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
   // --- execution monitor tab
   {
-    QWidget* execution_tab (new QWidget);
+    QWidget* execution_tab (new QWidget (this));
 
     m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
     m_view->setDragMode (QGraphicsView::ScrollHandDrag);
@@ -233,14 +233,14 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
             );
 
 
-    QSplitter* task_view_widget (new QSplitter (Qt::Horizontal, execution_tab));
+    QSplitter* task_view_widget (new QSplitter (Qt::Horizontal, this));
 
     task_view_widget->addWidget (m_component_view);
     task_view_widget->addWidget (m_view);
 
     task_view_widget->setSizes (QList<int>() << 0 << 1);
 
-    QGroupBox* legend_box (new QGroupBox (tr ("Legend"), execution_tab));
+    QGroupBox* legend_box (new QGroupBox (tr ("Legend"), this));
 
     QSignalMapper* legend_label_click (new QSignalMapper (this));
     connect ( legend_label_click, SIGNAL (mapped (QString))
@@ -261,7 +261,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         int r, g, b;
         settings.value (state).value<QColor>().getRgb (&r, &g, &b);
 
-        QPushButton* label (new QPushButton (state, legend_box));
+        QPushButton* label (new QPushButton (state, this));
         label->setStyleSheet
           (QString ("background-color: rgb(%1, %2, %3)").arg (r).arg (g).arg (b));
         legend_box_layout->addWidget (label);
@@ -273,15 +273,15 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
       settings.endGroup();
     }
 
-    QGroupBox* control_box (new QGroupBox (tr ("Control"), execution_tab));
+    QGroupBox* control_box (new QGroupBox (tr ("Control"), this));
 
-    QPushButton* clear_log_button (new QPushButton (tr ("Clear"), control_box));
+    QPushButton* clear_log_button (new QPushButton (tr ("Clear"), this));
     clear_log_button->setToolTip (tr ("Clear all events"));
     connect ( clear_log_button, SIGNAL (clicked())
             , this, SLOT (clearActivityLog())
             );
 
-    QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), control_box));
+    QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), this));
     follow_logging_cb->setChecked (true);
     follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
                                          "automatically scroll the view"
@@ -291,7 +291,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
             , this, SLOT (toggleFollowTaskView (bool))
             );
 
-    QSlider* m_task_view_zoom_slider (new QSlider (control_box));
+    QSlider* m_task_view_zoom_slider (new QSlider (this));
     m_task_view_zoom_slider->setMinimum (1);
     m_task_view_zoom_slider->setMaximum (800);
     m_task_view_zoom_slider->setValue (100);
