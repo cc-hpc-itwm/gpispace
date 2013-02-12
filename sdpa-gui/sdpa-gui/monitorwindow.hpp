@@ -40,6 +40,8 @@ public slots:
   void clearLogging();
   void toggleFollowLogging(bool checked);
   void toggleFollowTaskView(bool checked);
+  void toggle_automatically_sort_components (bool);
+  void sort_gantt_by_component();
   void levelFilterChanged (int lvl);
   void save ();
 
@@ -83,7 +85,6 @@ private:
   std::map<std::string, std::list<Task*> > m_tasks_list;
   std::map<std::string, QGraphicsItem*> _component_labels;
 
-  void sort_gantt_by_component();
   bool _automatically_sort_components;
 
   QString m_logfile;

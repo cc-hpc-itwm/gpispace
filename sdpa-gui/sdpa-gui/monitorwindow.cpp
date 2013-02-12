@@ -300,6 +300,19 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
             , this, SLOT (toggleFollowTaskView (bool))
             );
 
+    QCheckBox* automatically_sort_gantt
+      (new QCheckBox (tr ("automatically sort by component"), this));
+    automatically_sort_gantt->setChecked (true);
+
+    connect ( automatically_sort_gantt, SIGNAL (toggled (bool))
+            , this, SLOT (toggle_automatically_sort_components (bool))
+            );
+
+    QPushButton* sort_gantt (new QPushButton (tr ("sort by component"), this));
+    connect ( sort_gantt, SIGNAL (clicked())
+            , this, SLOT (sort_gantt_by_component())
+            );
+
     QSlider* zoom_slider (new QSlider (this));
     zoom_slider->setMinimum (1);
     zoom_slider->setMaximum (800);
@@ -316,6 +329,8 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
     control_box_layout->addWidget (clear_log_button);
     control_box_layout->addWidget (follow_logging_cb);
+    control_box_layout->addWidget (sort_gantt);
+    control_box_layout->addWidget (automatically_sort_gantt);
     control_box_layout->addWidget (zoom_slider);
     zoom_slider->setSizePolicy (QSizePolicy::Preferred, QSizePolicy::Preferred);
 
@@ -549,6 +564,11 @@ void MonitorWindow::append_exe (const fhg::log::LogEvent& event)
   }
 
   m_tasks_grid[component][activity_id]->update_task_state (task_state);
+}
+
+void MonitorWindow::toggle_automatically_sort_components (bool new_value)
+{
+  _automatically_sort_components = new_value;
 }
 
 /* Based on http://www.davekoelle.com/files/alphanum.hpp
