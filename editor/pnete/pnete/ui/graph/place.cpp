@@ -26,16 +26,13 @@ namespace fhg
       {
         namespace
         {
-          boost::optional<const Qt::PenStyle&> pen_style (const base_item* item)
+          boost::optional<Qt::PenStyle> pen_style (const base_item* item)
           {
             if ( fhg::util::qt::throwing_qobject_cast<const place_item*>
                  (item)->handle().is_virtual()
                )
             {
-              static Qt::PenStyle why_is_the_return_value_a_reference
-                (Qt::DashLine);
-
-              return why_is_the_return_value_a_reference;
+              return Qt::DashLine;
             }
 
             return boost::none;

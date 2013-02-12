@@ -29,7 +29,7 @@ namespace fhg
           namespace detail
           {
             template<typename T, typename Item>
-            const T& fallback (const Item* item, const key_type& key)
+              T fallback (const Item* item, const key_type& key)
             {
               if ( const Item* parent
                  = qgraphicsitem_cast<const Item*> (item->parentItem())
@@ -143,11 +143,10 @@ namespace fhg
             }
 
             template<typename T>
-            const T&
-            get ( const base_item* item
-                , const mode::type& mode
-                , const key_type& key
-                ) const
+              T get ( const base_item* item
+                    , const mode::type& mode
+                    , const key_type& key
+                    ) const
             {
               typedef typename store::of<T>::type store_type;
 

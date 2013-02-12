@@ -16,7 +16,7 @@ namespace fhg
           {
             //! \todo There are seven modes by now.
 #define IMPL(_t, _n, _d0, _d1, _d2, _d3, _d4)                           \
-            _t& _n (const mode::type& m)                                \
+            _t _n (const mode::type& m)                                 \
             {                                                           \
               static _t x[5] = {_d0,_d1,_d2,_d3,_d4};                   \
                                                                         \

@@ -17,12 +17,9 @@ namespace fhg
       {
         namespace
         {
-          boost::optional<const Qt::PenStyle&> pen_style (const base_item* item)
+          boost::optional<Qt::PenStyle> pen_style (const base_item* item)
           {
-            static Qt::PenStyle why_is_the_return_value_a_reference
-              (Qt::DotLine);
-
-            return why_is_the_return_value_a_reference;
+            return Qt::DotLine;
           }
         }
 

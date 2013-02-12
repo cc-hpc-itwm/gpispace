@@ -31,7 +31,7 @@ namespace fhg
             class cached_predicates
             {
             public:
-              typedef boost::optional<const Value&> optional_value_type;
+              typedef boost::optional<Value> optional_value_type;
               typedef boost::function< optional_value_type (Key)
                                      > predicate_type;
 

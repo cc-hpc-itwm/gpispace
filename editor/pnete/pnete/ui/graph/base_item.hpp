@@ -73,7 +73,7 @@ namespace fhg
           void clear_style_cache();
 
           template<typename T>
-          const T& style (const style::key_type& key) const
+            T style (const style::key_type& key) const
           {
             return _style.get<T> (this, mode(), key);
           }

@@ -24,7 +24,7 @@ namespace fhg
         {
           namespace fallback
           {
-#define DECL(_t, _n) _t& _n (const mode::type&)
+#define DECL(_t, _n) _t _n (const mode::type&)
 
             DECL (qreal, border_thickness);
             DECL (Qt::PenStyle, border_style);
