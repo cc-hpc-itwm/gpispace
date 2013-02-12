@@ -71,7 +71,7 @@ private:
   QGraphicsScene *m_component_scene;
   QGraphicsView *m_component_view;
 
-  QTimer m_timer;
+  QTimer _advance_timer;
 
   qreal m_current_scale;
 

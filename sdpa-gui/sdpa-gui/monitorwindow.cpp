@@ -336,10 +336,10 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   menuFile->addSeparator();
   menuFile->addAction (tr ("Exit"), this, SLOT (close()), QKeySequence::Quit);
 
-  connect (&m_timer, SIGNAL(timeout()), this, SLOT(advance()));
+  connect (&_advance_timer, SIGNAL(timeout()), this, SLOT(advance()));
 
   static const int updates_per_second (30);
-  m_timer.start (1000 / updates_per_second);
+  _advance_timer.start (1000 / updates_per_second);
 }
 
 MonitorWindow::~MonitorWindow()
