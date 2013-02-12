@@ -54,8 +54,6 @@ private:
   void handle_external_event (const fhg::log::LogEvent &);
 
   bool event (QEvent *event);
-  void UpdateExecutionView
-    (const sdpa::daemon::NotificationEvent&, const we::mgmt::type::activity_t&);
 
   boost::asio::io_service m_io_service;
   fhg::log::remote::LogServer m_log_server;

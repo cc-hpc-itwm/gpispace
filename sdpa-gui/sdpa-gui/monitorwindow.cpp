@@ -442,60 +442,44 @@ namespace
     }
   }
 
-  template <typename T>
-    void decode (const std::string& strMsg, T& t)
+
+  std::string nice_name (const sdpa::daemon::NotificationEvent& notification)
+  try
   {
-    std::stringstream sstr(strMsg);
-    boost::archive::text_iarchive ar(sstr);
-    ar >> t;
+    const we::mgmt::type::activity_t activity (notification.activity());
+
+    const we::type::module_call_t mod_call
+      (boost::get<we::type::module_call_t> (activity.transition().data()));
+
+    return mod_call.module() + ":" + mod_call.function();
+  }
+  catch (boost::bad_get const &)
+  {
+    return notification.activity_name();
   }
 }
 
-void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
+void MonitorWindow::append_exe (const fhg::log::LogEvent& event)
 {
+  static const qreal task_height (8.0);
+
   sdpa::daemon::NotificationEvent notification;
-  try
+
   {
-    decode(evt.message(), notification);
+    std::stringstream stream (event.message());
+    boost::archive::text_iarchive archive (stream);
+    archive >> notification;
   }
-  catch (const std::exception &ex)
+
+  const sdpa::daemon::NotificationEvent::state_t task_state
+    (notification.activity_state());
+
+  if (task_state == sdpa::daemon::NotificationEvent::STATE_IGNORE)
   {
     return;
   }
 
-  if (notification.activity_state() != sdpa::daemon::NotificationEvent::STATE_IGNORE)
-  {
-    we::mgmt::type::activity_t act (notification.activity());
-
-    UpdateExecutionView(notification, act);
-  }
-  else
-  {
-    //    qDebug() << "activity " << notification.activity_id().c_str() << " failed!";
-  }
-}
-
-void MonitorWindow::UpdateExecutionView
-  ( const sdpa::daemon::NotificationEvent& event
-  , const we::mgmt::type::activity_t& activity
-  )
-{
-  static const qreal task_height (8.0);
-
-  const std::string& component (event.component());
-  std::string activity_name (event.activity_name());
-  const std::string& activity_id (event.activity_id());
-
-  try
-  {
-    const we::type::module_call_t mod_call
-      (boost::get<we::type::module_call_t> (activity.transition().data()));
-    activity_name = mod_call.module() + ":" + mod_call.function();
-  }
-  catch (boost::bad_get const &)
-  {
-    // do nothing, i.e. take the activity name as it was
-  }
+  const std::string& component (notification.component());
 
   const boost::unique_lock<boost::recursive_mutex> lock (m_task_struct_mutex);
 
@@ -523,12 +507,14 @@ void MonitorWindow::UpdateExecutionView
     _scene_updates.push_back (std::make_pair (label, m_component_scene));
   }
 
+  const std::string& activity_id (notification.activity_id());
+
   if ( m_tasks_grid[component].find (activity_id)
      == m_tasks_grid[component].end()
      )
   {
     Task* task ( new Task ( QString::fromStdString (component)
-                          , QString::fromStdString (activity_name)
+                          , QString::fromStdString (nice_name (notification))
                           , QString::fromStdString (activity_id)
                           )
                );
@@ -547,8 +533,7 @@ void MonitorWindow::UpdateExecutionView
     _scene_updates.push_back (std::make_pair (task, m_scene));
   }
 
-  m_tasks_grid[component][activity_id]->update_task_state
-    (event.activity_state());
+  m_tasks_grid[component][activity_id]->update_task_state (task_state);
 }
 
 void MonitorWindow::clearActivityLog()
