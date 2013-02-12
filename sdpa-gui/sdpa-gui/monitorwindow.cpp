@@ -509,19 +509,15 @@ void MonitorWindow::append_exe (const fhg::log::LogEvent& event)
 
   const std::vector<std::string>::iterator comp
     (std::find (m_components.begin(), m_components.end(), component));
-
-  if (_automatically_sort_components && comp == m_components.end())
-  {
-    sort_gantt_by_component();
-  }
+  const bool is_new_component (comp == m_components.end());
 
   const qreal x_coord (m_scene->width());
-  const qreal y_coord ( comp != m_components.end()
+  const qreal y_coord ( !is_new_component
                       ? std::distance (m_components.begin(), comp) * task_height
                       : m_components.size() * task_height
                       );
 
-  if (comp == m_components.end())
+  if (is_new_component)
   {
     m_components.push_back (component);
 
@@ -564,6 +560,11 @@ void MonitorWindow::append_exe (const fhg::log::LogEvent& event)
   }
 
   m_tasks_grid[component][activity_id]->update_task_state (task_state);
+
+  if (_automatically_sort_components && is_new_component)
+  {
+    sort_gantt_by_component();
+  }
 }
 
 void MonitorWindow::toggle_automatically_sort_components (bool new_value)
