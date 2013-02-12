@@ -16,14 +16,6 @@ namespace fhg
     {
       namespace graph
       {
-        namespace
-        {
-          boost::optional<Qt::PenStyle> pen_style (const base_item* item)
-          {
-            return Qt::DotLine;
-          }
-        }
-
         port_place_association::port_place_association
           (port_item* port, place_item* place, const data::handle::port& handle)
             : association (port, place)
@@ -35,7 +27,7 @@ namespace fhg
             invert();
           }
 
-          _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, pen_style);
+          _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, Qt::DotLine);
 
           handle.connect_to_change_mgr
             ( this

@@ -15,14 +15,6 @@ namespace fhg
     {
       namespace graph
       {
-        namespace
-        {
-          boost::optional<Qt::PenStyle> pen_style (const base_item* item)
-          {
-            return Qt::DotLine;
-          }
-        }
-
         pending_connection::pending_connection
           ( const connectable_item* fixed_end
           , const QPointF& open_end
@@ -38,7 +30,7 @@ namespace fhg
           {
             if (fix->handle().is_tunnel())
             {
-              _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, pen_style);
+              _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, Qt::DotLine);
             }
           }
         }
