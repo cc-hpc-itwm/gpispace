@@ -331,12 +331,12 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
   setMenuBar (new QMenuBar (this));
 
-  QMenu* menuFile (menuBar()->addMenu (tr ("File")));
-  menuFile->addAction (tr ("Save"), this, SLOT (save()), QKeySequence::Save);
-  menuFile->addSeparator();
-  menuFile->addAction (tr ("Exit"), this, SLOT (close()), QKeySequence::Quit);
+  QMenu* file (menuBar()->addMenu (tr ("File")));
+  file->addAction (tr ("Save"), this, SLOT (save()), QKeySequence::Save);
+  file->addSeparator();
+  file->addAction (tr ("Exit"), this, SLOT (close()), QKeySequence::Quit);
 
-  connect (&_advance_timer, SIGNAL(timeout()), this, SLOT(advance()));
+  connect (&_advance_timer, SIGNAL (timeout()), this, SLOT (advance()));
 
   static const int updates_per_second (30);
   _advance_timer.start (1000 / updates_per_second);
