@@ -308,6 +308,8 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     control_box_layout->addWidget (clear_log_button);
     control_box_layout->addWidget (follow_logging_cb);
     control_box_layout->addWidget (m_task_view_zoom_slider);
+    m_task_view_zoom_slider->setSizePolicy
+          (QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     QVBoxLayout* execution_sidebar_layout (new QVBoxLayout);
     execution_sidebar_layout->addWidget (legend_box);
