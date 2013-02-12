@@ -722,9 +722,9 @@ bool MonitorWindow::event (QEvent* event)
 
 void MonitorWindow::clearLogging ()
 {
-        m_log_events.clear ();
-        m_log_table->clearContents ();
-        m_log_table->setRowCount (0);
+  m_log_events.clear();
+  m_log_table->clearContents();
+  m_log_table->setRowCount (0);
 }
 
 void MonitorWindow::toggleFollowLogging (bool follow)
@@ -746,7 +746,7 @@ void MonitorWindow::levelFilterChanged (int lvl)
       m_log_table->setRowHidden (i, false);
 }
 
-void MonitorWindow::changeTaskViewZoom(int to)
+void MonitorWindow::changeTaskViewZoom (int to)
 {
   qreal target = (to / 100.0);
   qreal factor = target / m_current_scale;
