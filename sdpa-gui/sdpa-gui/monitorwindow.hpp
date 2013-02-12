@@ -81,6 +81,10 @@ private:
   std::vector<std::string> m_components;
   std::map<std::string, std::map<std::string, Task*> > m_tasks_grid;
   std::map<std::string, std::list<Task*> > m_tasks_list;
+  std::map<std::string, QGraphicsItem*> _component_labels;
+
+  void sort_gantt_by_component();
+  bool _automatically_sort_components;
 
   QString m_logfile;
 
