@@ -5,13 +5,11 @@ include(${QT_USE_FILE})
 set(sdpa-gui_SRCS
   main.cpp
   monitorwindow.cpp
-  logeventwrapper.cpp
   task.cpp
 )
 
 set(sdpa-gui_HDRS
   monitorwindow.hpp
-  logeventwrapper.hpp
 )
 
 set (sdpa-gui_TOMOC

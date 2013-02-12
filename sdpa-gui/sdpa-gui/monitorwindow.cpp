@@ -1,5 +1,4 @@
 #include "monitorwindow.hpp"
-#include "logeventwrapper.hpp"
 #include "task.h"
 
 #include <fhglog/Appender.hpp>
@@ -38,11 +37,6 @@
 
 using namespace std;
 using namespace boost;
-
-enum external_events
-{
-  EXTERNAL_EVENT_LOGGING = QEvent::User + 1,
-};
 
 namespace
 {
@@ -690,24 +684,40 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
     m_log_table->setRowHidden (row, false);
 }
 
+namespace
+{
+  enum
+  {
+    EXTERNAL_EVENT_LOGGING = QEvent::User + 1,
+  };
+
+  class fhglog_event : public QEvent
+  {
+  public:
+    fhglog_event (const fhg::log::LogEvent& e)
+      : QEvent ((QEvent::Type)EXTERNAL_EVENT_LOGGING)
+      , log_event (e)
+    { }
+
+    fhg::log::LogEvent log_event;
+  };
+}
+
 void MonitorWindow::handle_external_event (const fhg::log::LogEvent & evt)
 {
-  QApplication::postEvent
-    (this, new LogEventWrapper (EXTERNAL_EVENT_LOGGING, evt));
+  QApplication::postEvent (this, new fhglog_event (evt));
 }
 
 bool MonitorWindow::event (QEvent* event)
 {
-  switch (event->type())
+  if (event->type() == EXTERNAL_EVENT_LOGGING)
   {
-  case EXTERNAL_EVENT_LOGGING:
     event->accept();
-    append_log (static_cast<LogEventWrapper*> (event)->log_event);
+    append_log (static_cast<fhglog_event*> (event)->log_event);
     return true;
-
-  default:
-    return QWidget::event (event);
   }
+
+  return QWidget::event (event);
 }
 
 void MonitorWindow::clearLogging ()
