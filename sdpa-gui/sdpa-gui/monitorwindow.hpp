@@ -27,9 +27,6 @@ class MonitorWindow : public QMainWindow
 {
   Q_OBJECT;
 
-  typedef boost::recursive_mutex mutex_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
-
 public:
   explicit MonitorWindow( unsigned short exe_port
                         , unsigned short log_port
@@ -60,9 +57,6 @@ private:
   void UpdateExecutionView
     (const sdpa::daemon::NotificationEvent&, const we::mgmt::type::activity_t&);
 
-  mutable mutex_type m_task_view_mutex;
-  mutable mutex_type m_task_struct_mutex;
-
   boost::asio::io_service m_io_service;
   fhg::log::remote::LogServer m_log_server;
   fhg::log::remote::LogServer m_exe_server;
@@ -81,9 +75,11 @@ private:
 
   qreal m_current_scale;
 
-  typedef std::list<std::pair<QGraphicsItem*, QGraphicsScene*> > scene_update_list_t;
-  scene_update_list_t m_scene_updates;
+  mutable boost::recursive_mutex _scene_updates_lock;
+  typedef std::pair<QGraphicsItem*, QGraphicsScene*> scene_update_t;
+  std::list<scene_update_t> _scene_updates;
 
+  mutable boost::recursive_mutex m_task_struct_mutex;
   std::vector<std::string> m_components;
   std::map<std::string, std::map<std::string, Task*> > m_tasks_grid;
   std::map<std::string, std::list<Task*> > m_tasks_list;

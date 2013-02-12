@@ -372,7 +372,6 @@ void MonitorWindow::change_gantt_color (const QString& state)
       (QString ("background-color: rgb(%1, %2, %3)").arg (r).arg (g).arg (b));
 
     {
-      lock_type lock (m_task_view_mutex);
       foreach (QGraphicsItem* item, m_scene->items())
       {
         if (Task* task = qgraphicsitem_cast<Task*> (item))
@@ -386,13 +385,13 @@ void MonitorWindow::change_gantt_color (const QString& state)
 
 void MonitorWindow::advance()
 {
-  scene_update_list_t updates;
+  std::list<scene_update_t> updates;
   {
-    lock_type lock (m_task_view_mutex);
-    updates.swap (m_scene_updates);
+    boost::unique_lock<boost::recursive_mutex> lock (_scene_updates_lock);
+    updates.swap (_scene_updates);
   }
 
-  BOOST_FOREACH (const scene_update_list_t::value_type& update, updates)
+  BOOST_FOREACH (const scene_update_t& update, updates)
   {
     update.second->addItem (update.first);
   }
@@ -498,7 +497,7 @@ void MonitorWindow::UpdateExecutionView
     // do nothing, i.e. take the activity name as it was
   }
 
-  const lock_type lock (m_task_struct_mutex);
+  const boost::unique_lock<boost::recursive_mutex> lock (m_task_struct_mutex);
 
   const std::vector<std::string>::iterator comp
     (std::find (m_components.begin(), m_components.end(), component));
@@ -521,7 +520,7 @@ void MonitorWindow::UpdateExecutionView
     label->setFont (font);
     label->setPos (0, y_coord);
 
-    m_scene_updates.push_back (std::make_pair (label, m_component_scene));
+    _scene_updates.push_back (std::make_pair (label, m_component_scene));
   }
 
   if ( m_tasks_grid[component].find (activity_id)
@@ -544,8 +543,8 @@ void MonitorWindow::UpdateExecutionView
     }
     m_tasks_list[component].push_back (task);
 
-    lock_type lock (m_task_view_mutex);
-    m_scene_updates.push_back (std::make_pair (task, m_scene));
+    boost::unique_lock<boost::recursive_mutex> lock (_scene_updates_lock);
+    _scene_updates.push_back (std::make_pair (task, m_scene));
   }
 
   m_tasks_grid[component][activity_id]->update_task_state
@@ -554,7 +553,7 @@ void MonitorWindow::UpdateExecutionView
 
 void MonitorWindow::clearActivityLog()
 {
-  lock_type struct_lock (m_task_struct_mutex);
+  boost::unique_lock<boost::recursive_mutex> struct_lock (m_task_struct_mutex);
 
   delete m_scene;
   delete m_component_scene;
@@ -569,11 +568,11 @@ void MonitorWindow::clearActivityLog()
   m_components.clear();
 
   {
-    lock_type update_lock (m_task_view_mutex);
-    while (!m_scene_updates.empty())
+    boost::unique_lock<boost::recursive_mutex> update_lock (_scene_updates_lock);
+    while (!_scene_updates.empty())
     {
-      delete m_scene_updates.front().first;
-      m_scene_updates.pop_front();
+      delete _scene_updates.front().first;
+      _scene_updates.pop_front();
     }
   }
 }
