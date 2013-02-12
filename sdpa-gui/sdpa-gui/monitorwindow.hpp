@@ -85,12 +85,8 @@ private:
   scene_update_list_t m_scene_updates;
 
   std::vector<std::string> m_components;
-  typedef std::map<std::string, Task*> id_to_task_map_t;
-  typedef std::list<Task*> task_list_t;
-  typedef std::map<std::string, id_to_task_map_t> component_to_task_map_t;
-  typedef std::map<std::string, task_list_t> component_to_task_list_t;
-  component_to_task_map_t m_tasks_grid;
-  component_to_task_list_t m_tasks_list;
+  std::map<std::string, std::map<std::string, Task*> > m_tasks_grid;
+  std::map<std::string, std::list<Task*> > m_tasks_list;
 
   QString m_logfile;
 
