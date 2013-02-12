@@ -291,25 +291,24 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
             , this, SLOT (toggleFollowTaskView (bool))
             );
 
-    QSlider* m_task_view_zoom_slider (new QSlider (this));
-    m_task_view_zoom_slider->setMinimum (1);
-    m_task_view_zoom_slider->setMaximum (800);
-    m_task_view_zoom_slider->setValue (100);
-    m_task_view_zoom_slider->setOrientation (Qt::Horizontal);
-    m_task_view_zoom_slider->setTickPosition (QSlider::TicksAbove);
-    m_task_view_zoom_slider->setTickInterval (100);
+    QSlider* zoom_slider (new QSlider (this));
+    zoom_slider->setMinimum (1);
+    zoom_slider->setMaximum (800);
+    zoom_slider->setValue (100);
+    zoom_slider->setOrientation (Qt::Horizontal);
+    zoom_slider->setTickPosition (QSlider::TicksAbove);
+    zoom_slider->setTickInterval (100);
 
-    connect ( m_task_view_zoom_slider, SIGNAL(valueChanged(int))
-            , this, SLOT(changeTaskViewZoom(int))
+    connect ( zoom_slider, SIGNAL (valueChanged (int))
+            , this, SLOT (changeTaskViewZoom (int))
             );
 
 
     QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
     control_box_layout->addWidget (clear_log_button);
     control_box_layout->addWidget (follow_logging_cb);
-    control_box_layout->addWidget (m_task_view_zoom_slider);
-    m_task_view_zoom_slider->setSizePolicy
-          (QSizePolicy::Preferred, QSizePolicy::Preferred);
+    control_box_layout->addWidget (zoom_slider);
+    zoom_slider->setSizePolicy (QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     QVBoxLayout* execution_sidebar_layout (new QVBoxLayout);
     execution_sidebar_layout->addWidget (legend_box);
