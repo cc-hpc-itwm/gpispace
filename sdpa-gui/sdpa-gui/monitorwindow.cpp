@@ -456,13 +456,13 @@ namespace
     case fhg::log::LogLevel::INFO:
       return QColor (25, 25, 25);
     case fhg::log::LogLevel::WARN:
-      return QColor (255,140,0);
+      return QColor (255, 140, 0);
     case fhg::log::LogLevel::ERROR:
-      return QColor (255,0,0);
+      return QColor (255, 0, 0);
     case fhg::log::LogLevel::FATAL:
-      return QColor (165,42,42);
+      return QColor (165, 42, 42);
     default:
-      return QColor (0,0,0);
+      return QColor (0, 0, 0);
     }
   }
 
