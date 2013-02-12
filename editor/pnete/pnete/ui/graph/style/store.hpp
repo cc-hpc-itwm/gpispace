@@ -27,38 +27,26 @@ namespace fhg
         {
           namespace store
           {
-            namespace detail
-            {
-              template<typename Key, typename Value>
-              class traits
-              {
-              public:
-                typedef boost::optional<const Value&> optional_value_type;
-                typedef boost::function< optional_value_type (Key)
-                                       > predicate_type;
-                typedef boost::unordered_map< Key
-                                            , optional_value_type
-                                            > cache_type;
-                typedef std::list<predicate_type> predicates_type;
-              };
-            }
-
             template<typename Key, typename Value>
             class cached_predicates
             {
+            public:
+              typedef boost::optional<const Value&> optional_value_type;
+              typedef boost::function< optional_value_type (Key)
+                                     > predicate_type;
+
             private:
-              typedef detail::traits<Key, Value> traits;
-              typedef typename traits::predicates_type predicates_type;
-              typedef typename traits::cache_type cache_type;
+              typedef boost::unordered_map< Key
+                                          , optional_value_type
+                                          > cache_type;
+              typedef std::list<predicate_type> predicates_type;
+
               typedef typename cache_type::const_iterator cache_iterator;
               typedef typename cache_type::value_type cache_entry_type;
               typedef typename predicates_type::const_iterator
                                predicates_iterator;
 
             public:
-              typedef typename traits::predicate_type predicate_type;
-              typedef typename traits::optional_value_type optional_value_type;
-
               cached_predicates ()
                 : _cache ()
                 , _predicates ()
