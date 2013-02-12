@@ -109,9 +109,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     QWidget* logging_tab (new QWidget);
     QGridLayout* logging_tab_layout (new QGridLayout (logging_tab));
 
-    logging_tab_layout->setSpacing (6);
-    logging_tab_layout->setContentsMargins (11, 11, 11, 11);
-
     m_log_table->setAlternatingRowColors (false);
     m_log_table->setAutoFillBackground (false);
     m_log_table->setColumnCount (4);
@@ -141,7 +138,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     logging_tab_layout->addWidget (m_log_table, 0, 0);
 
     QVBoxLayout* log_sidebar_layout (new QVBoxLayout);
-    log_sidebar_layout->setSpacing (6);
 
     QGroupBox* log_filter_box (new QGroupBox (tr ("Filter"), logging_tab));
 
@@ -182,8 +178,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
 
     QVBoxLayout* log_filter_layout (new QVBoxLayout (log_filter_box));
-    log_filter_layout->setSpacing (6);
-    log_filter_layout->setContentsMargins (11, 11, 11, 11);
 
     log_filter_layout->addWidget (log_filter_dial);
     log_filter_layout->addWidget (m_level_filter_selector);
@@ -193,8 +187,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
     log_sidebar_layout->addWidget (log_filter_box);
 
-    log_sidebar_layout->addSpacerItem
-      (new QSpacerItem (20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    log_sidebar_layout->addStretch();
 
     QGroupBox* control_box (new QGroupBox (tr ("Control"), logging_tab));
 
@@ -232,9 +225,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     QWidget* execution_tab (new QWidget);
     QGridLayout* execution_tab_layout (new QGridLayout (execution_tab));
 
-    execution_tab_layout->setSpacing (6);
-    execution_tab_layout->setContentsMargins (11, 11, 11, 11);
-
     m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
     m_view->setDragMode (QGraphicsView::ScrollHandDrag);
     m_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
@@ -254,8 +244,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
     QSplitter* task_view_widget (new QSplitter (Qt::Horizontal, execution_tab));
     QHBoxLayout *task_view_widget_layout (new QHBoxLayout);
-    task_view_widget_layout->setSpacing (0);
-    task_view_widget_layout->setContentsMargins (0, 0, 0, 0);
 
     task_view_widget->addWidget (m_component_view);
     task_view_widget->addWidget (m_view);
@@ -265,7 +253,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
 
     QVBoxLayout* execution_sidebar_layout (new QVBoxLayout);
-    execution_sidebar_layout->setSpacing (6);
 
     QGroupBox* legend_box (new QGroupBox (tr ("Legend"), execution_tab));
     QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
@@ -301,8 +288,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
     execution_sidebar_layout->addWidget (legend_box);
 
-    execution_sidebar_layout->addSpacerItem
-      (new QSpacerItem (20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    execution_sidebar_layout->addStretch();
 
     QGroupBox* control_box (new QGroupBox (tr ("Control"), execution_tab));
 
