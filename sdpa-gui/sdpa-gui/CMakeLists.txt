@@ -4,8 +4,7 @@ include (${QT_USE_FILE})
 
 set (sdpa-gui_SRCS
   main.cpp
-  monitorwindow.cpp
-  task.cpp)
+  monitorwindow.cpp)
 
 set (sdpa-gui_TOMOC
   monitorwindow.hpp)

@@ -12,7 +12,6 @@
 
 #include <boost/thread.hpp>
 
-#include "task.h"
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
@@ -20,6 +19,10 @@
 
 #endif
 
+namespace
+{
+  class Task;
+}
 class QGraphicsView;
 class QGraphicsScene;
 

@@ -1,12 +1,6 @@
 #include "monitorwindow.hpp"
-#include "task.h"
 
-#include <fhglog/Appender.hpp>
-
-//! \todo eliminate this include (that completes type transition_t::data)
 #include <we/loader/putget.hpp>
-#include <we/mgmt/type/activity.hpp>
-#include <we/type/net.hpp>
 #include <we/type/value.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
@@ -22,26 +16,30 @@
 #include <QDebug>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
+#include <QGraphicsRectItem>
+#include <QGraphicsScene>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QSettings>
 #include <QSlider>
 #include <QSplitter>
+#include <QString>
 #include <QVBoxLayout>
 
 #include <cmath>
 #include <fstream>
 #include <list>
 #include <sstream>
+#include <stdexcept>
 
 // alphanum
 #include <cassert>
-#include <functional>
-#include <string>
-#include <sstream>
 #include <cctype>
-
+#include <functional>
+#include <sstream>
+#include <string>
 
 using namespace std;
 using namespace boost;
@@ -372,12 +370,97 @@ MonitorWindow::~MonitorWindow()
   m_io_thread.join();
 }
 
+namespace
+{
+  QColor color_for_state (const QString& state, const QColor& color)
+  {
+    QSettings settings;
+
+    settings.setValue ("gantt/" + state, color);
+  }
+
+  QColor color_for_state (const QString& state)
+  {
+    QSettings settings;
+
+    return settings.value ("gantt/" + state).value<QColor>();
+  }
+
+  QColor color_for_state (const sdpa::daemon::NotificationEvent::state_t& state)
+  {
+    typedef sdpa::daemon::NotificationEvent event;
+
+    switch (state)
+    {
+#define CHOICE(enummed,stringed)                    \
+      case event::STATE_ ## enummed:                \
+        return color_for_state (stringed)
+
+      CHOICE (CREATED, "created");
+      CHOICE (STARTED, "started");
+      CHOICE (FINISHED, "finished");
+      CHOICE (FAILED, "failed");
+      CHOICE (CANCELLED, "cancelled");
+
+#undef CHOICE
+    }
+
+    throw std::runtime_error ("invalid state");
+  }
+
+  class Task : public QGraphicsRectItem
+  {
+  public:
+    Task ( const QString& component
+         , const QString& name
+         , const QString& id
+         , QGraphicsItem* parent = NULL
+         )
+      : QGraphicsRectItem (parent)
+      , _do_advance (true)
+      , _state (sdpa::daemon::NotificationEvent::STATE_CREATED)
+    {
+      setToolTip (QObject::tr ("%1 on %2 (id = %3)").arg (name, component, id));
+      setRect (0.0, 0.0, 0.5, 8.0);
+      reset_color();
+    }
+
+    void update_task_state (sdpa::daemon::NotificationEvent::state_t state)
+    {
+      _state = state;
+      _do_advance = _state < sdpa::daemon::NotificationEvent::STATE_FINISHED;
+      reset_color();
+    }
+
+    void advance (const qreal scene_width)
+    {
+      if (_do_advance)
+      {
+        static const qreal height (8.0);
+
+        setRect (0.0, 0.0, std::floor (scene_width - pos().x() + 0.5), height);
+      }
+    }
+
+    void reset_color()
+    {
+      setBrush (color_for_state (_state));
+      update();
+    }
+
+    enum { Type = UserType + 1 };
+    int type() const { return Type; }
+
+  private:
+    bool _do_advance;
+    sdpa::daemon::NotificationEvent::state_t _state;
+  };
+}
+
 void MonitorWindow::change_gantt_color (const QString& state)
 {
-  QSettings settings;
-
   QColor new_color
-    ( QColorDialog::getColor ( settings.value ("gantt/" + state).value<QColor>()
+    ( QColorDialog::getColor ( color_for_state (state)
                              , this
                              , tr ("Select new color for state %1").arg (state)
                              )
@@ -385,7 +468,7 @@ void MonitorWindow::change_gantt_color (const QString& state)
 
   if (new_color.isValid())
   {
-    settings.setValue ("gantt/" + state, new_color);
+    color_for_state (state, new_color);
 
     int r, g, b;
     new_color.getRgb (&r, &g, &b);
