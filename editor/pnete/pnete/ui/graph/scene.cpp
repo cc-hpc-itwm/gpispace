@@ -19,7 +19,6 @@
 #include <pnete/ui/graph/port_place_association.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/util/action.hpp>
 #include <pnete/weaver/display.hpp>
 
 #include <util/graphviz.hpp>

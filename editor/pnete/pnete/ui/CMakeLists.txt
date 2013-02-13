@@ -63,7 +63,6 @@ set(ui_TOMOC
 )
 
 add_subdirectory (graph)
-add_subdirectory (util)
 
 QT4_WRAP_UI(ui_UIS_H ${ui_UIS})
 QT4_WRAP_CPP(ui_SRCS_MOC ${ui_TOMOC} ${ui_UIS_H})
