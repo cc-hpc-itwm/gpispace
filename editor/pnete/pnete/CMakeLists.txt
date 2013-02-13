@@ -141,8 +141,9 @@ if (ENABLE_PNET_EDITOR)
 
   install (TARGETS pnete RUNTIME DESTINATION bin COMPONENT runtime)
 
-  add_executable (test_pnete_cached_predicates ui/graph/style/test_cached_predicates.cpp)
-  add_test ("test_pnete_cached_predicates" test_pnete_cached_predicates)
+  fhg_add_test (ui/graph/style/test_cached_predicates.cpp
+    DESCRIPTION "test caching of style predicates used in pnete"
+    )
 endif()
 
 if (ENABLE_SDPA_GUI)
