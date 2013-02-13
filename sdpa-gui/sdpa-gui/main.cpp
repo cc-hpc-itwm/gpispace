@@ -1,12 +1,14 @@
-#include <iostream>
-
-#include "monitorwindow.hpp"
+#include <execution_monitor.hpp>
+#include <log_monitor.hpp>
 
 #include <fhg/revision.hpp>
 
 #include <QApplication>
+#include <QTabWidget>
 #include <QtCore/QSettings>
 #include <QtCore/QString>
+
+#include <iostream>
 
 namespace
 {
@@ -37,18 +39,11 @@ namespace
 
 int main (int ac, char *av[])
 {
-  unsigned short exe_port (0);
-  unsigned short log_port (2438);
-
   if (ac < 2)
   {
     std::cerr << "usage: " << av[0] << " gui-port [log-port]" << std::endl;
     return 1;
   }
-
-  exe_port = QString (av[1]).toUShort();
-  if (ac > 2)
-    log_port = QString (av[2]).toUShort();
 
   QApplication a (ac, av);
 
@@ -62,8 +57,14 @@ int main (int ac, char *av[])
 
   maybe_set_default_settings();
 
-  MonitorWindow w (exe_port, log_port);
-  w.show();
+  QTabWidget window;
+  window.addTab ( new execution_monitor (QString (av[1]).toUShort())
+                , QObject::tr ("Execution Monitor")
+                );
+  window.addTab ( new log_monitor (ac > 2 ? QString (av[2]).toUShort() : 2438)
+                , QObject::tr ("Logging")
+                );
+  window.show();
 
   return a.exec();
 }
