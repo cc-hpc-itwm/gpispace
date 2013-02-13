@@ -59,6 +59,7 @@ void Task::update_task_state (sdpa::daemon::NotificationEvent::state_t state)
 void Task::reset_color()
 {
   setBrush (color_for_state (_state));
+  update();
 }
 
 void Task::advance (const qreal scene_width)
