@@ -60,6 +60,9 @@ namespace fhg
         void execute_locally_inputs_via_prompt();
         void execute_locally_inputs_from_file();
 
+        void open_remote_logging();
+        void open_remote_execution();
+
       protected:
         virtual void closeEvent (QCloseEvent*);
 

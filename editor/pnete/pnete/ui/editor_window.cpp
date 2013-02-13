@@ -11,8 +11,10 @@
 #include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/dock_widget.hpp>
 #include <pnete/ui/document_view.hpp>
+#include <pnete/ui/execution_monitor.hpp>
 #include <pnete/ui/expression_widget.hpp>
 #include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/log_monitor.hpp>
 #include <pnete/ui/module_call_widget.hpp>
 #include <pnete/ui/net_widget.hpp>
 #include <pnete/ui/size.hpp>
@@ -375,12 +377,68 @@ namespace fhg
 
         menu->addSeparator();
 
+        menu->addAction
+          (tr ("remote_logging"), this, SLOT (open_remote_logging()));
+        menu->addAction
+          (tr ("remote_execution"), this, SLOT (open_remote_execution()));
+
+        menu->addSeparator();
+
         foreach (document_view* view, findChildren<document_view*>())
         {
           menu->addAction (view->toggleViewAction());
         }
 
         return menu;
+      }
+
+      void editor_window::open_remote_logging()
+      {
+        bool ok;
+        const int port ( QInputDialog::getInt ( this
+                                              , tr ("port_for_remote_logging")
+                                              , tr ("port")
+                                              , 2438
+                                              , 1024
+                                              , 65535
+                                              , 1
+                                              , &ok
+                                              )
+                       );
+        if (ok)
+        {
+          dock_widget* widget
+            ( new dock_widget ( tr ("log_monitor_for_%1").arg (port)
+                              , new log_monitor (port, this)
+                              )
+            );
+          widget->show();
+          addDockWidget (dock_position, widget, Qt::Horizontal);
+        }
+      }
+      void editor_window::open_remote_execution()
+      {
+        bool ok;
+        const int port ( QInputDialog::getInt ( this
+                                              , tr ("port_for_remote_execution")
+                                              , tr ("port")
+                                              , 2439
+                                              , 1024
+                                              , 65535
+                                              , 1
+                                              , &ok
+                                              )
+                       );
+        if (ok)
+        {
+          dock_widget* widget
+            ( new dock_widget ( tr ("execution_monitor_for_%1").arg (port)
+                              , new execution_monitor (port, this)
+                              )
+            );
+          widget->show();
+          addDockWidget (dock_position, widget, Qt::Horizontal);
+        }
       }
 
       void editor_window::closeEvent (QCloseEvent* event)
