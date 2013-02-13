@@ -46,6 +46,7 @@ Task::Task ( const QString& component
 {
   setToolTip (QObject::tr ("%1 on %2 (id = %3)").arg (name, component, id));
   setBrush (color_for_state (sdpa::daemon::NotificationEvent::STATE_CREATED));
+  setRect (0.0, 0.0, 0.5, 8.0);
 }
 
 void Task::update_task_state (sdpa::daemon::NotificationEvent::state_t state)
