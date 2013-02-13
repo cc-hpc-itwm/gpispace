@@ -87,9 +87,9 @@ namespace fhg
         setDockNestingEnabled (true);
         setTabPosition (Qt::AllDockWidgetAreas, QTabWidget::North);
 
-        addDockWidget (dock_position, _transition_library_dock, Qt::Horizontal);
-        addDockWidget (dock_position, _structure_view_dock, Qt::Horizontal);
-        addDockWidget (dock_position, _undo_view_dock, Qt::Horizontal);
+        addDockWidget (dock_position, _transition_library_dock);
+        addDockWidget (dock_position, _structure_view_dock);
+        addDockWidget (dock_position, _undo_view_dock);
 
         setup_menu_and_toolbar();
 
@@ -252,7 +252,7 @@ namespace fhg
         }
         else
         {
-          addDockWidget (Qt::LeftDockWidgetArea, doc_view, Qt::Horizontal);
+          addDockWidget (Qt::LeftDockWidgetArea, doc_view);
         }
 
         doc_view->show();
@@ -413,7 +413,7 @@ namespace fhg
                               )
             );
           widget->show();
-          addDockWidget (dock_position, widget, Qt::Horizontal);
+          addDockWidget (dock_position, widget);
         }
       }
       void editor_window::open_remote_execution()
@@ -437,7 +437,7 @@ namespace fhg
                               )
             );
           widget->show();
-          addDockWidget (dock_position, widget, Qt::Horizontal);
+          addDockWidget (dock_position, widget);
         }
       }
 
