@@ -1,5 +1,5 @@
-#ifndef MONITORWINDOW_HPP
-#define MONITORWINDOW_HPP
+#ifndef FHG_PNETE_UI_LOG_MONITOR_HPP
+#define FHG_PNETE_UI_LOG_MONITOR_HPP
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/LogServer.hpp>

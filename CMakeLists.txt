@@ -153,11 +153,6 @@ message(STATUS "=== [ sdpa ] ===")
 add_subdirectory(sdpa)
 
 ## optional components
-if (ENABLE_SDPA_GUI)
-  message(STATUS "=== [ sdpa-gui ] ===")
-  add_subdirectory(sdpa-gui)
-endif (ENABLE_SDPA_GUI)
-
 if (ENABLE_SDPA_GPI)
   message(STATUS "=== [ sdpa-gpi ] ===")
   add_subdirectory(sdpa-gpi)
@@ -178,10 +173,8 @@ if (ENABLE_APPLICATION)
   add_subdirectory(application)
 endif (ENABLE_APPLICATION)
 
-if (ENABLE_PNET_EDITOR)
-  message(STATUS "=== [ pnete ] ===")
-  add_subdirectory(editor)
-endif (ENABLE_PNET_EDITOR)
+message (STATUS "=== [ pnete/sdpa-gui ] ===")
+add_subdirectory (editor)
 
 include(TargetDoc)
 

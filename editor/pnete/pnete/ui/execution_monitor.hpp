@@ -1,5 +1,5 @@
-#ifndef EXECUTION_MONITOR_HPP
-#define EXECUTION_MONITOR_HPP
+#ifndef FHG_PNETE_UI_EXECUTION_MONITOR_HPP
+#define FHG_PNETE_UI_EXECUTION_MONITOR_HPP
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/LogServer.hpp>

@@ -1,5 +1,5 @@
-#include <execution_monitor.hpp>
-#include <log_monitor.hpp>
+#include <pnete/ui/execution_monitor.hpp>
+#include <pnete/ui/log_monitor.hpp>
 
 #include <fhg/revision.hpp>
 

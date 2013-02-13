@@ -22,6 +22,7 @@ include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
                       ${FhgLog_INCLUDE_DIR}
                       ${GRAPHVIZ_INCLUDE_DIR}
                       ${UTIL_INCLUDE_DIR}
+                      ${CMAKE_SOURCE_DIR}/sdpa
                       ${CMAKE_SOURCE_DIR}/we
                       ${CMAKE_SOURCE_DIR}/xml
                     )
