@@ -1,4 +1,4 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-add_subdirectory (pnete)
+add_subdirectory (src)
 add_subdirectory (test)
