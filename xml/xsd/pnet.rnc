@@ -16,14 +16,10 @@ a:documentation [
   "    \x{a}" ~
   "  "
 ]
-start = defun
-defun = element defun { function_type }
-start = props
-props = element props { property_map_list_type }
-start = structs
-structs = element structs { struct_list_type }
-start = template
-template = element template { template_type }
+start = element defun { function_type }
+      | element props { property_map_list_type }
+      | element structs { struct_list_type }
+      | element template { template_type }
 transition_include_type = attribute href { xsd:anyURI }
 struct_include_type = attribute href { xsd:anyURI }
 function_include_type =
