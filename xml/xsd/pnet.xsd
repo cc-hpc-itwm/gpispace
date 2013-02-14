@@ -206,12 +206,10 @@
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="properties" type="property_map_type"/>
         <xsd:element name="include-properties" type="properties_include_type"/>
-      </xsd:choice>
-      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="require" type="require_type"/>
         <xsd:element name="struct" type="struct_type"/>
         <xsd:element name="include-structs" type="struct_include_type"/>
       </xsd:choice>
-      <xsd:element minOccurs="0" maxOccurs="unbounded" name="require" type="require_type"/>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="in" type="port_type"/>
         <xsd:element name="out" type="port_type"/>
@@ -234,6 +232,7 @@
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="properties" type="property_map_type"/>
         <xsd:element name="include-properties" type="properties_include_type"/>
+        <xsd:element name="require" type="require_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="1" maxOccurs="1">
         <xsd:element name="defun" type="function_type"/>
