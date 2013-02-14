@@ -322,9 +322,17 @@ $(NET_VALIDATION):
 
 else
 
-$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
-	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2> $@
+ifeq "$(TEE)" ""
 
+$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
+	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2> "$@"
+
+else
+
+$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
+	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2>&1 | $(TEE) "$@"
+
+endif
 endif
 
 ###############################################################################
