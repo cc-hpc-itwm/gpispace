@@ -24,25 +24,11 @@ namespace fhg
         {
           namespace fallback
           {
-#define DECL(_t, _n) _t _n (const mode::type&)
-
-            DECL (qreal, border_thickness);
-            DECL (Qt::PenStyle, border_style);
-            DECL (QColor, border_color);
-            DECL (QColor, background_color);
-            DECL (qreal, text_line_thickness);
-            DECL (QColor, text_color);
-
-#undef DECL
             namespace detail
             {
-              typedef boost::variant < const qreal&
-                                     , const QColor&
-                                     , const Qt::PenStyle&
-                                     > type;
+              typedef boost::variant<qreal, QColor, Qt::PenStyle> return_type;
 
-              typedef boost::function< type (const mode::type&)
-                                     > by_mode_type;
+              typedef boost::function<return_type (const mode::type&)> by_mode_type;
 
               typedef boost::unordered_map< key_type
                                           , by_mode_type
@@ -61,10 +47,10 @@ namespace fhg
                 (by_mode_by_key.find (key));
 
               if (by_mode == by_mode_by_key.end())
-                {
-                  throw std::runtime_error
-                    ("STRANGE: No default values for " + key);
-                }
+              {
+                throw std::runtime_error
+                  ("STRANGE: No default values for " + key);
+              }
 
               return boost::get<T> (by_mode->second (mode));
             };
