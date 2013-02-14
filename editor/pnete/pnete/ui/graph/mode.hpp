@@ -3,10 +3,6 @@
 #ifndef _FHG_PNETE_UI_GRAPH_MODE_HPP
 #define _FHG_PNETE_UI_GRAPH_MODE_HPP 1
 
-#include <boost/variant.hpp>
-
-class QString;
-
 namespace fhg
 {
   namespace pnete

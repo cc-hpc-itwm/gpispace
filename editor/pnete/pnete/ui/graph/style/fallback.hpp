@@ -3,12 +3,12 @@
 #ifndef _FHG_PNETE_UI_GRAPH_STYLE_FALLBACK_HPP
 #define _FHG_PNETE_UI_GRAPH_STYLE_FALLBACK_HPP 1
 
-#include <pnete/ui/graph/style/type.fwd.hpp>
 #include <pnete/ui/graph/mode.hpp>
+#include <pnete/ui/graph/style/type.fwd.hpp>
 
-#include <boost/variant.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/function.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/variant.hpp>
 
 #include <QColor>
 
