@@ -5,7 +5,7 @@ namespace xsd = "http://www.w3.org/2001/XMLSchema"
 
 a:documentation [
   "\x{a}" ~
-  "\x{a}" ~
+  "    \x{a}" ~
   "    petri nets with\x{a}" ~
   "      typed ports\x{a}" ~
   "      typed places\x{a}" ~
@@ -13,13 +13,17 @@ a:documentation [
   "      user defined types\x{a}" ~
   "      hierarchical structure\x{a}" ~
   "      hierarchical properties\x{a}" ~
-  "\x{a}" ~
+  "    \x{a}" ~
   "  "
 ]
-start = element defun { function_type }
-      | element props { property_map_list_type }
-      | element structs { struct_list_type }
-      | element template { template_type }
+start = defun
+defun = element defun { function_type }
+start = props
+props = element props { property_map_list_type }
+start = structs
+structs = element structs { struct_list_type }
+start = template
+template = element template { template_type }
 transition_include_type = attribute href { xsd:anyURI }
 struct_include_type = attribute href { xsd:anyURI }
 function_include_type =
@@ -27,16 +31,16 @@ function_include_type =
   attribute as { xsd:string }?
 properties_include_type = attribute href { xsd:anyURI }
 cinclude_type = attribute href { xsd:anyURI }
-flag_type = attribute flag { xsd:string }
 link_type = attribute href { xsd:anyURI }
+flag_type = attribute flag { xsd:string }
 property_type =
-  attribute key { xsd:ID },
+  attribute key { xsd:NCName },
   attribute value { xsd:string }
 property_map_type =
   (element property { property_type }
    | element properties { property_map_type }
    | element include-properties { properties_include_type })*,
-  attribute name { xsd:ID }
+  attribute name { xsd:NCName }
 property_map_list_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*
@@ -44,16 +48,16 @@ struct_list_type =
   (element struct { struct_type }
    | element include-structs { struct_include_type })*
 struct_field_type =
-  attribute name { xsd:ID },
+  attribute name { xsd:NCName },
   attribute type { xsd:string }
 struct_type =
   (element field { struct_field_type }
    | element struct { struct_type })*,
-  attribute name { xsd:ID }
+  attribute name { xsd:NCName }
 token_field_type =
   (element value { xsd:string }
    | element field { token_field_type }+)?,
-  attribute name { xsd:ID }
+  attribute name { xsd:NCName }
 token_type =
   (element value { xsd:string }
    | element field { token_field_type }+)?
@@ -63,68 +67,69 @@ mod_type =
    | element cxx { flag_type }
    | element link { link_type })*,
   element code { xsd:string }?,
-  attribute name { xsd:ID },
+  attribute name { xsd:NCName },
   attribute function { xsd:string }
 type_map_type =
-  attribute replace { xsd:ID },
+  attribute replace { xsd:NCName },
   attribute with { xsd:string }
-type_get_type = attribute name { xsd:ID }
+type_get_type = attribute name { xsd:NCName }
 template_use_type =
   (element type-map { type_map_type }
    | element type-get { type_get_type })*,
-  attribute name { xsd:ID },
+  attribute name { xsd:NCName },
   attribute use { xsd:string }
-use_type = attribute name { xsd:ID }
+use_type = attribute name { xsd:NCName }
 require_type =
   attribute key { xsd:string },
   attribute mandatory { xsd:boolean }?
-template_parameter_type = attribute type { xsd:ID }
+template_parameter_type = attribute type { xsd:NCName }
 place_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   element token { token_type }*,
-  attribute name { xsd:ID },
+  attribute name { xsd:NCName },
   attribute type { xsd:string },
   attribute virtual { xsd:boolean }?
 port_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
-  attribute name { xsd:ID },
+  attribute name { xsd:NCName },
   attribute type { xsd:string },
   attribute place { xsd:string }?
 connect_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   attribute place { xsd:string },
-  attribute port { xsd:ID }
+  attribute port { xsd:NCName }
 place_map_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   attribute virtual { xsd:string },
-  attribute real { xsd:ID }
+  attribute real { xsd:NCName }
 template_type =
-  (element template-parameter { template_paramater_type })*,
-  element defun { function_type }
-function_type =
   element template-parameter { template_parameter_type }*,
+  element defun { function_type },
+  attribute name { xsd:ID }?
+function_type =
   (element properties { property_map_type }
-   | element include-properties { properties_include_type })*,
-  (element struct { struct_type }
+   | element include-properties { properties_include_type }
+   | element require { require_type }
+   | element struct { struct_type }
    | element include-structs { struct_include_type })*,
-  element require { require_type }*,
   (element in { port_type }
    | element out { port_type }
    | element inout { port_type }
    | element tunnel { port_type })*,
-  ((element expression { xsd:string })*
+  (element expression { xsd:string }+
    | element module { mod_type }
    | element net { net_type }),
   element condition { xsd:string }*,
-  attribute name { xsd:ID }?,
+  attribute name { xsd:NCName }?,
   attribute internal { xsd:boolean }?
 transition_type =
   (element properties { property_map_type }
-   | element include-properties { properties_include_type })*,
+   | element include-properties { properties_include_type }
+   | element require { require_type })*,
   (element defun { function_type }
    | element include-function { transition_include_type }
    | element use { use_type }),
@@ -134,7 +139,7 @@ transition_type =
    | element connect-read { connect_type }
    | element place-map { place_map_type }
    | element condition { xsd:string })*,
-  attribute name { xsd:ID },
+  attribute name { xsd:NCName },
   attribute priority { xsd:nonNegativeInteger }?,
   attribute inline { xsd:boolean }?,
   attribute internal { xsd:boolean }?
@@ -146,5 +151,5 @@ net_type =
    | element properties { property_map_type }
    | element specialize { template_use_type }
    | element struct { struct_type }
-   | element template { function_type }
+   | element template { template_type }
    | element transition { transition_type })*
