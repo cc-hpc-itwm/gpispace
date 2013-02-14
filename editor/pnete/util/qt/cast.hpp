@@ -49,22 +49,6 @@ namespace fhg
         return x;
       }
     }
-
-    class scoped_signal_block
-    {
-    private:
-      QObject* _ob;
-      const bool _old;
-    public:
-      scoped_signal_block (QObject* ob)
-        : _ob (ob)
-        , _old (_ob->blockSignals (true))
-      {}
-      ~scoped_signal_block()
-      {
-        _ob->blockSignals (_old);
-      }
-    };
   }
 }
 
