@@ -6,12 +6,11 @@ ifndef TRANG
 	TRANG = $(shell which trang 2>/dev/null)
 endif
 
-default: all
-
 XSD := pnet.xsd
 
 RNC = $(XSD:.xsd=.rnc)
 
+default: pnet.xsd patch
 all: $(RNC)
 
 help:
@@ -41,8 +40,10 @@ endif
 %.rnc : %.rng ; $(TRANG) -I rng -O rnc $^ $@
 %.rng : %.xsd ; $(XSLT) -o $@ XSDtoRNG.xsl $^
 
+patch: pnet.rnc pnet.rnc.fix.patch
+	patch -p1 < pnet.rnc.fix.patch
 
-.PHONY: default all clean help
+.PHONY: default all clean help patch
 
 clean:
 	rm -f $(RNC)
