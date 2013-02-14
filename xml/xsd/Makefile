@@ -10,7 +10,7 @@ XSD := pnet.xsd
 
 RNC = $(XSD:.xsd=.rnc)
 
-default: pnet.xsd patch
+default: pnet.rnc patch
 all: $(RNC)
 
 help:
