@@ -1,0 +1,53 @@
+//bernd.loerwald@itwm.fraunhofer.de
+
+digraph
+{
+  splines = ortho
+  rankdir = LR
+  remincross = true
+  mindist = 1000.0
+  pencolor = none
+  page = "8.27,11.69"
+  size = "8.27,11.69"
+  center = true
+
+  function [shape = rect, style = filled, fillcolor = white]
+  subgraph cluster_function
+  {
+    bgcolor = gray90
+    port [label="port {place}", shape = rect, style = filled, fillcolor = white]
+    expression [shape = rect, style = filled, fillcolor = white]
+    module [shape = rect, style = filled, fillcolor = white]
+    net [shape = rect, style = filled, fillcolor = white]
+    subgraph cluster_net
+    {
+      bgcolor = gray80
+      template [shape = rect, style = filled, fillcolor = white]
+      place [shape = rect, style = filled, fillcolor = white]
+      specialize [shape = rect, style = filled, fillcolor = white]
+      transition [shape = rect, style = filled, fillcolor = white]
+      subgraph cluster_transition
+      {
+        bgcolor = gray70
+        connect [label="connect {port, place}", shape = rect, style = filled, fillcolor = white]
+        place_map [shape = rect, style = filled, fillcolor = white]
+        use [label="use {function}", shape = rect, style = filled, fillcolor = white]
+      }
+    }
+  }
+
+  connect -> transition
+  expression -> function
+  function -> net [penwidth = 2.0]
+  function -> template [penwidth = 2.0]
+  function -> transition [penwidth = 2.0]
+  module -> function
+  net -> function [penwidth = 2.0]
+  place -> net
+  place_map -> transition
+  port -> function
+  specialize -> net
+  template -> net [penwidth = 2.0]
+  transition -> net [penwidth = 2.0]
+  use -> transition
+}
