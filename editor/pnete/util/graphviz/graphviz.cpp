@@ -1,6 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#include <util/graphviz.hpp>
+#include <util/graphviz/graphviz.hpp>
 
 #include <QSizeF>
 #include <QGraphicsItem>

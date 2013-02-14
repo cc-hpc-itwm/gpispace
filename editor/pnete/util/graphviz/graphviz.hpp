@@ -1,7 +1,7 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_GRAPHVIZ_HPP
-#define _FHG_UTIL_GRAPHVIZ_HPP 1
+#ifndef FHG_UTIL_GRAPHVIZ_GRAPHVIZ_HPP
+#define FHG_UTIL_GRAPHVIZ_GRAPHVIZ_HPP
 
 class QSizeF;
 class QGraphicsItem;

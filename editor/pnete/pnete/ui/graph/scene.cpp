@@ -21,7 +21,7 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/weaver/display.hpp>
 
-#include <util/graphviz.hpp>
+#include <util/graphviz/graphviz.hpp>
 #include <util/qt/boost_connect.hpp>
 #include <util/qt/cast.hpp>
 #include <util/qt/parent.hpp>
