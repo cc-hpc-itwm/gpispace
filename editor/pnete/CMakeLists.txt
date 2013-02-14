@@ -32,5 +32,4 @@ set (LIB_PREFIX "fhg_pnete_")
 include(${QT_USE_FILE})
 
 add_subdirectory (pnete)
-add_subdirectory (test)
 add_subdirectory (util)
