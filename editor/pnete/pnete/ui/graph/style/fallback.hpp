@@ -52,9 +52,7 @@ namespace fhg
             }
 
             template<typename T>
-            const T& get ( const style::key_type& key
-                         , const mode::type& mode
-                         )
+              T get (const style::key_type& key, const mode::type& mode)
             {
               const detail::by_mode_by_key_type& by_mode_by_key
                 (detail::get_by_mode_by_key());
