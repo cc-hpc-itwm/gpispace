@@ -1,5 +1,0 @@
-<defun name="Gaining">
-  <in name="input" type="seismic"/>
-  <in name="params" type="sugain_param"/>
-  <out name="output" type="seismic"/>
-</defun>

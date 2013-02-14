@@ -1,5 +1,0 @@
-<defun name="Arbitrary to Common Shot">
-  <in name="input" type="seismic"/>
-  <in name="params" type="susort_param"/>
-  <out name="output" type="seismic"/>
-</defun>

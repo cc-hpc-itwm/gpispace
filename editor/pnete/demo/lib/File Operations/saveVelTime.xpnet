@@ -1,5 +1,0 @@
-<defun name="Save Velocity (time)">
-  <in name="data" type="velocity_time"/>
-  <in name="filename" type="string"/>
-  <out name="done" type="control"/>
-</defun>

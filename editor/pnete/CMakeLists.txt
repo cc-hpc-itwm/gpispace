@@ -34,9 +34,3 @@ include(${QT_USE_FILE})
 add_subdirectory (pnete)
 add_subdirectory (test)
 add_subdirectory (util)
-
-install ( DIRECTORY demo
-          DESTINATION share/pnete
-          USE_SOURCE_PERMISSIONS
-          FILES_MATCHING PATTERN "*.xml"
-        )

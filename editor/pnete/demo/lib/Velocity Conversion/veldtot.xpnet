@@ -1,5 +1,0 @@
-<defun name="Velocity Depth to Time">
-  <in name="input" type="velocity_depth"/>
-  <in name="params" type="veldtot_param"/>
-  <out name="output" type="velocity_time"/>
-</defun>
