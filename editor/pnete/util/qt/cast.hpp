@@ -21,12 +21,7 @@ namespace fhg
 
         if (!x)
         {
-          throw std::runtime_error
-            ( std::string ("throwing_qobject_cast failed from ")
-//             + qPrintable(from->metaObject()->className())
-//             + " to "
-//             + qPrintable(typename T::staticMetaObject.className())
-            );
+          throw std::runtime_error ("throwing_qobject_cast failed");
         }
 
         return x;
@@ -37,12 +32,7 @@ namespace fhg
 
         if (!x)
         {
-          throw std::runtime_error
-            ( std::string ("throwing_qobject_cast failed from ")
-//             + qPrintable(from->metaObject()->className())
-//             + " to "
-//             + qPrintable(typename T::staticMetaObject.className())
-            );
+          throw std::runtime_error ("throwing_qobject_cast failed");
         }
 
         return x;
@@ -53,12 +43,7 @@ namespace fhg
 
         if (!x)
         {
-          throw std::runtime_error
-            ( std::string ("throwing_qgraphicsitem_cast failed from ")
-//             + qPrintable(from->metaObject()->className())
-//             + " to "
-//             + qPrintable(typename T::staticMetaObject.className())
-            );
+          throw std::runtime_error ("throwing_qgraphicsitem_cast failed");
         }
 
         return x;
