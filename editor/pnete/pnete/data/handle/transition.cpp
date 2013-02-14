@@ -58,7 +58,7 @@ namespace fhg
           change_manager().no_undo_move_item (*this, position);
         }
 
-        function transition::function() const
+        handle::function transition::function() const
         {
           return handle::function (get().resolved_function(), document());
         }

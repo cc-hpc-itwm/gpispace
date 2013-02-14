@@ -45,7 +45,7 @@ namespace fhg
 
           virtual void no_undo_move (const QPointF& position) const;
 
-          function function() const;
+          handle::function function() const;
 
           bool parent_is (const net&) const;
           net parent() const;
