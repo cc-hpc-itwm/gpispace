@@ -2,17 +2,52 @@
 
 #include <we/container/priostore.hpp>
 
+#include <algorithm>
+
 namespace we
 {
   namespace container
   {
+    namespace
+    {
+      typedef std::vector<petri_net::transition_id_type> vec_type;
+      typedef std::pair<vec_type::iterator,vec_type::iterator> pit_type;
+
+      void vec_insert (vec_type& v, const petri_net::transition_id_type& x)
+      {
+        const pit_type pit (std::equal_range (v.begin(), v.end(), x));
+
+        if (pit.first == pit.second)
+        {
+          v.insert (pit.second, x);
+        }
+      }
+
+      void vec_erase (vec_type& v, const petri_net::transition_id_type& x)
+      {
+        const pit_type pit (std::equal_range (v.begin(), v.end(), x));
+
+        if (pit.first != pit.second)
+        {
+          v.erase (pit.first);
+        }
+      }
+
+      bool vec_elem ( const vec_type& v
+                    , const petri_net::transition_id_type& x
+                    )
+      {
+        return std::binary_search (v.begin(), v.end(), x);
+      }
+    }
+
     void priority_store::erase ( const petri_net::transition_id_type& x
                                , const prio_map_t::iterator& pos
                                )
     {
       if (pos != _prio_map.end())
       {
-        pos->second.erase (x);
+        vec_erase (pos->second, x);
 
         if (pos->second.empty())
         {
@@ -25,7 +60,7 @@ namespace we
                                 , const petri_net::priority_type& prio
                                 )
     {
-      _prio_map[prio].insert(x);
+      vec_insert (_prio_map[prio], x);
     }
 
     petri_net::priority_type
@@ -87,7 +122,7 @@ namespace we
     {
       const prio_map_t::const_iterator pos (_prio_map.find (get_priority (x)));
 
-      return (pos != _prio_map.end()) ? pos->second.elem (x) : false;
+      return (pos != _prio_map.end()) ? vec_elem (pos->second, x) : false;
     }
 
     bool priority_store::empty() const

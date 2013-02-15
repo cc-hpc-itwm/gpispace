@@ -3,12 +3,13 @@
 #ifndef _WE_CONTAINER_PRIOSTORE_HPP
 #define _WE_CONTAINER_PRIOSTORE_HPP
 
-#include <we/container/svector.hpp>
 #include <we/type/id.hpp>
 
-#include <map>
-
 #include <boost/unordered_map.hpp>
+#include <boost/random.hpp>
+
+#include <map>
+#include <vector>
 
 namespace we
 {
@@ -34,12 +35,16 @@ namespace we
       template<typename Engine>
       const petri_net::transition_id_type& random (Engine& engine) const
       {
-        return _prio_map.begin()->second.random (engine);
+        const std::vector<petri_net::transition_id_type>& v
+          (_prio_map.begin()->second);
+        boost::uniform_int<std::size_t> rand (0, v.size()-1);
+
+        return v.at (rand (engine));
       }
 
     private:
       typedef std::map< petri_net::priority_type
-                      , svector
+                      , std::vector<petri_net::transition_id_type>
                       , std::greater<petri_net::priority_type>
                       > prio_map_t;
       typedef boost::unordered_map< petri_net::transition_id_type
