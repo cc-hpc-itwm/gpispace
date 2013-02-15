@@ -18,17 +18,10 @@ namespace svector
   private:
     typedef std::vector<petri_net::transition_id_type>::iterator it_type;
     typedef std::pair<it_type,it_type> pit_t;
-    typedef std::vector<petri_net::transition_id_type>::const_iterator const_it;
 
     std::vector<petri_net::transition_id_type> vec;
 
     pit_t lookup (const petri_net::transition_id_type& x)
-    {
-      return std::equal_range (vec.begin(), vec.end(), x);
-    }
-
-    std::pair<const_it,const_it>
-    lookup (const petri_net::transition_id_type& x) const
     {
       return std::equal_range (vec.begin(), vec.end(), x);
     }
@@ -58,7 +51,7 @@ namespace svector
 
     bool elem (const petri_net::transition_id_type& x) const
     {
-      return member (lookup (x));
+      return std::binary_search (vec.begin(), vec.end(), x);
     }
 
     template<typename Engine>
