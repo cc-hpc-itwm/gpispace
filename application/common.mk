@@ -330,7 +330,7 @@ $(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
 else
 
 $(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
-	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2>&1 | $(TEE) "$@"
+	set -o pipefail ; $(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2>&1 | $(TEE) $@
 
 endif
 endif
