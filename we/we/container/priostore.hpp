@@ -8,8 +8,6 @@
 
 #include <map>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/unordered_map.hpp>
 
 namespace we
@@ -51,14 +49,6 @@ namespace we
 
       prio_map_t _prio_map;
       get_prio_t _get_prio;
-
-      friend class boost::serialization::access;
-      template<typename Archive>
-      void serialize (Archive & ar, const unsigned int)
-      {
-        ar & BOOST_SERIALIZATION_NVP (_prio_map);
-        ar & BOOST_SERIALIZATION_NVP (_get_prio);
-      }
 
       void erase ( const petri_net::transition_id_type&
                  , const prio_map_t::iterator&
