@@ -117,11 +117,6 @@ namespace priostore
     }
 
     bool empty (void) const { return prio_map.empty(); }
-
-    bool operator == (const type<T> & other) const
-    {
-      return (prio_map == other.prio_map);
-    }
   };
 }
 
