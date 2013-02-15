@@ -8,9 +8,6 @@
 #include <algorithm>
 #include <iostream>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/vector.hpp>
-
 #include <boost/random.hpp>
 
 namespace svector
@@ -30,19 +27,11 @@ namespace svector
 
     vec_type vec;
 
-    friend class boost::serialization::access;
-    template<typename Archive>
-    void serialize (Archive & ar, const unsigned int)
-    {
-      ar & BOOST_SERIALIZATION_NVP(vec);
-    }
-
     pit_t lookup (const T & x)
     {
       return std::equal_range (vec.begin(), vec.end(), x);
     }
 
-  public:
     typedef std::pair<const_it,const_it> const_pit_t;
 
     const_pit_t lookup (const T & x) const
@@ -56,7 +45,8 @@ namespace svector
       return std::distance (pit.first, pit.second) > 0;
     }
 
-    void insert (const T & x)
+  public:
+    void insert (const T& x)
     {
       const pit_t pit (lookup (x));
 
@@ -64,7 +54,7 @@ namespace svector
         vec.insert (pit.second, x);
     }
 
-    void erase (const T & x)
+    void erase (const T& x)
     {
       const pit_t pit (lookup (x));
 
@@ -72,52 +62,23 @@ namespace svector
         vec.erase (pit.first);
     }
 
-    bool elem (const T & x) const
+    bool elem (const T& x) const
     {
       return member (lookup (x));
     }
 
-    size_type size (void) const
-    {
-      return vec.size();
-    }
-
-    const_reference first (void) const
-    {
-      return vec.at (0);
-    }
-
     template<typename Engine>
-    const_reference random (Engine & engine) const
+    const_reference random (Engine& engine) const
     {
       boost::uniform_int<size_type> rand (0, vec.size()-1);
       return vec.at (rand (engine));
     }
 
-    bool empty (void) const { return vec.empty(); }
-
-    bool operator == (const type<T> & other) const
+    bool empty() const
     {
-      return (vec == other.vec);
+      return vec.empty();
     }
-
-    template<typename A>
-    friend std::ostream & operator << (std::ostream &, const type<A> &);
   };
-
-  template<typename A>
-  std::ostream & operator << (std::ostream & s, const type<A> & v)
-  {
-    s << "[";
-    
-    for ( typename type<A>::vec_type::const_iterator pos (v.vec.begin())
-        ; pos != v.vec.end()
-        ; ++pos
-        )
-      s << ((pos != v.vec.begin()) ? ", " : "") << *pos;
-
-    return s << "]";
-  }
 }
 
 #endif
