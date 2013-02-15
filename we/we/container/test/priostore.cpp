@@ -72,13 +72,30 @@ BOOST_AUTO_TEST_CASE (erase_priority)
 BOOST_AUTO_TEST_CASE (extract_random_with_highest_priority)
 {
   we::container::priority_store ps;
+  boost::mt19937 engine;
+
+  ps.insert (0);
+
+  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (0));
+
+  ps.insert (0);
+  ps.insert (1);
+  ps.set_priority (1, 1);
+
+  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (1));
+
+  ps.erase (1);
+
+  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (0));
+
+  ps.insert (1);
+
+  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (1));
 
   ps.insert (0);
   ps.insert (1);
   ps.set_priority (0, 1);
   ps.set_priority (1, 2);
-
-  boost::mt19937 engine;
 
   BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (1));
 }
