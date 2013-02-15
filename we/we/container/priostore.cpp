@@ -10,10 +10,12 @@ namespace we
   {
     namespace
     {
-      typedef std::vector<petri_net::transition_id_type> vec_type;
+      using petri_net::transition_id_type;
+
+      typedef std::vector<transition_id_type> vec_type;
       typedef std::pair<vec_type::iterator,vec_type::iterator> pit_type;
 
-      void vec_insert (vec_type& v, const petri_net::transition_id_type& x)
+      void vec_insert (vec_type& v, const transition_id_type& x)
       {
         const pit_type pit (std::equal_range (v.begin(), v.end(), x));
 
@@ -23,7 +25,7 @@ namespace we
         }
       }
 
-      void vec_erase (vec_type& v, const petri_net::transition_id_type& x)
+      void vec_erase (vec_type& v, const transition_id_type& x)
       {
         const pit_type pit (std::equal_range (v.begin(), v.end(), x));
 
@@ -33,9 +35,7 @@ namespace we
         }
       }
 
-      bool vec_elem ( const vec_type& v
-                    , const petri_net::transition_id_type& x
-                    )
+      bool vec_elem (const vec_type& v, const transition_id_type& x)
       {
         return std::binary_search (v.begin(), v.end(), x);
       }
