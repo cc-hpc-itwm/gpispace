@@ -1,6 +1,5 @@
 # -*- mode: cmake; -*-
 
-include(fhg_test_macros)
 include(fhg_plugin_macros)
 
 fhg_add_test(test_file_storage.cpp

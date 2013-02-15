@@ -1,7 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-include(fhg_test_macros)
-
 fhg_add_test (test_xml_stream.cpp
   LINK_LIBRARIES fhg-util
   DESCRIPTION "Tests the xml stream implementation"

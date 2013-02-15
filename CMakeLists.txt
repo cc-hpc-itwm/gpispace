@@ -80,6 +80,8 @@ cmake_minimum_required(VERSION "2.6.7" FATAL_ERROR)
 # path here, subsequent checks will resolve everything else
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
+include (fhg_test_macros)
+
 ##########################################################
 include(CheckCompiler)
 info_compiler()

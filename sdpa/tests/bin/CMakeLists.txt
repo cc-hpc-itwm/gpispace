@@ -1,5 +1,3 @@
-include (fhg_test_macros)
-
 fhg_add_test (test_codec.cpp LINK_LIBRARIES sdpa-events sdpa ${FhgLog_LIBRARY})
 
 fhg_add_test (test_network_strategy.cpp

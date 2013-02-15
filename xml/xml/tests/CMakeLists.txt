@@ -1,7 +1,5 @@
 #bernd.loerwald@itwm.fraunhofer.de
 
-include (fhg_test_macros)
-
 fhg_add_test (parse_duplicate_connect.cpp
   LINK_LIBRARIES xml we
   DESCRIPTION "pnetc shall throw if there are mutiple connections with the same port, place and direction"
