@@ -1,6 +1,11 @@
+#define BOOST_TEST_MODULE pnete_ui_graph_style_cached_predicates
+
 #include <pnete/ui/graph/style/store.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <iostream>
 
@@ -86,7 +91,15 @@ optional_value_type get ( const store_type& store
   return r;
 }
 
-int main ()
+namespace
+{
+  optional_value_type opt (const std::string& value)
+  {
+    return boost::make_optional (value);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (all)
 {
   store_type store;
 
@@ -95,103 +108,97 @@ int main ()
 
   {
     const optional_value_type res (get (store, "what"));
-    REQUIRE (count_eval == 1);
-    REQUIRE (res);
-    REQUIRE (*res == "beep");
+    BOOST_REQUIRE_EQUAL (count_eval, 1UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("beep"));
   }
   {
     const optional_value_type res (get (store, "id"));
-    REQUIRE (count_eval == 2);
-    REQUIRE (res);
-    REQUIRE (*res == "id");
+    BOOST_REQUIRE_EQUAL (count_eval, 2UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("id"));
   }
   {
     const optional_value_type res (get (store, "idd"));
-    REQUIRE (count_eval == 2);
-    REQUIRE (res);
-    REQUIRE (*res == "idd");
+    BOOST_REQUIRE_EQUAL (count_eval, 2UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("idd"));
   }
   {
     const optional_value_type res (get (store, "to long"));
-    REQUIRE (count_eval == 2);
-    REQUIRE (!res);
+    BOOST_REQUIRE_EQUAL (count_eval, 2UL);
+    BOOST_REQUIRE_EQUAL (res, boost::none);
   }
 
   {
     const optional_value_type res (get (store, "what"));
-    REQUIRE (count_eval == 0);
-    REQUIRE (res);
-    REQUIRE (*res == "beep");
+    BOOST_REQUIRE_EQUAL (count_eval, 0UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("beep"));
   }
   {
     const optional_value_type res (get (store, "id"));
-    REQUIRE (count_eval == 0);
-    REQUIRE (res);
-    REQUIRE (*res == "idd"); // yes, because its the same ref but no re-eval!
+    BOOST_REQUIRE_EQUAL (count_eval, 0UL);
+    // yes, because its the same ref but no re-eval!
+    BOOST_REQUIRE_EQUAL (res, opt ("idd"));
   }
   {
     const optional_value_type res (get (store, "idd"));
-    REQUIRE (count_eval == 0);
-    REQUIRE (res);
-    REQUIRE (*res == "idd");
+    BOOST_REQUIRE_EQUAL (count_eval, 0UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("idd"));
   }
   {
     const optional_value_type res (get (store, "to long"));
-    REQUIRE (count_eval == 0);
-    REQUIRE (!res);
+    BOOST_REQUIRE_EQUAL (count_eval, 0UL);
+    BOOST_REQUIRE_EQUAL (res, boost::none);
   }
+}
 
+
+BOOST_AUTO_TEST_CASE (fallback_if_non_existing)
+{
+  store_type store;
+
+  store.push (boost::bind (&beep_if, std::string ("what"), _1));
+  store.push (boost::bind (&short_id, 4, _1));
   store.push (&fallback);
 
   {
     const optional_value_type res (get (store, "what"));
-    REQUIRE (count_eval == 1);
-    REQUIRE (res);
-    REQUIRE (*res == "beep");
+    BOOST_REQUIRE_EQUAL (count_eval, 1UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("beep"));
   }
   {
     const optional_value_type res (get (store, "id"));
-    REQUIRE (count_eval == 2);
-    REQUIRE (res);
-    REQUIRE (*res == "id");
+    BOOST_REQUIRE_EQUAL (count_eval, 2UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("id"));
   }
   {
     const optional_value_type res (get (store, "idd"));
-    REQUIRE (count_eval == 2);
-    REQUIRE (res);
-    REQUIRE (*res == "idd");
+    BOOST_REQUIRE_EQUAL (count_eval, 2UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("idd"));
   }
   {
     const optional_value_type res (get (store, "to long"));
-    REQUIRE (count_eval == 2);
-    REQUIRE (res);
-    REQUIRE (*res == "fallback");
+    BOOST_REQUIRE_EQUAL (count_eval, 2UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("fallback"));
   }
 
   {
     const optional_value_type res (get (store, "what"));
-    REQUIRE (count_eval == 0);
-    REQUIRE (res);
-    REQUIRE (*res == "beep");
+    BOOST_REQUIRE_EQUAL (count_eval, 0UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("beep"));
   }
   {
     const optional_value_type res (get (store, "id"));
-    REQUIRE (count_eval == 0);
-    REQUIRE (res);
-    REQUIRE (*res == "idd"); // yes, because its the same ref but no re-eval!
+    BOOST_REQUIRE_EQUAL (count_eval, 0UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("idd"));
   }
   {
     const optional_value_type res (get (store, "idd"));
-    REQUIRE (count_eval == 0);
-    REQUIRE (res);
-    REQUIRE (*res == "idd");
+    BOOST_REQUIRE_EQUAL (count_eval, 0UL);
+    // yes, because its the same ref but no re-eval!
+    BOOST_REQUIRE_EQUAL (res, opt ("idd"));
   }
   {
     const optional_value_type res (get (store, "to long"));
-    REQUIRE (count_eval == 0);
-    REQUIRE (res);
-    REQUIRE (*res == "fallback");
+    BOOST_REQUIRE_EQUAL (count_eval, 0UL);
+    BOOST_REQUIRE_EQUAL (res, opt ("fallback"));
   }
-
-  return EXIT_SUCCESS;
 }
