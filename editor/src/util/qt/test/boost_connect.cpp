@@ -2,7 +2,7 @@
 
 #define BOOST_TEST_MODULE util_qt_boost_connect
 
-#include <boost_connect.hpp>
+#include <util/qt/test/boost_connect.hpp>
 
 #include <util/qt/boost_connect.hpp>
 
