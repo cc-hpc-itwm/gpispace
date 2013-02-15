@@ -39,7 +39,7 @@ namespace we
 
     private:
       typedef std::map< petri_net::priority_type
-                      , svector::type
+                      , svector
                       , std::greater<petri_net::priority_type>
                       > prio_map_t;
       typedef boost::unordered_map< petri_net::transition_id_type

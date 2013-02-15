@@ -1,7 +1,7 @@
 // set with access to nth element, mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _CONTAINER_SVECTOR_HPP
-#define _CONTAINER_SVECTOR_HPP
+#ifndef _WE_CONTAINER_SVECTOR_HPP
+#define _WE_CONTAINER_SVECTOR_HPP
 
 #include <we/type/id.hpp>
 
@@ -11,54 +11,57 @@
 
 #include <boost/random.hpp>
 
-namespace svector
+namespace we
 {
-  struct type
+  namespace container
   {
-  public:
-    void insert (const petri_net::transition_id_type& x)
+    struct svector
     {
-      const pit_t pit (std::equal_range (_vec.begin(), _vec.end(), x));
-
-      if (pit.first == pit.second)
+    public:
+      void insert (const petri_net::transition_id_type& x)
       {
-        _vec.insert (pit.second, x);
+        const pit_t pit (std::equal_range (_vec.begin(), _vec.end(), x));
+
+        if (pit.first == pit.second)
+        {
+          _vec.insert (pit.second, x);
+        }
       }
-    }
 
-    void erase (const petri_net::transition_id_type& x)
-    {
-      const pit_t pit (std::equal_range (_vec.begin(), _vec.end(), x));
-
-      if (pit.first != pit.second)
+      void erase (const petri_net::transition_id_type& x)
       {
-        _vec.erase (pit.first);
+        const pit_t pit (std::equal_range (_vec.begin(), _vec.end(), x));
+
+        if (pit.first != pit.second)
+        {
+          _vec.erase (pit.first);
+        }
       }
-    }
 
-    bool elem (const petri_net::transition_id_type& x) const
-    {
-      return std::binary_search (_vec.begin(), _vec.end(), x);
-    }
+      bool elem (const petri_net::transition_id_type& x) const
+      {
+        return std::binary_search (_vec.begin(), _vec.end(), x);
+      }
 
-    bool empty() const
-    {
-      return _vec.empty();
-    }
+      bool empty() const
+      {
+        return _vec.empty();
+      }
 
-    template<typename Engine>
-    const petri_net::transition_id_type& random (Engine& engine) const
-    {
-      boost::uniform_int<std::size_t> rand (0, _vec.size()-1);
-      return _vec.at (rand (engine));
-    }
+      template<typename Engine>
+      const petri_net::transition_id_type& random (Engine& engine) const
+      {
+        boost::uniform_int<std::size_t> rand (0, _vec.size()-1);
+        return _vec.at (rand (engine));
+      }
 
-  private:
-    typedef std::vector<petri_net::transition_id_type>::iterator it_type;
-    typedef std::pair<it_type,it_type> pit_t;
+    private:
+      typedef std::vector<petri_net::transition_id_type>::iterator it_type;
+      typedef std::pair<it_type,it_type> pit_t;
 
-    std::vector<petri_net::transition_id_type> _vec;
-  };
+      std::vector<petri_net::transition_id_type> _vec;
+    };
+  }
 }
 
 #endif
