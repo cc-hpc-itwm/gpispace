@@ -18,13 +18,12 @@
 
 namespace priostore
 {
-  template<typename T>
   struct type
   {
   private:
     typedef std::greater<petri_net::priority_type> Compare;
-    typedef std::map<petri_net::priority_type, svector::type<T>, Compare> prio_map_t;
-    typedef boost::unordered_map<T, petri_net::priority_type> get_prio_t;
+    typedef std::map<petri_net::priority_type, svector::type<petri_net::transition_id_type>, Compare> prio_map_t;
+    typedef boost::unordered_map<petri_net::transition_id_type, petri_net::priority_type> get_prio_t;
 
     prio_map_t prio_map;
     get_prio_t get_prio;
@@ -37,7 +36,7 @@ namespace priostore
       ar & BOOST_SERIALIZATION_NVP(get_prio);
     }
 
-    void erase (const T & x, const typename prio_map_t::iterator & pos)
+    void erase (const petri_net::transition_id_type& x, const prio_map_t::iterator & pos)
     {
       if (pos != prio_map.end())
         {
@@ -48,20 +47,20 @@ namespace priostore
         }
     }
 
-    void insert (const T & x, const petri_net::priority_type & prio)
+    void insert (const petri_net::transition_id_type& x, const petri_net::priority_type & prio)
     {
       prio_map[prio].insert(x);
     }
 
   public:
-    petri_net::priority_type get_priority (const T & x) const
+    petri_net::priority_type get_priority (const petri_net::transition_id_type& x) const
     {
-      typename get_prio_t::const_iterator pos (get_prio.find (x));
+      get_prio_t::const_iterator pos (get_prio.find (x));
 
       return (pos == get_prio.end()) ? petri_net::priority_type() : pos->second;
     }
 
-    void set_priority (const T & x, const petri_net::priority_type & prio)
+    void set_priority (const petri_net::transition_id_type& x, const petri_net::priority_type & prio)
     {
       const bool is_elem (elem (x));
 
@@ -74,7 +73,7 @@ namespace priostore
         insert (x, prio);
     }
 
-    void erase_priority (const T & x)
+    void erase_priority (const petri_net::transition_id_type& x)
     {
       const bool is_elem (elem (x));
 
@@ -87,36 +86,36 @@ namespace priostore
         insert (x);
     }
 
-    void insert (const T & x)
+    void insert (const petri_net::transition_id_type& x)
     {
       insert (x, get_priority (x));
     }
 
-    void erase (const T & x)
+    void erase (const petri_net::transition_id_type& x)
     {
       erase (x, prio_map.find (get_priority (x)));
     }
 
-    bool elem (const T & x) const
+    bool elem (const petri_net::transition_id_type& x) const
     {
-      typename prio_map_t::const_iterator pos
+      prio_map_t::const_iterator pos
         (prio_map.find (get_priority (x)));
 
       return (pos != prio_map.end()) ? pos->second.elem (x) : false;
     }
 
-    typename svector::type<T>::const_reference first (void) const
+    svector::type<petri_net::transition_id_type>::const_reference first (void) const
     {
       return prio_map.begin()->second.first();
     }
 
     template<typename Engine>
-    typename svector::type<T>::const_reference random (Engine & engine) const
+    svector::type<petri_net::transition_id_type>::const_reference random (Engine & engine) const
     {
       return prio_map.begin()->second.random(engine);
     }
 
-    bool empty (void) const { return prio_map.empty(); }
+    bool empty () const { return prio_map.empty(); }
   };
 }
 

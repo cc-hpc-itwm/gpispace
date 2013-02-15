@@ -142,7 +142,7 @@ namespace petri_net
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-    priostore::type<transition_id_type> _enabled;
+    priostore::type _enabled;
 
     boost::unordered_map
       < transition_id_type
