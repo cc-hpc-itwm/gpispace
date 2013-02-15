@@ -18,16 +18,13 @@
 
 namespace priostore
 {
-  template< typename T
-          , typename Prio = petri_net::priority_type
-          , typename Store = svector::type<T>
-          >
+  template<typename T>
   struct type
   {
   private:
-    typedef std::greater<Prio> Compare;
-    typedef std::map<Prio, Store, Compare> prio_map_t;
-    typedef boost::unordered_map<T, Prio> get_prio_t;
+    typedef std::greater<petri_net::priority_type> Compare;
+    typedef std::map<petri_net::priority_type, svector::type<T>, Compare> prio_map_t;
+    typedef boost::unordered_map<T, petri_net::priority_type> get_prio_t;
 
     prio_map_t prio_map;
     get_prio_t get_prio;
@@ -51,20 +48,20 @@ namespace priostore
         }
     }
 
-    void insert (const T & x, const Prio & prio)
+    void insert (const T & x, const petri_net::priority_type & prio)
     {
       prio_map[prio].insert(x);
     }
 
   public:
-    Prio get_priority (const T & x) const
+    petri_net::priority_type get_priority (const T & x) const
     {
       typename get_prio_t::const_iterator pos (get_prio.find (x));
 
-      return (pos == get_prio.end()) ? Prio() : pos->second;
+      return (pos == get_prio.end()) ? petri_net::priority_type() : pos->second;
     }
 
-    void set_priority (const T & x, const Prio & prio)
+    void set_priority (const T & x, const petri_net::priority_type & prio)
     {
       const bool is_elem (elem (x));
 
@@ -121,36 +118,36 @@ namespace priostore
       return s;
     }
 
-    typename Store::const_reference first (void) const
+    typename svector::type<T>::const_reference first (void) const
     {
       return prio_map.begin()->second.first();
     }
 
     template<typename Engine>
-    typename Store::const_reference random (Engine & engine) const
+    typename svector::type<T>::const_reference random (Engine & engine) const
     {
       return prio_map.begin()->second.random(engine);
     }
 
     bool empty (void) const { return prio_map.empty(); }
 
-    bool operator == (const type<T,Prio,Store> & other) const
+    bool operator == (const type<T> & other) const
     {
       return (prio_map == other.prio_map);
     }
 
-    template<typename A, typename B, typename C>
-    friend std::ostream & operator << (std::ostream &, const type<A,B,C> &);
+    template<typename A>
+    friend std::ostream & operator << (std::ostream &, const type<A> &);
   };
 
-  template<typename A, typename B, typename C>
-  std::ostream & operator << (std::ostream & s, const type<A,B,C> & p)
+  template<typename A>
+  std::ostream & operator << (std::ostream & s, const type<A> & p)
   {
-    for ( typename type<A,B,C>::prio_map_t::const_iterator prio (p.prio_map.begin())
+    for ( typename type<A>::prio_map_t::const_iterator prio (p.prio_map.begin())
         ; prio != p.prio_map.end()
         ; ++prio
         )
-      s << "Prio = " << prio->first
+      s << "prio = " << prio->first
         << std::endl << prio->second
         << std::endl;
 
