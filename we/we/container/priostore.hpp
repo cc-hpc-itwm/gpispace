@@ -30,14 +30,14 @@ namespace we
       void insert (const petri_net::transition_id_type&);
       void erase (const petri_net::transition_id_type&);
 
-      bool empty () const;
+      bool empty() const;
       bool elem (const petri_net::transition_id_type&) const;
 
       template<typename Engine>
       svector::type<petri_net::transition_id_type>::const_reference
       random (Engine& engine) const
       {
-        return prio_map.begin()->second.random (engine);
+        return _prio_map.begin()->second.random (engine);
       }
 
     private:
@@ -49,15 +49,15 @@ namespace we
                                   , petri_net::priority_type
                                   > get_prio_t;
 
-      prio_map_t prio_map;
-      get_prio_t get_prio;
+      prio_map_t _prio_map;
+      get_prio_t _get_prio;
 
       friend class boost::serialization::access;
       template<typename Archive>
       void serialize (Archive & ar, const unsigned int)
       {
-        ar & BOOST_SERIALIZATION_NVP (prio_map);
-        ar & BOOST_SERIALIZATION_NVP (get_prio);
+        ar & BOOST_SERIALIZATION_NVP (_prio_map);
+        ar & BOOST_SERIALIZATION_NVP (_get_prio);
       }
 
       void erase ( const petri_net::transition_id_type&
