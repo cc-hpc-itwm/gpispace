@@ -32,15 +32,14 @@ namespace we
       bool elem (const petri_net::transition_id_type&) const;
 
       template<typename Engine>
-      svector::type<petri_net::transition_id_type>::const_reference
-      random (Engine& engine) const
+      const petri_net::transition_id_type& random (Engine& engine) const
       {
         return _prio_map.begin()->second.random (engine);
       }
 
     private:
       typedef std::map< petri_net::priority_type
-                      , svector::type<petri_net::transition_id_type>
+                      , svector::type
                       , std::greater<petri_net::priority_type>
                       > prio_map_t;
       typedef boost::unordered_map< petri_net::transition_id_type
