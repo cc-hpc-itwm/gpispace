@@ -21,32 +21,25 @@ namespace svector
 
     std::vector<petri_net::transition_id_type> vec;
 
-    pit_t lookup (const petri_net::transition_id_type& x)
-    {
-      return std::equal_range (vec.begin(), vec.end(), x);
-    }
-
-    template<typename PIT>
-    bool member (const PIT& pit) const
-    {
-      return std::distance (pit.first, pit.second) > 0;
-    }
-
   public:
     void insert (const petri_net::transition_id_type& x)
     {
-      const pit_t pit (lookup (x));
+      const pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
 
-      if (!member (pit))
+      if (pit.first == pit.second)
+      {
         vec.insert (pit.second, x);
+      }
     }
 
     void erase (const petri_net::transition_id_type& x)
     {
-      const pit_t pit (lookup (x));
+      const pit_t pit (std::equal_range (vec.begin(), vec.end(), x));
 
-      if (member (pit))
+      if (pit.first != pit.second)
+      {
         vec.erase (pit.first);
+      }
     }
 
     bool elem (const petri_net::transition_id_type& x) const
