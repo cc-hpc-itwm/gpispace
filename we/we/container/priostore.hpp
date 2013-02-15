@@ -122,24 +122,7 @@ namespace priostore
     {
       return (prio_map == other.prio_map);
     }
-
-    template<typename A>
-    friend std::ostream & operator << (std::ostream &, const type<A> &);
   };
-
-  template<typename A>
-  std::ostream & operator << (std::ostream & s, const type<A> & p)
-  {
-    for ( typename type<A>::prio_map_t::const_iterator prio (p.prio_map.begin())
-        ; prio != p.prio_map.end()
-        ; ++prio
-        )
-      s << "prio = " << prio->first
-        << std::endl << prio->second
-        << std::endl;
-
-    return s << std::endl;
-  }
 }
 
 #endif
