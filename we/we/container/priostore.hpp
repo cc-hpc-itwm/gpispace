@@ -37,7 +37,7 @@ namespace we
       svector::type<petri_net::transition_id_type>::const_reference
       random (Engine& engine) const
       {
-        return prio_map.begin()->second.random(engine);
+        return prio_map.begin()->second.random (engine);
       }
 
     private:
