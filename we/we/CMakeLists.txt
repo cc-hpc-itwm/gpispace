@@ -104,7 +104,6 @@ install (FILES
 
 install (FILES
   container/adjacency.hpp
-  container/svector.hpp
   DESTINATION include/we/container
   COMPONENT headers
 )
