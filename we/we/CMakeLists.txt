@@ -6,6 +6,7 @@ set (we_dev_srcs
 )
 
 set (we_srcs
+  container/priostore.cpp
   expr/eval/context.cpp
   expr/eval/eval.cpp
   expr/exception.cpp
@@ -101,7 +102,6 @@ install (FILES
 
 install (FILES
   container/adjacency.hpp
-  container/priostore.hpp
   container/svector.hpp
   DESTINATION include/we/container
   COMPONENT headers
