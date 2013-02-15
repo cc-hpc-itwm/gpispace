@@ -1,7 +1,5 @@
 # -*- mode: cmake; -*-
 
-include (fhg_test_macros)
-
 # search for libreadline
 find_package (LibReadline REQUIRED)
 include_directories (${LibReadline_INCLUDE_DIR})
