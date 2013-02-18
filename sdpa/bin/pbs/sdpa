@@ -2175,24 +2175,29 @@ if [ "$1" = "gui" ] ; then
     exit $?
 fi
 
-if ! on_valid_host ; then
+function require_state ()
+{
+    if ! on_valid_host ; then
 #    log "W: you are executing 'sdpa' on an invalid host!"
 #    log "W: this might not be what you want"
 #    log "I: please run 'sdpa init' on the master node first!"
-    :
-fi
+        :
+    fi
 
-if ! configure ; then
-    log "E: configure() failed"
-    exit $?
-fi
+    if ! configure ; then
+        log "E: configure() failed"
+        exit $?
+    fi
+}
 
 case "$1" in
     start)
+        require_state
         shift
         start $@
         ;;
     stop)
+        require_state
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
@@ -2201,6 +2206,7 @@ case "$1" in
         stop $@
         ;;
     restart)
+        require_state
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
@@ -2209,6 +2215,7 @@ case "$1" in
         restart $@
         ;;
     status)
+        require_state
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
@@ -2225,10 +2232,12 @@ case "$1" in
         fi
         ;;
     cancel)
+        require_state
         shift
         cancel $@
         ;;
     submit)
+        require_state
         shift
         submit $@
         ;;
@@ -2247,6 +2256,7 @@ case "$1" in
         fi
         ;;
     unload-modules)
+        require_state
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
@@ -2263,6 +2273,10 @@ case "$1" in
         "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -F "$config_file" "$@"
         ;;
     selftest)
+        "$0" -s "$state_dir" -c "$config_file" init || {
+            echo >&2 "sdpa: could not initialize!"
+            exit 1
+        }
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
