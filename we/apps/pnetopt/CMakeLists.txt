@@ -1,8 +1,6 @@
-find_package(Lua51)
+find_package(LUA)
 
-if(NOT LUA51_FOUND)
-	return()
-endif()
+if (LUA_FOUND)
 
 set(PNETOPT_SOURCES
 	main.cpp
@@ -20,3 +18,4 @@ install (TARGETS pnetopt
 	DESTINATION bin
 	COMPONENT runtime
 )
+endif()
