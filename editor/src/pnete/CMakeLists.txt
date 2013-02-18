@@ -137,7 +137,8 @@ if (ENABLE_PNET_EDITOR)
                           ${UTIL_LIBRARIES}
                           ${Boost_LIBRARIES}
                           ${QT_LIBRARIES}
-                          xml)
+                          xml
+                          fhg-plugin)
 
   install (TARGETS pnete RUNTIME DESTINATION bin COMPONENT runtime)
 

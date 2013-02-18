@@ -11,6 +11,7 @@
 #include <QMainWindow>
 #include <QObject>
 #include <QStack>
+#include <QThread>
 
 class QCloseEvent;
 class QMenuBar;
@@ -20,6 +21,11 @@ class QUndoGroup;
 class QUndoView;
 class QWidget;
 
+namespace sdpa
+{
+  class Client;
+}
+
 namespace fhg
 {
   namespace pnete
@@ -28,6 +34,25 @@ namespace fhg
     {
       class StructureView;
       class transition_library_view;
+
+      class remote_job_waiting : public QThread
+      {
+        Q_OBJECT;
+
+      public:
+        remote_job_waiting (sdpa::Client*, const std::string&);
+
+      protected:
+        virtual void run();
+
+      signals:
+        void remote_job_finished (sdpa::Client*, const QString&);
+        void remote_job_failed (sdpa::Client*, const QString&);
+
+      private:
+        sdpa::Client* _client;
+        std::string _job_id;
+      };
 
       class editor_window : public QMainWindow
       {
@@ -59,9 +84,13 @@ namespace fhg
 
         void execute_locally_inputs_via_prompt();
         void execute_locally_inputs_from_file();
+        void execute_remote_inputs_via_prompt();
 
         void open_remote_logging();
         void open_remote_execution();
+
+        void remote_job_finished (sdpa::Client*, const QString&);
+        void remote_job_failed (sdpa::Client*, const QString&);
 
       protected:
         virtual void closeEvent (QCloseEvent*);
@@ -79,6 +108,7 @@ namespace fhg
         QAction* _action_save_current_file;
         QAction* _action_execute_current_file_locally_via_prompt;
         QAction* _action_execute_current_file_locally_from_file;
+        QAction* _action_execute_current_file_remote_via_prompt;
 
         QStack<document_view*> _accessed_widgets;
 
