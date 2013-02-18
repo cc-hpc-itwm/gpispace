@@ -331,7 +331,7 @@ namespace mapreduce
 		MLOG(INFO, "The file "<<str_part_in_file<<" already exists on disk!!!");
 
 		//else
-		if( file_size(str_part_in_file.data()) == 0 )
+		if( file_size(str_part_in_file.data()) == (std::streampos)0 )
 		{
 			MLOG(INFO, "The reduce file "<<str_part_in_file<<" exists but has the length 0!");
 			reduce_arr_file(arr_items_1, str_part_in_file);

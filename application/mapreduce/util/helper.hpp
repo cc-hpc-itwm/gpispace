@@ -26,8 +26,8 @@
 #include <fstream>
 
 
-const int US = 1000000.0L;
-const int MS = 1000.0L;
+const int US = 1000000;
+const int MS = 1000;
 const int KEY_MAX_SIZE = 50;
 
 const char SHRPCH = '#';
