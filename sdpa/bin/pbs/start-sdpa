@@ -265,7 +265,7 @@ info "using nodefile: $nodefile"
 info "using GPI mem: ${gpi_mem} bytes per node"
 info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
 
-dry_run rexec $master "${sdpa}" -c "${config_file}" init -s "${state_dir}" "$nodefile" </dev/null || {
+dry_run rexec $master "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
