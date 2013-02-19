@@ -778,7 +778,7 @@ namespace we { namespace mgmt {
           {
             DLOG(TRACE, "extractor extracting from net: " << desc->name());
 
-            while (desc->enabled())
+            while (desc->is_alive () && desc->enabled())
             {
               descriptor_ptr child (new detail::descriptor(desc->extract(generate_internal_id())));
               child->inject_input ();
