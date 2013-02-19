@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE (reference)
   const std::string key_c ("c");
 
   const value::type value_a (0.0);
-  const value::type value_b ("a_string");
+  const value::type value_b = std::string("a_string");
   const value::type value_c (value::read ("[x:=1,y:=[a:=2,b:=3]]"));
 
   c.bind_ref (key_a, value_a);
