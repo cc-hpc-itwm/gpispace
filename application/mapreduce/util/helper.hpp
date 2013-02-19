@@ -2,11 +2,6 @@
 #ifndef _H_MAPREDUCE_UTIL_HELPER
 #define _H_MAPREDUCE_UTIL_HELPER 1
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/assume_abstract.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -19,6 +14,17 @@
 #include <boost/algorithm/string/iter_find.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/serialization/utility.hpp> // for std::pair
+#include <boost/serialization/vector.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
 #include <util/types.hpp>
 #include <algorithm>
 #include <boost/regex.hpp>
@@ -26,8 +32,8 @@
 #include <fstream>
 
 
-const int US = 1000000;
-const int MS = 1000;
+const int US = 1000000.0L;
+const int MS = 1000.0L;
 const int KEY_MAX_SIZE = 50;
 
 const char SHRPCH = '#';
@@ -65,6 +71,11 @@ namespace mapreduce
   		  std::ostringstream oss;
   		  oss<<SHRPCH<<chunk_id<<SHRPCH<<"1";
   		  return oss.str();
+	  }
+
+  	  bool my_comp_pairs(::mapreduce::util::key_val_pair_t lhs, ::mapreduce::util::key_val_pair_t rhs)
+	  {
+		  return lhs.first.compare(rhs.first)<0;
 	  }
 
   	  bool my_comp(const std::string& lhs, const std::string& rhs)
@@ -123,7 +134,7 @@ namespace mapreduce
 
   		  if( list_border_keys.empty() )
   		  {
-  			  MLOG(WARN, "The array of border keys is empty ...");
+  			  LOG(WARN, "The array of border keys is empty ...");
   			  matching_pair = "";
   			  return "";
   		  }
@@ -273,6 +284,18 @@ namespace mapreduce
     	return pair.first+PAIRSEP+pair.second;
 	}
 
+    void get_arr_pairs(char* local_buff, std::vector<key_val_pair_t>& arr_pairs)
+	{
+    	std::string str_buff(local_buff);
+    	boost::char_separator<char> sep(DELIMITERS.c_str());
+    	boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
+    	std::vector<std::string> v;
+    	v.assign(tok.begin(),tok.end());
+
+    	for(int k=0; k<v.size(); k++)
+    		arr_pairs.push_back(str2kvpair(v[k]));
+	}
+
     /*
     bool is_special_item(const std::string& str_item)
     {
@@ -363,6 +386,17 @@ namespace mapreduce
   	    return sstr_part_out_file.str();
     }
 
+   std::string get_generic_part_filename(const std::string& cfg_out)
+   {
+	   std::vector<std::string> name_and_ext;
+		boost::split(name_and_ext, cfg_out, boost::is_any_of("."));
+		std::ostringstream sstr_part_out_file;
+		sstr_part_out_file<<name_and_ext[0]<<"_*";
+		sstr_part_out_file<<"."<<name_and_ext[1];
+
+		return sstr_part_out_file.str();
+   }
+
     size_t write_to_buff(std::string& key, std::list<std::string>& list_values, char* reduce_buff, size_t last_pos, const size_t& n_max_size)
 	{
 	  std::stringstream sstr;
@@ -417,6 +451,42 @@ namespace mapreduce
 		last_pos = 0;
 		for(std::vector<std::string>::const_iterator it=arr_items.begin(); it != arr_items.end(); it++ )
 			last_pos = ::mapreduce::util::write_to_buff( *it, ptr_shmem, last_pos, max_size );
+	}
+
+	void serialize_kv_pair_array( const std::vector<key_val_pair_t> & arr_items, char* buffer, size_t buffer_size )
+	{
+		boost::iostreams::basic_array_sink<char> sr(buffer, buffer_size);
+		boost::iostreams::stream< boost::iostreams::basic_array_sink<char> > source(sr);
+
+		boost::archive::binary_oarchive oa(source);
+
+		oa << arr_items;
+	}
+
+	void serialize_kv_pair_array( const std::vector<key_val_pair_t> & arr_items, std::string& serial_str )
+	{
+		// serialize obj into an std::string
+		boost::iostreams::back_insert_device<std::string> inserter(serial_str);
+		boost::iostreams::stream<boost::iostreams::back_insert_device<std::string> > s(inserter);
+		boost::archive::binary_oarchive oa(s);
+		oa << arr_items;
+	}
+
+	void deserialize_kv_pair_array(const std::string& serial_str, std::vector<key_val_pair_t>& arr_items )
+	{
+		// serialize obj into an std::string
+		boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
+		boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s(device);
+		boost::archive::binary_iarchive ia(s);
+		ia >> arr_items;
+	}
+
+	void get_list_str_items_from_pairs(const std::vector<key_val_pair_t>& arr_kv_part_items,  std::vector<std::string>& arr_part_items )
+	{
+		BOOST_FOREACH(key_val_pair_t kv_pair, arr_kv_part_items)
+		{
+			arr_part_items.push_back(kvpair2str(kv_pair));
+		}
 	}
   }
 }
