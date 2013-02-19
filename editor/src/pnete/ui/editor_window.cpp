@@ -20,6 +20,11 @@
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
 
+#include <fhg/plugin/core/kernel.hpp>
+
+#include <sdpa/plugins/sdpactl.hpp>
+#include <sdpa/plugins/sdpac.hpp>
+
 #include <util/qt/parent.hpp>
 
 #include <we/loader/loader.hpp>
@@ -33,6 +38,8 @@
 
 #include <fstream>
 #include <sstream>
+
+#include <boost/thread.hpp>
 
 #include <QAction>
 #include <QApplication>
@@ -80,6 +87,7 @@ namespace fhg
         , _action_save_current_file (NULL)
         , _action_execute_current_file_locally_via_prompt (NULL)
         , _action_execute_current_file_locally_from_file (NULL)
+        , _action_execute_current_file_remote_via_prompt (NULL)
       {
         setWindowTitle (tr ("editor_window_title"));
 
@@ -266,6 +274,7 @@ namespace fhg
         _action_save_current_file->setEnabled (true);
         _action_execute_current_file_locally_via_prompt->setEnabled (true);
         _action_execute_current_file_locally_from_file->setEnabled (true);
+        _action_execute_current_file_remote_via_prompt->setEnabled (true);
       }
 
       void editor_window::create_windows (const data::handle::function& function)
@@ -306,6 +315,7 @@ namespace fhg
             _action_save_current_file->setEnabled (false);
             _action_execute_current_file_locally_via_prompt->setEnabled (false);
             _action_execute_current_file_locally_from_file->setEnabled (false);
+            _action_execute_current_file_remote_via_prompt->setEnabled (false);
           }
         }
       }
@@ -487,13 +497,21 @@ namespace fhg
           , this
           , SLOT (execute_locally_inputs_from_file())
           );
+        _action_execute_current_file_remote_via_prompt = runtime_menu->addAction
+          ( tr ("execute_remote_input_prompt")
+          , this
+          , SLOT (execute_remote_inputs_via_prompt())
+          );
         _action_execute_current_file_locally_via_prompt->setEnabled (false);
         _action_execute_current_file_locally_from_file->setEnabled (false);
+        _action_execute_current_file_remote_via_prompt->setEnabled (false);
 
         runtime_toolbar->addAction
           (_action_execute_current_file_locally_via_prompt);
         runtime_toolbar->addAction
           (_action_execute_current_file_locally_from_file);
+        runtime_toolbar->addAction
+          (_action_execute_current_file_remote_via_prompt);
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)
@@ -752,6 +770,22 @@ namespace fhg
           return false;
         }
 
+        void show_results_of_activity
+          (const we::mgmt::type::activity_t& activity)
+        {
+          BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
+                        , activity.output()
+                        )
+          {
+            std::stringstream tmp;
+            tmp << "on " << activity.transition().get_port (top.second).name()
+                << ": " << top.first;
+            QMessageBox msgBox;
+            msgBox.setText (QString::fromStdString (tmp.str()));
+            msgBox.exec();
+          }
+        }
+
         void execute_activity_locally
           ( we::mgmt::type::activity_t activity
           , const boost::filesystem::path& temporary_path
@@ -768,18 +802,154 @@ namespace fhg
           activity.execute (&context);
           activity.collect_output();
 
-          BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
-                        , activity.output()
-                        )
+          show_results_of_activity (activity);
+        }
+
+        template<typename T>
+          T* load_plugin (fhg::core::kernel_t& kernel, const std::string& name)
+        {
+          if (!kernel.is_plugin_loaded (name))
           {
-            std::stringstream tmp;
-            tmp << "on " << activity.transition().get_port (top.second).name()
-                << ": " << top.first;
-            QMessageBox msgBox;
-            msgBox.setText (QString::fromStdString (tmp.str()));
-            msgBox.exec();
+            kernel.load_plugin (name);
+          }
+
+          if (!kernel.is_plugin_loaded (name))
+          {
+            throw std::runtime_error (name + " failed loading");
+          }
+
+          T* plugin (kernel.lookup_plugin_as<T> (name));
+          if (!plugin)
+          {
+            throw std::runtime_error (name + " did not provide correct interface");
+          }
+
+          return plugin;
+        }
+      }
+
+      remote_job_waiting::remote_job_waiting
+        (sdpa::Client* client, const std::string& job_id)
+          : _client (client)
+          , _job_id (job_id)
+      { }
+
+      void remote_job_waiting::run()
+      {
+        std::string status_message;
+        int error_code (-1);
+        int status (-1);
+        while ( (status = _client->status (_job_id, error_code, status_message)) > sdpa::status::CANCELED
+              && error_code == 0
+              )
+        {
+          msleep (10);
+        }
+
+        if (error_code)
+        {
+          emit remote_job_failed (_client, QString::fromStdString (_job_id));
+        }
+        else
+        {
+          emit remote_job_finished (_client, QString::fromStdString (_job_id));
+        }
+      }
+
+      void editor_window::remote_job_failed
+        (sdpa::Client* client, const QString& job_id)
+      {
+        QMessageBox msgBox;
+        msgBox.setText (job_id + " failed.");
+        msgBox.exec();
+      }
+
+      void editor_window::remote_job_finished
+        (sdpa::Client* client, const QString& job_id_)
+      {
+        const std::string job_id (job_id_.toStdString());
+        std::string output_string;
+        client->result (job_id, output_string);
+        client->remove (job_id);
+
+        const we::mgmt::type::activity_t output (output_string);
+        show_results_of_activity (output);
+      }
+
+      void editor_window::execute_remote_inputs_via_prompt()
+      try
+      {
+        const temporary_path_type temporary_path;
+
+        we::mgmt::type::activity_t activity
+          (prepare_activity (_accessed_widgets, temporary_path));
+
+        BOOST_FOREACH ( const std::string& port_name
+                      , activity.transition().port_names (we::type::PORT_IN)
+                      )
+        {
+          bool retry (true);
+          while (retry)
+          {
+            bool ok;
+            const std::string value
+              ( QInputDialog::getText ( this
+                                      , tr ("value_for_input_token")
+                                      , tr ("enter_value_for_input_port_%1")
+                                      .arg (QString::fromStdString (port_name))
+                                      , QLineEdit::Normal
+                                      , "[]"
+                                      , &ok
+                                      ).toStdString()
+              );
+            if (!ok)
+            {
+              return;
+            }
+
+            retry = put_token (activity, port_name, value);
           }
         }
+
+        //! \todo Add search path into config (temporarily)!
+        // loader.append_search_path (temporary_path / "pnetc" / "op");
+
+        //! \todo Setup plugin search path.
+        static fhg::core::kernel_t kernel;
+
+        sdpa::Client* client (load_plugin<sdpa::Client> (kernel, "sdpac"));
+
+        std::string job_id;
+        if (client->submit (activity.to_string(), job_id) == 0)
+        {
+          remote_job_waiting* waiter (new remote_job_waiting (client, job_id));
+          connect ( waiter
+                  , SIGNAL (remote_job_failed (sdpa::Client*,QString))
+                  , this
+                  , SLOT (remote_job_failed (sdpa::Client*,QString))
+                  );
+          connect ( waiter
+                  , SIGNAL (remote_job_finished (sdpa::Client*,QString))
+                  , this
+                  , SLOT (remote_job_finished (sdpa::Client*,QString))
+                  );
+          connect (waiter, SIGNAL (finished()), waiter, SLOT (deleteLater()));
+
+          waiter->start();
+        }
+        else
+        {
+          QMessageBox msgBox;
+          msgBox.setText ("submitting job failed.");
+          msgBox.exec();
+        }
+      }
+      catch (const std::runtime_error& e)
+      {
+        QMessageBox msgBox;
+        msgBox.setText (e.what());
+        msgBox.setIcon (QMessageBox::Critical);
+        msgBox.exec();
       }
 
       void editor_window::execute_locally_inputs_via_prompt()
