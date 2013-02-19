@@ -34,7 +34,7 @@ namespace mapreduce
 
     	  if( list_in_values.empty() )
     	  {
-    		  throw std::runtime_error ("could not reduce: key := " + key + ", empty list of values!");
+    		  throw std::runtime_error ("could not reduce: key := \"" + key + "\", empty list of values!");
     	  }
 
     	  BOOST_FOREACH(const std::string& str_item, list_in_values)
@@ -63,7 +63,7 @@ namespace mapreduce
     					  total += boost::lexical_cast<int>(*list_out_interm_val.begin());
     				  }
     				  else
-    					  throw std::runtime_error ("could not reduce: key := " + key + " val := " + *it);
+    					  throw std::runtime_error ("could not reduce: key := \"" + key + "\", val := \"" + *it+"\"");
     			  }
     		  }
     	  }
@@ -133,13 +133,13 @@ namespace mapreduce
       }
 
 
-      void reduce_arr_file(const std::vector<std::string>& arr_items,  const std::string& str_part_in_file )
+      void reduce_arr_file(const std::vector<std::string>& arr_items,  const std::string& str_out_file_2 )
       {
     	  std::list<std::string> list_in_values;
     	  key_val_pair_t kv_pair = str2kvpair(arr_items[0]);
     	  std::string last_key = kv_pair.first;
 
-    	  std::ofstream ofs( str_part_in_file.data() );
+    	  std::ofstream ofs( str_out_file_2.data() );
 
     	  for(std::vector<std::string>::const_iterator it=arr_items.begin(); it != arr_items.end(); it++ )
     	  {
@@ -317,31 +317,31 @@ namespace mapreduce
 	}
 
 	// assume that the both input arrays are sorted reduced !!!!
-	void merge_and_reduce_arr_file(const std::vector<std::string>& arr_items_1, const std::string& str_part_in_file)
+	void merge_and_reduce_arr_file(const std::vector<std::string>& arr_items_1, const std::string& str_out_file_2)
 	{
 		std::list<std::string> list_in_values;
 		size_t last_pos = 0;
 
-		if( !file_exists(str_part_in_file) )
+		if( !file_exists(str_out_file_2) )
 		{
-			 MLOG(INFO, "Create new file "<<str_part_in_file);
-			 reduce_arr_file(arr_items_1, str_part_in_file);
+			 MLOG(INFO, "Create new file "<<str_out_file_2);
+			 reduce_arr_file(arr_items_1, str_out_file_2);
 			 return;
 		}
-		MLOG(INFO, "The file "<<str_part_in_file<<" already exists on disk!!!");
+		MLOG(INFO, "The file "<<str_out_file_2<<" already exists on disk!!!");
 
 		//else
-		if( file_size(str_part_in_file.data()) == (std::streampos)0 )
+		if( file_size(str_out_file_2.data()) == 0 )
 		{
-			MLOG(INFO, "The reduce file "<<str_part_in_file<<" exists but has the length 0!");
-			reduce_arr_file(arr_items_1, str_part_in_file);
+			MLOG(INFO, "The reduce file "<<str_out_file_2<<" exists but has the length 0!");
+			reduce_arr_file(arr_items_1, str_out_file_2);
 			return;
 		}
 
 		std::ifstream ifs;
-		ifs.open( str_part_in_file.data() );
-		std::string str_part_out_file = str_part_in_file + std::string(".new");
-		std::ofstream ofs( str_part_out_file.data() );
+		ifs.open( str_out_file_2.data() );
+		std::string str_out_file = str_out_file_2 + std::string(".new");
+		std::ofstream ofs( str_out_file.data() );
 
 		MLOG(INFO, "Merge and reduce ...");
 		std::vector<std::string>::const_iterator it_1 = arr_items_1.begin();
@@ -403,8 +403,118 @@ namespace mapreduce
 		ifs.close();
 		ofs.close();
 
-		std::remove(str_part_in_file.data());
-		std::rename(str_part_out_file.data(), str_part_in_file.data());
+		std::remove(str_out_file_2.data());
+		std::rename(str_out_file.data(), str_out_file_2.data());
+	}
+
+	// assume that the both input arrays are sorted reduced !!!!
+	void merge_and_reduce_files(const std::string& str_out_file_1, const std::string& str_out_file_2, const std::string& str_out_file)
+	{
+		std::list<std::string> list_in_values;
+		size_t last_pos = 0;
+		std::string str_sp;
+		str_sp[0]=' ';
+
+		std::ifstream ifs_1;
+		std::ifstream ifs_2;
+
+		MLOG(INFO, "Merge and reduce ...");
+		char str_curr_line_1[256];
+		char str_curr_line_2[256];
+
+		if( !file_exists(str_out_file_1) && !file_exists(str_out_file_2) )
+		{
+			return;
+		}
+
+		if( file_exists(str_out_file_1) )
+		{
+			ifs_1.open( str_out_file_1.data() );
+			ifs_1.getline(str_curr_line_1, 256, NLCH);
+		}
+
+		if( file_exists(str_out_file_2) )
+		{
+			ifs_2.open( str_out_file_2.data() );
+			ifs_2.getline(str_curr_line_2, 256, NLCH);
+		}
+
+
+		std::ofstream ofs( str_out_file.data() );
+
+		// the array and the file are already reduced
+		std::string str_pair, curr_item;
+		std::string curr_key, last_key, curr_val;
+
+		while( !ifs_1.eof() || !ifs_2.eof() )
+		{
+			if( !ifs_1.eof() && !ifs_2.eof() )
+			{
+				if(	my_comp(str_curr_line_1, str_curr_line_2) )
+				{
+					curr_item = str_curr_line_1;
+					ifs_1.getline(str_curr_line_1, 256, NLCH);
+				}
+				else
+				{
+					curr_item = str_curr_line_2;
+					ifs_2.getline(str_curr_line_2, 256, NLCH);
+				}
+			}
+			else
+				if( !ifs_2.eof() )
+				{
+					curr_item = str_curr_line_2;
+					ifs_2.getline(str_curr_line_2, 256, NLCH);
+				}
+				else
+				{
+					curr_item = str_curr_line_1;
+					ifs_1.getline(str_curr_line_1, 256, NLCH);
+				}
+
+			if(!(curr_item.empty() || curr_item == str_sp) )
+			{
+				key_val_pair_t kv_pair = str2kvpair(curr_item);
+				curr_key = kv_pair.first;
+				curr_val = kv_pair.second;
+
+				if( curr_key != last_key )
+				{
+					if( !list_in_values.empty() )
+					{
+						if(!(last_key.empty() || last_key == str_sp))
+						{
+							std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+							::mapreduce::util::write_to_stream(last_key, list_out_values, ofs );
+							list_in_values.clear();
+						}
+					}
+
+					last_key = curr_key;
+				}
+
+				list_in_values.push_back(curr_val);
+			}
+		}
+
+		if( !list_in_values.empty() )
+		{
+			if( !(last_key.empty() || last_key == str_sp) )
+			{
+				std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+				::mapreduce::util::write_to_stream(last_key, list_out_values, ofs );
+				list_in_values.clear();
+			}
+		}
+
+		ifs_1.close();
+		ifs_2.close();
+		ofs.close();
+
+		std::remove(str_out_file_1.data());
+		std::remove(str_out_file_2.data());
+		//std::rename(str_out_file.data(), str_out_file_1.data());
 	}
   }
 }
