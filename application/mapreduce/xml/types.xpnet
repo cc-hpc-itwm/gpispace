@@ -32,6 +32,8 @@
     <struct name="num">
     	<field name="chunks" type="long"/>
     	<field name="part" type="long"/>
+    	<field name="slots_per_part" type="long"/>
+    	<field name="slots_per_red" type="long"/>
     </struct>
   </struct>
 
@@ -43,20 +45,30 @@
     release the read slot -->
   </struct>
 
-   <struct name="map_chunk_info">
+   <struct name="map_chunk_info_t">
 	<field name="map_slot_id" type="long"/>
     <field name="chunk_id" type="long"/>
-    <field name="used" type="long"/>
-    <field name="part_used" type="string"/>
-    <field name="unhandled_part_set" type="set"/>
+    <field name="arr_part_offset" type="stack"/>
+    <field name="arr_part_used" type="stack"/>
+    <field name="arr_part_ids" type="stack"/>
+  </struct>
+  
+   <struct name="part_slice_info">
+    <field name="map_slot_id" type="long"/>
+    <field name="chunk_id" type="long"/>
+	<field name="part_id" type="long"/> 
+	<field name="part_offset" type="long"/>
+    <field name="part_used" type="long"/>
   </struct>
   
   <struct name="partition_info">
+	<field name="slot_id" type="long"/> 
 	<field name="part_id" type="long"/> 
     <field name="part_used" type="long"/>
   </struct>
   
    <struct name="reduce_info">
+	<field name="slot_id" type="long"/> 
 	<field name="part_id" type="long"/> 
 	<field name="old_red_used" type="long"/>
     <field name="red_used" type="long"/>
@@ -65,35 +77,27 @@
    <struct name="partition_move_info">
 	<field name="reduce_info" type="reduce_info"/> 
 	<field name="partition_info" type="partition_info"/> 
+	<field name="part_slice_info" type="part_slice_info"/>
 	<field name="succeeded" type="long"/>
   </struct>
   
   <struct name="partition_result">
 	<field name="succeeded" type="long"/>
     <field name="partition_info" type="partition_info"/>
-    <field name="map_chunk_info" type="map_chunk_info"/> 
+    <field name="part_slice_info" type="part_slice_info"/>
+  </struct>
+  
+  <struct name="counter_partial_updates_t">
+  	<field name="chunk_id" type="long"/> 
+  	<field name="map_slot_id" type="long"/>
+  	<field name="counter" type="long"/>
   </struct>
   
    <struct name="reduce_result">
-	<field name="partition_locked" type="long"/>
     <field name="partition_info" type="partition_info"/>
+    <field name="part_slice_info" type="part_slice_info"/>
   </struct>
  
-    <struct name="iterator_red_info">
-    	<field name="avail_slots" type="long"/>
-    	<field name="slots_to_reduce" type="string"/>
-    	<field name="part_used" type="string"/>
-    	<field name="red_used" type="string"/>
-    	<!-- new added -->
-    	<field name="border_used" type="long"/>
-   </struct>
-
- 	<struct name="reduce_slot">
-     <field name="id" type="long"/>
-     <field name="part_used" type="long"/>
-     <field name="red_used" type="long"/>
-   </struct>
-   
    <struct name="chunk_and_slot">
      <field name="chunk" type="long"/>
      <field name="slot" type="long"/>
