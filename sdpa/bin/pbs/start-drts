@@ -211,7 +211,7 @@ if [ x"$identity" == x"0" ] ; then
             opts="$opts -S $gpi_socket"
         fi
         opts="$opts -g $gui"
-        opts="$opts -l lib_path"
+        opts="$opts -l ${lib_path}"
         opts="$opts -s $state_dir"
         opts="$opts -F $config_file"
         opts="$opts -n $name_prefix"
