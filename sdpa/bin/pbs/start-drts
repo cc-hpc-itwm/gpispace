@@ -322,7 +322,7 @@ cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
 cfg="$cfg -s plugin.gui.url=$gui"
 
 # config values (wfe plugin)
-cfg="$cfg -s plugin.wfe.library_path=${PC_LIBRARY_PATH}"
+cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
 
 plugins=$(fhgcfg -f "${config_file}" -g kernel.plugins)
 
