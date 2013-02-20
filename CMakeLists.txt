@@ -73,7 +73,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BI
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/packages.list.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/packages.list.cmake @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/modules.sdpa.in    ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa     @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/configure          ${CMAKE_CURRENT_BINARY_DIR}/configure       @COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/configure          ${CMAKE_CURRENT_BINARY_DIR}/configure       @ONLY)
 
 cmake_minimum_required(VERSION "2.6.7" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
