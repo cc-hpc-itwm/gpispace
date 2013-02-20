@@ -28,6 +28,7 @@ fhg_assert_mode=0
 
 strip_log=
 build_rev=
+build_vsn=$(echo $(sed 's/[^0-9]//g' "${src}/version.cmake") | tr ' ' '.')
 build_prefix=
 
 function get_cmake_cache_entry ()
@@ -95,6 +96,7 @@ cat >&2 <<EOF
 #  =================
 #
 #     revision: $build_rev
+#      version: $build_vsn
 #       prefix: $build_prefix
 #       source: $src
 #        build: $build_dir
