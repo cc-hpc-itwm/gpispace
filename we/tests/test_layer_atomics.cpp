@@ -1,21 +1,34 @@
 #include <iostream>
 #include <stdint.h>
 
-#include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
-#include <we/mgmt/type/requirement.hpp>
+#include <we/type/requirement.hpp>
+
+#include <we/type/module_call.hpp>
+#include <we/type/expression.hpp>
+#include <we/type/transition.hpp>
+#include <we/mgmt/type/activity.hpp>
+
+#include <boost/lexical_cast.hpp>
+
 #include <list>
+#include <string>
 
-typedef uint64_t id_type;
+typedef std::string id_type;
 
-typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
+typedef we::mgmt::layer layer_t;
 
-typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
+typedef std::list<we::type::requirement_t> requirement_list_t;
 
 static inline id_type generate_id ()
 {
-  static id_type id(0);
-  return ++id;
+  static uint64_t _cnt (0);
+
+  const id_type id (boost::lexical_cast<id_type> (_cnt));
+
+  ++_cnt;
+
+  return id;
 }
 
 template <typename L>
@@ -64,24 +77,23 @@ int main ()
   layer_t & layer = daemon.layer;
 
   {
-    we::transition_t mod_call
+    we::type::transition_t mod_call
       ( "module call"
-      , we::transition_t::mod_type ("m", "f")
+      , we::type::module_call_t ("m", "f")
       );
-    we::activity_t act (mod_call);
-    layer.submit (generate_id(), layer_t::policy::codec::encode(act));
+    we::mgmt::type::activity_t act (mod_call);
+    layer.submit (generate_id(), act.to_string());
 
     sleep (1);
     layer.print_statistics (std::cerr);
   }
 
   {
-    we::transition_t expr
-      ( "expression"
-      , we::transition_t::expr_type ("${out} := 3L")
-      );
-    we::activity_t act (expr);
-    layer.submit (generate_id(), layer_t::policy::codec::encode(act));
+    we::type::transition_t expr ( "expression"
+                          , we::type::expression_t ("${out} := 3L")
+                          );
+    we::mgmt::type::activity_t act (expr);
+    layer.submit (generate_id(), act.to_string());
 
     sleep (1);
     layer.print_statistics (std::cerr);

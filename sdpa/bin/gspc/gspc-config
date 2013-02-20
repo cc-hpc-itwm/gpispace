@@ -1,0 +1,294 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="get/set config values"
+GSPC_API_COMMAND_LEVEL=1
+
+# ATTENTION:  the log  functions themselves  use 'gspc  config', that  means, to
+# avoid a call-cycle, use the following pattern:
+#
+#      GSPC_LOG_FROM_CONFIG=true
+#      gspc_log_debug config "foo"
+#      unset GSPC_LOG_FROM_CONFIG
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: config [-h|--help] [options]
+
+Which config file to use:
+
+   --global              use the users global settings
+   --system              use the system settings
+   --site                use site settings
+   --local               use the local settings
+   -f --file <file>      use the given file
+
+What to do:
+
+   --get key             retrieves a given key
+   --get-regex <regex>   retrieve keys matching the given rexec
+   --set key value       sets the key to the given value
+   --del key             removes the given key
+   -e --edit             edit the given file
+
+Some configuration entries you might want to set:
+
+   color.log             shall log messages use colored output
+   color.status          shall status messages be colorized
+
+        Possible values are (default is 'auto'):
+
+            on -> always on
+           off -> always off
+          auto -> only if connected to a terminal
+
+   core.editor           which editor to use to edit config files
+EOF
+}
+
+system_config_file=$(gspc --etc-path)/gspc.rc
+site_config_file="/etc/gspc.rc"
+global_config_file="$HOME/.gspc.rc"
+if [ -n "$GSPC_DIR" ] ; then
+    local_config_file="$GSPC_DIR/gspc.rc"
+else
+    local_config_file=""
+fi
+config_file="${local_config_file}"
+
+files_to_get_from=(local_config_file global_config_file system_config_file site_config_file)
+
+function get_some_config_values ()
+{
+    local key="${1:?}"; shift
+    local pattern="${1}"; shift
+    if [ -z "$pattern" ] ; then
+        pattern='.*'
+    fi
+    local max=$(( ${1} )); shift
+    if [ ${max} -eq 0 ] ; then
+        max=${#files_to_get_from[@]}
+    fi
+
+    found=0
+    for var in ${files_to_get_from[@]} ; do
+        if [ $found -ge $max ] ; then
+            break
+        fi
+        file=$(eval echo \$${var})
+        if [ -z "$file" ] ; then continue ; fi
+        if [ -r "$file" ] ; then
+            val=$(fhgcfg -f "$file" -g "$key" 2>/dev/null)
+            if [ -n "$val" ] ; then
+                if [[ "$val" =~ $pattern ]] ; then
+                    echo "$val"
+                    found=$((found+1))
+                fi
+            fi
+        fi
+    done
+
+    if [ $found -gt 0 ]
+    then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function get_config_value ()
+{
+    get_some_config_values "$1" "$2" 1
+}
+
+if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+
+action=""
+
+TEMP=`getopt -o hef: --long help,global,site,system,local,file:,get,get-regex,get-all,set,del,list,edit -n 'gspc' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        -f|--file)
+            config_file="$2"
+            files_to_get_from=(config_file)
+            shift 2
+            ;;
+        --site)
+            config_file="$site_config_file"
+            files_to_get_from=(config_file)
+            shift
+            ;;
+        --system)
+            config_file="$system_config_file"
+            files_to_get_from=(config_file)
+            shift
+            ;;
+        --global)
+            config_file="$global_config_file"
+            files_to_get_from=(config_file)
+            shift
+            ;;
+        --local)
+            if [ -n "$local_config_file" ] ; then
+                config_file="${local_config_file}"
+            else
+                gspc_log_debug config "cannot act on local config: GSPC_DIR not set"
+                exit 1
+            fi
+            files_to_get_from=(config_file)
+            shift
+            ;;
+        --get)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="get"
+            shift
+            ;;
+        --get-regex)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="get-regex"
+            shift
+            ;;
+        --get-all)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="get-all"
+            shift
+            ;;
+        --set)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="set"
+            shift
+            ;;
+        --del)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="del"
+            shift
+            ;;
+        -e|--edit)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="edit"
+            shift
+            ;;
+        --list)
+            [ -z "$action" ] || {
+                gspc_log_error config "only one action allowed!"
+                exit 1
+            }
+            action="get-regex"
+            regex='.*'
+            shift
+            ;;
+        --) shift; break ;;
+        *) gspc_log_error config "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+if [ -z "$action" ] ; then
+    usage
+    exit 1
+fi
+
+case "$action" in
+    get)
+        if [ $# -lt 1 ] ; then
+            gspc_log_error config "get: invalid number of arguments"
+            exit 1
+        fi
+        get_config_value "$1" "$2"
+        exit $?
+        ;;
+    get-regex)
+        if [ $# -lt 1 ] ; then
+            if [ -z "$regex" ] ; then
+                gspc_log_error config "get-regex: invalid number of arguments"
+                exit 1
+            fi
+        else
+            regex="$1"
+        fi
+
+        for ((i=((${#files_to_get_from[@]}-1)); i >= 0 ; i--)) ; do
+            var=${files_to_get_from[$i]}
+            file=$(eval echo \$${var})
+            if [ -z "$file" ] ; then continue ; fi
+            if [ -r "$file" ] ; then
+                cat "$file"
+            fi
+        done | fhgcfg -f- --get-regex "$regex" 2>/dev/null
+        exit $?
+        ;;
+    get-all)
+        if [ $# -lt 1 ] ; then
+            gspc_log_error config "get-all: invalid number of arguments"
+            exit 1
+        fi
+        get_some_config_values "$1" "$2"
+        exit $?
+        ;;
+    set)
+        if [ $# -lt 2 ] ; then
+            gspc_log_error config "set: invalid number of arguments"
+            exit 1
+        fi
+        if [ -z "$config_file" ] ; then
+            config_file="$global_config_file"
+        fi
+
+        path_to_file=$(dirname "$config_file")
+        if [ ! -d "${path_to_file}" ]
+        then
+            gspc_log_error config "not creating config: directory does not exist: '${path_to_file}'"
+            exit 1
+        fi
+
+        gspc_log_trace config fhgcfg -f "$config_file" -a "$1" -v "$2"
+        gspc_atomic fhgcfg -f "$config_file" -a "$1" -v "$2"
+        ;;
+    del)
+        if [ $# -lt 1 ] ; then
+            gspc_log_error config "del: invalid number of arguments"
+            exit 1
+        fi
+        if [ -z "$config_file" ] ; then
+            config_file="$global_config_file"
+        fi
+
+        gspc_log_trace config fhgcfg -f "$config_file" -d "$1"
+        gspc_atomic fhgcfg -f "$config_file" -d "$1"
+        ;;
+    edit)
+        if [ -z "$config_file" ] ; then
+            config_file="$global_config_file"
+        fi
+        gspc_call_editor "$config_file"
+        ;;
+    *)
+        gspc_log_error config "invalid action: '$action'"
+        exit 1
+        ;;
+esac

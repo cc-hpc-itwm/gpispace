@@ -173,7 +173,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
 
   if( !strBackup.empty() )
   {
-    SDPA_LOG_INFO( "The input stream is not empty! Attempting to recover the daemon "<<name());
+    SDPA_LOG_INFO( "The backup file is not empty! Attempting to recover the daemon "<<name());
     LOG(INFO, "The recovery string is: "<<strBackup);
     std::stringstream iostr(strBackup);
     recover(iostr);
@@ -188,7 +188,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
     }
   }
   else
-    SDPA_LOG_INFO( "The input stream is empty! No recovery operation carried out for the daemon "<<name());
+    SDPA_LOG_INFO( "The backup file is empty! No recovery operation carried out for the daemon "<<name());
 
   scheduler()->setUseRequestModel(bUseReqModel);
 
@@ -385,11 +385,9 @@ void GenericDaemon::stop()
   shutdown_network();
 
   seda::StageRegistry::instance().lookup(name())->stop();
-
   seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
 
   seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-
   seda::StageRegistry::instance().remove(name());
 
   if( hasWorkflowEngine() )
@@ -822,13 +820,20 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
       SDPA_LOG_DEBUG( "The worker manager already contains an worker with the same id (="<<ex.worker_id()<<") but with a different agent_uuid!" );
 
-      SDPA_LOG_DEBUG( "Re-schedule the jobs" );
-      scheduler()->reschedule( worker_id );
-      SDPA_LOG_DEBUG( "Delete worker "<<worker_id );
+      try {
+    	  const Worker::ptr_t& pWorker = findWorker(worker_id);
 
-      scheduler()->delWorker(worker_id);
+    	  // mark the worker as disconnected
+    	  pWorker->set_disconnected();
+    	  SDPA_LOG_DEBUG( "Reschedule the jobs of the worker "<<worker_id<<" and, afterwards, delete it!" );
+    	  scheduler()->delWorker(worker_id);
+      }
+      catch (const WorkerNotFoundException& ex)
+      {
+        SDPA_LOG_ERROR("New worker find the worker "<<worker_id);
+      }
+
       SDPA_LOG_DEBUG( "Add worker"<<worker_id );
-
       registerWorker(evtRegWorker);
     }
     else

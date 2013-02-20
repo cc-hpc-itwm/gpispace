@@ -1,0 +1,11 @@
+<defun>
+  <in name="grid" type="grid_type"/>
+  <out name="size" type="long"/>
+  <expression>
+    ${delta_x} := ${grid.ur.x} - ${grid.ll.x};
+    ${delta_y} := ${grid.ur.y} - ${grid.ll.y};
+    ${sizex} := 1 + long (floor (${delta_x} / ${grid.s.x}));
+    ${sizey} := 1 + long (floor (${delta_y} / ${grid.s.y}));
+    ${size} := ${sizex} * ${sizey};
+  </expression>
+</defun>

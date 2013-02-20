@@ -77,32 +77,37 @@ macro(PNET_COMPILE)
               -o ${PNET_OUTPUT}
      )
 
+  set (PNET_GEN_OUTPUTS ${PNET_OUTPUT})
+
   if (PNET_GENERATE)
     set(PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})
+    set (PNET_GEN_OUTPUTS ${PNET_GEN_OUTPUTS} ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
   endif()
 
-  add_custom_target(pnet-${PNET_NAME} ALL
+  add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
     COMMAND ${PNETC_LOCATION} ${PNETC_ARGS}
-    DEPENDS ${PNETC_LOCATION} ${PNET_DEPENDS}
-    COMMENT "Generating petri-net: ${PNET_NAME}"
+    DEPENDS ${PNETC_LOCATION} ${PNET_SOURCES} ${PNET_DEPENDS}
+    COMMENT "Building petri-net ${PNET_NAME}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    SOURCES ${PNET_SOURCES}
     )
 
-  set_target_properties(pnet-${PNET_NAME} PROPERTIES PNET_GENERATE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
-  set_target_properties(pnet-${PNET_NAME} PROPERTIES LOCATION ${PNET_OUTPUT})
-
   if (PNET_BUILD)
-    add_custom_command(TARGET pnet-${PNET_NAME} POST_BUILD
+    add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
       COMMAND "$(MAKE)" -C ${PNET_GENERATE}
-      COMMENT "Compiling modules for: ${PNET_NAME}"
+      COMMENT "Building modules for petri-net ${PNET_NAME}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      APPEND
       )
   endif()
 
-  if (TARGET pnetc)
-    add_dependencies(pnet-${PNET_NAME} pnetc)
+  add_custom_target (pnet-${PNET_NAME} ALL DEPENDS ${PNET_GEN_OUTPUTS})
+
+  if (PNET_BUILD)
+    set_target_properties(pnet-${PNET_NAME} PROPERTIES PNET_GENERATE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
   endif()
+
+  set_target_properties(pnet-${PNET_NAME} PROPERTIES LOCATION ${PNET_OUTPUT})
+  set_target_properties(pnet-${PNET_NAME} PROPERTIES GEN_OUTPUTS "${PNET_GEN_OUTPUTS}")
 
   if (PNET_INSTALL)
     install (FILES ${__pnet_sources} ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL} COMPONENT ${PNET_COMPONENT})

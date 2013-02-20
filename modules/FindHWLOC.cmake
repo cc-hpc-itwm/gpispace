@@ -12,7 +12,7 @@ if (NOT HWLOC_FIND_QUIETLY)
 endif ()
 
 find_path (HWLOC_INCLUDE_DIR
-  NAMES "hwloc/cpuset.h"
+  NAMES "hwloc.h"
   HINTS ${HWLOC_HOME} ENV HWLOC_HOME
   PATH_SUFFIXES include
   )

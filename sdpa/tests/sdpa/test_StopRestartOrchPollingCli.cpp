@@ -115,14 +115,15 @@ struct MyFixture
 
 		m_serv->stop ();
 		m_pool->stop ();
-		m_thrd->join ();
+
+		if( m_thrd->joinable() )
+			m_thrd->join();
 
 		delete m_thrd;
 		delete m_serv;
 		delete m_kvsd;
 		delete m_pool;
 
-		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
 	}
 
@@ -193,16 +194,12 @@ void MyFixture::run_client_polling()
 		{
 			if(nTrials++ > NMAXTRIALS)
 			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
+				LOG( ERROR, "The maximum number of job submission  trials was exceeded. Last error was: "<<cliExc.what()<<". Giving-up now!");
 				ptrCli->shutdown_network();
 				ptrCli.reset();
 				return;
 			}
 		}
-
-		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
-
 
 		nTrials = 0;
 		std::string job_status;
@@ -215,18 +212,17 @@ void MyFixture::run_client_polling()
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
-				LOG(ERROR, "could not query job: " << cliExc.what());
 				if(nTrials++ > NMAXTRIALS)
 				{
-					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
+					LOG( ERROR, "The maximum number of job queries was exceeded. Last error was: "<<cliExc.what()<<". Giving-up now!");
 
 					ptrCli->shutdown_network();
 					ptrCli.reset();
-					  boost::this_thread::sleep(boost::posix_time::seconds(1));
+					boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 					return;
 				}
 
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 		}while( job_status.find("Finished") == std::string::npos &&
 				   job_status.find("Failed") == std::string::npos &&
@@ -240,12 +236,10 @@ void MyFixture::run_client_polling()
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-
-			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
-
+			LOG( ERROR, "An exception occurred when trying to retrieve the results of the job "<<job_id_user);
 			ptrCli->shutdown_network();
 			ptrCli.reset();
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 			return;
 		}
 
@@ -257,11 +251,10 @@ void MyFixture::run_client_polling()
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
-
+			LOG( ERROR, "An exception occurred when trying to delete the results of the job "<<job_id_user);
 			ptrCli->shutdown_network();
 			ptrCli.reset();
-			  boost::this_thread::sleep(boost::posix_time::seconds(1));
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 			return;
 		}
 	}
@@ -325,11 +318,13 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_Orch2Agents)
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
+
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
 	//LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch);
 
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	// now try to recover the system
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -337,7 +332,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_Orch2Agents)
 	LOG( INFO, "Re-start the orchestrator");// The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	ptrAgent1->shutdown();
@@ -386,7 +381,8 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE)
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
+
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
@@ -437,7 +433,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchEmptyWE)
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
@@ -487,7 +483,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
@@ -538,7 +534,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
 	ptrRecOrch->start_agent(false, strBackupOrch);
 
-	threadClient.join();
+	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();

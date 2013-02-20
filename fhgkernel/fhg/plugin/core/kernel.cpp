@@ -305,12 +305,20 @@ namespace fhg
 
     int kernel_t::handle_signal (int signum, siginfo_t *info, void *ctxt)
     {
-      MLOG (DEBUG, "handling signal: " << signum);
       plugin_map_t to_signal;
       {
-        lock_type plugins_lock (m_mtx_plugins);
+        if (not m_mtx_plugins.try_lock ())
+        {
+          MLOG (WARN, "ignoring signal: mutex still locked");
+          errno = EAGAIN;
+          return -1;
+        }
         to_signal = m_plugins;
+
+        m_mtx_plugins.unlock ();
       }
+
+      MLOG (DEBUG, "handling signal: " << signum);
 
       for ( plugin_map_t::iterator it = to_signal.begin ()
           ; it != to_signal.end()

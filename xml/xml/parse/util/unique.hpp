@@ -127,6 +127,17 @@ namespace xml
         return id;
       }
 
+      void push (const unique<value_type, id_type>& other, const std::string& m)
+      {
+        BOOST_FOREACH (const id_type& id, other.ids())
+        {
+          if (push (id) != id)
+          {
+            throw std::runtime_error ("non-unique join: " + m);
+          }
+        }
+      }
+
       void erase (const id_type& id)
       {
         const typename ids_type::const_iterator it (_values._ids.find (id));
@@ -159,7 +170,7 @@ namespace xml
         return copy;
       }
 
-      unique<value_type, id_type> reparent
+      unique<value_type, id_type>& reparent
         (const typename value_type::parent_id_type& parent)
       {
         BOOST_FOREACH (value_type& value, values())

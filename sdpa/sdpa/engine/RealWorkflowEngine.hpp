@@ -22,7 +22,7 @@
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 
 #ifdef USE_REAL_WE
-	typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
+	typedef we::mgmt::layer RealWorkflowEngine;
 #else
 	typedef EmptyWorkflowEngine RealWorkflowEngine;
 #endif

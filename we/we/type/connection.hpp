@@ -1,50 +1,53 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _TYPE_CONNECTION_HPP
-#define _TYPE_CONNECTION_HPP
+#ifndef _WE_TYPE_CONNECTION_HPP
+#define _WE_TYPE_CONNECTION_HPP
+
+#include <we/type/id.hpp>
 
 #include <boost/serialization/nvp.hpp>
 
+#include <string>
+
 namespace petri_net
 {
-  template<typename TYPE, typename TID, typename PID>
-  struct connection
+  namespace edge
+  {
+    //! \todo eliminate this, instead use subclasses of connection
+    enum type {PT,PT_READ,TP};
+
+    bool is_pt_read (const type&);
+    bool is_PT (const type&);
+
+    std::string enum_to_string (const type&);
+  }
+
+  struct connection_t
   {
   public:
-    TYPE type;
-    TID tid;
-    PID pid;
+    edge::type type;
+    transition_id_type tid;
+    place_id_type pid;
 
-    connection () : type(), tid(), pid() {}
+    connection_t ();
+    connection_t ( const edge::type&
+                 , const transition_id_type&
+                 , const place_id_type&
 
-    connection (const TYPE & _type, const TID & _tid, const PID & _pid)
-      : type (_type)
-      , tid (_tid)
-      , pid (_pid)
-    {}
+                 );
+
+    friend std::size_t hash_value (const connection_t&);
+    friend bool operator== (const connection_t&, const connection_t&);
+    friend bool operator!= (const connection_t&, const connection_t&);
 
     template<typename Archive>
-    void serialize (Archive & ar, const unsigned int)
+    void serialize (Archive& ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(type);
       ar & BOOST_SERIALIZATION_NVP(tid);
       ar & BOOST_SERIALIZATION_NVP(pid);
     }
   };
-
-  namespace detail
-  {
-	namespace tag {
-	  struct p2t_tag {};
-	  struct t2p_tag {};
-	}
-
-	template <typename TID, typename PID, typename Dir>
-	struct tagged_connection
-	{
-	  typedef Dir direction;
-	};
-  }
 }
 
 #endif

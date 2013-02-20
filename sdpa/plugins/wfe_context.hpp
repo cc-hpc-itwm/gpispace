@@ -5,35 +5,38 @@
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
 
+#include <we/type/module_call.hpp>
+
+#include <we/type/expression.fwd.hpp>
+#include <we/type/net.fwd.hpp>
+
 #include "wfe_task.hpp"
 
-struct wfe_exec_context : public we::mgmt::context<>
+struct wfe_exec_context : public we::mgmt::context
 {
-  typedef we::transition_t::net_type net_t;
-  typedef we::transition_t::mod_type mod_t;
-  typedef we::transition_t::expr_type expr_t;
-
-  wfe_exec_context (we::loader::loader & module_loader, wfe_task_t & target)
+  wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
     : loader (module_loader)
     , task (target)
   {}
 
-  void handle_internally ( we::activity_t & act, net_t &)
+  virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
   {
-    act.inject_input ();
+    act.inject_input();
 
     while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
     {
-      we::activity_t sub (act.extract ());
-      sub.inject_input ();
-      sub.execute (*this);
+      we::mgmt::type::activity_t sub (act.extract());
+      sub.inject_input();
+      sub.execute (this);
       act.inject (sub);
     }
 
-    act.collect_output ();
+    act.collect_output();
+
+    return 0;
   }
 
-  void handle_internally ( we::activity_t & act, const mod_t & mod)
+  virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
   {
     try
     {
@@ -42,35 +45,37 @@ struct wfe_exec_context : public we::mgmt::context<>
     catch (std::exception const &ex)
     {
       throw std::runtime_error
-        ( "call to '" + mod.module () + "::" + mod.function () + "'"
-        + " failed: " + ex.what ()
+        ( "call to '" + mod.module() + "::" + mod.function() + "'"
+        + " failed: " + ex.what()
         );
     }
+
+    return 0;
   }
 
-  void handle_internally ( we::activity_t & , const expr_t &)
+  virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
   {
-    // nothing to do
+    return 0;
   }
 
-  void handle_externally ( we::activity_t & act, net_t & n)
+  virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
   {
-    handle_internally (act, n);
+    return handle_internally (act, n);
   }
 
-  void handle_externally ( we::activity_t & act, const mod_t & module_call )
+  virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& module_call)
   {
-    handle_internally (act, module_call);
+    return handle_internally (act, module_call);
   }
 
-  void handle_externally ( we::activity_t & act, const expr_t & e)
+  virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
   {
-    handle_internally ( act, e );
+    return handle_internally (act, e);
   }
 
 private:
-  we::loader::loader & loader;
-  wfe_task_t & task;
+  we::loader::loader& loader;
+  wfe_task_t& task;
 };
 
 #endif

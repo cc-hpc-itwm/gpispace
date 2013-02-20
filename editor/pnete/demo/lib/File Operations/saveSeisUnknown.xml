@@ -1,5 +1,0 @@
-<defun name="Save Seismic">
-  <in name="data" type="seismic"/>
-  <in name="filename" type="string"/>
-  <out name="done" type="control"/>
-</defun>

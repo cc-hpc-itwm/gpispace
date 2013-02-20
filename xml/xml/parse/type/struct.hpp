@@ -19,6 +19,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/unordered/unordered_map_fwd.hpp>
 #include <boost/variant.hpp>
+#include <boost/function.hpp>
 
 namespace xml
 {
@@ -102,6 +103,14 @@ namespace xml
         literal::type_name_t operator () (const signature::structured_t &) const;
       };
 
+      typedef boost::function < boost::optional<signature::type>
+                                (const std::string&)
+                              > resolving_function_type;
+      signature::desc_t resolve_with_fun
+        (const type::structure_type&, resolving_function_type);
+
+      bool struct_by_name (const std::string&, const type::structure_type&);
+
       class resolve : public boost::static_visitor<bool>
       {
       private:
@@ -115,21 +124,6 @@ namespace xml
 
         bool operator () (literal::type_name_t & t) const;
         bool operator () (signature::structured_t & map) const;
-      };
-
-      class specialize : public boost::static_visitor<signature::desc_t>
-      {
-      private:
-        const type::type_map_type & map_in;
-        const state::type & state;
-
-      public:
-        specialize ( const type::type_map_type & _map_in
-                   , const state::type & _state
-                   );
-
-        signature::desc_t operator () (literal::type_name_t & t) const;
-        signature::desc_t operator () (signature::structured_t & map) const;
       };
     }
   }

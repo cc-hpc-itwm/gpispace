@@ -79,7 +79,8 @@ namespace daemon
 			{
 				SDPA_LOG_INFO( "Stopping the backup service ... ");
 				m_bStopRequested = true;
-				m_thread.join();
+				if(m_thread.joinable())
+					m_thread.join();
 			}
 		}
 

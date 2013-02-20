@@ -7,11 +7,8 @@
 #include <fhg/util/split.hpp>
 #include <fhg/util/getenv.hpp>
 
-#include <we/we.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/layer.hpp>
-#include <we/type/literal.hpp>
-
-#include <fhg/util/parse/position.hpp>
 
 #include <fhg/revision.hpp>
 
@@ -20,14 +17,14 @@
 #include <boost/foreach.hpp>
 #include "test_layer.hpp"
 
-using namespace we::mgmt;
+#include <fhg/util/stat.hpp>
+
 using namespace test;
 namespace po = boost::program_options;
 
 typedef std::string id_type;
-//typedef uint64_t id_type;
 
-typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
+typedef we::mgmt::layer layer_t;
 typedef sdpa_daemon<layer_t> daemon_type;
 typedef layer_t::internal_id_type layer_id_type;
 
@@ -61,7 +58,7 @@ void observe_finished (const layer_t *l, layer_id_type const & id, std::string c
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (layer_t::policy::codec::decode (s));
+      we::mgmt::type::activity_t act (s);
       std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -78,7 +75,7 @@ void observe_failed (const layer_t *l, layer_id_type const & id, std::string con
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (layer_t::policy::codec::decode (s));
+      we::mgmt::type::activity_t act (s);
       std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -95,7 +92,7 @@ void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::activity_t act (layer_t::policy::codec::decode (s));
+      we::mgmt::type::activity_t act (s);
       std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
     }
   }
@@ -113,6 +110,7 @@ void observe_executing (const layer_t *l, layer_id_type const & id)
 }
 
 int main (int argc, char **argv)
+try
 {
   fhg::log::Configurator::configure();
 
@@ -121,7 +119,6 @@ int main (int argc, char **argv)
   std::string path_to_act;
   std::string mod_path;
   std::vector<std::string> mods_to_load;
-  std::vector<std::string> input_spec;
   std::size_t num_worker (8);
   std::string output ("-");
   bool show_dots (false);
@@ -138,7 +135,6 @@ int main (int argc, char **argv)
     )
     ("worker", po::value<std::size_t>(&num_worker)->default_value(num_worker), "number of workers")
     ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
-    ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity: port=<value>")
     ("output,o", po::value<std::string>(&output)->default_value(output), "output stream (ignored)")
     ("show-dots,d", po::value<bool>(&show_dots)->default_value(show_dots), "show dots while waiting for progress")
     ;
@@ -161,7 +157,7 @@ int main (int argc, char **argv)
 
   if (vm.count("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Parallel Workflow Execution");
 
     return EXIT_SUCCESS;
   }
@@ -198,55 +194,15 @@ int main (int argc, char **argv)
     mgmt_layer.sig_executing.connect ( &observe_executing );
   }
 
-  we::activity_t act;
-
-  if (path_to_act != "-")
-  {
-    std::ifstream ifs (path_to_act.c_str());
-    if (! ifs)
-    {
-      std::cerr << "Could not open: " << path_to_act << std::endl;
-      return 1;
-    }
-    act = layer_t::policy::codec::decode(ifs);
-  }
-  else
-  {
-    std::cerr << "Reading from stdin..." << std::endl;
-    act = layer_t::policy::codec::decode(std::cin);
-  }
-
-  for ( std::vector<std::string>::const_iterator inp (input_spec.begin())
-      ; inp != input_spec.end()
-      ; ++inp
-      )
-  {
-    const std::string port_name
-      ( inp->substr (0, inp->find('=') ));
-    const std::string value
-      ( inp->substr (inp->find('=')+1) );
-
-    literal::type tokval;
-    std::size_t k (0);
-    std::string::const_iterator begin (value.begin());
-
-    fhg::util::parse::position pos (k, begin, value.end());
-    literal::read (tokval, pos);
-
-    act.add_input (
-                   we::input_t::value_type
-                   ( we::token_t ( port_name
-                                 , boost::apply_visitor (literal::visitor::type_name(), tokval)
-                                 , tokval
-                                 )
-                   , act.transition().input_port_by_name (port_name)
-                   )
-                  );
-  }
+  we::mgmt::type::activity_t act
+    ( path_to_act == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
+    );
 
   daemon_type::id_type id = daemon.gen_id();
   jobs.push_back(id);
-  mgmt_layer.submit(id, layer_t::policy::codec::encode (act));
+  mgmt_layer.submit(id, act.to_string());
 
 #if 0
   size_t max_wait (5);
@@ -264,11 +220,14 @@ int main (int argc, char **argv)
     }
 #endif
 
-#ifdef STATISTICS_CONDITION
-  statistics::dump_maps();
-#endif
-
   std::cerr << "Everything done." << std::endl;
 
+  FHG_UTIL_STAT_OUT (std::cerr);
+
   return ((jobs.size() == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

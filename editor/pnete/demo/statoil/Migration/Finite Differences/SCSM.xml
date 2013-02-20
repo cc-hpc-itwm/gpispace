@@ -1,5 +1,0 @@
-<defun name="Common Shot Migration">
-  <in name="input" type="seismic"/>
-  <in name="velocity" type="velocity_depth"/>
-  <out name="output" type="seismic"/>
-</defun>

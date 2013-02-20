@@ -3,158 +3,64 @@
 #ifndef _WE_CONTAINER_PRIOSTORE_HPP
 #define _WE_CONTAINER_PRIOSTORE_HPP
 
-#include <we/container/svector.hpp>
 #include <we/type/id.hpp>
 
-#include <map>
-
-#include <stdexcept>
-#include <iostream>
-
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/function.hpp>
+#include <boost/random.hpp>
 
-namespace priostore
+#include <map>
+#include <vector>
+
+namespace we
 {
-  template< typename T
-          , typename Prio = petri_net::prio_t
-          , typename Store = svector::type<T>
-          >
-  struct type
+  namespace container
   {
-  private:
-    typedef std::greater<Prio> Compare;
-    typedef std::map<Prio, Store, Compare> prio_map_t;
-    typedef boost::unordered_map<T, Prio> get_prio_t;
-
-    prio_map_t prio_map;
-    get_prio_t get_prio;
-
-    friend class boost::serialization::access;
-    template<typename Archive>
-    void serialize (Archive & ar, const unsigned int)
+    struct priority_store
     {
-      ar & BOOST_SERIALIZATION_NVP(prio_map);
-      ar & BOOST_SERIALIZATION_NVP(get_prio);
-    }
+    public:
+      petri_net::priority_type
+      get_priority (const petri_net::transition_id_type&) const;
 
-    void erase (const T & x, const typename prio_map_t::iterator & pos)
-    {
-      if (pos != prio_map.end())
-        {
-          pos->second.erase(x);
+      void set_priority ( const petri_net::transition_id_type&
+                        , const petri_net::priority_type&
+                        );
+      void erase_priority (const petri_net::transition_id_type&);
 
-          if (pos->second.empty())
-            prio_map.erase (pos);
-        }
-    }
+      void insert (const petri_net::transition_id_type&);
+      void erase (const petri_net::transition_id_type&);
 
-    void insert (const T & x, const Prio & prio)
-    {
-      prio_map[prio].insert(x);
-    }
+      bool empty() const;
+      bool elem (const petri_net::transition_id_type&) const;
 
-  public:
-    Prio get_priority (const T & x) const
-    {
-      typename get_prio_t::const_iterator pos (get_prio.find (x));
+      template<typename Engine>
+      const petri_net::transition_id_type& random (Engine& engine) const
+      {
+        const std::vector<petri_net::transition_id_type>& v
+          (_prio_map.begin()->second);
+        boost::uniform_int<std::size_t> rand (0, v.size()-1);
 
-      return (pos == get_prio.end()) ? Prio() : pos->second;
-    }
+        return v.at (rand (engine));
+      }
 
-    void set_priority (const T & x, const Prio & prio)
-    {
-      const bool is_elem (elem (x));
+    private:
+      typedef std::map< petri_net::priority_type
+                      , std::vector<petri_net::transition_id_type>
+                      , std::greater<petri_net::priority_type>
+                      > prio_map_t;
+      typedef boost::unordered_map< petri_net::transition_id_type
+                                  , petri_net::priority_type
+                                  > get_prio_t;
 
-      if (is_elem)
-        erase (x);
+      prio_map_t _prio_map;
+      get_prio_t _get_prio;
 
-      get_prio[x] = prio;
-
-      if (is_elem)
-        insert (x, prio);
-    }
-
-    void erase_priority (const T & x)
-    {
-      const bool is_elem (elem (x));
-
-      if (elem (x))
-        erase (x);
-
-      get_prio.erase (x);
-
-      if (is_elem)
-        insert (x);
-    }
-
-    void insert (const T & x)
-    {
-      insert (x, get_priority (x));
-    }
-
-    void erase (const T & x)
-    {
-      erase (x, prio_map.find (get_priority (x)));
-    }
-
-    bool elem (const T & x) const
-    {
-      typename prio_map_t::const_iterator pos
-        (prio_map.find (get_priority (x)));
-
-      return (pos != prio_map.end()) ? pos->second.elem (x) : false;
-    }
-
-    std::size_t size (void) const
-    {
-      std::size_t s (0);
-
-      for ( typename prio_map_t::const_iterator pos (prio_map.begin())
-          ; pos != prio_map.end()
-          ; ++pos
-          )
-        s += pos->second.size();
-
-      return s;
-    }
-
-    typename Store::const_reference first (void) const
-    {
-      return prio_map.begin()->second.first();
-    }
-
-    template<typename Engine>
-    typename Store::const_reference random (Engine & engine) const
-    {
-      return prio_map.begin()->second.random(engine);
-    }
-
-    bool empty (void) const { return prio_map.empty(); }
-
-    bool operator == (const type<T,Prio,Store> & other) const
-    {
-      return (prio_map == other.prio_map);
-    }
-
-    template<typename A, typename B, typename C>
-    friend std::ostream & operator << (std::ostream &, const type<A,B,C> &);
-  };
-
-  template<typename A, typename B, typename C>
-  std::ostream & operator << (std::ostream & s, const type<A,B,C> & p)
-  {
-    for ( typename type<A,B,C>::prio_map_t::const_iterator prio (p.prio_map.begin())
-        ; prio != p.prio_map.end()
-        ; ++prio
-        )
-      s << "Prio = " << prio->first
-        << std::endl << prio->second
-        << std::endl;
-
-    return s << std::endl;
+      void erase ( const petri_net::transition_id_type&
+                 , const prio_map_t::iterator&
+                 );
+      void insert ( const petri_net::transition_id_type&
+                  , const petri_net::priority_type&
+                  );
+    };
   }
 }
 

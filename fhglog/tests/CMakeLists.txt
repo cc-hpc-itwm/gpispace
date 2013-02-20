@@ -38,6 +38,6 @@ foreach (tc_src ${tc_srcs})
   add_test(${tc_name} ${LOC})
 endforeach(tc_src ${tc_srcs})
 
-if (WITH_REMOTE_LOGGING)
+if (ENABLE_REMOTE_LOGGING)
   add_subdirectory(remote)
-endif (WITH_REMOTE_LOGGING)
+endif (ENABLE_REMOTE_LOGGING)

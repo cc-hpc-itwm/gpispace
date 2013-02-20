@@ -360,7 +360,6 @@ BOOST_AUTO_TEST_CASE(testOrchFileSerialization)
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			const preference_t job_pref;
 			pScheduler->schedule_to(jobId, k);
 			if(l>=1)
 			{
@@ -441,7 +440,6 @@ BOOST_AUTO_TEST_CASE(testOrchStringSerialization)
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			const preference_t job_pref;
 			pScheduler->schedule_to(jobId, k);
 			if(l>=1)
 			{

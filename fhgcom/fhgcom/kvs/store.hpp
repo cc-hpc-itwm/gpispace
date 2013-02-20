@@ -39,11 +39,11 @@ namespace fhg
           try
           {
             // TODO: check timestamp?
-            return cache_.get<T>(k);
+            return cache_.template get<T>(k);
           }
           catch (std::exception const &)
           {
-            T v = backend_.get<T>(k);
+            T v = backend_.template get<T>(k);
             cache_.put (k,v);
             return v;
           }
@@ -91,7 +91,7 @@ namespace fhg
       template <typename Val, typename B, typename C>
       inline Val get (basic_store<B,C> const & s, std::string const & k)
       {
-        return s.get<Val>(k);
+        return s.template get<Val>(k);
       }
 
       template <typename B, typename C>

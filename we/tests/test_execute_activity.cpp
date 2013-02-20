@@ -3,25 +3,29 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-#include <we/net.hpp>
-#include <we/util/codec.hpp>
+#include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
-#include <we/type/token.hpp>
+#include <we/type/value.hpp>
+#include <we/type/port.hpp>
+#include <we/type/value/require_type.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
+
+#include <we/expr/eval/context.hpp>
+
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/net.fwd.hpp>
 
 using petri_net::connection_t;
 using petri_net::edge::PT;
 using petri_net::edge::PT_READ;
 using petri_net::edge::TP;
 
-typedef place::type place_t;
-typedef token::type token_t;
-typedef unsigned int edge_t;
-typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
-typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
-typedef we::mgmt::type::activity_t<transition_t> activity_t;
+typedef we::type::transition_t transition_t;
+typedef petri_net::net pnet_t;
+typedef we::mgmt::type::activity_t activity_t;
 typedef activity_t::input_t input_t;
 
 namespace dummy
@@ -66,18 +70,14 @@ namespace module
     }
   }
 
-  static void call (activity_t & act, const transition_t::mod_type & module_call)
+  static void call (activity_t & act, const we::type::module_call_t & module_call)
   {
-    we::mgmt::type::detail::printer<activity_t, std::ostream> printer (act, std::cout);
-
     // construct context
     typedef expr::eval::context context_t;
     typedef activity_t::input_t input_t;
     typedef activity_t::output_t output_t;
-    typedef activity_t::token_type token_type;
-    typedef activity_t::transition_type::port_id_t port_id_t;
-    typedef activity_t::transition_type::port_t port_t;
-    typedef activity_t::transition_type::const_iterator port_iterator;
+    typedef we::type::port_t port_t;
+    typedef we::type::transition_t::const_iterator port_iterator;
 
     context_t context;
     for ( input_t::const_iterator top (act.input().begin())
@@ -85,15 +85,10 @@ namespace module
         ; ++top
         )
     {
-      const token_type token   = top->first;
-      const port_id_t  port_id = top->second;
+      const value::type& token (top->first);
+      const petri_net::port_id_type& port_id (top->second);
 
-      context.bind
-        ( we::type::detail::translate_port_to_name ( act.transition()
-                                                   , port_id
-                                                   )
-        , token.value
-        );
+      context.bind (act.transition().name_of_port (port_id), token);
     }
 
     typedef std::vector <std::pair<value::type, std::string> > mod_output_t;
@@ -106,18 +101,17 @@ namespace module
         ; ++ton
         )
     {
-      const port_id_t port_id =
-        we::type::detail::translate_name_to_output_port (act.transition(), ton->second);
+      const petri_net::port_id_type& port_id
+        (act.transition().output_port_by_name (ton->second));
 
-      const port_t & port =
-        act.transition().get_port (port_id);
+      const port_t & port (act.transition().get_port (port_id));
 
       act.add_output
         ( output_t::value_type
-          ( token_type ( port.name()
-                       , port.signature()
-                       , ton->first
-                       )
+          ( value::require_type ( port.name()
+                                , port.signature()
+                                , ton->first
+                                )
           , port_id
           )
         );
@@ -125,91 +119,70 @@ namespace module
   }
 }
 
-struct exec_context : public we::mgmt::context<>
+struct exec_context : public we::mgmt::context
 {
-  typedef transition_t::net_type net_t;
-  typedef transition_t::mod_type mod_t;
-  typedef transition_t::expr_type expr_t;
-
-  void handle_internally ( activity_t & act, net_t &)
+  virtual int handle_internally (activity_t& act, net_t&)
   {
     act.inject_input ();
 
     // submit to self
     while (act.can_fire())
     {
-      std::cout << "***** act (pre-extract):"
-                << std::endl
-                << act
-                << std::endl;
-
       activity_t sub = act.extract ();
 
-      std::cout << "***** sub-act (pre-execute):"
-                << std::endl
-                << sub
-                << std::endl;
-
-      sub.execute (*this);
-
-      std::cout << "***** sub-act (post-execute):"
-                << std::endl
-                << sub
-                << std::endl;
+      sub.execute (this);
 
       act.inject (sub);
 
-      std::cout << "***** act (post-inject):"
-                << std::endl
-                << act
-                << std::endl;
     }
 
-    we::mgmt::visitor::output_collector<activity_t> collect_output (act);
-    boost::apply_visitor ( collect_output
-                         , act.transition().data()
-                         );
+    act.collect_output();
+
+    return 0;
   }
 
-  void handle_internally ( activity_t & , const mod_t & )
+  virtual int handle_internally (activity_t&, mod_t&)
   {
     throw std::runtime_error ("cannot handle module calls internally");
   }
 
-  void handle_internally ( activity_t & , const expr_t & )
+  virtual int handle_internally (activity_t&, expr_t&)
   {
     // nothing to do
+    return 0;
   }
 
-  std::string fake_external ( const std::string & act_enc, net_t & n )
+  std::string fake_external (const std::string& act_enc, net_t& n)
   {
-    activity_t act = we::util::text_codec::decode<activity_t> (act_enc);
-    handle_internally ( act, n );
-    return we::util::text_codec::encode (act);
+    activity_t act (act_enc);
+    handle_internally (act, n );
+    return act.to_string();
   }
 
-  void handle_externally ( activity_t & act, net_t & n)
+  virtual int handle_externally (activity_t& act, net_t& n)
   {
-    activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), n)));
+    activity_t result (fake_external (act.to_string(), n));
     act.set_output(result.output());
+    return 0;
   }
 
-  std::string fake_external ( const std::string & act_enc, const mod_t & mod )
+  std::string fake_external (const std::string& act_enc, const mod_t& mod)
   {
-    activity_t act = we::util::text_codec::decode<activity_t> (act_enc);
-    module::call ( act, mod );
-    return we::util::text_codec::encode (act);
+    activity_t act (act_enc);
+    module::call (act, mod );
+    return act.to_string();
   }
 
-  void handle_externally ( activity_t & act, const mod_t & module_call )
+  virtual int handle_externally (activity_t& act, mod_t& module_call)
   {
-    activity_t result ( we::util::text_codec::decode<activity_t> (fake_external (we::util::text_codec::encode(act), module_call)));
+    activity_t result (fake_external (act.to_string(), module_call));
     act.set_output(result.output());
+    return 0;
   }
 
-  void handle_externally ( activity_t & act, const expr_t & e)
+  virtual int handle_externally (activity_t& act, expr_t& e)
   {
-    handle_internally ( act, e );
+    return handle_internally (act, e );
   }
 };
 
@@ -228,22 +201,12 @@ int main (int ac, char ** av)
     return EXIT_FAILURE;
   }
 
-  activity_t act ( we::util::text_codec::decode<activity_t> (ifs) );
+  activity_t act (ifs);
 
-  std::cout << "act (initial):"
-            << std::endl
-            << act
-            << std::endl;
+  exec_context ctxt;
+  act.execute (&ctxt);
 
-  struct exec_context ctxt;
-  act.execute (ctxt);
-
-  std::cout << "act (final):"
-            << std::endl
-            << act
-            << std::endl;
-
-  if ( act.output().empty() )
+  if (act.output().empty() )
   {
     return EXIT_FAILURE;
   }

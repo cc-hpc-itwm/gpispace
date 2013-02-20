@@ -38,9 +38,9 @@ namespace value
 
       const type & operator () (const structured_t & s) const
       {
-        structured_t::const_iterator field (s.find (name));
+        map_type::const_iterator field (s.map().find (name));
 
-        if (field == s.end())
+        if (field == s.map().end())
           {
             throw exception::bad_get ("missing field: " + name);
           }

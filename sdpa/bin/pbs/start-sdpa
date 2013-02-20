@@ -265,7 +265,7 @@ info "using nodefile: $nodefile"
 info "using GPI mem: ${gpi_mem} bytes per node"
 info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
 
-dry_run rexec $master "${sdpa}" -c "${config_file}" init -s "${state_dir}" "$nodefile" </dev/null || {
+dry_run rexec $master /usr/bin/env LD_LIBRARY_PATH="$LD_LIBRARY_PATH" "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
@@ -320,12 +320,14 @@ function start_workers_for_capability
         id=1
 
         for (( j = 0 ; j < $num_per_node ; j += 1 )) ; do
+
+            info "start $capability on $host ($j of $num_per_node)"
+
             dry_run rexec $host "$start_drts" -D -i ${id} -n "$capability" \
                                               -m aggregator $caps_arg \
                                               -s "$state_dir" \
                                               -F "$config_file" \
-                                              -M "$shm_size" \
-                                              &
+                                              -M "$shm_size"
             id=$(( id + 1 ))
         done
 
@@ -334,7 +336,6 @@ function start_workers_for_capability
         if [ $num_nodes -eq $max_nodes ] ; then
             break
         fi
-        wait
     done
 }
 

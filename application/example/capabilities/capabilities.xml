@@ -73,7 +73,7 @@
 
 	  LOG(INFO, "<<< finished A(" << id << ", " << t << ")");
 
-	  return control();
+	  return we::type::literal::control();
 	  ]]></code>
 	</module>
       </defun>
@@ -125,7 +125,7 @@
 
 	  LOG(INFO, "<<< finished B(" << id << ", " << t << ")");
 
-	  return control();
+	  return we::type::literal::control();
 	  ]]></code>
 	</module>
       </defun>

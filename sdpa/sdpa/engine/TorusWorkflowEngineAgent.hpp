@@ -362,11 +362,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
       }
     }
 
-    bool fill_in_info ( const id_type & id, activity_information_t &) const
-    {
-      return false;
-    }
-
   public:
     mutable GenericDaemon *pIAgent_;
     static size_t m_nTorusDim;

@@ -5,7 +5,7 @@ endif
 
 ###############################################################################
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 MAKEFLAGS += -r
 
 ###############################################################################
@@ -76,6 +76,10 @@ endif
 
 ifndef WE_EXEC_WORKER
   WE_EXEC_WORKER = 2
+endif
+
+ifndef WE_EXEC_OUTPUT
+  WE_EXEC_OUTPUT = /dev/null
 endif
 
 ifndef SDPA
@@ -261,7 +265,7 @@ WE_EXEC += $(WE_EXEC_CMD)
 WE_EXEC += --w $(WE_EXEC_WORKER)
 WE_EXEC += $(addprefix --load ,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L,$(WE_EXEC_LIBPATHS))
-WE_EXEC += -o /dev/null
+WE_EXEC += -o $(WE_EXEC_OUTPUT)
 WE_EXEC += $(WE_EXEC_OPTS)
 
 XMLLINT += --noout
@@ -318,9 +322,17 @@ $(NET_VALIDATION):
 
 else
 
-$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
-	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2> $@
+ifeq "$(TEE)" ""
 
+$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
+	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2> "$@"
+
+else
+
+$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
+	set -o pipefail ; $(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2>&1 | $(TEE) $@
+
+endif
 endif
 
 ###############################################################################
@@ -533,6 +545,7 @@ showconfig:
 	@echo
 	@echo "WE_EXEC_ENV      = $(WE_EXEC_ENV)"
 	@echo "WE_EXEC_CMD      = $(WE_EXEC_CMD)"
+	@echo "WE_EXEC_OUTPUT   = $(WE_EXEC_OUTPUT)"
 	@echo "WE_EXEC_WORKER   = $(WE_EXEC_WORKER)"
 	@echo "WE_EXEC_LOAD     = $(WE_EXEC_LOAD)"
 	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"

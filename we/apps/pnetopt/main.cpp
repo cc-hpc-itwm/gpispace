@@ -18,7 +18,11 @@
 #include "LuaIterator.h"
 #include "RangeAdaptor.h"
 
-#include <we/we.hpp>
+#include <we/type/net.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/place.hpp>
+#include <we/type/port.hpp>
+#include <we/mgmt/type/activity.hpp>
 
 #define foreach BOOST_FOREACH
 
@@ -29,18 +33,12 @@ namespace {
  * Except iterators: nobody refers them anyway, so we can apply reference counting to them.
  */
 
-template<class P, class E, class T>
 class Optimizer {
-    typedef petri_net::pid_t pid_t;
-    typedef P place_t;
+    typedef we::type::transition_t transition_t;
 
-    typedef petri_net::tid_t tid_t;
-    typedef we::type::transition_t<P, E, T> transition_t;
+    typedef petri_net::net pnet_t;
 
-    typedef petri_net::net<P, transition_t, E, T> pnet_t;
-
-    typedef typename transition_t::port_id_t port_id_t;
-    typedef typename transition_t::port_t port_t;
+    typedef we::type::port_t port_t;
 
     lua_State *L;
 
@@ -59,17 +57,17 @@ class Optimizer {
 
         luabridge::getGlobalNamespace(L)
             .beginNamespace("pnetopt")
-                .template beginClass<pnetopt::Invalidatable>("Invalidatable")
+                .beginClass<pnetopt::Invalidatable>("Invalidatable")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("valid", &pnetopt::Invalidatable::valid)
                 .endClass()
-                .template deriveClass<PetriNet, pnetopt::Invalidatable>("PetriNet")
+                .deriveClass<PetriNet, pnetopt::Invalidatable>("PetriNet")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PetriNet::toString)
                     .addFunction("places", &PetriNet::placesIterator)
                     .addFunction("transitions", &PetriNet::transitionIterator)
                 .endClass()
-                .template deriveClass<Place, pnetopt::Invalidatable>("Place")
+                .deriveClass<Place, pnetopt::Invalidatable>("Place")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Place::name)
                     .addFunction("name", &Place::name)
@@ -78,29 +76,29 @@ class Optimizer {
                     .addFunction("associatedPorts", &Place::associatedPortsIterator)
                     .addFunction("remove", &Place::remove)
                 .endClass()
-                .template deriveClass<PlacesIterator, pnetopt::Invalidatable>("PlacesIterator")
+                .deriveClass<PlacesIterator, pnetopt::Invalidatable>("PlacesIterator")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PlacesIterator::toString)
                     .addFunction("__call", &PlacesIterator::call)
                     .addFunction("__len", &PlacesIterator::size)
                 .endClass()
-                .template deriveClass<ConnectedPortsIterator, pnetopt::Invalidatable>("ConnectedPortsIterator")
+                .deriveClass<ConnectedPortsIterator, pnetopt::Invalidatable>("ConnectedPortsIterator")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &ConnectedPortsIterator::toString)
                     .addFunction("__call", &ConnectedPortsIterator::call)
                     .addFunction("__len", &ConnectedPortsIterator::size)
                 .endClass()
-                .template deriveClass<Expression, pnetopt::Invalidatable>("Expression")
+                .deriveClass<Expression, pnetopt::Invalidatable>("Expression")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Expression::toString)
                     .addFunction("isEmpty", &Expression::isEmpty)
                 .endClass()
-                .template deriveClass<Condition, pnetopt::Invalidatable>("Condition")
+                .deriveClass<Condition, pnetopt::Invalidatable>("Condition")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Condition::toString)
                     .addFunction("isConstTrue", &Condition::isConstTrue)
                 .endClass()
-                .template deriveClass<Transition, pnetopt::Invalidatable>("Transition")
+                .deriveClass<Transition, pnetopt::Invalidatable>("Transition")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Transition::name)
                     .addFunction("name", &Transition::name)
@@ -111,13 +109,13 @@ class Optimizer {
                     .addFunction("condition", &Transition::condition)
                     .addFunction("remove", &Transition::remove)
                 .endClass()
-                .template deriveClass<TransitionsIterator, pnetopt::Invalidatable>("TransitionsIterator")
+                .deriveClass<TransitionsIterator, pnetopt::Invalidatable>("TransitionsIterator")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &TransitionsIterator::toString)
                     .addFunction("__call", &TransitionsIterator::call)
                     .addFunction("__len", &TransitionsIterator::size)
                 .endClass()
-                .template deriveClass<Port, pnetopt::Invalidatable>("Port")
+                .deriveClass<Port, pnetopt::Invalidatable>("Port")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &Port::name)
                     .addFunction("transition", &Port::transition)
@@ -125,7 +123,6 @@ class Optimizer {
                     .addFunction("isInput", &Port::isInput)
                     .addFunction("isOutput", &Port::isOutput)
                     .addFunction("isTunnel", &Port::isTunnel)
-                    .addFunction("isRead", &Port::isRead)
                     .addFunction("connectedPlace", &Port::connectedPlace)
                     .addFunction("connect", &Port::connect)
                     .addFunction("disconnect", &Port::disconnect)
@@ -133,7 +130,7 @@ class Optimizer {
                     .addFunction("associate", &Port::associate)
                     .addFunction("unassociate", &Port::unassociate)
                 .endClass()
-                .template deriveClass<PortsIterator, pnetopt::Invalidatable>("PortsIterator")
+                .deriveClass<PortsIterator, pnetopt::Invalidatable>("PortsIterator")
                     .addFunction("__eq", &pnetopt::Invalidatable::equals)
                     .addFunction("__tostring", &PortsIterator::toString)
                     .addFunction("__call", &PortsIterator::call)
@@ -159,13 +156,13 @@ class Optimizer {
     private:
 
     class Place;
-    typedef boost::unordered_map<pid_t, Place *> IdPlaceMap;
+  typedef boost::unordered_map<petri_net::place_id_type, Place *> IdPlaceMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPlaceMap>, IdPlaceMap> Places;
     typedef pnetopt::LuaIterator<Places> PlacesIterator;
     typedef RefCountedObjectPtr<PlacesIterator> PlacesIteratorPtr;
 
     class Transition;
-    typedef boost::unordered_map<tid_t, Transition *> IdTransitionMap;
+  typedef boost::unordered_map<petri_net::transition_id_type, Transition *> IdTransitionMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdTransitionMap>, IdTransitionMap> Transitions;
     typedef pnetopt::LuaIterator<Transitions> TransitionsIterator;
     typedef RefCountedObjectPtr<TransitionsIterator> TransitionsIteratorPtr;
@@ -197,11 +194,17 @@ class Optimizer {
         PetriNet(pnet_t &pnet):
             pnet_(pnet)
         {
-            for (typename pnet_t::place_const_it it = pnet_.places(); it.has_more(); ++it) {
-                getPlace(*it);
-            }
-            for (typename pnet_t::transition_const_it it = pnet_.transitions(); it.has_more(); ++it) {
-                getTransition(*it);
+          foreach ( const petri_net::place_id_type& pid
+                  , pnet_.places() | boost::adaptors::map_keys
+                  )
+          {
+            getPlace(pid);
+          }
+            foreach ( const petri_net::transition_id_type& tid
+                    , pnet_.transitions() | boost::adaptors::map_keys
+                    )
+            {
+                getTransition(tid);
             }
         }
 
@@ -219,11 +222,11 @@ class Optimizer {
             return "PetriNet";
         }
 
-        Place *getPlace(pid_t pid) {
+      Place *getPlace(petri_net::place_id_type pid) {
             Place *&result = id2place_[pid];
 
             if (!result) {
-                place_t &place = const_cast<place_t &>(pnet_.get_place(pid));
+              place::type &place = const_cast<place::type &>(pnet_.get_place(pid));
 
                 places_.reserve(places_.size() + 1);
                 result = new Place(this, pid, place);
@@ -263,7 +266,7 @@ class Optimizer {
             placesIterators_.clear();
         }
 
-        Transition *getTransition(pid_t tid) {
+      Transition *getTransition(petri_net::transition_id_type tid) {
             Transition *&result = id2transition_[tid];
 
             if (!result) {
@@ -333,10 +336,10 @@ class Optimizer {
         PetriNet *petriNet_;
 
         /** Place id. */
-        pid_t pid_;
+      petri_net::place_id_type pid_;
 
         /** Reference to the place. */
-        place_t &place_;
+        place::type &place_;
 
         /** Ports to which this place is connected. */
         ConnectedPorts connectedPorts_;
@@ -352,13 +355,13 @@ class Optimizer {
 
         public:
 
-        Place(PetriNet *petriNet, pid_t pid, place_t &place):
+      Place(PetriNet *petriNet, petri_net::place_id_type pid, place::type &place):
             petriNet_(petriNet), pid_(pid), place_(place)
         {}
 
         PetriNet *petriNet() const { return petriNet_; }
 
-        pid_t id() const { return pid_; }
+      petri_net::place_id_type id() const { return pid_; }
 
         const std::string &name() const {
             ensureValid();
@@ -367,7 +370,7 @@ class Optimizer {
 
         void setName(const std::string &name) {
             ensureValid();
-            place_.set_name(name);
+            place_.name(name);
         }
 
         const ConnectedPorts &connectedPorts() const { return connectedPorts_; }
@@ -498,7 +501,7 @@ class Optimizer {
 
     class Port;
     enum PortDirection { INPUT, OUTPUT, TUNNEL };
-    typedef boost::unordered_map<std::pair<tid_t, PortDirection>, Port *> IdPortMap;
+    typedef boost::unordered_map<std::pair<petri_net::port_id_type, PortDirection>, Port *> IdPortMap;
     typedef pnetopt::RangeAdaptor<boost::select_second_const_range<IdPortMap>, IdPortMap> Ports;
     typedef pnetopt::LuaIterator<Ports> PortsIterator;
     typedef RefCountedObjectPtr<PortsIterator> PortsIteratorPtr;
@@ -508,7 +511,7 @@ class Optimizer {
         PetriNet *petriNet_;
 
         /** Transition id. */
-        tid_t tid_;
+      petri_net::transition_id_type tid_;
 
         /** Reference to the transition. */
         transition_t &transition_;
@@ -533,11 +536,11 @@ class Optimizer {
 
         public:
 
-        Transition(PetriNet *petriNet, tid_t tid, transition_t &transition):
+      Transition(PetriNet *petriNet, petri_net::transition_id_type tid, transition_t &transition):
             petriNet_(petriNet), tid_(tid), transition_(transition)
         {
-            for (typename transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
-                port_id_t portId = i->first;
+            for (transition_t::const_iterator i = transition_.ports_begin(); i != transition_.ports_end(); ++i) {
+                petri_net::port_id_type portId = i->first;
                 port_t &port = transition_.get_port(portId);
                 if (port.is_input()) {
                     getPort(portId, INPUT);
@@ -549,18 +552,18 @@ class Optimizer {
                     getPort(portId, TUNNEL);
                 }
             }
-            for (typename transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
-                port_id_t portId = i->first;
-                pid_t placeId = i->second.first;
+            for (transition_t::inner_to_outer_t::const_iterator i = transition_.inner_to_outer_begin(); i != transition_.inner_to_outer_end(); ++i) {
+                petri_net::port_id_type portId = i->first;
+                petri_net::place_id_type placeId = i->second.first;
 
                 /* Top-level transition cannot have connections. */
                 assert(petriNet != NULL);
 
                 getPort(portId, OUTPUT)->setConnectedPlace(petriNet->getPlace(placeId));
             }
-            for (typename transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
-                pid_t placeId = i->first;
-                port_id_t portId = i->second.first;
+            for (transition_t::outer_to_inner_t::const_iterator i = transition_.outer_to_inner_begin(); i != transition_.outer_to_inner_end(); ++i) {
+              petri_net::place_id_type placeId = i->first;
+                petri_net::port_id_type portId = i->second.first;
 
                 /* Top-level transition cannot have connections. */
                 assert(petriNet != NULL);
@@ -571,11 +574,11 @@ class Optimizer {
 
         PetriNet *petriNet() const { return petriNet_; }
 
-        tid_t id() const { return tid_; }
+      petri_net::transition_id_type id() const { return tid_; }
 
         transition_t &transition() const { return transition_; }
 
-        Port *getPort(port_id_t portId, PortDirection direction) {
+        Port *getPort(petri_net::port_id_type portId, PortDirection direction) {
             Port *&result = id2port_[std::make_pair(portId, direction)];
 
             if (!result) {
@@ -707,7 +710,7 @@ class Optimizer {
         Transition *transition_;
 
         /** Port id. */
-        port_id_t portId_;
+        petri_net::port_id_type portId_;
 
         /** Reference to the port. */
         port_t &port_;
@@ -723,7 +726,7 @@ class Optimizer {
 
         public:
 
-        Port(Transition *transition, port_id_t portId, port_t &port, PortDirection direction):
+        Port(Transition *transition, petri_net::port_id_type portId, port_t &port, PortDirection direction):
             transition_(transition), portId_(portId), port_(port), direction_(direction),
             connectedPlace_(NULL), associatedPlace_(NULL)
         {
@@ -739,7 +742,7 @@ class Optimizer {
 
         PetriNet *petriNet() const { return transition()->petriNet(); }
 
-        port_id_t id() const { return portId_; }
+        petri_net::port_id_type id() const { return portId_; }
 
         const std::string &name() const {
             ensureValid();
@@ -759,11 +762,6 @@ class Optimizer {
         bool isTunnel() const {
             ensureValid();
             return direction_ == TUNNEL;
-        }
-
-        bool isRead() const {
-            ensureValid();
-            return port_.direction() == we::type::PORT_READ;
         }
 
         Place *connectedPlace() const {
@@ -803,10 +801,10 @@ class Optimizer {
             if (connectedPlace_) {
                 /* We must remove an edge. */
                 if (isInput()) {
-                    petriNet()->pnet().delete_edge(petriNet()->pnet().get_eid_in(transition()->id(), connectedPlace_->id()));
+                    petriNet()->pnet().delete_edge_in(transition()->id(), connectedPlace_->id());
                 }
                 if (isOutput()) {
-                    petriNet()->pnet().delete_edge(petriNet()->pnet().get_eid_out(transition()->id(), connectedPlace_->id()));
+                    petriNet()->pnet().delete_edge_out(transition()->id(), connectedPlace_->id());
                 }
 
                 /* Now we must disconnect the place on the transition's side. */
@@ -822,14 +820,20 @@ class Optimizer {
 
             if (connectedPlace_) {
                 /* We must add an edge. */
-                petri_net::edge::type edgeType = isRead() ? petri_net::edge::PT_READ : (isInput() ? petri_net::edge::PT : petri_net::edge::TP);
+              //! \todo How to get an read connection?
+                petri_net::edge::type edgeType = isInput() ? petri_net::edge::PT : petri_net::edge::TP;
 
                 bool tryAgain;
                 do {
                     tryAgain = false;
                     try {
-                        petriNet()->pnet().add_edge(random(), petri_net::connection_t(edgeType, transition()->id(), connectedPlace_->id()));
-                    } catch (const bijection::exception::already_there &) {
+                        petriNet()->pnet().add_connection
+                          (petri_net::connection_t ( edgeType
+                                                   , transition()->id()
+                                                   , connectedPlace_->id()
+                                                   )
+                          );
+                    } catch (const we::container::exception::already_there&) {
                         tryAgain = true;
                     }
                 } while (tryAgain);
@@ -893,7 +897,7 @@ class Optimizer {
             if (place) {
                 port_.associated_place() = place->id();
             } else {
-                port_.associated_place() = port_t::pid_traits::invalid();
+                port_.associated_place() = petri_net::place_id_invalid();
             }
         }
 
@@ -906,92 +910,81 @@ class Optimizer {
 
 } // anonymous namespace
 
-template<class P, class E, class T>
-void do_optimize(we::type::transition_t<P, E, T> &transition, const char *script) {
-    Optimizer<P, E, T> optimizer(transition);
+void do_optimize(we::type::transition_t &transition, const char *script) {
+    Optimizer optimizer(transition);
     optimizer(script);
 }
 
-int main(int argc, char **argv) {
-    namespace po = boost::program_options;
+int main(int argc, char **argv)
+try
+{
+  namespace po = boost::program_options;
 
-    std::string input("-");
-    std::string output("-");
-    std::string script("main.lua");
-    bool xml = false;
+  std::string input("-");
+  std::string output("-");
+  std::string script("main.lua");
 
-    po::options_description options("options");
+  po::options_description options("options");
 
-    options.add_options()
-        ("help,h", "this message")
-        ("input,i"
-        , po::value<std::string>(&input)->default_value(input)
-        , "input file name, - for stdin"
-        )
-        ("output,o"
-        , po::value<std::string>(&output)->default_value(output)
-        , "output file name, - for stdout"
-        )
-        ("script,s"
-        , po::value<std::string>(&script)->default_value(script)
-        , "script file name"
-        )
-        ( "xml,x"
-        , po::bool_switch(&xml)->default_value(xml)
-        , "write xml instead of text format"
-        )
-        ;
+  options.add_options()
+    ("help,h", "this message")
+    ("input,i"
+    , po::value<std::string>(&input)->default_value(input)
+    , "input file name, - for stdin"
+    )
+    ("output,o"
+    , po::value<std::string>(&output)->default_value(output)
+    , "output file name, - for stdout"
+    )
+    ("script,s"
+    , po::value<std::string>(&script)->default_value(script)
+    , "script file name"
+    )
+    ;
 
-    po::positional_options_description positional;
-    positional.add("input", -1);
+  po::positional_options_description positional;
+  positional.add("input", -1);
 
-    po::variables_map vm;
+  po::variables_map vm;
 
-    try {
-        po::store(po::command_line_parser(argc, argv).options(options).positional(positional).run(), vm);
-        po::notify(vm);
-    } catch (const std::exception &e) {
-        std::cerr << "invalid argument: " << e.what() << std::endl;
-        return EXIT_FAILURE;
+  try {
+    po::store(po::command_line_parser(argc, argv).options(options).positional(positional).run(), vm);
+    po::notify(vm);
+  } catch (const std::exception &e) {
+    std::cerr << "invalid argument: " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if (vm.count("help")) {
+    std::cout << options << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  we::mgmt::type::activity_t activity
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    );
+
+  do_optimize(activity.transition(), script.c_str());
+
+  if (output == "-") {
+    std::cout << activity.to_string();
+  } else {
+    std::ofstream out(output.c_str());
+    if (!out) {
+      std::cerr << "failed to open " << input << " for writing" << std::endl;
+      return EXIT_FAILURE;
     }
+    out << activity.to_string();
+  }
 
-    if (vm.count("help")) {
-        std::cout << options << std::endl;
-        return EXIT_SUCCESS;
-    }
-
-    we::activity_t activity;
-
-    if (input == "-") {
-        we::util::text_codec::decode(std::cin, activity);
-    } else {
-        std::ifstream in(input.c_str());
-        if (!in) {
-            std::cerr << "failed to open " << input << "for reading" << std::endl;
-            return EXIT_FAILURE;
-        }
-        we::util::text_codec::decode(in, activity);
-    }
-
-    try {
-        do_optimize(activity.transition(), script.c_str());
-    } catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    if (output == "-") {
-        std::cout << (xml ? we::util::xml_codec::encode(activity) : we::util::text_codec::encode(activity));
-    } else {
-        std::ofstream out(output.c_str());
-        if (!out) {
-            std::cerr << "failed to open " << input << " for writing" << std::endl;
-            return EXIT_FAILURE;
-        }
-        out << (xml ? we::util::xml_codec::encode(activity) : we::util::text_codec::encode(activity));
-    }
-
-    return 0;
+  return 0;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }
 
 /* vim:set et sts=4 sw=4: */

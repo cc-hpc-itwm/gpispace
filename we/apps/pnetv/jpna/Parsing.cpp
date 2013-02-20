@@ -9,7 +9,15 @@
 #include <jpn/common/Foreach.h>
 #include <jpn/common/Unreachable.h>
 
-#include <we/we.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/port.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/net.hpp>
+
+#include <we/mgmt/type/activity.hpp>
+
+#include <boost/range/adaptor/map.hpp>
 
 #include "PetriNet.h"
 
@@ -42,12 +50,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
     /**
      * Places present in the workflow.
      */
-    boost::unordered_map<petri_net::pid_t, Place *> places_;
+    boost::unordered_map<petri_net::place_id_type, Place *> places_;
 
     /**
      * Transitions present in the workflow.
      */
-    boost::unordered_map<petri_net::tid_t, Transition *> transitions_;
+    boost::unordered_map<petri_net::transition_id_type, Transition *> transitions_;
 
     public:
 
@@ -65,15 +73,16 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
     void operator()(const we::type::module_call_t & mod_call) { return; }
 
-    template<class P, class E, class T>
-    void operator()(const petri_net::net<P, we::type::transition_t<P, E, T>, E, T> &net) {
-        typedef petri_net::net<P, we::type::transition_t<P, E, T>, E, T> pnet_t;
-        typedef we::type::transition_t<P, E, T> transition_t;
+    void operator()(const petri_net::net &net) {
+        typedef petri_net::net pnet_t;
+        typedef we::type::transition_t transition_t;
 
         /* Translate places. */
-        for (typename pnet_t::place_const_it it = net.places(); it.has_more(); ++it) {
-            petri_net::pid_t pid = *it;
-            const P &p = net.get_place(pid);
+        typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+
+        BOOST_FOREACH (const ip_type& ip, net.places()) {
+            const petri_net::place_id_type& pid (ip.first);
+            const place::type &p (ip.second);
 
             Place *place = petriNet_->createPlace();
             place->setName(p.name());
@@ -81,9 +90,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         /* Translate transitions. */
-        for (typename pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::pid_t tid = *it;
-            const transition_t &t = net.get_transition(tid);
+        typedef std::pair<petri_net::transition_id_type, transition_t> it_type;
+
+        FOREACH (const it_type& it, net.transitions())
+        {
+          const petri_net::transition_id_type& tid (it.first);
+          const transition_t& t (it.second);
 
             std::ostringstream condition;
             condition << t.condition();
@@ -104,9 +116,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        for (typename pnet_t::edge_const_it it = net.edges(); it.has_more(); ++it) {
-            const typename petri_net::connection_t &connection = net.get_edge_info(*it);
-
+        FOREACH (const petri_net::connection_t& connection, net.connections()) {
             switch (connection.type) {
                 case petri_net::edge::PT: {
                     Place *place = find(places_, connection.pid);
@@ -140,8 +150,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        for (typename pnet_t::transition_const_it it = net.transitions(); it.has_more(); ++it) {
-            petri_net::pid_t id = *it;
+        FOREACH ( const petri_net::transition_id_type& id
+                , net.transitions() | boost::adaptors::map_keys
+                )
+        {
             const transition_t &transition = net.get_transition(id);
 
             TransitionVisitor visitor(petriNet_->name() + "::" + transition.name(), petriNets_);
@@ -149,17 +161,16 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
     }
 
-    template<class P, class E, class T>
-    void operator()(const we::type::transition_t<P, E, T> &transition) {
-        typedef we::type::transition_t<P, E, T> transition_t;
+    void operator()(const we::type::transition_t &transition) {
+        typedef we::type::transition_t transition_t;
 
         boost::apply_visitor(*this, transition.data());
 
-        FOREACH(const typename transition_t::port_map_t::value_type &item, transition.ports()) {
-            const typename transition_t::port_t &port = item.second;
+        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports()) {
+          const we::type::port_t &port = item.second;
 
             if (port.has_associated_place()) {
-                petri_net::pid_t pid = port.associated_place();
+                petri_net::place_id_type pid = port.associated_place();
 
                 Place *place = find(places_, pid);
                 place->setInitialMarking(place->initialMarking() + 1);
@@ -184,8 +195,7 @@ void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
 }
 
 void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets) {
-    we::activity_t activity;
-    we::util::text_codec::decode(in, activity);
+  we::mgmt::type::activity_t activity (in);
 
     TransitionVisitor visitor(filename, petriNets);
     visitor(activity.transition());

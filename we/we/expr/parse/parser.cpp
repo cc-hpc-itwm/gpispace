@@ -5,11 +5,12 @@
 #include <we/expr/parse/action.hpp>
 #include <we/expr/token/tokenizer.hpp>
 
-// #include <we/expr/token/prop.hpp>
+#include <we/expr/token/prop.hpp>
 
 #include <we/type/value/function.hpp>
 
 #include <we/expr/eval/context.hpp>
+#include <we/expr/eval/refnode.hpp>
 #include <we/expr/eval/eval.hpp>
 
 #include <fhg/util/show.hpp>
@@ -65,7 +66,7 @@ namespace expr
 
     value::type parser::eval_front (eval::context & context) const
     {
-      return boost::apply_visitor (eval::visitor::eval (context), front());
+      return eval::eval (context, front());
     }
 
     bool parser::eval_front_bool (eval::context & context) const
@@ -91,7 +92,7 @@ namespace expr
 
       for (nd_const_it_t it (begin()); it != end(); ++it)
         {
-          v = boost::apply_visitor (eval::visitor::eval (context), *it);
+          v = eval::eval (context, *it);
         }
 
       return v;
@@ -102,6 +103,20 @@ namespace expr
       const value::type v (eval_all (context));
 
       return value::function::is_true(v);
+    }
+
+    value::type parser::eval_all() const
+    {
+      eval::context c;
+
+      return eval_all (c);
+    }
+
+    bool parser::eval_all_bool() const
+    {
+      eval::context c;
+
+      return eval_all_bool (c);
     }
 
     void parser::rename ( const key_vec_t::value_type & from
@@ -127,18 +142,10 @@ namespace expr
 
       nd_t c (tmp_stack.back()); tmp_stack.pop_back();
 
-      if (  constant_folding()
-         && boost::apply_visitor (node::visitor::is_value(), c)
-         )
-        //! \todo use c++0x to write this as
-        // if (node::is_value(c))
+      if (constant_folding() && node::is_value (c))
         {
           tmp_stack.push_back
-            (nd_t (boost::apply_visitor ( value::function::unary (token)
-                                        , boost::get<value::type> (c)
-                                        )
-                  )
-            );
+            (value::function::unary (token, boost::get<value::type> (c)));
         }
       else
         {
@@ -151,24 +158,31 @@ namespace expr
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "left");
 
-      nd_t r (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t r (tmp_stack.back()); tmp_stack.pop_back();
 
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "right");
 
-      nd_t l (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t l (tmp_stack.back()); tmp_stack.pop_back();
 
-      if (  constant_folding()
-         && boost::apply_visitor (node::visitor::is_value(), l)
-         && boost::apply_visitor (node::visitor::is_value(), r)
-         )
-        tmp_stack.push_back
-          (nd_t (boost::apply_visitor ( value::function::binary (token)
-                                      , boost::get<value::type> (l)
-                                      , boost::get<value::type> (r)
-                                      )
-                )
-          );
+      if (token::is_define (token) && not node::is_ref (l))
+        {
+          throw exception::parse::exception ( "left hand of "
+                                            + fhg::util::show (token)
+                                            + " must be reference name"
+                                            , k
+                                            );
+        }
+
+      if (constant_folding() && node::is_value(l) && node::is_value(r))
+        {
+          tmp_stack.push_back ( value::function::binary
+                                ( token
+                                , boost::get<value::type> (l)
+                                , boost::get<value::type> (r)
+                                )
+                              );
+        }
       else
         {
           tmp_stack.push_back (node::binary_t (token, l, r));
@@ -180,51 +194,19 @@ namespace expr
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "first");
 
-      nd_t t (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t t (tmp_stack.back()); tmp_stack.pop_back();
 
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "second");
 
-      nd_t s (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t s (tmp_stack.back()); tmp_stack.pop_back();
 
       if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "third");
 
-      nd_t f (nd_t(tmp_stack.back())); tmp_stack.pop_back();
+      nd_t f (tmp_stack.back()); tmp_stack.pop_back();
 
       tmp_stack.push_back (node::ternary_t (token, f, s, t));
-    }
-
-    void parser::ite (const std::size_t k)
-    {
-      if (tmp_stack.empty())
-        throw exception::parse::missing_operand (k, "else expression");
-
-      nd_t f (nd_t(tmp_stack.back())); tmp_stack.pop_back();
-
-      if (tmp_stack.empty())
-        throw exception::parse::missing_operand (k, "then expression");
-
-      nd_t t (nd_t(tmp_stack.back())); tmp_stack.pop_back();
-
-      if (tmp_stack.empty())
-        throw exception::parse::missing_operand (k, "condition");
-
-      nd_t c (nd_t(tmp_stack.back())); tmp_stack.pop_back();
-
-      if (  constant_folding()
-         && boost::apply_visitor (node::visitor::is_value(), c)
-         )
-        {
-          if (value::function::is_true(boost::get<value::type> (c)))
-            tmp_stack.push_back (t);
-          else
-            tmp_stack.push_back (f);
-        }
-      else
-        {
-          tmp_stack.push_back (node::ternary_t (token::_ite,  c, t, f));
-        }
     }
 
     void parser::reduce (const std::size_t k)
@@ -265,6 +247,7 @@ namespace expr
         case token::_map_empty: unary (op_stack.top(),k); break;
         case token::_set_insert:
         case token::_set_erase:
+        case token::_set_is_subset:
         case token::_set_is_element: binary (op_stack.top(), k); break;
         case token::_set_pop:
         case token::_set_top:
@@ -294,7 +277,6 @@ namespace expr
         case token::abs: unary (op_stack.top(), k); break;
         case token::rpr: op_stack.pop(); break;
         case token::define: binary (op_stack.top(), k); break;
-        case token::_else: ite (k); break;
         default: break;
         }
       op_stack.pop();
@@ -327,18 +309,6 @@ namespace expr
                 case token::ref:
                   tmp_stack.push_back (refnode(token.get_ref()));
                   break;
-                case token::define:
-                  if (  tmp_stack.empty()
-                     || (! boost::apply_visitor
-                        (node::visitor::is_ref (), tmp_stack.back())
-                        )
-                     )
-                    throw exception::parse::exception
-                      ( "left hand of "
-                      + fhg::util::show(*token)
-                      + " must be reference name"
-                      , k
-                      );
                 default:
                   {
                   ACTION:

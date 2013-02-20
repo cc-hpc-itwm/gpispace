@@ -7,6 +7,7 @@
 #include <we/type/signature/types.hpp>
 
 #include <we/type/literal/name.hpp>
+#include <we/type/value/show.hpp>
 #include <fhg/util/show.hpp>
 
 #include <boost/variant.hpp>
@@ -345,7 +346,7 @@ namespace signature
       void operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          (msg + ": try to create a field in a non-strutured " + msg);
+          (msg + ": try to create a field in a non-structured " + msg);
       }
     };
   }
@@ -380,7 +381,7 @@ namespace signature
       desc_t & operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          (msg + ": try to create a field in a non-strutured " + msg);
+          (msg + ": try to create a field in a non-structured " + msg);
       }
     };
 
@@ -418,7 +419,7 @@ namespace signature
       void operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
-          (msg + ": try to create a field in a non-strutured " + msg);
+          (msg + ": try to create a field in a non-structured " + msg);
       }
     };
   }

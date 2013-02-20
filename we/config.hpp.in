@@ -1,7 +1,0 @@
-#ifndef WE_CONFIG_H
-#define WE_CONFIG_H
-
-#define WE_NUM_EXTRACTORS @WE_NUM_EXTRACTORS@
-#define WE_NUM_INJECTORS  @WE_NUM_INJECTORS@
-
-#endif

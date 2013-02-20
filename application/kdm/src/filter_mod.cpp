@@ -20,7 +20,6 @@ static unsigned long sizeofJob (void)
 }
 
 using we::loader::get;
-using we::loader::put;
 
 static void get_Job (const value::type & config, MigrationJob & Job)
 {
@@ -60,7 +59,7 @@ static void generic_filter ( void *
 
   filter (Bunch);
 
-  put (output, "bunch", bunch);
+  output.bind ("bunch", bunch);
 }
 
 static void
@@ -89,7 +88,7 @@ generic_filter_with_float ( void *
 
   filter (Bunch, f);
 
-  put (output, "bunch", bunch);
+  output.bind ("bunch", bunch);
 }
 
 // ************************************************************************* //
@@ -303,7 +302,7 @@ bandpass ( void *
 
   bandpass_impl (Bunch, Job.frequ1, Job.frequ2, Job.frequ3, Job.frequ4);
 
-  put (output, "bunch", bunch);
+  output.bind ("bunch", bunch);
 }
 
 // ************************************************************************* //

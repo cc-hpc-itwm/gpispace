@@ -149,7 +149,7 @@
 
 	  	LOG(INFO, "<<< finished testInotify(" << id << ", " << filename << ")");
 
-                return control();
+                return we::type::literal::control();
 	  ]]></code>
 	</module>
       </defun>

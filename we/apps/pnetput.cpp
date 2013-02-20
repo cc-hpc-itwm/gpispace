@@ -1,10 +1,12 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/we.hpp>
-#include <fhg/util/parse/position.hpp>
 #include <we/type/literal.hpp>
 #include <we/util/token.hpp>
-#include <we/type/value/read.hpp>
+#include <we/expr/parse/parser.hpp>
+
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/mgmt/type/activity.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -31,6 +33,7 @@ namespace po = boost::program_options;
 
 int
 main (int argc, char ** argv)
+try
 {
   std::string input ("-");
   std::string output ("-");
@@ -76,40 +79,21 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Token Injector");
 
     return EXIT_SUCCESS;
   }
-
-  if (input == "-")
-    {
-      input = "/dev/stdin";
-    }
 
   if (output == "-")
     {
       output = "/dev/stdout";
     }
 
-  we::activity_t act;
-
-  try
-  {
-    std::ifstream  stream (input.c_str());
-
-    if (!stream)
-      {
-        throw std::runtime_error
-          ("could not open file " + input + " for reading");
-      }
-
-    we::util::text_codec::decode (stream, act);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "failed: " << ex.what() << std::endl;
-    return 1;
-  }
+  we::mgmt::type::activity_t act
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    );
 
   typedef boost::unordered_map<std::string,value::type> port_values_type;
 
@@ -127,10 +111,7 @@ main (int argc, char ** argv)
       const std::string value
         ( inp->substr (inp->find('=')+1) );
 
-      std::size_t k (0);
-      std::string::const_iterator begin (value.begin());
-      fhg::util::parse::position pos (k, begin, value.end());
-      const value::type val (value::read (pos));
+      const value::type val (expr::parse::parser (value).eval_all());
 
       if (not we::type::content::is_subnet (act.transition()))
         {
@@ -168,7 +149,7 @@ main (int argc, char ** argv)
           ("could not open file " + output + " for writing");
       }
 
-    we::util::text_codec::encode (stream, act);
+    stream << act.to_string();
   }
   catch (std::exception const & ex)
   {
@@ -177,4 +158,9 @@ main (int argc, char ** argv)
   }
 
   return EXIT_SUCCESS;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

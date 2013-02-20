@@ -1,0 +1,47 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#include <we/type/value/field.hpp>
+
+#include <we/type/literal.hpp>
+#include <we/type/literal/show.hpp>
+
+#include <boost/format.hpp>
+
+#include <stdexcept>
+
+namespace value
+{
+  namespace
+  {
+    class visitor_field : public boost::static_visitor<type&>
+    {
+    private:
+      signature::field_name_t name;
+
+    public:
+      visitor_field (const signature::field_name_t& _name)
+        : name (_name)
+      {}
+
+      type& operator() (structured_t& s) const
+      {
+        return s[name];
+      }
+
+      type& operator() (literal::type& l) const
+      {
+        throw std::runtime_error
+          ( ( boost::format ("cannot get field %1% from the literal %2%")
+            % name
+            % l
+            ).str()
+          );
+      }
+    };
+  }
+
+  type& field (const signature::field_name_t& field, type& v)
+  {
+    return boost::apply_visitor (visitor_field (field), v);
+  }
+}

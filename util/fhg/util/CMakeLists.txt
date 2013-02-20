@@ -15,7 +15,6 @@ endif()
 
 set (hdrs
   join.hpp
-  boost.hpp
   read_bool.hpp
   read.hpp
   show.hpp
@@ -48,6 +47,8 @@ set (hdrs
   threadname.hpp
 
   remove_prefix.hpp
+
+  stat.hpp
 )
 
 set (srcs
@@ -55,6 +56,8 @@ set (srcs
   setproctitle.c
   threadname.cpp
   remove_prefix.cpp
+  read_bool.cpp
+  stat.cpp
 )
 
 add_library (fhg-util ${srcs})
@@ -63,6 +66,7 @@ install(FILES ${hdrs}
   DESTINATION include/fhg/util
   COMPONENT headers)
 
+add_subdirectory (boost)
 add_subdirectory(parse)
 add_subdirectory(thread)
 add_subdirectory(filesystem)

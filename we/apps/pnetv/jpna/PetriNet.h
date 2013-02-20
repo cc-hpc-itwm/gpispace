@@ -56,15 +56,14 @@ class PetriNet: public jpn::Printable {
      *
      * \return Transition with given id.
      */
-    Transition *getTransition(TransitionId id) { return transitions_[id]; }
+    Transition *getTransition(TransitionId id) { return transitions_[id.value()]; }
 
     /**
      * \param id Id of the transitions.
      *
      * \return Transition with given id.
      */
-    const Transition *getTransition(TransitionId id) const { return transitions_[id]; }
-
+    const Transition *getTransition(TransitionId id) const { return transitions_[id.value()]; }
     /**
      * \return Newly created place owned by the Petri net.
      */
@@ -85,14 +84,14 @@ class PetriNet: public jpn::Printable {
      *
      * \return Place with given id.
      */
-    Place *getPlace(PlaceId id) { return places_[id]; }
+    Place *getPlace(PlaceId id) { return places_[id.value()]; }
 
     /**
      * \param id Id of the place.
      *
      * \return Place with given id.
      */
-    const Place *getPlace(PlaceId id) const { return places_[id]; }
+    const Place *getPlace(PlaceId id) const { return places_[id.value()]; }
 
     /**
      * Dumps the graph in DOT format into given stream.

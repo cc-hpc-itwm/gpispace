@@ -258,7 +258,7 @@
 
           MLOG (INFO, "Call MyHandler.WriteToFile " );
           int ierr = MyHandler.WriteToFile( Job.VelFile );
-          return control();
+          return we::type::literal::control();
           ]]></code>
         </module>
 <!--        <expression>

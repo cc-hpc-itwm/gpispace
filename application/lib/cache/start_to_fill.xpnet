@@ -1,0 +1,8 @@
+<defun>
+  <in name="slot" type="long" place="slot"/>
+  <inout name="cache" type="cache_type" place="cache"/>
+  <expression>
+    ${cache.slots.started_to_fill}
+      := set_insert (${cache.slots.started_to_fill}, ${slot});
+  </expression>
+</defun>

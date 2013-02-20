@@ -21,7 +21,8 @@
 #include "progress.hpp"
 
 // ufbmig types
-#include <we/we.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/net.hpp>
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
 
@@ -310,6 +311,7 @@ public:
   }
 
   int prepare ()
+  try
   {
     reset_progress ("prepare");
 
@@ -346,19 +348,9 @@ public:
       }
     }
 
-    const std::string wf(read_workflow_from_file(m_wf_path_prepare));
+    const std::string wf (read_workflow_from_file(m_wf_path_prepare));
 
-    we::activity_t act;
-
-    try
-    {
-      we::util::codec::decode(wf, act);
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG (ERROR, "decoding PREPARE workflow failed: " << ex.what());
-      return -EINVAL;
-    }
+    we::mgmt::type::activity_t act (wf);
 
     update_progress (95);
 
@@ -370,10 +362,16 @@ public:
                              , m_check_interval
                              );
 
-    return submit_job (we::util::codec::encode(act), job::type::PREPARE);
+    return submit_job (act.to_string(), job::type::PREPARE);
+  }
+  catch (std::exception const &ex)
+  {
+    MLOG (ERROR, "decoding PREPARE workflow failed: " << ex.what());
+    return -EINVAL;
   }
 
   int initialize (std::string const &xml)
+  try
   {
     if (state::UNINITIALIZED != m_state)
     {
@@ -385,19 +383,9 @@ public:
 
     MLOG(INFO, "submitting INITIALIZE workflow");
 
-    const std::string wf(read_workflow_from_file(m_wf_path_initialize));
+    const std::string wf (read_workflow_from_file(m_wf_path_initialize));
 
-    we::activity_t act;
-
-    try
-    {
-      we::util::codec::decode(wf, act);
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG(ERROR, "decoding workflow failed: " << ex.what());
-      return -EINVAL;
-    }
+    we::mgmt::type::activity_t act (wf);
 
     // place tokens
     try
@@ -411,10 +399,16 @@ public:
       return -EINVAL;
     }
 
-    return submit_job(we::util::codec::encode(act), job::type::INITIALIZE);
+    return submit_job(act.to_string(), job::type::INITIALIZE);
+  }
+  catch (std::exception const &ex)
+  {
+    MLOG(ERROR, "decoding workflow failed: " << ex.what());
+    return -EINVAL;
   }
 
   int update_salt_mask (const char *data, size_t len)
+  try
   {
     if (state::INITIALIZED != m_state)
     {
@@ -436,17 +430,7 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_mask));
 
-    we::activity_t act;
-
-    try
-    {
-      we::util::codec::decode(wf, act);
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG(ERROR, "decoding workflow failed: " << ex.what());
-      return -EINVAL;
-    }
+    we::mgmt::type::activity_t act (wf);
 
     // place tokens
     try
@@ -461,10 +445,16 @@ public:
     }
 
     m_state = state::UPDATING;
-    return submit_job(we::util::codec::encode(act), job::type::UPDATE);
+    return submit_job(act.to_string(), job::type::UPDATE);
+  }
+  catch (std::exception const &ex)
+  {
+    MLOG(ERROR, "decoding workflow failed: " << ex.what());
+    return -EINVAL;
   }
 
   int calculate(std::string const &xml)
+  try
   {
     if (state::INITIALIZED != m_state)
     {
@@ -476,19 +466,9 @@ public:
 
     MLOG(INFO, "submitting CALCULATE workflow");
 
-    const std::string wf(read_workflow_from_file(m_wf_path_calculate));
+    const std::string wf (read_workflow_from_file(m_wf_path_calculate));
 
-    we::activity_t act;
-
-    try
-    {
-      we::util::codec::decode(wf, act);
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG(ERROR, "decoding workflow failed: " << ex.what());
-      return -EINVAL;
-    }
+    we::mgmt::type::activity_t act (wf);
 
     // place tokens
     try
@@ -502,15 +482,21 @@ public:
       return -EINVAL;
     }
 
-    int ec = submit_job(we::util::codec::encode(act), job::type::CALCULATE);
+    int ec = submit_job(act.to_string(), job::type::CALCULATE);
     if (0 == ec)
     {
       m_state = state::CALCULATING;
     }
     return ec;
   }
+  catch (std::exception const &ex)
+  {
+    MLOG(ERROR, "decoding workflow failed: " << ex.what());
+    return -EINVAL;
+  }
 
   int finalize()
+  try
   {
     if (state::INITIALIZED != m_state)
     {
@@ -523,17 +509,8 @@ public:
     MLOG(INFO, "submitting FINALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_finalize));
-    we::activity_t act;
 
-    try
-    {
-      we::util::codec::decode(wf, act);
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG(ERROR, "decoding workflow failed: " << ex.what());
-      return -EINVAL;
-    }
+    we::mgmt::type::activity_t act (wf);
 
     // place tokens
     try
@@ -546,12 +523,17 @@ public:
       return -EINVAL;
     }
 
-    int ec = submit_job(we::util::codec::encode(act), job::type::FINALIZE);
+    int ec = submit_job(act.to_string(), job::type::FINALIZE);
     if (0 == ec)
     {
       m_state = state::FINALIZING;
     }
     return ec;
+  }
+  catch (std::exception const &ex)
+  {
+    MLOG(ERROR, "decoding workflow failed: " << ex.what());
+    return -EINVAL;
   }
 
   int cancel()
@@ -855,7 +837,7 @@ private:
     return ec;
   }
 
-  int handle_initialize_result (we::activity_t const &result)
+  int handle_initialize_result (we::mgmt::type::activity_t const &result)
   {
     try
     {
@@ -872,17 +854,17 @@ private:
     return 0;
   }
 
-  int handle_update_salt_mask_result (we::activity_t const &result)
+  int handle_update_salt_mask_result (we::mgmt::type::activity_t const &result)
   {
     return 0;
   }
 
-  int handle_calculate_result (we::activity_t const &result)
+  int handle_calculate_result (we::mgmt::type::activity_t const &result)
   {
     return 0;
   }
 
-  int handle_finalize_result (we::activity_t const &result)
+  int handle_finalize_result (we::mgmt::type::activity_t const &result)
   {
     if (fs::exists(m_file_with_config))
     {
@@ -906,14 +888,40 @@ private:
 
     update_progress(100);
 
-    int ec = j.error;
+    int ec (j.error);
 
-    we::activity_t result;
     if (0 == ec)
     {
       try
       {
-        we::util::codec::decode(j.result, result);
+        we::mgmt::type::activity_t result (j.result);
+
+        switch (j.type)
+        {
+        case job::type::PREPARE:
+          break;
+
+        case job::type::INITIALIZE:
+          m_state = state::INITIALIZED;
+          ec = handle_initialize_result(result);
+          break;
+
+        case job::type::UPDATE:
+          ec = handle_update_salt_mask_result(result);
+          m_state = state::INITIALIZED;
+          break;
+
+        case job::type::CALCULATE:
+          ec = handle_calculate_result(result);
+          break;
+
+        case job::type::FINALIZE:
+          ec = handle_finalize_result(result);
+          break;
+
+        default:
+          return -EINVAL;
+        }
       }
       catch (std::exception const &ex)
       {
@@ -924,45 +932,28 @@ private:
     switch (j.type)
     {
     case job::type::PREPARE:
-
       if (m_frontend) m_frontend->prepare_backend_done (ec, j.error_message);
       break;
-    case job::type::INITIALIZE:
-      if (0 == ec)
-      {
-        m_state = state::INITIALIZED;
-        ec = handle_initialize_result(result);
-      }
 
+    case job::type::INITIALIZE:
       if (m_frontend) m_frontend->initialize_done(ec, j.error_message);
       break;
-    case job::type::UPDATE:
-      if (0 == ec)
-      {
-        ec = handle_update_salt_mask_result(result);
-      }
-      m_state = state::INITIALIZED;
 
+    case job::type::UPDATE:
+      m_state = state::INITIALIZED;
       if (m_frontend) m_frontend->salt_mask_done(ec, j.error_message);
       break;
-    case job::type::CALCULATE:
-      if (0 == ec)
-      {
-        ec = handle_calculate_result(result);
-      }
-      m_state = state::INITIALIZED;
 
+    case job::type::CALCULATE:
+      m_state = state::INITIALIZED;
       if (m_frontend) m_frontend->calculate_done(ec, j.error_message);
       break;
-    case job::type::FINALIZE:
-      if (0 == ec)
-      {
-        ec = handle_finalize_result(result);
-      }
-      m_state = state::UNINITIALIZED;
 
+    case job::type::FINALIZE:
+      m_state = state::UNINITIALIZED;
       if (m_frontend) m_frontend->finalize_done(ec, j.error_message);
       break;
+
     default:
       return -EINVAL;
     }

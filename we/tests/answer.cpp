@@ -1,8 +1,6 @@
 #include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
 
-#include <we/type/value/container/show.hpp>
-
 #include "answer.hpp"
 
 int the_answer;
@@ -15,8 +13,8 @@ int get_answer ()
 static void answer (void * state, const we::loader::input_t & input, we::loader::output_t & output)
 {
   std::cerr << "state := " << state << std::endl;
-  std::cerr << "input := "; value::container::show (std::cerr, input); std::cerr << std::endl;
-  we::loader::put (output, "out", 42L);
+  std::cerr << "input := " << input << std::endl;
+  output.bind ("out", 42L);
 }
 
 WE_MOD_INITIALIZE_START (answer);

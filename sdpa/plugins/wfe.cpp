@@ -17,13 +17,15 @@
 #include <fhg/util/bool.hpp>
 #include <fhg/util/bool_io.hpp>
 #include <fhg/util/threadname.hpp>
+#include <fhg/util/split.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/capability.hpp>
 
-#include <we/we.hpp>
+//! \todo eliminate this include (that completes the type transition_t::data)
+#include <we/type/net.hpp>
 
 struct search_path_appender
 {
@@ -34,7 +36,8 @@ struct search_path_appender
 
   search_path_appender & operator = (std::string const &p)
   {
-    loader.append_search_path (p);
+    if (not p.empty ())
+      loader.append_search_path (p);
     return *this;
   }
 
@@ -154,8 +157,7 @@ public:
 
     try
     {
-      task.activity =
-        we::util::text_codec::decode<we::activity_t>(job_description);
+      task.activity = we::mgmt::type::activity_t (job_description);
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
@@ -291,7 +293,7 @@ private:
       emit(task_event_t( task->id
                        , task->activity.transition().name()
                        , task_event_t::DEQUEUED
-                       , we::util::text_codec::encode(task->activity)
+                       , task->activity.to_string()
                        , task->meta
                        )
           );
@@ -308,7 +310,7 @@ private:
           wfe_exec_context ctxt (*m_loader, *task);
 
           task->activity.inject_input();
-          task->activity.execute (ctxt);
+          task->activity.execute (&ctxt);
           task->activity.collect_output();
 
           if (task->state == wfe_task_t::CANCELED)
@@ -346,7 +348,7 @@ private:
         }
       }
 
-      task->result = we::util::text_codec::encode(task->activity);
+      task->result = task->activity.to_string();
       task->done.notify(task->errc);
     }
   }

@@ -17,7 +17,6 @@
 #include <boost/lexical_cast.hpp>
 
 using we::loader::get;
-using we::loader::put;
 
 // ************************************************************************* //
 
@@ -83,7 +82,7 @@ generic_filter ( void * state
                              )
            );
 
-  put (output, "out", part_in_store);
+  output.bind ("out", part_in_store);
 }
 
 // ************************************************************************* //
@@ -488,7 +487,7 @@ static void execW ( void * state
                              )
            );
 
-  put (output, "out", part_in_store);
+  output.bind ("out", part_in_store);
 }
 
 // ************************************************************************* //

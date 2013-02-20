@@ -5,6 +5,7 @@ set (xmls
   dup.xml
   eatN.xml
   make_pair.xml
+  replicate.xpnet
   sequence_bounded.xml
   sequence.xml
   sequence_control.xml
@@ -21,4 +22,7 @@ install (FILES ${xmls}
   COMPONENT examples
   )
 
+add_subdirectory (cache)
+add_subdirectory (grid)
+add_subdirectory (point)
 add_subdirectory (sequence)

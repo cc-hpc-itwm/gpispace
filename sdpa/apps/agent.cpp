@@ -20,10 +20,11 @@
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/read_bool.hpp>
 
+#include <fhg/util/stat.hpp>
+
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
-using namespace std;
 
 enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
 const unsigned int MAX_CAP = 10000;
@@ -291,6 +292,14 @@ int main (int argc, char **argv)
           }
 
           LOG(INFO, "terminating...");
+
+          {
+            std::ostringstream oss;
+
+            FHG_UTIL_STAT_OUT (oss);
+
+            LOG (INFO, oss.str());
+          }
 
           ptrAgent->shutdown();
         }

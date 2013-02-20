@@ -1,6 +1,7 @@
 
 #include <we/expr/token/type.hpp>
 #include <we/expr/parse/action.hpp>
+#include <we/expr/exception.hpp>
 
 #include <iostream>
 #include <iomanip>

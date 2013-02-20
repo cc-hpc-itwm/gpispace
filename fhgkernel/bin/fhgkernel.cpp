@@ -124,9 +124,11 @@ void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
   if (kernel)
   {
-    kernel->handle_signal (sig_num, info, ucontext);
+    if (0 == kernel->handle_signal (sig_num, info, ucontext))
+    {
+      shutdown_kernel ();
+    }
   }
-  shutdown_kernel();
 }
 
 void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
@@ -151,9 +153,11 @@ void sigint_hdlr(int sig_num, siginfo_t *info, void *ucontext)
 {
   if (kernel)
   {
-    kernel->handle_signal (sig_num, info, ucontext);
+    if (0 == kernel->handle_signal (sig_num, info, ucontext))
+    {
+      shutdown_kernel ();
+    }
   }
-  shutdown_kernel ();
 }
 
 static void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)

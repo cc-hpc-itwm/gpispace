@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_NET_HPP
 #define _XML_PARSE_TYPE_NET_HPP
@@ -17,6 +17,8 @@
 #include <xml/parse/type/dumps.hpp>
 
 #include <xml/parse/id/generic.hpp>
+
+#include <we/type/id.hpp>
 
 namespace xml
 {
@@ -52,7 +54,6 @@ namespace xml
                  , const transitions_type& transitions
                  , const structs_type& structs
                  , const bool& contains_a_module_call
-                 , const xml::parse::structure_type::set_type& resol
                  , const we::type::property::type& properties
                  , const boost::filesystem::path& path
                  );
@@ -80,7 +81,12 @@ namespace xml
 
         // ***************************************************************** //
 
+      private:
+        //! \todo Remove this and all other _functions related stuff.
+        //! \note This only exists for specialization, which should be lazy.
         const id::ref::function& push_function (const id::ref::function&);
+
+      public:
         const id::ref::place& push_place (const id::ref::place&);
         const id::ref::specialize& push_specialize (const id::ref::specialize&);
         const id::ref::tmpl& push_template (const id::ref::tmpl&);
@@ -109,7 +115,15 @@ namespace xml
 
         // ***************************************************************** //
 
-        signature::type type_of_place (const place_type&) const;
+        void rename (const id::ref::function&, const std::string&);
+        void rename (const id::ref::place&, const std::string&);
+        void rename (const id::ref::specialize&, const std::string&);
+        void rename (const id::ref::tmpl&, const std::string&);
+        void rename (const id::ref::transition&, const std::string&);
+
+        // ***************************************************************** //
+
+        boost::optional<signature::type> signature (const std::string&) const;
 
         // ***************************************************************** //
 
@@ -122,17 +136,6 @@ namespace xml
                         , const xml::parse::structure_type::set_type & known_structs
                         , state::type & state
                         );
-
-        // ***************************************************************** //
-
-        void resolve ( const state::type & state
-                     , const xml::parse::structure_type::forbidden_type & forbidden
-                     );
-
-        void resolve ( const xml::parse::structure_type::set_type & global
-                     , const state::type & state
-                     , const xml::parse::structure_type::forbidden_type & forbidden
-                     );
 
         // ***************************************************************** //
 
@@ -162,8 +165,6 @@ namespace xml
         structs_type structs;
         bool contains_a_module_call;
 
-        xml::parse::structure_type::set_type structs_resolved;
-
       private:
         we::type::property::type _properties;
 
@@ -172,14 +173,11 @@ namespace xml
 
       // ******************************************************************* //
 
-      boost::unordered_map< std::string
-                          , we::activity_t::transition_type::pid_t
-                          >
-      net_synthesize ( we::activity_t::transition_type::net_type & we_net
+      boost::unordered_map<std::string, petri_net::place_id_type>
+      net_synthesize ( petri_net::net& we_net
                      , const place_map_map_type & place_map_map
                      , const net_type & net
                      , const state::type & state
-                     , we::activity_t::transition_type::edge_type & e
                      );
 
       namespace dump

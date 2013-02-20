@@ -5,14 +5,14 @@
 
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
+#include <we/type/port.hpp>
 
 namespace we { namespace type {
     namespace optimize
     {
-      template<typename P, typename E, typename T>
-      inline bool is_associated ( const transition_t<P, E, T> & trans
-                                , const petri_net::pid_t & pid
-                                , typename transition_t<P, E, T>::port_t & port
+      inline bool is_associated ( const transition_t & trans
+                                , const petri_net::place_id_type & pid
+                                , we::type::port_t & port
                                 )
       {
         try
@@ -21,18 +21,17 @@ namespace we { namespace type {
 
             return true;
           }
-        catch (const exception::not_connected<petri_net::pid_t> &)
+        catch (const exception::not_connected<petri_net::place_id_type> &)
           {
             return false;
           }
       }
 
-      template<typename P, typename E, typename T>
-      inline bool is_associated ( const transition_t<P, E, T> & trans
-                                , const petri_net::pid_t & pid
+      inline bool is_associated ( const transition_t & trans
+                                , const petri_net::place_id_type & pid
                                 )
       {
-        typename transition_t<P, E, T>::port_t port;
+        we::type::port_t port;
 
         return is_associated (trans, pid, port);
       }

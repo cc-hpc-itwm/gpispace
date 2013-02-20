@@ -1,96 +1,193 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <iostream>
-#include <string>
-
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#define BOOST_TEST_MODULE we_expr_parse_simplify
 
 #include <we/expr/parse/parser.hpp>
-#include <we/expr/eval/context.hpp>
-#include <we/expr/parse/util/get_names.hpp>
-
 #include <we/expr/parse/simplify/simplify.hpp>
+#include <we/expr/parse/simplify/util.hpp>
 
-static inline expr::parse::simplify::key_type
-key_vec_from_string (const std::string & in)
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <string>
+
+namespace
 {
-  expr::parse::simplify::key_type result;
-  boost::algorithm::split (result, in, boost::algorithm::is_any_of ("."));
-  return result;
+  expr::parse::simplify::key_type key_vec_from_string (const std::string& in)
+  {
+    expr::parse::simplify::key_type result;
+    boost::algorithm::split (result, in, boost::algorithm::is_any_of ("."));
+    return result;
+  }
+
+  void add_to_bindings_list ( const std::string& name
+                            , expr::parse::util::name_set_t& bindings
+                            )
+  {
+    bindings.insert (key_vec_from_string (name));
+  }
 }
 
-static inline void
-add_to_bindings_list ( const std::string & name
-                     , expr::parse::util::name_set_t & bindings
-                     )
-{
-  bindings.insert (key_vec_from_string (name));
-}
-
-int
-main (int argc, char ** argv)
+BOOST_AUTO_TEST_CASE (constant_propagation)
 {
   const std::string input
-    ("(${trigger} := []);\n"
-     "(${one} := ${trigger});\n"
-     "(${two} := ${trigger});\n"
-     "(${three} := ${trigger});\n"
-     "(${four} := ${trigger});\n"
-     "(${five} := ${trigger});\n"
-     "(${parallel} := ${object.PARALLEL_LOADTT});\n"
-     "(${wait} := ${parallel});\n"
-     "(${offsets} := ${object.OFFSETS});\n"
-     "(${state.id} := 0L);\n"
-     "(${state.max} := ${offsets});\n"
-     "(${N} := (2L + (${object.VOLUME_CREDITS} div ${object.SUBVOLUMES_PER_OFFSET})));\n"
-     "(${a} := ${N});\n"
-     "(${b} := ${N});\n"
-     "(${trigger} := []);\n"
-     "(${__generate_offset_credits_trigger_when_amount_state.pair.tag} := ${trigger});\n"
-     "(${__generate_offset_credits_trigger_when_amount_state.pair.id} := 0L);\n"
-     "(${__generate_offset_credits_trigger_when_amount_state.max} := ${a});\n"
-     "(${___loadTT_generate_init_state.id} := 0L);\n"
-     "(${___loadTT_generate_init_state.max} := ${parallel});\n"
-     "(${_init_wait_wait} := (${object.OFFSETS} * ${object.SUBVOLUMES_PER_OFFSET}));\n"
-     "(${N} := ${object.VOLUME_CREDITS});\n"
-     "(${a} := ${N});\n"
-     "(${_extract_number_of_volume_credits_b} := ${N});\n"
-     "(${trigger} := []);\n"
-     "(${__generate_volume_credits_trigger_when_amount_state.pair.tag} := ${trigger});\n"
-     "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0L);\n"
-     "(${__generate_volume_credits_trigger_when_amount_state.max} := ${a});\n"
-     "(${pair} := ${state.pair});\n"
-     "(${state.pair.id} := (${state.pair.id} + 1L));\n"
-     "(${aha} := ${state.pair});\n"
-     "(${volume.id} := ${pair.id});\n"
-     "(${b} := ${pair.id});\n"
-     "(${test} := ${aha.id});\n"
-     "(${volume.offset} := ${pair.tag});\n"
-     "(${z.a} := []);\n"
-     "(${z.b} := []);\n"
-     "(${z} := []);\n"
-     "(${z.a} := []);\n"
-     "([]);\n"
+    ( "(${a} := []);"
+      "(${b} := ${a});"
+    );
+
+  const std::string expected_output
+    ( "(${a} := []);"
+      "(${b} := []);"
+    );
+
+  expr::parse::util::name_set_t needed_bindings;
+  add_to_bindings_list ("a", needed_bindings);
+  add_to_bindings_list ("b", needed_bindings);
+
+  expr::parse::parser parser (input);
+
+  expr::parse::parser simplified_parser
+    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+
+  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+}
+
+BOOST_AUTO_TEST_CASE (copy_propagation)
+{
+  const std::string input
+    ( "(${b} := ${a});"
+      "(${c} := ${b});"
+    );
+
+  const std::string expected_output
+    ( "(${b} := ${a});"
+      "(${c} := ${a});"
+    );
+
+  expr::parse::util::name_set_t needed_bindings;
+  add_to_bindings_list ("b", needed_bindings);
+  add_to_bindings_list ("c", needed_bindings);
+
+  expr::parse::parser parser (input);
+
+  expr::parse::parser simplified_parser
+    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+
+  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+}
+
+BOOST_AUTO_TEST_CASE (constant_and_copy_propagation)
+{
+  const std::string input
+    ( "(${a} := []);"
+      "(${b} := ${a});"
+      "(${c} := ${b});"
+    );
+
+  const std::string expected_output
+    ( "(${a} := []);"
+      "(${b} := []);"
+      "(${c} := []);"
+    );
+
+  expr::parse::util::name_set_t needed_bindings;
+  add_to_bindings_list ("a", needed_bindings);
+  add_to_bindings_list ("b", needed_bindings);
+  add_to_bindings_list ("c", needed_bindings);
+
+  expr::parse::parser parser (input);
+
+  expr::parse::parser simplified_parser
+    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+
+  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+}
+
+BOOST_AUTO_TEST_CASE (dead_code_elimination)
+{
+  const std::string input
+    ( "(${a} := []);"
+      "(${b} := []);"
+      "([]);"
+    );
+
+  const std::string expected_output
+    ("(${a} := []);");
+
+  expr::parse::util::name_set_t needed_bindings;
+  add_to_bindings_list ("a", needed_bindings);
+
+  expr::parse::parser parser (input);
+
+  expr::parse::parser simplified_parser
+    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+
+  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+}
+
+BOOST_AUTO_TEST_CASE (all_combined)
+{
+  const std::string input
+    ("(${trigger} := []);"
+     "(${one} := ${trigger});"
+     "(${two} := ${trigger});"
+     "(${three} := ${trigger});"
+     "(${four} := ${trigger});"
+     "(${five} := ${trigger});"
+     "(${parallel} := ${object.PARALLEL_LOADTT});"
+     "(${wait} := ${parallel});"
+     "(${offsets} := ${object.OFFSETS});"
+     "(${state.id} := 0L);"
+     "(${state.max} := ${offsets});"
+     "(${N} := (2L + (${object.VOLUME_CREDITS} div ${object.SUBVOLUMES_PER_OFFSET})));"
+     "(${a} := ${N});"
+     "(${b} := ${N});"
+     "(${trigger} := []);"
+     "(${__generate_offset_credits_trigger_when_amount_state.pair.tag} := ${trigger});"
+     "(${__generate_offset_credits_trigger_when_amount_state.pair.id} := 0L);"
+     "(${__generate_offset_credits_trigger_when_amount_state.max} := ${a});"
+     "(${___loadTT_generate_init_state.id} := 0L);"
+     "(${___loadTT_generate_init_state.max} := ${parallel});"
+     "(${_init_wait_wait} := (${object.OFFSETS} * ${object.SUBVOLUMES_PER_OFFSET}));"
+     "(${N} := ${object.VOLUME_CREDITS});"
+     "(${a} := ${N});"
+     "(${_extract_number_of_volume_credits_b} := ${N});"
+     "(${trigger} := []);"
+     "(${__generate_volume_credits_trigger_when_amount_state.pair.tag} := ${trigger});"
+     "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0L);"
+     "(${__generate_volume_credits_trigger_when_amount_state.max} := ${a});"
+     "(${pair} := ${state.pair});"
+     "(${state.pair.id} := (${state.pair.id} + 1L));"
+     "(${aha} := ${state.pair});"
+     "(${volume.id} := ${pair.id});"
+     "(${b} := ${pair.id});"
+     "(${test} := ${aha.id});"
+     "(${volume.offset} := ${pair.tag});"
+     "(${z.a} := []);"
+     "(${z.b} := []);"
+     "(${z} := []);"
+     "(${z.a} := []);"
+     "([]);"
     );
 
   const std::string expected_output
     ("(${wait} := ${object.PARALLEL_LOADTT});"
-     "(${state.id} := 0L);"
+     "(${state.id} := 0);"
      "(${state.max} := ${object.OFFSETS});"
-     "(${N} := (2L + (${object.VOLUME_CREDITS} div ${object.SUBVOLUMES_PER_OFFSET})));"
+     "(${N} := (2 + (${object.VOLUME_CREDITS} div ${object.SUBVOLUMES_PER_OFFSET})));"
      "(${__generate_offset_credits_trigger_when_amount_state.pair.tag} := []);"
-     "(${__generate_offset_credits_trigger_when_amount_state.pair.id} := 0L);"
+     "(${__generate_offset_credits_trigger_when_amount_state.pair.id} := 0);"
      "(${__generate_offset_credits_trigger_when_amount_state.max} := ${N});"
-     "(${___loadTT_generate_init_state.id} := 0L);"
+     "(${___loadTT_generate_init_state.id} := 0);"
      "(${___loadTT_generate_init_state.max} := ${object.PARALLEL_LOADTT});"
      "(${_init_wait_wait} := (${object.OFFSETS} * ${object.SUBVOLUMES_PER_OFFSET}));"
      "(${_extract_number_of_volume_credits_b} := ${object.VOLUME_CREDITS});"
      "(${__generate_volume_credits_trigger_when_amount_state.pair.tag} := []);"
-     "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0L);"
+     "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0);"
      "(${__generate_volume_credits_trigger_when_amount_state.max} := ${object.VOLUME_CREDITS});"
      "(${pair} := ${state.pair});"
-     "(${state.pair.id} := (${state.pair.id} + 1L));"
+     "(${state.pair.id} := (${state.pair.id} + 1));"
      "(${volume.id} := ${pair.id});"
      "(${b} := ${pair.id});"
      "(${test} := ${state.pair.id});"
@@ -113,25 +210,8 @@ main (int argc, char ** argv)
 
   expr::parse::parser parser (input);
 
-  int passed = 0;
+  expr::parse::parser simplified_parser
+    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
 
-  try
-  {
-    expr::parse::parser simplified_parser
-        (expr::parse::simplify::simplification_pass (parser, needed_bindings));
-
-    if (simplified_parser.string() != expected_output)
-    {
-      std::cout << "result:\n" << simplified_parser.string() << "\n";
-      std::cout << "expected:\n" << expected_output << "\n";
-      --passed;
-    }
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << "exception during simplification: " << e.what() << std::endl;
-  }
-
-
-  return passed;
+  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
 }

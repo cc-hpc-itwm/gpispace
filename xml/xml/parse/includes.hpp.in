@@ -11,15 +11,14 @@
 #include <we/loader/types.hpp>
 #include <we/type/bitsetofint.hpp>
 #include <we/type/bytearray.hpp>
-#include <we/type/control.hpp>
+#include <we/type/literal/control.hpp>
 #include <we/type/literal.hpp>
 #include <we/type/literal/show.hpp>
 #include <we/type/signature/types.hpp>
 #include <we/type/value.hpp>
-#include <we/type/value/container/container.hpp>
-#include <we/type/value/container/exception.hpp>
-#include <we/type/value/container/type.hpp>
+#include <we/type/value/missing_binding.hpp>
 #include <we/type/value/cpp/get.hpp>
+#include <we/expr/eval/context.hpp>
 
 #include <list>
 
@@ -31,7 +30,7 @@ namespace pnetc
 
     inline const fs::path & root ()
     {
-      static const fs::path ret ("@WE_INCLUDE_SRC_DIR@");
+      static const fs::path ret ("@CMAKE_SOURCE_DIR@/we");
 
       return ret;
     }
@@ -49,18 +48,18 @@ namespace pnetc
         includes () : _names ()
         {
           _names.push_back (fs::path ("we/loader/IModule.hpp"));
+          _names.push_back (fs::path ("we/loader/api-guard.hpp"));
           _names.push_back (fs::path ("we/loader/macros.hpp"));
           _names.push_back (fs::path ("we/loader/types.hpp"));
           _names.push_back (fs::path ("we/type/bitsetofint.hpp"));
           _names.push_back (fs::path ("we/type/bytearray.hpp"));
-          _names.push_back (fs::path ("we/type/control.hpp"));
+          _names.push_back (fs::path ("we/type/literal/control.hpp"));
           _names.push_back (fs::path ("we/type/literal.hpp"));
           _names.push_back (fs::path ("we/type/signature/types.hpp"));
           _names.push_back (fs::path ("we/type/value.hpp"));
-          _names.push_back (fs::path ("we/type/value/container/container.hpp"));
-          _names.push_back (fs::path ("we/type/value/container/exception.hpp"));
-          _names.push_back (fs::path ("we/type/value/container/type.hpp"));
+          _names.push_back (fs::path ("we/type/value/missing_binding.hpp"));
           _names.push_back (fs::path ("we/type/value/cpp/get.hpp"));
+          _names.push_back (fs::path ("we/expr/eval/context.hpp"));
 
           // for operator <<
           _names.push_back (fs::path ("we/type/literal/show.hpp"));

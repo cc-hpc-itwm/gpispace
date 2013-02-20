@@ -2,11 +2,13 @@
 
 #include <jpn/config.h>
 
+#include <we/type/id.hpp>
+
 namespace jpn {
 
-typedef int PlaceId; ///< Place identifier.
-typedef int TransitionId; ///< Transition identifier.
-typedef int TokenCount; ///< Integer for token count.
+  typedef petri_net::place_id_type PlaceId; ///< Place identifier.
+  typedef petri_net::transition_id_type TransitionId; ///< Transition identifier.
+  typedef int TokenCount; ///< Integer for token count.
 
 } // namespace jpn
 

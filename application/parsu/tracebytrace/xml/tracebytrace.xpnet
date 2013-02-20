@@ -1,0 +1,807 @@
+<defun name="tracebytrace">
+
+  <in name="cmd" type="string" place="cmd"/>
+  <in name="shmem_per_node" type="long" place="shmem_per_node"/>
+  <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
+  <in name="file_input" type="string" place="file_input"/>
+  <in name="type_input" type="string" place="type_input"/>
+  <in name="file_output" type="string" place="file_output"/>
+  <in name="type_output" type="string" place="type_output"/>
+  <in name="skipped_traces" type="long" place="skipped_traces"/>
+  <in name="maximum_trace_count" type="long" place="maximum_trace_count"/>
+
+  <out name="done" type="control" place="done"/>
+
+  <struct name="tracebytrace_package">
+    <field name="part" type="long"/>
+    <struct name="num">
+      <field name="trace" type="long"/>
+    </struct>
+    <struct name="size">
+      <field name="trace" type="long"/>
+      <field name="package" type="long"/>
+    </struct>
+  </struct>
+
+  <struct name="tracebytrace_loaded_package">
+    <field name="package" type="tracebytrace_package"/>
+    <field name="slot" type="long"/>
+  </struct>
+
+  <struct name="tracebytrace_write_info">
+    <field name="next_part" type="long"/>
+    <field name="offset" type="long"/>
+  </struct>
+
+  <struct name="tracebytrace_package_to_be_written">
+    <field name="loaded_package" type="tracebytrace_loaded_package"/>
+    <field name="offset" type="long"/>
+  </struct>
+
+  <struct name="handle">
+    <field name="data" type="long"/> <!-- these two are fvmAllocHandle_ts -->
+  </struct>
+
+  <struct name="file">
+    <field name="name" type="string"/>
+    <field name="type" type="string"/>
+  </struct>
+
+  <struct name="tracebytrace_config">
+    <struct name="file">
+      <field name="input" type="file"/>
+      <field name="output" type="file"/>
+    </struct>
+
+    <field name="handle" type="handle"/>
+    <field name="seperate_io_buffers" type="bool"/>
+
+    <struct name="size">
+      <struct name="slot">
+        <field name="gpi" type="long"/>
+        <field name="input" type="long"/>
+      </struct>
+
+      <struct name="trace">
+        <field name="input" type="long"/>
+        <field name="output" type="long"/>
+      </struct>
+    </struct>
+
+    <struct name="num">
+      <field name="slot" type="long"/>
+      <struct name="trace">
+        <field name="input" type="long"/>
+        <field name="skipped" type="long"/>
+        <field name="per_slot" type="long"/>
+      </struct>
+    </struct>
+
+    <field name="cmd" type="string"/>
+  </struct>
+
+  <struct name="generate_package_state">
+    <field name="max" type="long"/>
+    <field name="id" type="long"/>
+    <field name="inc" type="long"/>
+    <field name="size" type="long"/>
+  </struct>
+
+  <net>
+
+    <include-template href="dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <specialize name="dup_control" use="dup">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <include-template href="triple.xml"/>
+    <specialize name="triple_config" use="triple">
+      <type-map replace="T" with="tracebytrace_config"/>
+    </specialize>
+
+    <!-- tuning -->
+    <place name="shmem_per_node" type="long"/>
+    <place name="gpi_mem_per_node" type="long"/>
+
+    <!-- necessary parameters -->
+    <place name="cmd" type="string"/>
+    <place name="file_input" type="string"/>
+    <place name="file_output" type="string"/>
+    <place name="type_input" type="string"/>
+    <place name="type_output" type="string"/>
+
+    <!-- optional parameters -->
+    <place name="skipped_traces" type="long"/>
+    <place name="maximum_trace_count" type="long"/>
+
+    <place name="done" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <require key="GPI" />
+        <require key="init" />
+        <in name="file_input" type="string"/>
+        <in name="type_input" type="string"/>
+        <in name="file_output" type="string"/>
+        <in name="type_output" type="string"/>
+        <in name="skipped_traces" type="long"/>
+        <in name="shmem_per_node" type="long"/>
+        <in name="gpi_mem_per_node" type="long"/>
+        <in name="cmd" type="string"/>
+        <in name="maximum_trace_count" type="long"/>
+        <out name="write_info" type="tracebytrace_write_info"/>
+        <out name="config" type="tracebytrace_config"/>
+        <out name="remaining_traces_to_be_written" type="long"/>
+        <module name="tracebytrace"
+                function="init ( file_input
+                               , type_input
+                               , file_output
+                               , type_output
+                               , cmd
+                               , skipped_traces
+                               , shmem_per_node
+                               , gpi_mem_per_node
+                               , write_info
+                               , config
+                               , remaining_traces_to_be_written
+                               , maximum_trace_count
+                               )">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="stdexcept"/>
+          <cinclude href="fstream"/>
+          <cinclude href="determine_size.hpp"/>
+          <cinclude href="do_load.hpp"/>
+          <cinclude href="process/process.hpp"/>
+          <ld flag="-lprocess"/>
+          <ld flag="-ldetermine_size"/>
+          <ld flag="-ldo_load"/>
+          <code><![CDATA[
+            LOG (INFO, "INIT");
+
+            LOG(INFO, "shmem_per_node = " << shmem_per_node);
+            LOG(INFO, "gpi_mem_per_node = " << gpi_mem_per_node);
+
+            config.cmd = cmd;
+
+
+            //! \note Check input and output files for being valid.
+
+            config.file.input.name = file_input;
+            config.file.input.type = type_input;
+            config.file.output.name = file_output;
+            config.file.output.type = type_output;
+
+            {
+              std::ifstream in (config.file.input.name.c_str());
+              if (!in)
+              {
+                LOG (FATAL, "Input file could not be opened.");
+                throw std::runtime_error ("BUMMER! in not good");
+              }
+            }
+            {
+              std::ofstream out (config.file.output.name.c_str());
+              if (!out)
+              {
+                LOG (FATAL, "Output file could not be opened.");
+                throw std::runtime_error ("BUMMER! out not good");
+              }
+            }
+
+            //! \note Get size of input data and respect skipped traces.
+
+            determine_size ( config.file.input.name
+                           , config.file.input.type
+                           , config.num.trace.input
+                           , config.size.trace.input
+                           );
+
+            //! \todo Or throw error. Behaviour to be defined.
+            config.num.trace.skipped = std::min ( skipped_traces
+                                                , config.num.trace.input
+                                                );
+
+            config.num.trace.input -= config.num.trace.skipped;
+
+            LOG (INFO, "num.trace.skipped = " << config.num.trace.skipped);
+            LOG (INFO, "num.trace.input (without skipped) = " << config.num.trace.input);
+            LOG (INFO, "size.trace.input = " << config.size.trace.input);
+
+            //! \todo Super-fast-terminating when no input traces?
+            if (config.num.trace.input == 0)
+            {
+              LOG ( WARN, "No traces to operate on (all skipped). "
+                          "This is probably not what you want."
+                  );
+            }
+
+            remaining_traces_to_be_written = maximum_trace_count == -1
+                                           ? LONG_MAX
+                                           : maximum_trace_count;
+
+
+            LOG(INFO, "remaining_traces_to_be_written = " << remaining_traces_to_be_written);
+
+            //! \note Get size of output data.
+
+            char* input_trace (new char [config.size.trace.input]);
+
+            //! \todo This might get made better.
+            // Worst case: this checks _all_ traces.
+            // Maybe don't ++trace but trace += random;
+            //! \note Skip traces that get a zero size output.
+            config.size.trace.output = 0;
+            const long last_available_trace (config.num.trace.input + config.num.trace.skipped);
+            for ( long trace (config.num.trace.skipped)
+                ; config.size.trace.output == 0 && trace < last_available_trace
+                ; ++trace
+                )
+            {
+              do_load ( config.file.input.name
+                      , config.file.input.type
+                      , trace
+                      , config.size.trace.input
+                      , config.size.trace.input
+                      , 1
+                      , input_trace
+                      );
+
+              config.size.trace.output = LONG_MAX;
+
+              for ( long size (std::max (1024 * 1024L, config.size.trace.input * 2))
+                  ; size <= config.size.trace.output
+                  ; size *= 2
+                  )
+              {
+                if (size + config.size.trace.input >= shmem_per_node)
+                {
+                  LOG (FATAL, "not enough memory to determine size of resulting trace.");
+                  throw std::runtime_error ("not enough memory (determine result size)");
+                }
+
+                char* output_buffer (new char[size]);
+                config.size.trace.output = process::execute ( cmd
+                                                            , input_trace
+                                                            , config.size.trace.input
+                                                            , output_buffer
+                                                            , size
+                                                            );
+                delete[] output_buffer;
+              }
+            }
+
+            delete[] input_trace;
+
+            LOG (INFO, "size.trace.output = " << config.size.trace.output);
+            if (config.size.trace.output == 0)
+            {
+              LOG ( FATAL, "output size of trace == 0. This means there is no "
+                           "trace for outputting. this should be handled "
+                           "better than by just aborting now."
+                  );
+              throw std::runtime_error ("size.trace.output == 0");
+            }
+
+
+
+            //! \note Decide which memory layout to use.
+
+            config.seperate_io_buffers =
+              (config.size.trace.output > config.size.trace.input);
+
+            const long size_needed_per_trace_on_node
+              ( config.size.trace.input
+              + ( config.seperate_io_buffers
+                ? config.size.trace.output
+                : 0
+                )
+              );
+
+            LOG(INFO, "size_needed_per_trace_on_node = " << size_needed_per_trace_on_node);
+
+            const long size_needed_per_trace_in_gpi
+              (std::max (config.size.trace.input, config.size.trace.output));
+
+            LOG(INFO, "size_needed_per_trace_in_gpi = " << size_needed_per_trace_in_gpi);
+
+            const long mem_per_node
+              (std::min (shmem_per_node, gpi_mem_per_node));
+
+            LOG(INFO, "mem_per_node = " << mem_per_node);
+
+            const long max_slot_size (1L << 30);
+
+            config.num.trace.per_slot = std::min (mem_per_node, max_slot_size)
+                                      / size_needed_per_trace_on_node;
+
+            LOG(INFO, "config.num.trace.per_slot = " << config.num.trace.per_slot);
+
+            if (config.num.trace.per_slot < 1)
+            {
+              throw std::runtime_error ("not enough memory (shmem)");
+            }
+
+            config.size.slot.gpi = config.num.trace.per_slot
+                                 * size_needed_per_trace_in_gpi;
+
+            LOG(INFO, "config.size.slot.gpi = " << config.size.slot.gpi);
+
+            const long slot_per_node
+              (gpi_mem_per_node / config.size.slot.gpi);
+
+            LOG(INFO, "slot_per_node = " << slot_per_node);
+
+            if (slot_per_node < 1)
+            {
+              throw std::runtime_error ("not enough memory (gpi)");
+            }
+
+            config.num.slot = slot_per_node * fvmGetNodeCount();
+
+            LOG(INFO, "config.num.slot = " << config.num.slot);
+
+            config.size.slot.input = config.size.trace.input
+                                   * config.num.trace.per_slot;
+
+            LOG(INFO, "config.size.slot.input = " << config.size.slot.input);
+
+            config.handle.data = static_cast<long>
+              (fvmGlobalAlloc (slot_per_node * config.size.slot.gpi));
+
+            if (config.seperate_io_buffers)
+            {
+              LOG ( INFO, "Resulting trace is bigger than input trace. "
+                          "Therefore operating in two IO buffers."
+                  );
+            }
+            else
+            {
+              LOG ( INFO, "Resulting trace is smaller or equal to input trace. "
+                          "Therefore operating in-place with same IO buffer."
+                  );
+            }
+
+            if (config.handle.data == 0)
+            {
+              throw std::runtime_error ("BUMMER! handle.data == 0");
+            }
+
+            write_info.next_part = 0;
+            write_info.offset = 0;
+
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="file_input" place="file_input"/>
+      <connect-in port="type_input" place="type_input"/>
+      <connect-in port="file_output" place="file_output"/>
+      <connect-in port="type_output" place="type_output"/>
+      <connect-in port="skipped_traces" place="skipped_traces"/>
+      <connect-in port="shmem_per_node" place="shmem_per_node"/>
+      <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
+      <connect-in port="cmd" place="cmd"/>
+      <connect-in port="maximum_trace_count" place="maximum_trace_count"/>
+      <connect-out port="write_info" place="write_info"/>
+      <connect-out port="config" place="config_generated"/>
+      <connect-out port="remaining_traces_to_be_written"
+                   place="remaining_traces_to_be_written"/>
+    </transition>
+
+    <place name="config_generated" type="tracebytrace_config"/>
+
+    <transition name="scatter_config" inline="true">
+      <use name="triple_config"/>
+      <connect-in port="in" place="config_generated"/>
+      <connect-out port="one" place="config"/>
+      <connect-out port="two" place="config_generate_package"/>
+      <connect-out port="three" place="config_generate_slot"/>
+    </transition>
+
+    <place name="config" type="tracebytrace_config"/>
+    <place name="config_generate_package" type="tracebytrace_config"/>
+    <place name="config_generate_slot" type="tracebytrace_config"/>
+
+    <place name="write_info" type="tracebytrace_write_info"/>
+
+    <transition name="extract_eat_slot">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="config" type="tracebytrace_config"/>
+        <out name="N" type="long"/>
+        <expression>
+          ${N} := ${config.num.slot}
+        </expression>
+      </defun>
+      <connect-in port="trigger" place="done_packages"/>
+      <connect-in port="config" place="config"/>
+      <connect-out port="config" place="config_finalize"/>
+      <connect-out port="N" place="num_slot_eat"/>
+    </transition>
+
+    <place name="config_finalize" type="tracebytrace_config"/>
+
+    <place name="num_slot_eat" type="long"/>
+
+    <transition name="generate_slot" inline="true">
+      <include-function href="generate/slot.xml"/>
+      <connect-in port="config" place="config_generate_slot"/>
+      <connect-out port="slot" place="empty_slot"/>
+    </transition>
+
+    <place name="empty_slot" type="long"/>
+
+    <place name="generate_package_break_check" type="generate_package_state"/>
+
+    <place name="new_package" type="tracebytrace_loaded_package"/>
+    <place name="num_packages" type="long"/>
+
+    <transition name="generate_package" inline="true">
+      <include-function href="generate/package.xml"/>
+      <place-map virtual="empty_slot" real="empty_slot"/>
+      <place-map virtual="check_break" real="generate_package_break_check"/>
+      <connect-in port="config" place="config_generate_package"/>
+      <connect-out port="package" place="new_package"/>
+      <connect-out port="num" place="num_packages"/>
+    </transition>
+
+    <transition name="load">
+      <defun>
+        <require key="GPI" />
+        <require key="LOAD" />
+        <in name="package" type="tracebytrace_loaded_package"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="package" type="tracebytrace_loaded_package"/>
+        <module name="tracebytrace" function="load (package, config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="do_load.hpp"/>
+          <cinclude href="print.hpp"/>
+          <cinclude href="comm.hpp"/>
+          <ld flag="-ldo_load"/>
+          <code><![CDATA[
+            LOG (INFO, "LOAD " << ::print::loaded_package (package));
+
+            LOG (INFO, "do_load: part " << package.package.part
+                    << ", part_size "  << config.size.slot.input
+                    << ", size " << package.package.size.package
+                    << ", num " << package.package.num.trace
+                );
+
+            const long offset ( package.package.part * config.size.slot.input
+                              + config.num.trace.skipped * config.size.trace.input
+                              );
+
+            do_load ( config.file.input.name
+                    , config.file.input.type
+                    , 1
+                    , offset
+                    , package.package.size.package
+                    , package.package.num.trace
+                    , fvmGetShmemPtr()
+                    );
+
+            comm::put (config, package);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="package" place="new_package"/>
+      <connect-out port="package" place="loaded_package"/>
+    </transition>
+
+    <place name="loaded_package" type="tracebytrace_loaded_package"/>
+
+    <transition name="tracebytrace">
+      <defun>
+        <require key="GPI" />
+        <require key="CPU" />
+        <in name="package" type="tracebytrace_loaded_package"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="package" type="tracebytrace_loaded_package"/>
+        <module name="tracebytrace" function="tracebytrace (package, config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="print.hpp"/>
+          <cinclude href="comm.hpp"/>
+          <cinclude href="process/process.hpp"/>
+          <ld flag="-lprocess"/>
+          <code><![CDATA[
+            const std::string cmd (config.cmd);
+
+            LOG (INFO, "TRACEBYTRACE " << ::print::loaded_package (package)
+                                 << cmd
+                );
+
+            const long shmem_output_offset
+              ( config.seperate_io_buffers
+              ? config.size.trace.input * config.num.trace.per_slot
+              : 0
+              );
+
+            comm::get (config, package);
+
+            void* buf_in (fvmGetShmemPtr());
+            void* buf_out ( static_cast<char*> (fvmGetShmemPtr())
+                          + shmem_output_offset
+                          );
+
+            const long& size_in (package.package.size.package);
+            const long size_out ( package.package.num.trace
+                                * config.size.trace.output
+                                );
+
+            const std::size_t size_shrunken
+              (process::execute (cmd, buf_in, size_in, buf_out, size_out));
+
+            LOG (INFO, "size_shrunken = " << size_shrunken);
+
+            package.package.size.trace = config.size.trace.output;
+            package.package.size.package = size_shrunken;
+            package.package.num.trace = package.package.size.package
+                                      / package.package.size.trace;
+
+            comm::put (config, package, shmem_output_offset);
+
+            LOG (INFO, "TRACEBYTRACE OUTPUT " << ::print::loaded_package (package));
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="package" place="loaded_package"/>
+      <connect-out port="package" place="writeable_package"/>
+    </transition>
+
+    <place name="writeable_package" type="tracebytrace_loaded_package"/>
+
+    <transition name="select_writeable">
+      <defun>
+        <in name="write_info" type="tracebytrace_write_info"/>
+        <out name="write_info" type="tracebytrace_write_info"/>
+        <in name="p" type="tracebytrace_loaded_package"/>
+        <out name="w" type="tracebytrace_package_to_be_written"/>
+        <in name="remaining" type="long"/>
+        <out name="remaining" type="long"/>
+        <in name="config" type="tracebytrace_config"/>
+        <expression>
+          /* limit number of traces written to the maximum remaining traces. */
+          ${p.package.num.trace} := min ( ${p.package.num.trace}
+                                        , ${remaining}
+                                        );
+          ${remaining} := ${remaining} - ${p.package.num.trace};
+          ${p.package.size.package} := ${p.package.num.trace}
+                                     * ${config.size.trace.output};
+
+          ${w.loaded_package} := ${p};
+          ${w.offset} := ${write_info.offset};
+
+          ${write_info.next_part} := ${p.package.part} + 1;
+          ${write_info.offset} := ${write_info.offset} + ${p.package.size.package};
+        </expression>
+        <condition>
+          ${write_info.next_part} :eq: ${p.package.part}
+        </condition>
+      </defun>
+      <connect-in port="write_info" place="write_info"/>
+      <connect-out port="write_info" place="write_info"/>
+      <connect-in port="p" place="writeable_package"/>
+      <connect-out port="w" place="package_to_be_written"/>
+      <connect-in port="remaining" place="remaining_traces_to_be_written"/>
+      <connect-out port="remaining" place="remaining_traces_to_be_written"/>
+      <connect-read port="config" place="config"/>
+    </transition>
+
+    <transition name="maximum_output_trace_checker" priority="1">
+      <defun>
+        <in name="state" type="generate_package_state"/>
+        <in name="remaining" type="long"/>
+        <in name="num_packages" type="long"/>
+        <out name="num_packages" type="long"/>
+        <expression>
+          ${packages_remaining} :=
+            1 + (${state.max} - ${state.id} - 1) div ${state.inc}
+            ;
+          ${num_packages} := ${num_packages} - ${packages_remaining};
+        </expression>
+        <condition>
+          ${remaining} == 0
+        </condition>
+      </defun>
+      <connect-in port="state" place="generate_package_break_check"/>
+      <connect-read port="remaining" place="remaining_traces_to_be_written"/>
+      <connect-in port="num_packages" place="num_packages"/>
+      <connect-out port="num_packages" place="num_packages"/>
+    </transition>
+
+    <place name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
+    <place name="remaining_traces_to_be_written" type="long"/>
+
+    <transition name="write">
+      <defun>
+        <require key="GPI" />
+        <require key="WRITE" />
+        <in name="package_to_be_written" type="tracebytrace_package_to_be_written"/>
+        <in name="config" type="tracebytrace_config"/>
+        <out name="p" type="tracebytrace_loaded_package"/>
+        <module name="tracebytrace"
+                function="p write (package_to_be_written, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="do_write.hpp"/>
+          <cinclude href="print.hpp"/>
+          <cinclude href="comm.hpp"/>
+          <ld flag="-ldo_write"/>
+          <code><![CDATA[
+            const ::pnetc::type::tracebytrace_loaded_package::tracebytrace_loaded_package & p
+              (package_to_be_written.loaded_package);
+
+            LOG ( INFO, "WRITE " << ::print::loaded_package (p)
+                                 << " to " << config.file.output.name
+                                 << ":" << package_to_be_written.offset
+                );
+
+            if (p.package.size.package > 0)
+            {
+              comm::get (config, p);
+
+              LOG ( INFO, "do_write: part " << package_to_be_written.offset
+                          << ", part_size "  << 1
+                          << ", size " << p.package.size.package
+                          << ", num " << p.package.num.trace
+                  );
+
+              do_write ( config.file.output.name
+                       , config.file.output.type
+                       , package_to_be_written.offset
+                       , 1
+                       , p.package.size.package
+                       , p.package.num.trace
+                       , fvmGetShmemPtr()
+                       );
+              }
+
+            return p;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="package_to_be_written" place="package_to_be_written"/>
+      <connect-out port="p" place="package_written"/>
+    </transition>
+
+    <place name="package_written" type="tracebytrace_loaded_package"/>
+
+    <transition name="back_store">
+      <defun>
+        <in name="loaded_package" type="tracebytrace_loaded_package"/>
+        <out name="package" type="tracebytrace_package"/>
+        <out name="slot" type="long"/>
+        <expression>
+          ${package} := ${loaded_package.package};
+          ${slot} := ${loaded_package.slot};
+        </expression>
+      </defun>
+      <connect-in port="loaded_package" place="package_written"/>
+      <connect-out port="package" place="package_finished"/>
+      <connect-out port="slot" place="empty_slot"/>
+    </transition>
+
+    <place name="package_finished" type="tracebytrace_package"/>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_package" use="wait">
+      <type-map replace="T" with="tracebytrace_package"/>
+    </specialize>
+
+    <transition name="wait_package">
+      <use name="wait_package"/>
+      <place-map virtual="wait" real="num_packages"/>
+      <connect-in port="trigger" place="package_finished"/>
+      <connect-out port="done" place="done_packages"/>
+    </transition>
+
+    <place name="done_packages" type="control"/>
+
+    <place name="done_finalize" type="control"/>
+    <place name="done_eat" type="control"/>
+
+    <transition name="finalize">
+      <defun>
+        <require key="GPI" />
+        <require key="finalize" />
+        <in name="config" type="tracebytrace_config"/>
+        <out name="trigger" type="control"/>
+        <module name="tracebytrace" function="finalize (trigger, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "FINALIZE");
+
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.data));
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config_finalize"/>
+      <connect-out port="trigger" place="done_finalize"/>
+    </transition>
+
+    <transition name="eat_slots">
+      <defun>
+        <in name="N" type="long" place="check_break"/>
+        <out name="done" type="control" place="done"/>
+        <tunnel name="what" type="long" place="what"/>
+        <net>
+          <place name="N" type="long"/>
+          <place name="done" type="control"/>
+          <place name="what" type="long" virtual="true"/>
+          <place name="check_break" type="long"/>
+          <transition name="step">
+            <defun>
+              <in name="wait" type="long"/>
+              <out name="wait" type="long"/>
+              <in name="x" type="long"/>
+              <expression>${wait} := ${wait} - 1</expression>
+            </defun>
+            <connect-in port="wait" place="N"/>
+            <connect-out port="wait" place="check_break"/>
+            <connect-in port="x" place="what"/>
+          </transition>
+          <transition name="break">
+            <defun>
+              <in name="wait" type="long"/>
+              <out name="done" type="control"/>
+              <expression>
+                ${done} := []
+              </expression>
+              <condition>
+                ${wait} :le: 0
+              </condition>
+            </defun>
+            <connect-in port="wait" place="check_break"/>
+            <connect-out port="done" place="done"/>
+          </transition>
+          <transition name="not_break">
+            <defun>
+              <in name="wait" type="long"/>
+              <out name="wait" type="long"/>
+              <expression>
+              </expression>
+              <condition>
+                ${wait} :gt: 0
+              </condition>
+            </defun>
+            <connect-in port="wait" place="check_break"/>
+            <connect-out port="wait" place="N"/>
+          </transition>
+        </net>
+      </defun>
+      <place-map virtual="what" real="empty_slot"/>
+      <connect-in port="N" place="num_slot_eat"/>
+      <connect-out port="done" place="done_eat"/>
+    </transition>
+
+    <transition name="cleanup">
+      <defun>
+        <in name="done_eat" type="control"/>
+        <in name="done_finalize" type="control"/>
+        <in name="write_info" type="tracebytrace_write_info"/>
+        <in name="remaining" type="long"/>
+
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+
+      <connect-in port="done_eat" place="done_eat"/>
+      <connect-in port="done_finalize" place="done_finalize"/>
+      <connect-in port="write_info" place="write_info"/>
+      <connect-in port="remaining" place="remaining_traces_to_be_written"/>
+
+      <connect-out port="done" place="done"/>
+    </transition>
+
+  </net>
+</defun>

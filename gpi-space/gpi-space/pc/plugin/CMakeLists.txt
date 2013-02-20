@@ -24,6 +24,7 @@ fhg_add_plugin(gpi_compat gpi_compat.cpp
   EXPORTS GPI
   LINK_LIBRARIES
     ${Boost_SERIALIZATION_SHARED_LIBRARY}
+    fhg-util
   INSTALL
   PLUGIN_DESTINATION libexec/fhg/plugins
   COMPONENT plugins

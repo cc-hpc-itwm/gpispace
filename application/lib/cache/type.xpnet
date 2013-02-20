@@ -1,0 +1,32 @@
+<structs>
+  <struct name="cache_type">
+    <struct name="by_id">
+      <field name="slot" type="map"/>
+    </struct>
+    <struct name="by_slot">
+      <field name="id" type="map"/>
+      <field name="num_users" type="map"/>
+    </struct>
+    <struct name="slots">
+      <field name="empty" type="set"/>
+      <field name="available" type="set"/>
+      <field name="filled" type="set"/>
+      <field name="started_to_fill" type="set"/>
+    </struct>
+    <struct name="stat">
+      <field name="hit" type="long"/>
+      <struct name="miss">
+        <field name="empty" type="long"/>
+        <field name="available" type="long"/>
+      </struct>
+    </struct>
+    <struct name="num">
+      <field name="user" type="long"/>
+    </struct>
+  </struct>
+
+  <struct name="slot_and_id_type">
+    <field name="slot" type="long"/>
+    <field name="id" type="long"/>
+  </struct>
+</structs>

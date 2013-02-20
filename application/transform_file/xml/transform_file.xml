@@ -371,7 +371,7 @@
                     }
 
             		write_slot_id = chunk_write_info.write_slot_id;
-            		return control ();
+            		return we::type::literal::control();
           		]]></code>
 			</module>
 		</defun>
@@ -429,7 +429,7 @@
             		vmem::free(config.read_area);
             		vmem::free(config.write_area);
 
-            		return control();
+            		return we::type::literal::control();
           		]]></code>
         	</module>
       	</defun>

@@ -1,16 +1,10 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _EXPR_PARSE_SIMPLIFY_SIMPLIFY_HPP
-#define _EXPR_PARSE_SIMPLIFY_SIMPLIFY_HPP 1
-
-#include <we/expr/parse/simplify/util.hpp>
-#include <we/expr/parse/simplify/constant_propagation.hpp>
-#include <we/expr/parse/simplify/copy_propagation.hpp>
-#include <we/expr/parse/simplify/dead_code_elimination.hpp>
+#ifndef WE_EXPR_PARSE_SIMPLIFY_SIMPLIFY_HPP
+#define WE_EXPR_PARSE_SIMPLIFY_SIMPLIFY_HPP
 
 #include <we/expr/parse/parser.hpp>
-
-#include <we/expr/parse/simplify/expression_list.hpp>
+#include <we/expr/parse/util/get_names.hpp>
 
 namespace expr
 {
@@ -18,18 +12,10 @@ namespace expr
   {
     namespace simplify
     {
-      inline parser
-      simplification_pass ( const parser & parser
-                          , const key_set_type & needed_bindings)
-      {
-        expression_list expressions (parser);
+      typedef ::expr::parse::util::name_set_t key_set_type;
 
-        constant_propagation (expressions);
-        copy_propagation (expressions);
-        dead_code_elimination (expressions, needed_bindings);
-
-        return parse::parser (expressions.nodes());
-      }
+      parser simplification_pass
+        (const parser&, const key_set_type& needed_bindings);
     }
   }
 }

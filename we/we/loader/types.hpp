@@ -22,9 +22,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/cpp/get.hpp>
 
-#include <we/type/value/container/container.hpp>
-
-#include <we/type/literal.hpp>
+#include <we/expr/eval/context.hpp>
 
 #include <vector>
 #include <list>
@@ -35,8 +33,8 @@ namespace we
   {
     class IModule;
 
-    typedef value::container::type input_t;
-    typedef value::container::type output_t;
+    typedef expr::eval::context input_t;
+    typedef expr::eval::context output_t;
 
     typedef void (*InitializeFunction)(IModule*, unsigned int);
     typedef void (*FinalizeFunction)(IModule*);
@@ -45,30 +43,12 @@ namespace we
     typedef std::list<std::string> param_names_list_t;
     typedef std::pair<WrapperFunction, param_names_list_t> parameterized_function_t;
 
-    inline void put ( output_t & o
-                    , const std::string & key
-                    , const value::type & val
-                    )
-    {
-      value::container::bind (o, key, val);
-    }
-
-    // on port, complete literal
-    template <typename T>
-    inline void put ( output_t & o
-                    , const std::string & key
-                    , const T & val
-                    )
-    {
-      put (o, key, value::type (val));
-    }
-
     // getting something means to get a literal value...
     template <typename T>
     inline typename value::cpp::get<T const &>::result_type
     get (const input_t & i, const std::string & key)
     {
-      return value::get<T>(value::container::value (i, key));
+      return value::get<T> (i.value (key));
     }
 
     // ...but not when stated explicitely be a value::type
@@ -76,7 +56,7 @@ namespace we
     inline const value::type &
     get<value::type> (const input_t & i, const std::string & key)
     {
-      return value::container::value (i, key);
+      return i.value (key);
     }
   }
 }

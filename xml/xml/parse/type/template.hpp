@@ -1,4 +1,4 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_TYPE_TEMPLATE_HPP
 #define _XML_PARSE_TYPE_TEMPLATE_HPP 1
@@ -40,20 +40,21 @@ namespace xml
         const boost::optional<std::string>& name() const;
         const std::string& name (const std::string& name);
 
+      private:
+        friend struct net_type;
+        const std::string& name_impl (const std::string& name);
+
+      public:
         const names_type& tmpl_parameter () const;
 
         const id::ref::function& function() const;
 
         const boost::filesystem::path& path() const;
 
-        void specialize ( const type_map_type & map
-                        , const type_get_type & get
-                        , const xml::parse::structure_type::set_type & known_structs
-                        , state::type & state
-                        );
-
         boost::optional<const id::ref::function&>
         get_function (const std::string&) const;
+
+        boost::optional<signature::type> signature (const std::string&) const;
 
         const unique_key_type& unique_key() const;
 

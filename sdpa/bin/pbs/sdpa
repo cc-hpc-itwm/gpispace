@@ -27,10 +27,17 @@ function prepend_to_path ()
     local var="$1"; shift
     local val=$(eval echo \$${var})
     for v ; do
+        if [ -z "$v" ] ; then
+            continue
+        fi
         val=$(echo "$val" | sed "s,:$v:,:,g")
         val=$(echo "$val" | sed -e "s,^$v:,,g")
         val=$(echo "$val" | sed -e "s,:$v\$,,g")
-        val="$v:$val"
+        if [ -z "$val" ] ; then
+            val="$v"
+        else
+            val="$v:$val"
+        fi
     done
     eval "$var=$val"
 }
@@ -879,32 +886,20 @@ function generate_environment ()
     prepend_to_path LD_LIBRARY_PATH "$SDPA_LIBEXEC"
     prepend_to_path LD_LIBRARY_PATH "$HOME/.sdpa/plugins"
 
-    prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
+    prepend_to_path PC_LIBRARY_PATH "$SDPA_LIBEXEC/apps"
+    if [ -n "$SDPA_APP_PATH" ] ; then
+        prepend_to_path PC_LIBRARY_PATH "$SDPA_APP_PATH"
+        prepend_to_path LD_LIBRARY_PATH "$SDPA_APP_PATH"
+    fi
     prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
 
-    app_directories=(                       "$SDPA_LIBEXEC/apps"  )
-
-    OLDIFS="$IFS"
-    IFS=":"
-    for d in $SDPA_APP_PATH ; do
-        # eval echo: resolve "~"
-        app_directories=( ${app_directories[@]} $(eval echo "$d") )
-    done
-    IFS="$OLDIFS"
-
-    app_directories=( ${app_directories[@]} "$HOME/.sdpa/modules" )
-
-    for app_dir in ${app_directories[@]} ; do
-        for f in $(find "$app_dir" -type f -name "*.so" 2>/dev/null) ; do
-            mod_dir=$(dirname "$f")
-            prepend_to_path PC_LIBRARY_PATH "$mod_dir"
-            prepend_to_path LD_LIBRARY_PATH "$mod_dir"
-        done
-    done
-
-    echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-    echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH"
+    echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:\$LD_LIBRARY_PATH"
+    echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH:\$PC_LIBRARY_PATH"
     echo export PATH="$PATH:\$PATH"
+
+    debug "I: PATH := ${PATH}"
+    debug "I: LD_LIBRARY_PATH := ${LD_LIBRARY_PATH}"
+    debug "I: PC_LIBRARY_PATH := ${PC_LIBRARY_PATH}"
 }
 
 function dump_config ()
@@ -2114,6 +2109,7 @@ function selftest ()
         log "I: Congratulations $greeting, your SDPA installation is working!"
     else
         log "E: self test job could not be executed!"
+        stop
         return 8
     fi
 
@@ -2192,24 +2188,29 @@ if [ "$1" = "gui" ] ; then
     exit $?
 fi
 
-if ! on_valid_host ; then
+function require_state ()
+{
+    if ! on_valid_host ; then
 #    log "W: you are executing 'sdpa' on an invalid host!"
 #    log "W: this might not be what you want"
 #    log "I: please run 'sdpa init' on the master node first!"
-    :
-fi
+        :
+    fi
 
-if ! configure ; then
-    log "E: configure() failed"
-    exit $?
-fi
+    if ! configure ; then
+        log "E: configure() failed"
+        exit $?
+    fi
+}
 
 case "$1" in
     start)
+        require_state
         shift
         start $@
         ;;
     stop)
+        require_state
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
@@ -2218,6 +2219,7 @@ case "$1" in
         stop $@
         ;;
     restart)
+        require_state
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
@@ -2226,6 +2228,7 @@ case "$1" in
         restart $@
         ;;
     status)
+        require_state
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
@@ -2242,10 +2245,12 @@ case "$1" in
         fi
         ;;
     cancel)
+        require_state
         shift
         cancel $@
         ;;
     submit)
+        require_state
         shift
         submit $@
         ;;
@@ -2264,6 +2269,7 @@ case "$1" in
         fi
         ;;
     unload-modules)
+        require_state
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1
@@ -2280,6 +2286,10 @@ case "$1" in
         "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -F "$config_file" "$@"
         ;;
     selftest)
+        "$0" -s "$state_dir" -c "$config_file" init || {
+            echo >&2 "sdpa: could not initialize!"
+            exit 1
+        }
         if ! on_master_node ; then
             log "E: not on master node"
             exit 1

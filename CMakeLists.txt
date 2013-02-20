@@ -15,7 +15,6 @@ set(PROJECT_CONTACT     "SDPA Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACH
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION(ENABLE_APPLICATION "Build with application" YES)
-OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" NO)
 OPTION(ENABLE_FVM_PC "Build the deprecated fvm-pc libraries" ON)
 OPTION(ENABLE_SDPA_GUI "Build the monitor gui" YES)
 OPTION(ENABLE_SDPA_GPI "Build the sdpa-gpi interface" NO)
@@ -27,6 +26,7 @@ OPTION(ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
 OPTION(ENABLE_PNET_EDITOR "Build the pnet editor" YES)
 OPTION(INSTALL_AS_BUNDLE "Install as a bundle" NO)
 OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
+OPTION(ENABLE_STATISTICS "enable statistics" NO)
 set(FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set(FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
 option(FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
@@ -80,6 +80,8 @@ cmake_minimum_required(VERSION "2.6.7" FATAL_ERROR)
 # path here, subsequent checks will resolve everything else
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
+include (fhg_test_macros)
+
 ##########################################################
 include(CheckCompiler)
 info_compiler()
@@ -117,6 +119,11 @@ else (DISABLE_FHGLOG)
   add_definitions("-DFHGLOG_STRIP_LEVEL=${FHGLOG_STRIP_LEVEL}")
 endif (DISABLE_FHGLOG)
 
+if (ENABLE_STATISTICS)
+else()
+  add_definitions ("-DNSTATISTICS")
+endif()
+
 ##########################################################
 set(BUILDING_FROM_MAIN 1)
 
@@ -148,16 +155,6 @@ message(STATUS "=== [ sdpa ] ===")
 add_subdirectory(sdpa)
 
 ## optional components
-if (ENABLE_MONITOR_GUI)
-  message(STATUS "=== [ monitor ] (deprecated) ===")
-  add_subdirectory(monitor)
-endif (ENABLE_MONITOR_GUI)
-
-if (ENABLE_SDPA_GUI)
-  message(STATUS "=== [ sdpa-gui ] ===")
-  add_subdirectory(sdpa-gui)
-endif (ENABLE_SDPA_GUI)
-
 if (ENABLE_SDPA_GPI)
   message(STATUS "=== [ sdpa-gpi ] ===")
   add_subdirectory(sdpa-gpi)
@@ -178,10 +175,8 @@ if (ENABLE_APPLICATION)
   add_subdirectory(application)
 endif (ENABLE_APPLICATION)
 
-if (ENABLE_PNET_EDITOR)
-  message(STATUS "=== [ pnete ] ===")
-  add_subdirectory(editor)
-endif (ENABLE_PNET_EDITOR)
+message (STATUS "=== [ pnete/sdpa-gui ] ===")
+add_subdirectory (editor)
 
 include(TargetDoc)
 

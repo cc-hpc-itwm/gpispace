@@ -250,12 +250,6 @@ class BasicEngine : public IWorkflowEngine
       }
     }
 
-    bool fill_in_info ( const id_type & id, activity_information_t &) const
-    {
-      return false;
-    }
-
-
   protected:
     mutable GenericDaemon *pIAgent_;
     TaskQueueT queueTasks_;

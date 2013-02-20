@@ -9,7 +9,6 @@
 #include <fstream>
 
 using we::loader::get;
-using we::loader::put;
 
 // ************************************************************************* //
 
@@ -34,7 +33,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
       file >> v;
       if (s.size())
         {
-          put (output, "config", s, v);
+          output.bind ("config", s, v);
         }
     }
 
@@ -55,7 +54,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
   MLOG (INFO, "loadTT: id " << id);
 
-  put (output, "done", control());
+  output.bind ("done", we::type::literal::control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -64,7 +63,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
 
   MLOG (INFO, "load: bunch " << bunch);
 
-  put (output, "bunch", bunch);
+  output.bind ("bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -100,7 +99,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
   MLOG (INFO, "process: volume " << volume);
 
-  put (output, "volume", volume);
+  output.bind ("volume", volume);
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -109,7 +108,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
   MLOG (INFO, "write: volume " << volume);
 
-  put (output, "volume", volume);
+  output.bind ("volume", volume);
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -118,7 +117,7 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
   MLOG (INFO, "finalize: config " << config);
 
-  put (output, "trigger", control());
+  output.bind ("trigger", we::type::literal::control());
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -127,7 +126,7 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
   MLOG (INFO, "init_volume: volume " << volume);
 
-  put (output, "volume", volume);
+  output.bind ("volume", volume);
 }
 
 // ************************************************************************* //

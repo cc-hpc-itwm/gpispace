@@ -3,6 +3,7 @@
 #include <xml/parse/type/specialize.hpp>
 
 #include <xml/parse/id/mapper.hpp>
+#include <xml/parse/type/net.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -35,9 +36,18 @@ namespace xml
       {
         return _name;
       }
-      const std::string& specialize_type::name(const std::string& name)
+      const std::string& specialize_type::name_impl (const std::string& name)
       {
         return _name = name;
+      }
+      const std::string& specialize_type::name (const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return _name;
+        }
+        return name_impl (name);
       }
 
       const specialize_type::unique_key_type&
@@ -90,50 +100,81 @@ namespace xml
 
         child_structs.clear();
 
-        for ( structs_type::iterator s (structs.begin())
-            ; s != structs.end()
-            ; ++s
-            )
+        BOOST_FOREACH (structure_type& s, structs)
+        {
+          const type_get_type::const_iterator pos (type_get.find (s.name()));
+
+          if (pos == type_get.end())
           {
-            const type_get_type::const_iterator pos (type_get.find (s->name()));
-
-            if (pos == type_get.end())
-              {
-                child_structs.push_back (*s);
-              }
-            else
-              {
-                boost::apply_visitor ( st::resolve (known_structs, s->path())
-                                     , s->signature()
-                                     );
-
-                parent_structs.push_back (*s);
-              }
+            child_structs.push_back (s);
           }
+          else
+          {
+            boost::apply_visitor ( st::resolve (known_structs, s.path())
+                                 , s.signature()
+                                 );
+
+            parent_structs.push_back (s);
+          }
+        }
       }
 
-      void specialize_structs ( const type_map_type & map
-                              , structs_type & structs
-                              , const state::type & state
+      namespace
+      {
+        class specialize_visitor
+          : public boost::static_visitor<signature::desc_t>
+        {
+        private:
+          const type::type_map_type& map_in;
+
+        public:
+          specialize_visitor (const type::type_map_type& _map_in)
+            : map_in (_map_in)
+          {}
+
+          signature::desc_t operator() (literal::type_name_t& t) const
+          {
+            const type::type_map_type::const_iterator mapped (map_in.find (t));
+
+            return (mapped != map_in.end()) ? mapped->second : t;
+          }
+
+          signature::desc_t operator() (signature::structured_t& map) const
+          {
+            for ( signature::structured_t::map_t::iterator pos (map.begin())
+                ; pos != map.end()
+                ; ++pos
+                )
+            {
+              const type::type_map_type::const_iterator mapped
+                (map_in.find (pos->first));
+
+              pos->second = (mapped != map_in.end())
+                          ? mapped->second
+                          : boost::apply_visitor (*this, pos->second);
+            }
+
+            return map;
+          }
+
+        };
+      }
+
+      void specialize_structs ( const type_map_type& map
+                              , structs_type& structs
+                              , const state::type& state
                               )
       {
-        for ( structs_type::iterator s (structs.begin())
-            ; s != structs.end()
-            ; ++s
-            )
+        BOOST_FOREACH (structure_type& s, structs)
         {
-          s->signature
-            ( boost::apply_visitor
-              ( xml::parse::structure_type::specialize (map, state)
-              , s->signature()
-              )
-            );
+          s.signature
+            (boost::apply_visitor(specialize_visitor (map), s.signature()));
 
-          type_map_type::const_iterator pos (map.find (s->name()));
+          type_map_type::const_iterator pos (map.find (s.name()));
 
           if (pos != map.end())
           {
-            s->name (pos->second);
+            s.name (pos->second);
           }
         }
       }

@@ -22,6 +22,7 @@
 #include <string>
 
 #include <we/loader/types.hpp>
+#include <we/loader/api-guard.hpp>
 
 namespace we {
   namespace loader {

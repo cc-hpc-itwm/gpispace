@@ -25,11 +25,10 @@ namespace we
     {
       namespace visitor
       {
-        template<typename Trans>
         class simplify_expression_sequences : public boost::static_visitor<bool>
         {
         private:
-          typedef typename Trans::port_names_t port_names_t;
+          typedef transition_t::port_names_t port_names_t;
           port_names_t _outport_names;
 
         public:
@@ -43,7 +42,7 @@ namespace we
           {
             expr::parse::util::name_set_t needed_bindings;
 
-            for ( typename port_names_t::const_iterator name (_outport_names.begin())
+            for ( port_names_t::const_iterator name (_outport_names.begin())
                 ; name != _outport_names.end()
                 ; ++name
                 )
@@ -58,28 +57,26 @@ namespace we
             return expr.simplify(needed_bindings);
           }
 
-          template<typename P, typename E, typename T>
           bool operator ()
-          (petri_net::net<P, transition_t<P,E,T>, E, T> & net) const
+          (petri_net::net & net) const
           {
-            typedef transition_t<P, E, T> transition_t;
-            typedef petri_net::net<P, transition_t, E, T> pnet_t;
-            typedef typename pnet_t::transition_const_it transition_const_it;
-            typedef petri_net::tid_t tid_t;
+            typedef petri_net::net pnet_t;
 
             bool modified (false);
 
-            typedef std::stack<tid_t> stack_t;
+            typedef std::stack<petri_net::transition_id_type> stack_t;
             stack_t stack;
 
-            for (transition_const_it t (net.transitions()); t.has_more(); ++t)
-              {
-                stack.push (*t);
-              }
+            BOOST_FOREACH ( const petri_net::transition_id_type& tid
+                          , net.transitions() | boost::adaptors::map_keys
+                          )
+            {
+              stack.push (tid);
+            }
 
             while (!stack.empty())
               {
-                const tid_t tid (stack.top()); stack.pop();
+                const petri_net::transition_id_type tid (stack.top()); stack.pop();
 
                 transition_t trans (net.get_transition (tid));
 
@@ -102,16 +99,15 @@ namespace we
           }
         };
 
-        template<typename Trans>
         class optimize : public boost::static_visitor<bool>
         {
         private:
           const options::type & options;
-          Trans & trans_parent;
+          transition_t& trans_parent;
 
         public:
           optimize ( const options::type & _options
-                   , Trans & _trans_parent
+                   , transition_t & _trans_parent
                    )
             : options (_options)
             , trans_parent (_trans_parent)
@@ -120,14 +116,10 @@ namespace we
           bool operator () (expression_t &) const { return false; }
           bool operator () (module_call_t &) const { return false; }
 
-          template<typename P, typename E, typename T>
           bool operator ()
-          (petri_net::net<P, transition_t<P,E,T>, E, T> & net) const
+          (petri_net::net & net) const
           {
-            typedef transition_t<P, E, T> transition_t;
-            typedef petri_net::net<P, transition_t, E, T> pnet_t;
-            typedef typename pnet_t::transition_const_it transition_const_it;
-            typedef petri_net::tid_t tid_t;
+            typedef petri_net::net pnet_t;
 
             bool modified (false);
 
@@ -140,22 +132,24 @@ namespace we
                         )
               ;
 
-            typedef std::stack<tid_t> stack_t;
+            typedef std::stack<petri_net::transition_id_type> stack_t;
             stack_t stack;
 
-            for (transition_const_it t (net.transitions()); t.has_more(); ++t)
-              {
-                stack.push (*t);
-              }
+            BOOST_FOREACH ( const petri_net::transition_id_type& t
+                          , net.transitions() | boost::adaptors::map_keys
+                          )
+            {
+              stack.push (t);
+            }
 
             while (!stack.empty())
               {
-                const tid_t tid (stack.top()); stack.pop();
+                const petri_net::transition_id_type tid (stack.top()); stack.pop();
 
                 transition_t trans (net.get_transition (tid));
 
                 const bool trans_modified
-                  ( boost::apply_visitor ( optimize<Trans>(options, trans)
+                  ( boost::apply_visitor ( optimize (options, trans)
                                          , trans.data()
                                          )
                   );
@@ -173,24 +167,18 @@ namespace we
         };
       } // namespace visitor
 
-      template<typename P, typename E, typename T>
-      inline bool optimize (transition_t<P,E,T> & t, const options::type & opts)
+      inline bool optimize (transition_t& t, const options::type & opts)
       {
-        typedef transition_t<P, E, T> transition_t;
-
         return
-          boost::apply_visitor
-          ( visitor::optimize<transition_t> (opts, t)
-          , t.data()
-          )
-          |
-          (  opts.simplify_expression_sequences()
-          && boost::apply_visitor
-             ( visitor::simplify_expression_sequences<transition_t>
-               (t.port_names(PORT_OUT))
-             , t.data()
-             )
-          )
+          boost::apply_visitor ( visitor::optimize (opts, t)
+                               , t.data()
+                               )
+          | (  opts.simplify_expression_sequences()
+            && boost::apply_visitor
+               ( visitor::simplify_expression_sequences (t.port_names(PORT_OUT))
+               , t.data()
+               )
+            )
           ;
       }
     } // namespace optimize

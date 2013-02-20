@@ -436,7 +436,7 @@ int fvmGetNodeCount()
 static void selftest (void *, const we::loader::input_t &, we::loader::output_t & out)
 {
   std::cerr << "running self test" << std::endl;
-  we::loader::put (out, "result", 0L);
+  out.bind ("result", 0L);
 }
 
 static inline long getenvlong (const char * name, const long dflt)

@@ -1,5 +1,0 @@
-<defun name="Butterworth Filter">
-  <in name="input" type="seismic"/>
-  <in name="params" type="subfilt_param"/>
-  <out name="output" type="seismic"/>
-</defun>

@@ -4,6 +4,11 @@
 #define WE_TYPE_BITS_TRANSITION_TODOT_HPP 1
 
 #include <we/type/transition.hpp>
+#include <we/type/id.hpp>
+#include <we/type/net.hpp>
+
+#include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace we { namespace type {
 
@@ -339,14 +344,13 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template <typename P, typename E, typename T, typename Pred>
+      template <typename Pred>
       inline std::string to_dot
-      ( const transition_t<P,E,T> &
+      ( const transition_t &
       , id_type &
       , const options<Pred> &
       , const level_type = 1
-      , const petri_net::prio_t &
-      = petri_net::traits::id_traits<petri_net::prio_t>::invalid()
+      , const petri_net::priority_type& = petri_net::priority_invalid()
       );
 
       template<typename Pred>
@@ -397,21 +401,15 @@ namespace we { namespace type {
 
         // ----------------------------------------------------------------- //
 
-        template <typename P, typename E, typename T>
         std::string operator ()
-        (const petri_net::net<P, transition_t<P, E, T>, E, T> & net) const
+        (const petri_net::net & net) const
         {
-          typedef transition_t<P, E, T> transition_t;
-          typedef petri_net::net<P, transition_t, E, T> pnet_t;
-          typedef typename pnet_t::place_const_it place_const_it;
-          typedef petri_net::adj_place_const_it adj_place_const_it;
-          typedef typename pnet_t::transition_const_it transition_const_it;
-          typedef typename pnet_t::token_place_it token_place_it;
+          typedef petri_net::net pnet_t;
           typedef petri_net::connection_t connection_t;
-          typedef typename transition_t::port_map_t::value_type pmv_t;
+          typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
           typedef std::pair< place_dot_name_type
-                           , typename transition_t::port_id_t
+                           , petri_net::port_id_type
                            > extra_connection_type;
           typedef std::string transition_name_type;
           typedef boost::unordered_map< transition_name_type
@@ -427,41 +425,25 @@ namespace we { namespace type {
             << "subgraph cluster_net_" << id_net << " {"
             << std::endl;
 
-          for (place_const_it p (net.places()); p.has_more(); ++p)
+          typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+
+          BOOST_FOREACH (const ip_type& ip, net.places())
             {
-              const P place (net.get_place (*p));
+              const petri_net::place_id_type& place_id (ip.first);
+              const place::type& place (ip.second);
               const place_dot_name_type place_dot_name
-                (name (id_net, "place_" + fhg::util::show (*p)));
+                (name (id_net, "place_" + fhg::util::show (place_id)));
 
               std::ostringstream token;
 
               if (opts.show_token)
                 {
-                  typedef boost::unordered_map<T, size_t> token_cnt_t;
-                  token_cnt_t token_cnt;
-                  for ( token_place_it tp (net.get_token (*p))
-                      ; tp.has_more()
-                      ; ++tp
-                      )
-                    {
-                      ++token_cnt[*tp];
-                    }
-
-                  for ( typename token_cnt_t::const_iterator
-                          tok (token_cnt.begin())
-                      ; tok != token_cnt.end()
-                      ; ++tok
-                      )
-                    {
-                      token << endl;
-
-                      if (tok->second > 1)
-                        {
-                          token << tok->second << " x ";
-                        }
-
-                      token << quote (fhg::util::show (tok->first));
-                    }
+                  BOOST_FOREACH ( const value::type& t
+                                , net.get_token (place_id)
+                                )
+                  {
+                    token << endl << quote (fhg::util::show (t));
+                  }
                 }
 
               std::ostringstream virt;
@@ -483,6 +465,8 @@ namespace we { namespace type {
               {
                 namespace prop = we::type::property::traverse;
 
+                //! \todo eliminate the hack that stores the real
+                //! place in the properties
                 prop::stack_type stack
                   (prop::dfs (place.property(), "real"));
 
@@ -499,28 +483,28 @@ namespace we { namespace type {
                           ;
                       }
 
-                    for ( transition_const_it t (net.transitions())
-                        ; t.has_more()
-                        ; ++t
-                        )
+                    BOOST_FOREACH ( const transition_t& trans
+                                  , net.transitions()
+                                  | boost::adaptors::map_values
+                                  )
+                    {
+                      if (trans.name() == stack.top().first[0])
                       {
-                        const transition_t& trans (net.get_transition (*t));
-
-                        if (trans.name() == stack.top().first[0])
+                        BOOST_FOREACH (const pmv_t& pmv, trans.ports())
+                        {
+                          if (  pmv.second.is_tunnel()
+                             && pmv.second.name() == stack.top().second
+                             )
                           {
-                            BOOST_FOREACH (const pmv_t& pmv, trans.ports())
-                              {
-                                if (pmv.second.name() == stack.top().second)
-                                  {
-                                    ecbt[trans.name()].push_back
-                                      (extra_connection_type
-                                      (place_dot_name, pmv.first)
-                                      )
-                                      ;
-                                  }
-                              }
+                            ecbt[trans.name()].push_back
+                              (extra_connection_type ( place_dot_name
+                                                     , pmv.first
+                                                     )
+                              );
                           }
+                        }
                       }
+                    }
 
                     stack.pop();
                   }
@@ -541,13 +525,17 @@ namespace we { namespace type {
                 ;
             }
 
-          for (transition_const_it t (net.transitions()); t.has_more(); ++t)
-            {
-              const transition_t & trans (net.get_transition (*t));
-              const id_type id_trans (++id);
-              const petri_net::prio_t prio (net.get_transition_priority (*t));
+          typedef std::pair<petri_net::transition_id_type,transition_t> it_type;
 
-              s << to_dot<P, E, T> (trans, id, opts, l + 1, prio);
+          BOOST_FOREACH (const it_type& it, net.transitions())
+            {
+              const petri_net::transition_id_type& trans_id (it.first);
+              const transition_t& trans (it.second);
+              const id_type id_trans (++id);
+              const petri_net::priority_type prio
+                (net.get_transition_priority (trans_id));
+
+              s << to_dot (trans, id, opts, l + 1, prio);
 
               if (opts.show_tunnel_connection)
                 {
@@ -592,21 +580,16 @@ namespace we { namespace type {
                   bool found (false);
                   bool is_read (false);
 
-                  for ( adj_place_const_it p (net.in_to_transition (*t))
-                      ; p.has_more()
-                      ; ++p
-                      )
+                  BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                                , net.in_to_transition (trans_id)
+                                | boost::adaptors::map_keys
+                                )
                     {
-                      if (*p == connection->first)
+                      if (place_id == connection->first)
                         {
                           found = true;
 
-                          const connection_t net_conn (net.get_edge_info (p()));
-
-                          if (petri_net::edge::is_pt_read (net_conn.type))
-                            {
-                              is_read = true;
-                            }
+                          is_read = net.is_read_connection (trans_id, place_id);
 
                           break;
                         }
@@ -647,16 +630,16 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template <typename P, typename E, typename T, typename Pred>
+      template <typename Pred>
       inline std::string to_dot
-      ( const transition_t<P,E,T> & t
+      ( const transition_t & t
       , id_type & id
       , const options<Pred> & opts
       , const level_type l
-      , const petri_net::prio_t & prio
+      , const petri_net::priority_type & prio
       )
       {
-        typedef transition_t<P,E,T> trans_t;
+        typedef transition_t trans_t;
 
         std::ostringstream s;
 
@@ -670,9 +653,9 @@ namespace we { namespace type {
 
         if (opts.show_priority)
           {
-            if (prio != petri_net::traits::id_traits<petri_net::prio_t>::invalid())
+            if (prio != petri_net::priority_invalid())
               {
-                if (prio > 0)
+                if (prio > petri_net::priority_type (0))
                   {
                     priority << "| priority: " << prio;
                   }

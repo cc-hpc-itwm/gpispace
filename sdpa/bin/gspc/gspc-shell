@@ -1,0 +1,24 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="run an interactive GPI-Space shell"
+GSPC_API_COMMAND_LEVEL=-1
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+if [ -z "$PS2" ] ; then
+    PS2="gspc> "
+fi
+
+while true
+do
+    read -e -p "$PS2" -a input
+    if [ $? -eq 1 ] ; then
+        break
+    fi
+    if [ ${#input[@]} -eq 0 ] ; then
+        continue
+    fi
+
+    gspc "${input[@]}"
+done
+

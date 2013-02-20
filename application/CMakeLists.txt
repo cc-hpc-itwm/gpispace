@@ -1,4 +1,5 @@
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
+set (PNETC_EXAMPLES_DIR "share/sdpa/xml/examples")
 set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 add_subdirectory(lib)
@@ -11,8 +12,8 @@ add_subdirectory(selftest)
 add_subdirectory(transform_file)
 add_subdirectory(mapreduce)
 
-option(WITH_APPLICATION_UFBMIG "Compile UfbMig Application" OFF)
-if (WITH_APPLICATION_UFBMIG)
+option(ENABLE_APPLICATION_UFBMIG "Compile UfbMig Application" ON)
+if (ENABLE_APPLICATION_UFBMIG)
    add_subdirectory(ufbmig)
 endif()
 

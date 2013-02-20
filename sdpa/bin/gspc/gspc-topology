@@ -1,0 +1,67 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="manage the GPI-Space topology"
+GSPC_API_COMMAND_LEVEL=1
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: topology [-h|--help] [options] [--] [<action>]
+
+Options:
+
+   --kvs-host <host>     specify the host of the KVS
+   --kvs-port <port>     specify the port of the KVS
+
+Actions:
+
+$(gspc --no-alias list-commands --prefix=topology --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
+EOF
+}
+
+kvs_host=
+kvs_port=
+
+while true ; do
+    case "$1" in
+        -h|--help) usage ; exit 0 ;;
+        --kvs-host)
+            kvs_host="$2"
+            shift ; shift
+            ;;
+        --kvs-port)
+            kvs_port="$2"
+            shift ; shift
+            ;;
+        --) shift; break ;;
+        *) break ;;
+    esac
+done
+
+action="$1"
+
+if [ -z "$action" ] ; then
+    action=list
+else
+    shift
+fi
+
+options=()
+
+if [ -n "$kvs_host" ] ; then
+    options+=( --kvs-host "$kvs_host" )
+fi
+if [ -n "$kvs_port" ] ; then
+    options+=( --kvs-host "$kvs_port" )
+fi
+
+cmd=$(gspc_resolve_command "topology-${action}")
+
+if [ ! -x "${cmd}" ] ; then
+    gspc_log_error topology "Invalid action: ${action}"
+    exit 1
+else
+    "${cmd}" "${options[@]}" "$@"
+fi

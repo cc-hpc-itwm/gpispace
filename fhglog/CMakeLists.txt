@@ -10,7 +10,7 @@ string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 include (./version.cmake)
 
-option(WITH_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
+option(ENABLE_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
 option(USE_STL_TR1
  "Use tr1 from stl"
  0)
@@ -53,9 +53,9 @@ include(CheckIncludeFiles)
 # usage: CHECK_INCLUDE_FILES (<header> <RESULT_VARIABLE> )
 CHECK_INCLUDE_FILES(syslog.h HAVE_SYSLOG_H)
 
-if (WITH_REMOTE_LOGGING)
+if (ENABLE_REMOTE_LOGGING)
   set(FHGLOG_WITH_REMOTE_LOGGING 1)
-endif (WITH_REMOTE_LOGGING)
+endif (ENABLE_REMOTE_LOGGING)
 
 ## check for boost
 include(SDPAFindBoost)

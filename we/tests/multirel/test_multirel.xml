@@ -111,7 +111,7 @@
                 << 1000 * (t_now - t) / mt << " ms per copy"
                 );
 
-            return control();
+            return we::type::literal::control();
           ]]></code>
         </module>
       </defun>

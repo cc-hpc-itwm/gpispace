@@ -1,0 +1,7 @@
+<structs>
+  <struct name="grid_type">
+    <field name="ll" type="point_type"/>
+    <field name="ur" type="point_type"/>
+    <field name="s" type="point_type"/>
+  </struct>
+</structs>

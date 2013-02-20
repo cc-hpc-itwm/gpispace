@@ -23,7 +23,8 @@
 #include <fhglog/minimal.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
-#include <gpi-space/version.hpp>
+#include <fhg/revision.hpp>
+
 #include <gpi-space/gpi/api.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
@@ -74,8 +75,8 @@ static void long_usage()
 {
   fprintf(stderr, "%s: [options]\n", program_name);
   fprintf(stderr, "\n");
-  fprintf(stderr, "      version: %s\n", gpi::version_string());
-  fprintf(stderr, "     revision: %s\n", gpi::revision_string());
+  fprintf(stderr, "      version: %s\n", fhg::project_version());
+  fprintf(stderr, "     revision: %s\n", fhg::project_revision());
   fprintf(stderr, "\n");
   fprintf(stderr, "options\n");
   fprintf(stderr, "    --help|-h\n");
@@ -197,7 +198,7 @@ int main (int ac, char *av[])
     }
     else if (strcmp(av[i], "--version") == 0 || strcmp(av[i], "-V") == 0)
     {
-      printf("%s\n", gpi::version_string());
+      printf("%s\n", fhg::project_version());
       exit(EXIT_SUCCESS);
     }
     else if (strcmp(av[i], "--pidfile") == 0)
@@ -662,8 +663,8 @@ int main (int ac, char *av[])
 
   if (gpi_api.is_master())
   {
-    LOG(INFO, "GPISpace version: " << gpi::version_string());
-    LOG(INFO, "GPISpace revision: " << gpi::revision_string());
+    LOG(INFO, "GPISpace version: " << fhg::project_version());
+    LOG(INFO, "GPISpace revision: " << fhg::project_revision());
     LOG(INFO, "GPIApi version: " << gpi_api.version());
 
     if (0 != configure_kvs (&config))

@@ -185,6 +185,80 @@ namespace xml
 
       // ******************************************************************* //
 
+      namespace
+      {
+        class resolve_with_fun_visitor : public boost::static_visitor<bool>
+        {
+        public:
+          resolve_with_fun_visitor
+            ( const resolving_function_type& resolving_function
+            , const boost::filesystem::path& path
+            )
+              : _path (path)
+              , _resolving_function (resolving_function)
+          {}
+
+          bool operator() (literal::type_name_t& t) const
+          {
+            return literal::valid_name (t);
+          }
+
+          bool operator() (signature::structured_t& map) const
+          {
+            BOOST_FOREACH (signature::structured_t::map_t::value_type& sub, map)
+            {
+              if (!boost::apply_visitor (*this, sub.second))
+              {
+                const literal::type_name_t child_name
+                  ( boost::apply_visitor
+                    (parse::structure_type::get_literal_type_name(), sub.second)
+                  );
+
+                const boost::optional<signature::type> res
+                  (_resolving_function (child_name));
+
+                if (!res)
+                {
+                  throw error::cannot_resolve (sub.first, child_name, _path);
+                }
+
+                sub.second = res->desc();
+
+                boost::apply_visitor (*this, sub.second);
+              }
+            }
+
+            return true;
+          }
+
+        private:
+          const boost::filesystem::path& _path;
+          const resolving_function_type& _resolving_function;
+        };
+      }
+
+      signature::desc_t resolve_with_fun
+        ( const type::structure_type& unresolved_struct
+        , resolving_function_type resolving_function
+        )
+      {
+        signature::desc_t sig (unresolved_struct.signature());
+        boost::apply_visitor
+          ( resolve_with_fun_visitor ( resolving_function
+                                     , unresolved_struct.path()
+                                     )
+          , sig
+          );
+        return sig;
+      }
+
+      bool struct_by_name ( const std::string& name
+                          , const type::structure_type& stru
+                          )
+      {
+        return stru.name() == name;
+      }
+
       resolve::resolve ( const set_type & _sig_set
                        , const boost::filesystem::path & _path
                        )
@@ -228,41 +302,6 @@ namespace xml
           }
         }
         return true;
-      }
-
-      // ******************************************************************* //
-
-      specialize::specialize ( const type::type_map_type & _map_in
-                             , const state::type & _state
-                             )
-        : map_in (_map_in)
-        , state (_state)
-      {}
-
-      signature::desc_t specialize::operator () (literal::type_name_t & t) const
-      {
-        const type::type_map_type::const_iterator mapped (map_in.find (t));
-
-        return (mapped != map_in.end()) ? mapped->second : t;
-      }
-
-      signature::desc_t specialize::operator () (signature::structured_t & map) const
-      {
-        for ( signature::structured_t::map_t::iterator pos (map.begin())
-            ; pos != map.end()
-            ; ++pos
-            )
-        {
-          const type::type_map_type::const_iterator mapped
-            (map_in.find (pos->first));
-
-          pos->second = (mapped != map_in.end())
-            ? mapped->second
-            : boost::apply_visitor (*this, pos->second)
-            ;
-        }
-
-          return map;
       }
     }
   }

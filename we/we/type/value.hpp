@@ -8,7 +8,7 @@
 
 #include <string>
 #include <map>
-#include <vector>
+#include <list>
 
 #include <boost/variant.hpp>
 
@@ -17,7 +17,7 @@
 
 namespace value
 {
-  typedef std::vector<signature::field_name_t> path_type;
+  typedef std::list<signature::field_name_t> path_type;
 
   struct structured_t;
 
@@ -25,44 +25,48 @@ namespace value
                         , boost::recursive_wrapper<structured_t>
                         > type;
 
+  typedef std::map<signature::field_name_t, type> map_type;
+  typedef std::pair<std::string, type> key_node_type;
+
   struct structured_t
   {
-  public:
-    // NOTE! sorted container neccessary for operator ==
-    typedef std::map<signature::field_name_t, type> map_t;
-    typedef map_t::const_iterator const_iterator;
-    typedef map_t::const_iterator iterator;
-
   private:
-    map_t map;
+    map_type _map;
 
     friend class boost::serialization::access;
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(map);
+      ar & BOOST_SERIALIZATION_NVP(_map);
     }
 
   public:
-    structured_t () : map () {}
-
     type & operator [] (const signature::field_name_t & field_name)
     {
-      return map[field_name];
+      return _map[field_name];
     }
 
-    const_iterator begin (void) const { return map.begin(); }
-    const_iterator end (void) const { return map.end(); }
-    const_iterator find (const signature::field_name_t & field_name) const
-    {
-      return map.find (field_name);
-    }
-
-    bool has_field (const signature::field_name_t & field_name) const
-    {
-      return map.find (field_name) != map.end();
-    }
+    const map_type& map() const { return _map; }
   };
+
+  inline bool operator== (const structured_t& x, const structured_t& y)
+  {
+    map_type::const_iterator pos_x (x.map().begin());
+    map_type::const_iterator pos_y (y.map().begin());
+    const map_type::const_iterator end_x (x.map().end());
+
+    bool all_eq (x.map().size() == y.map().size());
+
+    while (all_eq && pos_x != end_x)
+    {
+      all_eq = pos_x->first == pos_y->first && pos_x->second == pos_y->second;
+
+      ++pos_x;
+      ++pos_y;
+    }
+
+    return all_eq;
+  }
 }
 
 #endif

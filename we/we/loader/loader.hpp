@@ -16,11 +16,6 @@
 #include <we/loader/Module.hpp>
 #include <we/loader/module_traits.hpp>
 
-#include <fhglog/fhglog.hpp>
-
-#include <fhg/assert.hpp>
-#include <fhg/util/show.hpp>
-
 namespace we {
   namespace loader {
     using boost::shared_ptr;
@@ -32,242 +27,48 @@ namespace we {
       typedef std::list<boost::filesystem::path> search_path_t;
       typedef std::list<std::string> module_names_t;
 
-      static ptr_t create() { return ptr_t(new loader()); }
+      static ptr_t create();
 
       typedef boost::unordered_map<std::string, module_ptr_t> module_table_t;
 
-      loader()
-        : module_table_()
-        , module_counter_(0)
-      {
-      }
+      loader();
+      ~loader();
 
-      ~loader()
-      {
-        try {
-          unload_all();
-        } catch (const std::exception &ex) {
-        }
-      }
+      const module_ptr_t get(const std::string &module) const;
 
-      const module_ptr_t get(const std::string &module) const throw(ModuleNotLoaded)
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        module_table_t::const_iterator mod = module_table_.find(module);
-        if (mod != module_table_.end()) {
-          return mod->second;
-        } else {
-          throw ModuleNotLoaded(module);
-        }
-      }
+      Module & operator[] (const std::string &module);
 
-      Module & operator[] (const std::string &module) throw(ModuleNotLoaded, ModuleLoadFailed)
-      {
-        return *get(module);
-      }
+      module_ptr_t get(const std::string &module);
 
-      module_ptr_t get(const std::string &module) throw(ModuleNotLoaded, ModuleLoadFailed)
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        module_table_t::const_iterator mod = module_table_.find(module);
-        if (mod != module_table_.end()) {
-          return mod->second;
-        } else {
-          boost::filesystem::path module_file_path;
-          if (locate (module, module_file_path))
-            return load (module, module_file_path);
-          else
-            throw ModuleLoadFailed("module '" + module + "' could not be located", module, "[not-found]");
-        }
-      }
-
-      module_ptr_t load ( const boost::filesystem::path & path ) throw (ModuleLoadFailed)
-      {
-        return load ( "mod-"+fhg::util::show(module_counter_), path);
-      }
+      module_ptr_t load (const boost::filesystem::path & path);
 
       module_ptr_t load( const std::string & module_name
                        , const boost::filesystem::path & path
-                       ) throw(ModuleException)
-      {
-        module_ptr_t mod(new Module(module_name, path.string()));
+                       );
 
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        std::pair<module_table_t::iterator, bool> insert_result =
-          module_table_.insert(std::make_pair(module_name, mod));
+      void unload(const std::string &module_name);
 
-        if (! insert_result.second)
-        {
-          throw ModuleLoadFailed("module already registered", module_name, path.string());
-        }
-        else
-        {
-          LOG(INFO, "loaded module " << module_name << " from " << path);
-          module_load_order_.push_front (module_name);
-          ++module_counter_;
-          return mod;
-        }
-      }
+      const search_path_t & search_path (void) const;
 
-      void unload(const std::string &module_name)
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        module_table_t::iterator mod = module_table_.find(module_name);
-        if (mod != module_table_.end()) {
-          unload(mod);
-        }
-      }
+      void clear_search_path (void);
 
-      const search_path_t & search_path (void) const
-      {
-        return search_path_;
-      }
+      void append_search_path (const boost::filesystem::path & p);
 
-      void clear_search_path (void)
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        search_path_.clear();
-      }
+      void prepend_search_path (const boost::filesystem::path & p);
 
-      void append_search_path (const boost::filesystem::path & p)
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        search_path_.push_back (p);
-      }
+      void writeTo(std::ostream &os) const;
+      size_t unload_autoloaded ();
 
-      void prepend_search_path (const boost::filesystem::path & p)
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        search_path_.push_front (p);
-      }
-
-      void writeTo(std::ostream &os) const
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-
-        os << "{loader, ";
-        os << "{path, ";
-        for (search_path_t::const_iterator p (search_path_.begin()); p != search_path_.end(); ++p)
-        {
-          if (p != search_path_.begin())
-            os << ":";
-          os << "\"" << *p << "\"";
-        }
-        os << "}";
-        os << ", ";
-        os << "{modules, ";
-
-        os << "[";
-        module_table_t::const_iterator m(module_table_.begin());
-        while (m != module_table_.end())
-        {
-          os << (*(m->second));
-          ++m;
-
-          if (m != module_table_.end())
-            os << ", ";
-        }
-
-        os << "]";
-        os << "}";
-        os << "}";
-      }
-
-      size_t unload_autoloaded ()
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-
-        size_t count (0);
-
-        module_names_t::iterator it = module_load_order_.begin ();
-        module_names_t::iterator end = module_load_order_.end ();
-        while (it != end)
-        {
-          const std::string module_name = *it;
-          if (module_name.find ("mod-") != 0)
-          {
-            it = module_load_order_.erase (it);
-            unload (module_name);
-            ++count;
-          }
-          else
-          {
-            ++it;
-          }
-        }
-        return count;
-      }
-
-      int selftest ()
-      {
-        int ec (0);
-
-        // running selftests
-        for ( module_table_t::const_iterator m(module_table_.begin())
-            ; m != module_table_.end()
-            ; ++m
-            )
-        {
-          try
-          {
-            we::loader::input_t inp;
-            we::loader::output_t out;
-            (*(m->second))("selftest", inp, out);
-          }
-          catch (FunctionNotFound const &)
-          {
-            // ignore
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(ERROR, "selftest failed for module: " << m->first << ": " << ex.what());
-            ++ec;
-          }
-        }
-        return ec;
-      }
+      int selftest ();
     private:
       loader(const loader&);
       loader & operator = (const loader &);
 
-      bool locate (const std::string & module, boost::filesystem::path & path_found)
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        namespace fs = boost::filesystem;
-        const std::string file_name (module_traits<Module>::file_name (module));
-        for (search_path_t::const_iterator dir (search_path_.begin()); dir != search_path_.end(); ++dir)
-        {
-          if (! fs::exists (*dir))
-            continue;
+      bool locate (const std::string & module, boost::filesystem::path & path_found);
 
-          fs::path path (*dir / file_name);
-          if (fs::exists (path))
-          {
-            path_found = path;
-            return true;
-          }
-        }
-        return false;
-      }
+      void unload_all();
 
-      void unload_all()
-      {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-        while (! module_load_order_.empty ())
-        {
-          const std::string module_name = module_load_order_.front ();
-          module_load_order_.pop_front ();
-
-          unload (module_name);
-        }
-      }
-
-      module_table_t::iterator unload(module_table_t::iterator mod)
-      {
-        assert(mod != module_table_.end());
-        MLOG (TRACE, "unloading " << mod->first);
-        return module_table_.erase(mod);
-      }
+      module_table_t::iterator unload(module_table_t::iterator mod);
 
       module_table_t module_table_;
       module_names_t module_load_order_;

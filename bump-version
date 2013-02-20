@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ -z "$1" ]; then
   echo "usage: $0 MAJOR.MINOR.PATCH"
   exit 1
@@ -13,7 +13,7 @@ if ! echo "$1" | grep -q -e '^[[:digit:]]\+\(\.[[:digit:]]\+\(\.[[:digit:]]\+[^ 
 fi
 
 tmp=$( echo $1 | tr . ' ')
-read major minor patch <<<$tmp
+read major minor patch <<<"${tmp}"
 
 if [ -z "$minor" ]; then
   minor="0"
@@ -76,4 +76,4 @@ esac
 
 echo "bumping version number..."
 sed -e "s/\@V_MAJOR\@/$major/" -e "s/\@V_MINOR\@/$minor/" -e "s/\@V_PATCH\@/$patch/" version.cmake.in > version.cmake
-git commit version.cmake -m "bumped version to: '$version'" && touch sdpa/version.hpp.in
+git commit version.cmake -m "bumped version to: '$version'"

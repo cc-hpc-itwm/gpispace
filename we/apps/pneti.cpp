@@ -3,7 +3,11 @@
 
 #include <sysexits.h>
 
-#include <we/we.hpp>
+#include <we/type/requirement.hpp>
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+#include <we/mgmt/type/activity.hpp>
+
 #include <fhg/revision.hpp>
 
 #include <iostream>
@@ -14,7 +18,7 @@
 
 // ************************************************************************* //
 
-typedef we::transition_t::requirements_t requirements_t;
+typedef we::type::transition_t::requirements_t requirements_t;
 typedef requirements_t::value_type requirement_t;
 
 std::ostream & operator<<( std::ostream & os
@@ -41,10 +45,9 @@ std::ostream & operator<<( std::ostream & os
 
 namespace po = boost::program_options;
 
-typedef we::activity_t::transition_type::port_id_t port_id_t;
-
 int
 main (int argc, char ** argv)
+try
 {
   std::string input ("-");
 
@@ -89,43 +92,23 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
   {
-    std::cout << fhg::project_info();
+    std::cout << fhg::project_info ("Requirement Listing");
 
     return 0;
   }
 
-  if (input == "-")
-    {
-      input = "/dev/stdin";
-    }
-
-  we::activity_t act;
-
-  {
-    std::ifstream stream (input.c_str());
-
-    if (!stream)
-      {
-        std::cerr << "could not open file "
-                  << input
-                  << " for reading"
-                  << std::endl
-          ;
-        return EX_NOINPUT;
-      }
-
-    try
-    {
-      we::util::text_codec::decode (stream, act);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "could not parse input: " << ex.what() << std::endl;
-      return EX_DATAERR;
-    }
-  }
+  we::mgmt::type::activity_t act
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    );
 
   std::cout << act.transition().requirements();
 
   return EX_OK;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

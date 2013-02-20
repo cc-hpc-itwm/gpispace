@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/we.hpp>
+#include <we/type/transition.hpp>
+#include <we/mgmt/type/activity.hpp>
 
 #include <we/type/bits/transition/toDot.hpp>
 
@@ -17,14 +18,17 @@
 // ************************************************************************* //
 
 namespace detail {
-  template<typename Activity, typename Pred>
-  void to_dot (std::ostream & os, const Activity & a, const Pred & pred)
+  template<typename Pred>
+  void to_dot ( std::ostream & os
+              , const we::mgmt::type::activity_t& a
+              , const Pred & pred
+              )
   {
     we::type::dot::id_type id (0);
 
     we::type::dot::init (a.transition().prop());
 
-    os << "digraph " << a.transition().name() << " {" << std::endl;
+    os << "digraph \"" << a.transition().name() << "\" {" << std::endl;
     os << "compound=true" << std::endl;
     os << "rankdir=LR" << std::endl;
     os << we::type::dot::to_dot (a.transition(), id, pred);
@@ -84,6 +88,7 @@ namespace po = boost::program_options;
 
 int
 main (int argc, char ** argv)
+try
 {
   std::string input;
   std::string output;
@@ -91,7 +96,7 @@ main (int argc, char ** argv)
   vec_type not_starts_with;
   vec_type not_ends_with;
 
-  typedef we::type::dot::generic<we::transition_t> pred_t;
+  typedef we::type::dot::generic<we::type::transition_t> pred_t;
 
   we::type::dot::options<pred_t> options;
 
@@ -184,14 +189,9 @@ main (int argc, char ** argv)
 
   if (vm.count("version"))
     {
-      std::cout << fhg::project_info();
+      std::cout << fhg::project_info ("pnet2dot");
 
       return EXIT_SUCCESS;
-    }
-
-  if (input == "-")
-    {
-      input = "/dev/stdin";
     }
 
   if (output == "-")
@@ -199,52 +199,48 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
-  boost::function<bool (const we::transition_t &)> not_starts
-    ( boost::bind ( all<we::transition_t>
-                  , name_not_starts_with<we::transition_t>
+  boost::function<bool (const we::type::transition_t &)> not_starts
+    ( boost::bind ( all<we::type::transition_t>
+                  , name_not_starts_with<we::type::transition_t>
                   , not_starts_with
                   , _1
                   )
     );
 
-  boost::function<bool (const we::transition_t &)> not_ends
-    ( boost::bind ( all<we::transition_t>
-                  , name_not_ends_with<we::transition_t>
+  boost::function<bool (const we::type::transition_t &)> not_ends
+    ( boost::bind ( all<we::type::transition_t>
+                  , name_not_ends_with<we::type::transition_t>
                   , not_ends_with
                   , _1
                   )
     );
 
-  options.predicate = pred_t ( boost::bind ( pred_and<we::transition_t>
+  options.predicate = pred_t ( boost::bind ( pred_and<we::type::transition_t>
                                            , not_starts
                                            , not_ends
                                            , _1
                                            )
                              );
 
-  we::activity_t act;
+  we::mgmt::type::activity_t act
+    ( input == "-"
+    ? we::mgmt::type::activity_t (std::cin)
+    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    );
 
-  {
-    std::ifstream stream (input.c_str());
+  std::ofstream ostream (output.c_str());
 
-    if (!stream)
-      {
-        throw std::runtime_error ("failed to open " + input + " for reading");
-      }
+  if (!ostream)
+    {
+      throw std::runtime_error ("failed to open " + output + " for writing");
+    }
 
-    we::util::text_codec::decode (stream, act);
-  }
-
-  {
-    std::ofstream stream (output.c_str());
-
-    if (!stream)
-      {
-        throw std::runtime_error ("failed to open " + output + " for writing");
-      }
-
-    detail::to_dot (stream, act, options);
-  }
+  detail::to_dot (ostream, act, options);
 
   return EXIT_SUCCESS;
+}
+catch (const std::exception& e)
+{
+  std::cerr << e.what() << std::endl;
+  return EXIT_FAILURE;
 }

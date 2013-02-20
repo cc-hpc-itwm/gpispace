@@ -1,0 +1,13 @@
+<defun>
+  <in name="grid" type="grid_type"/>
+  <in name="n" type="long"/>
+  <out name="point" type="point_type"/>
+  <expression>
+    ${delta_x} := ${grid.ur.x} - ${grid.ll.x};
+    ${sizex} := 1 + long (floor (${delta_x} / ${grid.s.x}));
+    ${posx} := double (${n} mod ${sizex});
+    ${posy} := double (${n} div ${sizex});
+    ${point.x} := ${grid.ll.x} + ${posx} * ${grid.s.x};
+    ${point.y} := ${grid.ll.y} + ${posy} * ${grid.s.y};
+  </expression>
+</defun>

@@ -39,41 +39,6 @@ namespace sdpa { namespace client {
       }
     }
 
-    const std::string &version() const
-    {
-      return pimpl->version();
-    }
-
-    const std::string &copyright() const
-    {
-      return pimpl->copyright();
-    }
-
-    const std::string &contact() const
-    {
-      return pimpl->contact();
-    }
-
-    const std::string &build_timestamp() const
-    {
-      return pimpl->build_timestamp();
-    }
-
-    const std::string &revision() const
-    {
-      return pimpl->revision();
-    }
-
-    const std::string &build() const
-    {
-      return pimpl->build();
-    }
-
-    const std::string &build_info() const
-    {
-      return pimpl->build_info();
-    }
-
     void subscribe(const job_id_t& jobId)
         {
         job_id_list_t listJobIds;

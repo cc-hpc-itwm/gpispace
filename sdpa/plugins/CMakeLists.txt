@@ -36,7 +36,8 @@ fhg_add_plugin(kvsd kvsd.cpp
 
 fhg_add_plugin(kvs kvs.cpp
   EXPORTS KVS
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
+  LINK_LIBRARIES fhg-util
+                 ${FhgCom_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
@@ -61,7 +62,7 @@ fhg_add_plugin(kvs_dummy kvs_dummy.cpp
 fhg_add_plugin(wfe wfe.cpp observable.cpp
   EXPORTS WFE
   LINK_LIBRARIES ${FhgCom_LIBRARY}
-                 ${WE_LIBRARIES}
+                 we
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
@@ -75,7 +76,7 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
 
 fhg_add_plugin(wfe_eval wfe_eval.cpp
   EXPORTS WFE_EVAL
-  LINK_LIBRARIES ${WE_LIBRARIES}
+  LINK_LIBRARIES we
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
@@ -89,7 +90,7 @@ fhg_add_plugin(wfe_eval wfe_eval.cpp
 fhg_add_plugin(gui gui.cpp observable.cpp
   EXPORTS GUI
   LINK_LIBRARIES ${FhgCom_LIBRARY}
-                 ${WE_LIBRARIES}
+                 we
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
@@ -105,7 +106,6 @@ fhg_add_plugin(sdpac sdpac.cpp
                  sdpa-util
                  sdpa
                  ${FhgCom_LIBRARY}
-                 ${WE_PRECOMPILE_LIBRARIES}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}

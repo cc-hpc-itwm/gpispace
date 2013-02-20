@@ -3,6 +3,9 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
+#include <we/type/value/show.hpp>
+#include <we/type/value/missing_binding.hpp>
+
 #include "timer.hpp"
 
 #include <iostream>
@@ -53,7 +56,7 @@ int main (int ac, char **)
     cout << "enter expression, ^D to start measurement" << endl;
     cout << "clear context: #" << endl;
     cout << "list state: ?" << endl;
-    cout << "switch constant folding: f" << endl;
+    cout << "switch constant folding: g" << endl;
     typedef expr::eval::context context_t;
     context_t context;
     std::string input;
@@ -69,14 +72,16 @@ int main (int ac, char **)
                  << endl;
             cout << "context (delete with #): " << endl << context;
             break;
-          case 'f':
-          case 'F':
+          case 'g':
+          case 'G':
             constant_folding = not constant_folding;
             cout << "constant_folding: "
                  << std::boolalpha << constant_folding << std::noboolalpha
                  << endl;
             break;
-          case '#': context.clear(); cout << "context deleted" << endl; break;
+          case '#':
+            context = context_t(); cout << "context deleted" << endl;
+            break;
           default:
             try
               {
@@ -94,7 +99,7 @@ int main (int ac, char **)
                              << parser.eval_front (context)
                              << endl;
                       }
-                    catch (const value::container::exception::missing_binding & e)
+                    catch (const value::exception::missing_binding & e)
                       {
                         cout << e.what() << endl;
                       }

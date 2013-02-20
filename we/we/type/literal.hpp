@@ -3,7 +3,7 @@
 #ifndef _WE_TYPE_LITERAL_HPP
 #define _WE_TYPE_LITERAL_HPP
 
-#include <we/type/control.hpp>
+#include <we/type/literal/control.hpp>
 #include <we/type/bitsetofint.hpp>
 #include <we/type/bytearray.hpp>
 
@@ -15,8 +15,8 @@
 #include <boost/serialization/string.hpp>
 
 #include <string>
-#include <vector>
 
+#include <deque>
 #include <map>
 #include <set>
 
@@ -26,7 +26,7 @@ namespace literal
   typedef std::map<long, long> map_type;
   typedef std::set<long> set_type;
 
-  typedef boost::variant< control
+  typedef boost::variant< we::type::literal::control
                         , bool
                         , long
                         , double

@@ -19,11 +19,14 @@
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/expression.hpp>
+#include <we/type/module_call.hpp>
 #include <we/type/place.hpp>
-#include <we/type/token.hpp>
+#include <we/type/value.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/id.hpp>
 
-#include <we/net.hpp>
+#include <we/type/net.hpp>
 
 using petri_net::connection_t;
 using petri_net::edge::PT;
@@ -32,35 +35,31 @@ using petri_net::edge::TP;
 
 int main (int, char **)
 {
-  typedef place::type place_t;
-  typedef token::type token_t;
-  typedef unsigned int edge_t;
+  typedef we::type::transition_t transition_t;
 
-  typedef we::type::transition_t<place_t, edge_t, token_t> transition_t;
-
-  typedef petri_net::net<place_t, transition_t, edge_t, token_t> pnet_t;
+  typedef petri_net::net pnet_t;
 
   // ************************************ //
   pnet_t net;
 
-  petri_net::pid_t pid_vid (net.add_place (place_t ("vid","long")));
+  petri_net::place_id_type pid_vid (net.add_place (place::type ("vid","long")));
 
   signature::structured_t sig_store;
 
   sig_store["bid"] = "long";
   sig_store["seen"] = "bitset";
 
-  petri_net::pid_t pid_store (net.add_place (place::type("store", sig_store)));
+  petri_net::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
 
   transition_t trans_inner
     ( "trans_inner"
-    , transition_t::expr_type
+    , we::type::expression_t
       ( "${store.seen} := bitset_insert (${store.seen}, ${vid}); \
          ${store.bid}  := ${store.bid}                         ; \
          ${pair.bid}   := ${store.bid}                         ; \
          ${pair.vid}   := ${vid}                                 "
       )
-    , transition_t::cond_type ("!bitset_is_element (${store.seen}, ${vid})")
+    , "!bitset_is_element (${store.seen}, ${vid})"
     , true
     );
 
@@ -69,31 +68,36 @@ int main (int, char **)
   sig_pair["bid"] = "long";
   sig_pair["vid"] = "long";
 
-  petri_net::pid_t pid_pair (net.add_place (place::type("pair", sig_pair)));
+  petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 
-  trans_inner.add_ports ()
-    ("vid","long",we::type::PORT_IN)
-    ("store",sig_store,we::type::PORT_IN_OUT)
+  trans_inner.add_port
+    ("vid","long",we::type::PORT_IN);
+  trans_inner.add_port
+    ("store",sig_store,we::type::PORT_IN);
+  trans_inner.add_port
+    ("store",sig_store,we::type::PORT_OUT);
+  trans_inner.add_port
     ("pair",sig_pair,we::type::PORT_OUT)
     ;
 
-  trans_inner.add_connections ()
-    (pid_vid,"vid")
-    (pid_store,"store")
-    ("pair",pid_pair)
+  trans_inner.add_connection
+    (pid_vid,"vid");
+  trans_inner.add_connection
+    (pid_store,"store");
+  trans_inner.add_connection
+    ("pair",pid_pair);
+  trans_inner.add_connection
     ("store",pid_store)
     ;
 
-  petri_net::tid_t tid (net.add_transition (trans_inner));
+  petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
-  edge_t e (0);
+  net.add_connection (connection_t (PT, tid, pid_store));
+  net.add_connection (connection_t (TP, tid, pid_store));
+  net.add_connection (connection_t (PT_READ, tid, pid_vid));
+  net.add_connection (connection_t (TP, tid, pid_pair));
 
-  net.add_edge (e++, connection_t (PT, tid, pid_store));
-  net.add_edge (e++, connection_t (TP, tid, pid_store));
-  net.add_edge (e++, connection_t (PT_READ, tid, pid_vid));
-  net.add_edge (e++, connection_t (TP, tid, pid_pair));
-
-  token::put (net, pid_vid, literal::type(0L));
+  net.put_value (pid_vid, literal::type(0L));
 
   {
     value::structured_t m;
@@ -101,18 +105,21 @@ int main (int, char **)
     m["bid"] = 0L;
     m["seen"] = bitsetofint::type(0);
 
-    token::put (net, pid_store, m);
+    net.put_value (pid_store, m);
   }
   // ************************************ //
 
-  transition_t tnet ("tnet", transition_t::net_type (net));
-  tnet.add_ports()
-    ("vid", "long", we::type::PORT_IN, pid_vid)
-    ("store", sig_store, we::type::PORT_IN_OUT, pid_store)
+  transition_t tnet ("tnet", net);
+  tnet.add_port
+    ("vid", "long", we::type::PORT_IN, pid_vid);
+  tnet.add_port
+    ("store", sig_store, we::type::PORT_IN, pid_store);
+  tnet.add_port
+    ("store", sig_store, we::type::PORT_OUT, pid_store);
+  tnet.add_port
     ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
   ;
 
-  std::cout << "tnet: " << std::endl << tnet << std::endl;
   {
     std::ostringstream oss;
     {
@@ -129,20 +136,24 @@ int main (int, char **)
         ia >> BOOST_SERIALIZATION_NVP (tnet_d);
       }
     }
-    std::cout << "tnet (deserialized): " << std::endl << tnet_d << std::endl;
   }
 
-  transition_t t1 ("t1", transition_t::mod_type ("m", "f"));
+  transition_t t1 ("t1", we::type::module_call_t ("m", "f"));
 
-  t1.add_ports()
-    ("i", "long", we::type::PORT_IN_OUT)
+  t1.add_port
+    ("i", "long", we::type::PORT_IN);
+  t1.add_port
+    ("i", "long", we::type::PORT_OUT);
+  t1.add_port
     ("max", "long", we::type::PORT_IN)
   ;
 
-  t1.add_connections()
-    (transition_t::pid_t(0), "i")
-    (transition_t::pid_t(1), "max")
-    ("i", transition_t::pid_t(0))
+  t1.add_connection
+    (petri_net::place_id_type(0), "i");
+  t1.add_connection
+    (petri_net::place_id_type(1), "max");
+  t1.add_connection
+    ("i", petri_net::place_id_type(0))
   ;
 
   std::cout << "i (inp) = " << t1.input_port_by_name ("i") << std::endl;
@@ -150,14 +161,14 @@ int main (int, char **)
   std::cout << "i (out) = " << t1.output_port_by_name ("i") << std::endl;
   std::cout << "t1.p0 = " << t1.get_port (t1.input_port_by_name ("i")) << std::endl;
 
-  transition_t t2 ("t2", transition_t::expr_type ("true"));
-  t2.add_ports()
-    ("i", "long", we::type::PORT_IN)
-    ("sum", "long", we::type::PORT_IN_OUT)
+  transition_t t2 ("t2", we::type::expression_t ("true"));
+  t2.add_port
+    ("i", "long", we::type::PORT_IN);
+  t2.add_port
+    ("sum", "long", we::type::PORT_OUT);
+  t2.add_port
+    ("sum", "long", we::type::PORT_IN)
   ;
-
-  std::cout << "t1=" << t1 << std::endl;
-  std::cout << "t2=" << t2 << std::endl;
 
   {
     std::ostringstream oss;

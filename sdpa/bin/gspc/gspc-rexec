@@ -1,0 +1,64 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="execute commands remotely"
+GSPC_API_COMMAND_LEVEL=1
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: rexec host command [args...]
+EOF
+}
+
+hostname_short=$(hostname -s)
+hostname=$(hostname)
+
+function is_host_same_as_localhost ()
+{
+    local host="${1:?}" ; shift
+    if [ "localhost" = "$host" ]
+    then
+        return 0
+    fi
+    if [ "${hostname_short}" = "$node" ]
+    then
+        return 0
+    fi
+    if [ "${hostname}" = "$node" ]
+    then
+        return 0
+    fi
+    return 1
+}
+
+ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
+
+node="${1}"; shift
+
+if [ -z "$node" ] ; then
+    usage
+    exit 1
+fi
+
+if [ $# -eq 0 ] ; then
+    usage
+    exit 1
+fi
+
+gspc_log_trace rexec "$node $@"
+
+if is_host_same_as_localhost "$node"
+then
+    /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
+else
+    gspc_log_trace rexec ssh $ssh_opts $node /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
+    ssh $ssh_opts $node /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
+    ec=$?
+    if [ $ec -eq 255 ]
+    then
+        gspc_log_error rexec "ssh could not connect to: '$node'"
+    fi
+    exit $ec
+fi

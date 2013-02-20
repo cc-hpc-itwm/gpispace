@@ -27,38 +27,12 @@ namespace we
 {
   namespace mgmt {
 
-    struct activity_information_t
-    {
-      enum status_t
-      {
-        UNDEFINED = -1
-      , PENDING
-      , RUNNING
-      , FINISHED
-      , FAILED
-      , CANCELLED
-      , SUSPENDED
-      };
-
-      std::string name;
-      status_t status;
-      int level;
-
-      typedef boost::unordered_map<std::string, std::string> data_t;
-      data_t data;
-    };
-
-    template < typename IdType
-             , typename ResultType=std::string
-             , typename ReasonType=std::string
-             , typename EncodedType=std::string
-             >
     struct basic_layer
     {
-      typedef IdType id_type;
-      typedef ResultType result_type;
-      typedef ReasonType reason_type;
-      typedef EncodedType encoded_type;
+      typedef std::string id_type;
+      typedef std::string result_type;
+      typedef std::string reason_type;
+      typedef std::string encoded_type;
 
       virtual void submit(const id_type & id, const encoded_type & ) = 0;
       virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
@@ -70,8 +44,6 @@ namespace we
                          , const std::string & reason
                          ) = 0;
       virtual bool cancelled(const id_type & id) = 0;
-
-      virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;
 
       virtual ~basic_layer() {}
 

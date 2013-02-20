@@ -1,9 +1,10 @@
-// mirko.rahn@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <xml/parse/type/port.hpp>
 
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/error.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 
@@ -16,15 +17,17 @@ namespace xml
       port_type::port_type ( ID_CONS_PARAM(port)
                            , PARENT_CONS_PARAM(function)
                            , const std::string & name
-                           , const std::string & _type
+                           , const std::string & type
                            , const boost::optional<std::string> & _place
+                           , const we::type::PortDirection& direction
                            , const we::type::property::type& properties
                            )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
-        , type (_type)
+        , _type (type)
         , place (_place)
+        , _direction (direction)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
@@ -35,117 +38,194 @@ namespace xml
         return _name;
       }
 
+      const std::string& port_type::name_impl (const std::string& name)
+      {
+        return _name = name;
+      }
+
+      const std::string& port_type::name (const std::string& name)
+      {
+        if (has_parent())
+        {
+          parent()->rename (make_reference_id(), name);
+          return _name;
+        }
+
+        return name_impl (name);
+      }
+
+      const std::string& port_type::type() const
+      {
+        return _type;
+      }
+      const std::string& port_type::type (const std::string& type_)
+      {
+        return _type = type_;
+      }
+
+      boost::optional<signature::type> port_type::signature() const
+      {
+        if (literal::valid_name (type()))
+        {
+          return signature::type (type());
+        }
+
+        if (not parent())
+        {
+          return boost::none;
+        }
+
+        return parent()->signature (type());
+      }
+      signature::type port_type::signature_or_throw() const
+      {
+        const boost::optional<signature::type> s (signature());
+
+        if (not s)
+        {
+          throw error::port_with_unknown_type ( direction()
+                                              , name()
+                                              , type()
+                                              //! \todo own LOCATION
+                                              , parent()->path_GET()
+                                              );
+        }
+
+        return *s;
+      }
+
       void port_type::specialize ( const type::type_map_type & map_in
                                  , const state::type &
                                  )
       {
         const type::type_map_type::const_iterator
-          mapped (map_in.find (type));
+          mapped (map_in.find (type()));
 
         if (mapped != map_in.end())
         {
-          type = mapped->second;
+          type (mapped->second);
         }
       }
 
       namespace
       {
-        class port_type_check_visitor : public boost::static_visitor<void>
+        class type_checker : public boost::static_visitor<void>
         {
         private:
-          const std::string & direction;
-          const port_type & port;
-          const boost::filesystem::path & path;
-          const state::type & state;
+          const id::ref::port& _port;
+          const boost::filesystem::path& _path;
+          const state::type& _state;
 
         public:
-          port_type_check_visitor ( const std::string & _direction
-                                  , const port_type & _port
-                                  , const boost::filesystem::path & _path
-                                  , const state::type & _state
-                                  )
-            : direction (_direction)
-            , port (_port)
-            , path (_path)
-            , state (_state)
+          type_checker ( const id::ref::port& port
+                       , const boost::filesystem::path& path
+                       , const state::type& state
+                       )
+            : _port (port)
+            , _path (path)
+            , _state (state)
           { }
 
 
-          void operator () (const id::ref::net & id_net) const
+          void operator() (const id::ref::net& id_net) const
           {
-            if (not port.place)
+            if (not _port.get().place)
             {
-              if (direction == "in")
+              if (_port.get().direction() == we::type::PORT_IN)
               {
-                state.warn
-                  (warning::port_not_connected (direction, port.name(), path));
+                _state.warn (warning::port_not_connected (_port, _path));
               }
               else
               {
-                throw error::port_not_connected (direction, port.name(), path);
+                throw error::port_not_connected (_port, _path);
               }
             }
             else
             {
               boost::optional<const id::ref::place&>
-                id_place (id_net.get().places().get (*port.place));
+                place (_port.get().resolved_place());
 
-              if (not id_place)
+              if (not place)
               {
-                throw error::port_connected_place_nonexistent
-                  (direction, port.name(), *port.place, path);
+                throw error::port_connected_place_nonexistent (_port, _path);
               }
 
-              const place_type& place (id_place->get());
-
-              if (place.type != port.type)
+              if (place->get().signature() != _port.get().signature())
               {
-                throw error::port_connected_type_error ( direction
-                                                       , port
-                                                       , place
-                                                       , path
-                                                       );
+                throw error::port_connected_type_error (_port, *place, _path);
               }
 
-              if (direction == "tunnel")
+              if (_port.get().direction() == we::type::PORT_TUNNEL)
               {
-                if (not place.is_virtual())
+                if (not place->get().is_virtual())
                 {
                   throw
-                    error::tunnel_connected_non_virtual (port, place, path);
+                    error::tunnel_connected_non_virtual (_port, *place, _path);
                 }
 
-                if (port.name() != place.name())
+                if (_port.get().name() != place->get().name())
                 {
-                  throw error::tunnel_name_mismatch (port, place, path);
+                  throw error::tunnel_name_mismatch (_port, *place, _path);
                 }
               }
             }
           }
 
-          template<typename T>
-          void operator () (const T &) const
+          void operator() (const id::ref::expression&) const
           {
-            if (port.place)
+            if (_port.get().place)
             {
-              throw error::port_connected_place_nonexistent
-                (direction, port.name(), *port.place, path);
+              throw error::port_connected_place_nonexistent (_port, _path);
+            }
+          }
+
+          void operator() (const id::ref::module&) const
+          {
+            if (_port.get().place)
+            {
+              throw error::port_connected_place_nonexistent (_port, _path);
             }
           }
         };
       }
 
-      void port_type::type_check ( const std::string & direction
-                                 , const boost::filesystem::path & path
-                                 , const state::type & state
-                                 ) const
+      void port_type::type_check
+        (const boost::filesystem::path& path, const state::type& state) const
       {
         assert (has_parent());
 
         boost::apply_visitor
-          ( port_type_check_visitor (direction, *this, path, state)
-          , parent()->f
-          );
+          (type_checker (make_reference_id(), path, state), parent()->content());
+      }
+
+      const we::type::PortDirection& port_type::direction() const
+      {
+        return _direction;
+      }
+      const we::type::PortDirection& port_type::direction_impl
+        (const we::type::PortDirection& direction_)
+      {
+        return _direction = direction_;
+      }
+      const we::type::PortDirection& port_type::direction
+        (const we::type::PortDirection& direction_)
+      {
+        if (has_parent())
+        {
+          parent()->port_direction (make_reference_id(), direction_);
+          return _direction;
+        }
+        return direction_impl (direction_);
+      }
+
+      boost::optional<const id::ref::place&> port_type::resolved_place() const
+      {
+        if (!place || !(has_parent() && parent()->is_net()))
+        {
+          return boost::none;
+        }
+
+        return parent()->get_net()->get().places().get (*place);
       }
 
       const we::type::property::type& port_type::properties() const
@@ -157,9 +237,9 @@ namespace xml
         return _properties;
       }
 
-      const port_type::unique_key_type& port_type::unique_key() const
+      port_type::unique_key_type port_type::unique_key() const
       {
-        return name();
+        return std::make_pair (name(), direction());
       }
 
       id::ref::port port_type::clone
@@ -174,22 +254,20 @@ namespace xml
           , new_mapper
           , parent
           , _name
-          , type
+          , _type
           , place
+          , _direction
           , _properties
           ).make_reference_id();
       }
 
       namespace dump
       {
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const port_type & p
-                  , const std::string & direction
-                  )
+        void dump (::fhg::util::xml::xmlstream& s, const port_type& p)
         {
-          s.open (direction);
+          s.open (we::type::enum_to_string (p.direction()));
           s.attr ("name", p.name());
-          s.attr ("type", p.type);
+          s.attr ("type", p.type());
           s.attr ("place", p.place);
 
           ::we::type::property::dump::dump (s, p.properties());

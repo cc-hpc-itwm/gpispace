@@ -1,6 +1,0 @@
-<defun name="Seismic Depth to Time">
-  <in name="input" type="seismic"/>
-  <in name="velocity" type="velocity_depth"/>
-  <in name="params" type="suztot_param"/>
-  <out name="output" type="seismic"/>
-</defun>

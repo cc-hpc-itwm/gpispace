@@ -1,0 +1,17 @@
+# 1 n
+# 2 number of eval without gruenewald transformation
+# 3 number of eval with gruenewald transformation (update_enabled_put_token)
+5  472       125
+10 7217      1000
+15 36238     3375
+20 115432    8000
+25 285411    15625
+30 592043    27000
+35 1097518   42875
+40 1881442   64000
+45 3030863   91125
+50 4630101   125000
+55 6796296   166375
+60 9658978   216000
+65 13341887  274625
+70 17979428  343000

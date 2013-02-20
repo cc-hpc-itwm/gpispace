@@ -1,0 +1,6 @@
+<structs>
+  <struct name="point_type">
+    <field name="x" type="double"/>
+    <field name="y" type="double"/>
+  </struct>
+</structs>

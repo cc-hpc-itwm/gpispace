@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     if (variables.count("version"))
       {
-        std::cout << fhg::project_info();
+        std::cout << fhg::project_info ("Pnet Verifier");
 
         return EXIT_SUCCESS;
       }

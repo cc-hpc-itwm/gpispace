@@ -170,47 +170,50 @@ void JobManager::resubmitResults(IComm* pComm)
     std::string job_status = pJob->getStatus();
     SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");
 
-    if( pJob->isMasterJob() && job_status.find("Finished") != std::string::npos )
+    if( pJob->isMasterJob() )
     {
-      // create jobFinishedEvent
-      sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
-                                                                                              pJob->owner(),
-                                                                                              pJob->id(),
-                                                                                              pJob->result() ));
+		if( job_status.find("Finished") != std::string::npos )
+		{
+		  // create jobFinishedEvent
+		  sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
+																								  pJob->owner(),
+																								  pJob->id(),
+																								  pJob->result() ));
 
-      // send it to the master
-      pComm->sendEventToMaster(pEvtJobFinished);
-    }
-    else if( pJob->isMasterJob() && job_status.find("Failed") != std::string::npos )
-    {
-      // create jobFailedEvent
-      sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
-                                                                                        pJob->owner(),
-                                                                                        pJob->id(),
-                                                                                        pJob->result() ));
+		  // send it to the master
+		  pComm->sendEventToMaster(pEvtJobFinished);
+		}
+		else if( job_status.find("Failed") != std::string::npos )
+		{
+		  // create jobFailedEvent
+		  sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
+																							pJob->owner(),
+																							pJob->id(),
+																							pJob->result() ));
 
-      // send it to the master
-      pComm->sendEventToMaster(pEvtJobFailed);
-    }
-    else if( pJob->isMasterJob() && job_status.find("Cancelled") != std::string::npos)
-    {
-      // create jobCancelledEvent
-      sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
-                                                                                                  pJob->owner(),
-                                                                                                  pJob->id()));
+		  // send it to the master
+		  pComm->sendEventToMaster(pEvtJobFailed);
+		}
+		else if( job_status.find("Cancelled") != std::string::npos)
+		{
+		  // create jobCancelledEvent
+		  sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
+																									  pJob->owner(),
+																									  pJob->id()));
 
-      // send it to the master
-      pComm->sendEventToMaster(pEvtJobCancelled);
-    }
-    else
-    {
-      sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
-                                                                                                pJob->owner(),
-                                                                                                pJob->id(),
-                                                                                                ""));
+		  // send it to the master
+		  pComm->sendEventToMaster(pEvtJobCancelled);
+		}
+		else if( job_status.find("Pending") != std::string::npos )
+		{
+		  sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
+																									pJob->owner(),
+																									pJob->id(),
+																									""));
 
-      // There is a problem with this if uncommented
-      pComm->sendEventToMaster(pSubmitJobAckEvt);
+		  // There is a problem with this if uncommented
+		  pComm->sendEventToMaster(pSubmitJobAckEvt);
+		}
     }
   }
 }

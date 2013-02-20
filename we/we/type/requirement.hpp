@@ -4,23 +4,15 @@
 #include <boost/functional/hash.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/serialization/version.hpp>
 
 namespace we
 {
   namespace type
   {
-    template <typename T>
     struct requirement_t
     {
-      typedef T value_type;
+      typedef std::string value_type;
       typedef value_type argument_type;
-
-      template <typename U>
-      struct rebind
-      {
-        typedef requirement_t<U> other;
-      };
 
       requirement_t ()
         : value_()
@@ -33,12 +25,12 @@ namespace we
         , mandatory_(_mandatory)
       {}
 
-      requirement_t (requirement_t<T> const &other)
+      requirement_t (requirement_t const &other)
         : value_(other.value_)
         , mandatory_(other.mandatory_)
       {}
 
-      requirement_t<T> & operator=(requirement_t<T> const & rhs)
+      requirement_t& operator=(requirement_t const & rhs)
       {
         this->value_ = rhs.value_;
         this->mandatory_ = rhs.mandatory_;
@@ -74,21 +66,18 @@ namespace we
       bool mandatory_;
     };
 
-    template <typename T>
-    requirement_t<T> make_mandatory (T val)
+    inline requirement_t make_mandatory (const std::string& val)
     {
-      return requirement_t<T> (val, true);
+      return requirement_t (val, true);
     }
 
-    template <typename T>
-    requirement_t<T> make_optional (T val)
+    inline requirement_t make_optional (const std::string& val)
     {
-      return requirement_t<T> (val, false);
+      return requirement_t (val, false);
     }
 
-    template <typename T>
-    inline bool operator==( const requirement_t<T> & a
-                          , const requirement_t<T> & b
+    inline bool operator==( const requirement_t& a
+                          , const requirement_t& b
                           )
     {
       return (a.value() == b.value())
@@ -96,8 +85,7 @@ namespace we
         ;
     }
 
-    template <typename T>
-    inline std::size_t hash_value(requirement_t<T> const & r)
+    inline std::size_t hash_value(requirement_t const & r)
     {
       boost::hash<std::string> hasher;
       std::size_t h (hasher(r.value()));

@@ -1,4 +1,0 @@
-<defun name="Load Seismic">
-  <in name="filename" type="string"/>
-  <out name="data" type="seismic"/>
-</defun>

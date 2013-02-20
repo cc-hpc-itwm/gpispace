@@ -56,6 +56,8 @@ namespace xml
                     , const boost::filesystem::path& path
                     );
 
+        const std::string& name() const;
+
         bool operator == (const module_type& other) const;
 
         void sanity_check() const;
@@ -67,8 +69,11 @@ namespace xml
 
         friend std::size_t hash_value (const module_type&);
 
+      private:
+        std::string _name;
+
+      public:
         //! \todo All these should be private with accessors
-        std::string name;
         std::string function;
         boost::optional<std::string> port_return;
         port_args_type port_arg;

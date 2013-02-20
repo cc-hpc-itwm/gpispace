@@ -1,0 +1,7 @@
+<defun>
+  <in name="slot" type="long" place="slot"/>
+  <inout name="cache" type="cache_type" place="cache"/>
+  <expression>
+    ${cache.slots.filled} := set_insert (${cache.slots.filled}, ${slot});
+  </expression>
+</defun>

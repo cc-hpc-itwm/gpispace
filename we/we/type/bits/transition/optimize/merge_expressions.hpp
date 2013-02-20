@@ -5,6 +5,9 @@
 
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
+#include <we/type/port.hpp>
+
+#include <we/type/net.hpp>
 
 #include <we/type/bits/transition/optimize/is_associated.hpp>
 
@@ -19,20 +22,16 @@ namespace we { namespace type {
     {
       // ******************************************************************* //
 
-      template<typename P, typename E, typename T>
-      inline boost::optional<const typename transition_t<P, E, T>::port_t>
-      input_port_by_pid ( const transition_t<P, E, T> & trans
-                        , const petri_net::pid_t & pid
+      inline boost::optional<const we::type::port_t>
+      input_port_by_pid ( const transition_t & trans
+                        , const petri_net::place_id_type & pid
                         )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef typename transition_t::port_t port_t;
-
         try
           {
             return trans.get_port (trans.input_port_by_pid (pid).first);
           }
-        catch (const we::type::exception::not_connected<petri_net::pid_t> &)
+        catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
           {
             return boost::none;
           }
@@ -40,45 +39,40 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E, typename T>
       struct trans_info
       {
-        typedef boost::unordered_set<petri_net::pid_t> pid_set_type;
+        typedef boost::unordered_set<petri_net::place_id_type> pid_set_type;
 
-        const transition_t<P, E, T> pred;
-        const petri_net::tid_t tid_pred;
+        const transition_t pred;
+        const petri_net::transition_id_type tid_pred;
         const pid_set_type pid_read;
 
-        trans_info ( const transition_t<P, E, T> & _pred
-                   , const petri_net::tid_t & _tid_pred
+        trans_info ( const transition_t & _pred
+                   , const petri_net::transition_id_type & _tid_pred
                    , const pid_set_type & _pid_read
                    )
           : pred (_pred), tid_pred (_tid_pred), pid_read (_pid_read)
         {}
       };
 
-      template<typename P, typename E, typename T>
-      inline boost::optional<trans_info<P, E, T> >
+      inline boost::optional<trans_info>
       expression_predecessor
-      ( const transition_t<P, E, T> & trans
-      , const petri_net::tid_t & tid
-      , const petri_net::net<P, transition_t<P, E, T>, E, T> & net
+      ( const transition_t & trans
+      , const petri_net::transition_id_type & tid
+      , const petri_net::net & net
       )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef petri_net::net<P, transition_t, E, T> pnet_t;
-        typedef petri_net::adj_place_const_it adj_place_const_it;
-        typedef petri_net::adj_transition_const_it adj_transition_const_it;
-        typedef petri_net::tid_t tid_t;
+        typedef petri_net::net pnet_t;
         typedef petri_net::connection_t connection_t;
-        typedef typename transition_t::const_iterator const_iterator;
-        typedef trans_info<P, E, T> trans_info;
-        typedef typename trans_info::pid_set_type pid_set_type;
+        typedef transition_t::const_iterator const_iterator;
+        typedef trans_info::pid_set_type pid_set_type;
 
-        typedef std::pair<const transition_t, const tid_t> pair_type;
+        typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
         typedef boost::unordered_set<pair_type> set_of_pair_type;
 
-        typedef std::pair<const tid_t, const pid_t> tid_pid_type;
+        typedef std::pair< const petri_net::transition_id_type
+                         , const petri_net::place_id_type
+                         > tid_pid_type;
         typedef boost::unordered_set<tid_pid_type> set_of_tid_pid_type;
 
         typedef boost::unordered_set<std::string> name_set_type;
@@ -116,13 +110,12 @@ namespace we { namespace type {
         // collect outgoing pids
         pid_set_type pid_out;
 
-        for ( adj_place_const_it p (net.out_of_transition (tid))
-            ; p.has_more()
-            ; ++p
-            )
-          {
-            pid_out.insert (*p);
-          }
+        BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                      , net.out_of_transition (tid) | boost::adaptors::map_keys
+                      )
+        {
+          pid_out.insert (place_id);
+        }
 
         // collect predecessors, separate read connections
         set_of_pair_type preds;
@@ -130,83 +123,83 @@ namespace we { namespace type {
         pid_set_type pid_read;
         std::size_t max_successors_of_pred = 0;
 
-        for ( adj_place_const_it p (net.in_to_transition (tid))
-            ; p.has_more()
-            ; ++p
-            )
+        typedef std::pair<petri_net::place_id_type, connection_t> pc_type;
+
+        BOOST_FOREACH (const pc_type& pc, net.in_to_transition (tid))
+        {
+          const connection_t& connection (pc.second);
+          const petri_net::place_id_type& place_id (pc.first);
+
+          if (petri_net::edge::is_pt_read (connection.type))
           {
-            const connection_t & connection (net.get_edge_info (p()));
-
-            if (petri_net::edge::is_pt_read (connection.type))
-              {
-                if (net.in_to_place (*p).empty())
-                  {
-                    pid_read.insert (*p);
-                  }
-                else
-                  {
-                    for ( adj_transition_const_it t (net.in_to_place (*p))
-                        ; t.has_more()
-                        ; ++t
-                        )
-                      {
-                        preds_read.insert (tid_pid_type (*t, *p));
-
-                        for ( adj_place_const_it tp (net.out_of_transition (*t))
-                            ; tp.has_more()
-                            ; ++tp
-                            )
-                          {
-                            if (pid_out.find (*tp) != pid_out.end())
-                              {
-                                return boost::none;
-                              }
-                          }
-                     }
-                  }
-              }
-            else if (net.in_to_place (*p).empty())
-             {
-               // WORK HERE: possible optimization: make the place an
-               // input place of the only one predecessor
-               // BEWARE: check the conditions!
-               return boost::none;
-             }
+            if (net.in_to_place (place_id).empty())
+            {
+              pid_read.insert (place_id);
+            }
             else
+            {
+              BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                            , net.in_to_place (place_id)
+                            | boost::adaptors::map_keys
+                            )
               {
-                for ( adj_transition_const_it t (net.in_to_place (*p))
-                    ; t.has_more()
-                    ; ++t
-                    )
+                preds_read.insert (tid_pid_type (transition_id, place_id));
+
+                BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
+                              , net.out_of_transition (transition_id)
+                              | boost::adaptors::map_keys
+                              )
+                {
+                  if (pid_out.find (out_place_id) != pid_out.end())
                   {
-                    const petri_net::tid_t & tid_pred (*t);
-                    const transition_t & trans (net.get_transition (tid_pred));
-
-                    if (not content::is_expression (trans))
-                      {
-                        return boost::none;
-                      }
-
-                    for ( adj_place_const_it tp (net.out_of_transition (*t))
-                        ; tp.has_more()
-                        ; ++tp
-                        )
-                      {
-                        if (pid_out.find (*tp) != pid_out.end())
-                          {
-                            return boost::none;
-                          }
-
-                        max_successors_of_pred =
-                          std::max ( max_successors_of_pred
-                                   , net.out_of_place (*tp).size()
-                                   );
-                      }
-
-                    preds.insert (pair_type (trans, tid_pred));
+                    return boost::none;
                   }
+                }
               }
+            }
           }
+          else if (net.in_to_place (place_id).empty())
+          {
+            // WORK HERE: possible optimization: make the place an
+            // input place of the only one predecessor
+            // BEWARE: check the conditions!
+            return boost::none;
+          }
+          else
+          {
+            BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                          , net.in_to_place (place_id)
+                          | boost::adaptors::map_keys
+                          )
+            {
+              const petri_net::transition_id_type & tid_pred (transition_id);
+              const transition_t & trans (net.get_transition (tid_pred));
+
+              if (not content::is_expression (trans))
+              {
+                return boost::none;
+              }
+
+              BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
+                            , net.out_of_transition (transition_id)
+                            | boost::adaptors::map_keys
+                            )
+              {
+                if (pid_out.find (out_place_id) != pid_out.end())
+                {
+                  return boost::none;
+                }
+
+                max_successors_of_pred =
+                  std::max ( max_successors_of_pred
+                           , net.out_of_place (out_place_id).size()
+                           );
+              }
+
+              preds.insert (pair_type (trans, tid_pred));
+            }
+          }
+        }
 
         if (  (preds.size() != 1)
            || (!preds_read.empty() && max_successors_of_pred > 1)
@@ -217,7 +210,7 @@ namespace we { namespace type {
 
         const pair_type p (*preds.begin());
 
-        for ( typename set_of_tid_pid_type::const_iterator tr (preds_read.begin())
+        for ( set_of_tid_pid_type::const_iterator tr (preds_read.begin())
             ; tr != preds_read.end()
             ; ++tr
             )
@@ -233,35 +226,31 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E, typename T>
       inline void resolve_ports
-      ( transition_t<P, E, T> & trans
-      , const petri_net::tid_t & tid_trans
-      , const transition_t<P, E, T> & pred
-      , const petri_net::net<P, transition_t<P, E, T>, E, T> & net
-      , const typename trans_info<P, E, T>::pid_set_type & pid_read
+      ( transition_t & trans
+      , const petri_net::transition_id_type & tid_trans
+      , const transition_t & pred
+      , const petri_net::net & net
+      , const trans_info::pid_set_type & pid_read
       )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef typename transition_t::port_id_t port_id_t;
-        typedef typename transition_t::port_t port_t;
-        typedef petri_net::net<P, transition_t, E, T> pnet_t;
-        typedef petri_net::adj_place_const_it adj_place_const_it;
+        typedef we::type::port_t port_t;
+        typedef petri_net::net pnet_t;
 
         expression_t & expression (boost::get<expression_t &> (trans.data()));
 
-        for ( adj_place_const_it p (net.in_to_transition (tid_trans))
-            ; p.has_more()
-            ; ++p
-            )
+        BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                      , net.in_to_transition (tid_trans)
+                      | boost::adaptors::map_keys
+                      )
           {
-            if (pid_read.find (*p) == pid_read.end())
+            if (pid_read.find (place_id) == pid_read.end())
               {
                 const port_t & pred_out
-                  (pred.get_port (pred.output_port_by_pid (*p).first));
+                  (pred.get_port (pred.output_port_by_pid (place_id).first));
 
                 port_t & trans_in
-                  (trans.get_port (trans.input_port_by_pid (*p).first));
+                  (trans.get_port (trans.input_port_by_pid (place_id).first));
 
                 expression.rename (trans_in.name(), pred_out.name());
 
@@ -270,14 +259,14 @@ namespace we { namespace type {
             else
               {
                 const boost::optional<const port_t>
-                  maybe_pred_in (input_port_by_pid (pred, *p));
+                  maybe_pred_in (input_port_by_pid (pred, place_id));
 
                 if (maybe_pred_in)
                   {
                     const port_t & pred_in (*maybe_pred_in);
 
                     port_t & trans_in
-                      (trans.get_port (trans.input_port_by_pid (*p).first));
+                      (trans.get_port (trans.input_port_by_pid (place_id).first));
 
                     expression.rename (trans_in.name(), pred_in.name());
 
@@ -289,16 +278,15 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E, typename T>
       inline void rename_ports
-      ( transition_t<P, E, T> & trans
-      , const transition_t<P, E, T> & other
+      ( transition_t & trans
+      , const transition_t & other
       )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef typename transition_t::port_iterator port_iterator;
-        typedef typename transition_t::const_iterator const_iterator;
-        typedef typename transition_t::port_t port_t;
+        typedef transition_t transition_t;
+        typedef transition_t::port_iterator port_iterator;
+        typedef transition_t::const_iterator const_iterator;
+        typedef we::type::port_t port_t;
 
         boost::unordered_set<std::string> other_names;
 
@@ -329,22 +317,16 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E, typename T>
       inline void take_ports
-      ( const transition_t<P, E, T> & trans
-      , const petri_net::tid_t tid_trans
-      , transition_t<P, E, T> & pred
-      , const petri_net::tid_t tid_pred
-      , petri_net::net<P, transition_t<P, E, T>, E, T> & net
-      , const typename trans_info<P, E, T>::pid_set_type pid_read
+      ( const transition_t & trans
+      , const petri_net::transition_id_type tid_trans
+      , transition_t & pred
+      , const petri_net::transition_id_type tid_pred
+      , petri_net::net & net
+      , const trans_info::pid_set_type pid_read
       )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef typename transition_t::const_iterator const_iterator;
-        typedef typename transition_t::port_t port_t;
-        typedef typename transition_t::port_id_t port_id_t;
-        typedef petri_net::pid_t pid_t;
-        typedef petri_net::eid_t eid_t;
+        typedef transition_t::const_iterator const_iterator;
         typedef petri_net::connection_t connection_t;
 
         for ( const_iterator p (trans.ports_begin())
@@ -356,19 +338,17 @@ namespace we { namespace type {
               {
                 pred.UNSAFE_add_port (p->second);
 
-                const pid_t pid (trans.inner_to_outer (p->first));
+                const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
-                const eid_t eid (net.get_eid_out (tid_trans, pid));
-                const E edge (net.get_edge (eid));
-                connection_t connection (net.get_edge_info (eid));
+                connection_t connection (net.get_connection_out (tid_trans, pid));
 
-                net.delete_edge (eid);
+                net.delete_edge_out (tid_trans, pid);
 
                 connection.tid = tid_pred;
 
-                net.add_edge (edge, connection);
+                net.add_connection (connection);
 
-                pred.add_connections ()
+                pred.add_connection
                   (p->second.name(), pid, p->second.property())
                   ;
               }
@@ -376,7 +356,8 @@ namespace we { namespace type {
               {
                 try
                   {
-                    const pid_t pid (trans.input_pid_by_port_id (p->first));
+                    const petri_net::place_id_type pid
+                      (trans.input_pid_by_port_id (p->first));
 
                     if (pid_read.find (pid) != pid_read.end())
                       {
@@ -384,23 +365,21 @@ namespace we { namespace type {
                           {
                             pred.UNSAFE_add_port (p->second);
 
-                            const eid_t eid (net.get_eid_in (tid_trans, pid));
-                            const E edge (net.get_edge (eid));
-                            connection_t connection (net.get_edge_info (eid));
+                            connection_t connection (net.get_connection_in (tid_trans, pid));
 
-                            net.delete_edge (eid);
+                            net.delete_edge_in (tid_trans, pid);
 
                             connection.tid = tid_pred;
 
-                            net.add_edge (edge, connection);
+                            net.add_connection (connection);
 
-                            pred.add_connections ()
+                            pred.add_connection
                               (pid, p->second.name(), p->second.property())
                               ;
                           }
                       }
                   }
-                catch (const we::type::exception::not_connected<pid_t> &)
+                catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
                   {
                     // do nothing, the port was not connected
                   }
@@ -410,22 +389,16 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E, typename T>
       inline void clear_ports
-      ( transition_t<P, E, T> & trans
-      , const petri_net::tid_t /* tid_trans */
-      , const transition_t<P, E, T> & trans_parent
-      , petri_net::net<P, transition_t<P, E, T>, E, T> & net
+      ( transition_t & trans
+      , const petri_net::transition_id_type /* tid_trans */
+      , const transition_t & trans_parent
+      , petri_net::net & net
       )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef typename transition_t::const_iterator const_iterator;
-        typedef typename transition_t::port_t port_t;
-        typedef typename transition_t::port_id_t port_id_t;
-        typedef petri_net::pid_t pid_t;
-        typedef petri_net::eid_t eid_t;
+        typedef transition_t::const_iterator const_iterator;
 
-        typedef std::pair<port_id_t, pid_t> pair_type;
+        typedef std::pair<petri_net::port_id_type, petri_net::place_id_type> pair_type;
         std::stack<pair_type> to_erase;
 
         for ( const_iterator p (trans.ports_begin())
@@ -435,10 +408,12 @@ namespace we { namespace type {
           {
             if (p->second.is_output())
               {
-                const pid_t pid (trans.inner_to_outer (p->first));
+                const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
                 namespace prop = we::type::property::traverse;
 
+                //! \todo eliminate the hack that stores the real
+                //! place in the properties
                 prop::stack_type stack
                   (prop::dfs (net.get_place(pid).property(), "real"));
 
@@ -455,8 +430,8 @@ namespace we { namespace type {
         while (!to_erase.empty())
           {
             const pair_type & p (to_erase.top());
-            const port_id_t & port_id (p.first);
-            const pid_t & pid (p.second);
+            const petri_net::port_id_type& port_id (p.first);
+            const petri_net::place_id_type & pid (p.second);
 
             net.delete_place (pid);
             trans.erase_port (port_id);
@@ -467,38 +442,35 @@ namespace we { namespace type {
 
       // ******************************************************************* //
 
-      template<typename P, typename E, typename T>
       inline bool run_once
-      ( transition_t<P, E, T> & trans_parent
-      , petri_net::net<P, transition_t<P,E,T>, E, T> & net
+      ( transition_t & trans_parent
+      , petri_net::net & net
       )
       {
-        typedef transition_t<P, E, T> transition_t;
-        typedef petri_net::net<P, transition_t, E, T> pnet_t;
-        typedef typename pnet_t::transition_const_it transition_const_it;
-        typedef petri_net::tid_t tid_t;
+        typedef petri_net::net pnet_t;
 
         bool modified (false);
 
-        typedef std::stack<tid_t> stack_t;
+        typedef std::stack<petri_net::transition_id_type> stack_t;
         stack_t stack;
 
-        for (transition_const_it t (net.transitions()); t.has_more(); ++t)
-          {
-            stack.push (*t);
-          }
+        BOOST_FOREACH ( const petri_net::transition_id_type& t
+                      , net.transitions() | boost::adaptors::map_keys
+                      )
+        {
+          stack.push (t);
+        }
 
         while (!stack.empty())
           {
-            const tid_t & tid_trans (stack.top());
+            const petri_net::transition_id_type & tid_trans (stack.top());
             transition_t trans (net.get_transition (tid_trans));
 
             if (  content::is_expression (trans)
                && trans.condition().is_const_true()
                )
               {
-                typedef trans_info<P, E, T> trans_info;
-                typedef typename trans_info::pid_set_type pid_set_type;
+                typedef trans_info::pid_set_type pid_set_type;
 
                 const boost::optional<trans_info>
                   maybe_pred (expression_predecessor (trans, tid_trans, net));
@@ -506,13 +478,13 @@ namespace we { namespace type {
                 if (maybe_pred)
                   {
                     transition_t pred ((*maybe_pred).pred);
-                    tid_t tid_pred ((*maybe_pred).tid_pred);
+                    petri_net::transition_id_type tid_pred ((*maybe_pred).tid_pred);
 
                     pid_set_type pid_read ((*maybe_pred).pid_read);
 
-                    rename_ports<P, E, T> (trans, pred);
+                    rename_ports (trans, pred);
 
-                    resolve_ports<P, E, T>(trans, tid_trans, pred, net, pid_read);
+                    resolve_ports (trans, tid_trans, pred, net, pid_read);
 
                     expression_t & exp_trans
                       (boost::get<expression_t &> (trans.data()));
@@ -522,11 +494,11 @@ namespace we { namespace type {
 
                     exp_pred.add (exp_trans);
 
-                    take_ports<P, E, T> (trans, tid_trans, pred, tid_pred, net, pid_read);
+                    take_ports (trans, tid_trans, pred, tid_pred, net, pid_read);
 
                     net.delete_transition (tid_trans);
 
-                    clear_ports<P, E, T> (pred, tid_pred, trans_parent, net);
+                    clear_ports (pred, tid_pred, trans_parent, net);
 
                     net.modify_transition (tid_pred, pred);
 
@@ -540,10 +512,9 @@ namespace we { namespace type {
         return modified;
       }
 
-      template<typename P, typename E, typename T>
       inline bool run
-      ( transition_t<P, E, T> & trans_parent
-      , petri_net::net<P, transition_t<P,E,T>, E, T> & net
+      ( transition_t & trans_parent
+      , petri_net::net & net
       )
       {
         bool modified (false);

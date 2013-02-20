@@ -513,10 +513,9 @@ namespace signature
 
           if (literal::cpp::known (t))
             {
-              this->s << cpp_util::access::make ("","literal","show")
-                << "(" << cpp_util::access::make ("", "literal", "type")
+              this->s << cpp_util::access::make ("", "literal", "type")
                 << "(x" << fhg::util::show (field_global) << ")"
-                << ") << std::endl"
+                << std::endl
                 ;
             }
           else
@@ -621,12 +620,8 @@ namespace signature
       cpp_util::header_gen_full (os);
       cpp_util::include_guard_begin (os, "PNETC_TYPE_" + n);
 
-      cpp_util::include (os, "we/type/bitsetofint.hpp");
-      cpp_util::include (os, "we/type/bytearray.hpp");
-      cpp_util::include (os, "we/type/control.hpp");
       cpp_util::include (os, "we/type/value.hpp");
       cpp_util::include (os, "we/type/value/cpp/get.hpp");
-      cpp_util::include (os, "string");
 
       // for serialization
       cpp_util::include (os, "boost/serialization/nvp.hpp");

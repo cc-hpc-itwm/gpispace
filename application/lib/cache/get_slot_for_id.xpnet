@@ -1,0 +1,118 @@
+<defun>
+  <tunnel name="cache" type="cache_type" place="cache"/>
+  <in name="id" type="long" place="id"/>
+  <out name="slot" type="long" place="slot"/>
+  <net>
+    <place name="cache" type="cache_type" virtual="true"/>
+    <place name="id" type="long"/>
+    <place name="slot" type="long"/>
+
+    <transition name="in_cache">
+      <defun>
+        <inout name="cache" type="cache_type"/>
+        <in name="id" type="long"/>
+        <in name="in_cache" type="bool"/>
+        <out name="slot" type="long"/>
+        <expression>
+          ${slot} := map_get_assignment (${cache.by_id.slot}, ${id});
+
+          ${cache.by_slot.num_users}
+            := map_assign ( ${cache.by_slot.num_users}
+                          , ${slot}
+                          , 1 + map_get_assignment ( ${cache.by_slot.num_users}
+                                                   , ${slot}
+                                                   )
+                          );
+
+          ${cache.slots.available}
+            := set_erase (${cache.slots.available}, ${slot});
+
+          ${cache.stat.hit} := ${cache.stat.hit} + 1;
+
+          ${cache.num.user} := ${cache.num.user} + 1;
+        </expression>
+        <condition>
+          map_is_assigned (${cache.by_id.slot}, ${id})
+        </condition>
+      </defun>
+      <connect-inout port="cache" place="cache"/>
+      <connect-in port="id" place="id"/>
+      <connect-out port="slot" place="slot"/>
+    </transition>
+
+    <transition name="not_in_cache_has_empty">
+      <defun>
+        <inout name="cache" type="cache_type"/>
+        <in name="id" type="long"/>
+        <out name="slot" type="long"/>
+        <expression>
+          ${slot} := set_top (${cache.slots.empty});
+
+          ${cache.slots.empty} := set_pop (${cache.slots.empty});
+
+          ${cache.by_id.slot}
+            := map_assign (${cache.by_id.slot}, ${id}, ${slot});
+          ${cache.by_slot.id}
+            := map_assign (${cache.by_slot.id}, ${slot}, ${id});
+
+          ${cache.by_slot.num_users}
+            := map_assign (${cache.by_slot.num_users}, ${slot}, 1);
+
+          ${cache.stat.miss.empty} := ${cache.stat.miss.empty} + 1;
+
+          ${cache.num.user} := ${cache.num.user} + 1;
+        </expression>
+        <condition>
+          (!map_is_assigned (${cache.by_id.slot}, ${id}))
+          :and:
+          (!set_empty (${cache.slots.empty}))
+        </condition>
+      </defun>
+      <connect-inout port="cache" place="cache"/>
+      <connect-in port="id" place="id"/>
+      <connect-out port="slot" place="slot"/>
+    </transition>
+
+    <transition name="not_in_cache_not_has_empty_has_available">
+      <defun>
+        <inout name="cache" type="cache_type"/>
+        <in name="id" type="long"/>
+        <out name="slot" type="long"/>
+        <expression>
+          ${slot} := set_top (${cache.slots.available});
+
+          ${cache.slots.available} := set_pop (${cache.slots.available});
+          ${cache.slots.filled} := set_erase (${cache.slots.filled}, ${slot});
+
+          /* old content is deleted */
+          ${cache.by_id.slot}
+            := map_unassign ( ${cache.by_id.slot}
+                            , map_get_assignment (${cache.by_slot.id}, ${slot})
+                            );
+
+          ${cache.by_id.slot}
+            := map_assign (${cache.by_id.slot}, ${id}, ${slot});
+          ${cache.by_slot.id}
+            := map_assign (${cache.by_slot.id}, ${slot}, ${id});
+
+          ${cache.by_slot.num_users}
+            := map_assign (${cache.by_slot.num_users}, ${slot}, 1);
+
+          ${cache.stat.miss.available} := ${cache.stat.miss.available} + 1;
+
+          ${cache.num.user} := ${cache.num.user} + 1;
+        </expression>
+        <condition>
+          (!map_is_assigned (${cache.by_id.slot}, ${id}))
+          :and:
+          (set_empty (${cache.slots.empty}))
+          :and:
+          (!set_empty (${cache.slots.available}))
+        </condition>
+      </defun>
+      <connect-inout port="cache" place="cache"/>
+      <connect-in port="id" place="id"/>
+      <connect-out port="slot" place="slot"/>
+    </transition>
+  </net>
+</defun>

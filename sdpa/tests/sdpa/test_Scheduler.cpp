@@ -82,50 +82,6 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 
 	ptrScheduler->print();
 
-/*
-	// submit a number of remote jobs and schedule them
-	for(int i=0; i<NJOBS; i++)
-	{
-		JobId job_id;
-		Job::ptr_t pJob( new JobFSM( job_id, ""));
-		pJob->set_local(false);
-
-		// specify some preferences for this job
-		// job i prefers (i%NWORKERS + NWORKERS -1 )%NWORKERS, i%NWORKERS, (i%NWORKERS + 1)%NWORKERS,
-		// mandatory
-		preference_t job_pref(true);
-		job_pref.want( (i%NWORKERS + NWORKERS -1 )%NWORKERS );
-		job_pref.want( i%NWORKERS );
-		job_pref.want( (i%NWORKERS + 1)%NWORKERS );
-
-		ptrOrch->jobManager()->addJob(job_id, pJob);
-		ptrOrch->jobManager()->addJobPreferences(job_id, job_pref);
-
-		//add later preferences to the jobs
-		ptrScheduler->schedule_remote(job_id);
-	}
-
-	// the workers request jobs
-	int nJobsCompleted = 0;
-	while( nJobsCompleted<NJOBS )
-     for( int k=0; k<NWORKERS; k++ )
-     {
-         oss.str("");
-         oss<<"Worker"<<k;
-         Worker::worker_id_t workerId(oss.str());
-
-         try {
-             sdpa::job_id_t jobId = ptrScheduler->getNextJob(workerId, "");
-             LOG(DEBUG, "The worker "<<workerId<<" was served the job "<<jobId.str() );
-             nJobsCompleted++;
-         }
-         catch( const NoJobScheduledException& ex )
-         {
-             LOG(WARN, "No job could be scheduled on the worker  "<<workerId );
-         }
-     }
-*/
-
    LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
    seda::StageRegistry::instance().remove(ptrOrch->name());
 }

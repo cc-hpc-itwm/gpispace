@@ -34,27 +34,6 @@ set (xml_parse_type_fwd_headers
   use.fwd.hpp
 )
 
-set (xml_parse_type_sources
-  connect.cpp
-  expression.cpp
-  function.cpp
-  mod.cpp
-  net.cpp
-  place.cpp
-  place_map.cpp
-  port.cpp
-  require.cpp
-  specialize.cpp
-  struct.cpp
-  template.cpp
-  transition.cpp
-  use.cpp
-)
-
-add_library (xml_parse_type
-  ${xml_parse_type_sources}
-)
-
 install (FILES ${xml_parse_type_headers} ${xml_parse_type_fwd_headers}
   DESTINATION include/xml/parse/type
   COMPONENT headers)

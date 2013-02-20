@@ -1,4 +1,0 @@
-<defun name="Load Velocity (depth)">
-  <in name="filename" type="string"/>
-  <out name="data" type="velocity_depth"/>
-</defun>

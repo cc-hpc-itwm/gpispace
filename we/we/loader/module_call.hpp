@@ -4,66 +4,56 @@
 #include <we/loader/loader.hpp>
 #include <we/loader/types.hpp>
 
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/module_call.hpp>
+#include <we/type/id.hpp>
+#include <we/type/port.hpp>
+#include <we/type/value/require_type.hpp>
+
+#include <boost/foreach.hpp>
+
 namespace module
 {
-  static void call (we::loader::loader & loader, we::activity_t & act, const we::transition_t::mod_type & module_call)
+  static void call (we::loader::loader & loader, we::mgmt::type::activity_t & act, const we::type::module_call_t & module_call)
   {
-    we::mgmt::type::detail::printer<we::activity_t, std::ostream> printer (act, std::cout);
-
     // construct context
     typedef we::loader::input_t context_t;
-    typedef we::activity_t::input_t input_t;
-    typedef we::activity_t::output_t output_t;
-    typedef we::activity_t::token_type token_type;
-    typedef we::activity_t::transition_type::port_id_t port_id_t;
-    typedef we::activity_t::transition_type::port_t port_t;
-    typedef we::activity_t::transition_type::const_iterator port_iterator;
+    typedef we::mgmt::type::activity_t::output_t output_t;
+    typedef we::type::port_t port_t;
+    typedef we::type::transition_t::const_iterator port_iterator;
 
     context_t context;
-    for ( input_t::const_iterator top (act.input().begin())
-        ; top != act.input().end()
-        ; ++top
-        )
-    {
-      const token_type token   = top->first;
-      const port_id_t  port_id = top->second;
 
-      we::loader::put
-        ( context
-        , we::type::detail::translate_port_to_name ( act.transition()
-                                                   , port_id
-                                                   )
-        , token.value
-        );
+    typedef std::pair<value::type, petri_net::port_id_type> tp_type;
+
+    BOOST_FOREACH (const tp_type& tp, act.input())
+    {
+      context.bind_ref ( act.transition().name_of_port (tp.second)
+                       , tp.first
+                       );
     }
 
-    typedef we::loader::output_t mod_output_t;
-
-    mod_output_t mod_output;
+    we::loader::output_t mod_output;
 
     loader[module_call.module()] (module_call.function(), context, mod_output);
 
-    for ( mod_output_t::const_iterator ton (mod_output.begin())
-        ; ton != mod_output.end()
-        ; ++ton
-        )
+    typedef std::pair<std::string, value::type> kv_type;
+
+    BOOST_FOREACH (const kv_type& kv, mod_output.values())
     {
       try
       {
-        const port_id_t port_id =
-          we::type::detail::translate_name_to_output_port ( act.transition()
-                                                          , ton->first
-                                                          );
+        const petri_net::port_id_type& port_id
+          (act.transition().output_port_by_name (kv.first));
 
-        const port_t & port =
-          act.transition().get_port (port_id);
+        const port_t& port (act.transition().get_port (port_id));
 
         act.add_output
           ( output_t::value_type
-            ( token_type ( port.name()
-                         , port.signature()
-                         , ton->second
-                         )
+            ( value::require_type ( port.name()
+                                  , port.signature()
+                                  , kv.second
+                                  )
             , port_id
             )
           );
