@@ -415,11 +415,11 @@ namespace petri_net
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      if (place_id == pid)
-      {
-        cross.push (place_id, token);
-      }
-      else
+      // if (place_id == pid)
+      // {
+      //   cross.push (place_id, token);
+      // }
+      // else
       {
         std::list<value::type>& tokens (_token_by_place_id[place_id]);
 
@@ -451,18 +451,21 @@ namespace petri_net
 
     boost::unordered_set<transition_id_type> transitions_to_update;
 
-    typedef std::pair<place_id_type, std::list<value::type>::iterator> place_and_token_type;
+    typedef std::pair<place_id_type, value::type> place_and_token_type;
 
     BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
       const place_id_type& pid (pt.first);
-      const std::list<value::type>::iterator& token (pt.second);
+      const value::type& token (pt.second);
 
-      act.add_input (std::make_pair (*token, transition.outer_to_inner (pid)));
+      act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
 
       if (!is_read_connection (tid, pid))
       {
-        _token_by_place_id.at (pid).erase (token);
+        std::list<value::type>& tokens (_token_by_place_id[pid]);
+        tokens.erase (std::find (tokens.begin(), tokens.end(), token));
+
+        //        _token_by_place_id.at (pid).erase (token);
 
         BOOST_FOREACH ( const transition_id_type& t
                       , out_of_place (pid) | boost::adaptors::map_keys

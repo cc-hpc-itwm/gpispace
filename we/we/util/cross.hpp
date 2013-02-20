@@ -43,6 +43,10 @@ namespace we
                                          , std::list<value::type>::iterator
                                          >&
                     ) const;
+      void write_to (boost::unordered_map< petri_net::place_id_type
+                                         , value::type
+                                         >&
+                    ) const;
       void push ( const petri_net::place_id_type&
                 , std::list<value::type>&
                 );

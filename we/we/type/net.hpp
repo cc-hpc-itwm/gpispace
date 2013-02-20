@@ -147,7 +147,7 @@ namespace petri_net
     boost::unordered_map
       < transition_id_type
       , boost::unordered_map< petri_net::place_id_type
-                            , std::list<value::type>::iterator
+                            , value::type
                             >
       > _enabled_choice;
 
