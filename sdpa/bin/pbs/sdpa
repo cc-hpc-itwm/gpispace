@@ -889,6 +889,7 @@ function generate_environment ()
     prepend_to_path PC_LIBRARY_PATH "$SDPA_LIBEXEC/apps"
     if [ -n "$SDPA_APP_PATH" ] ; then
         prepend_to_path PC_LIBRARY_PATH "$SDPA_APP_PATH"
+        prepend_to_path LD_LIBRARY_PATH "$SDPA_APP_PATH"
     fi
     prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
 
