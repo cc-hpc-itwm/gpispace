@@ -27,10 +27,17 @@ function prepend_to_path ()
     local var="$1"; shift
     local val=$(eval echo \$${var})
     for v ; do
+        if [ -z "$v" ] ; then
+            continue
+        fi
         val=$(echo "$val" | sed "s,:$v:,:,g")
         val=$(echo "$val" | sed -e "s,^$v:,,g")
         val=$(echo "$val" | sed -e "s,:$v\$,,g")
-        val="$v:$val"
+        if [ -z "$val" ] ; then
+            val="$v"
+        else
+            val="$v:$val"
+        fi
     done
     eval "$var=$val"
 }
