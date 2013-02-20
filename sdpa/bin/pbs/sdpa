@@ -2104,6 +2104,7 @@ function selftest ()
         log "I: Congratulations $greeting, your SDPA installation is working!"
     else
         log "E: self test job could not be executed!"
+        stop
         return 8
     fi
 
