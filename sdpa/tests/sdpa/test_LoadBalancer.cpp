@@ -1,128 +1,51 @@
-/*
-* =====================================================================================
-*
-*       Filename:  test_LoadBalancer.cpp
-*
-*    Description:  test the scheduler thread
-*
-*        Version:  1.0
-*        Created:
-*       Revision:  none
-*       Compiler:  gcc
-*
-*         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
-*        Company:  Fraunhofer ITWM
-*
-* =====================================================================================
-*/
-#define BOOST_TEST_MODULE TestLoadBalancer
+#define BOOST_TEST_MODULE worker_manager_load_balancing
 
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
-#include <string>
-#include <list>
-#include <sdpa/memory.hpp>
-#include <time.h>
-#include <sdpa/util/util.hpp>
-#include <fstream>
+
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sstream>
 #include <sdpa/JobId.hpp>
-#include <seda/StageRegistry.hpp>
-#include <sdpa/types.hpp>
 
-using namespace std;
-using namespace sdpa;
-using namespace sdpa::tests;
-using namespace sdpa::daemon;
+#include <algorithm>
 
-const int NWORKERS = 10;
-
-struct MyFixture
+BOOST_AUTO_TEST_CASE (load_balancing_to_nearly_average)
 {
-  MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testLoadBalancer"){}
-  ~MyFixture()
+  static const size_t NWORKERS = 10;
+  size_t worker_load[NWORKERS] = {100, 200, 10, 2, 30, 1000, 5, 300, 55, 701};
+
+  const float average_load
+    (std::accumulate (worker_load, worker_load + NWORKERS, 0) / float (NWORKERS));
+  const float tolerance (std::ceil (average_load)/ average_load);
+
+  sdpa::daemon::WorkerManager wm;
+
+  std::cout << average_load << ", " << tolerance << std::endl;
+
+  for (size_t k (0); k < NWORKERS; ++k)
   {
-    seda::StageRegistry::instance().stopAll();
-    seda::StageRegistry::instance().clear();
+    const sdpa::JobId job_id;
+    wm.addWorker (job_id.str(), 100, sdpa::capabilities_set_t(), 0, job_id);
   }
 
-  SDPA_DECLARE_LOGGER();
-};
-
-BOOST_FIXTURE_TEST_SUITE( test_LoadBalancer, MyFixture )
-
-BOOST_AUTO_TEST_CASE(testLoadBalancer)
-{
-  WorkerManager wm;
-  ostringstream oss;
-  size_t arrLoad[] = {100, 200, 10, 2, 30, 1000, 5, 300, 55, 701};
-
-  // create a number of workers
-  for(int k=0;k<NWORKERS;k++)
+  for (size_t k (0); k < NWORKERS; ++k)
   {
-    oss.str("");
-    oss<<"TestWorker_"<<k;
-    sdpa::JobId id;
-    wm.addWorker(oss.str(), 100, capabilities_set_t(), 0 /*rank*/, id.str());
-  }
+    const sdpa::daemon::Worker::ptr_t& worker (wm.getNextWorker());
 
-  // submit jobs to the workers
-  for(int k=0; k<NWORKERS; k++)
-  {
-    try
+    for (size_t l (0); l < worker_load[k]; ++l)
     {
-      const Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
-
-      for( size_t l=0; l<arrLoad[k]; l++)
-      {
-              sdpa::job_id_t jobId;
-              ptrCurrWorker->dispatch(jobId);
-      }
-    }
-    catch(const NoWorkerFoundException& ex)
-    {
-      SDPA_LOG_ERROR("No worker found!");
-      BOOST_CHECK(false);
-      break;
+      worker->dispatch (sdpa::JobId());
     }
   }
 
-  // print loads before balancing
-  for(int k=0; k<NWORKERS; k++)
+  for (size_t k (0); k < NWORKERS; ++k)
   {
-    try
-    {
-      const Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
-      cout<<"load["<<ptrCurrWorker->name()<<"] = "<<ptrCurrWorker->pending().size()<<std::endl;
-    }
-    catch(const NoWorkerFoundException& ex)
-    {
-      SDPA_LOG_ERROR("No worker found!");
-      BOOST_CHECK(false);
-      break;
-    }
+    BOOST_REQUIRE_EQUAL (wm.getNextWorker()->pending().size(), worker_load[k]);
   }
 
-  cout<<"Balance the workers now ..."<<endl<<endl;
   wm.balanceWorkers();
 
-  // print load after balancing
-  for(int k=0; k<NWORKERS; k++)
+  for (size_t k (0); k < NWORKERS; ++k)
   {
-    try
-    {
-      const Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
-      cout<<"load["<<ptrCurrWorker->name()<<"] = "<<ptrCurrWorker->pending().size()<<std::endl;
-    }
-    catch(const NoWorkerFoundException& ex)
-    {
-      SDPA_LOG_ERROR("No worker found!");
-      BOOST_CHECK(false);
-      break;
-    }
+    BOOST_REQUIRE_CLOSE
+      (wm.getNextWorker()->pending().size(), average_load, tolerance);
   }
 }
-
-BOOST_AUTO_TEST_SUITE_END()
