@@ -896,6 +896,10 @@ function generate_environment ()
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:\$LD_LIBRARY_PATH"
     echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH:\$PC_LIBRARY_PATH"
     echo export PATH="$PATH:\$PATH"
+
+    debug "I: PATH := ${PATH}"
+    debug "I: LD_LIBRARY_PATH := ${LD_LIBRARY_PATH}"
+    debug "I: PC_LIBRARY_PATH := ${PC_LIBRARY_PATH}"
 }
 
 function dump_config ()
