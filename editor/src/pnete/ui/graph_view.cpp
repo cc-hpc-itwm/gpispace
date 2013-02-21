@@ -11,7 +11,11 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 
+#include <QHBoxLayout>
+#include <QSlider>
+#include <QSpinBox>
 #include <QWheelEvent>
+#include <QWidgetAction>
 
 namespace fhg
 {
@@ -72,6 +76,33 @@ namespace fhg
           );
         zoom_default->setShortcut (QKeySequence ("Ctrl+*"));
         addAction (zoom_default);
+
+        {
+          QWidget* base (new QWidget (this));
+
+          QSlider* bar (new QSlider (Qt::Horizontal, this));
+          bar->setMaximumWidth (size::zoom::slider::max_length());
+          bar->setRange (size::zoom::min_value(), size::zoom::max_value());
+          bar->setValue (size::zoom::default_value());
+
+          QSpinBox* box (new QSpinBox (this));
+          box->setSuffix ("%");
+          box->setRange (size::zoom::min_value(), size::zoom::max_value());
+          box->setValue (size::zoom::default_value());
+
+          connect (box, SIGNAL (valueChanged (int)), bar, SLOT (setValue (int)));
+          connect (bar, SIGNAL (valueChanged (int)), box, SLOT (setValue (int)));
+          connect (bar, SIGNAL (valueChanged (int)), this, SLOT (zoom (int)));
+          connect (this, SIGNAL (zoomed (int)), bar, SLOT (setValue (int)));
+
+          QHBoxLayout* layout (new QHBoxLayout (base));
+          layout->addWidget (bar);
+          layout->addWidget (box);
+
+          QWidgetAction* action (new QWidgetAction (this));
+          action->setDefaultWidget (base);
+          addAction (action);
+        }
 
         QAction* sep (new QAction (this));
         sep->setSeparator (true);
