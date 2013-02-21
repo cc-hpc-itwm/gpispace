@@ -84,6 +84,7 @@ namespace fhg
           )
         , _windows_menu (NULL)
         , _document_specific_action_menu (NULL)
+        , _document_specific_action_toolbar (NULL)
         , _action_save_current_file (NULL)
         , _action_execute_current_file_locally_via_prompt (NULL)
         , _action_execute_current_file_locally_from_file (NULL)
@@ -269,6 +270,7 @@ namespace fhg
         foreach (QAction* action, doc_view->actions())
         {
           _document_specific_action_menu->addAction (action);
+          _document_specific_action_toolbar->addAction (action);
         }
 
         _action_save_current_file->setEnabled (true);
@@ -302,6 +304,7 @@ namespace fhg
             action->setVisible (false);
           }
           _document_specific_action_menu->menuAction()->setVisible (false);
+          _document_specific_action_toolbar->setVisible (false);
           _accessed_widgets.pop();
           removeDockWidget (current);
           delete current;
@@ -352,6 +355,7 @@ namespace fhg
         }
         _document_specific_action_menu->menuAction()->setVisible
           (!to->actions().isEmpty());
+        _document_specific_action_toolbar->setVisible (!to->actions().isEmpty());
       }
 
       QMenu* editor_window::createPopupMenu()
@@ -480,6 +484,12 @@ namespace fhg
         _document_specific_action_menu =
           menu_bar->addMenu ("document_specific_actions");
         _document_specific_action_menu->menuAction()->setVisible (false);
+
+        _document_specific_action_toolbar =
+          new QToolBar ("document_specific_actions", this);
+        _document_specific_action_toolbar->setVisible (false);
+        addToolBar (Qt::TopToolBarArea, _document_specific_action_toolbar);
+        _document_specific_action_toolbar->setFloatable (false);
 
         QMenu* runtime_menu (new QMenu (tr ("runtime_menu"), menu_bar));
 
