@@ -216,7 +216,7 @@ extern "C" {
         (s_gpi->krnl->lookup_plugin ("isim")->get_plugin ());
       isim::Reactor *r = dynamic_cast<isim::Reactor*>
         (s_gpi->krnl->lookup_plugin ("isim")->get_plugin ());
-      r->set_reactor (s_react_on_message);
+//      r->set_reactor (s_react_on_message);
     }
     else
     {
