@@ -61,10 +61,20 @@ set (srcs
 )
 
 add_library (fhg-util ${srcs})
+add_library (fhg-util-shared SHARED ${srcs})
+set_target_properties(fhg-util-shared PROPERTIES OUTPUT_NAME fhg-util)
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
   COMPONENT headers)
+install (TARGETS fhg-util
+  ARCHIVE DESTINATION lib
+  COMPONENT runtime
+)
+install (TARGETS fhg-util-shared
+  LIBRARY DESTINATION lib
+  COMPONENT runtime
+)
 
 add_subdirectory (boost)
 add_subdirectory(parse)
