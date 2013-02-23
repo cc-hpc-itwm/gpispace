@@ -114,24 +114,24 @@ namespace petri_net
     template<typename Archive>
     void save (Archive& ar, const unsigned int) const
     {
-      ar & BOOST_SERIALIZATION_NVP(_place_id);
-      ar & BOOST_SERIALIZATION_NVP(_pmap);
-      ar & BOOST_SERIALIZATION_NVP(_transition_id);
-      ar & BOOST_SERIALIZATION_NVP(_tmap);
-      ar & BOOST_SERIALIZATION_NVP(_adj_pt);
-      ar & BOOST_SERIALIZATION_NVP(_adj_tp);
-      ar & BOOST_SERIALIZATION_NVP(_token_by_place_id);
+      ar & BOOST_SERIALIZATION_NVP (_place_id);
+      ar & BOOST_SERIALIZATION_NVP (_pmap);
+      ar & BOOST_SERIALIZATION_NVP (_transition_id);
+      ar & BOOST_SERIALIZATION_NVP (_tmap);
+      ar & BOOST_SERIALIZATION_NVP (_adj_pt);
+      ar & BOOST_SERIALIZATION_NVP (_adj_tp);
+      ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
     }
     template<typename Archive>
     void load (Archive& ar, const unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(_place_id);
-      ar & BOOST_SERIALIZATION_NVP(_pmap);
-      ar & BOOST_SERIALIZATION_NVP(_transition_id);
-      ar & BOOST_SERIALIZATION_NVP(_tmap);
-      ar & BOOST_SERIALIZATION_NVP(_adj_pt);
-      ar & BOOST_SERIALIZATION_NVP(_adj_tp);
-      ar & BOOST_SERIALIZATION_NVP(_token_by_place_id);
+      ar & BOOST_SERIALIZATION_NVP (_place_id);
+      ar & BOOST_SERIALIZATION_NVP (_pmap);
+      ar & BOOST_SERIALIZATION_NVP (_transition_id);
+      ar & BOOST_SERIALIZATION_NVP (_tmap);
+      ar & BOOST_SERIALIZATION_NVP (_adj_pt);
+      ar & BOOST_SERIALIZATION_NVP (_adj_tp);
+      ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
 
       BOOST_FOREACH ( const transition_id_type& tid
                     , _tmap | boost::adaptors::map_keys
