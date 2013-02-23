@@ -106,6 +106,21 @@ namespace we
 
       return transition.condition().parser().eval_all_bool (context);
     }
+    void cross_type::write_to (boost::unordered_map< petri_net::place_id_type
+                                                   , pos_and_distance_type
+                                                   >& choice
+                              ) const
+    {
+      choice.clear();
+
+      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
+
+      BOOST_FOREACH (const pits_type& pits, _m)
+      {
+        choice.insert
+          (std::make_pair (pits.first, pits.second.pos_and_distance()));
+      }
+    }
     void cross_type::write_to
       (boost::unordered_map< petri_net::place_id_type
                            , std::list<value::type>::iterator

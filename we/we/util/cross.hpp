@@ -39,6 +39,10 @@ namespace we
       bool step();
       bool eval (const we::type::transition_t&) const;
       void write_to (boost::unordered_map< petri_net::place_id_type
+                                         , pos_and_distance_type
+                                         >&
+                    ) const;
+      void write_to (boost::unordered_map< petri_net::place_id_type
                                          , std::list<value::type>::iterator
                                          >&
                     ) const;
