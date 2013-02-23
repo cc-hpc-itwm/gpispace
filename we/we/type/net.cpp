@@ -15,6 +15,55 @@
 
 namespace petri_net
 {
+  net::net()
+    : _place_id()
+    , _pmap()
+    , _transition_id()
+    , _tmap()
+    , _adj_pt()
+    , _adj_tp()
+    , _token_by_place_id()
+    , _enabled()
+    , _enabled_choice()
+  {}
+  net::net (const net& other)
+    : _place_id (other._place_id)
+    , _pmap (other._pmap)
+    , _transition_id (other._transition_id)
+    , _tmap (other._tmap)
+    , _adj_pt (other._adj_pt)
+    , _adj_tp (other._adj_tp)
+    , _token_by_place_id (other._token_by_place_id)
+    , _enabled()
+    , _enabled_choice()
+  {
+    BOOST_FOREACH ( const transition_id_type& tid
+                  , _tmap | boost::adaptors::map_keys
+                  )
+    {
+      update_enabled (tid);
+    }
+  }
+  net& net::operator= (const net& other)
+  {
+    _place_id = other._place_id;
+    _pmap = other._pmap;
+    _transition_id = other._transition_id;
+    _tmap = other._tmap;
+    _adj_pt = other._adj_pt;
+    _adj_tp = other._adj_tp;
+    _token_by_place_id = other._token_by_place_id;
+
+    BOOST_FOREACH ( const transition_id_type& tid
+                  , _tmap | boost::adaptors::map_keys
+                  )
+    {
+      update_enabled (tid);
+    }
+
+    return *this;
+  }
+
   place_id_type net::add_place (const place::type& place)
   {
     const place_id_type pid (_place_id++);

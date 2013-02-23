@@ -31,6 +31,11 @@ namespace petri_net
   class net
   {
   public:
+    //! \todo eliminate these, just do not copy or assign nets!
+    net();
+    net (const net&);
+    net& operator= (const net&);
+
     place_id_type add_place (const place::type&);
     transition_id_type add_transition (const we::type::transition_t&);
     void add_connection (const connection_t&);
