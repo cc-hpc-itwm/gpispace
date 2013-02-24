@@ -121,42 +121,6 @@ namespace we
           (std::make_pair (pits.first, pits.second.pos_and_distance()));
       }
     }
-    void cross_type::write_to
-      (boost::unordered_map< petri_net::place_id_type
-                           , std::list<value::type>::iterator
-                           >& choice
-      ) const
-    {
-      choice.clear();
-
-      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
-
-      BOOST_FOREACH (const pits_type& pits, _m)
-      {
-        choice.insert (std::make_pair ( pits.first
-                                      , pits.second.pos_and_distance().first
-                                      )
-                      );
-      }
-    }
-    void cross_type::write_to
-      (boost::unordered_map< petri_net::place_id_type
-                           , value::type
-                           >& choice
-      ) const
-    {
-      choice.clear();
-
-      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
-
-      BOOST_FOREACH (const pits_type& pits, _m)
-      {
-        choice.insert (std::make_pair ( pits.first
-                                      , *pits.second.pos_and_distance().first
-                                      )
-                      );
-      }
-    }
     void cross_type::push ( const petri_net::place_id_type& place_id
                           , std::list<value::type>& tokens
                           )
