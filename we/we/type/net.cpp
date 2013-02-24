@@ -479,11 +479,11 @@ namespace petri_net
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      // if (place_id == pid)
-      // {
-      //   cross.push (place_id, token);
-      // }
-      // else
+      if (place_id == pid)
+      {
+        cross.push (place_id, token);
+      }
+      else
       {
         std::list<value::type>& tokens (_token_by_place_id[place_id]);
 
