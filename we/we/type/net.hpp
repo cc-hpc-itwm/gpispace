@@ -152,9 +152,11 @@ namespace petri_net
     boost::unordered_map
       < transition_id_type
       , boost::unordered_map< petri_net::place_id_type
-                            , value::type
+                            , we::util::pos_and_distance_type
                             >
       > _enabled_choice;
+
+    void get_enabled_choice (const net&);
 
     void update_enabled (const transition_id_type&);
     void update_enabled_put_token

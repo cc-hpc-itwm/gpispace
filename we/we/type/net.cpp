@@ -8,6 +8,7 @@
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/utility.hpp>
 
 #include <stack>
 
@@ -34,15 +35,10 @@ namespace petri_net
     , _adj_pt (other._adj_pt)
     , _adj_tp (other._adj_tp)
     , _token_by_place_id (other._token_by_place_id)
-    , _enabled()
+    , _enabled (other._enabled)
     , _enabled_choice()
   {
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , _tmap | boost::adaptors::map_keys
-                  )
-    {
-      update_enabled (tid);
-    }
+    get_enabled_choice (other);
   }
   net& net::operator= (const net& other)
   {
@@ -53,15 +49,34 @@ namespace petri_net
     _adj_pt = other._adj_pt;
     _adj_tp = other._adj_tp;
     _token_by_place_id = other._token_by_place_id;
+    _enabled = other._enabled;
 
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , _tmap | boost::adaptors::map_keys
-                  )
-    {
-      update_enabled (tid);
-    }
+    get_enabled_choice (other);
 
     return *this;
+  }
+  void net::get_enabled_choice (const net& other)
+  {
+    typedef boost::unordered_map< petri_net::place_id_type
+                                , we::util::pos_and_distance_type
+                                > enabled_by_place_id_type;
+
+    typedef std::pair<transition_id_type, enabled_by_place_id_type> tm_type;
+
+    BOOST_FOREACH (const tm_type& tm, other._enabled_choice)
+    {
+      enabled_by_place_id_type& enabled_by_place_id (_enabled_choice[tm.first]);
+
+      BOOST_FOREACH (const enabled_by_place_id_type::value_type& pd, tm.second)
+      {
+        enabled_by_place_id[pd.first] = std::make_pair
+          ( boost::next ( _token_by_place_id.at (pd.first).begin()
+                        , pd.second.second
+                        )
+          , pd.second.second
+          );
+      }
+    }
   }
 
   place_id_type net::add_place (const place::type& place)
@@ -500,21 +515,21 @@ namespace petri_net
 
     boost::unordered_set<transition_id_type> transitions_to_update;
 
-    typedef std::pair<place_id_type, value::type> place_and_token_type;
+    typedef std::pair< place_id_type
+                     , we::util::pos_and_distance_type
+                     > place_and_token_type;
 
     BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
       const place_id_type& pid (pt.first);
-      const value::type& token (pt.second);
+      const we::util::pos_and_distance_type& pos_and_distance (pt.second);
+      const std::list<value::type>::iterator& token (pos_and_distance.first);
 
-      act.add_input (std::make_pair (token, transition.outer_to_inner (pid)));
+      act.add_input (std::make_pair (*token, transition.outer_to_inner (pid)));
 
       if (!is_read_connection (tid, pid))
       {
-        std::list<value::type>& tokens (_token_by_place_id[pid]);
-        tokens.erase (std::find (tokens.begin(), tokens.end(), token));
-
-        //        _token_by_place_id.at (pid).erase (token);
+        _token_by_place_id.at (pid).erase (token);
 
         BOOST_FOREACH ( const transition_id_type& t
                       , out_of_place (pid) | boost::adaptors::map_keys
