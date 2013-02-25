@@ -12,45 +12,39 @@
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/utility.hpp>
 
 namespace we
 {
   namespace util
   {
-    namespace
-    {
-      template<typename IT>
-      IT succ (IT it)
-      {
-        return ++it;
-      }
-    }
-
     iterators_type::iterators_type (std::list<value::type>& tokens)
       : _begin (tokens.begin())
       , _end (tokens.end())
-      , _pos (tokens.begin())
+      , _pos_and_distance (tokens.begin(), 0)
     {}
     iterators_type::iterators_type (const std::list<value::type>::iterator& token)
-        : _begin (token)
-        , _end (succ (token))
-        , _pos (token)
+      : _begin (token)
+      , _end (boost::next (token))
+      , _pos_and_distance (token, 0)
     {}
-    const std::list<value::type>::iterator& iterators_type::end() const
+    bool iterators_type::end() const
     {
-      return _end;
+      return _end == _pos_and_distance.first;
     }
-    const std::list<value::type>::iterator& iterators_type::pos() const
+    const pos_and_distance_type& iterators_type::pos_and_distance() const
     {
-      return _pos;
+      return _pos_and_distance;
     }
     void iterators_type::operator++()
     {
-      ++_pos;
+      ++_pos_and_distance.first;
+      ++_pos_and_distance.second;
     }
     void iterators_type::rewind()
     {
-      _pos = _begin;
+      _pos_and_distance.first = _begin;
+      _pos_and_distance.second = 0;
     }
 
     namespace
@@ -63,7 +57,7 @@ namespace we
       {
         ++slot->second;
 
-        if (slot->second.pos() == slot->second.end())
+        if (slot->second.end())
         {
           slot->second.rewind();
 
@@ -106,17 +100,16 @@ namespace we
       BOOST_FOREACH (const pits_type& pits, _m)
       {
         context.bind_ref ( transition.name_of_place (pits.first)
-                         , *pits.second.pos()
+                         , *pits.second.pos_and_distance().first
                          );
       }
 
       return transition.condition().parser().eval_all_bool (context);
     }
-    void cross_type::write_to
-      (boost::unordered_map< petri_net::place_id_type
-                           , std::list<value::type>::iterator
-                           >& choice
-      ) const
+    void cross_type::write_to (boost::unordered_map< petri_net::place_id_type
+                                                   , pos_and_distance_type
+                                                   >& choice
+                              ) const
     {
       choice.clear();
 
@@ -124,22 +117,8 @@ namespace we
 
       BOOST_FOREACH (const pits_type& pits, _m)
       {
-        choice.insert (std::make_pair (pits.first, pits.second.pos()));
-      }
-    }
-    void cross_type::write_to
-      (boost::unordered_map< petri_net::place_id_type
-                           , value::type
-                           >& choice
-      ) const
-    {
-      choice.clear();
-
-      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
-
-      BOOST_FOREACH (const pits_type& pits, _m)
-      {
-        choice.insert (std::make_pair (pits.first, *pits.second.pos()));
+        choice.insert
+          (std::make_pair (pits.first, pits.second.pos_and_distance()));
       }
     }
     void cross_type::push ( const petri_net::place_id_type& place_id

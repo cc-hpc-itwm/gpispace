@@ -31,6 +31,11 @@ namespace petri_net
   class net
   {
   public:
+    //! \todo eliminate these, just do not copy or assign nets!
+    net();
+    net (const net&);
+    net& operator= (const net&);
+
     place_id_type add_place (const place::type&);
     transition_id_type add_transition (const we::type::transition_t&);
     void add_connection (const connection_t&);
@@ -114,24 +119,24 @@ namespace petri_net
     template<typename Archive>
     void save (Archive& ar, const unsigned int) const
     {
-      ar & BOOST_SERIALIZATION_NVP(_place_id);
-      ar & BOOST_SERIALIZATION_NVP(_pmap);
-      ar & BOOST_SERIALIZATION_NVP(_transition_id);
-      ar & BOOST_SERIALIZATION_NVP(_tmap);
-      ar & BOOST_SERIALIZATION_NVP(_adj_pt);
-      ar & BOOST_SERIALIZATION_NVP(_adj_tp);
-      ar & BOOST_SERIALIZATION_NVP(_token_by_place_id);
+      ar & BOOST_SERIALIZATION_NVP (_place_id);
+      ar & BOOST_SERIALIZATION_NVP (_pmap);
+      ar & BOOST_SERIALIZATION_NVP (_transition_id);
+      ar & BOOST_SERIALIZATION_NVP (_tmap);
+      ar & BOOST_SERIALIZATION_NVP (_adj_pt);
+      ar & BOOST_SERIALIZATION_NVP (_adj_tp);
+      ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
     }
     template<typename Archive>
     void load (Archive& ar, const unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(_place_id);
-      ar & BOOST_SERIALIZATION_NVP(_pmap);
-      ar & BOOST_SERIALIZATION_NVP(_transition_id);
-      ar & BOOST_SERIALIZATION_NVP(_tmap);
-      ar & BOOST_SERIALIZATION_NVP(_adj_pt);
-      ar & BOOST_SERIALIZATION_NVP(_adj_tp);
-      ar & BOOST_SERIALIZATION_NVP(_token_by_place_id);
+      ar & BOOST_SERIALIZATION_NVP (_place_id);
+      ar & BOOST_SERIALIZATION_NVP (_pmap);
+      ar & BOOST_SERIALIZATION_NVP (_transition_id);
+      ar & BOOST_SERIALIZATION_NVP (_tmap);
+      ar & BOOST_SERIALIZATION_NVP (_adj_pt);
+      ar & BOOST_SERIALIZATION_NVP (_adj_tp);
+      ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
 
       BOOST_FOREACH ( const transition_id_type& tid
                     , _tmap | boost::adaptors::map_keys
@@ -147,9 +152,11 @@ namespace petri_net
     boost::unordered_map
       < transition_id_type
       , boost::unordered_map< petri_net::place_id_type
-                            , value::type
+                            , we::util::pos_and_distance_type
                             >
       > _enabled_choice;
+
+    void get_enabled_choice (const net&);
 
     void update_enabled (const transition_id_type&);
     void update_enabled_put_token
