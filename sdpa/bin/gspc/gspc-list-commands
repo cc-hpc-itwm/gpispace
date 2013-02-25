@@ -49,7 +49,7 @@ while true ; do
     esac
 done
 
-find "$command_directory" -name "gspc-${prefix}*" | while read path ; do
+find "$command_directory" -name "gspc-${prefix}*" | sort -u | while read path ; do
     if [ -x "$path" ]
     then
         cmd_level=$(grep '^GSPC_API_COMMAND_LEVEL=' "$path" | cut -d= -f2 | xargs echo)
