@@ -3,7 +3,7 @@ project(sdpa_main)
 
 include (./version.cmake)
 
-set(PROJECT_VERSION  "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version" FORCE)
+set(PROJECT_VERSION      CACHE STRING "Project version")
 set(PROJECT_REVISION     CACHE STRING "Source code revision")
 set(PROJECT_BUILD    "0" CACHE STRING "Build number")
 set(PROJECT_DESCRIPTION "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description")
@@ -61,12 +61,36 @@ function(get_revision_info REV_INFO)
   endif (NOT _res)
 endfunction()
 
+function(get_version_info VSN_INFO)
+  execute_process(
+    COMMAND git describe
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE _out
+    ERROR_VARIABLE _err
+    RESULT_VARIABLE _res
+  )
+  if (NOT _res)
+    string(STRIP "${_out}" _out)
+    set (${VSN_INFO} ${_out} PARENT_SCOPE)
+  else ()
+    set(${VSN_INFO} "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
+  endif (NOT _res)
+endfunction()
+
 get_revision_info (PROJECT_REVISION)
 if (NOT PROJECT_REVISION)
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
 endif (NOT PROJECT_REVISION)
 message (STATUS "Revision: ${PROJECT_REVISION}")
 set(PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
+
+get_version_info (PROJECT_VERSION)
+if (NOT PROJECT_VERSION)
+  set(PROJECT_VERSION "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version" FORCE)
+else()
+  set(PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
+endif()
+message (STATUS "Version: ${PROJECT_VERSION}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-dev.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-dev.cmake @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
