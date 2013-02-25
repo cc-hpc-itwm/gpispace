@@ -28,7 +28,7 @@ fhg_assert_mode=0
 
 strip_log=
 build_rev=
-build_vsn=$(cd "${src}" && git describe)
+build_vsn=$(cd "${src}" && git describe | sed -e 's/^v//')
 build_prefix=
 
 function get_cmake_cache_entry ()

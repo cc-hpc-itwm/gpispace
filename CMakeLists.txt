@@ -64,6 +64,7 @@ endfunction()
 function(get_version_info VSN_INFO)
   execute_process(
     COMMAND git describe
+    COMMAND sed -e 's/^v//'
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE _out
     ERROR_VARIABLE _err
