@@ -28,7 +28,7 @@ fhg_assert_mode=0
 
 strip_log=
 build_rev=
-build_vsn=$(echo $(sed 's/[^0-9]//g' "${src}/version.cmake") | tr ' ' '.')
+build_vsn=$(cd "${src}" && git describe)
 build_prefix=
 
 function get_cmake_cache_entry ()
@@ -242,6 +242,7 @@ else
     echo "E: no revision specified!" >&2
     exit 2
 fi
+cmake_flags="$cmake_flags -DPROJECT_VERSION=$build_vsn"
 
 if [ -n "$strip_log" ] ; then
     cmake_flags="$cmake_flags -DFHGLOG_STRIP_LEVEL=$strip_log"
