@@ -19,6 +19,7 @@ set (scripts
   gspc-log
   gspc-init
   gspc-kvs
+  gspc-version
 )
 
 set (files
