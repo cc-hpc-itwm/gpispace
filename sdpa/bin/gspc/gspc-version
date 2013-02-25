@@ -12,12 +12,12 @@ function usage()
 {
     cat <<EOF
 usage: version [-h|--help] [options]
+
+   -r : print the exact revision instead of the version
 EOF
 }
 
-TEMP=`getopt -o hr --long help -n 'version' -- "$@"`
-
-if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+TEMP=`getopt -o :hr --long help -n 'version' -- "$@"`
 
 eval set -- "$TEMP"
 
@@ -26,9 +26,8 @@ mode="version"
 while true ; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
-        -r) mode="revision" ; ;;
+        -r) mode="revision" ; shift ;;
         --) shift; break ;;
-        *) gspc_log_error version "Internal error on argument: '$1'"; exit 1 ;;
     esac
 done
 
