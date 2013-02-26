@@ -27,10 +27,17 @@ function prepend_to_path ()
     local var="$1"; shift
     local val=$(eval echo \$${var})
     for v ; do
+        if [ -z "$v" ] ; then
+            continue
+        fi
         val=$(echo "$val" | sed "s,:$v:,:,g")
         val=$(echo "$val" | sed -e "s,^$v:,,g")
         val=$(echo "$val" | sed -e "s,:$v\$,,g")
-        val="$v:$val"
+        if [ -z "$val" ] ; then
+            val="$v"
+        else
+            val="$v:$val"
+        fi
     done
     eval "$var=$val"
 }
@@ -882,12 +889,17 @@ function generate_environment ()
     prepend_to_path PC_LIBRARY_PATH "$SDPA_LIBEXEC/apps"
     if [ -n "$SDPA_APP_PATH" ] ; then
         prepend_to_path PC_LIBRARY_PATH "$SDPA_APP_PATH"
+        prepend_to_path LD_LIBRARY_PATH "$SDPA_APP_PATH"
     fi
     prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
 
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:\$LD_LIBRARY_PATH"
     echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH:\$PC_LIBRARY_PATH"
     echo export PATH="$PATH:\$PATH"
+
+    debug "I: PATH := ${PATH}"
+    debug "I: LD_LIBRARY_PATH := ${LD_LIBRARY_PATH}"
+    debug "I: PC_LIBRARY_PATH := ${PC_LIBRARY_PATH}"
 }
 
 function dump_config ()
@@ -2097,6 +2109,7 @@ function selftest ()
         log "I: Congratulations $greeting, your SDPA installation is working!"
     else
         log "E: self test job could not be executed!"
+        stop
         return 8
     fi
 

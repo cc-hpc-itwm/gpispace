@@ -5,7 +5,6 @@
 
 #include <we/util/cross.fwd.hpp>
 
-#include <we/type/value.hpp>
 #include <we/type/id.hpp>
 
 #include <we/type/transition.fwd.hpp>
@@ -23,14 +22,14 @@ namespace we
     public:
       iterators_type (std::list<value::type>&);
       iterators_type (const std::list<value::type>::iterator&);
-      const std::list<value::type>::iterator& end() const;
-      const std::list<value::type>::iterator& pos() const;
+      bool end() const;
+      const pos_and_distance_type& pos_and_distance() const;
       void operator++();
       void rewind();
     private:
       std::list<value::type>::iterator _begin;
       std::list<value::type>::iterator _end;
-      std::list<value::type>::iterator _pos;
+      pos_and_distance_type _pos_and_distance;
     };
 
     class cross_type
@@ -40,7 +39,7 @@ namespace we
       bool step();
       bool eval (const we::type::transition_t&) const;
       void write_to (boost::unordered_map< petri_net::place_id_type
-                                         , std::list<value::type>::iterator
+                                         , pos_and_distance_type
                                          >&
                     ) const;
       void push ( const petri_net::place_id_type&

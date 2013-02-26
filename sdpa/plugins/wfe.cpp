@@ -36,7 +36,8 @@ struct search_path_appender
 
   search_path_appender & operator = (std::string const &p)
   {
-    loader.append_search_path (p);
+    if (not p.empty ())
+      loader.append_search_path (p);
     return *this;
   }
 

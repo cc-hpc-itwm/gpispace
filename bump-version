@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ -z "$1" ]; then
   echo "usage: $0 MAJOR.MINOR.PATCH"
   exit 1
@@ -13,7 +13,7 @@ if ! echo "$1" | grep -q -e '^[[:digit:]]\+\(\.[[:digit:]]\+\(\.[[:digit:]]\+[^ 
 fi
 
 tmp=$( echo $1 | tr . ' ')
-read major minor patch <<<$tmp
+read major minor patch <<<"${tmp}"
 
 if [ -z "$minor" ]; then
   minor="0"
@@ -43,8 +43,8 @@ else
 		exit 4
 	    else
 		if [ $minor -eq $cur_minor ]; then
-		    if [ $patch -le $cur_patch ]; then
-			echo "new patch cannot be less than current patch"
+		    if [ "$patch" \< "$cur_patch" -o "$patch" == "$cur_patch" ]; then
+			echo "new patch ('$patch') cannot be less than or equal to current patch ('$cur_patch')"
 			exit 4
 		    fi
 		fi

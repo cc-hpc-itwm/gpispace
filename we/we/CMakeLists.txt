@@ -87,6 +87,7 @@ add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table we)
 
 add_subdirectory (container/test)
+add_subdirectory (util/test)
 
 if (BUILD_TESTING)
   add_executable (test_we_type_bytearray type/test/test_bytearray.cpp)

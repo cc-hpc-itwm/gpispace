@@ -105,6 +105,7 @@ namespace fhg
 
         QMenu* _windows_menu;
         QMenu* _document_specific_action_menu;
+        QToolBar* _document_specific_action_toolbar;
         QAction* _action_save_current_file;
         QAction* _action_execute_current_file_locally_via_prompt;
         QAction* _action_execute_current_file_locally_from_file;
