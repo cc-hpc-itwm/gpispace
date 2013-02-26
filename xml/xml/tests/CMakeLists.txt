@@ -8,7 +8,7 @@ fhg_add_test (parse_duplicate_connect.cpp
 )
 
 if (${Boost_VERSION} EQUAL 104700)
-  set (pnet_dir  "${CMAKE_CURRENT_SOURCE_DIR}/pnets/147")
+  set (pnet_dir  "${CMAKE_CURRENT_SOURCE_DIR}/pnets/1_47")
 else()
   set (pnet_dir  "${CMAKE_CURRENT_SOURCE_DIR}/pnets")
 endif()
