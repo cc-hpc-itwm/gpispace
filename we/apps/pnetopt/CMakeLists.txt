@@ -12,6 +12,7 @@ add_executable(pnetopt ${PNETOPT_SOURCES})
 target_link_libraries(pnetopt we)
 target_link_libraries(pnetopt ${Boost_LIBRARIES})
 target_link_libraries(pnetopt ${LUA_LIBRARY})
+target_link_libraries(pnetopt ${CMAKE_DL_LIBS})
 
 install (TARGETS pnetopt
 	RUNTIME
