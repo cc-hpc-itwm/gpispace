@@ -20,6 +20,7 @@ url="/p/hpc/sdpa/repo/sdpa.git"
 jobs=2
 execute_tests=true
 fresh=false
+create_package=false
 
 while getopts ":hp:b:u:j:tfi:H:" opt ; do
     case $opt in
@@ -27,6 +28,7 @@ while getopts ":hp:b:u:j:tfi:H:" opt ; do
             echo >&2 "usage: gspc-build: [-h] [-j #jobs(=${jobs})] [-p prefix] [-b branch(=${branch})] [-f]"
             echo >&2 "     -f : fresh"
             echo >&2 " -i key : ssh key to use"
+            echo >&2 "     -P : create a package"
             exit 0
             ;;
         p)  basedir=$OPTARG ;;
@@ -34,6 +36,7 @@ while getopts ":hp:b:u:j:tfi:H:" opt ; do
         u)  url="$OPTARG" ;;
         j)  jobs="$OPTARG" ;;
         t)  execute_tests=false ;;
+        P)  create_package=true ;;
         f)  fresh=true ;;
         i)  ssh_key="$OPTARG" ;;
         \?) ;;
@@ -112,6 +115,8 @@ if [ -d "${instdir}" ] ; then
 fi
 make -j "${jobs}" install || { echo >&2 "FAILED: could not INSTALL" ; exit 13; }
 
-cpack --config cpack-rel.cmake || { echo >&2 "FAILED: could not PACK" ; exit 14; }
+if $create_package ; then
+    cpack --config cpack-rel.cmake || { echo >&2 "FAILED: could not PACK" ; exit 14; }
+fi
 
 echo "${rev} SUCCESS $(date)" >> "${builddir}/cron.build.log"
