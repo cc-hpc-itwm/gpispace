@@ -21,14 +21,16 @@ jobs=2
 execute_tests=true
 fresh=false
 create_package=false
+test_timeout=360
 
-while getopts ":hp:b:u:j:tfi:H:" opt ; do
+while getopts ":hp:b:u:j:tfi:H:T:" opt ; do
     case $opt in
         h)
             echo >&2 "usage: gspc-build: [-h] [-j #jobs(=${jobs})] [-p prefix] [-b branch(=${branch})] [-f]"
             echo >&2 "     -f : fresh"
             echo >&2 " -i key : ssh key to use"
             echo >&2 "     -P : create a package"
+            echo >&2 "-T secs : timeout of tests (=${test_timeout})"
             exit 0
             ;;
         p)  basedir=$OPTARG ;;
@@ -39,6 +41,7 @@ while getopts ":hp:b:u:j:tfi:H:" opt ; do
         P)  create_package=true ;;
         f)  fresh=true ;;
         i)  ssh_key="$OPTARG" ;;
+        T)  test_timeout=$OPTARG ;;
         \?) ;;
     esac
 done
@@ -104,7 +107,7 @@ echo "$(date)" > "${builddir}/build.tstamp"
 
 make -j "${jobs}" || { echo >&2 "FAILED: could not BUILD" ; exit 12; }
 if $execute_tests ; then
-  ctest -j "${jobs}" --timeout 360 || { echo >&2 "WARN: could not TEST" ; }
+  ctest -j "${jobs}" --timeout "${test_timeout}" || { echo >&2 "WARN: could not TEST" ; }
 fi
 
 if [ -d "${instdir}" ] ; then
