@@ -473,6 +473,11 @@ namespace petri_net
     , const std::list<value::type>::iterator& token
     )
   {
+    if (_enabled.elem (tid))
+    {
+      return;
+    }
+
     we::util::cross_type cross;
 
     BOOST_FOREACH ( const place_id_type& place_id
