@@ -484,7 +484,7 @@
     <!-- map with tokenizer --> 
     <place name="counter_partial_updates" type="counter_partial_updates_t"/>
     <place name="map_chunk_info" type="map_chunk_info_t"/>
-     
+
      <transition name="map_chunk" inline="true">
       <require key="GPI" />
       <require key="MAP" /> 
@@ -543,10 +543,10 @@
             int n_part = config.num.part;
             size_t slot_size = config.size.partition.slot;
             
-            std::vector<std::string> arr_part_buffs(n_part, "");
+            std::vector< std::vector<std::string> > arr_part_buffs(n_part);
             
-            bool first_char_is_delim = first_char_is_delim = ::mapreduce::util::is_delimiter(ptr_shmem[0]);
-            bool last_char_is_delim = ::mapreduce::util::is_delimiter(ptr_shmem[read_chunk_info.used - 1]);
+            bool first_char_is_delim = ::mapreduce::util::is_delimiter(ptr_shmem[0]);
+            bool last_char_is_delim  = ::mapreduce::util::is_delimiter(ptr_shmem[read_chunk_info.used - 1]);
            
             long n = 0, part_id;
           
@@ -569,14 +569,14 @@
                         if( first_char_is_delim )
                         {
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_left_prefix, " " ));
-                            part_id = ::mapreduce::util::hash( str_pair, n_part);
-                            arr_part_buffs[part_id] += str_pair;
+                            part_id  = ::mapreduce::util::hash( str_pair, n_part);
+                            arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
                         {
-                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_left_prefix, curr_item)) + SPCH; 
-                            part_id = ::mapreduce::util::hash( str_pair, n_part);
-                            arr_part_buffs[part_id] += str_pair;
+                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_left_prefix, curr_item)); 
+                            part_id  = ::mapreduce::util::hash( str_pair, n_part);
+                            arr_part_buffs[part_id].push_back(str_pair);
                             continue;
                         }
                     }
@@ -589,14 +589,14 @@
                         if( last_char_is_delim )
                         {
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_right_prefix, " "));       
-                            part_id = ::mapreduce::util::hash( str_pair, n_part);
-                            arr_part_buffs[part_id] += str_pair;
+                            part_id  = ::mapreduce::util::hash( str_pair, n_part);
+                            arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
                         {
-                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_right_prefix, curr_item)) + SPCH;
+                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_right_prefix, curr_item));
                             part_id = ::mapreduce::util::hash( str_pair, n_part);
-                            arr_part_buffs[part_id] += str_pair;
+                            arr_part_buffs[part_id].push_back(str_pair);
                             continue;
                         }
                     }
@@ -609,9 +609,9 @@
                 
                 BOOST_FOREACH(::mapreduce::util::key_val_pair_t& key_val_pair, list_key_val_pairs)
                 {
-                    str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t(key_val_pair.first, key_val_pair.second)) + SPCH;
-                    part_id = ::mapreduce::util::hash( key_val_pair.first, n_part);
-                    arr_part_buffs[part_id] += str_pair;
+                    str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t(key_val_pair.first, key_val_pair.second));
+                    part_id  = ::mapreduce::util::hash( key_val_pair.first, n_part);
+                    arr_part_buffs[part_id].push_back(str_pair);
                 }
               }
              
@@ -623,7 +623,12 @@
               	 	offset = last_pos;
               	 	map_chunk_info.arr_part_ids.push_front(static_cast<long>(part_id));
               	 	map_chunk_info.arr_part_offset.push_front(static_cast<long>(offset));
-              	  	last_pos = ::mapreduce::util::write_to_buff(arr_part_buffs[part_id], ptr_shmem, last_pos, config.size.chunk.map, 0);     
+              	  	
+		          	BOOST_FOREACH( const std::string& item, arr_part_buffs[part_id] )
+          			{
+						last_pos = ::mapreduce::util::write_to_buff( item, ptr_shmem, last_pos, config.size.chunk.map ); 
+          			}
+              	 	    
     				map_chunk_info.arr_part_used.push_front(static_cast<long>(last_pos-offset));
     				arr_part_buffs[part_id].clear();
     				counter++;
@@ -637,17 +642,15 @@
                              
                 throw std::runtime_error("The operation cannot continue; not enough virtual memory allocated to a map slot!");
               }
-                                                                                                  
-              //map_chunk_info.used = last_pos; //ptr_next-ptr_shmem;
-              
-              counter_partial_updates.chunk_id = read_chunk_info.chunk_id; //map_slot_id;
+                                                                                                                
+              counter_partial_updates.chunk_id = read_chunk_info.chunk_id; 
               counter_partial_updates.map_slot_id = map_slot_id; //map_slot_id;
               counter_partial_updates.counter = counter;
               
               waitComm ( fvmPutGlobalData
               ( static_cast<fvmAllocHandle_t> (config.handle.map)
                                                 , map_slot_id*config.size.chunk.map
-                                                , last_pos //ptr_next-ptr_shmem
+                                                , last_pos 
                                                 , 0
                                                 , 0
                                             )
@@ -721,7 +724,7 @@
 	<place name="partition_result" type="partition_result"/>
     <transition name="copy_into_partition_slot" inline="true">
       <require key="GPI" />
-      <require key="SHFL" /> 
+      <require key="RED" /> 
     	<defun>
         <in name="part_slice_info" type="part_slice_info"/>
         <in name="partition_info" type="partition_info"/>
@@ -1512,7 +1515,7 @@
     <place name="special_reduce_info" type="reduce_info"/>  
     <transition name="recover_border_keys">
       <require key="GPI" />
-      <require key="SHFL" /> <!-- <require key="PAR" /> -->
+      <require key="RED" /> <!-- <require key="PAR" /> -->
       <defun>
         <in name="partition_info" type="partition_info"/>
         <in name="reduce_info" type="reduce_info"/>

@@ -78,13 +78,25 @@ namespace mapreduce
 		  return lhs.first.compare(rhs.first)<0;
 	  }
 
-  	  bool my_comp(const std::string& lhs, const std::string& rhs)
-  	  {
-  		  std::string key_l(lhs);
-  		  std::string key_r(rhs);
+  	 std::string key(const std::string& str_map)
+	 {
+  		 size_t split_pos = str_map.find_last_of(PAIRSEP);
 
-  		  return key_l.compare(key_r)<0;
-  	  }
+  		 std::string key = str_map.substr(0,split_pos);
+
+  		 return key;
+	 }
+
+  	 bool my_comp(const std::string& lhs, const std::string& rhs)
+  	 {
+		/*std::string key_l(lhs);
+		std::string key_r(rhs);*/
+
+		std::string key_l(key(lhs));
+		std::string key_r(key(rhs));
+
+		return key_l.compare(key_r)<0;
+  	 }
 
   	  void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
   	  {
@@ -107,81 +119,98 @@ namespace mapreduce
   		  MLOG(INFO, msg<<" "<<osstr.str());
   	  }
 
+  	key_val_pair_t str2kvpair(const std::string& str_map)
+	{
+	  size_t split_pos = str_map.find_last_of(PAIRSEP);
 
-  	  std::string match_keys(const std::string& str_item, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
-  	  {
-  		  // to do: use regex here
-  		  std::string w;
-  		  bool bMatching = false;
+	  std::string key = str_map.substr(0,split_pos);
+	  if(key.empty())
+	  {
+		  MLOG(FATAL, "Empty key!!!!!");
+		  throw std::runtime_error(std::string("Invalid key-value pair: ") + str_map);
+	  }
 
-  		  //MLOG(INFO, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
+	  std::string str_val = str_map.substr(split_pos+1, str_map.size());
 
-  		  // further checks are necessary
-  		  /*key_val_pair_t kvp = str2kvpair(str_item);
-  		  char szsep[2];
-  		  szsep[0]=SHRPCH;szsep[1]='\0';
-  		  boost::char_separator<char> sep(szsep);*/
+	  while( boost::algorithm::starts_with(str_val, "[") && boost::algorithm::ends_with(str_val, "]") )
+	  {
+		  std::string val = str_val.substr(1, str_val.size()-2);
+		  str_val = val;
+	  }
 
-  		  std::ostringstream oss;
-  		  oss<<SHRPCH<<PAIRSEP;
-  		  boost::char_separator<char> sep(oss.str().data());
-  		  boost::tokenizer<boost::char_separator<char> > tok_v(str_item, sep);
-  		  std::vector<std::string> v(3,"");
-  		  v.assign(tok_v.begin(), tok_v.end());
+	  return key_val_pair_t(key, str_val);
+	}
 
-  		  cid = boost::lexical_cast<long>(v[0]);
-  		  end = boost::lexical_cast<long>(v[1]);
+	std::string kvpair2str(const key_val_pair_t& pair)
+	{
+		return pair.first+PAIRSEP+pair.second;
+	}
 
-  		  if( list_border_keys.empty() )
-  		  {
-  			  LOG(WARN, "The array of border keys is empty ...");
-  			  matching_pair = "";
-  			  return "";
-  		  }
+	std::string match_keys(const std::string& str_item, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
+  	{
+		// to do: use regex here
+        std::string w;
+        bool bMatching = false;
 
-  		  for(std::list<std::string>::const_iterator it = list_border_keys.begin(); it != list_border_keys.end(); it++ )
-  		  {
-  			  boost::tokenizer<boost::char_separator<char> > tok_u(*it, sep);
-  			  std::vector<std::string> u(3, "");
-  			  u.assign(tok_u.begin(), tok_u.end());
+        //MLOG(INFO, "Trying to find the matching pair of the item "<<keyval_pair<<" ...");
 
-  			  int v0 = cid;
-  			  int u0 = boost::lexical_cast<long>(u[0]);
+        // further checks are necessary
+        key_val_pair_t kvp_v = str2kvpair(str_item);
+        char szsep[2];
+        szsep[0]=SHRPCH;szsep[1]='\0';
+        boost::char_separator<char> sep(szsep);
+        boost::tokenizer<boost::char_separator<char> > tok_v(kvp_v.first, sep);
+        std::vector<std::string> v(2,"");
+        v.assign(tok_v.begin(), tok_v.end());
 
-  			  int v1 = end;
-  			  int u1 = boost::lexical_cast<long>(u[1]);
+        cid = boost::lexical_cast<long>(v[0]);
+        end = boost::lexical_cast<long>(v[1]);
 
-  			  if( v0 == u0+1 && u1 == v1+1 )
-  			  {
-  				  w = u[2]+v[2];
-  				  bMatching = true;
-  				  matching_pair = *it;
-  			  }
-  			  else
-  				  if( u0 == v0+1 && v1 == u1+1 )
-  				  {
-  					  w = v[2]+u[2];
-  					  bMatching = true;
-  					  matching_pair = *it;
-  				  }
-  		  }
+        if( list_border_keys.empty() )
+        {
+        	LOG(WARN, "The array of border keys is empty ...");
+			matching_pair = "";
+			return "";
+        }
 
-  		  if(w.empty())
-  		  {
-  			  std::ostringstream oss;
-  			  oss<<"{";
-  			  BOOST_FOREACH(const std::string& key, list_border_keys)
-			  {
-  				  oss<<key<<std::endl;
-			  }
-  			  oss<<"}";
+        for(std::list<std::string>::const_iterator it = list_border_keys.begin(); it != list_border_keys.end(); it++ )
+        {
+        	key_val_pair_t kvp_u = str2kvpair(*it);
+			boost::tokenizer<boost::char_separator<char> > tok_u(kvp_u.first, sep);
+			std::vector<std::string> u(2, "");
+			u.assign(tok_u.begin(), tok_u.end());
 
-  			  MLOG(INFO, "No matching pair was found! The list of border keys is: "<<oss.str());
-  		  }
+			int v0 = cid;
+			int u0 = boost::lexical_cast<long>(u[0]);
 
-  		  return w;
-  	  }
+			int v1 = end;
+			int u1 = boost::lexical_cast<long>(u[1]);
 
+
+			if( v0 + v1 == u0 + u1 )
+			{
+				w = (u0<v0)?kvp_u.second + kvp_v.second : w = kvp_v.second + kvp_u.second;
+
+				bMatching = true;
+				matching_pair = *it;
+			}
+        }
+
+        if(w.empty())
+        {
+        	std::ostringstream oss;
+			oss<<"{";
+			BOOST_FOREACH(const std::string& key, list_border_keys)
+			{
+				oss<<key<<std::endl;
+			}
+			oss<<"}";
+
+			MLOG(INFO, "No matching pair was found! The list of border keys is: "<<oss.str());
+        }
+
+        return w;
+  	}
 
     bool is_delimiter(char x)
     {
@@ -189,8 +218,8 @@ namespace mapreduce
       return b;
     }
 
-     bool string_comp( const std::string &left, const std::string &right )
-     {
+    bool string_comp( const std::string &left, const std::string &right )
+    {
         for( std::string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
           if( *lit < *rit )
             return true;
@@ -257,32 +286,6 @@ namespace mapreduce
     	return v;
     }
 
-    key_val_pair_t str2kvpair(const std::string& str_map)
-    {
-      size_t split_pos = str_map.find_last_of(PAIRSEP);
-
-      std::string key = str_map.substr(0,split_pos);
-      if(key.empty())
-      {
-    	  MLOG(FATAL, "Empty key!!!!!");
-    	  throw std::runtime_error(std::string("Invalid key-value pair: ") + str_map);
-      }
-
-      std::string str_val = str_map.substr(split_pos+1, str_map.size());
-
-      while( boost::algorithm::starts_with(str_val, "[") && boost::algorithm::ends_with(str_val, "]") )
-      {
-    	  std::string val = str_val.substr(1, str_val.size()-2);
-    	  str_val = val;
-      }
-
-      return key_val_pair_t(key, str_val);
-    }
-
-    std::string kvpair2str(const key_val_pair_t& pair)
-	{
-    	return pair.first+PAIRSEP+pair.second;
-	}
 
     void get_arr_pairs(char* local_buff, std::vector<key_val_pair_t>& arr_pairs)
 	{
@@ -332,8 +335,7 @@ namespace mapreduce
 			int u1 = boost::lexical_cast<long>(u[1]);
 			return true;
 		}
-		catch(const boost::bad_lexical_cast& ex)
-		{
+		catch(const boost::bad_lexical_cast& ex) {
 			return false;
 		}
 	}
@@ -356,18 +358,17 @@ namespace mapreduce
 		return oss.str();
 	}
 
-    std::string key(const std::string& str)
+    /*std::string key(const std::string& str)
 	{
     	key_val_pair_t kv_pair = str2kvpair(str);
     	return kv_pair.first;
-	}
+	}*/
 
     std::string val(const std::string& str)
     {
     	key_val_pair_t kv_pair = str2kvpair(str);
 		return kv_pair.second;
     }
-
 
     long ceil(long a, long b)
     {
@@ -448,7 +449,6 @@ namespace mapreduce
 
 	void write_arr_to_buff( const std::vector<std::string>& arr_items, char* ptr_shmem, size_t& last_pos, const size_t max_size )
 	{
-		last_pos = 0;
 		for(std::vector<std::string>::const_iterator it=arr_items.begin(); it != arr_items.end(); it++ )
 			last_pos = ::mapreduce::util::write_to_buff( *it, ptr_shmem, last_pos, max_size );
 	}
