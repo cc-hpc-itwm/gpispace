@@ -1,0 +1,105 @@
+#!/bin/bash
+
+module_type=$(type module)
+if [ "$module_type" != "function" ] ; then
+  . /etc/profile
+fi
+
+module purge
+export MODULEPATH=/p/herc/itwm/hpc/soft/etc/modules
+module load lib/boost/1.47
+module load lib/hwloc/1.3
+module load lib/qt/4.7.1
+module load soft/cmake/2.8.4
+module load soft/graphviz/2.26.3
+
+basedir=""
+branch="develop"
+ssh_key="$HOME/.ssh/id_rsa"
+url="/p/hpc/sdpa/repo/sdpa.git"
+jobs=2
+execute_tests=true
+fresh=false
+
+while getopts ":hp:b:u:j:tfi:H:" opt ; do
+    case $opt in
+        h)
+            echo >&2 "usage: gspc-build: [-h] [-j #jobs(=${jobs})] [-p prefix] [-b branch(=${branch})] [-f]"
+            echo >&2 "     -f : fresh"
+            echo >&2 " -i key : ssh key to use"
+            exit 0
+            ;;
+        p)  basedir=$OPTARG ;;
+        b)  branch=$OPTARG ;;
+        u)  url="$OPTARG" ;;
+        j)  jobs="$OPTARG" ;;
+        t)  execute_tests=false ;;
+        f)  fresh=true ;;
+        i)  ssh_key="$OPTARG" ;;
+        \?) ;;
+    esac
+done
+
+if [ -z "${basedir}" ] ; then
+  echo >&2 "FAILED: prefix not set"
+  exit 1
+fi
+
+srcdir="${basedir}/src"
+builddir="${basedir}/build"
+instdir="${basedir}/inst"
+
+mkdir -p "${basedir}"
+
+if [ ! -e "${srcdir}/.git/HEAD" ] ; then
+  pushd "${basedir}" 2>/dev/null
+  rm -rf "${srcdir}"
+  ssh-agent bash -c "ssh-add ${ssh_key}; git clone ${url} ${srcdir}"
+  cd "${srcdir}"
+  if [ "${branch}" != master ] ; then
+    git checkout -b "${branch}" origin/"${branch}"
+  fi
+  popd >/dev/null
+fi
+
+# pulling new revision
+pushd "${srcdir}" >/dev/null
+
+git checkout "$branch"
+git pull || { echo >&2 "FAILED: could not pull!" ; exit 10; }
+ssh-agent bash -c "ssh-add ${ssh_key}; git pull"
+rev=$(git rev-parse HEAD)
+
+popd >/dev/null
+
+$fresh && rm -rf "${builddir}"
+
+if [ ! -d "${builddir}" ] ; then mkdir -p "${builddir}" ; fi
+
+if [ -r "${builddir}/cron.build.status" ] ; then
+	if grep -q "^${rev} SUCCESS " "${builddir}/cron.build.status" ; then
+           echo >&2 "Nothing to do, repository did not change"
+           exit 0
+        fi
+fi
+
+pushd "${builddir}" >/dev/null
+
+echo "$(date)" > "${builddir}/build.tstamp"
+"${srcdir}/incr-build-count" "${builddir}/build.counter"
+
+"${srcdir}/configure" -t -p "${instdir}" -- -DINSTALL_AS_BUNDLE=ON || { echo >&2 "FAILED: could not CONFIGURE"; exit 11; }
+
+make -j "${jobs}" || { echo >&2 "FAILED: could not BUILD" ; exit 12; }
+if $execute_tests ; then
+  ctest || { echo >&2 "WARN: could not TEST" ; }
+fi
+
+if [ -d "${instdir}" ] ; then
+  rm -rf "${instdir}"
+fi
+make -j "${jobs}" install || { echo >&2 "FAILED: could not INSTALL" ; exit 13; }
+
+cpack --config cpack-rel.cmake || { echo >&2 "FAILED: could not PACK" ; exit 14; }
+
+echo "${rev} SUCCESS $(date)" >> "${builddir}/cron.build.log"
