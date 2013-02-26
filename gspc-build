@@ -23,7 +23,7 @@ fresh=false
 create_package=false
 test_timeout=360
 
-while getopts ":hp:b:u:j:tfi:H:T:" opt ; do
+while getopts ":hp:b:u:j:tfi:H:T:P" opt ; do
     case $opt in
         h)
             echo >&2 "usage: gspc-build: [-h] [-j #jobs(=${jobs})] [-p prefix] [-b branch(=${branch})] [-f]"
