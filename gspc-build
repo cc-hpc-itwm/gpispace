@@ -51,6 +51,18 @@ instdir="${basedir}/inst"
 
 mkdir -p "${basedir}"
 
+if [ -e "${basedir}/.lock" ] ; then
+  pid=$(cat "${basedir}/.lock")
+  if kill -0 "${pid}" 2>/dev/null ; then
+     exit 0
+  else
+     rm -f "${basedir}/.lock"
+  fi
+fi
+
+echo $$ > "${basedir}/.lock"
+trap "rm -f ${basedir}/.lock" EXIT
+
 if [ ! -e "${srcdir}/.git/HEAD" ] ; then
   pushd "${basedir}" 2>/dev/null
   rm -rf "${srcdir}"
@@ -92,7 +104,7 @@ echo "$(date)" > "${builddir}/build.tstamp"
 
 make -j "${jobs}" || { echo >&2 "FAILED: could not BUILD" ; exit 12; }
 if $execute_tests ; then
-  ctest || { echo >&2 "WARN: could not TEST" ; }
+  ctest -j "${jobs}" || { echo >&2 "WARN: could not TEST" ; }
 fi
 
 if [ -d "${instdir}" ] ; then
