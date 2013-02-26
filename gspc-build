@@ -67,38 +67,35 @@ echo $$ > "${basedir}/.lock"
 trap "rm -f ${basedir}/.lock" EXIT
 
 if [ ! -e "${srcdir}/.git/HEAD" ] ; then
-  pushd "${basedir}" 2>/dev/null
+  cd "${basedir}"
   rm -rf "${srcdir}"
-  ssh-agent bash -c "ssh-add ${ssh_key}; git clone ${url} ${srcdir}"
+  ssh-agent bash -c "ssh-add ${ssh_key}; git clone ${url} ${srcdir}" || { echo >&2 "FAILED: could not CLONE"; exit 8 }
   cd "${srcdir}"
   if [ "${branch}" != master ] ; then
     git checkout -b "${branch}" origin/"${branch}"
   fi
-  popd >/dev/null
 fi
 
 # pulling new revision
-pushd "${srcdir}" >/dev/null
-
-git checkout "$branch"
-git pull || { echo >&2 "FAILED: could not pull!" ; exit 10; }
-ssh-agent bash -c "ssh-add ${ssh_key}; git pull"
+cd "${srcdir}"
+cur_branch=$(git status -b --porcelain | cut -d ' ' -f 2 | head -n 1)
+if [ "$cur_branch" != "$branch" ] ; then
+    git checkout "$branch" || { echo >&2 "FAILED: could not CHECKOUT"; exit 9 }
+fi
+ssh-agent bash -c "ssh-add ${ssh_key}; git pull" 2>/dev/null || { echo >&2 "FAILED: could not PULL"; exit 10 }
 rev=$(git rev-parse HEAD)
-
-popd >/dev/null
 
 $fresh && rm -rf "${builddir}"
 
 if [ ! -d "${builddir}" ] ; then mkdir -p "${builddir}" ; fi
 
-if [ -r "${builddir}/cron.build.status" ] ; then
-	if grep -q "^${rev} SUCCESS " "${builddir}/cron.build.status" ; then
-           echo >&2 "Nothing to do, repository did not change"
+if [ -r "${builddir}/cron.build.log" ] ; then
+	if grep -q "^${rev} SUCCESS " "${builddir}/cron.build.log" ; then
            exit 0
         fi
 fi
 
-pushd "${builddir}" >/dev/null
+cd "${builddir}"
 
 echo "$(date)" > "${builddir}/build.tstamp"
 "${srcdir}/incr-build-count" "${builddir}/build.counter"
