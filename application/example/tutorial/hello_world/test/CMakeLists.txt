@@ -5,4 +5,6 @@ if (BUILD_TESTING)
     "tutorial_hello_world"
     sh ${CMAKE_CURRENT_BINARY_DIR}/test.sh
   )
+
+  set_tests_properties (tutorial_hello_world PROPERTIES REQUIRED_FILES ${CMAKE_INSTALL_PREFIX}/etc/sdpa/sdpa.env)
 endif()
