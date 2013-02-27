@@ -39,3 +39,31 @@ macro(FHG_ADD_TEST)
     endforeach()
   endif()
 endmacro()
+
+macro (fhg_add_application_test)
+  parse_arguments (TEST "SCRIPT" "" ${ARGN})
+
+  car (TEST_NAME ${TEST_DEFAULT_ARGS})
+
+  if (BUILD_TESTING)
+    configure_file (
+      ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_SCRIPT}.sh.in
+      ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SCRIPT}.sh
+      @ONLY
+    )
+
+    add_test (${TEST_NAME}
+      sh ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SCRIPT}.sh
+           ${CMAKE_BINARY_DIR}/application/common.test.sh
+    )
+
+    set (REQUIRED_FILES
+      ${CMAKE_INSTALL_PREFIX}/etc/sdpa/sdpa.env
+      ${CMAKE_BINARY_DIR}/application/common.test.sh
+    )
+    set_tests_properties (${TEST_NAME}
+      PROPERTIES REQUIRED_FILES "${REQUIRED_FILES}"
+    )
+
+  endif()
+endmacro()
