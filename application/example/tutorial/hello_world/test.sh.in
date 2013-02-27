@@ -4,6 +4,15 @@ export BOOST_ROOT="@BOOST_ROOT@"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"@BOOST_ROOT@/lib"
 OUT="${DIR_SOURCE}/hello_many.out"
 
+cleanup()
+{
+    rm -rf run.out
+    make -C "${DIR_SOURCE}" clean
+    make -C "${DIR_SOURCE}/src" clean
+}
+
+trap 'cleanup' EXIT
+
 source "${DIR_INSTALL}/etc/sdpa/sdpa.env"               || exit 1
 make -C "${DIR_SOURCE}/src"                             || exit 2
 WE_EXEC_WORKER=1 make -C "${DIR_SOURCE}" run            || exit 3
@@ -11,6 +20,3 @@ grep 'finished \[1\]' "${OUT}"                          || exit 4
 test 2 -eq $(grep ^out "${OUT}" | wc -l)                || exit 5
 cat "${OUT}" | grep ^\* > run.out                       || exit 6
 diff run.out "${DIR_SOURCE}/test.out.cmp"               || exit 7
-rm -rf run.out                                          || exit 8
-make -C "${DIR_SOURCE}" clean                           || exit 9
-make -C "${DIR_SOURCE}/src" clean                       || exit 10
