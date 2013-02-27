@@ -17,13 +17,13 @@
     <cinclude href="iostream"/>
 
     <code><![CDATA[
-      std::cout << "Calling 3 versions of hello..." << std::endl;
+      std::cout << "*** Calling 3 versions of hello..." << std::endl;
 
       impl_hello_world();
       ::hello_world();
       hello_util();
 
-      std::cout << "...[done]" << std::endl;
+      std::cout << "*** ...[done]" << std::endl;
 
       return we::type::literal::control();
     ]]></code>
