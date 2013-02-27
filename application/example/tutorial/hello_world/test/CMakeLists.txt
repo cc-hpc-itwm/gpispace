@@ -1,10 +1,3 @@
-if (BUILD_TESTING)
-  configure_file (test.sh.in test.sh @ONLY)
+# mirko.rahn@itwm.fraunhofer.de
 
-  add_test (
-    "tutorial_hello_world"
-    sh ${CMAKE_CURRENT_BINARY_DIR}/test.sh
-  )
-
-  set_tests_properties (tutorial_hello_world PROPERTIES REQUIRED_FILES ${CMAKE_INSTALL_PREFIX}/etc/sdpa/sdpa.env)
-endif()
+fhg_add_application_test (tutorial_hello_world SCRIPT test)
