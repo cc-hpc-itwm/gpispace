@@ -72,20 +72,29 @@ trap "rm -f ${basedir}/.lock" EXIT
 if [ ! -e "${srcdir}/.git/HEAD" ] ; then
   cd "${basedir}"
   rm -rf "${srcdir}"
-  ssh-agent bash -c "ssh-add ${ssh_key}; git clone ${url} ${srcdir}" || { echo >&2 "FAILED: could not CLONE"; exit 8 }
+  ssh-agent bash -c "ssh-add ${ssh_key}; git clone ${url} ${srcdir}" 2>/dev/null
+  if [ $? -ne 0 ] ; then
+	echo >&2 "FAILED: could not CLONE"
+	exit 8
+  fi
   cd "${srcdir}"
   if [ "${branch}" != master ] ; then
-    git checkout -b "${branch}" origin/"${branch}"
+    git checkout -b "${branch}" "origin/${branch}"
   fi
 fi
 
 # pulling new revision
 cd "${srcdir}"
-cur_branch=$(git status -b --porcelain | cut -d ' ' -f 2 | head -n 1)
-if [ "$cur_branch" != "$branch" ] ; then
-    git checkout "$branch" || { echo >&2 "FAILED: could not CHECKOUT"; exit 9 }
+git checkout "$branch" >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+	echo >&2 "FAILED: could not CHECKOUT"
+	exit 9
 fi
-ssh-agent bash -c "ssh-add ${ssh_key}; git pull" 2>/dev/null || { echo >&2 "FAILED: could not PULL"; exit 10 }
+ssh-agent bash -c "ssh-add ${ssh_key}; git pull" >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+	echo >&2 "FAILED: could not PULL"
+	exit 10
+fi
 rev=$(git rev-parse HEAD)
 
 $fresh && rm -rf "${builddir}"
