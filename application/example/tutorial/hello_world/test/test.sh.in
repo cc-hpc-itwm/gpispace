@@ -55,7 +55,7 @@ measured()
 
   print_measurement                                            \
     $name                                                      \
-    "numeric/float"                                            \
+    "numeric/double"                                           \
     $(echo "scale=4; $msec/1000" | bc | sed 's/0*$//;s/^\./0./')
 
   return $ec
