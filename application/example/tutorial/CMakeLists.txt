@@ -1,1 +1,3 @@
-add_subdirectory (hello_world)
+include(SDPAFindBoost)
+
+add_subdirectory (hello_world/test)

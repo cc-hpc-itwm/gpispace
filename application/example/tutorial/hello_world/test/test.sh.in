@@ -1,0 +1,104 @@
+EX_ERR_ENV=1
+EX_ERR_RUN=2
+EX_ERR_RES=3
+EX_ERR_OTHER=4
+
+print_measurement()
+{
+  echo "<DartMeasurement name=\"$1\" type=\"$2\">$3</DartMeasurement>"
+}
+
+print_fail_reason()
+{
+  print_measurement "fail_reason" "text/string" $1
+}
+
+die()
+{
+  case $1 in
+      $EX_ERR_ENV)
+          print_fail_reason "EX_ERR_ENV"
+          ;;
+      $EX_ERR_RUN)
+          print_fail_reason "EX_ERR_RUN"
+          ;;
+      $EX_ERR_RES)
+          print_fail_reason "EX_ERR_RES"
+          ;;
+      $EX_ERR_OTHER)
+          print_fail_reason "EX_ERR_OTHER"
+          ;;
+      *)
+          print_fail_reason "UNKNOWN"
+          ;;
+  esac
+
+  exit $1
+}
+
+measured()
+{
+  local name=$1; shift
+
+  local time_start=($(date +'%s %N'))
+  eval $@; local ec=$?
+  local time_end=($(date +'%s %N'))
+
+  time_end[1]=$(echo "${time_end[1]}" | sed 's/^0*//')
+  time_start[1]=$(echo "${time_start[1]}" | sed 's/^0*//')
+
+  local msec_start=$((${time_start[1]} / 1000000))
+  local msec_end=$((${time_end[1]} / 1000000))
+
+  local secs=$((${time_end[0]} - ${time_start[0]}))
+  local msec=$((1000 * secs + msec_end - msec_start))
+
+  print_measurement                                            \
+    $name                                                      \
+    "numeric/float"                                            \
+    $(echo "scale=4; $msec/1000" | bc | sed 's/0*$//;s/^\./0./')
+
+  return $ec
+}
+
+export SDPA_HOME="@CMAKE_INSTALL_PREFIX@"
+
+SDPA_ENV="${SDPA_HOME}/etc/sdpa/sdpa.env"
+
+test -r "${SDPA_ENV}"                                       || die $EX_ERR_ENV
+
+source "${SDPA_ENV}"
+
+export BOOST_ROOT="@BOOST_ROOT@"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"@BOOST_ROOT@/lib"
+
+test -n "${BOOST_ROOT}"                                     || die $EX_ERR_ENV
+
+DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
+
+DIR_SOURCE="${DIR_TEST}/.."
+DIR_MODULE="${DIR_SOURCE}/src"
+
+OUT="${DIR_SOURCE}/hello_many.out"
+CMP="${DIR_TEST}/run.out"
+CMP_ORIG="${DIR_TEST}/test.out.cmp"
+
+cleanup()
+{
+  rm -rf "${CMP}"
+  make -C "${DIR_SOURCE}" clean
+  make -C "${DIR_MODULE}" clean
+}
+
+trap 'cleanup' EXIT
+
+export MAKEFLAGS=-j
+
+measured "build-module" make -C "${DIR_MODULE}"             || die $EX_ERR_RUN
+measured "build-wrapper" make -C "${DIR_SOURCE}" lib        || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=1 make -C "${DIR_SOURCE}" run || die $EX_ERR_RUN
+
+grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
+test 2 -eq $(grep ^out "${OUT}" | wc -l)                    || die $EX_ERR_RES
+cat "${OUT}" | grep ^\* > "${CMP}"                          || die $EX_ERR_OTHER
+diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
