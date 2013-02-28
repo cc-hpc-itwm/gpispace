@@ -1,10 +1,10 @@
 #! /bin/sh
-# 
+#
 # Bootstrap the project from a clean checkout.
 #
 case "$1" in
   -h|-?|--help)
-    echo "usage: $0 -DCMAKE_BUILD_TYPE={Debug,Release,Profile} -DWITH_LOG4CPP=YES|NO -DWITH_FHGLOG=YES|NO -DWITH_COMM=YES|NO"
+    echo "usage: $0 -DCMAKE_BUILD_TYPE={Debug,Release,Profile} -DWITH_LOG4CPP=YES|NO -DWITH_FHGLOG=YES|NO -DENABLE_SEDA_COMM_LIB=YES|NO"
     exit 0
   ;;
   *)
