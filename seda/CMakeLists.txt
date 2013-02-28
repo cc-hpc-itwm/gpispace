@@ -34,7 +34,7 @@ OPTION(WITH_LOG4CPP
 
 OPTION(WITH_COMM
   "Build communication library"
-  1)
+  OFF)
 
 OPTION(USE_STL_TR1
  "Use tr1 from stl"
