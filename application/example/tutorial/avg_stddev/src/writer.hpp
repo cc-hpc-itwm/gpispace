@@ -27,26 +27,26 @@ public:
     , _file (file)
   {}
 
-  void operator () ()
+  void operator() ()
   {
     buffer_type buffer;
 
     do
+    {
+      buffer = _queue_full.get();
+
+      if (buffer.count() != fwrite ( buffer.begin()
+                                   , sizeof (T)
+                                   , buffer.count()
+                                   , _file
+                                   )
+         )
       {
-        buffer = _queue_full.get();
-
-        if (buffer.count() != fwrite ( buffer.begin()
-                                     , sizeof (T)
-                                     , buffer.count()
-                                     , _file
-                                     )
-           )
-          {
-            throw std::runtime_error ("write failed");
-          }
-
-        _queue_empty.put (buffer);
+        throw std::runtime_error ("write failed");
       }
+
+      _queue_empty.put (buffer);
+    }
     while (buffer.count() != 0);
   }
 };
