@@ -57,12 +57,10 @@ macro (fhg_add_application_test)
            ${CMAKE_BINARY_DIR}/application/common.test.sh
     )
 
-    set (REQUIRED_FILES
-      ${CMAKE_INSTALL_PREFIX}/etc/sdpa/sdpa.env
-      ${CMAKE_BINARY_DIR}/application/common.test.sh
-    )
+    set (REQUIRED_FILES ${CMAKE_BINARY_DIR}/application/common.test.sh)
+    set (LABELS requires_installation)
     set_tests_properties (${TEST_NAME}
-      PROPERTIES REQUIRED_FILES "${REQUIRED_FILES}"
+      PROPERTIES REQUIRED_FILES "${REQUIRED_FILES}" LABELS "${LABELS}"
     )
 
   endif()
