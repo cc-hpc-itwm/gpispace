@@ -10,21 +10,21 @@ include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 set(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/stresstest")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}")
 
-set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/capabilities/capabilities/pnetc/op")
+set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH}")
 
-set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory/pnetc/op")
+set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH}")
 
-set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/atomic/atomic/pnetc/op")
+set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/atomic")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_ATOMIC_MODULES_PATH}")
 
 set(TESTS_N_ATOMIC_TASKS 100)
 
-set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/inotify/inotify/pnetc/op")
+set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
 
-set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_BINARY_DIR}/application/transform_file/xml/transform_file/pnetc/op")
+set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
 message(STATUS "example modules are in: ${TESTS_TRANSFORM_FILE_MODULES_PATH}")
 
 get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
@@ -70,7 +70,7 @@ pnet_compile(sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xm
   FLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/application/example
-           -I${CMAKE_SOURCE_DIR}/application/example/stresstest 
+           -I${CMAKE_SOURCE_DIR}/application/example/stresstest
 )
 
 ###########################################################################################
