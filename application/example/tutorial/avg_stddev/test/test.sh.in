@@ -7,7 +7,7 @@ DIR_MODULE="${DIR_SOURCE}/src"
 
 OUT="${DIR_SOURCE}/avg_stddev.out"
 CMP="${DIR_TEST}/run.out"
-CMP_ORIG="${DIR_TEST}/test.out.cmp"
+CMP_ORIG="${DIR_TEST}/out.cmp"
 DAT="${DIR_SOURCE}/dat"
 
 cleanup()

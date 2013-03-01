@@ -6,8 +6,7 @@ DIR_SOURCE="${DIR_TEST}/.."
 
 OUT="${DIR_SOURCE}/sequence.out"
 CMP="${DIR_TEST}/run.out"
-CMP_ORIG="${DIR_TEST}/test.out.cmp"
-
+CMP_ORIG="${DIR_TEST}/out.cmp"
 cleanup()
 {
   rm -rf ${CMP}
