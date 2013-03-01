@@ -13,7 +13,6 @@ set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM" CACHE STRING "Copyright
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
-OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
 OPTION(USE_REAL_WE "Use real workflow engine" YES)
 
