@@ -52,9 +52,9 @@ macro (fhg_add_application_test)
       @ONLY
     )
 
-    add_test (${TEST_NAME}
-      sh ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SCRIPT}.sh
-           ${CMAKE_BINARY_DIR}/application/common.test.sh
+    add_test (NAME ${TEST_NAME}
+              COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SCRIPT}.sh
+                           ${CMAKE_BINARY_DIR}/application/common.test.sh
     )
 
     set (REQUIRED_FILES ${CMAKE_BINARY_DIR}/application/common.test.sh)
