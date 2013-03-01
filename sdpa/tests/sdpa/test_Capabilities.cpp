@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testCapabilities
-#include "sdpa/daemon/jobFSM/JobFSM.hpp"
+#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
@@ -297,7 +297,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(	const std::string&
 	kernel->put("plugin.drts.master", masterName);
 	kernel->put("plugin.drts.backlog", "2");
 	kernel->put("plugin.drts.request-mode", "false");
-	
+
 	kernel->put("plugin.drts.capabilities", cpbList);
 	kernel->put("plugin.wfe.library_path", strWfePath /*TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH*/);
 

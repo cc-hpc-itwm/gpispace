@@ -4,7 +4,7 @@
 #include <vector>
 //#include <unistd.h>
 #include <csignal>
-#include "sdpa/daemon/jobFSM/JobFSM.hpp"
+#include "sdpa/daemon/JobFSM.hpp"
 
 #include <sdpa/sdpa-config.hpp>
 

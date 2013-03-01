@@ -17,7 +17,7 @@
  */
 
 #include <fhg/assert.hpp>
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 

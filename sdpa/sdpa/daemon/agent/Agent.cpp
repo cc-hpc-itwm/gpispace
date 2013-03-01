@@ -15,7 +15,7 @@
  *
  * =====================================================================================
  */
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <fhg/assert.hpp>
 
 using namespace std;

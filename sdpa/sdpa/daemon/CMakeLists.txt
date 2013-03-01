@@ -34,7 +34,6 @@ set (srcs
 add_subdirectory(orchestrator)
 add_subdirectory(agent)
 
-add_subdirectory(jobFSM)
 add_subdirectory(daemonFSM)
 
 ADD_LIBRARY(sdpa-daemon ${hdrs} ${srcs})
