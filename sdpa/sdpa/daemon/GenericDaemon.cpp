@@ -1793,8 +1793,12 @@ void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
 void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
 {
   lock_type lock(mtx_cpb_);
-  for(sdpa::capabilities_set_t::iterator it = m_capabilities.begin(); it!= m_capabilities.end(); it++ )
-    cpbset.insert(*it);
+  BOOST_FOREACH ( const sdpa::capabilities_set_t::value_type & capability
+                , m_capabilities
+                )
+  {
+    cpbset.insert (capability);
+  }
 
    scheduler()->getAllWorkersCapabilities(cpbset);
 }
