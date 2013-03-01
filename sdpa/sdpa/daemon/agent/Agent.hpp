@@ -18,7 +18,7 @@
 #ifndef SDPA_AGENT_HPP
 #define SDPA_AGENT_HPP 1
 
-#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
+#include <sdpa/daemon/DaemonFSM.hpp>
 #include <sdpa/daemon/agent/AgentScheduler.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 

@@ -18,7 +18,7 @@
 #ifndef SDPA_ORCHESTRATORTOR_HPP
 #define SDPA_ORCHESTRATORTOR_HPP 1
 
-#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
+#include <sdpa/daemon/DaemonFSM.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 
 namespace sdpa {

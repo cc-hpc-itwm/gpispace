@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include <sdpa/daemon/daemonFSM/BMSM/DaemonFSM.hpp>
+#include <sdpa/daemon/DaemonFSM.hpp>
 
 using namespace sdpa;
 using namespace sdpa::daemon;
@@ -273,4 +273,3 @@ namespace sdpa {
     }
   }
 }
-

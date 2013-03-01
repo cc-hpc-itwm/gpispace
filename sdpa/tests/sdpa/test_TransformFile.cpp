@@ -32,7 +32,7 @@
 
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/DaemonFSM.hpp"
+#include "sdpa/daemon/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 #include <sdpa/client/ClientApi.hpp>
 

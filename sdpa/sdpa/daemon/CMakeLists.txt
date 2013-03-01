@@ -29,19 +29,17 @@ set (srcs
   SynchronizedQueue.cpp
   Worker.cpp
   WorkerManager.cpp
+  DaemonFSM.cpp
   )
 
 add_subdirectory(orchestrator)
 add_subdirectory(agent)
 
-add_subdirectory(daemonFSM)
-
 ADD_LIBRARY(sdpa-daemon ${hdrs} ${srcs})
 
-target_link_libraries(sdpa-daemon sdpa-daemonFSM_BMSM)
 target_link_libraries(sdpa-daemon ${UTIL_LIBRARIES})
 target_link_libraries(sdpa-daemon ${ZLIB_LIBRARIES})
-target_link_libraries(sdpa-daemon sdpa-com)
+target_link_libraries(sdpa-daemon sdpa-com sdpa-events sdpa-daemon)
 
 install(FILES ${hdrs}
   DESTINATION include/sdpa/daemon
