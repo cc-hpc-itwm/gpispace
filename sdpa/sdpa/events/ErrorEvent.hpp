@@ -20,21 +20,11 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifdef USE_BOOST_SC
-#   include <boost/statechart/event.hpp>
-namespace sc = boost::statechart;
-#endif
-
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 
 namespace sdpa { namespace events {
-// this could be replaced by a small macro
-#ifdef USE_BOOST_SC
-  class ErrorEvent : public MgmtEvent, public sc::event<ErrorEvent>
-#else
   class ErrorEvent : public MgmtEvent
-#endif
   {
     public:
       typedef sdpa::shared_ptr<ErrorEvent> Ptr;

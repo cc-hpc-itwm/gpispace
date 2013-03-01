@@ -33,9 +33,9 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     typedef std::map<id_type, Token::ptr_t> map_actId2tokenPtr_t;
 
     //typedef std::pair<sdpa::job_id_t, result_type>
-    typedef SynchronizedQueue<std::list<Token::ptr_t> > TokenQueue;
+    typedef sdpa::daemon::SynchronizedQueue<std::list<Token::ptr_t> > TokenQueue;
 
-    TorusWorkflowEngineAgent( GenericDaemon* pIAgent = NULL, Function_t f = id_gen)
+    TorusWorkflowEngineAgent( sdpa::daemon::GenericDaemon* pIAgent = NULL, Function_t f = id_gen)
     : SDPA_INIT_LOGGER(pIAgent->name()+": AgentTorusWFE")
     {
       pIAgent_ = pIAgent;
@@ -52,7 +52,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
 
     virtual bool is_real() { return false; }
 
-    void connect( GenericDaemon* pIAgent )
+    void connect( sdpa::daemon::GenericDaemon* pIAgent )
     {
       pIAgent_ = pIAgent;
     }
@@ -363,7 +363,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     }
 
   public:
-    mutable GenericDaemon *pIAgent_;
+    mutable sdpa::daemon::GenericDaemon *pIAgent_;
     static size_t m_nTorusDim;
 
   private:

@@ -18,7 +18,7 @@
 #ifndef SDPA_ORCHESTRATORTOR_HPP
 #define SDPA_ORCHESTRATORTOR_HPP 1
 
-#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
+#include <sdpa/daemon/DaemonFSM.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 
 namespace sdpa {
@@ -26,7 +26,7 @@ namespace sdpa {
 
     template <typename T> struct OrchestratorFactory;
 
-    class Orchestrator : public dsm::DaemonFSM
+    class Orchestrator : public sdpa::fsm::bmsm::DaemonFSM
     {
       public:
       typedef sdpa::shared_ptr<Orchestrator> ptr_t;
@@ -88,7 +88,5 @@ namespace sdpa {
 	  };
 	}
 }
-
-#include <sdpa/daemon/orchestrator/Orchestrator.cpp>
 
 #endif //SDPA_ORCHESTRATORTOR_HPP

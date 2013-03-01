@@ -32,7 +32,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
 
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -161,14 +161,12 @@ void JobManager::waitForFreeSlot ()
 void JobManager::resubmitResults(IComm* pComm)
 {
   lock_type lock(mtx_);
-  SDPA_LOG_INFO("Re-submit to the master the results of the jobs that are either finished, failed or cancelled!");
 
   for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
   {
     sdpa::daemon::Job::ptr_t pJob = it->second;
-
     std::string job_status = pJob->getStatus();
-    SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");
+    SDPA_LOG_INFO("Re-submit to the master "<<pJob->owner()<<" the status of the job"<<pJob->id()<<" ("<<job_status<<" )");
 
     if( pJob->isMasterJob() )
     {

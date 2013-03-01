@@ -7,7 +7,7 @@ DIR_MODULE="${DIR_SOURCE}/src"
 
 OUT="${DIR_SOURCE}/hello_many.out"
 CMP="${DIR_TEST}/run.out"
-CMP_ORIG="${DIR_TEST}/test.out.cmp"
+CMP_ORIG="${DIR_TEST}/out.cmp"
 
 cleanup()
 {
@@ -22,7 +22,7 @@ measured "build-module" make -C "${DIR_MODULE}"             || die $EX_ERR_RUN
 measured "build-wrapper" make -C "${DIR_SOURCE}" lib        || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=1 make -C "${DIR_SOURCE}" run || die $EX_ERR_RUN
 
-grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
+grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
 test 2 -eq $(grep ^out "${OUT}" | wc -l)                    || die $EX_ERR_RES
 cat "${OUT}" | grep ^\* > "${CMP}"                          || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES

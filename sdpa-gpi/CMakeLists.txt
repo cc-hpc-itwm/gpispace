@@ -35,7 +35,6 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 # threads
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)
-    set(HAVE_PTHREAD_H 1)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 

@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testAtomic
-#include "sdpa/daemon/jobFSM/JobFSM.hpp"
+#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/assert.hpp>
 #include <boost/lexical_cast.hpp>
@@ -34,7 +34,7 @@
 
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/DaemonFSM.hpp"
+#include "sdpa/daemon/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 #include <sdpa/client/ClientApi.hpp>
 

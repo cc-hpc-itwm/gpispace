@@ -14,7 +14,7 @@
  *
  * ===================================================================================== */
 #define BOOST_TEST_MODULE TestSerializeSharedPtr
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(testSerializeBoostShPtrToXml)
 		ofs.flush();
 	}
 	shptrS.reset();
-	
+
 	boost::shared_ptr<Test> shptrD;
 	{
 		std::ifstream ifs(filename.c_str());
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(testSerializeBoostShPtrToXml)
 		cout<<"The deserialized shared pointer contains the value "<<shptrD->str()<<endl;
 	}
 	shptrD.reset();
-	
+
 	std::cout << std::endl;
 }
 

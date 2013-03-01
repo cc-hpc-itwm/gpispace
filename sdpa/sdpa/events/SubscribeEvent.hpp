@@ -20,21 +20,13 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifdef USE_BOOST_SC
-#   include <boost/statechart/event.hpp>
-namespace sc = boost::statechart;
-#endif
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 
 namespace sdpa { namespace events {
-#ifdef USE_BOOST_SC
-  class SubscribeEvent : public MgmtEvent, public sc::event<SubscribeEvent>
-#else
   class SubscribeEvent : public MgmtEvent
-#endif
   {
     public:
       typedef sdpa::shared_ptr<SubscribeEvent> Ptr;

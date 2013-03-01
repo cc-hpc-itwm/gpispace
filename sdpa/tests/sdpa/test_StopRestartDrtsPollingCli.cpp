@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE TestStopRestartDrtsPollingCli
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 

@@ -13,31 +13,8 @@ set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM" CACHE STRING "Copyright
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
-OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
 OPTION(USE_REAL_WE "Use real workflow engine" YES)
-
-set(STATE_MACHINE_IMPLEMENTATION "MSM" CACHE STRING "Statemachine implementation to use (SMC, MSM, BSC)")
-
-set (STATE_MACHINE_IMPLEMENTATION_SPECIFIED 0)
-if ("${STATE_MACHINE_IMPLEMENTATION}" MATCHES "SMC")
-  set (USE_SMC_SC ON)
-  set (STATE_MACHINE_IMPLEMENTATION_SPECIFIED 1)
-endif ("${STATE_MACHINE_IMPLEMENTATION}" MATCHES "SMC")
-
-if ("${STATE_MACHINE_IMPLEMENTATION}" MATCHES "BSC")
-  set (USE_BOOST_SC ON)
-  set (STATE_MACHINE_IMPLEMENTATION_SPECIFIED 1)
-endif ("${STATE_MACHINE_IMPLEMENTATION}" MATCHES "BSC")
-
-if ("${STATE_MACHINE_IMPLEMENTATION}" MATCHES "MSM")
-  set (USE_BOOST_MSM ON)
-  set (STATE_MACHINE_IMPLEMENTATION_SPECIFIED 1)
-endif ("${STATE_MACHINE_IMPLEMENTATION}" MATCHES "MSM")
-
-if (${STATE_MACHINE_IMPLEMENTATION_SPECIFIED} EQUAL 0)
-  message(SEND_ERROR "Statemachine implementation not set. Please define STATE_MACHINE_IMPLEMENTATION")
-endif (${STATE_MACHINE_IMPLEMENTATION_SPECIFIED} EQUAL 0)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 # Where are the additional libraries installed? Note: provide includes
@@ -58,7 +35,6 @@ include_directories(${CMAKE_INCLUDE_PATH})
 # threads
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)
-    set(HAVE_PTHREAD_H 1)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 

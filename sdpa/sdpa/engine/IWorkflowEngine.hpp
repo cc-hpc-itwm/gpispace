@@ -82,7 +82,7 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 	        return *this;
 	      }
 
-	      ~requirement_t () {}
+	      virtual ~requirement_t () {}
 
 	      virtual bool is_mandatory (void) const
 	      {

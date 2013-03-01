@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE TestStopRestartAgentsSubscriberCli
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
@@ -278,7 +278,7 @@ void MyFixture::run_client_subscriber()
 			}
 		}
 
-		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
+		LOG( DEBUG, "//JOB #"<<k<<"//");
 
 
 		int exit_code = subscribe_and_wait( job_id_user, ptrCli );
@@ -346,7 +346,7 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+	//LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
@@ -445,7 +445,7 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+	//LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+	//LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
