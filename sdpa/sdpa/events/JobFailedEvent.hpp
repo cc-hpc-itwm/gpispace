@@ -55,7 +55,7 @@ namespace sdpa {
       { }
 
       JobFailedEvent (JobFailedEvent const &other)
-        : sdpa::events::JobEvent(other.from(), other.to(), other.id())
+        : sdpa::events::JobEvent(other.from(), other.to(), other.job_id())
         , result_(other.result())
         , m_error_code (other.error_code())
         , m_error_message (other.error_message())
