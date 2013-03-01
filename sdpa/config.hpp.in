@@ -2,7 +2,6 @@
 #define SDPA_CONFIG_H
 
 #cmakedefine USE_REAL_WE 1
-#cmakedefine HAVE_FVM 1
 #cmakedefine HAVE_PTHREAD_H 1
 
 #cmakedefine SDPA_ENABLE_LOGGING 1
