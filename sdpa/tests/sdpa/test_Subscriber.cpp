@@ -199,15 +199,18 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
 			{
 				job_status="Finished";
+				LOG(WARN, "The job has finished!");
 				exit_code = 0;
 			}
 			else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
 			{
 				job_status="Failed";
+				LOG(WARN, "The job has failed!");
 				exit_code = 1;
 			}
 			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 			{
+				LOG(WARN, "The job has been canceled!");
 				job_status="Cancelled";
 				exit_code = 2;
 			}
