@@ -254,7 +254,7 @@ void MyFixture::run_client_subscriber()
 
     std::vector<std::string> cav;
     cav.push_back("--orchestrator=orchestrator_0");
-    cav.push_back("--network.timeout=0");
+    cav.push_back("--network.timeout=-1");
     config.parse_command_line(cav);
 
     std::ostringstream osstr;
@@ -510,7 +510,7 @@ void MyFixture::run_client_subscriber()
 
 	std::vector<std::string> cav;
 	cav.push_back("--orchestrator=orchestrator_0");
-	cav.push_back("--network.timeout=0");
+	cav.push_back("--network.timeout=-1");
 	config.parse_command_line(cav);
 
 	std::ostringstream osstr;
