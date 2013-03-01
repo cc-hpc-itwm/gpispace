@@ -1,0 +1,25 @@
+source "@CMAKE_BINARY_DIR@/application/common.test.sh"
+
+DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
+
+DIR_SOURCE="${DIR_TEST}/.."
+
+OUT="${DIR_SOURCE}/n_of_m.out"
+CMP="${DIR_TEST}/run.out"
+CMP_ORIG="${DIR_TEST}/out.cmp"
+
+cleanup()
+{
+  rm -rf "${CMP}"
+  make -C "${DIR_SOURCE}" clean
+}
+
+trap 'cleanup' EXIT
+
+measured "build-wrapper" make -C "${DIR_SOURCE}" lib        || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=1 make -C "${DIR_SOURCE}" run || die $EX_ERR_RUN
+
+grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
+test 1 -eq $(grep ^done "${OUT}" | wc -l)                   || die $EX_ERR_RES
+cat "${OUT}" | grep -A 1 ^\# > "${CMP}"                     || die $EX_ERR_OTHER
+diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
