@@ -32,9 +32,9 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
     typedef std::string internal_id_type;
 
     //typedef std::pair<sdpa::job_id_t, result_type>
-    typedef SynchronizedQueue<std::list<we_result_t> > ResQueue;
+    typedef sdpa::daemon::SynchronizedQueue<std::list<we_result_t> > ResQueue;
 
-    TorusWorkflowEngineOrch( GenericDaemon* pIAgent = NULL, Function_t f = id_gen )
+    TorusWorkflowEngineOrch( sdpa::daemon::GenericDaemon* pIAgent = NULL, Function_t f = id_gen )
     : SDPA_INIT_LOGGER("OrchTorusWFE")
     {
       pIAgent_ = pIAgent;
@@ -241,7 +241,7 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
     }
 
   public:
-    mutable GenericDaemon *pIAgent_;
+    mutable sdpa::daemon::GenericDaemon *pIAgent_;
     static size_t m_nTorusDim;
 
   private:
