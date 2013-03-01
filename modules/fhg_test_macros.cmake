@@ -41,7 +41,7 @@ macro(FHG_ADD_TEST)
 endmacro()
 
 macro (fhg_add_application_test)
-  parse_arguments (TEST "SCRIPT" "" ${ARGN})
+  parse_arguments (TEST "SCRIPT;RESOURCE_LOCK" "" ${ARGN})
 
   car (TEST_NAME ${TEST_DEFAULT_ARGS})
 
@@ -63,5 +63,10 @@ macro (fhg_add_application_test)
       PROPERTIES REQUIRED_FILES "${REQUIRED_FILES}" LABELS "${LABELS}"
     )
 
+    if (TEST_RESOURCE_LOCK)
+      set_tests_properties (${TEST_NAME}
+        PROPERTIES RESOURCE_LOCK ${TEST_RESOURCE_LOCK}
+        )
+    endif()
   endif()
 endmacro()
