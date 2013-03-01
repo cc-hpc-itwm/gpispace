@@ -4,9 +4,6 @@
 #cmakedefine SEDA_ENABLE_LOGGING 1
 #cmakedefine SEDA_HAVE_LOG4CPP 1
 #cmakedefine SEDA_HAVE_FHGLOG 1
-#ifndef HAVE_PTHREAD_H
-#cmakedefine HAVE_PTHREAD_H 1
-#endif
 #ifndef USE_STL_TR1
 #cmakedefine USE_STL_TR1 1
 #endif

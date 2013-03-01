@@ -1,9 +1,6 @@
 #ifndef FHGLOG_CONFIG_H
 #define FHGLOG_CONFIG_H
 
-#ifndef HAVE_PTHREAD_H
-#cmakedefine HAVE_PTHREAD_H 1
-#endif
 #ifndef HAVE_SYSLOG_H
 #cmakedefine HAVE_SYSLOG_H 1
 #endif
