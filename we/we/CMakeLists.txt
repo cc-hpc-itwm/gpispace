@@ -61,6 +61,22 @@ set (we_srcs
   type/transition.cpp
 )
 
+set (wfhd_srcs
+  util/wfhd.c
+)
+set (wfhd_hdrs
+  util/wfhd.h
+)
+
+add_library (wfhd SHARED ${wfhd_srcs})
+install (TARGETS wfhd
+  LIBRARY DESTINATION lib
+  )
+install (FILES ${wfhd_hdrs}
+  DESTINATION include/we/util
+  COMPONENT runtime-headers
+)
+
 add_library (we ${we_srcs})
 add_library (we-shared SHARED ${we_srcs})
 set_target_properties(we-shared PROPERTIES OUTPUT_NAME we)
