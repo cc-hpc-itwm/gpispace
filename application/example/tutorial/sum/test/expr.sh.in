@@ -3,7 +3,6 @@ source "@CMAKE_BINARY_DIR@/application/common.test.sh"
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
-DIR_MODULE="${DIR_SOURCE}/src"
 
 OUT="${DIR_SOURCE}/sum_expr_many.out"
 CMP="${DIR_TEST}/run.out"
@@ -15,7 +14,6 @@ cleanup()
 {
   rm -rf "${CMP}"
   eval ${make_expr} clean
-  make -C "${DIR_MODULE}" clean
 }
 
 trap 'cleanup' EXIT
