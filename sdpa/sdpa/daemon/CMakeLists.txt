@@ -39,10 +39,6 @@ add_subdirectory(daemonFSM)
 
 ADD_LIBRARY(sdpa-daemon ${hdrs} ${srcs})
 
-if (USE_BOOST_SC)
-	target_link_libraries(sdpa-daemon sdpa-jobFSM_BSC sdpa-daemonFSM_BSC)
-endif (USE_BOOST_SC)
-
 if (USE_BOOST_MSM)
 	target_link_libraries(sdpa-daemon sdpa-daemonFSM_BMSM)
 endif (USE_BOOST_MSM)

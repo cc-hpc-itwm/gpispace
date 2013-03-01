@@ -21,10 +21,6 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifdef USE_BOOST_SC
-#   include <boost/statechart/event.hpp>
-namespace sc = boost::statechart;
-#endif
 #include <sdpa/events/JobEvent.hpp>
 #include <fhg/error_codes.hpp>
 
@@ -32,9 +28,6 @@ namespace sdpa {
   namespace events {
 
     class JobFailedEvent : public JobEvent
-#ifdef USE_BOOST_SC
-                         , public sc::event<JobFailedEvent>
-#endif
     {
     public:
       typedef sdpa::shared_ptr<JobFailedEvent> Ptr;
