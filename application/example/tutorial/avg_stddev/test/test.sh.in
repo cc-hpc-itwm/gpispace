@@ -1,0 +1,36 @@
+source "@CMAKE_BINARY_DIR@/application/common.test.sh"
+
+DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
+
+DIR_SOURCE="${DIR_TEST}/.."
+DIR_MODULE="${DIR_SOURCE}/src"
+
+OUT="${DIR_SOURCE}/avg_stddev.out"
+CMP="${DIR_TEST}/run.out"
+CMP_ORIG="${DIR_TEST}/out.cmp"
+DAT="${DIR_SOURCE}/dat"
+
+cleanup()
+{
+  rm -rf "${CMP}" "${DAT}"
+  make -C "${DIR_SOURCE}" clean
+  make -C "${DIR_MODULE}" clean
+}
+
+trap 'cleanup' EXIT
+
+measured "build-module" make -C "${DIR_MODULE}"              || die $EX_ERR_RUN
+measured "setup-data"                                                         \
+         "${DIR_MODULE}/gen.bin"                                              \
+         -b 8388608                                                           \
+         -n $((100*1048576))                                                  \
+         -s 31415926                                                          \
+         -m 0                                                                 \
+         -g 1                                                                 \
+         -o "${DAT}"                                         || die $EX_ERR_RUN
+measured "build-wrapper" make -C "${DIR_SOURCE}" lib         || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=10 make -C "${DIR_SOURCE}" run || die $EX_ERR_RUN
+
+grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
+cat "${OUT}" | grep '=>' > "${CMP}"                         || die $EX_ERR_OTHER
+diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES

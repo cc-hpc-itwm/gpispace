@@ -32,9 +32,9 @@ OPTION(WITH_LOG4CPP
   "Build the project with log4cpp"
   0)
 
-OPTION(WITH_COMM
+OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
-  1)
+  OFF)
 
 OPTION(USE_STL_TR1
  "Use tr1 from stl"
@@ -100,9 +100,9 @@ ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 # Reflect the package structure
 add_subdirectory(seda)
-if (WITH_COMM)
+if (ENABLE_SEDA_COMM_LIB)
   add_subdirectory(seda/comm)
-endif (WITH_COMM)
+endif ()
 
 include(CTest)
 if (BUILD_TESTING)

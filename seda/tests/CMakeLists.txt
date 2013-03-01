@@ -6,9 +6,9 @@ if (CppUnit_FOUND)
 
   add_subdirectory(seda)
 
-  if (WITH_COMM)
+  if (ENABLE_SEDA_COMM_LIB)
     add_subdirectory(sedaComm)
-  endif (WITH_COMM)
+  endif ()
 else ()
   message (WARNING "Could not find CppUnit, disabling tests")
 endif ()
