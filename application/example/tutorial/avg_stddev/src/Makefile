@@ -12,6 +12,7 @@ CXXLIBPATHS += $(BOOST_ROOT)/lib
 
 LIBS += boost_program_options
 LIBS += boost_thread
+LIBS += boost_system
 
 ###############################################################################
 
@@ -27,7 +28,7 @@ gen.o: gen.cpp writer.hpp queue.hpp buffer.hpp
 OBJS += gen.o
 
 gen.bin: gen.o
-	$(CXX) $(addprefix -L,$(CXXLIBPATHS)) $(addprefix -l,$(LIBS)) $< -o $@
+	$(CXX) $< $(addprefix -L,$(CXXLIBPATHS)) $(addprefix -l,$(LIBS)) -o $@
 
 BINS += gen.bin
 
