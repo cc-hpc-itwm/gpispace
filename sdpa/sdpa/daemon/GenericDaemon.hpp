@@ -29,14 +29,31 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sdpa/daemon/GenericDaemonActions.hpp>
 #include <sdpa/daemon/BackupService.hpp>
 
-#include <sdpa/events/SubmitJobEvent.hpp>
-#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
+#include <sdpa/events/CancelJobAckEvent.hpp>
+#include <sdpa/events/ConfigNokEvent.hpp>
+#include <sdpa/events/ConfigOkEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
-#include <sdpa/events/SubscribeEvent.hpp>
+#include <sdpa/events/ConfigRequestEvent.hpp>
+#include <sdpa/events/DeleteJobAckEvent.hpp>
+#include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
+#include <sdpa/events/InterruptEvent.hpp>
+#include <sdpa/events/JobFailedAckEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
+#include <sdpa/events/JobFinishedAckEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/LifeSignEvent.hpp>
+#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/events/RequestJobEvent.hpp>
+#include <sdpa/events/StartUpEvent.hpp>
+#include <sdpa/events/SubmitJobAckEvent.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
+#include <sdpa/events/SubscribeEvent.hpp>
+#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
+#include <sdpa/events/WorkerRegistrationEvent.hpp>
+
 #include <sdpa/types.hpp>
 
 #include <boost/serialization/nvp.hpp>
@@ -56,8 +73,7 @@ namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_
 namespace sdpa {
   namespace daemon {
 
-    class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
-                          public sdpa::daemon::IComm,
+    class GenericDaemon : public sdpa::daemon::IComm,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           public IAgent,
