@@ -1,6 +1,7 @@
 #ifndef FHG_UTIL_THREAD_QUEUE_HPP
 #define FHG_UTIL_THREAD_QUEUE_HPP
 
+#include <boost/bind.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
@@ -8,6 +9,15 @@ namespace fhg
 {
   namespace thread
   {
+    struct operation_timedout : std::runtime_error
+    {
+      operation_timedout (std::string const &op)
+        : std::runtime_error ("'" + op + "' timedout")
+      {}
+
+      ~operation_timedout () throw() {}
+    };
+
     template < typename T
              , template < typename
                         , typename
@@ -17,6 +27,7 @@ namespace fhg
     class queue
     {
     public:
+      typedef queue<T, Container, Allocator> this_type;
       typedef boost::recursive_mutex            mutex;
       typedef boost::unique_lock<mutex>     lock_type;
       typedef boost::condition_variable_any condition;
@@ -31,6 +42,27 @@ namespace fhg
         while (m_container.empty()) m_cond.wait(lock);
         T t (m_container.front()); m_container.pop_front();
         return t;
+      }
+
+      T get (boost::posix_time::time_duration duration)
+      {
+        boost::system_time const timeout = boost::get_system_time() + duration;
+        lock_type lock (m_mtx);
+        if (m_cond.timed_wait ( lock
+                              , timeout
+                              , boost::bind ( &this_type::is_element_available
+                                            , this
+                                            )
+                              )
+           )
+        {
+          T t (m_container.front ()); m_container.pop_front ();
+          return t;
+        }
+        else
+        {
+          throw operation_timedout ("get");
+        }
       }
 
       void put(T const & t)
@@ -102,6 +134,11 @@ namespace fhg
       // expose mutex
       mutex & get_mutex () { return m_mtx; }
     private:
+      bool is_element_available () const
+      {
+        return not m_container.empty ();
+      }
+
       mutable mutex m_mtx;
       mutable condition m_cond;
 
