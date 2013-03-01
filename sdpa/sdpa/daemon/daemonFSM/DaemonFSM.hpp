@@ -20,13 +20,8 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifdef USE_BOOST_MSM
-#  include "sdpa/daemon/daemonFSM/BMSM/DaemonFSM.hpp"
-namespace dsm = sdpa::fsm::bmsm;
-#else
-#   error "No state machine variant defined!"
-#endif
+#include "sdpa/daemon/daemonFSM/BMSM/DaemonFSM.hpp"
 
-using namespace dsm;
+using namespace sdpa::fsm::bmsm;
 
 #endif /* DAEMONFSM_HPP_ */

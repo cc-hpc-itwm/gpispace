@@ -39,10 +39,7 @@ add_subdirectory(daemonFSM)
 
 ADD_LIBRARY(sdpa-daemon ${hdrs} ${srcs})
 
-if (USE_BOOST_MSM)
-	target_link_libraries(sdpa-daemon sdpa-daemonFSM_BMSM)
-endif (USE_BOOST_MSM)
-
+target_link_libraries(sdpa-daemon sdpa-daemonFSM_BMSM)
 target_link_libraries(sdpa-daemon ${UTIL_LIBRARIES})
 target_link_libraries(sdpa-daemon ${ZLIB_LIBRARIES})
 target_link_libraries(sdpa-daemon sdpa-com)

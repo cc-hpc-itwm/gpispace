@@ -26,7 +26,7 @@ namespace sdpa {
 
     template <typename T> struct OrchestratorFactory;
 
-    class Orchestrator : public dsm::DaemonFSM
+    class Orchestrator : public sdpa::fsm::bmsm::DaemonFSM
     {
       public:
       typedef sdpa::shared_ptr<Orchestrator> ptr_t;

@@ -27,7 +27,7 @@ namespace sdpa {
 
     template <typename T> struct AgentFactory;
 
-    class Agent : public dsm::DaemonFSM
+    class Agent : public sdpa::fsm::bmsm::DaemonFSM
     {
       public:
         typedef sdpa::shared_ptr<Agent > ptr_t;

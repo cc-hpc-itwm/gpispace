@@ -20,14 +20,11 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifdef USE_BOOST_MSM
-#   include <sdpa/daemon/mpl.hpp>
-#   include <sdpa/daemon/jobFSM/BMSM/JobFSM.hpp>
-namespace jsm = sdpa::fsm::bmsm;
-#else
-#   error "No state machine variant defined!"
-#endif
+#include <sdpa/daemon/mpl.hpp>
+#include <sdpa/daemon/jobFSM/BMSM/JobFSM.hpp>
 
-using namespace jsm;
+//! \todo Remove this using directive. sdpa::fsm::bmsm::JobFSM is used
+//! directly in multiple locations.
+using namespace sdpa::fsm::bmsm;
 
 #endif /* JOBFSM_HPP_ */

@@ -1,7 +1,6 @@
 #ifndef SDPA_CONFIG_H
 #define SDPA_CONFIG_H
 
-#cmakedefine USE_BOOST_MSM 1
 #cmakedefine USE_REAL_WE 1
 #cmakedefine ENABLE_TYPE_CHECKING 1
 #cmakedefine HAVE_FVM 1
