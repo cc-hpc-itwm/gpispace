@@ -13,6 +13,9 @@ set (srcs
   SynchronizedQueue.cpp
   Worker.cpp
   WorkerManager.cpp
+
+  agent/Agent.cpp
+  orchestrator/Orchestrator.cpp
   )
 
 add_library (sdpa-daemon ${srcs})

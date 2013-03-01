@@ -121,6 +121,4 @@ namespace sdpa {
   }
 }
 
-#include <sdpa/daemon/agent/Agent.cpp>
-
 #endif
