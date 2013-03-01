@@ -103,8 +103,6 @@ namespace sdpa {
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
-        void notifyAppGui(const result_type & result);
-
         private:
         void createScheduler(bool bUseReqModel)
         {

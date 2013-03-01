@@ -831,9 +831,5 @@ void Agent::recover( std::istream& ifs )
   }
 }
 
-void Agent::notifyAppGui(const result_type & result)
-{
-}
-
   }
 }
