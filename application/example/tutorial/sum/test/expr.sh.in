@@ -1,0 +1,28 @@
+source "@CMAKE_BINARY_DIR@/application/common.test.sh"
+
+DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
+
+DIR_SOURCE="${DIR_TEST}/.."
+DIR_MODULE="${DIR_SOURCE}/src"
+
+OUT="${DIR_SOURCE}/sum_expr_many.out"
+CMP="${DIR_TEST}/run.out"
+CMP_ORIG="${DIR_TEST}/out.cmp"
+
+make_expr='make MAIN=sum_expr_many -C "${DIR_SOURCE}"'
+
+cleanup()
+{
+  rm -rf "${CMP}"
+  eval ${make_expr} clean
+  make -C "${DIR_MODULE}" clean
+}
+
+trap 'cleanup' EXIT
+
+measured "build-wrapper" ${make_expr} lib                   || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=1 ${make_expr} run            || die $EX_ERR_RUN
+
+grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
+cat "${OUT}" | grep '^s =>' > "${CMP}"                      || die $EX_ERR_OTHER
+diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
