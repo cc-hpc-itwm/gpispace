@@ -115,14 +115,14 @@ echo "$(date)" > "${builddir}/build.tstamp"
 "${srcdir}/configure" -t -p "${instdir}" -- -DINSTALL_AS_BUNDLE=ON || { echo >&2 "FAILED: could not CONFIGURE"; exit 11; }
 
 make -j "${jobs}" || { echo >&2 "FAILED: could not BUILD" ; exit 12; }
-if $execute_tests ; then
-  ctest -j "${jobs}" --timeout "${test_timeout}" || { echo >&2 "WARN: could not TEST" ; }
-fi
-
 if [ -d "${instdir}" ] ; then
   rm -rf "${instdir}"
 fi
 make -j "${jobs}" install || { echo >&2 "FAILED: could not INSTALL" ; exit 13; }
+
+if $execute_tests ; then
+  ctest --timeout "${test_timeout}" || { echo >&2 "WARN: could not TEST" ; }
+fi
 
 if $create_package ; then
     cpack --config cpack-rel.cmake || { echo >&2 "FAILED: could not PACK" ; exit 14; }
