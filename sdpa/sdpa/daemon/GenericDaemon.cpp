@@ -174,7 +174,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
   if( !strBackup.empty() )
   {
     SDPA_LOG_INFO( "The backup file is not empty! Attempting to recover the daemon "<<name());
-    LOG(INFO, "The recovery string is: "<<strBackup);
+    //LOG(INFO, "The recovery string is: "<<strBackup);
     std::stringstream iostr(strBackup);
     recover(iostr);
 

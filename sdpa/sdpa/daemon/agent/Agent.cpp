@@ -365,7 +365,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
 
   if( !hasWorkflowEngine() )
   {
-    try {
+	  try {
       // forward it up
       JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(  name()
                                                               , pJob->owner()

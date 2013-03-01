@@ -41,20 +41,24 @@ void Orchestrator::action_configure(const StartUpEvent &se)
 
 void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 {
-  // should be overriden by the orchestrator, aggregator and NRE
+	// should be overriden by the orchestrator, aggregator and NRE
+	GenericDaemon::action_config_ok (e);
+	SDPA_LOG_INFO("Configuration (orchestrator) was ok");
 
-  GenericDaemon::action_config_ok (e);
-
-  SDPA_LOG_INFO("Configuration (orchestrator) was ok");
-
-  cfg().print();
+	cfg().print();
 }
 
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
   sdpa::job_id_t jobId = ptrEvt->job_id();
+  if(m_listSubscribers.empty())
+  {
+	  SDPA_LOG_INFO("The list of subscribers is empty!");
+	  return;
+  }
 
+  SDPA_LOG_INFO("Check if there are subscribers for the job!"<<jobId);
   BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;
@@ -65,7 +69,7 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
       ptrEvt->to() = pair_subscr_joblist.first;
       sendEventToMaster(ptrEvt);
 
-      DMLOG (TRACE, "Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
+      SDPA_LOG_INFO("Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;
     }
   }
@@ -83,25 +87,25 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
     if (pEvt->from() != sdpa::daemon::WE)
     {
-      // send a JobFinishedAckEvent back to the worker/slave
-      JobFinishedAckEvent::Ptr ptrAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
+    	// send a JobFinishedAckEvent back to the worker/slave
+    	JobFinishedAckEvent::Ptr ptrAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
-      // send ack to the slave
-      DMLOG (TRACE, "Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
-      sendEventToSlave(ptrAckEvt);
+    	// send ack to the slave
+    	DMLOG (TRACE, "Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
+    	sendEventToSlave(ptrAckEvt);
     }
 
     //put the job into the state Finished or Cancelled
     Job::ptr_t pJob;
     try {
-      pJob = jobManager()->findJob(pEvt->job_id());
-      pJob->JobFinished(pEvt);
-      SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+    	pJob = jobManager()->findJob(pEvt->job_id());
+    	pJob->JobFinished(pEvt);
+    	SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
     }
     catch(JobNotFoundException const &)
     {
-      SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
-      return;
+    	SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
+    	return;
     }
 
     // It's an worker who has sent the message
@@ -222,7 +226,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
             else
             {
                 JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
-
+                SDPA_LOG_DEBUG("Notify the subscribers that the job "<<actId<<" has failed");
                 notifySubscribers(ptrEvtJobFailed);
             }
 
@@ -257,6 +261,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
     }
     else
     {
+    	SDPA_LOG_INFO("Notify the subscribers that the job "<<pEvt->job_id()<<" has failed!");
         JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
         notifySubscribers(ptrEvtJobFailed);
     }

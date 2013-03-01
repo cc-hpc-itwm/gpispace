@@ -352,12 +352,12 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
         switch(we_result.status)
         {
           case FINISHED:
-              SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" successfully finished!");
+              SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" successfully finished!");
               pGenericDaemon_->finished(we_result.jobId, we_result.result);
               break;
 
           case FAILED:
-              SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" failed!");
+              SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" failed!");
               pGenericDaemon_->failed( we_result.jobId
                                      , we_result.result
                                      , fhg::error::UNEXPECTED_ERROR
@@ -366,7 +366,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
               break;
 
           case CANCELLED:
-              SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" was cancelled!");
+              SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" was canceled!");
               pGenericDaemon_->cancelled(we_result.jobId);
               break;
 
