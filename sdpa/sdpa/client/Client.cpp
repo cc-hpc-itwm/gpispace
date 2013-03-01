@@ -131,7 +131,7 @@ void Client::start(const config_t & config) throw (ClientException)
   DMLOG(TRACE, "waiting until configuration is done.");
   try
   {
-    seda::IEvent::Ptr reply(wait_for_reply(0));
+    seda::IEvent::Ptr reply(wait_for_reply((timeout_t)(-1)));
     // check event type
     if (dynamic_cast<ConfigOK*>(reply.get()))
     {
@@ -211,38 +211,30 @@ seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 // on t=0 blocks forever
 seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
 {
-        boost::unique_lock<boost::mutex> lock(mtx_);
-
-        while (reply_.get() == NULL)
-        {
-                if (t)
-                {
-                        const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(t));
-                        if (!cond_.timed_wait(lock, to))
-                        {
-                                if (reply_.get() != NULL)
-                                        break;
-                                else
-                                        throw Timedout("did not receive reply");
-                        }
-                }
-                else
-                        cond_.wait(lock);
-        }
-
-        seda::IEvent::Ptr ret(reply_);
-        reply_.reset();
-        return ret;
+  if (t == (timeout_t)(-1))
+  {
+    return m_incoming_events.get ();
+  }
+  else
+  {
+    try
+    {
+      return m_incoming_events.get (boost::posix_time::milliseconds (t));
+    }
+    catch (fhg::thread::operation_timedout const &)
+    {
+      throw Timedout ("did not receive reply");
+    }
+  }
 }
 
 void Client::clear_reply()
 {
-        boost::unique_lock<boost::mutex> lock(mtx_);
-        if (reply_)
-        {
-                LOG(WARN, "clearing old reply: " << reply_->str());
-        }
-        reply_.reset();
+  if (not m_incoming_events.empty ())
+  {
+    LOG(WARN, "clearing old replies...");
+    m_incoming_events.clear ();
+  }
 }
 
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
@@ -640,9 +632,6 @@ void Client::action_delete(const seda::IEvent::Ptr &e)
 
 void Client::action_store_reply(const seda::IEvent::Ptr &reply)
 {
-  boost::unique_lock<boost::mutex> lock(mtx_);
-
   DMLOG(TRACE,"storing reply message: " << reply->str());
-  reply_ = reply;
-  cond_.notify_one();
+  m_incoming_events.put (reply);
 }
