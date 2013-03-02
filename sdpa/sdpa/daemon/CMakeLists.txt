@@ -1,7 +1,5 @@
 # tiberiu.rotaru@itwm.fraunhofer.de
 
-add_subdirectory (orchestrator)
-
 set (srcs
   DaemonFSM.cpp
   GenericDaemon.cpp
