@@ -37,7 +37,6 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 message(STATUS "checking for thread package")
 find_package(Threads REQUIRED)
 if(CMAKE_USE_PTHREADS_INIT)
-    set(HAVE_PTHREAD_H 1)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 

@@ -61,8 +61,6 @@ struct IAgent
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive&, const unsigned int ){}
-
-  virtual void notifyAppGui(const result_type & result) {};
 };
 
 #endif //IAGENT_HPP

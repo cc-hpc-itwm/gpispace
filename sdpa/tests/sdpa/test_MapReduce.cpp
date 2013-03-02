@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testMapReduce
-#include "sdpa/daemon/jobFSM/JobFSM.hpp"
+#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
@@ -32,7 +32,7 @@
 
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "sdpa/daemon/daemonFSM/DaemonFSM.hpp"
+#include "sdpa/daemon/DaemonFSM.hpp"
 #include <seda/Strategy.hpp>
 #include <sdpa/client/ClientApi.hpp>
 
@@ -437,7 +437,7 @@ void MyFixture::run_client_subscriber(const std::string& strWorkflow )
 
   std::vector<std::string> cav;
   cav.push_back("--orchestrator=orchestrator_0");
-  cav.push_back("--network.timeout=0");
+  cav.push_back("--network.timeout=-1");
   config.parse_command_line(cav);
 
   std::ostringstream osstr;

@@ -15,7 +15,6 @@ BOOST_AUTO_TEST_CASE (default_constructor)
   BOOST_REQUIRE (jid1 != jid2);
   BOOST_REQUIRE (jid1 != jid3);
   BOOST_REQUIRE (jid2 != jid3);
-
 }
 
 BOOST_AUTO_TEST_CASE (conversion_from_string)

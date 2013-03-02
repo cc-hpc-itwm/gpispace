@@ -27,11 +27,13 @@
 #include <sdpa/client/generated/ClientFsm_sm.h>
 
 #include <fhg/revision.hpp>
+#include <fhg/util/thread/queue.hpp>
 
 namespace sdpa { namespace client {
   class Client : public ClientActions, public seda::Strategy {
   public:
     typedef sdpa::shared_ptr<Client> ptr_t;
+    typedef fhg::thread::queue<seda::IEvent::Ptr, std::list> event_queue_t;
 
     ~Client();
 
@@ -110,8 +112,7 @@ namespace sdpa { namespace client {
     std::string output_stage_;
 
     boost::mutex mtx_;
-    boost::condition_variable cond_;
-    seda::IEvent::Ptr reply_;
+    event_queue_t m_incoming_events;
 
     seda::Stage::Ptr client_stage_;
     ClientContext fsm_;

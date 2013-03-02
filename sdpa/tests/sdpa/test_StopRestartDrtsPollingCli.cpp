@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE TestStopRestartDrtsPollingCli
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
@@ -169,7 +169,7 @@ void MyFixture::run_client_polling()
 
 	std::vector<std::string> cav;
 	cav.push_back("--orchestrator=orchestrator_0");
-	cav.push_back("--network.timeout=0");
+	cav.push_back("--network.timeout=-1");
 	config.parse_command_line(cav);
 
 	std::ostringstream osstr;

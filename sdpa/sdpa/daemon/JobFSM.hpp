@@ -1,22 +1,9 @@
-/*
- * =====================================================================================
- *
- *       Filename:  JobFSM.hpp
- *
- *    Description:  Job meta state machine (boost::msm)
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// tiberiu.rotaru@itwm.fraunhofer.de
+
 #ifndef JOB_FSM_BMSM_HPP
 #define JOB_FSM_BMSM_HPP 1
+
+#include <sdpa/daemon/mpl.hpp>
 
 #include <iostream>
 // back-end
@@ -278,5 +265,9 @@ namespace sdpa {
     }
   }
 }
+
+//! \todo Remove this using directive. sdpa::fsm::bmsm::JobFSM is used
+//! directly in multiple locations.
+using namespace sdpa::fsm::bmsm;
 
 #endif

@@ -10,10 +10,6 @@
 #include <sdpa/types.hpp>
 #include <sdpa/util/Properties.hpp>
 
-#if defined(USE_BOOST_SC)
-        #include <boost/statechart/event_base.hpp>
-#endif
-
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
@@ -76,10 +72,6 @@ namespace sdpa {
 
     virtual void set_owner(const sdpa::worker_id_t& owner) = 0;
     virtual sdpa::worker_id_t owner() = 0;
-
-#ifdef USE_BOOST_SC
-    virtual void process_event( const boost::statechart::event_base &) {}
-#endif
 
     //transitions
     virtual void CancelJob(const sdpa::events::CancelJobEvent*);

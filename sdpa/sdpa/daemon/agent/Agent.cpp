@@ -15,13 +15,14 @@
  *
  * =====================================================================================
  */
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+
+#include <sdpa/daemon/agent/Agent.hpp>
+
+#include <sdpa/daemon/JobFSM.hpp>
 #include <fhg/assert.hpp>
 
-using namespace std;
-using namespace sdpa::daemon;
-using namespace sdpa::events;
-
+namespace sdpa {
+  namespace daemon {
 
 Agent::~Agent()
 {
@@ -830,6 +831,5 @@ void Agent::recover( std::istream& ifs )
   }
 }
 
-void Agent::notifyAppGui(const result_type & result)
-{
+  }
 }

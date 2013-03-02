@@ -20,19 +20,11 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifdef USE_BOOST_SC
-#   include <boost/statechart/event.hpp>
-namespace sc = boost::statechart;
-#endif
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
 
 namespace sdpa { namespace events {
-#ifdef USE_BOOST_SC
-  class RetrieveJobResultsEvent : public JobEvent, public sc::event<RetrieveJobResultsEvent>
-#else
   class RetrieveJobResultsEvent : public JobEvent
-#endif
   {
     public:
       typedef sdpa::shared_ptr<RetrieveJobResultsEvent> Ptr;

@@ -20,19 +20,11 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifdef USE_BOOST_SC
-#   include <boost/statechart/event.hpp>
-namespace sc = boost::statechart;
-#endif
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
 
 namespace sdpa { namespace events {
-#ifdef USE_BOOST_SC
-	class CapabilitiesGainedEvent : public MgmtEvent, public sc::event<CapabilitiesGainedEvent> {
-#else
 	class CapabilitiesGainedEvent : public MgmtEvent {
-#endif
 	public:
 		typedef sdpa::shared_ptr<CapabilitiesGainedEvent> Ptr;
 

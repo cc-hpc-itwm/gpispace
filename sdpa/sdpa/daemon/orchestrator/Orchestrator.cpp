@@ -16,14 +16,19 @@
  * =====================================================================================
  */
 
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+
 #include <fhg/assert.hpp>
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
+
+namespace sdpa {
+  namespace daemon {
 
 Orchestrator::~Orchestrator()
 {
@@ -552,5 +557,7 @@ void Orchestrator::recover( std::istream& is )
   catch(exception const &ex)
   {
     MLOG (ERROR, "could not recover orchestrator: " << ex.what ());
+  }
+}
   }
 }

@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE TestSubscriber
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
@@ -257,7 +257,7 @@ void MyFixture::run_client_subscriber()
 
 	std::vector<std::string> cav;
 	cav.push_back("--orchestrator=orchestrator_0");
-	cav.push_back("--network.timeout=0");
+	cav.push_back("--network.timeout=-1");
 	config.parse_command_line(cav);
 
 	std::ostringstream osstr;
@@ -419,7 +419,7 @@ BOOST_AUTO_TEST_CASE( test2Subscribers_OrchNoWEWait)
 
 	std::vector<std::string> cav;
 	cav.push_back("--orchestrator=orchestrator_0");
-	cav.push_back("--network.timeout=0");
+	cav.push_back("--network.timeout=-1");
 	config.parse_command_line(cav);
 
 	sdpa::client::ClientApi::ptr_t ptrCli_0 = sdpa::client::ClientApi::create( config, "sdpac_0", "sdpac_0.apps.client.out" );
