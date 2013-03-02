@@ -21,8 +21,8 @@
             <cinclude href="iostream"/>
             <code><![CDATA[
             std::cout << "### work " << v.id << " of [0.." << n << ")"
-            << ", credit " << v.credit
-            << ", config " << config
+            << std::endl << "credit " << v.credit
+            << std::endl << "config " << config
             << std::endl
             ;
             ]]></code>

@@ -21,5 +21,5 @@ measured "run" WE_EXEC_WORKER=1 make -C "${DIR_SOURCE}" run || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
 test 1 -eq $(grep ^done "${OUT}" | wc -l)                   || die $EX_ERR_RES
-cat "${OUT}" | grep -A 1 ^\# > "${CMP}"                     || die $EX_ERR_OTHER
+cat "${OUT}" | grep ^\# | sort -n -k +3 > "${CMP}"          || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
