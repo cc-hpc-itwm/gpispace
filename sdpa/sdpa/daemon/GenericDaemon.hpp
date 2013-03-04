@@ -25,7 +25,6 @@
 #include <sdpa/capability.hpp>
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/util/Config.hpp>
-#include <sdpa/daemon/IAgent.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -68,13 +67,18 @@
 
 #include <boost/utility.hpp>
 
+inline const requirement_list_t& empty_req_list()
+{
+  static requirement_list_t e_req_list;
+  return e_req_list;
+}
+
 namespace sdpa {
   namespace daemon {
 
     class GenericDaemon : public sdpa::daemon::IComm,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
-                          public IAgent,
                           boost::noncopyable
     {
     public:
