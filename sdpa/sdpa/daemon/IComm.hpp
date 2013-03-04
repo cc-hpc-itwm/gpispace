@@ -33,15 +33,7 @@
 
 namespace sdpa {
   namespace daemon {
-
-  const std::string ORCHESTRATOR("orchestrator") ;
-  const std::string AGGREGATOR("aggregator") ;
-  //const std::string NRE("NRE");
   const std::string WE("WE");
-  const std::string USER("user");
-
-  class JobNotDeletedException;
-  class JobManager;
 
   class IComm
   {
