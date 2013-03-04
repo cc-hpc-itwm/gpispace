@@ -92,8 +92,8 @@ namespace sdpa {
     virtual bool hasWorkflowEngine() = 0;
     virtual bool isTop() = 0;
 
-    virtual void backup( std::ostream& ) { throw std::runtime_error("not supported at this level"); }
-    virtual void recover( std::istream& ) { throw std::runtime_error("not supported at this level"); }
+    virtual void backup( std::ostream& ) = 0;
+    virtual void recover( std::istream& ) = 0;
 
     virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
 
