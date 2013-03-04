@@ -90,11 +90,9 @@ namespace fhg
           initialize_and_set_position (_transition, id);
           _scene->addItem (_transition);
 
-          from::many
-            (this, trans.resolved_function().get().ports().ids(), from::port);
-
-          from::many (this, trans.connections().ids(), from::connection);
-          from::many (this, trans.place_map().ids(), from::place_map);
+          from::many_port (this, trans.resolved_function().get().ports().ids());
+          from::many_connection (this, trans.connections().ids());
+          from::many_place_map (this, trans.place_map().ids());
 
           //! \todo do something if not already set
           //        _transition->repositionChildrenAndResize();
@@ -177,9 +175,9 @@ namespace fhg
         WSIG (net, net::open, ::xml::parse::id::ref::net, id)
         {
           const ::xml::parse::type::net_type& net (id.get());
-          from::many (this, net.places().ids(), from::place);
-          from::many (this, net.transitions().ids(), from::transition);
-          from::many (this, _function.get().ports().ids(), from::port);
+          from::many_place (this, net.places().ids());
+          from::many_transition (this, net.transitions().ids());
+          from::many_port (this, _function.get().ports().ids());
         }
 
         WSIG (net, transition::open, ::xml::parse::id::ref::transition, id)
