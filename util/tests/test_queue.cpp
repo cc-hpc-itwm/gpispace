@@ -175,3 +175,39 @@ BOOST_AUTO_TEST_CASE (thread_queue_clear)
   BOOST_REQUIRE_EQUAL (items.size (), 0);
   BOOST_REQUIRE       (items.empty ());
 }
+
+BOOST_AUTO_TEST_CASE (thread_queue_timed_put_empty_queue)
+{
+  items_t items (1);
+
+  try
+  {
+    BOOST_REQUIRE (items.empty ());
+    items.put (0, boost::posix_time::milliseconds (500));
+  }
+  catch (fhg::thread::operation_timedout const &)
+  {
+    BOOST_ERROR ("thread::queue::put(0, 500ms) timed out");
+  }
+}
+
+BOOST_AUTO_TEST_CASE (thread_queue_timed_put_full_queue)
+{
+  items_t items (1);
+
+  try
+  {
+    BOOST_REQUIRE (items.empty ());
+
+    items.put (0, boost::posix_time::milliseconds (500));
+    BOOST_REQUIRE_EQUAL (items.size (), 1u);
+
+    items.put (1, boost::posix_time::milliseconds (500));
+
+    BOOST_ERROR ("thread::queue::put(1, 500ms) did not timeout");
+  }
+  catch (fhg::thread::operation_timedout const &)
+  {
+    // expected
+  }
+}
