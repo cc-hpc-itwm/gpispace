@@ -25,10 +25,6 @@
 #if (  defined WNAME    \
     || defined WSIG     \
     || defined WEAVE    \
-    || defined XMLPARSE \
-    || defined XMLTYPE  \
-    || defined WETYPE   \
-    || defined ITVAL    \
     || defined GENFUN   \
     || defined FUN      \
     )
@@ -41,12 +37,6 @@
         template<> \
         void _class::weave< WNAME(_tag), _type > (const _type & _var)
 #define WEAVE(_tag) _state->template weave < WNAME(_tag) >
-
-#define XMLPARSE(_x) ::xml::parse::_x
-#define XMLTYPE(_type) XMLPARSE(type::_type)
-#define WETYPE(_type) ::we::type::_type
-
-#define ITVAL(_type) _type::const_iterator::value_type
 
 #define GENFUN(_name,_type,_state,_var) \
         template<typename State> \
