@@ -34,8 +34,6 @@
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
-
 
 using namespace std;
 using namespace sdpa::tests;

@@ -45,7 +45,6 @@
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
 #include <boost/thread.hpp>
 
 //plugin

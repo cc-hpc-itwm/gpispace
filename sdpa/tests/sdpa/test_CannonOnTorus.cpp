@@ -44,7 +44,6 @@
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 #include <sdpa/engine/TorusWorkflowEngineOrch.hpp>
 #include <sdpa/engine/TorusWorkflowEngineAgent.hpp>

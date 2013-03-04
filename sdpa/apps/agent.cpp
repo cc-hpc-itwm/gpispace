@@ -15,7 +15,7 @@
 #include <boost/foreach.hpp>
 
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/read_bool.hpp>

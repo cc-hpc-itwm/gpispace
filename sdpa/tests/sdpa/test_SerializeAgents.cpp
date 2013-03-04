@@ -42,7 +42,6 @@
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 const int MAX_CAP = 100;
 

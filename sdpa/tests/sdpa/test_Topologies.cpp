@@ -44,7 +44,6 @@
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/shared_array.hpp>

@@ -45,7 +45,7 @@
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 //plugin
 #include <fhg/plugin/plugin.hpp>
