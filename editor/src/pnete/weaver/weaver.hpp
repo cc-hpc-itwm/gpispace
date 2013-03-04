@@ -24,6 +24,7 @@
 
 #if (  defined WNAME    \
     || defined WSIG     \
+    || defined WSIGE    \
     || defined WEAVE    \
     || defined GENFUN   \
     || defined FUN      \
