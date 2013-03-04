@@ -18,9 +18,9 @@
 static const std::string &kvs_host () { static std::string s("localhost"); return s; }
 static const std::string &kvs_port () { static std::string s("0"); return s; }
 
-struct F
+struct KVSSetup
 {
-  F ()
+  KVSSetup ()
     : m_pool (0)
     , m_kvsd (0)
     , m_serv (0)
@@ -52,7 +52,7 @@ struct F
                                               );
   }
 
-  ~F ()
+  ~KVSSetup ()
   {
     m_serv->stop ();
     m_pool->stop ();
@@ -72,6 +72,12 @@ struct F
   fhg::com::kvs::server::kvsd *m_kvsd;
   fhg::com::tcp_server *m_serv;
   boost::thread *m_thrd;
+};
+
+BOOST_GLOBAL_FIXTURE (KVSSetup);
+
+struct F
+{
 };
 
 BOOST_FIXTURE_TEST_SUITE( s, F )
