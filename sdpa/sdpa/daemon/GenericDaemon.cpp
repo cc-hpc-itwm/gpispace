@@ -1704,11 +1704,6 @@ void GenericDaemon::reschedule(const sdpa::job_id_t& jobId)
   throw std::runtime_error(name() + " does not have scheduler!");
 }
 
-void GenericDaemon::start_fsm()
-{
-  // to be overriden by DaemonFSM
-}
-
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
 {
   lock_type lock(mtx_master_);

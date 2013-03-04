@@ -203,7 +203,6 @@ namespace sdpa {
       virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
 
       // agent fsm (actions)
-      virtual void start_fsm();
       virtual void action_configure( const sdpa::events::StartUpEvent& );
       virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
       virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
