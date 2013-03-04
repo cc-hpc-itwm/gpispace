@@ -259,6 +259,36 @@ namespace fhg
 
       namespace from
       {
+        template<typename WEAVER, typename IT>
+        void many ( WEAVER * weaver
+                  , IT pos
+                  , const IT & end
+                  , void (*fun)
+                    ( WEAVER *
+                    , const typename std::iterator_traits<IT>::value_type &
+                    )
+                  )
+        {
+          while (pos != end)
+            {
+              fun (weaver, *pos);
+
+              ++pos;
+            }
+        }
+
+        template<typename WEAVER, typename COLLECTION>
+        void many ( WEAVER * weaver
+                  ,  const COLLECTION & collection
+                  , void (*fun)
+                    ( WEAVER *
+                    , const typename std::iterator_traits<typename COLLECTION::const_iterator>::value_type &
+                    )
+                  )
+        {
+          many (weaver, collection.begin(), collection.end(), fun);
+        }
+
         namespace visitor
         {
           template<typename State>
@@ -583,36 +613,6 @@ namespace fhg
           WEAVE(net::places) (net.places());
           WEAVE(net::transitions) (net.transitions());
           WEAVE(net::close)();
-        }
-
-        template<typename WEAVER, typename IT>
-        void many ( WEAVER * weaver
-                  , IT pos
-                  , const IT & end
-                  , void (*fun)
-                    ( WEAVER *
-                    , const typename std::iterator_traits<IT>::value_type &
-                    )
-                  )
-        {
-          while (pos != end)
-            {
-              fun (weaver, *pos);
-
-              ++pos;
-            }
-        }
-
-        template<typename WEAVER, typename COLLECTION>
-        void many ( WEAVER * weaver
-                  ,  const COLLECTION & collection
-                  , void (*fun)
-                    ( WEAVER *
-                    , const typename std::iterator_traits<typename COLLECTION::const_iterator>::value_type &
-                    )
-                  )
-        {
-          many (weaver, collection.begin(), collection.end(), fun);
         }
 
         namespace
