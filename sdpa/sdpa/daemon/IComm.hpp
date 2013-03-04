@@ -97,12 +97,6 @@ namespace sdpa {
 
     virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
 
-    //GUI notification methods
-    virtual void notifyActivityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
-    virtual void notifyActivityStarted(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
-    virtual void notifyActivityFinished(const id_type&, const std::string& )  { throw std::runtime_error("not supported by this component"); }
-    virtual void notifyActivityFailed(const id_type&, const std::string& )    { throw std::runtime_error("not supported by this component"); }
-    virtual void notifyActivityCancelled(const id_type&, const std::string& ) { throw std::runtime_error("not supported by this component"); }
     virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
     virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
     virtual void addCapability(const capability_t&) = 0;
