@@ -453,7 +453,7 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
   peer_1.start();
 
   bool stop_request (false);
-  boost::thread thrd_send_recv (boost::bind (send_loop, &stop_request, &peer_1));
+  //  boost::thread thrd_send_recv (boost::bind (send_loop, &stop_request, &peer_1));
 
   for (std::size_t i (0); i < 1000; ++i)
   {
@@ -470,13 +470,15 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
       BOOST_ERROR ( ex.what() );
     }
 
+    usleep (500);
+
     peer_2.stop();
     thrd_2.join ();
   }
 
   stop_request = true;
-  thrd_send_recv.interrupt ();
-  thrd_send_recv.join ();
+  //  thrd_send_recv.interrupt ();
+  //  thrd_send_recv.join ();
 
   peer_1.stop();
   thrd_1.join ();
