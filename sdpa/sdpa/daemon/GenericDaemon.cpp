@@ -1786,11 +1786,9 @@ void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
 
 bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_id_t& jobId)
 {
-  for(sdpa::job_id_list_t::const_iterator it = m_listSubscribers[agId].begin(); it != m_listSubscribers[agId].end(); it++ )
-    if( *it == jobId )
-      return true;
-
-  return false;
+  return std::find
+    (m_listSubscribers[agId].begin(), m_listSubscribers[agId].end(), jobId)
+    != m_listSubscribers[agId].end();
 }
 
 void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::job_id_list_t& listJobIds)
