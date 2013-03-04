@@ -340,14 +340,14 @@ namespace fhg
           public:
             explicit property (State * state) : _state (state) {}
 
-            void operator () (const WETYPE(property::value_type) & v) const
+            void operator () (const ::we::type::property::value_type& v) const
             {
               WEAVE(property::value) (v);
             }
 
-            void operator () (const WETYPE(property::type) & props) const
+            void operator () (const ::we::type::property::type& props) const
             {
-              for ( WETYPE(property::map_type::const_iterator)
+              for ( ::we::type::property::map_type::const_iterator
                       p (props.get_map().begin()), end (props.get_map().end())
                   ; p != end
                   ; ++p
@@ -361,27 +361,27 @@ namespace fhg
           };
         } // namespace visitor
 
-        FUN(property, ITVAL(WETYPE(property::map_type)), prop)
+        FUN(property, ::we::type::property::map_type::const_iterator::value_type, prop)
         {
           WEAVE(property::open) (prop.first);
           boost::apply_visitor(visitor::property<State>(_state),prop.second);
           WEAVE(property::close)();
         }
 
-        FUN(properties, WETYPE(property::type), props)
+        FUN(properties, ::we::type::property::type, props)
         {
           WEAVE(properties::open) (props);
           WEAVE(properties::close)();
         }
 
-        FUN(structure, XMLTYPE(structure_type), s)
+        FUN(structure, ::xml::parse::type::structure_type, s)
         {
           WEAVE(structure::open) (s.name());
           boost::apply_visitor(visitor::structure<State>(_state),s.signature());
           WEAVE(structure::close) ();
         }
 
-        FUN(structs, XMLTYPE(structs_type), structs)
+        FUN(structs, ::xml::parse::type::structs_type, structs)
         {
           WEAVE(structs::open) (structs);
           WEAVE(structs::close)();
@@ -436,13 +436,13 @@ namespace fhg
           WEAVE(expression_sequence::close)();
         }
 
-        FUN(type_get, ITVAL(XMLTYPE(type_get_type)), tg)
+        FUN(type_get, ::xml::parse::type::type_get_type::const_iterator::value_type, tg)
         {
           WEAVE(type_get::open) (tg);
           WEAVE(type_get::close)();
         }
 
-        FUN(type_map, ITVAL(XMLTYPE(type_map_type)), tm)
+        FUN(type_map, ::xml::parse::type::type_map_type::const_iterator::value_type, tm)
         {
           WEAVE(type_map::open)(tm);
           WEAVE(type_map::close)();
@@ -470,7 +470,7 @@ namespace fhg
           WEAVE(mod::open) (id);
           const ::xml::parse::type::module_type& mod (id.get());
           WEAVE(mod::name) (mod.name());
-          WEAVE(mod::fun) (XMLTYPE(dump::dump_fun(mod)));
+          WEAVE(mod::fun) (::xml::parse::type::dump::dump_fun (mod));
           WEAVE(mod::cincludes) (mod.cincludes);
           WEAVE(mod::ldflags) (mod.ldflags);
           WEAVE(mod::cxxflags) (mod.cxxflags);
@@ -486,7 +486,7 @@ namespace fhg
           WEAVE(use::close)();
         }
 
-        FUN(conditions, XMLTYPE(conditions_type), cs)
+        FUN(conditions, ::xml::parse::type::conditions_type, cs)
         {
           WEAVE(conditions::open) (cs);
           WEAVE(conditions::close)();
@@ -537,7 +537,7 @@ namespace fhg
           WEAVE(place::is_virtual) (place.is_virtual());
           WEAVE(place::properties) (place.properties());
 
-          BOOST_FOREACH (const XMLTYPE(place_type::token_type)& tok, place.tokens)
+          BOOST_FOREACH (const ::xml::parse::type::place_type::token_type& tok, place.tokens)
           {
             WEAVE(place::token) (tok);
           }
