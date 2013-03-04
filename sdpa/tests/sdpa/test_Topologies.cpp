@@ -370,7 +370,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
 			}
 
-			seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
 
 			// check event type
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))

@@ -192,7 +192,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
           }
 
           LOG(INFO, "The client waits for a notification from the orchestrator ...");
-          seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
+          seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
           LOG(INFO, "The client receive for the notification ...");
 
           // check event type
@@ -449,7 +449,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 				LOG(INFO, "Re-trying ...");
 			}
 
-			seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
 
 			// check event type
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
