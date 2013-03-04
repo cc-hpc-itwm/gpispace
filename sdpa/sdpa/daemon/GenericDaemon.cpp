@@ -1213,35 +1213,17 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
 {
-  try {
-    return jobManager()->findJob(job_id);
-  }
-  catch(const JobNotFoundException& ex)
-  {
-    throw ex;
-  }
+  return jobManager()->findJob(job_id);
 }
 
 void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
 {
-  try {
-    jobManager()->deleteJob(jobId);
-  }
-  catch(const JobNotDeletedException& ex)
-  {
-    throw ex;
-  }
+  jobManager()->deleteJob(jobId);
 }
 
 const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
-  try {
-    return jobManager()->getJobRequirements(jobId);
-  }
-  catch (const NoJobRequirements& ex)
-  {
-    throw ex;
-  }
+  return jobManager()->getJobRequirements(jobId);
 }
 
 void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
@@ -1525,22 +1507,12 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 
 Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
 {
-  try {
-    return  scheduler()->findWorker(worker_id);
-  }
-  catch(const WorkerNotFoundException& ex) {
-    throw ex;
-  }
+  return scheduler()->findWorker(worker_id);
 }
 
 const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
 {
-  try {
-    return  scheduler()->findWorker(job_id);
-  }
-  catch(const NoWorkerFoundException& ex) {
-    throw ex;
-  }
+  return scheduler()->findWorker(job_id);
 }
 
 void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
@@ -1549,13 +1521,7 @@ void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid )
 {
-  try {
-    scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
-  }
-  catch( const WorkerAlreadyExistException& ex )
-  {
-    throw ex;
-  }
+  scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
 }
 
 void GenericDaemon::updateLastRequestTime()
