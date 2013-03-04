@@ -285,27 +285,27 @@ namespace fhg
         {
           append_maybe_bool ("inline", _inline);
         }
-        WSIG(tv, transition::properties, WETYPE(property::type), prop)
+        WSIG(tv, transition::properties, ::we::type::property::type, prop)
         {
           from::properties (this, prop);
         }
-        WSIG(tv, transition::structs, XMLTYPE(structs_type), structs)
+        WSIG(tv, transition::structs, ::xml::parse::type::structs_type, structs)
         {
           from::structs (this, structs);
         }
-        WSIG(tv, transition::function, XMLTYPE(transition_type::function_or_use_type), fun)
+        WSIG(tv, transition::function, ::xml::parse::type::transition_type::function_or_use_type, fun)
         {
           from::variant (this, fun);
         }
-        WSIG(tv, transition::place_map, XMLTYPE(transition_type::place_maps_type), pm)
+        WSIG(tv, transition::place_map, ::xml::parse::type::transition_type::place_maps_type, pm)
         {
           xs ("place-map", pm.ids(), from::place_map);
         }
-        WSIG(tv, transition::connection, XMLTYPE(transition_type::connections_type), cs)
+        WSIG(tv, transition::connection, ::xml::parse::type::transition_type::connections_type, cs)
         {
           xs ("connections", cs.ids(), from::connection);
         }
-        WSIG(tv, transition::condition, XMLTYPE(conditions_type), cond)
+        WSIG(tv, transition::condition, ::xml::parse::type::conditions_type, cond)
         {
           from::conditions (this, cond);
         }
@@ -327,28 +327,28 @@ namespace fhg
         {
           append_maybe_bool ("virtual", is_virtual);
         }
-        WSIG(tv, place::token, XMLTYPE(place_type::token_type), token)
+        WSIG(tv, place::token, ::xml::parse::type::place_type::token_type, token)
         {
           push (append ("token"));
           boost::apply_visitor (from::visitor::token<tv> (this), token);
           pop ();
         }
-        WSIG(tv, place::properties, WETYPE(property::type), prop)
+        WSIG(tv, place::properties, ::we::type::property::type, prop)
         {
           from::properties (this, prop);
         }
 
-        WSIG(tv, properties::open, WETYPE(property::type), props)
+        WSIG(tv, properties::open, ::we::type::property::type, props)
         {
           xs ("property", props.get_map(), from::property);
         }
 
-        WSIG(tv, property::open, WETYPE(property::key_type), key)
+        WSIG(tv, property::open, ::we::type::property::key_type, key)
         {
           push (append (key));
         }
         WSIGE(tv, property::close) { pop(); }
-        WSIG(tv, property::value, WETYPE(property::value_type), val)
+        WSIG(tv, property::value, ::we::type::property::value_type, val)
         {
           add_value (val);
         }
@@ -363,7 +363,7 @@ namespace fhg
           add_type (type);
         }
 
-        WSIG(tv, structs::open, XMLTYPE(structs_type), structs)
+        WSIG(tv, structs::open, ::xml::parse::type::structs_type, structs)
         {
           xs ("struct", structs, from::structure);
         }
@@ -385,7 +385,7 @@ namespace fhg
         {
           append_maybe_key_value ("place", "%s", place);
         }
-        WSIG(tv, port::properties, WETYPE(property::type), prop)
+        WSIG(tv, port::properties, ::we::type::property::type, prop)
         {
           from::properties (this, prop);
         }
@@ -395,12 +395,12 @@ namespace fhg
           append (line);
         }
 
-        WSIG(tv, type_get::open, ITVAL(XMLTYPE(type_get_type)), tg)
+        WSIG(tv, type_get::open, ::xml::parse::type::type_get_type::const_iterator::value_type, tg)
         {
           append (tg);
         }
 
-        WSIG(tv, type_map::open, ITVAL(XMLTYPE(type_map_type)), tm)
+        WSIG(tv, type_map::open, ::xml::parse::type::type_map_type::const_iterator::value_type, tm)
         {
           append_key_value (tm.first, "%s", tm.second);
         }
@@ -418,16 +418,16 @@ namespace fhg
         {
           add_something (" use ", use);
         }
-        WSIG(tv, specialize::type_map, XMLTYPE(type_map_type), tm)
+        WSIG(tv, specialize::type_map, ::xml::parse::type::type_map_type, tm)
         {
           xs ("type_map", tm, from::type_map);
         }
-        WSIG(tv, specialize::type_get, XMLTYPE(type_get_type), tg)
+        WSIG(tv, specialize::type_get, ::xml::parse::type::type_get_type, tg)
         {
           xs ("type_get", tg, from::type_get);
         }
 
-        WSIG(tv, conditions::open, XMLTYPE(conditions_type), cs)
+        WSIG(tv, conditions::open, ::xml::parse::type::conditions_type, cs)
         {
           xs ("condition", cs, from::expression_sequence);
         }
@@ -443,7 +443,7 @@ namespace fhg
             set_text (*name);
           }
         }
-        WSIG(tv, tmpl::template_parameter, XMLTYPE(tmpl_type::names_type), templates)
+        WSIG(tv, tmpl::template_parameter, ::xml::parse::type::tmpl_type::names_type, templates)
         {
           append_list ("template-parameter", templates);
         }
@@ -469,27 +469,27 @@ namespace fhg
         {
           append_maybe_bool ("internal", internal);
         }
-        WSIG(tv, function::require, XMLTYPE(requirements_type), reqs)
+        WSIG(tv, function::require, ::xml::parse::type::requirements_type, reqs)
         {
           append_list ("require", reqs);
         }
-        WSIG(tv, function::properties, WETYPE(property::type), prop)
+        WSIG(tv, function::properties, ::we::type::property::type, prop)
         {
           from::properties (this, prop);
         }
-        WSIG(tv, function::structs, XMLTYPE(structs_type), structs)
+        WSIG(tv, function::structs, ::xml::parse::type::structs_type, structs)
         {
           from::structs (this, structs);
         }
-        WSIG(tv, function::ports, XMLTYPE(function_type::ports_type), ports)
+        WSIG(tv, function::ports, ::xml::parse::type::function_type::ports_type, ports)
         {
           xs ("ports", ports.ids(), from::port);
         }
-        WSIG(tv, function::fun, XMLTYPE(function_type::content_type), fun)
+        WSIG(tv, function::fun, ::xml::parse::type::function_type::content_type, fun)
         {
           from::variant (this, fun);
         }
-        WSIG(tv, function::conditions, XMLTYPE(conditions_type), cs)
+        WSIG(tv, function::conditions, ::xml::parse::type::conditions_type, cs)
         {
           from::conditions (this, cs);
         }
@@ -507,7 +507,7 @@ namespace fhg
         {
           add_something(" <-> real: ", name);
         }
-        WSIG(tv, place_map::properties, WETYPE(property::type), prop)
+        WSIG(tv, place_map::properties, ::we::type::property::type, prop)
         {
           from::properties (this, prop);
         }
@@ -545,19 +545,19 @@ namespace fhg
         {
           add_something (" -> ", fun);
         }
-        WSIG(tv, mod::cincludes, XMLTYPE(module_type::cincludes_type), cincludes)
+        WSIG(tv, mod::cincludes, ::xml::parse::type::module_type::cincludes_type, cincludes)
         {
           append_list ("cinclude", cincludes);
         }
-        WSIG(tv, mod::ldflags, XMLTYPE(module_type::flags_type), ldflags)
+        WSIG(tv, mod::ldflags, ::xml::parse::type::module_type::flags_type, ldflags)
         {
           append_list ("ldflag", ldflags);
         }
-        WSIG(tv, mod::cxxflags, XMLTYPE(module_type::flags_type), cxxflags)
+        WSIG(tv, mod::cxxflags, ::xml::parse::type::module_type::flags_type, cxxflags)
         {
           append_list ("cxxflag", cxxflags);
         }
-        WSIG(tv, mod::links, XMLTYPE(module_type::flags_type), links)
+        WSIG(tv, mod::links, ::xml::parse::type::module_type::flags_type, links)
         {
           append_list ("link", links);
         }
@@ -586,33 +586,33 @@ namespace fhg
           push (append ("net"));
         }
         WSIGE(tv, net::close) { pop(); }
-        WSIG(tv, net::properties, WETYPE(property::type), prop)
+        WSIG(tv, net::properties, ::we::type::property::type, prop)
         {
           from::properties (this, prop);
         }
-        WSIG(tv, net::structs, XMLTYPE(structs_type), structs)
+        WSIG(tv, net::structs, ::xml::parse::type::structs_type, structs)
         {
           from::structs (this, structs);
         }
-        WSIG(tv, net::templates, XMLTYPE(net_type::templates_type), templates)
+        WSIG(tv, net::templates, ::xml::parse::type::net_type::templates_type, templates)
         {
           xs ("template", templates.ids(), from::tmpl);
         }
-        WSIG(tv, net::specializes, XMLTYPE(net_type::specializes_type), specializes)
+        WSIG(tv, net::specializes, ::xml::parse::type::net_type::specializes_type, specializes)
         {
           xs ("specialize", specializes.ids(), from::specialize);
         }
-        WSIG(tv, net::functions, XMLTYPE(net_type::functions_type), functions)
+        WSIG(tv, net::functions, ::xml::parse::type::net_type::functions_type, functions)
         {
           xs ("function", functions.ids(), from::function);
         }
-        WSIG(tv, net::places, XMLTYPE(net_type::places_type), places)
+        WSIG(tv, net::places, ::xml::parse::type::net_type::places_type, places)
         {
           xs ("place", places.ids(), from::place);
         }
         WSIG( tv
             , net::transitions
-            , XMLTYPE(net_type::transitions_type)
+            , ::xml::parse::type::net_type::transitions_type
             , transitions
             )
         {
