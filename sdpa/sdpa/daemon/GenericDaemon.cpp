@@ -1730,10 +1730,7 @@ void GenericDaemon::addMasters(const agent_id_list_t& listMasters )
 
 bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
 {
-  if( info.name() == agId )
-    return true;
-  else
-    return false;
+  return info.name() == agId;
 }
 
 void GenericDaemon::removeMaster( const agent_id_t& id )
@@ -1864,9 +1861,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 {
   lock_type lock(mtx_subscriber_);
-  sdpa::subscriber_map_t::iterator it = m_listSubscribers.find(agentId);
-
-  return (it != m_listSubscribers.end());
+  return m_listSubscribers.find (agentId) != m_listSubscribers.end();
 }
 
 Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
