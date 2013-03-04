@@ -291,8 +291,8 @@ namespace fhg
 
       LOG(TRACE, "plugin '" << p->first << "' unloaded");
 
-      m_plugins.erase (p);
       m_load_order.remove (p->first);
+      m_plugins.erase (p);
 
       return rc;
     }
