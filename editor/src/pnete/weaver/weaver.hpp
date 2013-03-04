@@ -26,7 +26,6 @@
     || defined WSIG     \
     || defined WSIGE    \
     || defined WEAVE    \
-    || defined GENFUN   \
     || defined FUN      \
     )
 #error "Macro already defined"
@@ -39,10 +38,16 @@
         void _class::weave< WNAME(_tag), _type > (const _type & _var)
 #define WEAVE(_tag) _state->template weave < WNAME(_tag) >
 
-#define GENFUN(_name,_type,_state,_var) \
-        template<typename State> \
-        static void _name (State * _state, const _type & _var)
-#define FUN(_name,_type,_var) GENFUN(_name,_type,_state,_var)
+#define FUN(_name,_type,_var)                                           \
+  template<typename State>                                              \
+  static void _name (State*, const _type&);                             \
+  template<typename State, typename Collection>                         \
+  static void many_ ## _name (State* state, const Collection& collection) \
+  {                                                                     \
+    from::many (state, collection, from::_name<State>);                 \
+  }                                                                     \
+  template<typename State>                                              \
+  static void _name (State * _state, const _type & _var)
 
 namespace fhg
 {
