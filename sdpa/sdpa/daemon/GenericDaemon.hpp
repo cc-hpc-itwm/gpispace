@@ -394,7 +394,7 @@ namespace sdpa {
       lock_type lock(mtx_master_);
       if(m_arrMasterInfo.empty())
       {
-        SDPA_LOG_INFO("The master list is empty. No mater to be notified exist!");
+        SDPA_LOG_INFO("The master list is empty. No master to be notified exist!");
         return;
       }
 
