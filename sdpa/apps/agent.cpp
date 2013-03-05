@@ -41,7 +41,6 @@ int main (int argc, char **argv)
   string kvsUrl;
   unsigned int agentRank;
   string pidfile;
-  bool daemonize = false;
 
   bool bDoBackup = false;
   string backup_file;
@@ -109,8 +108,6 @@ int main (int argc, char **argv)
 
   if( vm.count("backup_folder") )
     bkpOpt *= FLD_DEF;
-  if (vm.count ("daemonize"))
-    daemonize = true;
 
   bfs::path bkp_path(backup_folder);
   boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
@@ -184,7 +181,7 @@ int main (int argc, char **argv)
   }
 
   // everything is fine so far, daemonize
-  if (daemonize)
+  if (vm.count ("daemonize"))
   {
     if (pid_t child = fork())
     {
