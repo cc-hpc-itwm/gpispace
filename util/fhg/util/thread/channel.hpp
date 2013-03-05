@@ -24,6 +24,15 @@ namespace fhg
       {}
     };
 
+    struct drop
+    {
+      explicit drop (size_t N = 1)
+        : N (N)
+      {}
+
+      size_t N;
+    };
+
     template <typename T, typename U>
     channel<T> & operator << (channel<T> & chan, U const & val)
     {
@@ -50,6 +59,17 @@ namespace fhg
     {
       rhs.put (lhs.get ());
       return rhs;
+    }
+
+    template <typename T>
+    channel<T> & operator >> (channel<T> & lhs, drop const & rhs)
+    {
+      size_t N = rhs.N;
+      while (N --> 0)
+      {
+        lhs.get ();
+      }
+      return lhs;
     }
   }
 }

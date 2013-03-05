@@ -271,3 +271,23 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_timeout)
 
   BOOST_REQUIRE_EQUAL (elem, 42);
 }
+
+BOOST_AUTO_TEST_CASE (thread_channel_drop)
+{
+  int nready;
+  int_channel_t chan;
+
+  for (int i = 0 ; i < 10 ; ++i)
+    chan << i;
+
+  chan >> fhg::thread::drop (5);
+
+  for (int i = 5 ; i < 10 ; ++i)
+  {
+    int elem;
+    chan >> elem;
+    BOOST_CHECK_EQUAL (elem, i);
+  }
+
+  BOOST_REQUIRE (chan.empty ());
+}
