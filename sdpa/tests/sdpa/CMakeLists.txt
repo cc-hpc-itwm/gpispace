@@ -48,7 +48,6 @@ get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
 get_target_property(TESTS_GUI_PLUGIN_PATH gui-plugin LOCATION)
 get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
 get_target_property(TESTS_WFE_PLUGIN_PATH wfe-plugin LOCATION)
-get_target_property(TESTS_WFE_TEST_PLUGIN_PATH wfe_test-plugin LOCATION)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
