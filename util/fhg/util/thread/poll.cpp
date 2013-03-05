@@ -1,35 +1,20 @@
 #include <cerrno>
 #include <boost/thread.hpp>
-#include <fhg/util/thread/select.hpp>
+#include <fhg/util/thread/pollable.hpp>
+#include <fhg/util/thread/poll.hpp>
 
 namespace fhg
 {
   namespace thread
   {
-    static bool s_select_on_item (select_item_t *item)
+    static bool s_select_on_item (poll_item_t *item)
     {
       item->revents = 0;
-
-      if (item->events & fhg::thread::POLL_IN)
-      {
-        if (item->selectable->is_ready_for (fhg::thread::POLL_IN))
-        {
-          item->revents |= fhg::thread::POLL_IN;
-        }
-      }
-
-      if (item->events & fhg::thread::POLL_OUT)
-      {
-        if (item->selectable->is_ready_for (fhg::thread::POLL_OUT))
-        {
-          item->revents |= fhg::thread::POLL_OUT;
-        }
-      }
-
+      item->revents = (item->events & item->pollable->poll ());
       return item->revents != 0;
     }
 
-    int select (select_item_t *items, size_t nitems, long _ms)
+    int poll (poll_item_t *items, size_t nitems, long _ms)
     {
       boost::posix_time::time_duration duration =
         boost::posix_time::milliseconds (_ms);

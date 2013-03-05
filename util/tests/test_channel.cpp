@@ -9,7 +9,7 @@
 #include <boost/foreach.hpp>
 
 #include <fhg/util/thread/channel.hpp>
-#include <fhg/util/thread/select.hpp>
+#include <fhg/util/thread/poll.hpp>
 
 typedef fhg::thread::channel<int> int_channel_t;
 
@@ -121,13 +121,13 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_in_empty_channel)
   int_channel_t chan_a (1);
   int_channel_t chan_b (1);
 
-  fhg::thread::select_item_t items [] =
+  fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, fhg::thread::POLL_IN, 0}
-    , {&chan_b, fhg::thread::POLL_IN, 0}
+      {&chan_a, 0, fhg::thread::POLLIN, 0}
+    , {&chan_b, 0, fhg::thread::POLLIN, 0}
     };
 
-  int nready = fhg::thread::select (items, 2, 0);
+  int nready = fhg::thread::poll (items, 2, 0);
 
   BOOST_REQUIRE (nready == 0);
   BOOST_CHECK (items [0].revents == 0);
@@ -142,17 +142,17 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_in_full_channel)
   chan_a << 1;
   chan_b << 1;
 
-  fhg::thread::select_item_t items [] =
+  fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, fhg::thread::POLL_IN, 0}
-    , {&chan_b, fhg::thread::POLL_IN, 0}
+      {&chan_a, 0, fhg::thread::POLLIN, 0}
+    , {&chan_b, 0, fhg::thread::POLLIN, 0}
     };
 
-  int nready = fhg::thread::select (items, 2, 0);
+  int nready = fhg::thread::poll (items, 2, 0);
 
   BOOST_REQUIRE (nready == 2);
-  BOOST_CHECK (items [0].revents == fhg::thread::POLL_IN);
-  BOOST_CHECK (items [1].revents == fhg::thread::POLL_IN);
+  BOOST_CHECK (items [0].revents == fhg::thread::POLLIN);
+  BOOST_CHECK (items [1].revents == fhg::thread::POLLIN);
 }
 
 BOOST_AUTO_TEST_CASE (thread_channel_select_out_empty_channel)
@@ -160,17 +160,17 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_out_empty_channel)
   int_channel_t chan_a (1);
   int_channel_t chan_b (1);
 
-  fhg::thread::select_item_t items [] =
+  fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, fhg::thread::POLL_OUT, 0}
-    , {&chan_b, fhg::thread::POLL_OUT, 0}
+      {&chan_a, 0, fhg::thread::POLLOUT, 0}
+    , {&chan_b, 0, fhg::thread::POLLOUT, 0}
     };
 
-  int nready = fhg::thread::select (items, 2, 0);
+  int nready = fhg::thread::poll (items, 2, 0);
 
   BOOST_REQUIRE (nready == 2);
-  BOOST_CHECK (items [0].revents == fhg::thread::POLL_OUT);
-  BOOST_CHECK (items [1].revents == fhg::thread::POLL_OUT);
+  BOOST_CHECK (items [0].revents == fhg::thread::POLLOUT);
+  BOOST_CHECK (items [1].revents == fhg::thread::POLLOUT);
 }
 
 BOOST_AUTO_TEST_CASE (thread_channel_select_out_full_channel)
@@ -181,13 +181,13 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_out_full_channel)
   chan_a << 1;
   chan_b << 1;
 
-  fhg::thread::select_item_t items [] =
+  fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, fhg::thread::POLL_OUT, 0}
-    , {&chan_b, fhg::thread::POLL_OUT, 0}
+      {&chan_a, 0, fhg::thread::POLLOUT, 0}
+    , {&chan_b, 0, fhg::thread::POLLOUT, 0}
     };
 
-  int nready = fhg::thread::select (items, 2, 0);
+  int nready = fhg::thread::poll (items, 2, 0);
 
   BOOST_REQUIRE (nready == 0);
   BOOST_CHECK (items [0].revents == 0);
@@ -201,17 +201,17 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_channel)
 
   chan_a << 1;
 
-  fhg::thread::select_item_t items [] =
+  fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, fhg::thread::POLL_IN + fhg::thread::POLL_OUT, 0}
-    , {&chan_b, fhg::thread::POLL_OUT + fhg::thread::POLL_IN, 0}
+      {&chan_a, 0, fhg::thread::POLLIN + fhg::thread::POLLOUT, 0}
+    , {&chan_b, 0, fhg::thread::POLLOUT + fhg::thread::POLLIN, 0}
     };
 
-  int nready = fhg::thread::select (items, 2, 0);
+  int nready = fhg::thread::poll (items, 2, 0);
 
   BOOST_REQUIRE (nready == 2);
-  BOOST_CHECK (items [0].revents == fhg::thread::POLL_IN);
-  BOOST_CHECK (items [1].revents == fhg::thread::POLL_OUT);
+  BOOST_CHECK (items [0].revents == fhg::thread::POLLIN);
+  BOOST_CHECK (items [1].revents == fhg::thread::POLLOUT);
 }
 
 static void s_forward_element ( int_channel_t *chan_a
@@ -228,13 +228,13 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_timeout)
   int_channel_t chan_a (1);
   int_channel_t chan_b (1);
 
-  fhg::thread::select_item_t items [] =
+  fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, fhg::thread::POLL_IN, 0}
-    , {&chan_b, fhg::thread::POLL_IN, 0}
+      {&chan_a, 0, fhg::thread::POLLIN, 0}
+    , {&chan_b, 0, fhg::thread::POLLIN, 0}
     };
 
-  nready = fhg::thread::select (items, 2, 500 * FHG_THREAD_SELECT_MS);
+  nready = fhg::thread::poll (items, 2, 500 * FHG_THREAD_SELECT_MS);
 
   BOOST_REQUIRE (nready == 0);
 }
@@ -247,24 +247,24 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_timeout)
 
   chan_a << 42;
 
-  fhg::thread::select_item_t items [] =
+  fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, fhg::thread::POLL_OUT, 0}
-    , {&chan_b, fhg::thread::POLL_IN, 0}
+      {&chan_a, 0, fhg::thread::POLLOUT, 0}
+    , {&chan_b, 0, fhg::thread::POLLIN, 0}
     };
 
-  nready = fhg::thread::select (items, 2, 500 * FHG_THREAD_SELECT_MS);
+  nready = fhg::thread::poll (items, 2, 500 * FHG_THREAD_SELECT_MS);
   BOOST_REQUIRE (nready == 0);
 
   boost::thread T = boost::thread (&s_forward_element, &chan_a, &chan_b);
-  nready = fhg::thread::select (items, 2, 5000 * FHG_THREAD_SELECT_MS);
+  nready = fhg::thread::poll (items, 2, 5000 * FHG_THREAD_SELECT_MS);
 
   BOOST_REQUIRE (nready > 0);
 
   if (items [0].revents)
-    BOOST_CHECK (items [0].revents == fhg::thread::POLL_OUT);
+    BOOST_CHECK (items [0].revents == fhg::thread::POLLOUT);
   if (items [1].revents)
-    BOOST_CHECK (items [1].revents == fhg::thread::POLL_IN);
+    BOOST_CHECK (items [1].revents == fhg::thread::POLLIN);
 
   int elem;
   chan_b >> elem;

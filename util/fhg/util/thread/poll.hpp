@@ -2,7 +2,6 @@
 #define FHG_UTIL_THREAD_SELECT_HPP
 
 #include <stdlib.h>
-#include <fhg/util/thread/selectable.hpp>
 
 namespace fhg
 {
@@ -12,14 +11,16 @@ namespace fhg
 #define FHG_THREAD_SELECT_TEST  0
 #define FHG_THREAD_SELECT_WAIT -1
 
-    struct select_item_t
+    class pollable;
+    struct poll_item_t
     {
-      selectable *selectable;
+      pollable     *pollable;
+      int                 fd;
       short           events;
       short          revents;
     };
 
-    int select (select_item_t *, size_t nitems, long timeout);
+    int poll (poll_item_t *, size_t nitems, long timeout);
   }
 }
 

@@ -5,7 +5,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
-#include <fhg/util/thread/selectable.hpp>
+#include <fhg/util/thread/pollable.hpp>
 
 namespace fhg
 {
@@ -26,7 +26,7 @@ namespace fhg
                         > class Container
              , typename Allocator = std::allocator<T>
              >
-    class queue : public virtual selectable
+    class queue : public virtual pollable
     {
     public:
       typedef queue<T, Container, Allocator> this_type;
@@ -173,19 +173,17 @@ namespace fhg
         m_put_cond.notify_one ();
       }
 
-      bool is_ready_for (select_mode_t mode) const
+      int poll () const
       {
         lock_type lock(m_mtx);
-        switch (mode)
-        {
-        case POLL_IN:
-          return is_element_available ();
-        case POLL_OUT:
-          return is_free_slot_available ();
-        default:
-          throw std::runtime_error
-            ("invalid argument to fhg::thread::queue::poll");
-        }
+        int mask = 0;
+
+        if (is_element_available ())
+          mask |= fhg::thread::POLLIN;
+        if (is_free_slot_available ())
+          mask |= fhg::thread::POLLOUT;
+
+        return mask;
       }
 
       // expose mutex

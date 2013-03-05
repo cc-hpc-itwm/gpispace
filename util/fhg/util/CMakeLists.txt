@@ -59,7 +59,7 @@ set (srcs
   read_bool.cpp
   stat.cpp
 
-  thread/select.cpp
+  thread/poll.cpp
 )
 
 add_library (fhg-util ${srcs})
