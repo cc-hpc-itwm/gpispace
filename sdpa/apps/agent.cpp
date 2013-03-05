@@ -42,7 +42,6 @@ int main (int argc, char **argv)
   unsigned int agentRank;
   std::string pidfile;
 
-  bool bDoBackup = false;
   std::string backup_file;
   std::string backup_folder;
   std::string requestMode ("false");
@@ -112,6 +111,8 @@ int main (int argc, char **argv)
   bfs::path bkp_path(backup_folder);
   boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
 
+  const bool do_backup (vm.count ("backup_folder") && bfs::is_directory (st));
+
   switch(bkpOpt)
   {
   case FLD_DEF:
@@ -121,18 +122,15 @@ int main (int argc, char **argv)
     if( !bfs::is_directory(st) )             // true - is directory
     {
       LOG(ERROR, "The path "<<backup_folder<<" does not represent a folder!" );
-      bDoBackup = false;
     }
     else
     {
       LOG(INFO, "Backup the agent into the file "<<backup_folder<<"/"<<backup_file );
-      bDoBackup = true;
     }
     break;
 
   case FILE_DEF:
     LOG( INFO, "Backup folder not specified! No backup file will be created!");
-    bDoBackup = false;
     break;
 
   case FLDANDFILE_DEF:
@@ -142,23 +140,19 @@ int main (int argc, char **argv)
     if( !bfs::is_directory(st) )             // true - is directory
     {
       LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
-      bDoBackup = false;
     }
     else
     {
       LOG(INFO, "Backup the agent into the file "<<backup_folder<<"/"<<backup_file );
-      bDoBackup = true;
     }
     break;
 
   case NO_BKP:
     MLOG (INFO, "No backup folder and no backup file were specified! No backup for the agent will be available!");
-    bDoBackup = false;
     break;
 
   default:
     LOG(ERROR, "Bad luck, This should not happen!");
-    bDoBackup = false;
   }
 
   if( arrMasterNames.empty() )
@@ -259,7 +253,7 @@ int main (int argc, char **argv)
 
     bool bUseRequestModel(fhg::util::read_bool(requestMode));
 
-    if(bDoBackup)
+    if(do_backup)
       ptrAgent->start_agent(bUseRequestModel, bkp_path/backup_file);
     else
       ptrAgent->start_agent(bUseRequestModel);
