@@ -69,7 +69,6 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     }
 
     virtual ~DummyWorkflowEngine() {}
-    virtual bool is_real() { return false; }
 
     void connect(sdpa::daemon::GenericDaemon* pIAgent )
     {

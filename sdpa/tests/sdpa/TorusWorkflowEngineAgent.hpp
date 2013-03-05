@@ -52,8 +52,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
       stop();
     }
 
-    virtual bool is_real() { return false; }
-
     void connect( sdpa::daemon::GenericDaemon* pIAgent )
     {
       pIAgent_ = pIAgent;
