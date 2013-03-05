@@ -41,7 +41,6 @@
 #include <boost/thread.hpp>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
-#include <sdpa/engine/EmptyWorkflowEngine.hpp>
 
 const int MAX_CAP = 100;
 

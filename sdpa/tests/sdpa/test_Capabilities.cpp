@@ -43,7 +43,6 @@
 
 #include <boost/filesystem/path.hpp>
 
-#include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <boost/thread.hpp>
 
@@ -75,7 +74,7 @@ struct MyFixture
 	    	, m_kvsd (0)
 	    	, m_serv (0)
 	    	, m_thrd (0)
-			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+			, m_arrAggMasterInfo(1, sdpa::MasterInfo("orchestrator_0"))
 	{ //initialize and start_agent the finite state machine
 
 		FHGLOG_SETUP();
@@ -328,7 +327,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
 
@@ -382,7 +381,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
 

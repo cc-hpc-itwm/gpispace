@@ -19,6 +19,8 @@
 #define TORUS_WORKFLOW_ENGINE_AGENT_HPP 1
 #include <TorusToken.hpp>
 
+#include <sdpa/engine/EmptyWorkflowEngine.hpp> // we_result_t
+
 using boost::numeric::ublas::matrix;
 
 class TorusWorkflowEngineAgent : public IWorkflowEngine {

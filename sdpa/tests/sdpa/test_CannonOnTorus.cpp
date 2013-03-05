@@ -42,8 +42,6 @@
 
 #include <boost/filesystem/path.hpp>
 
-#include <sdpa/engine/EmptyWorkflowEngine.hpp>
-
 #include <TorusWorkflowEngineOrch.hpp>
 #include <TorusWorkflowEngineAgent.hpp>
 

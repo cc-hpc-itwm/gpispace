@@ -20,6 +20,8 @@
 #include <TorusToken.hpp>
 #include <boost/numeric/ublas/storage.hpp>
 
+#include <sdpa/engine/EmptyWorkflowEngine.hpp> // we_result_t
+
 using namespace boost::numeric::ublas;
 
 class TorusWorkflowEngineOrch : public IWorkflowEngine {

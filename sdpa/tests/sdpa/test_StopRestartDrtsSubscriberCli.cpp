@@ -41,7 +41,6 @@
 #include "tests_config.hpp"
 #include <boost/filesystem/fstream.hpp>
 
-#include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 
 //plugin
