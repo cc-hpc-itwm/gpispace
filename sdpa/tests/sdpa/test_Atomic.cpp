@@ -45,7 +45,6 @@
 
 #include <boost/filesystem/path.hpp>
 
-#include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <boost/thread.hpp>

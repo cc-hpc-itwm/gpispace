@@ -41,7 +41,6 @@
 #include "tests_config.hpp"
 #include <boost/filesystem/path.hpp>
 
-#include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 
 #include <fhg/plugin/plugin.hpp>
