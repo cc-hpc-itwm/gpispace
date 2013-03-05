@@ -11,14 +11,15 @@ namespace fhg
     {
       item->revents = 0;
       item->revents = (item->events & item->pollable->poll ());
+
       return item->revents != 0;
     }
 
     int poll (poll_item_t *items, size_t nitems, long _ms)
     {
-      boost::posix_time::time_duration duration =
-        boost::posix_time::milliseconds (_ms);
-      boost::system_time const timeout = boost::get_system_time() + duration;
+      boost::system_time const timeout
+        = boost::get_system_time()
+        + boost::posix_time::milliseconds (_ms);
 
       while (true)
       {
@@ -26,8 +27,13 @@ namespace fhg
 
         for (size_t i = 0 ; i < nitems ; ++i)
         {
-          if (s_select_on_item (&items [i]))
-            ++nready;
+          if (items [i].pollable)
+          {
+            if (s_select_on_item (&items [i]))
+            {
+              ++nready;
+            }
+          }
         }
 
         if (nready || 0 == _ms)
