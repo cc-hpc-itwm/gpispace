@@ -232,11 +232,19 @@ int main (int argc, char **argv)
     fsync(pidfile_fd);
   }
 
-  LOG(INFO, "Starting the agent with the name = '"<<agentName<<"' at location "<<agentUrl<<", having the masters: ");
-  BOOST_FOREACH(string master, arrMasterNames)
   {
-    cout<<"   "<<master<<std::endl;
-    listMasterInfo.push_back(sdpa::MasterInfo(master));
+    std::stringstream startup_message;
+    startup_message << "Starting agent '" << agentName
+                    << "' at '" << agentUrl
+                    << "', having masters: ";
+
+    BOOST_FOREACH (const std::string& master, arrMasterNames)
+    {
+      startup_message << master << ", ";
+      listMasterInfo.push_back (sdpa::MasterInfo (master));
+    }
+
+    LOG (INFO, startup_message.str());
   }
 
   try
@@ -302,6 +310,6 @@ int main (int argc, char **argv)
   }
   catch ( std::exception& )
   {
-    std::cout<<"Could not start the Agent!"<<std::endl;
+    LOG (FATAL, "Could not start the Agent!");
   }
 }
