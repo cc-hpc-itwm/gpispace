@@ -1,2 +1,0 @@
-file0.txt mapper0
-file1.txt mapper1

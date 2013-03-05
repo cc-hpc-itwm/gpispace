@@ -1,5 +1,2 @@
-configure_file(file0.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/file0.txt COPYONLY)
-configure_file(file1.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/file1.txt COPYONLY)
-configure_file(wordcount_test.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/wordcount_test.txt COPYONLY)
 configure_file(in.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/in.txt COPYONLY)
 configure_file(stresstest.xml ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml COPYONLY)
