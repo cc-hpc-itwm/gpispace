@@ -9,6 +9,7 @@
 #include <boost/foreach.hpp>
 
 #include <fhg/util/thread/channel.hpp>
+#include <fhg/util/thread/select.hpp>
 
 typedef fhg::thread::channel<int> int_channel_t;
 
@@ -113,4 +114,162 @@ BOOST_AUTO_TEST_CASE (thread_channel_multiple_adder)
   }
 
   BOOST_REQUIRE (reference.empty ());
+}
+
+BOOST_AUTO_TEST_CASE (thread_channel_select_in_empty_channel)
+{
+  int_channel_t chan_a (1);
+  int_channel_t chan_b (1);
+
+  fhg::thread::select_item_t items [] =
+    {
+      {&chan_a, fhg::thread::POLL_IN, 0}
+    , {&chan_b, fhg::thread::POLL_IN, 0}
+    };
+
+  int nready = fhg::thread::select (items, 2, 0);
+
+  BOOST_REQUIRE (nready == 0);
+  BOOST_CHECK (items [0].revents == 0);
+  BOOST_CHECK (items [1].revents == 0);
+}
+
+BOOST_AUTO_TEST_CASE (thread_channel_select_in_full_channel)
+{
+  int_channel_t chan_a (1);
+  int_channel_t chan_b (1);
+
+  chan_a << 1;
+  chan_b << 1;
+
+  fhg::thread::select_item_t items [] =
+    {
+      {&chan_a, fhg::thread::POLL_IN, 0}
+    , {&chan_b, fhg::thread::POLL_IN, 0}
+    };
+
+  int nready = fhg::thread::select (items, 2, 0);
+
+  BOOST_REQUIRE (nready == 2);
+  BOOST_CHECK (items [0].revents == fhg::thread::POLL_IN);
+  BOOST_CHECK (items [1].revents == fhg::thread::POLL_IN);
+}
+
+BOOST_AUTO_TEST_CASE (thread_channel_select_out_empty_channel)
+{
+  int_channel_t chan_a (1);
+  int_channel_t chan_b (1);
+
+  fhg::thread::select_item_t items [] =
+    {
+      {&chan_a, fhg::thread::POLL_OUT, 0}
+    , {&chan_b, fhg::thread::POLL_OUT, 0}
+    };
+
+  int nready = fhg::thread::select (items, 2, 0);
+
+  BOOST_REQUIRE (nready == 2);
+  BOOST_CHECK (items [0].revents == fhg::thread::POLL_OUT);
+  BOOST_CHECK (items [1].revents == fhg::thread::POLL_OUT);
+}
+
+BOOST_AUTO_TEST_CASE (thread_channel_select_out_full_channel)
+{
+  int_channel_t chan_a (1);
+  int_channel_t chan_b (1);
+
+  chan_a << 1;
+  chan_b << 1;
+
+  fhg::thread::select_item_t items [] =
+    {
+      {&chan_a, fhg::thread::POLL_OUT, 0}
+    , {&chan_b, fhg::thread::POLL_OUT, 0}
+    };
+
+  int nready = fhg::thread::select (items, 2, 0);
+
+  BOOST_REQUIRE (nready == 0);
+  BOOST_CHECK (items [0].revents == 0);
+  BOOST_CHECK (items [1].revents == 0);
+}
+
+BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_channel)
+{
+  int_channel_t chan_a (1);
+  int_channel_t chan_b (1);
+
+  chan_a << 1;
+
+  fhg::thread::select_item_t items [] =
+    {
+      {&chan_a, fhg::thread::POLL_IN + fhg::thread::POLL_OUT, 0}
+    , {&chan_b, fhg::thread::POLL_OUT + fhg::thread::POLL_IN, 0}
+    };
+
+  int nready = fhg::thread::select (items, 2, 0);
+
+  BOOST_REQUIRE (nready == 2);
+  BOOST_CHECK (items [0].revents == fhg::thread::POLL_IN);
+  BOOST_CHECK (items [1].revents == fhg::thread::POLL_OUT);
+}
+
+static void s_forward_element ( int_channel_t *chan_a
+                              , int_channel_t *chan_b
+                              )
+{
+  usleep (100);
+  int elem;
+  *chan_a >> elem;
+  *chan_b << elem;
+}
+
+BOOST_AUTO_TEST_CASE (thread_channel_select_timeout)
+{
+  int nready;
+  int_channel_t chan_a (1);
+  int_channel_t chan_b (1);
+
+  fhg::thread::select_item_t items [] =
+    {
+      {&chan_a, fhg::thread::POLL_IN, 0}
+    , {&chan_b, fhg::thread::POLL_IN, 0}
+    };
+
+  nready = fhg::thread::select (items, 2, 500 * FHG_THREAD_SELECT_MS);
+
+  BOOST_REQUIRE (nready == 0);
+}
+
+BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_timeout)
+{
+  int nready;
+  int_channel_t chan_a (1);
+  int_channel_t chan_b (1);
+
+  chan_a << 42;
+
+  fhg::thread::select_item_t items [] =
+    {
+      {&chan_a, fhg::thread::POLL_OUT, 0}
+    , {&chan_b, fhg::thread::POLL_IN, 0}
+    };
+
+  nready = fhg::thread::select (items, 2, 500 * FHG_THREAD_SELECT_MS);
+  BOOST_REQUIRE (nready == 0);
+
+  boost::thread T = boost::thread (&s_forward_element, &chan_a, &chan_b);
+  nready = fhg::thread::select (items, 2, 5000 * FHG_THREAD_SELECT_MS);
+
+  BOOST_REQUIRE (nready > 0);
+
+  if (items [0].revents)
+    BOOST_CHECK (items [0].revents == fhg::thread::POLL_OUT);
+  if (items [1].revents)
+    BOOST_CHECK (items [1].revents == fhg::thread::POLL_IN);
+
+  int elem;
+  chan_b >> elem;
+
+  BOOST_REQUIRE_EQUAL (elem, 42);
 }

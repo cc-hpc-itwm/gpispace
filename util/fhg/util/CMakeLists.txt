@@ -58,6 +58,8 @@ set (srcs
   remove_prefix.cpp
   read_bool.cpp
   stat.cpp
+
+  thread/select.cpp
 )
 
 add_library (fhg-util ${srcs})

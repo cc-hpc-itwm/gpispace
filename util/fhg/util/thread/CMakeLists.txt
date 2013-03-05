@@ -4,6 +4,8 @@ set (hdrs
   event.hpp
   queue.hpp
   channel.hpp
+  select.hpp
+  selectable.hpp
 )
 
 install(FILES ${hdrs}
