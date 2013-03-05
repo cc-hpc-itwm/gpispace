@@ -15,7 +15,7 @@
 #include <boost/foreach.hpp>
 
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <we/mgmt/layer.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/read_bool.hpp>
@@ -244,7 +244,7 @@ int main (int argc, char **argv)
 
         try
         {
-          sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create(   agentName,
+          sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(   agentName,
                                                                                                           agentUrl,
                                                                                                           listMasterInfo,
                                                                                                           MAX_CAP,
