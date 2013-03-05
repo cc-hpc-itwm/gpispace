@@ -219,9 +219,7 @@ static void s_forward_element ( int_channel_t *chan_a
                               )
 {
   usleep (100);
-  int elem;
-  *chan_a >> elem;
-  *chan_b << elem;
+  *chan_a >> *chan_b >> *chan_a >> *chan_b;
 }
 
 BOOST_AUTO_TEST_CASE (thread_channel_select_timeout)
