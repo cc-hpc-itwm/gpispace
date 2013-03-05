@@ -37,6 +37,20 @@ namespace fhg
       val = chan.get ();
       return chan;
     }
+
+    template <typename T, typename U>
+    channel<T> & operator << (channel<T> & lhs, channel<U> & rhs)
+    {
+      lhs.put (rhs.get ());
+      return lhs;
+    }
+
+    template <typename T, typename U>
+    channel<U> & operator >> (channel<T> & lhs, channel<U> & rhs)
+    {
+      rhs.put (lhs.get ());
+      return rhs;
+    }
   }
 }
 
