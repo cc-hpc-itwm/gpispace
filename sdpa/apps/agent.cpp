@@ -33,35 +33,35 @@ static const int EX_STILL_RUNNING = 4;
 
 int main (int argc, char **argv)
 {
-  string agentName;
-  string agentUrl;
-  vector<string> arrMasterNames;
-  string arrMasterUrls;
-  string appGuiUrl;
-  string kvsUrl;
+  std::string agentName;
+  std::string agentUrl;
+  std::vector<std::string> arrMasterNames;
+  std::string arrMasterUrls;
+  std::string appGuiUrl;
+  std::string kvsUrl;
   unsigned int agentRank;
-  string pidfile;
+  std::string pidfile;
 
   bool bDoBackup = false;
-  string backup_file;
-  string backup_folder;
-  string requestMode ("false");
+  std::string backup_file;
+  std::string backup_folder;
+  std::string requestMode ("false");
 
   FHGLOG_SETUP();
 
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help,h", "Display this message")
-    ("name,n", po::value<string>(&agentName)->default_value("agent"), "Agent's logical name")
-    ("url,u",  po::value<string>(&agentUrl)->default_value("localhost"), "Agent's url")
-    //("orch_name,m",  po::value<string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
-    ("master,m", po::value<vector<string> >(&arrMasterNames)->multitoken(), "Agent's master list")
+    ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
+    ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
+    //("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
+    ("master,m", po::value<std::vector<std::string> >(&arrMasterNames)->multitoken(), "Agent's master list")
     ("rank,r", po::value<unsigned int>(&agentRank)->default_value(0), "Agent's rank")
-    ("backup_folder,d", po::value<string>(&backup_folder), "Agent's backup folder")
-    ("backup_file,f", po::value<string>(&backup_file), "Agent's backup file (stored into the backup folder)")
-    ("app_gui_url,a", po::value<string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
-    ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
-    ("request-mode", po::value<string>(&requestMode)->default_value(requestMode), "send periodical job requests to master")
+    ("backup_folder,d", po::value<std::string>(&backup_folder), "Agent's backup folder")
+    ("backup_file,f", po::value<std::string>(&backup_file), "Agent's backup file (stored into the backup folder)")
+    ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
+    ("kvs_url,k",  po::value<std::string>(), "The kvs daemon's url")
+    ("request-mode", po::value<std::string>(&requestMode)->default_value(requestMode), "send periodical job requests to master")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
     ;
@@ -85,9 +85,9 @@ int main (int argc, char **argv)
   else
   {
     boost::char_separator<char> sep(":");
-    boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<string>(), sep);
+    boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
 
-    vector< string > vec;
+    std::vector< std::string > vec;
     vec.assign(tok.begin(),tok.end());
 
     if( vec.size() != 2 )
