@@ -17,7 +17,7 @@
  */
 #ifndef TORUS_WORKFLOW_ENGINE_ORCH_HPP
 #define TORUS_WORKFLOW_ENGINE_ORCH_HPP 1
-#include <sdpa/engine/Token.hpp>
+#include <TorusToken.hpp>
 #include <boost/numeric/ublas/storage.hpp>
 
 using namespace boost::numeric::ublas;

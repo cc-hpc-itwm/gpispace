@@ -45,8 +45,8 @@
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 
-#include <sdpa/engine/TorusWorkflowEngineOrch.hpp>
-#include <sdpa/engine/TorusWorkflowEngineAgent.hpp>
+#include <TorusWorkflowEngineOrch.hpp>
+#include <TorusWorkflowEngineAgent.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/shared_array.hpp>

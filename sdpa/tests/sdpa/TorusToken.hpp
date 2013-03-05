@@ -17,7 +17,6 @@
  */
 #ifndef TOKEN_HPP
 #define TOKEN_HPP 1
-#include <sdpa/engine/Token.hpp>
 
 #include <boost/numeric/ublas/assignment.hpp>
 #include <boost/numeric/ublas/matrix.hpp>

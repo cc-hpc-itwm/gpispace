@@ -17,7 +17,7 @@
  */
 #ifndef TORUS_WORKFLOW_ENGINE_AGENT_HPP
 #define TORUS_WORKFLOW_ENGINE_AGENT_HPP 1
-#include <sdpa/engine/Token.hpp>
+#include <TorusToken.hpp>
 
 using boost::numeric::ublas::matrix;
 
