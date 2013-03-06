@@ -1,0 +1,211 @@
+#!/bin/bash
+
+EX_ERR_ENV=255
+EX_ERR_RUN=1
+EX_ERR_RES=2
+EX_ERR_OTHER=3
+
+set -m
+
+function die()
+{
+    local ec="$1" ; shift
+
+    if [ $# -gt 0 ] ; then
+        echo >&2 $@
+    fi
+
+    exit $ec
+}
+
+function crash_report ()
+{
+    local name="$1" ; shift
+    local ec="$1" ; shift
+
+    cat >&2 <<EOF
+------ START CRASH REPORT --------
+   name: $name
+   code: $ec
+    msg: $@
+------   END CRASH REPORT --------
+EOF
+}
+
+port_kvsd=8015
+num_worker=50
+num_reqsts=100
+
+num_worker_done=0
+num_worker_crashed=0
+all_done=false
+
+got_sigint=false
+pid_kvsd=
+pid_worker=()
+pid_client=()
+
+function handle_sigint ()
+{
+    if $got_sigint ; then
+        echo >&2 "please be patient, shutting down."
+    fi
+    got_sigint=true
+    if [ -n "$pid_kvsd" ] ; then
+        kill -TERM "${pid_kvsd}" 2>/dev/null
+    fi
+}
+
+trap handle_sigint SIGINT
+
+function cleanup()
+{
+    if [ -n "$pid_kvsd" ] ; then
+        for ((i=0 ; i < 10 ; i++))
+        do
+            kill -TERM "${pid_kvsd}" 2>/dev/null
+            if kill -0 "${pid_kvsd}" 2>/dev/null ; then
+                sleep 0.5
+            else
+                break
+            fi
+        done
+    fi
+}
+
+trap cleanup EXIT
+
+function remove_worker ()
+{
+    local pid="$1" ; shift
+
+    local found=false
+    other=()
+
+    for worker in ${pid_worker[@]} ; do
+        if [ ${worker} -ne $pid ] ; then
+            other+=( $worker )
+        else
+            found=true
+        fi
+    done
+
+    pid_worker=( ${other[@]} )
+
+    if $found ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function handle_sigchld ()
+{
+    local finished=
+    finished=( $(jobs -np) )
+
+    for pid in ${finished[@]} ; do
+        echo >2 "subprocess finished: $pid"
+        if kill -0 "$pid" 2>/dev/null ; then
+          continue
+        fi
+        wait $pid
+        ec=$?
+        if [ "$pid" = "$pid_kvsd" ] ; then
+            if [ $ec -ne 0 ] ; then
+                crash_report kvsd $ec
+                exit ${EX_ERR_RES}
+            fi
+
+            if ! ${all_done} ; then
+                echo >&2 "KVSD stopped but not everything done!"
+                kill -TERM $(jobs -p) 2>/dev/null
+                exit ${EX_ERR_RES}
+            fi
+        else
+            if remove_worker $pid ; then
+                num_worker_done=$((num_worker_done + 1))
+                if [ $ec -eq 0 ] ; then
+                    :
+                else
+                    num_worker_crashed=$((num_worker_crashed + 1))
+                fi
+            fi
+        fi
+    done
+
+    if [ $num_worker_done -eq $num_worker ] ; then
+        all_done=true
+        kill -TERM ${pid_kvsd} 2>/dev/null
+    fi
+}
+
+function simulate_worker ()
+{
+    local name="$1" ; shift
+    local nval="$1" ; shift
+    local work="$1" ; shift
+
+    for ((i=0 ; i < $nval ; i++)) ; do
+        err=$("${kvsc}" -P "${port_kvsd}" -p "drts.simulated-${name}.current_job.state" -v $i 2>&1)
+        ec=$?
+        if [ $ec -ne 0 ] ; then
+            crash_report worker $ec "${err}"
+            return $ec
+        fi
+    done
+
+    return 0
+}
+
+trap handle_sigchld SIGCHLD
+
+[ -n "$SDPA_HOME" ] || die ${EX_ERR_ENV} "SDPA_HOME is not set"
+
+kvsd="$SDPA_HOME/bin/fhgkvsd"
+kvsc="$SDPA_HOME/bin/fhgkvsc"
+
+[ -x "$kvsd" ] || die ${EX_ERR_ENV} "${kvsd} is not executable"
+[ -x "$kvsc" ] || die ${EX_ERR_ENV} "${kvsc} is not executable"
+
+# start kvsd on some port
+
+${kvsd} -s "" -p ${port_kvsd} &
+pid_kvsd=$!
+
+sleep 1
+
+for ((i=0 ; i < ${num_worker} ; i++))
+do
+    name="worker-$i"
+    work=0
+    nval=$((num_reqsts))
+
+    simulate_worker "${name}" $nval $work &
+    pid_worker[i]=$!
+
+    unset name
+    unset work
+    unset nval
+done
+
+wait
+
+if [ $num_worker_crashed -gt 0 ] ; then
+    crash_report test ${EX_ERR_RES} "${num_worker_crashed} / ${num_worker} worker(s) crashed"
+    exit ${EX_ERR_RES}
+fi
+
+# simulate workers that do the following:
+#
+#   for some times do:
+#       put N values
+#       sleep randomly
+#
+
+# simulate clients that do the following:
+#
+#   for ever
+#       get all keys
+#       sleep randomly
+#
