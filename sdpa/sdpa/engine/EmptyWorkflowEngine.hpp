@@ -128,8 +128,6 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
        stop();
         }
 
-    virtual bool is_real() { return false; }
-
     void connect(sdpa::daemon::GenericDaemon* pGenericDaemon )
     {
       pGenericDaemon_ = pGenericDaemon;

@@ -12,6 +12,11 @@ fhg_add_test(test_queue.cpp
   DESCRIPTION "Tests the synchronized queue implementation"
 )
 
+fhg_add_test(test_channel.cpp
+  DESCRIPTION "Tests the channel implementation"
+  LINK_LIBRARIES fhg-util
+)
+
 fhg_add_test(test_ini_parser.cpp
   DESCRIPTION "Tests the ini-parser"
 )

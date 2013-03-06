@@ -14,7 +14,6 @@ set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" C
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
-OPTION(USE_REAL_WE "Use real workflow engine" YES)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 # Where are the additional libraries installed? Note: provide includes
@@ -48,10 +47,7 @@ include_directories(${FhgKernel_INCLUDE_DIR})
 find_package(SEDA REQUIRED QUIET)
 include_directories(${SEDA_INCLUDE_DIR})
 
-# we library
-if (USE_REAL_WE)
-  include_directories(${CMAKE_SOURCE_DIR}/we)
-endif (USE_REAL_WE)
+include_directories(${CMAKE_SOURCE_DIR}/we)
 
 ## find zlib
 find_package(ZLIB REQUIRED)

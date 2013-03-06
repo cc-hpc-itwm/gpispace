@@ -818,6 +818,17 @@ while(!bStopRequested)
 }
 }
 
+namespace
+{
+  enum ExecutionState
+  {
+    ACTIVITY_FINISHED,
+    ACTIVITY_FAILED,
+    ACTIVITY_CANCELLED,
+  };
+  typedef std::pair<ExecutionState, result_type> execution_result_t;
+}
+
 void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
 {
   MLOG(TRACE, "executing activity: "<< jobId);

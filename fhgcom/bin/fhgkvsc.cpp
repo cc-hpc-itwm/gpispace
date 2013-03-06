@@ -44,6 +44,7 @@ int main(int ac, char *av[])
   std::string key;
   std::string value;
   size_t expiry (0);
+  size_t timeout (120 * 1000);
 
   std::vector<std::string> key_list;
 
@@ -62,6 +63,7 @@ int main(int ac, char *av[])
     ("list-all,l", "list all entries in the server")
     ("clear,C", "clear entries on the server")
     ("term", "terminate a running kvs daemon")
+    ("timeout,T", po::value<size_t>(&timeout)->default_value (timeout), "timeout in milliseconds")
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
     ("get,g", po::value<std::vector<std::string> >(&key_list), "get values from the key-value store")
     ("del,d", po::value<std::vector<std::string> >(&key_list), "delete entries from the key-value store")
@@ -93,7 +95,12 @@ int main(int ac, char *av[])
 
   try
   {
-    client.start (server_address, server_port, false, boost::posix_time::seconds(10), 1);
+    client.start ( server_address
+                 , server_port
+                 , false
+                 , boost::posix_time::milliseconds(timeout)
+                 , 1
+                 );
   }
   catch (std::exception const & ex)
   {

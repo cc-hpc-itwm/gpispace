@@ -41,9 +41,8 @@
 #include "tests_config.hpp"
 #include <boost/filesystem/fstream.hpp>
 
-#include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 //plugin
 #include <fhg/plugin/plugin.hpp>
@@ -286,7 +285,6 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-	//kernel->load_plugin (TESTS_WFE_TEST_PLUGIN_PATH);
 	//kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
