@@ -37,7 +37,7 @@ void session::async_send (const std::string & data)
                                                  , to_send_.front().length()
                                                  )
                             , boost::bind( &session::handle_write
-                                         , this
+                                         , shared_from_this ()
                                          , boost::asio::placeholders::error
                                          )
                             );
@@ -167,7 +167,7 @@ void session::handle_write (const boost::system::error_code & e)
                                                    , to_send_.front().length()
                                                    )
                               , boost::bind( &session::handle_write
-                                           , this
+                                           , shared_from_this ()
                                            , boost::asio::placeholders::error
                                            )
                               );
