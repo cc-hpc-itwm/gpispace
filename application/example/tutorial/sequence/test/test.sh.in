@@ -15,7 +15,7 @@ cleanup()
 {
   rm -rf ${CMP}
   eval ${make_expr} clean
-  rmdir "{$DIR_BUILD}"
+  rmdir "${DIR_BUILD}"
 }
 
 trap 'cleanup' EXIT

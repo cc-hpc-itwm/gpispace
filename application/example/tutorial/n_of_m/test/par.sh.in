@@ -12,7 +12,7 @@ make_expr='make BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 cleanup()
 {
   eval ${make_expr} clean
-  rmdir "{DIR_BUILD}"
+  rmdir "${DIR_BUILD}"
 }
 
 trap 'cleanup' EXIT
