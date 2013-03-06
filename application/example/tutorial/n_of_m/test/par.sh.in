@@ -1,6 +1,5 @@
 source "@CMAKE_BINARY_DIR@/application/common.test.sh"
 
-DIR_BUILD=$(mktemp -d)
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
@@ -12,7 +11,7 @@ make_expr='make BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 cleanup()
 {
   eval ${make_expr} clean
-  rmdir "${DIR_BUILD}"
+  cleanup_common
 }
 
 trap 'cleanup' EXIT
