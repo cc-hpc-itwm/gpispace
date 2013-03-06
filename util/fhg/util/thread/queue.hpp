@@ -179,9 +179,9 @@ namespace fhg
         int mask = 0;
 
         if (is_element_available ())
-          mask |= fhg::thread::POLLIN;
+          mask |= fhg::thread::FHG_POLLIN;
         if (is_free_slot_available ())
-          mask |= fhg::thread::POLLOUT;
+          mask |= fhg::thread::FHG_POLLOUT;
 
         return mask;
       }

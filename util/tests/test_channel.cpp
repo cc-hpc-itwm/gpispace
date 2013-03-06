@@ -123,8 +123,8 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_in_empty_channel)
 
   fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, 0, fhg::thread::POLLIN, 0}
-    , {&chan_b, 0, fhg::thread::POLLIN, 0}
+      {&chan_a, 0, fhg::thread::FHG_POLLIN, 0}
+    , {&chan_b, 0, fhg::thread::FHG_POLLIN, 0}
     };
 
   int nready = fhg::thread::poll (items, 2, 0);
@@ -144,15 +144,15 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_in_full_channel)
 
   fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, 0, fhg::thread::POLLIN, 0}
-    , {&chan_b, 0, fhg::thread::POLLIN, 0}
+      {&chan_a, 0, fhg::thread::FHG_POLLIN, 0}
+    , {&chan_b, 0, fhg::thread::FHG_POLLIN, 0}
     };
 
   int nready = fhg::thread::poll (items, 2, 0);
 
   BOOST_REQUIRE (nready == 2);
-  BOOST_CHECK (items [0].revents == fhg::thread::POLLIN);
-  BOOST_CHECK (items [1].revents == fhg::thread::POLLIN);
+  BOOST_CHECK (items [0].revents == fhg::thread::FHG_POLLIN);
+  BOOST_CHECK (items [1].revents == fhg::thread::FHG_POLLIN);
 }
 
 BOOST_AUTO_TEST_CASE (thread_channel_select_out_empty_channel)
@@ -162,15 +162,15 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_out_empty_channel)
 
   fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, 0, fhg::thread::POLLOUT, 0}
-    , {&chan_b, 0, fhg::thread::POLLOUT, 0}
+      {&chan_a, 0, fhg::thread::FHG_POLLOUT, 0}
+    , {&chan_b, 0, fhg::thread::FHG_POLLOUT, 0}
     };
 
   int nready = fhg::thread::poll (items, 2, 0);
 
   BOOST_REQUIRE (nready == 2);
-  BOOST_CHECK (items [0].revents == fhg::thread::POLLOUT);
-  BOOST_CHECK (items [1].revents == fhg::thread::POLLOUT);
+  BOOST_CHECK (items [0].revents == fhg::thread::FHG_POLLOUT);
+  BOOST_CHECK (items [1].revents == fhg::thread::FHG_POLLOUT);
 }
 
 BOOST_AUTO_TEST_CASE (thread_channel_select_out_full_channel)
@@ -183,8 +183,8 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_out_full_channel)
 
   fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, 0, fhg::thread::POLLOUT, 0}
-    , {&chan_b, 0, fhg::thread::POLLOUT, 0}
+      {&chan_a, 0, fhg::thread::FHG_POLLOUT, 0}
+    , {&chan_b, 0, fhg::thread::FHG_POLLOUT, 0}
     };
 
   int nready = fhg::thread::poll (items, 2, 0);
@@ -203,15 +203,15 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_channel)
 
   fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, 0, fhg::thread::POLLIN + fhg::thread::POLLOUT, 0}
-    , {&chan_b, 0, fhg::thread::POLLOUT + fhg::thread::POLLIN, 0}
+      {&chan_a, 0, fhg::thread::FHG_POLLIN + fhg::thread::FHG_POLLOUT, 0}
+    , {&chan_b, 0, fhg::thread::FHG_POLLOUT + fhg::thread::FHG_POLLIN, 0}
     };
 
   int nready = fhg::thread::poll (items, 2, 0);
 
   BOOST_REQUIRE (nready == 2);
-  BOOST_CHECK (items [0].revents == fhg::thread::POLLIN);
-  BOOST_CHECK (items [1].revents == fhg::thread::POLLOUT);
+  BOOST_CHECK (items [0].revents == fhg::thread::FHG_POLLIN);
+  BOOST_CHECK (items [1].revents == fhg::thread::FHG_POLLOUT);
 }
 
 static void s_forward_element ( int_channel_t *chan_a
@@ -230,8 +230,8 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_timeout)
 
   fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, 0, fhg::thread::POLLIN, 0}
-    , {&chan_b, 0, fhg::thread::POLLIN, 0}
+      {&chan_a, 0, fhg::thread::FHG_POLLIN, 0}
+    , {&chan_b, 0, fhg::thread::FHG_POLLIN, 0}
     };
 
   nready = fhg::thread::poll (items, 2, 500 * FHG_THREAD_SELECT_MS);
@@ -249,8 +249,8 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_timeout)
 
   fhg::thread::poll_item_t items [] =
     {
-      {&chan_a, 0, fhg::thread::POLLOUT, 0}
-    , {&chan_b, 0, fhg::thread::POLLIN, 0}
+      {&chan_a, 0, fhg::thread::FHG_POLLOUT, 0}
+    , {&chan_b, 0, fhg::thread::FHG_POLLIN, 0}
     };
 
   nready = fhg::thread::poll (items, 2, 500 * FHG_THREAD_SELECT_MS);
@@ -262,9 +262,9 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_timeout)
   BOOST_REQUIRE (nready > 0);
 
   if (items [0].revents)
-    BOOST_CHECK (items [0].revents == fhg::thread::POLLOUT);
+    BOOST_CHECK (items [0].revents == fhg::thread::FHG_POLLOUT);
   if (items [1].revents)
-    BOOST_CHECK (items [1].revents == fhg::thread::POLLIN);
+    BOOST_CHECK (items [1].revents == fhg::thread::FHG_POLLIN);
 
   int elem;
   chan_b >> elem;

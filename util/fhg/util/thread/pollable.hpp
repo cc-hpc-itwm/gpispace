@@ -7,8 +7,8 @@ namespace fhg
   {
     enum poll_mode_t
       {
-        POLLIN   = 0x01
-      , POLLOUT  = 0x02
+        FHG_POLLIN   = 0x01
+      , FHG_POLLOUT  = 0x02
       };
 
     class pollable
