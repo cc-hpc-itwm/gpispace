@@ -1,22 +1,27 @@
 source "@CMAKE_BINARY_DIR@/application/common.test.sh"
 
+DIR_BUILD=$(mktemp -d)
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
 
-OUT="${DIR_SOURCE}/sequence.out"
-CMP="${DIR_TEST}/run.out"
+OUT="${DIR_BUILD}/sequence.out"
+CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
+
+make_expr='make BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
+
 cleanup()
 {
   rm -rf ${CMP}
-  make -C "${DIR_SOURCE}" clean
+  eval ${make_expr} clean
+  rmdir "{$DIR_BUILD}"
 }
 
 trap 'cleanup' EXIT
 
-measured "build-wrapper" make -C "${DIR_SOURCE}" lib        || die $EX_ERR_RUN
-measured "run" WE_EXEC_WORKER=1 make -C "${DIR_SOURCE}" run || die $EX_ERR_RUN
+measured "build-wrapper" ${make_expr} lib                   || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=1 ${make_expr} run            || die $EX_ERR_RUN
 
 grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
 cat "${OUT}" | grep ^i > "${CMP}"                           || die $EX_ERR_OTHER
