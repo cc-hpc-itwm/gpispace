@@ -542,6 +542,7 @@ namespace fhg
             catch (std::exception const & ex)
             {
               LOG(ERROR, "could not handle incoming data: " << ex.what());
+              client->close ();
             }
           }
         private:
