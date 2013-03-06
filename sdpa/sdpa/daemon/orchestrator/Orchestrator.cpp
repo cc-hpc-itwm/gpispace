@@ -516,8 +516,6 @@ void Orchestrator::backup( std::ostream& os )
         oa.register_type(static_cast<SchedulerImpl*>(NULL));
         backupScheduler(oa);
 
-        /*oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-        oa << ptr_workflow_engine_;*/
         oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
     }
     catch(exception const &ex)

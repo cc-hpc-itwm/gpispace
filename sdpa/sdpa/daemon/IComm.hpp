@@ -33,15 +33,7 @@
 
 namespace sdpa {
   namespace daemon {
-
-  const std::string ORCHESTRATOR("orchestrator") ;
-  const std::string AGGREGATOR("aggregator") ;
-  //const std::string NRE("NRE");
   const std::string WE("WE");
-  const std::string USER("user");
-
-  class JobNotDeletedException;
-  class JobManager;
 
   class IComm
   {
@@ -92,17 +84,11 @@ namespace sdpa {
     virtual bool hasWorkflowEngine() = 0;
     virtual bool isTop() = 0;
 
-    virtual void backup( std::ostream& ) { throw std::runtime_error("not supported at this level"); }
-    virtual void recover( std::istream& ) { throw std::runtime_error("not supported at this level"); }
+    virtual void backup( std::ostream& ) = 0;
+    virtual void recover( std::istream& ) = 0;
 
     virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
 
-    //GUI notification methods
-    virtual void notifyActivityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
-    virtual void notifyActivityStarted(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
-    virtual void notifyActivityFinished(const id_type&, const std::string& )  { throw std::runtime_error("not supported by this component"); }
-    virtual void notifyActivityFailed(const id_type&, const std::string& )    { throw std::runtime_error("not supported by this component"); }
-    virtual void notifyActivityCancelled(const id_type&, const std::string& ) { throw std::runtime_error("not supported by this component"); }
     virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
     virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
     virtual void addCapability(const capability_t&) = 0;

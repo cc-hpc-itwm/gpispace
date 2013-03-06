@@ -75,3 +75,12 @@ export BOOST_ROOT="@BOOST_ROOT@"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"@BOOST_ROOT@/lib"
 
 test -n "${BOOST_ROOT}"                                     || die $EX_ERR_ENV
+
+DIR_BUILD=$(mktemp -d)                                      || die $EX_ERR_OTHER
+
+echo "DIR_BUILD = ${DIR_BUILD}"                             || die $EX_ERR_OTHER
+
+cleanup_common()
+{
+  rmdir "${DIR_BUILD}"
+}

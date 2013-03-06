@@ -17,7 +17,9 @@
  */
 #ifndef TORUS_WORKFLOW_ENGINE_AGENT_HPP
 #define TORUS_WORKFLOW_ENGINE_AGENT_HPP 1
-#include <sdpa/engine/Token.hpp>
+#include <TorusToken.hpp>
+
+#include <sdpa/engine/EmptyWorkflowEngine.hpp> // we_result_t
 
 using boost::numeric::ublas::matrix;
 
@@ -49,8 +51,6 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
     {
       stop();
     }
-
-    virtual bool is_real() { return false; }
 
     void connect( sdpa::daemon::GenericDaemon* pIAgent )
     {

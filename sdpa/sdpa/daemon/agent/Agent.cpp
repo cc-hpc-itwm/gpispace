@@ -177,11 +177,9 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
   }
 
 #if 0
-#  ifdef USE_REAL_WE
-#    ifdef STATISTICS_CONDITION
-        statistics::dump_maps();
-        statistics::reset_maps();
-#    endif
+#  ifdef STATISTICS_CONDITION
+      statistics::dump_maps();
+      statistics::reset_maps();
 #  endif
 #endif
 
@@ -257,11 +255,9 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
   }
 
 #if 0
-#  ifdef USE_REAL_WE
-#    ifdef STATISTICS_CONDITION
-        statistics::dump_maps();
-        statistics::reset_maps();
-#    endif
+#  ifdef STATISTICS_CONDITION
+      statistics::dump_maps();
+      statistics::reset_maps();
 #  endif
 #endif
 
@@ -483,11 +479,9 @@ bool Agent::failed( const id_type& wfid
   }
 
 #if 0
-#  ifdef USE_REAL_WE
-#    ifdef STATISTICS_CONDITION
-        statistics::dump_maps();
-        statistics::reset_maps();
-#    endif
+#  ifdef STATISTICS_CONDITION
+      statistics::dump_maps();
+      statistics::reset_maps();
 #  endif
 #endif
 

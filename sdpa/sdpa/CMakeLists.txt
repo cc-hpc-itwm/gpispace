@@ -3,7 +3,6 @@ add_subdirectory(events)
 
 add_subdirectory(daemon)
 add_subdirectory(client)
-add_subdirectory(engine)
 
 set (hdrs
   common.hpp

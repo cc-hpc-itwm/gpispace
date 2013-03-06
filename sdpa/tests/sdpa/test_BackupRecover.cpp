@@ -30,8 +30,6 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
-#include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>

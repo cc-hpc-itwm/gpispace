@@ -4,16 +4,17 @@ DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
 
-OUT="${DIR_SOURCE}/sum_expr_many.out"
-CMP="${DIR_TEST}/run.out"
+OUT="${DIR_BUILD}/sum_expr_many.out"
+CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
 
-make_expr='make MAIN=sum_expr_many -C "${DIR_SOURCE}"'
+make_expr='make MAIN=sum_expr_many BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 
 cleanup()
 {
   rm -rf "${CMP}"
   eval ${make_expr} clean
+  cleanup_common
 }
 
 trap 'cleanup' EXIT

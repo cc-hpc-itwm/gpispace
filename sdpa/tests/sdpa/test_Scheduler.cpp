@@ -32,11 +32,6 @@
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 
-#include <sdpa/engine/DummyWorkflowEngine.hpp>
-#include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
-
-
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;

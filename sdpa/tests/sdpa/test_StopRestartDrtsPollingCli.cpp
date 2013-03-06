@@ -41,9 +41,8 @@
 #include "tests_config.hpp"
 #include <boost/filesystem/fstream.hpp>
 
-#include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 //plugin
 #include <fhg/plugin/plugin.hpp>
@@ -286,7 +285,6 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-	//kernel->load_plugin (TESTS_WFE_TEST_PLUGIN_PATH);
 	//kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
@@ -296,58 +294,6 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-BOOST_AUTO_TEST_CASE( testStopRestartDrts_EmptyWE)
-{
-	LOG( DEBUG, "testStopRestartDrts_EmptyWE");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false, strBackupAgent);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
-
-	drts_0->stop();
-	if(drts_0_thread.joinable())
-		drts_0_thread.join();
-
-	// create new drts
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
-	boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
-
-	// wait foŕ a while
-	boost::this_thread::sleep(boost::posix_time::seconds(1));
-
-	// and stop!!!
-	drts_new->stop();
-	if(drts_new_thread.joinable())
-		drts_new_thread.join();
-
-	if( threadClient.joinable() )
-		threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	ptrAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testStopRestartDrts_EmptyWE terminated!");
-}
 
 BOOST_AUTO_TEST_CASE( testStopRestartDrts_RealWE)
 {

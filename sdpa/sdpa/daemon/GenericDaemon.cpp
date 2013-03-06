@@ -1213,35 +1213,17 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
 {
-  try {
-    return jobManager()->findJob(job_id);
-  }
-  catch(const JobNotFoundException& ex)
-  {
-    throw ex;
-  }
+  return jobManager()->findJob(job_id);
 }
 
 void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
 {
-  try {
-    jobManager()->deleteJob(jobId);
-  }
-  catch(const JobNotDeletedException& ex)
-  {
-    throw ex;
-  }
+  jobManager()->deleteJob(jobId);
 }
 
 const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
-  try {
-    return jobManager()->getJobRequirements(jobId);
-  }
-  catch (const NoJobRequirements& ex)
-  {
-    throw ex;
-  }
+  return jobManager()->getJobRequirements(jobId);
 }
 
 void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
@@ -1525,22 +1507,12 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 
 Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
 {
-  try {
-    return  scheduler()->findWorker(worker_id);
-  }
-  catch(const WorkerNotFoundException& ex) {
-    throw ex;
-  }
+  return scheduler()->findWorker(worker_id);
 }
 
 const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
 {
-  try {
-    return  scheduler()->findWorker(job_id);
-  }
-  catch(const NoWorkerFoundException& ex) {
-    throw ex;
-  }
+  return scheduler()->findWorker(job_id);
 }
 
 void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
@@ -1549,13 +1521,7 @@ void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid )
 {
-  try {
-    scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
-  }
-  catch( const WorkerAlreadyExistException& ex )
-  {
-    throw ex;
-  }
+  scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
 }
 
 void GenericDaemon::updateLastRequestTime()
@@ -1738,11 +1704,6 @@ void GenericDaemon::reschedule(const sdpa::job_id_t& jobId)
   throw std::runtime_error(name() + " does not have scheduler!");
 }
 
-void GenericDaemon::start_fsm()
-{
-  // to be overriden by DaemonFSM
-}
-
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
 {
   lock_type lock(mtx_master_);
@@ -1764,10 +1725,7 @@ void GenericDaemon::addMasters(const agent_id_list_t& listMasters )
 
 bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
 {
-  if( info.name() == agId )
-    return true;
-  else
-    return false;
+  return info.name() == agId;
 }
 
 void GenericDaemon::removeMaster( const agent_id_t& id )
@@ -1823,11 +1781,9 @@ void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
 
 bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_id_t& jobId)
 {
-  for(sdpa::job_id_list_t::const_iterator it = m_listSubscribers[agId].begin(); it != m_listSubscribers[agId].end(); it++ )
-    if( *it == jobId )
-      return true;
-
-  return false;
+  return std::find
+    (m_listSubscribers[agId].begin(), m_listSubscribers[agId].end(), jobId)
+    != m_listSubscribers[agId].end();
 }
 
 void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::job_id_list_t& listJobIds)
@@ -1898,9 +1854,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 {
   lock_type lock(mtx_subscriber_);
-  sdpa::subscriber_map_t::iterator it = m_listSubscribers.find(agentId);
-
-  return (it != m_listSubscribers.end());
+  return m_listSubscribers.find (agentId) != m_listSubscribers.end();
 }
 
 Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)

@@ -25,7 +25,6 @@
 #include <sdpa/capability.hpp>
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/util/Config.hpp>
-#include <sdpa/daemon/IAgent.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -68,7 +67,11 @@
 
 #include <boost/utility.hpp>
 
-namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
+inline const requirement_list_t& empty_req_list()
+{
+  static requirement_list_t e_req_list;
+  return e_req_list;
+}
 
 namespace sdpa {
   namespace daemon {
@@ -76,7 +79,6 @@ namespace sdpa {
     class GenericDaemon : public sdpa::daemon::IComm,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
-                          public IAgent,
                           boost::noncopyable
     {
     public:
@@ -205,7 +207,6 @@ namespace sdpa {
       virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
 
       // agent fsm (actions)
-      virtual void start_fsm();
       virtual void action_configure( const sdpa::events::StartUpEvent& );
       virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
       virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
@@ -286,42 +287,6 @@ namespace sdpa {
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
       void reScheduleAllMasterJobs();
 
-      // workflow engine observers
-      template <typename T>
-      static void observe_submitted (const T* l, typename T::internal_id_type const & id)
-      {
-        std::cerr << "activity submitted: id := " << id << std::endl;
-        l->print_statistics( std::cerr );
-      }
-
-      template <typename T>
-      static void observe_finished (const T* l, typename T::internal_id_type const & id, std::string const &)
-      {
-        std::cerr << "activity finished: id := " << id << std::endl;
-        l->print_statistics( std::cerr );
-      }
-
-      template <typename T>
-      static void observe_failed (const T* l, typename T::internal_id_type const & id, std::string const &)
-      {
-        std::cerr << "activity failed: id := " << id << std::endl;
-        l->print_statistics( std::cerr );
-      }
-
-      template <typename T>
-      static void observe_cancelled (const T* l, typename T::internal_id_type const & id, std::string const &)
-      {
-        std::cerr << "activity cancelled: id := " << id << std::endl;
-        l->print_statistics( std::cerr );
-      }
-
-      template <typename T>
-      static void observe_executing (const T* l, typename T::internal_id_type const & id )
-      {
-        std::cerr << "activity executing: id := " << id << std::endl;
-        l->print_statistics( std::cerr );
-      }
-
       // backup
       friend class boost::serialization::access;
 
@@ -394,7 +359,7 @@ namespace sdpa {
       lock_type lock(mtx_master_);
       if(m_arrMasterInfo.empty())
       {
-        SDPA_LOG_INFO("The master list is empty. No mater to be notified exist!");
+        SDPA_LOG_INFO("The master list is empty. No master to be notified exist!");
         return;
       }
 
