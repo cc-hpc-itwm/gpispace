@@ -1,9 +1,39 @@
 #!/bin/bash
 
-EX_ERR_ENV=255
-EX_ERR_RUN=1
-EX_ERR_RES=2
-EX_ERR_OTHER=3
+source "@CMAKE_BINARY_DIR@/application/common.test.sh" || exit 255
+
+port_kvsd=8015
+num_worker=50
+num_reqsts=100
+
+while getopts ":hp:w:r:" opt ; do
+    case $opt in
+        h)
+            cat <<EOF
+usage: $(basename $0) [options]
+
+Options:
+    -h             print this help
+    -p port        use this port (=$port_kvsd)
+    -w #worker     number of workers to start (=$num_worker)
+    -r #requests   number of requests each worker will do (=$num_reqsts)
+EOF
+            exit 0
+            ;;
+        p)
+            port_kvsd=$OPTARG
+            ;;
+        w)
+            num_worker=$OPTARG
+            ;;
+        r)
+            num_reqsts=$OPTARG
+            ;;
+        *)
+            echo >&2 "invalid option, try $(basename $0) -h"
+            exit 1
+    esac
+done
 
 set -m
 
@@ -31,10 +61,6 @@ function crash_report ()
 ------   END CRASH REPORT --------
 EOF
 }
-
-port_kvsd=8015
-num_worker=50
-num_reqsts=100
 
 num_worker_done=0
 num_worker_crashed=0
@@ -105,7 +131,6 @@ function handle_sigchld ()
     finished=( $(jobs -np) )
 
     for pid in ${finished[@]} ; do
-        echo >2 "subprocess finished: $pid"
         if kill -0 "$pid" 2>/dev/null ; then
           continue
         fi
@@ -189,23 +214,9 @@ do
     unset nval
 done
 
-wait
+measured "run" wait                                         || die $EX_ERR_RUN
 
 if [ $num_worker_crashed -gt 0 ] ; then
     crash_report test ${EX_ERR_RES} "${num_worker_crashed} / ${num_worker} worker(s) crashed"
-    exit ${EX_ERR_RES}
+    die ${EX_ERR_RES}
 fi
-
-# simulate workers that do the following:
-#
-#   for some times do:
-#       put N values
-#       sleep randomly
-#
-
-# simulate clients that do the following:
-#
-#   for ever
-#       get all keys
-#       sleep randomly
-#

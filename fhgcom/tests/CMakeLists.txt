@@ -1,5 +1,9 @@
 # -*- mode: cmake; -*-
 
+fhg_add_application_test (kvs_pressure
+  SCRIPT test_kvs_pressure
+)
+
 set(tc_srcs
   test_store.cpp
   test_kvs_message.cpp
