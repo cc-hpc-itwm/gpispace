@@ -10,16 +10,6 @@ namespace xml
   {
     namespace type
     {
-      link_type::link_type (const std::string& href)
-        : _href (href)
-        , _prefix (boost::none)
-      {}
-      link_type::link_type ( const std::string& href
-                           , const std::string& prefix
-                           )
-        : _href (href)
-        , _prefix (prefix)
-      {}
       link_type::link_type ( const std::string& href
                            , const boost::optional<std::string>& prefix
                            )
