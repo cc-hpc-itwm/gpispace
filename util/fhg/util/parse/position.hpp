@@ -30,7 +30,7 @@ namespace fhg
       private:
         std::size_t& _k;
         std::string::const_iterator& _pos;
-        const std::string::const_iterator& _begin;
+        const std::string::const_iterator _begin;
         const std::string::const_iterator& _end;
       };
     }
