@@ -275,6 +275,7 @@ done
 # config values (kernel)
 
 cfg="$cfg -n $name"
+cfg="$cfg -L $SDPA_PLUGINS"
 lazy=$(fhgcfg -f "${config_file}" -g kernel.lazy -v false)
 if [ x"$lazy" = x"true" ] ; then
     cfg="$cfg -s kernel.load.lazy=1"
@@ -335,7 +336,7 @@ for p in $(echo $plugins | tr ',' ' '); do
             continue
         fi
     fi
-    plugin_load_flags="$plugin_load_flags -l $SDPA_PLUGINS/$p.so"
+    plugin_load_flags="$plugin_load_flags $p"
 done
 
 cmd="${bin} $cfg $plugin_load_flags"
