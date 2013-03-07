@@ -511,7 +511,6 @@ namespace signature
             {
               this->s << cpp_util::access::make ("", "literal", "type")
                 << "(x" << fhg::util::show (field_global) << ")"
-                << std::endl
                 ;
             }
           else
