@@ -97,6 +97,7 @@ function cleanup()
             fi
         done
     fi
+    cleanup_common
 }
 
 trap cleanup EXIT
