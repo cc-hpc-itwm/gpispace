@@ -595,6 +595,32 @@ namespace xml
 
       // ******************************************************************* //
 
+      class parse_link_prefix : public generic
+      {
+      public:
+        parse_link_prefix ( const std::string& reason
+                          , const std::string& input
+                          , const std::size_t& pos
+                          );
+        virtual ~parse_link_prefix() throw() {}
+
+      private:
+        const std::string _reason;
+        const std::string _input;
+        const std::size_t _pos;
+      };
+
+      class link_prefix_missing : public generic
+      {
+      public:
+        link_prefix_missing (const std::string&);
+        virtual ~link_prefix_missing() throw() {}
+      private:
+        const std::string _key;
+      };
+
+      // ******************************************************************* //
+
       class duplicate_port : public generic
       {
       public:
