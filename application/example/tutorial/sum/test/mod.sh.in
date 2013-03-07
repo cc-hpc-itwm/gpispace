@@ -9,21 +9,22 @@ OUT="${DIR_BUILD}/sum_many.out"
 CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
 
-make_expr='make MAIN=sum_many BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
+make_src='make MAIN=sum_many BUILDDIR="${DIR_BUILD}" PNETC_LINK_PREFIX="libdir=${DIR_BUILD}" -C "${DIR_SOURCE}"'
+make_mod='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 
 cleanup()
 {
   rm -rf "${CMP}"
-  eval ${make_expr} clean
-  make -C "${DIR_MODULE}" clean
+  eval ${make_src} clean
+  eval ${make_mod} clean
   cleanup_common
 }
 
 trap 'cleanup' EXIT
 
-measured "build-module" make -C "${DIR_MODULE}"             || die $EX_ERR_RUN
-measured "build-wrapper" ${make_expr} lib                   || die $EX_ERR_RUN
-measured "run" WE_EXEC_WORKER=1 ${make_expr} run            || die $EX_ERR_RUN
+measured "build-module" ${make_mod}                         || die $EX_ERR_RUN
+measured "build-wrapper" ${make_src} lib                    || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=1 ${make_src} run             || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
 cat "${OUT}" | grep '^s =>' > "${CMP}"                      || die $EX_ERR_OTHER
