@@ -92,6 +92,7 @@ fhg_add_plugin(gui gui.cpp observable.cpp
   EXPORTS GUI
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  we
+                 fhg-util
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}

@@ -437,7 +437,7 @@ int main (int argc, char **argv) {
       {
         fhg::com::kvs::global::get_kvs_info().init( parts[0]
                                                   , parts[1]
-                                                  , boost::posix_time::seconds(1)
+                                                  , boost::posix_time::seconds(120)
                                                   , 1
                                                   );
       }
