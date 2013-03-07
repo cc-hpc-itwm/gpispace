@@ -1,11 +1,13 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
+#include <fhg/util/thread/channel.hpp>
 #include <fhglog/ThreadedAppender.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
+#include <boost/thread.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
 #include "observable.hpp"
@@ -14,12 +16,16 @@
 
 #include "kvs.hpp"
 
+typedef fhg::thread::channel<task_event_t> event_channel_t;
+
 class GuiObserverPlugin : FHG_PLUGIN
                         , public observe::Observer
 {
 public:
   FHG_PLUGIN_START()
   {
+    m_thread = 0;
+
     m_kvs_prefix =
       "job." + fhg_kernel ()->get_name () + ".current";
 
@@ -49,12 +55,27 @@ public:
 
     m_kvs = fhg_kernel ()->acquire<kvs::KeyValueStore>("kvs");
 
+    m_thread =
+      new boost::thread
+      (boost::bind( &GuiObserverPlugin::event_handler
+                  , this
+                  )
+      );
+
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
     observe::Observer::stop_to_observe();
+
+    if (m_thread)
+    {
+      m_thread->interrupt ();
+      m_thread->join ();
+      delete m_thread;
+    }
+
     m_destination.reset();
     FHG_PLUGIN_STOPPED();
   }
@@ -85,35 +106,50 @@ public:
   {
     try
     {
-      task_event_t const & t (boost::any_cast<task_event_t>(evt));
-      MLOG(TRACE, "*** TASK EVENT: id := " << t.id << " name := " << t.name << " state := " << t.state << " time := " << t.tstamp);
-      m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t)));
-
-      // store task in kvs
-      store_task_info_to_kvs (t);
+      m_events << boost::any_cast<task_event_t>(evt);
     }
     catch (boost::bad_any_cast const &ex)
     {
     }
     catch (std::exception const & ex)
     {
-      MLOG(ERROR, "could not send event: " << ex.what());
+      MLOG(ERROR, "could not notify event: " << ex.what());
     }
   }
 private:
+  void event_handler ()
+  {
+    for (;;)
+    {
+      task_event_t t = m_events.get ();
+
+      MLOG ( TRACE
+           , "*** TASK EVENT:"
+           << " id := " << t.id
+           << " name := " << t.name
+           << " state := " << t.state
+           << " time := " << t.tstamp
+           );
+
+      try
+      {
+        m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t)));
+        // store task in kvs
+        store_task_info_to_kvs (t);
+      }
+      catch (std::exception const & ex)
+      {
+        MLOG(ERROR, "could not handle event: " << ex.what());
+      }
+    }
+  }
+
   void store_task_info_to_kvs (task_event_t const & t)
   {
-    try
-    {
-      m_kvs->put (m_kvs_prefix + "." + "id",     t.id);
-      m_kvs->put (m_kvs_prefix + "." + "name",   t.name);
-      m_kvs->put (m_kvs_prefix + "." + "state",  t.state);
-      m_kvs->put (m_kvs_prefix + "." + "tstamp", t.tstamp);
-    }
-    catch (std::exception const & ex)
-    {
-      MLOG (WARN, "could not store task info to kvs: " << ex.what ());
-    }
+    m_kvs->put (m_kvs_prefix + "." + "id",     t.id);
+    m_kvs->put (m_kvs_prefix + "." + "name",   t.name);
+    m_kvs->put (m_kvs_prefix + "." + "state",  t.state);
+    m_kvs->put (m_kvs_prefix + "." + "tstamp", t.tstamp);
   }
 
   // void stop_to_observe(observe::Observable* o)
@@ -169,6 +205,8 @@ private:
   fhg::log::Appender::ptr_t m_destination;
   std::string m_kvs_prefix;
   kvs::KeyValueStore *m_kvs;
+  event_channel_t m_events;
+  boost::thread *m_thread;
 };
 
 EXPORT_FHG_PLUGIN( gui
