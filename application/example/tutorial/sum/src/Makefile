@@ -1,5 +1,9 @@
 
-LIB_PATH = ../lib
+ifndef DIR_BUILD
+  DIR_BUILD=..
+endif
+
+LIB_PATH = $(DIR_BUILD)/lib
 INC_PATH = $(CURDIR)/../include
 
 OBJ = $(LIB_PATH)/sum.o
