@@ -60,7 +60,9 @@ set (srcs
   stat.cpp
 
   thread/poll.cpp
+
   parse/position.cpp
+  parse/error.cpp
 )
 
 add_library (fhg-util ${srcs})
