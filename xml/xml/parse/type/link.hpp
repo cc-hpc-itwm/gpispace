@@ -22,6 +22,7 @@ namespace xml
       public:
         link_type (const std::string&);
         link_type (const std::string&, const std::string&);
+        link_type (const std::string&, const boost::optional<std::string>&);
         const std::string& href() const;
         const boost::optional<std::string>& prefix() const;
       private:

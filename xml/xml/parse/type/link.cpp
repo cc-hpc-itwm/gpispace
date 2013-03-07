@@ -20,6 +20,12 @@ namespace xml
         : _href (href)
         , _prefix (prefix)
       {}
+      link_type::link_type ( const std::string& href
+                           , const boost::optional<std::string>& prefix
+                           )
+        : _href (href)
+        , _prefix (prefix)
+      {}
       const std::string& link_type::href() const
       {
         return _href;
