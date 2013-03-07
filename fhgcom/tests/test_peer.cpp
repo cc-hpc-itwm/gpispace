@@ -424,26 +424,6 @@ BOOST_AUTO_TEST_CASE ( peers_with_fixed_ports_reuse )
   thrd_2.join ();
 }
 
-static void send_loop (bool *stop_request, fhg::com::peer_t *peer)
-{
-  while (! *stop_request)
-  {
-    try
-    {
-      peer->send ("peer-2", "hello world");
-      usleep (500);
-    }
-    catch (boost::thread_interrupted const &)
-    {
-      break;
-    }
-    catch (std::exception const &ex)
-    {
-      // ignore
-    }
-  }
-}
-
 BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
 {
   using namespace fhg::com;
@@ -453,7 +433,6 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
   peer_1.start();
 
   bool stop_request (false);
-  //  boost::thread thrd_send_recv (boost::bind (send_loop, &stop_request, &peer_1));
 
   for (std::size_t i (0); i < 1000; ++i)
   {
@@ -477,8 +456,6 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
   }
 
   stop_request = true;
-  //  thrd_send_recv.interrupt ();
-  //  thrd_send_recv.join ();
 
   peer_1.stop();
   thrd_1.join ();
