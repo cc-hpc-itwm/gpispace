@@ -1231,7 +1231,12 @@ namespace xml
                   {
                     stream << objs << " += "
                            << boost::filesystem::absolute
-                              ( link.href()
+                              ( link.link
+                                ( boost::bind ( &state::type::link_prefix_by_key
+                                              , boost::ref (state)
+                                              , _1
+                                              )
+                                )
                               , fun->path.parent_path()
                               ).string()
                            << std::endl;
