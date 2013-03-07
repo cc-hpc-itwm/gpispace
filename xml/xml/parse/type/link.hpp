@@ -10,6 +10,7 @@
 #include <fhg/util/xml.fwd.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/function.hpp>
 
 namespace xml
 {
@@ -19,8 +20,12 @@ namespace xml
     {
       struct link_type
       {
+      private:
+        typedef boost::function<const std::string& (const std::string&)>
+                by_key_function_type;
       public:
         link_type (const std::string&, const boost::optional<std::string>&);
+        const std::string link (const by_key_function_type&) const;
         const std::string& href() const;
         const boost::optional<std::string>& prefix() const;
       private:

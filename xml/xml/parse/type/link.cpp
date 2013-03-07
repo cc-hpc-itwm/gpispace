@@ -3,6 +3,8 @@
 #include <xml/parse/type/link.hpp>
 
 #include <fhg/util/xml.hpp>
+#include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/error.hpp>
 
 namespace xml
 {
@@ -16,6 +18,55 @@ namespace xml
         : _href (href)
         , _prefix (prefix)
       {}
+      const std::string
+      link_type::link (const by_key_function_type& by_key) const
+      {
+        std::string p;
+
+        if (_prefix)
+        {
+          std::size_t k (0);
+          std::string::const_iterator pos (_prefix->begin());
+          fhg::util::parse::position inp (k, pos, _prefix->end());
+
+          while (!inp.end())
+          {
+            switch (*inp)
+            {
+            case '$':
+              {
+                ++inp;
+                inp.require ("{");
+                bool read_key (false);
+                std::string key;
+
+                while (!read_key && !inp.end())
+                {
+                  switch (*inp)
+                  {
+                  case '}':
+                    ++inp;
+                    read_key = true;
+                    p += by_key (key);
+                    break;
+                  default: key += *inp; ++inp; break;
+                  }
+                }
+
+                if (!read_key)
+                {
+                  throw fhg::util::parse::error::expected ("}", inp);
+                }
+              }
+              break;
+            default: p += *inp; ++inp; break;
+            }
+          }
+        }
+
+        return p + _href;
+      }
+
       const std::string& link_type::href() const
       {
         return _href;
