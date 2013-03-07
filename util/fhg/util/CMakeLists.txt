@@ -80,7 +80,6 @@ install (TARGETS fhg-util-shared
 )
 
 add_subdirectory (boost)
-add_subdirectory(parse)
 add_subdirectory(thread)
 add_subdirectory(filesystem)
 add_subdirectory(cpp)
