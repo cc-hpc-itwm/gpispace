@@ -15,9 +15,10 @@ namespace fhg
       {
       public:
         position ( std::size_t& k
-                 , std::string::const_iterator& pos
+                 , std::string::const_iterator& begin
                  , const std::string::const_iterator& end
                  );
+        std::string consumed() const;
         std::string rest() const;
         const char& operator*() const;
         void operator++();
@@ -28,6 +29,7 @@ namespace fhg
       private:
         std::size_t& _k;
         std::string::const_iterator& _pos;
+        const std::string::const_iterator& _begin;
         const std::string::const_iterator& _end;
       };
     }
