@@ -229,7 +229,8 @@ int main(int ac, char *av[])
                                 );
 
     server.start ();
-    pool.run();
+    pool.set_nthreads (4);
+    pool.run ();
   }
   catch (std::exception const & ex)
   {
