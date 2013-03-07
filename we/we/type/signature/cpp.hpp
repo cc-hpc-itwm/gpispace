@@ -487,11 +487,13 @@ namespace signature
         const std::string & field_global;
 
         const unsigned int l0;
+        const bool _is_toplevel;
 
       public:
         cpp_show ( Stream& _s
                  , const std::string & _field_local
                  , const std::string & _field_global
+                 , const bool is_toplevel
                  , const unsigned int & _l0 = 0
                  , const unsigned int & _l = 0
                  )
@@ -499,23 +501,19 @@ namespace signature
           , field_local (_field_local)
           , field_global (_field_global)
           , l0 (_l0)
+          , _is_toplevel (is_toplevel)
         {}
 
         Stream& operator () (const literal::type_name_t & t) const
         {
           this->level (l0);
 
-          this->s << "s << \"";
-
-          this->level (this->l);
-
-          this->s << field_local << " = \" << ";
+          this->s << "s << \"" << field_local << " = \" << ";
 
           if (literal::cpp::known (t))
             {
               this->s << cpp_util::access::make ("", "literal", "type")
                 << "(x" << fhg::util::show (field_global) << ")"
-                << std::endl
                 ;
             }
           else
@@ -533,20 +531,28 @@ namespace signature
           this->level (l0);
 
           this->s << "s << \"";
-
-          this->level (this->l);
-
-          this->s << field_local << " = {\" << std::endl;" << std::endl;
+          if (!_is_toplevel)
+          {
+            this->s << field_local << " = ";
+          }
+          this->s << "{\";" << std::endl;
 
           for ( structured_t::const_iterator field (map.begin())
               ; field != map.end()
               ; ++field
               )
             {
+              if (field != map.begin())
+              {
+                this->level (l0);
+                this->s << "s << \", \";" << std::endl;
+              }
+
               boost::apply_visitor
                 ( cpp_show ( this->s
                            , field->first
                            , field_global + "." + field->first
+                           , false
                            , l0
                            , this->l+1
                            )
@@ -556,9 +562,7 @@ namespace signature
 
           this->level (l0);
 
-          this->s << "s << \"";
-
-          this->s << "}\" << std::endl;" << std::endl;
+          this->s << "s << \"}\";" << std::endl;
 
           return this->s;
         }
@@ -583,7 +587,7 @@ namespace signature
 
       os << "{"                                   << std::endl;
 
-      boost::apply_visitor ( visitor::cpp_show<Stream> (os, n, "", l + 1)
+      boost::apply_visitor ( visitor::cpp_show<Stream> (os, "", "", true, l + 1)
                            , s.desc()
                            );
 
