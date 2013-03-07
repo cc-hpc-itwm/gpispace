@@ -69,47 +69,75 @@ using namespace sdpa::tests;
 
 #define NO_GUI ""
 
+static std::string current_kvs_port = "0";
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("0"); return s; }
+static const std::string & kvs_port () { return current_kvs_port; }
+
+struct KVSSetup
+{
+  KVSSetup ()
+    : m_pool (0)
+    , m_kvsd (0)
+    , m_serv (0)
+    , m_thrd (0)
+  {
+    FHGLOG_SETUP();
+
+    m_pool = new fhg::com::io_service_pool(1);
+    m_kvsd = new fhg::com::kvs::server::kvsd ("");
+    m_serv = new fhg::com::tcp_server ( *m_pool
+                                      , *m_kvsd
+                                      , kvs_host ()
+                                      , kvs_port ()
+                                      , true
+                                      );
+    m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
+                                            , m_pool
+                                            )
+                               );
+
+    m_serv->start();
+
+    LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
+
+    current_kvs_port = boost::lexical_cast<std::string>(m_serv->port());
+
+    fhg::com::kvs::global::get_kvs_info().init( kvs_host()
+                                              , kvs_port()
+                                              , boost::posix_time::seconds(10)
+                                              , 3
+                                              );
+
+  }
+
+  ~KVSSetup ()
+  {
+    m_serv->stop ();
+    m_pool->stop ();
+    m_thrd->join ();
+
+    delete m_thrd;
+    delete m_serv;
+    delete m_kvsd;
+    delete m_pool;
+  }
+
+  fhg::com::io_service_pool *m_pool;
+  fhg::com::kvs::server::kvsd *m_kvsd;
+  fhg::com::tcp_server *m_serv;
+  boost::thread *m_thrd;
+};
+
+BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
 {
 	MyFixture()
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
-			, m_pool (0)
-	    	, m_kvsd (0)
-	    	, m_serv (0)
-	    	, m_thrd (0)
 			, m_arrAggMasterInfo(1, sdpa::MasterInfo("orchestrator_0"))
 	{ //initialize and start_agent the finite state machine
-
-		FHGLOG_SETUP();
-
 		LOG(DEBUG, "Fixture's constructor called ...");
-
-		m_pool = new fhg::com::io_service_pool(1);
-		m_kvsd = new fhg::com::kvs::server::kvsd ("");
-		m_serv = new fhg::com::tcp_server ( *m_pool
-										  , *m_kvsd
-										  , kvs_host ()
-										  , kvs_port ()
-										  , true
-										  );
-		m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-												, m_pool
-												)
-								   );
-
-		m_serv->start();
-
-		LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
-
-		fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-												  , boost::lexical_cast<std::string>(m_serv->port())
-												  , boost::posix_time::seconds(10)
-												  , 3
-												  );
 
 		m_strWorkflow = read_workflow("workflows/capabilities.pnet");
 	}
@@ -120,15 +148,6 @@ struct MyFixture
 
 		sstrOrch.str("");
 		sstrAgg.str("");
-
-		m_serv->stop ();
-		m_pool->stop ();
-		m_thrd->join ();
-
-		delete m_thrd;
-		delete m_serv;
-		delete m_kvsd;
-		delete m_pool;
 
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
@@ -157,11 +176,6 @@ struct MyFixture
 	int m_nITER;
 	int m_sleep_interval ;
   std::string m_strWorkflow;
-
-  fhg::com::io_service_pool *m_pool;
-	fhg::com::kvs::server::kvsd *m_kvsd;
-	fhg::com::tcp_server *m_serv;
-	boost::thread *m_thrd;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
@@ -294,9 +308,10 @@ void MyFixture::run_client()
 sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName, const std::string& cpbList )
 {
 	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
+        kernel->set_name (drtsName);
 
 	kernel->put("plugin.kvs.host", kvs_host());
-	kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
+	kernel->put("plugin.kvs.port", kvs_port());
 
 	//see ~/.sdpa/configs/sdpa.rc
 	std::string guiUrl("lts016.itwm.fhg.de:6408");
@@ -310,8 +325,8 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	kernel->put("plugin.drts.capabilities", cpbList);
 	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_INOTIFY_MODULES_PATH);
 
-	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
