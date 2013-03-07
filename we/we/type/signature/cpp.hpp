@@ -505,11 +505,7 @@ namespace signature
         {
           this->level (l0);
 
-          this->s << "s << \"";
-
-          this->level (this->l);
-
-          this->s << field_local << " = \" << ";
+          this->s << "s << \"" << field_local << " = \" << ";
 
           if (literal::cpp::known (t))
             {
@@ -532,17 +528,19 @@ namespace signature
         {
           this->level (l0);
 
-          this->s << "s << \"";
-
-          this->level (this->l);
-
-          this->s << field_local << " = {\" << std::endl;" << std::endl;
+          this->s << "s << \"" << field_local << " = {\";" << std::endl;
 
           for ( structured_t::const_iterator field (map.begin())
               ; field != map.end()
               ; ++field
               )
             {
+              if (field != map.begin())
+              {
+                this->level (l0);
+                this->s << "s << \", \";" << std::endl;
+              }
+
               boost::apply_visitor
                 ( cpp_show ( this->s
                            , field->first
@@ -556,9 +554,7 @@ namespace signature
 
           this->level (l0);
 
-          this->s << "s << \"";
-
-          this->s << "}\" << std::endl;" << std::endl;
+          this->s << "s << \"}\";" << std::endl;
 
           return this->s;
         }
