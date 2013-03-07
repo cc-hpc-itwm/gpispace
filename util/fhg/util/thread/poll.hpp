@@ -14,7 +14,7 @@ namespace fhg
     class pollable;
     struct poll_item_t
     {
-      pollable     *pollable;
+      pollable      *to_poll;
       int                 fd;
       short           events;
       short          revents;

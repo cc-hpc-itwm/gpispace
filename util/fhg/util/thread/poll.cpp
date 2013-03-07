@@ -10,7 +10,7 @@ namespace fhg
     static bool s_select_on_item (poll_item_t *item)
     {
       item->revents = 0;
-      item->revents = (item->events & item->pollable->poll ());
+      item->revents = (item->events & item->to_poll->poll ());
 
       return item->revents != 0;
     }
@@ -27,7 +27,7 @@ namespace fhg
 
         for (size_t i = 0 ; i < nitems ; ++i)
         {
-          if (items [i].pollable)
+          if (items [i].to_poll)
           {
             if (s_select_on_item (&items [i]))
             {
