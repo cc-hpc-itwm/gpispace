@@ -10,29 +10,30 @@ CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
 DAT="${DIR_BUILD}/dat"
 
-make_expr='make BUILDDIR="${DIR_BUILD}" DATFILE="${DAT}" -C "${DIR_SOURCE}"'
+make_src='make BUILDDIR="${DIR_BUILD}" DATFILE="${DAT}" -C "${DIR_SOURCE}"'
+make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 
 cleanup()
 {
   rm -rf "${CMP}" "${DAT}"
-  eval ${make_expr} clean
-  make -C "${DIR_MODULE}" clean
+  eval ${make_src} clean
+  eval ${make_gen} clean
   cleanup_common
 }
 
 trap 'cleanup' EXIT
 
-measured "build-module" make -C "${DIR_MODULE}"             || die $EX_ERR_RUN
+measured "build-module" ${make_gen}                         || die $EX_ERR_RUN
 measured "setup-data"                                                        \
-         "${DIR_MODULE}/gen.bin"                                             \
+         "${DIR_BUILD}/gen.bin"                                              \
          -b 8388608                                                          \
          -n $((100*1048576))                                                 \
          -s 31415926                                                         \
          -m 0                                                                \
          -g 1                                                                \
          -o "${DAT}"                                        || die $EX_ERR_RUN
-measured "build-wrapper" ${make_expr} lib                   || die $EX_ERR_RUN
-measured "run" WE_EXEC_WORKER=10 ${make_expr} run           || die $EX_ERR_RUN
+measured "build-wrapper" ${make_src} lib                    || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=10 ${make_src} run            || die $EX_ERR_RUN
 
 grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
 cat "${OUT}" | grep '=>' > "${CMP}"                         || die $EX_ERR_OTHER
