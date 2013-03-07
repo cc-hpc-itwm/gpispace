@@ -12,12 +12,17 @@
 #include "observer.hpp"
 #include "task_event.hpp"
 
+#include "kvs.hpp"
+
 class GuiObserverPlugin : FHG_PLUGIN
                         , public observe::Observer
 {
 public:
   FHG_PLUGIN_START()
   {
+    m_kvs_prefix =
+      "job." + fhg_kernel ()->get_name () + ".current";
+
     m_url = fhg_kernel()->get("url", "");
     if ("" == m_url)
     {
@@ -41,6 +46,8 @@ public:
     }
 
     MLOG(INFO, "GUI sending events to " << m_url);
+
+    m_kvs = fhg_kernel ()->acquire<kvs::KeyValueStore>("kvs");
 
     FHG_PLUGIN_STARTED();
   }
@@ -81,6 +88,9 @@ public:
       task_event_t const & t (boost::any_cast<task_event_t>(evt));
       MLOG(TRACE, "*** TASK EVENT: id := " << t.id << " name := " << t.name << " state := " << t.state << " time := " << t.tstamp);
       m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t)));
+
+      // store task in kvs
+      store_task_info_to_kvs (t);
     }
     catch (boost::bad_any_cast const &ex)
     {
@@ -91,6 +101,21 @@ public:
     }
   }
 private:
+  void store_task_info_to_kvs (task_event_t const & t)
+  {
+    try
+    {
+      m_kvs->put (m_kvs_prefix + "." + "id",     t.id);
+      m_kvs->put (m_kvs_prefix + "." + "name",   t.name);
+      m_kvs->put (m_kvs_prefix + "." + "state",  t.state);
+      m_kvs->put (m_kvs_prefix + "." + "tstamp", t.tstamp);
+    }
+    catch (std::exception const & ex)
+    {
+      MLOG (WARN, "could not store task info to kvs: " << ex.what ());
+    }
+  }
+
   // void stop_to_observe(observe::Observable* o)
   // {
   //   MLOG(INFO, "stopping to observe: " << o);
@@ -142,6 +167,8 @@ private:
 
   std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
+  std::string m_kvs_prefix;
+  kvs::KeyValueStore *m_kvs;
 };
 
 EXPORT_FHG_PLUGIN( gui
@@ -151,6 +178,6 @@ EXPORT_FHG_PLUGIN( gui
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , ""
+                 , "kvs"
                  , ""
                  );
