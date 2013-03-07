@@ -4,6 +4,8 @@
 
 #include <xml/parse/error.hpp>
 
+#include <fhg/util/parse/position.hpp>
+
 namespace xml
 {
   namespace parse
@@ -230,21 +232,21 @@ namespace xml
             std::string key;
             std::size_t k (0);
             std::string::const_iterator pos (kv.begin());
-            const std::string::const_iterator end (kv.end());
+            fhg::util::parse::position inp (k, pos, kv.end());
             bool found_eq (false);
 
-            while (!found_eq && pos != end)
+            while (!found_eq && !inp.end())
             {
-              if (*pos == '=')
+              if (*inp == '=')
               {
                 found_eq = true;
               }
               else
               {
-                key += *pos;
+                key += *inp;
               }
 
-              ++pos; ++k;
+              ++inp;
             }
 
             if (!key.size())
@@ -257,12 +259,12 @@ namespace xml
               throw error::parse_link_prefix ("Missing =", kv, k);
             }
 
-            if (pos == end)
+            if (inp.end())
             {
               throw error::parse_link_prefix ("Missing value", kv, k);
             }
 
-            _link_prefix_by_key[key] = std::string (pos, end);
+            _link_prefix_by_key[key] = inp.rest();
           }
 
           _link_prefix_parsed = true;
