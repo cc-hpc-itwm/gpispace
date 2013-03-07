@@ -13,48 +13,22 @@ namespace fhg
     {
       class position
       {
-      private:
-        std::size_t& _k;
-        std::string::const_iterator& _pos;
-        const std::string::const_iterator& _end;
       public:
         position ( std::size_t& k
                  , std::string::const_iterator& pos
                  , const std::string::const_iterator& end
-                 )
-          : _k (k)
-          , _pos (pos)
-          , _end (end)
-        {}
+                 );
+        std::string rest() const;
+        const char& operator*() const;
+        void operator++();
+        bool end() const;
+        const std::size_t& operator() () const;
+        void skip_spaces();
 
-        std::string rest()
-        {
-          return std::string (_pos, _end);
-        }
-        const char& operator*() const
-        {
-          return *_pos;
-        }
-        void operator++ ()
-        {
-          ++_k;
-          ++_pos;
-        }
-        bool end() const
-        {
-          return _pos == _end;
-        }
-        const std::size_t& operator() () const
-        {
-          return _k;
-        }
-        void skip_spaces()
-        {
-          while (_pos != _end && isspace (*_pos))
-          {
-            ++_pos;
-          }
-        }
+      private:
+        std::size_t& _k;
+        std::string::const_iterator& _pos;
+        const std::string::const_iterator& _end;
       };
     }
   }
