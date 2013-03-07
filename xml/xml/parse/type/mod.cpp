@@ -311,7 +311,7 @@ namespace xml
 
           BOOST_FOREACH (module_type::links_type::value_type const& link, m.links)
             {
-              dump (s, link);
+              ::xml::parse::type::dump::dump (s, link);
             }
 
           if (m.code)
