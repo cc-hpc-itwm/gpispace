@@ -5,6 +5,7 @@
 #include <xml/parse/error.hpp>
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/function.hpp>
+#include <xml/parse/type/link.hpp>
 #include <xml/parse/util/valid_name.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -310,9 +311,7 @@ namespace xml
 
           BOOST_FOREACH (module_type::links_type::value_type const& link, m.links)
             {
-              s.open ("link");
-              s.attr ("href", link);
-              s.close ();
+              dump (s, link);
             }
 
           if (m.code)

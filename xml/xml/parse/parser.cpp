@@ -26,6 +26,7 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
+#include <xml/parse/type/link.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/read_bool.hpp>
@@ -1089,11 +1090,12 @@ namespace xml
             else if (child_name == "link")
             {
               module.get_ref().links.push_back
-                ( required ( "module_type"
-                           , child
-                           , "href"
-                           , state.file_in_progress()
-                           )
+                ( type::link_type ( required ( "module_type"
+                                             , child
+                                             , "href"
+                                             , state.file_in_progress()
+                                             )
+                                  )
                 );
             }
             else if (child_name == "code")

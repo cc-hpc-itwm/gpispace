@@ -15,6 +15,7 @@ set (xml_parse_type_headers
   template.hpp
   transition.hpp
   use.hpp
+  link.hpp
 )
 
 set (xml_parse_type_fwd_headers
@@ -32,6 +33,7 @@ set (xml_parse_type_fwd_headers
   template.fwd.hpp
   transition.fwd.hpp
   use.fwd.hpp
+  link.fwd.hpp
 )
 
 install (FILES ${xml_parse_type_headers} ${xml_parse_type_fwd_headers}

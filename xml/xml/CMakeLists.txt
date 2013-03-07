@@ -22,6 +22,7 @@ add_library (xml
   parse/type/template.cpp
   parse/type/transition.cpp
   parse/type/use.cpp
+  parse/type/link.cpp
   parse/util/mk_fstream.cpp
   parse/util/valid_name.cpp
   parse/warning.cpp

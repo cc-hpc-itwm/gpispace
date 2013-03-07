@@ -6,6 +6,7 @@
 #include <xml/parse/id/generic.hpp>
 
 #include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/link.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -31,7 +32,7 @@ namespace xml
         typedef std::list<std::string> port_args_type;
         typedef std::list<std::string> cincludes_type;
         typedef std::list<std::string> flags_type;
-        typedef std::list<std::string> links_type;
+        typedef std::list<link_type> links_type;
 
         module_type ( ID_CONS_PARAM(module)
                     , PARENT_CONS_PARAM(function)
