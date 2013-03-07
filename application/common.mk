@@ -244,6 +244,7 @@ PNETC += $(addprefix -I,$(SDPA_XML_LIB))
 PNETC += --gen-cxxflags=-O3
 PNETC += $(addprefix --gen-cxxflags=-I,$(CXXINCLUDEPATHS))
 PNETC += $(addprefix --gen-ldflags=-L,$(CXXLIBRARYPATHS))
+PNETC += $(addprefix --link-prefix ,$(PNETC_LINK_PREFIX))
 PNETC += --force-overwrite-file=true
 PNETC += $(PNETC_OPTS)
 
@@ -534,35 +535,36 @@ showconfig:
 	@echo
 	@echo "*** Dependencies and options:"
 	@echo
-	@echo "DEP              = $(DEP)"
-	@echo "PATH_LIB         = $(PATH_LIB)"
-	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
-	@echo "LIB_DESTDIR      = $(LIB_DESTDIR)"
+	@echo "DEP               = $(DEP)"
+	@echo "PATH_LIB          = $(PATH_LIB)"
+	@echo "WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)"
+	@echo "LIB_DESTDIR       = $(LIB_DESTDIR)"
 	@echo
-	@echo "CXXINCLUDEPATHS  = $(CXXINCLUDEPATHS)"
-	@echo "CXXLIBRARYPATHS  = $(CXXLIBRARYPATHS)"
+	@echo "CXXINCLUDEPATHS   = $(CXXINCLUDEPATHS)"
+	@echo "CXXLIBRARYPATHS   = $(CXXLIBRARYPATHS)"
 	@echo
-	@echo "NOT_STARTS_WITH  = $(NOT_STARTS_WITH)"
-	@echo "NOT_ENDS_WITH    = $(NOT_ENDS_WITH)"
-	@echo "PNET2DOT_OPTS    = $(PNET2DOT_OPTS)"
+	@echo "NOT_STARTS_WITH   = $(NOT_STARTS_WITH)"
+	@echo "NOT_ENDS_WITH     = $(NOT_ENDS_WITH)"
+	@echo "PNET2DOT_OPTS     = $(PNET2DOT_OPTS)"
 	@echo
-	@echo "PNETC_OPTS       = $(PNETC_OPTS)"
+	@echo "PNETC_OPTS        = $(PNETC_OPTS)"
+	@echo "PNETC_LINK_PREFIX = $(PNETC_LINK_PREFIX)"
 	@echo
-	@echo "PUT_PORT         = $(PUT_PORT)"
-	@echo "PNETPUT_OPTS     = $(PNETPUT_OPTS)"
+	@echo "PUT_PORT          = $(PUT_PORT)"
+	@echo "PNETPUT_OPTS      = $(PNETPUT_OPTS)"
 	@echo
-	@echo "PNETV_OPTS       = $(PNETV_OPTS)"
+	@echo "PNETV_OPTS        = $(PNETV_OPTS)"
 	@echo
-	@echo "WE_EXEC_ENV      = $(WE_EXEC_ENV)"
-	@echo "WE_EXEC_CMD      = $(WE_EXEC_CMD)"
-	@echo "WE_EXEC_OUTPUT   = $(WE_EXEC_OUTPUT)"
-	@echo "WE_EXEC_WORKER   = $(WE_EXEC_WORKER)"
-	@echo "WE_EXEC_LOAD     = $(WE_EXEC_LOAD)"
-	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
-	@echo "WE_EXEC_OPTS     = $(WE_EXEC_OPTS)"
+	@echo "WE_EXEC_ENV       = $(WE_EXEC_ENV)"
+	@echo "WE_EXEC_CMD       = $(WE_EXEC_CMD)"
+	@echo "WE_EXEC_OUTPUT    = $(WE_EXEC_OUTPUT)"
+	@echo "WE_EXEC_WORKER    = $(WE_EXEC_WORKER)"
+	@echo "WE_EXEC_LOAD      = $(WE_EXEC_LOAD)"
+	@echo "WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)"
+	@echo "WE_EXEC_OPTS      = $(WE_EXEC_OPTS)"
 	@echo
-	@echo "BUILD            = $(BUILD)"
-	@echo "CLEAN            = $(CLEAN)"
+	@echo "BUILD             = $(BUILD)"
+	@echo "CLEAN             = $(CLEAN)"
 	@echo
 	@echo "*** Derived commands:"
 	@echo
