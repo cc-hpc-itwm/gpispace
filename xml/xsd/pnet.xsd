@@ -41,6 +41,7 @@
 
   <xsd:complexType name="link_type">
     <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
+    <xsd:attribute name="href" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="flag_type">
