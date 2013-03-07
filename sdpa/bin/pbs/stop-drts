@@ -128,7 +128,7 @@ debug "pattern = '$pattern'"
 
 still_running=$(ps -C fhgkernel -o pid=)
 for p in $still_running ; do
-    name=$(cat /proc/$p/cmdline 2>/dev/null | tr '\0' ' ' |  grep -o 'plugin.drts.name=[^ ]\+' | cut -d= -f2)
+    name=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '-n' | tail -n 1)
     if [ -z "$name" ] ; then
         continue
     fi

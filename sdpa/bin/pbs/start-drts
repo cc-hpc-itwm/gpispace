@@ -256,7 +256,9 @@ fi
 # check if still running
 still_running=$(ps -C fhgkernel -o pid=)
 for p in $still_running ; do
-    if grep -q -e "plugin.drts.name=$name" /proc/$p/cmdline ; then
+    name_opt=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '-n' | tail -n 1)
+
+    if [ "$name_opt" = "${name}" ] ; then
         if [ "$force" = "true" ] ; then
             log "W: $name is still running, terminating it"
             kill -TERM "$p"
@@ -267,6 +269,7 @@ for p in $still_running ; do
             exit 2
         fi
     fi
+    unset name_opt
 done
 
 # config values (kernel)
@@ -296,7 +299,6 @@ logc_host=$(head -n 1 "${state_dir}/nodefile")
 cfg="$cfg -s plugin.logc.url=${logc_host}:${logc_port}"
 
 # config values (drts plugin)
-cfg="$cfg -s plugin.drts.name=$name"
 cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
 cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f "${config_file}" -g plugin.drts.max_reconnect_attempts -v 128)"

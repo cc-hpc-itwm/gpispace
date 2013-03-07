@@ -68,7 +68,7 @@ public:
     m_graceful_shutdown_requested = false;
 
     m_reconnect_counter = 0;
-    m_my_name =      fhg_kernel()->get("name", "drts");
+    m_my_name =      fhg_kernel()->get_name ();
     try
     {
       m_backlog_size = fhg_kernel()->get<size_t>("backlog", "3");
