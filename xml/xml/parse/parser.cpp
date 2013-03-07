@@ -1095,6 +1095,7 @@ namespace xml
                                              , "href"
                                              , state.file_in_progress()
                                              )
+                                  , optional (child, "prefix")
                                   )
                 );
             }
