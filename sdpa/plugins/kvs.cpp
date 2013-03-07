@@ -26,7 +26,7 @@ public:
 
     fhg::com::kvs::global::get_kvs_info().init( m_host
                                               , m_port
-                                              , boost::posix_time::seconds(2)
+                                              , boost::posix_time::seconds(120)
                                               , 1
                                               );
 
