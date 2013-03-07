@@ -20,6 +20,8 @@ namespace fhg
     public:
       explicit io_service_pool (std::size_t pool_size);
 
+      void set_nthreads (size_t nthreads) { m_nthreads = nthreads; }
+
       void run ();
       void stop ();
 
@@ -32,6 +34,7 @@ namespace fhg
       std::vector<work_ptr> work_;
 
       std::size_t next_io_service_;
+      std::size_t m_nthreads;
     };
   }
 }
