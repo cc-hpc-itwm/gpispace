@@ -20,6 +20,8 @@
 #include <vector>
 
 #include <boost/filesystem.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -38,6 +40,7 @@ namespace xml
       typedef std::set<fs::path> dependencies_type;
 
       typedef std::vector<std::string> gen_param_type;
+      typedef std::vector<std::string> link_prefix_type;
 
       // ******************************************************************* //
 
@@ -96,6 +99,13 @@ namespace xml
 
         std::string _path_to_cpp;
 
+        link_prefix_type _link_prefix;
+
+        mutable boost::unordered_map< std::string
+                                    , std::string
+                                    > _link_prefix_by_key;
+        mutable bool _link_prefix_parsed;
+
         std::string _Osearch_path;
         std::string _Ogen_ldflags;
         std::string _Ogen_cxxflags;
@@ -142,6 +152,7 @@ namespace xml
         std::string _Odo_file_backup;
 
         std::string _Opath_to_cpp;
+        std::string _Olink_prefix;
 
         id::mapper _id_mapper;
 
@@ -161,6 +172,8 @@ namespace xml
         const gen_param_type& gen_cxxflags (void) const;
         gen_param_type& gen_ldflags (void);
         gen_param_type& gen_cxxflags (void);
+        const link_prefix_type& link_prefix() const;
+        const std::string& link_prefix_by_key (const std::string&) const;
 
         // ***************************************************************** //
 

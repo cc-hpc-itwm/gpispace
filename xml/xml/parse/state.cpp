@@ -135,6 +135,9 @@ namespace xml
         , _do_file_backup (true)
 
         , _path_to_cpp ("")
+        , _link_prefix()
+        , _link_prefix_by_key()
+        , _link_prefix_parsed (false)
 
         , _Osearch_path ("search-path,I")
         , _Ogen_ldflags ("gen-ldflags")
@@ -182,6 +185,7 @@ namespace xml
         , _Odo_file_backup ("do-backup")
 
         , _Opath_to_cpp ("path-to-cpp,g")
+        , _Olink_prefix("link-prefix")
 
         , _id_mapper()
       {}
@@ -209,6 +213,70 @@ namespace xml
       gen_param_type& type::gen_cxxflags (void)
       {
         return _gen_cxxflags;
+      }
+
+      const link_prefix_type& type::link_prefix() const
+      {
+        return _link_prefix;
+      }
+
+      const std::string&
+      type::link_prefix_by_key (const std::string& key) const
+      {
+        if (!_link_prefix_parsed)
+        {
+          BOOST_FOREACH (const std::string& kv, _link_prefix)
+          {
+            std::string key;
+            std::size_t k (0);
+            std::string::const_iterator pos (kv.begin());
+            const std::string::const_iterator end (kv.end());
+            bool found_eq (false);
+
+            while (!found_eq && pos != end)
+            {
+              if (*pos == '=')
+              {
+                found_eq = true;
+              }
+              else
+              {
+                key += *pos;
+              }
+
+              ++pos; ++k;
+            }
+
+            if (!key.size())
+            {
+              throw error::parse_link_prefix ("Missing key", kv, k);
+            }
+
+            if (!found_eq)
+            {
+              throw error::parse_link_prefix ("Missing =", kv, k);
+            }
+
+            if (pos == end)
+            {
+              throw error::parse_link_prefix ("Missing value", kv, k);
+            }
+
+            _link_prefix_by_key[key] = std::string (pos, end);
+          }
+
+          _link_prefix_parsed = true;
+        }
+
+        const boost::unordered_map<std::string, std::string>::const_iterator
+          pos (_link_prefix_by_key.find (key));
+
+        if (pos != _link_prefix_by_key.end())
+        {
+          return pos->second;
+        }
+
+        throw error::link_prefix_missing (key);
       }
 
       // ***************************************************************** //
@@ -582,6 +650,10 @@ namespace xml
           ( _Opath_to_cpp.c_str()
           , STRINGVAL(path_to_cpp)->implicit_value ("gen")
           , "path for cpp output, empty for no cpp output"
+          )
+          ( _Olink_prefix.c_str()
+          , po::value<link_prefix_type>(&_link_prefix)
+          , "prefix for linking, key=value"
           )
           ;
 
