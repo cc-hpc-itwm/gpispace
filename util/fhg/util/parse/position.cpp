@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/error.hpp>
 
 namespace fhg
 {
@@ -48,6 +49,23 @@ namespace fhg
         while (_pos != _end && isspace (*_pos))
         {
           ++_pos;
+        }
+      }
+      void position::require (const std::string& what)
+      {
+        std::string::const_iterator what_pos (what.begin());
+        const std::string::const_iterator what_end (what.end());
+
+        while (what_pos != what_end)
+        {
+          if (end() || operator*() != *what_pos)
+          {
+            throw error::expected (std::string (what_pos, what_end), *this);
+          }
+          else
+          {
+            operator++(); ++what_pos;
+          }
         }
       }
     }

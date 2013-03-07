@@ -25,6 +25,7 @@ namespace fhg
         bool end() const;
         const std::size_t& operator() () const;
         void skip_spaces();
+        void require (const std::string&);
 
       private:
         std::size_t& _k;
