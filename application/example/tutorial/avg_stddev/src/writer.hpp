@@ -4,6 +4,9 @@
 #include <queue.hpp>
 #include <stdexcept>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <sstream>
 
 template<typename T>
 class writer
@@ -42,7 +45,14 @@ public:
                                    )
          )
       {
-        throw std::runtime_error ("write failed");
+        const int ec (errno);
+
+        std::ostringstream oss;
+
+        oss << "write failed: ec = " << ec
+            << ", reason = " << strerror (ec);
+
+        throw std::runtime_error (oss.str());
       }
 
       _queue_empty.put (buffer);
