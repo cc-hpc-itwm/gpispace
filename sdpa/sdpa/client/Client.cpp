@@ -58,6 +58,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
 Client::~Client()
 {
   MLOG(TRACE, "destroying client api");
+  shutdown ();
 }
 
 void Client::perform(const seda::IEvent::Ptr &event)
@@ -155,9 +156,12 @@ void Client::start(const config_t & config) throw (ClientException)
 
 void Client::shutdown() throw (ClientException)
 {
-  client_stage_->stop();
-  seda::StageRegistry::instance().remove(client_stage_);
-  client_stage_.reset();
+  if (client_stage_)
+  {
+    client_stage_->stop();
+    seda::StageRegistry::instance().remove(client_stage_);
+    client_stage_.reset();
+  }
 
   /* somehow times out from time to time...
   client_stage_->send(seda::IEvent::Ptr(new Shutdown()));
