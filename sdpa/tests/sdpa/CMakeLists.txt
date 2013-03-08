@@ -227,6 +227,7 @@ set (tc_srcs
   test_CannonOnTorus.cpp
   test_Capabilities.cpp
   test_TransformFile.cpp
+  test_wfe_plugin.cpp
 )
 
 foreach (tc_src ${tc_srcs})
