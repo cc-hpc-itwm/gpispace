@@ -191,7 +191,15 @@ install (FILES
   type/signature.hpp
   type/transition.hpp
   type/value.hpp
+  type/bitsetofint.hpp
+  type/bytearray.hpp
   DESTINATION include/we/type
+  COMPONENT headers
+)
+
+install (FILES
+  type/literal/control.hpp
+  DESTINATION include/we/type/literal
   COMPONENT headers
 )
 
