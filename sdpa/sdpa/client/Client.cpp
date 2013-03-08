@@ -523,7 +523,7 @@ void Client::action_configure_network(const config_t &cfg)
   sdpa::com::NetworkStrategy::ptr_t net
     (new sdpa::com::NetworkStrategy( client_stage_->name()
                                    , client_stage_->name() //"sdpac" // TODO encode user, pid, etc
-                                   , fhg::com::host_t ("127.0.0.1")
+                                   , fhg::com::host_t ("*")
                                    , fhg::com::port_t ("0")
                                    )
     );
