@@ -26,6 +26,7 @@
 #include <seda/Stage.hpp>
 #include <seda/StageNotFound.hpp>
 #include <seda/StageAlreadyRegistered.hpp>
+#include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 #include <list>
 
@@ -91,6 +92,9 @@ namespace seda {
          */
         void clear();
     private:
+        typedef boost::recursive_mutex mutex_type;
+        typedef boost::unique_lock<mutex_type> lock_type;
+
         typedef boost::unordered_map<std::string, Stage::Ptr> stage_map_t;
         typedef std::list<std::string> stage_names_t;
 
@@ -101,6 +105,8 @@ namespace seda {
         SEDA_DECLARE_LOGGER();
         stage_map_t _stages;
         stage_names_t _stage_names;
+
+        mutable mutex_type m_mutex;
     };
 }
 
