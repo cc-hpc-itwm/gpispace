@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -39,19 +39,16 @@
 
 namespace seda {
     class StageWorker;
+    struct ThreadInfo;
     class Stage {
     private:
-        typedef struct {
-            boost::thread thread;
-            StageWorker  *worker;
-        } ThreadInfo;
-        typedef std::list<ThreadInfo*> ThreadPool;
+      typedef std::list<ThreadInfo*> ThreadPool;
     public:
         typedef seda::shared_ptr<Stage> Ptr;
-    
+
         Stage(const std::string& name, Strategy::Ptr strategy, std::size_t maxPoolSize=1, std::size_t maxQueueSize=SEDA_MAX_QUEUE_SIZE, const std::string& errorHandler="system-event-handler");
         Stage(const std::string& name, IEventQueue::Ptr queue, Strategy::Ptr strategy, std::size_t maxPoolSize=1, const std::string& errorHandler="system-event-handler");
-    
+
         virtual ~Stage();
 
         virtual void start();
@@ -61,17 +58,17 @@ namespace seda {
         virtual std::size_t size() const { return queue()->size(); }
         virtual void waitUntilEmpty() const { queue()->waitUntilEmpty(); }
         virtual void waitUntilEmpty(unsigned long millis) { queue()->waitUntilEmpty(millis); }
-    
+
         virtual void waitUntilNonEmpty() const { queue()->waitUntilNotEmpty(); }
         virtual void waitUntilNonEmpty(unsigned long millis) { queue()->waitUntilNotEmpty(millis); }
 
         virtual const std::string& name() const { return _name; }
-    
+
         virtual Strategy::Ptr strategy() { return _strategy; }
         virtual const Strategy::Ptr strategy() const { return _strategy; }
 
         static void send(const std::string& stageName, const IEvent::Ptr& e) throw (QueueFull, StageNotFound);
-        
+
         virtual void send(const IEvent::Ptr& e) throw (QueueFull) {
             queue()->push(e);
         }
@@ -84,6 +81,9 @@ namespace seda {
         unsigned long timeout() const { return _timeout; }
         void timeout(unsigned long millis) { _timeout = millis; }
     private:
+        typedef boost::recursive_mutex mutex_type;
+        typedef boost::unique_lock<mutex_type> lock_type;
+
         IEventQueue::Ptr queue() { return _queue; }
         const IEventQueue::Ptr queue() const { return _queue; }
 
@@ -95,6 +95,7 @@ namespace seda {
         std::size_t _maxPoolSize;
         unsigned long _timeout;
         ThreadPool _threadPool;
+        mutable mutex_type m_mutex;
     };
 }
 

@@ -27,6 +27,12 @@
 #include "StageRegistry.hpp"
 
 namespace seda {
+  struct ThreadInfo
+  {
+    boost::thread *thread;
+    seda::StageWorker  *worker;
+  };
+
     Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize, std::size_t a_maxQueueSize, const std::string& a_errorHandler)
         : SEDA_INIT_LOGGER("seda.stage."+a_name),
           _queue(new EventQueue("seda.stage."+a_name+".queue", a_maxQueueSize)),
@@ -74,6 +80,7 @@ namespace seda {
 
     void
     Stage::start() {
+      lock_type lock (m_mutex);
         if (_threadPool.empty()) {
             _strategy->onStageStart(name());
 
@@ -83,7 +90,7 @@ namespace seda {
                 sstr << "seda.stage." << name() << ".worker." << tId;
                 ThreadInfo *i = new ThreadInfo;
                 i->worker = new seda::StageWorker(sstr.str(), this);
-                i->thread = boost::thread(boost::ref(*i->worker));
+                i->thread = new boost::thread(boost::ref(*i->worker));
                 _threadPool.push_back(i);
             }
         } // else == noop
@@ -91,19 +98,22 @@ namespace seda {
 
     void
     Stage::stop() {
+      lock_type lock (m_mutex);
         if (_threadPool.empty()) {
             return;
         }
 
         for (ThreadPool::iterator it(_threadPool.begin()); it != _threadPool.end(); ++it) {
             (*it)->worker->stop(); // signal threads to stop
-            (*it)->thread.interrupt();
+            (*it)->thread->interrupt();
         }
 //        queue()->wakeUpAll(); // release blocked threads
 
         while (!_threadPool.empty()) {
             ThreadInfo *i(_threadPool.front()); _threadPool.pop_front();
-            i->thread.join();
+
+            i->thread->join();
+            delete i->thread;
             delete i->worker;
             delete i;
         }
