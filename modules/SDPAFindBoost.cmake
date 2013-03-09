@@ -3,7 +3,7 @@ if (NOT BOOST_ROOT)
   set(BOOST_ROOT $ENV{BOOST_ROOT})
 endif()
 
-set(Boost_FIND_QUIETLY NO)
+set(Boost_FIND_QUIETLY YES)
 set(Boost_USE_STATIC_LIBS ON)
 #set(Boost_USE_STATIC_LIBS OFF)
 set (COMPONENTS
