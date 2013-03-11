@@ -24,7 +24,7 @@ namespace fhg
       {
         cogwheel_button::cogwheel_button (transition_item* linked_transition)
           : base_item (linked_transition)
-          , _linked_transition (linked_transition)
+            //          , _linked_transition (linked_transition)
         {
           const QPointF padding (5.0, 5.0);                                        // hardcoded constant
           //! \todo set on resize

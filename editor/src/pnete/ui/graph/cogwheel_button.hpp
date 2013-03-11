@@ -30,7 +30,7 @@ namespace fhg
           virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
         private:
-          transition_item* _linked_transition;
+          //          transition_item* _linked_transition;
         };
       }
     }
