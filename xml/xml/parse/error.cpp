@@ -237,7 +237,7 @@ namespace xml
                   )
         , _reason (reason)
         , _input (input)
-        , _pos (pos)
+          //        , _pos (pos)
       {}
 
       link_prefix_missing::link_prefix_missing (const std::string& key)

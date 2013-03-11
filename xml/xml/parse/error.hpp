@@ -607,7 +607,7 @@ namespace xml
       private:
         const std::string _reason;
         const std::string _input;
-        const std::size_t _pos;
+        //        const std::size_t _pos;
       };
 
       class link_prefix_missing : public generic
