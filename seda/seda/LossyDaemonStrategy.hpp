@@ -49,7 +49,7 @@ namespace seda {
             void perform(const IEvent::Ptr&);
         private:
             double probability_;
-            unsigned int seed_;
+      //            unsigned int seed_;
 
             typedef boost::minstd_rand generator_type;
             typedef boost::uniform_01<generator_type> gen_type;
