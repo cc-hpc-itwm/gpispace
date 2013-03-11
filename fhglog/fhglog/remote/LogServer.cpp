@@ -30,7 +30,7 @@ LogServer::LogServer(const fhg::log::Appender::ptr_t &appender
                    , boost::asio::io_service &io_service
                    , unsigned short port)
   : appender_(appender)
-  , io_service_(io_service)
+    //  , io_service_(io_service)
   , socket_(io_service, udp::endpoint(udp::v4(), port))
 {
   LOG(INFO, "log server listening on " << udp::endpoint(udp::v4(), port));

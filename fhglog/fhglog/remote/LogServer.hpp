@@ -38,7 +38,7 @@ namespace fhg { namespace log { namespace remote {
                            , size_t bytes_recv);
   private:
     fhg::log::Appender::ptr_t appender_;
-    boost::asio::io_service &io_service_;
+    //    boost::asio::io_service &io_service_;
     boost::asio::ip::udp::socket socket_;
     boost::asio::ip::udp::endpoint sender_endpoint_;
 
