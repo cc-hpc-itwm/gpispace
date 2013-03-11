@@ -7,6 +7,7 @@ usage: $(basename $0) [options]
 
   -h: this help
   -n: dry run
+  -A path: add a path to the list of application search paths
   -f: node file to use
   -S: state directory to use
   -F: config file
@@ -144,6 +145,7 @@ nodefile="$PBS_NODEFILE"
 state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
 gpi_enabled=true
+app_path="${SDPA_APP_PATH}"
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -158,7 +160,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:c:C:F:p:M" opt; do
+while getopts ":hnf:S:m:s:c:C:F:p:MA:" opt; do
     case $opt in
         h)
             usage
@@ -202,6 +204,14 @@ while getopts ":hnf:S:m:s:c:C:F:p:M" opt; do
             ;;
         p)
             def_num_proc=$(( $OPTARG ))
+            shiftcount=$(( shiftcount + 2 ))
+            ;;
+        A)
+            if [ -n "${app_path}" ] ; then
+                app_path="${app_path}:$OPTARG"
+            else
+                app_path="$OPTARG"
+            fi
             shiftcount=$(( shiftcount + 2 ))
             ;;
         \?)
@@ -266,7 +276,7 @@ info "using nodefile: $nodefile"
 
 info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
 
-dry_run rexec $master /usr/bin/env LD_LIBRARY_PATH="$LD_LIBRARY_PATH" "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
+dry_run rexec $master /usr/bin/env SDPA_APP_PATH="${app_path}" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
