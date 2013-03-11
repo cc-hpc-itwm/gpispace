@@ -166,10 +166,6 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:" opt; do
             usage
             exit 0
             ;;
-        M)
-            gpi_enabled=false
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
         n)
             dry_run_p=true
             shiftcount=$(( shiftcount + 1 ))
@@ -205,6 +201,10 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:" opt; do
         p)
             def_num_proc=$(( $OPTARG ))
             shiftcount=$(( shiftcount + 2 ))
+            ;;
+        M)
+            gpi_enabled=false
+            shiftcount=$(( shiftcount + 1 ))
             ;;
         A)
             if [ -n "${app_path}" ] ; then
