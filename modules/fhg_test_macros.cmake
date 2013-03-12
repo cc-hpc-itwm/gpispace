@@ -54,10 +54,16 @@ macro (fhg_add_application_test)
 
     add_test (NAME ${TEST_NAME}
               COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SCRIPT}.sh
-                           ${CMAKE_BINARY_DIR}/application/common.test.sh
     )
 
-    set (REQUIRED_FILES ${CMAKE_BINARY_DIR}/application/common.test.sh)
+    set (REQUIRED_FILES
+      ${CMAKE_BINARY_DIR}/test/die.sh
+      ${CMAKE_BINARY_DIR}/test/dir_build.sh
+      ${CMAKE_BINARY_DIR}/test/env.sh
+      ${CMAKE_BINARY_DIR}/test/error.sh
+      ${CMAKE_BINARY_DIR}/test/measured.sh
+      ${CMAKE_BINARY_DIR}/test/measurement.sh
+    )
     set (LABELS requires_installation)
     set_tests_properties (${TEST_NAME}
       PROPERTIES REQUIRED_FILES "${REQUIRED_FILES}" LABELS "${LABELS}"

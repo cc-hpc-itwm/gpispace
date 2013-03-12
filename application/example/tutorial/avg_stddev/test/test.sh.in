@@ -1,4 +1,8 @@
-source "@CMAKE_BINARY_DIR@/application/common.test.sh"
+# mirko.rahn@itwm.fraunhofer.de
+
+source "@CMAKE_BINARY_DIR@/test/env.sh"
+source "@CMAKE_BINARY_DIR@/test/dir_build.sh"
+source "@CMAKE_BINARY_DIR@/test/measured.sh"
 
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
@@ -18,7 +22,7 @@ cleanup()
   rm -rf "${CMP}" "${DAT}"
   eval ${make_src} clean
   eval ${make_gen} clean
-  cleanup_common
+  cleanup_dir_build
 }
 
 trap 'cleanup' EXIT

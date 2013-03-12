@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source "@CMAKE_BINARY_DIR@/application/common.test.sh" || exit 255
+source "@CMAKE_BINARY_DIR@/test/env.sh"      || exit 255
+source "@CMAKE_BINARY_DIR@/test/measured.sh" || exit 255
 
 port_kvsd=8015
 num_worker=50
@@ -97,7 +98,6 @@ function cleanup()
             fi
         done
     fi
-    cleanup_common
 }
 
 trap cleanup EXIT
