@@ -113,7 +113,7 @@ include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
 find_package (ZMQ ${QUIET_FIND_PACKAGE})
 if (ZMQ_FOUND)
-  include_directories (${ZMQ_INCLUDE_DIR})
+  include_directories (SYSTEM ${ZMQ_INCLUDE_DIR})
 endif ()
 
 find_package (CZMQ ${QUIET_FIND_PACKAGE})
