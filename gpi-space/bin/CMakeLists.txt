@@ -15,7 +15,7 @@ target_link_libraries (gpi-space
 
 # search for libreadline
 find_package (LibReadline REQUIRED)
-include_directories (${LibReadline_INCLUDE_DIR})
+include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
 set (srcs
   gpish.cpp
