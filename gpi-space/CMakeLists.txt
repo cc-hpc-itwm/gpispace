@@ -109,7 +109,7 @@ find_package (MMGR REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${MMGR_INCLUDE_DIR})
 
 find_package (LibRT REQUIRED ${QUIET_FIND_PACKAGE})
-include_directories(${LIBRT_INCLUDE_DIR})
+include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
 find_package (ZMQ ${QUIET_FIND_PACKAGE})
 if (ZMQ_FOUND)
