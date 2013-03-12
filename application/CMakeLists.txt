@@ -17,12 +17,6 @@ if (ENABLE_APPLICATION_UFBMIG)
    add_subdirectory(ufbmig)
 endif()
 
-if (BUILD_TESTING)
-  include(SDPAFindBoost)
-
-  configure_file (common.test.sh.in common.test.sh @ONLY)
-endif()
-
 install ( FILES common.mk
           DESTINATION share/sdpa/make
           COMPONENT sdk
