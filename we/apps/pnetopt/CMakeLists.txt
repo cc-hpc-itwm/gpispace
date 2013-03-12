@@ -6,7 +6,7 @@ set(PNETOPT_SOURCES
 	main.cpp
 )
 
-include_directories(${LUA_INCLUDE_DIR})
+include_directories(SYSTEM ${LUA_INCLUDE_DIR})
 
 add_executable(pnetopt ${PNETOPT_SOURCES})
 target_link_libraries(pnetopt we)
