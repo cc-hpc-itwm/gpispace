@@ -2,7 +2,7 @@
 
 find_package (CppUnit)
 if (CppUnit_FOUND)
-  include_directories(${CppUnit_INCLUDE_DIR})
+  include_directories(SYSTEM ${CppUnit_INCLUDE_DIR})
 
   add_subdirectory(seda)
 
