@@ -213,6 +213,8 @@ if (INSTALL_AS_BUNDLE)
   add_subdirectory(bundle)
 endif()
 
+add_subdirectory(test)
+
 # CPACK packaging
 INCLUDE(InstallRequiredSystemLibraries)
 #set(CPACK_GENERATOR "RPM;STGZ;TGZ;TBZ2")
