@@ -47,7 +47,7 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 ## find zlib
 find_package(ZLIB REQUIRED)
-include_directories(${ZLIB_INCLUDE_DIRS})
+include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 message(STATUS "ZLib: Inc:${ZLIB_INCLUDE_DIR} Lib:${ZLIB_LIBRARIES}")
 
 # logging
