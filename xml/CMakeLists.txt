@@ -15,7 +15,7 @@ if(CMAKE_USE_PTHREADS_INIT)
 endif(CMAKE_USE_PTHREADS_INIT)
 
 include(SDPAFindBoost)
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 add_subdirectory(xml)
 add_subdirectory(xsd)

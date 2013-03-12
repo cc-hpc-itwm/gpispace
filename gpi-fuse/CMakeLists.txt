@@ -34,7 +34,7 @@ include_directories (${FUSE_INCLUDE_DIR})
 
 include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 find_package(GPISpace REQUIRED)
 include_directories (${GPI_SPACE_INCLUDE_DIR})

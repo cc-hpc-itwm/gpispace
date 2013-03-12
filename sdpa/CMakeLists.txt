@@ -67,7 +67,7 @@ endif (USE_SMC_SC)
 include (SMCMacros)
 
 include(SDPAFindBoost)
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 if (ENABLE_LOGGING)
   set(SDPA_ENABLE_LOGGING 1)

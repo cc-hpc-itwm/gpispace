@@ -91,7 +91,7 @@ else (HAVE_GETPW_R_SIZE_MAX)
 endif (HAVE_GETPW_R_SIZE_MAX)
 
 include(SDPAFindBoost)
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 find_package (FhgLog REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${FhgLog_INCLUDE_DIR})
