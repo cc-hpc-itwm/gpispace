@@ -118,7 +118,7 @@ endif ()
 
 find_package (CZMQ ${QUIET_FIND_PACKAGE})
 if (CZMQ_FOUND)
-  include_directories (${CZMQ_INCLUDE_DIR})
+  include_directories (SYSTEM ${CZMQ_INCLUDE_DIR})
 endif()
 
 add_subdirectory(gpi-space)
