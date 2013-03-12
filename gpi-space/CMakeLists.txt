@@ -26,7 +26,7 @@ set (QUIET_FIND_PACKAGE QUIET)
 if(ENABLE_REAL_GPI)
   find_package (IBVerbs ${QUIET_FIND_PACKAGE})
   if (IBverbs_FOUND)
-    include_directories(${IBverbs_INCLUDE_DIR})
+    include_directories(SYSTEM ${IBverbs_INCLUDE_DIR})
 
     set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
     set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
