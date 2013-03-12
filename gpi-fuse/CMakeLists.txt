@@ -30,7 +30,7 @@ ENDFOREACH (lib ${PC_FUSE_LIBRARIES})
 if (NOT FUSE_INCLUDE_DIR)
   message (FATAL_ERROR "FUSE NOT FOUND!")
 endif (NOT FUSE_INCLUDE_DIR)
-include_directories (${FUSE_INCLUDE_DIR})
+include_directories (SYSTEM ${FUSE_INCLUDE_DIR})
 
 include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
