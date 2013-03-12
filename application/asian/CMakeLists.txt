@@ -10,7 +10,7 @@ SET(HDRS asianopt.h basics.h prob.h random.h asian.h ) #asianAPI.h)
 SET(SRCS2 ${SRCS}  )
 SET(SRCS3 ${SRCS} mcbeispiel.cpp )
 
-include_directories(.)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(Asian ${SRCS3})
 

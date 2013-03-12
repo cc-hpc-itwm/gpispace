@@ -4,7 +4,7 @@ set(PNETV_SOURCES
 
 add_executable(pnetv ${PNETV_SOURCES})
 
-include_directories(".")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(pnetv fhg-revision)
 target_link_libraries(pnetv pnetv-jpna)

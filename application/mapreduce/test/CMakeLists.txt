@@ -1,7 +1,7 @@
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
-include_directories(../util)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../util)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable (test_merge_and_reduce_buff test_merge_and_reduce_buff.cpp)
