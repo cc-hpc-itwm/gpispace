@@ -1,0 +1,32 @@
+# mirko.rahn@itwm.fraunhofer.de
+
+source "@CMAKE_CURRENT_BINARY_DIR@/error.sh"
+source "@CMAKE_CURRENT_BINARY_DIR@/measurement.sh"
+
+print_fail_reason()
+{
+  print_measurement "fail_reason" "text/string" $1
+}
+
+die()
+{
+  case $1 in
+      $EX_ERR_ENV)
+          print_fail_reason "EX_ERR_ENV"
+          ;;
+      $EX_ERR_RUN)
+          print_fail_reason "EX_ERR_RUN"
+          ;;
+      $EX_ERR_RES)
+          print_fail_reason "EX_ERR_RES"
+          ;;
+      $EX_ERR_OTHER)
+          print_fail_reason "EX_ERR_OTHER"
+          ;;
+      *)
+          print_fail_reason "UNKNOWN"
+          ;;
+  esac
+
+  exit $1
+}
