@@ -255,55 +255,55 @@ namespace
 
     throw std::runtime_error ("invalid state");
   }
-
-  class Task : public QGraphicsRectItem
-  {
-  public:
-    Task ( const QString& component
-         , const QString& name
-         , const QString& id
-         , QGraphicsItem* parent = NULL
-         )
-      : QGraphicsRectItem (parent)
-      , _do_advance (true)
-      , _state (sdpa::daemon::NotificationEvent::STATE_CREATED)
-    {
-      setToolTip (QObject::tr ("%1 on %2 (id = %3)").arg (name, component, id));
-      setRect (0.0, 0.0, 0.5, 8.0);
-      reset_color();
-    }
-
-    void update_task_state (sdpa::daemon::NotificationEvent::state_t state)
-    {
-      _state = state;
-      _do_advance = _state < sdpa::daemon::NotificationEvent::STATE_FINISHED;
-      reset_color();
-    }
-
-    void advance (const qreal scene_width)
-    {
-      if (_do_advance)
-      {
-        static const qreal height (8.0);
-
-        setRect (0.0, 0.0, std::floor (scene_width - pos().x() + 0.5), height);
-      }
-    }
-
-    void reset_color()
-    {
-      setBrush (color_for_state (_state));
-      update();
-    }
-
-    enum { Type = UserType + 1 };
-    int type() const { return Type; }
-
-  private:
-    bool _do_advance;
-    sdpa::daemon::NotificationEvent::state_t _state;
-  };
 }
+
+class Task : public QGraphicsRectItem
+{
+public:
+  Task ( const QString& component
+       , const QString& name
+       , const QString& id
+       , QGraphicsItem* parent = NULL
+       )
+    : QGraphicsRectItem (parent)
+    , _do_advance (true)
+    , _state (sdpa::daemon::NotificationEvent::STATE_CREATED)
+  {
+    setToolTip (QObject::tr ("%1 on %2 (id = %3)").arg (name, component, id));
+    setRect (0.0, 0.0, 0.5, 8.0);
+    reset_color();
+  }
+
+  void update_task_state (sdpa::daemon::NotificationEvent::state_t state)
+  {
+    _state = state;
+    _do_advance = _state < sdpa::daemon::NotificationEvent::STATE_FINISHED;
+    reset_color();
+  }
+
+  void advance (const qreal scene_width)
+  {
+    if (_do_advance)
+    {
+      static const qreal height (8.0);
+
+      setRect (0.0, 0.0, std::floor (scene_width - pos().x() + 0.5), height);
+    }
+  }
+
+  void reset_color()
+  {
+    setBrush (color_for_state (_state));
+    update();
+  }
+
+  enum { Type = UserType + 1 };
+  int type() const { return Type; }
+
+private:
+  bool _do_advance;
+  sdpa::daemon::NotificationEvent::state_t _state;
+};
 
 void execution_monitor::change_gantt_color (const QString& state)
 {
