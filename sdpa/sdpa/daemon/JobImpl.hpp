@@ -18,7 +18,7 @@
 #ifndef SDPA_JOB_IMPL_HPP
 #define SDPA_JOB_IMPL_HPP 1
 #include <sdpa/daemon/Job.hpp>
-#include <sdpa/daemon/IComm.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 #include <sdpa/common.hpp>
 #include <boost/thread.hpp>
 
@@ -39,7 +39,7 @@ namespace sdpa {
 
       JobImpl(const sdpa::job_id_t id = JobId(""),
               const sdpa::job_desc_t desc = "",
-              const sdpa::daemon::IComm* pHandler = NULL,
+              const sdpa::daemon::IAgent* pHandler = NULL,
               const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
 
       virtual ~JobImpl();
@@ -64,8 +64,8 @@ namespace sdpa {
         return *this;
       }
 
-      virtual void set_icomm(IComm* pArgComm) { pComm = pArgComm; }
-      virtual IComm* icomm() { return pComm; }
+      virtual void set_icomm(IAgent* pArgComm) { pComm = pArgComm; }
+      virtual IAgent* icomm() { return pComm; }
 
       virtual bool is_marked_for_deletion();
       virtual bool mark_for_deletion();
@@ -141,7 +141,7 @@ namespace sdpa {
 
       sdpa::worker_id_t m_owner;
     protected:
-      IComm* pComm;
+      IAgent* pComm;
     };
 }}
 

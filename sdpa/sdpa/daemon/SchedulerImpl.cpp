@@ -33,7 +33,7 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler, bool bUseRequestModel )
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IAgent* pCommHandler, bool bUseRequestModel )
   : ptr_worker_man_(new WorkerManager())
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
@@ -608,7 +608,7 @@ const Worker::worker_id_t& SchedulerImpl::findSubmOrAckWorker(const sdpa::job_id
   return ptr_worker_man_->findSubmOrAckWorker(job_id);
 }
 
-void SchedulerImpl::start(IComm* p)
+void SchedulerImpl::start(IAgent* p)
 {
   if(p)
     ptr_comm_handler_ = p;

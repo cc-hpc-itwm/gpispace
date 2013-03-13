@@ -61,10 +61,10 @@ namespace sdpa {
 	    void waitForFreeSlot();
 	    bool slotAvailable() const;
 
-      void resubmitResults(IComm* );
-      sdpa::job_id_list_t getListNotCompletedMasterJobs(bool bHasWfe);
+	    void resubmitResults(IAgent* );
+	    sdpa::job_id_list_t getListNotCompletedMasterJobs(bool bHasWfe);
 
-      std::string print() const;
+	    std::string print() const;
 
 	    template <class Archive>
 	    void serialize(Archive& ar, const unsigned int)

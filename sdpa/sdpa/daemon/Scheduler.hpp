@@ -86,7 +86,7 @@ namespace daemon {
 	 virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
 	 virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
 
-	 virtual void start(IComm*) = 0;
+	 virtual void start(IAgent*) = 0;
 	 virtual void stop() = 0;
 	 virtual void run() = 0;
 	 virtual void print() = 0;

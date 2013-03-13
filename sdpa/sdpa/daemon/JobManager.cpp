@@ -26,7 +26,7 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/map.hpp>
 
-#include <sdpa/daemon/IComm.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
@@ -158,7 +158,7 @@ void JobManager::waitForFreeSlot ()
   free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
 }
 
-void JobManager::resubmitResults(IComm* pComm)
+void JobManager::resubmitResults(IAgent* pComm)
 {
   lock_type lock(mtx_);
 

@@ -76,7 +76,7 @@ inline const requirement_list_t& empty_req_list()
 namespace sdpa {
   namespace daemon {
 
-    class GenericDaemon : public sdpa::daemon::IComm,
+    class GenericDaemon : public sdpa::daemon::IAgent,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable

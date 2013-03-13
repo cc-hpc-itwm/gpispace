@@ -12,7 +12,7 @@
 #include <boost/msm/front/state_machine_def.hpp>
 
 #include <fhg/assert.hpp>
-#include <sdpa/daemon/IComm.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/logging.hpp>
 #include <sdpa/types.hpp>
@@ -122,7 +122,7 @@ namespace sdpa {
 
         JobFSM( const sdpa::job_id_t id = sdpa::JobId(""),
               const sdpa::job_desc_t desc = "",
-              const sdpa::daemon::IComm* pHandler = NULL,
+              const sdpa::daemon::IAgent* pHandler = NULL,
               const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id())
           : JobImpl(id, desc, pHandler, parent)
           , SDPA_INIT_LOGGER("sdpa.fsm.bmsm.JobFSM")
@@ -141,7 +141,7 @@ namespace sdpa {
         void CancelJob(const sdpa::events::CancelJobEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
         void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
 
-        void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IComm*  ptr_comm)
+        void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm)
         {
           assert (ptr_comm);
           lock_type lock(mtx_);
@@ -155,7 +155,7 @@ namespace sdpa {
         void JobFailed(const sdpa::events::JobFailedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
         void JobFinished(const sdpa::events::JobFinishedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
 
-        void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IComm* pDaemon )
+        void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
         {
           assert (pDaemon);
           // attention, no action called!
@@ -172,7 +172,7 @@ namespace sdpa {
           pDaemon->sendEventToMaster(pStatReply);
         }
 
-        void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IComm* ptr_comm)
+        void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
         {
           assert (ptr_comm);
           lock_type lock(mtx_);

@@ -23,7 +23,7 @@
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
-#include <sdpa/daemon/IComm.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
@@ -40,7 +40,7 @@ namespace sdpa {
 	    typedef boost::unique_lock<mutex_type> lock_type;
 	    typedef boost::condition_variable_any condition_type;
 
-	    SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL, bool bUseRequestModel = true );
+	    SchedulerImpl(sdpa::daemon::IAgent* pHandler = NULL, bool bUseRequestModel = true );
 	    virtual ~SchedulerImpl();
 
 	    virtual void schedule(const sdpa::job_id_t&);
@@ -63,13 +63,13 @@ namespace sdpa {
 
 	    virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
 	    virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
-      virtual const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+	    virtual const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
-      virtual void addWorker( const Worker::worker_id_t& workerId,
-			                        const unsigned int& capacity = 10000,
-			                        const capabilities_set_t& cpbset = capabilities_set_t(),
-			                        const unsigned int& agent_rank = 0,
-			                        const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
+	    virtual void addWorker( const Worker::worker_id_t& workerId,
+	    						const unsigned int& capacity = 10000,
+			                    const capabilities_set_t& cpbset = capabilities_set_t(),
+			                    const unsigned int& agent_rank = 0,
+			                    const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
 
 	    virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 	    void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
@@ -105,7 +105,7 @@ namespace sdpa {
 	    void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
     	// thread related functions
-	    virtual void start(IComm*);
+	    virtual void start(IAgent*);
 	    virtual void stop();
 	    virtual void run();
 
@@ -132,7 +132,7 @@ namespace sdpa {
 	    boost::thread m_thread_run;
 	    boost::thread m_thread_feed;
 
-	    mutable sdpa::daemon::IComm* ptr_comm_handler_;
+	    mutable sdpa::daemon::IAgent* ptr_comm_handler_;
 	    SDPA_DECLARE_LOGGER();
 	    boost::posix_time::time_duration m_timeout;
 

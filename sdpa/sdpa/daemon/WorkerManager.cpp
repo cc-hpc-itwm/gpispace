@@ -23,7 +23,7 @@
 #include <sdpa/types.hpp>
 #include <boost/foreach.hpp>
 #include "boost/bind.hpp"
-#include <sdpa/daemon/IComm.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 
 #include <algorithm>
 #include <limits>
