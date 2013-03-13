@@ -310,16 +310,11 @@ void log_monitor::append_log (fhg::log::LogEvent const &evt)
 
 namespace
 {
-  enum
-  {
-    EXTERNAL_EVENT_LOGGING = QEvent::User + 1,
-  };
-
   class fhglog_event : public QEvent
   {
   public:
     fhglog_event (const fhg::log::LogEvent& e)
-      : QEvent ((QEvent::Type)EXTERNAL_EVENT_LOGGING)
+      : QEvent (QEvent::User)
       , log_event (e)
     { }
 
@@ -334,7 +329,7 @@ void log_monitor::handle_external_event (const fhg::log::LogEvent & evt)
 
 bool log_monitor::event (QEvent* event)
 {
-  if (event->type() == EXTERNAL_EVENT_LOGGING)
+  if (event->type() == QEvent::User)
   {
     event->accept();
     append_log (static_cast<fhglog_event*> (event)->log_event);
