@@ -106,7 +106,7 @@ struct MyFixture
 												  , 3
 												  );
 
-		m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+		m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	}
 
 	~MyFixture()
@@ -357,7 +357,8 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	kernel->put("plugin.drts.backlog", "2");
 	//kernel->put("plugin.drts.request-mode", "false");
 
-	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+	//kernel->put("plugin.wfe.library_path", TESTS_TRANSFORM_FILE_MODULES_PATH);
+	kernel->put("plugin.wfe.library_path", TESTS_TRANSFORM_FILE_MODULES_PATH);
 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
@@ -383,7 +384,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_Orch2Agents)
 	std::string strBackupAgent0;
     std::string strBackupAgent1;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -433,7 +434,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE)
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -484,7 +485,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchEmptyWE)
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -534,7 +535,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -585,7 +586,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);

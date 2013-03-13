@@ -69,7 +69,7 @@ namespace sdpa {
         public:
                   JobImpl(  const sdpa::job_id_t id = sdpa::JobId(""),
                          const sdpa::job_desc_t /* desc */ = "",
-                         const sdpa::daemon::IComm* /* pHandler */ = NULL,
+                         const sdpa::daemon::IAgent* /* pHandler */ = NULL,
                          const sdpa::job_id_t &/*parent*/ = sdpa::job_id_t::invalid_job_id()) : Job(id.str())
                 {
                           parent_        = "aaaaaaaaaaaaa";

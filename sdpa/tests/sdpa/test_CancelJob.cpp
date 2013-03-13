@@ -104,7 +104,7 @@ struct MyFixture
 												  , 3
 												  );
 
-		m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+		m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	}
 
 	~MyFixture()
@@ -283,10 +283,9 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	kernel->put("plugin.drts.backlog", "2");
 	kernel->put("plugin.drts.request-mode", "false");
 
-	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+	kernel->put("plugin.wfe.library_path", TESTS_TRANSFORM_FILE_MODULES_PATH);
 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-//	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
@@ -296,53 +295,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-/*
-BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWEDrts )
-{
-	// topology:
-	// O
-	// |
-	// A
-	// |
-	// drts
 
-
-	LOG( DEBUG, "testCancelJobPath1AgentEmptyWEDrts");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-	ptrOrch->start_agent(false);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAg0->start_agent(false);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
-	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-
-	ptrAg0->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testCancelJobPath1AgentEmptyWE terminated!");
-}
-*/
 
 BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 {
@@ -363,7 +316,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
@@ -411,7 +364,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath2Drts )
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
@@ -466,7 +419,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsAndDrtsPath3 )
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -514,7 +467,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -544,235 +497,5 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
 	LOG( DEBUG, "The test case testCancelAgentsNoDrtsTree terminated!");
 }
 
-/*
-BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentNoWE )
-{
-  LOG( DEBUG, "testCancelJobPath1AgentNoWE");
-  //guiUrl
-  string guiUrl     = "";
-  string workerUrl  = "127.0.0.1:5500";
-  string addrOrch   = "127.0.0.1";
-  string addrAgent  = "127.0.0.1";
-
-  typedef void OrchWorkflowEngine;
-
-  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
-
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-  threadClient.join();
-
-  LOG( INFO, "The client thread joined the main thread°!" );
-  ptrOrch->shutdown();
-
-  LOG( DEBUG, "The test case testCancelJobPath1AgentNoWE terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWE )
-{
-  LOG( DEBUG, "testCancelJobPath1AgentEmptyWE");
-  //guiUrl
-  string guiUrl     = "";
-  string workerUrl  = "127.0.0.1:5500";
-  string addrOrch   = "127.0.0.1";
-  string addrAgent  = "127.0.0.1";
-
-  typedef void OrchWorkflowEngine;
-
-  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
-
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-  threadClient.join();
-
-  LOG( INFO, "The client thread joined the main thread°!" );
-
-  ptrOrch->shutdown();
-
-  LOG( DEBUG, "The test case testCancelJobPath1AgentEmptyWE terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testCancelJobPath2AgentsNoWE )
-{
-  LOG( DEBUG, "testCancelJobPath2AgentsNoWE");
-  //guiUrl
-  string guiUrl     = "";
-  string workerUrl  = "127.0.0.1:5500";
-  string addrOrch   = "127.0.0.1";
-  string addrAgent  = "127.0.0.1";
-
-  typedef void OrchWorkflowEngine;
-
-  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
-
-  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
-
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-  threadClient.join();
-
-  LOG( INFO, "The client thread joined the main thread°!" );
-  boost::this_thread::sleep(boost::posix_time::seconds(20));
-
-  ptrAg0->shutdown();
-  ptrOrch->shutdown();
-
-  LOG( DEBUG, "The test case testCancelJobPath2AgentsNoWE terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testCancelJobPath2AgentsEmptyWE )
-{
-  LOG( DEBUG, "testCancelJobPath2AgentsEmptyWE");
-  //guiUrl
-  string guiUrl     = "";
-  string workerUrl  = "127.0.0.1:5500";
-  string addrOrch   = "127.0.0.1";
-  string addrAgent  = "127.0.0.1";
-
-  typedef void OrchWorkflowEngine;
-
-  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-
-    sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
-
-  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
-
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-  threadClient.join();
-
-  LOG( INFO, "The client thread joined the main thread°!" );
-  boost::this_thread::sleep(boost::posix_time::seconds(20));
-
-  ptrAg0->shutdown();
-  ptrOrch->shutdown();
-
-  LOG( DEBUG, "The test case testCancelJobPath2AgentsEmptyWE terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testCancelJobPath3AgentsNoWE )
-{
-  LOG( DEBUG, "testCancelJobPath3AgentsNoWE");
-  //guiUrl
-  string guiUrl     = "";
-  string workerUrl  = "127.0.0.1:5500";
-  string addrOrch   = "127.0.0.1";
-  string addrAgent  = "127.0.0.1";
-
-  typedef void OrchWorkflowEngine;
-
-  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
-
-  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
-
-  sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_1", addrAgent, arrAgent1MasterInfo, MAX_CAP);
-  ptrAg1->start_agent(false);
-
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-  threadClient.join();
-
-  LOG( INFO, "The client thread joined the main thread°!" );
-
-  ptrAg1->shutdown();
-  ptrAg0->shutdown();
-  ptrOrch->shutdown();
-
-  LOG( DEBUG, "The test case testCancelJobPath3AgentsNoWE terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testCancelJobPath3AgentsEmptyWE )
-{
-  LOG( DEBUG, "testCancelJobPath3AgentsEmptyWE");
-  //guiUrl
-  string guiUrl     = "";
-  string workerUrl  = "127.0.0.1:5500";
-  string addrOrch   = "127.0.0.1";
-  string addrAgent  = "127.0.0.1";
-
-  typedef void OrchWorkflowEngine;
-
-  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
-
-  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
-
-  sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_1", addrAgent, arrAgent1MasterInfo, MAX_CAP);
-  ptrAg1->start_agent(false);
-
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-  threadClient.join();
-
-  LOG( INFO, "The client thread joined the main thread°!" );
-
-  ptrAg1->shutdown();
-  ptrAg0->shutdown();
-  ptrOrch->shutdown();
-
-  LOG( DEBUG, "The test case testCancelJobPath3AgentsEmptyWE terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testCancelJobPath3AgentsEmptyWEExec )
-{
-  LOG( DEBUG, "testCancelJobPath3AgentsEmptyWEExec");
-  //guiUrl
-  string guiUrl     = "";
-  string workerUrl  = "127.0.0.1:5500";
-  string addrOrch   = "127.0.0.1";
-  string addrAgent  = "127.0.0.1";
-
-  typedef void OrchWorkflowEngine;
-
-  m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-
-   sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
-
-  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
-
-  sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_1", addrAgent, arrAgent1MasterInfo, MAX_CAP, true);
-  ptrAg1->start_agent(false);
-
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-  threadClient.join();
-
-  LOG( INFO, "The client thread joined the main thread°!" );
-
-  ptrAg1->shutdown();
-  ptrAg0->shutdown();
-  ptrOrch->shutdown();
-
-  LOG( DEBUG, "The test case testCancelJobPath3AgentsEmptyWEExec terminated!");
-}
-*/
 
 BOOST_AUTO_TEST_SUITE_END()
