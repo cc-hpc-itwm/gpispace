@@ -93,10 +93,6 @@ else (PROJECT_REVISION)
 endif (PROJECT_REVISION)
 add_definitions(-DHAVE_CONFIG_H)
 
-link_directories(${CMAKE_LIBRARY_PATH})
-link_directories(${${PROJECT_NAME}_BINARY_DIR})
-link_directories(${Boost_LIBRARY_DIRS})
-
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include("${CMAKE_MODULE_PATH}/TargetDoc.cmake" OPTIONAL)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
