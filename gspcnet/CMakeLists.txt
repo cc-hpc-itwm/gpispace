@@ -9,6 +9,8 @@ find_package (UTIL REQUIRED QUIET)
 find_package (FhgKernel REQUIRED QUIET)
 find_package (SDPA REQUIRED QUIET)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 add_subdirectory(gspc)
 
 if (BUILD_TESTING)
