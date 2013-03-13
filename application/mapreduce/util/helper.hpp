@@ -292,12 +292,12 @@ namespace mapreduce
     	std::string str_buff(local_buff);
     	boost::char_separator<char> sep(DELIMITERS.c_str());
     	boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
-    	std::vector<std::string> v;
-    	v.assign(tok.begin(),tok.end());
 
-    	for(int k=0; k<v.size(); k++)
-    		arr_pairs.push_back(str2kvpair(v[k]));
+        BOOST_FOREACH (const std::string& s, tok)
+        {
+          arr_pairs.push_back(str2kvpair(s));
 	}
+        }
 
     /*
     bool is_special_item(const std::string& str_item)
