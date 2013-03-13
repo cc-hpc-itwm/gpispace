@@ -1144,7 +1144,7 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
-        stream << "CXXFLAGS += -I$(BOOST_ROOT)/include"            << std::endl;
+        stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
         stream << "LDFLAGS += -L$(BOOST_ROOT)/lib"                 << std::endl;
         stream << "LDFLAGS += -lboost_serialization"               << std::endl;

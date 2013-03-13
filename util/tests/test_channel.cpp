@@ -58,7 +58,7 @@ static void s_adder (to_add_channel_t & in, int_channel_t & out)
 BOOST_AUTO_TEST_CASE (thread_channel_multiple_adder)
 {
   static const int NUM_THREADS = 4;
-  static const int VALUES_TO_ADD = 1 << 18;
+  static const int_channel_t::size_type VALUES_TO_ADD = 1 << 18;
 
   srand (1337);
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE (thread_channel_multiple_adder)
   }
 
   // generate values and feed to workers
-  for (int i = 0 ; i < VALUES_TO_ADD ; ++i)
+  for (int_channel_t::size_type i = 0 ; i < VALUES_TO_ADD ; ++i)
   {
     to_add_t to_add = std::make_pair (rand (), rand ());
     input << to_add;

@@ -11,10 +11,7 @@
 #include <QWidget>
 #include <QTimer>
 
-namespace
-{
-  class Task;
-}
+class Task;
 class QGraphicsItem;
 class QGraphicsView;
 class QGraphicsScene;
