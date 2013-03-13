@@ -251,6 +251,8 @@ namespace
       CHOICE (CANCELLED, "cancelled");
 
 #undef CHOICE
+    case event::STATE_IGNORE:
+      ;
     }
 
     throw std::runtime_error ("invalid state");
