@@ -27,8 +27,18 @@
 #include "SystemEvent.hpp"
 #include "StageRegistry.hpp"
 
+#include <csignal>
+#include <pthread.h>
+
 namespace seda {
     void StageWorker::run() {
+      sigset_t signals_to_block;
+      sigaddset (&signals_to_block, SIGTERM);
+      sigaddset (&signals_to_block, SIGSEGV);
+      sigaddset (&signals_to_block, SIGHUP);
+      sigaddset (&signals_to_block, SIGPIPE);
+      sigaddset (&signals_to_block, SIGINT);
+      pthread_sigmask (SIG_BLOCK, &signals_to_block, NULL);
 
         while (!stopped()) {
             try {
