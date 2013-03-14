@@ -3,12 +3,12 @@
 
 #include <string>
 
+#include <gspc/net/frame_fwd.hpp>
+
 namespace gspc
 {
   namespace net
   {
-    class frame;
-
     namespace parse
     {
       enum state_t
@@ -65,20 +65,25 @@ namespace gspc
       private:
         enum frame_state
           {
-            command_start
+            frame_start
+          , frame_start_line_feed
           , command
+          , command_line_feed
           , header_start
+          , header_start_line_feed
           , header_name
           , header_value
-          , body_start
-          , body
-          , body_end
-          } m_state;
+          , header_value_line_feed
+          , body_without_content_length
+          , body_with_content_length
+          };
 
         state_t consume (gspc::net::frame & frame, const char c);
 
-        frame_state       m_frame_state;
-        std::string       m_buffer;
+        frame_state                  m_frame_state;
+        std::string                  m_buffer;
+        std::string                  m_header_key;
+        std::size_t                  m_remaining_body_bytes;
       };
     }
   }

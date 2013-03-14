@@ -1,29 +1,242 @@
 #define BOOST_TEST_MODULE GspcNetBasics
 #include <boost/test/unit_test.hpp>
 
+#include <cstring>
+#include <iostream>
 #include <algorithm>
 
 #include <gspc/net.hpp>
 #include <gspc/net/parse/parser.hpp>
+#include <gspc/net/frame_io.hpp>
 
-BOOST_AUTO_TEST_CASE (test_gspcnet_frame_parser)
+BOOST_AUTO_TEST_CASE (invalid_empty_frame)
 {
   gspc::net::parse::parser parser;
   gspc::net::parse::result_t result;
 
-  const std::string input = "CONNECT\nheart-beat:0,0\n\n";
+  const char *input = "\r\r";
   gspc::net::frame frame;
 
-  result = parser.parse ( input.begin ()
-                        , input.end ()
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FAILED);
+  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input));
+}
+
+BOOST_AUTO_TEST_CASE (test_invalid_command)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "FOO\r\r";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FAILED);
+  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input));
+}
+
+BOOST_AUTO_TEST_CASE (test_heartbeat_frame)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "\n";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
                         , frame
                         );
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-  BOOST_REQUIRE_EQUAL (result.consumed, input.size ());
-  BOOST_REQUIRE_EQUAL (frame.command (), "CONNECT");
-  BOOST_REQUIRE (frame.has_header ("heart-beat"));
+  // heartbeats don't want a NULL byte
+  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input));
+
+  BOOST_CHECK_EQUAL (frame.get_command (), "");
+  BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
+  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
 }
+
+BOOST_AUTO_TEST_CASE (test_heartbeat_crlf_frame)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "\r\n";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
+  // heartbeats don't want a NULL byte
+  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input));
+
+  BOOST_CHECK_EQUAL (frame.get_command (), "");
+  BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
+}
+
+BOOST_AUTO_TEST_CASE (test_empty_header_empty_body)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "CONNECT\n\n";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
+  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input) + 1);
+
+  BOOST_CHECK_EQUAL (frame.get_command (), "CONNECT");
+  BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
+}
+
+BOOST_AUTO_TEST_CASE (test_empty_header_empty_body_crlf)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "CONNECT\r\n\r\n";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
+  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input) + 1);
+
+  BOOST_CHECK_EQUAL (frame.get_command (), "CONNECT");
+  BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
+  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
+}
+
+BOOST_AUTO_TEST_CASE (test_header)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "CONNECT\nfoo:bar\nbaz:bam\n\n";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
+  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input) + 1);
+
+  BOOST_CHECK_EQUAL (frame.get_command (), "CONNECT");
+  BOOST_CHECK_EQUAL (frame.get_header ().size (), 2);
+  BOOST_CHECK_EQUAL (frame.get_header ("foo"), "bar");
+  BOOST_CHECK_EQUAL (frame.get_header ("baz"), "bam");
+  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
+}
+
+BOOST_AUTO_TEST_CASE (test_invalid_header)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "CONNECT\n:bar\n\n";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FAILED);
+  BOOST_REQUIRE (result.consumed > 0);
+  BOOST_REQUIRE (result.consumed < strlen (input));
+}
+
+BOOST_AUTO_TEST_CASE (test_content_length)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "CONNECT\ncontent-length:5\n\n1234567890";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
+  BOOST_REQUIRE (result.consumed > 0);
+  BOOST_REQUIRE (result.consumed < strlen (input));
+
+  BOOST_REQUIRE_EQUAL (frame.get_body_as_string (), "12345");
+}
+
+BOOST_AUTO_TEST_CASE (test_binary_body)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  std::vector<char> bytes;
+  bytes.push_back ('A');
+  bytes.push_back ('\n');
+  bytes.push_back ('c');
+  bytes.push_back ('o');
+  bytes.push_back ('n');
+  bytes.push_back ('t');
+  bytes.push_back ('e');
+  bytes.push_back ('n');
+  bytes.push_back ('t');
+  bytes.push_back ('-');
+  bytes.push_back ('l');
+  bytes.push_back ('e');
+  bytes.push_back ('n');
+  bytes.push_back ('g');
+  bytes.push_back ('t');
+  bytes.push_back ('h');
+  bytes.push_back (':');
+  bytes.push_back ('5');
+  bytes.push_back ('\n');
+  bytes.push_back ('\n');
+  bytes.push_back ('\x00');
+  bytes.push_back ('\x01');
+  bytes.push_back ('\x02');
+  bytes.push_back ('\x03');
+  bytes.push_back ('\x04');
+
+  gspc::net::frame frame;
+
+  result = parser.parse ( bytes.begin ()
+                        , bytes.end ()
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
+  BOOST_REQUIRE (result.consumed == bytes.size ());
+
+  BOOST_REQUIRE_EQUAL (frame.get_body ()[0], '\x00');
+  BOOST_REQUIRE_EQUAL (frame.get_body ()[1], '\x01');
+  BOOST_REQUIRE_EQUAL (frame.get_body ()[2], '\x02');
+  BOOST_REQUIRE_EQUAL (frame.get_body ()[3], '\x03');
+  BOOST_REQUIRE_EQUAL (frame.get_body ()[4], '\x04');
+}
+
 
 // BOOST_AUTO_TEST_CASE (test_gspcnet_hello_world)
 // {

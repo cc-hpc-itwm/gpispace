@@ -1,6 +1,7 @@
 set (gspc_common_src
   net/parse/parser.cpp
   net/frame.cpp
+  net/frame_io.cpp
 )
 
 add_library (gspcnet-common        STATIC ${gspc_common_src})

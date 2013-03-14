@@ -1,5 +1,7 @@
 #include "frame.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 namespace gspc
 {
   namespace net
@@ -10,22 +12,28 @@ namespace gspc
       return *this;
     }
 
-    frame & frame::set_header ( string_type const & key
-                              , string_type const & val
+    frame & frame::set_header ( std::string const & key
+                              , std::string const & val
                               )
     {
       m_header [key] = val;
       return *this;
     }
 
-    frame & frame::del_header (string_type const & key)
+    frame & frame::del_header (std::string const & key)
     {
       m_header.erase (key);
       return *this;
     }
 
-    frame::string_type const &
-    frame::get_header (string_type const & key) const
+    frame::header_type const &
+    frame::get_header () const
+    {
+      return m_header;
+    }
+
+    std::string const &
+    frame::get_header (std::string const & key) const
     {
       static const std::string dflt ("");
 
@@ -35,9 +43,26 @@ namespace gspc
       else                       return dflt;
     }
 
-    bool frame::has_header (string_type const & key) const
+    bool frame::has_header (std::string const & key) const
     {
       return m_header.find (key) != m_header.end ();
+    }
+
+    frame & frame::set_body (std::string const &body)
+    {
+      m_body.assign (body.begin (), body.end ());
+      /*
+      set_header ( "content-length"
+                 , boost::lexical_cast<std::string>(m_body.size ())
+                 );
+      */
+
+      return *this;
+    }
+
+    std::string frame::get_body_as_string () const
+    {
+      return std::string (m_body.begin (), m_body.end ());
     }
   }
 }
