@@ -1,6 +1,6 @@
 # -*- mode: cmake; -*-
 
-fhg_add_test(test_basics
+fhg_add_test(test_frame_parser
   LINK_LIBRARIES gspcnet-common
-  DESCRIPTION "Basic GSPCNet tests"
+  DESCRIPTION "GSPCNet - frame parser tests"
 )
