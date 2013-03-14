@@ -30,28 +30,24 @@ public:
       "job." + fhg_kernel ()->get_name () + ".current";
 
     m_url = fhg_kernel()->get("url", "");
-    if ("" == m_url)
-    {
-      MLOG(ERROR, "no GUI URL specified, please set plugin.gui.url");
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
 
-    try
+    if (not m_url.empty ())
     {
-      m_destination.reset (new fhg::log::ThreadedAppender
-                          (fhg::log::Appender::ptr_t
-                          (new fhg::log::remote::RemoteAppender( "gui"
-                                                               , m_url
-                                                               )
-                          )));
+      try
+      {
+        m_destination.reset (new fhg::log::ThreadedAppender
+                            (fhg::log::Appender::ptr_t
+                            (new fhg::log::remote::RemoteAppender( "gui"
+                                                                 , m_url
+                                                                 )
+                            )));
+        MLOG(INFO, "GUI sending events to " << m_url);
+      }
+      catch (std::exception const &ex)
+      {
+        MLOG(ERROR, "could not start appender to url: " << m_url << ": " << ex.what());
+      }
     }
-    catch (std::exception const &ex)
-    {
-      MLOG(ERROR, "could not start appender to url: " << m_url << ": " << ex.what());
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
-    MLOG(INFO, "GUI sending events to " << m_url);
 
     m_kvs = fhg_kernel ()->acquire<kvs::KeyValueStore>("kvs");
 
