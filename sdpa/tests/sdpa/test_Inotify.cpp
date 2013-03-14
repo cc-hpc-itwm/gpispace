@@ -314,7 +314,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 	kernel->put("plugin.kvs.port", kvs_port());
 
 	//see ~/.sdpa/configs/sdpa.rc
-	std::string guiUrl("lts016.itwm.fhg.de:6408");
+	std::string guiUrl("localhost:6408");
 	kernel->put("plugin.gui.url", guiUrl);
 
 	kernel->put("plugin.drts.name", drtsName);
