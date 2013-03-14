@@ -27,7 +27,7 @@ public:
       fhg_kernel ()->get ("store", "");
 
     MLOG( INFO
-        , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
+        , "starting KeyValueStore @ [" << m_host << "]:" << m_port
         );
 
     m_io_pool = new fhg::com::io_service_pool (1);
