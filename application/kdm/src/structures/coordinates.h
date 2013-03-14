@@ -1,8 +1,8 @@
 /***************************************************************************
                           coordinates.h  -  description
-   
+
     With the dawn of UTM/MOD coordinate classes
-    it was necessary to have an improved struct for 
+    it was necessary to have an improved struct for
     bundles of coordinates based on templates of (e.g., UTM or MOD) data
 
                           -------------------
@@ -29,8 +29,8 @@ public:
   Coords_src_recv(const Coords_src_recv<T>& A) { SrcX=A.SrcX; SrcY=A.SrcY; RcvX=A.RcvX; RcvY=A.RcvY; };
   ~Coords_src_recv() {};
 
-  Coords_src_recv<T>& operator= (const Coords_src_recv<T>& A){ 
-	SrcX=A.SrcX; SrcY=A.SrcY; RcvX=A.RcvX; RcvY=A.RcvY; return *this; 
+  Coords_src_recv<T>& operator= (const Coords_src_recv<T>& A){
+	SrcX=A.SrcX; SrcY=A.SrcY; RcvX=A.RcvX; RcvY=A.RcvY; return *this;
   };
 
   Coords_cdp_offset<T> Trafo() const {
@@ -63,8 +63,8 @@ public:
   Coords_cdp_offset(const Coords_cdp_offset<T>& A) { CDPx=A.CDPx; CDPy=A.CDPy; Offx=A.Offx; Offy=A.Offy; };
   ~Coords_cdp_offset() {};
 
-  Coords_cdp_offset<T>& operator= (const Coords_cdp_offset<T>& A){ 
-	CDPx=A.CDPx; CDPy=A.CDPy; Offx=A.Offx; Offy=A.Offy; return *this; 
+  Coords_cdp_offset<T>& operator= (const Coords_cdp_offset<T>& A){
+	CDPx=A.CDPx; CDPy=A.CDPy; Offx=A.Offx; Offy=A.Offy; return *this;
   };
 
   Coords_src_recv<T> Trafo() const {
