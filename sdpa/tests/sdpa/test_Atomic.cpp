@@ -369,18 +369,10 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 
   const std::string atomic_file ("atomic_test.txt");
 
-	int nInitial (0);
+  int nInitial (0);
   {
-    ifstream ifs(atomic_file.c_str());
-    if (ifs.good())
-    {
-        ifs>>nInitial;
-    }
-    else
-    {
-      ofstream ofs(atomic_file.c_str());
-      ofs<<nInitial;
-    }
+    std::ofstream ofs (atomic_file.c_str ());
+    ofs << nInitial << std::endl;
   }
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
