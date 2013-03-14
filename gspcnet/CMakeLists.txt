@@ -8,10 +8,6 @@ project(gspcnet)
 string (TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 include (SDPAFindBoost)
-find_package (FhgLog REQUIRED QUIET)
-find_package (UTIL REQUIRED QUIET)
-find_package (FhgKernel REQUIRED QUIET)
-find_package (SDPA REQUIRED QUIET)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
