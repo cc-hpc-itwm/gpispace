@@ -135,7 +135,9 @@ BOOST_AUTO_TEST_CASE (thread_queue_remove_if)
   items_t items;
   fill_items (items, NUM_ITEMS_TO_PUT);
 
-  BOOST_REQUIRE_EQUAL (items.size (), NUM_ITEMS_TO_PUT);
+  BOOST_REQUIRE_EQUAL ( items.size()
+                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT)
+                      );
 
   std::size_t num_removed = items.remove_if (is_even);
 
