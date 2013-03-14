@@ -7,8 +7,6 @@
 
 #include <QDockWidget>
 
-class Widget;
-
 namespace fhg
 {
   namespace pnete
