@@ -52,7 +52,21 @@ namespace sdpa
           msg.data.assign (encoded_evt.begin(), encoded_evt.end());
           msg.header.length = msg.data.size();
 
-          m_peer->async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
+          try
+          {
+            m_peer->async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
+          }
+          catch (std::exception const & ex)
+          {
+            sdpa::events::ErrorEvent::Ptr ptrErrEvt
+              (new sdpa::events::ErrorEvent( sdpa_event->to()
+                                           , sdpa_event->from()
+                                           , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                           , sdpa_event->str())
+              );
+            if (ptrErrEvt)
+              super::perform (ptrErrEvt);
+          }
       }
       else
       {
