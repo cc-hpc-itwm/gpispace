@@ -2014,7 +2014,6 @@ namespace xml
                   (_id_function.get().get_port_out (*name));
 
                 const port_type& port_in (id_port_in->get());
-                const port_type& port_out (id_port_out->get());
 
                 if (    mod.port_return
                    && (*mod.port_return == port_in.name())
