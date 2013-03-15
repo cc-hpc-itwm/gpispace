@@ -44,10 +44,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-format")
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 
-#set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wfloat-equal")
-#set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wswitch-default")
-#set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wswitch-enum")
-
 if(NOT WIN32)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   include (CheckCXXSourceCompiles)
