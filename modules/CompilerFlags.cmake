@@ -27,7 +27,6 @@ set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wnon-virtual-dtor")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-system-headers")
 
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unused-parameter")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unused-variable")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-pragmas")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")

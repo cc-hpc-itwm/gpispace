@@ -28,7 +28,7 @@
      void we_mod_initialize(::we::loader::IModule *mod, unsigned int)                \
      {\
         (void)(mod);                               \
-        {volatile int _ = WE_GUARD_SYMBOL;}        \
+        {volatile int _ = WE_GUARD_SYMBOL; (void)_;} \
         mod->name (#modname)
 
 #define WE_REGISTER_FUN_START(fun)                \

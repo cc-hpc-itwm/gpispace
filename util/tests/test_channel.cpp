@@ -274,7 +274,6 @@ BOOST_AUTO_TEST_CASE (thread_channel_select_mixed_timeout)
 
 BOOST_AUTO_TEST_CASE (thread_channel_drop)
 {
-  int nready;
   int_channel_t chan;
 
   for (int i = 0 ; i < 10 ; ++i)

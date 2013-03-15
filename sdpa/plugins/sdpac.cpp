@@ -147,7 +147,7 @@ public:
               );
     if (request(req, rep) == 0)
     {
-      if (CancelJobAckEvent* ack = dynamic_cast<CancelJobAckEvent*>(rep.get()))
+      if (dynamic_cast<CancelJobAckEvent*>(rep.get()))
       {
         return 0;
       }
@@ -208,7 +208,7 @@ public:
               );
     if (request(req, rep) == 0)
     {
-      if (DeleteJobAckEvent* ack = dynamic_cast<DeleteJobAckEvent*>(rep.get()))
+      if (dynamic_cast<DeleteJobAckEvent*>(rep.get()))
       {
         return 0;
       }
