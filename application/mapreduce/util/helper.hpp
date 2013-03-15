@@ -331,8 +331,8 @@ namespace mapreduce
 		u.assign(tok.begin(), tok.end());
 
 		try {
-			int u0 = boost::lexical_cast<long>(u[0]);
-			int u1 = boost::lexical_cast<long>(u[1]);
+                  (void)(boost::lexical_cast<long>(u[0]));
+                  (void)(boost::lexical_cast<long>(u[1]));
 			return true;
 		}
 		catch(const boost::bad_lexical_cast& ex) {
