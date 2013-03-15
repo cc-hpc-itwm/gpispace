@@ -83,7 +83,7 @@ namespace fhg { namespace log {
     {
       struct flush_at_end_of_scope_t
       {
-        ~flush_at_end_of_scope_t()
+        ~flush_at_end_of_scope_t() throw ()
         {
           FHGLOG_FLUSH();
         }
