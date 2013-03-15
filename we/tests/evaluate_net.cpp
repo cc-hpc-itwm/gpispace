@@ -63,22 +63,22 @@ namespace
     }
 
 
-    std::string content_of_file (const boost::filesystem::path& path) const
-    {
-      std::ifstream reference_file
-        ((path_to_pnets / path).string().c_str(), std::ios::in);
+    // std::string content_of_file (const boost::filesystem::path& path) const
+    // {
+    //   std::ifstream reference_file
+    //     ((path_to_pnets / path).string().c_str(), std::ios::in);
 
-      BOOST_REQUIRE (reference_file);
+    //   BOOST_REQUIRE (reference_file);
 
-      std::string reference;
-      reference_file.seekg (0, std::ios::end);
-      reference.resize (reference_file.tellg());
-      reference_file.seekg (0, std::ios::beg);
-      reference_file.read (&reference[0], reference.size());
-      reference_file.close();
+    //   std::string reference;
+    //   reference_file.seekg (0, std::ios::end);
+    //   reference.resize (reference_file.tellg());
+    //   reference_file.seekg (0, std::ios::beg);
+    //   reference_file.read (&reference[0], reference.size());
+    //   reference_file.close();
 
-      return reference;
-    }
+    //   return reference;
+    // }
 
     //! \note Context copied from we-eval.
     virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
