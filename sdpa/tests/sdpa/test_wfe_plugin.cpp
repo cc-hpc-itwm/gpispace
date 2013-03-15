@@ -53,12 +53,27 @@ static int s_load_unload_test ()
     std::string result;
     std::string error_message;
 
+    unlink ("atomic_wfe_plugin_test.txt");
+
     rc = wfe->execute ("test_job"
                       , jobdesc.str ()
                       , wfe::capabilities_t ()
                       , result
                       , error_message
                       );
+
+    {
+      std::size_t counter_value;
+      std::ifstream ifs ("atomic_wfe_plugin_test.txt");
+
+      BOOST_REQUIRE (ifs.good ());
+
+      ifs >> counter_value;
+
+      BOOST_CHECK_EQUAL (counter_value, 20);
+    }
+
+    unlink ("atomic_wfe_plugin_test.txt");
 
     kernel->unload_all ();
 
