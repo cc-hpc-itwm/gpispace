@@ -194,7 +194,6 @@ void *LoadFromDisk_CO_ST(void *_param)
   const int 	       oid = thread_param->oid;;
   const int 	       pid = thread_param->pid;;
   const int 	       bid = thread_param->bid;;
-  const int 	      Nbip = thread_param->Nbip;;
   const int 	      Ntib = thread_param->Ntib;;
   const int 	      Ntid = thread_param->Ntid;
   const int 	      mtid = thread_param->mtid;
