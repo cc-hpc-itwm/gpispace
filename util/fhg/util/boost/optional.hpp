@@ -7,6 +7,8 @@
 
 #include <boost/optional.hpp>
 
+#include <ostream>
+
 namespace fhg
 {
   namespace util
