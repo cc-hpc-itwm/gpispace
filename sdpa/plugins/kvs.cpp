@@ -16,6 +16,7 @@ public:
     , m_ping_interval (10)
     , m_ping_failed (0)
     , m_max_ping_failed (3)
+    , m_kvs_timeout (120)
     , m_terminate_on_connection_failure (true)
   {}
 
@@ -32,16 +33,18 @@ public:
       fhg_kernel ()->get<fhg::util::bool_t> ( "terminate"
                                             , m_terminate_on_connection_failure
                                             );
+    m_kvs_timeout = fhg_kernel ()->get<unsigned int> ("timeout", m_kvs_timeout);
 
     MLOG( INFO
         , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
         );
 
-    fhg::com::kvs::global::get_kvs_info().init( m_host
-                                              , m_port
-                                              , boost::posix_time::seconds(120)
-                                              , 1
-                                              );
+    fhg::com::kvs::global::get_kvs_info().init
+      ( m_host
+      , m_port
+      , boost::posix_time::seconds (m_kvs_timeout)
+      , 1
+      );
 
     async_start();
 
@@ -165,6 +168,7 @@ private:
   unsigned int m_ping_interval;
   unsigned int m_ping_failed;
   unsigned int m_max_ping_failed;
+  unsigned int m_kvs_timeout;
   bool         m_terminate_on_connection_failure;
 };
 
