@@ -402,7 +402,7 @@ int NTrace_in_oid(int oid,const MigrationJob &Job)
 {
   float dOffVol=Job.dOffVol,dOffDat=Job.d_offset;
   float Off0Vol=Job.Off0Vol,Off0Dat=Job.first_offset;
-  int   NOffVol=Job.NOffVol,NOffDat=Job.n_offset;
+  int                       NOffDat=Job.n_offset;
 
   float OffVol,OffDat;
 
