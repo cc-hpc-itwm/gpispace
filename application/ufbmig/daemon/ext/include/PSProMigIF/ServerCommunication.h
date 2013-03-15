@@ -19,7 +19,7 @@
 namespace PSProMigIF
 {
   class ServerCommunication;
-  class Message;
+  struct Message;
 
   /*! @brief Helper class for generating derived classes of class ServerCommunication
    *  Every derived class from ServerCommunication has to derive this object, too.
