@@ -280,7 +280,7 @@ void MyFixture::run_client_subscriber()
 		LOG( DEBUG, "//JOB #"<<k<<"//");
 
 
-		int exit_code = subscribe_and_wait( job_id_user, ptrCli );
+		subscribe_and_wait( job_id_user, ptrCli );
 
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
