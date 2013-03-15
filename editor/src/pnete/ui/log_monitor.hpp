@@ -12,7 +12,12 @@
 
 class QCheckBox;
 class QComboBox;
-class QTableWidget;
+class QTableView;
+
+namespace detail
+{
+  class log_table_model;
+}
 
 class log_monitor : public QWidget
 {
@@ -43,7 +48,9 @@ private:
 
   QCheckBox* m_drop_filtered;
   QComboBox* m_level_filter_selector;
-  QTableWidget* m_log_table;
+  QTableView* m_log_table;
+
+  detail::log_table_model* _log_model;
 };
 
 #endif
