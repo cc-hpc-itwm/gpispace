@@ -510,7 +510,8 @@ int getfile_offset(int _oid, int _pid,int _bid,int _tid,const MigrationJob &_Job
 
    if(dOffVol<=dOffDat)
    {
-     int imin ((OffVol-Off0Dat)/dOffDat);
+     //! \note UNSAFE conversion from float to int
+     int imin (static_cast<int>((OffVol-Off0Dat)/dOffDat));
      if(imin<-.5)
        std::cout<<"get_file_offset: ERROR !!!"<<std::endl;
 
