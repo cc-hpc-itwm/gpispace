@@ -1,7 +1,17 @@
 #!/bin/bash
-if [ -z "$1" ]; then
-  echo "usage: $0 MAJOR.MINOR.PATCH[-EXTRA]"
+
+if [ -z "$1" -o "$1" = "-h" ]; then
+  echo >&2 "usage: $0 MAJOR.MINOR.PATCH[-EXTRA]"
+  echo >&2 "    -h: help"
+  echo >&2 "    -n: dry-run"
   exit 1
+fi
+
+dry_run=false
+
+if [ "$1" = "-n" ]; then
+    dry_run=true
+    shift
 fi
 
 cd $(dirname $(which "$0"))
@@ -72,6 +82,7 @@ fi
 
 echo "current: $cur_version"
 echo "new:     $version"
+
 read -n 1 -p "Do you want to accept this? [y/N] "
 case "$REPLY" in
     y|Y)
@@ -85,9 +96,18 @@ case "$REPLY" in
 esac
 
 echo "bumping version number..."
+
 sed -e "s/\@V_MAJOR\@/$major/" \
     -e "s/\@V_MINOR\@/$minor/" \
     -e "s/\@V_PATCH\@/$patch/" \
     -e "s/\@V_EXTRA\@/$extra/" \
-    version.cmake.in > version.cmake
-git commit version.cmake -m "bumped version to: '$version'"
+    version.cmake.in > version.cmake.new
+
+if $dry_run ; then
+    echo >&2 "would commit new version.cmake:"
+    cat version.cmake.new
+    rm -f version.cmake.new
+else
+    mv version.cmake.new version.cmake
+    git commit version.cmake -m "bumped version to: '$version'"
+fi
