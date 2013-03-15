@@ -45,10 +45,7 @@ namespace xml
 #include <xml/parse/id/helper.lst>
 #undef ITEM
 #undef COLON
-        { }
-
-      private:
-        bool _dummy_to_use_macro_in_initializer_list;
+        {}
 
       public:
 
