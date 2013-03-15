@@ -14,6 +14,7 @@ usage: $(basename $0) [options]
   -m: amount of gpi memory to use
   -M: disable use of the memory layer
   -s: default amount of shared memory to use (=0)
+  -d: do not delete logfiles
   -c: ignored (accepted for backward compatibility)
   -C: capability specification
 
@@ -145,6 +146,7 @@ nodefile="$PBS_NODEFILE"
 state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
 gpi_enabled=true
+delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
 
 # guess memory sizes
@@ -160,7 +162,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:c:C:F:p:MA:" opt; do
+while getopts ":hnf:S:m:s:c:C:F:p:MA:d" opt; do
     case $opt in
         h)
             usage
@@ -213,6 +215,10 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:" opt; do
                 app_path="$OPTARG"
             fi
             shiftcount=$(( shiftcount + 2 ))
+            ;;
+        d)
+            delete_logfiles=false
+            shiftcount=$((shiftcount + 1))
             ;;
         \?)
             echo >&2 "invalid option: $OPTARG"
@@ -279,6 +285,10 @@ info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
 dry_run rexec $master /usr/bin/env SDPA_APP_PATH="${app_path}" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
+
+if $delete_logfiles ; then
+    find "${state_dir}/log" -type f -delete
+fi
 
 if $gpi_enabled ; then
     # compute memory sizes
