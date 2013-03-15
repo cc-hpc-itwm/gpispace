@@ -190,7 +190,9 @@ namespace detail
 
     void clear()
     {
+      beginResetModel();
       _data.clear();
+      endResetModel();
     }
 
     void add (const fhg::log::LogEvent& event)
