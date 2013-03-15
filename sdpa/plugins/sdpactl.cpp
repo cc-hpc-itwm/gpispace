@@ -220,7 +220,7 @@ namespace helper
     else
     {
       int status;
-      pid_t ec = waitpid(child, &status, 0);
+      waitpid(child, &status, 0);
 
       if (WIFEXITED(status))
       {
