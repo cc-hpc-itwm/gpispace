@@ -50,8 +50,6 @@ void Receiver::clear(){
 }
 /** Return a pointer to the last recorded Signal */
 RecSig* Receiver::GetSig(){
-  RecSig* pTmp = pSignal;
-
   return &Signals[g_MAXSIG-1];
 }
 

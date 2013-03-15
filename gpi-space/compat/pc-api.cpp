@@ -283,8 +283,7 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 // wait on communication between fvm and pc
 fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 {
-  gpi::pc::type::size_t num_finished
-    (gpi_api().wait (static_cast<gpi::pc::type::queue_id_t>(handle)));
+  gpi_api().wait (static_cast<gpi::pc::type::queue_id_t>(handle));
   return COMM_HANDLE_OK;
 }
 

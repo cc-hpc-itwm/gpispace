@@ -289,7 +289,7 @@ void MyFixture::run_client_subscriber()
 		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
 
 
-		int exit_code = subscribe_and_wait( job_id_user, ptrCli );
+		subscribe_and_wait( job_id_user, ptrCli );
 		nTrials = 0;
 
 RETRY:
@@ -442,7 +442,7 @@ BOOST_AUTO_TEST_CASE( test2Subscribers_OrchNoWEWait)
 	sdpa::client::ClientApi::ptr_t ptrCli_1 = sdpa::client::ClientApi::create( config, "sdpac_1", "sdpac_1.apps.client.out" );
 	ptrCli_1->configure_network( config );
 
-	int rc = subscribe_and_wait(job_id_user, ptrCli_1 );
+	subscribe_and_wait(job_id_user, ptrCli_1 );
 
 	try {
 			LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);

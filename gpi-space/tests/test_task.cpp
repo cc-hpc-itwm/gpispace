@@ -74,7 +74,6 @@ BOOST_AUTO_TEST_CASE ( simple_task_cancel )
 BOOST_AUTO_TEST_CASE ( simple_task_failed )
 {
   using namespace gpi::pc::memory;
-  int executed (0);
   task_t task ("simple_task", task_erroneous);
 
   BOOST_CHECK_EQUAL (task.get_state(), task_state::pending);

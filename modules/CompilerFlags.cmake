@@ -28,8 +28,6 @@ set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-system-headers")
 
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unused-parameter")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unused-variable")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-deprecated")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-deprecated-declarations")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-pragmas")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
@@ -43,10 +41,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-write-strings")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-format")
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-
-#set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wfloat-equal")
-#set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wswitch-default")
-#set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wswitch-enum")
 
 if(NOT WIN32)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")

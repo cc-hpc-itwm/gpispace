@@ -443,7 +443,6 @@ bool MigTrace2SubVol(const MigrationJob &Job, TraceData &Trace,
    float* dTdy;
    posix_memalign((void**) &dTdy, 16, 2*Nz*sizeof(float));
 
-   float sqAper[Nz];
    float* Amp;
    posix_memalign((void**) &Amp, 16, 4*sizeof(float));
 
@@ -468,7 +467,6 @@ bool MigTrace2SubVol(const MigrationJob &Job, TraceData &Trace,
 
  	  const float zmin = sqrt(dxyCDP_sqr / sqAperAng);
  	  const int Nzmax = std::max(0, 4 * (std::min(Nz, (int)((fabs(SubVol.getz0()) - zmin) / dz))/4));
- 	  const float ztaper_width = taper_width / sqAperAng;
 
  	  Taper CDPtaper;
 

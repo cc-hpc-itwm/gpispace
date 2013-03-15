@@ -39,8 +39,6 @@ void tcp_server::start ( const std::string & host
                        , const bool reuse_addr
                        )
 {
-  const bool prefer_ipv6 = false;
-
   acceptor_.close ();
 
   boost::system::error_code ec;

@@ -588,7 +588,6 @@ namespace gpi
         using namespace gpi::pc;
 
         url_t url (url_s);
-        gpi::pc::type::flags_t flags = F_PERSISTENT + F_GLOBAL;
 
         type::size_t comsize =
           boost::lexical_cast<type::size_t>(url.get ("buffer_size", "4194304"));

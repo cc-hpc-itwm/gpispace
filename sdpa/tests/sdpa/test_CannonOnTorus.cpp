@@ -349,7 +349,7 @@ void MyFixture::run_cannon_client()
         }
 
 
-        int exit_code = subscribe_and_wait( job_id_user, ptrCli );
+        subscribe_and_wait( job_id_user, ptrCli );
 
         try {
                 LOG( DEBUG, "User: delete the job "<<job_id_user);

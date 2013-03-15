@@ -33,7 +33,6 @@ namespace gpi
                           , const mode_t open_mode = 0
                           )
         {
-          int err (0);
           int fd (-1);
           void *ptr (0);
 

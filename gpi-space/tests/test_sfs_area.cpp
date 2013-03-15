@@ -116,7 +116,6 @@ BOOST_AUTO_TEST_CASE (old_segment_version)
   gpi::tests::dummy_topology topology;
 
   const gpi::pc::type::size_t size = 4096;
-  const char *text = "hello world!\n";
 
   {
     sfs_area_t area ( 0
@@ -159,7 +158,6 @@ BOOST_AUTO_TEST_CASE (too_new_segment_version)
   gpi::tests::dummy_topology topology;
 
   const gpi::pc::type::size_t size = 4096;
-  const char *text = "hello world!\n";
 
   {
     sfs_area_t area ( 0
@@ -201,7 +199,6 @@ BOOST_AUTO_TEST_CASE (garbage_segment_version)
   gpi::tests::dummy_topology topology;
 
   const gpi::pc::type::size_t size = 4096;
-  const char *text = "hello world!\n";
 
   {
     sfs_area_t area ( 0
@@ -303,7 +300,6 @@ BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
   gpi::tests::dummy_topology topology;
 
   const gpi::pc::type::size_t size = (1L << 35); // 32 GB
-  const char *text = "hello world!\n";
 
   try
   {
@@ -335,7 +331,6 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
   gpi::tests::dummy_topology topology;
 
   const gpi::pc::type::size_t size = (1L << 40); // 1 TB
-  const char *text = "hello world!\n";
 
   try
   {
@@ -367,7 +362,6 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
   gpi::tests::dummy_topology topology;
 
   const gpi::pc::type::size_t size = (1L << 40); // 1 TB
-  const char *text = "hello world!\n";
 
   try
   {
@@ -451,7 +445,6 @@ BOOST_AUTO_TEST_CASE (test_already_open)
   gpi::tests::dummy_topology topology;
 
   const gpi::pc::type::size_t size = (1L << 20); // 1 MB
-  const char *text = "hello world!\n";
 
   try
   {

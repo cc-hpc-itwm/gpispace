@@ -194,11 +194,9 @@ void *LoadFromDisk_CO_ST(void *_param)
   const int 	       oid = thread_param->oid;;
   const int 	       pid = thread_param->pid;;
   const int 	       bid = thread_param->bid;;
-  const int 	      Nbip = thread_param->Nbip;;
   const int 	      Ntib = thread_param->Ntib;;
   const int 	      Ntid = thread_param->Ntid;
   const int 	      mtid = thread_param->mtid;
-  const int 	  n_offset = thread_param->Job->n_offset;
 
   // create a trace file handler
   int ierr=0;
@@ -404,7 +402,7 @@ int NTrace_in_oid(int oid,const MigrationJob &Job)
 {
   float dOffVol=Job.dOffVol,dOffDat=Job.d_offset;
   float Off0Vol=Job.Off0Vol,Off0Dat=Job.first_offset;
-  int   NOffVol=Job.NOffVol,NOffDat=Job.n_offset;
+  int                       NOffDat=Job.n_offset;
 
   float OffVol,OffDat;
 
@@ -500,7 +498,7 @@ int getfile_offset(int _oid, int _pid,int _bid,int _tid,const MigrationJob &_Job
    // Compute the offset_id in the seismic data
    const float &dOffVol=_Job.dOffVol,&dOffDat=_Job.d_offset;
    const float &Off0Vol=_Job.Off0Vol,&Off0Dat=_Job.first_offset;
-   const int   &NOffVol=_Job.NOffVol,&NOffDat=_Job.n_offset;
+   const int                         &NOffDat=_Job.n_offset;
 
    float OffVol,OffDat;
 

@@ -432,8 +432,7 @@ fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 
   try
   {
-    gpi::pc::type::size_t num_finished
-      (gpi_compat->api->wait(static_cast<gpi::pc::type::queue_id_t>(handle)));
+    gpi_compat->api->wait(static_cast<gpi::pc::type::queue_id_t>(handle));
     return COMM_HANDLE_OK;
   }
   catch (std::exception const &ex)

@@ -92,8 +92,7 @@ namespace daemon
 				return;
 			}
 
-			int k=0;
-			m_bStarted = true;
+                        m_bStarted = true;
 			while(!m_bStopRequested)
 			{
 				try
@@ -128,7 +127,6 @@ namespace daemon
 				return;
 			}
 
-			int k=0;
 			m_bStarted = true;
 			bfs::path tmpBakFile = m_backupFile.string()+".tmp";
 			while(!m_bStopRequested)
