@@ -467,7 +467,6 @@ bool MigTrace2SubVol(const MigrationJob &Job, TraceData &Trace,
 
  	  const float zmin = sqrt(dxyCDP_sqr / sqAperAng);
  	  const int Nzmax = std::max(0, 4 * (std::min(Nz, (int)((fabs(SubVol.getz0()) - zmin) / dz))/4));
- 	  const float ztaper_width = taper_width / sqAperAng;
 
  	  Taper CDPtaper;
 
