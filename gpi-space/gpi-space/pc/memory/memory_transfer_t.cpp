@@ -6,13 +6,13 @@ namespace gpi
   {
     namespace memory
     {
-      static const char *status_name[] =
-      {
-        "PENDING"
-      , "RUNNING"
-      , "FAILED"
-      , "FINISHED"
-      };
+      // static const char *status_name[] =
+      // {
+      //   "PENDING"
+      // , "RUNNING"
+      // , "FAILED"
+      // , "FINISHED"
+      // };
 
       std::ostream & operator << (std::ostream &os, const memory_transfer_t &mt)
       {
