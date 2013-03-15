@@ -146,6 +146,21 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMENT "putting tokens into atomic workflow: ${command}"
                    APPEND
 )
+
+set(command ${PNETPUT_LOCATION}
+       --if  "${ATOMIC_PNET_LOCATION}"
+       -p n_A=10L
+       -p n_B=10L
+       -p shared_file=\\"atomic_wfe_plugin_test.txt\\"
+       --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic_wfe_plugin_test.pnet"
+   )
+
+add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
+                   COMMAND ${command}
+                   COMMENT "putting tokens into atomic workflow: ${command}"
+                   APPEND
+)
+
 add_dependencies(pnet-atomic-test-wf pnetput)
 ################################################################################################
 pnet_compile(inotify-test-wf ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml

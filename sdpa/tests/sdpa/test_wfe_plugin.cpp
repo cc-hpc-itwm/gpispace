@@ -47,11 +47,13 @@ static int s_load_unload_test ()
     BOOST_REQUIRE (wfe);
 
     std::stringstream jobdesc;
-    std::ifstream ifs (TESTS_WORKFLOWS_PATH "/atomic.pnet");
+    std::ifstream ifs (TESTS_WORKFLOWS_PATH "/atomic_wfe_plugin_test.pnet");
     ifs >> std::noskipws >> jobdesc.rdbuf ();
 
     std::string result;
     std::string error_message;
+
+    unlink ("atomic_wfe_plugin_test.txt");
 
     rc = wfe->execute ("test_job"
                       , jobdesc.str ()
@@ -59,6 +61,19 @@ static int s_load_unload_test ()
                       , result
                       , error_message
                       );
+
+    {
+      std::size_t counter_value;
+      std::ifstream ifs ("atomic_wfe_plugin_test.txt");
+
+      BOOST_REQUIRE (ifs.good ());
+
+      ifs >> counter_value;
+
+      BOOST_CHECK_EQUAL (counter_value, 20);
+    }
+
+    unlink ("atomic_wfe_plugin_test.txt");
 
     kernel->unload_all ();
 

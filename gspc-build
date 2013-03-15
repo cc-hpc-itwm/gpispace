@@ -16,7 +16,7 @@ module load soft/graphviz/2.26.3
 basedir=""
 branch="develop"
 ssh_key="$HOME/.ssh/id_rsa"
-url="/p/hpc/sdpa/repo/sdpa.git"
+url="git@gitlab.hpc.devnet.itwm.fhg.de:gpispace.git"
 jobs=2
 execute_tests=true
 fresh=false
@@ -121,7 +121,7 @@ fi
 make -j "${jobs}" install || { echo >&2 "FAILED: could not INSTALL" ; exit 13; }
 
 if $execute_tests ; then
-  ctest --timeout "${test_timeout}" || { echo >&2 "WARN: could not TEST" ; }
+  ctest -j "${jobs}" --timeout "${test_timeout}" || { echo >&2 "WARN: could not TEST" ; }
 fi
 
 if $create_package ; then

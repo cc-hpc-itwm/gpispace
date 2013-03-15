@@ -33,6 +33,7 @@ static std::set<layer_id_type> layer_jobs;
 static boost::recursive_mutex mutex;
 typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 static bool verbose (false);
+static std::string encoded_result;
 
 // observe workflow engine
 static
@@ -60,6 +61,7 @@ void observe_finished (const layer_t *l, layer_id_type const & id, std::string c
       layer_jobs.erase (id);
       we::mgmt::type::activity_t act (s);
       std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
+      encoded_result = s;
     }
   }
 
@@ -77,6 +79,7 @@ void observe_failed (const layer_t *l, layer_id_type const & id, std::string con
       layer_jobs.erase (id);
       we::mgmt::type::activity_t act (s);
       std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
+      encoded_result = s;
     }
   }
 
@@ -94,6 +97,7 @@ void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string 
       layer_jobs.erase (id);
       we::mgmt::type::activity_t act (s);
       std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
+      encoded_result = s;
     }
   }
 
@@ -120,7 +124,7 @@ try
   std::string mod_path;
   std::vector<std::string> mods_to_load;
   std::size_t num_worker (8);
-  std::string output ("-");
+  std::string output;
   bool show_dots (false);
 
   desc.add_options()
@@ -135,7 +139,7 @@ try
     )
     ("worker", po::value<std::size_t>(&num_worker)->default_value(num_worker), "number of workers")
     ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
-    ("output,o", po::value<std::string>(&output)->default_value(output), "output stream (ignored)")
+    ("output,o", po::value<std::string>(&output)->default_value(output), "where to write the result pnet to")
     ("show-dots,d", po::value<bool>(&show_dots)->default_value(show_dots), "show dots while waiting for progress")
     ;
 
@@ -223,6 +227,19 @@ try
   std::cerr << "Everything done." << std::endl;
 
   FHG_UTIL_STAT_OUT (std::cerr);
+
+  if (output.size ())
+  {
+    if (output == "=")
+    {
+      std::cout << encoded_result;
+    }
+    else
+    {
+      std::ofstream ofs (output.c_str ());
+      ofs << encoded_result;
+    }
+  }
 
   return ((jobs.size() == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 }
