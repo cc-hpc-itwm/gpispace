@@ -17,12 +17,6 @@ namespace fhg
     {
       using namespace ::boost;
 
-      template<typename T>
-        std::ostream& operator<< (std::ostream& s, const optional<T>& o)
-      {
-        return s << (o ? ("Just " + fhg::util::show (*o)) : "Nothing");
-      }
-
       template<typename T, typename U>
         boost::optional<U> fmap (U (*f)(const T &), const optional<T>& m)
       {
@@ -45,6 +39,15 @@ namespace fhg
         }
       }
     }
+  }
+}
+
+namespace boost
+{
+  template<typename T>
+  std::ostream& operator<< (std::ostream& s, const boost::optional<T>& x)
+  {
+    return x ? (s << "Just " << *x) : (s << "Nothing");
   }
 }
 
