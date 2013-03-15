@@ -33,7 +33,7 @@ const std::string &LogLevel::str() const
     , "ERROR"
     , "FATAL"
   };
-  assert(lvl_ >= 0 && lvl_ < static_cast<int>(sizeof(LevelToStringMap_)));
+  assert(lvl_ >= 0 && lvl_ < 6);
   return LevelToStringMap_[lvl_];
 }
 
