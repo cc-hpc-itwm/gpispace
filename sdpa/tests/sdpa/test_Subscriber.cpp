@@ -289,7 +289,7 @@ void MyFixture::run_client_subscriber()
 		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
 
 
-		int exit_code = subscribe_and_wait( job_id_user, ptrCli );
+		subscribe_and_wait( job_id_user, ptrCli );
 		nTrials = 0;
 
 RETRY:
