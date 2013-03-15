@@ -26,7 +26,6 @@ class log_monitor : public QWidget
 public:
   explicit log_monitor (unsigned short port, QWidget* parent = NULL);
   ~log_monitor();
-  void append_log (const fhg::log::LogEvent &);
 
 public slots:
   void clearLogging();

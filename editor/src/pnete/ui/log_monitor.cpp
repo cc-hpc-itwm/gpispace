@@ -335,30 +335,6 @@ log_monitor::~log_monitor()
   m_io_thread.join();
 }
 
-void log_monitor::append_log (fhg::log::LogEvent const &evt)
-{
-  if ( evt.severity() < m_level_filter_selector->currentIndex ()
-     && m_drop_filtered->isChecked()
-     )
-  {
-    return;
-  }
-
-  // TODO:
-  //    respect filtering etc.
-  //    maximum number of events (circular buffer like)
-
-  _log_model->add (evt);
-  m_log_events.push_back (evt);
-
-  // int row(0);
-
-  // if (evt.severity() < m_level_filter_selector->currentIndex())
-  //   m_log_table->setRowHidden (row, true);
-  // else
-  //   m_log_table->setRowHidden (row, false);
-}
-
 namespace
 {
   class fhglog_event : public QEvent
@@ -383,7 +359,21 @@ bool log_monitor::event (QEvent* event)
   if (event->type() == QEvent::User)
   {
     event->accept();
-    append_log (static_cast<fhglog_event*> (event)->log_event);
+
+    const fhg::log::LogEvent& evt (static_cast<fhglog_event*> (event)->log_event);
+
+    if ( !( evt.severity() < m_level_filter_selector->currentIndex()
+          && m_drop_filtered->isChecked()
+          )
+       )
+    {
+      // TODO:
+      //    maximum number of events (circular buffer like)
+
+      _log_model->add (evt);
+      m_log_events.push_back (evt);
+    }
+
     return true;
   }
 
