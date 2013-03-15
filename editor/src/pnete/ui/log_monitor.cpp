@@ -260,7 +260,6 @@ void log_monitor::append_log (fhg::log::LogEvent const &evt)
   int row (m_log_table->rowCount ());
   m_log_table->setRowCount (row+1);
 
-  QColor bg(severityToColor(evt.severity()));
   QBrush fg(severityToColor(evt.severity()));
 
   {
