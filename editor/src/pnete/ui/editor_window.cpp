@@ -555,9 +555,9 @@ namespace fhg
           (tr ("save"), this, SLOT (save_file()), QKeySequence::Save);
         _action_save_current_file->setEnabled (false);
 
-        QAction* close_action = file_menu->addAction
+        file_menu->addAction
           (tr ("close_document"), this, SLOT (close_document()));
-        QAction* quit_action = file_menu->addAction
+        file_menu->addAction
           (tr ("quit_application"), this, SLOT (quit()), QKeySequence::Quit);
 
         file_tool_bar->addAction (action_new_expression);
