@@ -198,6 +198,15 @@ namespace detail
 
     void add (const fhg::log::LogEvent& event)
     {
+      //! \todo Configurable limit.
+      static const int limit (10000);
+      if (rowCount() > limit)
+      {
+        beginRemoveRows (QModelIndex(), 0, 0);
+        _data.pop_front();
+        endRemoveRows();
+      }
+
       beginInsertRows (QModelIndex(), rowCount() - 1, rowCount() - 1);
       _data.push_back (formatted_log_event (event));
       endInsertRows();
