@@ -443,7 +443,6 @@ bool MigTrace2SubVol(const MigrationJob &Job, TraceData &Trace,
    float* dTdy;
    posix_memalign((void**) &dTdy, 16, 2*Nz*sizeof(float));
 
-   float sqAper[Nz];
    float* Amp;
    posix_memalign((void**) &Amp, 16, 4*sizeof(float));
 
