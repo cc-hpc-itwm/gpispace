@@ -10,15 +10,28 @@ class KeyValueStorePlugin : FHG_PLUGIN
                           , public kvs::KeyValueStore
 {
 public:
+  KeyValueStorePlugin ()
+    : m_host ("localhost")
+    , m_port ("2439")
+    , m_ping_interval (10)
+    , m_ping_failed (0)
+    , m_max_ping_failed (3)
+    , m_terminate_on_connection_failure (true)
+  {}
+
   FHG_PLUGIN_START()
   {
-    m_host = fhg_kernel()->get("host", "localhost");
-    m_port = fhg_kernel()->get("port", "2439");
-    m_max_ping_failed = fhg_kernel ()->get ("max_ping_failed", 3);
+    m_host = fhg_kernel()->get("host", m_host);
+    m_port = fhg_kernel()->get("port", m_port);
+    m_max_ping_failed = fhg_kernel ()->get ( "max_ping_failed"
+                                           , m_max_ping_failed
+                                           );
     m_ping_interval =
-      fhg_kernel ()->get<unsigned int> ("ping", 10);
+      fhg_kernel ()->get<unsigned int> ("ping", m_ping_interval);
     m_terminate_on_connection_failure =
-      fhg_kernel ()->get<fhg::util::bool_t> ("terminate", "true");
+      fhg_kernel ()->get<fhg::util::bool_t> ( "terminate"
+                                            , m_terminate_on_connection_failure
+                                            );
 
     MLOG( INFO
         , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
