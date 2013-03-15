@@ -17,6 +17,7 @@ class QTableView;
 namespace detail
 {
   class log_table_model;
+  class log_filter_proxy;
 }
 
 class log_monitor : public QWidget
@@ -50,6 +51,7 @@ private:
   QTableView* m_log_table;
 
   detail::log_table_model* _log_model;
+  detail::log_filter_proxy* _log_filter;
 };
 
 #endif

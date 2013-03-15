@@ -28,6 +28,7 @@
 #include <QGroupBox>
 #include <QDial>
 #include <QPushButton>
+#include <QSortFilterProxyModel>
 #include <QSlider>
 #include <QSplitter>
 #include <QCheckBox>
@@ -224,7 +225,33 @@ namespace detail
 
     QList<formatted_log_event> _data;
   };
+
+  class log_filter_proxy : public QSortFilterProxyModel
+  {
+  public:
+     log_filter_proxy (QObject* parent = NULL)
+       : QSortFilterProxyModel (parent)
+    { }
+
+    void minimum_severity (int minimum_severity_)
+    {
+      _minimum_severity = minimum_severity_;
+      invalidateFilter();
+    }
+
+  protected:
+    virtual bool filterAcceptsRow (int row, const QModelIndex& parent) const
+    {
+      return sourceModel()->data
+        (sourceModel()->index (row, 0, parent), Qt::UserRole).toInt()
+        >= _minimum_severity;
+    }
+
+ private:
+    int _minimum_severity;
+ };
 }
+
 
 log_monitor::log_monitor (unsigned short port, QWidget* parent)
   : QWidget (parent)
@@ -237,14 +264,18 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   , m_level_filter_selector (new QComboBox (this))
   , m_log_table (new QTableView (this))
   , _log_model (new detail::log_table_model (this))
+  , _log_filter (new detail::log_filter_proxy (this))
 {
+  _log_filter->setDynamicSortFilter (true);
+  _log_filter->setSourceModel (_log_model);
+  m_log_table->setModel (_log_filter);
+
   m_log_table->setAlternatingRowColors (false);
   m_log_table->setHorizontalScrollMode (QAbstractItemView::ScrollPerPixel);
   m_log_table->setSelectionMode (QAbstractItemView::NoSelection);
   m_log_table->setShowGrid (false);
   m_log_table->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
   m_log_table->setWordWrap (false);
-  m_log_table->setModel (_log_model);
   m_log_table->verticalHeader()->setVisible (false);
   m_log_table->horizontalHeader()->setStretchLastSection (true);
 
@@ -266,10 +297,6 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
                                        << tr ("Fatal")
                                        );
 
-  log_filter_dial->setValue (2);
-  log_filter_dial->setSliderPosition (2);
-  m_level_filter_selector->setCurrentIndex (2);
-
   connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
           , this, SLOT (levelFilterChanged(int))
           );
@@ -280,6 +307,8 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
           , log_filter_dial, SLOT (setValue(int))
           );
+
+  m_level_filter_selector->setCurrentIndex (2);
 
   m_drop_filtered->setCheckState (Qt::Checked);
   m_drop_filtered->setToolTip
@@ -407,11 +436,7 @@ void log_monitor::toggleFollowLogging (bool follow)
 
 void log_monitor::levelFilterChanged (int lvl)
 {
-  for (size_t i = 0; i < m_log_events.size (); ++i)
-    if (m_log_events[i].severity() < m_level_filter_selector->currentIndex())
-      m_log_table->setRowHidden (i, true);
-    else
-      m_log_table->setRowHidden (i, false);
+  _log_filter->minimum_severity (lvl);
 }
 
 void log_monitor::save ()
