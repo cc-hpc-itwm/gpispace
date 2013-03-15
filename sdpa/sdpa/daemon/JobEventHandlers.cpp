@@ -120,7 +120,7 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
   Worker::worker_id_t worker_id = pEvt->from();
 
   try {
-    Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+    jobManager()->findJob(pEvt->job_id());
     // delete it from the map when you receive a CancelJobAckEvent!
     jobManager()->deleteJob(pEvt->job_id());
   }
@@ -162,7 +162,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
   try {
     SDPA_LOG_INFO("Got acknowledgment for the finished job " << pEvt->job_id() << "!");
 
-    Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+    jobManager()->findJob(pEvt->job_id());
 
     SDPA_LOG_INFO("Delete the job " << pEvt->job_id() << " from the JobManager!");
     // delete it from the map when you receive a JobFinishedAckEvent!
@@ -202,7 +202,7 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
   Worker::worker_id_t worker_id = pEvt->from();
 
   try {
-    Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+    jobManager()->findJob(pEvt->job_id());
     // delete it from the map when you receive a JobFailedAckEvent!
     jobManager()->deleteJob(pEvt->job_id());
   }
