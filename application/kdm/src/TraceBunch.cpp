@@ -498,7 +498,7 @@ int getfile_offset(int _oid, int _pid,int _bid,int _tid,const MigrationJob &_Job
    // Compute the offset_id in the seismic data
    const float &dOffVol=_Job.dOffVol,&dOffDat=_Job.d_offset;
    const float &Off0Vol=_Job.Off0Vol,&Off0Dat=_Job.first_offset;
-   const int   &NOffVol=_Job.NOffVol,&NOffDat=_Job.n_offset;
+   const int                         &NOffDat=_Job.n_offset;
 
    float OffVol,OffDat;
 
