@@ -130,9 +130,10 @@ namespace fhg
 
       QSize graph_view::sizeHint() const
       {
-        return QSize ( util::phi::ratio::smaller (window()->width())
-                     , window()->height()
-                     );
+        return QSize
+          ( static_cast<int>(util::phi::ratio::smaller (window()->width()))
+          , window()->height()
+          );
       }
 
       graph::scene_type* graph_view::scene() const

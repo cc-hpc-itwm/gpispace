@@ -144,8 +144,8 @@ namespace fhg
                               ( content_pos() - QPointF (d, d)
                               , content_size() + QSizeF (2 * d, 2 * d)
                               )
-                            , 2 * d
-                            , 2 * d
+                            , static_cast<int>(2 * d)
+                            , static_cast<int>(2 * d)
                             );
 
           return path;
