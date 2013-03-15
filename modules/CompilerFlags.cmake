@@ -28,8 +28,6 @@ set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-system-headers")
 
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unused-parameter")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unused-variable")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-deprecated")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-deprecated-declarations")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-pragmas")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
