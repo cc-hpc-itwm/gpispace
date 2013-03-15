@@ -141,8 +141,12 @@ BOOST_AUTO_TEST_CASE (thread_queue_remove_if)
 
   std::size_t num_removed = items.remove_if (is_even);
 
-  BOOST_REQUIRE_EQUAL (num_removed, NUM_ITEMS_TO_PUT / 2);
-  BOOST_REQUIRE_EQUAL (items.size (), NUM_ITEMS_TO_PUT / 2);
+  BOOST_REQUIRE_EQUAL ( num_removed
+                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT / 2)
+                      );
+  BOOST_REQUIRE_EQUAL ( items.size ()
+                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT / 2)
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (thread_queue_erase)
@@ -152,13 +156,18 @@ BOOST_AUTO_TEST_CASE (thread_queue_erase)
   items_t items;
   fill_items (items, NUM_ITEMS_TO_PUT);
 
-  BOOST_REQUIRE_EQUAL (items.size (), NUM_ITEMS_TO_PUT);
+  BOOST_REQUIRE_EQUAL ( items.size ()
+                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT)
+                      );
 
   for (int i = 0 ; i < NUM_ITEMS_TO_PUT ; i++)
   {
     size_t num_erased = items.erase (i);
     BOOST_REQUIRE_EQUAL (num_erased, 1);
-    BOOST_REQUIRE_EQUAL (items.size (), NUM_ITEMS_TO_PUT - i - 1);
+    BOOST_REQUIRE_EQUAL
+      ( items.size ()
+      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT - i - 1)
+      );
   }
 }
 
@@ -170,7 +179,9 @@ BOOST_AUTO_TEST_CASE (thread_queue_clear)
 
   fill_items (items, NUM_ITEMS_TO_PUT);
 
-  BOOST_REQUIRE_EQUAL (items.size (), NUM_ITEMS_TO_PUT);
+  BOOST_REQUIRE_EQUAL ( items.size ()
+                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT)
+                      );
 
   items.clear ();
 
