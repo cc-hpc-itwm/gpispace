@@ -47,7 +47,7 @@ static int s_load_unload_test ()
     BOOST_REQUIRE (wfe);
 
     std::stringstream jobdesc;
-    std::ifstream ifs (TESTS_WORKFLOWS_PATH "/atomic.pnet");
+    std::ifstream ifs (TESTS_WORKFLOWS_PATH "/atomic_wfe_plugin_test.pnet");
     ifs >> std::noskipws >> jobdesc.rdbuf ();
 
     std::string result;
