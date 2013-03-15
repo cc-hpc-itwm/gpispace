@@ -18,8 +18,8 @@ namespace PSProMigIF
   struct StartupInfo
   {
       StartupInfo() :
-        m_nConnectToTimeout(30), // default value
-            m_nWaitForConnectionTimeout(30)
+        m_nWaitForConnectionTimeout(30) ,
+        m_nConnectToTimeout(30) // default value
       {
         sprintf(m_sHostname, "%s", localhost().c_str());
         sprintf(m_sSSHHostname, "%s", localhost().c_str());
@@ -124,6 +124,9 @@ namespace PSProMigIF
       {
         return std::string("Not Running");
       }
+    case ServerState_StartedButNotUnderControl:
+      // just ignore that state, is this the correct behavior?
+      ;
     }
 
     return std::string("Unknown Server State");
