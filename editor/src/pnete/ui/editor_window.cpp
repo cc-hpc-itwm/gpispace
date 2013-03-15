@@ -1015,7 +1015,6 @@ namespace fhg
         we::mgmt::type::activity_t activity
           (prepare_activity (_accessed_widgets, temporary_path));
 
-        bool ok;
         const QString input_filename
           (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));
         if (input_filename.isEmpty())
