@@ -446,7 +446,6 @@ bool TravTimeTab::Init(const MigrationJob &Job,
     GSrc.GetCoord(nxSrc, nySrc, sx, sy);
     GSrc.GetCoord(nxRcv, nyRcv, gx, gy);
 
-    const int NxVol = GVol.getNx();
     const int NyVol = GVol.getNy();
     const int NzVol = GVol.getNz();
 
