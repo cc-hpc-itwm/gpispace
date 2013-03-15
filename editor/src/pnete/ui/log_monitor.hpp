@@ -37,7 +37,6 @@ private:
   boost::asio::io_service m_io_service;
   fhg::log::remote::LogServer m_log_server;
   boost::thread m_io_thread;
-  bool m_follow_logging;
   std::vector<fhg::log::LogEvent> m_log_events;
 
   QString m_logfile;

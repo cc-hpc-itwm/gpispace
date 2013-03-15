@@ -33,6 +33,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QTableWidget>
+#include <QTimer>
 #include <QString>
 #include <QVBoxLayout>
 
@@ -85,7 +86,6 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
                  , port
                  )
   , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
-  , m_follow_logging (true)
   , m_drop_filtered (new QCheckBox (tr ("drop filtered"), this))
   , m_level_filter_selector (new QComboBox (this))
   , m_log_table (new QTableWidget (this))
@@ -161,7 +161,6 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   connect (clear_log_button, SIGNAL (clicked()), this, SLOT (clearLogging()));
 
   QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), this));
-  follow_logging_cb->setChecked (true);
   follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
                                        "automatically scroll the view, drop "
                                        "events otherwise"
@@ -170,6 +169,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   connect ( follow_logging_cb, SIGNAL (toggled (bool))
           , this, SLOT (toggleFollowLogging (bool))
           );
+  follow_logging_cb->setChecked (true);
 
 
   QVBoxLayout* log_filter_layout (new QVBoxLayout (log_filter_box));
@@ -297,8 +297,6 @@ void log_monitor::append_log (fhg::log::LogEvent const &evt)
     i->setForeground (fg);
     m_log_table->setItem (row, TABLE_COL_MESSAGE, i);
   }
-  if (m_follow_logging)
-    m_log_table->scrollToBottom ();
   m_log_table->resizeRowToContents (row);
 
   if (evt.severity() < m_level_filter_selector->currentIndex())
@@ -347,7 +345,21 @@ void log_monitor::clearLogging ()
 
 void log_monitor::toggleFollowLogging (bool follow)
 {
-  m_follow_logging = follow;
+  if (!follow)
+  {
+    return;
+  }
+
+  m_log_table->scrollToBottom();
+
+  QTimer* log_follower (new QTimer (this));
+
+  connect (log_follower, SIGNAL (timeout()), m_log_table, SLOT (scrollToBottom()));
+  connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (stop()));
+  connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (deleteLater()));
+
+  static const int refresh_rate (200 /*ms*/);
+  log_follower->start (refresh_rate);
 }
 
 void log_monitor::levelFilterChanged (int lvl)
