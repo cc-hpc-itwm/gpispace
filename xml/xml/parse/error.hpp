@@ -15,6 +15,7 @@
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/backtracing_exception.hpp>
+#include <fhg/util/boost/optional.hpp>
 
 #include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
 
@@ -1037,8 +1038,10 @@ namespace xml
             << "type error: connect-" << direction
             << " place " << place.name()
             << " of type " << place.type()
+            << " (the signature is " << place.signature() << ")"
             << " with port " << port.name()
             << " of type " << port.type()
+            << " (the signature is " << port.signature() << ")"
             ;
 
           return s.str();
