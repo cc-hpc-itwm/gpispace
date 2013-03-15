@@ -197,7 +197,6 @@ void *LoadFromDisk_CO_ST(void *_param)
   const int 	      Ntib = thread_param->Ntib;;
   const int 	      Ntid = thread_param->Ntid;
   const int 	      mtid = thread_param->mtid;
-  const int 	  n_offset = thread_param->Job->n_offset;
 
   // create a trace file handler
   int ierr=0;
