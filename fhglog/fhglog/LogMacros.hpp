@@ -91,7 +91,8 @@ namespace fhg { namespace log {
     }
 
 #  define FHGLOG_SETUP(args...)                                         \
-    fhg::log::detail::flush_at_end_of_scope_t fhglog_flush_at_end_of_scope;       \
+    fhg::log::detail::flush_at_end_of_scope_t fhglog_flush_at_end_of_scope; \
+    (void)(fhglog_flush_at_end_of_scope);                               \
     do                                                                  \
     {                                                                   \
       if (! #args[0])                                                   \
