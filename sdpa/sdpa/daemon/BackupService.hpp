@@ -92,8 +92,7 @@ namespace daemon
 				return;
 			}
 
-			int k=0;
-			m_bStarted = true;
+                        m_bStarted = true;
 			while(!m_bStopRequested)
 			{
 				try
