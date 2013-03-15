@@ -1061,7 +1061,7 @@ void SchedulerImpl::removeRecoveryInconsistencies()
   for(JobQueue::iterator it = jobs_to_be_scheduled.begin(); it != jobs_to_be_scheduled.end(); it++ )
   {
     try {
-      const Job::ptr_t& pJob = ptr_comm_handler_->findJob(*it);
+      ptr_comm_handler_->findJob(*it);
     }
     catch(const JobNotFoundException& ex)
     {
