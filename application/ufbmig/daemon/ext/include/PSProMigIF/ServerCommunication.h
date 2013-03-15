@@ -30,6 +30,7 @@ namespace PSProMigIF
       /*! @brief Create object of class ServerCommunication
        */
       virtual ServerCommunication* create();
+      virtual ~ServerCommunicationHelper() = 0;
   };
 
   /*! @brief Enum which holds the error codes of the server communication
@@ -176,6 +177,7 @@ namespace PSProMigIF
       /*! @brief Create object of class ServerCommunication
        */
       virtual ServerCommunication* create();
+      virtual ~ServerCommunicationListenHelper() = 0;
   };
 
   /*! @brief Class for communication between client and server
