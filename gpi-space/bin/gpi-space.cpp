@@ -929,7 +929,6 @@ static int cleanup_kvs ()
 
 static int configure_kvs (const config_t *cfg)
 {
-  unsigned int trial = 0;
   try
   {
     fhg::com::kvs::global::get_kvs_info().init( cfg->kvs_host
