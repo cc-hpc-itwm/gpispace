@@ -251,7 +251,6 @@ void MyFixture::run_client_subscriber()
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			//boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -259,13 +258,11 @@ void MyFixture::run_client_subscriber()
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
 			return;
 		}
 	}
 
 	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 	ptrCli.reset();
 }
 
