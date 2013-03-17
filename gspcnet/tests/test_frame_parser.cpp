@@ -193,43 +193,22 @@ BOOST_AUTO_TEST_CASE (test_binary_body)
   gspc::net::parse::parser parser;
   gspc::net::parse::result_t result;
 
-  std::vector<char> bytes;
-  bytes.push_back ('A');
-  bytes.push_back ('\n');
-  bytes.push_back ('c');
-  bytes.push_back ('o');
-  bytes.push_back ('n');
-  bytes.push_back ('t');
-  bytes.push_back ('e');
-  bytes.push_back ('n');
-  bytes.push_back ('t');
-  bytes.push_back ('-');
-  bytes.push_back ('l');
-  bytes.push_back ('e');
-  bytes.push_back ('n');
-  bytes.push_back ('g');
-  bytes.push_back ('t');
-  bytes.push_back ('h');
-  bytes.push_back (':');
-  bytes.push_back ('5');
-  bytes.push_back ('\n');
-  bytes.push_back ('\n');
-  bytes.push_back ('\x00');
-  bytes.push_back ('\x01');
-  bytes.push_back ('\x02');
-  bytes.push_back ('\x03');
-  bytes.push_back ('\x04');
+  const char bytes[] = "A\ncontent-length:5\n\n\x00\x01\x02\x03\x04";
 
   gspc::net::frame frame;
 
-  result = parser.parse ( bytes.begin ()
-                        , bytes.end ()
+  result = parser.parse ( bytes
+                        , bytes + sizeof (bytes)
                         , frame
                         );
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-  BOOST_REQUIRE (result.consumed == bytes.size ());
 
+  // the trailing 0 is not consumed
+  BOOST_CHECK (result.consumed == sizeof(bytes) - 1);
+  BOOST_REQUIRE_EQUAL (bytes [result.consumed], '\x00');
+
+  BOOST_REQUIRE_EQUAL (frame.get_body ().size (), 5);
   BOOST_REQUIRE_EQUAL (frame.get_body ()[0], '\x00');
   BOOST_REQUIRE_EQUAL (frame.get_body ()[1], '\x01');
   BOOST_REQUIRE_EQUAL (frame.get_body ()[2], '\x02');
