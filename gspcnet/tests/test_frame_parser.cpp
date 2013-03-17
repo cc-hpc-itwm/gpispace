@@ -216,6 +216,24 @@ BOOST_AUTO_TEST_CASE (test_binary_body)
   BOOST_REQUIRE_EQUAL (frame.get_body ()[4], '\x04');
 }
 
+BOOST_AUTO_TEST_CASE (test_unfinished)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char bytes[] = "A";
+
+  gspc::net::frame frame;
+
+  result = parser.parse ( bytes
+                        , bytes + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_NEED_MORE_DATA);
+  BOOST_REQUIRE_EQUAL (result.consumed, 1);
+  BOOST_REQUIRE_EQUAL (bytes[result.consumed-1], 'A');
+}
 
 // BOOST_AUTO_TEST_CASE (test_gspcnet_hello_world)
 // {
