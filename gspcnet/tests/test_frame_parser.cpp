@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE GspcNetBasics
+#define BOOST_TEST_MODULE GspcNetFrameParser
 #include <boost/test/unit_test.hpp>
 
 #include <cstring>
