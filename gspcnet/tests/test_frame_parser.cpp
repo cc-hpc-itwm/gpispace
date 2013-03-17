@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE (test_content_length)
   gspc::net::parse::parser parser;
   gspc::net::parse::result_t result;
 
-  const char *input = "CONNECT\ncontent-length:5\n\n1234567890";
+  const char input[] = "CONNECT\ncontent-length:5\n\n12345\x00\x01\x02\x03\x04";
   gspc::net::frame frame;
 
   result = parser.parse ( input
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE (test_content_length)
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
   BOOST_REQUIRE (result.consumed > 0);
-  BOOST_REQUIRE (result.consumed < strlen (input));
+  BOOST_REQUIRE (result.consumed == sizeof (input) - 5);
 
   BOOST_REQUIRE_EQUAL (frame.get_body_as_string (), "12345");
 }
@@ -205,8 +205,10 @@ BOOST_AUTO_TEST_CASE (test_binary_body)
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
 
   // the trailing 0 is not consumed
-  BOOST_CHECK (result.consumed == sizeof(bytes) - 1);
-  BOOST_REQUIRE_EQUAL (bytes [result.consumed], '\x00');
+  BOOST_CHECK (result.consumed == sizeof (bytes));
+  BOOST_CHECK (result.consumed == 26);
+
+  BOOST_REQUIRE_EQUAL (bytes [result.consumed-1], '\x00');
 
   BOOST_REQUIRE_EQUAL (frame.get_body ().size (), 5);
   BOOST_REQUIRE_EQUAL (frame.get_body ()[0], '\x00');

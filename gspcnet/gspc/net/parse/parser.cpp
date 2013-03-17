@@ -280,9 +280,24 @@ namespace gspc
             }
             else
             {
-              return PARSE_FINISHED;
+              m_frame_state = body_with_content_length_final_null;
+              return PARSE_NEED_MORE_DATA;
             }
           }
+        case body_with_content_length_final_null:
+          {
+            if (s_is_null (c))
+            {
+              return PARSE_FINISHED;
+            }
+            else
+            {
+              frame.get_body ().push_back (c);
+              return PARSE_NEED_MORE_DATA;
+            }
+          }
+        default:
+          abort ();
         }
 
         return gspc::net::parse::PARSE_FAILED;

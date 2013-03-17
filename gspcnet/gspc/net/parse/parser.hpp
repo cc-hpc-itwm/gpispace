@@ -76,6 +76,7 @@ namespace gspc
           , header_value_line_feed
           , body_without_content_length
           , body_with_content_length
+          , body_with_content_length_final_null
           };
 
         state_t consume (gspc::net::frame & frame, const char c);
