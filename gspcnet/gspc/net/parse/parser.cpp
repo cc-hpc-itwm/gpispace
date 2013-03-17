@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <iostream>
 
 #include "parser.hpp"
@@ -88,9 +89,13 @@ namespace gspc
             {
               m_frame_state = command_line_feed;
             }
-            else
+            else if (isprint (c))
             {
               m_buffer.push_back (c);
+            }
+            else
+            {
+              return PARSE_FAILED;
             }
 
             return PARSE_NEED_MORE_DATA;
@@ -143,10 +148,14 @@ namespace gspc
             {
               m_frame_state = header_start_line_feed;
             }
-            else
+            else if (isprint (c))
             {
               m_buffer.push_back (c);
               m_frame_state = header_name;
+            }
+            else
+            {
+              return PARSE_FAILED;
             }
 
             return PARSE_NEED_MORE_DATA;
@@ -193,9 +202,13 @@ namespace gspc
               m_header_key = m_buffer;
               m_buffer.clear ();
             }
-            else
+            else if (isprint (c))
             {
               m_buffer.push_back (c);
+            }
+            else
+            {
+              return PARSE_FAILED;
             }
 
             return PARSE_NEED_MORE_DATA;
@@ -215,9 +228,13 @@ namespace gspc
             {
               m_frame_state = header_value_line_feed;
             }
-            else
+            else if (isprint (c))
             {
               m_buffer.push_back (c);
+            }
+            else
+            {
+              return PARSE_FAILED;
             }
 
             return PARSE_NEED_MORE_DATA;
