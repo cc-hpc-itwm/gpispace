@@ -10,7 +10,6 @@
 
 namespace literal
 {
-  //  std::ostream& operator<< (std::ostream&, const type&);
   std::string show (const type&);
 }
 
