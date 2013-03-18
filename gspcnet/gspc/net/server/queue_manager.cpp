@@ -103,19 +103,24 @@ namespace gspc
                                    , frame const & rqst
                                    )
       {
+        int rc = 0;
         frame rply;
-        int rc = m_service_demux.handle_request (dst, rqst, rply);
-        if (rc && rply.get_command ().empty ())
-        {
-          rply = make::error_frame (E_INTERNAL_ERROR, "internal error");
-        }
-        else
+
+        rc = m_service_demux.handle_request (dst, rqst, rply);
+        if (rc == 0)
         {
           rply.set_command ("REPLY");
         }
+        else if (rc < 0)
+        {
+          rply = make::error_frame ( rc
+                                   , strerror (-rc)
+                                   );
+        }
 
         u->deliver (rply);
-        return 0;
+
+        return rc;
       }
 
       int queue_manager_t::subscribe ( user_ptr user
