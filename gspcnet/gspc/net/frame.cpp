@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include <boost/none.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
@@ -23,7 +24,8 @@ namespace gspc
       return *this;
     }
 
-    frame & frame::del_header (std::string const & key)
+    frame & frame::del_header ( std::string const & key
+                              )
     {
       m_header.erase (key);
       return *this;
@@ -35,15 +37,13 @@ namespace gspc
       return m_header;
     }
 
-    std::string const &
+    boost::optional<frame::value_type>
     frame::get_header (std::string const & key) const
     {
-      static const std::string dflt ("");
-
       header_type::const_iterator it = m_header.find (key);
 
       if (it != m_header.end ()) return it->second;
-      else                       return dflt;
+      else                       return boost::none;
     }
 
     bool frame::has_header (std::string const & key) const

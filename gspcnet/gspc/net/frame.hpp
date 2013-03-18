@@ -6,6 +6,8 @@
 #include <string>
 #include <iosfwd>
 
+#include <boost/optional.hpp>
+
 namespace gspc
 {
   namespace net
@@ -13,7 +15,9 @@ namespace gspc
     class frame
     {
     public:
-      typedef std::map<std::string, std::string> header_type;
+      typedef std::string                        key_type;
+      typedef std::string                        value_type;
+      typedef std::map<std::string, value_type>  header_type;
       typedef std::vector<char>                  body_type;
 
       frame () {}
@@ -26,10 +30,30 @@ namespace gspc
       std::string const & get_command () const { return m_command; }
       frame & set_command (std::string const &cmd);
 
-      frame & set_header (std::string const &key, std::string const &val);
-      frame & del_header (std::string const &key);
+      /**
+         Sets a header key to the given value.
+       */
+      frame & set_header (key_type const &key, value_type const &val);
+
+      /**
+         Delete the given header entry.
+       */
+      frame & del_header (key_type const &key);
+
+      /**
+         Get the whole header
+       */
       header_type const & get_header () const;
-      std::string const & get_header (std::string const &key) const;
+
+      /**
+         Get a header entry. Returns  a boost::optional depending on whether the
+         header entry was found or not.
+       */
+      boost::optional<value_type> get_header (key_type const &key) const;
+
+      /**
+         Check if a header entry exists or not.
+       */
       bool has_header (std::string const &key) const;
 
       frame & set_body (std::string const & body);

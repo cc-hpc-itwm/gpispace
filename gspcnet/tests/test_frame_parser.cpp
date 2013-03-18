@@ -145,8 +145,10 @@ BOOST_AUTO_TEST_CASE (test_header)
 
   BOOST_CHECK_EQUAL (frame.get_command (), "CONNECT");
   BOOST_CHECK_EQUAL (frame.get_header ().size (), 2);
-  BOOST_CHECK_EQUAL (frame.get_header ("foo"), "bar");
-  BOOST_CHECK_EQUAL (frame.get_header ("baz"), "bam");
+  BOOST_REQUIRE (frame.has_header ("foo"));
+  BOOST_CHECK_EQUAL (*frame.get_header ("foo"), "bar");
+  BOOST_REQUIRE (frame.has_header ("baz"));
+  BOOST_CHECK_EQUAL (*frame.get_header ("baz"), "bam");
   BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
 }
 
