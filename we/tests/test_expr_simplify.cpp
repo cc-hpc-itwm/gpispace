@@ -124,6 +124,42 @@ BOOST_AUTO_TEST_CASE (copy_propagation)
   test (input, expected_output, needed_bindings);
 }
 
+BOOST_AUTO_TEST_CASE (copy_propagation_complex)
+{
+  const std::string input
+    ( "(${b.b.b} := ${a});"
+      "(${c} := ${b.b.b.b});"
+    );
+
+  const std::string expected_output
+    ( "(${c} := ${a.b});"
+    );
+
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("c");
+
+  test (input, expected_output, needed_bindings);
+}
+
+BOOST_AUTO_TEST_CASE (copy_propagation_complex_and_overwrite)
+{
+  const std::string input
+    ( "(${b.b.b} := ${a});"
+      "(${c} := ${b.b.b.b});"
+      "(${b.b} := ${x});"
+      "(${c} := ${b.b.b.b});"
+    );
+
+  const std::string expected_output
+    ( "(${c} := ${x.b.b});"
+    );
+
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("c");
+
+  test (input, expected_output, needed_bindings);
+}
+
 BOOST_AUTO_TEST_CASE (constant_and_copy_propagation)
 {
   const std::string input
