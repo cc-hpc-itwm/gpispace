@@ -30,6 +30,9 @@ usage: $(basename $0) [options]
 
            WRITE:2x4,16*2**20
               2 WRITE workers/node but on at most 4 nodes
+
+           WRITE+LOAD:2
+              2 workers/node with capabilities WRITE *and* LOAD
 EOF
 }
 
