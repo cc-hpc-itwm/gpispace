@@ -12,6 +12,7 @@
 
 #include <gspc/net.hpp>
 #include <gspc/net/error.hpp>
+#include <gspc/net/handle.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
@@ -191,4 +192,34 @@ BOOST_AUTO_TEST_CASE (test_no_such_service)
   BOOST_CHECK_EQUAL ( *rply_frame.get_header ("message")
                     , "no such service"
                     );
+}
+
+BOOST_AUTO_TEST_CASE (test_default_demux)
+{
+  using namespace gspc::net::tests;
+
+  int rc;
+  mock::user user;
+
+  gspc::net::server::queue_manager_t qmgr;
+
+  gspc::net::handle ("/test/echo", gspc::net::handler::echo ());
+
+  gspc::net::frame rqst_frame;
+  rqst_frame.set_command ("REQUEST");
+  rqst_frame.set_header ("destination", "/test/echo");
+  rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_body ("Hello echo!");
+
+  rc = qmgr.request (&user, "/test/echo", rqst_frame);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
+
+  gspc::net::frame & rply_frame = user.frames.back ();
+
+  BOOST_CHECK_EQUAL (rply_frame.get_command (), "REPLY");
+  BOOST_CHECK_EQUAL (rply_frame.get_body_as_string (), "Hello echo!");
+  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
