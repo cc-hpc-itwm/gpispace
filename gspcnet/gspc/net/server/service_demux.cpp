@@ -32,7 +32,8 @@ namespace gspc
         handler_map_t::iterator it = m_handler_map.find (dst);
         if (it == m_handler_map.end ())
         {
-          return -ESRCH;
+          rply = make::error_frame (E_SERVICE_LOOKUP, "no such service");
+          return E_SERVICE_LOOKUP;
         }
 
         try
@@ -41,9 +42,10 @@ namespace gspc
         }
         catch (std::exception const &ex)
         {
-          rply = make::error_frame (E_INTERNAL_ERROR, ex.what ());
-          rply.set_body (rqst.to_string ());
-          return -EFAULT;
+          rply = make::error_frame (E_SERVICE_FAILED, "service request failed");
+          rply.add_body ("Request to service '" + dst + "' failed:\n");
+          rply.add_body (ex.what ());
+          return E_SERVICE_FAILED;
         }
 
         return 0;
