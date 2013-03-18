@@ -42,10 +42,34 @@ namespace gspc
       }
 
       int
-      queue_manager_t::disconnect (user_ptr u, frame const &)
+      queue_manager_t::disconnect (user_ptr user, frame const &)
       {
-        // remove all user_ptr entries from the subscription tables
-        return -ENOTSUP;
+        unique_lock lock (m_subscription_mutex);
+
+        user_subscription_map_t::iterator user_it =
+          m_user_subscriptions.find (user);
+
+        if (user_it == m_user_subscriptions.end ())
+          return 0;
+
+        BOOST_FOREACH (subscription_t *sub, user_it->second)
+        {
+          // remove subscription
+          subscription_map_t::iterator sub_map_it =
+            m_subscriptions.find (sub->destination);
+          if (sub_map_it != m_subscriptions.end ())
+          {
+            sub_map_it->second.remove (sub);
+          }
+          if (sub_map_it->second.empty ())
+          {
+            m_subscriptions.erase (sub_map_it);
+          }
+          delete sub;
+        }
+        m_user_subscriptions.erase (user);
+
+        return 0;
       }
 
       int queue_manager_t::send ( user_ptr u

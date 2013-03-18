@@ -149,3 +149,53 @@ BOOST_AUTO_TEST_CASE (test_async_sender)
                       , NUM_ASYNC_SENDER * NUM_MSGS_TO_SEND
                       );
 }
+
+BOOST_AUTO_TEST_CASE (test_disconnect)
+{
+  using namespace gspc::net::tests;
+
+  mock::user user;
+  int rc;
+
+  gspc::net::server::queue_manager_t qmgr;
+
+  rc = qmgr.subscribe (&user, "/tests", "0");
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  gspc::net::frame dummy;
+  rc = qmgr.disconnect (&user, dummy);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = qmgr.send (&user, "/tests", dummy);
+  BOOST_CHECK_EQUAL (rc, -ESRCH);
+  BOOST_CHECK_EQUAL (user.frames.size (), 0);
+}
+
+BOOST_AUTO_TEST_CASE (test_subscribe_disconnect_loop)
+{
+  static const std::size_t NUM_ITERATIONS = 1000;
+
+  using namespace gspc::net::tests;
+
+  mock::user user;
+  int rc;
+
+  gspc::net::server::queue_manager_t qmgr;
+
+  for (std::size_t i = 0 ; i < NUM_ITERATIONS ; ++i)
+  {
+    rc = qmgr.subscribe (&user, "/tests", "0");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    gspc::net::frame dummy;
+    qmgr.send (&user, "/tests", dummy);
+
+    rc = qmgr.disconnect (&user, dummy);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = qmgr.send (&user, "/tests", dummy);
+    BOOST_CHECK_EQUAL (rc, -ESRCH);
+  }
+
+  BOOST_REQUIRE_EQUAL (user.frames.size (), NUM_ITERATIONS);
+}
