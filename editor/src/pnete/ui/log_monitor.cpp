@@ -466,7 +466,7 @@ void log_monitor::toggleFollowLogging (bool follow)
   connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (deleteLater()));
 
   //! \todo Configurable refresh rate.
-  static const int refresh_rate (200 /*ms*/);
+  static const int refresh_rate (0 /*ms*/);
   log_follower->start (refresh_rate);
 }
 
