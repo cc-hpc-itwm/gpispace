@@ -199,6 +199,24 @@ BOOST_AUTO_TEST_CASE (dead_code_elimination)
   test (input, expected_output, needed_bindings);
 }
 
+BOOST_AUTO_TEST_CASE (dead_code_elimination_complex)
+{
+  //! \todo can we do some elimination here?
+  const std::string input
+    ( "(${a.a.a} := (${a.a} + 1));"
+      "(${a.a.a} := []);"
+    );
+
+  const std::string expected_output
+    ( input
+    );
+
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("a");
+
+  test (input, expected_output, needed_bindings);
+}
+
 BOOST_AUTO_TEST_CASE (all_combined)
 {
   const std::string input
