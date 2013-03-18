@@ -109,17 +109,6 @@ namespace
     TABLE_COL_MESSAGE,
     TABLE_COLUMN_COUNT,
   };
-
-  class fhglog_event : public QEvent
-  {
-  public:
-    fhglog_event (const fhg::log::LogEvent& event)
-      : QEvent (QEvent::User)
-      , _event (event)
-    { }
-
-    fhg::log::LogEvent _event;
-  };
 }
 
 namespace detail
@@ -131,15 +120,8 @@ namespace detail
       : QAbstractTableModel (parent)
     { }
 
-    bool event (QEvent* event)
+    void add (const fhg::log::LogEvent& event)
     {
-      if (event->type() != QEvent::User)
-      {
-        return QAbstractTableModel::event (event);
-      }
-
-      event->accept();
-
       //! \todo Configurable limit.
       static const int limit (10000);
       static const int to_be_removed (limit * 0.1);
@@ -151,11 +133,8 @@ namespace detail
       }
 
       beginInsertRows (QModelIndex(), rowCount() - 1, rowCount() - 1);
-      _data.push_back
-        (formatted_log_event (static_cast<fhglog_event*> (event)->_event));
+      _data.push_back (formatted_log_event (event));
       endInsertRows();
-
-      return true;
     }
 
     virtual int rowCount (const QModelIndex& = QModelIndex()) const
@@ -402,7 +381,7 @@ void log_monitor::handle_external_event (const fhg::log::LogEvent & evt)
         )
      )
   {
-    QApplication::postEvent (_log_model, new fhglog_event (evt));
+    _log_model->add (evt);
     m_log_events.push_back (evt);
   }
 }
