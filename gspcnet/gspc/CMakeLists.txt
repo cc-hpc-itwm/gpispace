@@ -7,6 +7,8 @@ set (gspcnet_src
   net/server/queue_manager.cpp
   net/server/service_demux.cpp
   net/server/default_service_demux.cpp
+
+  net/handler/echo.cpp
 )
 
 add_library (gspcnet        STATIC ${gspcnet_src})
