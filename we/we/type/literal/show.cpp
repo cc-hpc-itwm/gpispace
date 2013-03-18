@@ -12,15 +12,6 @@ namespace literal
 {
   namespace
   {
-    namespace detail
-    {
-      template<typename T>
-      std::string show (const T& x)
-      {
-        std::ostringstream s; s << x; return s.str();
-      }
-    }
-
     class visitor_show : public boost::static_visitor<std::ostream&>
     {
     private:
@@ -38,12 +29,12 @@ namespace literal
 
       std::ostream& operator() (const long& x) const
       {
-        return _os << detail::show (x) << "L";
+        return _os << x << "L";
       }
 
       std::ostream& operator() (const char& x) const
       {
-        return _os << "'" << detail::show (x) << "'";
+        return _os << "'" << x << "'";
       }
 
       std::ostream& operator() (const std::string& x) const
@@ -102,7 +93,7 @@ namespace literal
       template<typename T>
       std::ostream& operator() (const T& x) const
       {
-        return _os << detail::show (x);
+        return _os << x;
       }
     };
   }
