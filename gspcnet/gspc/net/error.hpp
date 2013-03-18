@@ -7,7 +7,9 @@ namespace gspc
   {
     enum error_code_t
       {
-        E_INTERNAL_ERROR = 500
+        E_SERVICE_LOOKUP = 404
+      , E_INTERNAL_ERROR = 500
+      , E_SERVICE_FAILED = 503
       };
   }
 }
