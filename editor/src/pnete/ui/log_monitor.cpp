@@ -40,6 +40,8 @@
 #include <QTimer>
 #include <QString>
 #include <QVBoxLayout>
+#include <QMutexLocker>
+#include <QThread>
 
 #include <cmath>
 #include <fstream>
@@ -115,140 +117,173 @@ namespace
 
 namespace detail
 {
-  class log_table_model : public QAbstractTableModel
-  {
-  public:
-    log_table_model (QObject* parent = NULL)
-      : QAbstractTableModel (parent)
-    { }
+  formatted_log_event::formatted_log_event (const fhg::log::LogEvent& evt)
+    //! \todo get time from outside?
+    : time (QTime::currentTime().toString())
+    , source (QString ("%1@%2").arg (evt.pid()).arg (evt.logged_on().c_str()))
+    , location (QString ("%1:%2").arg (evt.file().c_str()).arg (evt.line()))
+    , message (evt.message().c_str())
+    , event (evt)
+  { }
 
-    void add (const fhg::log::LogEvent& event)
+  log_table_model::log_table_model (QObject* parent)
+    : QAbstractTableModel (parent)
+    , _pending_data()
+    , _clear_on_update()
+    , _mutex_pending (QMutex::Recursive)
+    , _data()
+    , _mutex_data (QMutex::Recursive)
+  { }
+
+  int log_table_model::rowCount (const QModelIndex&) const
+  {
+    QMutexLocker lock (&_mutex_data);
+    return _data.size();
+  }
+
+  int log_table_model::columnCount (const QModelIndex&) const
+  {
+    return TABLE_COLUMN_COUNT;
+  }
+
+  QVariant log_table_model::headerData
+    (int section, Qt::Orientation orientation, int role) const
+  {
+    if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
     {
+      switch (section)
+      {
+      case TABLE_COL_TIME:
+        static const QString time (tr ("Time"));
+        return time;
+      case TABLE_COL_SOURCE:
+        static const QString source (tr ("Source"));
+        return source;
+      case TABLE_COL_LOCATION:
+        static const QString location (tr ("Location"));
+        return location;
+      case TABLE_COL_MESSAGE:
+        static const QString message (tr ("Message"));
+        return message;
+      }
+    }
+
+    return QVariant();
+  }
+
+  QVariant log_table_model::data (const QModelIndex& index, int role) const
+  {
+    QMutexLocker lock (&_mutex_data);
+
+    const formatted_log_event& event (_data[index.row()]);
+
+    switch (role)
+    {
+    case Qt::DisplayRole:
+      switch (index.column())
+      {
+      case TABLE_COL_TIME:
+        return event.time;
+      case TABLE_COL_SOURCE:
+        return event.source;
+      case TABLE_COL_LOCATION:
+        return event.location;
+      case TABLE_COL_MESSAGE:
+        return event.message;
+      }
+
+      break;
+
+    case Qt::ForegroundRole:
+      return severityToColor (event.event.severity());
+
+    case Qt::UserRole:
+      return static_cast<int> (event.event.severity());
+    }
+
+    return QVariant();
+  }
+
+  std::vector<fhg::log::LogEvent> log_table_model::data() const
+  {
+    QMutexLocker lock (&_mutex_data);
+
+    std::vector<fhg::log::LogEvent> result;
+
+    foreach (const formatted_log_event& event, _data)
+    {
+      result.push_back (event.event);
+    }
+
+    return result;
+  }
+
+  void log_table_model::add (const fhg::log::LogEvent& event)
+  {
+    QMutexLocker lock (&_mutex_pending);
+    _pending_data.push_back (formatted_log_event (event));
+  }
+
+  void log_table_model::clear()
+  {
+    QMutexLocker lock (&_mutex_pending);
+    _clear_on_update = true;
+  }
+
+  void log_table_model::update()
+  {
+    //! \note These operations _need_ to be exclusive during one event
+    //! loop, as Qt emits some signals which will fuck everything up,
+    //! if you do stuff like adding and removing rows at once.
+
+    //! \note emulate circular buffer
+    {
+      QMutexLocker lock (&_mutex_data);
+
       //! \todo Configurable limit.
       static const int limit (10000);
       static const int to_be_removed (limit * 0.1);
-      if (rowCount() > limit)
+      if (_data.size() > limit)
       {
-        beginRemoveRows (QModelIndex(), 0, to_be_removed - 1);
-        _data.erase (_data.begin(), _data.begin() + to_be_removed);
-        endRemoveRows();
-      }
+        const int really_removing (std::min (to_be_removed, _data.size()));
 
-      beginInsertRows (QModelIndex(), rowCount() - 1, rowCount() - 1);
-      _data.push_back (formatted_log_event (event));
+        beginRemoveRows (QModelIndex(), 0, really_removing - 1);
+        _data.erase (_data.begin(), _data.begin() + really_removing);
+        endRemoveRows();
+
+        return;
+      }
+    }
+
+    //! \note Clear also removes pending data, which is fine. This
+    //! saves us from locking twice.
+    QList<formatted_log_event> pending_data;
+    bool clear_on_update (false);
+
+    {
+      QMutexLocker lock (&_mutex_pending);
+      pending_data.swap (_pending_data);
+      std::swap (clear_on_update, _clear_on_update);
+    }
+
+    if (clear_on_update && _data.size())
+    {
+      QMutexLocker lock (&_mutex_data);
+
+      beginRemoveRows (QModelIndex(), 0, _data.size() - 1);
+      _data.clear();
+      endRemoveRows();
+    }
+    else if (!pending_data.isEmpty())
+    {
+      QMutexLocker lock (&_mutex_data);
+
+      beginInsertRows
+        (QModelIndex(), _data.size(), _data.size() + pending_data.size() - 1);
+      _data.append (pending_data);
       endInsertRows();
     }
-
-    virtual int rowCount (const QModelIndex& = QModelIndex()) const
-    {
-      return _data.size();
-    }
-
-    virtual int columnCount (const QModelIndex& = QModelIndex()) const
-    {
-      return TABLE_COLUMN_COUNT;
-    }
-
-    virtual QVariant headerData ( int section
-                                , Qt::Orientation orientation
-                                , int role = Qt::DisplayRole
-                                ) const
-    {
-      if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
-      {
-        switch (section)
-        {
-        case TABLE_COL_TIME:
-          static const QString time (tr ("Time"));
-          return time;
-        case TABLE_COL_SOURCE:
-          static const QString source (tr ("Source"));
-          return source;
-        case TABLE_COL_LOCATION:
-          static const QString location (tr ("Location"));
-          return location;
-        case TABLE_COL_MESSAGE:
-          static const QString message (tr ("Message"));
-          return message;
-        }
-      }
-
-      return QVariant();
-    }
-
-    virtual QVariant
-      data (const QModelIndex& index, int role = Qt::DisplayRole) const
-    {
-      const formatted_log_event& event (_data[index.row()]);
-
-      switch (role)
-      {
-      case Qt::DisplayRole:
-        switch (index.column())
-        {
-        case TABLE_COL_TIME:
-          return event.time;
-        case TABLE_COL_SOURCE:
-          return event.source;
-        case TABLE_COL_LOCATION:
-          return event.location;
-        case TABLE_COL_MESSAGE:
-          return event.message;
-        }
-
-        break;
-
-      case Qt::ForegroundRole:
-        return severityToColor (event.event.severity());
-
-      case Qt::UserRole:
-        return static_cast<int> (event.event.severity());
-      }
-
-      return QVariant();
-    }
-
-    std::vector<fhg::log::LogEvent> data() const
-    {
-      std::vector<fhg::log::LogEvent> result;
-
-      foreach (const formatted_log_event& event, _data)
-      {
-        result.push_back (event.event);
-      }
-
-      return result;
-    }
-
-    void clear()
-    {
-      beginResetModel();
-      _data.clear();
-      endResetModel();
-    }
-
-  private:
-    struct formatted_log_event
-    {
-      QString time;
-      QString source;
-      QString location;
-      QString message;
-
-      fhg::log::LogEvent event;
-
-      formatted_log_event (const fhg::log::LogEvent& evt)
-        //! \todo get time from outside?
-        : time (QTime::currentTime().toString())
-        , source (QString ("%1@%2").arg (evt.pid()).arg (evt.logged_on().c_str()))
-        , location (QString ("%1:%2").arg (evt.file().c_str()).arg (evt.line()))
-        , message (evt.message().c_str())
-        , event (evt)
-      { }
-    };
-
-    QList<formatted_log_event> _data;
-  };
+  }
 
   class log_filter_proxy : public QSortFilterProxyModel
   {
@@ -287,9 +322,18 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   , m_drop_filtered (new QCheckBox (tr ("drop filtered"), this))
   , m_level_filter_selector (new QComboBox (this))
   , m_log_table (new QTableView (this))
-  , _log_model (new detail::log_table_model (this))
+  , _log_model (new detail::log_table_model)
   , _log_filter (new detail::log_filter_proxy (this))
+  , _log_model_update_thread (new QThread (this))
+  , _log_model_update_timer (new QTimer (this))
 {
+  _log_model->moveToThread (_log_model_update_thread);
+  connect ( _log_model_update_timer, SIGNAL (timeout())
+          , _log_model, SLOT (update())
+          );
+  _log_model_update_thread->start();
+  _log_model_update_timer->start();
+
   _log_filter->setDynamicSortFilter (true);
   _log_filter->setSourceModel (_log_model);
   m_log_table->setModel (_log_filter);
@@ -389,6 +433,10 @@ log_monitor::~log_monitor()
 {
   m_io_service.stop();
   m_io_thread.join();
+
+  _log_model_update_timer->stop();
+  _log_model_update_thread->quit();
+  _log_model_update_thread->wait();
 }
 
 void log_monitor::handle_external_event (const fhg::log::LogEvent & evt)
