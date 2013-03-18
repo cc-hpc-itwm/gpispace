@@ -29,7 +29,6 @@ public:
   ~log_monitor();
 
 public slots:
-  void clearLogging();
   void toggleFollowLogging (bool);
   void levelFilterChanged (int);
   void save();

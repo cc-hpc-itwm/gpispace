@@ -1,5 +1,7 @@
 #include <pnete/ui/log_monitor.hpp>
 
+#include <util/qt/boost_connect.hpp>
+
 #include <we/loader/putget.hpp>
 #include <we/type/value.hpp>
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
@@ -329,7 +331,10 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
   QPushButton* clear_log_button (new QPushButton (tr ("Clear"), this));
   clear_log_button->setToolTip (tr ("Clear all events"));
-  connect (clear_log_button, SIGNAL (clicked()), this, SLOT (clearLogging()));
+  fhg::util::qt::boost_connect<void()>
+    ( clear_log_button, SIGNAL (clicked())
+    , _log_model, boost::bind (&detail::log_table_model::clear, _log_model)
+    );
 
   QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), this));
   follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
@@ -384,12 +389,6 @@ void log_monitor::handle_external_event (const fhg::log::LogEvent & evt)
     _log_model->add (evt);
     m_log_events.push_back (evt);
   }
-}
-
-void log_monitor::clearLogging ()
-{
-  m_log_events.clear();
-  _log_model->clear();
 }
 
 void log_monitor::toggleFollowLogging (bool follow)
