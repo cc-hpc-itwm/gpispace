@@ -109,6 +109,10 @@ namespace gspc
         {
           rply = make::error_frame (E_INTERNAL_ERROR, "internal error");
         }
+        else
+        {
+          rply.set_command ("REPLY");
+        }
 
         u->deliver (rply);
         return 0;
