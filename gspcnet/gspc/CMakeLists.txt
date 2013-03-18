@@ -1,7 +1,12 @@
 set (gspcnet_src
-  net/parse/parser.cpp
   net/frame.cpp
   net/frame_io.cpp
+
+  net/parse/parser.cpp
+
+  net/server/queue_manager.cpp
+  net/server/service_demux.cpp
+  net/server/default_service_demux.cpp
 )
 
 add_library (gspcnet        STATIC ${gspcnet_src})
