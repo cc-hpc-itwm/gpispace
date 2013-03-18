@@ -1640,10 +1640,12 @@ function status_drts_on_node ()
     local node=$1 ; shift
     local err
     local ec
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/status-drts $@" 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/status-drts" "$@" 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
-        log "W: status-drts on node $node failed: $ec: $err"
+        if [ -n "$err" ] ; then
+            log "W: status-drts on node $node failed: $ec: $err"
+        fi
     fi
     return $ec
 }
