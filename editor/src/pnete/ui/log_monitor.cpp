@@ -142,10 +142,11 @@ namespace detail
 
       //! \todo Configurable limit.
       static const int limit (10000);
+      static const int to_be_removed (limit * 0.1);
       if (rowCount() > limit)
       {
-        beginRemoveRows (QModelIndex(), 0, 0);
-        _data.pop_front();
+        beginRemoveRows (QModelIndex(), 0, to_be_removed - 1);
+        _data.erase (_data.begin(), _data.begin() + to_be_removed);
         endRemoveRows();
       }
 
