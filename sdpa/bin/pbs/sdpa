@@ -1220,7 +1220,7 @@ function status_agent ()
     local name="$1" ; shift
 
     local node=$(get_master_node)
-    local cmd="rexec $node $SDPA_SCRIPT_DIR/status-agent -n $name"
+    local cmd="rexec $node $SDPA_SCRIPT_DIR/status-agent -n $name-$node"
     debug $cmd
     $cmd </dev/null >/dev/null 2>&1
 }
@@ -1280,8 +1280,8 @@ function stop_orch ()
 
 function start_agg ()
 {
-    if ! start_agent "aggregator" "orchestrator" ; then
-        echo "E: could not start aggregator, giving up!" >&2
+    if ! start_agent "agent-$(get_master_node)-0" "orchestrator" ; then
+        echo "E: could not start agent, giving up!" >&2
         return 1
     else
         return 0
@@ -1290,8 +1290,8 @@ function start_agg ()
 
 function stop_agg ()
 {
-    if ! stop_agent "aggregator" ; then
-        echo "E: could not stop aggregator" >&2
+    if ! stop_agent "agent" ; then
+        echo "E: could not stop agent" >&2
         return 1
     fi
 }
@@ -1417,7 +1417,7 @@ function status_nre_on_node ()
 function start_drts ()
 {
     local node=
-    local master=aggregator
+    local master=agent-$(get_master_node)-0
     local ident=
     local count=
     local force=
@@ -1597,7 +1597,7 @@ function start_drts_on_node ()
     local master="$1" ; shift
     local per_node="$1"; shift
     if [ -z "$master" ] ; then
-        master="aggregator"
+        master="agent-$(get_master_node)-0"
     fi
     if [ -z "$per_node" ] ; then
         per_node=$(get "topology.per-node" "0")
@@ -1789,7 +1789,7 @@ function status_orch ()
 
 function status_agg ()
 {
-    status_agent "aggregator"
+    status_agent "agent-$(get_master_node)-0"
 }
 
 function status_kvs ()

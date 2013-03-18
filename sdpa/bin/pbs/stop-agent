@@ -1,5 +1,4 @@
 #!/bin/bash
-name=
 
 function usage ()
 {
@@ -7,47 +6,142 @@ function usage ()
 usage: $(basename "$0") [options]
 
     -h: print this help
-    -n name (*): name of the agent to kill (if empty all will be killed)
+    -i ident (=$identiy): identity
+    -d: dry run
+    -n: name prefix
+    -p: pattern
+    -S: signal (=$signal)
+    -v: be verbose
+    -T timeout (=$timeout): seconds to wait before SIGKILL
 EOF
 }
 
-while getopts ":hn:" opt; do
+identity=
+dry_run=false
+name_prefix=''
+pattern=
+verbose=false
+signal=TERM
+timeout=3
+
+while getopts ":hi:dn:p:vS:T:" opt; do
     case $opt in
         h)
             usage
             exit 0
             ;;
+        i)
+            identity=$OPTARG
+            ;;
+        d)
+            dry_run=true
+            ;;
         n)
-            name=$OPTARG
+            name_prefix="$OPTARG"
+            ;;
+        p)
+            pattern="$OPTARG"
+            ;;
+        v)
+            verbose=true
+            ;;
+        S)
+            signal=$(echo "$OPTARG" | tr 'a-z' 'A-Z')
+            ;;
+        T)
+            timeout=$OPTARG
             ;;
         \?)
-            echo "Invalid option: -$OPTARG" >&2
+            echo "invalid option: -$OPTARG" >&2
+            echo "try: $0 -h" >&2
             exit 1
+            ;;
     esac
 done
 
-function agent_status ()
+function debug()
 {
-    local name="$1" ; shift
-    local pids=$(ps aux | grep -v [s]top-agent | grep "[a]gent.* -n $name" | awk '{print $2;}')
-    if [ -z "$pids" ] ; then
-        return 1
+    $verbose && echo >&2 $@
+}
+
+function term_drts ()
+{
+    local pid="$1" ; shift
+    local name="$1"; shift
+
+    alive=true
+    if signal_drts TERM $pid "$name"
+    then
+        for ((i=0 ; i < $timeout ; ++i))
+        do
+            sleep 1
+            if ! signal_drts 0 $pid "$name"
+            then
+                alive=false
+                break
+            fi
+        done
     else
-        echo $pids
-        return 0
+        alive=false
+    fi
+
+    if $alive
+    then
+        signal_drts KILL $pid "$name"
+        debug "killed"
     fi
 }
 
-pids=$(agent_status $name)
-if [ -n "$pids" ] ; then
-    kill -TERM $pids
-    sleep 2
-    kill -KILL $pids &>/dev/null
-    if kill -0 $pids &>/dev/null ; then
-        exit 1
+function run_maybe()
+{
+    if $dry_run ; then
+        echo "would run: $@"
     else
-        exit 0
+        "$@" >/dev/null 2>&1
     fi
-else
-    exit 2
+}
+
+function signal_drts ()
+{
+    local sig="$1"; shift
+    local pid="$1" ; shift
+    local name="$1" ; shift
+
+    run_maybe kill -$sig "$pid"
+}
+
+if [ -z "$pattern" ] ; then
+    if [ -z "$name_prefix" ] ; then
+        pattern=".*"
+    else
+        pattern="$name_prefix-$(hostname -s)"
+    fi
+
+    if [ -n "$identity" ] ; then
+        pattern="$pattern-${identity}"
+    else
+        pattern="$pattern-[0-9]\+"
+    fi
 fi
+
+debug "pattern = '$pattern'"
+
+still_running=$(ps -C agent -o pid=)
+for p in $still_running ; do
+    name=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '-n' | tail -n 1)
+    if [ -z "$name" ] ; then
+        continue
+    fi
+
+    debug "found running drts: $name"
+
+    if echo "$name" | grep -q "^${pattern}$" ; then
+        debug "drts matches pattern '^${pattern}\$'"
+        if [ "$signal" = "TERM" -o "$signal" = "15" ] ; then
+            term_drts "$p" "$name"
+        else
+            signal_drts "$signal" "$p" "$name"
+        fi
+    fi
+done
+wait
