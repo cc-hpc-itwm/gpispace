@@ -17,6 +17,7 @@ usage: $(basename $0) [options]
   -d: do not delete logfiles
   -c: ignored (accepted for backward compatibility)
   -C: capability specification
+  -G: number of segments
 
         format:
            <CAP>[+CAP1...][:N[xM][,shm]]
@@ -151,6 +152,7 @@ config_file="$HOME/.sdpa/configs/sdpa.rc"
 gpi_enabled=true
 delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
+number_of_groups=1
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -165,7 +167,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:c:C:F:p:MA:d" opt; do
+while getopts ":hnf:S:m:s:c:C:F:p:MA:dG:" opt; do
     case $opt in
         h)
             usage
@@ -222,6 +224,10 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:d" opt; do
         d)
             delete_logfiles=false
             shiftcount=$((shiftcount + 1))
+            ;;
+        G)
+            number_of_groups=$OPTARG
+            shiftcount=$((shiftcount + 2))
             ;;
         \?)
             echo >&2 "invalid option: $OPTARG"
