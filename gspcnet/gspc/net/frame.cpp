@@ -98,12 +98,9 @@ namespace gspc
       {
         frame f;
         f.set_command ("ERROR");
-        f.set_header ( "error-code"
-                     , boost::lexical_cast<std::string>(ec)
-                     );
-        f.set_header ("error-message"
-                     , message
-                     );
+        f.set_header ("content-type", "text/plain");
+        f.set_header ("code", boost::lexical_cast<std::string>(ec));
+        f.set_header ("message", message);
         return f;
       }
     }
