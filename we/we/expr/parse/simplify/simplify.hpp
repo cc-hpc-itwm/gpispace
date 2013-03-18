@@ -14,6 +14,7 @@ namespace expr
     {
       typedef ::expr::parse::util::name_set_t key_set_type;
 
+      //! \todo also return the modified flag
       parser simplification_pass
         (const parser&, const key_set_type& needed_bindings);
     }
