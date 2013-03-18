@@ -334,6 +334,18 @@ dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start agg
 #       - check maximum worker limit, break
 #       - start additional workers, up to N
 
+pids=()
+
+function wait_on_pids ()
+{
+    for pid in ${pids[@]} ; do
+        wait $pid
+    done
+    pids=()
+}
+
+max_background_tasks=8
+
 function start_workers_for_capability
 {
     local capability="$1"   ; shift
@@ -354,19 +366,18 @@ function start_workers_for_capability
     caps_arg=$(echo "$capability" | tr '+' '\n' | xargs -n1 echo '-C')
 
     for host in ${hosts[@]} ; do
-        id=1
+        dry_run rexec $host "$start_drts" \
+            -D \
+            -c $num_per_node -n "$capability" \
+            -m aggregator $caps_arg \
+            -s "$state_dir" \
+            -F "$config_file" \
+            -M "$shm_size" &
+        pids+=( $! )
 
-        for (( j = 0 ; j < $num_per_node ; j += 1 )) ; do
-
-            info "start $capability on $host ($j of $num_per_node)"
-
-            dry_run rexec $host "$start_drts" -D -i ${id} -n "$capability" \
-                                              -m aggregator $caps_arg \
-                                              -s "$state_dir" \
-                                              -F "$config_file" \
-                                              -M "$shm_size"
-            id=$(( id + 1 ))
-        done
+        if [ ${#pids[@]} -ge ${max_background_tasks} ] ; then
+            wait_on_pids
+        fi
 
         num_nodes=$(( num_nodes + 1 ))
 
@@ -377,18 +388,15 @@ function start_workers_for_capability
 }
 
 sizeof_capstruct=4
-count=0
 for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
     capability=${capabilities[   $(( i+0 )) ]}
     num_per_node=${capabilities[ $(( i+1 )) ]}
     max_nodes=${capabilities[    $(( i+2 )) ]}
     shm_size=${capabilities[     $(( i+3 )) ]}
 
-    start_workers_for_capability "$capability" "$num_per_node" "$max_nodes" "$shm_size" &
-    count=$((count+1))
-    if [ $count -gt 2 ] ; then
-      count=0
-      wait
-    fi
+    start_workers_for_capability "$capability" "$num_per_node" "$max_nodes" "$shm_size"
 done
+
+wait_on_pids
+
 wait
