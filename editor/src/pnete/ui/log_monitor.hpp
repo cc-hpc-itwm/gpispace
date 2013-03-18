@@ -37,8 +37,6 @@ public slots:
 private:
   void handle_external_event (const fhg::log::LogEvent &);
 
-  bool event (QEvent *event);
-
   boost::asio::io_service m_io_service;
   fhg::log::remote::LogServer m_log_server;
   boost::thread m_io_thread;

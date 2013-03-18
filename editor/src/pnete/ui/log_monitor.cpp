@@ -109,6 +109,17 @@ namespace
     TABLE_COL_MESSAGE,
     TABLE_COLUMN_COUNT,
   };
+
+  class fhglog_event : public QEvent
+  {
+  public:
+    fhglog_event (const fhg::log::LogEvent& event)
+      : QEvent (QEvent::User)
+      , _event (event)
+    { }
+
+    fhg::log::LogEvent _event;
+  };
 }
 
 namespace detail
@@ -119,6 +130,32 @@ namespace detail
     log_table_model (QObject* parent = NULL)
       : QAbstractTableModel (parent)
     { }
+
+    bool event (QEvent* event)
+    {
+      if (event->type() != QEvent::User)
+      {
+        return QAbstractTableModel::event (event);
+      }
+
+      event->accept();
+
+      //! \todo Configurable limit.
+      static const int limit (10000);
+      if (rowCount() > limit)
+      {
+        beginRemoveRows (QModelIndex(), 0, 0);
+        _data.pop_front();
+        endRemoveRows();
+      }
+
+      beginInsertRows (QModelIndex(), rowCount() - 1, rowCount() - 1);
+      _data.push_back
+        (formatted_log_event (static_cast<fhglog_event*> (event)->_event));
+      endInsertRows();
+
+      return true;
+    }
 
     virtual int rowCount (const QModelIndex& = QModelIndex()) const
     {
@@ -194,22 +231,6 @@ namespace detail
       beginResetModel();
       _data.clear();
       endResetModel();
-    }
-
-    void add (const fhg::log::LogEvent& event)
-    {
-      //! \todo Configurable limit.
-      static const int limit (10000);
-      if (rowCount() > limit)
-      {
-        beginRemoveRows (QModelIndex(), 0, 0);
-        _data.pop_front();
-        endRemoveRows();
-      }
-
-      beginInsertRows (QModelIndex(), rowCount() - 1, rowCount() - 1);
-      _data.push_back (formatted_log_event (event));
-      endInsertRows();
     }
 
   private:
@@ -373,49 +394,16 @@ log_monitor::~log_monitor()
   m_io_thread.join();
 }
 
-namespace
-{
-  class fhglog_event : public QEvent
-  {
-  public:
-    fhglog_event (const fhg::log::LogEvent& e)
-      : QEvent (QEvent::User)
-      , log_event (e)
-    { }
-
-    fhg::log::LogEvent log_event;
-  };
-}
-
 void log_monitor::handle_external_event (const fhg::log::LogEvent & evt)
 {
-  QApplication::postEvent (this, new fhglog_event (evt));
-}
-
-bool log_monitor::event (QEvent* event)
-{
-  if (event->type() == QEvent::User)
+  if ( !( evt.severity() < m_level_filter_selector->currentIndex()
+        && m_drop_filtered->isChecked()
+        )
+     )
   {
-    event->accept();
-
-    const fhg::log::LogEvent& evt (static_cast<fhglog_event*> (event)->log_event);
-
-    if ( !( evt.severity() < m_level_filter_selector->currentIndex()
-          && m_drop_filtered->isChecked()
-          )
-       )
-    {
-      // TODO:
-      //    maximum number of events (circular buffer like)
-
-      _log_model->add (evt);
-      m_log_events.push_back (evt);
-    }
-
-    return true;
+    QApplication::postEvent (_log_model, new fhglog_event (evt));
+    m_log_events.push_back (evt);
   }
-
-  return QWidget::event (event);
 }
 
 void log_monitor::clearLogging ()
