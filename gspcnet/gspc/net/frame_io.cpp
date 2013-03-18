@@ -13,15 +13,7 @@ namespace gspc
                               , frame const & f
                               )
     {
-      os << f.get_command () << std::endl;
-      BOOST_FOREACH ( frame::header_type::value_type const & kvp
-                    , f.get_header ()
-                    )
-      {
-        os << kvp.first << ":" << kvp.second << std::endl;
-      }
-      os << std::endl;
-      os << f.get_body_as_string ();
+      os << f.to_string ();
       return os;
     }
   }
