@@ -259,6 +259,32 @@ BOOST_AUTO_TEST_CASE (test_unfinished)
   BOOST_REQUIRE_EQUAL (bytes[result.consumed-1], 'A');
 }
 
+BOOST_AUTO_TEST_CASE (test_nul_in_sstream)
+{
+  std::stringstream sstr;
+  sstr << '\0';
+  sstr << '\1';
+  sstr << '\2';
+  sstr << '\3';
+
+  sstr << '\0';
+  sstr << '\1';
+  sstr << '\2';
+  sstr << '\3';
+
+  const std::string result (sstr.str ());
+
+  BOOST_REQUIRE_EQUAL (result.size (), 8);
+  BOOST_REQUIRE_EQUAL (result [0], '\0');
+  BOOST_REQUIRE_EQUAL (result [1], '\1');
+  BOOST_REQUIRE_EQUAL (result [2], '\2');
+  BOOST_REQUIRE_EQUAL (result [3], '\3');
+  BOOST_REQUIRE_EQUAL (result [4], '\0');
+  BOOST_REQUIRE_EQUAL (result [5], '\1');
+  BOOST_REQUIRE_EQUAL (result [6], '\2');
+  BOOST_REQUIRE_EQUAL (result [7], '\3');
+}
+
 // BOOST_AUTO_TEST_CASE (test_gspcnet_hello_world)
 // {
 //   int ec = 0;
