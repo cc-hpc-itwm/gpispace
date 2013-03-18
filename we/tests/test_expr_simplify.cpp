@@ -9,6 +9,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/foreach.hpp>
 
 #include <string>
 
@@ -26,6 +27,26 @@ namespace
                             )
   {
     bindings.insert (key_vec_from_string (name));
+  }
+
+  void test ( const std::string& input
+            , const std::string& expected_output
+            , const std::list<std::string>& _needed_bindings
+            )
+  {
+    expr::parse::util::name_set_t needed_bindings;
+
+    BOOST_FOREACH (const std::string& name, _needed_bindings)
+    {
+      needed_bindings.insert (key_vec_from_string (name));
+    }
+
+    const expr::parse::parser parser (input);
+
+    const expr::parse::parser simplified_parser
+      (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+
+    BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
   }
 }
 
