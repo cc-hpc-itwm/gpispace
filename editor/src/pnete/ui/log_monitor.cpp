@@ -262,7 +262,7 @@ namespace detail
 
     {
       QMutexLocker lock (&_mutex_pending);
-      pending_data.swap (_pending_data);
+      std::swap (pending_data, _pending_data);
       std::swap (clear_on_update, _clear_on_update);
     }
 
