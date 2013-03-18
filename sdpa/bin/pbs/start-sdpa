@@ -323,7 +323,9 @@ fi
 log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
-dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start gpi
+if $gpi_enabled ; then
+    dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start gpi
+fi
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start orch
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start agg
 
