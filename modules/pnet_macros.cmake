@@ -92,6 +92,9 @@ macro(PNET_COMPILE)
     )
 
   if (PNET_BUILD)
+    # the call to $(MAKE) does currently only work when the gernator is make as
+    # well, ninja for example doesn't know about $(MAKE) (and wants it quoted
+    # as $$(MAKE) anyways)
     add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
       COMMAND "$(MAKE)" -C ${PNET_GENERATE} "BOOST_ROOT=${Boost_INCLUDE_DIR}/../"
       COMMENT "Building modules for petri-net ${PNET_NAME}"
