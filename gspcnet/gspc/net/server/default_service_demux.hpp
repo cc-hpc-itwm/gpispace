@@ -1,7 +1,7 @@
 #ifndef GSPC_NET_SERVER_DEFAULT_SERVICE_DEMUX_HPP
 #define GSPC_NET_SERVER_DEFAULT_SERVICE_DEMUX_HPP
 
-#include <gspc/net/server/service_demux_fwd.hpp>
+#include <gspc/net/server/service_demux.hpp>
 
 namespace gspc
 {
