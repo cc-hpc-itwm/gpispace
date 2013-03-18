@@ -146,20 +146,49 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
   rqst_frame.set_body ("Hello echo!");
 
   rc = qmgr.request (&user, "/tests/error", rqst_frame);
-  BOOST_REQUIRE_EQUAL (rc, gspc::net::E_INTERNAL_ERROR);
+  BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_FAILED);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
 
   gspc::net::frame & rply_frame = user.frames.back ();
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "ERROR");
-  BOOST_CHECK       (rply_frame.has_header ("error-code"));
-  BOOST_CHECK_EQUAL (*rply_frame.get_header ("error-code"), "500");
-  BOOST_CHECK       (rply_frame.has_header ("error-message"));
-  BOOST_CHECK_EQUAL ( *rply_frame.get_header ("error-message")
-                    , "internal error"
+  BOOST_CHECK       (rply_frame.has_header ("code"));
+  BOOST_CHECK_EQUAL (*rply_frame.get_header ("code"), "503");
+  BOOST_CHECK       (rply_frame.has_header ("message"));
+  BOOST_CHECK_EQUAL ( *rply_frame.get_header ("message")
+                    , "service request failed"
                     );
-  BOOST_CHECK_EQUAL ( rply_frame.get_body_as_string ()
-                    , "erroneous_handler_t could not handle request"
+}
+
+BOOST_AUTO_TEST_CASE (test_no_such_service)
+{
+  using namespace gspc::net::tests;
+
+  int rc;
+  mock::user user;
+
+  gspc::net::server::service_demux_t demux;
+  gspc::net::server::queue_manager_t qmgr (demux);
+
+  gspc::net::frame rqst_frame;
+  rqst_frame.set_command ("REQUEST");
+  rqst_frame.set_header ("destination", "/tests/echo");
+  rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_body ("Hello echo!");
+
+  rc = qmgr.request (&user, "/tests/error", rqst_frame);
+  BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_LOOKUP);
+
+  BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
+
+  gspc::net::frame & rply_frame = user.frames.back ();
+
+  BOOST_CHECK_EQUAL (rply_frame.get_command (), "ERROR");
+  BOOST_CHECK       (rply_frame.has_header ("code"));
+  BOOST_CHECK_EQUAL (*rply_frame.get_header ("code"), "404");
+  BOOST_CHECK       (rply_frame.has_header ("message"));
+  BOOST_CHECK_EQUAL ( *rply_frame.get_header ("message")
+                    , "no such service"
                     );
 }
