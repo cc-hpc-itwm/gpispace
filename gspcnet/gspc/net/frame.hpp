@@ -39,6 +39,8 @@ namespace gspc
       body_type const & get_body () const { return m_body; }
       body_type & get_body () { return m_body; }
       std::string get_body_as_string () const;
+
+      std::string to_string () const;
     private:
       std::string       m_command;
       header_type       m_header;

@@ -1,6 +1,9 @@
 #include "frame.hpp"
 
+#include <sstream>
+
 #include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
 
 namespace gspc
 {
@@ -63,6 +66,24 @@ namespace gspc
     std::string frame::get_body_as_string () const
     {
       return std::string (m_body.begin (), m_body.end ());
+    }
+
+    std::string frame::to_string () const
+    {
+      std::ostringstream os;
+
+      os << get_command () << std::endl;
+      BOOST_FOREACH ( frame::header_type::value_type const & kvp
+                    , get_header ()
+                    )
+      {
+        os << kvp.first << ":" << kvp.second << std::endl;
+      }
+      os << std::endl;
+      os << get_body_as_string ();
+      os << '\0';
+
+      return os.str ();
     }
   }
 }
