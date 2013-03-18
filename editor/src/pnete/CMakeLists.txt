@@ -153,6 +153,7 @@ if (ENABLE_SDPA_GUI)
 
   target_link_libraries ( sdpa-gui
                           we
+                          "fhg_util_qt"
                           fhg-revision
                           ${FhgLog_LIBRARY}
                           ${Boost_LIBRARIES}
