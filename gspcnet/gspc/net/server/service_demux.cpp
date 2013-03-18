@@ -14,19 +14,19 @@ namespace gspc
       service_demux_t::service_demux_t ()
       {}
 
-      int service_demux_t::register_handler ( std::string const & dst
-                                            , service_handler_t h
-                                            )
+      int service_demux_t::handle ( std::string const & dst
+                                  , service_handler_t h
+                                  )
       {
         unique_lock lock (m_mutex);
         m_handler_map [dst] = h;
         return 0;
       }
 
-      int service_demux_t::handle ( std::string const & dst
-                                    , frame const & rqst
-                                    , frame & rply
-                                    )
+      int service_demux_t::handle_request ( std::string const & dst
+                                          , frame const & rqst
+                                          , frame & rply
+                                          )
       {
         shared_lock lock (m_mutex);
         handler_map_t::iterator it = m_handler_map.find (dst);

@@ -23,14 +23,14 @@ namespace gspc
       public:
         service_demux_t ();
 
-        int register_handler ( std::string const &dst
-                             , service_handler_t
-                             );
-
         int handle ( std::string const &dst
-                   , frame const & rqst
-                   , frame & rply
+                   , service_handler_t
                    );
+
+        int handle_request ( std::string const &dst
+                           , frame const & rqst
+                           , frame & rply
+                           );
       private:
         service_demux_t (service_demux_t const &);
         service_demux_t & operator= (service_demux_t const &);

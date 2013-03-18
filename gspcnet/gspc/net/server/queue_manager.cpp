@@ -104,7 +104,7 @@ namespace gspc
                                    )
       {
         frame rply;
-        int rc = m_service_demux.handle (dst, rqst, rply);
+        int rc = m_service_demux.handle_request (dst, rqst, rply);
         if (rc && rply.get_command ().empty ())
         {
           rply = make::error_frame (E_INTERNAL_ERROR, "internal error");
