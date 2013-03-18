@@ -54,11 +54,6 @@ namespace gspc
     frame & frame::set_body (std::string const &body)
     {
       m_body.assign (body.begin (), body.end ());
-      /*
-      set_header ( "content-length"
-                 , boost::lexical_cast<std::string>(m_body.size ())
-                 );
-      */
 
       return *this;
     }
