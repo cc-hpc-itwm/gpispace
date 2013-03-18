@@ -85,5 +85,23 @@ namespace gspc
 
       return os.str ();
     }
+
+    namespace make
+    {
+      frame error_frame ( int ec
+                        , const char *message
+                        )
+      {
+        frame f;
+        f.set_command ("ERROR");
+        f.set_header ( "error-code"
+                     , boost::lexical_cast<std::string>(ec)
+                     );
+        f.set_header ("error-message"
+                     , message
+                     );
+        return f;
+      }
+    }
   }
 }
