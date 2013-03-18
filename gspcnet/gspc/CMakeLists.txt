@@ -1,6 +1,7 @@
 set (gspcnet_src
   net/frame.cpp
   net/frame_io.cpp
+  net/handle.cpp
 
   net/parse/parser.cpp
 
