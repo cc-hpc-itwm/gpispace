@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE (dead_code_elimination_complex)
 {
   //! \todo can we do some elimination here?
   const std::string input
-    ( "(${a.a.a} := (${a.a} + 1));"
+    ( "(${a.a.a} := (${a.a} + 1L));"
       "(${a.a.a} := []);"
     );
 
@@ -264,21 +264,21 @@ BOOST_AUTO_TEST_CASE (all_combined)
 
   const std::string expected_output
     ("(${wait} := ${object.PARALLEL_LOADTT});"
-     "(${state.id} := 0);"
+     "(${state.id} := 0L);"
      "(${state.max} := ${object.OFFSETS});"
-     "(${N} := (2 + (${object.VOLUME_CREDITS} div ${object.SUBVOLUMES_PER_OFFSET})));"
+     "(${N} := (2L + (${object.VOLUME_CREDITS} div ${object.SUBVOLUMES_PER_OFFSET})));"
      "(${__generate_offset_credits_trigger_when_amount_state.pair.tag} := []);"
-     "(${__generate_offset_credits_trigger_when_amount_state.pair.id} := 0);"
+     "(${__generate_offset_credits_trigger_when_amount_state.pair.id} := 0L);"
      "(${__generate_offset_credits_trigger_when_amount_state.max} := ${N});"
-     "(${___loadTT_generate_init_state.id} := 0);"
+     "(${___loadTT_generate_init_state.id} := 0L);"
      "(${___loadTT_generate_init_state.max} := ${object.PARALLEL_LOADTT});"
      "(${_init_wait_wait} := (${object.OFFSETS} * ${object.SUBVOLUMES_PER_OFFSET}));"
      "(${_extract_number_of_volume_credits_b} := ${object.VOLUME_CREDITS});"
      "(${__generate_volume_credits_trigger_when_amount_state.pair.tag} := []);"
-     "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0);"
+     "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0L);"
      "(${__generate_volume_credits_trigger_when_amount_state.max} := ${object.VOLUME_CREDITS});"
      "(${pair} := ${state.pair});"
-     "(${state.pair.id} := (${state.pair.id} + 1));"
+     "(${state.pair.id} := (${state.pair.id} + 1L));"
      "(${volume.id} := ${pair.id});"
      "(${b} := ${pair.id});"
      "(${test} := ${state.pair.id});"

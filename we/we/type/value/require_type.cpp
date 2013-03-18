@@ -81,7 +81,7 @@ namespace value
 
         s << "incompatible types:"
           << " wanted a structured value of type " << fhg::util::show (signature)
-          << " but got the literal value" << u
+          << " but got the literal value" << literal::show (u)
           ;
 
         throw ::type::error (s.str());
