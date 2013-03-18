@@ -49,19 +49,24 @@ BOOST_AUTO_TEST_CASE (test_subscribe_unsubscribe)
 
 BOOST_AUTO_TEST_CASE (test_subscribe_many_users)
 {
+  static const std::size_t NUM_MOCK_USERS = 5000;
+
   using namespace gspc::net::tests;
 
-  std::vector<mock::user> users;
-  users.resize (5);
+  std::vector<mock::user*> users;
+  for (size_t i = 0 ; i < NUM_MOCK_USERS ; ++i)
+  {
+    users.push_back (new mock::user);
+  }
 
   mock::user client;
   int rc;
 
   gspc::net::server::queue_manager_t qmgr;
 
-  BOOST_FOREACH (mock::user &user, users)
+  BOOST_FOREACH (mock::user *user, users)
   {
-    rc = qmgr.subscribe (&user, "/tests", "0");
+    rc = qmgr.subscribe (user, "/tests", "0");
     BOOST_CHECK_EQUAL (rc, 0);
   }
 
@@ -72,17 +77,19 @@ BOOST_AUTO_TEST_CASE (test_subscribe_many_users)
   rc = qmgr.send (&client, "/tests", dummy);
   BOOST_CHECK_EQUAL (rc, 0);
 
-  BOOST_FOREACH (mock::user &user, users)
+  BOOST_FOREACH (mock::user *user, users)
   {
-    BOOST_CHECK_EQUAL (user.frames.size (), 1);
-    BOOST_CHECK_EQUAL (user.frames.back ().get_command (), "MESSAGE");
-    BOOST_CHECK_EQUAL (*user.frames.back ().get_header ("test-id"), "42");
-    user.frames.clear ();
+    BOOST_CHECK_EQUAL (user->frames.size (), 1);
+    BOOST_CHECK_EQUAL (user->frames.back ().get_command (), "MESSAGE");
+    BOOST_CHECK_EQUAL (*user->frames.back ().get_header ("test-id"), "42");
+    user->frames.clear ();
   }
 
-  BOOST_FOREACH (mock::user &user, users)
+  BOOST_FOREACH (mock::user *user, users)
   {
-    rc = qmgr.unsubscribe (&user, "0");
+    rc = qmgr.unsubscribe (user, "0");
     BOOST_CHECK_EQUAL (rc, 0);
+    delete user;
   }
+  users.clear ();
 }

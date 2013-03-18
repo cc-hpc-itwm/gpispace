@@ -6,6 +6,9 @@
 
 #include <list>
 
+#include <boost/thread/locks.hpp>
+#include <boost/thread/mutex.hpp>
+
 namespace gspc
 {
   namespace net
@@ -23,11 +26,15 @@ namespace gspc
 
           virtual int deliver (frame const & f)
           {
+            boost::lock_guard<boost::mutex> lock (m_mutex);
             frames.push_back (f);
             return 0;
           }
 
           frame_list_t frames;
+
+        private:
+          boost::mutex m_mutex;
         };
       }
     }
