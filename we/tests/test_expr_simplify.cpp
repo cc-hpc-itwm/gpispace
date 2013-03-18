@@ -62,16 +62,47 @@ BOOST_AUTO_TEST_CASE (constant_propagation)
       "(${b} := []);"
     );
 
-  expr::parse::util::name_set_t needed_bindings;
-  add_to_bindings_list ("a", needed_bindings);
-  add_to_bindings_list ("b", needed_bindings);
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("a");
+  needed_bindings.push_back ("b");
 
-  expr::parse::parser parser (input);
+  test (input, expected_output, needed_bindings);
+}
 
-  expr::parse::parser simplified_parser
-    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+BOOST_AUTO_TEST_CASE (constant_propagation_nothing_needed)
+{
+  const std::string input
+    ( "(${a} := []);"
+    );
 
-  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+  const std::string expected_output;
+
+  std::list<std::string> needed_bindings;
+
+  test (input, expected_output, needed_bindings);
+}
+
+BOOST_AUTO_TEST_CASE (constant_propagation_complex)
+{
+  const std::string input
+    ( "(${a} := []);"
+      "(${b} := ${a});"
+      "(${a.a} := []);"
+      "(${c} := ${a});"
+    );
+
+  const std::string expected_output
+    ( "(${a} := []);"
+      "(${b} := []);"
+      "(${a.a} := []);"
+      "(${c} := ${a});"
+    );
+
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("b");
+  needed_bindings.push_back ("c");
+
+  test (input, expected_output, needed_bindings);
 }
 
 BOOST_AUTO_TEST_CASE (copy_propagation)
