@@ -12,7 +12,13 @@
 
 class QCheckBox;
 class QComboBox;
-class QTableWidget;
+class QTableView;
+
+namespace detail
+{
+  class log_table_model;
+  class log_filter_proxy;
+}
 
 class log_monitor : public QWidget
 {
@@ -21,7 +27,6 @@ class log_monitor : public QWidget
 public:
   explicit log_monitor (unsigned short port, QWidget* parent = NULL);
   ~log_monitor();
-  void append_log (const fhg::log::LogEvent &);
 
 public slots:
   void clearLogging();
@@ -32,19 +37,19 @@ public slots:
 private:
   void handle_external_event (const fhg::log::LogEvent &);
 
-  bool event (QEvent *event);
-
   boost::asio::io_service m_io_service;
   fhg::log::remote::LogServer m_log_server;
   boost::thread m_io_thread;
-  bool m_follow_logging;
   std::vector<fhg::log::LogEvent> m_log_events;
 
   QString m_logfile;
 
   QCheckBox* m_drop_filtered;
   QComboBox* m_level_filter_selector;
-  QTableWidget* m_log_table;
+  QTableView* m_log_table;
+
+  detail::log_table_model* _log_model;
+  detail::log_filter_proxy* _log_filter;
 };
 
 #endif
