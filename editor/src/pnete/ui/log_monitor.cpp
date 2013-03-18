@@ -208,6 +208,18 @@ namespace detail
       return QVariant();
     }
 
+    std::vector<fhg::log::LogEvent> data() const
+    {
+      std::vector<fhg::log::LogEvent> result;
+
+      foreach (const formatted_log_event& event, _data)
+      {
+        result.push_back (event.event);
+      }
+
+      return result;
+    }
+
     void clear()
     {
       beginResetModel();
@@ -387,7 +399,6 @@ void log_monitor::handle_external_event (const fhg::log::LogEvent & evt)
      )
   {
     _log_model->add (evt);
-    m_log_events.push_back (evt);
   }
 }
 
@@ -430,7 +441,8 @@ void log_monitor::save ()
   {
     std::ofstream ofs (fname.toStdString ().c_str ());
     boost::archive::text_oarchive oa (ofs);
-    oa & m_log_events;
+    std::vector<fhg::log::LogEvent> data (_log_model->data());
+    oa & data;
     m_logfile = fname;
   }
   catch (std::exception const & ex)
