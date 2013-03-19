@@ -76,9 +76,6 @@ namespace
 
 execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
   : QWidget (parent)
-  , m_exe_server
-    (appender_with (&execution_monitor::append_exe, this), m_io_service, port)
-  , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
   , m_follow_execution (true)
   , m_scene (new QGraphicsScene (this))
   , m_view (new QGraphicsView (m_scene))
@@ -86,6 +83,9 @@ execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
   , m_component_view (new QGraphicsView (m_component_scene))
   , m_current_scale (1.0)
   , _automatically_sort_components (true)
+  , m_exe_server
+    (appender_with (&execution_monitor::append_exe, this), m_io_service, port)
+  , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
 {
   m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
   m_view->setDragMode (QGraphicsView::ScrollHandDrag);
