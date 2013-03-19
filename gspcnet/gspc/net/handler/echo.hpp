@@ -12,10 +12,10 @@ namespace gspc
     {
       struct echo
       {
-        int operator () ( std::string const &
-                        , frame const &rqst
-                        , frame & rply
-                        );
+        void operator () ( std::string const &
+                         , frame const &rqst
+                         , frame & rply
+                         );
       };
     }
   }

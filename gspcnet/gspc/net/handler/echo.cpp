@@ -8,13 +8,12 @@ namespace gspc
   {
     namespace handler
     {
-      int echo::operator() ( std::string const &
-                           , frame const &rqst
-                           , frame & rply
-                           )
+      void echo::operator() ( std::string const &
+                            , frame const &rqst
+                            , frame & rply
+                            )
       {
         rply = rqst;
-        return 0;
       }
     }
   }
