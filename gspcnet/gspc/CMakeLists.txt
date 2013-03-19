@@ -10,6 +10,7 @@ set (gspcnet_src
   net/server/default_service_demux.cpp
 
   net/handler/echo.cpp
+  net/handler/strip_prefix.cpp
 )
 
 add_library (gspcnet        STATIC ${gspcnet_src})
