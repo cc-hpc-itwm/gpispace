@@ -75,27 +75,27 @@ public:
   ~log_monitor();
 
 public slots:
-  void toggleFollowLogging (bool);
-  void levelFilterChanged (int);
+  void toggle_follow_logging (bool);
   void save();
 
 private:
-  void handle_external_event (const fhg::log::LogEvent &);
+  void append_log_event (const fhg::log::LogEvent &);
 
-  boost::asio::io_service m_io_service;
-  fhg::log::remote::LogServer m_log_server;
-  boost::thread m_io_thread;
+  bool _drop_filtered;
+  int _filter_level;
 
-  QString m_logfile;
-
-  QCheckBox* m_drop_filtered;
-  QComboBox* m_level_filter_selector;
-  QTableView* m_log_table;
-
+  QTableView* _log_table;
   detail::log_table_model* _log_model;
   detail::log_filter_proxy* _log_filter;
+
   QThread* _log_model_update_thread;
   QTimer* _log_model_update_timer;
+
+  QString _last_saved_filename;
+
+  boost::asio::io_service _io_service;
+  fhg::log::remote::LogServer _log_server;
+  boost::thread _io_thread;
 };
 
 #endif
