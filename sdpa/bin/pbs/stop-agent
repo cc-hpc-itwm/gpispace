@@ -128,7 +128,7 @@ debug "pattern = '$pattern'"
 
 still_running=$(ps -C agent -o pid=)
 for p in $still_running ; do
-    name=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '-n' | tail -n 1)
+    name=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
     if [ -z "$name" ] ; then
         continue
     fi
