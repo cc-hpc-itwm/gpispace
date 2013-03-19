@@ -47,10 +47,7 @@
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <boost/thread.hpp>
-
-//plugin
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
+#include <tests/sdpa/CreateDrtsWorker.hpp>
 
 
 const int NMAXTRIALS=5;
@@ -90,7 +87,6 @@ struct MyFixture
 	}
 
 	void run_client();
-	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName, const std::string& cpbList );
 
 	string read_workflow(string strFileName)
 	{
@@ -111,7 +107,7 @@ struct MyFixture
 
 	int m_nITER;
 	int m_sleep_interval ;
-  std::string m_strWorkflow;
+	std::string m_strWorkflow;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
@@ -185,6 +181,8 @@ void MyFixture::run_client()
 					ptrCli.reset();
 					return;
 				}
+
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 		}
 
@@ -221,37 +219,7 @@ void MyFixture::run_client()
 	}
 
 	ptrCli->shutdown_network();
-  ptrCli.reset();
-}
-
-
-sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName, const std::string& cpbList )
-{
-	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
-        kernel->set_name (drtsName);
-
-	kernel->put("plugin.kvs.host", kvs_host ());
-	kernel->put("plugin.kvs.port", kvs_port ());
-
-	//see ~/.sdpa/configs/sdpa.rc
-	std::string guiUrl("localhost:6408");
-	kernel->put("plugin.gui.url", guiUrl);
-
-	kernel->put("plugin.drts.name", drtsName);
-	kernel->put("plugin.drts.master", masterName);
-	kernel->put("plugin.drts.backlog", "2");
-	kernel->put("plugin.drts.request-mode", "false");
-
-	kernel->put("plugin.drts.capabilities", cpbList);
-	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_ATOMIC_MODULES_PATH);
-
-	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
-
-	return kernel;
+    ptrCli.reset();
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
@@ -315,10 +283,10 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0", "ATOMIC") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "ATOMIC", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0", "A,B") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "A,B", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
@@ -338,11 +306,11 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	ptrOrch->shutdown();
 
 	int nCounterVal=0;
-  {
-    std::ifstream ifs (atomic_file.c_str());
-    BOOST_CHECK (ifs.good());
-    ifs>>nCounterVal;
-  }
+	{
+		std::ifstream ifs (atomic_file.c_str());
+		BOOST_CHECK (ifs.good());
+		ifs>>nCounterVal;
+	}
 
 	LOG(INFO, "Intial value was "<<nInitial);
 	LOG(INFO, "The counter value now is: "<<nCounterVal);
