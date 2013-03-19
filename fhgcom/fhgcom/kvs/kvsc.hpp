@@ -302,14 +302,14 @@ namespace fhg
           assert (! host.empty());
           assert (! port.empty());
 
+          is_configured = true;
+
           if (modified)
           {
-            LOG(TRACE, "global kvs configured to be at: [" << host << "]:" << port);
-
+            DLOG (TRACE, "global kvs configured to be at: [" << host << "]:" << port);
             client = kvsc_ptr_t (new client::kvsc);
+            start ();
           }
-
-          is_configured = true;
         }
 
         void start ()
@@ -392,10 +392,7 @@ namespace fhg
 
       inline kvsc_ptr_t global_kvs ()
       {
-        return get_or_create_global_kvs ();
-        // if (! global::get_kvs_info ().is_started)
-        //   global::start();
-        // return *global::get_kvs_info ().client;
+        return global::get_kvs_info ().client;
       }
 
       typedef fhg::com::kvs::message::list::map_type values_type;

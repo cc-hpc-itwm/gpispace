@@ -73,7 +73,7 @@ namespace fhg
         {
           ++connection_attempts_;
 
-          LOG( WARN
+          LOG( TRACE
              , "connecting to [" << host_ << "]:" << port_
              << " failed: " << ex.what()
              << " attempt: " << (connection_attempts_) << "/" << max_connection_attempts_
@@ -142,7 +142,7 @@ namespace fhg
         // were successful.
         if (!ec && socket_.is_open())
         {
-          DLOG(DEBUG, "connected to " << socket_.remote_endpoint());
+          MLOG (TRACE, "connected to " << socket_.remote_endpoint());
           return;
         }
       }
@@ -167,7 +167,7 @@ namespace fhg
           try_send (reqst, timeout);
           return try_recv (timeout);
         }
-        catch (...)
+        catch (std::exception const &ex)
         {
           if (auto_reconnect_)
           {
