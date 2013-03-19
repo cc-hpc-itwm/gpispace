@@ -1645,7 +1645,7 @@ function status_drts_on_node ()
     local node=$1 ; shift
     local err
     local ec
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/status-drts" "$@" 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/status-drts" -s "$@" 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
         if [ -n "$err" ] ; then
@@ -1727,7 +1727,7 @@ function start ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="kvs gpi orch agg nre drts"
+        parts="kvs gpi orch agg drts"
     else
         shift
     fi
@@ -1747,7 +1747,7 @@ function stop ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="drts nre agg orch gpi kvs"
+        parts="drts agg orch gpi kvs"
     else
         shift
     fi
@@ -1819,7 +1819,7 @@ function status ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="kvs orch agg gpi nre drts"
+        parts="kvs orch agg gpi drts"
     else
         shift
     fi
