@@ -193,3 +193,37 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
   BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
+
+BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
+{
+  using namespace gspc::net::tests;
+
+  int rc;
+  mock::user user;
+
+  gspc::net::server::queue_manager_t qmgr_1;
+  gspc::net::server::queue_manager_t qmgr_2;
+
+  gspc::net::handle ("/test/echo", gspc::net::service::echo ());
+
+  gspc::net::frame rqst_frame;
+  rqst_frame.set_command ("REQUEST");
+  rqst_frame.set_header ("destination", "/test/echo");
+  rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_body ("Hello echo!");
+
+  rc = qmgr_1.request (&user, "/test/echo", rqst_frame);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
+
+  rc = qmgr_2.request (&user, "/test/echo", rqst_frame);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (user.frames.size (), 2);
+
+  gspc::net::frame & rply_frame = user.frames.back ();
+
+  BOOST_CHECK_EQUAL (rply_frame.get_command (), "REPLY");
+  BOOST_CHECK_EQUAL (rply_frame.get_body_as_string (), "Hello echo!");
+  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
+}
