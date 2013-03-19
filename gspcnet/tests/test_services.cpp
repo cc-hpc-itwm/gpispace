@@ -17,8 +17,8 @@
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
 
-#include <gspc/net/handler/echo.hpp>
-#include <gspc/net/handler/strip_prefix.hpp>
+#include <gspc/net/service/echo.hpp>
+#include <gspc/net/service/strip_prefix.hpp>
 
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_util.hpp>
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE (test_echo_service)
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
 
-  demux.handle ("/test/echo", gspc::net::handler::echo ());
+  demux.handle ("/test/echo", gspc::net::service::echo ());
 
   gspc::net::frame rqst_frame;
   rqst_frame.set_command ("REQUEST");
@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE (test_strip_prefix)
   gspc::net::server::queue_manager_t qmgr (demux);
 
   demux.handle ( "/test/echo"
-               , gspc::net::handler::strip_prefix ( "/test"
-                                                  , gspc::net::handler::echo ()
+               , gspc::net::service::strip_prefix ( "/test"
+                                                  , gspc::net::service::echo ()
                                                   )
                );
 

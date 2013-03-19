@@ -6,10 +6,10 @@ namespace gspc
 {
   namespace net
   {
-    namespace handler
+    namespace service
     {
       strip_prefix::strip_prefix ( std::string const &prefix
-                                 , gspc::net::server::service_handler_t next
+                                 , handler_t next
                                  )
         : m_prefix (prefix)
         , m_next (next)

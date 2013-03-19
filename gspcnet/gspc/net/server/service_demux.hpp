@@ -10,7 +10,7 @@
 #include <boost/unordered_map.hpp>
 
 #include <gspc/net/frame_fwd.hpp>
-#include <gspc/net/server/service_handler.hpp>
+#include <gspc/net/service/handler.hpp>
 
 namespace gspc
 {
@@ -24,7 +24,7 @@ namespace gspc
         service_demux_t ();
 
         int handle ( std::string const &dst
-                   , service_handler_t
+                   , gspc::net::service::handler_t
                    );
 
         int handle_request ( std::string const &dst
@@ -39,7 +39,7 @@ namespace gspc
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
 
         typedef boost::unordered_map< std::string
-                                    , service_handler_t
+                                    , gspc::net::service::handler_t
                                     > handler_map_t;
 
         mutable boost::shared_mutex m_mutex;

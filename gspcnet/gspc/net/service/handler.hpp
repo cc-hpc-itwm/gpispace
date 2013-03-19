@@ -9,13 +9,13 @@ namespace gspc
 {
   namespace net
   {
-    namespace server
+    namespace service
     {
       typedef boost::function<void ( std::string const &
                                    , frame const &
                                    , frame &
                                    )
-                             > service_handler_t;
+                             > handler_t;
     }
   }
 }

@@ -8,7 +8,7 @@ namespace gspc
 {
   namespace net
   {
-    namespace handler
+    namespace service
     {
       struct echo
       {

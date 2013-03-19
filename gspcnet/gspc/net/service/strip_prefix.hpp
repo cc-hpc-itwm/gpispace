@@ -2,18 +2,18 @@
 #define GSPC_NET_HANDLER_STRIP_PREFIX_HPP
 
 #include <string>
-#include <gspc/net/server/service_handler.hpp>
+#include <gspc/net/service/handler.hpp>
 
 namespace gspc
 {
   namespace net
   {
-    namespace handler
+    namespace service
     {
       struct strip_prefix
       {
         strip_prefix ( std::string const &prefix
-                     , gspc::net::server::service_handler_t next
+                     , handler_t next
                      );
 
         void operator () ( std::string const &
@@ -22,7 +22,7 @@ namespace gspc
                          );
       private:
         std::string m_prefix;
-        gspc::net::server::service_handler_t m_next;
+        handler_t m_next;
       };
     }
   }

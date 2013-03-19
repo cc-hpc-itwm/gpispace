@@ -16,7 +16,8 @@
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
-#include <gspc/net/handler/echo.hpp>
+
+#include <gspc/net/service/echo.hpp>
 
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_util.hpp>
@@ -64,9 +65,9 @@ BOOST_AUTO_TEST_CASE (test_multiple_echo_service)
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
 
-  demux.handle ("/test/echo-1", gspc::net::handler::echo ());
-  demux.handle ("/test/echo-2", gspc::net::handler::echo ());
-  demux.handle ("/test/echo-3", gspc::net::handler::echo ());
+  demux.handle ("/test/echo-1", gspc::net::service::echo ());
+  demux.handle ("/test/echo-2", gspc::net::service::echo ());
+  demux.handle ("/test/echo-3", gspc::net::service::echo ());
 
   for (std::size_t i = 0 ; i < NUM_REQUESTS ; ++i)
   {
@@ -172,7 +173,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
 
   gspc::net::server::queue_manager_t qmgr;
 
-  gspc::net::handle ("/test/echo", gspc::net::handler::echo ());
+  gspc::net::handle ("/test/echo", gspc::net::service::echo ());
 
   gspc::net::frame rqst_frame;
   rqst_frame.set_command ("REQUEST");

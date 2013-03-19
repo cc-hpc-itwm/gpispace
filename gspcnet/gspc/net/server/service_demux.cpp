@@ -15,7 +15,7 @@ namespace gspc
       {}
 
       int service_demux_t::handle ( std::string const & dst
-                                  , service_handler_t h
+                                  , gspc::net::service::handler_t h
                                   )
       {
         unique_lock lock (m_mutex);

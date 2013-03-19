@@ -6,7 +6,7 @@ namespace gspc
 {
   namespace net
   {
-    namespace handler
+    namespace service
     {
       void echo::operator() ( std::string const &
                             , frame const &rqst
