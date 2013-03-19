@@ -282,14 +282,14 @@ if [ ! -e "${config_file}" ] ; then
     }
 fi
 
-start_drts="${SDPA_HOME}/libexec/sdpa/scripts/start-drts"
-if [ ! -x "${start_drts}" ] ; then
-    error 2 "utility script '${start_drts}' is not executable"
+script_start_drts="${SDPA_HOME}/libexec/sdpa/scripts/start-drts"
+if [ ! -x "${script_start_drts}" ] ; then
+    error 2 "utility script '${script_start_drts}' is not executable"
 fi
 
-start_agent="${SDPA_HOME}/libexec/sdpa/scripts/start-agent"
-if [ ! -x "${start_agent}" ] ; then
-    error 2 "utility script '${start_agent}' is not executable"
+script_start_agent="${SDPA_HOME}/libexec/sdpa/scripts/start-agent"
+if [ ! -x "${script_start_agent}" ] ; then
+    error 2 "utility script '${script_start_agent}' is not executable"
 fi
 
 hosts=( $(cat "$nodefile" | uniq) )
@@ -414,7 +414,7 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${master}"
 
-    dry_run rexec ${host} "${start_agent}" \
+    dry_run rexec ${host} "${script_start_agent}" \
         -D \
         -n "${name}" \
         -m "${master}" \
@@ -470,7 +470,7 @@ function start_workers_for_capability
     for ((i=${group_start} ; i < ${group_size} ; ++i)) ; do
         host=${hosts[$i]}
 
-        dry_run rexec $host "$start_drts" \
+        dry_run rexec $host "$script_start_drts" \
             -D \
             -c $num_per_node -n "$capability" \
             -m "$master" $caps_arg \
