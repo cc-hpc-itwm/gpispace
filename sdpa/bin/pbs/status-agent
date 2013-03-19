@@ -37,11 +37,18 @@ function agent_status ()
 {
     local name="$1" ; shift
     local pids=
-    if [ -z "$name" ] ; then
-        pids=$(ps aux | grep -v [s]tatus-agent | grep "[a]gent.*-n" | awk '{print $2;}')
-    else
-        pids=$(ps aux | grep -v [s]tatus-agent | grep "[a]gent.*-n \<$name\>" | awk '{print $2;}')
+    pids=$(ps -C agent -o pid=)
+
+    if [ -n "$name" ] ; then
+        for p in $pids ; do
+            agent_name=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
+            if [ "$agent_name" = "$name" ] ; then
+                echo "$p"
+                return 0
+            fi
+        done
     fi
+
     if [ -z "$pids" ] ; then
         return 1
     else
