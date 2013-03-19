@@ -58,12 +58,12 @@ namespace
 
     function_call_appender (const event_handler_t& handler)
       : fhg::log::Appender ("event-handler")
-      , m_handler (handler)
+      , _handler (handler)
     { }
 
     void append (const fhg::log::LogEvent& evt)
     {
-      m_handler (evt);
+      _handler (evt);
     }
 
     void flush()
@@ -71,7 +71,7 @@ namespace
     }
 
   private:
-    event_handler_t m_handler;
+    event_handler_t _handler;
   };
 
   template<typename T>
