@@ -36,7 +36,7 @@ LossyDaemonStrategy::LossyDaemonStrategy(const Strategy::Ptr &s, double probabil
 void
 LossyDaemonStrategy::perform(const IEvent::Ptr &evt) {
     if ( random_() < probability_) {
-        SEDA_LOG_INFO("lossy-daemon lost event: " << evt->str());
+      MLOG (TRACE, "lossy-daemon lost event: " << evt->str());
     } else {
         StrategyDecorator::perform(evt);
     }
