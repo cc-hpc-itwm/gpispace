@@ -40,9 +40,6 @@ public slots:
 private:
   void handle_external_event (const fhg::log::LogEvent &);
 
-  boost::asio::io_service m_io_service;
-  fhg::log::remote::LogServer m_exe_server;
-  boost::thread m_io_thread;
   bool m_follow_execution;
 
   QGraphicsScene* m_scene;
@@ -66,6 +63,10 @@ private:
   std::map<std::string, QGraphicsItem*> _component_labels;
 
   bool _automatically_sort_components;
+
+  boost::asio::io_service m_io_service;
+  fhg::log::remote::LogServer m_exe_server;
+  boost::thread m_io_thread;
 };
 
 #endif
