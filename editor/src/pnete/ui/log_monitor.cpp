@@ -15,6 +15,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/lambda/lambda.hpp>
 
 #include <QAction>
 #include <QApplication>
@@ -314,18 +315,17 @@ namespace detail
 
 log_monitor::log_monitor (unsigned short port, QWidget* parent)
   : QWidget (parent)
-  , m_log_server ( appender_with (&log_monitor::handle_external_event, this)
-                 , m_io_service
-                 , port
-                 )
-  , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
-  , m_drop_filtered (new QCheckBox (tr ("drop filtered"), this))
-  , m_level_filter_selector (new QComboBox (this))
-  , m_log_table (new QTableView (this))
+  , _drop_filtered (true)
+  , _filter_level (2)
+  , _log_table (new QTableView (this))
   , _log_model (new detail::log_table_model)
   , _log_filter (new detail::log_filter_proxy (this))
   , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
+  , _io_service()
+  , _log_server
+    (appender_with (&log_monitor::append_log_event, this), _io_service, port)
+  , _io_thread (boost::bind (&boost::asio::io_service::run, &_io_service))
 {
   _log_model->moveToThread (_log_model_update_thread);
   connect ( _log_model_update_timer, SIGNAL (timeout())
@@ -336,26 +336,27 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
   _log_filter->setDynamicSortFilter (true);
   _log_filter->setSourceModel (_log_model);
-  m_log_table->setModel (_log_filter);
+  _log_table->setModel (_log_filter);
 
-  m_log_table->setAlternatingRowColors (false);
-  m_log_table->setHorizontalScrollMode (QAbstractItemView::ScrollPerPixel);
-  m_log_table->setSelectionMode (QAbstractItemView::NoSelection);
-  m_log_table->setShowGrid (false);
-  m_log_table->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
-  m_log_table->setWordWrap (false);
-  m_log_table->verticalHeader()->setVisible (false);
-  m_log_table->horizontalHeader()->setStretchLastSection (true);
+  _log_table->setAlternatingRowColors (false);
+  _log_table->setHorizontalScrollMode (QAbstractItemView::ScrollPerPixel);
+  _log_table->setSelectionMode (QAbstractItemView::NoSelection);
+  _log_table->setShowGrid (false);
+  _log_table->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+  _log_table->setWordWrap (false);
+  _log_table->verticalHeader()->setVisible (false);
+  _log_table->horizontalHeader()->setStretchLastSection (true);
 
-  QGroupBox* log_filter_box (new QGroupBox (tr ("Filter"), this));
+  QGroupBox* filter_level_box (new QGroupBox (tr ("Filter"), this));
 
-  QDial* log_filter_dial (new QDial (this));
-  log_filter_dial->setOrientation (Qt::Horizontal);
+  QDial* filter_level_dial (new QDial (this));
+  filter_level_dial->setOrientation (Qt::Horizontal);
 
-  m_level_filter_selector->setToolTip (tr ("Filter events according to level"));
+  QComboBox* filter_level_combobox (new QComboBox (this));
+  filter_level_combobox->setToolTip (tr ("Filter events according to level"));
 
-  log_filter_dial->setMaximum (5);
-  m_level_filter_selector->insertItems ( 0
+  filter_level_dial->setMaximum (5);
+  filter_level_combobox->insertItems ( 0
                                        , QStringList()
                                        << tr ("Trace")
                                        << tr ("Debug")
@@ -365,22 +366,34 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
                                        << tr ("Fatal")
                                        );
 
-  connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
-          , this, SLOT (levelFilterChanged(int))
+  fhg::util::qt::boost_connect<void (int)>
+    ( filter_level_combobox, SIGNAL (currentIndexChanged(int))
+    , this, boost::lambda::var (_filter_level) = boost::lambda::_1
+    );
+  fhg::util::qt::boost_connect<void (int)>
+    ( filter_level_combobox
+    , SIGNAL (currentIndexChanged(int))
+    , _log_filter
+    , boost::bind (&detail::log_filter_proxy::minimum_severity, _log_filter, _1)
+    );
+
+  connect ( filter_level_dial, SIGNAL (valueChanged(int))
+          , filter_level_combobox, SLOT (setCurrentIndex(int))
+          );
+  connect ( filter_level_combobox, SIGNAL (currentIndexChanged(int))
+          , filter_level_dial, SLOT (setValue(int))
           );
 
-  connect ( log_filter_dial, SIGNAL (valueChanged(int))
-          , m_level_filter_selector, SLOT (setCurrentIndex(int))
-          );
-  connect ( m_level_filter_selector, SIGNAL (currentIndexChanged(int))
-          , log_filter_dial, SLOT (setValue(int))
-          );
+  filter_level_combobox->setCurrentIndex (_filter_level);
 
-  m_level_filter_selector->setCurrentIndex (2);
-
-  m_drop_filtered->setCheckState (Qt::Checked);
-  m_drop_filtered->setToolTip
+  QCheckBox* drop_filtered_box (new QCheckBox (tr ("drop filtered"), this));
+  drop_filtered_box->setChecked (_drop_filtered);
+  drop_filtered_box->setToolTip
     (tr ("Drop filtered events instead of keeping them"));
+  fhg::util::qt::boost_connect<void (bool)>
+    ( drop_filtered_box, SIGNAL (toggled (bool))
+    , this, boost::lambda::var (_drop_filtered) = boost::lambda::_1
+    );
 
 
   QGroupBox* control_box (new QGroupBox (tr ("Control"), this));
@@ -399,27 +412,27 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
                                      )
                                 );
   connect ( follow_logging_cb, SIGNAL (toggled (bool))
-          , this, SLOT (toggleFollowLogging (bool))
+          , this, SLOT (toggle_follow_logging (bool))
           );
   follow_logging_cb->setChecked (true);
 
 
-  QVBoxLayout* log_filter_layout (new QVBoxLayout (log_filter_box));
-  log_filter_layout->addWidget (log_filter_dial);
-  log_filter_layout->addWidget (m_level_filter_selector);
-  log_filter_layout->addWidget (m_drop_filtered);
+  QVBoxLayout* log_filter_layout (new QVBoxLayout (filter_level_box));
+  log_filter_layout->addWidget (filter_level_dial);
+  log_filter_layout->addWidget (filter_level_combobox);
+  log_filter_layout->addWidget (drop_filtered_box);
 
   QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
   control_box_layout->addWidget (follow_logging_cb);
   control_box_layout->addWidget (clear_log_button);
 
   QVBoxLayout* log_sidebar_layout (new QVBoxLayout);
-  log_sidebar_layout->addWidget (log_filter_box);
+  log_sidebar_layout->addWidget (filter_level_box);
   log_sidebar_layout->addStretch();
   log_sidebar_layout->addWidget (control_box);
 
   QGridLayout* layout (new QGridLayout (this));
-  layout->addWidget (m_log_table, 0, 0);
+  layout->addWidget (_log_table, 0, 0);
   layout->addLayout (log_sidebar_layout, 0, 1);
 
 
@@ -431,37 +444,34 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
 log_monitor::~log_monitor()
 {
-  m_io_service.stop();
-  m_io_thread.join();
+  _io_service.stop();
+  _io_thread.join();
 
   _log_model_update_timer->stop();
   _log_model_update_thread->quit();
   _log_model_update_thread->wait();
 }
 
-void log_monitor::handle_external_event (const fhg::log::LogEvent & evt)
+void log_monitor::append_log_event (const fhg::log::LogEvent & evt)
 {
-  if ( !( evt.severity() < m_level_filter_selector->currentIndex()
-        && m_drop_filtered->isChecked()
-        )
-     )
+  if (evt.severity() >= _filter_level || !_drop_filtered)
   {
     _log_model->add (evt);
   }
 }
 
-void log_monitor::toggleFollowLogging (bool follow)
+void log_monitor::toggle_follow_logging (bool follow)
 {
   if (!follow)
   {
     return;
   }
 
-  m_log_table->scrollToBottom();
+  _log_table->scrollToBottom();
 
   QTimer* log_follower (new QTimer (this));
 
-  connect (log_follower, SIGNAL (timeout()), m_log_table, SLOT (scrollToBottom()));
+  connect (log_follower, SIGNAL (timeout()), _log_table, SLOT (scrollToBottom()));
   connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (stop()));
   connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (deleteLater()));
 
@@ -470,17 +480,10 @@ void log_monitor::toggleFollowLogging (bool follow)
   log_follower->start (refresh_rate);
 }
 
-void log_monitor::levelFilterChanged (int lvl)
-{
-  _log_filter->minimum_severity (lvl);
-}
-
 void log_monitor::save ()
 {
-  QString fname = QFileDialog::getSaveFileName ( this
-                                               , "Save log messages"
-                                               , m_logfile
-                                               );
+  const QString fname
+    (QFileDialog::getSaveFileName (this, "Save log messages", _last_saved_filename));
 
   if (fname.isEmpty ())
     return;
@@ -491,7 +494,7 @@ void log_monitor::save ()
     boost::archive::text_oarchive oa (ofs);
     std::vector<fhg::log::LogEvent> data (_log_model->data());
     oa & data;
-    m_logfile = fname;
+    _last_saved_filename = fname;
   }
   catch (std::exception const & ex)
   {
