@@ -215,6 +215,11 @@ if [ x"$identity" == x"0" ] ; then
         opts="$opts -s $state_dir"
         opts="$opts -F $config_file"
         opts="$opts -n $name_prefix"
+        opts="$opts -M $shm_size"
+
+        for cap in ${capabilities//,/ } ; do
+            opts="$opts -C $cap"
+        done
 
         if [ x"$force" = x"true" ] ; then
             opts="$opts -f"
