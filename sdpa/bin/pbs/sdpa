@@ -1195,22 +1195,28 @@ function start_agent ()
     fi
 }
 
+function stop_agent_on_node ()
+{
+    local node="${1}" ; shift
+    local rc=0
+    local err=""
+
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/stop-agent" 2>&1)
+    rc=$?
+
+    if [ $rc -ne 0 -a $rc -ne 2 ] ; then
+        echo >&2 "stop-agent on node '$node' failed: $rc: $err"
+    fi
+
+    return $rc
+}
+
 function stop_agent ()
 {
-    local name="$1" ; shift
-
-    # name format: name[-node[-id]]
-    local node=$(get_master_node)
-    local cmd="rexec $node $SDPA_SCRIPT_DIR/stop-agent -n $name"
-    debug $cmd
-    err=$($cmd 2>&1)
+    echo "agent (all nodes)" >&2
+    node_loop stop_agent_on_node $@
     ec=$?
-    if [ $ec -eq 0 ] ; then
-        return 0
-    elif [ $ec -eq 2 ] ; then
-        return 0 # not found
-    else
-        echo "$err" >&2
+    if [ $ec -ne 0 ] ; then
         return $ec
     fi
 }
@@ -1290,7 +1296,7 @@ function start_agg ()
 
 function stop_agg ()
 {
-    if ! stop_agent "agent" ; then
+    if ! stop_agent ; then
         echo "E: could not stop agent" >&2
         return 1
     fi
@@ -1514,7 +1520,6 @@ function stop_drts ()
         node_loop stop_drts_on_node $@
         ec=$?
         if [ $ec -ne 0 ] ; then
-            echo "$err"
             return $ec
         fi
     else
