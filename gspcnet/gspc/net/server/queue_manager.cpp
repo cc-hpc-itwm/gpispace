@@ -5,6 +5,8 @@
 #include <boost/foreach.hpp>
 
 #include <gspc/net/frame.hpp>
+#include <gspc/net/frame_builder.hpp>
+
 #include <gspc/net/error.hpp>
 #include <gspc/net/server/user.hpp>
 #include <gspc/net/server/subscription.hpp>

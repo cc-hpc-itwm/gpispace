@@ -71,11 +71,6 @@ namespace gspc
       header_type       m_header;
       body_type         m_body;
     };
-
-    namespace make
-    {
-      frame error_frame (int ec, const char *message);
-    }
   }
 }
 

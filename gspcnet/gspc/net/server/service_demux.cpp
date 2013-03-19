@@ -1,6 +1,7 @@
 #include <errno.h>
 
 #include <gspc/net/frame.hpp>
+#include <gspc/net/frame_builder.hpp>
 #include <gspc/net/error.hpp>
 
 #include "service_demux.hpp"
