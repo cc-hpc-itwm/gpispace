@@ -465,9 +465,10 @@ function start_workers_for_capability
     master=${segment_master[$segment]}
     group_start=${segment_host_index[$segment]}
     group_size=${segment_size[$segment]}
+    group_end=$((group_start + group_size))
 
     local i=
-    for ((i=${group_start} ; i < ${group_size} ; ++i)) ; do
+    for ((i=${group_start} ; i < ${group_end} ; ++i)) ; do
         host=${hosts[$i]}
 
         dry_run rexec $host "$script_start_drts" \
