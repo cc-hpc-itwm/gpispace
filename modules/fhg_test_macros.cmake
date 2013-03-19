@@ -4,7 +4,7 @@ include(car_cdr_macros)
 macro(FHG_ADD_TEST)
   PARSE_ARGUMENTS(TEST
     "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS"
-    "QUIET;STANDALONE"
+    "QUIET;STANDALONE;RESOURCE_LOCK"
     ${ARGN}
     )
   CAR(TEST_SOURCE ${TEST_DEFAULT_ARGS})
@@ -33,6 +33,12 @@ macro(FHG_ADD_TEST)
     target_link_libraries(${tc_name} ${TEST_LINK_LIBRARIES})
     get_target_property(TC_LOC ${tc_name} LOCATION)
     add_test (${tc_name} ${TC_LOC} ${TEST_ARGS})
+
+    if (TEST_RESOURCE_LOCK)
+      set_tests_properties (${tc_name}
+        PROPERTIES RESOURCE_LOCK ${TEST_RESOURCE_LOCK}
+        )
+    endif()
 
     foreach (d ${TEST_DEPENDS})
       add_dependencies(${tc_name} ${d})
