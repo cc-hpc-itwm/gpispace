@@ -197,6 +197,10 @@ if [ -z "$master" ] ; then
     exit 1
 fi
 
+if [ -z "$shm_size" ] ; then
+    shm_size=$(fhgcfg -f "${config_file}" -g plugin.gpi_compat.shm_size -v 536870912)
+fi
+
 if [ x"$identity" == x"0" ] ; then
 # quick hack to easily start multiple instances
     if [ -n "$count" ] ; then
@@ -318,10 +322,6 @@ if [ -z "$gpi_socket" ] ; then
 fi
 cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
 cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.startmode -v wait)"
-
-if [ -z "$shm_size" ] ; then
-    shm_size=$(fhgcfg -f "${config_file}" -g plugin.gpi_compat.shm_size -v 536870912)
-fi
 
 # config values (gpi_compat plugin)
 cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
