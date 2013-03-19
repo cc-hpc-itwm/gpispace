@@ -391,14 +391,14 @@ function assign_segments
         local hosts_per_group=$(( ${num_hosts} / ${number_of_groups} ))
         local remaining_hosts=$(( ${num_hosts} % ${number_of_groups} ))
         local host=
-        local group_idx=0
+        local offset=0
         for ((i=0 ; i < $number_of_groups ; ++i)) ; do
-            segment_host_index[$i]=${group_idx}
+            segment_host_index[$i]=${offset}
             segment_size[$i]=${hosts_per_group}
-            host=${hosts[$group_idx]}
+            host=${hosts[$offset]}
             segment_master[$i]="agent-${host}-1"
 
-            group_idx=$((group_index + hosts_per_group))
+            offset=$((offset + hosts_per_group))
         done
 
         # add remaining hosts to last group
