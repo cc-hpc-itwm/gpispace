@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_AgentsAndDrts.cpp
+ *       Filename:  test_Atomic.cpp
  *
  *    Description:  test all components, each with a real gwes, using a real user client
  *
@@ -16,39 +16,16 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testAtomic
-#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/assert.hpp>
 #include <boost/lexical_cast.hpp>
-
-#include <iostream>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-
-#include <boost/thread.hpp>
-
 #include "tests_config.hpp"
-
-#include "sdpa/memory.hpp"
-#include "sdpa/logging.hpp"
-#include "sdpa/daemon/DaemonFSM.hpp"
-#include <seda/Strategy.hpp>
-#include <sdpa/client/ClientApi.hpp>
-
-#include <plugins/drts.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <seda/StageRegistry.hpp>
-
-#include <boost/filesystem/path.hpp>
-
+#include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <boost/thread.hpp>
 #include <tests/sdpa/CreateDrtsWorker.hpp>
-
+#include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
@@ -61,7 +38,6 @@ using namespace sdpa::tests;
 
 #define NO_GUI ""
 
-#include "kvs_setup_fixture.hpp"
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture

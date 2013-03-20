@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_AgentsAndDrts.cpp
+ *       Filename:  test_CancelJob.cpp
  *
  *    Description:  test all components, each with a real gwes, using a real user client
  *
@@ -16,40 +16,15 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE TestCancelJob
-#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
-
-#include <iostream>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-
-#include <boost/thread.hpp>
-
 #include "tests_config.hpp"
-
-#include "sdpa/memory.hpp"
-#include "sdpa/logging.hpp"
-#include "sdpa/daemon/DaemonFSM.hpp"
-#include <seda/Strategy.hpp>
-#include <sdpa/client/ClientApi.hpp>
-
-#include <plugins/drts.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <seda/StageRegistry.hpp>
-
-#include <boost/filesystem/path.hpp>
-
+#include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <boost/thread.hpp>
-
 #include <tests/sdpa/CreateDrtsWorker.hpp>
 #include "kvs_setup_fixture.hpp"
-BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
@@ -60,6 +35,8 @@ using namespace std;
 using namespace sdpa::tests;
 
 #define NO_GUI ""
+
+BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
 {
@@ -97,7 +74,8 @@ struct MyFixture
 			char c;
 			while (f.get(c)) os<<c;
 			f.close();
-		}else
+		}
+		else
 			cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
 
 		return os.str();
@@ -107,19 +85,12 @@ struct MyFixture
 	int m_sleep_interval ;
 	std::string m_strWorkflow;
 
-	fhg::com::io_service_pool *m_pool;
-	fhg::com::kvs::server::kvsd *m_kvsd;
-	fhg::com::tcp_server *m_serv;
-	boost::thread *m_thrd;
-
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
 
 	boost::thread m_threadClient;
-
-	fhg::core::kernel_t *kernel;
 };
 
 void MyFixture::run_client()
