@@ -44,7 +44,7 @@ namespace gspc
       }
 
       int
-      queue_manager_t::disconnect (user_ptr user, frame const &)
+      queue_manager_t::disconnect (user_ptr user, frame const &f)
       {
         unique_lock lock (m_subscription_mutex);
 
@@ -71,6 +71,11 @@ namespace gspc
         }
         m_user_subscriptions.erase (user);
 
+        if (f.has_header ("receipt"))
+        {
+          user->deliver (make::receipt_frame (*f.get_header ("receipt")));
+        }
+
         return 0;
       }
 
@@ -95,6 +100,11 @@ namespace gspc
         BOOST_FOREACH (subscription_t * sub, sub_it->second)
         {
           sub->user->deliver (frame_to_deliver);
+        }
+
+        if (f.has_header ("receipt"))
+        {
+          u->deliver (make::receipt_frame (*f.get_header ("receipt")));
         }
 
         return 0;
