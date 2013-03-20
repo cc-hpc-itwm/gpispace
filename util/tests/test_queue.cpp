@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE (thread_queue_erase)
   for (int i = 0 ; i < NUM_ITEMS_TO_PUT ; i++)
   {
     size_t num_erased = items.erase (i);
-    BOOST_REQUIRE_EQUAL (num_erased, 1);
+    BOOST_REQUIRE_EQUAL (num_erased, 1u);
     BOOST_REQUIRE_EQUAL
       ( items.size ()
       , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT - i - 1)
