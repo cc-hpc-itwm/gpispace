@@ -39,6 +39,7 @@ namespace sdpa { namespace events {
 
 	std::string next()
 	{
+          //! \todo Do we really need the lock here?
 	  lock_type lock(mtx_);
 	  return boost::uuids::to_string (boost::uuids::random_generator()());
 	}
