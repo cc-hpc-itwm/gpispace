@@ -75,6 +75,7 @@ namespace gspc
       MK_HEADER (id, "id");
       MK_HEADER (transaction, "transaction");
       MK_HEADER (heart_beat, "heart-beat");
+      MK_HEADER (version, "version");
 
 #undef MK_HEADER
     }
