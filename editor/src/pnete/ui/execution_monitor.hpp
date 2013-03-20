@@ -63,6 +63,7 @@ private:
   std::map<std::string, QGraphicsItem*> _component_labels;
 
   bool _automatically_sort_components;
+  bool _sort_gantt_trigger;
 
   boost::asio::io_service m_io_service;
   fhg::log::remote::LogServer m_exe_server;

@@ -83,6 +83,7 @@ execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
   , m_component_view (new QGraphicsView (m_component_scene))
   , m_current_scale (1.0)
   , _automatically_sort_components (true)
+  , _sort_gantt_trigger (false)
   , m_exe_server
     (appender_with (&execution_monitor::append_exe, this), m_io_service, port)
   , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
@@ -369,6 +370,12 @@ void execution_monitor::advance()
     }
   }
 
+  if (_sort_gantt_trigger)
+  {
+    sort_gantt_by_component();
+    _sort_gantt_trigger = false;
+  }
+
   if (m_follow_execution)
   {
     m_view->horizontalScrollBar()->setValue
@@ -474,7 +481,7 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
 
   if (_automatically_sort_components && is_new_component)
   {
-    sort_gantt_by_component();
+    _sort_gantt_trigger = true;
   }
 }
 
