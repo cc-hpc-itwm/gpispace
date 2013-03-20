@@ -143,6 +143,8 @@ namespace gspc
                                      , std::string const &id
                                      )
       {
+        int rc = 0;
+
         unique_lock lock (m_subscription_mutex);
 
         // check if we already have that subscription
@@ -160,15 +162,22 @@ namespace gspc
         }
 
         subscription_t *sub = new subscription_t;
-        sub->user = user;
-        sub->destination = dst;
-        sub->id = id;
+        if (0 == sub)
+        {
+          rc = -ENOMEM;
+        }
+        else
+        {
+          sub->user = user;
+          sub->destination = dst;
+          sub->id = id;
 
-        m_subscriptions      [dst].push_back (sub);
-        m_user_subscriptions [user].push_back (sub);
+          m_subscriptions      [dst].push_back (sub);
+          m_user_subscriptions [user].push_back (sub);
+        }
 
         // sanity check the frame
-        return 0;
+        return rc;
       }
 
       int queue_manager_t::unsubscribe ( user_ptr user
