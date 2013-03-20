@@ -447,6 +447,8 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
     label->setFont (font);
     label->setPos (0, y_coord);
 
+    boost::unique_lock<boost::recursive_mutex> lock (_scene_updates_lock);
+
     _scene_updates.push_back (std::make_pair (label, m_component_scene));
     _component_labels[component] = label;
   }
