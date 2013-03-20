@@ -1,0 +1,16 @@
+n_of_m
+n_of_m.wait
+n_of_m.wait.dec
+n_of_m.wait.done
+n_of_m.work
+n_of_m.work.work
+n_of_m.credit_back
+n_of_m.generate_work
+n_of_m.generate_work.step
+n_of_m.generate_work.init
+n_of_m.generate_work.break
+n_of_m.scatter
+n_of_m.generate_credit
+n_of_m.generate_credit.step
+n_of_m.generate_credit.break
+n_of_m.generate_credit.init

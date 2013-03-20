@@ -12,7 +12,6 @@ set (mods
   FindSEDA.cmake
   FindSMC.cmake
   FindUTIL.cmake
-  FindUUID.cmake
   SMCMacros.cmake
   TargetDoc.cmake
   car_cdr_macros.cmake

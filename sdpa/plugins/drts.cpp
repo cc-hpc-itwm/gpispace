@@ -21,7 +21,6 @@
 #include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>
 
-#include <sdpa/uuidgen.hpp>
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>

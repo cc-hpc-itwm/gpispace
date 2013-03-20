@@ -20,7 +20,8 @@
 #define SDPA_EVENTS_ID_GENERATOR_HPP 1
 
 #include <boost/thread.hpp>
-#include <sdpa/uuidgen.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace sdpa { namespace events {
   class id_generator
@@ -38,11 +39,9 @@ namespace sdpa { namespace events {
 
 	std::string next()
 	{
+          //! \todo Do we really need the lock here?
 	  lock_type lock(mtx_);
-	  static sdpa::uuidgen gen;
-	  sdpa::uuid id;
-	  gen(id);
-	  return id.str();
+	  return boost::uuids::to_string (boost::uuids::random_generator()());
 	}
 
   private:
