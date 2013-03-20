@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 	LOG( DEBUG, "The test case testCancelJobPath1AgentRealWE terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( testCancelJobPath2Drts )
+BOOST_AUTO_TEST_CASE( testCancelJobTree2Drts )
 {
 	// topology:
 	// O
@@ -272,22 +272,23 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath2Drts )
 	sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAg0->start_agent(false);
 
-	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( "agent_00", addrAgent, arrAgMaster, MAX_CAP );
-	ptrAg00->start_agent(false);
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
+	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( createDRTSWorker("drts_00", "agent_00", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_00_thread = boost::thread( &fhg::core::kernel_t::run, drts_00 );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
+	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
 
-	drts_00->stop();
-	drts_00_thread.join();
+	drts_0->stop();
+	drts_0_thread.join();
 
-	ptrAg00->shutdown();
+	drts_1->stop();
+	drts_1_thread.join();
+
 	ptrAg0->shutdown();
 	ptrOrch->shutdown();
 
