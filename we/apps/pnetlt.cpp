@@ -13,11 +13,48 @@
 
 #include <fhg/revision.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+#include <boost/foreach.hpp>
+
 namespace
 {
+  class list_transition_name : public boost::static_visitor<void>
+  {
+  public:
+    list_transition_name (std::ostream& os, const std::string& name)
+      : _os (os)
+      , _name (name)
+    {
+      _os << _name << std::endl;
+    }
+
+    void operator() (const we::type::expression_t&) const
+    {}
+    void operator() (const we::type::module_call_t&) const
+    {}
+    void operator() (const petri_net::net& n) const
+    {
+      BOOST_FOREACH ( const we::type::transition_t& t
+                    , n.transitions() | boost::adaptors::map_values
+                    )
+      {
+        boost::apply_visitor
+          ( list_transition_name (_os, _name + "." + t.name())
+          , t.data()
+          );
+      }
+    }
+
+  private:
+    std::ostream& _os;
+    const std::string& _name;
+  };
+
   void tl (std::ostream& os, const we::mgmt::type::activity_t& a)
   {
-    os << a.transition().name() << std::endl;
+    boost::apply_visitor ( list_transition_name (os, a.transition().name())
+                         , a.transition().data()
+                         );
   }
 }
 
