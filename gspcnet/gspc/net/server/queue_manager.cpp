@@ -84,22 +84,25 @@ namespace gspc
                                 , frame const &f
                                 )
       {
+        int rc = 0;
         shared_lock lock (m_subscription_mutex);
 
         subscription_map_t::iterator sub_it =
           m_subscriptions.find (dst);
 
-        if (sub_it == m_subscriptions.end ())
+        if (sub_it != m_subscriptions.end ())
         {
-          return -ESRCH;
+          frame frame_to_deliver (f);
+          frame_to_deliver.set_command ("MESSAGE");
+
+          BOOST_FOREACH (subscription_t * sub, sub_it->second)
+          {
+            sub->user->deliver (frame_to_deliver);
+          }
         }
-
-        frame frame_to_deliver (f);
-        frame_to_deliver.set_command ("MESSAGE");
-
-        BOOST_FOREACH (subscription_t * sub, sub_it->second)
+        else
         {
-          sub->user->deliver (frame_to_deliver);
+          rc = -ESRCH;
         }
 
         if (f.has_header ("receipt"))
@@ -107,7 +110,7 @@ namespace gspc
           u->deliver (make::receipt_frame (*f.get_header ("receipt")));
         }
 
-        return 0;
+        return rc;
       }
 
       int queue_manager_t::request ( user_ptr u
