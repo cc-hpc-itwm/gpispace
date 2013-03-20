@@ -7,6 +7,7 @@ set (simple_targets
      pnetput
      pnet2dot
      pneti
+     pnetlt
     )
 
 foreach (target ${simple_targets})
