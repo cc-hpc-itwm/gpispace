@@ -23,8 +23,6 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/daemon/JobFSM.hpp>
-#include <sdpa/uuid.hpp>
-#include <sdpa/uuidgen.hpp>
 
 #include <sdpa/daemon/exceptions.hpp>
 
