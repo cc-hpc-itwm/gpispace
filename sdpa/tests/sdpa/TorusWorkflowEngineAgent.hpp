@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  TORUSGwes.hpp
+ *       Filename:  TORUS_WE.hpp
  *
  *    Description:  Simulate simple gwes behavior
  *
