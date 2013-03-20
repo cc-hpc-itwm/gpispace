@@ -15,7 +15,7 @@ using namespace sdpa;
 using namespace std;
 using namespace seda;
 
-const int NMAXTRIALS = 10;
+const int NMAXTRIALS = 20;
 const int MAX_CAP 	 = 100;
 static int testNb 	 = 0;
 
@@ -84,15 +84,44 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 	time_type poll_start = boost::posix_time::microsec_clock::local_time();
 
 	int exit_code(4);
-
-	ptrCli->subscribe(job_id);
-
-	LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
-
 	std::string job_status;
+	bool bSubscribed=false;
 
   	int nTrials = 0;
-  	do {
+  	do
+  	{
+  		do
+		{
+			try
+			{
+				ptrCli->subscribe(job_id);
+				bSubscribed = true;
+			}
+			catch(...)
+			{
+				bSubscribed = false;
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
+			}
+
+			if(bSubscribed)
+				break;
+
+			nTrials++;
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+		}while(nTrials<NMAXTRIALS);
+
+		if(bSubscribed)
+		{
+			LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+			nTrials = 0;
+		}
+		else
+		{
+			LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
+		  	return exit_code;
+		}
+
 
   		LOG(INFO, "start waiting at: " << poll_start);
 
@@ -127,10 +156,13 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 			}
 			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
 			{
-				std::cerr<< "got error event: reason := "
+				LOG(WARN, "got error event: reason := "
 							+ err->reason()
 							+ " code := "
-							+ boost::lexical_cast<std::string>(err->error_code())<<std::endl;
+							+ boost::lexical_cast<std::string>(err->error_code()));
+
+				// give some time to the orchestrator to come up
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 			}
 			else
@@ -228,7 +260,6 @@ RETRY:
 	}
 
 	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
     ptrCli.reset();
 }
 
@@ -321,7 +352,7 @@ BOOST_AUTO_TEST_CASE( test2Subscribers_OrchNoWEWait)
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+		LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 	}
 
 	ptrCli_0->shutdown_network();
@@ -334,13 +365,12 @@ BOOST_AUTO_TEST_CASE( test2Subscribers_OrchNoWEWait)
 	subscribe_and_wait(job_id_user, ptrCli_1 );
 
 	try {
-			LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-			ptrCli_1->retrieveResults(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
+		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+		ptrCli_1->retrieveResults(job_id_user);
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-
 		LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
 
 		ptrCli_1->shutdown_network();
