@@ -5,6 +5,11 @@ fhg_add_test(test_frame_parser.cpp
   DESCRIPTION "GSPCNet - frame parser tests"
 )
 
+fhg_add_test(test_frame_builder.cpp
+  LINK_LIBRARIES gspcnet
+  DESCRIPTION "GSPCNet - frame builder tests"
+)
+
 fhg_add_test(test_queue_manager.cpp
   LINK_LIBRARIES gspcnet
                  ${Boost_THREAD_LIBRARY}
