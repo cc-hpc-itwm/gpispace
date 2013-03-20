@@ -110,39 +110,20 @@ namespace fhg { namespace log {
 	{
 	  for (;;)
 	  {
-		try
-		{
-		  lock_type lock(mtx_);
-		  while (events_.empty())
-		  {
-			event_available_.wait(lock);
-		  }
-		  LogEvent evt = events_.front(); events_.pop_front();
-		  DecoratingAppender::append(evt);
+            lock_type lock(mtx_);
+            while (events_.empty())
+            {
+              event_available_.wait(lock);
+            }
+            LogEvent evt = events_.front(); events_.pop_front();
+            DecoratingAppender::append(evt);
 
-		  if (events_.empty())
-		  {
-			flushed_.notify_all();
-		  }
-		}
-		catch (const boost::thread_interrupted &)
-		{
-		  break;
-		}
-		catch (const std::exception &ex)
-		{
-#ifndef NDEBUG
-		  std::clog << "W: error during logging: " << ex.what() << std::endl;
-#endif
-		}
-		catch (...)
-		{
-#ifndef NDEBUG
-		  std::clog << "W: unknown error during logging!" << std::endl;
-#endif
-		}
-	  }
-	}
+            if (events_.empty())
+            {
+              flushed_.notify_all();
+            }
+          }
+        }
 
 	private:
 	  boost::thread log_thread_;
