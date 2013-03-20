@@ -1,0 +1,11 @@
+n_of_m
+n_of_m._generate_work_break
+n_of_m._wait_done
+n_of_m._wait_dec
+n_of_m._generate_credit_init
+n_of_m._generate_credit_break
+n_of_m.credit_back
+n_of_m.scatter
+n_of_m._generate_credit_step
+n_of_m._work_work
+n_of_m._generate_work_step
