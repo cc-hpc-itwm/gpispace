@@ -71,15 +71,16 @@ namespace gspc
         }
         m_user_subscriptions.erase (user);
 
-        if (f.has_header ("receipt"))
+        gspc::net::header::receipt r (f);
+        if (r.value ())
         {
-          user->deliver (make::receipt_frame (*f.get_header ("receipt")));
+          user->deliver (make::receipt_frame (r));
         }
 
         return 0;
       }
 
-      int queue_manager_t::send ( user_ptr u
+      int queue_manager_t::send ( user_ptr user
                                 , std::string const & dst
                                 , frame const &f
                                 )
@@ -105,15 +106,16 @@ namespace gspc
           rc = -ESRCH;
         }
 
-        if (f.has_header ("receipt"))
+        gspc::net::header::receipt r (f);
+        if (r.value ())
         {
-          u->deliver (make::receipt_frame (*f.get_header ("receipt")));
+          user->deliver (make::receipt_frame (r));
         }
 
         return rc;
       }
 
-      int queue_manager_t::request ( user_ptr u
+      int queue_manager_t::request ( user_ptr user
                                    , std::string const & dst
                                    , frame const & rqst
                                    )
@@ -133,7 +135,7 @@ namespace gspc
                                    );
         }
 
-        u->deliver (rply);
+        user->deliver (rply);
 
         return rc;
       }

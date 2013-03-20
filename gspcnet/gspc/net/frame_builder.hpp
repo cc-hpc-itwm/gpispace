@@ -2,6 +2,7 @@
 #define GSPC_NET_FRAME_BUILDER_HPP
 
 #include <gspc/net/frame.hpp>
+#include <gspc/net/header.hpp>
 
 namespace gspc
 {
@@ -10,7 +11,7 @@ namespace gspc
     namespace make
     {
       frame error_frame (int ec, const char *message);
-      frame receipt_frame (frame::value_type const &id);
+      frame receipt_frame (gspc::net::header::receipt const &);
     }
   }
 }

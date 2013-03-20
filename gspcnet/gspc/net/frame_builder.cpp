@@ -19,10 +19,11 @@ namespace gspc
         return f;
       }
 
-      frame receipt_frame (frame::value_type const &id)
+      frame receipt_frame (gspc::net::header::receipt const &id)
       {
         frame f ("RECEIPT");
-        f.set_header ("receipt-id", id);
+        gspc::net::header::receipt_id r_id (*id.value ());
+        r_id.apply_to (f);
         return f;
       }
     }
