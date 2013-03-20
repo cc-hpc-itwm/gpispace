@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_AgentsAndDrts.cpp
+ *       Filename:  test_Capabilities.cpp
  *
  *    Description:  test all components, each with a real gwes, using a real user client
  *
@@ -16,40 +16,14 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testCapabilities
-#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
-
-#include <iostream>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-
-#include <boost/thread.hpp>
-
 #include "tests_config.hpp"
-
-#include "sdpa/memory.hpp"
-#include "sdpa/logging.hpp"
-#include "sdpa/daemon/DaemonFSM.hpp"
-#include <seda/Strategy.hpp>
-#include <sdpa/client/ClientApi.hpp>
-
-#include <plugins/drts.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <seda/StageRegistry.hpp>
-
-#include <boost/filesystem/path.hpp>
-
+#include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <boost/thread.hpp>
-
-//plugin
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
-
+#include <tests/sdpa/CreateDrtsWorker.hpp>
+#include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
@@ -62,7 +36,6 @@ using namespace sdpa::tests;
 
 #define NO_GUI ""
 
-#include "kvs_setup_fixture.hpp"
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
@@ -118,8 +91,6 @@ struct MyFixture
 	std::stringstream sstrAgg;
 
 	boost::thread m_threadClient;
-
-	fhg::core::kernel_t *kernel;
 };
 
 void MyFixture::run_client()
@@ -172,7 +143,7 @@ void MyFixture::run_client()
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-				boost::this_thread::sleep(boost::posix_time::seconds(10));
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -185,7 +156,7 @@ void MyFixture::run_client()
 					return;
 				}
 
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 		}
 
@@ -194,18 +165,15 @@ void MyFixture::run_client()
 		try {
 				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 				ptrCli->retrieveResults(job_id_user);
-				boost::this_thread::sleep(boost::posix_time::seconds(3));
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-
 			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
 			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 
 		nTrials = 0;
@@ -213,7 +181,7 @@ void MyFixture::run_client()
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -222,47 +190,11 @@ void MyFixture::run_client()
 			ptrCli->shutdown_network();
 			ptrCli.reset();
 			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 	}
 
 	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
     ptrCli.reset();
-}
-
-
-sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(	const std::string& drtsName,
-																const std::string& masterName,
-																const std::string& cpbList,
-																const std::string& strWfePath)
-{
-	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
-        kernel->set_name (drtsName);
-
-	kernel->put("plugin.kvs.host", kvs_host());
-	kernel->put("plugin.kvs.port", kvs_port ());
-
-	//see ~/.sdpa/configs/sdpa.rc
-	std::string guiUrl("localhost:6408");
-	kernel->put("plugin.gui.url", guiUrl);
-
-	kernel->put("plugin.drts.name", drtsName);
-	kernel->put("plugin.drts.master", masterName);
-	kernel->put("plugin.drts.backlog", "2");
-	kernel->put("plugin.drts.request-mode", "false");
-
-	kernel->put("plugin.drts.capabilities", cpbList);
-	kernel->put("plugin.wfe.library_path", strWfePath /*TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH*/);
-
-	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
-
-	return kernel;
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
@@ -289,13 +221,13 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 	ptrAgent->start_agent(false);
 
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0", "B", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "B", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH,  kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( create_drts("drts_2", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( createDRTSWorker("drts_2", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH,  kvs_host(), kvs_port()) );
 	boost::thread drts_2_thread = boost::thread( &fhg::core::kernel_t::run, drts_2 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
@@ -343,13 +275,13 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 	ptrAgent->start_agent(false);
 
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( create_drts("drts_2", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( createDRTSWorker("drts_2", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
 	boost::thread drts_2_thread = boost::thread( &fhg::core::kernel_t::run, drts_2 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));

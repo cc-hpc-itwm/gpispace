@@ -1,9 +1,7 @@
 #define BOOST_TEST_MODULE job_id
 
 #include <boost/test/unit_test.hpp>
-
 #include <sstream>
-
 #include <sdpa/JobId.hpp>
 
 BOOST_AUTO_TEST_CASE (default_constructor)

@@ -16,39 +16,14 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testAgentsAndDrts
-#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
-
-#include <iostream>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-
-#include <boost/thread.hpp>
-
 #include "tests_config.hpp"
-
-#include "sdpa/memory.hpp"
-#include "sdpa/logging.hpp"
-#include "sdpa/daemon/DaemonFSM.hpp"
-#include <seda/Strategy.hpp>
-#include <sdpa/client/ClientApi.hpp>
-
-#include <plugins/drts.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <seda/StageRegistry.hpp>
-
-#include <boost/filesystem/path.hpp>
-
+#include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <boost/thread.hpp>
-
 #include <tests/sdpa/CreateDrtsWorker.hpp>
 #include "kvs_setup_fixture.hpp"
-BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
@@ -61,6 +36,7 @@ using namespace sdpa::tests;
 
 #define NO_GUI ""
 
+BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
 {
