@@ -93,6 +93,7 @@ execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
   m_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
   m_view->setTransformationAnchor (QGraphicsView::AnchorViewCenter);
   m_view->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+  m_view->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
   m_component_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
   m_component_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
