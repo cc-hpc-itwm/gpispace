@@ -18,6 +18,13 @@ namespace gspc
         f.set_header ("message", message);
         return f;
       }
+
+      frame receipt_frame (frame::value_type const &id)
+      {
+        frame f ("RECEIPT");
+        f.set_header ("receipt-id", id);
+        return f;
+      }
     }
   }
 }

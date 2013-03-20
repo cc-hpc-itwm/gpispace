@@ -10,7 +10,7 @@ namespace gspc
     namespace make
     {
       frame error_frame (int ec, const char *message);
-      frame receipt (frame::value_type const &id);
+      frame receipt_frame (frame::value_type const &id);
     }
   }
 }
