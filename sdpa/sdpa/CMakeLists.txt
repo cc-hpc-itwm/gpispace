@@ -11,14 +11,11 @@ set (hdrs
   memory.hpp
   SDPAException.hpp
   types.hpp
-  uuidgen.hpp
-  uuid.hpp
   job_states.hpp
 )
 
 set (srcs
   JobId.cpp
-  uuidgen.cpp
 )
 
 ADD_LIBRARY(sdpa ${hdrs} ${srcs})
