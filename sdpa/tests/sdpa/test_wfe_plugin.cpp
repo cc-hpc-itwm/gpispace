@@ -70,7 +70,7 @@ static int s_load_unload_test ()
 
       ifs >> counter_value;
 
-      BOOST_CHECK_EQUAL (counter_value, 20);
+      BOOST_CHECK_EQUAL (counter_value, 20u);
     }
 
     unlink ("atomic_wfe_plugin_test.txt");

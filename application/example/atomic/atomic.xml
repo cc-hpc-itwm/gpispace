@@ -63,12 +63,12 @@
 	<in name="id" type="long" />
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
-	<module name="atomic_test" function="done A (id,filename)">
-          <cinclude href="fhglog/minimal.hpp"/>
+	<module name="atomic_test" function="done f_A (id,filename)">
+      <cinclude href="fhglog/minimal.hpp"/>
 	  <cinclude href="unistd.h" />
 	  <cinclude href="stdio.h" />
 	  <code><![CDATA[
-	  	LOG(INFO, ">>> running  A(" << id << ", " << filename << ")");
+	  	LOG(INFO, ">>> running  f_A(" << id << ", " << filename << ")");
 
 		FILE * pFile = fopen(filename.c_str(),"r");
 
@@ -90,7 +90,7 @@
 			fclose(pFile);
 		}
 
-	  	LOG(INFO, "<<< finished A(" << id << ", " << filename << ")");
+	  	LOG(INFO, "<<< finished f_A(" << id << ", " << filename << ")");
 
                 return we::type::literal::control();
 	  ]]></code>
@@ -134,12 +134,12 @@
 	<in name="id" type="long" />
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
-	<module name="atomic_test" function="done B(id, filename)">
+	<module name="atomic_test" function="done f_B(id, filename)">
 		<cinclude href="fhglog/minimal.hpp" />
 		<cinclude href="unistd.h" />
 		<cinclude href="stdio.h" />
         <code><![CDATA[
-	  		LOG(INFO, ">>> running  B(" << id << ", " << filename << ")");
+	  		LOG(INFO, ">>> running  f_B(" << id << ", " << filename << ")");
 
 			FILE * pFile = fopen(filename.c_str(),"r");
 
@@ -161,9 +161,9 @@
 				fclose(pFile);
 			}
 
-	  		LOG(INFO, "<<< finished B(" << id << ", " << filename << ")");
+	  		LOG(INFO, "<<< finished f_B(" << id << ", " << filename << ")");
 
-                        return we::type::literal::control();
+			return we::type::literal::control();
 	  ]]></code>
 	</module>
       </defun>
