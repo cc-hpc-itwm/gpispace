@@ -115,6 +115,12 @@ namespace gspc
         frame f ("DISCONNECT");
         return f;
       }
+
+      frame const & heartbeat_frame ()
+      {
+        static frame f;
+        return f;
+      }
     }
   }
 }
