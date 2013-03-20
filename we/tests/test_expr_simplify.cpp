@@ -22,13 +22,6 @@ namespace
     return result;
   }
 
-  void add_to_bindings_list ( const std::string& name
-                            , expr::parse::util::name_set_t& bindings
-                            )
-  {
-    bindings.insert (key_vec_from_string (name));
-  }
-
   void test ( const std::string& input
             , const std::string& expected_output
             , const std::list<std::string>& _needed_bindings
