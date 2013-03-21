@@ -148,7 +148,6 @@ int command_subscribe_and_wait ( const std::string &job_id
 		catch(...)
 		{
 			bSubscribed = false;
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
 		}
 
 		if(bSubscribed)
