@@ -62,7 +62,7 @@ namespace expr
         case _map_assign: return s << "map_assign";
         case _map_unassign: return s << "map_unassign";
         case _map_is_assigned: return s << "map_is_assigned";
-        case _map_get_assignment: return s << "map_get_assignement";
+        case _map_get_assignment: return s << "map_get_assignment";
         case _map_size: return s << "map_size";
         case _map_empty: return s << "map_empty";
         case _set_insert: return s << "set_insert";
