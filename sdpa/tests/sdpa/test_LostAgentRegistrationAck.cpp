@@ -251,8 +251,9 @@ public:
 };
 
 template <typename T>
-struct FaultyAgentFactory
+class FaultyAgentFactory
 {
+public:
    static FaultyAgent::ptr_t create( const std::string& name,
 							   const std::string& url,
 							   const sdpa::master_info_list_t& arrMasterNames,
