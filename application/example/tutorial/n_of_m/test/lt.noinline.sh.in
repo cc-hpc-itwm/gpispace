@@ -25,5 +25,5 @@ cleanup()
 trap 'cleanup' EXIT
 
 measured "setup-data" ${make_expr} ${NET}                   || die $EX_ERR_RUN
-pnetlt ${NET} > "${CMP}"                                    || die $EX_ERR_RUN
+pnetlt ${NET} | sort > "${CMP}"                             || die $EX_ERR_RUN
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
