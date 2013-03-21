@@ -1243,7 +1243,7 @@ function start_kvs ()
         return 1
     fi
 
-    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" -s "$state_dir/kvs.dat" "-C" "-b" "0" "-p" "${kvs_port}" "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize"; then
+    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" -s "''" "-C" "-b" "0" "-p" "${kvs_port}" "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize"; then
         log "E: could not start kvs, giving up!"
         return 1
     else
