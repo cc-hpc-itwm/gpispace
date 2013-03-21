@@ -1417,9 +1417,9 @@ void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pE
   try {
     subscribe(pEvt->subscriber(), pEvt->listJobIds());
   }
-  catch(...)
+  catch(const std::exception& exc)
   {
-    SDPA_LOG_WARN("An exception occurred when "<<pEvt->subscriber()<<" was attempting to subscribe!");
+    SDPA_LOG_WARN("An exception occurred when "<<pEvt->subscriber()<<" attempted to subscribe: "<<exc.what());
   }
 }
 
@@ -1811,43 +1811,54 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   // check if the subscribed jobs are already in a terminal state
   BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
   {
-    //try
-    {
-      Job::ptr_t& pJob = findJob(jobId);
-      sdpa::status_t jobStatus = pJob->getStatus();
+	  try {
+		  Job::ptr_t& pJob = findJob(jobId);
+		  sdpa::status_t jobStatus = pJob->getStatus();
 
-      if(jobStatus.find("Finished") != std::string::npos)
-      {
-        JobFinishedEvent::Ptr pEvtJobFinished
-          (new JobFinishedEvent( name()
-                               , subscriber
-                               , pJob->id()
-                               , pJob->result()
-                               ));
-        sendEventToMaster(pEvtJobFinished);
-      }
-      else if(jobStatus.find("Failed") != std::string::npos)
-      {
-        JobFailedEvent::Ptr pEvtJobFailed
-          (new JobFailedEvent( name()
-                             , subscriber
-                             , pJob->id()
-                             , pJob->result()
-                             )
-          );
-        pEvtJobFailed->error_code() =
-          fhg::error::UNASSIGNED_ERROR;
-        pEvtJobFailed->error_message() =
-          "TODO: take the error message from the job"
-          " pointer somehow";
-        sendEventToMaster(pEvtJobFailed);
-      }
-      else if( jobStatus.find("Cancelled") != std::string::npos)
-      {
-        CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
-        sendEventToMaster(pEvtCancelJobAck);
-      }
-    }
+		  if(jobStatus.find("Finished") != std::string::npos)
+		  {
+			  JobFinishedEvent::Ptr pEvtJobFinished
+			  	  (new JobFinishedEvent( name()
+					  	  	  	  	  , subscriber
+					  	  	  	  	  , pJob->id()
+					  	  	  	  	  , pJob->result()
+							));
+			  sendEventToMaster(pEvtJobFinished);
+		}
+		else if(jobStatus.find("Failed") != std::string::npos)
+		{
+			JobFailedEvent::Ptr pEvtJobFailed
+				(new JobFailedEvent( name()
+									, subscriber
+									, pJob->id()
+									, pJob->result()
+					 ));
+
+			pEvtJobFailed->error_code() = fhg::error::UNASSIGNED_ERROR;
+			pEvtJobFailed->error_message() = "TODO: take the error message from the job pointer somehow";
+			sendEventToMaster(pEvtJobFailed);
+		}
+		else if( jobStatus.find("Cancelled") != std::string::npos)
+		{
+			CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
+			sendEventToMaster(pEvtCancelJobAck);
+		}
+	  }
+	  catch(JobNotFoundException const &)
+	  {
+		  std::string strErr("The job ");
+		  strErr+=jobId.str();
+		  strErr+=" could not be found!";
+
+		  SDPA_LOG_ERROR(strErr);
+		  sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+				  	  	  	  	  	  	  	  	  	  	  	  , subscriber
+				  	  	  	  	  	  	  	  	  	  	  	  , ErrorEvent::SDPA_EJOBNOTFOUND
+				  	  	  	  	  	  	  	  	  	  	  	  , strErr
+		  	  	  	  	  	  	  	  	  	  	  	  	  	  )
+                                           	   ));
+
+     }
   }
 }
 
