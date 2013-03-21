@@ -449,8 +449,8 @@ log_monitor::~log_monitor()
   _io_thread.join();
 
   _log_model_update_timer->stop();
-  _log_model_update_thread->quit();
-  _log_model_update_thread->wait();
+  // _log_model_update_thread->quit();
+  // _log_model_update_thread->wait();
 }
 
 void log_monitor::append_log_event (const fhg::log::LogEvent & evt)
