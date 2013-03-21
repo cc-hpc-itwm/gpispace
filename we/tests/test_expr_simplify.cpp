@@ -9,6 +9,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/foreach.hpp>
 
 #include <string>
 
@@ -21,11 +22,24 @@ namespace
     return result;
   }
 
-  void add_to_bindings_list ( const std::string& name
-                            , expr::parse::util::name_set_t& bindings
-                            )
+  void test ( const std::string& input
+            , const std::string& expected_output
+            , const std::list<std::string>& _needed_bindings
+            )
   {
-    bindings.insert (key_vec_from_string (name));
+    expr::parse::util::name_set_t needed_bindings;
+
+    BOOST_FOREACH (const std::string& name, _needed_bindings)
+    {
+      needed_bindings.insert (key_vec_from_string (name));
+    }
+
+    const expr::parse::parser parser (input);
+
+    const expr::parse::parser simplified_parser
+      (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+
+    BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
   }
 }
 
@@ -41,16 +55,47 @@ BOOST_AUTO_TEST_CASE (constant_propagation)
       "(${b} := []);"
     );
 
-  expr::parse::util::name_set_t needed_bindings;
-  add_to_bindings_list ("a", needed_bindings);
-  add_to_bindings_list ("b", needed_bindings);
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("a");
+  needed_bindings.push_back ("b");
 
-  expr::parse::parser parser (input);
+  test (input, expected_output, needed_bindings);
+}
 
-  expr::parse::parser simplified_parser
-    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+BOOST_AUTO_TEST_CASE (constant_propagation_nothing_needed)
+{
+  const std::string input
+    ( "(${a} := []);"
+    );
 
-  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+  const std::string expected_output;
+
+  std::list<std::string> needed_bindings;
+
+  test (input, expected_output, needed_bindings);
+}
+
+BOOST_AUTO_TEST_CASE (constant_propagation_complex)
+{
+  const std::string input
+    ( "(${a} := []);"
+      "(${b} := ${a});"
+      "(${a.a} := []);"
+      "(${c} := ${a});"
+    );
+
+  const std::string expected_output
+    ( "(${a} := []);"
+      "(${b} := []);"
+      "(${a.a} := []);"
+      "(${c} := ${a});"
+    );
+
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("b");
+  needed_bindings.push_back ("c");
+
+  test (input, expected_output, needed_bindings);
 }
 
 BOOST_AUTO_TEST_CASE (copy_propagation)
@@ -65,16 +110,47 @@ BOOST_AUTO_TEST_CASE (copy_propagation)
       "(${c} := ${a});"
     );
 
-  expr::parse::util::name_set_t needed_bindings;
-  add_to_bindings_list ("b", needed_bindings);
-  add_to_bindings_list ("c", needed_bindings);
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("b");
+  needed_bindings.push_back ("c");
 
-  expr::parse::parser parser (input);
+  test (input, expected_output, needed_bindings);
+}
 
-  expr::parse::parser simplified_parser
-    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+BOOST_AUTO_TEST_CASE (copy_propagation_complex)
+{
+  const std::string input
+    ( "(${b.b.b} := ${a});"
+      "(${c} := ${b.b.b.b});"
+    );
 
-  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+  const std::string expected_output
+    ( "(${c} := ${a.b});"
+    );
+
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("c");
+
+  test (input, expected_output, needed_bindings);
+}
+
+BOOST_AUTO_TEST_CASE (copy_propagation_complex_and_overwrite)
+{
+  const std::string input
+    ( "(${b.b.b} := ${a});"
+      "(${c} := ${b.b.b.b});"
+      "(${b.b} := ${x});"
+      "(${c} := ${b.b.b.b});"
+    );
+
+  const std::string expected_output
+    ( "(${c} := ${x.b.b});"
+    );
+
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("c");
+
+  test (input, expected_output, needed_bindings);
 }
 
 BOOST_AUTO_TEST_CASE (constant_and_copy_propagation)
@@ -91,17 +167,12 @@ BOOST_AUTO_TEST_CASE (constant_and_copy_propagation)
       "(${c} := []);"
     );
 
-  expr::parse::util::name_set_t needed_bindings;
-  add_to_bindings_list ("a", needed_bindings);
-  add_to_bindings_list ("b", needed_bindings);
-  add_to_bindings_list ("c", needed_bindings);
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("a");
+  needed_bindings.push_back ("b");
+  needed_bindings.push_back ("c");
 
-  expr::parse::parser parser (input);
-
-  expr::parse::parser simplified_parser
-    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
-
-  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+  test (input, expected_output, needed_bindings);
 }
 
 BOOST_AUTO_TEST_CASE (dead_code_elimination)
@@ -115,15 +186,28 @@ BOOST_AUTO_TEST_CASE (dead_code_elimination)
   const std::string expected_output
     ("(${a} := []);");
 
-  expr::parse::util::name_set_t needed_bindings;
-  add_to_bindings_list ("a", needed_bindings);
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("a");
 
-  expr::parse::parser parser (input);
+  test (input, expected_output, needed_bindings);
+}
 
-  expr::parse::parser simplified_parser
-    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
+BOOST_AUTO_TEST_CASE (dead_code_elimination_complex)
+{
+  //! \todo can we do some elimination here?
+  const std::string input
+    ( "(${a.a.a} := (${a.a} + 1L));"
+      "(${a.a.a} := []);"
+    );
 
-  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+  const std::string expected_output
+    ( input
+    );
+
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("a");
+
+  test (input, expected_output, needed_bindings);
 }
 
 BOOST_AUTO_TEST_CASE (all_combined)
@@ -173,45 +257,40 @@ BOOST_AUTO_TEST_CASE (all_combined)
 
   const std::string expected_output
     ("(${wait} := ${object.PARALLEL_LOADTT});"
-     "(${state.id} := 0);"
+     "(${state.id} := 0L);"
      "(${state.max} := ${object.OFFSETS});"
-     "(${N} := (2 + (${object.VOLUME_CREDITS} div ${object.SUBVOLUMES_PER_OFFSET})));"
+     "(${N} := (2L + (${object.VOLUME_CREDITS} div ${object.SUBVOLUMES_PER_OFFSET})));"
      "(${__generate_offset_credits_trigger_when_amount_state.pair.tag} := []);"
-     "(${__generate_offset_credits_trigger_when_amount_state.pair.id} := 0);"
+     "(${__generate_offset_credits_trigger_when_amount_state.pair.id} := 0L);"
      "(${__generate_offset_credits_trigger_when_amount_state.max} := ${N});"
-     "(${___loadTT_generate_init_state.id} := 0);"
+     "(${___loadTT_generate_init_state.id} := 0L);"
      "(${___loadTT_generate_init_state.max} := ${object.PARALLEL_LOADTT});"
      "(${_init_wait_wait} := (${object.OFFSETS} * ${object.SUBVOLUMES_PER_OFFSET}));"
      "(${_extract_number_of_volume_credits_b} := ${object.VOLUME_CREDITS});"
      "(${__generate_volume_credits_trigger_when_amount_state.pair.tag} := []);"
-     "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0);"
+     "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0L);"
      "(${__generate_volume_credits_trigger_when_amount_state.max} := ${object.VOLUME_CREDITS});"
      "(${pair} := ${state.pair});"
-     "(${state.pair.id} := (${state.pair.id} + 1));"
+     "(${state.pair.id} := (${state.pair.id} + 1L));"
      "(${volume.id} := ${pair.id});"
      "(${b} := ${pair.id});"
      "(${test} := ${state.pair.id});"
      "(${volume.offset} := ${pair.tag});"
     );
 
-  expr::parse::util::name_set_t needed_bindings;
-  add_to_bindings_list ("___loadTT_generate_init_state", needed_bindings);
-  add_to_bindings_list ("__generate_offset_credits_trigger_when_amount_state", needed_bindings);
-  add_to_bindings_list ("__generate_volume_credits_trigger_when_amount_state", needed_bindings);
-  add_to_bindings_list ("_extract_number_of_volume_credits_b", needed_bindings);
-  add_to_bindings_list ("state", needed_bindings);
-  add_to_bindings_list ("_init_wait_wait", needed_bindings);
-  add_to_bindings_list ("object", needed_bindings);
-  add_to_bindings_list ("wait", needed_bindings);
-  add_to_bindings_list ("b", needed_bindings);
-  add_to_bindings_list ("volume", needed_bindings);
-  add_to_bindings_list ("state", needed_bindings);
-  add_to_bindings_list ("test", needed_bindings);
+  std::list<std::string> needed_bindings;
+  needed_bindings.push_back ("___loadTT_generate_init_state");
+  needed_bindings.push_back ("__generate_offset_credits_trigger_when_amount_state");
+  needed_bindings.push_back ("__generate_volume_credits_trigger_when_amount_state");
+  needed_bindings.push_back ("_extract_number_of_volume_credits_b");
+  needed_bindings.push_back ("state");
+  needed_bindings.push_back ("_init_wait_wait");
+  needed_bindings.push_back ("object");
+  needed_bindings.push_back ("wait");
+  needed_bindings.push_back ("b");
+  needed_bindings.push_back ("volume");
+  needed_bindings.push_back ("state");
+  needed_bindings.push_back ("test");
 
-  expr::parse::parser parser (input);
-
-  expr::parse::parser simplified_parser
-    (expr::parse::simplify::simplification_pass (parser, needed_bindings));
-
-  BOOST_REQUIRE_EQUAL (simplified_parser.string(), expected_output);
+  test (input, expected_output, needed_bindings);
 }

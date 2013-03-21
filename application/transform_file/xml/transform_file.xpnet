@@ -50,9 +50,13 @@
         <out name="n_write_slots" type="long"/>
         <out name="n_chunks" type="long"/>
 
-        <module name="create_config" function="config create_config (input_file, output_file, chunk_size,
-                                               input_n_read_slots, input_n_write_slots,
-                                               n_chunks, n_read_slots, n_write_slots)">
+        <module name="create_config" function="config create_config (	input_file, 
+        																output_file, chunk_size,
+                                               							input_n_read_slots, 
+                                               							input_n_write_slots,
+                                               							n_chunks, 
+                                               							n_read_slots, 
+                                               							n_write_slots)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <cinclude href="cstdio"/>
@@ -66,18 +70,17 @@
           FILE *pf;
           if((pf = fopen(input_file.c_str(), "r"))== NULL)
           {
-          std::ostringstream oss;
-          oss<<"  Could not open the file " <<input_file << "!";
-          MLOG(ERROR, oss.str());
-          throw std::runtime_error(oss.str());
+	          std::ostringstream oss;
+	          oss<<"  Could not open the file " <<input_file << "!";
+	          MLOG(ERROR, oss.str());
+	          throw std::runtime_error(oss.str());
           }
 
           fseek(pf, 0L, SEEK_END);
           long input_file_size = ftell(pf);
           fclose(pf);
 
-          // truncate output file
-
+          if( !output_file.empty() )
           {
             std::ofstream f (output_file.c_str());
 
@@ -86,12 +89,14 @@
               throw std::runtime_error ("could not create output file " + output_file);
             }
           }
+          else
+          	MLOG(WARN, "No output file specified, therefore the result will not be stored!");
 
           ::pnetc::type::config::config config;
           printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
           if(input_file_size<=0)
           {
-          throw std::runtime_error("invalid size for the input file!!!" );
+			throw std::runtime_error("invalid size for the input file!!!" );
           }
 
           n_chunks = DIVRU(input_file_size,chunk_size);
@@ -230,17 +235,17 @@
 
           if((file_ptr = fopen(config.input_file.c_str(), "r"))== NULL)
           {
-          std::ostringstream oss;
-          oss<<"  Could not open the file " << config.input_file << "!";
-          MLOG(ERROR, oss.str());
-          throw std::runtime_error(oss.str());
+	          std::ostringstream oss;
+	          oss<<"  Could not open the file " << config.input_file << "!";
+	          MLOG(ERROR, oss.str());
+	          throw std::runtime_error(oss.str());
           }
 
           long offset = chunk_and_slot.chunk * config.chunk_size;
           if( (fseek(file_ptr, offset, SEEK_SET)) != 0)
           {
-          printf("Error in seek operation: errno \n");
-          exit(1);
+	          printf("Error in seek operation: errno \n");
+	          exit(1);
           }
 
           size_t size = sizeof(char)*config.chunk_size;
@@ -254,10 +259,10 @@
 
           waitComm ( fvmPutGlobalData
           ( static_cast<fvmAllocHandle_t> (config.read_area)
-          , chunk_and_slot.slot*config.chunk_size
-          , result
-          , 0
-          , 0
+          	, chunk_and_slot.slot*config.chunk_size
+          	, result
+          	, 0
+          	, 0
           )
           );
 
@@ -300,10 +305,10 @@
 
           waitComm ( fvmGetGlobalData
           ( static_cast<fvmAllocHandle_t> (config.read_area)
-          , chunk_read_info.read_slot_id*config.chunk_size
-          , chunk_read_info.size
-          , 0
-          , 0
+          	, chunk_read_info.read_slot_id*config.chunk_size
+          	, chunk_read_info.size
+          	, 0
+          	, 0
           )
           );
 
@@ -311,8 +316,8 @@
 
           // transform chunk
           for( int k=0; k<chunk_read_info.size; k++ )
-          if( isalpha(*(chunk+k)) )
-          *(chunk+k) = toupper(*(chunk+k));
+          	if( isalpha(*(chunk+k)) )
+				*(chunk+k) = toupper(*(chunk+k));
 
           c_w_info.write_slot_id = write_slot_id;
           c_w_info.chunk_id = chunk_read_info.chunk_id;
@@ -320,10 +325,10 @@
 
           waitComm ( fvmPutGlobalData
           ( static_cast<fvmAllocHandle_t> (config.write_area)
-          , write_slot_id*config.chunk_size
-          , c_w_info.size
-          , 0
-          , 0
+          	, write_slot_id*config.chunk_size
+          	, c_w_info.size
+          	, 0
+          	, 0
           )
           );
 
@@ -364,10 +369,10 @@
           // get data from vm::write_area
           waitComm( fvmGetGlobalData
           ( static_cast<fvmAllocHandle_t> (config.write_area)
-          , chunk_write_info.write_slot_id*config.chunk_size
-          , chunk_write_info.size
-          , 0
-          , 0
+          	, chunk_write_info.write_slot_id*config.chunk_size
+          	, chunk_write_info.size
+          	, 0
+          	, 0
           )
           );
 
@@ -376,22 +381,29 @@
           // write the data into file at the position
           // chunk_id*config.chunk_size
 
-          int fd = open (config.output_file.c_str (), O_RDWR);
-          if (fd == -1)
-          {
-          throw std::runtime_error
-          ( std::string ("could not open output file '")
-          + config.output_file + "' "
-          + strerror (errno)
-          );
-          }
-          else
-          {
-          lseek (fd, chunk_write_info.chunk_id*config.chunk_size, SEEK_SET);
-          write (fd, ptrChunk, chunk_write_info.size);
-          close (fd);
-          }
-
+		  if(!config.output_file.empty())
+		  {
+	          int fd = open (config.output_file.c_str (), O_RDWR);
+	          if (fd == -1)
+	          {
+		          throw std::runtime_error
+		          ( std::string ("could not open output file '")
+		          	+ config.output_file + "' "
+		          	+ strerror (errno)
+		          );
+	          }
+	          else
+	          {
+		          lseek (fd, chunk_write_info.chunk_id*config.chunk_size, SEEK_SET);
+		          write (fd, ptrChunk, chunk_write_info.size);
+		          close (fd);
+	          }
+		  }
+		  else
+		  {
+			MLOG (DEBUG, "No output file was specified, therefore the result will not be stored");
+	      }
+		  
           write_slot_id = chunk_write_info.write_slot_id;
           return we::type::literal::control();
           ]]></code>
@@ -432,14 +444,13 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <code><![CDATA[
-          LOG (INFO, "finalize: " << config);
+          	LOG (INFO, "finalize: " << config);
+			namespace vmem = ::transform_file::util::memory::global;
 
-          namespace vmem = ::transform_file::util::memory::global;
+          	vmem::free(config.read_area);
+          	vmem::free(config.write_area);
 
-          vmem::free(config.read_area);
-          vmem::free(config.write_area);
-
-          return we::type::literal::control();
+          	return we::type::literal::control();
           ]]></code>
         </module>
       </defun>

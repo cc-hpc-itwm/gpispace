@@ -17,6 +17,7 @@ usage: $(basename $0) [options]
   -d: do not delete logfiles
   -c: ignored (accepted for backward compatibility)
   -C: capability specification
+  -G: number of segments
 
         format:
            <CAP>[+CAP1...][:N[xM][,shm]]
@@ -30,6 +31,9 @@ usage: $(basename $0) [options]
 
            WRITE:2x4,16*2**20
               2 WRITE workers/node but on at most 4 nodes
+
+           WRITE+LOAD:2
+              2 workers/node with capabilities WRITE *and* LOAD
 EOF
 }
 
@@ -148,6 +152,7 @@ config_file="$HOME/.sdpa/configs/sdpa.rc"
 gpi_enabled=true
 delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
+number_of_groups=1
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -162,7 +167,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:c:C:F:p:MA:d" opt; do
+while getopts ":hnf:S:m:s:c:C:F:p:MA:dG:" opt; do
     case $opt in
         h)
             usage
@@ -220,6 +225,10 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:d" opt; do
             delete_logfiles=false
             shiftcount=$((shiftcount + 1))
             ;;
+        G)
+            number_of_groups=$OPTARG
+            shiftcount=$((shiftcount + 2))
+            ;;
         \?)
             echo >&2 "invalid option: $OPTARG"
             exit 1
@@ -240,6 +249,10 @@ fi
 
 if [ -z "$SDPA_HOME" ] ; then
     error 2 "SDPA_HOME is not set!"
+fi
+
+if [ $number_of_groups -le 0 ] ; then
+    error 2 "number of groups must be positive: found: $number_of_groups"
 fi
 
 if [ "${nodefile:0:1}" != "/" ]; then
@@ -269,6 +282,16 @@ if [ ! -e "${config_file}" ] ; then
     }
 fi
 
+script_start_drts="${SDPA_HOME}/libexec/sdpa/scripts/start-drts"
+if [ ! -x "${script_start_drts}" ] ; then
+    error 2 "utility script '${script_start_drts}' is not executable"
+fi
+
+script_start_agent="${SDPA_HOME}/libexec/sdpa/scripts/start-agent"
+if [ ! -x "${script_start_agent}" ] ; then
+    error 2 "utility script '${script_start_agent}' is not executable"
+fi
+
 hosts=( $(cat "$nodefile" | uniq) )
 
 if [ ${#hosts[@]} -eq 0 ] ; then
@@ -277,6 +300,10 @@ fi
 
 master=${hosts[0]}
 num_hosts=${#hosts[@]}
+
+if [ $number_of_groups -gt $num_hosts ] ; then
+    error 2 "number of groups must not be larger than number of hosts: $number_of_groups > $num_hosts"
+fi
 
 info "using nodefile: $nodefile"
 
@@ -320,17 +347,105 @@ fi
 log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
-dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start gpi
+if $gpi_enabled ; then
+    dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start gpi
+fi
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start orch
-dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start agg
 
 # for each capability:
 #    for each host
 #       - check maximum worker limit, break
 #       - start additional workers, up to N
 
+pids=()
+max_background_tasks=8
+
+function wait_on_pids ()
+{
+    local pid=
+    for pid in ${pids[@]} ; do
+        wait $pid
+    done
+    pids=()
+}
+
+function wait_if_necessary ()
+{
+    if [ ${#pids[@]} -ge ${max_background_tasks} ] ; then
+        wait_on_pids
+    fi
+}
+
+segment_host_index=()
+segment_size=()
+segment_master=()
+
+function assign_segments
+{
+    if [ $number_of_groups -eq 1 ] ; then
+        segment_host_index[0]=0
+        segment_size[0]=${num_hosts}
+        segment_master=("agent-${master}-0")
+    else
+        local i=
+        local hosts_per_group=$(( ${num_hosts} / ${number_of_groups} ))
+        local remaining_hosts=$(( ${num_hosts} % ${number_of_groups} ))
+        local host=
+        local offset=0
+        for ((i=0 ; i < $number_of_groups ; ++i)) ; do
+            segment_host_index[$i]=${offset}
+            segment_size[$i]=${hosts_per_group}
+            host=${hosts[$offset]}
+            segment_master[$i]="agent-${host}-1"
+
+            offset=$((offset + hosts_per_group))
+        done
+
+        # add remaining hosts to last group
+        segment_size[$((number_of_groups - 1))]=$((hosts_per_group + remaining_hosts))
+    fi
+}
+
+function start_agent
+{
+    local host="$1" ; shift
+    local name="$1" ; shift
+    local master="$1" ; shift
+
+    info "starting agent: ${name} on host ${host} with parent ${master}"
+
+    dry_run rexec ${host} "${script_start_agent}" \
+        -D \
+        -n "${name}" \
+        -m "${master}" \
+        -s "${state_dir}" \
+        -F "${config_file}" &
+    pids+=( $! )
+}
+
+function start_agents
+{
+    start_agent ${master} "agent-${master}-0" "orchestrator"
+    ec=$?
+
+    if [ ${#segment_master[@]} -eq 1 ] ; then
+        return $ec
+    fi
+
+    local i=
+    for ((i = 0 ; i < ${#segment_master[@]} ; ++i)) ; do
+        host_idx=${segment_host_index[$i]}
+        host=${hosts[${host_idx}]}
+        name="agent-${host}-1"
+
+        start_agent "${host}" "${name}" "agent-${master}-0"
+        wait_if_necessary
+    done
+}
+
 function start_workers_for_capability
 {
+    local segment="$1"      ; shift
     local capability="$1"   ; shift
     local num_per_node="$1" ; shift
     local max_nodes="$1"    ; shift
@@ -342,26 +457,30 @@ function start_workers_for_capability
     elif [ $max_nodes -eq 1 ] ; then
         human_max="unique"
     fi
-    info "starting $capability workers ($num_per_node/host, $human_max, $shm_size SHM)..."
+    info "starting $capability workers (segment $segment, $num_per_node/host, $human_max, $shm_size SHM)..."
 
     num_nodes=0
-    start_drts="${SDPA_HOME}/libexec/sdpa/scripts/start-drts"
     caps_arg=$(echo "$capability" | tr '+' '\n' | xargs -n1 echo '-C')
 
-    for host in ${hosts[@]} ; do
-        id=1
+    master=${segment_master[$segment]}
+    group_start=${segment_host_index[$segment]}
+    group_size=${segment_size[$segment]}
+    group_end=$((group_start + group_size))
 
-        for (( j = 0 ; j < $num_per_node ; j += 1 )) ; do
+    local i=
+    for ((i=${group_start} ; i < ${group_end} ; ++i)) ; do
+        host=${hosts[$i]}
 
-            info "start $capability on $host ($j of $num_per_node)"
+        dry_run rexec $host "$script_start_drts" \
+            -D \
+            -c $num_per_node -n "$capability" \
+            -m "$master" $caps_arg \
+            -s "$state_dir" \
+            -F "$config_file" \
+            -M "$shm_size" &
+        pids+=( $! )
 
-            dry_run rexec $host "$start_drts" -D -i ${id} -n "$capability" \
-                                              -m aggregator $caps_arg \
-                                              -s "$state_dir" \
-                                              -F "$config_file" \
-                                              -M "$shm_size"
-            id=$(( id + 1 ))
-        done
+        wait_if_necessary
 
         num_nodes=$(( num_nodes + 1 ))
 
@@ -371,19 +490,23 @@ function start_workers_for_capability
     done
 }
 
-sizeof_capstruct=4
-count=0
-for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
-    capability=${capabilities[   $(( i+0 )) ]}
-    num_per_node=${capabilities[ $(( i+1 )) ]}
-    max_nodes=${capabilities[    $(( i+2 )) ]}
-    shm_size=${capabilities[     $(( i+3 )) ]}
+function start_workers
+{
+    local seg=
+    for (( seg=0 ; seg < ${number_of_groups} ; ++seg )) ; do
+        sizeof_capstruct=4
+        local i=
+        for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
+            capability=${capabilities[   $(( i+0 )) ]}
+            num_per_node=${capabilities[ $(( i+1 )) ]}
+            max_nodes=${capabilities[    $(( i+2 )) ]}
+            shm_size=${capabilities[     $(( i+3 )) ]}
+            start_workers_for_capability $seg "$capability" "$num_per_node" "$max_nodes" "$shm_size"
+        done
+    done
+}
 
-    start_workers_for_capability "$capability" "$num_per_node" "$max_nodes" "$shm_size" &
-    count=$((count+1))
-    if [ $count -gt 2 ] ; then
-      count=0
-      wait
-    fi
-done
-wait
+assign_segments
+start_agents
+start_workers
+wait_if_necessary

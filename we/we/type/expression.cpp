@@ -26,7 +26,7 @@ namespace we
 
     const std::string& expression_t::expression() const
     {
-      return _expr; 
+      return _expr;
     }
 
     const expression_t::ast_t& expression_t::ast() const
@@ -39,12 +39,14 @@ namespace we
       return _expr.empty();
     }
 
-    bool expression_t::simplify 
+    bool expression_t::simplify
     (const expr::parse::util::name_set_t& needed_bindings)
     {
       _ast = expr::parse::parser (expr::parse::simplify::simplification_pass
         (_ast, needed_bindings));
 
+      //! \todo Eliminate this comparsion, get the modified flag from
+      //! the call to the simplification pass
       const bool modified (_ast.string() != _expr);
 
       if (modified)

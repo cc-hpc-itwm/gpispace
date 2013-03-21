@@ -40,9 +40,6 @@ public slots:
 private:
   void handle_external_event (const fhg::log::LogEvent &);
 
-  boost::asio::io_service m_io_service;
-  fhg::log::remote::LogServer m_exe_server;
-  boost::thread m_io_thread;
   bool m_follow_execution;
 
   QGraphicsScene* m_scene;
@@ -57,15 +54,23 @@ private:
 
   mutable boost::recursive_mutex _scene_updates_lock;
   typedef std::pair<QGraphicsItem*, QGraphicsScene*> scene_update_t;
+  typedef std::pair<QGraphicsItem*, std::string> component_update_t;
   std::list<scene_update_t> _scene_updates;
+  std::list<component_update_t> _component_updates;
 
   mutable boost::recursive_mutex m_task_struct_mutex;
   std::vector<std::string> m_components;
   std::map<std::string, std::map<std::string, Task*> > m_tasks_grid;
   std::map<std::string, std::list<Task*> > m_tasks_list;
   std::map<std::string, QGraphicsItem*> _component_labels;
+  std::map<std::string, QGraphicsItem*> _component_dummies;
 
   bool _automatically_sort_components;
+  bool _sort_gantt_trigger;
+
+  boost::asio::io_service m_io_service;
+  fhg::log::remote::LogServer m_exe_server;
+  boost::thread m_io_thread;
 };
 
 #endif

@@ -7,9 +7,6 @@ find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 
-set(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/stresstest")
-message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}")
-
 set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH}")
 
@@ -56,21 +53,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_B
 include(pnet_macros)
 
 get_target_property(PNETPUT_LOCATION pnetput LOCATION)
-
-###########################################################################################
-#pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
-#  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-#  FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
-#)
-
-pnet_compile(sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
-  FLAGS -I${CMAKE_SOURCE_DIR}/fhglog
-           -I${CMAKE_BINARY_DIR}/fhglog
-           -I${CMAKE_SOURCE_DIR}/application/example
-           -I${CMAKE_SOURCE_DIR}/application/example/stresstest
-)
 
 ###########################################################################################
 pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabilities.xml
@@ -203,7 +185,7 @@ pnet_compile(transform_file-test-wf ${CMAKE_SOURCE_DIR}/application/transform_fi
 get_target_property(TRANSFORM_FILE_PNET_LOCATION pnet-transform_file-test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-transform_file-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if "${TRANSFORM_FILE_PNET_LOCATION}" -p input_file=\\"in.txt\\"
-                                                                        -p output_file=\\"out.txt\\"
+                                                                        -p output_file=\\"\\"
                                                                         -p input_n_read_slots="3L"
                                                                         -p input_n_write_slots="3L"
                                                                         -p chunk_size="512L"
@@ -225,6 +207,7 @@ set (tc_srcs
   test_JobId.cpp
   test_Scheduler.cpp
   test_LoadBalancer.cpp
+  test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
@@ -271,10 +254,10 @@ foreach (tc_src ${tc_srcs})
   add_test(${tc_name} ${LOC})
   add_dependencies(${tc_name} drts-plugin)
   add_dependencies(${tc_name} fvm-fake-plugin)
-  add_dependencies(${tc_name} sdpa-stresstest)
   add_dependencies(${tc_name} pnet-capabilities-test-wf)
   add_dependencies(${tc_name} pnet-capabilities_no_mandatory-test-wf)
   add_dependencies(${tc_name} pnet-atomic-test-wf)
   add_dependencies(${tc_name} pnet-inotify-test-wf)
   add_dependencies(${tc_name} pnet-transform_file-test-wf)
 endforeach(tc_src ${tc_srcs})
+

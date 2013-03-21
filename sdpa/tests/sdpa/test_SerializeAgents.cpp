@@ -13,6 +13,8 @@
 #include <sstream>
 #include <string>
 
+#include "tests_config.hpp"
+
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -26,21 +28,14 @@
 
 #include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/daemon/GenericDaemon.hpp>
-
 #include <sdpa/client/ClientApi.hpp>
-#include <seda/StageRegistry.hpp>
-#include <seda/Strategy.hpp>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-#include <boost/thread.hpp>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
+#include <tests/sdpa/CreateDrtsWorker.hpp>
+
+#include "kvs_setup_fixture.hpp"
+BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 const int MAX_CAP = 100;
 
@@ -50,9 +45,6 @@ using namespace sdpa;
 using namespace std;
 using namespace seda;
 
-static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("12100"); return s; }
-
 struct MyFixture
 {
 	MyFixture()
@@ -60,46 +52,12 @@ struct MyFixture
 			, m_sleep_interval(1000000)
 	{ //initialize and start the finite state machine
 
-		FHGLOG_SETUP();
-
 		LOG(DEBUG, "Fixture's constructor called ...");
-
-		m_pool = new fhg::com::io_service_pool(1);
-		m_kvsd = new fhg::com::kvs::server::kvsd ("/tmp/notthere");
-		m_serv = new fhg::com::tcp_server ( *m_pool
-										  , *m_kvsd
-										  , kvs_host ()
-										  , kvs_port ()
-										  , true
-										  );
-
-		m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-												, m_pool
-												)
-								   );
-
-		m_serv->start();
-
-		fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
-												, kvs_port()
-												, true
-												, boost::posix_time::seconds(10)
-												, 3
-												);
 	}
 
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
-
-		m_serv->stop ();
-		m_pool->stop ();
-		m_thrd->join ();
-
-		delete m_thrd;
-		delete m_serv;
-		delete m_kvsd;
-		delete m_pool;
 
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
@@ -126,11 +84,6 @@ struct MyFixture
 	int m_nITER;
 	int m_sleep_interval ;
     std::string m_strWorkflow;
-
-	fhg::com::io_service_pool *m_pool;
-	fhg::com::kvs::server::kvsd *m_kvsd;
-	fhg::com::tcp_server *m_serv;
-	boost::thread *m_thrd;
 };
 
 BOOST_AUTO_TEST_SUITE( test_SerializeAgents );

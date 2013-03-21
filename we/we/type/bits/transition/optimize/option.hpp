@@ -34,7 +34,7 @@ namespace we { namespace type {
             : _not (false)
             , _simple_pipe_elimination (true)
             , _merge_expressions (true)
-            , _simplify_expression_sequences (false)
+            , _simplify_expression_sequences (true)
 
             , _Onot ("Onot")
             , _Osimple_pipe_elimination ("Osimple-pipe-elimination")

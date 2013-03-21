@@ -1,42 +1,9 @@
 #define BOOST_TEST_MODULE TestStopRestartAgentsPollingCli
-#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
-#include <sdpa/daemon/Worker.hpp>
-#include <sdpa/JobId.hpp>
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include "boost/serialization/map.hpp"
-#include <sdpa/daemon/JobManager.hpp>
-
-#include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/daemon/GenericDaemon.hpp>
-
 #include <sdpa/client/ClientApi.hpp>
-#include <seda/StageRegistry.hpp>
-#include <seda/Strategy.hpp>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-#include <boost/thread.hpp>
 
 #include "tests_config.hpp"
 #include <boost/filesystem/fstream.hpp>
@@ -44,9 +11,8 @@
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 
-//plugin
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
+#include <tests/sdpa/CreateDrtsWorker.hpp>
+#include "kvs_setup_fixture.hpp"
 
 namespace bfs=boost::filesystem;
 using namespace sdpa::tests;
@@ -54,9 +20,6 @@ using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
 using namespace seda;
-
-static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("0"); return s; }
 
 const int NMAXTRIALS = 10;
 const int MAX_CAP 	 = 100;
@@ -66,61 +29,23 @@ namespace po = boost::program_options;
 
 #define NO_GUI ""
 
+BOOST_GLOBAL_FIXTURE (KVSSetup);
+
 struct MyFixture
 {
 	MyFixture()
 			: m_nITER(1)
 			, m_sleep_interval(1000) //microseconds
-			, m_pool (0)
-	    	, m_kvsd (0)
-	    	, m_serv (0)
-	    	, m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
 	{ //initialize and start the finite state machine
 
-		FHGLOG_SETUP();
-
 		LOG(DEBUG, "Fixture's constructor called ...");
-
-		m_pool = new fhg::com::io_service_pool(1);
-		m_kvsd = new fhg::com::kvs::server::kvsd ("");
-		m_serv = new fhg::com::tcp_server ( *m_pool
-										  , *m_kvsd
-										  , kvs_host ()
-										  , kvs_port ()
-										  , true
-										  );
-		m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-												, m_pool
-												)
-								   );
-
-		m_serv->start();
-
-		LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
-
-		fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-												  , boost::lexical_cast<std::string>(m_serv->port())
-												  , boost::posix_time::seconds(10)
-												  , 3
-												  );
-
 		m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	}
 
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
-
-		m_serv->stop ();
-		m_pool->stop ();
-		if(m_thrd->joinable())
-			m_thrd->join ();
-
-		delete m_thrd;
-		delete m_serv;
-		delete m_kvsd;
-		delete m_pool;
 
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
@@ -149,12 +74,7 @@ struct MyFixture
 
 	int m_nITER;
 	int m_sleep_interval ;
-  std::string m_strWorkflow;
-
-  fhg::com::io_service_pool *m_pool;
-	fhg::com::kvs::server::kvsd *m_kvsd;
-	fhg::com::tcp_server *m_serv;
-	boost::thread *m_thrd;
+	std::string m_strWorkflow;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
@@ -268,30 +188,7 @@ void MyFixture::run_client_polling()
 	}
 
 	ptrCli->shutdown_network();
-  ptrCli.reset();
-}
-
-sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
-{
-	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
-
-	kernel->put("plugin.kvs.host", kvs_host());
-	kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
-
-	kernel->put("plugin.drts.name", drtsName);
-	kernel->put("plugin.drts.master", masterName);
-	kernel->put("plugin.drts.backlog", "2");
-	//kernel->put("plugin.drts.request-mode", "false");
-
-	kernel->put("plugin.wfe.library_path", TESTS_TRANSFORM_FILE_MODULES_PATH);
-
-	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-	//kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
-
-	return kernel;
+	ptrCli.reset();
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
@@ -328,7 +225,7 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	ptrAgent0->shutdown(strBackupAgent0);
-	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
+	LOG( INFO, "Shutdown agent \"agent_0\". The recovery string is "<<strBackupAgent0);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
@@ -371,66 +268,18 @@ BOOST_AUTO_TEST_CASE( testStop_AgentWithDrts_push)
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false, strBackupAgent);
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	ptrAgent->shutdown(strBackupAgent);
-	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
+	LOG( INFO, "Shutdown the agent \"agent_0\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	// now try to recover the system
 	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-
-	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	ptrRecAgent->start_agent(false, strBackupAgent);
-
-	if( threadClient.joinable() ) threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-
-	ptrRecAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testStop_AgentWithDrts_push terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
-{
-	LOG( DEBUG, "testStop_AgentNoWE_push");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	//LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<void>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false, strBackupAgent);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
-
-	ptrAgent->shutdown(strBackupAgent);
-	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
-
-	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<void>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 
 	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
 	ptrRecAgent->start_agent(false, strBackupAgent);
@@ -445,8 +294,9 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	ptrRecAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_AgentNoWE_push terminated!");
+	LOG( DEBUG, "The test case testStop_AgentWithDrts_push terminated!");
 }
+
 
 BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
 {
@@ -470,13 +320,13 @@ BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false, strBackupAgent);
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0",  "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	ptrAgent->shutdown(strBackupAgent);
-	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
+	LOG( INFO, "Shutdown the agent \"agent_0\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
@@ -520,13 +370,13 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false, strBackupAgent);
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0",  "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	ptrAgent->shutdown(strBackupAgent);
-	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
+	LOG( INFO, "Shutdown the agent \"agent_0\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
@@ -547,65 +397,5 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 
 	LOG( DEBUG, "The test case testStop_AgentRealWE_push terminated!");
 }
-
-/*
-BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Req)
-{
-	LOG( DEBUG, "testStop_2AgentsAndDrts_Req");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent0 	= "127.0.0.1";
-	string addrAgent1	= "127.0.0.1";
-
-	std::string strBackupAgent0;
-	std::string strBackupAgent1;
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(true, strBackupOrch);
-
-	sdpa::master_info_list_t arrAgent0MasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
-	ptrAgent0->start_agent(true, strBackupAgent0);
-
-	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo, MAX_CAP );
-	ptrAgent1->start_agent(true, strBackupAgent1);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts( create_drts("drts", "agent_1") );
-	boost::thread drts_thread = boost::thread(&fhg::core::kernel_t::run, drts);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
-
-	ptrAgent0->shutdown(strBackupAgent0);
-	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
-
-	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
-
-	LOG( INFO, "Re-start \"agent_0\". The recovery string is "<<strBackupAgent0);
-	ptrRecAgent0->start_agent(true, strBackupAgent0);
-
-	if( threadClient.joinable() ) threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!");
-
-	drts->stop();
-	drts_thread.join();
-
-	ptrAgent1->shutdown();
-	ptrRecAgent0->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testStop_2AgentsAndDrts_Req terminated!");
-}
-*/
 
 BOOST_AUTO_TEST_SUITE_END()

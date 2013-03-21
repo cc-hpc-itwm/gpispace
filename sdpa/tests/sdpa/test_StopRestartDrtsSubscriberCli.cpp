@@ -1,51 +1,17 @@
 #define BOOST_TEST_MODULE TestStopRestartDrtsSubscriberCli
-#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
-#include <sdpa/daemon/Worker.hpp>
-#include <sdpa/JobId.hpp>
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include "boost/serialization/map.hpp"
-#include <sdpa/daemon/JobManager.hpp>
-
-#include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
-#include <seda/StageRegistry.hpp>
-#include <seda/Strategy.hpp>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-#include <boost/thread.hpp>
 
 #include "tests_config.hpp"
 #include <boost/filesystem/fstream.hpp>
-
 #include <sdpa/engine/IWorkflowEngine.hpp>
-
-//plugin
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
+#include <tests/sdpa/CreateDrtsWorker.hpp>
+#include "kvs_setup_fixture.hpp"
 
 namespace bfs=boost::filesystem;
 using namespace sdpa::tests;
@@ -54,18 +20,16 @@ using namespace sdpa;
 using namespace std;
 using namespace seda;
 
-#include "kvs_setup_fixture.hpp"
-BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 const int NMAXTRIALS = 10;
-const int MAX_CAP        = 100;
-static int testNb        = 0;
+const int MAX_CAP = 100;
+static int testNb = 0;
 
 namespace po = boost::program_options;
 
 #define NO_GUI ""
 
-
+BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
 {
@@ -73,11 +37,8 @@ struct MyFixture
 			: m_nITER(1)
 			, m_sleep_interval(1000) //microseconds
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-	{ //initialize and start the finite state machine
-		FHGLOG_SETUP();
-
+	{
 		LOG(DEBUG, "Fixture's constructor called ...");
-
 		m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	}
 
@@ -90,9 +51,7 @@ struct MyFixture
 	}
 
 	void run_client_subscriber();
-	int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli );
-
-	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
+	int subscribe_and_wait( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli );
 
 	string read_workflow(string strFileName)
 	{
@@ -266,31 +225,7 @@ void MyFixture::run_client_subscriber()
 	ptrCli.reset();
 }
 
-sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
-{
-	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
-
-	kernel->put("plugin.kvs.host", kvs_host ());
-	kernel->put("plugin.kvs.port", kvs_port ());
-
-	kernel->put("plugin.drts.name", drtsName);
-	kernel->put("plugin.drts.master", masterName);
-	kernel->put("plugin.drts.backlog", "2");
-	//kernel->put("plugin.drts.request-mode", "false");
-
-	kernel->put("plugin.wfe.library_path", TESTS_TRANSFORM_FILE_MODULES_PATH);
-
-	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-	// kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
-
-	return kernel;
-}
-
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
-
 
 BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
 {
@@ -304,7 +239,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
     typedef void OrchWorkflowEngine;
 
     m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-    LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+    //LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
     sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
     ptrOrch->start_agent(false, strBackupOrch);
@@ -313,7 +248,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
     sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
     ptrAgent->start_agent(false, strBackupAgent);
 
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
     boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
     boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
@@ -325,7 +260,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
     MLOG (INFO, "************ stopped drts_0");
 
     // create new drts
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_new( createDRTSWorker("drts_new", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
     boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
 
     MLOG (INFO, "************ stopping client");

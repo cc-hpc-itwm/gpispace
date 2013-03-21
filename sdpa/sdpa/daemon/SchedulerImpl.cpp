@@ -23,7 +23,6 @@
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
-#include <sdpa/events/id_generator.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <cassert>

@@ -1,53 +1,13 @@
-#define BOOST_TEST_MODULE TestStopRestartAgents
-
-#include <sdpa/daemon/JobFSM.hpp>
+#define BOOST_TEST_MODULE TestSubmitJobFails
 #include <boost/test/unit_test.hpp>
-#include <iostream>
-
-#include <sdpa/daemon/Worker.hpp>
-#include <sdpa/JobId.hpp>
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include "boost/serialization/map.hpp"
-#include <sdpa/daemon/JobManager.hpp>
-
-#include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/daemon/GenericDaemon.hpp>
-
 #include <sdpa/client/ClientApi.hpp>
-#include <seda/StageRegistry.hpp>
-#include <seda/Strategy.hpp>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-#include <boost/thread.hpp>
-
 #include "tests_config.hpp"
-
-#include <boost/filesystem/path.hpp>
-
 #include <sdpa/engine/IWorkflowEngine.hpp>
-
-//plugin
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
+#include <tests/sdpa/CreateDrtsWorker.hpp>
+#include "kvs_setup_fixture.hpp"
 
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
@@ -55,53 +15,21 @@ using namespace sdpa;
 using namespace std;
 using namespace seda;
 
-static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("0"); return s; }
-
 const int NMAXTRIALS = 3;
 
 namespace po = boost::program_options;
 #define NO_GUI ""
+
+BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
 {
 	MyFixture()
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
-			, m_pool (0)
-	    	, m_kvsd (0)
-	    	, m_serv (0)
-	    	, m_thrd (0)
-	{ //initialize and start the finite state machine
-
-		FHGLOG_SETUP();
-
+	{
 		LOG(DEBUG, "Fixture's constructor called ...");
-
-		m_pool = new fhg::com::io_service_pool(1);
-		m_kvsd = new fhg::com::kvs::server::kvsd ("");
-		m_serv = new fhg::com::tcp_server ( *m_pool
-										  , *m_kvsd
-										  , kvs_host ()
-										  , kvs_port ()
-										  , true
-										  );
-		m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-												, m_pool
-												)
-								   );
-
-		m_serv->start();
-
-		LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
-
-		fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-												  , boost::lexical_cast<std::string>(m_serv->port())
-												  , boost::posix_time::seconds(10)
-												  , 3
-												  );
-
-		m_strWorkflow = "trash_workflow";
+		m_strWorkflow = "invalid_workflow";
 	}
 
 	~MyFixture()
@@ -111,15 +39,6 @@ struct MyFixture
 		sstrOrch.str("");
 		sstrAgg.str("");
 
-		m_serv->stop ();
-		m_pool->stop ();
-		m_thrd->join ();
-
-		delete m_thrd;
-		delete m_serv;
-		delete m_kvsd;
-		delete m_pool;
-
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
 	}
@@ -127,16 +46,9 @@ struct MyFixture
 	void run_client();
 	void run_client_cancel_failed_job();
 
-	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
-
 	int m_nITER;
 	int m_sleep_interval ;
     std::string m_strWorkflow;
-
-    fhg::com::io_service_pool *m_pool;
-	fhg::com::kvs::server::kvsd *m_kvsd;
-	fhg::com::tcp_server *m_serv;
-	boost::thread *m_thrd;
 
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
@@ -199,7 +111,7 @@ void MyFixture::run_client()
 				return;
 			}
 
-			sleep(5);
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 		}
 	}
 
@@ -208,7 +120,6 @@ void MyFixture::run_client()
 	try {
 			LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 			ptrCli->retrieveResults(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
@@ -221,8 +132,7 @@ void MyFixture::run_client()
 			return;
 		}
 
-		sleep(5);
-	}
+		boost::this_thread::sleep(boost::posix_time::seconds(1));	}
 
 	nTrials = 0;
 
@@ -242,7 +152,7 @@ void MyFixture::run_client()
 			return;
 		}
 
-		sleep(5);
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
 
 	ptrCli->shutdown_network();
@@ -306,7 +216,7 @@ void MyFixture::run_client_cancel_failed_job()
 				return;
 			}
 
-			sleep(5);
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 		}
 	}
 
@@ -330,7 +240,7 @@ void MyFixture::run_client_cancel_failed_job()
 			return;
 		}
 
-		sleep(5);
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
 
 	nTrials = 0;
@@ -352,34 +262,11 @@ void MyFixture::run_client_cancel_failed_job()
 			return;
 		}
 
-		sleep(5);
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
-}
-
-sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
-{
-	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
-
-	kernel->put("plugin.kvs.host", kvs_host());
-	kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
-
-	kernel->put("plugin.drts.name", drtsName);
-	kernel->put("plugin.drts.master", masterName);
-	kernel->put("plugin.drts.backlog", "2");
-	kernel->put("plugin.drts.request-mode", "false");
-
-	kernel->put("plugin.wfe.library_path", TESTS_TRANSFORM_FILE_MODULES_PATH);
-
-	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-//	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
-
-	return kernel;
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
@@ -401,7 +288,7 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure1 )
 	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg, arrAggMasterInfo, 100 );
 	ptrAgg->start_agent();
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
@@ -436,7 +323,7 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure2 )
 	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg, arrAggMasterInfo, 100 );
 	ptrAgg->start_agent();
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client_cancel_failed_job, this));

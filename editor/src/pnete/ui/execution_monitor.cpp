@@ -76,9 +76,6 @@ namespace
 
 execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
   : QWidget (parent)
-  , m_exe_server
-    (appender_with (&execution_monitor::append_exe, this), m_io_service, port)
-  , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
   , m_follow_execution (true)
   , m_scene (new QGraphicsScene (this))
   , m_view (new QGraphicsView (m_scene))
@@ -86,12 +83,17 @@ execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
   , m_component_view (new QGraphicsView (m_component_scene))
   , m_current_scale (1.0)
   , _automatically_sort_components (true)
+  , _sort_gantt_trigger (false)
+  , m_exe_server
+    (appender_with (&execution_monitor::append_exe, this), m_io_service, port)
+  , m_io_thread (boost::bind (&boost::asio::io_service::run, &m_io_service))
 {
   m_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
   m_view->setDragMode (QGraphicsView::ScrollHandDrag);
   m_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
   m_view->setTransformationAnchor (QGraphicsView::AnchorViewCenter);
   m_view->setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+  m_view->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
 
   m_component_view->setAlignment (Qt::AlignRight | Qt::AlignTop);
   m_component_view->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
@@ -343,14 +345,21 @@ void execution_monitor::change_gantt_color (const QString& state)
 void execution_monitor::advance()
 {
   std::list<scene_update_t> updates;
+  std::list<component_update_t> component_updates;
   {
     boost::unique_lock<boost::recursive_mutex> lock (_scene_updates_lock);
     updates.swap (_scene_updates);
+    std::swap (component_updates, _component_updates);
   }
 
   BOOST_FOREACH (const scene_update_t& update, updates)
   {
     update.second->addItem (update.first);
+  }
+
+  BOOST_FOREACH (const component_update_t& update, component_updates)
+  {
+    update.first->setParentItem (_component_dummies[update.second]);
   }
 
   QRectF scene_rect (m_scene->sceneRect());
@@ -367,6 +376,12 @@ void execution_monitor::advance()
     {
       m_tasks_list[component].back()->advance (scene_rect.width());
     }
+  }
+
+  if (_sort_gantt_trigger)
+  {
+    sort_gantt_by_component();
+    _sort_gantt_trigger = false;
   }
 
   if (m_follow_execution)
@@ -440,8 +455,17 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
     label->setFont (font);
     label->setPos (0, y_coord);
 
+    boost::unique_lock<boost::recursive_mutex> lock (_scene_updates_lock);
+
     _scene_updates.push_back (std::make_pair (label, m_component_scene));
     _component_labels[component] = label;
+
+    {
+      QGraphicsItemGroup* dummy (new QGraphicsItemGroup);
+      dummy->setPos (0, y_coord);
+      _scene_updates.push_back (std::make_pair (dummy, m_scene));
+      _component_dummies[component] = dummy;
+    }
   }
 
   const std::string& activity_id (notification.activity_id());
@@ -455,8 +479,9 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
                           , QString::fromStdString (activity_id)
                           )
                );
-    task->setPos (x_coord, y_coord);
+    task->setX (x_coord);
     m_tasks_grid[component][activity_id] = task;
+
 
     // new task, make sure to close previous task -> asume finished
     if (!m_tasks_list[component].empty())
@@ -467,14 +492,14 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
     m_tasks_list[component].push_back (task);
 
     boost::unique_lock<boost::recursive_mutex> lock (_scene_updates_lock);
-    _scene_updates.push_back (std::make_pair (task, m_scene));
+    _component_updates.push_back (std::make_pair (task, component));
   }
 
   m_tasks_grid[component][activity_id]->update_task_state (task_state);
 
   if (_automatically_sort_components && is_new_component)
   {
-    sort_gantt_by_component();
+    _sort_gantt_trigger = true;
   }
 }
 
@@ -611,11 +636,7 @@ void execution_monitor::sort_gantt_by_component()
     const qreal y_coord (row++ * task_height);
 
     _component_labels[component]->setY (y_coord);
-
-    BOOST_FOREACH (Task* task, m_tasks_list.at (component))
-    {
-      task->setY (y_coord);
-    }
+    _component_dummies[component]->setY (y_coord);
   }
 }
 
@@ -641,6 +662,11 @@ void execution_monitor::clearActivityLog()
     {
       delete _scene_updates.front().first;
       _scene_updates.pop_front();
+    }
+    while (!_component_updates.empty())
+    {
+      delete _component_updates.front().first;
+      _component_updates.pop_front();
     }
   }
 }

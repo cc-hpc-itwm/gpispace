@@ -10,6 +10,8 @@
 #include <we/type/bitsetofint.hpp>
 #include <we/type/bytearray.hpp>
 
+#include <fhg/util/show.hpp>
+
 #include <boost/foreach.hpp>
 
 #include <math.h>
@@ -59,7 +61,7 @@ namespace literal
           case expr::token::_map_empty: return m.empty();
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % m);
+              (fhg::util::show (_token) + " (" + literal::show (m) + ")");
           }
         }
 
@@ -73,7 +75,7 @@ namespace literal
           case expr::token::_set_size: return long(s.size());
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % s);
+              (fhg::util::show (_token) + " (" + literal::show (s) + ")");
           }
         }
 
@@ -87,7 +89,7 @@ namespace literal
           case expr::token::_stack_size: return long (s.size());
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % s);
+              (fhg::util::show (_token) + " (" + literal::show (s) + ")");
           }
         }
 
@@ -100,7 +102,7 @@ namespace literal
           case expr::token::_todouble: return x ? 1.0 : 0.0;
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % x);
+              (fhg::util::show (_token) + " (" + fhg::util::show(x) + ")");
           }
         }
 
@@ -122,7 +124,7 @@ namespace literal
           case expr::token::_todouble: return double(x);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % x);
+              (fhg::util::show (_token) + " (" + fhg::util::show(x) + ")");
           }
         }
 
@@ -148,7 +150,7 @@ namespace literal
           case expr::token::_todouble: return x;
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % x);
+              (fhg::util::show (_token) + " (" + fhg::util::show(x) + ")");
           }
         }
 
@@ -159,7 +161,7 @@ namespace literal
           case expr::token::_len: return 1L;
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % x);
+              (fhg::util::show (_token) + " (" + fhg::util::show(x) + ")");
           }
         }
 
@@ -171,7 +173,7 @@ namespace literal
           case expr::token::_bitset_fromhex: return bitsetofint::from_hex (x);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % x);
+              (fhg::util::show (_token) + " (" + fhg::util::show(x) + ")");
           }
         }
 
@@ -183,7 +185,7 @@ namespace literal
           case expr::token::_bitset_count: return static_cast<long>(b.count());
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%)") % _token % b);
+              (fhg::util::show (_token) + " (" + fhg::util::show(b) + ")");
           }
         }
 
@@ -191,7 +193,7 @@ namespace literal
         literal::type operator() (T x) const
         {
           throw expr::exception::eval::type_error
-            (boost::format ("%1% (%2%)") % _token % x);
+            (fhg::util::show (_token) + " (" + literal::show (x) + ")");
         }
       };
 
@@ -222,7 +224,9 @@ namespace literal
             return true;
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + literal::show (l) + "," + literal::show (r) + ")"
+              );
           }
         }
 
@@ -235,7 +239,9 @@ namespace literal
           case expr::token::_set_is_element: return s.find (k) != s.end();
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % s % k);
+              ( fhg::util::show (_token) +
+              "(" + literal::show (s) + "," + fhg::util::show (k) + ")"
+              );
           }
         }
 
@@ -255,7 +261,9 @@ namespace literal
           case expr::token::max: return std::max (l,r);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
         }
 
@@ -298,7 +306,9 @@ namespace literal
           case expr::token::max: return std::max (l,r);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
         }
 
@@ -326,7 +336,9 @@ namespace literal
           case expr::token::max: return std::max (l,r);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
         }
 
@@ -345,7 +357,9 @@ namespace literal
           case expr::token::max: return std::max (l,r);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
         }
 
@@ -356,7 +370,9 @@ namespace literal
           case expr::token::_substr: return l.substr(0, r);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
         }
 
@@ -367,7 +383,9 @@ namespace literal
           case expr::token::_stack_push: s.push_back (l); return s;
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % s % l);
+              ( fhg::util::show (_token) +
+              "(" + literal::show (s) + "," + fhg::util::show (l) + ")"
+              );
           }
         }
 
@@ -385,7 +403,9 @@ namespace literal
             return l;
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + literal::show (l) + "," + literal::show (r) + ")"
+              );
           }
         }
 
@@ -398,7 +418,9 @@ namespace literal
           case expr::token::_bitset_is_element: return set.is_element (l);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % set % l);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (set) + "," + fhg::util::show (l) + ")"
+              );
           }
         }
 
@@ -411,7 +433,9 @@ namespace literal
           case expr::token::_map_get_assignment: return m.at (k);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % m % k);
+              ( fhg::util::show (_token) +
+              "(" + literal::show (m) + "," + fhg::util::show (k) + ")"
+              );
           }
         }
 
@@ -430,7 +454,9 @@ namespace literal
           case expr::token::max: return std::max (l,r);
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
         }
 
@@ -446,7 +472,9 @@ namespace literal
           case expr::token::_bitset_xor: return l ^ r;
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
         }
 
@@ -459,7 +487,9 @@ namespace literal
           case expr::token::eq: return l == r;
           default:
             throw expr::exception::eval::type_error
-              (boost::format ("%1% (%2%, %3%)") % _token % l % r);
+              ( fhg::util::show (_token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
         }
 
@@ -467,7 +497,9 @@ namespace literal
         literal::type operator() (T& t, U& u) const
         {
           throw expr::exception::eval::type_error
-            (boost::format ("%1% (%2%, %3%)") % _token % t % u);
+            ( fhg::util::show (_token) +
+            "(" + literal::show (t) + "," + literal::show (u) + ")"
+            );
         }
       };
     }

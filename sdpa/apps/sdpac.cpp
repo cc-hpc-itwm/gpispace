@@ -21,12 +21,15 @@
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
-#include <sdpa/uuidgen.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/tokenizer.hpp>
+
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/error_codes.hpp>
@@ -396,10 +399,8 @@ int main (int argc, char **argv) {
   {
     std::string client_api_name ("sdpac-");
     {
-      sdpa::uuidgen gen;
-      sdpa::uuid id;
-      gen(id);
-      client_api_name += id.str();
+      client_api_name +=
+        boost::uuids::to_string (boost::uuids::random_generator()());
     }
 
     sdpa::client::ClientApi::ptr_t api

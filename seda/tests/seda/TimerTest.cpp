@@ -41,11 +41,11 @@ TimerTest::testTimer() {
   stage->start();
   timer->start();
 
-  ecs->wait(2, 1250); // wait for two events, maximum of 2 seconds
+  ecs->wait(2, 5000); // wait for two events, maximum of 2 seconds
   timer->stop();
 
   stage->waitUntilEmpty();
-  
+
   CPPUNIT_ASSERT_EQUAL(std::size_t(2), ecs->count());
 
   stage->stop();
