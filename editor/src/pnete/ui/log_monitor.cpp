@@ -333,7 +333,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
           , _log_model, SLOT (update())
           );
   // _log_model_update_thread->start();
-  _log_model_update_timer->start();
+  _log_model_update_timer->start (20 /*ms*/);
 
   _log_filter->setDynamicSortFilter (true);
   _log_filter->setSourceModel (_log_model);
@@ -477,7 +477,7 @@ void log_monitor::toggle_follow_logging (bool follow)
   connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (deleteLater()));
 
   //! \todo Configurable refresh rate.
-  static const int refresh_rate (0 /*ms*/);
+  static const int refresh_rate (20 /*ms*/);
   log_follower->start (refresh_rate);
 }
 

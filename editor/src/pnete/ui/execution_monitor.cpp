@@ -210,8 +210,7 @@ execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
 
   connect (&_advance_timer, SIGNAL (timeout()), this, SLOT (advance()));
 
-  static const int updates_per_second (30);
-  _advance_timer.start (1000 / updates_per_second);
+  _advance_timer.start (20 /*ms*/);
 }
 
 execution_monitor::~execution_monitor()
