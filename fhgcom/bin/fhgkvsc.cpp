@@ -97,7 +97,7 @@ int main(int ac, char *av[])
   {
     client.start ( server_address
                  , server_port
-                 , false
+                 , true
                  , boost::posix_time::milliseconds(timeout)
                  , 1
                  );

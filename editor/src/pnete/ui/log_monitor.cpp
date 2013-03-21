@@ -320,19 +320,20 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   , _log_table (new QTableView (this))
   , _log_model (new detail::log_table_model)
   , _log_filter (new detail::log_filter_proxy (this))
-  , _log_model_update_thread (new QThread (this))
+  //! \todo Do updates in separate thread again?
+  // , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
   , _io_service()
   , _log_server
     (appender_with (&log_monitor::append_log_event, this), _io_service, port)
   , _io_thread (boost::bind (&boost::asio::io_service::run, &_io_service))
 {
-  _log_model->moveToThread (_log_model_update_thread);
+  // _log_model->moveToThread (_log_model_update_thread);
   connect ( _log_model_update_timer, SIGNAL (timeout())
           , _log_model, SLOT (update())
           );
-  _log_model_update_thread->start();
-  _log_model_update_timer->start();
+  // _log_model_update_thread->start();
+  _log_model_update_timer->start (20 /*ms*/);
 
   _log_filter->setDynamicSortFilter (true);
   _log_filter->setSourceModel (_log_model);
@@ -448,8 +449,8 @@ log_monitor::~log_monitor()
   _io_thread.join();
 
   _log_model_update_timer->stop();
-  _log_model_update_thread->quit();
-  _log_model_update_thread->wait();
+  // _log_model_update_thread->quit();
+  // _log_model_update_thread->wait();
 }
 
 void log_monitor::append_log_event (const fhg::log::LogEvent & evt)
@@ -476,7 +477,7 @@ void log_monitor::toggle_follow_logging (bool follow)
   connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (deleteLater()));
 
   //! \todo Configurable refresh rate.
-  static const int refresh_rate (0 /*ms*/);
+  static const int refresh_rate (20 /*ms*/);
   log_follower->start (refresh_rate);
 }
 

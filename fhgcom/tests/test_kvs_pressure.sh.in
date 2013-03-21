@@ -4,8 +4,8 @@ source "@CMAKE_BINARY_DIR@/test/env.sh"      || exit 255
 source "@CMAKE_BINARY_DIR@/test/measured.sh" || exit 255
 
 port_kvsd=8015
-num_worker=50
-num_reqsts=100
+num_worker=500
+num_reqsts=50
 
 while getopts ":hp:w:r:" opt ; do
     case $opt in
@@ -196,10 +196,14 @@ kvsc="$SDPA_HOME/bin/fhgkvsc"
 
 # start kvsd on some port
 
+echo >&2 "starting kvsd on port ${port_kvsd}"
+
 ${kvsd} -s "" -p ${port_kvsd} &
 pid_kvsd=$!
 
 sleep 1
+
+echo >&2 "starting ${num_worker} workers performing ${num_reqsts} requests each"
 
 for ((i=0 ; i < ${num_worker} ; i++))
 do
@@ -214,6 +218,8 @@ do
     unset work
     unset nval
 done
+
+echo >&2 "waiting for workers to finish"
 
 measured "run" wait                                         || die $EX_ERR_RUN
 
