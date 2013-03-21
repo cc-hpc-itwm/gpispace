@@ -320,18 +320,19 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   , _log_table (new QTableView (this))
   , _log_model (new detail::log_table_model)
   , _log_filter (new detail::log_filter_proxy (this))
-  , _log_model_update_thread (new QThread (this))
+  //! \todo Do updates in separate thread again?
+  // , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
   , _io_service()
   , _log_server
     (appender_with (&log_monitor::append_log_event, this), _io_service, port)
   , _io_thread (boost::bind (&boost::asio::io_service::run, &_io_service))
 {
-  _log_model->moveToThread (_log_model_update_thread);
+  // _log_model->moveToThread (_log_model_update_thread);
   connect ( _log_model_update_timer, SIGNAL (timeout())
           , _log_model, SLOT (update())
           );
-  _log_model_update_thread->start();
+  // _log_model_update_thread->start();
   _log_model_update_timer->start();
 
   _log_filter->setDynamicSortFilter (true);
