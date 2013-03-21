@@ -52,6 +52,7 @@ enum return_codes_t
   , UNKNOWN_ERROR         = 100
   };
 
+const int NMAXTRIALS = 10;
 
 void get_user_input(std::string const & prompt, std::string & result, std::istream & in = std::cin)
 {
@@ -132,25 +133,43 @@ int command_subscribe_and_wait ( const std::string &job_id
   std::cerr << "waiting for job to return..." << std::flush;
 
   bool bSubscribed = false;
-
-  do
-  {
-    try
-    {
-      ptrCli->subscribe(job_id);
-      bSubscribed = true;
-    }
-    catch(...)
-    {
-      bSubscribed = false;
-    }
-
-  }while(!bSubscribed);
-
   int status = sdpa::status::UNKNOWN;
+  int nTrials = 0;
 
   do
   {
+	do
+	{
+		try
+		{
+			ptrCli->subscribe(job_id);
+			bSubscribed = true;
+		}
+		catch(...)
+		{
+			bSubscribed = false;
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+		}
+
+		if(bSubscribed)
+			break;
+
+		nTrials++;
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+	}while(nTrials<NMAXTRIALS);
+
+	if(bSubscribed)
+	{
+		LOG(INFO, "The client successfully subscribed to the orchestrator for the job "<<job_id);
+		nTrials = 0;
+	}
+	else
+	{
+		LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
+		return status;
+	}
+
     try
     {
       seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
