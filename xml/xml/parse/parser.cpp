@@ -28,6 +28,8 @@
 #include <xml/parse/type/use.hpp>
 #include <xml/parse/type/link.hpp>
 
+#include <xml/parse/util/position.hpp>
+
 #include <fhg/util/join.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/boost/optional.hpp>
@@ -73,26 +75,14 @@ namespace xml
         }
         catch (const rapidxml::parse_error& e)
         {
-          int line (1);
-          int col (0);
-
-          for ( char* pos (const_cast<char*> (inp.data()))
-              ; pos != e.where<char>()
-              ; ++pos
-              )
-          {
-            ++col;
-
-            if (*pos == '\n')
-            {
-              col = 0;
-              ++line;
-            }
-          }
+          const util::position_type position ( inp.data()
+                                             , e.where<char>()
+                                             , state.file_in_progress()
+                                             );
 
           std::ostringstream oss;
 
-          oss << "Parse error [" << line << ":" << col << "]: " << e.what();
+          oss << "Parse error " << position << ": " << e.what();
 
           throw rapidxml::parse_error (oss.str().c_str(), e.where<void>());
         }
