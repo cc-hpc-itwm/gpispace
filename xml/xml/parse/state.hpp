@@ -36,7 +36,7 @@ namespace xml
       using namespace warning;
 
       typedef std::vector<std::string> search_path_type;
-      typedef std::vector<fs::path> in_progress_type;
+      typedef std::list<fs::path> in_progress_type;
       typedef std::set<fs::path> dependencies_type;
 
       typedef std::vector<std::string> gen_param_type;
