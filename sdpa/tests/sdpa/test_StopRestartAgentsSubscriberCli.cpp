@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 	sdpa::daemon::Agent::ptr_t ptrRecAgent0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
 
 	LOG( INFO, "Re-start \"agent_0\". The recovery string is "<<strBackupAgent0);
-	ptrRecAgent0->start_agent(true, strBackupAgent0);
+	ptrRecAgent0->start_agent(false, strBackupAgent0);
 
 	if( threadClient.joinable() ) threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!");

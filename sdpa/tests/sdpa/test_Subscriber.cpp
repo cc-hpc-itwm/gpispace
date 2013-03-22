@@ -441,7 +441,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEStopRestart)
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 
 	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
-	ptrRecOrch->start_agent(true, strBackupOrch);
+	ptrRecOrch->start_agent(false, strBackupOrch);
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
