@@ -25,6 +25,17 @@ add_library (xml
   parse/type/link.cpp
   parse/util/mk_fstream.cpp
   parse/util/valid_name.cpp
+  parse/util/cdata.cpp
+  parse/util/expect.cpp
+  parse/util/name_element.cpp
+  parse/util/optional.cpp
+  parse/util/required.cpp
+  parse/util/skip.cpp
+  parse/util/validprefix.cpp
+  parse/util/validstructfield.cpp
+  parse/util/property.cpp
+  parse/util/show_node_type.cpp
+  parse/util/weparse.cpp
   parse/warning.cpp
 )
 target_link_libraries (xml

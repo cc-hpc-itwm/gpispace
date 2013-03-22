@@ -17,6 +17,8 @@
 #include <fhg/util/backtracing_exception.hpp>
 #include <fhg/util/boost/optional.hpp>
 
+#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
+
 #include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
 
 #include <boost/filesystem.hpp>

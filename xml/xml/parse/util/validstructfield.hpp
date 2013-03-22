@@ -15,18 +15,9 @@ namespace xml
 {
   namespace parse
   {
-    inline std::string
-    validate_field_name ( const std::string & name
-                        , const boost::filesystem::path & path
-                        )
-    {
-      if (literal::cpp::reserved (name))
-        {
-          throw error::invalid_field_name (name, path);
-        }
-
-      return validate_name (name, "fieldname", path);
-    }
+    std::string validate_field_name ( const std::string&
+                                    , const boost::filesystem::path&
+                                    );
   }
 }
 
