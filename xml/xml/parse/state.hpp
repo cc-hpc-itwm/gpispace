@@ -203,7 +203,7 @@ namespace xml
         void set_input (const fs::path & path);
         void set_input (const std::string & file);
 
-        fs::path file_in_progress (void) const;
+        fs::path file_in_progress() const;
 
         const dependencies_type& dependencies (void) const;
 
