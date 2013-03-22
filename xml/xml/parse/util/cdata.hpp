@@ -50,7 +50,7 @@ namespace xml
 
           if (child)
             {
-              v.push_back (std::string (child->value()));
+              v.push_back (std::string (child->value(), child->value_size()));
             }
         }
 

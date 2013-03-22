@@ -18,7 +18,9 @@ namespace xml
     {
       if (node->first_attribute (attr))
       {
-        return std::string (node->first_attribute (attr)->value());
+        return std::string ( node->first_attribute (attr)->value()
+                           , node->first_attribute (attr)->value_size()
+                           );
       }
       return boost::none;
     }

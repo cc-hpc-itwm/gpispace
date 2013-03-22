@@ -841,8 +841,12 @@ namespace xml
           {
             if (child_name == "value")
             {
-              signature::create_literal_field<std::string>
-                (tok, name, child->value(), "token");
+              signature::create_literal_field
+                ( tok
+                , name
+                , std::string (child->value(), child->value_size())
+                , "token"
+                );
             }
             else if (child_name == "field")
             {
@@ -1144,7 +1148,7 @@ namespace xml
           {
             if (child_name == "value")
             {
-              return std::string (child->value());
+              return std::string (child->value(), child->value_size());
             }
             else if (child_name == "field")
             {

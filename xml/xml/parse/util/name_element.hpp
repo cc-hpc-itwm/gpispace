@@ -32,7 +32,7 @@ namespace xml
           return "<missing_node>";
         }
 
-      return node->name();
+      return std::string (node->name(), node->name_size());
     }
   }
 }

@@ -26,7 +26,9 @@ namespace xml
           throw error::missing_attr (pre, attr, path);
         }
 
-      return node->first_attribute (attr)->value();
+      return std::string ( node->first_attribute (attr)->value()
+                         , node->first_attribute (attr)->value_size()
+                         );
     }
   }
 }
