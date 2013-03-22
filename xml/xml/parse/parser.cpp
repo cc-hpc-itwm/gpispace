@@ -68,8 +68,7 @@ namespace xml
         try
         {
           doc.parse < rapidxml::parse_full
-                    | rapidxml::parse_trim_whitespace
-                    | rapidxml::parse_normalize_whitespace
+                    | rapidxml::parse_non_destructive
                     > (inp.data());
         }
         catch (const rapidxml::parse_error& e)
