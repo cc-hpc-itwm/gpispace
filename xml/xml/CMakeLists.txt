@@ -36,6 +36,7 @@ add_library (xml
   parse/util/property.cpp
   parse/util/show_node_type.cpp
   parse/util/weparse.cpp
+  parse/util/position.cpp
   parse/warning.cpp
 )
 target_link_libraries (xml
