@@ -461,7 +461,9 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	drts_0->stop();
 	drts_0_thread.join();
 
+	LOG( INFO, "Shutdown the agent "<<ptrRecAgent->name() );
 	ptrRecAgent->shutdown();
+	LOG( INFO, "Shutdown the orchestrator "<<ptrOrch->name() );
 	ptrOrch->shutdown();
 
 	LOG( DEBUG, "The test case testStop_AgentRealWE_push terminated!");
