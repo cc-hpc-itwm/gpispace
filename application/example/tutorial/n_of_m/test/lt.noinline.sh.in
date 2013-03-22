@@ -18,6 +18,7 @@ NET="${DIR_BUILD}/n_of_m.noinline.pnet"
 cleanup()
 {
   rm -rf "${CMP}"
+  rm -rf "${CMP}.cmp"
   eval ${make_expr} clean
   cleanup_dir_build
 }
@@ -26,4 +27,5 @@ trap 'cleanup' EXIT
 
 measured "setup-data" ${make_expr} ${NET}                   || die $EX_ERR_RUN
 pnetlt ${NET} | sort > "${CMP}"                             || die $EX_ERR_RUN
-diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
+cat "${CMP_ORIG}" | sort > "${CMP}.cmp"                     || die $EX_ERR_RUN
+diff "${CMP}" "${CMP}.cmp"                                  || die $EX_ERR_RES
