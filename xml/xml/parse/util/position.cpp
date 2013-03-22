@@ -2,6 +2,8 @@
 
 #include <xml/parse/util/position.hpp>
 
+#include <iostream>
+
 namespace xml
 {
   namespace parse
@@ -51,6 +53,14 @@ namespace xml
       const boost::filesystem::path& position_type::path() const
       {
         return _path;
+      }
+
+      std::ostream& operator<< (std::ostream& os, const position_type& p)
+      {
+        return os << "[" << p.path().string()
+                  << ":" << p.line()
+                  << ":" << p.column()
+                  << "]";
       }
     }
   }

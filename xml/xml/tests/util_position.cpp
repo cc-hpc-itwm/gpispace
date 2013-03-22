@@ -7,6 +7,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
+#include <sstream>
 
 namespace
 {
@@ -62,4 +63,16 @@ BOOST_AUTO_TEST_CASE (wrap_line)
 
   BOOST_REQUIRE_EQUAL (position.line(), 2U);
   BOOST_REQUIRE_EQUAL (position.column(), 0U);
+}
+
+BOOST_AUTO_TEST_CASE (operator_out)
+{
+  const boost::filesystem::path p ("/some/path");
+  const xml::parse::util::position_type position (input, input + 53, p);
+
+  std::ostringstream oss;
+
+  oss << position;
+
+  BOOST_REQUIRE_EQUAL (oss.str(), std::string ("[/some/path:2:2]"));
 }

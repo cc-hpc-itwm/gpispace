@@ -5,6 +5,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include <iosfwd>
+
 namespace xml
 {
   namespace parse
@@ -26,6 +28,8 @@ namespace xml
         unsigned int _column;
         const boost::filesystem::path _path;
       };
+
+      std::ostream& operator<< (std::ostream&, const position_type&);
     }
   }
 }
