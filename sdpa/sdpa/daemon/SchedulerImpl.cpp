@@ -648,24 +648,20 @@ void SchedulerImpl::start(IAgent* p)
 
 void SchedulerImpl::stop()
 {
-  bStopRequested = true;
-  ptr_comm_handler_ = NULL;
+	bStopRequested = true;
 
-  m_thread_run.interrupt();
-   DLOG(TRACE, "Scheduler thread before join ...");
-   if (m_thread_run.joinable ())
-     m_thread_run.join();
+	m_thread_run.interrupt();
+	m_thread_feed.interrupt();
 
-  m_thread_feed.interrupt();
-  DLOG(TRACE, "Feeding thread before join ...");
-  if (m_thread_feed.joinable ())
-    m_thread_feed.join();
+	if (m_thread_run.joinable() )
+		m_thread_run.join();
 
-  if( jobs_to_be_scheduled.size() )
-  {
-    SDPA_LOG_WARN("There are still "<<jobs_to_be_scheduled.size()<<" jobs to be scheduled: " );
-    jobs_to_be_scheduled.print();
-  }
+	if (m_thread_feed.joinable() )
+		m_thread_feed.join();
+
+	jobs_to_be_scheduled.clear();
+	cancellation_list_.clear();
+	ptr_worker_man_->removeWorkers();
 }
 
 bool SchedulerImpl::post_request(const MasterInfo& masterInfo, bool force)

@@ -371,10 +371,66 @@ void GenericDaemon::shutdown_network()
   }
 }
 
+void GenericDaemon::stop()
+{
+  SDPA_LOG_INFO("Shutting down...");
+
+  SDPA_LOG_INFO("Stop the scheduler now!");
+  scheduler()->stop();
+  SDPA_LOG_INFO("The scheduler was stopped!");
+
+  SDPA_LOG_INFO("Stop the backup service now!");
+  m_threadBkpService.stop();
+  SDPA_LOG_INFO("The backup service was stopped!");
+
+  // here one should only generate a message of type interrupt
+  SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
+  InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
+  //sendEventToSelf(pEvtInterrupt);
+  handleInterruptEvent(pEvtInterrupt.get());
+
+  // wait to be stopped
+  {
+	  SDPA_LOG_INFO("The daemon can be safely stopped now ...");
+	  lock_type lock(mtx_stop_);
+	  while(!m_bStopped)
+		  cond_can_stop_.wait(lock);
+  }
+
+  // first close the message pipe ...
+  SDPA_LOG_INFO("Shutdown the network...");
+  shutdown_network();
+
+  //  stop the network stage
+  SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
+  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+
+  // stop the daemon stage
+  SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
+  seda::StageRegistry::instance().lookup(name())->stop();
+
+  SDPA_LOG_INFO("Removing the network stage...");
+  // remove the network stage
+  seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+
+  SDPA_LOG_INFO("Removing the daemon stage...");
+  // remove the daemon stage
+  seda::StageRegistry::instance().remove(name());
+
+  if( hasWorkflowEngine() )
+  {
+     delete ptr_workflow_engine_;
+     ptr_workflow_engine_ = NULL;
+  }
+
+  SDPA_LOG_INFO("The daemon "<<name()<<" was successfully stopped!");
+}
+
+
 /**
  * Stop the agent.
  */
-void GenericDaemon::stop()
+/*void GenericDaemon::stop()
 {
   MLOG (INFO, name () << " is shutting down...");
 
@@ -398,7 +454,7 @@ void GenericDaemon::stop()
 
   MLOG (INFO, name () << " was successfully stopped!");
 }
-
+*/
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
@@ -507,7 +563,15 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
   SDPA_LOG_DEBUG("Call 'action_interrupt'");
   // save the current state of the system .i.e serialize the daemon's state
   // the following code shoud be executed on action action_interrupt!!
-  setRequestsAllowed(false);
+
+   // save the current state of the system .i.e serialize the daemon's state
+   // the following code shoud be executed on action action_interrupt!!
+   lock_type lock(mtx_stop_);
+   setRequestsAllowed(false);
+   //m_bStarted 	= false;
+   m_bStopped 	= true;
+
+   cond_can_stop_.notify_one();
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
