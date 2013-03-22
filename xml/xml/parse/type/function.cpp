@@ -733,7 +733,7 @@ namespace xml
         {
           const std::string cond ((fun.conditions() + _conditions).flatten());
 
-          util::we_parser_t parsed_condition
+          expr::parse::parser parsed_condition
             (util::we_parse (cond, "condition", "function", name(), fun.path));
 
           return we_cond_type (cond, parsed_condition);
@@ -763,7 +763,7 @@ namespace xml
         operator () (const id::ref::expression& id_expression) const
         {
           const std::string expr (id_expression.get().expression());
-          const util::we_parser_t parsed_expression
+          const expr::parse::parser parsed_expression
             (util::we_parse (expr, "expression", "function", name(), fun.path));
 
           we_transition_type trans

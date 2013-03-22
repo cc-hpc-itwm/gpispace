@@ -776,7 +776,7 @@ namespace xml
             const std::string cond_in
               ((fun.conditions() + trans.conditions()).flatten());
 
-            util::we_parser_t parsed_condition_in
+            expr::parse::parser parsed_condition_in
               ( util::we_parse ( cond_in
                                , "condition"
                                , "unfold"
@@ -875,7 +875,7 @@ namespace xml
             // going out of the subnet
             const std::string cond_out ("true");
 
-            util::we_parser_t parsed_condition_out
+            expr::parse::parser parsed_condition_out
               ( util::we_parse ( cond_out
                                , "condition"
                                , "unfold"

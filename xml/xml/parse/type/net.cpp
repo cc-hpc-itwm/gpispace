@@ -742,7 +742,7 @@ namespace xml
               << " in " << path
               ;
 
-            const util::we_parser_t parser
+            const expr::parse::parser parser
               (util::generic_we_parse (value, s.str()));
 
             try
