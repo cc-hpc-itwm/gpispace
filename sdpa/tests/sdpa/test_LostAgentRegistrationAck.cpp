@@ -17,7 +17,7 @@ using namespace sdpa;
 using namespace std;
 using namespace seda;
 
-const int NMAXTRIALS = 10;
+const int NMAXTRIALS = 5;
 const int MAX_CAP 	 = 100;
 static int testNb 	 = 0;
 
@@ -76,31 +76,61 @@ struct MyFixture
 };
 
 
-int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli, bool& bForceExit )
+/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli,  bool& bForceExit  )
 {
 	typedef boost::posix_time::ptime time_type;
 	time_type poll_start = boost::posix_time::microsec_clock::local_time();
 
 	int exit_code(4);
-
-	ptrCli->subscribe(job_id);
-
-	LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
-
 	std::string job_status;
+	bool bSubscribed=false;
 
   	int nTrials = 0;
-  	do {
+  	do
+  	{
+  		do
+		{
+			try
+			{
+				ptrCli->subscribe(job_id);
+				bSubscribed = true;
+			}
+			catch(...)
+			{
+				bSubscribed = false;
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
+			}
+
+			if(bSubscribed)
+				break;
+
+			nTrials++;
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+		}while(nTrials<NMAXTRIALS);
+
+		if(bSubscribed)
+		{
+			LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+			nTrials = 0;
+		}
+		else
+		{
+			LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
+		  	return exit_code;
+		}
+
 
   		LOG(INFO, "start waiting at: " << poll_start);
 
   		try
   		{
   			if(nTrials<NMAXTRIALS)
-			{
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-				LOG(INFO, "Re-trying ...");
-			}
+  			{
+  				boost::this_thread::sleep(boost::posix_time::seconds(1));
+  				LOG(INFO, "Re-trying ...");
+  			}
 
 			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
 
@@ -108,24 +138,30 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
 			{
 				job_status="Finished";
+				LOG(WARN, "The job has finished!");
 				exit_code = 0;
 			}
 			else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
 			{
 				job_status="Failed";
+				LOG(WARN, "The job has failed!");
 				exit_code = 1;
 			}
 			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 			{
+				LOG(WARN, "The job has been canceled!");
 				job_status="Cancelled";
 				exit_code = 2;
 			}
 			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
 			{
-				std::cerr<< "got error event: reason := "
+				LOG(WARN, "got error event: reason := "
 							+ err->reason()
 							+ " code := "
-							+ boost::lexical_cast<std::string>(err->error_code())<<std::endl;
+							+ boost::lexical_cast<std::string>(err->error_code()));
+
+				// give some time to the orchestrator to come up
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 			}
 			else
@@ -138,7 +174,7 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
 			LOG(INFO, "Timeout expired!");
 		}
 
-  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS && !bForceExit);
+  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS && !bForceExit );
 
   	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
 
@@ -307,10 +343,9 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 
 	ptrAgent1->start_agent(false, strBackupAgent1);
 
-	ptrAgent1->shutdown();
-	ptrAgent0->shutdown();
 	ptrOrch->shutdown();
-
+	ptrAgent0->shutdown();
+	ptrAgent1->shutdown();
 	LOG( DEBUG, "The test case testLostRegAck terminated!");
 }
 
