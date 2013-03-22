@@ -19,3 +19,8 @@ fhg_add_test (parse_compile_and_compare.cpp
   ARGS "${CMAKE_CURRENT_SOURCE_DIR}/xpnets"
        "${pnet_dir}"
 )
+
+fhg_add_test (util_position.cpp
+  LINK_LIBRARIES xml
+  DESCRIPTION "test xml_util_position"
+)
