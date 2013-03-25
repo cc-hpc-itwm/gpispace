@@ -67,9 +67,7 @@ namespace mapreduce
     		  }
     	  }
 
-    	  char buff_total[sizeof(long)*8+1];
-    	  sprintf(buff_total, "%d", total);
-    	  list_out_values.push_back(std::string(buff_total));
+    	  list_out_values.push_back(boost::lexical_cast<std::string>(total));
 
     	  return list_out_values;
       }
