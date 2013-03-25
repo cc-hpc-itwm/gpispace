@@ -1,0 +1,6 @@
+{
+   boost_thread_once_per_epoch_false_positive
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN5boost6detail25get_once_per_thread_epochEv
+}
