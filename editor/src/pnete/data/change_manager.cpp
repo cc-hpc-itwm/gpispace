@@ -1713,7 +1713,7 @@ namespace fhg
             ( p.id().id_mapper()->next_id()
             , p.id().id_mapper()
             , boost::none
-            , XML_PARSE_POSITION_GENERATED()
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , p.get().name()
             , p.get().type()
             , p.get().name()
@@ -1851,7 +1851,7 @@ namespace fhg
             ( function.id().id_mapper()->next_id()
             , function.id().id_mapper()
             , boost::none
-            , XML_PARSE_POSITION_GENERATED()
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , name
             , type
             , boost::make_optional (direction == we::type::PORT_TUNNEL, name)
