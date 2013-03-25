@@ -1,6 +1,8 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/assert.hpp>
 
+#include <boost/system/error_code.hpp>
+
 #include "connection.hpp"
 
 #include <fhgcom/util/to_hex.hpp>
@@ -116,7 +118,10 @@ namespace fhg
       else
       {
         in_message_->resize(0);
-        if (callback_handler_) callback_handler_->handle_error (get_this(), ec);
+        if (callback_handler_)
+        {
+          callback_handler_->handle_error (get_this(), ec);
+        }
       }
     }
 
@@ -199,14 +204,24 @@ namespace fhg
 
       DLOG( TRACE, "initiating write of " << *d.message);
 
-      boost::asio::async_write( socket_
-                              , d.to_buffers()
-                              , strand_.wrap (boost::bind( &self::handle_write
-                                                         , get_this()
-                                                         , boost::asio::placeholders::error
-                                                         )
-                                             )
-                              );
+      try
+      {
+        boost::asio::async_write( socket_
+                                , d.to_buffers()
+                                , strand_.wrap (boost::bind( &self::handle_write
+                                                           , get_this()
+                                                           , boost::asio::placeholders::error
+                                                           )
+                                               )
+                                );
+      }
+      catch (std::length_error const &)
+      {
+        strand_.post (boost::bind( &self::handle_write
+                                 , get_this()
+                                 , boost::system::errc::make_error_code (boost::system::errc::bad_message)
+                                 ));
+      }
     }
 
     void connection_t::handle_write (const boost::system::error_code & ec)
