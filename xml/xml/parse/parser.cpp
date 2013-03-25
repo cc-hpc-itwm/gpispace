@@ -87,6 +87,8 @@ namespace xml
           throw rapidxml::parse_error (oss.str().c_str(), e.where<void>());
         }
 
+        state.set_in_progress_position (inp.data());
+
         xml_node_type* node (doc.first_node());
 
         if (!node)

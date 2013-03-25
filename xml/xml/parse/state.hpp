@@ -9,6 +9,8 @@
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/require.hpp>
 #include <xml/parse/warning.hpp>
+#include <xml/parse/util/position.hpp>
+#include <xml/parse/rapidxml/types.hpp>
 
 #include <we/type/bits/transition/optimize.hpp>
 #include <we/type/property.hpp>
@@ -16,8 +18,10 @@
 #include <fstream>
 #include <list>
 #include <set>
+#include <map>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <boost/filesystem.hpp>
 #include <boost/unordered_map.hpp>
@@ -37,6 +41,11 @@ namespace xml
 
       typedef std::vector<std::string> search_path_type;
       typedef std::list<fs::path> in_progress_type;
+      typedef std::map< const char*
+                      , util::position_type
+                      , std::greater<const char*>
+                      > position_by_pointer_type;
+      typedef std::list<position_by_pointer_type> in_progress_position_type;
       typedef std::set<fs::path> dependencies_type;
 
       typedef std::vector<std::string> gen_param_type;
@@ -52,6 +61,7 @@ namespace xml
         gen_param_type _gen_ldflags;
         gen_param_type _gen_cxxflags;
         in_progress_type _in_progress;
+        in_progress_position_type _in_progress_position;
         dependencies_type _dependencies;
         property::path_type _prop_path;
         optimize::options::type _options_optimize;
@@ -204,6 +214,8 @@ namespace xml
         void set_input (const std::string & file);
 
         fs::path file_in_progress() const;
+        void set_in_progress_position (const char*);
+        util::position_type position (const xml_node_type*);
 
         const dependencies_type& dependencies (void) const;
 
@@ -321,7 +333,14 @@ namespace xml
 
           const T x (parse (stream, *this));
 
-          _in_progress.pop_back ();
+          _in_progress.pop_back();
+
+          if (_in_progress_position.empty())
+          {
+            throw std::runtime_error ("no start position given");
+          }
+
+          _in_progress_position.pop_back();
 
           return x;
         }

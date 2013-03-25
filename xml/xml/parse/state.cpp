@@ -87,6 +87,7 @@ namespace xml
         , _gen_ldflags ()
         , _gen_cxxflags ()
         , _in_progress ()
+        , _in_progress_position()
         , _dependencies ()
         , _ignore_properties (false)
         , _Werror (false)
@@ -380,6 +381,49 @@ namespace xml
           ? fs::path("<stdin>")
           : _in_progress.back()
           ;
+      }
+
+      void type::set_in_progress_position (const char* p)
+      {
+        in_progress_position_type::iterator m
+          (_in_progress_position.insert ( _in_progress_position.end()
+                                        , position_by_pointer_type()
+                                        )
+          );
+
+        m->insert
+          (std::make_pair ( p
+                          , util::position_type (p, p, file_in_progress())
+                          )
+          );
+      }
+      util::position_type type::position (const xml_node_type* node)
+      {
+        if (_in_progress_position.empty())
+        {
+          throw std::runtime_error ("start position requested but unknown");
+        }
+
+        position_by_pointer_type& m (_in_progress_position.back());
+
+        const position_by_pointer_type::const_iterator before
+          (m.lower_bound (node->name()));
+
+        if (before == m.end())
+        {
+          throw std::runtime_error ("no prior position found");
+        }
+
+        const util::position_type p ( before->second.pos()
+                                    , node->name()
+                                    , file_in_progress()
+                                    , before->second.line()
+                                    , before->second.column()
+                                    );
+
+        m.insert (std::make_pair (node->name(), p));
+
+        return p;
       }
 
       const dependencies_type& type::dependencies (void) const
