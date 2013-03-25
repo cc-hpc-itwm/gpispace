@@ -36,6 +36,9 @@ namespace xml
       };
 
       std::ostream& operator<< (std::ostream&, const position_type&);
+
+#define XML_PARSE_POSITION_GENERATED()                                  \
+      ::xml::parse::util::position_type (NULL, NULL, __FILE__, __LINE__)
     }
   }
 }
