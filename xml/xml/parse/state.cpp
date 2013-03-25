@@ -178,11 +178,6 @@ namespace xml
         , _id_mapper()
       {}
 
-      const search_path_type& type::search_path() const
-      {
-        return _search_path;
-      }
-
       const gen_param_type& type::gen_ldflags() const
       {
         return _gen_ldflags;

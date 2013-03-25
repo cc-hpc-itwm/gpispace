@@ -52,7 +52,6 @@ namespace xml
       public:
         type();
 
-        const search_path_type& search_path() const;
         const gen_param_type& gen_ldflags() const;
         const gen_param_type& gen_cxxflags() const;
         gen_param_type& gen_ldflags();
