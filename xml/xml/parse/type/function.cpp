@@ -1494,7 +1494,7 @@ namespace xml
             if (not id_function)
               {
                 throw error::unknown_function
-                  (u.get().name(), trans.name(), trans.path);
+                  (u.get().name(), trans.make_reference_id());
               }
 
             return find_module_calls (state, *id_function, m, mcs);

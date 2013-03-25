@@ -47,7 +47,6 @@ namespace xml
                         , const boost::optional<petri_net::priority_type>& priority
                         , const boost::optional<bool>& finline
                         , const boost::optional<bool>& internal
-                        , const boost::filesystem::path& path
                         );
 
         transition_type ( ID_CONS_PARAM(transition)
@@ -70,7 +69,6 @@ namespace xml
                         , const boost::optional<bool>& finline
                         , const boost::optional<bool>& internal
                         , const we::type::property::type& properties
-                        , const boost::filesystem::path& path
                         );
 
         const function_or_use_type& function_or_use() const;
@@ -183,9 +181,6 @@ namespace xml
 
       private:
         we::type::property::type _properties;
-
-      public:
-        boost::filesystem::path path;
       };
 
       // ******************************************************************* //

@@ -31,7 +31,6 @@ namespace xml
         , const boost::optional<petri_net::priority_type>& priority
         , const boost::optional<bool>& finline
         , const boost::optional<bool>& internal
-        , const boost::filesystem::path& path
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -40,7 +39,6 @@ namespace xml
         , priority (priority)
         , finline (finline)
         , internal (internal)
-        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -107,7 +105,6 @@ namespace xml
         , const boost::optional<bool>& finline
         , const boost::optional<bool>& internal
         , const we::type::property::type& properties
-        , const boost::filesystem::path& path
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -126,7 +123,6 @@ namespace xml
         , finline (finline)
         , internal (internal)
         , _properties (properties)
-        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -190,7 +186,7 @@ namespace xml
             if (not id_function)
             {
               throw error::unknown_function
-                (use.get().name(), trans.name(), trans.path);
+                (use.get().name(), trans.make_reference_id());
             }
 
             return *id_function;
@@ -287,7 +283,7 @@ namespace xml
         if (not (id_old == connect_id))
         {
           throw error::duplicate_connect
-            (connect_id, id_old, make_reference_id(), path);
+            (connect_id, id_old, make_reference_id());
         }
         connect_id.get_ref().parent (id());
       }
@@ -299,7 +295,7 @@ namespace xml
         if (not (id_old == pm_id))
         {
           throw error::duplicate_place_map
-            (pm_id, id_old, make_reference_id(), path);
+            (pm_id, id_old, make_reference_id());
         }
         pm_id.get_ref().parent (id());
       }
@@ -495,36 +491,30 @@ namespace xml
         const std::string direction
           (petri_net::edge::enum_to_string (connect.direction()));
 
-        // existence of connect.place
         const boost::optional<const id::ref::place&> id_place
           (connect.resolved_place());
 
         if (not id_place)
         {
           throw error::connect_to_nonexistent_place
-            (direction, name(), connect.place(), path);
+            (make_reference_id(), connect.make_reference_id());
         }
 
-        // existence of connect.port
         const boost::optional<const id::ref::port&> id_port
           (connect.resolved_port());
 
         if (not id_port)
         {
           throw error::connect_to_nonexistent_port
-            (direction, name(), connect.port(), path);
+            (make_reference_id(), connect.make_reference_id());
         }
 
-        const port_type& port (id_port->get());
-        const place_type& place (id_place->get());
-
-        if (place.signature() != port.signature())
+        if (id_place->get().signature() != id_port->get().signature())
         {
-          throw error::connect_type_error ( direction
-                                          , name()
-                                          , port
-                                          , place
-                                          , path
+          throw error::connect_type_error ( make_reference_id()
+                                          , connect.make_reference_id()
+                                          , *id_port
+                                          , *id_place
                                           );
         }
       }
@@ -650,7 +640,6 @@ namespace xml
           , finline
           , internal
           , _properties
-          , path
           ).make_reference_id();
       }
 
@@ -788,7 +777,7 @@ namespace xml
                                , "condition"
                                , "unfold"
                                , trans.name()
-                               , trans.path
+                               , trans.position_of_definition().path()
                                )
               );
 
@@ -887,7 +876,7 @@ namespace xml
                                , "condition"
                                , "unfold"
                                , trans.name()
-                               , trans.path
+                               , trans.position_of_definition().path()
                                )
               );
 

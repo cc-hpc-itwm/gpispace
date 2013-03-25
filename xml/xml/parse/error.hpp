@@ -647,7 +647,6 @@ namespace xml
         duplicate_connect ( const id::ref::connect& connection
                           , const id::ref::connect& old_connection
                           , const id::ref::transition& transition
-                          , const boost::filesystem::path& path
                           );
         virtual ~duplicate_connect() throw() { }
 
@@ -655,7 +654,6 @@ namespace xml
         const id::ref::connect _connection;
         const id::ref::connect _old_connection;
         const id::ref::transition _transition;
-        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -666,7 +664,6 @@ namespace xml
         duplicate_place_map ( const id::ref::place_map& place_map
                             , const id::ref::place_map& old_place_map
                             , const id::ref::transition& transition
-                            , const boost::filesystem::path & path
                             );
         virtual ~duplicate_place_map() throw() { }
 
@@ -674,7 +671,6 @@ namespace xml
         const id::ref::place_map _place_map;
         const id::ref::place_map _old_place_map;
         const id::ref::transition _transition;
-        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -915,85 +911,41 @@ namespace xml
 
       class connect_to_nonexistent_place : public generic
       {
-      private:
-        std::string nice ( const std::string & direction
-                         , const std::string & trans
-                         , const std::string & place
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "in transition " << trans << " in " << path << ": "
-            << "connect-" << direction << " to nonexistent place " << place
-            ;
-
-          return s.str();
-        }
       public:
-        connect_to_nonexistent_place ( const std::string & direction
-                                     , const std::string & trans
-                                     , const std::string & place
-                                     , const boost::filesystem::path & path
-                                     )
-          : generic (nice (direction, trans, place, path))
-        {}
-      };
+        connect_to_nonexistent_place ( const id::ref::transition&
+                                     , const id::ref::connect&
+                                     );
+        ~connect_to_nonexistent_place() throw() {}
 
-      // ******************************************************************* //
+      private:
+        const id::ref::transition _transition;
+        const id::ref::connect _connection;
+      };
 
       class connect_to_nonexistent_port : public generic
       {
-      private:
-        std::string nice ( const std::string & direction
-                         , const std::string & trans
-                         , const std::string & port
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "in transition " << trans << " in " << path << ": "
-            << "connect-" << direction << " to nonexistent port " << port
-            ;
-
-          return s.str();
-        }
       public:
-        connect_to_nonexistent_port ( const std::string & direction
-                                    , const std::string & trans
-                                    , const std::string & port
-                                    , const boost::filesystem::path & path
-                                    )
-          : generic (nice (direction, trans, port, path))
-        {}
+        connect_to_nonexistent_port ( const id::ref::transition&
+                                    , const id::ref::connect&
+                                    );
+        ~connect_to_nonexistent_port() throw() {}
+
+      private:
+        const id::ref::transition _transition;
+        const id::ref::connect _connection;
       };
 
       // ******************************************************************* //
 
       class unknown_function : public generic
       {
-      private:
-        std::string nice ( const std::string & fun
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "in transition " << trans << " in " << path << ": "
-            << "unknown function " << fun
-            ;
-
-          return s.str();
-        }
       public:
-        unknown_function ( const std::string & fun
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         )
-          : generic (nice (fun, trans, path))
-        {}
+        unknown_function (const std::string&, const id::ref::transition&);
+        ~unknown_function() throw() {}
+
+      private:
+        const std::string _function_name;
+        const id::ref::transition _transition;
       };
 
       // ******************************************************************* //
@@ -1025,40 +977,19 @@ namespace xml
 
       class connect_type_error : public generic
       {
-      private:
-        template<typename PORT, typename PLACE>
-        std::string nice ( const std::string & direction
-                         , const std::string & trans
-                         , const PORT & port
-                         , const PLACE & place
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "in transition " << trans << " in " << path << ": "
-            << "type error: connect-" << direction
-            << " place " << place.name()
-            << " of type " << place.type()
-            << " (the signature is " << place.signature() << ")"
-            << " with port " << port.name()
-            << " of type " << port.type()
-            << " (the signature is " << port.signature() << ")"
-            ;
-
-          return s.str();
-        }
-
       public:
-        template<typename PORT, typename PLACE>
-        connect_type_error ( const std::string & direction
-                           , const std::string trans
-                           , const PORT & port
-                           , const PLACE & place
-                           , const boost::filesystem::path & path
-                           )
-          : generic (nice (direction, trans, port, place, path))
-        {}
+        connect_type_error ( const id::ref::transition&
+                           , const id::ref::connect&
+                           , const id::ref::port&
+                           , const id::ref::place&
+                           );
+        ~connect_type_error() throw() {}
+
+      private:
+        const id::ref::transition _transition;
+        const id::ref::connect _connection;
+        const id::ref::port _port;
+        const id::ref::place _place;
       };
 
       // ******************************************************************* //

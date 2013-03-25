@@ -61,7 +61,7 @@ namespace xml
                     % function.get().name().get_value_or ("<<anonymous>>")
                     % function.get().path
                     % trans.get().name()
-                    % trans.get().path
+                    % trans.get().position_of_definition()
                     )
           , _transition (trans)
           , _function (function)
@@ -73,7 +73,7 @@ namespace xml
                                       "internal tag of the contained function"
                                     )
                     % trans.get().name()
-                    % trans.get().path
+                    % trans.get().position_of_definition()
                     )
           , _transition (trans)
           , _function (function)

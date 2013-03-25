@@ -137,7 +137,6 @@ namespace xml
         ( const id::ref::connect& connection
         , const id::ref::connect& old_connection
         , const id::ref::transition& transition
-        , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "duplicate connect-%1% %2% <-> %3% "
                                       "for transition %4% in %5%"
@@ -149,7 +148,7 @@ namespace xml
                     % connection.get().place()
                     % connection.get().port()
                     % transition.get().name()
-                    % path
+                    % transition.get().position_of_definition()
                     % petri_net::edge::enum_to_string
                       (old_connection.get().direction())
                     % connection.get().position_of_definition()
@@ -158,14 +157,12 @@ namespace xml
           , _connection (connection)
           , _old_connection (old_connection)
           , _transition (transition)
-          , _path (path)
       { }
 
       duplicate_place_map::duplicate_place_map
         ( const id::ref::place_map& place_map
         , const id::ref::place_map& old_place_map
         , const id::ref::transition& transition
-        , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "duplicate place-map %1% <-> %2% for "
                                       "transition %3% in %4%"
@@ -173,12 +170,11 @@ namespace xml
                     % place_map.get().place_virtual()
                     % place_map.get().place_real()
                     % transition.get().name()
-                    % path
+                    % transition.get().position_of_definition()
                     )
           , _place_map (place_map)
           , _old_place_map (old_place_map)
           , _transition (transition)
-          , _path (path)
       { }
 
       duplicate_transition::duplicate_transition
@@ -189,8 +185,8 @@ namespace xml
                                       "first definition was in %3%"
                                     )
                     % transition.get().name()
-                    % transition.get().path
-                    % old_transition.get().path
+                    % transition.get().position_of_definition()
+                    % old_transition.get().position_of_definition()
                     )
           , _transition (transition)
           , _old_transition (old_transition)
@@ -263,6 +259,81 @@ namespace xml
           , _mod (mod)
           , _old (old)
       {}
+
+      unknown_function::unknown_function ( const std::string& fun
+                                         , const id::ref::transition& trans
+                                         )
+        : generic ( boost::format ( "unknown function %1% in transition %2%"
+                                    " in %3%"
+                                  )
+                  % fun
+                  % trans.get().name()
+                  % trans.get().position_of_definition()
+                  )
+        , _function_name (fun)
+        , _transition (trans)
+      {}
+
+      connect_to_nonexistent_place::connect_to_nonexistent_place
+       ( const id::ref::transition& transition
+       , const id::ref::connect& connection
+       )
+         : generic ( boost::format ( "connect-%1% to nonexistent place %2%"
+                                     " in transition %3% at %4%"
+                                   )
+                   % connection.get().direction()
+                   % connection.get().place()
+                   % transition.get().name()
+                   % connection.get().position_of_definition()
+                   )
+         , _transition (transition)
+         , _connection (connection)
+        {}
+
+      connect_to_nonexistent_port::connect_to_nonexistent_port
+       ( const id::ref::transition& transition
+       , const id::ref::connect& connection
+       )
+         : generic ( boost::format ( "connect-%1% to nonexistent port %2%"
+                                     " in transition %3% at %4%"
+                                   )
+                   % connection.get().direction()
+                   % connection.get().port()
+                   % transition.get().name()
+                   % connection.get().position_of_definition()
+                   )
+         , _transition (transition)
+         , _connection (connection)
+        {}
+
+      connect_type_error::connect_type_error
+        ( const id::ref::transition& transition
+        , const id::ref::connect& connection
+        , const id::ref::port& port
+        , const id::ref::place& place
+        )
+         : generic ( boost::format ( "type-error: connect-%1%"
+                                     " from place %2%::%3% (%4%) at %5%"
+                                     " to port %6%::%7% (%8%) at %9%"
+                                     " in transition %10% at %11%"
+                                   )
+                   % connection.get().direction()
+                   % place.get().name()
+                   % place.get().type()
+                   % place.get().signature()
+                   % "TODO: place::position_of_definition"
+                   % port.get().name()
+                   % port.get().type()
+                   % port.get().signature()
+                   % port.get().position_of_definition()
+                   % transition.get().name()
+                   % connection.get().position_of_definition()
+                   )
+          , _transition (transition)
+          , _connection (connection)
+          , _port (port)
+          , _place (place)
+        {}
     }
   }
 }

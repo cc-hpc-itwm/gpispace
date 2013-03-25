@@ -491,7 +491,6 @@ namespace xml
               (fhg::util::read_bool, optional (node, "inline"))
             , fhg::util::boost::fmap<std::string, bool>
               (fhg::util::read_bool, optional (node, "internal"))
-            , state.file_in_progress()
             ).make_reference_id()
           );
 
