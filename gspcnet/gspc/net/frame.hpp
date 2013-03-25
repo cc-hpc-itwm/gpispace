@@ -60,6 +60,7 @@ namespace gspc
       frame & set_body (const char *buf, std::size_t len);
       frame & set_body (body_type const & body);
       frame & add_body (std::string const & body);
+      frame & add_body (const char *buf, std::size_t len);
 
       body_type const & get_body () const { return m_body; }
       body_type & get_body () { return m_body; }

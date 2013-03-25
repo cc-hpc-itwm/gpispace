@@ -67,6 +67,15 @@ namespace gspc
       return *this;
     }
 
+    frame & frame::add_body (const char *bytes, size_t len)
+    {
+      m_body.insert ( m_body.end ()
+                    , bytes
+                    , bytes + len
+                    );
+      return *this;
+    }
+
     std::string frame::get_body_as_string () const
     {
       return std::string (m_body.begin (), m_body.end ());
