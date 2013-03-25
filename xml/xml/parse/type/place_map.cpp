@@ -16,11 +16,13 @@ namespace xml
     {
       place_map_type::place_map_type ( ID_CONS_PARAM(place_map)
                                      , PARENT_CONS_PARAM(transition)
+                                     , const util::position_type& pod
                                      , const std::string & place_virtual
                                      , const std::string & place_real
                                      , const we::type::property::type& prop
                                      )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _place_virtual (place_virtual)
         , _place_real (place_real)
@@ -102,6 +104,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _place_virtual
           , _place_real
           , _properties

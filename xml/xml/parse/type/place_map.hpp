@@ -4,9 +4,10 @@
 #define _XML_PARSE_TYPE_PLACE_MAP_HPP
 
 #include <xml/parse/id/generic.hpp>
-#include <xml/parse/util/unique.hpp>
-
 #include <xml/parse/type/transition.fwd.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
+#include <xml/parse/util/unique.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -23,7 +24,7 @@ namespace xml
   {
     namespace type
     {
-      struct place_map_type
+      struct place_map_type : with_position_of_definition
       {
         ID_SIGNATURES(place_map);
         PARENT_SIGNATURES(transition);
@@ -33,6 +34,7 @@ namespace xml
 
         place_map_type ( ID_CONS_PARAM(place_map)
                        , PARENT_CONS_PARAM(transition)
+                       , const util::position_type&
                        , const std::string & _place_virtual
                        , const std::string & _place_real
                        , const we::type::property::type& properties

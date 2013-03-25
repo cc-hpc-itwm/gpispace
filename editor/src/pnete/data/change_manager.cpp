@@ -1168,6 +1168,7 @@ namespace fhg
                        ( transition_of_fun_of_port.id_mapper()->next_id()
                        , transition_of_fun_of_port.id_mapper()
                        , boost::none
+                       , XML_PARSE_UTIL_POSITION_GENERATED()
                        , port.get().name()
                        , place.get().name()
                        , we::type::property::type()

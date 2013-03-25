@@ -381,6 +381,7 @@ namespace xml
           ( state.id_mapper()->next_id()
           , state.id_mapper()
           , boost::none
+          , state.position (node)
           , required ("place_map_type", node, "virtual", state.file_in_progress())
           , required ("place_map_type", node, "real", state.file_in_progress())
           , properties
