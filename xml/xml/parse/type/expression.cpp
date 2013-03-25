@@ -36,9 +36,11 @@ namespace xml
 
       expression_type::expression_type ( ID_CONS_PARAM(expression)
                                        , PARENT_CONS_PARAM(function)
+                                       , const util::position_type& pod
                                        , const expressions_type & exps
                                        )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _expressions (split (exps))
       {
@@ -85,6 +87,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _expressions
           ).make_reference_id();
       }

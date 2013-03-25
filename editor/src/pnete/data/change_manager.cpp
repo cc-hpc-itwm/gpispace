@@ -1394,6 +1394,7 @@ namespace fhg
                 ( net.id().id_mapper()->next_id()
                 , net.id().id_mapper()
                 , boost::none
+                , XML_PARSE_UTIL_POSITION_GENERATED()
                 ).make_reference_id()
               ).make_reference_id()
             ).make_reference_id()

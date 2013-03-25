@@ -7,6 +7,8 @@
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -22,7 +24,7 @@ namespace xml
       //! \todo Move this into class scope.
       typedef std::list<std::string> expressions_type;
 
-      struct expression_type
+      struct expression_type : with_position_of_definition
       {
         ID_SIGNATURES(expression);
         PARENT_SIGNATURES(function);
@@ -30,6 +32,7 @@ namespace xml
       public:
         expression_type ( ID_CONS_PARAM(expression)
                         , PARENT_CONS_PARAM(function)
+                        , const util::position_type&
                         , const expressions_type& exps
                         = expressions_type()
                         );
