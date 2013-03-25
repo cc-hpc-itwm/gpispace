@@ -8,6 +8,7 @@
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/type_map_type.hpp>
 
 #include <xml/parse/util/position.hpp>
@@ -29,7 +30,7 @@ namespace xml
   {
     namespace type
     {
-      struct port_type
+      struct port_type : with_position_of_definition
       {
         ID_SIGNATURES(port);
         PARENT_SIGNATURES(function);
@@ -61,8 +62,6 @@ namespace xml
         const std::string& type() const;
         const std::string& type (const std::string&);
 
-        const util::position_type& position_of_definition() const;
-
         boost::optional<signature::type> signature() const;
         signature::type signature_or_throw() const;
 
@@ -89,7 +88,6 @@ namespace xml
           ) const;
 
       private:
-        util::position_type _position_of_definition;
         std::string _name;
         std::string _type;
 

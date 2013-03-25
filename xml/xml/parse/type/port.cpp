@@ -23,9 +23,9 @@ namespace xml
                            , const we::type::PortDirection& direction
                            , const we::type::property::type& properties
                            )
-        : ID_INITIALIZE()
+        : with_position_of_definition (position_of_definition)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _position_of_definition (XML_PARSE_POSITION_GENERATED())
         , _name (name)
         , _type (type)
         , place (_place)
@@ -33,11 +33,6 @@ namespace xml
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
-      }
-
-      const util::position_type& port_type::position_of_definition() const
-      {
-        return _position_of_definition;
       }
 
       const std::string& port_type::name() const
