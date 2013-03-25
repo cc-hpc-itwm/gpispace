@@ -1044,6 +1044,7 @@ namespace xml
             ( id
             , state.id_mapper()
             , boost::none
+            , state.position (node)
             , required ("module_type", node, "name", state.file_in_progress())
             , required ("module_type", node, "function", state.file_in_progress())
             , state.file_in_progress()

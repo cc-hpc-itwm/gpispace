@@ -7,6 +7,9 @@
 
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/link.fwd.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -23,7 +26,7 @@ namespace xml
   {
     namespace type
     {
-      struct module_type
+      struct module_type : with_position_of_definition
       {
         ID_SIGNATURES(module);
         PARENT_SIGNATURES(function);
@@ -36,15 +39,18 @@ namespace xml
 
         module_type ( ID_CONS_PARAM(module)
                     , PARENT_CONS_PARAM(function)
+                    , const util::position_type&
                     );
         module_type ( ID_CONS_PARAM(module)
                     , PARENT_CONS_PARAM(function)
+                    , const util::position_type&
                     , const std::string & _name
                     , const std::string & _function
                     , const boost::filesystem::path & path
                     );
         module_type ( ID_CONS_PARAM(module)
                     , PARENT_CONS_PARAM(function)
+                    , const util::position_type&
                     , const std::string& name
                     , const std::string& function
                     , const boost::optional<std::string>& port_return

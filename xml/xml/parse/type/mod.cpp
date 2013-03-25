@@ -20,8 +20,10 @@ namespace xml
     {
       module_type::module_type ( ID_CONS_PARAM(module)
                                , PARENT_CONS_PARAM(function)
+                               , const util::position_type& pod
                                )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
       {
         _id_mapper->put (_id, *this);
@@ -29,11 +31,13 @@ namespace xml
 
       module_type::module_type ( ID_CONS_PARAM(module)
                                , PARENT_CONS_PARAM(function)
+                               , const util::position_type& pod
                                , const std::string& name
                                , const std::string & _function
                                , const boost::filesystem::path & path
                                )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , function ()
@@ -133,6 +137,7 @@ namespace xml
 
       module_type::module_type ( ID_CONS_PARAM(module)
                                , PARENT_CONS_PARAM(function)
+                               , const util::position_type& pod
                                , const std::string& name
                                , const std::string& function
                                , const boost::optional<std::string>& port_return
@@ -144,7 +149,8 @@ namespace xml
                                , const links_type& links
                                , const boost::filesystem::path& path
                                )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , function (function)
@@ -225,6 +231,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _name
           , function
           , port_return

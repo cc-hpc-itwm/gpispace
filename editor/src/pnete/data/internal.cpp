@@ -9,6 +9,8 @@
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/link.hpp>
 
+#include <xml/parse/util/position.hpp>
+
 #include <QObject>
 #include <QString>
 
@@ -39,6 +41,7 @@ namespace fhg
                 ( state.id_mapper()->next_id()
                 , state.id_mapper()
                 , boost::none
+                , XML_PARSE_POSITION_GENERATED()
                 ).make_reference_id();
             }
           case internal_type::net:
