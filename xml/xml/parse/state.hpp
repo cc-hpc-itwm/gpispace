@@ -34,7 +34,6 @@ namespace xml
     namespace state
     {
       typedef std::vector<std::string> search_path_type;
-      typedef std::list<boost::filesystem::path> in_progress_type;
       typedef std::map< const char*
                       , util::position_type
                       , std::greater<const char*>
@@ -47,6 +46,9 @@ namespace xml
 
       struct type
       {
+      private:
+        typedef std::list<boost::filesystem::path> in_progress_type;
+
       public:
         type();
 
