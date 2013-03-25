@@ -1,5 +1,6 @@
 set (gspcnet_src
   net/error.cpp
+  net/limits.cpp
 
   net/frame.cpp
   net/frame_io.cpp
