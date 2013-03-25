@@ -2,12 +2,7 @@
 #ifndef _H_MAPREDUCE_UTIL_MAP
 #define _H_MAPREDUCE_UTIL_MAP 1
 
-#include <sstream>
-#include <stdexcept>
 #include <string>
-#include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
-#include <sstream>
 #include <list>
 #include <util/types.hpp>
 
