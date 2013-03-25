@@ -523,6 +523,7 @@ namespace xml
                 ( type::use_type ( id::use (state.id_mapper()->next_id())
                                  , state.id_mapper()
                                  , id
+                                 , state.position (child)
                                  , required ( "transition_type"
                                             , child
                                             , "name"

@@ -14,9 +14,11 @@ namespace xml
     {
       use_type::use_type ( ID_CONS_PARAM(use)
                          , PARENT_CONS_PARAM(transition)
+                         , const util::position_type& pod
                          , const std::string& name
                          )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
       {
@@ -39,6 +41,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _name
           ).make_reference_id();
       }

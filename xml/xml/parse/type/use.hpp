@@ -6,6 +6,8 @@
 #include <xml/parse/id/generic.hpp>
 
 #include <xml/parse/type/transition.fwd.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -17,7 +19,7 @@ namespace xml
   {
     namespace type
     {
-      struct use_type
+      struct use_type : with_position_of_definition
       {
         ID_SIGNATURES(use);
         PARENT_SIGNATURES(transition);
@@ -25,6 +27,7 @@ namespace xml
       public:
         use_type ( ID_CONS_PARAM(use)
                  , PARENT_CONS_PARAM(transition)
+                 , const util::position_type&
                  , const std::string& name
                  );
 
