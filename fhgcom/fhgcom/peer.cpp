@@ -187,6 +187,9 @@ namespace fhg
       {
         connection_data_t & cd = connections_.begin()->second;
 
+        if (cd.connection)
+          cd.connection->socket ().cancel ();
+
         while (! cd.o_queue.empty())
         {
           to_send_t & to_send = cd.o_queue.front();
@@ -258,7 +261,6 @@ namespace fhg
 
         if (peer_info.empty())
         {
-          DLOG(ERROR, "could not lookup location information for " << addr);
           try
           {
             using namespace boost::system;
@@ -266,7 +268,7 @@ namespace fhg
           }
           catch (std::exception const & ex)
           {
-            LOG(ERROR, "completion handler failed (ignored): " << ex.what());
+            LOG (ERROR, "completion handler failed (ignored): " << ex.what());
           }
           return;
         }
@@ -851,6 +853,10 @@ namespace fhg
       if (connections_.find (c->remote_address()) != connections_.end())
       {
         connection_data_t & cd = connections_[c->remote_address()];
+
+        boost::system::error_code ignore;
+        c->socket ().cancel (ignore);
+        c->socket ().close (ignore);
 
         // deactivate asynchronous sender
         cd.send_in_progress = false;
