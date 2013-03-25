@@ -47,8 +47,6 @@ namespace xml
       typedef std::vector<std::string> gen_param_type;
       typedef std::vector<std::string> link_prefix_type;
 
-      // ******************************************************************* //
-
       struct type
       {
       private:
@@ -163,164 +161,146 @@ namespace xml
         id::mapper _id_mapper;
 
         template<typename W>
-        void generic_warn ( const W & w
-                          , const bool & active
-                          , const std::string & flag
+        void generic_warn ( const W& w
+                          , const bool& active
+                          , const std::string& flag
                           ) const;
 
-        boost::filesystem::path expand (const std::string & file) const;
+        boost::filesystem::path expand (const std::string& file) const;
 
       public:
         type();
 
-        const search_path_type & search_path (void) const;
-        const gen_param_type& gen_ldflags (void) const;
-        const gen_param_type& gen_cxxflags (void) const;
-        gen_param_type& gen_ldflags (void);
-        gen_param_type& gen_cxxflags (void);
+        const search_path_type& search_path() const;
+        const gen_param_type& gen_ldflags() const;
+        const gen_param_type& gen_cxxflags() const;
+        gen_param_type& gen_ldflags();
+        gen_param_type& gen_cxxflags();
         const link_prefix_type& link_prefix() const;
         const std::string& link_prefix_by_key (const std::string&) const;
 
-        // ***************************************************************** //
-
-        const ::xml::parse::type::requirements_type & requirements () const;
+        const ::xml::parse::type::requirements_type& requirements() const;
 
         void set_requirement
-          ( const ::xml::parse::type::require_key_type & key
-          , const bool & mandatory
+          ( const ::xml::parse::type::require_key_type& key
+          , const bool& mandatory
           );
 
-        // ***************************************************************** //
+        we::type::property::path_type& prop_path();
 
-        we::type::property::path_type & prop_path (void);
+        const we::type::optimize::options::type& options_optimize() const;
 
-        // ***************************************************************** //
-
-        const we::type::optimize::options::type & options_optimize (void) const;
-
-        // ***************************************************************** //
-
-        void interpret_property ( const we::type::property::path_type & path
-                                , const we::type::property::value_type & value
+        void interpret_property ( const we::type::property::path_type& path
+                                , const we::type::property::value_type& value
                                 );
 
-        // ***************************************************************** //
-
-        void set_input (const boost::filesystem::path & path);
-        void set_input (const std::string & file);
+        void set_input (const boost::filesystem::path& path);
+        void set_input (const std::string& file);
 
         boost::filesystem::path file_in_progress() const;
         void set_in_progress_position (const char*);
         util::position_type position (const xml_node_type*) const;
 
-        const dependencies_type& dependencies (void) const;
+        const dependencies_type& dependencies() const;
 
-#define ACCESS(name) \
-        const std::string & name (void) const; \
-        std::string & name (void);
+#define ACCESS(name)                     \
+        const std::string& name() const; \
+        std::string& name();
 
-        ACCESS(path_to_cpp)
-        ACCESS(dump_xml_file)
-        ACCESS(dump_dependencies)
-        ACCESS(list_dependencies)
-        ACCESS(backup_extension)
-
-#undef ACCESS
-
-#define ACCESS(name) const std::vector<std::string> & name (void) const;
-
-        ACCESS(dependencies_target)
-        ACCESS(dependencies_target_quoted)
+        ACCESS (path_to_cpp)
+        ACCESS (dump_xml_file)
+        ACCESS (dump_dependencies)
+        ACCESS (list_dependencies)
+        ACCESS (backup_extension)
 
 #undef ACCESS
 
-        // ***************************************************************** //
+#define ACCESS(name) const std::vector<std::string>& name() const;
 
-#define ACCESST(_t,_x)                                  \
-        const _t & _x (void) const;                     \
-        _t & _x (void);
+        ACCESS (dependencies_target)
+        ACCESS (dependencies_target_quoted)
+
+#undef ACCESS
+
+#define ACCESST(_t,_x)                            \
+          const _t& _x() const;                   \
+        _t& _x();
 #define ACCESS(x) ACCESST(bool,x)
 
-        ACCESS(ignore_properties)
+        ACCESS (ignore_properties)
 
-        ACCESS(Werror)
-        ACCESS(Wall)
-        ACCESS(Woverwrite_function_name_as)
-        ACCESS(Woverwrite_template_name_as)
-        ACCESS(Wshadow_struct)
-        ACCESS(Wshadow_function)
-        ACCESS(Wshadow_template)
-        ACCESS(Wshadow_specialize)
-        ACCESS(Wdefault_construction)
-        ACCESS(Wunused_field)
-        ACCESS(Wport_not_connected)
-        ACCESS(Wunexpected_element)
-        ACCESS(Woverwrite_function_name_trans)
-        ACCESS(Woverwrite_function_internal_trans)
-        ACCESS(Wproperty_overwritten)
-        ACCESS(Wtype_map_duplicate)
-        ACCESS(Wtype_get_duplicate)
-        ACCESS(Windependent_place)
-        ACCESS(Windependent_transition)
-        ACCESS(Wconflicting_port_types)
-        ACCESS(Woverwrite_file)
-        ACCESS(Wbackup_file)
-        ACCESS(Wduplicate_external_function)
-        ACCESS(Wproperty_unknown)
-        ACCESS(Winline_many_output_ports)
-        ACCESS(Wvirtual_place_not_tunneled)
-        ACCESS(Wduplicate_template_parameter)
+        ACCESS (Werror)
+        ACCESS (Wall)
+        ACCESS (Woverwrite_function_name_as)
+        ACCESS (Woverwrite_template_name_as)
+        ACCESS (Wshadow_struct)
+        ACCESS (Wshadow_function)
+        ACCESS (Wshadow_template)
+        ACCESS (Wshadow_specialize)
+        ACCESS (Wdefault_construction)
+        ACCESS (Wunused_field)
+        ACCESS (Wport_not_connected)
+        ACCESS (Wunexpected_element)
+        ACCESS (Woverwrite_function_name_trans)
+        ACCESS (Woverwrite_function_internal_trans)
+        ACCESS (Wproperty_overwritten)
+        ACCESS (Wtype_map_duplicate)
+        ACCESS (Wtype_get_duplicate)
+        ACCESS (Windependent_place)
+        ACCESS (Windependent_transition)
+        ACCESS (Wconflicting_port_types)
+        ACCESS (Woverwrite_file)
+        ACCESS (Wbackup_file)
+        ACCESS (Wduplicate_external_function)
+        ACCESS (Wproperty_unknown)
+        ACCESS (Winline_many_output_ports)
+        ACCESS (Wvirtual_place_not_tunneled)
+        ACCESS (Wduplicate_template_parameter)
 
-        ACCESS(no_inline)
-        ACCESS(synthesize_virtual_places)
-        ACCESS(force_overwrite_file)
-        ACCESS(do_file_backup)
+        ACCESS (no_inline)
+        ACCESS (synthesize_virtual_places)
+        ACCESS (force_overwrite_file)
+        ACCESS (do_file_backup)
 
-        ACCESS(dependencies_add_phony_targets)
-        ACCESS(dump_dependenciesD)
+        ACCESS (dependencies_add_phony_targets)
+        ACCESS (dump_dependenciesD)
 
 #undef ACCESS
 #undef ACCESST
 
-        // ***************************************************************** //
+#define WARN(x) void warn (const x& w) const;
 
-#define WARN(x) \
-        void warn (const x & w) const;
-
-        WARN(overwrite_function_name_as)
-        WARN(overwrite_template_name_as)
-        WARN(default_construction)
-        WARN(unused_field)
-        WARN(port_not_connected)
-        WARN(unexpected_element)
-        WARN(overwrite_function_name_trans)
-        WARN(overwrite_function_internal_trans)
-        WARN(property_overwritten)
-        WARN(type_map_duplicate)
-        WARN(type_get_duplicate)
-        WARN(independent_place)
-        WARN(independent_transition)
-        WARN(conflicting_port_types)
-        WARN(overwrite_file)
-        WARN(backup_file)
-        WARN(duplicate_external_function)
-        WARN(property_unknown)
-        WARN(inline_many_output_ports)
-        WARN(virtual_place_not_tunneled)
-        WARN(shadow_function)
-        WARN(shadow_template)
-        WARN(shadow_specialize)
-        WARN(duplicate_template_parameter)
-        WARN(struct_shadowed)
+        WARN (overwrite_function_name_as)
+        WARN (overwrite_template_name_as)
+        WARN (default_construction)
+        WARN (unused_field)
+        WARN (port_not_connected)
+        WARN (unexpected_element)
+        WARN (overwrite_function_name_trans)
+        WARN (overwrite_function_internal_trans)
+        WARN (property_overwritten)
+        WARN (type_map_duplicate)
+        WARN (type_get_duplicate)
+        WARN (independent_place)
+        WARN (independent_transition)
+        WARN (conflicting_port_types)
+        WARN (overwrite_file)
+        WARN (backup_file)
+        WARN (duplicate_external_function)
+        WARN (property_unknown)
+        WARN (inline_many_output_ports)
+        WARN (virtual_place_not_tunneled)
+        WARN (shadow_function)
+        WARN (shadow_template)
+        WARN (shadow_specialize)
+        WARN (duplicate_template_parameter)
+        WARN (struct_shadowed)
 
 #undef WARN
 
-        // ***************************************************************** //
-
-        //! \note These are called from parser, must be defined inline.
         template<typename T>
-        T generic_parse ( boost::function<T (std::istream &, type &)> parse
-                        , const boost::filesystem::path & path
+        T generic_parse ( boost::function<T (std::istream&, type&)> parse
+                        , const boost::filesystem::path& path
                         )
         {
           _in_progress.push_back (path);
@@ -342,8 +322,8 @@ namespace xml
         }
 
         template<typename T>
-        T generic_parse ( boost::function<T (std::istream &, type &)> parse
-                        , const std::string & file
+        T generic_parse ( boost::function<T (std::istream&, type&)> parse
+                        , const std::string& file
                         )
         {
           return generic_parse<T> (parse, boost::filesystem::path (file));
@@ -352,8 +332,8 @@ namespace xml
         void check_for_include_loop (const boost::filesystem::path& path) const;
 
         template<typename T>
-        T generic_include ( boost::function<T (std::istream &, type &)> parse
-                          , const std::string & file
+        T generic_include ( boost::function<T (std::istream&, type&)> parse
+                          , const std::string& file
                           )
         {
           const boost::filesystem::path path (expand (file));
@@ -365,9 +345,7 @@ namespace xml
           return generic_parse<T> (parse, path);
         };
 
-        // ***************************************************************** //
-
-        void add_options (boost::program_options::options_description & desc);
+        void add_options (boost::program_options::options_description& desc);
 
         const id::mapper* id_mapper() const;
         id::mapper* id_mapper();
