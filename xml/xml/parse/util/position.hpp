@@ -3,6 +3,8 @@
 #ifndef _XML_PARSE_UTIL_POSITION_HPP
 #define _XML_PARSE_UTIL_POSITION_HPP
 
+#include <xml/parse/util/position.fwd.hpp>
+
 #include <boost/filesystem.hpp>
 
 #include <iosfwd>
