@@ -11,7 +11,7 @@
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/type_map_type.hpp>
 
-#include <xml/parse/util/position.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
