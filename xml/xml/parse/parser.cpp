@@ -322,6 +322,7 @@ namespace xml
           ( state.id_mapper()->next_id()
           , state.id_mapper()
           , boost::none
+          , state.position (node)
           , required ("connect_type", node, "place", state.file_in_progress())
           , required ("connect_type", node, "port", state.file_in_progress())
           , direction

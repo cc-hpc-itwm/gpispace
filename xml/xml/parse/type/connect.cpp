@@ -16,12 +16,14 @@ namespace xml
     {
       connect_type::connect_type ( ID_CONS_PARAM(connect)
                                  , PARENT_CONS_PARAM(transition)
+                                 , const util::position_type& pod
                                  , const std::string& place
                                  , const std::string& port
                                  , const ::petri_net::edge::type& direction
                                  , const we::type::property::type& properties
                                  )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _place (place)
         , _port (port)
@@ -118,6 +120,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _place
           , _port
           , _direction

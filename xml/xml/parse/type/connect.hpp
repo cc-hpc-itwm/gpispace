@@ -6,8 +6,9 @@
 #include <xml/parse/type/connect.fwd.hpp>
 
 #include <xml/parse/id/generic.hpp>
-
 #include <xml/parse/type/transition.fwd.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/boost/tuple.hpp> //! \note To allow storing in unique.
 #include <fhg/util/xml.fwd.hpp>
@@ -27,7 +28,7 @@ namespace xml
   {
     namespace type
     {
-      struct connect_type
+      struct connect_type : with_position_of_definition
       {
         ID_SIGNATURES(connect);
         PARENT_SIGNATURES(transition);
@@ -38,6 +39,7 @@ namespace xml
 
         connect_type ( ID_CONS_PARAM(connect)
                      , PARENT_CONS_PARAM(transition)
+                     , const util::position_type&
                      , const std::string& place
                      , const std::string& port
                      , const ::petri_net::edge::type& direction
