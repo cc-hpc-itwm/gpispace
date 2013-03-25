@@ -1963,21 +1963,13 @@ namespace xml
                 if (old_mc->second == mod)
                 {
                   state.warn ( warning::duplicate_external_function
-                               ( mod.function
-                               , mod.name()
-                               , old_mc->second.path
-                               , mod.path
-                               )
+                               (id, old_mc->second.make_reference_id())
                              );
                 }
                 else
                 {
                   throw error::duplicate_external_function
-                    ( mod.function
-                    , mod.name()
-                    , old_mc->second.path
-                    , mod.path
-                    );
+                    (id, old_mc->second.make_reference_id());
                 }
               }
             }
@@ -2085,7 +2077,7 @@ namespace xml
                                            , mod.ldflags
                                            , mod.cxxflags
                                            , mod.links
-                                           , mod.path
+                                           , mod.position_of_definition().path()
                                            );
 
               m[mod.name()].insert (fun_info);

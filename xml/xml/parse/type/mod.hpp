@@ -46,7 +46,6 @@ namespace xml
                     , const util::position_type&
                     , const std::string & _name
                     , const std::string & _function
-                    , const boost::filesystem::path & path
                     );
         module_type ( ID_CONS_PARAM(module)
                     , PARENT_CONS_PARAM(function)
@@ -60,7 +59,6 @@ namespace xml
                     , const flags_type& ldflags
                     , const flags_type& cxxflags
                     , const links_type& links
-                    , const boost::filesystem::path& path
                     );
 
         const std::string& name() const;
@@ -90,7 +88,6 @@ namespace xml
         flags_type ldflags;
         flags_type cxxflags;
         links_type links;
-        boost::filesystem::path path;
       };
 
       std::size_t hash_value (const module_type& m);

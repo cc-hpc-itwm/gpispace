@@ -1047,11 +1047,8 @@ namespace xml
             , state.position (node)
             , required ("module_type", node, "name", state.file_in_progress())
             , required ("module_type", node, "function", state.file_in_progress())
-            , state.file_in_progress()
             ).make_reference_id()
           );
-
-        state.id_mapper()->get_ref (id)->path = state.file_in_progress();
 
         for ( xml_node_type* child (node->first_node())
             ; child

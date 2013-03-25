@@ -34,7 +34,6 @@ namespace xml
                                , const util::position_type& pod
                                , const std::string& name
                                , const std::string & _function
-                               , const boost::filesystem::path & path
                                )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -77,7 +76,7 @@ namespace xml
                                                     , _function
                                                     , "("
                                                     , pos()
-                                                    , path
+                                                    , pod.path()
                                                     );
             }
 
@@ -95,7 +94,7 @@ namespace xml
                                                         , _function
                                                         , ","
                                                         , pos()
-                                                        , path
+                                                        , pod.path()
                                                         );
                 }
 
@@ -109,7 +108,7 @@ namespace xml
                                                     , _function
                                                     , ")"
                                                     , pos()
-                                                    , path
+                                                    , pod.path()
                                                     );
             }
 
@@ -127,7 +126,7 @@ namespace xml
                                                   , _function
                                                   , "<end of input>"
                                                   , pos()
-                                                  , path
+                                                  , pod.path()
                                                   );
           }
         }
@@ -147,7 +146,6 @@ namespace xml
                                , const flags_type& ldflags
                                , const flags_type& cxxflags
                                , const links_type& links
-                               , const boost::filesystem::path& path
                                )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -161,7 +159,6 @@ namespace xml
         , ldflags (ldflags)
         , cxxflags (cxxflags)
         , links (links)
-        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -241,7 +238,6 @@ namespace xml
           , ldflags
           , cxxflags
           , links
-          , path
           ).make_reference_id();
       }
 
