@@ -191,7 +191,7 @@ namespace mapreduce
 
 		char szsep[2];
 		szsep[0]=SHRPCH;
-		szsep[2]='\0';
+		szsep[1]='\0';
 		boost::char_separator<char> sep(szsep);
 		boost::tokenizer<boost::char_separator<char> > tok(kvp.first, sep);
 		std::vector<std::string> u(2, "");
