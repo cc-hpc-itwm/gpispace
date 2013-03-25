@@ -12,12 +12,12 @@
 
 namespace fs = boost::filesystem;
 
-BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
+BOOST_AUTO_TEST_CASE (test_serve_tcp_socket)
 {
   gspc::net::server::queue_manager_t qmgr;
 
   gspc::net::server_t *server =
-    gspc::net::serve ("unix://test-server", qmgr);
+    gspc::net::serve ("tcp://localhost:5000", qmgr);
 
   BOOST_REQUIRE (server);
 
