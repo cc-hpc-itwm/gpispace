@@ -34,10 +34,13 @@ namespace xml
       position_type::position_type ( const char* begin
                                    , const char* pos
                                    , const boost::filesystem::path& path
+                                   , const unsigned int& line
+                                   , const unsigned int& column
                                    )
-        : _line (1)
-        , _column (0)
+        : _line (line)
+        , _column (column)
         , _path (path)
+        , _pos (pos)
       {
         inc_line_and_column (const_cast<char*>(begin), pos, _line, _column);
       }

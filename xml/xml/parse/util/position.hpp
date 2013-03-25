@@ -16,9 +16,11 @@ namespace xml
       class position_type
       {
       public:
-        position_type ( const char*
-                      , const char*
+        position_type ( const char* begin
+                      , const char* pos
                       , const boost::filesystem::path&
+                      , const unsigned int& line = 1
+                      , const unsigned int& column = 0
                       );
         const unsigned int& line() const;
         const unsigned int& column() const;
