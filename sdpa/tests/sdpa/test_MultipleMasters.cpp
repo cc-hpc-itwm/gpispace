@@ -45,6 +45,7 @@ using namespace seda;
 const int NMAXTRIALS = 10000;
 const int NMAXTHRDS = 3;
 const int MAX_CAP = 100;
+static int testNb = 0;
 
 namespace po = boost::program_options;
 #define NO_GUI ""
@@ -71,7 +72,7 @@ struct MyFixture
 		seda::StageRegistry::instance().clear();
 	}
 
-	void run_client(int i);
+	void run_client();
 	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
 	string read_workflow(string strFileName)
@@ -102,7 +103,7 @@ struct MyFixture
 	boost::thread m_threadClient;
 };
 
-void MyFixture::run_client(int i)
+void MyFixture::run_client()
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
@@ -110,16 +111,11 @@ void MyFixture::run_client(int i)
 	cav.push_back("--orchestrator=orchestrator_0");
 	config.parse_command_line(cav);
 
-	std::ostringstream oss;
-	oss<<"client_"<<i;
+	std::ostringstream osstr;
+	osstr<<"sdpac_"<<testNb++;
 
-	std::string outstage("sdpa.apps.");
-	outstage += oss.str();
-	outstage += (".out");
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, oss.str(), outstage );
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
 	ptrCli->configure_network( config );
-
 
 	for( int k=0; k<m_nITER; k++ )
 	{
@@ -128,7 +124,7 @@ void MyFixture::run_client(int i)
 
 		try {
 
-			//LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
+			LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
 			job_id_user = ptrCli->submitJob(m_strWorkflow);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
@@ -143,7 +139,7 @@ void MyFixture::run_client(int i)
 			}
 		}
 
-		LOG( DEBUG, "*****JOB #"<<k<<"******");
+		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
 
 		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
@@ -156,40 +152,38 @@ void MyFixture::run_client(int i)
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
+
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
 				if(nTrials++ > NMAXTRIALS)
 				{
-					LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
 
 					ptrCli->shutdown_network();
 					ptrCli.reset();
 					return;
 				}
+
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 		}
 
 		nTrials = 0;
 
 		try {
-				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-				ptrCli->retrieveResults(job_id_user);
-				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
+			LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+			ptrCli->retrieveResults(job_id_user);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
+			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
 
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
+			ptrCli->shutdown_network();
+			ptrCli.reset();
+			return;
 		}
 
 		nTrials = 0;
@@ -197,28 +191,20 @@ void MyFixture::run_client(int i)
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
 
-				ptrCli->shutdown_network();
-				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-				ptrCli.reset();
-				return;
-			}
-
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
+			ptrCli->shutdown_network();
+			ptrCli.reset();
+			return;
 		}
 	}
 
 	ptrCli->shutdown_network();
-    ptrCli.reset();
+	ptrCli.reset();
 }
-
 
 BOOST_FIXTURE_TEST_SUITE( testMultipleMastersSuite, MyFixture );
 
@@ -259,20 +245,9 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( createDRTSWorker("drts_00", "agent_00", "",  TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_00_thread = boost::thread(&fhg::core::kernel_t::run, drts_00);
 
-	boost::thread* arrThreadClient = new boost::thread[NMAXTHRDS];
-
-	for(int i=0;i<NMAXTHRDS;i++)
-		arrThreadClient[i] = boost::thread(boost::bind(&MyFixture::run_client, this, i));
-
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-
-	for(int i=0;i<NMAXTHRDS;i++)
-	{
-		if( arrThreadClient[i].joinable() )
-			arrThreadClient[i].join();
-
-		LOG( INFO, "The client thread "<<i<<" joined the main thread°!" );
-	}
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_00->stop();
 	if(drts_00_thread.joinable())

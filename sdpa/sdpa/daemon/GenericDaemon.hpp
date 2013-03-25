@@ -170,6 +170,7 @@ namespace sdpa {
       void setRequestsAllowed(bool bVal = true) { m_bRequestsAllowed = bVal; }
       virtual void updateLastRequestTime();
       virtual bool requestsAllowed();
+      void interrupt();
 
       virtual sdpa::status_t getCurrentState() { throw std::runtime_error("not implemented by the generic daemon!"); }
 
@@ -343,6 +344,7 @@ namespace sdpa {
       mutex_type mtx_subscriber_;
       mutex_type mtx_master_;
       mutex_type mtx_cpb_;
+      mutex_type mtx_stop_;
 
       BackupService m_threadBkpService;
       sdpa::capabilities_set_t m_capabilities;

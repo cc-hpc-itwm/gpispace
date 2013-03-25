@@ -57,13 +57,8 @@ template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
   sdpa::job_id_t jobId = ptrEvt->job_id();
-  if(m_listSubscribers.empty())
-  {
-	  SDPA_LOG_INFO("The list of subscribers is empty!");
-	  return;
-  }
 
-  SDPA_LOG_INFO("Check if there are subscribers for the job!"<<jobId);
+  SDPA_LOG_DEBUG("Check if there are subscribers for the job "<<jobId<<" ...");
   BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;

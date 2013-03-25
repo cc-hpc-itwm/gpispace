@@ -104,6 +104,12 @@ namespace fhg
         std::vector<boost::asio::const_buffer> const & to_buffers() const
         {
           assert (message != 0);
+
+          if (message->data.size () != message->header.length)
+          {
+            throw std::length_error ("header/data length mismatch");
+          }
+
           assert (message->data.size() == message->header.length);
 
           if (m_buf.empty ())

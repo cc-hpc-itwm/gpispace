@@ -64,6 +64,7 @@ namespace fhg
       void assign (Iterator begin, Iterator end)
       {
         data.assign(begin, end);
+        header.length = data.size ();
       }
 
       const char * buf () const { return &data[0]; }
