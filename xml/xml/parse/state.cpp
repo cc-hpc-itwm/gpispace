@@ -550,16 +550,18 @@ namespace xml
         }
       }
 
-      namespace po = boost::program_options;
-
-      void type::add_options (po::options_description& desc)
+      void type::add_options (boost::program_options::options_description& desc)
       {
-#define TYPEDVAL(t,x) po::value<t>(&_ ## x)->default_value (_ ## x)
-#define BOOLVAL(x) TYPEDVAL (bool,x)->implicit_value(true)
-#define STRINGVAL(x) TYPEDVAL (std::string,x)
-#define STRINGVECVAL(x) po::value<std::vector<std::string> > (&_ ## x)
+#define TYPEDVAL(t,x)                                                   \
+        boost::program_options::value<t>(&_ ## x)->default_value (_ ## x)
+#define BOOLVAL(x)                              \
+        TYPEDVAL (bool,x)->implicit_value(true)
+#define STRINGVAL(x)                            \
+        TYPEDVAL (std::string,x)
+#define STRINGVECVAL(x)                                                 \
+        boost::program_options::value<std::vector<std::string> > (&_ ## x)
 
-        po::options_description warnings ("Warnings");
+        boost::program_options::options_description warnings ("Warnings");
 
         warnings.add_options()
           ( _OWerror.c_str()
@@ -674,15 +676,16 @@ namespace xml
           )
           ;
 
-        po::options_description generate ("Wrapper generation");
+        boost::program_options::options_description
+          generate ("Wrapper generation");
 
         generate.add_options()
           ( _Ogen_ldflags.c_str()
-          , po::value<gen_param_type>(&_gen_ldflags)
+          , boost::program_options::value<gen_param_type>(&_gen_ldflags)
           , "ldflags for generated makefile"
           )
           ( _Ogen_cxxflags.c_str()
-          , po::value<gen_param_type>(&_gen_cxxflags)
+          , boost::program_options::value<gen_param_type>(&_gen_cxxflags)
           , "cxxflags for generated makefile"
           )
           ( _Opath_to_cpp.c_str()
@@ -690,12 +693,12 @@ namespace xml
           , "path for cpp output, empty for no cpp output"
           )
           ( _Olink_prefix.c_str()
-          , po::value<link_prefix_type>(&_link_prefix)
+          , boost::program_options::value<link_prefix_type>(&_link_prefix)
           , "prefix for linking, key=value"
           )
           ;
 
-        po::options_description xml ("XML mirroring");
+        boost::program_options::options_description xml ("XML mirroring");
 
         xml.add_options()
           ( _Odump_xml_file.c_str()
@@ -704,7 +707,8 @@ namespace xml
           )
           ;
 
-        po::options_description depend ("Dependency generation");
+        boost::program_options::options_description
+          depend ("Dependency generation");
 
         depend.add_options()
           ( _Odump_dependencies.c_str()
@@ -735,7 +739,7 @@ namespace xml
           )
           ;
 
-        po::options_description net ("Network handling");
+        boost::program_options::options_description net ("Network handling");
 
         net.add_options()
           ( _Oignore_properties.c_str()
@@ -752,7 +756,7 @@ namespace xml
           )
           ;
 
-        po::options_description file ("File handling");
+        boost::program_options::options_description file ("File handling");
 
         file.add_options()
           ( _Oforce_overwrite_file.c_str()
@@ -771,7 +775,7 @@ namespace xml
 
         desc.add_options()
           ( _Osearch_path.c_str()
-          , po::value<search_path_type>(&_search_path)
+          , boost::program_options::value<search_path_type>(&_search_path)
           , "search path"
           )
           ;
