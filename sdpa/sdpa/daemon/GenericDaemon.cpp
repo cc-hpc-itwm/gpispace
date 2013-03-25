@@ -426,36 +426,6 @@ void GenericDaemon::stop()
   SDPA_LOG_INFO("The daemon "<<name()<<" was successfully stopped!");
 }
 
-
-/**
- * Stop the agent.
- */
-/*void GenericDaemon::stop()
-{
-  MLOG (INFO, name () << " is shutting down...");
-
-  scheduler()->stop();
-
-  m_threadBkpService.stop();
-
-  shutdown_network();
-
-  seda::StageRegistry::instance().lookup(name())->stop();
-  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-
-  seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-  seda::StageRegistry::instance().remove(name());
-
-  if( hasWorkflowEngine() )
-  {
-    delete ptr_workflow_engine_;
-    ptr_workflow_engine_ = NULL;
-  }
-
-  MLOG (INFO, name () << " was successfully stopped!");
-}
-*/
-
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
   if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
@@ -1026,7 +996,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
           {
             if( error.from() == masterInfo.name() )
             {
-              SDPA_LOG_WARN("The connection with the master " << masterInfo.name() << " is broken!");
+              SDPA_LOG_WARN("The connection to the master " << masterInfo.name() << " is broken!");
               masterInfo.incConsecNetFailCnt();
 
               if( masterInfo.getConsecNetFailCnt() < cfg().get<unsigned long>("max_consecutive_net_faults", 360) )
