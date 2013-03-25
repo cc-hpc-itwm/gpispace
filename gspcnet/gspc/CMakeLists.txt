@@ -1,4 +1,6 @@
 set (gspcnet_src
+  net/error.cpp
+
   net/frame.cpp
   net/frame_io.cpp
   net/frame_builder.cpp
