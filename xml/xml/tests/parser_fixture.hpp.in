@@ -26,8 +26,17 @@ namespace
 
     void parse (const boost::filesystem::path& path)
     {
-      parsed_xpnet = path_to_xpnets / path;
-      function = ::xml::parse::just_parse (state, parsed_xpnet.string());
+      set_parse_input (path);
+      parse();
+    }
+
+    void set_parse_input (const boost::filesystem::path& path)
+    {
+      xpnet = path_to_xpnets / path;
+    }
+    void parse()
+    {
+      function = ::xml::parse::just_parse (state, xpnet.string());
     }
 
     void post_processing_passes()
@@ -73,7 +82,7 @@ namespace
     ::xml::parse::state::type state;
     boost::optional< ::xml::parse::id::ref::function> function;
 
-    boost::filesystem::path parsed_xpnet;
+    boost::filesystem::path xpnet;
     boost::filesystem::path path_to_xpnets;
     boost::filesystem::path path_to_pnets;
   };

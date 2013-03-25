@@ -49,8 +49,8 @@ BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
     , boost::format ( "WARNING: the external function f in module m"
                       " has multiple occurences in %1% and %2%"
                     )
-    % xml::parse::util::position_type (NULL, NULL, parsed_xpnet, 10, 9)
-    % xml::parse::util::position_type (NULL, NULL, parsed_xpnet, 5, 9)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 10, 9)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 5, 9)
     );
 }
 
@@ -64,7 +64,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
     , boost::format ( "ERROR: the external function f in module m"
                       " has different definitions in %1% and %2%"
                     )
-    % xml::parse::util::position_type (NULL, NULL, parsed_xpnet, 10, 9)
-    % xml::parse::util::position_type (NULL, NULL, parsed_xpnet, 5, 9)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 10, 9)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 5, 9)
     );
 }
