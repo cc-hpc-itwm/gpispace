@@ -438,6 +438,7 @@ namespace xml
           ( state.id_mapper()->next_id()
           , state.id_mapper()
           , boost::none
+          , state.position (node)
           , validate_name
             ( validate_prefix ( required ( "port_type"
                                          , node

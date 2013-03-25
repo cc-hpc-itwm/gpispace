@@ -10,6 +10,8 @@
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
 
+#include <xml/parse/util/position.hpp>
+
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/port.hpp>
@@ -37,6 +39,7 @@ namespace xml
 
         port_type ( ID_CONS_PARAM(port)
                   , PARENT_CONS_PARAM(function)
+                  , const util::position_type&
                   , const std::string & name
                   , const std::string & _type
                   , const boost::optional<std::string> & _place
@@ -57,6 +60,8 @@ namespace xml
 
         const std::string& type() const;
         const std::string& type (const std::string&);
+
+        const util::position_type& position_of_definition() const;
 
         boost::optional<signature::type> signature() const;
         signature::type signature_or_throw() const;
@@ -84,6 +89,7 @@ namespace xml
           ) const;
 
       private:
+        util::position_type _position_of_definition;
         std::string _name;
         std::string _type;
 

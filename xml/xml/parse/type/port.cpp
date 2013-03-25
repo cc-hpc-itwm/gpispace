@@ -16,6 +16,7 @@ namespace xml
     {
       port_type::port_type ( ID_CONS_PARAM(port)
                            , PARENT_CONS_PARAM(function)
+                           , const util::position_type& position_of_definition
                            , const std::string & name
                            , const std::string & type
                            , const boost::optional<std::string> & _place
@@ -24,6 +25,7 @@ namespace xml
                            )
         : ID_INITIALIZE()
         , PARENT_INITIALIZE()
+        , _position_of_definition (XML_PARSE_POSITION_GENERATED())
         , _name (name)
         , _type (type)
         , place (_place)
@@ -31,6 +33,11 @@ namespace xml
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
+      }
+
+      const util::position_type& port_type::position_of_definition() const
+      {
+        return _position_of_definition;
       }
 
       const std::string& port_type::name() const
@@ -253,6 +260,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _name
           , _type
           , place
