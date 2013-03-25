@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <gspc/net/error.hpp>
 #include <gspc/net/frame_fwd.hpp>
 
 namespace gspc
@@ -23,15 +24,18 @@ namespace gspc
         result_t ()
           : consumed (0)
           , state (PARSE_FAILED)
+          , reason (E_OK)
         {}
 
-        result_t (size_t consumed, state_t s)
+        result_t (size_t consumed, state_t s, error_code_t reason)
           : consumed (consumed)
           , state (s)
+          , reason (reason)
         {}
 
-        size_t      consumed;
-        state_t     state;
+        size_t       consumed;
+        state_t      state;
+        error_code_t reason;
       };
 
       class parser
@@ -54,12 +58,15 @@ namespace gspc
             state_t state = consume (frame, *begin++);
             ++consumed;
 
-            if (state == PARSE_FINISHED || state == PARSE_FAILED)
-              return result_t (consumed, state);
+            if (state == PARSE_FINISHED)
+              return result_t (consumed, state, E_OK);
+            else if (state == PARSE_FAILED)
+              return result_t (consumed, state, m_error);
           }
 
           return result_t ( consumed
                           , PARSE_NEED_MORE_DATA
+                          , m_error
                           );
         }
       private:
@@ -82,6 +89,7 @@ namespace gspc
         state_t consume (gspc::net::frame & frame, const char c);
 
         frame_state                  m_frame_state;
+        error_code_t                 m_error;
         std::string                  m_buffer;
         std::string                  m_header_key;
         std::size_t                  m_remaining_body_bytes;

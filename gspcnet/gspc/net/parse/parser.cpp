@@ -16,6 +16,7 @@ namespace gspc
     {
       parser::parser ()
         : m_frame_state (frame_start)
+        , m_error (E_BAD_REQUEST)
         , m_buffer ()
         , m_header_key ()
         , m_remaining_body_bytes (0)
@@ -24,6 +25,7 @@ namespace gspc
       void parser::reset ()
       {
         m_frame_state = frame_start;
+        m_error = E_BAD_REQUEST;
         m_buffer.clear ();
         m_header_key.clear ();
         m_remaining_body_bytes = 0;
@@ -101,6 +103,7 @@ namespace gspc
               }
               else
               {
+                m_error = E_COMMAND_TOO_LONG;
                 return PARSE_FAILED;
               }
             }
@@ -221,6 +224,7 @@ namespace gspc
               }
               else
               {
+                m_error = E_HEADER_FIELDS_TOO_LARGE;
                 return PARSE_FAILED;
               }
             }
@@ -254,6 +258,7 @@ namespace gspc
               }
               else
               {
+                m_error = E_HEADER_FIELDS_TOO_LARGE;
                 return PARSE_FAILED;
               }
             }
