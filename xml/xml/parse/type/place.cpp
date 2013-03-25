@@ -17,17 +17,6 @@ namespace xml
       place_type::place_type ( ID_CONS_PARAM(place)
                              , PARENT_CONS_PARAM(net)
                              , const util::position_type& pod
-                             )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      place_type::place_type ( ID_CONS_PARAM(place)
-                             , PARENT_CONS_PARAM(net)
-                             , const util::position_type& pod
                              , const std::string & name
                              , const std::string & type
                              , const boost::optional<bool> is_virtual

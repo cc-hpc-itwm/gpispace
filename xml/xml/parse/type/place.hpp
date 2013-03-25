@@ -41,11 +41,6 @@ namespace xml
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
                    , const util::position_type&
-                   );
-
-        place_type ( ID_CONS_PARAM(place)
-                   , PARENT_CONS_PARAM(net)
-                   , const util::position_type&
                    , const std::string & name
                    , const std::string & type
                    , const boost::optional<bool> is_virtual
