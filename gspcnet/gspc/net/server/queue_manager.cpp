@@ -35,7 +35,31 @@ namespace gspc
       {}
 
       queue_manager_t::~queue_manager_t ()
-      {}
+      {
+        user_subscription_map_t::iterator user_it =
+          m_user_subscriptions.begin ();
+        const user_subscription_map_t::iterator user_it_end =
+          m_user_subscriptions.end ();
+
+        for (; user_it != user_it_end ; ++user_it)
+        {
+          BOOST_FOREACH (subscription_t *sub, user_it->second)
+          {
+            // remove subscription
+            subscription_map_t::iterator sub_map_it =
+              m_subscriptions.find (sub->destination);
+            if (sub_map_it != m_subscriptions.end ())
+            {
+              sub_map_it->second.remove (sub);
+            }
+            if (sub_map_it->second.empty ())
+            {
+              m_subscriptions.erase (sub_map_it);
+            }
+            delete sub;
+          }
+        }
+      }
 
       int
       queue_manager_t::connect (user_ptr u, frame const &)
