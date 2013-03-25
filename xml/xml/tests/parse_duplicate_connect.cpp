@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE parse_duplicate_connect
 
 #include <xml/parse/error.hpp>
-#include <xml/tests/parser_fixture.hpp>
+#include <parser_fixture.hpp>
 
 BOOST_FIXTURE_TEST_CASE (different_directions, parser_fixture)
 {

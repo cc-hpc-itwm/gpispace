@@ -20,14 +20,14 @@ namespace
       : state()
       , function (boost::none)
     {
-      BOOST_REQUIRE (boost::unit_test::framework::master_test_suite().argc >= 3);
-      path_to_xpnets = boost::unit_test::framework::master_test_suite().argv[1];
-      path_to_pnets = boost::unit_test::framework::master_test_suite().argv[2];
+      path_to_xpnets = "@XML_PARSE_TEST_XPNETS_DIR@";
+      path_to_pnets = "@XML_PARSE_TEST_PNETS_DIR@";
     }
 
     void parse (const boost::filesystem::path& path)
     {
-      function = ::xml::parse::just_parse (state, (path_to_xpnets / path).string());
+      parsed_xpnet = path_to_xpnets / path;
+      function = ::xml::parse::just_parse (state, parsed_xpnet.string());
     }
 
     void post_processing_passes()
@@ -73,6 +73,7 @@ namespace
     ::xml::parse::state::type state;
     boost::optional< ::xml::parse::id::ref::function> function;
 
+    boost::filesystem::path parsed_xpnet;
     boost::filesystem::path path_to_xpnets;
     boost::filesystem::path path_to_pnets;
   };

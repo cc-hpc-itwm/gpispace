@@ -2,7 +2,7 @@
 
 #define BOOST_TEST_MODULE parse_compile_and_compare
 
-#include <xml/tests/parser_fixture.hpp>
+#include <parser_fixture.hpp>
 
 BOOST_FIXTURE_TEST_CASE (simple_pipe_elimination, parser_fixture)
 {
