@@ -47,125 +47,6 @@ namespace xml
 
       struct type
       {
-      private:
-        ::xml::parse::type::requirements_type _requirements;
-        search_path_type _search_path;
-        gen_param_type _gen_ldflags;
-        gen_param_type _gen_cxxflags;
-        in_progress_type _in_progress;
-        mutable in_progress_position_type _in_progress_position;
-        dependencies_type _dependencies;
-        we::type::property::path_type _prop_path;
-        we::type::optimize::options::type _options_optimize;
-        bool _ignore_properties;
-        bool _Werror;
-        bool _Wall;
-        bool _Woverwrite_function_name_as;
-        bool _Woverwrite_template_name_as;
-        bool _Wshadow_struct;
-        bool _Wshadow_function;
-        bool _Wshadow_template;
-        bool _Wshadow_specialize;
-        bool _Wdefault_construction;
-        bool _Wunused_field;
-        bool _Wport_not_connected;
-        bool _Wunexpected_element;
-        bool _Woverwrite_function_name_trans;
-        bool _Woverwrite_function_internal_trans;
-        bool _Wproperty_overwritten;
-        bool _Wtype_map_duplicate;
-        bool _Wtype_get_duplicate;
-        bool _Windependent_place;
-        bool _Windependent_transition;
-        bool _Wconflicting_port_types;
-        bool _Woverwrite_file;
-        bool _Wbackup_file;
-        bool _Wduplicate_external_function;
-        bool _Wproperty_unknown;
-        bool _Winline_many_output_ports;
-        bool _Wvirtual_place_not_tunneled;
-        bool _Wduplicate_template_parameter;
-
-        std::string _dump_xml_file;
-        std::string _dump_dependencies;
-        std::string _list_dependencies;
-        bool _dump_dependenciesD;
-        std::vector<std::string> _dependencies_target;
-        std::vector<std::string> _dependencies_target_quoted;
-        bool _dependencies_add_phony_targets;
-        bool _no_inline;
-        bool _synthesize_virtual_places;
-        bool _force_overwrite_file;
-        std::string _backup_extension;
-        bool _do_file_backup;
-
-        std::string _path_to_cpp;
-
-        link_prefix_type _link_prefix;
-
-        mutable boost::unordered_map< std::string
-                                    , std::string
-                                    > _link_prefix_by_key;
-        mutable bool _link_prefix_parsed;
-
-        std::string _Osearch_path;
-        std::string _Ogen_ldflags;
-        std::string _Ogen_cxxflags;
-        std::string _Oignore_properties;
-        std::string _OWerror;
-        std::string _OWall;
-        std::string _OWoverwrite_function_name_as;
-        std::string _OWoverwrite_template_name_as;
-        std::string _OWshadow_struct;
-        std::string _OWshadow_function;
-        std::string _OWshadow_template;
-        std::string _OWshadow_specialize;
-        std::string _OWdefault_construction;
-        std::string _OWunused_field;
-        std::string _OWport_not_connected;
-        std::string _OWunexpected_element;
-        std::string _OWoverwrite_function_name_trans;
-        std::string _OWoverwrite_function_internal_trans;
-        std::string _OWproperty_overwritten;
-        std::string _OWtype_map_duplicate;
-        std::string _OWtype_get_duplicate;
-        std::string _OWindependent_place;
-        std::string _OWindependent_transition;
-        std::string _OWconflicting_port_types;
-        std::string _OWoverwrite_file;
-        std::string _OWbackup_file;
-        std::string _OWduplicate_external_function;
-        std::string _OWproperty_unknown;
-        std::string _OWinline_many_output_ports;
-        std::string _OWvirtual_place_not_tunneled;
-        std::string _OWduplicate_template_parameter;
-
-        std::string _Odump_xml_file;
-        std::string _Odump_dependencies;
-        std::string _Olist_dependencies;
-        std::string _Odump_dependenciesD;
-        std::string _Odependencies_target;
-        std::string _Odependencies_target_quoted;
-        std::string _Odependencies_add_phony_targets;
-        std::string _Ono_inline;
-        std::string _Osynthesize_virtual_places;
-        std::string _Oforce_overwrite_file;
-        std::string _Obackup_extension;
-        std::string _Odo_file_backup;
-
-        std::string _Opath_to_cpp;
-        std::string _Olink_prefix;
-
-        id::mapper _id_mapper;
-
-        template<typename W>
-        void generic_warn ( const W& w
-                          , const bool& active
-                          , const std::string& flag
-                          ) const;
-
-        boost::filesystem::path expand (const std::string& file) const;
-
       public:
         type();
 
@@ -347,6 +228,125 @@ namespace xml
 
         const id::mapper* id_mapper() const;
         id::mapper* id_mapper();
+
+      private:
+        ::xml::parse::type::requirements_type _requirements;
+        search_path_type _search_path;
+        gen_param_type _gen_ldflags;
+        gen_param_type _gen_cxxflags;
+        in_progress_type _in_progress;
+        mutable in_progress_position_type _in_progress_position;
+        dependencies_type _dependencies;
+        we::type::property::path_type _prop_path;
+        we::type::optimize::options::type _options_optimize;
+        bool _ignore_properties;
+        bool _Werror;
+        bool _Wall;
+        bool _Woverwrite_function_name_as;
+        bool _Woverwrite_template_name_as;
+        bool _Wshadow_struct;
+        bool _Wshadow_function;
+        bool _Wshadow_template;
+        bool _Wshadow_specialize;
+        bool _Wdefault_construction;
+        bool _Wunused_field;
+        bool _Wport_not_connected;
+        bool _Wunexpected_element;
+        bool _Woverwrite_function_name_trans;
+        bool _Woverwrite_function_internal_trans;
+        bool _Wproperty_overwritten;
+        bool _Wtype_map_duplicate;
+        bool _Wtype_get_duplicate;
+        bool _Windependent_place;
+        bool _Windependent_transition;
+        bool _Wconflicting_port_types;
+        bool _Woverwrite_file;
+        bool _Wbackup_file;
+        bool _Wduplicate_external_function;
+        bool _Wproperty_unknown;
+        bool _Winline_many_output_ports;
+        bool _Wvirtual_place_not_tunneled;
+        bool _Wduplicate_template_parameter;
+
+        std::string _dump_xml_file;
+        std::string _dump_dependencies;
+        std::string _list_dependencies;
+        bool _dump_dependenciesD;
+        std::vector<std::string> _dependencies_target;
+        std::vector<std::string> _dependencies_target_quoted;
+        bool _dependencies_add_phony_targets;
+        bool _no_inline;
+        bool _synthesize_virtual_places;
+        bool _force_overwrite_file;
+        std::string _backup_extension;
+        bool _do_file_backup;
+
+        std::string _path_to_cpp;
+
+        link_prefix_type _link_prefix;
+
+        mutable boost::unordered_map< std::string
+                                    , std::string
+                                    > _link_prefix_by_key;
+        mutable bool _link_prefix_parsed;
+
+        std::string _Osearch_path;
+        std::string _Ogen_ldflags;
+        std::string _Ogen_cxxflags;
+        std::string _Oignore_properties;
+        std::string _OWerror;
+        std::string _OWall;
+        std::string _OWoverwrite_function_name_as;
+        std::string _OWoverwrite_template_name_as;
+        std::string _OWshadow_struct;
+        std::string _OWshadow_function;
+        std::string _OWshadow_template;
+        std::string _OWshadow_specialize;
+        std::string _OWdefault_construction;
+        std::string _OWunused_field;
+        std::string _OWport_not_connected;
+        std::string _OWunexpected_element;
+        std::string _OWoverwrite_function_name_trans;
+        std::string _OWoverwrite_function_internal_trans;
+        std::string _OWproperty_overwritten;
+        std::string _OWtype_map_duplicate;
+        std::string _OWtype_get_duplicate;
+        std::string _OWindependent_place;
+        std::string _OWindependent_transition;
+        std::string _OWconflicting_port_types;
+        std::string _OWoverwrite_file;
+        std::string _OWbackup_file;
+        std::string _OWduplicate_external_function;
+        std::string _OWproperty_unknown;
+        std::string _OWinline_many_output_ports;
+        std::string _OWvirtual_place_not_tunneled;
+        std::string _OWduplicate_template_parameter;
+
+        std::string _Odump_xml_file;
+        std::string _Odump_dependencies;
+        std::string _Olist_dependencies;
+        std::string _Odump_dependenciesD;
+        std::string _Odependencies_target;
+        std::string _Odependencies_target_quoted;
+        std::string _Odependencies_add_phony_targets;
+        std::string _Ono_inline;
+        std::string _Osynthesize_virtual_places;
+        std::string _Oforce_overwrite_file;
+        std::string _Obackup_extension;
+        std::string _Odo_file_backup;
+
+        std::string _Opath_to_cpp;
+        std::string _Olink_prefix;
+
+        id::mapper _id_mapper;
+
+        template<typename W>
+        void generic_warn ( const W& w
+                          , const bool& active
+                          , const std::string& flag
+                          ) const;
+
+        boost::filesystem::path expand (const std::string& file) const;
       };
 
       std::pair<std::string, std::string> reg_M (const std::string& s);
