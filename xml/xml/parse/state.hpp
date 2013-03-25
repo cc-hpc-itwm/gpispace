@@ -33,7 +33,6 @@ namespace xml
   {
     namespace state
     {
-      typedef std::set<boost::filesystem::path> dependencies_type;
       typedef std::vector<std::string> gen_param_type;
       typedef std::vector<std::string> link_prefix_type;
 
@@ -80,7 +79,7 @@ namespace xml
         void set_in_progress_position (const char*);
         util::position_type position (const xml_node_type*) const;
 
-        const dependencies_type& dependencies() const;
+        const std::set<boost::filesystem::path>& dependencies() const;
 
 #define ACCESS(name)                     \
         const std::string& name() const; \
@@ -236,7 +235,7 @@ namespace xml
         gen_param_type _gen_cxxflags;
         in_progress_type _in_progress;
         mutable in_progress_position_type _in_progress_position;
-        dependencies_type _dependencies;
+        std::set<boost::filesystem::path> _dependencies;
         we::type::property::path_type _prop_path;
         we::type::optimize::options::type _options_optimize;
         bool _ignore_properties;

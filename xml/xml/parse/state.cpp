@@ -403,7 +403,7 @@ namespace xml
         return p;
       }
 
-      const dependencies_type& type::dependencies() const
+      const std::set<boost::filesystem::path>& type::dependencies() const
       {
         return _dependencies;
       }
