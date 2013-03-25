@@ -33,8 +33,6 @@ namespace xml
   {
     namespace state
     {
-      using namespace warning;
-
       typedef std::vector<std::string> search_path_type;
       typedef std::list<boost::filesystem::path> in_progress_type;
       typedef std::map< const char*
@@ -268,7 +266,7 @@ namespace xml
 #undef ACCESS
 #undef ACCESST
 
-#define WARN(x) void warn (const x& w) const;
+#define WARN(x) void warn (const warning::x& w) const;
 
         WARN (overwrite_function_name_as)
         WARN (overwrite_template_name_as)
