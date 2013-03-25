@@ -95,8 +95,11 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_read, fixture)
     ( "error::duplicate_connect"
     , boost::format ( "ERROR: duplicate connect-read P <-> A for transition"
                       " foo in %1% (existing connection is connect-in)"
+                      " in %2% and %3%"
                     )
     % xpnet
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 14, 7)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 12, 7)
     );
 }
 
@@ -108,8 +111,11 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_in, fixture)
     ( "error::duplicate_connect"
     , boost::format ( "ERROR: duplicate connect-in P <-> A for transition"
                       " foo in %1% (existing connection is connect-in)"
+                      " in %2% and %3%"
                     )
     % xpnet
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 14, 7)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 13, 7)
     );
 }
 
@@ -121,8 +127,11 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_read_read, fixture)
     ( "error::duplicate_connect"
     , boost::format ( "ERROR: duplicate connect-read P <-> A for transition"
                       " foo in %1% (existing connection is connect-read)"
+                      " in %2% and %3%"
                     )
     % xpnet
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 14, 7)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 13, 7)
     );
 }
 
@@ -134,7 +143,10 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
     ( "error::duplicate_connect"
     , boost::format ( "ERROR: duplicate connect-out P <-> A for transition"
                       " foo in %1% (existing connection is connect-out)"
+                      " in %2% and %3%"
                     )
     % xpnet
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 14, 7)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 13, 7)
     );
 }

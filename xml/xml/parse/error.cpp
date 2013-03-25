@@ -142,6 +142,7 @@ namespace xml
           : generic ( boost::format ( "duplicate connect-%1% %2% <-> %3% "
                                       "for transition %4% in %5%"
                                       " (existing connection is connect-%6%)"
+                                      " in %7% and %8%"
                                     )
                     % petri_net::edge::enum_to_string
                       (connection.get().direction())
@@ -151,6 +152,8 @@ namespace xml
                     % path
                     % petri_net::edge::enum_to_string
                       (old_connection.get().direction())
+                    % connection.get().position_of_definition()
+                    % old_connection.get().position_of_definition()
                     )
           , _connection (connection)
           , _old_connection (old_connection)
