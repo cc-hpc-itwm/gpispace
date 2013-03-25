@@ -394,7 +394,7 @@ namespace xml
                           )
           );
       }
-      util::position_type type::position (const xml_node_type* node)
+      util::position_type type::position (const xml_node_type* node) const
       {
         if (_in_progress_position.empty())
         {
