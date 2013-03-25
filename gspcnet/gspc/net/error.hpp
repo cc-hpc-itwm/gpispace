@@ -9,6 +9,7 @@ namespace gspc
       {
         E_OK                      = 200
 
+      , E_BAD_REQUEST             = 400
       , E_UNAUTHORIZED            = 401
       , E_SERVICE_LOOKUP          = 404
       , E_COMMAND_TOO_LONG        = 414
