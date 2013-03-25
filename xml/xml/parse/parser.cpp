@@ -471,6 +471,7 @@ namespace xml
             ( id
             , state.id_mapper()
             , boost::none
+            , state.position (node)
             , validate_name ( validate_prefix ( required ( "transition_type"
                                                          , node
                                                          , "name"

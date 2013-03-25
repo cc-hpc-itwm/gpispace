@@ -8,6 +8,8 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/use.hpp>
 #include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/id/types.hpp>
@@ -22,7 +24,7 @@ namespace xml
   {
     namespace type
     {
-      struct transition_type
+      struct transition_type : with_position_of_definition
       {
         ID_SIGNATURES(transition);
         PARENT_SIGNATURES(net);
@@ -40,6 +42,7 @@ namespace xml
 
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
+                        , const util::position_type&
                         , const std::string& name
                         , const boost::optional<petri_net::priority_type>& priority
                         , const boost::optional<bool>& finline
@@ -49,11 +52,13 @@ namespace xml
 
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
+                        , const util::position_type&
                         , const function_or_use_type&
                         );
 
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
+                        , const util::position_type&
                         , const boost::optional<function_or_use_type>&
                         , const std::string& name
                         , const connections_type& connections

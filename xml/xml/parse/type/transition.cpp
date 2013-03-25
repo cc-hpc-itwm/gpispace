@@ -26,13 +26,15 @@ namespace xml
       transition_type::transition_type
         ( ID_CONS_PARAM(transition)
         , PARENT_CONS_PARAM(net)
+        , const util::position_type& pod
         , const std::string& name
         , const boost::optional<petri_net::priority_type>& priority
         , const boost::optional<bool>& finline
         , const boost::optional<bool>& internal
         , const boost::filesystem::path& path
         )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , priority (priority)
@@ -79,9 +81,11 @@ namespace xml
       transition_type::transition_type
         ( ID_CONS_PARAM(transition)
         , PARENT_CONS_PARAM(net)
+        , const util::position_type& pod
         , const function_or_use_type& function_or_use
         )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _function_or_use (reparent (function_or_use, _id))
       {
@@ -91,6 +95,7 @@ namespace xml
       transition_type::transition_type
         ( ID_CONS_PARAM(transition)
         , PARENT_CONS_PARAM(net)
+        , const util::position_type& pod
         , const boost::optional<function_or_use_type>& fun_or_use
         , const std::string& name
         , const connections_type& connections
@@ -104,7 +109,8 @@ namespace xml
         , const we::type::property::type& properties
         , const boost::filesystem::path& path
         )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _function_or_use ( fun_or_use
                            ? boost::make_optional (reparent (*fun_or_use, _id))
@@ -626,6 +632,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _function_or_use
           ? boost::make_optional
             ( boost::apply_visitor ( visitor_clone (new_id, new_mapper)

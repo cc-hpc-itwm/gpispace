@@ -1354,6 +1354,7 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , fun
             ).make_reference_id()
           );
@@ -1382,6 +1383,7 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , ::xml::parse::type::function_type
               ( net.id().id_mapper()->next_id()
               , net.id().id_mapper()
