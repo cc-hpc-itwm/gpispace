@@ -7,6 +7,8 @@
 #include <gspc/net/util.hpp>
 #include <gspc/net/server.hpp>
 
+#include <gspc/net/server/tcp_server.hpp>
+
 namespace gspc
 {
   namespace net
@@ -46,7 +48,14 @@ namespace gspc
       }
       else
       {
-        ec = errc::make_error_code (errc::not_supported);
+        try
+        {
+          return new gspc::net::server::tcp_server (host, port, qmgr);
+        }
+        catch (boost::system::system_error const &se)
+        {
+          ec = se.code ();
+        }
       }
 
       return (server_t*)(0);
