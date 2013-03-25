@@ -188,7 +188,10 @@ namespace fhg
         connection_data_t & cd = connections_.begin()->second;
 
         if (cd.connection)
-          cd.connection->socket ().cancel ();
+        {
+          boost::system::error_code ignore;
+          cd.connection->socket ().cancel (ignore);
+        }
 
         while (! cd.o_queue.empty())
         {
