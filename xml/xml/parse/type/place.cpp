@@ -16,8 +16,10 @@ namespace xml
     {
       place_type::place_type ( ID_CONS_PARAM(place)
                              , PARENT_CONS_PARAM(net)
+                             , const util::position_type& pod
                              )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
       {
         _id_mapper->put (_id, *this);
@@ -25,11 +27,13 @@ namespace xml
 
       place_type::place_type ( ID_CONS_PARAM(place)
                              , PARENT_CONS_PARAM(net)
+                             , const util::position_type& pod
                              , const std::string & name
                              , const std::string & type
                              , const boost::optional<bool> is_virtual
                              )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _is_virtual (is_virtual)
         , _name (name)
@@ -40,13 +44,15 @@ namespace xml
 
       place_type::place_type ( ID_CONS_PARAM(place)
                              , PARENT_CONS_PARAM(net)
+                             , const util::position_type& pod
                              , const boost::optional<bool>& is_virtual
                              , const std::string& name
                              , const std::string& type
                              , const std::list<token_type>& tokens
                              , const we::type::property::type& properties
                              )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _is_virtual (is_virtual)
         , _name (name)
@@ -171,6 +177,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _is_virtual
           , _name
           , _type

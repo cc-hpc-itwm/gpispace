@@ -1233,6 +1233,7 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , unique_name_for_place (net, "implicit")
             , port_a.get().type()
             , boost::none
@@ -1514,6 +1515,7 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , unique_name_for_place (net)
             //! \todo: default type to something useful?
             , ""
@@ -1832,6 +1834,7 @@ namespace fhg
               ( function.id().id_mapper()->next_id()
               , function.id().id_mapper()
               , boost::none
+              , XML_PARSE_UTIL_POSITION_GENERATED()
               , name
               , type
               , true

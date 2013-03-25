@@ -321,7 +321,7 @@ namespace xml
                    % place.get().name()
                    % place.get().type()
                    % place.get().signature()
-                   % "TODO: place::position_of_definition"
+                   % place.get().position_of_definition()
                    % port.get().name()
                    % port.get().type()
                    % port.get().signature()

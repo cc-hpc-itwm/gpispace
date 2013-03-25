@@ -7,6 +7,8 @@
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -26,7 +28,7 @@ namespace xml
   {
     namespace type
     {
-      struct place_type
+      struct place_type : with_position_of_definition
       {
         ID_SIGNATURES(place);
         PARENT_SIGNATURES(net);
@@ -38,10 +40,12 @@ namespace xml
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
+                   , const util::position_type&
                    );
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
+                   , const util::position_type&
                    , const std::string & name
                    , const std::string & type
                    , const boost::optional<bool> is_virtual
@@ -49,6 +53,7 @@ namespace xml
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
+                   , const util::position_type&
                    , const boost::optional<bool>& _is_virtual
                    , const std::string& name
                    , const std::string& type
