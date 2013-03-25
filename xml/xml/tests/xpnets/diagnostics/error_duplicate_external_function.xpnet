@@ -1,0 +1,14 @@
+<defun name="f">
+  <net>
+    <transition name="a">
+      <defun>
+        <module name="m" function="f"><cinclude href="inc.h"/></module>
+      </defun>
+    </transition>
+    <transition name="b">
+      <defun>
+        <module name="m" function="f"/>
+      </defun>
+    </transition>
+  </net>
+</defun>
