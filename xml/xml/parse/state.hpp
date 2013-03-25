@@ -33,14 +33,7 @@ namespace xml
   {
     namespace state
     {
-      typedef std::vector<std::string> search_path_type;
-      typedef std::map< const char*
-                      , util::position_type
-                      , std::greater<const char*>
-                      > position_by_pointer_type;
-      typedef std::list<position_by_pointer_type> in_progress_position_type;
       typedef std::set<boost::filesystem::path> dependencies_type;
-
       typedef std::vector<std::string> gen_param_type;
       typedef std::vector<std::string> link_prefix_type;
 
@@ -48,6 +41,12 @@ namespace xml
       {
       private:
         typedef std::list<boost::filesystem::path> in_progress_type;
+        typedef std::vector<std::string> search_path_type;
+        typedef std::map< const char*
+                        , util::position_type
+                        , std::greater<const char*>
+                        > position_by_pointer_type;
+        typedef std::list<position_by_pointer_type> in_progress_position_type;
 
       public:
         type();
