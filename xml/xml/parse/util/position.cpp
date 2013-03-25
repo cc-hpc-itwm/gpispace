@@ -54,6 +54,10 @@ namespace xml
       {
         return _path;
       }
+      const char* const& position_type::pos() const
+      {
+        return _pos;
+      }
 
       std::ostream& operator<< (std::ostream& os, const position_type& p)
       {

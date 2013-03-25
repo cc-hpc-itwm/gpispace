@@ -23,10 +23,12 @@ namespace xml
         const unsigned int& line() const;
         const unsigned int& column() const;
         const boost::filesystem::path& path() const;
+        const char* const& pos() const;
       private:
         unsigned int _line;
         unsigned int _column;
         const boost::filesystem::path _path;
+        const char* _pos;
       };
 
       std::ostream& operator<< (std::ostream&, const position_type&);
