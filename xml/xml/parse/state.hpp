@@ -33,20 +33,16 @@ namespace xml
   {
     namespace state
     {
-      namespace fs = boost::filesystem;
-      namespace property = we::type::property;
-      namespace optimize = we::type::optimize;
-
       using namespace warning;
 
       typedef std::vector<std::string> search_path_type;
-      typedef std::list<fs::path> in_progress_type;
+      typedef std::list<boost::filesystem::path> in_progress_type;
       typedef std::map< const char*
                       , util::position_type
                       , std::greater<const char*>
                       > position_by_pointer_type;
       typedef std::list<position_by_pointer_type> in_progress_position_type;
-      typedef std::set<fs::path> dependencies_type;
+      typedef std::set<boost::filesystem::path> dependencies_type;
 
       typedef std::vector<std::string> gen_param_type;
       typedef std::vector<std::string> link_prefix_type;
@@ -63,8 +59,8 @@ namespace xml
         in_progress_type _in_progress;
         in_progress_position_type _in_progress_position;
         dependencies_type _dependencies;
-        property::path_type _prop_path;
-        optimize::options::type _options_optimize;
+        we::type::property::path_type _prop_path;
+        we::type::optimize::options::type _options_optimize;
         bool _ignore_properties;
         bool _Werror;
         bool _Wall;
@@ -172,7 +168,7 @@ namespace xml
                           , const std::string & flag
                           ) const;
 
-        fs::path expand (const std::string & file) const;
+        boost::filesystem::path expand (const std::string & file) const;
 
       public:
         type();
@@ -196,24 +192,24 @@ namespace xml
 
         // ***************************************************************** //
 
-        property::path_type & prop_path (void);
+        we::type::property::path_type & prop_path (void);
 
         // ***************************************************************** //
 
-        const optimize::options::type & options_optimize (void) const;
+        const we::type::optimize::options::type & options_optimize (void) const;
 
         // ***************************************************************** //
 
-        void interpret_property ( const property::path_type & path
-                                , const property::value_type & value
+        void interpret_property ( const we::type::property::path_type & path
+                                , const we::type::property::value_type & value
                                 );
 
         // ***************************************************************** //
 
-        void set_input (const fs::path & path);
+        void set_input (const boost::filesystem::path & path);
         void set_input (const std::string & file);
 
-        fs::path file_in_progress() const;
+        boost::filesystem::path file_in_progress() const;
         void set_in_progress_position (const char*);
         util::position_type position (const xml_node_type*);
 
@@ -353,14 +349,14 @@ namespace xml
           return generic_parse<T> (parse, boost::filesystem::path (file));
         }
 
-        void check_for_include_loop (const fs::path& path) const;
+        void check_for_include_loop (const boost::filesystem::path& path) const;
 
         template<typename T>
         T generic_include ( boost::function<T (std::istream &, type &)> parse
                           , const std::string & file
                           )
         {
-          const fs::path path (expand (file));
+          const boost::filesystem::path path (expand (file));
 
           _dependencies.insert (path);
 

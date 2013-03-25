@@ -12,10 +12,6 @@ namespace xml
   {
     namespace state
     {
-      namespace fs = boost::filesystem;
-      namespace property = we::type::property;
-      namespace optimize = we::type::optimize;
-
       using namespace warning;
 
       // ******************************************************************* //
@@ -39,23 +35,23 @@ namespace xml
         }
       }
 
-      fs::path type::expand (const std::string & file) const
+      boost::filesystem::path type::expand (const std::string & file) const
       {
-        const fs::path absolute (file);
+        const boost::filesystem::path absolute (file);
 
         if (absolute.is_absolute())
         {
-          if (fs::exists (absolute))
+          if (boost::filesystem::exists (absolute))
           {
             return absolute;
           }
         }
         else
         {
-          const fs::path from_actual_file
+          const boost::filesystem::path from_actual_file
             (file_in_progress().parent_path() / file);
 
-          if (fs::exists (from_actual_file))
+          if (boost::filesystem::exists (from_actual_file))
           {
             return from_actual_file;
           }
@@ -63,15 +59,15 @@ namespace xml
           {
             BOOST_FOREACH (const std::string& search_path, _search_path)
             {
-              if (! fs::exists (search_path))
+              if (! boost::filesystem::exists (search_path))
               {
                 continue;
               }
 
-              const fs::path pre (search_path);
-              const fs::path path (pre / file);
+              const boost::filesystem::path pre (search_path);
+              const boost::filesystem::path path (pre / file);
 
-              if (fs::exists (path))
+              if (boost::filesystem::exists (path))
               {
                 return path;
               }
@@ -293,33 +289,34 @@ namespace xml
 
       // ***************************************************************** //
 
-      property::path_type & type::prop_path (void)
+      we::type::property::path_type & type::prop_path (void)
       {
         return _prop_path;
       }
 
       // ***************************************************************** //
 
-      const optimize::options::type & type::options_optimize (void) const
+      const we::type::optimize::options::type & type::options_optimize (void) const
       {
         return _options_optimize;
       }
 
       // ***************************************************************** //
 
-      void type::interpret_property ( const property::path_type & path
-                                    , const property::value_type & value
-                                    )
+      void
+      type::interpret_property ( const we::type::property::path_type & path
+                               , const we::type::property::value_type & value
+                               )
       {
         if (path.size() > 0 && path[0] == "pnetc")
         {
           if (path.size() > 1 && path[1] == "search_path")
           {
-            const fs::path absolute (value);
+            const boost::filesystem::path absolute (value);
 
             if (absolute.is_absolute())
             {
-              if (fs::exists (absolute))
+              if (boost::filesystem::exists (absolute))
               {
                 _search_path.push_back (absolute.string());
               }
@@ -331,10 +328,10 @@ namespace xml
             }
             else
             {
-              const fs::path from_actual_file
+              const boost::filesystem::path from_actual_file
                 (file_in_progress().parent_path() / value);
 
-              if (fs::exists (from_actual_file))
+              if (boost::filesystem::exists (from_actual_file))
               {
                 _search_path.push_back (from_actual_file.string());
               }
@@ -365,20 +362,20 @@ namespace xml
 
       // ***************************************************************** //
 
-      void type::set_input (const fs::path & path)
+      void type::set_input (const boost::filesystem::path & path)
       {
         _in_progress.push_back (path);
       }
 
       void type::set_input (const std::string & file)
       {
-        set_input (fs::path (file));
+        set_input (boost::filesystem::path (file));
       }
 
-      fs::path type::file_in_progress (void) const
+      boost::filesystem::path type::file_in_progress (void) const
       {
         return (_in_progress.empty())
-          ? fs::path("<stdin>")
+          ? boost::filesystem::path("<stdin>")
           : _in_progress.back()
           ;
       }
@@ -537,7 +534,8 @@ namespace xml
       // ***************************************************************** //
 
 
-      void type::check_for_include_loop(const fs::path& path) const
+      void
+      type::check_for_include_loop (const boost::filesystem::path& path) const
       {
         for ( in_progress_type::const_iterator pos (_in_progress.begin())
             ; pos != _in_progress.end()
