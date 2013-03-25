@@ -12,8 +12,6 @@ namespace xml
   {
     namespace state
     {
-      using namespace warning;
-
       // ******************************************************************* //
 
       template<typename W>
@@ -351,10 +349,10 @@ namespace xml
           }
           else
           {
-            warn ( property_unknown ( path
-                                    , value
-                                    , file_in_progress()
-                                    )
+            warn ( warning::property_unknown ( path
+                                             , value
+                                             , file_in_progress()
+                                             )
                  );
           }
         }
@@ -496,10 +494,10 @@ namespace xml
       // ***************************************************************** //
 
 #define WARN(x)                                                         \
-      void type::warn (const x & w) const                               \
+        void type::warn (const warning::x & w) const                    \
       { generic_warn (w, _W ## x, _OW ## x ); }
 #define WARN_(x,y)                                                      \
-      void type::warn (const x & w) const                               \
+      void type::warn (const warning::x & w) const                      \
       { generic_warn (w, _W ## y, _OW ## y ); }
 
       WARN(overwrite_function_name_as)
