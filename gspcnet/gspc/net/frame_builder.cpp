@@ -8,14 +8,15 @@ namespace gspc
   {
     namespace make
     {
-      frame error_frame ( int ec
+      frame error_frame ( error_code_t ec
                         , const char *message
                         )
       {
         frame f ("ERROR");
         f.set_header ("content-type", "text/plain");
         f.set_header ("code", boost::lexical_cast<std::string>(ec));
-        f.set_header ("message", message);
+        f.set_header ("message", gspc::net::error_string (ec));
+        f.add_body (message);
         return f;
       }
 

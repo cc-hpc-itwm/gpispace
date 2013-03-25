@@ -12,11 +12,12 @@ using namespace gspc::net;
 
 BOOST_AUTO_TEST_CASE (test_error_frame)
 {
-  frame f = make::error_frame (42, "test error");
+  frame f = make::error_frame (E_INTERNAL_ERROR, "test error");
 
   BOOST_REQUIRE_EQUAL (f.get_command (), "ERROR");
-  BOOST_REQUIRE_EQUAL (*f.get_header ("code"), "42");
-  BOOST_REQUIRE_EQUAL (*f.get_header ("message"), "test error");
+  BOOST_REQUIRE_EQUAL (*f.get_header ("code"), "500");
+  BOOST_REQUIRE_EQUAL (*f.get_header ("message"), "internal error");
+  BOOST_REQUIRE_EQUAL (f.get_body_as_string (), "test error");
 }
 
 BOOST_AUTO_TEST_CASE (test_receipt_frame)
