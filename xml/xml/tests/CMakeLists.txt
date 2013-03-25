@@ -26,3 +26,8 @@ fhg_add_test (util_position.cpp
   LINK_LIBRARIES xml
   DESCRIPTION "test xml_util_position"
 )
+
+fhg_add_test (diagnostics.cpp
+  LINK_LIBRARIES xml we
+  DESCRIPTION "check parser diagnostics"
+)
