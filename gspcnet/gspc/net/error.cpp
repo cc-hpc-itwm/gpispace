@@ -8,6 +8,8 @@ namespace gspc
     {
       switch (code)
       {
+      case E_OK:                      // 200
+        return "success";
       case E_UNAUTHORIZED:            // 401
         return "not authorized";
       case E_SERVICE_LOOKUP:          // 404
