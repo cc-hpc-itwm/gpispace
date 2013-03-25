@@ -1279,14 +1279,12 @@ namespace xml
       public:
         port_type_mismatch ( const id::ref::port& port
                            , const id::ref::port& other_port
-                           , const boost::filesystem::path& path
                            );
         virtual ~port_type_mismatch() throw() { }
 
       private:
         const id::ref::port _port;
         const id::ref::port _other_port;
-        const boost::filesystem::path _path;
       };
 
       // ******************************************************************* //

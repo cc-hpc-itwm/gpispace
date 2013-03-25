@@ -36,21 +36,20 @@ namespace xml
       port_type_mismatch::port_type_mismatch
         ( const id::ref::port& port
         , const id::ref::port& other_port
-        , const boost::filesystem::path& path
         )
-          : generic ( boost::format ( "in-/out-port %1% has different types "
-                                    "%2% (%3%) and %4% (%5%) in %6%"
+          : generic ( boost::format ( "in-/out-port %1% has different types: "
+                                    "%2% (%3%) from %4% and %5% (%6%) from %7%"
                                     )
                     % port.get().name()
                     % port.get().type()
                     % we::type::enum_to_string (port.get().direction())
+                    % port.get().position_of_definition()
                     % other_port.get().type()
                     % we::type::enum_to_string (other_port.get().direction())
-                    % path
+                    % other_port.get().position_of_definition()
                     )
         , _port (port)
         , _other_port (other_port)
-        , _path (path)
       { }
 
       port_not_connected::port_not_connected
