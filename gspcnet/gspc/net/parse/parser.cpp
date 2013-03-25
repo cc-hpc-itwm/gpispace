@@ -4,6 +4,8 @@
 #include "parser.hpp"
 
 #include <gspc/net/frame.hpp>
+#include <gspc/net/limits.hpp>
+
 #include <boost/lexical_cast.hpp>
 
 namespace gspc
@@ -48,6 +50,8 @@ namespace gspc
                               , const char c
                               )
       {
+        using namespace gspc::net::limits;
+
         switch (m_frame_state)
         {
         case frame_start:
@@ -91,7 +95,14 @@ namespace gspc
             }
             else if (isprint (c))
             {
-              m_buffer.push_back (c);
+              if (m_buffer.size () < max_command_length ())
+              {
+                m_buffer.push_back (c);
+              }
+              else
+              {
+                return PARSE_FAILED;
+              }
             }
             else
             {
@@ -204,7 +215,14 @@ namespace gspc
             }
             else if (isprint (c))
             {
-              m_buffer.push_back (c);
+              if (m_buffer.size () < max_header_key_length ())
+              {
+                m_buffer.push_back (c);
+              }
+              else
+              {
+                return PARSE_FAILED;
+              }
             }
             else
             {
@@ -230,7 +248,14 @@ namespace gspc
             }
             else if (isprint (c))
             {
-              m_buffer.push_back (c);
+              if (m_buffer.size () < max_header_value_length ())
+              {
+                m_buffer.push_back (c);
+              }
+              else
+              {
+                return PARSE_FAILED;
+              }
             }
             else
             {
