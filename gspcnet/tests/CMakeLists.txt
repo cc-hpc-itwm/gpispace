@@ -5,6 +5,11 @@ fhg_add_test(test_frame_parser.cpp
   DESCRIPTION "GSPCNet - frame parser tests"
 )
 
+fhg_add_test(test_util.cpp
+  LINK_LIBRARIES gspcnet
+  DESCRIPTION "GSPCNet - util tests"
+)
+
 fhg_add_test(test_frame_builder.cpp
   LINK_LIBRARIES gspcnet
   DESCRIPTION "GSPCNet - frame builder tests"

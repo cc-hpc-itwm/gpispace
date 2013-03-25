@@ -1,4 +1,5 @@
 set (gspcnet_src
+  net/util.cpp
   net/error.cpp
   net/limits.cpp
 
