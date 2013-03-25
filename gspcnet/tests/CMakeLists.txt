@@ -36,3 +36,13 @@ fhg_add_test(test_services.cpp
                  ${CMAKE_THREAD_LIBS_INIT}
   DESCRIPTION "GSPCNet - services tests"
 )
+
+fhg_add_test(test_serve.cpp
+  LINK_LIBRARIES gspcnet
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_DATE_TIME_LIBRARY}
+                 ${Boost_FILE_SYSTEM_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+                 ${CMAKE_THREAD_LIBS_INIT}
+  DESCRIPTION "GSPCNet - serve tests"
+)
