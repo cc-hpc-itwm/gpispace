@@ -130,7 +130,7 @@ namespace gspc
         }
         else if (rc < 0)
         {
-          rply = make::error_frame ( rc
+          rply = make::error_frame ( E_SERVICE_FAILED
                                    , strerror (-rc)
                                    );
         }

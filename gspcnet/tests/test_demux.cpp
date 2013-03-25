@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("code"), "503");
   BOOST_CHECK       (rply_frame.has_header ("message"));
   BOOST_CHECK_EQUAL ( *rply_frame.get_header ("message")
-                    , "service request failed"
+                    , "service failed"
                     );
 }
 
