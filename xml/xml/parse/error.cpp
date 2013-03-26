@@ -19,21 +19,6 @@ namespace xml
   {
     namespace error
     {
-      duplicate_port::duplicate_port ( const id::ref::port& early
-                                     , const id::ref::port& late
-                                     )
-        : generic ( boost::format ( "duplicate %1%-port %2% at %3%"
-                                    ", earlier definition is at %4%"
-                                  )
-                  % we::type::enum_to_string (early.get().direction())
-                  % early.get().name()
-                  % late.get().position_of_definition()
-                  % early.get().position_of_definition()
-                  )
-        , _early (early)
-        , _late (late)
-      {}
-
       port_type_mismatch::port_type_mismatch
         ( const id::ref::port& port
         , const id::ref::port& other_port
@@ -366,6 +351,17 @@ namespace xml
         )
           : generic_duplicate
             (early, late, boost::format ("transition %1%") % early.get().name())
+      {}
+
+      duplicate_port::duplicate_port ( const id::ref::port& early
+                                     , const id::ref::port& late
+                                     )
+        : generic_duplicate ( early
+                            , late
+                            , boost::format ("%1%-port %1%")
+                            % we::type::enum_to_string (early.get().direction())
+                            % early.get().name()
+                            )
       {}
 
       place_type_unknown::place_type_unknown (const id::ref::place& place)

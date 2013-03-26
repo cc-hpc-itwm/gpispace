@@ -536,19 +536,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class duplicate_port : public generic
-      {
-      public:
-        duplicate_port ( const id::ref::port& early
-                       , const id::ref::port& late
-                       );
-        virtual ~duplicate_port() throw() {}
-
-      private:
-        const id::ref::port _early;
-        const id::ref::port _late;
-      };
-
       // ******************************************************************* //
 
       class duplicate_connect : public generic
@@ -641,6 +628,14 @@ namespace xml
         duplicate_transition ( const id::ref::transition& early
                              , const id::ref::transition& late
                              );
+      };
+
+      class duplicate_port : public generic_duplicate<id::ref::port>
+      {
+      public:
+        duplicate_port ( const id::ref::port& early
+                       , const id::ref::port& late
+                       );
       };
 
       // ******************************************************************* //
