@@ -1029,6 +1029,7 @@ namespace xml
           ( id
           , state.id_mapper()
           , boost::none
+          , state.position (node)
           , name
           , template_parameter
           , *fun

@@ -27,12 +27,14 @@ namespace xml
       tmpl_type::tmpl_type
         ( ID_CONS_PARAM(tmpl)
         , PARENT_CONS_PARAM(net)
+        , const util::position_type& pod
         , const boost::optional<std::string>& name
         , const names_type& tmpl_parameter
         , const id::ref::function& function
         , const boost::filesystem::path& path
         )
-          : ID_INITIALIZE()
+          : with_position_of_definition (pod)
+          , ID_INITIALIZE()
           , PARENT_INITIALIZE()
           , _name (name)
           , _tmpl_parameter (tmpl_parameter)
@@ -117,6 +119,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _name
           , _tmpl_parameter
           , _function.get().clone (function_type::make_parent (new_id), mapper)

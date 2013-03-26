@@ -7,6 +7,8 @@
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <string>
 
@@ -20,7 +22,7 @@ namespace xml
   {
     namespace type
     {
-      struct tmpl_type
+      struct tmpl_type : with_position_of_definition
       {
         ID_SIGNATURES(tmpl);
         PARENT_SIGNATURES(net);
@@ -31,6 +33,7 @@ namespace xml
 
         tmpl_type ( ID_CONS_PARAM(tmpl)
                   , PARENT_CONS_PARAM(net)
+                  , const util::position_type&
                   , const boost::optional<std::string>& name
                   , const names_type& tmpl_parameter
                   , const id::ref::function& function
