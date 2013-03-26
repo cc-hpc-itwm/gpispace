@@ -84,19 +84,17 @@ namespace gspc
     {
       using namespace boost::system;
 
-      std::string s_url (url);
-
       ec = errc::make_error_code (errc::success);
 
       server_ptr_t server;
 
-      if (s_url.find ("unix://") == 0)
+      if (url.find ("unix://") == 0)
       {
-        server = s_new_unix_server (s_url.substr (7), qmgr, ec);
+        server = s_new_unix_server (url.substr (7), qmgr, ec);
       }
-      else if (s_url.find ("tcp://") == 0)
+      else if (url.find ("tcp://") == 0)
       {
-        server = s_new_tcp_server (s_url.substr (6), qmgr, ec);
+        server = s_new_tcp_server (url.substr (6), qmgr, ec);
       }
       else
       {
