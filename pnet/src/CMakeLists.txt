@@ -20,7 +20,6 @@ include_directories (${UTIL_INCLUDE_DIR})
 add_subdirectory (apps)
 add_subdirectory (we)
 add_subdirectory (xml)
-add_subdirectory (xsd)
 
 if (BUILD_TESTING)
   add_subdirectory (tests)
