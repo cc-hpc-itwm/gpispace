@@ -106,6 +106,23 @@ BOOST_AUTO_TEST_CASE (test_empty_header_empty_body)
   BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
 }
 
+BOOST_AUTO_TEST_CASE (test_command_need_more_data)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char *input = "CONNECT";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input)
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_NEED_MORE_DATA);
+  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input));
+}
+
 BOOST_AUTO_TEST_CASE (test_empty_header_empty_body_crlf)
 {
   gspc::net::parse::parser parser;
