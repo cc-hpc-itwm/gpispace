@@ -128,27 +128,11 @@ namespace xml
 
       class struct_shadowed : public generic
       {
-      private:
-        std::string nice ( const type::structure_type & early
-                         , const type::structure_type & late
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "struct with name " << late.name()
-            << " in " << late.path()
-            << " shadows definition from " << early.path()
-            ;
-
-          return s.str();
-        }
-
       public:
-        struct_shadowed ( const type::structure_type & early
-                        , const type::structure_type & late
-                        )
-          : generic (nice (early, late))
-        {}
+        struct_shadowed ( const type::structure_type& early
+                        , const type::structure_type& late
+                        );
+        ~struct_shadowed() throw() {}
       };
 
       // ******************************************************************* //
