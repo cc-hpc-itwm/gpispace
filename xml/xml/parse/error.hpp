@@ -346,7 +346,7 @@ namespace xml
                        , const std::string& type
                        , const type::structure_type&
                        );
-        ~cannot_resolve() throw() {}
+        virtual ~cannot_resolve() throw() {}
 
       private:
         const std::string _field;
@@ -359,7 +359,7 @@ namespace xml
         struct_redefined ( const type::structure_type& early
                          , const type::structure_type& late
                          );
-        ~struct_redefined() throw() {}
+        virtual ~struct_redefined() throw() {}
       };
 
       class struct_field_redefined : public generic
@@ -378,7 +378,7 @@ namespace xml
       {
       public:
         place_type_unknown (const id::ref::place&);
-        ~place_type_unknown() throw() {}
+        virtual ~place_type_unknown() throw() {}
 
       private:
         const id::ref::place _place;
@@ -505,7 +505,7 @@ namespace xml
                             , const type::structure_type& late
                             , const std::string& port_name
                             );
-        ~forbidden_shadowing() throw() {}
+        virtual ~forbidden_shadowing() throw() {}
       };
 
       // ******************************************************************* //
@@ -591,7 +591,7 @@ namespace xml
           , _late (late)
         {}
 
-        ~generic_duplicate() throw() {}
+        virtual ~generic_duplicate() throw() {}
 
         const Id& early() const
         {
@@ -799,7 +799,7 @@ namespace xml
         connect_to_nonexistent_place ( const id::ref::transition&
                                      , const id::ref::connect&
                                      );
-        ~connect_to_nonexistent_place() throw() {}
+        virtual ~connect_to_nonexistent_place() throw() {}
 
       private:
         const id::ref::transition _transition;
@@ -812,7 +812,7 @@ namespace xml
         connect_to_nonexistent_port ( const id::ref::transition&
                                     , const id::ref::connect&
                                     );
-        ~connect_to_nonexistent_port() throw() {}
+        virtual ~connect_to_nonexistent_port() throw() {}
 
       private:
         const id::ref::transition _transition;
@@ -825,7 +825,7 @@ namespace xml
       {
       public:
         unknown_function (const std::string&, const id::ref::transition&);
-        ~unknown_function() throw() {}
+        virtual ~unknown_function() throw() {}
 
       private:
         const std::string _function_name;
@@ -867,7 +867,7 @@ namespace xml
                            , const id::ref::port&
                            , const id::ref::place&
                            );
-        ~connect_type_error() throw() {}
+        virtual ~connect_type_error() throw() {}
 
       private:
         const id::ref::transition _transition;
@@ -1223,7 +1223,7 @@ namespace xml
         duplicate_external_function ( const id::ref::module& mod
                                     , const id::ref::module& old
                                     );
-        ~duplicate_external_function() throw() {}
+        virtual ~duplicate_external_function() throw() {}
 
       private:
         const id::ref::module _mod;
