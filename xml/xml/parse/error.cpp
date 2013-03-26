@@ -403,6 +403,15 @@ namespace xml
         , _early (early)
         , _late (late)
       {}
+
+      place_type_unknown::place_type_unknown (const id::ref::place& place)
+        : generic ( boost::format ("unknown type %1% for place %2% at %3%")
+                  % place.get().type()
+                  % place.get().name()
+                  % place.get().position_of_definition()
+                  )
+        , _place (place)
+      {}
     }
   }
 }

@@ -374,32 +374,14 @@ namespace xml
         {}
       };
 
-      // ******************************************************************* //
-
       class place_type_unknown : public generic
       {
-      private:
-        std::string nice ( const std::string & place
-                         , const std::string & type
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "unknown type " << type
-            << " given to place " << place
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        place_type_unknown ( const std::string & place
-                           , const std::string & type
-                           , const boost::filesystem::path & path
-                           )
-          : generic (nice (place, type, path))
-        {}
+        place_type_unknown (const id::ref::place&);
+        ~place_type_unknown() throw() {}
+
+      private:
+        const id::ref::place _place;
       };
 
       // ******************************************************************* //

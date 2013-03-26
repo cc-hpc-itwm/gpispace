@@ -100,11 +100,7 @@ namespace xml
 
         if (not s)
         {
-          throw error::place_type_unknown ( name()
-                                          , type()
-                                          //! \todo own LOCATION
-                                          , parent()->path()
-                                          );
+          throw error::place_type_unknown (make_reference_id());
         }
 
         return *s;
