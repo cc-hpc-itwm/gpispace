@@ -9,6 +9,49 @@
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/frame_io.hpp>
 
+BOOST_AUTO_TEST_CASE (invalid_frame_start)
+{
+  // only some examples
+  const char to_check[] =
+    { 0 // NUL
+    , 1 // SOH Ctrl+A
+    , 2 // STX Ctrl+B
+    , 3 // ETX Ctrl+C
+    , 4 // EOT Ctrl+D
+    , 5 // ENQ Ctrl+E
+    , 6 // ACK Ctrl+F
+    , 7 // BEL Ctrl+G
+    , 8 // BS  Ctrl+H
+    , 9 // HT  Ctrl+I
+
+    // , 10 // LF Ctrl+J is allowed
+
+    , 11 // VT  Ctrl+K
+    , 12 // FF  Ctrl+L
+
+    // , 13 // CR  Ctrl+M is allowed
+
+    , 127 // DEL
+  };
+
+  for (size_t i = 0 ; i < sizeof (to_check) ; ++i)
+  {
+    gspc::net::frame frame;
+    gspc::net::parse::parser parser;
+    gspc::net::parse::result_t result;
+
+    const char input [] = {to_check [i]};
+
+    result = parser.parse ( input
+                          , input + sizeof (input)
+                          , frame
+                          );
+
+    BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FAILED);
+    BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
+  }
+}
+
 BOOST_AUTO_TEST_CASE (invalid_empty_frame)
 {
   gspc::net::parse::parser parser;
