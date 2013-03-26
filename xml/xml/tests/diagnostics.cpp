@@ -79,11 +79,12 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
   require_exception_from_generate_cpp
     <xml::parse::error::duplicate_external_function>
     ( "error::duplicate_external_function"
-    , boost::format ( "ERROR: the external function f in module m"
-                      " has different definitions in %1% and %2%"
+    , boost::format ( "ERROR: duplicate external function f in module m"
+                      " has conflicting definition at %1%"
+                      ", earlier definition is at %2%"
                     )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 10, 9)
     % xml::parse::util::position_type (NULL, NULL, xpnet, 5, 9)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 10, 9)
     );
 }
 

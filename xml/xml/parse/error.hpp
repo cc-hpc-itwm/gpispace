@@ -606,6 +606,7 @@ namespace xml
       DUPLICATE (port);
       DUPLICATE_WITH_ID (template,tmpl);
       DUPLICATE (place_map);
+      DUPLICATE_WITH_ID (external_function,module);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
@@ -1197,21 +1198,6 @@ namespace xml
         could_not_create_directory (const boost::filesystem::path & path)
           : generic (nice (path))
         {}
-      };
-
-      // ******************************************************************* //
-
-      class duplicate_external_function : public generic
-      {
-      public:
-        duplicate_external_function ( const id::ref::module& mod
-                                    , const id::ref::module& old
-                                    );
-        virtual ~duplicate_external_function() throw() {}
-
-      private:
-        const id::ref::module _mod;
-        const id::ref::module _old;
       };
 
       // ******************************************************************* //

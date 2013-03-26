@@ -168,21 +168,6 @@ namespace xml
         , _key (key)
       {}
 
-      duplicate_external_function::duplicate_external_function
-        (const id::ref::module& mod, const id::ref::module& old)
-          : generic ( boost::format ( "the external function %1% in module %2%"
-                                      " has different definitions in %3% and"
-                                      " %4%"
-                                    )
-                    % mod.get().function
-                    % mod.get().name()
-                    % old.get().position_of_definition()
-                    % mod.get().position_of_definition()
-                    )
-          , _mod (mod)
-          , _old (old)
-      {}
-
       unknown_function::unknown_function ( const std::string& fun
                                          , const id::ref::transition& trans
                                          )
@@ -349,6 +334,21 @@ namespace xml
                               % early.get().place_virtual()
                               % early.get().place_real()
                               )
+      {}
+
+      duplicate_external_function::duplicate_external_function
+         ( const id::ref::module& early
+         , const id::ref::module& late
+         )
+          : generic_duplicate
+            ( early
+            , late
+            , boost::format ( "external function %1% in module %2%"
+                              " has conflicting definition"
+                            )
+            % early.get().function
+            % early.get().name()
+            )
       {}
 
       place_type_unknown::place_type_unknown (const id::ref::place& place)

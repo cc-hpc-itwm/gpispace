@@ -1966,7 +1966,7 @@ namespace xml
                 else
                 {
                   throw error::duplicate_external_function
-                    (id, old_mc->second.make_reference_id());
+                    (old_mc->second.make_reference_id(), id);
                 }
               }
             }
