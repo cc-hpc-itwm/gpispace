@@ -15,13 +15,15 @@ namespace xml
     {
       specialize_type::specialize_type ( ID_CONS_PARAM(specialize)
                                        , PARENT_CONS_PARAM(net)
+                                       , const util::position_type& pod
                                        , const std::string& name
                                        , const std::string& use
                                        , const type_map_type& type_map
                                        , const type_get_type& type_get
                                        , const boost::filesystem::path& path
                                        )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , use (use)
@@ -67,6 +69,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _name
           , use
           , type_map

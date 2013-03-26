@@ -655,6 +655,7 @@ namespace xml
           ( state.id_mapper()->next_id()
           , state.id_mapper()
           , boost::none
+          , state.position (node)
           , required ("specialize_type", node, "name", state.file_in_progress())
           , required ("specialize_type", node, "use", state.file_in_progress())
           , type_map

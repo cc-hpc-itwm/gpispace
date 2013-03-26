@@ -8,6 +8,8 @@
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -21,7 +23,7 @@ namespace xml
   {
     namespace type
     {
-      struct specialize_type
+      struct specialize_type : with_position_of_definition
       {
         ID_SIGNATURES(specialize);
         PARENT_SIGNATURES(net);
@@ -31,6 +33,7 @@ namespace xml
 
         specialize_type ( ID_CONS_PARAM(specialize)
                         , PARENT_CONS_PARAM(net)
+                        , const util::position_type&
                         , const std::string& name
                         , const std::string& use
                         , const type_map_type& type_map
