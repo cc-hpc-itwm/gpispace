@@ -585,17 +585,46 @@ namespace xml
 
       // ******************************************************************* //
 
-      class duplicate_specialize : public generic
+      template<typename Id>
+      class generic_duplicate : public generic
+      {
+      public:
+        generic_duplicate ( const Id& early
+                          , const Id& late
+                          , const boost::format& fmt
+                          )
+          : generic ( boost::format ( "duplicate %1% at %2%"
+                                      ", earlier definition is at %3%"
+                                    )
+                    % fmt
+                    % late.get().position_of_definition()
+                    % early.get().position_of_definition()
+                    )
+          , _early (early)
+          , _late (late)
+        {}
+
+        ~generic_duplicate() throw() {}
+
+        const Id& early() const
+        {
+          return _early;
+        }
+        const Id& late() const
+        {
+          return _late;
+        }
+      private:
+        const Id _early;
+        const Id _late;
+      };
+
+      class duplicate_specialize : public generic_duplicate<id::ref::specialize>
       {
       public:
         duplicate_specialize ( const id::ref::specialize& early
                              , const id::ref::specialize& late
                              );
-        ~duplicate_specialize() throw() {}
-
-      private:
-        const id::ref::specialize _early;
-        const id::ref::specialize _late;
       };
 
       class duplicate_place : public generic
