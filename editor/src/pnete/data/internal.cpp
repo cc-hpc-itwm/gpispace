@@ -51,6 +51,7 @@ namespace fhg
                 ( state.id_mapper()->next_id()
                 , state.id_mapper()
                 , boost::none
+                , XML_PARSE_UTIL_POSITION_GENERATED()
                 ).make_reference_id();
             }
           }

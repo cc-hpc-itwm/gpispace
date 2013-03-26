@@ -26,9 +26,11 @@ namespace xml
     {
       net_type::net_type ( ID_CONS_PARAM(net)
                          , PARENT_CONS_PARAM(function)
+                         , const util::position_type& pod
                          , const boost::filesystem::path& path
                          )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _path (path)
       {
@@ -37,6 +39,7 @@ namespace xml
 
       net_type::net_type ( ID_CONS_PARAM(net)
                          , PARENT_CONS_PARAM(function)
+                         , const util::position_type& pod
                          , const functions_type& functions
                          , const places_type& places
                          , const specializes_type& specializes
@@ -47,7 +50,8 @@ namespace xml
                          , const we::type::property::type& properties
                          , const boost::filesystem::path& path
                          )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _functions (functions, _id)
         , _places (places, _id)
@@ -662,6 +666,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _functions.clone (function_type::make_parent (new_id), new_mapper)
           , _places.clone (new_id, new_mapper)
           , _specializes.clone (new_id, new_mapper)

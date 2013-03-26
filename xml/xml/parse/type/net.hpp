@@ -11,6 +11,8 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type_map_type.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <xml/parse/util/unique.hpp>
 
@@ -26,7 +28,7 @@ namespace xml
   {
     namespace type
     {
-      struct net_type
+      struct net_type : with_position_of_definition
       {
         ID_SIGNATURES(net);
         PARENT_SIGNATURES(function);
@@ -41,12 +43,14 @@ namespace xml
 
         net_type ( ID_CONS_PARAM(net)
                  , PARENT_CONS_PARAM(function)
+                 , const util::position_type&
                  , const boost::filesystem::path& path
                        = boost::filesystem::path()
                  );
 
         net_type ( ID_CONS_PARAM(net)
                  , PARENT_CONS_PARAM(function)
+                 , const util::position_type&
                  , const functions_type& functions
                  , const places_type& places
                  , const specializes_type& specializes
