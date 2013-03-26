@@ -196,12 +196,12 @@ namespace xml
         ( const id::ref::function& function
         , const id::ref::function& old_function
         )
-          : generic ( boost::format ( "duplicate function %1% in %2%. "
-                                      "first definition was in %3%"
+          : generic ( boost::format ( "duplicate function %1% at %2%. "
+                                      "first definition was at %3%"
                                     )
                     % function.get().name()
-                    % function.get().path
-                    % old_function.get().path
+                    % function.get().position_of_definition()
+                    % old_function.get().position_of_definition()
                     )
           , _function (function)
           , _old_function (old_function)

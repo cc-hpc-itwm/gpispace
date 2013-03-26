@@ -83,7 +83,6 @@ namespace xml
                       , const boost::optional<std::string>& name
                       , const boost::optional<bool>& internal
                       , const content_type& content
-                      , const boost::filesystem::path& path
                       );
 
         function_type ( ID_CONS_PARAM(function)
@@ -99,7 +98,6 @@ namespace xml
                       , const requirements_type& requirements
                       , const content_type& content
                       , const we::type::property::type& properties
-                      , const boost::filesystem::path& path
                       );
 
         const content_type& content() const;
@@ -250,11 +248,6 @@ namespace xml
       private:
         content_type _content;
         we::type::property::type _properties;
-
-      public:
-        boost::filesystem::path path;
-
-        const boost::filesystem::path& path_GET() const;
       };
 
       // ***************************************************************** //

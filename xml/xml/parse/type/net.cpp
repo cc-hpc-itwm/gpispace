@@ -549,7 +549,7 @@ namespace xml
           {
             state.warn
               ( warning::virtual_place_not_tunneled ( place.name()
-                                                    , outer_function.path
+                                                    , outer_function.position_of_definition().path()
                                                     )
               );
           }

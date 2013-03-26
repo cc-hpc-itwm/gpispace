@@ -194,7 +194,7 @@ namespace xml
               , *port_return
               , name()
               , function
-              , outer_function.path
+              , outer_function.position_of_definition().path()
               );
           }
         }
@@ -211,7 +211,7 @@ namespace xml
               , *port
               , name()
               , function
-              , outer_function.path
+              , outer_function.position_of_definition().path()
               );
           }
         }

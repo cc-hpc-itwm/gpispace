@@ -1391,7 +1391,6 @@ namespace xml
                                     , id
                                     , state.position (node)
                                     ).make_reference_id()
-            , state.file_in_progress()
             ).make_reference_id()
           );
 
@@ -1699,7 +1698,7 @@ namespace xml
     {
       if (not function.get().name())
       {
-        throw error::synthesize_anonymous_function (function.get().path);
+        throw error::synthesize_anonymous_function (function.get().position_of_definition().path());
       }
 
       we::type::transition_t trans

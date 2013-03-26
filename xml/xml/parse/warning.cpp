@@ -54,12 +54,12 @@ namespace xml
 
       overwrite_function_name_trans::overwrite_function_name_trans
         (const id::ref::transition& trans, const id::ref::function& function)
-          : generic ( boost::format ( "name of function %1% defined in %2% "
+          : generic ( boost::format ( "name of function %1% defined at %2% "
                                       "overwritten with name of transition %3% "
-                                      "in %4%"
+                                      "at %4%"
                                     )
                     % function.get().name().get_value_or ("<<anonymous>>")
-                    % function.get().path
+                    % function.get().position_of_definition()
                     % trans.get().name()
                     % trans.get().position_of_definition()
                     )

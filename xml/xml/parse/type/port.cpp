@@ -89,7 +89,7 @@ namespace xml
                                               , name()
                                               , type()
                                               //! \todo own LOCATION
-                                              , parent()->path_GET()
+                                              , parent()->position_of_definition().path()
                                               );
         }
 

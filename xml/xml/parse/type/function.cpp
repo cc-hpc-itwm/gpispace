@@ -92,7 +92,6 @@ namespace xml
                                    , const boost::optional<std::string>& name
                                    , const boost::optional<bool>& internal
                                    , const content_type& content
-                                   , const boost::filesystem::path& path
                                    )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -101,7 +100,6 @@ namespace xml
         , contains_a_module_call (false)
         , internal (internal)
         , _content (reparent (content, _id))
-        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -120,7 +118,6 @@ namespace xml
         , const requirements_type& requirements
         , const content_type& content
         , const we::type::property::type& properties
-        , const boost::filesystem::path& path
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -135,7 +132,6 @@ namespace xml
         , requirements (requirements)
         , _content (reparent (content, _id))
         , _properties (properties)
-        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -152,11 +148,6 @@ namespace xml
         function_type::content (const content_type& content_)
       {
         return _content = reparent (content_, id());
-      }
-
-      const boost::filesystem::path& function_type::path_GET() const
-      {
-        return /*! \todo _*/path;
       }
 
       // ******************************************************************* //
@@ -334,7 +325,7 @@ namespace xml
 
         if (id_old != id)
         {
-          throw error::duplicate_port (id, id_old, path);
+          throw error::duplicate_port (id, id_old, position_of_definition().path());
         }
 
         id.get_ref().parent (_id);
@@ -627,7 +618,7 @@ namespace xml
       {
         BOOST_FOREACH (const port_type& port, ports().values())
         {
-          port.type_check (path, state);
+          port.type_check (position_of_definition().path(), state);
         }
 
         boost::apply_visitor (function_type_check (state), content());
@@ -740,7 +731,7 @@ namespace xml
           const std::string cond ((fun.conditions() + _conditions).flatten());
 
           expr::parse::parser parsed_condition
-            (util::we_parse (cond, "condition", "function", name(), fun.path));
+            (util::we_parse (cond, "condition", "function", name(), fun.position_of_definition().path()));
 
           return we_cond_type (cond, parsed_condition);
         }
@@ -770,7 +761,7 @@ namespace xml
         {
           const std::string expr (id_expression.get().expression());
           const expr::parse::parser parsed_expression
-            (util::we_parse (expr, "expression", "function", name(), fun.path));
+            (util::we_parse (expr, "expression", "function", name(), fun.position_of_definition().path()));
 
           we_transition_type trans
             ( name()
@@ -1006,7 +997,6 @@ namespace xml
           , requirements
           , boost::apply_visitor (visitor_clone (new_id, new_mapper), content())
           , _properties
-          , path
           ).make_reference_id();
       }
 
