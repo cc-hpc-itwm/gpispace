@@ -294,8 +294,7 @@ namespace xml
 
         if (not (id_old == pm_id))
         {
-          throw error::duplicate_place_map
-            (pm_id, id_old, make_reference_id());
+          throw error::duplicate_place_map (id_old, pm_id);
         }
         pm_id.get_ref().parent (id());
       }

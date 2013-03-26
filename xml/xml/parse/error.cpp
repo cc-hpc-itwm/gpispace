@@ -145,24 +145,6 @@ namespace xml
           , _transition (transition)
       { }
 
-      duplicate_place_map::duplicate_place_map
-        ( const id::ref::place_map& place_map
-        , const id::ref::place_map& old_place_map
-        , const id::ref::transition& transition
-        )
-          : generic ( boost::format ( "duplicate place-map %1% <-> %2% for "
-                                      "transition %3% in %4%"
-                                    )
-                    % place_map.get().place_virtual()
-                    % place_map.get().place_real()
-                    % transition.get().name()
-                    % transition.get().position_of_definition()
-                    )
-          , _place_map (place_map)
-          , _old_place_map (old_place_map)
-          , _transition (transition)
-      { }
-
       parse_link_prefix::parse_link_prefix ( const std::string& reason
                                            , const std::string& input
                                            , const std::size_t& pos
@@ -355,6 +337,18 @@ namespace xml
         )
           : generic_duplicate
             (early, late, boost::format ("template %1%") % early.get().name())
+      {}
+
+      duplicate_place_map::duplicate_place_map
+        ( const id::ref::place_map& early
+        , const id::ref::place_map& late
+        )
+          : generic_duplicate ( early
+                              , late
+                              , boost::format ("place-map %1% <-> %2%")
+                              % early.get().place_virtual()
+                              % early.get().place_real()
+                              )
       {}
 
       place_type_unknown::place_type_unknown (const id::ref::place& place)

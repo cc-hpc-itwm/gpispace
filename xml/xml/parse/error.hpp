@@ -555,23 +555,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class duplicate_place_map : public generic
-      {
-      public:
-        duplicate_place_map ( const id::ref::place_map& place_map
-                            , const id::ref::place_map& old_place_map
-                            , const id::ref::transition& transition
-                            );
-        virtual ~duplicate_place_map() throw() { }
-
-      private:
-        const id::ref::place_map _place_map;
-        const id::ref::place_map _old_place_map;
-        const id::ref::transition _transition;
-      };
-
-      // ******************************************************************* //
-
       template<typename Id>
       class generic_duplicate : public generic
       {
@@ -622,6 +605,7 @@ namespace xml
       DUPLICATE (transition);
       DUPLICATE (port);
       DUPLICATE_WITH_ID (template,tmpl);
+      DUPLICATE (place_map);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
