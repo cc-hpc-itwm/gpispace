@@ -178,21 +178,6 @@ namespace xml
           , _transition (transition)
       { }
 
-      duplicate_function::duplicate_function
-        ( const id::ref::function& function
-        , const id::ref::function& old_function
-        )
-          : generic ( boost::format ( "duplicate function %1% at %2%. "
-                                      "first definition was at %3%"
-                                    )
-                    % function.get().name()
-                    % function.get().position_of_definition()
-                    % old_function.get().position_of_definition()
-                    )
-          , _function (function)
-          , _old_function (old_function)
-      { }
-
       duplicate_template::duplicate_template
         ( const id::ref::tmpl& tmpl
         , const id::ref::tmpl& old_template
@@ -382,7 +367,6 @@ namespace xml
           : generic_duplicate
             (early, late, boost::format ("transition %1%") % early.get().name())
       {}
-
 
       place_type_unknown::place_type_unknown (const id::ref::place& place)
         : generic ( boost::format ("unknown type %1% for place %2% at %3%")

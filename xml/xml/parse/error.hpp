@@ -645,21 +645,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class duplicate_function : public generic
-      {
-      public:
-        duplicate_function ( const id::ref::function& function
-                           , const id::ref::function& old_function
-                           );
-        ~duplicate_function() throw() { }
-
-      private:
-        id::ref::function _function;
-        id::ref::function _old_function;
-      };
-
-      // ******************************************************************* //
-
       class duplicate_template : public generic
       {
       public:
