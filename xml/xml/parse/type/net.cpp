@@ -27,12 +27,10 @@ namespace xml
       net_type::net_type ( ID_CONS_PARAM(net)
                          , PARENT_CONS_PARAM(function)
                          , const util::position_type& pod
-                         , const boost::filesystem::path& path
                          )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -48,7 +46,6 @@ namespace xml
                          , const structs_type& structs
                          , const bool& contains_a_module_call
                          , const we::type::property::type& properties
-                         , const boost::filesystem::path& path
                          )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -61,7 +58,6 @@ namespace xml
         , structs (structs)
         , contains_a_module_call (contains_a_module_call)
         , _properties (properties)
-        , _path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -73,11 +69,6 @@ namespace xml
       we::type::property::type& net_type::properties()
       {
         return _properties;
-      }
-
-      const boost::filesystem::path& net_type::path () const
-      {
-        return _path;
       }
 
       // ***************************************************************** //
@@ -455,7 +446,8 @@ namespace xml
 
           if (not id_tmpl)
           {
-            throw error::unknown_template (specialize.use, path());
+            throw error::unknown_template
+              (specialize.use, position_of_definition().path());
           }
 
           //! \todo generate a new function, with a state.next_id and
@@ -675,7 +667,6 @@ namespace xml
           , structs
           , contains_a_module_call
           , _properties
-          , _path
           ).make_reference_id();
       }
 
@@ -928,7 +919,11 @@ namespace xml
             we_net.put_value
               ( pid
               , boost::apply_visitor
-                ( construct_value (place.name(), net.path(), "", state)
+                ( construct_value ( place.name()
+                                  , net.position_of_definition().path()
+                                  , ""
+                                  , state
+                                  )
                 , place.signature_or_throw().desc()
                 , token
                 )

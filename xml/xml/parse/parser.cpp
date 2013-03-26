@@ -1249,7 +1249,6 @@ namespace xml
             , state.id_mapper()
             , boost::none
             , state.position (node)
-            , state.file_in_progress()
             ).make_reference_id()
           );
 

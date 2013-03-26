@@ -44,8 +44,6 @@ namespace xml
         net_type ( ID_CONS_PARAM(net)
                  , PARENT_CONS_PARAM(function)
                  , const util::position_type&
-                 , const boost::filesystem::path& path
-                       = boost::filesystem::path()
                  );
 
         net_type ( ID_CONS_PARAM(net)
@@ -59,13 +57,10 @@ namespace xml
                  , const structs_type& structs
                  , const bool& contains_a_module_call
                  , const we::type::property::type& properties
-                 , const boost::filesystem::path& path
                  );
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
-
-        const boost::filesystem::path& path() const;
 
         // ***************************************************************** //
 
@@ -171,8 +166,6 @@ namespace xml
 
       private:
         we::type::property::type _properties;
-
-        boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
