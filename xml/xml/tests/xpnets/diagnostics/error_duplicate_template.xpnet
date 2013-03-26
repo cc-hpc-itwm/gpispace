@@ -1,0 +1,10 @@
+<defun name="f">
+  <net>
+    <template name="t">
+      <defun/>
+    </template>
+    <template name="t">
+      <defun/>
+    </template>
+  </net>
+</defun>

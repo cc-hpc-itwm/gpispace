@@ -156,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
                                                                         \
   require_exception_from_parse<xml::parse::error::duplicate_ ## _type>  \
   ( "error::duplicate_" #_type                                          \
-  , boost::format ( "ERROR: duplicate " #_type " " #_msg" at %1%"       \
+  , boost::format ( "ERROR: duplicate " #_type " " #_msg " at %1%"      \
                     ", earlier definition is at %2%"                    \
                   )                                                     \
   % xml::parse::util::position_type (NULL, NULL, xpnet, _ll, _cl)       \
@@ -177,4 +177,10 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_place, fixture)
 BOOST_FIXTURE_TEST_CASE (error_duplicate_transition, fixture)
 {
   GENERIC_DUPLICATE (transition,t,3,5,4,5);
+}
+
+BOOST_FIXTURE_TEST_CASE (error_duplicate_template, fixture)
+{
+
+  GENERIC_DUPLICATE (template,Just t,3,5,6,5);
 }
