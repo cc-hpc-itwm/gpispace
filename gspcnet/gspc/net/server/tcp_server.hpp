@@ -15,9 +15,6 @@ namespace gspc
     namespace server
     {
       typedef gspc::net::server::base_server<boost::asio::ip::tcp> tcp_server;
-      boost::system::error_code resolve_address ( std::string const &address
-                                                , tcp_server::endpoint_type &ep
-                                                );
     }
   }
 }

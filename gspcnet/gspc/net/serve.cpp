@@ -7,6 +7,7 @@
 
 #include <gspc/net/server.hpp>
 
+#include <gspc/net/resolver.hpp>
 #include <gspc/net/server/tcp_server.hpp>
 #include <gspc/net/server/unix_server.hpp>
 
@@ -28,7 +29,8 @@ namespace gspc
         fs::remove (full_path);
 
         server::unix_server::endpoint_type ep;
-        ec = server::resolve_address (full_path.string (), ep);
+        ep = resolver<server::unix_server::protocol_type>::resolve
+          (full_path.string (), ec);
 
         if (not ec)
         {
@@ -53,7 +55,9 @@ namespace gspc
       try
       {
         server::tcp_server::endpoint_type ep;
-        ec = server::resolve_address (location, ep);
+        ep = resolver<server::tcp_server::protocol_type>::resolve ( location
+                                                                  , ec
+                                                                  );
 
         if (not ec)
         {

@@ -2,6 +2,7 @@ set (gspcnet_src
   net/util.cpp
   net/error.cpp
   net/limits.cpp
+  net/resolver.cpp
 
   net/frame.cpp
   net/frame_io.cpp
