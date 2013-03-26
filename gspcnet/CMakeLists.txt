@@ -13,6 +13,7 @@ find_package(Threads REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(gspc)
+add_subdirectory(bin)
 
 if (BUILD_TESTING)
   add_subdirectory(tests)
