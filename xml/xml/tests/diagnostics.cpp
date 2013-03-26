@@ -178,3 +178,17 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_place, fixture)
     % xml::parse::util::position_type (NULL, NULL, xpnet, 3, 5)
     );
 }
+
+BOOST_FIXTURE_TEST_CASE (error_duplicate_transition, fixture)
+{
+  set_parse_input ("diagnostics/error_duplicate_transition.xpnet");
+
+  require_exception_from_parse<xml::parse::error::duplicate_transition>
+    ( "error::duplicate_transition"
+    , boost::format ( "ERROR: duplicate transition t at %1%"
+                      ", earlier definition is at %2%"
+                    )
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 4, 5)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 3, 5)
+    );
+}
