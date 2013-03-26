@@ -12,22 +12,19 @@
 
 namespace fs = boost::filesystem;
 
-BOOST_AUTO_TEST_CASE (test_serve_tcp_socket)
+BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
 {
+  static const size_t NUM_ITERATIONS = 1000;
+
   gspc::net::server::queue_manager_t qmgr;
 
-  gspc::net::server_t *server =
-    gspc::net::serve ("tcp://localhost:5000", qmgr);
+  for (size_t i = 0 ; i < NUM_ITERATIONS ; ++i)
+  {
+    gspc::net::server_ptr_t server =
+      gspc::net::serve ("tcp://localhost:5000", qmgr);
+    BOOST_REQUIRE (server);
 
-  BOOST_REQUIRE (server);
-
-  server->start ();
-
-  BOOST_REQUIRE (fs::exists ("test-server"));
-
-  server->stop ();
-
-  BOOST_REQUIRE (not fs::exists ("test-server"));
-
-  delete server;
+    server->start ();
+    server->stop ();
+  }
 }

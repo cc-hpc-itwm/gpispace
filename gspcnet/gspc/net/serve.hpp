@@ -10,13 +10,13 @@ namespace gspc
 {
   namespace net
   {
-    server_t *serve ( const char *url
-                    , server::queue_manager_t &
-                    );
-    server_t *serve ( const char *url
-                    , server::queue_manager_t &
-                    , boost::system::error_code & ec
-                    );
+    server_ptr_t serve ( const char *url
+                       , server::queue_manager_t &
+                       );
+    server_ptr_t serve ( const char *url
+                       , server::queue_manager_t &
+                       , boost::system::error_code & ec
+                       );
   }
 }
 
