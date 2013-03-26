@@ -260,14 +260,14 @@ namespace xml
         ( const id::ref::specialize& early
         , const id::ref::specialize& late
         )
-          : generic_duplicate
+          : generic_duplicate<id::ref::specialize>
             (early, late, boost::format ("specialize %1%") % early.get().name())
       {}
 
       duplicate_place::duplicate_place ( const id::ref::place& early
                                        , const id::ref::place& late
                                        )
-        : generic_duplicate
+        : generic_duplicate<id::ref::place>
           (early, late, boost::format ("place %1%") % early.get().name())
       {}
 
@@ -275,14 +275,15 @@ namespace xml
         ( const id::ref::transition& early
         , const id::ref::transition& late
         )
-          : generic_duplicate
+          : generic_duplicate<id::ref::transition>
             (early, late, boost::format ("transition %1%") % early.get().name())
       {}
 
       duplicate_port::duplicate_port ( const id::ref::port& early
                                      , const id::ref::port& late
                                      )
-        : generic_duplicate ( early
+        : generic_duplicate<id::ref::port>
+                            ( early
                             , late
                             , boost::format ("%1%-port %2%")
                             % we::type::enum_to_string (early.get().direction())
@@ -294,7 +295,7 @@ namespace xml
         ( const id::ref::tmpl& early
         , const id::ref::tmpl& late
         )
-          : generic_duplicate
+          : generic_duplicate<id::ref::tmpl>
             (early, late, boost::format ("template %1%") % early.get().name())
       {}
 
@@ -302,7 +303,8 @@ namespace xml
         ( const id::ref::place_map& early
         , const id::ref::place_map& late
         )
-          : generic_duplicate ( early
+          : generic_duplicate<id::ref::place_map>
+                              ( early
                               , late
                               , boost::format ("place-map %1% <-> %2%")
                               % early.get().place_virtual()
@@ -314,7 +316,7 @@ namespace xml
          ( const id::ref::module& early
          , const id::ref::module& late
          )
-          : generic_duplicate
+          : generic_duplicate<id::ref::module>
             ( early
             , late
             , boost::format ( "external function %1% in module %2%"
@@ -329,7 +331,7 @@ namespace xml
         ( const id::ref::connect& early
         , const id::ref::connect& late
         )
-          : generic_duplicate
+          : generic_duplicate<id::ref::connect>
             ( early
             , late
             , boost::format ( "connect-%1% %2% <-> %3%"
