@@ -151,36 +151,39 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
     );
 }
 
-#define GENERIC_DUPLICATE(_type,_msg,_le,_ce,_ll,_cl)                   \
+#define GENERIC_DUPLICATE(_type,_msg,_le,_ce,_ll,_cl,_pre)              \
   set_parse_input ("diagnostics/error_duplicate_" #_type ".xpnet");     \
                                                                         \
   require_exception_from_parse<xml::parse::error::duplicate_ ## _type>  \
   ( "error::duplicate_" #_type                                          \
-  , boost::format ( "ERROR: duplicate " #_type " " #_msg " at %1%"      \
+  , boost::format ( "ERROR: duplicate " _pre #_type " " #_msg " at %1%" \
                     ", earlier definition is at %2%"                    \
                   )                                                     \
   % xml::parse::util::position_type (NULL, NULL, xpnet, _ll, _cl)       \
   % xml::parse::util::position_type (NULL, NULL, xpnet, _le, _ce)       \
   )
 
-
 BOOST_FIXTURE_TEST_CASE (error_duplicate_specialize, fixture)
 {
-  GENERIC_DUPLICATE (specialize,s,6,5,7,5);
+  GENERIC_DUPLICATE (specialize,s,6,5,7,5,"");
 }
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_place, fixture)
 {
-  GENERIC_DUPLICATE (place,p,3,5,4,5);
+  GENERIC_DUPLICATE (place,p,3,5,4,5,"");
 }
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_transition, fixture)
 {
-  GENERIC_DUPLICATE (transition,t,3,5,4,5);
+  GENERIC_DUPLICATE (transition,t,3,5,4,5,"");
 }
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_template, fixture)
 {
+  GENERIC_DUPLICATE (template,Just t,3,5,6,5,"");
+}
 
-  GENERIC_DUPLICATE (template,Just t,3,5,6,5);
+BOOST_FIXTURE_TEST_CASE (error_duplicate_port, fixture)
+{
+  GENERIC_DUPLICATE (port,p,2,3,3,3,"in-");
 }
