@@ -528,30 +528,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class duplicate_place : public generic
-      {
-      private:
-        std::string nice ( const std::string & place
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate place " << place << " in " << path;
-
-          return s.str();
-        }
-
-      public:
-        duplicate_place ( const std::string & place
-                        , const boost::filesystem::path & path
-                        )
-          : generic (nice (place, path))
-        {}
-      };
-
-      // ******************************************************************* //
-
       class parse_link_prefix : public generic
       {
       public:
@@ -640,6 +616,19 @@ namespace xml
       private:
         const id::ref::specialize _early;
         const id::ref::specialize _late;
+      };
+
+      class duplicate_place : public generic
+      {
+      public:
+        duplicate_place ( const id::ref::place& early
+                        , const id::ref::place& late
+                        );
+        ~duplicate_place() throw() {}
+
+      private:
+        const id::ref::place _early;
+        const id::ref::place _late;
       };
 
       // ******************************************************************* //

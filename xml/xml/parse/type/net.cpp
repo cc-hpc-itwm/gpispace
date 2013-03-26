@@ -174,7 +174,7 @@ namespace xml
 
         if (id_old != id)
         {
-          throw error::duplicate_place (id.get().name(), path());
+          throw error::duplicate_place (id_old, id);
         }
 
         id.get_ref().parent (_id);
