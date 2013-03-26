@@ -151,44 +151,30 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
     );
 }
 
+#define GENERIC_DUPLICATE(_type,_msg,_le,_ce,_ll,_cl)                   \
+  set_parse_input ("diagnostics/error_duplicate_" #_type ".xpnet");     \
+                                                                        \
+  require_exception_from_parse<xml::parse::error::duplicate_ ## _type>  \
+  ( "error::duplicate_" #_type                                          \
+  , boost::format ( "ERROR: duplicate " #_type " " #_msg" at %1%"       \
+                    ", earlier definition is at %2%"                    \
+                  )                                                     \
+  % xml::parse::util::position_type (NULL, NULL, xpnet, _ll, _cl)       \
+  % xml::parse::util::position_type (NULL, NULL, xpnet, _le, _ce)       \
+  )
+
+
 BOOST_FIXTURE_TEST_CASE (error_duplicate_specialize, fixture)
 {
-  set_parse_input ("diagnostics/error_duplicate_specialize.xpnet");
-
-  require_exception_from_parse<xml::parse::error::duplicate_specialize>
-    ( "error::duplicate_specialize"
-    , boost::format ( "ERROR: duplicate specialize s at %1%"
-                      ", earlier definition is at %2%"
-                    )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 7, 5)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 6, 5)
-    );
+  GENERIC_DUPLICATE (specialize,s,6,5,7,5);
 }
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_place, fixture)
 {
-  set_parse_input ("diagnostics/error_duplicate_place.xpnet");
-
-  require_exception_from_parse<xml::parse::error::duplicate_place>
-    ( "error::duplicate_place"
-    , boost::format ( "ERROR: duplicate place p at %1%"
-                      ", earlier definition is at %2%"
-                    )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 4, 5)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 3, 5)
-    );
+  GENERIC_DUPLICATE (place,p,3,5,4,5);
 }
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_transition, fixture)
 {
-  set_parse_input ("diagnostics/error_duplicate_transition.xpnet");
-
-  require_exception_from_parse<xml::parse::error::duplicate_transition>
-    ( "error::duplicate_transition"
-    , boost::format ( "ERROR: duplicate transition t at %1%"
-                      ", earlier definition is at %2%"
-                    )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 4, 5)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 3, 5)
-    );
+  GENERIC_DUPLICATE (transition,t,3,5,4,5);
 }
