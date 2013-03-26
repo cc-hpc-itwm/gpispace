@@ -103,6 +103,9 @@ namespace gspc
         ec = errc::make_error_code (errc::wrong_protocol_type);
       }
 
+      if (server)
+        server->start ();
+
       return server;
     }
   }

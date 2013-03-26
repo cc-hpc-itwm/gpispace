@@ -23,8 +23,5 @@ BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
     gspc::net::server_ptr_t server =
       gspc::net::serve ("tcp://localhost:5000", qmgr);
     BOOST_REQUIRE (server);
-
-    server->start ();
-    server->stop ();
   }
 }
