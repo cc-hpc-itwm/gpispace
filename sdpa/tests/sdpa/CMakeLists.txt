@@ -245,7 +245,7 @@ foreach (tc_src ${tc_srcs})
                         fhg-revision
                         ${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
-                        we
+                        pnet
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
                         ${CMAKE_DL_LIBS}
@@ -260,4 +260,3 @@ foreach (tc_src ${tc_srcs})
   add_dependencies(${tc_name} pnet-inotify-test-wf)
   add_dependencies(${tc_name} pnet-transform_file-test-wf)
 endforeach(tc_src ${tc_srcs})
-

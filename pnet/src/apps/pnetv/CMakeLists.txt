@@ -9,7 +9,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(pnetv fhg-revision)
 target_link_libraries(pnetv pnetv-jpna)
 target_link_libraries(pnetv pnetv-jpn)
-target_link_libraries(pnetv we)
+target_link_libraries(pnetv pnet)
 target_link_libraries(pnetv ${Boost_LIBRARIES})
 
 install (TARGETS pnetv

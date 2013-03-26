@@ -97,37 +97,15 @@ install (FILES ${wfhd_hdrs}
   COMPONENT runtime-headers
 )
 
-add_library (we ${we_srcs})
-add_library (we-shared SHARED ${we_srcs})
-set_target_properties(we-shared PROPERTIES OUTPUT_NAME we)
-
-add_library (we-dev ${we_dev_srcs})
-add_library (we-dev-shared SHARED ${we_dev_srcs})
-set_target_properties(we-dev-shared PROPERTIES OUTPUT_NAME we-dev)
-
-target_link_libraries (we
-  fhg-util
-)
-
-install (TARGETS we-dev
-  ARCHIVE DESTINATION lib
-  COMPONENT runtime
-)
-
-install (TARGETS we-dev-shared
-  LIBRARY DESTINATION lib
-  COMPONENT runtime
-)
-
 add_executable (generate_parser_action_table we/expr/parse/table.cpp)
-target_link_libraries (generate_parser_action_table we)
+target_link_libraries (generate_parser_action_table pnet)
 
 add_subdirectory (we/container/test)
 add_subdirectory (we/util/test)
 
 if (BUILD_TESTING)
   add_executable (test_we_type_bytearray we/type/test/test_bytearray.cpp)
-  target_link_libraries(test_we_type_bytearray we)
+  target_link_libraries(test_we_type_bytearray pnet)
   target_link_libraries(test_we_type_bytearray ${Boost_UNIT_TEST_LIBRARIES})
   target_link_libraries(test_we_type_bytearray ${Boost_LIBRARIES})
   add_test ("test_we_type_bytearray" test_we_type_bytearray)
@@ -232,7 +210,7 @@ install (FILES
 
 add_subdirectory (xml/parse)
 
-add_library (xml
+set (xml_sources
   xml/parse/error.cpp
   xml/parse/id/generic.cpp
   xml/parse/id/mapper.cpp
@@ -272,11 +250,20 @@ add_library (xml
   xml/parse/warning.cpp
 )
 
-target_link_libraries (xml
-  we
+add_library (pnet ${we_srcs} ${xml_sources})
+target_link_libraries (pnet
   fhg-util
-  ${Boost_LIBRARIES}
 )
+add_library (pnet-shared SHARED ${we_srcs} ${xml_sources})
+set_target_properties(pnet-shared PROPERTIES OUTPUT_NAME pnet)
+
+add_library (we-dev SHARED ${we_dev_srcs})
+
+install (TARGETS we-dev
+  LIBRARY DESTINATION lib
+  COMPONENT runtime
+)
+
 
 get_target_property(GEN_INCLUDE_EXE gen-includes LOCATION)
 

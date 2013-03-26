@@ -38,7 +38,7 @@ set(tc_srcs
 add_library(answer SHARED answer.cpp)
 add_library(question SHARED question.cpp)
 target_link_libraries(question answer)
-target_link_libraries(answer we)
+target_link_libraries(answer pnet)
 
 function(construct_tests )
   foreach (tc_src ${ARGN})
@@ -47,7 +47,7 @@ function(construct_tests )
     message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
     add_executable(${tc_name} ${tc_src})
-    target_link_libraries(${tc_name} we)
+    target_link_libraries(${tc_name} pnet)
     target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
     target_link_libraries(${tc_name} ${UTIL_LIBRARIES})
     target_link_libraries(${tc_name} ${Boost_UNIT_TEST_LIBRARIES})
@@ -63,7 +63,7 @@ list(SORT tc_srcs)
 construct_tests(${tc_srcs})
 
 fhg_add_test (evaluate_net.cpp
-  LINK_LIBRARIES we ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
+  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
   DESCRIPTION "evaluate various nets and compare the results with given reference nets"
   ARGS ${CMAKE_CURRENT_SOURCE_DIR}/pnets
 )
@@ -82,7 +82,7 @@ set(tc_src
    )
 string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_we_\\2" tc_name ${tc_src})
 add_executable(${tc_name} ${tc_src} ${cross_hpp})
-target_link_libraries(${tc_name} we ${Boost_LIBRARIES})
+target_link_libraries(${tc_name} pnet ${Boost_LIBRARIES})
 get_target_property(LOC ${tc_name} LOCATION_)
 add_test(${tc_name} ${LOC})
 

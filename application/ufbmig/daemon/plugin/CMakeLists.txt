@@ -34,7 +34,7 @@ set(HEADER_DESTINATION_DIR "include/fhg/plugins")
 
 fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   EXPORTS UFBMIG_BACK
-  LINK_LIBRARIES we
+  LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY_SHARED}
                  ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}

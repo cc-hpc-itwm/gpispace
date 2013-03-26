@@ -15,7 +15,7 @@ foreach (target ${simple_targets})
   add_executable (${target} "${target}.cpp")
 
   target_link_libraries(${target} fhg-revision)
-  target_link_libraries(${target} we)
+  target_link_libraries(${target} pnet)
   target_link_libraries(${target} ${UTIL_LIBRARIES})
   target_link_libraries(${target} ${FhgLog_LIBRARY})
   target_link_libraries(${target} ${Boost_LIBRARIES})
@@ -32,7 +32,7 @@ foreach (target ${simple_targets})
 
     add_executable(${target}.static "${target}.cpp")
 
-    target_link_libraries(${target}.static we)
+    target_link_libraries(${target}.static pnet)
     target_link_libraries(${target}.static ${FhgLog_LIBRARY})
     target_link_libraries(${target}.static ${Boost_LIBRARIES})
     target_link_libraries(${target}.static pthread)
