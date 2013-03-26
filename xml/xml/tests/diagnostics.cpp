@@ -150,3 +150,17 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
     % xml::parse::util::position_type (NULL, NULL, xpnet, 13, 7)
     );
 }
+
+BOOST_FIXTURE_TEST_CASE (error_duplicate_specialize, fixture)
+{
+  set_parse_input ("diagnostics/error_duplicate_specialize.xpnet");
+
+  require_exception_from_parse<xml::parse::error::duplicate_specialize>
+    ( "error::duplicate_specialize"
+    , boost::format ( "ERROR: duplicate specialize s at %1%"
+                      ", earlier definition is at %2%"
+                    )
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 7, 5)
+    % xml::parse::util::position_type (NULL, NULL, xpnet, 6, 5)
+    );
+}
