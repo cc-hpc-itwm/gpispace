@@ -40,7 +40,6 @@ namespace xml
                        , const util::position_type&
                        , const std::string& name
                        , const signature::desc_t& sig
-                       , const boost::filesystem::path& path
                        );
 
         const signature::desc_t& signature() const;
@@ -50,8 +49,6 @@ namespace xml
         const std::string& name() const;
         const std::string& name (const std::string& name);
 
-        const boost::filesystem::path& path() const;
-
         id::ref::structure clone
           ( const boost::optional<parent_id_type>& parent = boost::none
           , const boost::optional<id::mapper*>& mapper = boost::none
@@ -60,7 +57,6 @@ namespace xml
       private:
         std::string _name;
         signature::desc_t _sig;
-        boost::filesystem::path _path;
       };
 
       bool operator == (const structure_type & a, const structure_type & b);
@@ -117,13 +113,11 @@ namespace xml
       class resolve : public boost::static_visitor<bool>
       {
       private:
-        const boost::filesystem::path path;
+        const type::structure_type _struct;
         const set_type & sig_set;
 
       public:
-        resolve ( const set_type & _sig_set
-                , const boost::filesystem::path & _path
-                );
+        resolve (const set_type&, const type::structure_type&);
 
         bool operator () (literal::type_name_t & t) const;
         bool operator () (signature::structured_t & map) const;

@@ -334,6 +334,45 @@ namespace xml
           , _port (port)
           , _place (place)
         {}
+
+      cannot_resolve::cannot_resolve ( const std::string& field
+                                     , const std::string& type
+                                     , const type::structure_type& strct
+                                     )
+        : generic ( boost::format ("cannot resolve %1%::%2%, defined at %3%")
+                  % field
+                  % type
+                  % strct.position_of_definition()
+                  )
+        , _field (field)
+        , _type (type)
+      {}
+
+      struct_redefined::struct_redefined ( const type::structure_type& early
+                                         , const type::structure_type& late
+                                         )
+        : generic ( boost::format ("struct %1% at %2% redefined at %3%")
+                  % early.name()
+                  % early.position_of_definition()
+                  % late.position_of_definition()
+                  )
+      {}
+
+      forbidden_shadowing::forbidden_shadowing
+        ( const type::structure_type& early
+        , const type::structure_type& late
+        , const std::string& port_name
+        )
+          : generic ( boost::format ( "struct %1% at %2% shadowed at %3%."
+                                      " This is forbidden because it is"
+                                      " the type of the port %4%."
+                                    )
+                    % early.name()
+                    % early.position_of_definition()
+                    % late.position_of_definition()
+                    % port_name
+                    )
+      {}
     }
   }
 }

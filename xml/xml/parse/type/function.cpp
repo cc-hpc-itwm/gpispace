@@ -2213,12 +2213,13 @@ namespace xml
 
             util::check_no_change_fstream stream (state, file);
 
-            signature::cpp::cpp_header ( stream
-                                       , structure.signature()
-                                       , structure.name()
-                                       , structure.path()
-                                       , ::fhg::util::cpp::path::type()
-                                       );
+            signature::cpp::cpp_header
+              ( stream
+              , structure.signature()
+              , structure.name()
+              , structure.position_of_definition().path()
+              , ::fhg::util::cpp::path::type()
+              );
 
             stream.commit();
           }

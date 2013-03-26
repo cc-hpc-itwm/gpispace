@@ -341,51 +341,25 @@ namespace xml
 
       class cannot_resolve : public generic
       {
-      private:
-        std::string nice ( const std::string & field
-                         , const std::string & type
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "cannot resolve " << field << " :: " << type
-            << ", defined in " << path;
-
-          return s.str();
-        }
-
       public:
-        cannot_resolve ( const std::string & field
-                       , const std::string & type
-                       , const boost::filesystem::path & path
-                       )
-          : generic (nice (field, type, path))
-        {}
+        cannot_resolve ( const std::string& field
+                       , const std::string& type
+                       , const type::structure_type&
+                       );
+        ~cannot_resolve() throw() {}
+
+      private:
+        const std::string _field;
+        const std::string _type;
       };
 
-      // ******************************************************************* //
-
-      template<typename T>
       class struct_redefined : public generic
       {
-      private:
-        std::string nice (const T & early, const T & late) const
-        {
-          std::ostringstream s;
-
-          s << "redefinition of struct with name " << late.name()
-            << " in " << late.path()
-            << ", first definition was in " << early.path()
-            ;
-
-          return s.str();
-        }
-
       public:
-        struct_redefined (const T & early, const T & late)
-          : generic (nice (early, late))
-        {}
+        struct_redefined ( const type::structure_type& early
+                         , const type::structure_type& late
+                         );
+        ~struct_redefined() throw() {}
       };
 
       class struct_field_redefined : public generic
@@ -542,34 +516,14 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename T>
       class forbidden_shadowing : public generic
       {
-      private:
-        std::string nice ( const T & early
-                         , const T & late
-                         , const std::string & port_name
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "struct with name " << late.name()
-            << " in " << late.path()
-            << " shadows definition from " << early.path()
-            << " but this is forbidden, since it is a type used for port "
-            << port_name
-            ;
-
-          return s.str();
-        }
-
       public:
-        forbidden_shadowing ( const T & early
-                            , const T & late
-                            , const std::string & port_name
-                            )
-          : generic (nice (early, late, port_name))
-        {}
+        forbidden_shadowing ( const type::structure_type& early
+                            , const type::structure_type& late
+                            , const std::string& port_name
+                            );
+        ~forbidden_shadowing() throw() {}
       };
 
       // ******************************************************************* //

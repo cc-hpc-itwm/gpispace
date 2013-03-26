@@ -1619,7 +1619,6 @@ namespace xml
                                 , state.file_in_progress()
                                 )
           , signature::structured_t()
-          , state.file_in_progress()
           );
 
         gen_struct_type (node, state, s.signature());

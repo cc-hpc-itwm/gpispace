@@ -9,6 +9,7 @@
 #include <fhg/util/xml.hpp>
 
 #include <boost/unordered_map.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace xml
 {
@@ -21,14 +22,12 @@ namespace xml
                                      , const util::position_type& pod
                                      , const std::string& name
                                      , const signature::desc_t& sig
-                                     , const boost::filesystem::path& path
                                      )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , _sig (sig)
-        , _path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -55,11 +54,6 @@ namespace xml
         return _name = name;
       }
 
-      const boost::filesystem::path& structure_type::path() const
-      {
-        return _path;
-      }
-
       id::ref::structure structure_type::clone
         ( const boost::optional<parent_id_type>& parent
         , const boost::optional<id::mapper*>& mapper
@@ -74,7 +68,6 @@ namespace xml
           , _position_of_definition
           , _name
           , _sig
-          , _path
           ).make_reference_id();
       }
 
@@ -116,11 +109,10 @@ namespace xml
 
             if (old != set.end())
               {
-                throw error::struct_redefined<type::structure_type>
-                  (old->second, *pos);
+                throw error::struct_redefined (old->second, *pos);
               }
 
-            set.insert (std::make_pair (pos->name(),  *pos));
+            set.insert (std::make_pair (pos->name(), *pos));
           }
 
         return set;
@@ -139,18 +131,20 @@ namespace xml
             ; ++pos
             )
           {
-            const type::structure_type & strct (pos->second);
+            const type::structure_type& strct (pos->second);
             const set_type::const_iterator old (set.find (strct.name()));
 
             if (old != set.end() && strct != old->second)
               {
-                const forbidden_type::const_iterator pos
+                const forbidden_type::const_iterator forbidden_it
                   (forbidden.find (strct.name()));
 
-                if (pos != forbidden.end())
+                if (forbidden_it != forbidden.end())
                   {
-                    throw error::forbidden_shadowing<type::structure_type>
-                      (old->second, strct, pos->second);
+                    throw error::forbidden_shadowing ( old->second
+                                                     , strct
+                                                     , forbidden_it->second
+                                                     );
                   }
 
                 state.warn
@@ -195,9 +189,9 @@ namespace xml
         public:
           resolve_with_fun_visitor
             ( const resolving_function_type& resolving_function
-            , const boost::filesystem::path& path
+            , const type::structure_type& strct
             )
-              : _path (path)
+              : _struct (strct)
               , _resolving_function (resolving_function)
           {}
 
@@ -222,7 +216,7 @@ namespace xml
 
                 if (!res)
                 {
-                  throw error::cannot_resolve (sub.first, child_name, _path);
+                  throw error::cannot_resolve (sub.first, child_name, _struct);
                 }
 
                 sub.second = res->desc();
@@ -235,7 +229,7 @@ namespace xml
           }
 
         private:
-          const boost::filesystem::path& _path;
+          const type::structure_type _struct;
           const resolving_function_type& _resolving_function;
         };
       }
@@ -248,7 +242,7 @@ namespace xml
         signature::desc_t sig (unresolved_struct.signature());
         boost::apply_visitor
           ( resolve_with_fun_visitor ( resolving_function
-                                     , unresolved_struct.path()
+                                     , unresolved_struct
                                      )
           , sig
           );
@@ -263,9 +257,9 @@ namespace xml
       }
 
       resolve::resolve ( const set_type & _sig_set
-                       , const boost::filesystem::path & _path
+                       , const type::structure_type& strct
                        )
-        : path (_path)
+        : _struct (strct)
         , sig_set (_sig_set)
       {}
 
@@ -295,8 +289,7 @@ namespace xml
 
             if (res == sig_set.end())
             {
-              throw error::cannot_resolve
-                (pos->first, child_name, path);
+              throw error::cannot_resolve (pos->first, child_name, _struct);
             }
 
             pos->second = res->second.signature();
