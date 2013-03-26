@@ -37,6 +37,11 @@ namespace gspc
 
       void tcp_connection::start ()
       {
+        std::cerr << "new connection: "
+                  << m_socket.remote_endpoint ()
+                  << std::endl
+          ;
+
         m_socket.async_read_some
           ( boost::asio::buffer (m_buffer)
           , m_strand.wrap (boost::bind
@@ -74,7 +79,10 @@ namespace gspc
 
             if (result.state == gspc::net::parse::PARSE_FAILED)
             {
-              // handle error and close the connection
+              std::cerr << "parsing failed: "
+                        << gspc::net::error_string (result.reason)
+                        << std::endl
+                ;
               return;
             }
 
@@ -86,6 +94,7 @@ namespace gspc
               m_parser.reset ();
 
               std::cerr << "got frame: " << m_frame;
+
               m_frame = frame ();
             }
           }
@@ -99,6 +108,10 @@ namespace gspc
                             , boost::asio::placeholders::bytes_transferred
                             ))
             );
+        }
+        else
+        {
+          std::cerr << "lost connection" << std::endl;
         }
       }
 
