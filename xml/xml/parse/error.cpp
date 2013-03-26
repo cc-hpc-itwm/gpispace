@@ -19,19 +19,20 @@ namespace xml
   {
     namespace error
     {
-      duplicate_port::duplicate_port ( const id::ref::port& port
-                                     , const id::ref::port& old_port
-                                     , const boost::filesystem::path & path
+      duplicate_port::duplicate_port ( const id::ref::port& early
+                                     , const id::ref::port& late
                                      )
-        : generic ( boost::format ("duplicate %1%-port %2% in %3%")
-                  % we::type::enum_to_string (port.get().direction())
-                  % port.get().name()
-                  % path
+        : generic ( boost::format ( "duplicate %1%-port %2% at %3%"
+                                    ", earlier definition is at %4%"
+                                  )
+                  % we::type::enum_to_string (early.get().direction())
+                  % early.get().name()
+                  % late.get().position_of_definition()
+                  % early.get().position_of_definition()
                   )
-        , _port (port)
-        , _old_port (old_port)
-        , _path (path)
-      { }
+        , _early (early)
+        , _late (late)
+      {}
 
       port_type_mismatch::port_type_mismatch
         ( const id::ref::port& port

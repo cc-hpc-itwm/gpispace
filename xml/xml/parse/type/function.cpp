@@ -325,7 +325,7 @@ namespace xml
 
         if (id_old != id)
         {
-          throw error::duplicate_port (id, id_old, position_of_definition().path());
+          throw error::duplicate_port (id_old, id);
         }
 
         id.get_ref().parent (_id);

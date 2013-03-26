@@ -539,16 +539,14 @@ namespace xml
       class duplicate_port : public generic
       {
       public:
-        duplicate_port ( const id::ref::port& port
-                       , const id::ref::port& old_port
-                       , const boost::filesystem::path & path
+        duplicate_port ( const id::ref::port& early
+                       , const id::ref::port& late
                        );
-        virtual ~duplicate_port() throw() { }
+        virtual ~duplicate_port() throw() {}
 
       private:
-        const id::ref::port _port;
-        const id::ref::port _old_port;
-        const boost::filesystem::path _path;
+        const id::ref::port _early;
+        const id::ref::port _late;
       };
 
       // ******************************************************************* //
