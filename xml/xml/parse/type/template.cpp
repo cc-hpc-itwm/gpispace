@@ -31,7 +31,6 @@ namespace xml
         , const boost::optional<std::string>& name
         , const names_type& tmpl_parameter
         , const id::ref::function& function
-        , const boost::filesystem::path& path
         )
           : with_position_of_definition (pod)
           , ID_INITIALIZE()
@@ -39,7 +38,6 @@ namespace xml
           , _name (name)
           , _tmpl_parameter (tmpl_parameter)
           , _function (reparent (function, _id))
-          , _path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -72,11 +70,6 @@ namespace xml
       const id::ref::function& tmpl_type::function() const
       {
         return _function;
-      }
-
-      const boost::filesystem::path& tmpl_type::path() const
-      {
-        return _path;
       }
 
       boost::optional<const id::ref::function&>
@@ -123,7 +116,6 @@ namespace xml
           , _name
           , _tmpl_parameter
           , _function.get().clone (function_type::make_parent (new_id), mapper)
-          , _path
           ).make_reference_id();
       }
 

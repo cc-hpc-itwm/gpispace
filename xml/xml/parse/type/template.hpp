@@ -37,7 +37,6 @@ namespace xml
                   , const boost::optional<std::string>& name
                   , const names_type& tmpl_parameter
                   , const id::ref::function& function
-                  , const boost::filesystem::path& path
                   );
 
         const boost::optional<std::string>& name() const;
@@ -51,8 +50,6 @@ namespace xml
         const names_type& tmpl_parameter () const;
 
         const id::ref::function& function() const;
-
-        const boost::filesystem::path& path() const;
 
         boost::optional<const id::ref::function&>
         get_function (const std::string&) const;
@@ -70,7 +67,6 @@ namespace xml
         boost::optional<std::string> _name;
         names_type _tmpl_parameter;
         id::ref::function _function;
-        boost::filesystem::path _path;
       };
 
       namespace dump

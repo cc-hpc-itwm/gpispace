@@ -215,8 +215,8 @@ namespace xml
                                       "first definition was in %3%"
                                     )
                     % tmpl.get().name()
-                    % tmpl.get().path()
-                    % old_template.get().path()
+                    % tmpl.get().position_of_definition()
+                    % old_template.get().position_of_definition()
                     )
           , _template (tmpl)
           , _old_template (old_template)

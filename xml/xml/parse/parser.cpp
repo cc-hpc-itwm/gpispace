@@ -1033,7 +1033,6 @@ namespace xml
           , name
           , template_parameter
           , *fun
-          , state.file_in_progress()
           ).make_reference_id();
       }
 
