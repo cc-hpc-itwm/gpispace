@@ -624,6 +624,7 @@ namespace xml
       DUPLICATE_WITH_ID (template,tmpl);
 
 #undef DUPLICATE
+#undef DUPLICATE_WITH_ID
 
       // ******************************************************************* //
 

@@ -187,3 +187,5 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_port, fixture)
 {
   GENERIC_DUPLICATE (port,p,2,3,3,3,"in-");
 }
+
+#undef GENERIC_DUPLICATE
