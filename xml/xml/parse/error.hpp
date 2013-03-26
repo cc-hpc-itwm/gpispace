@@ -606,37 +606,21 @@ namespace xml
         const Id _late;
       };
 
-      class duplicate_specialize : public generic_duplicate<id::ref::specialize>
-      {
-      public:
-        duplicate_specialize ( const id::ref::specialize& early
-                             , const id::ref::specialize& late
-                             );
-      };
+#define DUPLICATE(_type)                                                \
+      class duplicate_ ## _type : public generic_duplicate<id::ref::_type> \
+      {                                                                 \
+      public:                                                           \
+        duplicate_ ## _type ( const id::ref::_type& early               \
+                            , const id::ref::_type& late                \
+                            );                                          \
+      }
 
-      class duplicate_place : public generic_duplicate<id::ref::place>
-      {
-      public:
-        duplicate_place ( const id::ref::place& early
-                        , const id::ref::place& late
-                        );
-      };
+      DUPLICATE (specialize);
+      DUPLICATE (place);
+      DUPLICATE (transition);
+      DUPLICATE (port);
 
-      class duplicate_transition : public generic_duplicate<id::ref::transition>
-      {
-      public:
-        duplicate_transition ( const id::ref::transition& early
-                             , const id::ref::transition& late
-                             );
-      };
-
-      class duplicate_port : public generic_duplicate<id::ref::port>
-      {
-      public:
-        duplicate_port ( const id::ref::port& early
-                       , const id::ref::port& late
-                       );
-      };
+#undef DUPLICATE
 
       // ******************************************************************* //
 
