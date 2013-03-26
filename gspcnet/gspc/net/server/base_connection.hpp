@@ -50,7 +50,7 @@ namespace gspc
         boost::array<char, 8192> m_buffer;
 
         parse::parser m_parser;
-        frame        m_frame;
+        frame         m_frame;
 
         queue_manager_t &  m_qmgr;
       };
