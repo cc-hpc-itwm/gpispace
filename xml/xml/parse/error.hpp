@@ -627,17 +627,12 @@ namespace xml
                              );
       };
 
-      class duplicate_place : public generic
+      class duplicate_place : public generic_duplicate<id::ref::place>
       {
       public:
         duplicate_place ( const id::ref::place& early
                         , const id::ref::place& late
                         );
-        ~duplicate_place() throw() {}
-
-      private:
-        const id::ref::place _early;
-        const id::ref::place _late;
       };
 
       // ******************************************************************* //

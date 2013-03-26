@@ -383,19 +383,11 @@ namespace xml
             (early, late, boost::format ("specialize %1%") % early.get().name())
       {}
 
-      duplicate_place::duplicate_place
-      ( const id::ref::place& early
-      , const id::ref::place& late
-      )
-        : generic ( boost::format ( "duplicate place %1% at %2%"
-                                    ", first definition was at %3%"
-                                  )
-                  % early.get().name()
-                  % late.get().position_of_definition()
-                  % early.get().position_of_definition()
-                  )
-        , _early (early)
-        , _late (late)
+      duplicate_place::duplicate_place ( const id::ref::place& early
+                                       , const id::ref::place& late
+                                       )
+        : generic_duplicate
+          (early, late, boost::format ("place %1%") % early.get().name())
       {}
 
       place_type_unknown::place_type_unknown (const id::ref::place& place)
