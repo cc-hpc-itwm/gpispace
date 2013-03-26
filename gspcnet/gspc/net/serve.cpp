@@ -62,7 +62,7 @@ namespace gspc
       return server_ptr_t ();
     }
 
-    server_ptr_t serve ( const char *url
+    server_ptr_t serve ( std::string const &url
                        , server::queue_manager_t &qmgr
                        )
     {
@@ -77,7 +77,7 @@ namespace gspc
       return server;
     }
 
-    server_ptr_t serve ( const char *url
+    server_ptr_t serve ( std::string const &url
                        , server::queue_manager_t & qmgr
                        , boost::system::error_code & ec
                        )
