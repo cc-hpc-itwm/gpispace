@@ -4,7 +4,6 @@
 
 #include <boost/system/system_error.hpp>
 
-#include <gspc/net/util.hpp>
 #include <gspc/net/server.hpp>
 
 #include <gspc/net/server/tcp_server.hpp>
@@ -37,26 +36,17 @@ namespace gspc
                                   , boost::system::error_code & ec
                                   )
     {
-      using namespace boost::system;
-
-      std::string host;
-      std::string port;
-
-      if (split_host_port (location, host, port) != std::string::npos)
+      try
       {
-        ec = errc::make_error_code (errc::invalid_argument);
+        return server_ptr_t
+          (new server::tcp_server ( server::resolve_address (location)
+                                  , qmgr
+                                  )
+          );
       }
-      else
+      catch (boost::system::system_error const &se)
       {
-        try
-        {
-          return server_ptr_t
-            (new gspc::net::server::tcp_server (host, port, qmgr));
-        }
-        catch (boost::system::system_error const &se)
-        {
-          ec = se.code ();
-        }
+        ec = se.code ();
       }
 
       return server_ptr_t ();
