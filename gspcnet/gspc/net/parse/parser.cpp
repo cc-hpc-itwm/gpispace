@@ -64,10 +64,14 @@ namespace gspc
             {
               m_frame_state = frame_start_line_feed;
             }
-            else
+            else if (isprint (c))
             {
               m_buffer.push_back (c);
               m_frame_state = command;
+            }
+            else
+            {
+              return PARSE_FAILED;
             }
 
             return PARSE_NEED_MORE_DATA;
