@@ -80,11 +80,6 @@ namespace xml
 
         // ***************************************************************** //
 
-      private:
-        //! \todo Remove this and all other _functions related stuff.
-        //! \note This only exists for specialization, which should be lazy.
-        const id::ref::function& push_function (const id::ref::function&);
-
       public:
         const id::ref::place& push_place (const id::ref::place&);
         const id::ref::specialize& push_specialize (const id::ref::specialize&);

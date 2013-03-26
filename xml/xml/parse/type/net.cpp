@@ -143,21 +143,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      const id::ref::function&
-      net_type::push_function (const id::ref::function& id)
-      {
-        const id::ref::function& id_old (_functions.push (id));
-
-        if (id_old != id)
-          {
-            throw error::duplicate_function (id, id_old);
-          }
-
-        id.get_ref().parent (_id);
-
-        return id;
-      }
-
       const id::ref::place&
       net_type::push_place (const id::ref::place& id)
       {
@@ -475,7 +460,11 @@ namespace xml
 
           specialized_function.get_ref().name (specialize.name());
 
-          push_function (specialized_function);
+          //! \todo remove this, for now it is safe to not check for
+          //! duplicates since we check for duplicate specializes
+          _functions.push (specialized_function);
+
+          specialized_function.get_ref().parent (_id);
         }
 
         _specializes.clear();
