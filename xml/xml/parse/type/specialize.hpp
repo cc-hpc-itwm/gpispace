@@ -38,7 +38,6 @@ namespace xml
                         , const std::string& use
                         , const type_map_type& type_map
                         , const type_get_type& type_get
-                        , const boost::filesystem::path& path
                         );
 
         const std::string& name () const;
@@ -64,7 +63,6 @@ namespace xml
         std::string use;
         type_map_type type_map;
         type_get_type type_get;
-        boost::filesystem::path path;
       };
 
       void split_structs ( const parse::structure_type::set_type & global

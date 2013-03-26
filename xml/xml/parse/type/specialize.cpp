@@ -20,7 +20,6 @@ namespace xml
                                        , const std::string& use
                                        , const type_map_type& type_map
                                        , const type_get_type& type_get
-                                       , const boost::filesystem::path& path
                                        )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -29,7 +28,6 @@ namespace xml
         , use (use)
         , type_map (type_map)
         , type_get (type_get)
-        , path (path)
       {
         _id_mapper->put (_id, *this);
       }
@@ -74,7 +72,6 @@ namespace xml
           , use
           , type_map
           , type_get
-          , path
           ).make_reference_id();
       }
 

@@ -373,6 +373,21 @@ namespace xml
                     % port_name
                     )
       {}
+
+      duplicate_specialize::duplicate_specialize
+      ( const id::ref::specialize& early
+      , const id::ref::specialize& late
+      )
+        : generic ( boost::format ( "duplicate specialize %1% at %2%"
+                                    ", first definition was at %3%"
+                                  )
+                  % early.get().name()
+                  % late.get().position_of_definition()
+                  % early.get().position_of_definition()
+                  )
+        , _early (early)
+        , _late (late)
+      {}
     }
   }
 }

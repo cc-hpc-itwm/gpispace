@@ -660,7 +660,6 @@ namespace xml
           , required ("specialize_type", node, "use", state.file_in_progress())
           , type_map
           , type_get
-          , state.file_in_progress()
           ).make_reference_id();
       }
 

@@ -631,24 +631,15 @@ namespace xml
 
       class duplicate_specialize : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "duplicate specialize " << name << " in " << path;
-
-          return s.str();
-        }
-
       public:
-        duplicate_specialize ( const std::string & name
-                             , const boost::filesystem::path & path
-                             )
-          : generic (nice (name, path))
-        {}
+        duplicate_specialize ( const id::ref::specialize& early
+                             , const id::ref::specialize& late
+                             );
+        ~duplicate_specialize() throw() {}
+
+      private:
+        const id::ref::specialize _early;
+        const id::ref::specialize _late;
       };
 
       // ******************************************************************* //

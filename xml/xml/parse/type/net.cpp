@@ -185,9 +185,7 @@ namespace xml
 
         if (id_old != id)
         {
-          const specialize_type& spec (id.get());
-
-          throw error::duplicate_specialize (spec.name(), spec.path);
+          throw error::duplicate_specialize (id_old, id);
         }
 
         id.get_ref().parent (_id);
