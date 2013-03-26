@@ -9,7 +9,6 @@ namespace gspc
 {
   namespace net
   {
-    using namespace boost::asio::ip;
     using namespace boost::asio::local;
 
     template <>
@@ -22,6 +21,8 @@ namespace gspc
         (boost::system::errc::success);
       return endpoint_type (address);
     }
+
+    using namespace boost::asio::ip;
 
     template <>
     resolver<tcp>::endpoint_type
