@@ -662,6 +662,16 @@ namespace xml
                     )
         {}
       };
+
+      class synthesize_anonymous_function : public generic
+      {
+      public:
+        synthesize_anonymous_function (const id::ref::function&);
+        ~synthesize_anonymous_function() throw() {}
+
+      private:
+        const id::ref::function _function;
+      };
     }
   }
 }

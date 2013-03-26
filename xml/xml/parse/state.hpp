@@ -134,6 +134,7 @@ namespace xml
         ACCESS (Winline_many_output_ports)
         ACCESS (Wvirtual_place_not_tunneled)
         ACCESS (Wduplicate_template_parameter)
+        ACCESS (Wsynthesize_anonymous_function)
 
         ACCESS (no_inline)
         ACCESS (synthesize_virtual_places)
@@ -173,6 +174,7 @@ namespace xml
         WARN (shadow_specialize)
         WARN (duplicate_template_parameter)
         WARN (struct_shadowed)
+        WARN (synthesize_anonymous_function)
 
 #undef WARN
 
@@ -266,6 +268,7 @@ namespace xml
         bool _Winline_many_output_ports;
         bool _Wvirtual_place_not_tunneled;
         bool _Wduplicate_template_parameter;
+        bool _Wsynthesize_anonymous_function;
 
         std::string _dump_xml_file;
         std::string _dump_dependencies;
@@ -320,6 +323,7 @@ namespace xml
         std::string _OWinline_many_output_ports;
         std::string _OWvirtual_place_not_tunneled;
         std::string _OWduplicate_template_parameter;
+        std::string _OWsynthesize_anonymous_function;
 
         std::string _Odump_xml_file;
         std::string _Odump_dependencies;

@@ -102,6 +102,16 @@ namespace xml
                   % late.position_of_definition()
                   )
       {}
+
+      synthesize_anonymous_function::synthesize_anonymous_function
+        (const id::ref::function& function)
+          : generic ( boost::format ( "synthesize anonymous top level function"
+                                      " at %1%"
+                                    )
+                    % function.get().position_of_definition()
+                    )
+          , _function (function)
+      {}
     }
   }
 }

@@ -1698,7 +1698,9 @@ namespace xml
     {
       if (not function.get().name())
       {
-        throw error::synthesize_anonymous_function (function.get().position_of_definition().path());
+        state.warn (warning::synthesize_anonymous_function (function));
+
+        function.get_ref().name (boost::optional<std::string>("anonymous"));
       }
 
       we::type::transition_t trans

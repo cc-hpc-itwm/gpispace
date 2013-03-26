@@ -108,6 +108,7 @@ namespace xml
         , _Winline_many_output_ports (true)
         , _Wvirtual_place_not_tunneled (true)
         , _Wduplicate_template_parameter (true)
+        , _Wsynthesize_anonymous_function (true)
 
         , _dump_xml_file ("")
         , _dump_dependencies ("")
@@ -158,6 +159,7 @@ namespace xml
         , _OWinline_many_output_ports ("Winline-many-output-ports")
         , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
         , _OWduplicate_template_parameter ("Wduplicate-template-parameter")
+        , _OWsynthesize_anonymous_function ("Wsynthesize-anonymous-function")
 
         , _Odump_xml_file ("dump-xml-file,d")
         , _Odump_dependencies ("dump-dependencies,M")
@@ -477,6 +479,7 @@ namespace xml
       ACCESS (Winline_many_output_ports)
       ACCESS (Wvirtual_place_not_tunneled)
       ACCESS (Wduplicate_template_parameter)
+      ACCESS (Wsynthesize_anonymous_function)
 
       ACCESS (no_inline)
       ACCESS (synthesize_virtual_places)
@@ -525,6 +528,7 @@ namespace xml
       WARN (shadow_specialize)
       WARN (duplicate_template_parameter)
       WARN_(struct_shadowed,shadow_struct)
+      WARN (synthesize_anonymous_function)
 
 #undef WARN
 #undef WARN_
@@ -668,6 +672,10 @@ namespace xml
           ( _OWduplicate_template_parameter.c_str()
           , BOOLVAL (Wduplicate_template_parameter)
           , "warn when a template paramater is duplicated"
+          )
+          ( _OWsynthesize_anonymous_function.c_str()
+          , BOOLVAL (Wsynthesize_anonymous_function)
+          , "warn when a anonymous top level function is synthesized"
           )
           ;
 
