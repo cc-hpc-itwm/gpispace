@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <gspc/net/server/user_fwd.hpp>
+#include <gspc/net/user_fwd.hpp>
 
 namespace gspc
 {

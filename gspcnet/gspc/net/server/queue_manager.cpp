@@ -8,7 +8,7 @@
 #include <gspc/net/frame_builder.hpp>
 
 #include <gspc/net/error.hpp>
-#include <gspc/net/server/user.hpp>
+#include <gspc/net/user.hpp>
 #include <gspc/net/server/subscription.hpp>
 
 #include <gspc/net/server/service_demux.hpp>

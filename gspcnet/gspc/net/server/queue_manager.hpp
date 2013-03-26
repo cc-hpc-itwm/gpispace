@@ -9,7 +9,7 @@
 #include <boost/thread/shared_mutex.hpp>
 
 #include <gspc/net/frame_fwd.hpp>
-#include <gspc/net/server/user_fwd.hpp>
+#include <gspc/net/user_fwd.hpp>
 #include <gspc/net/server/subscription_fwd.hpp>
 #include <gspc/net/server/service_demux_fwd.hpp>
 

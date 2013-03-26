@@ -2,7 +2,7 @@
 #define GSPC_NET_TESTS_MOCK_USER_HPP
 
 #include <gspc/net/frame.hpp>
-#include <gspc/net/server/user.hpp>
+#include <gspc/net/user.hpp>
 
 #include <list>
 
@@ -17,7 +17,7 @@ namespace gspc
     {
       namespace mock
       {
-        class user : public gspc::net::server::user_t
+        class user : public gspc::net::user_t
         {
         public:
           typedef std::list<frame> frame_list_t;

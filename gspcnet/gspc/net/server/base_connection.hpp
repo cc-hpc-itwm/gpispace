@@ -8,7 +8,7 @@
 #include <gspc/net/frame.hpp>
 #include <gspc/net/parse/parser.hpp>
 
-#include <gspc/net/server/user.hpp>
+#include <gspc/net/user.hpp>
 #include <gspc/net/server/queue_manager_fwd.hpp>
 
 namespace gspc
@@ -20,7 +20,7 @@ namespace gspc
       template <class Protocol>
       class base_connection
         : public boost::enable_shared_from_this<base_connection<Protocol> >
-        , public gspc::net::server::user_t
+        , public gspc::net::user_t
         , private boost::noncopyable
       {
       public:
