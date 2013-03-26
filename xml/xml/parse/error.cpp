@@ -178,21 +178,6 @@ namespace xml
           , _transition (transition)
       { }
 
-      duplicate_transition::duplicate_transition
-        ( const id::ref::transition& transition
-        , const id::ref::transition& old_transition
-        )
-          : generic ( boost::format ( "duplicate transition %1% in %2%. "
-                                      "first definition was in %3%"
-                                    )
-                    % transition.get().name()
-                    % transition.get().position_of_definition()
-                    % old_transition.get().position_of_definition()
-                    )
-          , _transition (transition)
-          , _old_transition (old_transition)
-      { }
-
       duplicate_function::duplicate_function
         ( const id::ref::function& function
         , const id::ref::function& old_function
@@ -389,6 +374,15 @@ namespace xml
         : generic_duplicate
           (early, late, boost::format ("place %1%") % early.get().name())
       {}
+
+      duplicate_transition::duplicate_transition
+        ( const id::ref::transition& early
+        , const id::ref::transition& late
+        )
+          : generic_duplicate
+            (early, late, boost::format ("transition %1%") % early.get().name())
+      {}
+
 
       place_type_unknown::place_type_unknown (const id::ref::place& place)
         : generic ( boost::format ("unknown type %1% for place %2% at %3%")

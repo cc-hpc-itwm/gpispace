@@ -210,7 +210,7 @@ namespace xml
 
         if (id_old != id)
         {
-          throw error::duplicate_transition (id, id_old);
+          throw error::duplicate_transition (id_old, id);
         }
 
         id.get_ref().parent (_id);

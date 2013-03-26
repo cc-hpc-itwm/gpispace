@@ -635,19 +635,12 @@ namespace xml
                         );
       };
 
-      // ******************************************************************* //
-
-      class duplicate_transition : public generic
+      class duplicate_transition : public generic_duplicate<id::ref::transition>
       {
       public:
-        duplicate_transition ( const id::ref::transition& transition
-                             , const id::ref::transition& old_transition
+        duplicate_transition ( const id::ref::transition& early
+                             , const id::ref::transition& late
                              );
-        ~duplicate_transition() throw() { }
-
-      private:
-        id::ref::transition _transition;
-        id::ref::transition _old_transition;
       };
 
       // ******************************************************************* //
