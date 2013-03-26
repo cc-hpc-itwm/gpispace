@@ -536,25 +536,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      // ******************************************************************* //
-
-      class duplicate_connect : public generic
-      {
-      public:
-        duplicate_connect ( const id::ref::connect& connection
-                          , const id::ref::connect& old_connection
-                          , const id::ref::transition& transition
-                          );
-        virtual ~duplicate_connect() throw() { }
-
-      private:
-        const id::ref::connect _connection;
-        const id::ref::connect _old_connection;
-        const id::ref::transition _transition;
-      };
-
-      // ******************************************************************* //
-
       template<typename Id>
       class generic_duplicate : public generic
       {
@@ -607,6 +588,7 @@ namespace xml
       DUPLICATE_WITH_ID (template,tmpl);
       DUPLICATE (place_map);
       DUPLICATE_WITH_ID (external_function,module);
+      DUPLICATE (connect);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID

@@ -88,72 +88,8 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_read, fixture)
-{
-  set_parse_input ("connect_in_read_same.xpnet");
-
-  require_exception_from_parse<xml::parse::error::duplicate_connect>
-    ( "error::duplicate_connect"
-    , boost::format ( "ERROR: duplicate connect-read P <-> A for transition"
-                      " foo in %1% (existing connection is connect-in)"
-                      " in %2% and %3%"
-                    )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 6, 5)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 14, 7)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 12, 7)
-    );
-}
-
-BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_in, fixture)
-{
-  set_parse_input ("connect_in_in_same.xpnet");
-
-  require_exception_from_parse<xml::parse::error::duplicate_connect>
-    ( "error::duplicate_connect"
-    , boost::format ( "ERROR: duplicate connect-in P <-> A for transition"
-                      " foo in %1% (existing connection is connect-in)"
-                      " in %2% and %3%"
-                    )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 6, 5)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 14, 7)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 13, 7)
-    );
-}
-
-BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_read_read, fixture)
-{
-  set_parse_input ("connect_read_read_same.xpnet");
-
-  require_exception_from_parse<xml::parse::error::duplicate_connect>
-    ( "error::duplicate_connect"
-    , boost::format ( "ERROR: duplicate connect-read P <-> A for transition"
-                      " foo in %1% (existing connection is connect-read)"
-                      " in %2% and %3%"
-                    )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 6, 5)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 14, 7)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 13, 7)
-    );
-}
-
-BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
-{
-  set_parse_input ("connect_out_out_same.xpnet");
-
-  require_exception_from_parse<xml::parse::error::duplicate_connect>
-    ( "error::duplicate_connect"
-    , boost::format ( "ERROR: duplicate connect-out P <-> A for transition"
-                      " foo in %1% (existing connection is connect-out)"
-                      " in %2% and %3%"
-                    )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 6, 5)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 14, 7)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 13, 7)
-    );
-}
-
-#define GENERIC_DUPLICATE(_type,_msg,_le,_ce,_ll,_cl)                   \
-  set_parse_input ("diagnostics/error_duplicate_" #_type ".xpnet");     \
+#define GENERIC_DUPLICATE_FROM_FILE(_file,_type,_msg,_le,_ce,_ll,_cl)   \
+  set_parse_input (_file);                                              \
                                                                         \
   require_exception_from_parse<xml::parse::error::duplicate_ ## _type>  \
   ( "error::duplicate_" #_type                                          \
@@ -163,6 +99,56 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
   % xml::parse::util::position_type (NULL, NULL, xpnet, _ll, _cl)       \
   % xml::parse::util::position_type (NULL, NULL, xpnet, _le, _ce)       \
   )
+
+BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_read, fixture)
+{
+  GENERIC_DUPLICATE_FROM_FILE
+    ( "connect_in_read_same.xpnet"
+    , connect
+    , "connect-read P <-> A (existing connection is connect-in)"
+    , 12, 7
+    , 14, 7
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_in, fixture)
+{
+  GENERIC_DUPLICATE_FROM_FILE
+    ( "connect_in_in_same.xpnet"
+    , connect
+    , "connect-in P <-> A (existing connection is connect-in)"
+    , 13, 7
+    , 14, 7
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_read_read, fixture)
+{
+  GENERIC_DUPLICATE_FROM_FILE
+    ( "connect_read_read_same.xpnet"
+    , connect
+    , "connect-read P <-> A (existing connection is connect-read)"
+    , 13, 7
+    , 14, 7
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
+{
+  GENERIC_DUPLICATE_FROM_FILE
+    ( "connect_out_out_same.xpnet"
+    , connect
+    , "connect-out P <-> A (existing connection is connect-out)"
+    , 13, 7
+    , 14, 7
+    );
+}
+
+#define GENERIC_DUPLICATE(_type,_msg,_le,_ce,_ll,_cl)                   \
+  GENERIC_DUPLICATE_FROM_FILE                                           \
+    ( "diagnostics/error_duplicate_" #_type ".xpnet"                    \
+    , _type,_msg,_le,_ce,_ll,_cl                                        \
+    )
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_specialize, fixture)
 {

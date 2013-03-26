@@ -282,8 +282,7 @@ namespace xml
 
         if (not (id_old == connect_id))
         {
-          throw error::duplicate_connect
-            (connect_id, id_old, make_reference_id());
+          throw error::duplicate_connect (id_old, connect_id);
         }
         connect_id.get_ref().parent (id());
       }

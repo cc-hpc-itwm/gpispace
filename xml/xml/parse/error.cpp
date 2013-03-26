@@ -119,32 +119,6 @@ namespace xml
           , _path (path)
       { }
 
-      duplicate_connect::duplicate_connect
-        ( const id::ref::connect& connection
-        , const id::ref::connect& old_connection
-        , const id::ref::transition& transition
-        )
-          : generic ( boost::format ( "duplicate connect-%1% %2% <-> %3% "
-                                      "for transition %4% in %5%"
-                                      " (existing connection is connect-%6%)"
-                                      " in %7% and %8%"
-                                    )
-                    % petri_net::edge::enum_to_string
-                      (connection.get().direction())
-                    % connection.get().place()
-                    % connection.get().port()
-                    % transition.get().name()
-                    % transition.get().position_of_definition()
-                    % petri_net::edge::enum_to_string
-                      (old_connection.get().direction())
-                    % connection.get().position_of_definition()
-                    % old_connection.get().position_of_definition()
-                    )
-          , _connection (connection)
-          , _old_connection (old_connection)
-          , _transition (transition)
-      { }
-
       parse_link_prefix::parse_link_prefix ( const std::string& reason
                                            , const std::string& input
                                            , const std::size_t& pos
@@ -348,6 +322,23 @@ namespace xml
                             )
             % early.get().function
             % early.get().name()
+            )
+      {}
+
+      duplicate_connect::duplicate_connect
+        ( const id::ref::connect& early
+        , const id::ref::connect& late
+        )
+          : generic_duplicate
+            ( early
+            , late
+            , boost::format ( "connect-%1% %2% <-> %3%"
+                              " (existing connection is connect-%4%)"
+                            )
+            % petri_net::edge::enum_to_string (late.get().direction())
+            % late.get().place()
+            % late.get().port()
+            % petri_net::edge::enum_to_string (early.get().direction())
             )
       {}
 
