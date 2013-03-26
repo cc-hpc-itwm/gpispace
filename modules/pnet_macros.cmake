@@ -19,6 +19,10 @@ macro(PNET_COMPILE)
         --Woverwrite-file=false
         --Wbackup-file=false
         --force-overwrite-file=true
+        --Winline-many-output-ports=false
+        --Wshadow-struct=false
+        --Windependent-place=false
+        --Wduplicate-external-function=false
       )
 
   if (PNET_QUIET)
