@@ -83,11 +83,8 @@ namespace gspc
       template <class Proto>
       void base_server<Proto>::start_accept ()
       {
-        m_new_connection.reset
-          (new connection ( m_io_service
-                          , m_qmgr
-                          )
-          );
+        m_new_connection.reset (new connection (m_io_service));
+
         m_acceptor.async_accept ( m_new_connection->socket ()
                                 , boost::bind ( &base_server<Proto>::handle_accept
                                               , this

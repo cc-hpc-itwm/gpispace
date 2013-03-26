@@ -9,7 +9,6 @@
 #include <gspc/net/parse/parser.hpp>
 
 #include <gspc/net/user.hpp>
-#include <gspc/net/server/queue_manager_fwd.hpp>
 
 namespace gspc
 {
@@ -27,9 +26,8 @@ namespace gspc
         typedef Protocol protocol_type;
         typedef typename protocol_type::socket socket_type;
 
-        base_connection ( boost::asio::io_service & io_service
-                        , queue_manager_t & qmgr
-                        );
+        explicit
+        base_connection (boost::asio::io_service & io_service);
 
         ~base_connection ();
 
@@ -51,8 +49,6 @@ namespace gspc
 
         parse::parser m_parser;
         frame         m_frame;
-
-        queue_manager_t &  m_qmgr;
       };
     }
   }

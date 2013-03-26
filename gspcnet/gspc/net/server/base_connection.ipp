@@ -14,15 +14,12 @@ namespace gspc
     namespace server
     {
       template <class Proto>
-      base_connection<Proto>::base_connection ( boost::asio::io_service &service
-                                              , queue_manager_t & qmgr
-                                              )
+      base_connection<Proto>::base_connection (boost::asio::io_service &service)
         : m_strand (service)
         , m_socket (service)
         , m_buffer ()
         , m_parser ()
         , m_frame ()
-        , m_qmgr (qmgr)
       {}
 
       template <class Proto>
