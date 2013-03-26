@@ -30,7 +30,7 @@ namespace pnetc
 
     inline const fs::path & root ()
     {
-      static const fs::path ret ("@CMAKE_SOURCE_DIR@/pnet/src/we");
+      static const fs::path ret ("@CMAKE_SOURCE_DIR@/pnet/src");
 
       return ret;
     }
