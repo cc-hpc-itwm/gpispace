@@ -86,11 +86,11 @@ namespace gspc
               return;
             }
 
+            remaining -= result.consumed;
+            offset += result.consumed;
+
             if (result.state == gspc::net::parse::PARSE_FINISHED)
             {
-              remaining -= result.consumed;
-              offset += result.consumed;
-
               m_parser.reset ();
 
               std::cerr << "got frame: " << m_frame;
