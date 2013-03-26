@@ -4,5 +4,4 @@
 
 using namespace boost::asio::ip;
 
-typedef gspc::net::server::base_connection<tcp> tcp_connection;
 template class gspc::net::server::base_connection<tcp>;

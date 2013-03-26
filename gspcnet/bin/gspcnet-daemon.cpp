@@ -11,5 +11,9 @@ int main (int argc, char *argv[])
   gspc::net::server_ptr_t server =
     gspc::net::serve (url, qmgr);
 
+  std::cout << "use the following url to connect: "
+            << server->url ()
+            << std::endl;
+
   pause ();
 }

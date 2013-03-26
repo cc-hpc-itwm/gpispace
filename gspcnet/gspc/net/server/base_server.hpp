@@ -33,6 +33,7 @@ namespace gspc
 
         int start ();
         int stop ();
+        std::string url () const;
       private:
         typedef base_connection<protocol_type> connection;
         typedef boost::shared_ptr<connection>  connection_ptr;

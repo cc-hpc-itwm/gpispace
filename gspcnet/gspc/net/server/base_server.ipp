@@ -6,6 +6,7 @@
 #include <boost/foreach.hpp>
 
 #include <gspc/net/server/queue_manager.hpp>
+#include <gspc/net/server/url_maker.hpp>
 
 namespace gspc
 {
@@ -71,6 +72,12 @@ namespace gspc
         m_thread_pool.clear ();
 
         return 0;
+      }
+
+      template <class Proto>
+      std::string base_server<Proto>::url () const
+      {
+        return url_maker<Proto>::make (m_acceptor.local_endpoint ());
       }
 
       template <class Proto>

@@ -2,11 +2,13 @@
 
 #include <string>
 
+#include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
 
 #include <gspc/net/server.hpp>
 
 #include <gspc/net/server/tcp_server.hpp>
+#include <gspc/net/server/unix_server.hpp>
 
 namespace gspc
 {
@@ -18,15 +20,27 @@ namespace gspc
                                    , boost::system::error_code & ec
                                    )
     {
-      using namespace boost::system;
+      namespace fs = boost::filesystem;
 
-      if (path.empty ())
+      try
       {
-        ec = errc::make_error_code (errc::invalid_argument);
-        return server_ptr_t ();
+        fs::path full_path = fs::absolute (path);
+        fs::remove (full_path);
+
+        server::unix_server::endpoint_type ep;
+        ec = server::resolve_address (full_path.string (), ep);
+
+        if (not ec)
+        {
+          return server_ptr_t
+            (new server::unix_server (ep, qmgr));
+        }
+      }
+      catch (boost::system::system_error const &se)
+      {
+        ec = se.code ();
       }
 
-      ec = errc::make_error_code (errc::not_supported);
       return server_ptr_t ();
     }
 
@@ -38,11 +52,14 @@ namespace gspc
     {
       try
       {
-        return server_ptr_t
-          (new server::tcp_server ( server::resolve_address (location)
-                                  , qmgr
-                                  )
-          );
+        server::tcp_server::endpoint_type ep;
+        ec = server::resolve_address (location, ep);
+
+        if (not ec)
+        {
+          return server_ptr_t
+            (new server::tcp_server (ep, qmgr));
+        }
       }
       catch (boost::system::system_error const &se)
       {

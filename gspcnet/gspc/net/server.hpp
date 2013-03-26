@@ -1,6 +1,8 @@
 #ifndef GSPC_NET_SERVER_HPP
 #define GSPC_NET_SERVER_HPP
 
+#include <string>
+
 namespace gspc
 {
   namespace net
@@ -29,6 +31,7 @@ namespace gspc
 
       virtual int start () = 0;
       virtual int stop () = 0;
+      virtual std::string url () const = 0;
     };
   }
 }
