@@ -1,45 +1,27 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+# mirko.rahn@itwm.fraunhofer.de
 
-include(FindThreads)
-if(CMAKE_USE_PTHREADS_INIT)
-    link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(CMAKE_USE_PTHREADS_INIT)
+include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (${CMAKE_CURRENT_BINARY_DIR})
 
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+include (FindThreads)
+if (CMAKE_USE_PTHREADS_INIT)
+  link_libraries (${CMAKE_THREAD_LIBS_INIT})
+endif()
 
-find_package(FhgLog REQUIRED)
-include_directories(${FhgLog_INCLUDE_DIR})
+include (SDPAFindBoost)
+include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
-include(FindUTIL REQUIRED)
-include_directories(${UTIL_INCLUDE_DIR})
+find_package (FhgLog REQUIRED)
+include_directories (${FhgLog_INCLUDE_DIR})
 
-add_subdirectory(we)
-add_subdirectory(apps)
+include (FindUTIL REQUIRED)
+include_directories (${UTIL_INCLUDE_DIR})
 
-include(CTest)
+add_subdirectory (apps)
+add_subdirectory (we)
+add_subdirectory (xml)
+add_subdirectory (xsd)
+
 if (BUILD_TESTING)
-  add_subdirectory(tests)
-endif (BUILD_TESTING)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-find_package(FhgLog REQUIRED)
-include_directories(${FhgLog_INCLUDE_DIR})
-
-include(FindUTIL REQUIRED)
-include_directories(${UTIL_INCLUDE_DIR})
-
-include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
-
-include(FindThreads)
-if(CMAKE_USE_PTHREADS_INIT)
-  link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(CMAKE_USE_PTHREADS_INIT)
-
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
-add_subdirectory(xml)
-add_subdirectory(xsd)
+  add_subdirectory (tests)
+endif()
