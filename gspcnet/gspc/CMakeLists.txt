@@ -15,6 +15,7 @@ set (gspcnet_src
   net/server/service_demux.cpp
   net/server/default_service_demux.cpp
   net/server/tcp_server.cpp
+  net/server/tcp_connection.cpp
 
   net/service/echo.cpp
   net/service/strip_prefix.cpp
