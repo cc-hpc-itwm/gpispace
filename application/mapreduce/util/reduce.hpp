@@ -315,7 +315,6 @@ namespace mapreduce
 	void merge_and_reduce_arr_file(const std::vector<std::string>& arr_items, const std::string& str_out_file_2)
 	{
 		std::list<std::string> list_in_values;
-		size_t last_pos = 0;
 
 		if( !file_exists(str_out_file_2) )
 		{
@@ -406,7 +405,6 @@ namespace mapreduce
 	void merge_and_reduce_files(const std::string& str_out_file_1, const std::string& str_out_file_2, const std::string& str_out_file)
 	{
 		std::list<std::string> list_in_values;
-		size_t last_pos = 0;
 		std::string str_sp;
 		str_sp[0]=' ';
 
