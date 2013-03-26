@@ -7,7 +7,7 @@ include_directories(${FhgLog_INCLUDE_DIR})
 include(FindUTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/we)
+include_directories(${CMAKE_SOURCE_DIR}/pnet/src/we)
 
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)

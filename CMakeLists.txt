@@ -171,10 +171,9 @@ message(STATUS "=== [ fhglog ] ===")
 add_subdirectory(fhglog)
 message(STATUS "=== [ fhgcom ] ===")
 add_subdirectory(fhgcom)
-message(STATUS "=== [ we ] ===")
-add_subdirectory(we)
-message(STATUS "=== [ xml ] ===")
-add_subdirectory(xml)
+
+add_subdirectory (pnet)
+
 message(STATUS "=== [ mmgr ] ===")
 add_subdirectory(mmgr)
 if (ENABLE_FVM_PC)

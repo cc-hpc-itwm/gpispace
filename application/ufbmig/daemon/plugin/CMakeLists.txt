@@ -9,7 +9,7 @@ include_directories(${FhgLog_INCLUDE_DIR})
 find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/we)
+include_directories(${CMAKE_SOURCE_DIR}/pnet/src/we)
 
 # for usage of the sdpac plugin
 find_package(SDPA REQUIRED QUIET)
