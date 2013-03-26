@@ -1,21 +1,64 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-find_package(FhgLog REQUIRED)
-include_directories(${FhgLog_INCLUDE_DIR})
+add_subdirectory (parse)
 
-include(FindUTIL REQUIRED)
-include_directories(${UTIL_INCLUDE_DIR})
+add_library (xml
+  parse/error.cpp
+  parse/id/generic.cpp
+  parse/id/mapper.cpp
+  parse/id/types.cpp
+  parse/parser.cpp
+  parse/state.cpp
+  parse/type/connect.cpp
+  parse/type/expression.cpp
+  parse/type/function.cpp
+  parse/type/mod.cpp
+  parse/type/net.cpp
+  parse/type/place.cpp
+  parse/type/place_map.cpp
+  parse/type/port.cpp
+  parse/type/require.cpp
+  parse/type/specialize.cpp
+  parse/type/struct.cpp
+  parse/type/template.cpp
+  parse/type/transition.cpp
+  parse/type/use.cpp
+  parse/type/link.cpp
+  parse/type/with_position_of_definition.cpp
+  parse/util/mk_fstream.cpp
+  parse/util/valid_name.cpp
+  parse/util/cdata.cpp
+  parse/util/expect.cpp
+  parse/util/name_element.cpp
+  parse/util/optional.cpp
+  parse/util/required.cpp
+  parse/util/skip.cpp
+  parse/util/validprefix.cpp
+  parse/util/validstructfield.cpp
+  parse/util/property.cpp
+  parse/util/show_node_type.cpp
+  parse/util/weparse.cpp
+  parse/util/position.cpp
+  parse/warning.cpp
+)
+target_link_libraries (xml
+  we
+  fhg-util
+  ${Boost_LIBRARIES}
+)
 
-include_directories(${CMAKE_SOURCE_DIR}/pnet/src/we)
+get_target_property(GEN_INCLUDE_EXE gen-includes LOCATION)
 
-include(FindThreads)
-if(CMAKE_USE_PTHREADS_INIT)
-  link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(CMAKE_USE_PTHREADS_INIT)
+set (headerlist_hpp ${CMAKE_CURRENT_BINARY_DIR}/parse/headerlist.hpp)
 
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+add_custom_command(OUTPUT ${headerlist_hpp}
+  COMMAND ${GEN_INCLUDE_EXE} -o ${headerlist_hpp}
+  DEPENDS gen-includes ${CMAKE_CURRENT_BINARY_DIR}/parse/includes.hpp
+  COMMENT "generating internal pnetc headerlist"
+)
 
-add_subdirectory(xml)
-add_subdirectory(xsd)
+set_source_files_properties (
+  "${CMAKE_CURRENT_SOURCE_DIR}/parse/parser.cpp"
+  PROPERTIES OBJECT_DEPENDS "${headerlist_hpp}"
+)
+
+add_subdirectory (tests)
