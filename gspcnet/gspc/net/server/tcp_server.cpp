@@ -44,14 +44,29 @@ namespace gspc
           return errc::make_error_code (errc::invalid_argument);
         }
 
+        if (host == "*")
+        {
+          host = host_name (ec);
+
+          if (ec)
+            return ec;
+        }
+
         boost::asio::io_service io_service;
         tcp::resolver resolver (io_service);
         tcp::resolver::query query ( host
                                    , port
-                                   , boost::asio::ip::resolver_query_base::canonical_name
+                                   , resolver_query_base::canonical_name
+                                   | resolver_query_base::passive
+                                   | resolver_query_base::all_matching
                                    );
 
-        ep = *resolver.resolve (query, ec);
+        tcp::resolver::iterator ep_it = resolver.resolve (query, ec);
+        if (not ec)
+        {
+          ep = *ep_it;
+        }
+
         return ec;
       }
     }
