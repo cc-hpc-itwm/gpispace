@@ -18,11 +18,13 @@ namespace xml
     {
       structure_type::structure_type ( ID_CONS_PARAM(structure)
                                      , PARENT_CONS_PARAM(function)
+                                     , const util::position_type& pod
                                      , const std::string& name
                                      , const signature::desc_t& sig
                                      , const boost::filesystem::path& path
                                      )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , _sig (sig)
@@ -69,6 +71,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _name
           , _sig
           , _path

@@ -1610,6 +1610,7 @@ namespace xml
           ( id::structure (state.id_mapper()->next_id())
           , state.id_mapper()
           , boost::none
+          , state.position (node)
           , validate_field_name ( required ( "struct_type"
                                            , node
                                            , "name"
