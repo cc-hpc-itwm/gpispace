@@ -13,6 +13,8 @@
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/util/mk_fstream.hpp>
 #include <xml/parse/util/unique.hpp>
+#include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/position.fwd.hpp>
 
 #include <we/type/property.hpp>
 #include <we/type/transition.hpp>
@@ -33,7 +35,7 @@ namespace xml
 
       conditions_type operator+ (conditions_type, const conditions_type&);
 
-      struct function_type
+      struct function_type : with_position_of_definition
       {
         ID_SIGNATURES(function);
 
@@ -71,11 +73,13 @@ namespace xml
 
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
+                      , const util::position_type&
                       , const content_type& content
                       );
 
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
+                      , const util::position_type&
                       , const boost::optional<std::string>& name
                       , const boost::optional<bool>& internal
                       , const content_type& content
@@ -84,6 +88,7 @@ namespace xml
 
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
+                      , const util::position_type&
                       , const boost::optional<std::string>& name
                       , const ports_type& ports
                       , const typenames_type& typenames

@@ -74,9 +74,11 @@ namespace xml
 
       function_type::function_type ( ID_CONS_PARAM(function)
                                    , const boost::optional<parent_id_type>& parent
+                                   , const util::position_type& pod
                                    , const content_type& content
                                    )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , _parent (parent)
         , contains_a_module_call (false)
         , _content (reparent (content, _id))
@@ -86,12 +88,14 @@ namespace xml
 
       function_type::function_type ( ID_CONS_PARAM(function)
                                    , const boost::optional<parent_id_type>& parent
+                                   , const util::position_type& pod
                                    , const boost::optional<std::string>& name
                                    , const boost::optional<bool>& internal
                                    , const content_type& content
                                    , const boost::filesystem::path& path
                                    )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , _parent (parent)
         , _name (name)
         , contains_a_module_call (false)
@@ -105,6 +109,7 @@ namespace xml
       function_type::function_type
         ( ID_CONS_PARAM(function)
         , const boost::optional<parent_id_type>& parent
+        , const util::position_type& pod
         , const boost::optional<std::string>& name
         , const ports_type& ports
         , const typenames_type& typenames
@@ -117,7 +122,8 @@ namespace xml
         , const we::type::property::type& properties
         , const boost::filesystem::path& path
         )
-        : ID_INITIALIZE()
+        : with_position_of_definition (pod)
+        , ID_INITIALIZE()
         , _parent (parent)
         , _name (name)
         , _ports (ports, _id)
@@ -989,6 +995,7 @@ namespace xml
           ( new_id
           , new_mapper
           , parent
+          , _position_of_definition
           , _name
           , _ports.clone (new_id, new_mapper)
           , _typenames

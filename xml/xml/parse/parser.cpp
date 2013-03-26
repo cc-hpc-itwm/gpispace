@@ -1381,6 +1381,7 @@ namespace xml
             ( id
             , state.id_mapper()
             , boost::none
+            , state.position (node)
             , optional (node, "name")
             , fhg::util::boost::fmap<std::string, bool>
               (fhg::util::read_bool, optional (node, "internal"))
