@@ -163,21 +163,6 @@ namespace xml
           , _transition (transition)
       { }
 
-      duplicate_template::duplicate_template
-        ( const id::ref::tmpl& tmpl
-        , const id::ref::tmpl& old_template
-        )
-          : generic ( boost::format ( "duplicate template %1% in %2%. "
-                                      "first definition was in %3%"
-                                    )
-                    % tmpl.get().name()
-                    % tmpl.get().position_of_definition()
-                    % old_template.get().position_of_definition()
-                    )
-          , _template (tmpl)
-          , _old_template (old_template)
-      { }
-
       parse_link_prefix::parse_link_prefix ( const std::string& reason
                                            , const std::string& input
                                            , const std::size_t& pos
@@ -358,10 +343,18 @@ namespace xml
                                      )
         : generic_duplicate ( early
                             , late
-                            , boost::format ("%1%-port %1%")
+                            , boost::format ("%1%-port %2%")
                             % we::type::enum_to_string (early.get().direction())
                             % early.get().name()
                             )
+      {}
+
+      duplicate_template::duplicate_template
+        ( const id::ref::tmpl& early
+        , const id::ref::tmpl& late
+        )
+          : generic_duplicate
+            (early, late, boost::format ("template %1%") % early.get().name())
       {}
 
       place_type_unknown::place_type_unknown (const id::ref::place& place)

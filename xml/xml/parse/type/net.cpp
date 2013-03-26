@@ -180,7 +180,7 @@ namespace xml
 
         if (id_old != id)
           {
-            throw error::duplicate_template (id, id_old);
+            throw error::duplicate_template (id_old, id);
           }
 
         id.get_ref().parent (_id);

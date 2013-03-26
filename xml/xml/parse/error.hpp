@@ -606,36 +606,24 @@ namespace xml
         const Id _late;
       };
 
-#define DUPLICATE(_type)                                                \
-      class duplicate_ ## _type : public generic_duplicate<id::ref::_type> \
+#define DUPLICATE_WITH_ID(_type,_id)                                    \
+      class duplicate_ ##_type : public generic_duplicate<id::ref::_id> \
       {                                                                 \
       public:                                                           \
-        duplicate_ ## _type ( const id::ref::_type& early               \
-                            , const id::ref::_type& late                \
-                            );                                          \
+        duplicate_ ##_type ( const id::ref::_id& early                  \
+                           , const id::ref::_id& late                   \
+                           );                                           \
       }
+
+#define DUPLICATE(_type) DUPLICATE_WITH_ID(_type,_type)
 
       DUPLICATE (specialize);
       DUPLICATE (place);
       DUPLICATE (transition);
       DUPLICATE (port);
+      DUPLICATE_WITH_ID (template,tmpl);
 
 #undef DUPLICATE
-
-      // ******************************************************************* //
-
-      class duplicate_template : public generic
-      {
-      public:
-        duplicate_template ( const id::ref::tmpl& tmpl
-                           , const id::ref::tmpl& old_template
-                           );
-        ~duplicate_template() throw() { }
-
-      private:
-        id::ref::tmpl _template;
-        id::ref::tmpl _old_template;
-      };
 
       // ******************************************************************* //
 
