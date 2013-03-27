@@ -1092,8 +1092,6 @@ namespace xml
             stream << "{" << std::endl;
             stream << "}" << std::endl;
             stream << "WE_MOD_FINALIZE_END (" << mod->first << ");" << std::endl;
-
-            stream.commit();
           }
       }
 
@@ -1437,8 +1435,6 @@ namespace xml
         stream                                                     << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
-
-        stream.commit();
       }
 
       typedef boost::unordered_map<std::string, module_type>
@@ -2106,8 +2102,6 @@ namespace xml
 
               cpp_util::include_guard_end
                 (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
-
-              stream.commit();
             }
 
             {
@@ -2159,8 +2153,6 @@ namespace xml
               stream << std::endl << "      }" << std::endl;
 
               namespace_close (stream, mod);
-
-              stream.commit();
             }
 
             return true;
@@ -2217,8 +2209,6 @@ namespace xml
               , structure.position_of_definition().path()
               , ::fhg::util::cpp::path::type()
               );
-
-            stream.commit();
           }
         }
 
