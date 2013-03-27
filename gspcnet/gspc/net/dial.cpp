@@ -8,6 +8,9 @@
 #include <gspc/net/resolver.hpp>
 #include <gspc/net/client.hpp>
 
+#include <gspc/net/client/tcp_client.hpp>
+#include <gspc/net/client/unix_client.hpp>
+
 namespace gspc
 {
   namespace net
@@ -18,14 +21,21 @@ namespace gspc
                                    )
     {
       namespace fs = boost::filesystem;
+      using namespace gspc::net::client;
 
       try
       {
         fs::path full_path = fs::canonical (path, ec);
-        if (not ec)
-        {
+        if (ec)
           return client_ptr_t ();
-        }
+
+        unix_client::endpoint_type ep;
+        ep = resolver<unix_client::protocol_type>::resolve
+          (full_path.string (), ec);
+        if (ec)
+          return client_ptr_t ();
+
+        return client_ptr_t (new unix_client (ep));
       }
       catch (boost::system::system_error const &se)
       {
@@ -40,15 +50,18 @@ namespace gspc
                                   , boost::system::error_code & ec
                                   )
     {
+      using namespace gspc::net::client;
+
       try
       {
-        //        server::tcp_server::endpoint_type ep;
-        //        ec = server::resolve_address (location, ep);
-
-        if (not ec)
-        {
+        tcp_client::endpoint_type ep;
+        ep = resolver<tcp_client::protocol_type>::resolve ( location
+                                                          , ec
+                                                          );
+        if (ec)
           return client_ptr_t ();
-        }
+
+        return client_ptr_t (new tcp_client (ep));
       }
       catch (boost::system::system_error const &se)
       {

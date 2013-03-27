@@ -21,6 +21,9 @@ set (gspcnet_src
   net/server/unix_server.cpp
   net/server/unix_connection.cpp
 
+  net/client/tcp_client.cpp
+  net/client/unix_client.cpp
+
   net/service/echo.cpp
   net/service/strip_prefix.cpp
 )

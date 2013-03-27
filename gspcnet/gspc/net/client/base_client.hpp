@@ -13,6 +13,7 @@
 #include <gspc/net/parse/parser.hpp>
 
 #include <gspc/net/client.hpp>
+#include <gspc/net/server/base_connection.hpp>
 
 namespace gspc
 {
@@ -28,6 +29,8 @@ namespace gspc
         typedef Protocol                         protocol_type;
         typedef typename protocol_type::socket   socket_type;
         typedef typename protocol_type::endpoint endpoint_type;
+        typedef typename server::base_connection<protocol_type> connection_type;
+        typedef boost::shared_ptr<connection_type> connection_ptr_t;
 
         explicit
         base_client (endpoint_type const &);
@@ -37,11 +40,8 @@ namespace gspc
         int stop ();
       private:
         boost::asio::io_service         m_io_service;
-        boost::asio::io_service::strand m_strand;
-        socket_type                     m_socket;
-
-        parse::parser m_parser;
-        frame         m_frame;
+        endpoint_type                   m_endpoint;
+        connection_ptr_t                m_connection;
 
         typedef boost::shared_ptr<boost::thread> thread_ptr_t;
         typedef std::vector<thread_ptr_t>        thread_pool_t;
