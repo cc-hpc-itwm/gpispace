@@ -41,15 +41,33 @@ void test2()
 	std::cout<<"The key: "<<key(str_pair)<<std::endl;
 	std::cout<<"The value: "<<val(str_pair)<<std::endl;
 
-	key_val_pair_t pair("#0#2", "haha");
+	std::string key("#0#2");
 
-	std::string item = kvpair2str(pair);
-	key_val_pair_t kvp = str2kvpair(item);
-
-	if(is_special_item(item))
-		std::cout<<"The item "<<item<<" is special!"<<std::endl;
+	if(is_special_key(key))
+		std::cout<<"The item "<<key<<" is special!"<<std::endl;
 	else
-		std::cout<<"The item "<<item<<" is NOT special!"<<std::endl;
+		std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
+
+	key = std::string("#0#");
+
+	if(is_special_key(key))
+		std::cout<<"The item "<<key<<" is special!"<<std::endl;
+	else
+		std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
+
+	key = std::string("#0");
+
+	if(is_special_key(key))
+		std::cout<<"The item "<<key<<" is special!"<<std::endl;
+	else
+		std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
+
+	key = std::string("2#0#");
+
+	if(is_special_key(key))
+		std::cout<<"The item "<<key<<" is special!"<<std::endl;
+	else
+		std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
 }
 
 int main ()
