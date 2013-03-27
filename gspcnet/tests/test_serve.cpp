@@ -6,6 +6,7 @@
 #include <gspc/net.hpp>
 #include <gspc/net/error.hpp>
 #include <gspc/net/serve.hpp>
+#include <gspc/net/dial.hpp>
 
 #include <gspc/net/server.hpp>
 #include <gspc/net/server/queue_manager.hpp>
@@ -42,4 +43,18 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
   }
 
   fs::remove ("socket.foo");
+}
+
+BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_connect)
+{
+  gspc::net::server::queue_manager_t qmgr;
+
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("unix://socket.foo", qmgr);
+  BOOST_REQUIRE (server);
+
+  gspc::net::client_ptr_t client =
+    gspc::net::dial ("unix://socket.foo");
+
+  BOOST_REQUIRE (client);
 }

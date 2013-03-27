@@ -9,6 +9,7 @@ set (gspcnet_src
   net/frame_builder.cpp
   net/handle.cpp
   net/serve.cpp
+  net/dial.cpp
 
   net/parse/parser.cpp
 
