@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <gspc/net.hpp>
 #include <gspc/net/error.hpp>
@@ -82,4 +83,24 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
   }
 
   BOOST_REQUIRE_EQUAL (clients.size (), NUM_CLIENTS);
+}
+
+BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
+{
+  gspc::net::server::queue_manager_t qmgr;
+
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("tcp://localhost:0", qmgr);
+  BOOST_REQUIRE (server);
+
+  BOOST_CHECK_THROW ( gspc::net::serve (server->url (), qmgr)
+                    , boost::system::system_error
+                    );
+}
+
+BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connection_refused)
+{
+  BOOST_CHECK_THROW ( gspc::net::dial ("unix://socket.foo")
+                    , boost::system::system_error
+                    );
 }
