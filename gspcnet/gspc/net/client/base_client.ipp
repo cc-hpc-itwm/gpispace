@@ -64,6 +64,12 @@ namespace gspc
 
         return 0;
       }
+
+      template <class Proto>
+      int base_client<Proto>::send_raw (frame const &f)
+      {
+        return m_connection->deliver (f);
+      }
     }
   }
 }

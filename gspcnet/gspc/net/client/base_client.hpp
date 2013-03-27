@@ -38,6 +38,8 @@ namespace gspc
 
         int start ();
         int stop ();
+
+        int send_raw (frame const &);
       private:
         boost::asio::io_service         m_io_service;
         endpoint_type                   m_endpoint;
