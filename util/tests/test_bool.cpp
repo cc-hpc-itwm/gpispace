@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE ( test_input_invalid )
   try
   {
     iss >> b;
-    BOOST_REQUIRE (! "invalid input must throw");
+    BOOST_ERROR ("invalid input must throw");
   }
   catch (...)
   {

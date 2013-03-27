@@ -31,7 +31,7 @@ class PSProSocket
 {
   public:
     PSProSocket();
-    ~PSProSocket();
+    virtual ~PSProSocket();
     //int frontend_connect(const char *hn,const int port,const unsigned int timeout_secs);
     int connect(const char *_hostname, const unsigned int _port , const int _timeout_secs, bool _bMilliseconds = false);
     

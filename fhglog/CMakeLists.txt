@@ -45,7 +45,6 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 message(STATUS "checking for thread package")
 find_package(Threads REQUIRED)
 if(CMAKE_USE_PTHREADS_INIT)
-    set(HAVE_PTHREAD_H 1)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 
@@ -60,7 +59,7 @@ endif (ENABLE_REMOTE_LOGGING)
 ## check for boost
 include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # on osx, the dylib needs to be linked against boost-thread.
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp)

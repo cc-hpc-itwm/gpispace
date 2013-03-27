@@ -83,7 +83,7 @@ int CheckReadMigrationJob::ReadConfigFileXML(char* ConfigFileName, MigrationJob&
   success = success && ReadXML(Reader, "Migration/OutputVol/dy_along_const_xline", Job.MigVol.dy_between_inlines);
   success = success && ReadXML(Reader, "Migration/OutputVol/Nz", Job.MigVol.nz);
   success = success && ReadXML(Reader, "Migration/OutputVol/dz", Job.MigVol.dz);
-  float X1z;
+  float X1z (0.0);
   success = success && ReadXML(Reader, "Migration/OutputVol/zMinDepth", X1z);
   Job.MigVol.first_z_coord = -(X1z + (Job.MigVol.nz-1) * Job.MigVol.dz);
 

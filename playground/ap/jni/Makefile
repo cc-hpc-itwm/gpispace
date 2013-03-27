@@ -1,10 +1,11 @@
-INCLUDE += -I /usr/java/jdk1.7.0_05/include
-INCLUDE += -I /usr/java/jdk1.7.0_05/include/linux/
+JAVA_HOME = /usr/lib/jvm/java-8-oracle
+INCLUDE += -I $(JAVA_HOME)/include
+INCLUDE += -I $(JAVA_HOME)/include/linux
 INCLUDE += -I /home/alex/.local/sdpa/include
 CFLAGS += -fPIC $(INCLUDE)
 CXXFLAGS += $(CFLAGS)
 LDFLAGS += -L /home/alex/.local/sdpa/lib -L /usr/local/lib
-LDFLAGS += -lgpi-space-pc-client -lgpi-space-pc-segment -lfhg-plugin-core -lfhglog -lboost_filesystem -lboost_serialization -lboost_thread -lboost_system
+LDFLAGS += -lfhg-util -lwe-dev -lgpi-space-pc-client -lgpi-space-pc-segment -lfhg-plugin-core -lfhglog -lboost_filesystem -lboost_serialization -lboost_thread -lboost_system
 
 default: build
 

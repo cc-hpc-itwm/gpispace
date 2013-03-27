@@ -7,6 +7,9 @@
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/net.hpp>
+#include <xml/parse/type/link.hpp>
+
+#include <xml/parse/util/position.hpp>
 
 #include <QObject>
 #include <QString>
@@ -30,6 +33,7 @@ namespace fhg
                 ( state.id_mapper()->next_id()
                 , state.id_mapper()
                 , boost::none
+                , XML_PARSE_UTIL_POSITION_GENERATED()
                 ).make_reference_id();
             }
           case internal_type::module_call:
@@ -38,6 +42,7 @@ namespace fhg
                 ( state.id_mapper()->next_id()
                 , state.id_mapper()
                 , boost::none
+                , XML_PARSE_UTIL_POSITION_GENERATED()
                 ).make_reference_id();
             }
           case internal_type::net:
@@ -46,6 +51,7 @@ namespace fhg
                 ( state.id_mapper()->next_id()
                 , state.id_mapper()
                 , boost::none
+                , XML_PARSE_UTIL_POSITION_GENERATED()
                 ).make_reference_id();
             }
           }
@@ -59,6 +65,7 @@ namespace fhg
                       ( _state.id_mapper()->next_id()
                       , _state.id_mapper()
                       , boost::none
+                      , XML_PARSE_UTIL_POSITION_GENERATED()
                       , make_function_content (kind_, _state)
                       ).make_reference_id()
                     )

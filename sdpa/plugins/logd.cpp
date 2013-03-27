@@ -31,7 +31,7 @@ namespace detail
     void flush() {}
   private:
     event_handler_t m_handler;
-    unsigned short m_port;
+    //    unsigned short m_port;
   };
 }
 

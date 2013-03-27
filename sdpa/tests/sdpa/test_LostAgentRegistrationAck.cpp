@@ -1,53 +1,14 @@
-#define BOOST_TEST_MODULE TestStopRestartAgentsSubscriberCli
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#define BOOST_TEST_MODULE test_LostRegistrationAck
+#include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
-#include <sdpa/daemon/Worker.hpp>
-#include <sdpa/JobId.hpp>
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include "boost/serialization/map.hpp"
-#include <sdpa/daemon/JobManager.hpp>
-
-#include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/daemon/GenericDaemon.hpp>
-
 #include <sdpa/client/ClientApi.hpp>
-#include <seda/StageRegistry.hpp>
-#include <seda/Strategy.hpp>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-#include <boost/thread.hpp>
-
 #include "tests_config.hpp"
 #include <boost/filesystem/fstream.hpp>
-
-#include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
-
-//plugin
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
+#include "kvs_setup_fixture.hpp"
 
 namespace bfs=boost::filesystem;
 using namespace sdpa::tests;
@@ -56,10 +17,7 @@ using namespace sdpa;
 using namespace std;
 using namespace seda;
 
-static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("0"); return s; }
-
-const int NMAXTRIALS = 10;
+const int NMAXTRIALS = 5;
 const int MAX_CAP 	 = 100;
 static int testNb 	 = 0;
 
@@ -67,60 +25,22 @@ namespace po = boost::program_options;
 
 #define NO_GUI ""
 
+BOOST_GLOBAL_FIXTURE (KVSSetup);
+
 struct MyFixture
 {
 	MyFixture()
 			: m_nITER(1)
 			, m_sleep_interval(1000) //microseconds
-			, m_pool (0)
-	    	, m_kvsd (0)
-	    	, m_serv (0)
-	    	, m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-	{ //initialize and start the finite state machine
-
-		FHGLOG_SETUP();
+	{
 
 		LOG(DEBUG, "Fixture's constructor called ...");
-
-		m_pool = new fhg::com::io_service_pool(1);
-		m_kvsd = new fhg::com::kvs::server::kvsd ("");
-		m_serv = new fhg::com::tcp_server ( *m_pool
-										  , *m_kvsd
-										  , kvs_host ()
-										  , kvs_port ()
-										  , true
-										  );
-		m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-												, m_pool
-												)
-								   );
-
-		m_serv->start();
-
-		LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
-
-		fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-												  , boost::lexical_cast<std::string>(m_serv->port())
-												  , boost::posix_time::seconds(10)
-												  , 3
-												  );
-
-		m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	}
 
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
-
-		m_serv->stop ();
-		m_pool->stop ();
-		m_thrd->join ();
-
-		delete m_thrd;
-		delete m_serv;
-		delete m_kvsd;
-		delete m_pool;
 
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
@@ -147,11 +67,6 @@ struct MyFixture
 	int m_sleep_interval ;
     std::string m_strWorkflow;
 
-    fhg::com::io_service_pool *m_pool;
-	fhg::com::kvs::server::kvsd *m_kvsd;
-	fhg::com::tcp_server *m_serv;
-	boost::thread *m_thrd;
-
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
 	std::string strBackupOrch;
@@ -161,56 +76,92 @@ struct MyFixture
 };
 
 
-int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli, bool& bForceExit )
+/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli,  bool& bForceExit  )
 {
 	typedef boost::posix_time::ptime time_type;
 	time_type poll_start = boost::posix_time::microsec_clock::local_time();
 
 	int exit_code(4);
-
-	ptrCli->subscribe(job_id);
-
-	LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
-
 	std::string job_status;
+	bool bSubscribed=false;
 
   	int nTrials = 0;
-  	do {
+  	do
+  	{
+  		do
+		{
+			try
+			{
+				ptrCli->subscribe(job_id);
+				bSubscribed = true;
+			}
+			catch(...)
+			{
+				bSubscribed = false;
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
+			}
+
+			if(bSubscribed)
+				break;
+
+			nTrials++;
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+		}while(nTrials<NMAXTRIALS);
+
+		if(bSubscribed)
+		{
+			LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+			nTrials = 0;
+		}
+		else
+		{
+			LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
+		  	return exit_code;
+		}
+
 
   		LOG(INFO, "start waiting at: " << poll_start);
 
   		try
   		{
   			if(nTrials<NMAXTRIALS)
-			{
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-				LOG(INFO, "Re-trying ...");
-			}
+  			{
+  				boost::this_thread::sleep(boost::posix_time::seconds(1));
+  				LOG(INFO, "Re-trying ...");
+  			}
 
-			seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
 
 			// check event type
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
 			{
 				job_status="Finished";
+				LOG(WARN, "The job has finished!");
 				exit_code = 0;
 			}
 			else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
 			{
 				job_status="Failed";
+				LOG(WARN, "The job has failed!");
 				exit_code = 1;
 			}
 			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 			{
+				LOG(WARN, "The job has been canceled!");
 				job_status="Cancelled";
 				exit_code = 2;
 			}
 			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
 			{
-				std::cerr<< "got error event: reason := "
+				LOG(WARN, "got error event: reason := "
 							+ err->reason()
 							+ " code := "
-							+ boost::lexical_cast<std::string>(err->error_code())<<std::endl;
+							+ boost::lexical_cast<std::string>(err->error_code()));
+
+				// give some time to the orchestrator to come up
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 			}
 			else
@@ -223,7 +174,7 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
 			LOG(INFO, "Timeout expired!");
 		}
 
-  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS && !bForceExit);
+  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS && !bForceExit );
 
   	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
 
@@ -272,7 +223,7 @@ public:
 
 		std::vector<std::string> cav;
 		cav.push_back("--orchestrator=orchestrator_0");
-		cav.push_back("--network.timeout=0");
+		cav.push_back("--network.timeout=-1");
 		config.parse_command_line(cav);
 
 		std::ostringstream osstr;
@@ -301,11 +252,12 @@ public:
 			}
 		}
 
-		int exit_code = subscribe_and_wait( job_id_user, ptrCli, bForceExit_ );
+		subscribe_and_wait( job_id_user, ptrCli, bForceExit_ );
 	}
 
 	void stop_client()
 	{
+		LOG( DEBUG, "Stop the client now ...");
 		bForceExit_ = true;
 		threadClient.interrupt();
 		threadClient.join();
@@ -314,7 +266,7 @@ public:
 	void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 	{
 		std::string masterName = pRegAckEvt->from();
-		std::cout<<"Received registration acknowledgment from "<<masterName<<" ... and ignore it!"<<std::endl;
+		LOG(INFO, "Received registration acknowledgment from "<<masterName<<" ... and ignore it!");
 
 		if( nSuccFailures_<NMAXFAIL )
 			nSuccFailures_++;
@@ -335,28 +287,29 @@ public:
 };
 
 template <typename T>
-struct FaultyAgentFactory
+class FaultyAgentFactory
 {
-	   static FaultyAgent::ptr_t create( const std::string& name,
-								   const std::string& url,
-								   const sdpa::master_info_list_t& arrMasterNames,
-								   const unsigned int capacity )
-	   {
-		   LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-		   FaultyAgent::ptr_t pAgent( new FaultyAgent( name, url, arrMasterNames, capacity ) );
-		   pAgent->createWorkflowEngine<T>();
+public:
+   static FaultyAgent::ptr_t create( const std::string& name,
+							   const std::string& url,
+							   const sdpa::master_info_list_t& arrMasterNames,
+							   const unsigned int capacity )
+   {
+	   LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
+	   FaultyAgent::ptr_t pAgent( new FaultyAgent( name, url, arrMasterNames, capacity ) );
+	   pAgent->createWorkflowEngine<T>();
 
-		   seda::IEventQueue::Ptr ptrEvtQueue(new seda::EventQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
-		   seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtQueue, pAgent, 1) );
+	   seda::IEventQueue::Ptr ptrEvtQueue(new seda::EventQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
+	   seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtQueue, pAgent, 1) );
 
-		   pAgent->setStage(daemon_stage);
-		   seda::StageRegistry::instance().insert(daemon_stage);
+	   pAgent->setStage(daemon_stage);
+	   seda::StageRegistry::instance().insert(daemon_stage);
 
-		   return pAgent;
-	   }
+	   return pAgent;
+   }
 };
 
-BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
+BOOST_FIXTURE_TEST_SUITE( test_LostRegistrationAck, MyFixture );
 
 BOOST_AUTO_TEST_CASE( testLostRegAck)
 {
@@ -374,7 +327,7 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 
 	typedef void OrchWorkflowEngine;
 
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -390,10 +343,9 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 
 	ptrAgent1->start_agent(false, strBackupAgent1);
 
-	ptrAgent1->shutdown();
-	ptrAgent0->shutdown();
 	ptrOrch->shutdown();
-
+	ptrAgent0->shutdown();
+	ptrAgent1->shutdown();
 	LOG( DEBUG, "The test case testLostRegAck terminated!");
 }
 

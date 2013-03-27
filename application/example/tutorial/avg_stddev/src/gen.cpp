@@ -25,36 +25,36 @@ int main (int argc, char** argv)
   std::size_t num_buf (1UL << 3);
   std::string output ("-");
 
-  po::options_description desc("General");
+  po::options_description desc ("General");
 
   desc.add_options()
     ( "help,h", "this message")
     ( "output,o"
-    , po::value<std::string>(&output)->default_value(output)
+    , po::value<std::string> (&output)->default_value (output)
     , "output file, - for stdout"
     )
     ( "seed,s"
-    , po::value<unsigned long>(&seed)->default_value(seed)
+    , po::value<unsigned long> (&seed)->default_value (seed)
     , "seed for mersenne twister"
     )
     ( "number,n"
-    , po::value<unsigned long>(&number)->default_value(number)
+    , po::value<unsigned long> (&number)->default_value (number)
     , "how many values to generate"
     )
     ( "mean,m"
-    , po::value<double>(&mean)->default_value(mean)
+    , po::value<double> (&mean)->default_value (mean)
     , "mean"
     )
     ( "sigma,g"
-    , po::value<double>(&sigma)->default_value(sigma)
+    , po::value<double> (&sigma)->default_value (sigma)
     , "sigma"
     )
     ( "size_buf,b"
-    , po::value<std::size_t>(&size_buf)->default_value(size_buf)
+    , po::value<std::size_t> (&size_buf)->default_value (size_buf)
     , "size_buf"
     )
     ( "num_buf,k"
-    , po::value<std::size_t>(&num_buf)->default_value(num_buf)
+    , po::value<std::size_t> (&num_buf)->default_value (num_buf)
     , "size_buf"
     )
     ;
@@ -63,21 +63,21 @@ int main (int argc, char** argv)
 
   try
   {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    po::store (po::parse_command_line(argc, argv, desc), vm);
+    po::notify (vm);
   }
-  catch (std::exception const & ex)
+  catch (const std::exception& ex)
   {
     std::cerr << "invalid argument: " << ex.what() << std::endl;
     return EXIT_FAILURE;
   }
 
-  if (vm.count("help"))
-    {
-      std::cout << argv[0] << std::endl << desc << std::endl;
+  if (vm.count ("help"))
+  {
+    std::cout << argv[0] << std::endl << desc << std::endl;
 
-      return EXIT_SUCCESS;
-    }
+    return EXIT_SUCCESS;
+  }
 
   const std::size_t elem_per_buf (size_buf / sizeof (double));
 
@@ -97,17 +97,16 @@ int main (int argc, char** argv)
   FILE* file = stdout;
 
   if (output != "-")
+  {
+    file = fopen (output.c_str(), "w");
+
+    if (!file)
     {
-      file = fopen (output.c_str(), "w");
-
-      if (!file)
-        {
-          throw std::runtime_error ("could not open " + output);
-        }
+      throw std::runtime_error ("could not open " + output);
     }
+  }
 
-  boost::thread* thread_writer
-    (new boost::thread (writer_type (queue_empty, queue_full, file)));
+  boost::thread thread_writer (writer_type (queue_empty, queue_full, file));
 
   double* begin (buf);
   double* end (begin + elem_per_buf * num_buf);
@@ -145,11 +144,9 @@ int main (int argc, char** argv)
       queue_full.put (buf);
     }
 
-  queue_full.put (buffer_type (0,0));
+  queue_full.put (buffer_type (0, 0));
 
-  thread_writer->join();
-
-  delete thread_writer;
+  thread_writer.join();
 
   if (output != "-")
     {

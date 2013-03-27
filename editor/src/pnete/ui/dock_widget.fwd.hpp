@@ -1,11 +1,7 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
+// bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_DOCK_WIDGET_HPP
-#define _PNETE_UI_DOCK_WIDGET_HPP 1
-
-#include <QDockWidget>
-
-class Widget;
+#ifndef FHG_PNETE_UI_DOCK_WIDGET_FWD_HPP
+#define FHG_PNETE_UI_DOCK_WIDGET_FWD_HPP
 
 namespace fhg
 {
@@ -13,17 +9,7 @@ namespace fhg
   {
     namespace ui
     {
-      class dock_widget : public QDockWidget
-      {
-        Q_OBJECT
-
-      public:
-        explicit dock_widget (const QString& = "<<unnamed dock_widget>>");
-        explicit dock_widget (const QString&, QWidget*);
-
-      private:
-        void init();
-      };
+      class dock_widget;
     }
   }
 }

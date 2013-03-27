@@ -4,7 +4,7 @@
 #include <vector>
 //#include <unistd.h>
 #include <csignal>
-#include "sdpa/daemon/jobFSM/JobFSM.hpp"
+#include "sdpa/daemon/JobFSM.hpp"
 #include <sdpa/sdpa-config.hpp>
 
 #include <sdpa/logging.hpp>
@@ -12,7 +12,6 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-//#include <sdpa/engine/RealWorkflowEngine.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
@@ -85,7 +84,7 @@ int main (int argc, char **argv)
       else
       {
         LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
-        fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(5), 1);
+        fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
       }
     }
 

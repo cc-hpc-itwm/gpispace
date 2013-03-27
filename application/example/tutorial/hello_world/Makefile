@@ -6,7 +6,8 @@ endif
 ###############################################################################
 
 CXXINCLUDEPATHS += $(CURDIR)/include
-CXXLIBRARYPATHS += $(CURDIR)/lib
+CXXLIBRARYPATHS += $(CURDIR)
+PNETC_LINK_PREFIX += "libdir=$(CURDIR)"
 
 ###############################################################################
 

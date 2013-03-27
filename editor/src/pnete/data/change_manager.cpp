@@ -21,6 +21,8 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/transition.hpp>
 
+#include <xml/parse/util/position.hpp>
+
 #include <we/expr/parse/parser.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -1166,6 +1168,7 @@ namespace fhg
                        ( transition_of_fun_of_port.id_mapper()->next_id()
                        , transition_of_fun_of_port.id_mapper()
                        , boost::none
+                       , XML_PARSE_UTIL_POSITION_GENERATED()
                        , port.get().name()
                        , place.get().name()
                        , we::type::property::type()
@@ -1191,6 +1194,7 @@ namespace fhg
                        ( transition_of_fun_of_port.id_mapper()->next_id()
                        , transition_of_fun_of_port.id_mapper()
                        , boost::none
+                       , XML_PARSE_UTIL_POSITION_GENERATED()
                        , place.get().name()
                        , port.get().name()
                        , port.is_input()
@@ -1230,6 +1234,7 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , unique_name_for_place (net, "implicit")
             , port_a.get().type()
             , boost::none
@@ -1351,6 +1356,7 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , fun
             ).make_reference_id()
           );
@@ -1379,14 +1385,17 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , ::xml::parse::type::function_type
               ( net.id().id_mapper()->next_id()
               , net.id().id_mapper()
               , boost::none
+              , XML_PARSE_UTIL_POSITION_GENERATED()
               , ::xml::parse::type::expression_type
                 ( net.id().id_mapper()->next_id()
                 , net.id().id_mapper()
                 , boost::none
+                , XML_PARSE_UTIL_POSITION_GENERATED()
                 ).make_reference_id()
               ).make_reference_id()
             ).make_reference_id()
@@ -1509,6 +1518,7 @@ namespace fhg
             ( net.id().id_mapper()->next_id()
             , net.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , unique_name_for_place (net)
             //! \todo: default type to something useful?
             , ""
@@ -1711,6 +1721,7 @@ namespace fhg
             ( p.id().id_mapper()->next_id()
             , p.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , p.get().name()
             , p.get().type()
             , p.get().name()
@@ -1826,6 +1837,7 @@ namespace fhg
               ( function.id().id_mapper()->next_id()
               , function.id().id_mapper()
               , boost::none
+              , XML_PARSE_UTIL_POSITION_GENERATED()
               , name
               , type
               , true
@@ -1848,6 +1860,7 @@ namespace fhg
             ( function.id().id_mapper()->next_id()
             , function.id().id_mapper()
             , boost::none
+            , XML_PARSE_UTIL_POSITION_GENERATED()
             , name
             , type
             , boost::make_optional (direction == we::type::PORT_TUNNEL, name)

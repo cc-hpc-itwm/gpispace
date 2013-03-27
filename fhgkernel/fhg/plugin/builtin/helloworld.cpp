@@ -12,7 +12,6 @@
 
 #include <boost/thread.hpp>
 
-static fhg::plugin::Kernel *krnl = 0;
 static stats::Statistics *statistics = 0;
 
 static void (*count)(const char*name) = 0;

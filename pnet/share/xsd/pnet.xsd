@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <xsd:annotation>
+    <xsd:documentation>
+    petri nets with
+      typed ports
+      typed places
+      typed tokens
+      user defined types
+      hierarchical structure
+      hierarchical properties
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <xsd:element name="defun" type="function_type"/>
+  <xsd:element name="props" type="property_map_list_type"/>
+  <xsd:element name="structs" type="struct_list_type"/>
+  <xsd:element name="template" type="template_type"/>
+
+  <xsd:complexType name="transition_include_type">
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="struct_include_type">
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="function_include_type">
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
+    <xsd:attribute name="as" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="properties_include_type">
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="cinclude_type">
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="link_type">
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
+    <xsd:attribute name="href" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="flag_type">
+    <xsd:attribute name="flag" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="property_type">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="key" type="xsd:NCName" use="required"/>
+        <xsd:attribute name="value" type="xsd:string" use="optional"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="property_map_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="property" type="property_type"/>
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-properties" type="properties_include_type"/>
+    </xsd:choice>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="property_map_list_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-properties" type="properties_include_type"/>
+    </xsd:choice>
+  </xsd:complexType>
+
+  <xsd:complexType name="struct_list_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="struct" type="struct_type"/>
+      <xsd:element name="include-structs" type="struct_include_type"/>
+    </xsd:choice>
+  </xsd:complexType>
+
+  <xsd:complexType name="struct_field_type">
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+    <xsd:attribute name="type" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="struct_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="field" type="struct_field_type"/>
+      <xsd:element name="struct" type="struct_type"/>
+    </xsd:choice>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="token_field_type">
+    <xsd:choice minOccurs="0">
+      <xsd:element maxOccurs="1" name="value" type="xsd:string"/>
+      <xsd:element maxOccurs="unbounded" name="field" type="token_field_type"/>
+    </xsd:choice>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="token_type">
+    <xsd:choice minOccurs="0">
+      <xsd:element maxOccurs="1" name="value" type="xsd:string"/>
+      <xsd:element maxOccurs="unbounded" name="field" type="token_field_type"/>
+    </xsd:choice>
+  </xsd:complexType>
+
+  <xsd:complexType name="mod_type">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="cinclude" type="cinclude_type"/>
+        <xsd:element name="ld" type="flag_type"/>
+        <xsd:element name="cxx" type="flag_type"/>
+        <xsd:element name="link" type="link_type"/>
+      </xsd:choice>
+      <xsd:element minOccurs="0" maxOccurs="1" name="code" type="xsd:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+    <xsd:attribute name="function" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="type_map_type">
+    <xsd:attribute name="replace" type="xsd:NCName" use="required"/>
+    <xsd:attribute name="with" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="type_get_type">
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="template_use_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="type-map" type="type_map_type"/>
+      <xsd:element name="type-get" type="type_get_type"/>
+    </xsd:choice>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+    <xsd:attribute name="use" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="use_type">
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="require_type">
+    <xsd:attribute name="key" type="xsd:string" use="required"/>
+    <xsd:attribute name="mandatory" type="xsd:boolean" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="template_parameter_type">
+    <xsd:attribute name="type" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="place_type">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="properties" type="property_map_type"/>
+        <xsd:element name="include-properties" type="properties_include_type"/>
+      </xsd:choice>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="token" type="token_type"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+    <xsd:attribute name="type" type="xsd:string" use="required"/>
+    <xsd:attribute name="virtual" type="xsd:boolean" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="port_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-properties" type="properties_include_type"/>
+    </xsd:choice>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+    <xsd:attribute name="type" type="xsd:string" use="required"/>
+    <xsd:attribute name="place" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="connect_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-properties" type="properties_include_type"/>
+    </xsd:choice>
+    <xsd:attribute name="place" type="xsd:string" use="required"/>
+    <xsd:attribute name="port" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="place_map_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-properties" type="properties_include_type"/>
+    </xsd:choice>
+    <xsd:attribute name="virtual" type="xsd:string" use="required"/>
+    <xsd:attribute name="real" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="template_type">
+    <xsd:sequence>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="template-parameter" type="template_parameter_type"/>
+      <xsd:element minOccurs="1" maxOccurs="1" name="defun" type="function_type"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:ID" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="function_type">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="properties" type="property_map_type"/>
+        <xsd:element name="include-properties" type="properties_include_type"/>
+        <xsd:element name="require" type="require_type"/>
+        <xsd:element name="struct" type="struct_type"/>
+        <xsd:element name="include-structs" type="struct_include_type"/>
+      </xsd:choice>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="in" type="port_type"/>
+        <xsd:element name="out" type="port_type"/>
+        <xsd:element name="inout" type="port_type"/>
+        <xsd:element name="tunnel" type="port_type"/>
+      </xsd:choice>
+      <xsd:choice>
+        <xsd:element minOccurs="1" maxOccurs="unbounded" name="expression" type="xsd:string"/>
+        <xsd:element minOccurs="1" maxOccurs="1" name="module" type="mod_type"/>
+        <xsd:element minOccurs="1" maxOccurs="1" name="net" type="net_type"/>
+      </xsd:choice>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="condition" type="xsd:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:NCName" use="optional"/>
+    <xsd:attribute name="internal" type="xsd:boolean" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="transition_type">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="properties" type="property_map_type"/>
+        <xsd:element name="include-properties" type="properties_include_type"/>
+        <xsd:element name="require" type="require_type"/>
+      </xsd:choice>
+      <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:element name="defun" type="function_type"/>
+        <xsd:element name="include-function" type="transition_include_type"/>
+        <xsd:element name="use" type="use_type"/>
+      </xsd:choice>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="connect-in" type="connect_type"/>
+        <xsd:element name="connect-out" type="connect_type"/>
+        <xsd:element name="connect-inout" type="connect_type"/>
+        <xsd:element name="connect-read" type="connect_type"/>
+        <xsd:element name="place-map" type="place_map_type"/>
+        <xsd:element name="condition" type="xsd:string"/>
+      </xsd:choice>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+    <xsd:attribute name="priority" type="xsd:nonNegativeInteger" use="optional"/>
+    <xsd:attribute name="inline" type="xsd:boolean" use="optional"/>
+    <xsd:attribute name="internal" type="xsd:boolean" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="net_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="include-properties" type="properties_include_type"/>
+      <xsd:element name="include-structs" type="struct_include_type"/>
+      <xsd:element name="include-template" type="function_include_type"/>
+      <xsd:element name="place" type="place_type"/>
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="specialize" type="template_use_type"/>
+      <xsd:element name="struct" type="struct_type"/>
+      <xsd:element name="template" type="template_type"/>
+      <xsd:element name="transition" type="transition_type"/>
+    </xsd:choice>
+  </xsd:complexType>
+</xsd:schema>

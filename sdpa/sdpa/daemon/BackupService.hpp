@@ -20,7 +20,7 @@
 
 #include <iostream>
 #include <boost/thread.hpp>
-#include <sdpa/daemon/IComm.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/fstream.hpp>
 
@@ -34,7 +34,7 @@ namespace daemon
 	class BackupService
 	{
 	public:
-		BackupService(IComm* pHandler)
+		BackupService(IAgent* pHandler)
 			: SDPA_INIT_LOGGER(pHandler->name() + ": BackupService")
 			, m_ptrDaemon_(pHandler)
 			, m_bStopRequested(false)
@@ -92,8 +92,7 @@ namespace daemon
 				return;
 			}
 
-			int k=0;
-			m_bStarted = true;
+                        m_bStarted = true;
 			while(!m_bStopRequested)
 			{
 				try
@@ -128,7 +127,6 @@ namespace daemon
 				return;
 			}
 
-			int k=0;
 			m_bStarted = true;
 			bfs::path tmpBakFile = m_backupFile.string()+".tmp";
 			while(!m_bStopRequested)
@@ -163,7 +161,7 @@ namespace daemon
 			boost::filesystem::rename(tmpBakFile, m_backupFile);
 		}
 
-		sdpa::daemon::IComm* daemon() { return m_ptrDaemon_; }
+		sdpa::daemon::IAgent* daemon() { return m_ptrDaemon_; }
 
 		void setBackupInterval(const sdpa::util::time_type& backup_interval) { m_backup_interval = backup_interval; }
 
@@ -171,7 +169,7 @@ namespace daemon
 
 	private:
 		SDPA_DECLARE_LOGGER();
-		mutable sdpa::daemon::IComm* m_ptrDaemon_;
+		mutable sdpa::daemon::IAgent* m_ptrDaemon_;
 		bool m_bStopRequested;
 		boost::thread m_thread;
 		std::string m_strBackupDaemon;

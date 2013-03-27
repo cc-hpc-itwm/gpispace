@@ -1,53 +1,17 @@
 #define BOOST_TEST_MODULE TestStopRestartDrtsSubscriberCli
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
-#include <sdpa/daemon/Worker.hpp>
-#include <sdpa/JobId.hpp>
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include "boost/serialization/map.hpp"
-#include <sdpa/daemon/JobManager.hpp>
-
-#include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
-#include <seda/StageRegistry.hpp>
-#include <seda/Strategy.hpp>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_server.hpp>
-#include <boost/thread.hpp>
 
 #include "tests_config.hpp"
 #include <boost/filesystem/fstream.hpp>
-
-#include <sdpa/engine/DummyWorkflowEngine.hpp>
-#include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
-
-//plugin
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <tests/sdpa/CreateDrtsWorker.hpp>
+#include "kvs_setup_fixture.hpp"
 
 namespace bfs=boost::filesystem;
 using namespace sdpa::tests;
@@ -56,405 +20,249 @@ using namespace sdpa;
 using namespace std;
 using namespace seda;
 
-static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("0"); return s; }
 
 const int NMAXTRIALS = 10;
-const int MAX_CAP        = 100;
-static int testNb        = 0;
+const int MAX_CAP = 100;
+static int testNb = 0;
 
 namespace po = boost::program_options;
 
 #define NO_GUI ""
 
+BOOST_GLOBAL_FIXTURE (KVSSetup);
+
 struct MyFixture
 {
-    MyFixture()
-		: m_nITER(1)
-		, m_sleep_interval(1000) //microseconds
-		, m_pool (0)
-		, m_kvsd (0)
-		, m_serv (0)
-		, m_thrd (0)
-		, m_arrAggMasterInfo(1
-		, MasterInfo("orchestrator_0"))
-    { //initialize and start the finite state machine
-        FHGLOG_SETUP();
+	MyFixture()
+			: m_nITER(1)
+			, m_sleep_interval(1000) //microseconds
+			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+	{
+		LOG(DEBUG, "Fixture's constructor called ...");
+		m_strWorkflow = read_workflow("workflows/transform_file.pnet");
+	}
 
-        LOG(DEBUG, "Fixture's constructor called ...");
-
-        m_pool = new fhg::com::io_service_pool(1);
-        m_kvsd = new fhg::com::kvs::server::kvsd ("");
-        m_serv = new fhg::com::tcp_server ( *m_pool
-                                            , *m_kvsd
-                                            , kvs_host ()
-                                            , kvs_port ()
-                                            , true
-        								);
-
-        m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-                                                , m_pool
-                                                )
-                                    );
-
-        m_serv->start();
-
-        LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
-
-        fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-                                                    , boost::lexical_cast<std::string>(m_serv->port())
-                                                    , boost::posix_time::seconds(10)
-                                                    , 3
-                                                    );
-    }
-
-    ~MyFixture()
-    {
+	~MyFixture()
+	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 
-		m_serv->stop ();
-		m_pool->stop ();
-		if(m_thrd->joinable())
-		  m_thrd->join ();
-
-		delete m_thrd;
-		delete m_serv;
-		delete m_kvsd;
-		delete m_pool;
-
+		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
-    }
+	}
 
-    void run_client_subscriber();
-    int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli );
+	void run_client_subscriber();
+	int subscribe_and_wait( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli );
 
-    sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
+	string read_workflow(string strFileName)
+	{
+		ifstream f(strFileName.c_str());
+		ostringstream os;
+		os.str("");
 
-    string read_workflow(string strFileName)
-    {
-      ifstream f(strFileName.c_str());
-      ostringstream os;
-      os.str("");
+		if( f.is_open() )
+		{
+			char c;
+			while (f.get(c)) os<<c;
+			f.close();
+		}else
+			cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
 
-      if( f.is_open() )
-      {
-        char c;
-        while (f.get(c)) os<<c;
-        f.close();
-      }else
-        cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
+		return os.str();
+	}
 
-      return os.str();
-    }
-
-    int m_nITER;
-    int m_sleep_interval ;
+	int m_nITER;
+	int m_sleep_interval ;
     std::string m_strWorkflow;
 
-    fhg::com::io_service_pool *m_pool;
-    fhg::com::kvs::server::kvsd *m_kvsd;
-    fhg::com::tcp_server *m_serv;
-    boost::thread *m_thrd;
+	sdpa::master_info_list_t m_arrAggMasterInfo;
 
-    sdpa::master_info_list_t m_arrAggMasterInfo;
+	std::string strBackupOrch;
+	std::string strBackupAgent;
 
-    std::string strBackupOrch;
-    std::string strBackupAgent;
-
-    boost::thread m_threadClient;
+	boost::thread m_threadClient;
 };
 
 
+/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
-    typedef boost::posix_time::ptime time_type;
-    time_type poll_start = boost::posix_time::microsec_clock::local_time();
+	typedef boost::posix_time::ptime time_type;
+	time_type poll_start = boost::posix_time::microsec_clock::local_time();
 
-    int exit_code(4);
+	int exit_code(4);
+	std::string job_status;
+	bool bSubscribed=false;
 
-    ptrCli->subscribe(job_id);
+  	int nTrials = 0;
+  	do
+  	{
+  		do
+		{
+			try
+			{
+				ptrCli->subscribe(job_id);
+				bSubscribed = true;
+			}
+			catch(...)
+			{
+				bSubscribed = false;
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
+			}
 
-    LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+			if(bSubscribed)
+				break;
 
-    std::string job_status;
+			nTrials++;
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 
-    int nTrials = 0;
-    do {
+		}while(nTrials<NMAXTRIALS);
 
-        LOG(INFO, "start waiting at: " << poll_start);
+		if(bSubscribed)
+		{
+			LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+			nTrials = 0;
+		}
+		else
+		{
+			LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
+		  	return exit_code;
+		}
 
-        try
-        {
-          if(nTrials<NMAXTRIALS)
-          {
-            boost::this_thread::sleep(boost::posix_time::seconds(1));
-            LOG(INFO, "Re-trying ...");
-          }
 
-          LOG(INFO, "The client waits for a notification from the orchestrator ...");
-          seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
-          LOG(INFO, "The client receive for the notification ...");
+  		LOG(INFO, "start waiting at: " << poll_start);
 
-          // check event type
-          if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
-          {
-            job_status="Finished";
-            exit_code = 0;
-          }
-          else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
-          {
-            job_status="Failed";
-            exit_code = 1;
-          }
-          else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
-          {
-            job_status="Cancelled";
-            exit_code = 2;
-          }
-          else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
-          {
-            std::cerr<< "got error event: reason := "
-                        + err->reason()
-                        + " code := "
-                        + boost::lexical_cast<std::string>(err->error_code())<<std::endl;
+  		try
+  		{
+  			if(nTrials<NMAXTRIALS)
+  			{
+  				boost::this_thread::sleep(boost::posix_time::seconds(1));
+  				LOG(INFO, "Re-trying ...");
+  			}
 
-          }
-          else
-          {
-            LOG(WARN, "unexpected reply: " << (reply ? reply->str() : "null"));
-          }
-        }
-        catch (const sdpa::client::Timedout &)
-        {
-          LOG(INFO, "Timeout expired!");
-        }
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
 
-    }while(exit_code == 4 && ++nTrials<NMAXTRIALS);
+			// check event type
+			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
+			{
+				job_status="Finished";
+				LOG(WARN, "The job has finished!");
+				exit_code = 0;
+			}
+			else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
+			{
+				job_status="Failed";
+				LOG(WARN, "The job has failed!");
+				exit_code = 1;
+			}
+			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
+			{
+				LOG(WARN, "The job has been canceled!");
+				job_status="Cancelled";
+				exit_code = 2;
+			}
+			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
+			{
+				LOG(WARN, "got error event: reason := "
+							+ err->reason()
+							+ " code := "
+							+ boost::lexical_cast<std::string>(err->error_code()));
 
-    std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
+				// give some time to the orchestrator to come up
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 
-    if( job_status != std::string("Finished") &&
-            job_status != std::string("Failed")   &&
-            job_status != std::string("Cancelled") )
-    {
-    	LOG(ERROR, "Unexpected status, leave now ...");
-    	return exit_code;
-    }
+			}
+			else
+			{
+				LOG(WARN, "unexpected reply: " << (reply ? reply->str() : "null"));
+			}
+		}
+		catch (const sdpa::client::Timedout &)
+		{
+			LOG(INFO, "Timeout expired!");
+		}
 
-    time_type poll_end = boost::posix_time::microsec_clock::local_time();
+  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS);
 
-    LOG(INFO, "Client stopped waiting at: " << poll_end);
-    LOG(INFO, "Execution time: " << (poll_end - poll_start));
-    return exit_code;
+  	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
+
+  	if( job_status != std::string("Finished") &&
+  		job_status != std::string("Failed")   &&
+  		job_status != std::string("Cancelled") )
+  	{
+  		LOG(ERROR, "Unexpected status, leave now ...");
+  		return exit_code;
+  	}
+
+  	time_type poll_end = boost::posix_time::microsec_clock::local_time();
+
+  	LOG(INFO, "Client stopped waiting at: " << poll_end);
+  	LOG(INFO, "Execution time: " << (poll_end - poll_start));
+  	return exit_code;
 }
 
 void MyFixture::run_client_subscriber()
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
-    std::vector<std::string> cav;
-    cav.push_back("--orchestrator=orchestrator_0");
-    cav.push_back("--network.timeout=0");
-    config.parse_command_line(cav);
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	cav.push_back("--network.timeout=-1");
+	config.parse_command_line(cav);
 
-    std::ostringstream osstr;
-    osstr<<"sdpac_"<<testNb++;
+	std::ostringstream osstr;
+	osstr<<"sdpac_"<<testNb++;
 
-    LOG( INFO, "Starting the client "<<osstr.str()<<" ... "); //<<m_strWorkflow);
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
+	ptrCli->configure_network( config );
 
-    sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
-    ptrCli->configure_network( config );
-
-	int nTrials = 0;
-	sdpa::job_id_t job_id_user;
-
-	try {
-		LOG( INFO, "Submitting new workflow :"<<m_strWorkflow);
-		job_id_user = ptrCli->submitJob(m_strWorkflow);
-	}
-	catch(const sdpa::client::ClientException& cliExc)
+	for( int k=0; k<m_nITER; k++ )
 	{
-		if(nTrials++ > NMAXTRIALS)
+		int nTrials = 0;
+		sdpa::job_id_t job_id_user;
+
+		try {
+
+			LOG( DEBUG, "Submitting new workflow ..."); //<<m_strWorkflow);
+			job_id_user = ptrCli->submitJob(m_strWorkflow);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
 		{
-			LOG( INFO, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+			if(nTrials++ > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
+				return;
+			}
+		}
+
+		LOG( DEBUG, "//JOB #"<<k<<"//");
+
+
+		subscribe_and_wait( job_id_user, ptrCli );
+
+		try {
+			LOG( DEBUG, "User: delete the job "<<job_id_user);
+			ptrCli->deleteJob(job_id_user);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
 			return;
 		}
-
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
 
-	int exit_code = subscribe_and_wait( job_id_user, ptrCli );
-
-	try {
-		LOG( INFO, "User: delete the job "<<job_id_user);
-		ptrCli->deleteJob(job_id_user);
-	}
-	catch(const sdpa::client::ClientException& cliExc)
-	{
-		LOG( INFO, "The maximum number of  trials was exceeded. Giving-up now!");
-
-		ptrCli->shutdown_network();
-		ptrCli.reset();
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
-		return;
-	}
-
-    ptrCli->shutdown_network();
-    boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-}
-
-sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
-{
-    sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
-
-    kernel->put("plugin.kvs.host", kvs_host());
-    kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
-
-    kernel->put("plugin.drts.name", drtsName);
-    kernel->put("plugin.drts.master", masterName);
-    kernel->put("plugin.drts.backlog", "2");
-    //kernel->put("plugin.drts.request-mode", "false");
-
-    kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-    kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
-    kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-    kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-    //kernel->load_plugin (TESTS_WFE_TEST_PLUGIN_PATH);
-    //kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
-    kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
-
-    return kernel;
+	ptrCli->shutdown_network();
+	ptrCli.reset();
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
-
-BOOST_AUTO_TEST_CASE( testStopRestartDrtsEmptyWE)
-{
-    LOG( DEBUG, "testStopRestartDrtsEmptyWE");
-    //guiUrl
-    string guiUrl           = "";
-    string workerUrl        = "127.0.0.1:5500";
-    string addrOrch         = "127.0.0.1";
-    string addrAgent        = "127.0.0.1";
-
-
-    typedef void OrchWorkflowEngine;
-
-    m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-    LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-    sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-    ptrOrch->start_agent(false, strBackupOrch);
-
-    sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-    ptrAgent->start_agent(false, strBackupAgent);
-
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
-    boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-    boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
-
-    MLOG (INFO, "************ stopping client");
-    if( threadClient.joinable() )
-    	threadClient.join();
-    MLOG (INFO, "************ stopped client");
-
-    // create new drts
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
-    boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
-
-    MLOG (INFO, "************ stopping client");
-    if( threadClient.joinable() )
-    	threadClient.join();
-    MLOG (INFO, "************ stopped client");
-
-    // and stop!!!
-    MLOG (INFO, "************ stopping drts_new");
-    drts_new->stop();
-    if(drts_new_thread.joinable())
-    	drts_new_thread.join();
-    MLOG (INFO, "************ stopped drts_new");
-
-    ptrAgent->shutdown();
-    ptrOrch->shutdown();
-
-    LOG( INFO
-       , "The test case testStopRestartDrtsEmptyWE terminated!"
-       );
-}
-
-/*
-BOOST_AUTO_TEST_CASE( testStopRestartMultipleDrtsEmptyWE)
-{
-    LOG( DEBUG, "testStopRestartDrtsEmptyWE");
-    //guiUrl
-    string guiUrl           = "";
-    string workerUrl        = "127.0.0.1:5500";
-    string addrOrch         = "127.0.0.1";
-    string addrAgent        = "127.0.0.1";
-
-
-    typedef void OrchWorkflowEngine;
-
-    m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-    LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-    sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-    ptrOrch->start_agent(false, strBackupOrch);
-
-    sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-    ptrAgent->start_agent(false, strBackupAgent);
-
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_1( create_drts("drts_1", "agent_0") );
-
-    boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-    boost::thread drts_1_thread = boost::thread(&fhg::core::kernel_t::run, drts_1);
-
-    boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
-
-    MLOG (INFO, "************ stopping drts_0");
-    drts_0->stop();
-    if(drts_0_thread.joinable())
-    	drts_0_thread.join();
-    MLOG (INFO, "************ stopped drts_0");
-
-    // create new drts
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_0_new( create_drts("drts_0_new", "agent_0") );
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_1_new( create_drts("drts_1_new", "agent_0") );
-
-    boost::thread drts_0_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_0_new);
-    boost::thread drts_1_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_1_new);
-
-    MLOG (INFO, "************ stopping client");
-    if( threadClient.joinable() )
-    	threadClient.join();
-    MLOG (INFO, "************ client stopped");
-
-    // and stop!!!
-    drts_0_new->stop();
-    drts_0_new->stop();
-
-    if(drts_0_new_thread.joinable())
-    	drts_0_new_thread.join();
-    MLOG (INFO, "************ stopped drts_0_new");
-    if(drts_1_new_thread.joinable())
-    	drts_1_new_thread.join();
-    MLOG (INFO, "************ stopped drts_1_new");
-
-    ptrAgent->shutdown();
-    ptrOrch->shutdown();
-
-    LOG( INFO
-       , "The test case testStopRestartDrtsEmptyWE terminated!"
-       );
-}
 
 BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
 {
@@ -467,8 +275,8 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
 
     typedef void OrchWorkflowEngine;
 
-    m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-    LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+    m_strWorkflow = read_workflow("workflows/transform_file.pnet");
+    //LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
     sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
     ptrOrch->start_agent(false, strBackupOrch);
@@ -477,7 +285,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
     sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
     ptrAgent->start_agent(false, strBackupAgent);
 
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
     boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
     boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
@@ -489,7 +297,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
     MLOG (INFO, "************ stopped drts_0");
 
     // create new drts
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_new( create_drts("drts_new", "agent_0") );
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_new( createDRTSWorker("drts_new", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
     boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
 
     MLOG (INFO, "************ stopping client");
@@ -509,6 +317,5 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
 
     LOG( INFO, "The test case testStopRestartDrtsRealWE terminated!");
 }
-*/
 
 BOOST_AUTO_TEST_SUITE_END()

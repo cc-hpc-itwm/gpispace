@@ -11,8 +11,6 @@ volatile int TTVMMemHandler::threadcom = 0;
 
 #include <pthread.h>
 
-static pthread_mutex_t fvm_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 TTVMMemHandler::TTVMMemHandler():Src00(NULL),Src01(NULL),Src10(NULL),Src11(NULL),Rcv00(NULL),Rcv01(NULL),Rcv10(NULL),Rcv11(NULL)
 {
   endianess = TestByteOrder();

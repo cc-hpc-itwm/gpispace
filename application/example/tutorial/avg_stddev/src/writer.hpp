@@ -4,6 +4,9 @@
 #include <queue.hpp>
 #include <stdexcept>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <sstream>
 
 template<typename T>
 class writer
@@ -27,26 +30,33 @@ public:
     , _file (file)
   {}
 
-  void operator () ()
+  void operator() ()
   {
     buffer_type buffer;
 
     do
+    {
+      buffer = _queue_full.get();
+
+      if (buffer.count() != fwrite ( buffer.begin()
+                                   , sizeof (T)
+                                   , buffer.count()
+                                   , _file
+                                   )
+         )
       {
-        buffer = _queue_full.get();
+        const int ec (errno);
 
-        if (buffer.count() != fwrite ( buffer.begin()
-                                     , sizeof (T)
-                                     , buffer.count()
-                                     , _file
-                                     )
-           )
-          {
-            throw std::runtime_error ("write failed");
-          }
+        std::ostringstream oss;
 
-        _queue_empty.put (buffer);
+        oss << "write failed: ec = " << ec
+            << ", reason = " << strerror (ec);
+
+        throw std::runtime_error (oss.str());
       }
+
+      _queue_empty.put (buffer);
+    }
     while (buffer.count() != 0);
   }
 };

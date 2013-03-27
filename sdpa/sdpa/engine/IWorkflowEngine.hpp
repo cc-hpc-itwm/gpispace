@@ -1,141 +1,21 @@
-/*
- * =====================================================================================
- *
- *       Filename:  IWorkflowEngine.hpp
- *
- *    Description:  Redefines the interface to gwes
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// tiberiu.rotaru@itwm.fraunhofer.de
+
 #ifndef IWORKFLOWENGINE_HPP
-#define IWORKFLOWENGINE_HPP 1
+#define IWORKFLOWENGINE_HPP
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/assume_abstract.hpp>
-
-#include <sdpa/sdpa-config.hpp>
-
-#ifdef USE_REAL_WE
-	#include <we/mgmt/basic_layer.hpp>
-	#include <we/mgmt/bits/signal.hpp>
-	#include <we/type/requirement.hpp>
-	#include <we/mgmt/layer.hpp>
-	#include <we/loader/putget.hpp>
-#else
-	#include <vector>
-	#include <boost/unordered_set.hpp>
-	#include <boost/unordered_map.hpp>
-#endif
+#include <we/mgmt/basic_layer.hpp>
+#include <we/mgmt/layer.hpp>
+#include <we/type/requirement.hpp>
 
 typedef we::mgmt::basic_layer::id_type id_type;
 typedef we::mgmt::basic_layer::result_type result_type;
 typedef we::mgmt::basic_layer::reason_type reason_type;
 typedef we::mgmt::basic_layer::encoded_type encoded_type;
 
-enum ExecutionState
- {
-	  ACTIVITY_FINISHED
-	, ACTIVITY_FAILED
-	, ACTIVITY_CANCELLED
- };
+typedef we::type::requirement_t requirement_t;
+typedef std::list<requirement_t> requirement_list_t;
 
-typedef std::pair<ExecutionState, result_type> execution_result_t;
-
-#ifdef USE_REAL_WE
-		typedef we::type::requirement_t requirement_t;
-		typedef std::list<requirement_t> requirement_list_t;
-		typedef we::mgmt::basic_layer IWorkflowEngine;
-#else
-	   // template <typename T>
-	    struct requirement_t
-	    {
-	      typedef std::string value_type;
-	      typedef value_type argument_type;
-
-	      explicit
-	      requirement_t (value_type arg, const bool _mandatory = false)
-	        : value_(arg)
-	        , mandatory_(_mandatory)
-	      {}
-
-	      requirement_t (requirement_t<T> const &other)
-	        : value_(other.value_)
-	        , mandatory_(other.mandatory_)
-	      {}
-
-	      requirement_t<T> & operator=(requirement_t<T> const & rhs)
-	      {
-	        this->value_ = rhs.value_;
-	        this->mandatory_ = rhs.mandatory_;
-	        return *this;
-	      }
-
-	      ~requirement_t () {}
-
-	      virtual bool is_mandatory (void) const
-	      {
-	        return mandatory_;
-	      }
-
-	      const value_type & value(void) const
-	      {
-	        return value_;
-	      }
-
-	      void value(const value_type & val)
-	      {
-	        value_ = val;
-	      }
-	    private:
-	      bool mandatory_;
-	      value_type value_;
-	    };
-
-	    typedef std::list<requirement_t> requirement_list_t;
-
-	    template <typename T>
-	    requirement_t<T> make_mandatory (T val)
-	    {
-	      return requirement_t<T> (val, true);
-	    }
-
-	    template <typename T>
-	    requirement_t<T> make_optional (T val)
-	    {
-	      return requirement_t<T> (val, false);
-	    }
-
-		struct IWorkflowEngine
-		{
-			virtual void submit(const id_type & id, const encoded_type & ) = 0;
-			virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
-
-			virtual bool finished(const id_type & id, const result_type & result) = 0;
-			virtual bool failed(const id_type & id, const result_type & result) = 0;
-			virtual bool cancelled(const id_type & id) = 0;
-
-			virtual void set_rank(const unsigned int& rank ){ //to be overridden! }
-
-			virtual ~IWorkflowEngine() {}
-
-			friend class boost::serialization::access;
-
-			template <class Archive>
-			void serialize(Archive&, const unsigned int ){}
-		};
-
-#endif
+typedef we::mgmt::basic_layer IWorkflowEngine;
+typedef we::mgmt::layer RealWorkflowEngine;
 
 #endif //IWORKFLOWENGINE_HPP

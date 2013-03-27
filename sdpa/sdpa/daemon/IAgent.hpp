@@ -3,10 +3,10 @@
  *
  *       Filename:  IAgent.hpp
  *
- *    Description:  Redefines the interface to gwes
+ *    Description:  Interface used for communication
  *
  *        Version:  1.0
- *        Created:
+ *        Created:  2004
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,54 +15,86 @@
  *
  * =====================================================================================
  */
-#ifndef IAGENT_HPP
-#define IAGENT_HPP 1
+#ifndef SDPA_ICOMM_HPP
+#define SDPA_ICOMM_HPP 1
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
+#include <sdpa/daemon/mpl.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/memory.hpp>
 
-#include <boost/serialization/assume_abstract.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 
-// Assume ids of type string
-typedef std::string id_type;
-typedef std::string result_type;
-typedef std::string reason_type;
-typedef std::string encoded_type;
+#include <seda/Stage.hpp>
+#include <sdpa/util/Config.hpp>
+#include <sdpa/types.hpp>
+#include <sdpa/daemon/JobManager.hpp>
+#include <sdpa/daemon/Worker.hpp>
+#include <sdpa/JobId.hpp>
 
-inline const requirement_list_t empty_req_list()
-{
-  static requirement_list_t e_req_list;
-  return e_req_list;
-}
+namespace sdpa {
+  namespace daemon {
+  const std::string WE("WE");
 
-struct IAgent
-{
+  class IAgent
+  {
+    public:
+    virtual ~IAgent() {}
 
-  virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() ) = 0;
-  virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
+    virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e) = 0;
+    virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e) = 0;
+    virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e) = 0;
+    virtual void requestRegistration() = 0;
+    virtual void requestRegistration(const MasterInfo& masterInfo) = 0;
+    virtual void requestJob(const MasterInfo& masterInfo) = 0;
 
-  virtual bool finished(const id_type & id, const result_type & result) = 0;
-  virtual bool failed( const id_type& id
-                       , const result_type & result
-                       , int error_code
-                       , std::string const & reason
-                       ) = 0;
+    virtual JobManager::ptr_t jobManager() const = 0;
 
-  virtual bool cancelled(const id_type & id) = 0;
+    virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const = 0;
+    virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const = 0;
+    virtual void deleteJob(const sdpa::job_id_t& ) = 0;
 
-  virtual bool finished(const id_type & id, const result_type & result, const id_type& ) { return false; }
+    virtual const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
 
-  virtual ~IAgent () {}
+    virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
+    virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;
 
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive&, const unsigned int ){}
+    virtual void activityFailed( const Worker::worker_id_t& worker_id
+                                 , const job_id_t& jobId
+                                 , const std::string& result
+                                 , const int error_code
+                                 , const std::string& reason
+                                 ) = 0;
 
-  virtual void notifyAppGui(const result_type & result) {};
-};
+    virtual void activityFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
+    virtual void activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id ) = 0;
 
-#endif //IAGENT_HPP
+    virtual const std::string& name() const = 0;
+    //virtual bool is_registered() const = 0;
+    virtual sdpa::util::Config& cfg() = 0;
+
+    virtual unsigned int& rank() = 0;
+    virtual const sdpa::worker_id_t& agent_uuid() = 0;
+
+    virtual void updateLastRequestTime() = 0;
+    virtual bool requestsAllowed() = 0;
+
+    virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& last_id = sdpa::JobId::invalid_job_id()) = 0;
+
+    virtual void schedule(const sdpa::job_id_t& job) = 0;
+    virtual bool hasWorkflowEngine() = 0;
+    virtual bool isTop() = 0;
+
+    virtual void backup( std::ostream& ) = 0;
+    virtual void recover( std::istream& ) = 0;
+
+    virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
+
+    virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
+    virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
+    virtual void addCapability(const capability_t&) = 0;
+    virtual bool canRunTasksLocally() { return false; }
+  };
+
+}}
+
+#endif

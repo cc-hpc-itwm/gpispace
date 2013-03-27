@@ -1,0 +1,13 @@
+# mirko.rahn@itwm.fraunhofer.de
+
+source "@CMAKE_CURRENT_BINARY_DIR@/error.sh"
+source "@CMAKE_CURRENT_BINARY_DIR@/die.sh"
+
+DIR_BUILD=$(mktemp -d)                                      || die $EX_ERR_OTHER
+
+echo "DIR_BUILD = ${DIR_BUILD}"                             || die $EX_ERR_OTHER
+
+cleanup_dir_build()
+{
+  rmdir "${DIR_BUILD}"
+}

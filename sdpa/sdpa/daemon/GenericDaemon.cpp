@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/JobFSM.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/events/CodecStrategy.hpp>
 #include <seda/EventPrioQueue.hpp>
@@ -174,7 +174,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
   if( !strBackup.empty() )
   {
     SDPA_LOG_INFO( "The backup file is not empty! Attempting to recover the daemon "<<name());
-    LOG(INFO, "The recovery string is: "<<strBackup);
+    //LOG(INFO, "The recovery string is: "<<strBackup);
     std::stringstream iostr(strBackup);
     recover(iostr);
 
@@ -371,34 +371,60 @@ void GenericDaemon::shutdown_network()
   }
 }
 
-/**
- * Stop the agent.
- */
 void GenericDaemon::stop()
 {
-  MLOG (INFO, name () << " is shutting down...");
+  SDPA_LOG_INFO("Shutting down...");
 
+  SDPA_LOG_INFO("Stop the scheduler now!");
   scheduler()->stop();
+  SDPA_LOG_INFO("The scheduler was stopped!");
 
+  SDPA_LOG_INFO("Stop the backup service now!");
   m_threadBkpService.stop();
+  SDPA_LOG_INFO("The backup service was stopped!");
 
+  // here one should only generate a message of type interrupt
+  SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
+  InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
+  //sendEventToSelf(pEvtInterrupt);
+  handleInterruptEvent(pEvtInterrupt.get());
+
+  // wait to be stopped
+  {
+	  SDPA_LOG_INFO("The daemon can be safely stopped now ...");
+	  lock_type lock(mtx_stop_);
+	  while(!m_bStopped)
+		  cond_can_stop_.wait(lock);
+  }
+
+  // first close the message pipe ...
+  SDPA_LOG_INFO("Shutdown the network...");
   shutdown_network();
 
-  seda::StageRegistry::instance().lookup(name())->stop();
+  //  stop the network stage
+  SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
   seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
 
+  // stop the daemon stage
+  SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
+  seda::StageRegistry::instance().lookup(name())->stop();
+
+  SDPA_LOG_INFO("Removing the network stage...");
+  // remove the network stage
   seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+
+  SDPA_LOG_INFO("Removing the daemon stage...");
+  // remove the daemon stage
   seda::StageRegistry::instance().remove(name());
 
   if( hasWorkflowEngine() )
   {
-    delete ptr_workflow_engine_;
-    ptr_workflow_engine_ = NULL;
+     delete ptr_workflow_engine_;
+     ptr_workflow_engine_ = NULL;
   }
 
-  MLOG (INFO, name () << " was successfully stopped!");
+  SDPA_LOG_INFO("The daemon "<<name()<<" was successfully stopped!");
 }
-
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
@@ -507,7 +533,15 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
   SDPA_LOG_DEBUG("Call 'action_interrupt'");
   // save the current state of the system .i.e serialize the daemon's state
   // the following code shoud be executed on action action_interrupt!!
-  setRequestsAllowed(false);
+
+   // save the current state of the system .i.e serialize the daemon's state
+   // the following code shoud be executed on action action_interrupt!!
+   lock_type lock(mtx_stop_);
+   setRequestsAllowed(false);
+   //m_bStarted 	= false;
+   m_bStopped 	= true;
+
+   cond_can_stop_.notify_one();
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
@@ -962,7 +996,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
           {
             if( error.from() == masterInfo.name() )
             {
-              SDPA_LOG_WARN("The connection with the master " << masterInfo.name() << " is broken!");
+              SDPA_LOG_WARN("The connection to the master " << masterInfo.name() << " is broken!");
               masterInfo.incConsecNetFailCnt();
 
               if( masterInfo.getConsecNetFailCnt() < cfg().get<unsigned long>("max_consecutive_net_faults", 360) )
@@ -1213,35 +1247,17 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
 {
-  try {
-    return jobManager()->findJob(job_id);
-  }
-  catch(const JobNotFoundException& ex)
-  {
-    throw ex;
-  }
+  return jobManager()->findJob(job_id);
 }
 
 void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
 {
-  try {
-    jobManager()->deleteJob(jobId);
-  }
-  catch(const JobNotDeletedException& ex)
-  {
-    throw ex;
-  }
+  jobManager()->deleteJob(jobId);
 }
 
 const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
-  try {
-    return jobManager()->getJobRequirements(jobId);
-  }
-  catch (const NoJobRequirements& ex)
-  {
-    throw ex;
-  }
+  return jobManager()->getJobRequirements(jobId);
 }
 
 void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
@@ -1435,9 +1451,9 @@ void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pE
   try {
     subscribe(pEvt->subscriber(), pEvt->listJobIds());
   }
-  catch(...)
+  catch(const std::exception& exc)
   {
-    SDPA_LOG_WARN("An exception occurred when "<<pEvt->subscriber()<<" was attempting to subscribe!");
+    SDPA_LOG_WARN("An exception occurred when "<<pEvt->subscriber()<<" attempted to subscribe: "<<exc.what());
   }
 }
 
@@ -1525,22 +1541,12 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 
 Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
 {
-  try {
-    return  scheduler()->findWorker(worker_id);
-  }
-  catch(const WorkerNotFoundException& ex) {
-    throw ex;
-  }
+  return scheduler()->findWorker(worker_id);
 }
 
 const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
 {
-  try {
-    return  scheduler()->findWorker(job_id);
-  }
-  catch(const NoWorkerFoundException& ex) {
-    throw ex;
-  }
+  return scheduler()->findWorker(job_id);
 }
 
 void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
@@ -1549,13 +1555,7 @@ void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid )
 {
-  try {
-    scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
-  }
-  catch( const WorkerAlreadyExistException& ex )
-  {
-    throw ex;
-  }
+  scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
 }
 
 void GenericDaemon::updateLastRequestTime()
@@ -1738,11 +1738,6 @@ void GenericDaemon::reschedule(const sdpa::job_id_t& jobId)
   throw std::runtime_error(name() + " does not have scheduler!");
 }
 
-void GenericDaemon::start_fsm()
-{
-  // to be overriden by DaemonFSM
-}
-
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
 {
   lock_type lock(mtx_master_);
@@ -1764,10 +1759,7 @@ void GenericDaemon::addMasters(const agent_id_list_t& listMasters )
 
 bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
 {
-  if( info.name() == agId )
-    return true;
-  else
-    return false;
+  return info.name() == agId;
 }
 
 void GenericDaemon::removeMaster( const agent_id_t& id )
@@ -1793,8 +1785,12 @@ void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
 void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
 {
   lock_type lock(mtx_cpb_);
-  for(sdpa::capabilities_set_t::iterator it = m_capabilities.begin(); it!= m_capabilities.end(); it++ )
-    cpbset.insert(*it);
+  BOOST_FOREACH ( const sdpa::capabilities_set_t::value_type & capability
+                , m_capabilities
+                )
+  {
+    cpbset.insert (capability);
+  }
 
    scheduler()->getAllWorkersCapabilities(cpbset);
 }
@@ -1819,11 +1815,9 @@ void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
 
 bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_id_t& jobId)
 {
-  for(sdpa::job_id_list_t::const_iterator it = m_listSubscribers[agId].begin(); it != m_listSubscribers[agId].end(); it++ )
-    if( *it == jobId )
-      return true;
-
-  return false;
+  return std::find
+    (m_listSubscribers[agId].begin(), m_listSubscribers[agId].end(), jobId)
+    != m_listSubscribers[agId].end();
 }
 
 void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::job_id_list_t& listJobIds)
@@ -1851,52 +1845,61 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   // check if the subscribed jobs are already in a terminal state
   BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
   {
-    //try
-    {
-      Job::ptr_t& pJob = findJob(jobId);
-      sdpa::status_t jobStatus = pJob->getStatus();
+	  try {
+		  Job::ptr_t& pJob = findJob(jobId);
+		  sdpa::status_t jobStatus = pJob->getStatus();
 
-      if(jobStatus.find("Finished") != std::string::npos)
-      {
-        JobFinishedEvent::Ptr pEvtJobFinished
-          (new JobFinishedEvent( name()
-                               , subscriber
-                               , pJob->id()
-                               , pJob->result()
-                               ));
-        sendEventToMaster(pEvtJobFinished);
-      }
-      else if(jobStatus.find("Failed") != std::string::npos)
-      {
-        JobFailedEvent::Ptr pEvtJobFailed
-          (new JobFailedEvent( name()
-                             , subscriber
-                             , pJob->id()
-                             , pJob->result()
-                             )
-          );
-        pEvtJobFailed->error_code() =
-          fhg::error::UNASSIGNED_ERROR;
-        pEvtJobFailed->error_message() =
-          "TODO: take the error message from the job"
-          " pointer somehow";
-        sendEventToMaster(pEvtJobFailed);
-      }
-      else if( jobStatus.find("Cancelled") != std::string::npos)
-      {
-        CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
-        sendEventToMaster(pEvtCancelJobAck);
-      }
-    }
+		  if(jobStatus.find("Finished") != std::string::npos)
+		  {
+			  JobFinishedEvent::Ptr pEvtJobFinished
+			  	  (new JobFinishedEvent( name()
+					  	  	  	  	  , subscriber
+					  	  	  	  	  , pJob->id()
+					  	  	  	  	  , pJob->result()
+							));
+			  sendEventToMaster(pEvtJobFinished);
+		}
+		else if(jobStatus.find("Failed") != std::string::npos)
+		{
+			JobFailedEvent::Ptr pEvtJobFailed
+				(new JobFailedEvent( name()
+									, subscriber
+									, pJob->id()
+									, pJob->result()
+					 ));
+
+			pEvtJobFailed->error_code() = fhg::error::UNASSIGNED_ERROR;
+			pEvtJobFailed->error_message() = "TODO: take the error message from the job pointer somehow";
+			sendEventToMaster(pEvtJobFailed);
+		}
+		else if( jobStatus.find("Cancelled") != std::string::npos)
+		{
+			CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
+			sendEventToMaster(pEvtCancelJobAck);
+		}
+	  }
+	  catch(JobNotFoundException const &)
+	  {
+		  std::string strErr("The job ");
+		  strErr+=jobId.str();
+		  strErr+=" could not be found!";
+
+		  SDPA_LOG_ERROR(strErr);
+		  sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+				  	  	  	  	  	  	  	  	  	  	  	  , subscriber
+				  	  	  	  	  	  	  	  	  	  	  	  , ErrorEvent::SDPA_EJOBNOTFOUND
+				  	  	  	  	  	  	  	  	  	  	  	  , strErr
+		  	  	  	  	  	  	  	  	  	  	  	  	  	  )
+                                           	   ));
+
+     }
   }
 }
 
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 {
   lock_type lock(mtx_subscriber_);
-  sdpa::subscriber_map_t::iterator it = m_listSubscribers.find(agentId);
-
-  return (it != m_listSubscribers.end());
+  return m_listSubscribers.find (agentId) != m_listSubscribers.end();
 }
 
 Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)

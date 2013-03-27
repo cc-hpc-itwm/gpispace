@@ -21,7 +21,6 @@
 #include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>
 
-#include <sdpa/uuidgen.hpp>
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
@@ -68,7 +67,7 @@ public:
     m_graceful_shutdown_requested = false;
 
     m_reconnect_counter = 0;
-    m_my_name =      fhg_kernel()->get("name", "drts");
+    m_my_name =      fhg_kernel()->get_name ();
     try
     {
       m_backlog_size = fhg_kernel()->get<size_t>("backlog", "3");

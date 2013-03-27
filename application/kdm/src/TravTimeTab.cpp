@@ -446,7 +446,6 @@ bool TravTimeTab::Init(const MigrationJob &Job,
     GSrc.GetCoord(nxSrc, nySrc, sx, sy);
     GSrc.GetCoord(nxRcv, nyRcv, gx, gy);
 
-    const int NxVol = GVol.getNx();
     const int NyVol = GVol.getNy();
     const int NzVol = GVol.getNz();
 
@@ -634,7 +633,6 @@ void TravTimeTab::GetTT(float* T, const int& Nz )
 
 void TravTimeTab::GetTT(float* T, float* dTdx, float* dTdy, const int& Nz )
 {
-  float** ctmp = coeff[ixc][iyc];
   int index = 0;
   int iza = iz0/zfac;
   int ize = (Nz+iz0)/zfac;
@@ -705,7 +703,6 @@ void TravTimeTab::GetTT(float* T, float* dTdx, float* dTdy, const int& Nz )
 void TravTimeTab::GetTT(float* T, float* dTdx, float* dTdy, float* ps_plus_pr,
 			float* detQ, float* detH, const int& Nz )
 {
-  float** ctmp = coeff[ixc][iyc];
   int index = 0;
   int iza = iz0/zfac;
   int ize = (Nz+iz0)/zfac;

@@ -7,12 +7,12 @@ message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
 
 add_subdirectory(pnet)
 
-include_directories(./src
-		    ./src/include
-		    ./src/structures
-		    ./src/filehandler
-		    ./src/utils
-                    ../example
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src
+		    ${CMAKE_CURRENT_SOURCE_DIR}/src/include
+		    ${CMAKE_CURRENT_SOURCE_DIR}/src/structures
+		    ${CMAKE_CURRENT_SOURCE_DIR}/src/filehandler
+		    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../example
                     )
 
 set(SRC ./src/main.cpp
@@ -64,12 +64,12 @@ add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM  -DSHMEM)
 
 include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 find_package(FVM REQUIRED)
 include_directories(${FVM_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/we)
+include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
 find_package(UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})

@@ -21,12 +21,12 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV
 include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-#set (QUIET_FIND_PACKAGE QUIET)
+set (QUIET_FIND_PACKAGE QUIET)
 
 if(ENABLE_REAL_GPI)
   find_package (IBVerbs ${QUIET_FIND_PACKAGE})
   if (IBverbs_FOUND)
-    include_directories(${IBverbs_INCLUDE_DIR})
+    include_directories(SYSTEM ${IBverbs_INCLUDE_DIR})
 
     set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
     set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
@@ -67,9 +67,6 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # threads
 include(FindThreads)
-if(CMAKE_USE_PTHREADS_INIT)
-    set(HAVE_PTHREAD_H 1)
-endif(CMAKE_USE_PTHREADS_INIT)
 
 # header files
 include(CheckIncludeFile)
@@ -94,8 +91,7 @@ else (HAVE_GETPW_R_SIZE_MAX)
 endif (HAVE_GETPW_R_SIZE_MAX)
 
 include(SDPAFindBoost)
-message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 find_package (FhgLog REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${FhgLog_INCLUDE_DIR})
@@ -113,16 +109,16 @@ find_package (MMGR REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${MMGR_INCLUDE_DIR})
 
 find_package (LibRT REQUIRED ${QUIET_FIND_PACKAGE})
-include_directories(${LIBRT_INCLUDE_DIR})
+include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
 find_package (ZMQ ${QUIET_FIND_PACKAGE})
 if (ZMQ_FOUND)
-  include_directories (${ZMQ_INCLUDE_DIR})
+  include_directories (SYSTEM ${ZMQ_INCLUDE_DIR})
 endif ()
 
 find_package (CZMQ ${QUIET_FIND_PACKAGE})
 if (CZMQ_FOUND)
-  include_directories (${CZMQ_INCLUDE_DIR})
+  include_directories (SYSTEM ${CZMQ_INCLUDE_DIR})
 endif()
 
 add_subdirectory(gpi-space)

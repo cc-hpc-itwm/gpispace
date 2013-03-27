@@ -64,12 +64,26 @@ namespace mapreduce
 		 return i;
 	  }
 
+      /*
       int hash(const std::string& key, const int N)
 	  {
     	  if(N<=28)
     		  return hash_1(key, N);
     	  else
     		  return hash_2(key, N);
+	  }
+      */
+
+      int hash(const std::string& key, const int N)
+	  {
+    	  if(is_special_item(key))
+    		return N-1;
+
+    	  int sum=0;
+    	  for(int i=0; i<key.size(); i++)
+    		  sum+=key[i];
+
+    	  return sum%(N-1);
 	  }
   }
 }

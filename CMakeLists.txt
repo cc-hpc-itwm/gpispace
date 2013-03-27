@@ -3,7 +3,7 @@ project(sdpa_main)
 
 include (./version.cmake)
 
-set(PROJECT_VERSION  "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version" FORCE)
+set(PROJECT_VERSION      CACHE STRING "Project version")
 set(PROJECT_REVISION     CACHE STRING "Source code revision")
 set(PROJECT_BUILD    "0" CACHE STRING "Build number")
 set(PROJECT_DESCRIPTION "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description")
@@ -30,7 +30,6 @@ OPTION(ENABLE_STATISTICS "enable statistics" NO)
 set(FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set(FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
 option(FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
-set(WITH_COMM OFF)
 
 function(get_revision_info REV_INFO)
   execute_process(
@@ -61,6 +60,31 @@ function(get_revision_info REV_INFO)
   endif (NOT _res)
 endfunction()
 
+function(get_version_info VSN_INFO)
+  execute_process(
+    COMMAND git describe
+    COMMAND sed -e 's/^v//'
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE _out
+    ERROR_VARIABLE _err
+    RESULT_VARIABLE _res
+  )
+  if (NOT _res)
+    string(STRIP "${_out}" _out)
+    set (${VSN_INFO} ${_out} PARENT_SCOPE)
+  else ()
+    set(__new_vsn "${V_MAJOR}.${V_MINOR}")
+    if (V_PATCH)
+      set(__new_vsn "${__new_vsn}.${V_PATCH}")
+    endif()
+    if (V_EXTRA)
+      set(__new_vsn "${__new_vsn}-${V_EXTRA}")
+    endif()
+    set(${VSN_INFO} "${__new_vsn}")
+    unset(__new_vsn)
+  endif (NOT _res)
+endfunction()
+
 get_revision_info (PROJECT_REVISION)
 if (NOT PROJECT_REVISION)
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
@@ -68,12 +92,26 @@ endif (NOT PROJECT_REVISION)
 message (STATUS "Revision: ${PROJECT_REVISION}")
 set(PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
+math(EXPR GSPC_VERSION "${V_MAJOR}*10000 + ${V_MINOR} * 100")
+
+if (V_PATCH)
+  math(EXPR GSPC_VERSION "${GSPC_VERSION} + ${V_PATCH}")
+endif()
+
+get_version_info (PROJECT_VERSION)
+if (NOT PROJECT_VERSION)
+  set(PROJECT_VERSION "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version" FORCE)
+else()
+  set(PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
+endif()
+message (STATUS "Version: ${PROJECT_VERSION}")
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-dev.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-dev.cmake @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/packages.list.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/packages.list.cmake @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/modules.sdpa.in    ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa     @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/configure          ${CMAKE_CURRENT_BINARY_DIR}/configure       @COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/configure          ${CMAKE_CURRENT_BINARY_DIR}/configure       @ONLY)
 
 cmake_minimum_required(VERSION "2.6.7" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -133,10 +171,9 @@ message(STATUS "=== [ fhglog ] ===")
 add_subdirectory(fhglog)
 message(STATUS "=== [ fhgcom ] ===")
 add_subdirectory(fhgcom)
-message(STATUS "=== [ we ] ===")
-add_subdirectory(we)
-message(STATUS "=== [ xml ] ===")
-add_subdirectory(xml)
+
+add_subdirectory (pnet)
+
 message(STATUS "=== [ mmgr ] ===")
 add_subdirectory(mmgr)
 if (ENABLE_FVM_PC)
@@ -183,6 +220,8 @@ include(TargetDoc)
 if (INSTALL_AS_BUNDLE)
   add_subdirectory(bundle)
 endif()
+
+add_subdirectory(test)
 
 # CPACK packaging
 INCLUDE(InstallRequiredSystemLibraries)

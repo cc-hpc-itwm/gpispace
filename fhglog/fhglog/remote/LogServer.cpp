@@ -30,7 +30,7 @@ LogServer::LogServer(const fhg::log::Appender::ptr_t &appender
                    , boost::asio::io_service &io_service
                    , unsigned short port)
   : appender_(appender)
-  , io_service_(io_service)
+    //  , io_service_(io_service)
   , socket_(io_service, udp::endpoint(udp::v4(), port))
 {
   LOG(INFO, "log server listening on " << udp::endpoint(udp::v4(), port));
@@ -62,26 +62,19 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
 
     LogEvent evt;
 
-    try
-    {
-      std::stringstream sstr(msg);
-      boost::archive::text_iarchive ia(sstr);
-      ia & evt;
+    std::stringstream sstr(msg);
+    boost::archive::text_iarchive ia(sstr);
+    ia & evt;
 
-      {
-        // FIXME: think about a better way to introduce some kind of "trace"
+    {
+      // FIXME: think about a better way to introduce some kind of "trace"
         // the following is only meaningful for a flat hierarchy of logservers
-        std::ostringstream ostr;
-        ostr << evt.logged_via() << "@" << sender_endpoint_;
-        evt.logged_via(ostr.str());
-      }
+      std::ostringstream ostr;
+      ostr << evt.logged_via() << "@" << sender_endpoint_;
+      evt.logged_via(ostr.str());
+    }
 
-      appender_->append(evt);
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "could not append log event: " << ex.what());
-    }
+    appender_->append (evt);
   }
   else
   {

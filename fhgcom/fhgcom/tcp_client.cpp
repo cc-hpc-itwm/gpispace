@@ -73,7 +73,7 @@ namespace fhg
         {
           ++connection_attempts_;
 
-          LOG( WARN
+          LOG( TRACE
              , "connecting to [" << host_ << "]:" << port_
              << " failed: " << ex.what()
              << " attempt: " << (connection_attempts_) << "/" << max_connection_attempts_
@@ -112,28 +112,32 @@ namespace fhg
 
       for (; iter != tcp::resolver::iterator(); ++iter)
       {
-        // We may have an open socket from a previous connection attempt. This
-        // socket cannot be reused, so we must close it before trying to connect
-        // again.
-        socket_.close();
+        do
+        {
+          // We may have an open socket from a previous connection attempt. This
+          // socket cannot be reused, so we must close it before trying to connect
+          // again.
+          socket_.close();
 
-        // Set up the variable that receives the result of the asynchronous
-        // operation. The error code is set to would_block to signal that the
-        // operation is incomplete. Asio guarantees that its asynchronous
-        // operations will never fail with would_block, so any other value in
-        // ec indicates completion.
-        ec = boost::asio::error::would_block;
+          // Set up the variable that receives the result of the asynchronous
+          // operation. The error code is set to would_block to signal that the
+          // operation is incomplete. Asio guarantees that its asynchronous
+          // operations will never fail with would_block, so any other value in
+          // ec indicates completion.
+          ec = boost::asio::error::would_block;
 
-        DLOG(TRACE, "trying to connect to " << iter->endpoint());
+          DLOG(TRACE, "trying to connect to " << iter->endpoint());
 
-        // Start the asynchronous operation itself. The boost::lambda function
-        // object is used as a callback and will update the ec variable when the
-        // operation completes. The blocking_udp_client.cpp example shows how you
-        // can use boost::bind rather than boost::lambda.
-        socket_.async_connect(iter->endpoint(), var(ec) = boost::lambda::_1);
+          // Start the asynchronous operation itself. The boost::lambda function
+          // object is used as a callback and will update the ec variable when the
+          // operation completes. The blocking_udp_client.cpp example shows how you
+          // can use boost::bind rather than boost::lambda.
+          socket_.async_connect(iter->endpoint(), var(ec) = boost::lambda::_1);
 
-        // Block until the asynchronous operation has completed.
-        do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+          // Block until the asynchronous operation has completed.
+          do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+
+        } while (ec == boost::system::errc::address_not_available);
 
         // Determine whether a connection was successfully established. The
         // deadline actor may have had a chance to run and close our socket, even
@@ -142,7 +146,7 @@ namespace fhg
         // were successful.
         if (!ec && socket_.is_open())
         {
-          DLOG(DEBUG, "connected to " << socket_.remote_endpoint());
+          MLOG (TRACE, "connected to " << socket_.remote_endpoint());
           return;
         }
       }
@@ -167,7 +171,7 @@ namespace fhg
           try_send (reqst, timeout);
           return try_recv (timeout);
         }
-        catch (...)
+        catch (std::exception const &ex)
         {
           if (auto_reconnect_)
           {
@@ -205,7 +209,8 @@ namespace fhg
                               , boost::posix_time::time_duration timeout
                               )
     {
-      deadline_.expires_from_now(timeout);
+      if (timeout.total_microseconds () > 0)
+        deadline_.expires_from_now (timeout);
 
       // Set up the variable that receives the result of the asynchronous
       // operation. The error code is set to would_block to signal that the
@@ -265,7 +270,8 @@ namespace fhg
 
     std::string tcp_client::try_recv (boost::posix_time::time_duration timeout)
     {
-      deadline_.expires_from_now (timeout);
+      if (timeout.total_microseconds () > 0)
+        deadline_.expires_from_now (timeout);
 
       // Set up the variable that receives the result of the asynchronous
       // operation. The error code is set to would_block to signal that the
@@ -285,10 +291,10 @@ namespace fhg
 
       if (ec)
       {
-        LOG_IF( WARN
-              , ec.value() != boost::asio::error::eof
-              , "recv failed: " << ec << ": " << ec.message();
-              );
+        DMLOG_IF( WARN
+                , ec.value() != boost::asio::error::eof
+                , "recv failed: " << ec << ": " << ec.message();
+                );
         throw boost::system::system_error ( ec.value()
                                           , boost::asio::error::get_misc_category()
                                           );
@@ -299,7 +305,7 @@ namespace fhg
         std::istringstream is (std::string (header, header_length));
         if (! (is >> std::hex >> data_size))
         {
-          LOG(ERROR, "could not parse header: " << std::string(header, header_length));
+          DMLOG (ERROR, "could not parse header: " << std::string(header, header_length));
           throw std::runtime_error ("could not parse header!");
         }
       }
@@ -319,10 +325,10 @@ namespace fhg
 
       if (ec)
       {
-        LOG_IF( WARN
-              , ec.value() != boost::asio::error::eof
-              , "recv failed: " << ec << ": " << ec.message();
-              );
+        DMLOG_IF( WARN
+                , ec.value() != boost::asio::error::eof
+                , "recv failed: " << ec << ": " << ec.message();
+                );
         throw boost::system::system_error ( ec.value()
                                           , boost::asio::error::get_system_category()
                                           );

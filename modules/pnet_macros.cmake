@@ -19,6 +19,10 @@ macro(PNET_COMPILE)
         --Woverwrite-file=false
         --Wbackup-file=false
         --force-overwrite-file=true
+        --Winline-many-output-ports=false
+        --Wshadow-struct=false
+        --Windependent-place=false
+        --Wduplicate-external-function=false
       )
 
   if (PNET_QUIET)
@@ -93,7 +97,7 @@ macro(PNET_COMPILE)
 
   if (PNET_BUILD)
     add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
-      COMMAND "$(MAKE)" -C ${PNET_GENERATE}
+      COMMAND "$(MAKE)" -C ${PNET_GENERATE} "BOOST_ROOT=${Boost_INCLUDE_DIR}/../"
       COMMENT "Building modules for petri-net ${PNET_NAME}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       APPEND

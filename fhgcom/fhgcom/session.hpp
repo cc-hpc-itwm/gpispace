@@ -91,7 +91,7 @@ namespace fhg
       char inbound_header_[header_length];
       std::vector<char> inbound_data_;
 
-      bool send_in_progress_;
+      //      bool send_in_progress_;
       std::list<std::string> to_send_;
 
       manager_t & manager_;

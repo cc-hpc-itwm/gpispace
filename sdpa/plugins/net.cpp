@@ -21,9 +21,7 @@ class PeerImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
-    const std::string default_name
-      (fhg::com::peer_t::hostname() + "-" + boost::lexical_cast<std::string>(getpid()));
-    m_name =      fhg_kernel()->get("name", default_name);
+    m_name =      fhg_kernel()->get ("name", fhg_kernel ()->get_name ());
 
     // initialize peer
     m_peer.reset (new fhg::com::peer_t ( m_name

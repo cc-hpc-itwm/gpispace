@@ -40,7 +40,7 @@ namespace fhg
           void start ( std::string const & server_address
                      , std::string const & server_port
                      , const bool auto_reconnect = true
-                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (15)
+                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
                      , const std::size_t max_connection_attempts = 3
                      )
           {
@@ -62,14 +62,7 @@ namespace fhg
 
           void put (fhg::com::kvs::message::put::map_type const & e)
           {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::put (e).set_expiry (0)
-                    , m
-                    );
-            DLOG(TRACE, "put(...) := " << m);
+            timed_put (e, 0);
           }
 
           void timed_put ( fhg::com::kvs::message::put::map_type const & e
@@ -89,14 +82,7 @@ namespace fhg
           template <typename Val>
           void put (key_type const & k, Val v)
           {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::put (k, v).set_expiry (0)
-                    , m
-                    );
-            DLOG(TRACE, "put(" << k << ", " << v << ") := " << m);
+            this->timed_put<Val>(k, v, 0);
           }
 
           template <typename Val>
@@ -251,7 +237,7 @@ namespace fhg
               ar & msg;
             }
             std::stringstream i_sstr( client.request ( o_sstr.str()
-                                                     , boost::posix_time::seconds(10)
+                                                     , boost::posix_time::seconds(0)
                                                      )
                                     );
             {
@@ -262,19 +248,19 @@ namespace fhg
         };
       }
 
+      typedef boost::shared_ptr<client::kvsc> kvsc_ptr_t;
+
       struct kvs_data
       {
-        typedef boost::shared_ptr<client::kvsc> kvsc_ptr_t;
-
         kvs_data ()
           : is_configured (false)
-          , timeout (boost::posix_time::seconds (15))
+          , timeout (boost::posix_time::seconds (120))
           , max_connection_attempts (3)
         {}
 
         void init ( std::string const & p_host = ""
                   , std::string const & p_port = ""
-                  , const boost::posix_time::time_duration p_timeout = boost::posix_time::seconds (15)
+                  , const boost::posix_time::time_duration p_timeout = boost::posix_time::seconds (120)
                   , const std::size_t p_max_connection_attempts = 3
                   )
         {
@@ -316,15 +302,14 @@ namespace fhg
           assert (! host.empty());
           assert (! port.empty());
 
+          is_configured = true;
+
           if (modified)
           {
-            LOG(TRACE, "global kvs configured to be at: [" << host << "]:" << port);
-
-            stop ();
-            client.reset (new client::kvsc);
+            DLOG (TRACE, "global kvs configured to be at: [" << host << "]:" << port);
+            client = kvsc_ptr_t (new client::kvsc);
+            start ();
           }
-
-          is_configured = true;
         }
 
         void start ()
@@ -382,19 +367,19 @@ namespace fhg
 
         static kvs_data **get_kvs_info_ptr ()
         {
-          static kvs_data * d (new kvs_data);
+          static kvs_data *d = 0;
           if (d == 0)
             d = new kvs_data;
           return &d;
         }
       };
 
-      inline client::kvsc & get_or_create_global_kvs ( std::string const & host = ""
-                                                     , std::string const & port = ""
-                                                     , const bool auto_reconnect = true
-                                                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (15)
-                                                     , const std::size_t max_connection_attempts = 3
-                                                     )
+      inline kvsc_ptr_t get_or_create_global_kvs ( std::string const & host = ""
+                                                 , std::string const & port = ""
+                                                 , const bool auto_reconnect = true
+                                                 , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
+                                                 , const std::size_t max_connection_attempts = 3
+                                                 )
       {
         fhg::com::kvs::global::get_kvs_info().init( host
                                                   , port
@@ -402,15 +387,12 @@ namespace fhg
                                                   , max_connection_attempts
                                                   );
         fhg::com::kvs::global::start();
-        return *global::get_kvs_info ().client;
+        return global::get_kvs_info ().client;
       }
 
-      inline client::kvsc & global_kvs ()
+      inline kvsc_ptr_t global_kvs ()
       {
-        return get_or_create_global_kvs ();
-        // if (! global::get_kvs_info ().is_started)
-        //   global::start();
-        // return *global::get_kvs_info ().client;
+        return global::get_kvs_info ().client;
       }
 
       typedef fhg::com::kvs::message::list::map_type values_type;
@@ -418,54 +400,54 @@ namespace fhg
       inline
       bool ping ()
       {
-        return global_kvs ().ping ();
+        return global_kvs ()->ping ();
       }
 
       inline
       void put (values_type const & e)
       {
-        global_kvs ().put (e);
+        global_kvs ()->put (e);
       }
 
       inline
       void timed_put (values_type const & e, size_t expiry)
       {
-        global_kvs ().timed_put (e, expiry);
+        global_kvs ()->timed_put (e, expiry);
       }
 
       template <typename Key, typename Val>
       inline
       void put (Key k, Val v)
       {
-        global_kvs ().put (k, v);
+        global_kvs ()->put (k, v);
       }
 
       template <typename Key, typename Val>
       inline
       void timed_put (Key k, Val v, size_t expiry)
       {
-        global_kvs ().timed_put (k, v, expiry);
+        global_kvs ()->timed_put (k, v, expiry);
       }
 
       template <typename Key>
       inline
       void del (Key k)
       {
-        return global_kvs().del (k);
+        return global_kvs()->del (k);
       }
 
       template <typename Key>
       inline
       int inc (Key k, int step)
       {
-        return global_kvs().inc (k, step);
+        return global_kvs()->inc (k, step);
       }
 
       template <typename Key>
       inline
       values_type get_tree (Key k)
       {
-        return global_kvs().get(k);
+        return global_kvs()->get(k);
       }
 
       template <typename Val, typename Key>

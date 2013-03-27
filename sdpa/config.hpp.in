@@ -1,14 +1,6 @@
 #ifndef SDPA_CONFIG_H
 #define SDPA_CONFIG_H
 
-#cmakedefine USE_SMC_SC 1
-#cmakedefine USE_BOOST_SC 1
-#cmakedefine USE_BOOST_MSM 1
-#cmakedefine USE_REAL_WE 1
-#cmakedefine ENABLE_TYPE_CHECKING 1
-#cmakedefine HAVE_FVM 1
-#cmakedefine HAVE_PTHREAD_H 1
-
 #cmakedefine SDPA_ENABLE_LOGGING 1
 #cmakedefine SDPA_HAVE_FHGLOG 1
 

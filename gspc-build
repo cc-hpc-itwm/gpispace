@@ -1,0 +1,131 @@
+#!/bin/bash
+
+module_type=$(type module)
+if [ "$module_type" != "function" ] ; then
+  . /etc/profile
+fi
+
+module purge
+export MODULEPATH=/p/herc/itwm/hpc/soft/etc/modules
+module load lib/boost/1.47
+module load lib/hwloc/1.3
+module load lib/qt/4.7.1
+module load soft/cmake/2.8.4
+module load soft/graphviz/2.26.3
+
+basedir=""
+branch="develop"
+ssh_key="$HOME/.ssh/id_rsa"
+url="git@gitlab.hpc.devnet.itwm.fhg.de:gpispace.git"
+jobs=2
+execute_tests=true
+fresh=false
+create_package=false
+test_timeout=360
+
+while getopts ":hp:b:u:j:tfi:H:T:P" opt ; do
+    case $opt in
+        h)
+            echo >&2 "usage: gspc-build: [-h] [-j #jobs(=${jobs})] [-p prefix] [-b branch(=${branch})] [-f]"
+            echo >&2 "     -f : fresh"
+            echo >&2 " -i key : ssh key to use"
+            echo >&2 "     -P : create a package"
+            echo >&2 "-T secs : timeout of tests (=${test_timeout})"
+            exit 0
+            ;;
+        p)  basedir=$OPTARG ;;
+        b)  branch=$OPTARG ;;
+        u)  url="$OPTARG" ;;
+        j)  jobs="$OPTARG" ;;
+        t)  execute_tests=false ;;
+        P)  create_package=true ;;
+        f)  fresh=true ;;
+        i)  ssh_key="$OPTARG" ;;
+        T)  test_timeout=$OPTARG ;;
+        \?) ;;
+    esac
+done
+
+if [ -z "${basedir}" ] ; then
+  echo >&2 "FAILED: prefix not set"
+  exit 1
+fi
+
+srcdir="${basedir}/src"
+builddir="${basedir}/build"
+instdir="${basedir}/inst"
+
+mkdir -p "${basedir}"
+
+if [ -e "${basedir}/.lock" ] ; then
+  pid=$(cat "${basedir}/.lock")
+  if kill -0 "${pid}" 2>/dev/null ; then
+     exit 0
+  else
+     rm -f "${basedir}/.lock"
+  fi
+fi
+
+echo $$ > "${basedir}/.lock"
+trap "rm -f ${basedir}/.lock" EXIT
+
+if [ ! -e "${srcdir}/.git/HEAD" ] ; then
+  cd "${basedir}"
+  rm -rf "${srcdir}"
+  ssh-agent bash -c "ssh-add ${ssh_key}; git clone ${url} ${srcdir}" 2>/dev/null
+  if [ $? -ne 0 ] ; then
+	echo >&2 "FAILED: could not CLONE"
+	exit 8
+  fi
+  cd "${srcdir}"
+  if [ "${branch}" != master ] ; then
+    git checkout -b "${branch}" "origin/${branch}"
+  fi
+fi
+
+# pulling new revision
+cd "${srcdir}"
+git checkout "$branch" >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+	echo >&2 "FAILED: could not CHECKOUT"
+	exit 9
+fi
+ssh-agent bash -c "ssh-add ${ssh_key}; git pull" >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+	echo >&2 "FAILED: could not PULL"
+	exit 10
+fi
+rev=$(git rev-parse HEAD)
+
+$fresh && rm -rf "${builddir}"
+
+if [ ! -d "${builddir}" ] ; then mkdir -p "${builddir}" ; fi
+
+if [ -r "${builddir}/cron.build.log" ] ; then
+	if grep -q "^${rev} SUCCESS " "${builddir}/cron.build.log" ; then
+           exit 0
+        fi
+fi
+
+cd "${builddir}"
+
+echo "$(date)" > "${builddir}/build.tstamp"
+"${srcdir}/incr-build-count" "${builddir}/build.counter"
+
+"${srcdir}/configure" -t -p "${instdir}" -- -DINSTALL_AS_BUNDLE=ON || { echo >&2 "FAILED: could not CONFIGURE"; exit 11; }
+
+make -j "${jobs}" || { echo >&2 "FAILED: could not BUILD" ; exit 12; }
+if [ -d "${instdir}" ] ; then
+  rm -rf "${instdir}"
+fi
+make -j "${jobs}" install || { echo >&2 "FAILED: could not INSTALL" ; exit 13; }
+
+if $execute_tests ; then
+  ctest -j "${jobs}" --timeout "${test_timeout}" || { echo >&2 "WARN: could not TEST" ; }
+fi
+
+if $create_package ; then
+    cpack --config cpack-rel.cmake || { echo >&2 "FAILED: could not PACK" ; exit 14; }
+fi
+
+echo "${rev} SUCCESS $(date)" >> "${builddir}/cron.build.log"

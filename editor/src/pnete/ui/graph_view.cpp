@@ -11,7 +11,11 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 
+#include <QHBoxLayout>
+#include <QSlider>
+#include <QSpinBox>
 #include <QWheelEvent>
+#include <QWidgetAction>
 
 namespace fhg
 {
@@ -19,6 +23,48 @@ namespace fhg
   {
     namespace ui
     {
+      namespace
+      {
+        class zoom_widget_action : public QWidgetAction
+        {
+        public:
+          zoom_widget_action (graph_view* graph)
+            : QWidgetAction (graph)
+            , _graph (graph)
+          { }
+
+        protected:
+          virtual QWidget* createWidget (QWidget* parent)
+          {
+            QWidget* base (new QWidget (parent));
+
+            QSlider* bar (new QSlider (Qt::Horizontal, parent));
+            bar->setMaximumWidth (size::zoom::slider::max_length());
+            bar->setRange (size::zoom::min_value(), size::zoom::max_value());
+            bar->setValue (size::zoom::default_value());
+
+            QSpinBox* box (new QSpinBox (parent));
+            box->setSuffix ("%");
+            box->setRange (size::zoom::min_value(), size::zoom::max_value());
+            box->setValue (size::zoom::default_value());
+
+            connect (box, SIGNAL (valueChanged (int)), bar, SLOT (setValue (int)));
+            connect (bar, SIGNAL (valueChanged (int)), box, SLOT (setValue (int)));
+            connect (bar, SIGNAL (valueChanged (int)), _graph, SLOT (zoom (int)));
+            connect (_graph, SIGNAL (zoomed (int)), bar, SLOT (setValue (int)));
+
+            QHBoxLayout* layout (new QHBoxLayout (base));
+            layout->addWidget (bar);
+            layout->addWidget (box);
+
+            return base;
+          }
+
+        private:
+          graph_view* _graph;
+        };
+      }
+
       graph_view::graph_view (graph::scene_type* scene, QWidget* parent)
       : QGraphicsView (scene, parent)
       , _currentScale (size::zoom::default_value())
@@ -73,6 +119,8 @@ namespace fhg
         zoom_default->setShortcut (QKeySequence ("Ctrl+*"));
         addAction (zoom_default);
 
+        addAction (new zoom_widget_action (this));
+
         QAction* sep (new QAction (this));
         sep->setSeparator (true);
         addAction (sep);
@@ -82,9 +130,10 @@ namespace fhg
 
       QSize graph_view::sizeHint() const
       {
-        return QSize ( util::phi::ratio::smaller (window()->width())
-                     , window()->height()
-                     );
+        return QSize
+          ( static_cast<int>(util::phi::ratio::smaller (window()->width()))
+          , window()->height()
+          );
       }
 
       graph::scene_type* graph_view::scene() const

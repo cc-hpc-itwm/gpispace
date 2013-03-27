@@ -19,7 +19,14 @@ namespace gpi
         {
           DLOG(TRACE, "gpi::wait_dma(" << q << ")");
 
-          std::size_t s(gpi::api::gpi_api_t::get().wait_dma (q));
+#ifndef NDEBUG
+          std::size_t s(
+#endif
+                        gpi::api::gpi_api_t::get().wait_dma (q)
+#ifndef NDEBUG
+                       )
+#endif
+            ;
 
           DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
         }

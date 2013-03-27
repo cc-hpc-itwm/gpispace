@@ -1,4 +1,8 @@
 
+ifndef DIR_BUILD
+  DIR_BUILD=.
+endif
+
 CXX = g++
 
 CXXFLAGS += -O3
@@ -12,24 +16,24 @@ CXXLIBPATHS += $(BOOST_ROOT)/lib
 
 LIBS += boost_program_options
 LIBS += boost_thread
+LIBS += boost_system
+
+OBJ = $(DIR_BUILD)/gen.o
+BIN = $(DIR_BUILD)/gen.bin
 
 ###############################################################################
 
 .PHONY: default
 
-default: gen.bin
+default: $(BIN)
 
 ###############################################################################
 
-gen.o: gen.cpp writer.hpp queue.hpp buffer.hpp
-	$(CXX) $(CXXFLAGS) $(addprefix -I,$(CXXINCLUDEPATHS)) -c $<
+$(OBJ): gen.cpp writer.hpp queue.hpp buffer.hpp
+	$(CXX) $(CXXFLAGS) $(addprefix -I,$(CXXINCLUDEPATHS)) -c $< -o $@
 
-OBJS += gen.o
-
-gen.bin: gen.o
-	$(CXX) $(addprefix -L,$(CXXLIBPATHS)) $(addprefix -l,$(LIBS)) $< -o $@
-
-BINS += gen.bin
+$(BIN): $(OBJ)
+	$(CXX) $< $(addprefix -L,$(CXXLIBPATHS)) $(addprefix -l,$(LIBS)) -o $@
 
 ###############################################################################
 
@@ -38,7 +42,7 @@ BINS += gen.bin
 RM = rm
 
 clean: objclean
-	$(RM) -f $(BINS)
+	$(RM) -f $(BIN)
 
 objclean:
-	$(RM) -f $(OBJS)
+	$(RM) -f $(OBJ)

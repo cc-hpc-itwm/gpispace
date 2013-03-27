@@ -13,7 +13,7 @@ MigSubVol3D::MigSubVol3D(MigVol3D& _MigVol,int _SubVol_id, int _NSubVols)
   // Set the subvolume id
   if( (SubVol_id=_SubVol_id)>_NSubVols)
   {
-    
+
   }
 
   float * pVolMem;
@@ -21,7 +21,7 @@ MigSubVol3D::MigSubVol3D(MigVol3D& _MigVol,int _SubVol_id, int _NSubVols)
   if( (pVolMem=_MigVol.getMemPtr())==NULL)
   {
     //
-  }  
+  }
 
   const int VolNx(_MigVol.getNx());
 
@@ -32,7 +32,7 @@ MigSubVol3D::MigSubVol3D(MigVol3D& _MigVol,int _SubVol_id, int _NSubVols)
   const int SubVolNx=( _SubVol_id <= tmp2 ) ? (tmp1+1) : tmp1 ;
 
   // compute the index, where the  subvolume starts from
-  const int Vol_ix=( _SubVol_id -1 )* SubVolNx + ( ( _SubVol_id <= tmp2 ) ? 0 : tmp2 );  
+  const int Vol_ix=( _SubVol_id -1 )* SubVolNx + ( ( _SubVol_id <= tmp2 ) ? 0 : tmp2 );
   const int Vol_iy=0;
   const int Vol_iz=0;
 
@@ -65,7 +65,7 @@ MigSubVol3D::MigSubVol3D(MigSubVol3D& _MigVol,int _SubVol_id, int _NSubVols)
   // Set the subvolume id
   if( (SubVol_id=_SubVol_id)>_NSubVols)
   {
-    
+
   }
 
   float * pVolMem;
@@ -73,7 +73,7 @@ MigSubVol3D::MigSubVol3D(MigSubVol3D& _MigVol,int _SubVol_id, int _NSubVols)
   if( (pVolMem=_MigVol.getMemPtr())==NULL)
   {
     //
-  }  
+  }
 
   const int VolNx(_MigVol.getNx());
 
@@ -85,7 +85,7 @@ MigSubVol3D::MigSubVol3D(MigSubVol3D& _MigVol,int _SubVol_id, int _NSubVols)
 
   // compute the index, where the  subvolume starts from
   // relative to the parent index
-  const int Vol_ix=( _SubVol_id -1 )* SubVolNx + ( ( _SubVol_id <= tmp2 ) ? 0 : tmp2 );  
+  const int Vol_ix=( _SubVol_id -1 )* SubVolNx + ( ( _SubVol_id <= tmp2 ) ? 0 : tmp2 );
   const int Vol_iy=0;
   const int Vol_iz=0;
 
@@ -133,7 +133,7 @@ void MigSubVol3D::clear()
 
   if(pSubVolMem==NULL)
   {
-    
+
     // (re-)initialize the subvolume to 0.
   }
   else
@@ -192,7 +192,7 @@ point3D<float> MigSubVol3D::getSubVolx0(const MigVol3D &_MigVol,
   const int SubVolNx=( _SubVol_id <= tmp2 ) ? (tmp1+1) : tmp1 ;
 
   // compute the index, where the  subvolume starts from
-  const int Vol_ix=( _SubVol_id -1 )* SubVolNx + ( ( _SubVol_id <= tmp2 ) ? 0 : tmp2 );  
+  const int Vol_ix=( _SubVol_id -1 )* SubVolNx + ( ( _SubVol_id <= tmp2 ) ? 0 : tmp2 );
   const int Vol_iy=0;
   const int Vol_iz=0;
 
@@ -207,31 +207,31 @@ point3D<float> MigSubVol3D::getSubVolx0(const MigVol3D &_MigVol,
 // 					const int &_SubVol_id,
 // 					const int &_NSubVols)
 // {
-// 
+//
 //   const int VolNx(_MigVol.getNx());
-// 
+//
 //   // Compute the extension of the subvolume
 //   int tmp1=VolNx / _NSubVols;
 //   int tmp2=VolNx % _NSubVols;
-// 
+//
 //   const int SubVolNx=( _SubVol_id <= tmp2 ) ? (tmp1+1) : tmp1 ;
-// 
+//
 //   // compute the index, where the  subvolume starts from
-//   const int Vol_ix=( _SubVol_id -1 )* SubVolNx + ( ( _SubVol_id <= tmp2 ) ? 0 : tmp2 );  
+//   const int Vol_ix=( _SubVol_id -1 )* SubVolNx + ( ( _SubVol_id <= tmp2 ) ? 0 : tmp2 );
 //   const int Vol_iy=0;
 //   const int Vol_iz=0;
-// 
+//
 //   // compute the physical point, where the subvolume starts from
 //   point3D<float> SubVolX0 = _MigVol.GetCoord(Vol_ix, Vol_iy, Vol_iz);
-// 
+//
 //   //std::cout<<"MigSubVol3D::getSubVolx0(MigSubVol3D, ...): X0[0]="<<SubVolX0[0]<<std::endl;
 //   //std::cout<<"MigSubVol3D::getSubVolx0(MigSubVol3D, ...): X0[1]="<<SubVolX0[1]<<std::endl;
 //   //std::cout<<"MigSubVol3D::getSubVolx0(MigSubVol3D, ...): X0[2]="<<SubVolX0[2]<<std::endl;
-// 
+//
 //   return SubVolX0;
-// 
+//
 // }
-   
+
 point3D<int>   MigSubVol3D::getSubVolN (const MigVol3D &_MigVol,
 			                const int &_SubVol_id,
 			                const int &_NSubVols)
@@ -240,7 +240,7 @@ point3D<int>   MigSubVol3D::getSubVolN (const MigVol3D &_MigVol,
   const int VolNx(_MigVol.getNx());
   const int VolNy(_MigVol.getNy());
   const int VolNz(_MigVol.getNz());
-  
+
 
   // Compute the extension of the subvolume
   int tmp1=VolNx / _NSubVols;
@@ -263,27 +263,27 @@ point3D<int>   MigSubVol3D::getSubVolN (const MigVol3D &_MigVol,
 // 			                const int &_SubVol_id,
 // 			                const int &_NSubVols)
 // {
-// 
+//
 //   const int VolNx(_MigVol.getNx());
 //   const int VolNy(_MigVol.getNy());
 //   const int VolNz(_MigVol.getNz());
-//   
-// 
+//
+//
 //   // Compute the extension of the subvolume
 //   int tmp1=VolNx / _NSubVols;
 //   int tmp2=VolNx % _NSubVols;
-// 
+//
 //   point3D<int> SubVolN;
 //   SubVolN[0] = ( _SubVol_id <= tmp2 ) ? (tmp1+1) : tmp1 ; 	// SubVolNx
 //   SubVolN[1] = VolNy;						// SubVolNy
 //   SubVolN[2] = VolNz;						// SubVolNz
-// 
+//
 //   /*std::cout<<"MigSubVol3D::getSubVolN(MigSubVol3D, ...): mtid="<<_SubVol_id<<" VolNx="<<VolNx<<" N[0]="<<SubVolN[0]<<std::endl;
 //   std::cout<<"MigSubVol3D::getSubVolN(MigSubVol3D, ...): mtid="<<_SubVol_id<<" VolNy="<<VolNy<<" N[1]="<<SubVolN[1]<<std::endl;
 //   std::cout<<"MigSubVol3D::getSubVolN(MigSubVol3D, ...): mtid="<<_SubVol_id<<" VolNz="<<VolNz<<" N[2]="<<SubVolN[2]<<std::endl;*/
-// 
+//
 //   return SubVolN;
-// 
+//
 // }
 
 

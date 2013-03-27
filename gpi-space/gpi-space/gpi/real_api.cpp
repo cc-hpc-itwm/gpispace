@@ -338,7 +338,6 @@ namespace gpi
       }
 
       int rc (0);
-      int errors (0);
 
       rc = findProcGPI (host);
       if (rc == 0)

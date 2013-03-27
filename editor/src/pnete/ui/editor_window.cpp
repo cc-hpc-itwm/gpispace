@@ -21,6 +21,7 @@
 #include <pnete/ui/transition_library_view.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
+#include <fhg/util/temporary_path.hpp>
 
 #include <sdpa/plugins/sdpactl.hpp>
 #include <sdpa/plugins/sdpac.hpp>
@@ -84,6 +85,7 @@ namespace fhg
           )
         , _windows_menu (NULL)
         , _document_specific_action_menu (NULL)
+        , _document_specific_action_toolbar (NULL)
         , _action_save_current_file (NULL)
         , _action_execute_current_file_locally_via_prompt (NULL)
         , _action_execute_current_file_locally_from_file (NULL)
@@ -269,6 +271,7 @@ namespace fhg
         foreach (QAction* action, doc_view->actions())
         {
           _document_specific_action_menu->addAction (action);
+          _document_specific_action_toolbar->addAction (action);
         }
 
         _action_save_current_file->setEnabled (true);
@@ -302,6 +305,7 @@ namespace fhg
             action->setVisible (false);
           }
           _document_specific_action_menu->menuAction()->setVisible (false);
+          _document_specific_action_toolbar->setVisible (false);
           _accessed_widgets.pop();
           removeDockWidget (current);
           delete current;
@@ -352,6 +356,7 @@ namespace fhg
         }
         _document_specific_action_menu->menuAction()->setVisible
           (!to->actions().isEmpty());
+        _document_specific_action_toolbar->setVisible (!to->actions().isEmpty());
       }
 
       QMenu* editor_window::createPopupMenu()
@@ -481,6 +486,12 @@ namespace fhg
           menu_bar->addMenu ("document_specific_actions");
         _document_specific_action_menu->menuAction()->setVisible (false);
 
+        _document_specific_action_toolbar =
+          new QToolBar ("document_specific_actions", this);
+        _document_specific_action_toolbar->setVisible (false);
+        addToolBar (Qt::TopToolBarArea, _document_specific_action_toolbar);
+        _document_specific_action_toolbar->setFloatable (false);
+
         QMenu* runtime_menu (new QMenu (tr ("runtime_menu"), menu_bar));
 
         QToolBar* runtime_toolbar (new QToolBar (tr ("runtime_toolbar"), this));
@@ -545,9 +556,9 @@ namespace fhg
           (tr ("save"), this, SLOT (save_file()), QKeySequence::Save);
         _action_save_current_file->setEnabled (false);
 
-        QAction* close_action = file_menu->addAction
+        file_menu->addAction
           (tr ("close_document"), this, SLOT (close_document()));
-        QAction* quit_action = file_menu->addAction
+        file_menu->addAction
           (tr ("quit_application"), this, SLOT (quit()), QKeySequence::Quit);
 
         file_tool_bar->addAction (action_new_expression);
@@ -640,27 +651,6 @@ namespace fhg
 
         private:
           we::loader::loader& loader;
-        };
-
-        struct temporary_path_type
-        {
-          temporary_path_type()
-            : _path (boost::filesystem::unique_path())
-          {
-            boost::filesystem::create_directories (_path);
-          }
-
-          ~temporary_path_type()
-          {
-            boost::filesystem::remove_all (_path);
-          }
-
-          operator boost::filesystem::path() const
-          {
-            return _path;
-          }
-
-          boost::filesystem::path _path;
         };
 
         boost::optional<std::string> get_env (const std::string& name)
@@ -879,7 +869,7 @@ namespace fhg
       void editor_window::execute_remote_inputs_via_prompt()
       try
       {
-        const temporary_path_type temporary_path;
+        const fhg::util::temporary_path temporary_path;
 
         we::mgmt::type::activity_t activity
           (prepare_activity (_accessed_widgets, temporary_path));
@@ -955,7 +945,7 @@ namespace fhg
       void editor_window::execute_locally_inputs_via_prompt()
       try
       {
-        const temporary_path_type temporary_path;
+        const fhg::util::temporary_path temporary_path;
 
         we::mgmt::type::activity_t activity
           (prepare_activity (_accessed_widgets, temporary_path));
@@ -1000,12 +990,11 @@ namespace fhg
       void editor_window::execute_locally_inputs_from_file()
       try
       {
-        const temporary_path_type temporary_path;
+        const fhg::util::temporary_path temporary_path;
 
         we::mgmt::type::activity_t activity
           (prepare_activity (_accessed_widgets, temporary_path));
 
-        bool ok;
         const QString input_filename
           (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));
         if (input_filename.isEmpty())

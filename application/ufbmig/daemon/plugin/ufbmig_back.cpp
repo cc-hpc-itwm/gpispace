@@ -571,7 +571,6 @@ public:
 
   int open (std::string const & name)
   {
-    size_t size = 0;
     int ec = 0;
 
     ec = reinitialize_gpi_state();

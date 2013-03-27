@@ -88,6 +88,10 @@ endif
 
 ###############################################################################
 
+ifndef BUILDDIR
+  BUILDDIR = $(CURDIR)
+endif
+
 ifndef XML
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable XML)
@@ -100,7 +104,7 @@ ifndef DEP_XML
   ifndef XML
     $(error variable XML undefined but needed to derive variable DEP_XML)
   else
-    DEP_XML = $(XML).d
+    DEP_XML = $(BUILDDIR)/$(MAIN).xpnet.d
   endif
 endif
 
@@ -108,7 +112,7 @@ ifndef NET
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable NET)
   else
-    NET = $(CURDIR)/$(MAIN).pnet
+    NET = $(BUILDDIR)/$(MAIN).pnet
   endif
 endif
 
@@ -116,7 +120,7 @@ ifndef NET_NOINLINE
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable NET_NOINLINE)
   else
-    NET_NOINLINE = $(CURDIR)/$(MAIN).noinline.pnet
+    NET_NOINLINE = $(BUILDDIR)/$(MAIN).noinline.pnet
   endif
 endif
 
@@ -148,7 +152,7 @@ ifndef GEN
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable GEN)
   else
-    GEN = $(CURDIR)/gen
+    GEN = $(BUILDDIR)/gen
   endif
 endif
 
@@ -156,7 +160,7 @@ ifndef OUT
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable OUT)
   else
-    OUT = $(CURDIR)/$(MAIN).out
+    OUT = $(BUILDDIR)/$(MAIN).out
   endif
 endif
 
@@ -164,7 +168,7 @@ ifndef DOT
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable DOT)
   else
-    DOT = $(CURDIR)/$(MAIN).dot
+    DOT = $(BUILDDIR)/$(MAIN).dot
   endif
 endif
 
@@ -172,7 +176,7 @@ ifndef DOT_NOINLINE
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable DOT_NOINLINE)
   else
-    DOT_NOINLINE = $(CURDIR)/$(MAIN).noinline.dot
+    DOT_NOINLINE = $(BUILDDIR)/$(MAIN).noinline.dot
   endif
 endif
 
@@ -180,7 +184,7 @@ ifndef PS
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable PS)
   else
-    PS = $(CURDIR)/$(MAIN).ps
+    PS = $(BUILDDIR)/$(MAIN).ps
   endif
 endif
 
@@ -188,7 +192,7 @@ ifndef PS_NOINLINE
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable PS_NOINLINE)
   else
-    PS_NOINLINE = $(CURDIR)/$(MAIN).noinline.ps
+    PS_NOINLINE = $(BUILDDIR)/$(MAIN).noinline.ps
   endif
 endif
 
@@ -196,7 +200,7 @@ ifndef SVG
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable SVG)
   else
-    SVG = $(CURDIR)/$(MAIN).svg
+    SVG = $(BUILDDIR)/$(MAIN).svg
   endif
 endif
 
@@ -204,7 +208,7 @@ ifndef SVG_NOINLINE
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable SVG_NOINLINE)
   else
-    SVG_NOINLINE = $(CURDIR)/$(MAIN).noinline.svg
+    SVG_NOINLINE = $(BUILDDIR)/$(MAIN).noinline.svg
   endif
 endif
 
@@ -240,6 +244,7 @@ PNETC += $(addprefix -I,$(SDPA_XML_LIB))
 PNETC += --gen-cxxflags=-O3
 PNETC += $(addprefix --gen-cxxflags=-I,$(CXXINCLUDEPATHS))
 PNETC += $(addprefix --gen-ldflags=-L,$(CXXLIBRARYPATHS))
+PNETC += $(addprefix --link-prefix ,$(PNETC_LINK_PREFIX))
 PNETC += --force-overwrite-file=true
 PNETC += $(PNETC_OPTS)
 
@@ -290,7 +295,16 @@ validate: $(NET_VALIDATION)
 
 ###############################################################################
 
-$(DEP_XML): $(XML)
+ifeq "$(wildcard $(BUILDDIR))" ""
+$(BUILDDIR):
+	$(error Build directory does not exist: $(BUILDDIR))
+else
+$(BUILDDIR):
+endif
+
+###############################################################################
+
+$(DEP_XML): $(XML) $(BUILDDIR)
 	$(PNETC) -i $(XML) -o /dev/null -MP -MT '$(DEP_XML)' -MM $@
 
 ifneq "$(wildcard $(DEP_XML))" ""
@@ -484,7 +498,8 @@ showconfig:
 	@echo
 	@echo "SDPA_HOME = $(SDPA_HOME)"
 	@echo
-	@echo "MAIN = $(MAIN)"
+	@echo "MAIN     = $(MAIN)"
+	@echo "BUILDDIR = $(BUILDDIR)"
 	@echo
 	@echo "*** External programs:"
 	@echo
@@ -524,35 +539,36 @@ showconfig:
 	@echo
 	@echo "*** Dependencies and options:"
 	@echo
-	@echo "DEP              = $(DEP)"
-	@echo "PATH_LIB         = $(PATH_LIB)"
-	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
-	@echo "LIB_DESTDIR      = $(LIB_DESTDIR)"
+	@echo "DEP               = $(DEP)"
+	@echo "PATH_LIB          = $(PATH_LIB)"
+	@echo "WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)"
+	@echo "LIB_DESTDIR       = $(LIB_DESTDIR)"
 	@echo
-	@echo "CXXINCLUDEPATHS  = $(CXXINCLUDEPATHS)"
-	@echo "CXXLIBRARYPATHS  = $(CXXLIBRARYPATHS)"
+	@echo "CXXINCLUDEPATHS   = $(CXXINCLUDEPATHS)"
+	@echo "CXXLIBRARYPATHS   = $(CXXLIBRARYPATHS)"
 	@echo
-	@echo "NOT_STARTS_WITH  = $(NOT_STARTS_WITH)"
-	@echo "NOT_ENDS_WITH    = $(NOT_ENDS_WITH)"
-	@echo "PNET2DOT_OPTS    = $(PNET2DOT_OPTS)"
+	@echo "NOT_STARTS_WITH   = $(NOT_STARTS_WITH)"
+	@echo "NOT_ENDS_WITH     = $(NOT_ENDS_WITH)"
+	@echo "PNET2DOT_OPTS     = $(PNET2DOT_OPTS)"
 	@echo
-	@echo "PNETC_OPTS       = $(PNETC_OPTS)"
+	@echo "PNETC_OPTS        = $(PNETC_OPTS)"
+	@echo "PNETC_LINK_PREFIX = $(PNETC_LINK_PREFIX)"
 	@echo
-	@echo "PUT_PORT         = $(PUT_PORT)"
-	@echo "PNETPUT_OPTS     = $(PNETPUT_OPTS)"
+	@echo "PUT_PORT          = $(PUT_PORT)"
+	@echo "PNETPUT_OPTS      = $(PNETPUT_OPTS)"
 	@echo
-	@echo "PNETV_OPTS       = $(PNETV_OPTS)"
+	@echo "PNETV_OPTS        = $(PNETV_OPTS)"
 	@echo
-	@echo "WE_EXEC_ENV      = $(WE_EXEC_ENV)"
-	@echo "WE_EXEC_CMD      = $(WE_EXEC_CMD)"
-	@echo "WE_EXEC_OUTPUT   = $(WE_EXEC_OUTPUT)"
-	@echo "WE_EXEC_WORKER   = $(WE_EXEC_WORKER)"
-	@echo "WE_EXEC_LOAD     = $(WE_EXEC_LOAD)"
-	@echo "WE_EXEC_LIBPATHS = $(WE_EXEC_LIBPATHS)"
-	@echo "WE_EXEC_OPTS     = $(WE_EXEC_OPTS)"
+	@echo "WE_EXEC_ENV       = $(WE_EXEC_ENV)"
+	@echo "WE_EXEC_CMD       = $(WE_EXEC_CMD)"
+	@echo "WE_EXEC_OUTPUT    = $(WE_EXEC_OUTPUT)"
+	@echo "WE_EXEC_WORKER    = $(WE_EXEC_WORKER)"
+	@echo "WE_EXEC_LOAD      = $(WE_EXEC_LOAD)"
+	@echo "WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)"
+	@echo "WE_EXEC_OPTS      = $(WE_EXEC_OPTS)"
 	@echo
-	@echo "BUILD            = $(BUILD)"
-	@echo "CLEAN            = $(CLEAN)"
+	@echo "BUILD             = $(BUILD)"
+	@echo "CLEAN             = $(CLEAN)"
 	@echo
 	@echo "*** Derived commands:"
 	@echo

@@ -32,9 +32,9 @@ OPTION(WITH_LOG4CPP
   "Build the project with log4cpp"
   0)
 
-OPTION(WITH_COMM
+OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
-  1)
+  OFF)
 
 OPTION(USE_STL_TR1
  "Use tr1 from stl"
@@ -72,18 +72,14 @@ endif (ENABLE_LOGGING)
 ## check for threads
 Include(FindThreads)
 
-if (CMAKE_USE_PTHREADS_INIT)
-  set (HAVE_PTHREAD_H 1)
-endif (CMAKE_USE_PTHREADS_INIT)
-
 include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 ## find zlib
 if( NOT WIN32)
   find_package(ZLIB REQUIRED)
-  include_directories(${ZLIB_INCLUDE_DIRS})
+  include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
   message(STATUS "ZLib: Inc:${ZLIB_INCLUDE_DIR} Lib:${ZLIB_LIBRARIES}")
 endif( NOT WIN32)
 
@@ -100,9 +96,9 @@ ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 # Reflect the package structure
 add_subdirectory(seda)
-if (WITH_COMM)
+if (ENABLE_SEDA_COMM_LIB)
   add_subdirectory(seda/comm)
-endif (WITH_COMM)
+endif ()
 
 include(CTest)
 if (BUILD_TESTING)

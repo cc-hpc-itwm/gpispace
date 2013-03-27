@@ -111,10 +111,10 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     typedef std::string internal_id_type;
 
     //typedef std::pair<sdpa::job_id_t, result_type>
-    typedef SynchronizedQueue<std::list<we_result_t> > ResQueue;
+    typedef sdpa::daemon::SynchronizedQueue<std::list<we_result_t> > ResQueue;
 
-    EmptyWorkflowEngine( GenericDaemon* pGenericDaemon = NULL, Function_t f = id_gen )
-        : SDPA_INIT_LOGGER(dynamic_cast<GenericDaemon*>(pGenericDaemon)->name()+"::EmptyWE")
+    EmptyWorkflowEngine( sdpa::daemon::GenericDaemon* pGenericDaemon = NULL, Function_t f = id_gen )
+        : SDPA_INIT_LOGGER(dynamic_cast<sdpa::daemon::GenericDaemon*>(pGenericDaemon)->name()+"::EmptyWE")
         , bStopRequested(false)
         {
         pGenericDaemon_ = pGenericDaemon;
@@ -128,9 +128,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
        stop();
         }
 
-    virtual bool is_real() { return false; }
-
-    void connect(GenericDaemon* pGenericDaemon )
+    void connect(sdpa::daemon::GenericDaemon* pGenericDaemon )
     {
       pGenericDaemon_ = pGenericDaemon;
     }
@@ -352,12 +350,12 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
         switch(we_result.status)
         {
           case FINISHED:
-              SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" successfully finished!");
+              SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" successfully finished!");
               pGenericDaemon_->finished(we_result.jobId, we_result.result);
               break;
 
           case FAILED:
-              SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" failed!");
+              SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" failed!");
               pGenericDaemon_->failed( we_result.jobId
                                      , we_result.result
                                      , fhg::error::UNEXPECTED_ERROR
@@ -366,7 +364,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
               break;
 
           case CANCELLED:
-              SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" was cancelled!");
+              SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" was canceled!");
               pGenericDaemon_->cancelled(we_result.jobId);
               break;
 
@@ -385,7 +383,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     }
 
   public:
-    mutable GenericDaemon *pGenericDaemon_;
+    mutable sdpa::daemon::GenericDaemon *pGenericDaemon_;
 
   private:
     map_t map_Act2Wf_Ids_;
@@ -415,7 +413,7 @@ inline void load_construct_data(
     Archive & ar, EmptyWorkflowEngine* t, const unsigned int
 ){
     // retrieve data from archive required to construct new instance
-        GenericDaemon *pGenericDaemon;
+    sdpa::daemon::GenericDaemon *pGenericDaemon;
     ar >> pGenericDaemon;
 
     // invoke inplace constructor to initialize instance of my_class

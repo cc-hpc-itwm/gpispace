@@ -11,6 +11,7 @@ namespace fhg
   {
     io_service_pool::io_service_pool (std::size_t pool_size)
       : next_io_service_(0)
+      , m_nthreads (1)
     {
       if (pool_size == 0)
       {
@@ -31,13 +32,16 @@ namespace fhg
       std::vector<boost::shared_ptr<boost::thread> > threads;
       for (std::size_t i (0); i < io_services_.size(); ++i)
       {
-        boost::shared_ptr<boost::thread> thread
-          (new boost::thread(boost::bind( &boost::asio::io_service::run
-                                        , io_services_[i]
-                                        )
-                            )
-          );
-        threads.push_back (thread);
+        for (std::size_t j (0) ; j < m_nthreads ; ++j)
+        {
+          boost::shared_ptr<boost::thread> thread
+            (new boost::thread(boost::bind( &boost::asio::io_service::run
+                                          , io_services_[i]
+                                          )
+                              )
+            );
+          threads.push_back (thread);
+        }
       }
 
       for (std::size_t i (0); i < threads.size(); ++i)

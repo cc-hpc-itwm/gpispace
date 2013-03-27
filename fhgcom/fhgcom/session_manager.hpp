@@ -6,6 +6,7 @@
 #include <fhglog/fhglog.hpp>
 
 #include <fhgcom/memory.hpp>
+#include <boost/thread.hpp>
 #include <fhgcom/basic_session_manager.hpp>
 #include <fhgcom/util/to_hex.hpp>
 
@@ -19,6 +20,8 @@ namespace fhg
     public:
       typedef Session session_type;
       typedef shared_ptr<session_type> session_ptr;
+      typedef boost::recursive_mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> lock_type;
 
       virtual ~session_manager () {}
 
@@ -28,7 +31,11 @@ namespace fhg
         {
           on_add_hook (session);
 
-          sessions_.insert(session);
+          {
+            lock_type lock (m_mutex);
+            sessions_.insert(session);
+          }
+
           DLOG(DEBUG, "added session between " << session->local_endpoint_str() << " and " << session->remote_endpoint_str());
         } catch (std::exception const & ex)
         {
@@ -41,7 +48,10 @@ namespace fhg
 
       void del_session (session_ptr session)
       {
-        sessions_.erase(session);
+        {
+          lock_type lock (m_mutex);
+          sessions_.erase(session);
+        }
         DLOG(DEBUG, "removed session between " << session->local_endpoint_str() << " and " << session->remote_endpoint_str());
 
         try
@@ -64,6 +74,7 @@ namespace fhg
       virtual void on_del_hook (session_ptr) {}
       virtual void on_data_hook (session_ptr, const std::string &) {}
     private:
+      mutex_type            m_mutex;
       std::set<session_ptr> sessions_;
     };
   }

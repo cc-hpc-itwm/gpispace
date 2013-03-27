@@ -7,24 +7,21 @@ find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 
-set(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/stresstest")
-message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}")
-
-set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/capabilities/capabilities/pnetc/op")
+set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH}")
 
-set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory/pnetc/op")
+set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH}")
 
-set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/atomic/atomic/pnetc/op")
+set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/atomic")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_ATOMIC_MODULES_PATH}")
 
 set(TESTS_N_ATOMIC_TASKS 100)
 
-set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/inotify/inotify/pnetc/op")
+set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
 
-set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_BINARY_DIR}/application/transform_file/xml/transform_file/pnetc/op")
+set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
 message(STATUS "example modules are in: ${TESTS_TRANSFORM_FILE_MODULES_PATH}")
 
 get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
@@ -48,7 +45,6 @@ get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
 get_target_property(TESTS_GUI_PLUGIN_PATH gui-plugin LOCATION)
 get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
 get_target_property(TESTS_WFE_PLUGIN_PATH wfe-plugin LOCATION)
-get_target_property(TESTS_WFE_TEST_PLUGIN_PATH wfe_test-plugin LOCATION)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -57,21 +53,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_B
 include(pnet_macros)
 
 get_target_property(PNETPUT_LOCATION pnetput LOCATION)
-
-###########################################################################################
-#pnet_compile( sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
-#  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-#  FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib
-#)
-
-pnet_compile(sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
-  FLAGS -I${CMAKE_SOURCE_DIR}/fhglog
-           -I${CMAKE_BINARY_DIR}/fhglog
-           -I${CMAKE_SOURCE_DIR}/application/example
-           -I${CMAKE_SOURCE_DIR}/application/example/stresstest 
-)
 
 ###########################################################################################
 pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabilities.xml
@@ -147,6 +128,21 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMENT "putting tokens into atomic workflow: ${command}"
                    APPEND
 )
+
+set(command ${PNETPUT_LOCATION}
+       --if  "${ATOMIC_PNET_LOCATION}"
+       -p n_A=10L
+       -p n_B=10L
+       -p shared_file=\\"atomic_wfe_plugin_test.txt\\"
+       --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic_wfe_plugin_test.pnet"
+   )
+
+add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
+                   COMMAND ${command}
+                   COMMENT "putting tokens into atomic workflow: ${command}"
+                   APPEND
+)
+
 add_dependencies(pnet-atomic-test-wf pnetput)
 ################################################################################################
 pnet_compile(inotify-test-wf ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
@@ -189,7 +185,7 @@ pnet_compile(transform_file-test-wf ${CMAKE_SOURCE_DIR}/application/transform_fi
 get_target_property(TRANSFORM_FILE_PNET_LOCATION pnet-transform_file-test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-transform_file-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if "${TRANSFORM_FILE_PNET_LOCATION}" -p input_file=\\"in.txt\\"
-                                                                        -p output_file=\\"out.txt\\"
+                                                                        -p output_file=\\"\\"
                                                                         -p input_n_read_slots="3L"
                                                                         -p input_n_write_slots="3L"
                                                                         -p chunk_size="512L"
@@ -211,7 +207,7 @@ set (tc_srcs
   test_JobId.cpp
   test_Scheduler.cpp
   test_LoadBalancer.cpp
-  test_MapReduce.cpp
+  test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
@@ -220,7 +216,7 @@ set (tc_srcs
   test_StopRestartOrchSubscriberCli.cpp
   test_StopRestartAgentsSubscriberCli.cpp
   test_StopRestartAgentsPollingCli.cpp
-  #test_StopRestartDrtsSubscriberCli.cpp
+  test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
   test_SubmitJobFails.cpp
   test_MultipleMasters.cpp
@@ -229,6 +225,7 @@ set (tc_srcs
   test_CannonOnTorus.cpp
   test_Capabilities.cpp
   test_TransformFile.cpp
+  test_wfe_plugin.cpp
 )
 
 foreach (tc_src ${tc_srcs})
@@ -248,7 +245,7 @@ foreach (tc_src ${tc_srcs})
                         fhg-revision
                         ${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
-                        we
+                        pnet
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
                         ${CMAKE_DL_LIBS}
@@ -257,7 +254,6 @@ foreach (tc_src ${tc_srcs})
   add_test(${tc_name} ${LOC})
   add_dependencies(${tc_name} drts-plugin)
   add_dependencies(${tc_name} fvm-fake-plugin)
-  add_dependencies(${tc_name} sdpa-stresstest)
   add_dependencies(${tc_name} pnet-capabilities-test-wf)
   add_dependencies(${tc_name} pnet-capabilities_no_mandatory-test-wf)
   add_dependencies(${tc_name} pnet-atomic-test-wf)

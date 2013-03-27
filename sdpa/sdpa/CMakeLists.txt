@@ -3,7 +3,6 @@ add_subdirectory(events)
 
 add_subdirectory(daemon)
 add_subdirectory(client)
-add_subdirectory(engine)
 
 set (hdrs
   common.hpp
@@ -12,14 +11,11 @@ set (hdrs
   memory.hpp
   SDPAException.hpp
   types.hpp
-  uuidgen.hpp
-  uuid.hpp
   job_states.hpp
 )
 
 set (srcs
   JobId.cpp
-  uuidgen.cpp
 )
 
 ADD_LIBRARY(sdpa ${hdrs} ${srcs})

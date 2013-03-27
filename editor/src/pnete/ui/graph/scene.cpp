@@ -967,11 +967,11 @@ namespace fhg
             it.first->setPos (style::raster::snap (it.second.position()));
           }
 
-          BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
-          {
-            //! \todo enable this, before repair connection::shape
-            //                edge.first->fixed_points (edge.second.points());
-          }
+          // BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
+          // {
+          //   //! \todo enable this, before repair connection::shape
+          //   //                edge.first->fixed_points (edge.second.points());
+          // }
         }
 
         template<typename item_type, typename handle_type>

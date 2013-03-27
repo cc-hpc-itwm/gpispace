@@ -15,6 +15,7 @@
 #include <stdexcept>
 
 #include <boost/thread.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <fhglog/minimal.hpp>
@@ -376,6 +377,27 @@ namespace process
         }
       while (ec != 0);
     }
+
+    struct tempfile_t
+    {
+      tempfile_t ()
+        : m_path ()
+      {}
+
+      explicit
+      tempfile_t (std::string const &p)
+        : m_path (p)
+      {}
+
+      ~tempfile_t ()
+      {
+        if (not m_path.empty ())
+          unlink (m_path.c_str ());
+      }
+
+    private:
+      std::string m_path;
+    };
   }
 
   /* *********************************************************************** */
@@ -472,6 +494,8 @@ namespace process
                               , file_buffer_list const & files_output
                               )
   {
+    typedef boost::shared_ptr<detail::tempfile_t> tempfile_ptr;
+    typedef std::list<tempfile_ptr> tempfile_list_t;
     execute_return_type ret;
 
     pid_t pid;
@@ -486,6 +510,7 @@ namespace process
     detail::param_map param_map;
     boost::thread_group writers;
     boost::thread_group readers;
+    tempfile_list_t tempfiles;
 
     for ( file_const_buffer_list::const_iterator file_input (files_input.begin())
         ; file_input != files_input.end()
@@ -499,7 +524,7 @@ namespace process
                                           , file_input->size()
                                           )
                            );
-
+        tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         param_map[file_input->param()] = filename;
       }
 
@@ -521,6 +546,7 @@ namespace process
                                           )
                            );
 
+        tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         param_map[file_output->param()] = filename;
       }
 

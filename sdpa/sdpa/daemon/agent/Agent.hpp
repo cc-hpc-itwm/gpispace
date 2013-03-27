@@ -18,7 +18,7 @@
 #ifndef SDPA_AGENT_HPP
 #define SDPA_AGENT_HPP 1
 
-#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
+#include <sdpa/daemon/DaemonFSM.hpp>
 #include <sdpa/daemon/agent/AgentScheduler.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 
@@ -27,7 +27,7 @@ namespace sdpa {
 
     template <typename T> struct AgentFactory;
 
-    class Agent : public dsm::DaemonFSM
+    class Agent : public sdpa::fsm::bmsm::DaemonFSM
     {
       public:
         typedef sdpa::shared_ptr<Agent > ptr_t;
@@ -103,8 +103,6 @@ namespace sdpa {
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
-        void notifyAppGui(const result_type & result);
-
         private:
         void createScheduler(bool bUseReqModel)
         {
@@ -120,7 +118,5 @@ namespace sdpa {
       };
   }
 }
-
-#include <sdpa/daemon/agent/Agent.cpp>
 
 #endif

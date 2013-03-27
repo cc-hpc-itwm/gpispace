@@ -15,13 +15,14 @@
  *
  * =====================================================================================
  */
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+
+#include <sdpa/daemon/agent/Agent.hpp>
+
+#include <sdpa/daemon/JobFSM.hpp>
 #include <fhg/assert.hpp>
 
-using namespace std;
-using namespace sdpa::daemon;
-using namespace sdpa::events;
-
+namespace sdpa {
+  namespace daemon {
 
 Agent::~Agent()
 {
@@ -176,11 +177,9 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
   }
 
 #if 0
-#  ifdef USE_REAL_WE
-#    ifdef STATISTICS_CONDITION
-        statistics::dump_maps();
-        statistics::reset_maps();
-#    endif
+#  ifdef STATISTICS_CONDITION
+      statistics::dump_maps();
+      statistics::reset_maps();
 #  endif
 #endif
 
@@ -256,11 +255,9 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
   }
 
 #if 0
-#  ifdef USE_REAL_WE
-#    ifdef STATISTICS_CONDITION
-        statistics::dump_maps();
-        statistics::reset_maps();
-#    endif
+#  ifdef STATISTICS_CONDITION
+      statistics::dump_maps();
+      statistics::reset_maps();
 #  endif
 #endif
 
@@ -365,7 +362,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
 
   if( !hasWorkflowEngine() )
   {
-    try {
+	  try {
       // forward it up
       JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(  name()
                                                               , pJob->owner()
@@ -482,11 +479,9 @@ bool Agent::failed( const id_type& wfid
   }
 
 #if 0
-#  ifdef USE_REAL_WE
-#    ifdef STATISTICS_CONDITION
-        statistics::dump_maps();
-        statistics::reset_maps();
-#    endif
+#  ifdef STATISTICS_CONDITION
+      statistics::dump_maps();
+      statistics::reset_maps();
 #  endif
 #endif
 
@@ -830,6 +825,5 @@ void Agent::recover( std::istream& ifs )
   }
 }
 
-void Agent::notifyAppGui(const result_type & result)
-{
+  }
 }

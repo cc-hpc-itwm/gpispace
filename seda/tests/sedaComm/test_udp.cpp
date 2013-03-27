@@ -16,6 +16,8 @@
  * =====================================================================================
  */
 
+#include <unistd.h>
+
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
 
@@ -47,16 +49,19 @@ int main(int argc, char **argv)
 
     seda::AccumulateStrategy *p1_acc;
     seda::AccumulateStrategy *p2_acc;
+
+
+    seda::comm::Connection::ptr_t conn_1;
+
     // create the first "process"
     {
       LOG(INFO, "creating process-1 stages...");
 
       seda::comm::ConnectionParameters params("udp", "127.0.0.1:5000", "process-1");
-      seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
-      conn->locator()->insert("process-2", "127.0.0.1:5001");
+      conn_1 = cFactory->createConnection(params);
 
       // process-1 has two stages, a counting/discarding and the network
-      seda::Strategy::Ptr net(new seda::comm::ConnectionStrategy("p1-final", conn));
+      seda::Strategy::Ptr net(new seda::comm::ConnectionStrategy("p1-final", conn_1));
       seda::Stage::Ptr net_stage(sFactory->createStage("p1-net", net));
 
       seda::Strategy::Ptr discard(new seda::DiscardStrategy());
@@ -72,11 +77,15 @@ int main(int argc, char **argv)
       LOG(INFO, "creating process-2 stages...");
 
       seda::comm::ConnectionParameters params("udp", "127.0.0.1:5001", "process-2");
-      seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
-      conn->locator()->insert("process-1", "127.0.0.1:5000");
+      seda::comm::Connection::ptr_t conn_2 = cFactory->createConnection(params);
+
+      conn_1->locator()->insert("process-2", "127.0.0.1:5001");
+      conn_2->locator()->insert("process-1", "127.0.0.1:5000");
+
+      usleep (500);
 
       // process-2 has two stages, a counting/discarding and the network
-      seda::Strategy::Ptr net(new seda::comm::ConnectionStrategy("p2-final", conn));
+      seda::Strategy::Ptr net(new seda::comm::ConnectionStrategy("p2-final", conn_2));
       seda::Stage::Ptr net_stage(sFactory->createStage("p2-net", net));
 
       seda::Strategy::Ptr discard(new seda::DiscardStrategy());

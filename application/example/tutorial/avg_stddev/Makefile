@@ -10,11 +10,31 @@ CXXINCLUDEPATHS += $(BOOST_ROOT)/include
 
 ###############################################################################
 
-PUT_PORT += name_file=\"/u/r/rahn/sdpa/application/example/tutorial/avg_stddev/src/dat\"
-PUT_PORT += size_file=800000000
-PUT_PORT += size_chunk=8388608
-PUT_PORT += size_buffer=8388608
-PUT_PORT += num_buffer=10
+ifndef DATFILE
+  DATFILE=$(CURDIR)/dat
+endif
+
+ifndef SIZE_FILE
+  SIZE_FILE=838860800
+endif
+
+ifndef SIZE_CHUNK
+  SIZE_CHUNK=8388608
+endif
+
+ifndef SIZE_BUFFER
+  SIZE_BUFFER=8388608
+endif
+
+ifndef NUM_BUFFER
+  NUM_BUFFER=10
+endif
+
+PUT_PORT += name_file=\"$(DATFILE)\"
+PUT_PORT += size_file=$(SIZE_FILE)
+PUT_PORT += size_chunk=$(SIZE_CHUNK)
+PUT_PORT += size_buffer=$(SIZE_BUFFER)
+PUT_PORT += num_buffer=$(NUM_BUFFER)
 
 ###############################################################################
 

@@ -16,7 +16,7 @@ namespace fhg
         {
           int tmp = a;
           a = b;
-          b = a;
+          b = tmp;
         }
 
         assert (b > a);

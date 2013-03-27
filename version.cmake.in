@@ -1,3 +1,4 @@
 set(V_MAJOR @V_MAJOR@)
 set(V_MINOR @V_MINOR@)
 set(V_PATCH @V_PATCH@)
+set(V_EXTRA @V_EXTRA@)

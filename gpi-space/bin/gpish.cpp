@@ -1523,11 +1523,10 @@ static void print_progress( FILE *fp
                           )
 {
   double percent_done = (double)(current) / (double)(total);
-  size_t  filled_part = round(percent_done * bar_length);
 
   fprintf(stderr, "%3.0f%% [", percent_done*100);
   size_t pos=0;
-  for (; pos < filled_part; ++pos)
+  for (; total * pos < current * bar_length; ++pos)
   {
     fprintf (stderr, "=");
   }

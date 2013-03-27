@@ -60,9 +60,9 @@ namespace boost { namespace serialization {
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::SDPAEvent & e, unsigned int /* version */)
   {
-    ar & e.from();
-    ar & e.to();
-        ar & e.id();
+	  ar & e.from();
+	  ar & e.to();
+	  ar & e.id();
   }
 
   // ***********
@@ -71,58 +71,58 @@ namespace boost { namespace serialization {
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::MgmtEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::SDPAEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::SDPAEvent>(e);
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::ErrorEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
-    ar & e.error_code();
-    ar & e.reason();
-    ar & e.job_id();
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+	  ar & e.error_code();
+	  ar & e.reason();
+	  ar & e.job_id();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::ConfigReplyEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::ConfigRequestEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::LifeSignEvent & e, unsigned int /* version */)
   {
-          ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
-          ar & e.last_job_id();
+      ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+      ar & e.last_job_id();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::WorkerRegistrationEvent & e, unsigned int /* version */)
   {
-          ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
-          ar & e.capacity();
-          ar & e.capabilities();
-          ar & e.rank();
-          ar & e.agent_uuid();
+      ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+      ar & e.capacity();
+      ar & e.capabilities();
+      ar & e.rank();
+      ar & e.agent_uuid();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::WorkerRegistrationAckEvent & e, unsigned int /* version */)
   {
-          ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::RequestJobEvent & e, unsigned int /* version */)
   {
-          ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
-          ar & e.last_job_id();
+      ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+      ar & e.last_job_id();
   }
 
   // ***********
@@ -132,61 +132,61 @@ namespace boost { namespace serialization {
   template <class Archive>
   void serialize(Archive & ar, sdpa::job_id_t & job_id, unsigned int /* version */)
   {
-    ar & job_id.str();
+	  ar & job_id.str();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::JobEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::SDPAEvent>(e);
-    ar & e.job_id();
+	  ar & boost::serialization::base_object<sdpa::events::SDPAEvent>(e);
+	  ar & e.job_id();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::SubmitJobEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
-    ar & e.description();
-    ar & e.parent_id();
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & e.description();
+	  ar & e.parent_id();
   }
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::SubmitJobAckEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::CancelJobEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::CancelJobAckEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
-    ar & e.result();
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & e.result();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::DeleteJobEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::DeleteJobAckEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::JobFailedEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
-    ar & e.result();
-    ar & e.error_code();
-    ar & e.error_message();
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & e.result();
+	  ar & e.error_code();
+	  ar & e.error_message();
   }
 
   template <class Archive>
@@ -215,51 +215,51 @@ namespace boost { namespace serialization {
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::JobResultsReplyEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
-    ar & e.result();
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & e.result();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::QueryJobStatusEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
   }
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::JobStatusReplyEvent & e, unsigned int /* version */)
   {
-    ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
-    ar & e.status();
-    ar & e.error_code();
-    ar & e.error_message();
+	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
+	  ar & e.status();
+	  ar & e.error_code();
+	  ar & e.error_message();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::CapabilitiesGainedEvent & e, unsigned int /* version */)
   {
-          ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
-          ar & e.capabilities();
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+      ar & e.capabilities();
   }
 
   template <class Archive>
-   void serialize(Archive & ar, sdpa::events::CapabilitiesLostEvent & e, unsigned int /* version */)
-   {
-          ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
-          ar & e.capabilities();
-   }
+  void serialize(Archive & ar, sdpa::events::CapabilitiesLostEvent & e, unsigned int /* version */)
+  {
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+      ar & e.capabilities();
+  }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::SubscribeEvent & e, unsigned int /* version */)
   {
-          ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
-          ar & e.subscriber();
-          ar & e.listJobIds();
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+      ar & e.subscriber();
+      ar & e.listJobIds();
   }
 
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::SubscribeAckEvent & e, unsigned int /* version */)
   {
-          ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
-          ar & e.listJobIds();
+      ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+      ar & e.listJobIds();
   }
 
   BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::SDPAEvent)

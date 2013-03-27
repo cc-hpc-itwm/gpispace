@@ -8,7 +8,7 @@
   <module name="sum" function="s sum (p)">
 
     <cinclude href="sum.h"/>
-    <link href="lib/sum.o"/>
+    <link href="sum.o" prefix="${libdir}/"/>
 
     <code><![CDATA[
       return ::sum (p.x,p.y);

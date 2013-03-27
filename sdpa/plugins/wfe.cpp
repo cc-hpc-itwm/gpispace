@@ -228,7 +228,7 @@ public:
       }
       else
       {
-        MLOG(WARN, "task failed: " << task.id << ": " << task.error_message);
+        MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::FAILED;
         result = task.result;
         error_message = task.error_message;

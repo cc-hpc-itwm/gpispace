@@ -6,10 +6,10 @@
   <module name="hello_world" function="out call_hello_world (in)">
 
     <cinclude href="hello_world.hpp"/> <!-- cpp library -->
-    <link href="lib/hello2.o"/>
+    <link href="hello2.o" prefix="${libdir}/"/>
 
     <cinclude href="hello2.h"/>        <!-- c library -->
-    <link href="lib/hello_world.o"/>
+    <link href="hello_world.o" prefix="${libdir}/"/>
 
     <cinclude href="hello_util.h"/>    <!-- shared object -->
     <ld flag="-lhello_util"/>
@@ -17,13 +17,13 @@
     <cinclude href="iostream"/>
 
     <code><![CDATA[
-      std::cout << "Calling 3 versions of hello..." << std::endl;
+      std::cout << "*** Calling 3 versions of hello..." << std::endl;
 
       impl_hello_world();
       ::hello_world();
       hello_util();
 
-      std::cout << "...[done]" << std::endl;
+      std::cout << "*** ...[done]" << std::endl;
 
       return we::type::literal::control();
     ]]></code>

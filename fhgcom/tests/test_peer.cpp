@@ -18,9 +18,9 @@
 static const std::string &kvs_host () { static std::string s("localhost"); return s; }
 static const std::string &kvs_port () { static std::string s("0"); return s; }
 
-struct F
+struct KVSSetup
 {
-  F ()
+  KVSSetup ()
     : m_pool (0)
     , m_kvsd (0)
     , m_serv (0)
@@ -52,7 +52,7 @@ struct F
                                               );
   }
 
-  ~F ()
+  ~KVSSetup ()
   {
     m_serv->stop ();
     m_pool->stop ();
@@ -72,6 +72,12 @@ struct F
   fhg::com::kvs::server::kvsd *m_kvsd;
   fhg::com::tcp_server *m_serv;
   boost::thread *m_thrd;
+};
+
+BOOST_GLOBAL_FIXTURE (KVSSetup);
+
+struct F
+{
 };
 
 BOOST_FIXTURE_TEST_SUITE( s, F )
@@ -418,18 +424,17 @@ BOOST_AUTO_TEST_CASE ( peers_with_fixed_ports_reuse )
   thrd_2.join ();
 }
 
-static void send_loop (bool *stop_request, fhg::com::peer_t *peer)
+static void s_send_loop ( fhg::com::peer_t *peer
+                        , bool *stop
+                        , std::string const & to
+                        )
 {
-  while (! *stop_request)
+  while (not *stop)
   {
     try
     {
-      peer->send ("peer-2", "hello world");
       usleep (500);
-    }
-    catch (boost::thread_interrupted const &)
-    {
-      break;
+      peer->send (to, "hello world\n");
     }
     catch (std::exception const &ex)
     {
@@ -447,7 +452,13 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
   peer_1.start();
 
   bool stop_request (false);
-  boost::thread thrd_send_recv (boost::bind (send_loop, &stop_request, &peer_1));
+
+  boost::thread sender (boost::bind ( s_send_loop
+                                    , &peer_1
+                                    , &stop_request
+                                    , "peer-2"
+                                    )
+                       );
 
   for (std::size_t i (0); i < 1000; ++i)
   {
@@ -457,20 +468,22 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
 
     try
     {
-      peer_2.send(peer_1.name (), "hello world!");
+      peer_2.send (peer_1.name (), "hello world!");
     }
     catch (std::exception const & ex)
     {
       BOOST_ERROR ( ex.what() );
     }
 
+    usleep (500);
+
     peer_2.stop();
     thrd_2.join ();
   }
 
   stop_request = true;
-  thrd_send_recv.interrupt ();
-  thrd_send_recv.join ();
+
+  sender.join ();
 
   peer_1.stop();
   thrd_1.join ();

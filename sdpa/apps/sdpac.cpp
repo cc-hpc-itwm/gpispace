@@ -21,12 +21,15 @@
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
-#include <sdpa/uuidgen.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/tokenizer.hpp>
+
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/error_codes.hpp>
@@ -49,6 +52,7 @@ enum return_codes_t
   , UNKNOWN_ERROR         = 100
   };
 
+const int NMAXTRIALS = 10;
 
 void get_user_input(std::string const & prompt, std::string & result, std::istream & in = std::cin)
 {
@@ -129,25 +133,42 @@ int command_subscribe_and_wait ( const std::string &job_id
   std::cerr << "waiting for job to return..." << std::flush;
 
   bool bSubscribed = false;
-
-  do
-  {
-    try
-    {
-      ptrCli->subscribe(job_id);
-      bSubscribed = true;
-    }
-    catch(...)
-    {
-      bSubscribed = false;
-    }
-
-  }while(!bSubscribed);
-
   int status = sdpa::status::UNKNOWN;
+  int nTrials = 0;
 
   do
   {
+	do
+	{
+		try
+		{
+			ptrCli->subscribe(job_id);
+			bSubscribed = true;
+		}
+		catch(...)
+		{
+			bSubscribed = false;
+		}
+
+		if(bSubscribed)
+			break;
+
+		nTrials++;
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+	}while(nTrials<NMAXTRIALS);
+
+	if(bSubscribed)
+	{
+		LOG(INFO, "The client successfully subscribed to the orchestrator for the job "<<job_id);
+		nTrials = 0;
+	}
+	else
+	{
+		LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
+		return status;
+	}
+
     try
     {
       seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
@@ -396,10 +417,8 @@ int main (int argc, char **argv) {
   {
     std::string client_api_name ("sdpac-");
     {
-      sdpa::uuidgen gen;
-      sdpa::uuid id;
-      gen(id);
-      client_api_name += id.str();
+      client_api_name +=
+        boost::uuids::to_string (boost::uuids::random_generator()());
     }
 
     sdpa::client::ClientApi::ptr_t api
@@ -437,7 +456,7 @@ int main (int argc, char **argv) {
       {
         fhg::com::kvs::global::get_kvs_info().init( parts[0]
                                                   , parts[1]
-                                                  , boost::posix_time::seconds(1)
+                                                  , boost::posix_time::seconds(120)
                                                   , 1
                                                   );
       }

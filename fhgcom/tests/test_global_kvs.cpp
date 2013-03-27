@@ -77,6 +77,23 @@ BOOST_AUTO_TEST_CASE ( put_get_test )
   kvs::del ("test_global_kvs");
 }
 
+BOOST_AUTO_TEST_CASE ( put_get_loop_test )
+{
+  static const std::size_t NUM_ITERATIONS = (1 << 16);
+
+  using namespace fhg::com;
+
+  MLOG (INFO, "entering put/get loop (iterations := " << NUM_ITERATIONS << ")");
+
+  for (std::size_t i = 0 ; i < NUM_ITERATIONS ; ++i)
+  {
+    kvs::put ("test_global_kvs", i);
+    std::size_t val = kvs::get<std::size_t> ("test_global_kvs");
+
+    BOOST_CHECK_EQUAL (val, i);
+  }
+}
+
 BOOST_AUTO_TEST_CASE ( put_get_int_test )
 {
   using namespace fhg::com;
@@ -120,7 +137,6 @@ BOOST_AUTO_TEST_CASE ( put_get_timed_expired_test )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
 
 // outside of suite, we don't want the kvsd
 BOOST_AUTO_TEST_CASE ( no_server_test )

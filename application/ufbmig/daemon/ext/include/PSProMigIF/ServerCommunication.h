@@ -19,7 +19,7 @@
 namespace PSProMigIF
 {
   class ServerCommunication;
-  class Message;
+  struct Message;
 
   /*! @brief Helper class for generating derived classes of class ServerCommunication
    *  Every derived class from ServerCommunication has to derive this object, too.
@@ -30,6 +30,7 @@ namespace PSProMigIF
       /*! @brief Create object of class ServerCommunication
        */
       virtual ServerCommunication* create();
+      virtual ~ServerCommunicationHelper() = 0;
   };
 
   /*! @brief Enum which holds the error codes of the server communication
@@ -176,6 +177,7 @@ namespace PSProMigIF
       /*! @brief Create object of class ServerCommunication
        */
       virtual ServerCommunication* create();
+      virtual ~ServerCommunicationListenHelper() = 0;
   };
 
   /*! @brief Class for communication between client and server

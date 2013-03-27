@@ -38,7 +38,6 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/daemon/IAgent.hpp>
 #include <boost/function.hpp>
 
 //#include <we/mgmt/bits/traits.hpp>
@@ -62,16 +61,16 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     typedef std::string internal_id_type;
 
 
-    DummyWorkflowEngine( IAgent* pIAgent = NULL, Function_t f = id_gen_f  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
+    DummyWorkflowEngine( sdpa::daemon::GenericDaemon* pIAgent = NULL, Function_t f = id_gen_f  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
         {
         pIAgent_ = pIAgent;
         fct_id_gen_ = f;
         SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
-    virtual bool is_real() { return false; }
+    virtual ~DummyWorkflowEngine() {}
 
-    void connect(IAgent* pIAgent )
+    void connect(sdpa::daemon::GenericDaemon* pIAgent )
     {
         pIAgent_ = pIAgent;
     }
@@ -267,7 +266,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     }
 
   public:
-    mutable IAgent *pIAgent_;
+    mutable sdpa::daemon::GenericDaemon *pIAgent_;
 
   private:
     map_t map_Act2Wf_Ids_;
@@ -290,7 +289,7 @@ inline void load_construct_data(
     Archive & ar, DummyWorkflowEngine* t, const unsigned int
 ){
     // retrieve data from archive required to construct new instance
-        IAgent *pIAgent;
+        sdpa::daemon::GenericDaemon *pIAgent;
     ar >> pIAgent;
 
     // invoke inplace constructor to initialize instance of my_class

@@ -10,10 +10,6 @@
 #include <sdpa/types.hpp>
 #include <sdpa/util/Properties.hpp>
 
-#if defined(USE_BOOST_SC)
-        #include <boost/statechart/event_base.hpp>
-#endif
-
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
@@ -31,7 +27,7 @@
 namespace sdpa {
   namespace daemon {
 
-    class IComm;
+    class IAgent;
     class GenericDaemon;
     /**
      * The interface to the generic job description we keep around in all
@@ -58,8 +54,8 @@ namespace sdpa {
     virtual Job & error_code(int) = 0;
     virtual Job & error_message(std::string const &) = 0;
 
-    virtual void set_icomm(IComm* pArgComm) = 0;
-    virtual IComm* icomm() = 0;
+    virtual void set_icomm(IAgent* pArgComm) = 0;
+    virtual IAgent* icomm() = 0;
 
     //virtual sdpa::worker_id_t& worker() = 0;
 
@@ -77,18 +73,14 @@ namespace sdpa {
     virtual void set_owner(const sdpa::worker_id_t& owner) = 0;
     virtual sdpa::worker_id_t owner() = 0;
 
-#ifdef USE_BOOST_SC
-    virtual void process_event( const boost::statechart::event_base &) {}
-#endif
-
     //transitions
     virtual void CancelJob(const sdpa::events::CancelJobEvent*);
     virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*);
-    virtual void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IComm*);
+    virtual void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IAgent*);
     virtual void JobFailed(const sdpa::events::JobFailedEvent*);
     virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
-    virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IComm* );
-    virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IComm*);
+    virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IAgent* );
+    virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*);
     virtual void Dispatch();
     virtual void Reschedule();
 

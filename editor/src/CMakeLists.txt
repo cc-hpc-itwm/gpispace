@@ -20,15 +20,16 @@ find_package (SDPA REQUIRED QUIET)
 
 include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}
-                      ${Boost_INCLUDE_DIR}
                       ${FhgLog_INCLUDE_DIR}
-                      ${GRAPHVIZ_INCLUDE_DIR}
                       ${UTIL_INCLUDE_DIR}
                       ${CMAKE_SOURCE_DIR}/sdpa
-                      ${CMAKE_SOURCE_DIR}/we
-                      ${CMAKE_SOURCE_DIR}/xml
+                      ${CMAKE_SOURCE_DIR}/pnet/src
                       ${FhgKernel_INCLUDE_DIR}
                       ${CMAKE_SOURCE_DIR} # to have sdpa plugins in sdpa/plugins, not plugins/
+                    )
+include_directories (SYSTEM
+                    ${Boost_INCLUDE_DIR}
+                    ${GRAPHVIZ_INCLUDE_DIR}
                     )
 
 set (LIB_PREFIX "fhg_pnete_")

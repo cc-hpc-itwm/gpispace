@@ -1,69 +1,49 @@
-#define BOOST_TEST_MODULE TestJobId
-#include "sdpa/daemon/jobFSM/JobFSM.hpp"
+#define BOOST_TEST_MODULE job_id
+
 #include <boost/test/unit_test.hpp>
-
-#include <iostream>
 #include <sstream>
-
-#include <sdpa/util/util.hpp>
 #include <sdpa/JobId.hpp>
-#include "sdpa/memory.hpp"
-#include "sdpa/logging.hpp"
-#include <assert.h>
 
-using namespace sdpa;
-
-struct MyFixture
+BOOST_AUTO_TEST_CASE (default_constructor)
 {
-   MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testJobId"){}
-   ~MyFixture(){}
-   SDPA_DECLARE_LOGGER();
-};
+  const sdpa::JobId jid1;
+  const sdpa::JobId jid2;
+  const sdpa::JobId jid3;
 
-BOOST_FIXTURE_TEST_SUITE( test_JobId, MyFixture )
-
-BOOST_AUTO_TEST_CASE(testDefaultConstructor)
-{
-  JobId jid1;
-  JobId jid2;
-  JobId jid3;
-
-  BOOST_CHECK(jid1 != jid2);
-  BOOST_CHECK(jid1 != jid3);
-  BOOST_CHECK(jid2 != jid3);
+  BOOST_REQUIRE (jid1 != jid2);
+  BOOST_REQUIRE (jid1 != jid3);
+  BOOST_REQUIRE (jid2 != jid3);
 }
 
-BOOST_AUTO_TEST_CASE(testAutoConversionFromString)
+BOOST_AUTO_TEST_CASE (conversion_from_string)
 {
-  const std::string EXPECTED("010203040506070809101112131415");
-  JobId jid1 = EXPECTED;
-  BOOST_CHECK(EXPECTED == jid1.str());
+  const std::string EXPECTED ("010203040506070809101112131415");
+  const sdpa::JobId jid1 (EXPECTED);
+  BOOST_REQUIRE_EQUAL (EXPECTED, jid1.str());
 
-  JobId jid2 = "foo";
-  BOOST_CHECK(std::string("foo") == jid2.str());
+  const sdpa::JobId jid2 ("foo");
+  BOOST_REQUIRE_EQUAL (std::string("foo"), jid2.str());
 
-  JobId jid3 = std::string("bar");
-  BOOST_CHECK(std::string("bar") == jid3.str());
+  const sdpa::JobId jid3 (std::string("bar"));
+  BOOST_REQUIRE_EQUAL (std::string("bar"), jid3.str());
 }
 
-BOOST_AUTO_TEST_CASE(testAutoConversionToString)
+BOOST_AUTO_TEST_CASE (conversion_to_string)
 {
-  const std::string EXPECTED("010203040506070809101112131415");
-  JobId jid(EXPECTED);
-  const std::string actual(jid);
-  BOOST_CHECK(EXPECTED == actual);
+  const std::string EXPECTED ("010203040506070809101112131415");
+  const sdpa::JobId jid (EXPECTED);
+  const std::string actual (jid);
+  BOOST_REQUIRE_EQUAL (EXPECTED, actual);
 
-  const std::string jidString = jid;
-  BOOST_CHECK(jidString == jid.str());
+  const std::string jidString (jid);
+  BOOST_REQUIRE_EQUAL (jidString, jid.str());
 }
 
-BOOST_AUTO_TEST_CASE(testStream)
+BOOST_AUTO_TEST_CASE (streaming_operator)
 {
-  JobId jid;
+  const sdpa::JobId jid;
   std::ostringstream sstr;
   sstr << jid;
 
-  BOOST_CHECK(jid.str() == sstr.str());
+  BOOST_REQUIRE_EQUAL (jid.str(), sstr.str());
 }
-
-BOOST_AUTO_TEST_SUITE_END()

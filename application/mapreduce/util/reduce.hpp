@@ -20,6 +20,7 @@
 #include <util/helper.hpp>
 #include <fhglog/fhglog.hpp>
 #include <vector>
+#include <cstdlib>
 
 using namespace std;
 
@@ -34,7 +35,8 @@ namespace mapreduce
 
     	  if( list_in_values.empty() )
     	  {
-    		  throw std::runtime_error ("could not reduce: key := \"" + key + "\", empty list of values!");
+    		  MLOG(WARN, "could not reduce: key := \"" + key + "\", empty list of values!");
+    		  return list_out_values;
     	  }
 
     	  BOOST_FOREACH(const std::string& str_item, list_in_values)
@@ -51,30 +53,24 @@ namespace mapreduce
     		  boost::tokenizer<boost::char_separator<char> > tok(str_val, sep);
     		  for(boost::tokenizer<boost::char_separator<char> >::iterator it = tok.begin(); it != tok.end(); ++it)
     		  {
-    			  try {
-    				  total += boost::lexical_cast<int>(*it);
-    			  }
-    			  catch (boost::bad_lexical_cast const &) {
-    				  if(boost::algorithm::starts_with(*it, "[") && boost::algorithm::ends_with(*it, "]") )
-    				  {
-    					  std::list<string> list_in_interm_values;
-    					  list_in_interm_values.push_back(*it);
-    					  std::list<std::string> list_out_interm_val = reduce(key, list_in_interm_values);
-    					  total += boost::lexical_cast<int>(*list_out_interm_val.begin());
-    				  }
-    				  else
-    					  throw std::runtime_error ("could not reduce: key := \"" + key + "\", val := \"" + *it+"\"");
-    			  }
+				  if(boost::algorithm::starts_with(*it, "[") && boost::algorithm::ends_with(*it, "]") )
+				  {
+					  std::list<string> list_in_interm_values;
+					  list_in_interm_values.push_back(*it);
+					  std::list<std::string> list_out_interm_val = reduce(key, list_in_interm_values);
+					  total += atol(list_out_interm_val.begin()->c_str()); //boost::lexical_cast<int>(*list_out_interm_val.begin());
+				  }
+				  else
+				  {
+					  total += std::atol(it->data()); //boost::lexical_cast<int>(*it);
+				  }
     		  }
     	  }
 
-    	  // MLOG(INFO, "After reduction, "<<key<<" -> "<<total<<" ");
-    	  std::string str_total( boost::lexical_cast<std::string>(total) );
-    	  list_out_values.push_back(str_total);
+    	  list_out_values.push_back(boost::lexical_cast<std::string>(total));
 
     	  return list_out_values;
       }
-
 
       void reduce_arr_buff(const int part_id, const size_t red_slot_size, const std::vector<std::string>& arr_items, char* ptr_shmem, size_t& last_pos )
       {
@@ -131,7 +127,6 @@ namespace mapreduce
 			  }
 		  }
       }
-
 
       void reduce_arr_file(const std::vector<std::string>& arr_items,  const std::string& str_out_file_2 )
       {
@@ -265,7 +260,7 @@ namespace mapreduce
     // assume that the both input arrays are sorted reduced !!!!
 	size_t merge_and_reduce_arr_buff( 	const int part_id,
 										const size_t red_slot_size,
-										const std::vector<std::string>& arr_items_1,
+										const std::vector<std::string>& arr_items,
 										const std::vector<std::string>& arr_items_2,
 										char* reduce_buff )
 	{
@@ -273,16 +268,16 @@ namespace mapreduce
 		size_t last_pos = 0;
 
 		MLOG(INFO, "Merge and reduce ...");
-		std::vector<std::string>::const_iterator it_1 = arr_items_1.begin();
+		std::vector<std::string>::const_iterator it_1 = arr_items.begin();
 		std::vector<std::string>::const_iterator it_2 = arr_items_2.begin();
 
 		// the array and the file are already reduced
 		std::string str_pair, curr_item;
 		std::string curr_key, last_key, curr_val;
 
-		while( it_1 != arr_items_1.end() || it_2 != arr_items_2.end() )
+		while( it_1 != arr_items.end() || it_2 != arr_items_2.end() )
 		{
-			if( it_1 != arr_items_1.end() && it_2 != arr_items_2.end() )
+			if( it_1 != arr_items.end() && it_2 != arr_items_2.end() )
 				curr_item = my_comp(*it_1, *it_2)?*it_1++:*it_2++;
 			else
 				curr_item = (it_2!=arr_items_2.end())?*it_2++:*it_1++;
@@ -317,15 +312,14 @@ namespace mapreduce
 	}
 
 	// assume that the both input arrays are sorted reduced !!!!
-	void merge_and_reduce_arr_file(const std::vector<std::string>& arr_items_1, const std::string& str_out_file_2)
+	void merge_and_reduce_arr_file(const std::vector<std::string>& arr_items, const std::string& str_out_file_2)
 	{
 		std::list<std::string> list_in_values;
-		size_t last_pos = 0;
 
 		if( !file_exists(str_out_file_2) )
 		{
 			 MLOG(INFO, "Create new file "<<str_out_file_2);
-			 reduce_arr_file(arr_items_1, str_out_file_2);
+			 reduce_arr_file(arr_items, str_out_file_2);
 			 return;
 		}
 		MLOG(INFO, "The file "<<str_out_file_2<<" already exists on disk!!!");
@@ -334,7 +328,7 @@ namespace mapreduce
 		if( file_size(str_out_file_2.data()) == (std::streampos)0 )
 		{
 			MLOG(INFO, "The reduce file "<<str_out_file_2<<" exists but has the length 0!");
-			reduce_arr_file(arr_items_1, str_out_file_2);
+			reduce_arr_file(arr_items, str_out_file_2);
 			return;
 		}
 
@@ -344,7 +338,7 @@ namespace mapreduce
 		std::ofstream ofs( str_out_file.data() );
 
 		MLOG(INFO, "Merge and reduce ...");
-		std::vector<std::string>::const_iterator it_1 = arr_items_1.begin();
+		std::vector<std::string>::const_iterator it_1 = arr_items.begin();
 
 		char str_curr_line[256];
 		ifs.getline(str_curr_line, 256);
@@ -353,9 +347,9 @@ namespace mapreduce
 		std::string str_pair, curr_item;
 		std::string curr_key, last_key, curr_val;
 
-		while( it_1 != arr_items_1.end() || !ifs.eof() )
+		while( it_1 != arr_items.end() || !ifs.eof() )
 		{
-			if( it_1 != arr_items_1.end() && !ifs.eof() )
+			if( it_1 != arr_items.end() && !ifs.eof() )
 			{
 				if(	my_comp(*it_1, str_curr_line) )
 					curr_item = *it_1++;
@@ -411,7 +405,6 @@ namespace mapreduce
 	void merge_and_reduce_files(const std::string& str_out_file_1, const std::string& str_out_file_2, const std::string& str_out_file)
 	{
 		std::list<std::string> list_in_values;
-		size_t last_pos = 0;
 		std::string str_sp;
 		str_sp[0]=' ';
 
@@ -516,6 +509,167 @@ namespace mapreduce
 		std::remove(str_out_file_2.data());
 		//std::rename(str_out_file.data(), str_out_file_1.data());
 	}
+
+	// assume that the both input arrays are sorted reduced !!!!
+	void merge_and_reduce_buffs(char* buff_1, char* buff_2, char* buff_out, const size_t slot_size)
+	{
+		std::list<std::string> list_in_values;
+		size_t last_pos = 0;
+		std::string str_sp;
+		str_sp[0]=' ';
+
+		char* pch_1 = NULL;
+		char* pch_2 = NULL;
+
+		if( buff_1 )
+			pch_1 = strtok(buff_1, DELIMITERS.c_str());
+
+		if( buff_2 )
+			pch_2 = strtok(buff_2, DELIMITERS.c_str());
+
+
+		// the array and the file are already reduced
+		std::string str_pair, curr_item;
+		std::string curr_key, last_key, curr_val;
+
+		while( pch_1 || pch_2 )
+		{
+			std::string str_curr_line_1(pch_1);
+			std::string str_curr_line_2(pch_2);
+
+			if( pch_1 && pch_2 )
+			{
+				if(	my_comp(str_curr_line_1, str_curr_line_2) )
+				{
+					curr_item = str_curr_line_1;
+					pch_1 = strtok(NULL, DELIMITERS.c_str());
+				}
+				else
+				{
+					curr_item = str_curr_line_2;
+					pch_2 = strtok(NULL, DELIMITERS.c_str());
+				}
+			}
+			else
+				if( pch_2 )
+				{
+					curr_item = str_curr_line_2;
+					pch_2 = strtok(NULL, DELIMITERS.c_str());
+				}
+				else
+				{
+					curr_item = str_curr_line_1;
+					pch_1 = strtok(NULL, DELIMITERS.c_str());
+				}
+
+			if(!(curr_item.empty() || curr_item == str_sp) )
+			{
+				key_val_pair_t kv_pair = str2kvpair(curr_item);
+				curr_key = kv_pair.first;
+				curr_val = kv_pair.second;
+
+				if( curr_key != last_key )
+				{
+					if( !list_in_values.empty() )
+					{
+						if(!(last_key.empty() || last_key == str_sp))
+						{
+							std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+							last_pos = ::mapreduce::util::write_to_buff(last_key, list_out_values, buff_out, last_pos, slot_size );
+							list_in_values.clear();
+						}
+					}
+
+					last_key = curr_key;
+				}
+
+				list_in_values.push_back(curr_val);
+			}
+		}
+
+		if( !list_in_values.empty() )
+		{
+			if( !(last_key.empty() || last_key == str_sp) )
+			{
+				std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+				last_pos = ::mapreduce::util::write_to_buff(last_key, list_out_values, buff_out, last_pos, slot_size );
+				list_in_values.clear();
+			}
+		}
+	}
+
+	 // assume that the both input arrays are sorted reduced !!!!
+	size_t merge_and_reduce_arr_buff_2( const int part_id,
+										const size_t red_slot_size,
+										const std::vector<std::string>& arr_items,
+										char* in_buff,
+										char* out_buff )
+	{
+		std::list<std::string> list_in_values;
+		size_t last_pos = 0;
+
+		MLOG(INFO, "Merge and reduce ...");
+		std::vector<std::string>::const_iterator it = arr_items.begin();
+		char* pch = in_buff?strtok(in_buff, DELIMITERS.c_str()):NULL;
+
+		// the array and the file are already reduced
+		std::string str_pair, curr_item;
+		std::string curr_key, last_key, curr_val;
+
+		while( it != arr_items.end() || pch )
+		{
+			if( it != arr_items.end() && pch )
+			{
+				if(	my_comp(*it, pch) )
+				{
+					curr_item = *it++;
+				}
+				else
+				{
+					curr_item = pch;
+					pch = strtok(NULL, DELIMITERS.c_str());
+				}
+			}
+			else
+				if( pch )
+				{
+					curr_item = pch;
+					pch = strtok(NULL, DELIMITERS.c_str());
+				}
+				else
+				{
+					curr_item = *it++;
+				}
+
+			key_val_pair_t kv_pair = str2kvpair(curr_item);
+			curr_key = kv_pair.first;
+			curr_val = kv_pair.second;
+
+			if( curr_key != last_key )
+			{
+				if( !list_in_values.empty() )
+				{
+					std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+					last_pos = ::mapreduce::util::write_to_buff( last_key, list_out_values, out_buff, last_pos, red_slot_size );
+					list_in_values.clear();
+				}
+
+				last_key = curr_key;
+			}
+
+			list_in_values.push_back(curr_val);
+		}
+
+		if( !list_in_values.empty() )
+		{
+			std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+			last_pos = ::mapreduce::util::write_to_buff( last_key, list_out_values, out_buff, last_pos, red_slot_size );
+			list_in_values.clear();
+		}
+
+		return last_pos;
+	}
+
   }
 }
 

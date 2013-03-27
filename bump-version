@@ -1,79 +1,119 @@
 #!/bin/bash
-if [ -z "$1" ]; then
-  echo "usage: $0 MAJOR.MINOR.PATCH"
+
+if [ -z "$1" -o "$1" = "-h" ]; then
+  echo >&2 "usage: $0 MAJOR.MINOR.PATCH[-EXTRA]"
+  echo >&2 "    -h: help"
+  echo >&2 "    -n: dry-run"
   exit 1
+fi
+
+dry_run=false
+
+if [ "$1" = "-n" ]; then
+    dry_run=true
+    shift
 fi
 
 cd $(dirname $(which "$0"))
 
-if ! echo "$1" | grep -q -e '^[[:digit:]]\+\(\.[[:digit:]]\+\(\.[[:digit:]]\+[^ .]*\)\?\)\?$'; then
+if ! echo "$1" | grep -q -E '^[0-9]+\.[0-9]+(\.[0-9]+(-.+)?)?$' ; then
   echo "version input was not ok: $1"
-  echo "   must match \d+(.\d+(.\d+)?)?"
+  echo "   must match '^[0-9]+\.[0-9]+(\.[0-9]+(-.+)?)?$'"
   exit 2
 fi
 
-tmp=$( echo $1 | tr . ' ')
-read major minor patch <<<"${tmp}"
+major=$(echo "$1" | cut -d. -f1)
+minor=$(echo "$1" | cut -d. -f2)
+patch=$(echo "$1" | cut -d. -f3 | cut    -d- -f 1)
+extra=$(echo "$1" | cut -d. -f3 | cut -s -d- -f 2-)
 
-if [ -z "$minor" ]; then
-  minor="0"
+version="${major}.${minor}"
+if [ -n "${patch}" ] ; then
+    version="${version}.${patch}"
+fi
+if [ -n "$extra" ] ; then
+    version="${version}-${extra}"
 fi
 
-if [ -z "$patch" ]; then
-  patch="0"
-fi
-
-tmp=$( grep -o 'V_.*\ [^ \)]\+' version.cmake )
+tmp=$(grep -o 'V_.*\ [^ \)]\+' version.cmake)
 if [ -z "$tmp" ] ; then
     echo "could not get current version" >&2
-    version="0.0.0"
+    cur_version="0.0.0"
 else
-    read foo cur_major foo cur_minor foo cur_patch <<<$tmp
+    read foo cur_major foo cur_minor foo cur_patch foo cur_extra <<<$tmp
     cur_major=$(echo $cur_major | tr -d \")
     cur_minor=$(echo $cur_minor | tr -d \")
     cur_patch=$(echo $cur_patch | tr -d \")
+    cur_extra=$(echo $cur_extra | tr -d \")
+
+    cur_version="${cur_major}.${cur_minor}"
+    if [ -n "$cur_patch" ] ; then
+        cur_version="${cur_version}.${cur_patch}"
+    fi
+    if [ -n "$cur_extra" ] ; then
+        cur_version="${cur_version}-${cur_extra}"
+    fi
 
     if [ $major -lt $cur_major ]; then
 	echo "new major cannot be less than current major"
 	exit 4
-    else
-	if [ $major -eq $cur_major ]; then
-	    if [ $minor -lt $cur_minor ]; then
-		echo "new minor cannot be less than current minor"
-		exit 4
-	    else
-		if [ $minor -eq $cur_minor ]; then
-		    if [ $patch -le $cur_patch ]; then
-			echo "new patch cannot be less than current patch"
-			exit 4
-		    fi
-		fi
+    fi
+
+    if [ $major -eq $cur_major ]; then
+	if [ $minor -lt $cur_minor ]; then
+	    echo "new minor cannot be less than current minor"
+	    exit 4
+        fi
+	if [ $minor -eq $cur_minor ]; then
+	    if [ $patch -lt $cur_patch ] ; then
+                echo >&2 "new patch cannot be less than current patch"
+                exit 4
+            fi
+            if [ $patch -eq $cur_patch ] ; then
+                if [ "$extra" = "$cur_extra" ] ; then
+		    echo "new version ('$version') cannot be the same as the old one ('$cur_version')"
+		    exit 4
+                fi
 	    fi
 	fi
     fi
 fi
 
-version="${major}.${minor}.${patch}"
-cur_version="${cur_major}.${cur_minor}.${cur_patch}"
 tag="v${version}"
 cur_tag="v${cur_version}"
-if git tag | grep "^$tag$" ; then
+if git tag | grep -q "^$tag$" ; then
   echo "tag \"$tag\" does already exist, try a different one!"
   exit 3
 fi
 
 echo "current: $cur_version"
 echo "new:     $version"
+
 read -n 1 -p "Do you want to accept this? [y/N] "
 case "$REPLY" in
     y|Y)
+        echo
 	;;
     *)
+        [ -n "$REPLY" ] && echo
 	echo "aborting."
 	exit 1
 	;;
 esac
 
 echo "bumping version number..."
-sed -e "s/\@V_MAJOR\@/$major/" -e "s/\@V_MINOR\@/$minor/" -e "s/\@V_PATCH\@/$patch/" version.cmake.in > version.cmake
-git commit version.cmake -m "bumped version to: '$version'"
+
+sed -e "s/\@V_MAJOR\@/$major/" \
+    -e "s/\@V_MINOR\@/$minor/" \
+    -e "s/\@V_PATCH\@/$patch/" \
+    -e "s/\@V_EXTRA\@/$extra/" \
+    version.cmake.in > version.cmake.new
+
+if $dry_run ; then
+    echo >&2 "would commit new version.cmake:"
+    cat version.cmake.new
+    rm -f version.cmake.new
+else
+    mv version.cmake.new version.cmake
+    git commit version.cmake -m "bumped version to: '$version'"
+fi

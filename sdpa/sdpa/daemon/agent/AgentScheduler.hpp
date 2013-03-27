@@ -30,7 +30,7 @@ namespace sdpa {
   class AgentScheduler : public SchedulerImpl {
 
   public:
-	 AgentScheduler(sdpa::daemon::IComm* pCommHandler = NULL,  bool use_request_model=true):
+	 AgentScheduler(sdpa::daemon::IAgent* pCommHandler = NULL,  bool use_request_model=true):
 	   SchedulerImpl(pCommHandler, use_request_model),
 	   SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name()+"::Scheduler":"Scheduler")
 	{

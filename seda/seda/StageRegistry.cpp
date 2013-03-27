@@ -36,6 +36,8 @@ StageRegistry& StageRegistry::instance() {
 }
 
 void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) throw(StageAlreadyRegistered) {
+    lock_type lock (m_mutex);
+
     // lookup the stage first
     try {
         lookup(name);
@@ -62,6 +64,8 @@ bool StageRegistry::remove(const Stage::Ptr &stage) {
 }
 
 bool StageRegistry::remove(const std::string &name) {
+    lock_type lock (m_mutex);
+
     stage_map_t::iterator it(_stages.find(name));
     if (it == _stages.end()) {
         return false;
@@ -82,6 +86,8 @@ const Stage::Ptr StageRegistry::lookup(const std::string& name) const throw (Sta
 }
 
 void StageRegistry::startAll() {
+  lock_type lock (m_mutex);
+
   // start everything in order of addition
   for ( stage_names_t::const_iterator n (_stage_names.begin())
       ; n != _stage_names.end()
@@ -93,17 +99,28 @@ void StageRegistry::startAll() {
 }
 
 void StageRegistry::stopAll() {
+  lock_type lock (m_mutex);
+
   // stop everything in reverse order of addition
   for ( stage_names_t::const_reverse_iterator n (_stage_names.rbegin())
       ; n != _stage_names.rend()
       ; ++n
       )
   {
-    _stages.at (*n)->stop();
+    try
+    {
+      _stages.at (*n)->stop();
+    }
+    catch (std::exception const & ex)
+    {
+      SEDA_LOG_ERROR ("could not stop stage '" << *n << "': " << ex.what ());
+    }
   }
 }
 
 void StageRegistry::clear() {
+    lock_type lock (m_mutex);
+
     SEDA_LOG_DEBUG("removing all registered stages");
     stopAll();
     _stages.clear();

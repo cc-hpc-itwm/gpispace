@@ -1,0 +1,6 @@
+# mirko.rahn@itwm.fraunhofer.de
+
+EX_ERR_ENV=255
+EX_ERR_RUN=1
+EX_ERR_RES=2
+EX_ERR_OTHER=3

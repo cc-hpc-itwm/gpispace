@@ -58,16 +58,30 @@ set (srcs
   remove_prefix.cpp
   read_bool.cpp
   stat.cpp
+
+  thread/poll.cpp
+
+  parse/position.cpp
+  parse/error.cpp
 )
 
 add_library (fhg-util ${srcs})
+add_library (fhg-util-shared SHARED ${srcs})
+set_target_properties(fhg-util-shared PROPERTIES OUTPUT_NAME fhg-util)
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
   COMPONENT headers)
+install (TARGETS fhg-util
+  ARCHIVE DESTINATION lib
+  COMPONENT runtime
+)
+install (TARGETS fhg-util-shared
+  LIBRARY DESTINATION lib
+  COMPONENT runtime
+)
 
 add_subdirectory (boost)
-add_subdirectory(parse)
 add_subdirectory(thread)
 add_subdirectory(filesystem)
 add_subdirectory(cpp)
