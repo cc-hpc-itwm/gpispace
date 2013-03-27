@@ -565,16 +565,19 @@
                         std::string spec_left_prefix = ::mapreduce::util::make_spec_left_prefix(read_chunk_info.chunk_id);
                         
                         // the first char of the chunk is a separator/delimiter
+          				std::string key = spec_left_prefix;
                         if( first_char_is_delim )
                         {
-                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_left_prefix, " " ));
-                            part_id  = ::mapreduce::util::hash(str_pair, n_part);
+          					key = spec_left_prefix;
+                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t(key, " " ));
+                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
                         {
-                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_left_prefix, curr_item)); 
-                            part_id  = ::mapreduce::util::hash(str_pair, n_part);
+          					
+                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, curr_item)); 
+                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                             continue;
                         }
@@ -583,18 +586,19 @@
                     if( boost::next(it) ==  tok.end() && read_chunk_info.chunk_id < config.num.chunks-1 )
                     {
                         std::string spec_right_prefix = ::mapreduce::util::make_spec_right_prefix(read_chunk_info.chunk_id);
+                    	std::string key = spec_right_prefix;
                         
                         // the last character of the chunk is a delimiter
                         if( last_char_is_delim )
                         {
-                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_right_prefix, " "));       
-                            part_id  = ::mapreduce::util::hash(str_pair, n_part);
+                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, " "));       
+                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
                         {
-                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( spec_right_prefix, curr_item));
-                            part_id  = ::mapreduce::util::hash(str_pair, n_part);
+                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, curr_item));
+                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                             continue;
                         }
@@ -2005,7 +2009,8 @@
                 std::vector<std::string> arr_special_items = ::mapreduce::util::get_list_items(ptr_shmem);
                 BOOST_FOREACH(const std::string& spec_item, arr_special_items)
                 {
-                    if(::mapreduce::util::hash(spec_item, config.num.part) == reduce_info.part_id )
+          			std::string key = ::mapreduce::util::key(spec_item);
+                    if(::mapreduce::util::hash(key, config.num.part) == reduce_info.part_id )
                         ::mapreduce::util::insert_element(arr_red_items, spec_item);
                 }
                 
