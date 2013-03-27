@@ -6,6 +6,7 @@
 #include <fhglog/fhglog.hpp>
 #include <vector>
 
+const int NTESTKEYS = 5;
 using namespace mapreduce::util;
 
 void test1()
@@ -41,33 +42,17 @@ void test2()
 	std::cout<<"The key: "<<key(str_pair)<<std::endl;
 	std::cout<<"The value: "<<val(str_pair)<<std::endl;
 
-	std::string key("#0#2");
+	char* arr_keys[] = {"#0#2","#0#","#0","2#0#"," 7#0#"};
 
-	if(is_special_key(key))
-		std::cout<<"The item "<<key<<" is special!"<<std::endl;
-	else
-		std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
+	for(int k=0; k<NTESTKEYS; k++)
+	{
+		std::string key(arr_keys[k]);
 
-	key = std::string("#0#");
-
-	if(is_special_key(key))
-		std::cout<<"The item "<<key<<" is special!"<<std::endl;
-	else
-		std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
-
-	key = std::string("#0");
-
-	if(is_special_key(key))
-		std::cout<<"The item "<<key<<" is special!"<<std::endl;
-	else
-		std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
-
-	key = std::string("2#0#");
-
-	if(is_special_key(key))
-		std::cout<<"The item "<<key<<" is special!"<<std::endl;
-	else
-		std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
+		if(is_special_key(key))
+			std::cout<<"The item "<<key<<" is special!"<<std::endl;
+		else
+			std::cout<<"The item "<<key<<" is NOT special!"<<std::endl;
+	}
 }
 
 int main ()
