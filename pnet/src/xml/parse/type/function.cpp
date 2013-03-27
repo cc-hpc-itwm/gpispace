@@ -1092,8 +1092,6 @@ namespace xml
             stream << "{" << std::endl;
             stream << "}" << std::endl;
             stream << "WE_MOD_FINALIZE_END (" << mod->first << ");" << std::endl;
-
-            stream.commit();
           }
       }
 
@@ -1105,6 +1103,9 @@ namespace xml
 
         const path_t prefix (state.path_to_cpp());
         const path_t file (prefix / "Makefile");
+
+        const std::string file_global_cxxflags ("Makefile.CXXFLAGS");
+        const std::string file_global_ldflags ("Makefile.LDFLAGS");
 
         util::check_no_change_fstream stream (state, file);
 
@@ -1159,17 +1160,28 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
-        BOOST_FOREACH (std::string const& flag, state.gen_cxxflags())
-          {
-            stream << "CXXFLAGS += " << flag << std::endl;
-          }
+        {
+          util::check_no_change_fstream cxx
+            (state, prefix / file_global_cxxflags);
 
-        stream                                                     << std::endl;
-
-        BOOST_FOREACH (std::string const& flag, state.gen_ldflags())
+          BOOST_FOREACH (std::string const& flag, state.gen_cxxflags())
           {
-            stream << "LDFLAGS += " << flag << std::endl;
+            cxx << "CXXFLAGS += " << flag << std::endl;
           }
+        }
+
+        {
+          util::check_no_change_fstream ld
+            (state, prefix / file_global_ldflags);
+
+          BOOST_FOREACH (std::string const& flag, state.gen_ldflags())
+          {
+            ld << "LDFLAGS += " << flag << std::endl;
+          }
+        }
+
+        stream << "include " << file_global_cxxflags               << std::endl;
+        stream << "include " << file_global_ldflags                << std::endl;
 
         stream                                                     << std::endl;
         stream << ".PHONY: default modules depend install"         << std::endl;
@@ -1206,7 +1218,11 @@ namespace xml
 
             const std::string objs ("OBJ_" + mod->first);
             const fun_infos_type & funs (mod->second);
-            const std::string ldflags ("LDFLAG_" + mod->first);
+            const std::string ldflags ("LDFLAGS_" + mod->first);
+            const std::string file_module_ldflags ("Makefile." + ldflags);
+
+            util::check_no_change_fstream ldflags_module
+              (state, prefix / file_module_ldflags);
 
             for ( fun_infos_type::const_iterator fun (funs.begin())
                 ; fun != funs.end()
@@ -1218,7 +1234,9 @@ namespace xml
                 stream << "##"                                     << std::endl;
 
                 const std::string cxxflags
-                  ("CXXFLAG_" + mod->first + "_" + fun->name);
+                  ("CXXFLAGS_" + mod->first + "_" + fun->name);
+                const std::string file_function_cxxflags
+                  ("Makefile." + cxxflags);
 
                 stream << objs << " += "
                        << cpp_util::make::obj (mod->first, fun->name)
@@ -1241,23 +1259,38 @@ namespace xml
 
                 BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->ldflags)
                   {
-                    stream << ldflags << " += " << flag << std::endl;
+                    ldflags_module << ldflags << " += " << flag << std::endl;
                   }
 
-                BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->cxxflags)
+                {
+                  util::check_no_change_fstream cxxflags_function
+                    (state, prefix / file_function_cxxflags);
+
+                  BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->cxxflags)
                   {
-                    stream << cxxflags << " += " << flag << std::endl;
+                    cxxflags_function << cxxflags << " += " << flag << std::endl;
                   }
+                }
+
+                stream << "include " << file_function_cxxflags     << std::endl;
 
                 stream << cpp_util::make::obj (mod->first, fun->name)
                        << ": "
                        << cpp_util::make::cpp (mod->first, fun->name)
+                       << " "
+                       << file_global_cxxflags
+                       << " "
+                       << file_function_cxxflags
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
                        << " -c $< -o $@"                           << std::endl;
                 stream << cpp_util::make::dep (mod->first, fun->name)
                        << ": "
                        << cpp_util::make::cpp (mod->first, fun->name)
+                       << " "
+                       << file_global_cxxflags
+                       << " "
+                       << file_function_cxxflags
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
                        << " -MM -MP -MT '"
@@ -1292,11 +1325,15 @@ namespace xml
 
             stream << cpp_util::make::obj (mod->first)
                    << ": "
-                   << obj_cpp                                      << std::endl;
+                   << obj_cpp
+                   << " "
+                   << file_global_cxxflags                         << std::endl;
             stream << "\t$(CXX) $(CXXFLAGS) -c $< -o $@"           << std::endl;
             stream << cpp_util::make::dep (mod->first)
                    << ": "
-                   << obj_cpp                                      << std::endl;
+                   << obj_cpp
+                   << " "
+                   << file_global_cxxflags                         << std::endl;
             stream << "\t$(CXX) $(CXXFLAGS)"
                    << " -MM -MP -MT '"
                    << cpp_util::make::dep (mod->first)
@@ -1313,13 +1350,16 @@ namespace xml
                    << cpp_util::make::dep (mod->first)             << std::endl;
 
             stream                                                 << std::endl;
+            stream << "include " << file_module_ldflags            << std::endl;
+            stream                                                 << std::endl;
             stream << cpp_util::make::mod_so (mod->first)
-                   << ": $(" << objs << ")";
-
-            stream << std::endl;
-
+                   << ": $(" << objs << ")"
+                   << " "
+                   << file_global_ldflags
+                   << " "
+                   << file_module_ldflags                          << std::endl;
             stream << "\t$(CXX)"
-                   << " -shared $^ -o $@"
+                   << " -shared $(" << objs << ") -o $@"
                    << " $(" << ldflags << ")"
                    << " $(LDFLAGS)"                                << std::endl;
             stream                                                 << std::endl;
@@ -1437,8 +1477,6 @@ namespace xml
         stream                                                     << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
-
-        stream.commit();
       }
 
       typedef boost::unordered_map<std::string, module_type>
@@ -2106,8 +2144,6 @@ namespace xml
 
               cpp_util::include_guard_end
                 (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
-
-              stream.commit();
             }
 
             {
@@ -2159,8 +2195,6 @@ namespace xml
               stream << std::endl << "      }" << std::endl;
 
               namespace_close (stream, mod);
-
-              stream.commit();
             }
 
             return true;
@@ -2217,8 +2251,6 @@ namespace xml
               , structure.position_of_definition().path()
               , ::fhg::util::cpp::path::type()
               );
-
-            stream.commit();
           }
         }
 

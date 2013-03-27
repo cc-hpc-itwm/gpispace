@@ -45,8 +45,6 @@ namespace xml
             util::check_no_change_fstream stream (state, prefix / d->name);
 
             stream << d->content;
-
-            stream.commit();
           }
       }
     }
