@@ -81,20 +81,23 @@ namespace gspc
       return std::string (m_body.begin (), m_body.end ());
     }
 
+    static const char EOL[] = {'\n'};
+    static const char NUL[] = {0};
+
     std::string frame::to_string () const
     {
       std::ostringstream os;
 
-      os << get_command () << std::endl;
+      os << get_command () << EOL;
       BOOST_FOREACH ( frame::header_type::value_type const & kvp
                     , get_header ()
                     )
       {
-        os << kvp.first << ":" << kvp.second << std::endl;
+        os << kvp.first << ":" << kvp.second << EOL;
       }
-      os << std::endl;
+      os << EOL;
       os << get_body_as_string ();
-      os << '\0';
+      os << NUL;
 
       return os.str ();
     }
