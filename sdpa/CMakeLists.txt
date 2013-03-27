@@ -47,7 +47,7 @@ include_directories(${FhgKernel_INCLUDE_DIR})
 find_package(SEDA REQUIRED QUIET)
 include_directories(${SEDA_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/we)
+include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
 ## find zlib
 find_package(ZLIB REQUIRED)

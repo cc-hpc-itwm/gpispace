@@ -295,8 +295,12 @@ validate: $(NET_VALIDATION)
 
 ###############################################################################
 
+ifeq "$(wildcard $(BUILDDIR))" ""
 $(BUILDDIR):
 	$(error Build directory does not exist: $(BUILDDIR))
+else
+$(BUILDDIR):
+endif
 
 ###############################################################################
 

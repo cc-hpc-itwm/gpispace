@@ -132,12 +132,11 @@ if (ENABLE_PNET_EDITOR)
   target_link_libraries ( pnete
                           "${LIB_PREFIX}graphviz-wrapper"
                           "fhg_util_qt"
-                          we
+                          pnet
                           ${FhgLog_LIBRARY}
                           ${UTIL_LIBRARIES}
                           ${Boost_LIBRARIES}
                           ${QT_LIBRARIES}
-                          xml
                           fhg-plugin)
 
   install (TARGETS pnete RUNTIME DESTINATION bin COMPONENT runtime)
@@ -152,7 +151,7 @@ if (ENABLE_SDPA_GUI)
     monitor.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
 
   target_link_libraries ( sdpa-gui
-                          we
+                          pnet
                           "fhg_util_qt"
                           fhg-revision
                           ${FhgLog_LIBRARY}

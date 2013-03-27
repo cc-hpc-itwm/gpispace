@@ -1,0 +1,81 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#ifndef _XML_PARSE_INCLUDE_HPP
+#define _XML_PARSE_INCLUDE_HPP 1
+
+#include <boost/filesystem.hpp>
+
+// force dependencies
+#include <we/loader/IModule.hpp>
+#include <we/loader/macros.hpp>
+#include <we/loader/types.hpp>
+#include <we/type/bitsetofint.hpp>
+#include <we/type/bytearray.hpp>
+#include <we/type/literal/control.hpp>
+#include <we/type/literal.hpp>
+#include <we/type/literal/show.hpp>
+#include <we/type/signature/types.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/missing_binding.hpp>
+#include <we/type/value/cpp/get.hpp>
+#include <we/expr/eval/context.hpp>
+
+#include <list>
+
+namespace pnetc
+{
+  namespace includes
+  {
+    namespace fs = boost::filesystem;
+
+    inline const fs::path & root ()
+    {
+      static const fs::path ret ("@CMAKE_SOURCE_DIR@/pnet/src");
+
+      return ret;
+    }
+
+    typedef std::list<boost::filesystem::path> names_type;
+
+    namespace detail
+    {
+      struct includes
+      {
+      private:
+        names_type _names;
+
+      public:
+        includes () : _names ()
+        {
+          _names.push_back (fs::path ("we/loader/IModule.hpp"));
+          _names.push_back (fs::path ("we/loader/api-guard.hpp"));
+          _names.push_back (fs::path ("we/loader/macros.hpp"));
+          _names.push_back (fs::path ("we/loader/types.hpp"));
+          _names.push_back (fs::path ("we/type/bitsetofint.hpp"));
+          _names.push_back (fs::path ("we/type/bytearray.hpp"));
+          _names.push_back (fs::path ("we/type/literal/control.hpp"));
+          _names.push_back (fs::path ("we/type/literal.hpp"));
+          _names.push_back (fs::path ("we/type/signature/types.hpp"));
+          _names.push_back (fs::path ("we/type/value.hpp"));
+          _names.push_back (fs::path ("we/type/value/missing_binding.hpp"));
+          _names.push_back (fs::path ("we/type/value/cpp/get.hpp"));
+          _names.push_back (fs::path ("we/expr/eval/context.hpp"));
+
+          // for operator <<
+          _names.push_back (fs::path ("we/type/literal/show.hpp"));
+        }
+
+        const names_type & names () const { return _names; }
+      };
+    }
+
+    inline const names_type & includes ()
+    {
+      static const detail::includes is;
+
+      return is.names();
+    }
+  }
+}
+
+#endif

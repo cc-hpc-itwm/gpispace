@@ -9,7 +9,7 @@ include_directories(${FhgLog_INCLUDE_DIR})
 find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/we)
+include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
 # for usage of the sdpac plugin
 find_package(SDPA REQUIRED QUIET)
@@ -34,7 +34,7 @@ set(HEADER_DESTINATION_DIR "include/fhg/plugins")
 
 fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   EXPORTS UFBMIG_BACK
-  LINK_LIBRARIES we
+  LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY_SHARED}
                  ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}

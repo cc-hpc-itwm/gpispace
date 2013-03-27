@@ -1390,6 +1390,7 @@ namespace fhg
               ( net.id().id_mapper()->next_id()
               , net.id().id_mapper()
               , boost::none
+              , XML_PARSE_UTIL_POSITION_GENERATED()
               , ::xml::parse::type::expression_type
                 ( net.id().id_mapper()->next_id()
                 , net.id().id_mapper()

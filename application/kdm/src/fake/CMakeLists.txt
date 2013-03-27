@@ -5,7 +5,7 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 find_package(FVM REQUIRED)
 include_directories(${FVM_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/we)
+include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
 find_package(UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
