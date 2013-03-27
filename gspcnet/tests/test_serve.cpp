@@ -58,3 +58,28 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 
   BOOST_REQUIRE (client);
 }
+
+BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
+{
+  static const size_t NUM_CLIENTS = 100;
+
+  gspc::net::server::queue_manager_t qmgr;
+
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("unix://socket.foo", qmgr);
+  BOOST_REQUIRE (server);
+
+  std::vector<gspc::net::client_ptr_t> clients;
+
+  for (size_t i = 0 ; i < NUM_CLIENTS ; ++i)
+  {
+    gspc::net::client_ptr_t client =
+      gspc::net::dial (server->url ());
+    BOOST_CHECK (client);
+
+    if (client)
+      clients.push_back (client);
+  }
+
+  BOOST_REQUIRE_EQUAL (clients.size (), NUM_CLIENTS);
+}
