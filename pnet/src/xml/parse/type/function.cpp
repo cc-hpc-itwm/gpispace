@@ -1218,7 +1218,7 @@ namespace xml
 
             const std::string objs ("OBJ_" + mod->first);
             const fun_infos_type & funs (mod->second);
-            const std::string ldflags ("LDFLAG_" + mod->first);
+            const std::string ldflags ("LDFLAGS_" + mod->first);
             const std::string file_module_ldflags ("Makefile." + ldflags);
 
             util::check_no_change_fstream ldflags_module
@@ -1234,7 +1234,7 @@ namespace xml
                 stream << "##"                                     << std::endl;
 
                 const std::string cxxflags
-                  ("CXXFLAG_" + mod->first + "_" + fun->name);
+                  ("CXXFLAGS_" + mod->first + "_" + fun->name);
                 const std::string file_function_cxxflags
                   ("Makefile." + cxxflags);
 
