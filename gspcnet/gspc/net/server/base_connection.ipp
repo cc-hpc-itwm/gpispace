@@ -6,6 +6,7 @@
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_buffer.hpp>
 #include <gspc/net/frame_util.hpp>
+#include <gspc/net/frame_handler.hpp>
 
 #include <iostream>
 
@@ -16,8 +17,11 @@ namespace gspc
     namespace server
     {
       template <class Proto>
-      base_connection<Proto>::base_connection (boost::asio::io_service &service)
+      base_connection<Proto>::base_connection ( boost::asio::io_service &service
+                                              , frame_handler_t & frame_handler
+                                              )
         : m_frame_list_mutex ()
+        , m_frame_handler (frame_handler)
         , m_strand (service)
         , m_socket (service)
         , m_buffer ()
@@ -112,7 +116,14 @@ namespace gspc
 
               if (not is_heartbeat (m_frame))
               {
-                this->deliver (m_frame);
+                int error = m_frame_handler.handle_frame (this, m_frame);
+                if (error < 0)
+                {
+                  std::cerr << "error in connection: "
+                            << strerror (-error)
+                            << std::endl;
+                  return;
+                }
               }
 
               m_frame = frame ();
@@ -132,6 +143,7 @@ namespace gspc
         else
         {
           std::cerr << "handle connection lost event" << std::endl;
+          m_frame_handler.handle_error (this, ec);
         }
       }
 
@@ -159,6 +171,7 @@ namespace gspc
         else
         {
           std::cerr << "handle write error (disconnect)" << std::endl;
+          m_frame_handler.handle_error (this, ec);
         }
       }
     }

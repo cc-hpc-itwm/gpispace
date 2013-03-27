@@ -10,6 +10,7 @@
 #include <boost/thread/shared_mutex.hpp>
 
 #include <gspc/net/frame.hpp>
+#include <gspc/net/frame_handler_fwd.hpp>
 #include <gspc/net/parse/parser.hpp>
 
 #include <gspc/net/user.hpp>
@@ -31,7 +32,9 @@ namespace gspc
         typedef typename protocol_type::socket socket_type;
 
         explicit
-        base_connection (boost::asio::io_service & io_service);
+        base_connection ( boost::asio::io_service & io_service
+                        , frame_handler_t & frame_handler
+                        );
 
         ~base_connection ();
 
@@ -52,6 +55,8 @@ namespace gspc
         void handle_write (const boost::system::error_code &);
 
         mutable boost::shared_mutex     m_frame_list_mutex;
+
+        frame_handler_t &m_frame_handler;
 
         boost::asio::io_service::strand m_strand;
         socket_type                     m_socket;

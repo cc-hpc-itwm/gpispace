@@ -10,6 +10,7 @@
 #include <boost/thread.hpp>
 
 #include <gspc/net/frame.hpp>
+#include <gspc/net/frame_handler.hpp>
 #include <gspc/net/parse/parser.hpp>
 
 #include <gspc/net/client.hpp>
@@ -23,6 +24,7 @@ namespace gspc
     {
       template <class Protocol>
       class base_client : public gspc::net::client_t
+                        , public gspc::net::frame_handler_t
                         , private boost::noncopyable
       {
       public:
@@ -40,6 +42,9 @@ namespace gspc
         int stop ();
 
         int send_raw (frame const &);
+
+        int handle_frame (user_ptr, frame const &);
+        int handle_error (user_ptr, boost::system::error_code const &);
       private:
         boost::asio::io_service         m_io_service;
         endpoint_type                   m_endpoint;

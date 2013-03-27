@@ -4,6 +4,7 @@
 #include <fhg/assert.hpp>
 
 #include <boost/foreach.hpp>
+#include <gspc/net/frame_io.hpp>
 
 namespace gspc
 {
@@ -33,7 +34,7 @@ namespace gspc
 
         m_io_service.reset ();
 
-        m_connection.reset (new connection_type (m_io_service));
+        m_connection.reset (new connection_type (m_io_service, *this));
         m_connection->socket ().connect (m_endpoint);
         m_connection->start ();
 
@@ -69,6 +70,22 @@ namespace gspc
       int base_client<Proto>::send_raw (frame const &f)
       {
         return m_connection->deliver (f);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::handle_frame (user_ptr user, frame const &f)
+      {
+        std::cout << f << std::endl;
+        return 0;
+      }
+
+      template <class Proto>
+      int base_client<Proto>::handle_error ( user_ptr user
+                                           , boost::system::error_code const &ec
+                                           )
+      {
+        std::cerr << "handle error: " << ec << std::endl;
+        return 0;
       }
     }
   }

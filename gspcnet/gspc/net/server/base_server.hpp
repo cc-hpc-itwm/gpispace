@@ -10,6 +10,7 @@
 #include <boost/thread.hpp>
 
 #include <gspc/net/server.hpp>
+#include <gspc/net/frame_handler.hpp>
 #include <gspc/net/server/base_connection.hpp>
 #include <gspc/net/server/queue_manager_fwd.hpp>
 
@@ -21,6 +22,7 @@ namespace gspc
     {
       template <class Protocol>
       class base_server : public gspc::net::server_t
+                        , public gspc::net::frame_handler_t
                         , private boost::noncopyable
       {
       public:
@@ -34,6 +36,9 @@ namespace gspc
         int start ();
         int stop ();
         std::string url () const;
+
+        int handle_frame (user_ptr, frame const &);
+        int handle_error (user_ptr, boost::system::error_code const &);
       private:
         typedef base_connection<protocol_type> connection;
         typedef boost::shared_ptr<connection>  connection_ptr;
