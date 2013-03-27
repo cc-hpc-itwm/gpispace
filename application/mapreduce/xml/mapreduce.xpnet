@@ -83,7 +83,7 @@
         <out name="n_chunks" type="long"/>
         <out name="n_partitions" type="long"/>
 
-        <module name="create_config" function="config create_config(input_file, output_file, 
+        <module name="mapredmod_cfg" function="config create_config(input_file, output_file, 
         															read_chunk_size, map_chunk_size,
                                                						input_n_read_slots, input_n_map_slots,
                                                						n_chunks, n_read_slots, n_map_slots,
@@ -92,11 +92,12 @@
                                                						n_part_slots, n_red_slots, n_partitions, reduce_slot_size)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>   
           <cinclude href="cstdio"/>
           <cinclude href="sstream"/>
           <cinclude href="fstream"/>
           <cinclude href="cmath"/>
+          <ld flag="-lboost_regex"/>
           <code><![CDATA[
           		
 	  		  	if(map_chunk_size<read_chunk_size)
@@ -401,7 +402,7 @@
         <in name="config" type="config"/>
         <out name="read_chunk_info" type="read_chunk_info"/>
 
-        <module name="load" function="read_chunk_info read_and_load_chunk(chunk_and_slot, config)">
+        <module name="mapredmod_read" function="read_chunk_info read_and_load_chunk(chunk_and_slot, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <cinclude href="util/helper.hpp"/>
@@ -410,6 +411,7 @@
           <cinclude href="stdio.h"/>
           <cinclude href="cmath"/>
           <cinclude href="fstream"/>
+          <ld flag="-lboost_regex"/>
           <code><![CDATA[
             // MLOG (INFO, "Read the chunk "<<chunk_and_slot.chunk<<" from the file " << config.file.input<<" into slot " << chunk_and_slot.slot);
 	
@@ -495,10 +497,10 @@
         <out name="counter_partial_updates" type="counter_partial_updates_t"/>
         <out name="read_slot_id" type="long"/>
 
-        <module name="map" function="map_chunk(map_slot_id, read_chunk_info, config, read_slot_id, counter_partial_updates, map_chunk_info)">
+        <module name="mapredmod_map" function="map_chunk(map_slot_id, read_chunk_info, config, read_slot_id, counter_partial_updates, map_chunk_info)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/> 
           <cinclude href="util/map.hpp"/>
           <cinclude href="util/partition.hpp"/>
           <cinclude href="boost/algorithm/string/split.hpp"/>
@@ -509,6 +511,7 @@
           <cinclude href="fstream"/>
           <cinclude href="ctype.h"/>
           <cinclude href="cstdio"/>
+          <ld flag="-lboost_regex"/>
           <code><![CDATA[
             LOG (INFO, "Map the chunk "<<read_chunk_info.chunk_id<<" ... ");
 			
@@ -743,7 +746,7 @@
           <cinclude href="boost/tokenizer.hpp"/>
           <cinclude href="vector"/>
           <cinclude href="util/partition.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>   <ld flag="-lboost_regex"/>
           <cinclude href="util/map.hpp"/>
           <cinclude href="util/reduce.hpp"/>        
           <code><![CDATA[
@@ -901,9 +904,10 @@
           <cinclude href="boost/tokenizer.hpp"/>
           <cinclude href="vector"/>
           <cinclude href="util/partition.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>   
           <cinclude href="util/map.hpp"/>
-          <cinclude href="util/reduce.hpp"/>        
+          <cinclude href="util/reduce.hpp"/> 
+		  <ld flag="-lboost_regex"/>       
           <code><![CDATA[
             MLOG (INFO, "copying the slice (offset="<<part_slice_info.part_offset<<", size="<<part_slice_info.part_used<<") of the map "<<part_slice_info.map_slot_id
                          <<" into the corresponding partition (part_id="<<part_slice_info.part_id<<")"); 
@@ -1142,7 +1146,7 @@
         <!-- <module name="free_map_slot" function="free_map_slot(map_chunk_info, counter_partial_updates, map_slot_id, chunk_partitioned)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>   <ld flag="-lboost_regex"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="boost/utility.hpp"/>
           <cinclude href="boost/thread.hpp"/>
@@ -1192,7 +1196,7 @@
         <module name="move_partition" function="move_partition_into_the_reduce_slot(config, partition_result, reduce_info, partition_move_info)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>   
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="boost/utility.hpp"/>
           <cinclude href="boost/thread.hpp"/>
@@ -1201,6 +1205,7 @@
           <cinclude href="sstream"/>
           <cinclude href="cstdio"/>
           <cinclude href="algorithm"/>
+          <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
 			timestamp_t time_start_reduce = ::mapreduce::util::get_timestamp();
@@ -1379,7 +1384,7 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/time.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>  
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="boost/utility.hpp"/>
           <cinclude href="boost/thread.hpp"/>
@@ -1388,6 +1393,7 @@
           <cinclude href="sstream"/>
           <cinclude href="cstdio"/>
           <cinclude href="algorithm"/>
+          <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
 		  	  timestamp_t time_start_reduce = ::mapreduce::util::get_timestamp();
@@ -1530,7 +1536,7 @@
         <module name="reduce_and_save" function="reduce_and_save(config, partition_move_info, new_reduce_info, reduce_result)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>   
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="boost/utility.hpp"/>
           <cinclude href="boost/thread.hpp"/>
@@ -1539,6 +1545,7 @@
           <cinclude href="sstream"/>
           <cinclude href="cstdio"/>
           <cinclude href="algorithm"/>
+          <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
 			timestamp_t time_start_reduce = ::mapreduce::util::get_timestamp();
@@ -1687,7 +1694,7 @@
               																border_keys_recovered_red )">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>  
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="util/map.hpp"/>
           <cinclude href="boost/utility.hpp"/>
@@ -1696,6 +1703,7 @@
           <cinclude href="sstream"/>
           <cinclude href="cstdio"/>
           <cinclude href="algorithm"/>
+          <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
               
@@ -1910,7 +1918,7 @@
      													border_keys_recovered_part)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/> 
           <cinclude href="util/partition.hpp"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="util/map.hpp"/>
@@ -1922,6 +1930,7 @@
           <cinclude href="sstream"/>
           <cinclude href="cstdio"/>
           <cinclude href="algorithm"/>
+          <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
           
@@ -2161,6 +2170,7 @@
           <cinclude href="sstream"/>
           <cinclude href="cstdio"/>
           <cinclude href="algorithm"/>
+          <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
               
@@ -2250,7 +2260,7 @@
         <module name="mapreduce_done" function="finalize_mapreduce(config, result)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
-          <cinclude href="util/helper.hpp"/>
+          <cinclude href="util/helper.hpp"/>   <ld flag="-lboost_regex"/>
           <code><![CDATA[
 	          LOG (INFO, "finalize: " << config);
 			
