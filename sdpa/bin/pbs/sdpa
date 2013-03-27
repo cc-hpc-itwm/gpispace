@@ -1114,8 +1114,8 @@ function start_proc ()
     local pid=$( cat "$pid_file" 2>/dev/null )
     if ! is_proc_alive "$name" "$pid" ; then
         :> "$pid_file"
-        debug $binary $@
-        $binary $@ </dev/null >"$log_file" 2>&1
+        debug $binary "$@"
+        $binary "$@" </dev/null >"$log_file" 2>&1
         for (( i = 0 ; i < 6 ; ++i )) ; do
             sleep 0.5
             pid=$( cat "$pid_file" 2>/dev/null )
@@ -1243,7 +1243,7 @@ function start_kvs ()
         return 1
     fi
 
-    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" -s "''" "-C" "-b" "0" "-p" "${kvs_port}" "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize"; then
+    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" -s "" "-C" "-b" "0" "-p" "${kvs_port}" "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize"; then
         log "E: could not start kvs, giving up!"
         return 1
     else
