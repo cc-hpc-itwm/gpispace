@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <gspc/net.hpp>
+#include <gspc/net/service/echo.hpp>
 
 int main (int argc, char *argv[])
 {
@@ -10,6 +11,8 @@ int main (int argc, char *argv[])
     std::cerr << "usage: gspcnetd url..." << std::endl;
     return 1;
   }
+
+  gspc::net::handle ("/test/echo", gspc::net::service::echo ());
 
   std::vector<gspc::net::server_ptr_t> servers;
   gspc::net::server::queue_manager_t qmgr;
