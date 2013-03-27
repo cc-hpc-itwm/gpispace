@@ -5,6 +5,7 @@
 
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_buffer.hpp>
+#include <gspc/net/frame_util.hpp>
 
 #include <iostream>
 
@@ -118,6 +119,10 @@ namespace gspc
               m_parser.reset ();
 
               std::cerr << "got frame: " << m_frame;
+              if (not is_heartbeat (m_frame))
+              {
+                this->deliver (m_frame);
+              }
 
               m_frame = frame ();
             }
