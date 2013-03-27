@@ -1,6 +1,7 @@
 #include "frame.hpp"
 
 #include <sstream>
+#include <iomanip>
 
 #include <boost/none.hpp>
 #include <boost/lexical_cast.hpp>
@@ -99,6 +100,23 @@ namespace gspc
       os << get_body_as_string ();
       os << NUL;
 
+      return os.str ();
+    }
+
+    std::string frame::to_hex () const
+    {
+      std::string frame_as_string = to_string ();
+      std::ostringstream os;
+
+      os << std::hex;
+      BOOST_FOREACH (const char c, frame_as_string)
+      {
+        os << "\\x"
+           << std::setfill ('0')
+           << std::setw (2)
+           << (int)(c & 0xff)
+          ;
+      }
       return os.str ();
     }
   }

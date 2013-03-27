@@ -67,6 +67,7 @@ namespace gspc
       std::string get_body_as_string () const;
 
       std::string to_string () const;
+      std::string to_hex () const;
     private:
       std::string       m_command;
       header_type       m_header;
