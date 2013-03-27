@@ -12,6 +12,13 @@ namespace gspc
                         , const char *message
                         )
       {
+        return error_frame (ec, std::string (message));
+      }
+
+      frame error_frame ( error_code_t ec
+                        , std::string const &message
+                        )
+      {
         frame f ("ERROR");
         f.set_header ("content-type", "text/plain");
         f.set_header ("code", boost::lexical_cast<std::string>(ec));

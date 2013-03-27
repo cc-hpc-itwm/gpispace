@@ -1,6 +1,8 @@
 #ifndef GSPC_NET_FRAME_BUILDER_HPP
 #define GSPC_NET_FRAME_BUILDER_HPP
 
+#include <string>
+
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/header.hpp>
@@ -15,6 +17,8 @@ namespace gspc
 
       // server -> client frames
       frame error_frame (error_code_t ec, const char *message);
+      frame error_frame (error_code_t ec, std::string const &message);
+
       frame receipt_frame (gspc::net::header::receipt const &);
       frame connected_frame (gspc::net::header::version const &);
       frame message_frame (frame const & send_frame);
