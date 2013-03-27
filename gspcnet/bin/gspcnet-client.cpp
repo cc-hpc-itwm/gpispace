@@ -69,6 +69,7 @@ int main (int argc, char *argv[])
     }
     else if (result.state == gspc::net::parse::PARSE_FINISHED)
     {
+      std::cout << std::endl;
       client->send_raw (frame);
     }
     else
