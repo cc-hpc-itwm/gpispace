@@ -40,13 +40,6 @@ namespace gspc
       template <class Proto>
       void base_connection<Proto>::start ()
       {
-        std::cerr << "new connection: "
-                  << m_socket.remote_endpoint ()
-                  << " -> "
-                  << m_socket.local_endpoint ()
-                  << std::endl
-          ;
-
         m_socket.async_read_some
           ( boost::asio::buffer (m_buffer)
           , m_strand.wrap (boost::bind
@@ -61,11 +54,6 @@ namespace gspc
       template <class Proto>
       int base_connection<Proto>::deliver (frame const &f)
       {
-        std::cerr << "delivering"
-                  << std::endl
-                  << "'" << f << "'"
-                  << std::endl;
-
         unique_lock lock (m_frame_list_mutex);
         bool write_in_progress = not m_frame_list.empty ();
         m_frame_list.push_back (f);
@@ -121,10 +109,6 @@ namespace gspc
             if (result.state == gspc::net::parse::PARSE_FINISHED)
             {
               m_parser.reset ();
-
-              std::cerr << "got frame:"
-                        << std::endl
-                        << m_frame;
 
               if (not is_heartbeat (m_frame))
               {
