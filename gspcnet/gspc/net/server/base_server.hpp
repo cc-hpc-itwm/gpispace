@@ -28,7 +28,7 @@ namespace gspc
         typedef typename protocol_type::endpoint endpoint_type;
         typedef typename protocol_type::acceptor acceptor_type;
 
-        base_server ( endpoint_type const &, queue_manager_t &qmgr);
+        base_server (endpoint_type const &, queue_manager_t &qmgr);
         ~base_server ();
 
         int start ();
