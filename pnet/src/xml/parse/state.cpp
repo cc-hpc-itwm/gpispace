@@ -393,7 +393,7 @@ namespace xml
           throw std::runtime_error ("no prior position found");
         }
 
-        const util::position_type p ( before->second.pos()
+        const util::position_type p ( before->first
                                     , node->name()
                                     , file_in_progress()
                                     , before->second.line()
