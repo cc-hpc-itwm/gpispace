@@ -44,14 +44,19 @@ namespace xml
       check_no_change_fstream::check_no_change_fstream
       ( const state::type& state
       , const boost::filesystem::path& file
+      , const bool auto_commit
       )
         : _state (state)
         , _file (file)
         , _oss ()
+        , _auto_commit (auto_commit)
       {}
       check_no_change_fstream::~check_no_change_fstream()
       {
-        commit();
+        if (_auto_commit)
+        {
+          commit();
+        }
       }
       check_no_change_fstream&
       check_no_change_fstream::operator << (std::ostream& (*f)(std::ostream&))

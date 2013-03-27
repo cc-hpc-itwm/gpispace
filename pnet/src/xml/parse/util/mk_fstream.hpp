@@ -30,8 +30,10 @@ namespace xml
       public:
         explicit check_no_change_fstream ( const state::type&
                                          , const boost::filesystem::path&
+                                         , const bool auto_commit = true
                                          );
         ~check_no_change_fstream();
+        void commit() const;
 
         template<typename T> check_no_change_fstream& operator<< (const T& x)
         {
@@ -43,8 +45,8 @@ namespace xml
         const state::type& _state;
         const boost::filesystem::path _file;
         std::ostringstream _oss;
+        const bool _auto_commit;
 
-        void commit() const;
         void write() const;
       };
     }
