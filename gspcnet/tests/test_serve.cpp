@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
   fs::remove ("socket.foo");
 }
 
-BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_connect)
+BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 {
   gspc::net::server::queue_manager_t qmgr;
 
