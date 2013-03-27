@@ -49,6 +49,10 @@ namespace xml
         , _file (file)
         , _oss ()
       {}
+      check_no_change_fstream::~check_no_change_fstream()
+      {
+        commit();
+      }
       check_no_change_fstream&
       check_no_change_fstream::operator << (std::ostream& (*f)(std::ostream&))
       {

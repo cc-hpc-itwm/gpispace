@@ -31,20 +31,21 @@ namespace xml
         explicit check_no_change_fstream ( const state::type&
                                          , const boost::filesystem::path&
                                          );
-        void commit() const;
+        ~check_no_change_fstream();
 
-        template<typename T> check_no_change_fstream& operator << (const T& x)
+        template<typename T> check_no_change_fstream& operator<< (const T& x)
         {
           _oss << x; return *this;
         }
-        check_no_change_fstream& operator << (std::ostream& (*)(std::ostream&));
+        check_no_change_fstream& operator<< (std::ostream& (*)(std::ostream&));
 
       private:
         const state::type& _state;
         const boost::filesystem::path _file;
         std::ostringstream _oss;
 
-        void write () const;
+        void commit() const;
+        void write() const;
       };
     }
   }
