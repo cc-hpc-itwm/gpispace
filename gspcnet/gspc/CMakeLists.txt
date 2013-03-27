@@ -5,6 +5,7 @@ set (gspcnet_src
   net/resolver.cpp
 
   net/frame.cpp
+  net/frame_util.cpp
   net/frame_io.cpp
   net/frame_buffer.cpp
   net/frame_builder.cpp

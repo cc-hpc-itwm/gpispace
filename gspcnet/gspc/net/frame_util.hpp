@@ -34,6 +34,8 @@ namespace gspc
         return dflt;
       }
     }
+
+    bool is_heartbeat (frame const &f);
   }
 }
 
