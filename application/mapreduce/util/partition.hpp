@@ -26,7 +26,7 @@ namespace mapreduce
 			  i = ((first_char - 'a')*(N-2))/('z'-'a');
 		  }
 		  else
-			  if(is_special_item(key))
+			  if(is_special_key(key))
 				  i=N-1;
 			  else
 				  i=N-2;
@@ -57,7 +57,7 @@ namespace mapreduce
 			  i = ((hash_val - low)*(N-2))/(high-low);
 		  }
 		  else
-			  if(is_special_item(key))
+			  if(is_special_key(key))
 				  i=N-1;
 			  else
 				  i=N-2;
@@ -76,7 +76,7 @@ namespace mapreduce
 
       int hash(const std::string& key, const int N)
 	  {
-    	  if(is_special_item(key))
+    	  if(is_special_key(key))
     		return N-1;
 
     	  int sum=0;
