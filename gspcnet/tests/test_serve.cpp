@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
   BOOST_REQUIRE (server);
 
   gspc::net::client_ptr_t client =
-    gspc::net::dial ("unix://socket.foo");
+    gspc::net::dial (server->url ());
 
   BOOST_REQUIRE (client);
 }
