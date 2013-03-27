@@ -38,6 +38,8 @@ namespace gspc
       {
         std::cerr << "new connection: "
                   << m_socket.remote_endpoint ()
+                  << " -> "
+                  << m_socket.local_endpoint ()
                   << std::endl
           ;
 
