@@ -1231,6 +1231,8 @@ namespace xml
 
                 const std::string cxxflags
                   ("CXXFLAG_" + mod->first + "_" + fun->name);
+                const std::string file_function_cxxflags
+                  ("Makefile." + cxxflags);
 
                 stream << objs << " += "
                        << cpp_util::make::obj (mod->first, fun->name)
@@ -1256,16 +1258,25 @@ namespace xml
                     stream << ldflags << " += " << flag << std::endl;
                   }
 
-                BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->cxxflags)
+                {
+                  util::check_no_change_fstream cxxflags_function
+                    (state, prefix / file_function_cxxflags);
+
+                  BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->cxxflags)
                   {
-                    stream << cxxflags << " += " << flag << std::endl;
+                    cxxflags_function << cxxflags << " += " << flag << std::endl;
                   }
+                }
+
+                stream << "include " << file_function_cxxflags     << std::endl;
 
                 stream << cpp_util::make::obj (mod->first, fun->name)
                        << ": "
                        << cpp_util::make::cpp (mod->first, fun->name)
                        << " "
                        << file_global_cxxflags
+                       << " "
+                       << file_function_cxxflags
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
                        << " -c $< -o $@"                           << std::endl;
@@ -1274,6 +1285,8 @@ namespace xml
                        << cpp_util::make::cpp (mod->first, fun->name)
                        << " "
                        << file_global_cxxflags
+                       << " "
+                       << file_function_cxxflags
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
                        << " -MM -MP -MT '"
