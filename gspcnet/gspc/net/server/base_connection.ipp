@@ -61,7 +61,10 @@ namespace gspc
       template <class Proto>
       int base_connection<Proto>::deliver (frame const &f)
       {
-        std::cerr << "delivering " << f << std::endl;
+        std::cerr << "delivering"
+                  << std::endl
+                  << "'" << f << "'"
+                  << std::endl;
 
         unique_lock lock (m_frame_list_mutex);
         bool write_in_progress = not m_frame_list.empty ();
@@ -108,6 +111,7 @@ namespace gspc
                         << gspc::net::error_string (result.reason)
                         << std::endl
                 ;
+              std::cerr << m_frame.to_hex () << std::endl;
               return;
             }
 
@@ -118,7 +122,10 @@ namespace gspc
             {
               m_parser.reset ();
 
-              std::cerr << "got frame: " << m_frame;
+              std::cerr << "got frame:"
+                        << std::endl
+                        << m_frame;
+
               if (not is_heartbeat (m_frame))
               {
                 this->deliver (m_frame);
@@ -140,7 +147,7 @@ namespace gspc
         }
         else
         {
-          std::cerr << "handle connection event" << std::endl;
+          std::cerr << "handle connection lost event" << std::endl;
         }
       }
 
