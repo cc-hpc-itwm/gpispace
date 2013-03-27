@@ -4,6 +4,7 @@
 #include <boost/bind.hpp>
 
 #include <gspc/net/frame_io.hpp>
+#include <gspc/net/frame_buffer.hpp>
 
 #include <iostream>
 
@@ -15,11 +16,13 @@ namespace gspc
     {
       template <class Proto>
       base_connection<Proto>::base_connection (boost::asio::io_service &service)
-        : m_strand (service)
+        : m_frame_list_mutex ()
+        , m_strand (service)
         , m_socket (service)
         , m_buffer ()
         , m_parser ()
         , m_frame ()
+        , m_frame_list ()
       {}
 
       template <class Proto>
@@ -58,6 +61,23 @@ namespace gspc
       int base_connection<Proto>::deliver (frame const &f)
       {
         std::cerr << "delivering " << f << std::endl;
+
+        unique_lock lock (m_frame_list_mutex);
+        bool write_in_progress = not m_frame_list.empty ();
+        m_frame_list.push_back (f);
+
+        if (not write_in_progress)
+        {
+          m_socket.async_send
+            ( frame_to_buffers (m_frame_list.front ())
+            , m_strand.wrap (boost::bind
+                            ( &base_connection<Proto>::handle_write
+                            , this->shared_from_this ()
+                            , boost::asio::placeholders::error
+                            ))
+            );
+        }
+
         return 0;
       }
 
@@ -115,7 +135,7 @@ namespace gspc
         }
         else
         {
-          std::cerr << "lost connection" << std::endl;
+          std::cerr << "handle connection event" << std::endl;
         }
       }
 
@@ -123,7 +143,27 @@ namespace gspc
       void
       base_connection<Proto>::handle_write (const boost::system::error_code &ec)
       {
+        if (not ec)
+        {
+          unique_lock lock (m_frame_list_mutex);
+          m_frame_list.pop_front ();
 
+          if (not m_frame_list.empty ())
+          {
+            m_socket.async_send
+              ( frame_to_buffers (m_frame_list.front ())
+              , m_strand.wrap (boost::bind
+                              ( &base_connection<Proto>::handle_write
+                              , this->shared_from_this ()
+                              , boost::asio::placeholders::error
+                              ))
+              );
+          }
+        }
+        else
+        {
+          std::cerr << "handle write error (disconnect)" << std::endl;
+        }
       }
     }
   }

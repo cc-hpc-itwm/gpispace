@@ -1,9 +1,13 @@
 #ifndef GSPC_NET_SERVER_BASE_CONNECTION_HPP
 #define GSPC_NET_SERVER_BASE_CONNECTION_HPP
 
+#include <list>
+
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <gspc/net/frame.hpp>
 #include <gspc/net/parse/parser.hpp>
@@ -37,10 +41,17 @@ namespace gspc
 
         int deliver (frame const &);
       private:
+        typedef boost::shared_lock<boost::shared_mutex> shared_lock;
+        typedef boost::unique_lock<boost::shared_mutex> unique_lock;
+
+        typedef std::list<frame>        frame_list_t;
+
         void handle_read ( const boost::system::error_code &
                          , std::size_t transferred
                          );
         void handle_write (const boost::system::error_code &);
+
+        mutable boost::shared_mutex     m_frame_list_mutex;
 
         boost::asio::io_service::strand m_strand;
         socket_type                     m_socket;
@@ -49,6 +60,7 @@ namespace gspc
 
         parse::parser m_parser;
         frame         m_frame;
+        frame_list_t  m_frame_list;
       };
     }
   }
