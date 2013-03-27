@@ -66,6 +66,7 @@
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="fstream"/>
+          <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
             
@@ -298,6 +299,7 @@
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="fstream"/>
+		  <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
             
