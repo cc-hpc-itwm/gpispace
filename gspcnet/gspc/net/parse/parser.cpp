@@ -141,7 +141,7 @@ namespace gspc
                 try
                 {
                   m_remaining_body_bytes = boost::lexical_cast<std::size_t>
-                    (frame.get_header ("content-length"));
+                    (*frame.get_header ("content-length"));
                 }
                 catch (boost::bad_lexical_cast const &)
                 {
@@ -326,8 +326,7 @@ namespace gspc
             }
             else
             {
-              frame.get_body ().push_back (c);
-              return PARSE_NEED_MORE_DATA;
+              return PARSE_FAILED;
             }
           }
         default:

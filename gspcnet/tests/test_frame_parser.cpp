@@ -290,6 +290,24 @@ BOOST_AUTO_TEST_CASE (test_content_length)
   BOOST_REQUIRE_EQUAL (frame.get_body_as_string (), "12345");
 }
 
+BOOST_AUTO_TEST_CASE (test_content_length_body_too_long)
+{
+  gspc::net::parse::parser parser;
+  gspc::net::parse::result_t result;
+
+  const char input[] = "CONNECT\ncontent-length:5\n\n123456\x00";
+  gspc::net::frame frame;
+
+  result = parser.parse ( input
+                        , input + strlen (input) + 1
+                        , frame
+                        );
+
+  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FAILED);
+  BOOST_REQUIRE (result.consumed > 0);
+  BOOST_REQUIRE_EQUAL (result.consumed, sizeof (input) - 2);
+}
+
 BOOST_AUTO_TEST_CASE (test_binary_body)
 {
   gspc::net::parse::parser parser;
