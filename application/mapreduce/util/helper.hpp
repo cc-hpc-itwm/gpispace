@@ -114,7 +114,65 @@ namespace mapreduce
   		  return pair.first+PAIRSEP+pair.second;
   	  }
 
-  	  bool is_special_key(const std::string& key)
+  	  /*
+	  std::string key(const std::string& item)
+	  {
+		  int sizeKey;
+		  sscanf(item.data(), "%2d%*s", &sizeKey);
+		  std::string key = item.substr(KEY_LENGTH,sizeKey);
+		  return key;
+	  }
+
+	  std::string val(const std::string& item)
+	  {
+		 int sizeKey;
+		 sscanf(item.data(), "%2d%*s", &sizeKey);
+		 std::string val = item.substr(sizeKey+KEY_LENGTH);
+		 return val;
+	  }
+
+	  key_val_pair_t str2kvpair(const std::string& item)
+	  {
+		 int sizeKey;
+		 sscanf(item.data(), "%2d%*s", &sizeKey);
+
+		 key_val_pair_t kvs_pair;
+		 kvs_pair.first = item.substr(KEY_LENGTH,sizeKey);
+		 std::string str_val("");
+
+		 if(sizeKey+KEY_LENGTH<item.size())
+			str_val = item.substr(sizeKey+KEY_LENGTH);
+
+		 while( boost::algorithm::starts_with(str_val, "[") && boost::algorithm::ends_with(str_val, "]") )
+		 {
+			 std::string val = str_val.substr(1, str_val.size()-2);
+			 str_val = val;
+		 }
+
+		 kvs_pair.second = str_val;
+		 return kvs_pair;
+	  }
+
+	  std::string kvpair2str(const key_val_pair_t& pair)
+	  {
+		  int size_key(pair.first.size());
+
+		  std::ostringstream oss;
+		  oss<<setfill('0')<<std::setw(KEY_LENGTH)<<size_key<<pair.first<<pair.second;
+		  return oss.str();
+	  }
+	  */
+
+  	  bool is_special_key_regex(const std::string& key)
+  	  {
+  		 if(key[0] != SHRPCH)
+  			 return false;
+
+  		 const boost::regex pattern("^#\\d+#\\d+");
+  		 return boost::regex_match(key, pattern);
+  	  }
+
+  	  bool is_special_key_simple(const std::string& key)
   	  {
   		  if(key[0] != SHRPCH)
   			  return false;
@@ -137,6 +195,12 @@ namespace mapreduce
   		  }
   	  }
 
+  	 bool is_special_key(const std::string& key)
+	 {
+		return is_special_key_regex(key);
+	 }
+
+
   	  bool my_comp_pairs(::mapreduce::util::key_val_pair_t lhs, ::mapreduce::util::key_val_pair_t rhs)
   	  {
   		  return lhs.first.compare(rhs.first)<0;
@@ -144,9 +208,6 @@ namespace mapreduce
 
   	  bool my_comp(const std::string& lhs, const std::string& rhs)
   	  {
-  		  /*std::string key_l(lhs);
-			std::string key_r(rhs);*/
-
   		  std::string key_l(key(lhs));
   		  std::string key_r(key(rhs));
 
@@ -305,7 +366,6 @@ namespace mapreduce
           arr_pairs.push_back(str2kvpair(s));
         }
 	}
-
 
     std::string list2str(std::list<std::string>& list_values )
 	{
