@@ -1219,6 +1219,10 @@ namespace xml
             const std::string objs ("OBJ_" + mod->first);
             const fun_infos_type & funs (mod->second);
             const std::string ldflags ("LDFLAG_" + mod->first);
+            const std::string file_module_ldflags ("Makefile." + ldflags);
+
+            util::check_no_change_fstream ldflags_module
+              (state, prefix / file_module_ldflags);
 
             for ( fun_infos_type::const_iterator fun (funs.begin())
                 ; fun != funs.end()
@@ -1255,7 +1259,7 @@ namespace xml
 
                 BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->ldflags)
                   {
-                    stream << ldflags << " += " << flag << std::endl;
+                    ldflags_module << ldflags << " += " << flag << std::endl;
                   }
 
                 {
@@ -1346,10 +1350,14 @@ namespace xml
                    << cpp_util::make::dep (mod->first)             << std::endl;
 
             stream                                                 << std::endl;
+            stream << "include " << file_module_ldflags            << std::endl;
+            stream                                                 << std::endl;
             stream << cpp_util::make::mod_so (mod->first)
                    << ": $(" << objs << ")"
                    << " "
-                   << file_global_ldflags                          << std::endl;
+                   << file_global_ldflags
+                   << " "
+                   << file_module_ldflags                          << std::endl;
             stream << "\t$(CXX)"
                    << " -shared $(" << objs << ") -o $@"
                    << " $(" << ldflags << ")"
