@@ -7,6 +7,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
+#include <gspc/net/frame_util.hpp>
+
 namespace gspc
 {
   namespace net
@@ -82,23 +84,30 @@ namespace gspc
       return std::string (m_body.begin (), m_body.end ());
     }
 
-    static const char EOL[] = {'\n'};
-    static const char NUL[] = {0};
+    static const char EOL = '\n';
+    static const char NUL = '\0';
 
     std::string frame::to_string () const
     {
       std::ostringstream os;
 
-      os << get_command () << EOL;
-      BOOST_FOREACH ( frame::header_type::value_type const & kvp
-                    , get_header ()
-                    )
+      if (is_heartbeat (*this))
       {
-        os << kvp.first << ":" << kvp.second << EOL;
+        os << EOL;
       }
-      os << EOL;
-      os << get_body_as_string ();
-      os << NUL;
+      else
+      {
+        os << get_command () << EOL;
+        BOOST_FOREACH ( frame::header_type::value_type const & kvp
+                      , get_header ()
+                      )
+        {
+          os << kvp.first << ":" << kvp.second << EOL;
+        }
+        os << EOL;
+        os << get_body_as_string ();
+        os << NUL;
+      }
 
       return os.str ();
     }
