@@ -184,7 +184,7 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
 )
 add_dependencies(pnet-transform_file-test-wf pnetput)
 ################################################################################################
-set (tc_srcs
+set (tests
   test_Atomic.cpp
   test_Inotify.cpp
   test_CancelJob.cpp
@@ -214,35 +214,29 @@ set (tc_srcs
   test_wfe_plugin.cpp
 )
 
-foreach (tc_src ${tc_srcs})
-  # get the filename without extension and insert the project name
-  string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
-  message(STATUS "adding test case ${tc_name} (using ${tc_src})")
-
-  add_executable(${tc_name} ${tc_src})
-  target_link_libraries(${tc_name}
-                        sdpa-daemon
-                        sdpa-com
-                        sdpa-client
-                        sdpa-events
-                        sdpa-util
-                        sdpa
-                        fhg-plugin
-                        fhg-revision
-                        ${SEDA_LIBRARY}
-                        ${FhgLog_LIBRARY}
-                        pnet
-                        ${Boost_UNIT_TEST_LIBRARIES}
-                        ${Boost_LIBRARIES}
-                        ${CMAKE_DL_LIBS}
-                        )
-  get_target_property(LOC ${tc_name} LOCATION_)
-  add_test(${tc_name} ${LOC})
-  add_dependencies(${tc_name} drts-plugin)
-  add_dependencies(${tc_name} fvm-fake-plugin)
-  add_dependencies(${tc_name} pnet-capabilities-test-wf)
-  add_dependencies(${tc_name} pnet-capabilities_no_mandatory-test-wf)
-  add_dependencies(${tc_name} pnet-atomic-test-wf)
-  add_dependencies(${tc_name} pnet-inotify-test-wf)
-  add_dependencies(${tc_name} pnet-transform_file-test-wf)
-endforeach(tc_src ${tc_srcs})
+foreach (test ${tests})
+    fhg_add_test (${test}
+      PROJECT sdpa
+      LINK_LIBRARIES sdpa-daemon
+                     sdpa-com
+                     sdpa-client
+                     sdpa-events
+                     sdpa-util
+                     sdpa
+                     fhg-plugin
+                     fhg-revision
+                     ${SEDA_LIBRARY}
+                     ${FhgLog_LIBRARY}
+                     pnet
+                     ${Boost_UNIT_TEST_LIBRARIES}
+                     ${Boost_LIBRARIES}
+                     ${CMAKE_DL_LIBS}
+      DEPENDS drts-plugin
+              fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-atomic-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+     )
+endforeach()
