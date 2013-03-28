@@ -32,30 +32,17 @@ option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 
 function (get_revision_info REV_INFO)
   execute_process (
-    COMMAND svn info
+    COMMAND git rev-parse HEAD
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE _out
-    ERROR_VARIABLE _err
-    RESULT_VARIABLE _res
+    OUTPUT_VARIABLE _out_git
+    ERROR_VARIABLE _err_git
+    RESULT_VARIABLE _res_git
     )
-  if (NOT _res)
-    string (REGEX MATCH "Revision: [0-9]+" _rev ${_out})
-    string (REPLACE "Revision: " "r" _rev ${_rev})
-    set (${REV_INFO} ${_rev} PARENT_SCOPE)
+  if (NOT _res_git)
+    string (STRIP "${_out_git}" _out_git)
+    set (${REV_INFO} ${_out_git} PARENT_SCOPE)
   else()
-    execute_process (
-      COMMAND git rev-parse HEAD
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      OUTPUT_VARIABLE _out_git
-      ERROR_VARIABLE _err_git
-      RESULT_VARIABLE _res_git
-      )
-    if (NOT _res_git)
-      string(STRIP "${_out_git}" _out_git)
-      set (${REV_INFO} ${_out_git} PARENT_SCOPE)
-    else (_res_git)
-      message(WARNING "Could not discover revision information")
-    endif()
+    message (WARNING "Could not discover revision information")
   endif()
 endfunction()
 
@@ -69,7 +56,7 @@ function (get_version_info VSN_INFO)
     RESULT_VARIABLE _res
   )
   if (NOT _res)
-    string(STRIP "${_out}" _out)
+    string (STRIP "${_out}" _out)
     set (${VSN_INFO} ${_out} PARENT_SCOPE)
   else()
     set(__new_vsn "${V_MAJOR}.${V_MINOR}")
