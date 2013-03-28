@@ -20,8 +20,8 @@ namespace xml
   {
     namespace type
     {
-      module_type::module_type ( ID_CONS_PARAM(module)
-                               , PARENT_CONS_PARAM(function)
+      module_type::module_type ( ID_CONS_PARAM (module)
+                               , PARENT_CONS_PARAM (function)
                                , const util::position_type& pod
                                )
         : with_position_of_definition (pod)
@@ -31,8 +31,8 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      module_type::module_type ( ID_CONS_PARAM(module)
-                               , PARENT_CONS_PARAM(function)
+      module_type::module_type ( ID_CONS_PARAM (module)
+                               , PARENT_CONS_PARAM (function)
                                , const util::position_type& pod
                                , const std::string& name
                                , const std::string& function
@@ -177,13 +177,12 @@ namespace xml
 
       std::size_t hash_value (const module_type& m)
       {
-        boost::hash<std::string> hasher;
-        return hasher (m.name());
+        return boost::hash<std::string>()(m.name());
       }
 
       namespace dump
       {
-        std::string dump_fun (const module_type & m)
+        std::string dump_fun (const module_type& m)
         {
           std::ostringstream s;
 
@@ -214,7 +213,7 @@ namespace xml
           return s.str();
         }
 
-        void dump (::fhg::util::xml::xmlstream & s, const module_type & m)
+        void dump (::fhg::util::xml::xmlstream& s, const module_type& m)
         {
           s.open ("module");
           s.attr ("name", m.name());

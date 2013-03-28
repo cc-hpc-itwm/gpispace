@@ -28,16 +28,16 @@ namespace xml
     {
       struct module_type : with_position_of_definition
       {
-        ID_SIGNATURES(module);
-        PARENT_SIGNATURES(function);
+        ID_SIGNATURES (module);
+        PARENT_SIGNATURES (function);
 
       public:
-        module_type ( ID_CONS_PARAM(module)
-                    , PARENT_CONS_PARAM(function)
+        module_type ( ID_CONS_PARAM (module)
+                    , PARENT_CONS_PARAM (function)
                     , const util::position_type&
                     );
-        module_type ( ID_CONS_PARAM(module)
-                    , PARENT_CONS_PARAM(function)
+        module_type ( ID_CONS_PARAM (module)
+                    , PARENT_CONS_PARAM (function)
                     , const util::position_type&
                     , const std::string& name
                     , const std::string& function
@@ -63,7 +63,7 @@ namespace xml
         const std::list<std::string>& cxxflags() const;
         const std::list<link_type>& links() const;
 
-        bool operator == (const module_type& other) const;
+        bool operator== (const module_type&) const;
 
         void sanity_check() const;
 
@@ -87,15 +87,13 @@ namespace xml
         std::list<link_type> _links;
       };
 
-      std::size_t hash_value (const module_type& m);
+      std::size_t hash_value (const module_type&);
 
       namespace dump
       {
-        std::string dump_fun (const module_type & m);
+        std::string dump_fun (const module_type&);
 
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const module_type & m
-                  );
+        void dump (::fhg::util::xml::xmlstream&, const module_type&);
       }
     }
   }
