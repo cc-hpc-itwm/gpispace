@@ -4,7 +4,7 @@ include(car_cdr_macros)
 macro(PNET_COMPILE)
   PARSE_ARGUMENTS(PNET
     "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS;CXXFLAGS;COMPONENT"
-    "QUIET;BUILD"
+    "VERBOSE;BUILD"
     ${ARGN}
     )
   CAR(PNET_NAME ${PNET_DEFAULT_ARGS})
@@ -25,9 +25,8 @@ macro(PNET_COMPILE)
         --Wduplicate-external-function=false
       )
 
-  if (PNET_QUIET)
-  else()
-    message(STATUS "**** Adding pnet ${PNET_NAME} with source ${PNET_SOURCES}")
+  if (PNET_VERBOSE)
+    message (STATUS "adding pnet ${PNET_NAME} with source ${PNET_SOURCES}")
   endif()
 
   if (PNET_INCLUDES)
