@@ -25,7 +25,6 @@ fhg_add_plugin (fvm-fake fvm-fake.cpp
 get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
-message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
 get_target_property(TESTS_GUI_PLUGIN_PATH gui-plugin LOCATION)
