@@ -26,5 +26,27 @@ namespace xml
 
       return;
     }
+
+    std::list<std::string> parse_cdata ( const xml_node_type* node
+                                       , const boost::filesystem::path& path
+                                       )
+    {
+      std::list<std::string> v;
+
+      for ( xml_node_type* child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          cdata (child, path);
+
+          if (child)
+            {
+              v.push_back (std::string (child->value(), child->value_size()));
+            }
+        }
+
+      return v;
+    }
   }
 }

@@ -567,9 +567,7 @@ namespace xml
             else if (child_name == "condition")
             {
               transition.get_ref().add_conditions
-                ( parse_cdata<type::conditions_type>
-                  (child, state.file_in_progress())
-                );
+                (parse_cdata (child, state.file_in_progress()));
             }
             else if (child_name == "require")
             {
@@ -689,12 +687,8 @@ namespace xml
               const boost::optional<std::string>
                 value (optional (child, "value"));
 
-              typedef std::vector<std::string> cdatas_container_type;
-
-              const cdatas_container_type cdata
-                ( parse_cdata<cdatas_container_type>
-                  (child, state.file_in_progress())
-                );
+              const std::list<std::string> cdata
+                (parse_cdata (child, state.file_in_progress()));
 
               state.prop_path().push_back (key);
 
@@ -1096,14 +1090,12 @@ namespace xml
             }
             else if (child_name == "code")
             {
-              typedef std::vector<std::string> cdatas_container_type;
-
-              const cdatas_container_type cdata
-                ( parse_cdata<cdatas_container_type>
-                  (child, state.file_in_progress())
-                );
-
-              module.get_ref().code = fhg::util::join (cdata, "\n");
+              module.get_ref().code
+                = fhg::util::join ( parse_cdata ( child
+                                                , state.file_in_progress()
+                                                )
+                                  , "\n"
+                                  );
             }
             else
             {
@@ -1452,9 +1444,7 @@ namespace xml
             else if (child_name == "expression")
             {
               function.get_ref().add_expression
-                ( parse_cdata<type::expressions_type>
-                  (child, state.file_in_progress())
-                );
+                (parse_cdata (child, state.file_in_progress()));
             }
             else if (child_name == "module")
             {
@@ -1467,9 +1457,7 @@ namespace xml
             else if (child_name == "condition")
             {
               function.get_ref().add_conditions
-                ( parse_cdata<type::conditions_type>
-                  (child, state.file_in_progress())
-                );
+                (parse_cdata (child, state.file_in_progress()));
             }
             else if (child_name == "properties")
             {

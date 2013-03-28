@@ -483,7 +483,7 @@ namespace xml
       {
         return _conditions;
       }
-      void function_type::add_conditions (const conditions_type& other)
+      void function_type::add_conditions (const std::list<std::string>& other)
       {
         _conditions.insert (_conditions.end(), other.begin(), other.end());
       }
