@@ -112,100 +112,46 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 install (FILES
-  we/util/token.hpp
-  DESTINATION include/we/util
-  COMPONENT headers
+  we/expr/eval/context.hpp
+  DESTINATION include/we/expr/eval
+  COMPONENT sdk
 )
-
 install (FILES
-  we/container/adjacency.hpp
-  DESTINATION include/we/container
-  COMPONENT headers
-)
-
-install (FILES
-  we/loader/api-guard.hpp
-  we/loader/exceptions.hpp
   we/loader/IModule.hpp
+  we/loader/api-guard.hpp
   we/loader/macros.hpp
-  we/loader/module_call.hpp
-  we/loader/Module.hpp
-  we/loader/module_traits.hpp
-  we/loader/putget.hpp
   we/loader/types.hpp
   DESTINATION include/we/loader
-  COMPONENT headers
+  COMPONENT sdk
 )
-
 install (FILES
-  we/serialize/unordered_map.hpp
-  we/serialize/unordered_set.hpp
-  DESTINATION include/we/serialize
-  COMPONENT headers
-)
-
-install (FILES
-  we/mgmt/basic_layer.hpp
-  we/mgmt/context.hpp
-  we/mgmt/exception.hpp
-  we/mgmt/layer.hpp
-  DESTINATION include/we/mgmt
-  COMPONENT headers
-)
-
-install (FILES
-  we/mgmt/bits/commands.hpp
-  we/mgmt/bits/execution_policy.hpp
-  we/mgmt/bits/queue.hpp
-  we/mgmt/bits/set.hpp
-  we/mgmt/bits/signal.hpp
-  DESTINATION include/we/mgmt/bits/
-  COMPONENT headers
-)
-
-install (FILES
-  we/type/bits/transition/optimize.hpp
-  we/type/bits/transition/toDot.hpp
-  DESTINATION include/we/type/bits/transition
-  COMPONENT headers
-)
-
-install (FILES
-  we/type/bits/transition/optimize/is_associated.hpp
-  we/type/bits/transition/optimize/merge_expressions.hpp
-  we/type/bits/transition/optimize/merge_places.hpp
-  we/type/bits/transition/optimize/option.hpp
-  we/type/bits/transition/optimize/simple_pipe_elimination.hpp
-  DESTINATION include/we/type/bits/transition/optimize
-  COMPONENT headers
-)
-
-install (FILES
-  we/type/condition.hpp
-  we/type/error.hpp
-  we/type/literal.hpp
-  we/type/module_call.hpp
-  we/type/requirement.hpp
-  we/type/signature.hpp
-  we/type/transition.hpp
-  we/type/value.hpp
   we/type/bitsetofint.hpp
   we/type/bytearray.hpp
+  we/type/literal.hpp
+  we/type/value.hpp
   DESTINATION include/we/type
-  COMPONENT headers
+  COMPONENT sdk
 )
-
 install (FILES
   we/type/literal/control.hpp
+  we/type/literal/show.hpp
   DESTINATION include/we/type/literal
-  COMPONENT headers
+  COMPONENT sdk
 )
-
 install (FILES
-  we/type/signature/cpp.hpp
   we/type/signature/types.hpp
   DESTINATION include/we/type/signature
-  COMPONENT headers
+  COMPONENT sdk
+)
+install (FILES
+  we/type/value/cpp/get.hpp
+  DESTINATION include/we/type/value/cpp
+  COMPONENT sdk
+)
+install (FILES
+  we/type/value/missing_binding.hpp
+  DESTINATION include/we/type/value
+  COMPONENT sdk
 )
 
 add_subdirectory (xml/parse)
