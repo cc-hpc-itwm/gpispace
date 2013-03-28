@@ -57,7 +57,10 @@ install (TARGETS gpifs
 
 fhg_add_test (test/test_split.cpp
   PROJECT test_gpi-fuse
-  LINK_LIBRARIES "gpi-fuse;${FUSE_LIBRARIES};${GPI_SPACE_LIBRARY};${FhgLog_LIBRARY}"
+  LINK_LIBRARIES gpi-fuse
+                 ${FUSE_LIBRARIES}
+                 ${GPI_SPACE_LIBRARY}
+                 ${FhgLog_LIBRARY}
   COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
 )
 
