@@ -16,8 +16,6 @@
 #include <string>
 #include <list>
 
-#include <boost/filesystem.hpp>
-#include <boost/unordered/unordered_map_fwd.hpp>
 #include <boost/optional.hpp>
 
 namespace xml

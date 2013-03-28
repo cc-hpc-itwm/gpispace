@@ -12,7 +12,6 @@
 
 #include <boost/foreach.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/optional.hpp>
 
 namespace xml
 {
