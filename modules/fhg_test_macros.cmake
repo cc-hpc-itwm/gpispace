@@ -4,7 +4,7 @@ include(car_cdr_macros)
 macro(FHG_ADD_TEST)
   PARSE_ARGUMENTS(TEST
     "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS"
-    "QUIET;STANDALONE;RESOURCE_LOCK"
+    "VERBOSE;STANDALONE;RESOURCE_LOCK"
     ${ARGN}
     )
   CAR(TEST_SOURCE ${TEST_DEFAULT_ARGS})
@@ -22,8 +22,8 @@ macro(FHG_ADD_TEST)
     # get the filename without extension
     string(REGEX REPLACE "(.*/)?(.*)\\.c.*" "${TEST_PROJECT}_\\2" tc_name ${TEST_SOURCE})
 
-    if (NOT TEST_QUIET)
-      message(STATUS "**** Adding test ${tc_name} ${TEST_ARGS} (${TEST_DESCRIPTION})")
+    if (TEST_VERBOSE)
+      message (STATUS "adding test ${tc_name} ${TEST_ARGS} (${TEST_DESCRIPTION})")
     endif()
 
     add_executable(${tc_name} ${TEST_SOURCE} ${TEST_ADDITIONAL_SOURCES})
