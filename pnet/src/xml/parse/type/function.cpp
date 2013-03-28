@@ -2164,13 +2164,9 @@ namespace xml
                                 , cpp_util::path::op() / mod.name() / file_hpp
                                 );
 
-              for ( module_type::cincludes_type::const_iterator inc
-                      (mod.cincludes.begin())
-                  ; inc != mod.cincludes.end()
-                  ; ++inc
-                  )
+              BOOST_FOREACH (const std::string& inc, mod.cincludes())
               {
-                cpp_util::include (stream, *inc);
+                cpp_util::include (stream, inc);
               }
 
               if (not mod.code())

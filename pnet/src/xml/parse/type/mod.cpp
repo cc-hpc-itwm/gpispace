@@ -40,7 +40,7 @@ namespace xml
                                , const std::list<std::string>& port_arg
                                , const boost::optional<std::string>& code
                                , const boost::optional<util::position_type>& pod_of_code
-                               , const cincludes_type& cincludes
+                               , const std::list<std::string>& cincludes
                                , const flags_type& ldflags
                                , const flags_type& cxxflags
                                , const links_type& links
@@ -54,7 +54,7 @@ namespace xml
         , _port_arg (port_arg)
         , _code (code)
         , _position_of_definition_of_code (pod_of_code)
-        , cincludes (cincludes)
+        , _cincludes (cincludes)
         , ldflags (ldflags)
         , cxxflags (cxxflags)
         , links (links)
@@ -87,13 +87,17 @@ namespace xml
       {
         return _position_of_definition_of_code;
       }
+      const std::list<std::string>& module_type::cincludes() const
+      {
+        return _cincludes;
+      }
 
       bool module_type::operator == (const module_type& other) const
       {
         return _port_return == other._port_return
           && _port_arg == other._port_arg
           && _code == other._code
-          && cincludes == other.cincludes
+          && _cincludes == other._cincludes
           && ldflags == other.ldflags
           && cxxflags == other.cxxflags
           && links == other.links
@@ -152,7 +156,7 @@ namespace xml
           , _port_arg
           , _code
           , _position_of_definition_of_code
-          , cincludes
+          , _cincludes
           , ldflags
           , cxxflags
           , links
@@ -204,13 +208,10 @@ namespace xml
           s.attr ("name", m.name());
           s.attr ("function", dump_fun (m));
 
-          for ( module_type::cincludes_type::const_iterator inc (m.cincludes.begin())
-              ; inc != m.cincludes.end()
-              ; ++inc
-              )
+          BOOST_FOREACH (const std::string& inc, m.cincludes())
             {
               s.open ("cinclude");
-              s.attr ("href", *inc);
+              s.attr ("href", inc);
               s.close ();
             }
 

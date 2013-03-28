@@ -545,7 +545,7 @@ namespace fhg
         {
           add_something (" -> ", fun);
         }
-        WSIG(tv, mod::cincludes, ::xml::parse::type::module_type::cincludes_type, cincludes)
+        WSIG(tv, mod::cincludes, std::list<std::string>, cincludes)
         {
           append_list ("cinclude", cincludes);
         }

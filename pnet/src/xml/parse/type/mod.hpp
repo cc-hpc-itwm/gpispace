@@ -32,7 +32,6 @@ namespace xml
         PARENT_SIGNATURES(function);
 
       public:
-        typedef std::list<std::string> cincludes_type;
         typedef std::list<std::string> flags_type;
         typedef std::list<link_type> links_type;
 
@@ -49,7 +48,7 @@ namespace xml
                     , const std::list<std::string>& port_arg
                     , const boost::optional<std::string>& code
                     , const boost::optional<util::position_type>& pod_of_code
-                    , const cincludes_type& cincludes
+                    , const std::list<std::string>& cincludes
                     , const flags_type& ldflags
                     , const flags_type& cxxflags
                     , const links_type& links
@@ -62,6 +61,7 @@ namespace xml
         const boost::optional<std::string>& code() const;
         const boost::optional<util::position_type>
           position_of_definition_of_code() const;
+        const std::list<std::string>& cincludes() const;
 
         bool operator == (const module_type& other) const;
 
@@ -81,10 +81,10 @@ namespace xml
         std::list<std::string> _port_arg;
         boost::optional<std::string> _code;
         boost::optional<util::position_type> _position_of_definition_of_code;
+        std::list<std::string> _cincludes;
 
       public:
         //! \todo All these should be private with accessors
-        cincludes_type cincludes;
         flags_type ldflags;
         flags_type cxxflags;
         links_type links;
