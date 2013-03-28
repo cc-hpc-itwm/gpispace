@@ -132,9 +132,6 @@ endif()
 add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
 add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
 
-# to avoid warnings when using gcc 4.5
-add_definitions ("-fno-strict-aliasing")
-
 if (DISABLE_FHGLOG)
   add_definitions ("-DFHGLOG_DISABLE_LOGGING=1")
 else()

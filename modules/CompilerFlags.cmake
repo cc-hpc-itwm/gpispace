@@ -41,6 +41,9 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-format")
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 
+# to avoid warnings when using gcc 4.5
+add_definitions ("-fno-strict-aliasing")
+
 if(NOT WIN32)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   include (CheckCXXSourceCompiles)
