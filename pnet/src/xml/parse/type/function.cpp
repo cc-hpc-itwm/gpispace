@@ -1137,8 +1137,8 @@ namespace xml
         stream << "  BOOST_ROOT = /usr"                            << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
-        stream << "ifeq \"$(CXX)\" \"\""                           << std::endl;
-        stream << "  $(error Variable CXX is empty.)"              << std::endl;
+        stream << "ifndef CXX"                                     << std::endl;
+        stream << "  $(error Variable CXX is not defined)"         << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
