@@ -14,7 +14,7 @@ include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-include (FindUTIL REQUIRED)
+find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
 add_subdirectory (apps)

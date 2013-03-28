@@ -24,7 +24,7 @@ include_directories (SYSTEM ${ZLIB_INCLUDE_DIRS})
 find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-include (FindUTIL REQUIRED)
+find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp)
