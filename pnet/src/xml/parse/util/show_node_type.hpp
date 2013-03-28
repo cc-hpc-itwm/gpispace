@@ -12,7 +12,6 @@ namespace xml
     namespace util
     {
       std::string show_node_type (const int);
-      std::string quote (const std::string&);
     }
   }
 }
