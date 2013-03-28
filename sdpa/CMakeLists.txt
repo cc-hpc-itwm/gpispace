@@ -25,7 +25,7 @@ include_directories (${FhgKernel_INCLUDE_DIR})
 find_package (SEDA REQUIRED QUIET)
 include_directories (${SEDA_INCLUDE_DIR})
 
-find_package(ZLIB REQUIRED)
+find_package(ZLIB REQUIRED QUIET)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 
 if (USE_SMC_SC)

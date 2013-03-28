@@ -1,5 +1,5 @@
 # -*- mode: cmake; -*-
-find_package (FVM REQUIRED)
+find_package (FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
 include(fhg_plugin_macros)

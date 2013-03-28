@@ -8,7 +8,7 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include (CompilerFlags)
 endif()
 
-find_package (Threads REQUIRED)
+find_package (Threads REQUIRED QUIET)
 if (CMAKE_USE_PTHREADS_INIT)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif()

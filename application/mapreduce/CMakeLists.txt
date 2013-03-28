@@ -9,10 +9,10 @@ project (mapreduce)
 include(SDPAFindBoost)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package(FVM REQUIRED)
+find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
-find_package(FhgLog REQUIRED)
+find_package(FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${PROCESS_INCLUDE_DIR})

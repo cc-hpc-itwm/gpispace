@@ -1,5 +1,5 @@
 # -*- mode: cmake; -*-
-find_package(SMC)
+find_package(SMC QUIET)
 if (SMC_FOUND)
     include_directories(SYSTEM ${SMC_INCLUDE_DIR})
 else (SMC_FOUND)

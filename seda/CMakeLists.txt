@@ -62,7 +62,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 if (ENABLE_LOGGING)
   set(${UPPER_PROJECT_NAME}_ENABLE_LOGGING ${ENABLE_LOGGING})
 
-	find_package (FhgLog REQUIRED)
+	find_package (FhgLog REQUIRED QUIET)
     include_directories(${FhgLog_INCLUDE_DIR})
     set(${UPPER_PROJECT_NAME}_HAVE_FHGLOG 1)
 endif (ENABLE_LOGGING)
@@ -75,7 +75,7 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 ## find zlib
 if( NOT WIN32)
-  find_package(ZLIB REQUIRED)
+  find_package(ZLIB REQUIRED QUIET)
   include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 endif( NOT WIN32)
 

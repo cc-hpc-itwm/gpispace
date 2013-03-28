@@ -1,6 +1,6 @@
 # -*- mode: cmake; -*-
 
-find_package (CppUnit)
+find_package (CppUnit QUIET)
 if (CppUnit_FOUND)
   include_directories(SYSTEM ${CppUnit_INCLUDE_DIR})
 

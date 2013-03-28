@@ -2,7 +2,7 @@
 
 # check for 'pthread_setname_np'
 include(CheckCSourceCompiles)
-find_package (Threads)
+find_package (Threads QUIET)
 set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 check_c_source_compiles("
 #include <pthread.h>
