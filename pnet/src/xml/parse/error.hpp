@@ -70,9 +70,9 @@ namespace xml
           std::ostringstream s;
 
           s << "expected node of type "
-            << util::quote (util::show_node_type (want))
+            << util::show_node_type (want)
             << ": got node of type "
-            << util::quote(util::show_node_type (got))
+            << util::show_node_type (got)
             << " in " << path
             ;
 
@@ -88,11 +88,11 @@ namespace xml
           std::ostringstream s;
 
           s << "expected node of type "
-            << util::quote (util::show_node_type (want1))
+            << util::show_node_type (want1)
             << " or "
-            << util::quote (util::show_node_type (want2))
+            << util::show_node_type (want2)
             << ": got node of type "
-            << util::quote(util::show_node_type (got))
+            << util::show_node_type (got)
             << " in " << path
             ;
 
@@ -128,7 +128,7 @@ namespace xml
           std::ostringstream s;
 
           s << "expected node of type "
-            << util::quote (util::show_node_type (want))
+            << util::show_node_type (want)
             << " in " << path
             ;
 
@@ -143,9 +143,9 @@ namespace xml
           std::ostringstream s;
 
           s << "expected node of type "
-            << util::quote (util::show_node_type (want1))
+            << util::show_node_type (want1)
             << " or "
-            << util::quote (util::show_node_type (want2))
+            << util::show_node_type (want2)
             << " in " << path
             ;
 
@@ -181,7 +181,7 @@ namespace xml
 
           s << pre
             << ": missing attribute "
-            << util::quote (attr)
+            << attr
             << " in " << path
             ;
 
