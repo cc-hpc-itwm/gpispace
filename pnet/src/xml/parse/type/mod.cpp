@@ -37,7 +37,7 @@ namespace xml
                                , const std::string& name
                                , const std::string& function
                                , const boost::optional<std::string>& port_return
-                               , const port_args_type& port_arg
+                               , const std::list<std::string>& port_arg
                                , const boost::optional<std::string>& code
                                , const boost::optional<util::position_type>& pod_of_code
                                , const cincludes_type& cincludes
@@ -50,8 +50,8 @@ namespace xml
         , PARENT_INITIALIZE()
         , _name (name)
         , _function (function)
-        , port_return (port_return)
-        , port_arg (port_arg)
+        , _port_return (port_return)
+        , _port_arg (port_arg)
         , code (code)
         , position_of_definition_of_code (pod_of_code)
         , cincludes (cincludes)
@@ -70,11 +70,19 @@ namespace xml
       {
         return _function;
       }
+      const boost::optional<std::string>& module_type::port_return() const
+      {
+        return _port_return;
+      }
+      const std::list<std::string>& module_type::port_arg() const
+      {
+        return _port_arg;
+      }
 
       bool module_type::operator == (const module_type& other) const
       {
-        return port_return == other.port_return
-          && port_arg == other.port_arg
+        return _port_return == other._port_return
+          && _port_arg == other._port_arg
           && code == other.code
           && cincludes == other.cincludes
           && ldflags == other.ldflags
@@ -88,13 +96,13 @@ namespace xml
         assert (has_parent());
 
         const function_type& outer_function (*parent());
-        if (port_return)
+        if (_port_return)
         {
-          if (!outer_function.is_known_port (*port_return))
+          if (!outer_function.is_known_port (*_port_return))
           {
             throw error::function_description_with_unknown_port
               ( "return"
-              , *port_return
+              , *_port_return
               , name()
               , function()
               , outer_function.position_of_definition().path()
@@ -102,16 +110,13 @@ namespace xml
           }
         }
 
-        for ( port_args_type::const_iterator port (port_arg.begin())
-            ; port != port_arg.end()
-            ; ++port
-            )
+        BOOST_FOREACH (const std::string& port, _port_arg)
         {
-          if (!outer_function.is_known_port (*port))
+          if (!outer_function.is_known_port (port))
           {
             throw error::function_description_with_unknown_port
               ( "argument"
-              , *port
+              , port
               , name()
               , function()
               , outer_function.position_of_definition().path()
@@ -134,8 +139,8 @@ namespace xml
           , _position_of_definition
           , _name
           , _function
-          , port_return
-          , port_arg
+          , _port_return
+          , _port_arg
           , code
           , position_of_definition_of_code
           , cincludes
@@ -157,9 +162,9 @@ namespace xml
         {
           std::ostringstream s;
 
-          if (m.port_return)
+          if (m.port_return())
             {
-              s << *m.port_return << " ";
+              s << *m.port_return() << " ";
             }
 
           s << m.function();
@@ -168,17 +173,15 @@ namespace xml
 
           bool first (true);
 
-          for ( module_type::port_args_type::const_iterator arg (m.port_arg.begin())
-              ; arg != m.port_arg.end()
-              ; ++arg, first = false
-              )
+          BOOST_FOREACH (const std::string& arg, m.port_arg())
             {
               if (!first)
                 {
                   s << ", ";
+                  first = false;
                 }
 
-              s << *arg;
+              s << arg;
             }
 
           s << ")";

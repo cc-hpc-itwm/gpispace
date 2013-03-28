@@ -2027,70 +2027,67 @@ namespace xml
             boost::optional<port_with_type> port_return;
             types_type types;
 
-            if (mod.port_return)
+            if (mod.port_return())
             {
               boost::optional<const id::ref::port&> id_port
-                (_id_function.get().get_port_out (*mod.port_return));
+                (_id_function.get().get_port_out (*mod.port_return()));
 
               const port_type& port (id_port->get());
 
-              port_return = port_with_type (*mod.port_return, port.type());
+              port_return = port_with_type (*mod.port_return(), port.type());
               types.insert (port.type());
             }
 
-            for ( module_type::port_args_type::const_iterator name (mod.port_arg.begin())
-                ; name != mod.port_arg.end()
-                ; ++name
-                )
+            BOOST_FOREACH (const std::string& name, mod.port_arg())
             {
-              if (_id_function.get().is_known_port_inout (*name))
+              if (_id_function.get().is_known_port_inout (name))
               {
                 boost::optional<const id::ref::port&> id_port_in
-                  (_id_function.get().get_port_in (*name));
+                  (_id_function.get().get_port_in (name));
                 boost::optional<const id::ref::port&> id_port_out
-                  (_id_function.get().get_port_out (*name));
+                  (_id_function.get().get_port_out (name));
 
                 const port_type& port_in (id_port_in->get());
 
-                if (    mod.port_return
-                   && (*mod.port_return == port_in.name())
+                if (    mod.port_return()
+                   && (*mod.port_return() == port_in.name())
                    )
                 {
-                  ports_const.push_back (port_with_type (*name, port_in.type()));
+                  ports_const.push_back (port_with_type (name, port_in.type()));
                   types.insert (port_in.type());
                 }
                 else
                 {
-                  ports_mutable.push_back (port_with_type (*name, port_in.type()));
+                  ports_mutable.push_back (port_with_type (name, port_in.type()));
                   types.insert (port_in.type());
                 }
               }
-              else if (_id_function.get().is_known_port_in (*name))
+              else if (_id_function.get().is_known_port_in (name))
               {
                 boost::optional<const id::ref::port&> id_port_in
-                  (_id_function.get().get_port_in (*name));
+                  (_id_function.get().get_port_in (name));
 
                 const port_type& port_in (id_port_in->get());
 
-                ports_const.push_back (port_with_type (*name, port_in.type()));
+                ports_const.push_back (port_with_type (name, port_in.type()));
                 types.insert (port_in.type());
               }
-              else if (_id_function.get().is_known_port_out (*name))
+              else if (_id_function.get().is_known_port_out (name))
               {
                 boost::optional<const id::ref::port&> id_port_out
-                  (_id_function.get().get_port_out (*name));
+                  (_id_function.get().get_port_out (name));
 
                 const port_type& port_out (id_port_out->get());
 
-                if (    mod.port_return
-                   && (*mod.port_return == port_out.name())
+                if (    mod.port_return()
+                   && (*mod.port_return() == port_out.name())
                    )
                 {
                   // do nothing, it is the return port
                 }
                 else
                 {
-                  ports_out.push_back (port_with_type (*name, port_out.type()));
+                  ports_out.push_back (port_with_type (name, port_out.type()));
                   types.insert (port_out.type());
                 }
               }

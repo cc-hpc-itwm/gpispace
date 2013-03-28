@@ -32,7 +32,6 @@ namespace xml
         PARENT_SIGNATURES(function);
 
       public:
-        typedef std::list<std::string> port_args_type;
         typedef std::list<std::string> cincludes_type;
         typedef std::list<std::string> flags_type;
         typedef std::list<link_type> links_type;
@@ -47,7 +46,7 @@ namespace xml
                     , const std::string& name
                     , const std::string& function
                     , const boost::optional<std::string>& port_return
-                    , const port_args_type& port_arg
+                    , const std::list<std::string>& port_arg
                     , const boost::optional<std::string>& code
                     , const boost::optional<util::position_type>& pod_of_code
                     , const cincludes_type& cincludes
@@ -58,6 +57,8 @@ namespace xml
 
         const std::string& name() const;
         const std::string& function() const;
+        const boost::optional<std::string>& port_return() const;
+        const std::list<std::string>& port_arg() const;
 
         bool operator == (const module_type& other) const;
 
@@ -73,12 +74,11 @@ namespace xml
       private:
         std::string _name;
         std::string _function;
+        boost::optional<std::string> _port_return;
+        std::list<std::string> _port_arg;
 
       public:
         //! \todo All these should be private with accessors
-        boost::optional<std::string> port_return;
-        port_args_type port_arg;
-
         boost::optional<std::string> code;
         boost::optional<util::position_type> position_of_definition_of_code;
         cincludes_type cincludes;
