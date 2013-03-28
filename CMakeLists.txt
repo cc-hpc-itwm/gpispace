@@ -166,7 +166,6 @@ endif()
 set(BUILDING_FROM_MAIN 1)
 
 include(CTest)
-add_subdirectory(modules)
 add_subdirectory(fhglog)
 add_subdirectory(fhgcom)
 add_subdirectory (pnet)
