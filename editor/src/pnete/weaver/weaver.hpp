@@ -498,8 +498,8 @@ namespace fhg
           WEAVE(mod::name) (mod.name());
           WEAVE(mod::fun) (::xml::parse::type::dump::dump_fun (mod));
           WEAVE(mod::cincludes) (mod.cincludes());
-          WEAVE(mod::ldflags) (mod.ldflags);
-          WEAVE(mod::cxxflags) (mod.cxxflags);
+          WEAVE(mod::ldflags) (mod.ldflags());
+          WEAVE(mod::cxxflags) (mod.cxxflags());
           WEAVE(mod::links) (mod.links);
           WEAVE(mod::code) (mod.code());
           WEAVE(mod::close)();

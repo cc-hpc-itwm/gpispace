@@ -41,8 +41,8 @@ namespace xml
                                , const boost::optional<std::string>& code
                                , const boost::optional<util::position_type>& pod_of_code
                                , const std::list<std::string>& cincludes
-                               , const flags_type& ldflags
-                               , const flags_type& cxxflags
+                               , const std::list<std::string>& ldflags
+                               , const std::list<std::string>& cxxflags
                                , const links_type& links
                                )
         : with_position_of_definition (pod)
@@ -55,8 +55,8 @@ namespace xml
         , _code (code)
         , _position_of_definition_of_code (pod_of_code)
         , _cincludes (cincludes)
-        , ldflags (ldflags)
-        , cxxflags (cxxflags)
+        , _ldflags (ldflags)
+        , _cxxflags (cxxflags)
         , links (links)
       {
         _id_mapper->put (_id, *this);
@@ -91,6 +91,14 @@ namespace xml
       {
         return _cincludes;
       }
+      const std::list<std::string>& module_type::ldflags() const
+      {
+        return _ldflags;
+      }
+      const std::list<std::string>& module_type::cxxflags() const
+      {
+        return _cxxflags;
+      }
 
       bool module_type::operator == (const module_type& other) const
       {
@@ -98,8 +106,8 @@ namespace xml
           && _port_arg == other._port_arg
           && _code == other._code
           && _cincludes == other._cincludes
-          && ldflags == other.ldflags
-          && cxxflags == other.cxxflags
+          && _ldflags == other._ldflags
+          && _cxxflags == other._cxxflags
           && links == other.links
           ;
       }
@@ -157,8 +165,8 @@ namespace xml
           , _code
           , _position_of_definition_of_code
           , _cincludes
-          , ldflags
-          , cxxflags
+          , _ldflags
+          , _cxxflags
           , links
           ).make_reference_id();
       }
@@ -215,14 +223,14 @@ namespace xml
               s.close ();
             }
 
-          BOOST_FOREACH (module_type::flags_type::value_type const& flag, m.ldflags)
+          BOOST_FOREACH (const std::string& flag, m.ldflags())
             {
               s.open ("ld");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (module_type::flags_type::value_type const& flag, m.cxxflags)
+          BOOST_FOREACH (const std::string& flag, m.cxxflags())
             {
               s.open ("cxx");
               s.attr ("flag", flag);

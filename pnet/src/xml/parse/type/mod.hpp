@@ -32,7 +32,6 @@ namespace xml
         PARENT_SIGNATURES(function);
 
       public:
-        typedef std::list<std::string> flags_type;
         typedef std::list<link_type> links_type;
 
         module_type ( ID_CONS_PARAM(module)
@@ -49,8 +48,8 @@ namespace xml
                     , const boost::optional<std::string>& code
                     , const boost::optional<util::position_type>& pod_of_code
                     , const std::list<std::string>& cincludes
-                    , const flags_type& ldflags
-                    , const flags_type& cxxflags
+                    , const std::list<std::string>& ldflags
+                    , const std::list<std::string>& cxxflags
                     , const links_type& links
                     );
 
@@ -62,6 +61,8 @@ namespace xml
         const boost::optional<util::position_type>
           position_of_definition_of_code() const;
         const std::list<std::string>& cincludes() const;
+        const std::list<std::string>& ldflags() const;
+        const std::list<std::string>& cxxflags() const;
 
         bool operator == (const module_type& other) const;
 
@@ -82,11 +83,11 @@ namespace xml
         boost::optional<std::string> _code;
         boost::optional<util::position_type> _position_of_definition_of_code;
         std::list<std::string> _cincludes;
+        std::list<std::string> _ldflags;
+        std::list<std::string> _cxxflags;
 
       public:
         //! \todo All these should be private with accessors
-        flags_type ldflags;
-        flags_type cxxflags;
         links_type links;
       };
 

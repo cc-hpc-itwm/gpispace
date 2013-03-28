@@ -549,11 +549,11 @@ namespace fhg
         {
           append_list ("cinclude", cincludes);
         }
-        WSIG(tv, mod::ldflags, ::xml::parse::type::module_type::flags_type, ldflags)
+        WSIG(tv, mod::ldflags, std::list<std::string>, ldflags)
         {
           append_list ("ldflag", ldflags);
         }
-        WSIG(tv, mod::cxxflags, ::xml::parse::type::module_type::flags_type, cxxflags)
+        WSIG(tv, mod::cxxflags, std::list<std::string>, cxxflags)
         {
           append_list ("cxxflag", cxxflags);
         }

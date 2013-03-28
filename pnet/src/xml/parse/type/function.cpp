@@ -1004,8 +1004,8 @@ namespace xml
 
       fun_info_type::fun_info_type ( const std::string & _name
                                    , const std::string & _code
-                                   , const module_type::flags_type & _ldflags
-                                   , const module_type::flags_type & _cxxflags
+                                   , const std::list<std::string>& _ldflags
+                                   , const std::list<std::string>& _cxxflags
                                    , const module_type::links_type & _links
                                    , const boost::filesystem::path & _path
                                    )
@@ -1267,7 +1267,7 @@ namespace xml
                            << std::endl;
                   }
 
-                BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->ldflags)
+                BOOST_FOREACH (const std::string& flag, fun->ldflags)
                   {
                     ldflags_module << ldflags << " += " << flag << std::endl;
                   }
@@ -1276,7 +1276,7 @@ namespace xml
                   util::check_no_change_fstream cxxflags_function
                     (state, prefix / file_function_cxxflags);
 
-                  BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->cxxflags)
+                  BOOST_FOREACH (const std::string& flag, fun->cxxflags)
                   {
                     cxxflags_function << cxxflags << " += " << flag << std::endl;
                   }
@@ -2116,8 +2116,8 @@ namespace xml
 
               const fun_info_type fun_info ( mod.function()
                                            , stream.str()
-                                           , mod.ldflags
-                                           , mod.cxxflags
+                                           , mod.ldflags()
+                                           , mod.cxxflags()
                                            , mod.links
                                            , mod.position_of_definition().path()
                                            );

@@ -256,15 +256,15 @@ namespace xml
       {
         std::string name;
         std::string code;
-        module_type::flags_type ldflags;
-        module_type::flags_type cxxflags;
+        std::list<std::string> ldflags;
+        std::list<std::string> cxxflags;
         module_type::links_type links;
         boost::filesystem::path path;
 
         fun_info_type ( const std::string & _name
                       , const std::string & _code
-                      , const module_type::flags_type & _ldflags
-                      , const module_type::flags_type & _cxxflags
+                      , const std::list<std::string>& _ldflags
+                      , const std::list<std::string>& _cxxflags
                       , const module_type::links_type & _links
                       , const boost::filesystem::path & _path
                       );
