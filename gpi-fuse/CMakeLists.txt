@@ -1,5 +1,5 @@
 find_package (PkgConfig QUIET)
-pkg_check_modules (PC_FUSE fuse)
+pkg_check_modules (PC_FUSE fuse QUIET)
 
 find_path ( FUSE_INCLUDE_DIR fuse/fuse.h
             HINTS ${PC_FUSE_INCLUDE_DIRS} ${PC_FUSE_INCLUDEDIR}
