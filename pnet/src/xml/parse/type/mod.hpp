@@ -55,6 +55,7 @@ namespace xml
                     , const boost::optional<std::string>& port_return
                     , const port_args_type& port_arg
                     , const boost::optional<std::string>& code
+                    , const boost::optional<util::position_type>& pod_of_code
                     , const cincludes_type& cincludes
                     , const flags_type& ldflags
                     , const flags_type& cxxflags
@@ -84,6 +85,7 @@ namespace xml
         port_args_type port_arg;
 
         boost::optional<std::string> code;
+        boost::optional<util::position_type> position_of_definition_of_code;
         cincludes_type cincludes;
         flags_type ldflags;
         flags_type cxxflags;

@@ -2199,6 +2199,15 @@ namespace xml
               }
               else
               {
+                if (!mod.position_of_definition_of_code)
+                {
+                  throw std::runtime_error
+                    ("STRANGE: There is code without a position of definition");
+                }
+
+                stream << "// defined at "
+                       << *mod.position_of_definition_of_code
+                       << std::endl;
                 stream << *mod.code;
               }
 

@@ -1090,6 +1090,8 @@ namespace xml
             }
             else if (child_name == "code")
             {
+              module.get_ref().position_of_definition_of_code
+                = state.position (child);
               module.get_ref().code
                 = fhg::util::join ( parse_cdata ( child
                                                 , state.file_in_progress()

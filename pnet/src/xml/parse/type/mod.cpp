@@ -142,6 +142,7 @@ namespace xml
                                , const boost::optional<std::string>& port_return
                                , const port_args_type& port_arg
                                , const boost::optional<std::string>& code
+                               , const boost::optional<util::position_type>& pod_of_code
                                , const cincludes_type& cincludes
                                , const flags_type& ldflags
                                , const flags_type& cxxflags
@@ -155,6 +156,7 @@ namespace xml
         , port_return (port_return)
         , port_arg (port_arg)
         , code (code)
+        , position_of_definition_of_code (pod_of_code)
         , cincludes (cincludes)
         , ldflags (ldflags)
         , cxxflags (cxxflags)
@@ -234,6 +236,7 @@ namespace xml
           , port_return
           , port_arg
           , code
+          , position_of_definition_of_code
           , cincludes
           , ldflags
           , cxxflags

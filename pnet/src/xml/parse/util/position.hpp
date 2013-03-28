@@ -31,7 +31,7 @@ namespace xml
       private:
         unsigned int _line;
         unsigned int _column;
-        const boost::filesystem::path _path;
+        boost::filesystem::path _path;
       };
 
       std::ostream& operator<< (std::ostream&, const position_type&);
