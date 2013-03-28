@@ -176,13 +176,6 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
     return false;
   }
 
-#if 0
-#  ifdef STATISTICS_CONDITION
-      statistics::dump_maps();
-      statistics::reset_maps();
-#  endif
-#endif
-
   try {
     // forward it up
     JobFinishedEvent::Ptr pEvtJobFinished
@@ -253,13 +246,6 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
     SDPA_LOG_WARN( "got finished message for old/unknown Job "<<job_id.str());
     return false;
   }
-
-#if 0
-#  ifdef STATISTICS_CONDITION
-      statistics::dump_maps();
-      statistics::reset_maps();
-#  endif
-#endif
 
   try {
     // forward it up
@@ -477,13 +463,6 @@ bool Agent::failed( const id_type& wfid
     SDPA_LOG_WARN( "got failed message for old/unknown Job "<<id.str());
     return false;
   }
-
-#if 0
-#  ifdef STATISTICS_CONDITION
-      statistics::dump_maps();
-      statistics::reset_maps();
-#  endif
-#endif
 
   try {
     // forward it up
