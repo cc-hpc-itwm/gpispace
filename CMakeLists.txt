@@ -167,52 +167,29 @@ set(BUILDING_FROM_MAIN 1)
 
 include(CTest)
 add_subdirectory(modules)
-message(STATUS "=== [ fhglog ] ===")
 add_subdirectory(fhglog)
-message(STATUS "=== [ fhgcom ] ===")
 add_subdirectory(fhgcom)
-
 add_subdirectory (pnet)
-
-message(STATUS "=== [ mmgr ] ===")
 add_subdirectory(mmgr)
 if (ENABLE_FVM_PC)
-  message(STATUS "=== [ fvm-pc ] ===")
   add_subdirectory(fvm-pc)
 endif()
-message(STATUS "=== [ seda ] ===")
 add_subdirectory(seda)
-message(STATUS "=== [ util ] ===")
 add_subdirectory(util)
-
-message(STATUS "=== [ fhgkernel ] ===")
 add_subdirectory(fhgkernel)
-
-message(STATUS "=== [ sdpa ] ===")
 add_subdirectory(sdpa)
-
-## optional components
 if (ENABLE_SDPA_GPI)
-  message(STATUS "=== [ sdpa-gpi ] ===")
   add_subdirectory(sdpa-gpi)
 endif (ENABLE_SDPA_GPI)
-
 if (ENABLE_GPI_SPACE)
-  message(STATUS "=== [ gpi-space ] ===")
   add_subdirectory(gpi-space)
 endif (ENABLE_GPI_SPACE)
-
 if (ENABLE_GPI_FUSE)
-  message(STATUS "=== [ gpi-fuse ] ===")
   add_subdirectory(gpi-fuse)
 endif (ENABLE_GPI_FUSE)
-
 if (ENABLE_APPLICATION)
-  message(STATUS "=== [ applications ] ===")
   add_subdirectory(application)
 endif (ENABLE_APPLICATION)
-
-message (STATUS "=== [ pnete/sdpa-gui ] ===")
 add_subdirectory (editor)
 
 include(TargetDoc)
@@ -223,7 +200,6 @@ endif()
 
 add_subdirectory(test)
 
-# CPACK packaging
 INCLUDE(InstallRequiredSystemLibraries)
 #set(CPACK_GENERATOR "RPM;STGZ;TGZ;TBZ2")
 set(CPACK_GENERATOR "TBZ2")
