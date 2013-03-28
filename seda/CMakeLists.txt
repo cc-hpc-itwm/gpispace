@@ -60,10 +60,8 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## logging
 if (ENABLE_LOGGING)
-  message(STATUS "Project: '${PROJECT_NAME}'")
   set(${UPPER_PROJECT_NAME}_ENABLE_LOGGING ${ENABLE_LOGGING})
 
-    message(STATUS "Building with fhglog...")
 	find_package (FhgLog REQUIRED)
     include_directories(${FhgLog_INCLUDE_DIR})
     set(${UPPER_PROJECT_NAME}_HAVE_FHGLOG 1)
@@ -79,7 +77,6 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 if( NOT WIN32)
   find_package(ZLIB REQUIRED)
   include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
-  message(STATUS "ZLib: Inc:${ZLIB_INCLUDE_DIR} Lib:${ZLIB_LIBRARIES}")
 endif( NOT WIN32)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp)

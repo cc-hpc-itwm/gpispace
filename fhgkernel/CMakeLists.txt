@@ -23,7 +23,6 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # threads
-message(STATUS "checking for thread package")
 find_package(Threads REQUIRED)
 if(CMAKE_USE_PTHREADS_INIT)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
