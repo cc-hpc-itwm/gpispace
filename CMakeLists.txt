@@ -107,9 +107,7 @@ include (CheckCompiler)
 info_compiler()
 include (CompilerFlags)
 
-if (DEBUG_FHGLOG)
-  message (STATUS "additional messages from fhglog have been enabled")
-else()
+if (NOT DEBUG_FHGLOG)
   add_definitions("-DNDEBUG_FHGLOG")
 endif()
 
