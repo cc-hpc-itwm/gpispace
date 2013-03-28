@@ -58,7 +58,6 @@ endif (ENABLE_REMOTE_LOGGING)
 
 ## check for boost
 include(SDPAFindBoost)
-message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # on osx, the dylib needs to be linked against boost-thread.
 

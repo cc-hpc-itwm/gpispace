@@ -58,7 +58,6 @@ endif (ENABLE_FAKE_PC)
 
 ## check for boost
 include(SDPAFindBoost)
-message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
