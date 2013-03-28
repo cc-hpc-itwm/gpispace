@@ -11,6 +11,8 @@
 #include <fhg/util/xml.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -26,111 +28,6 @@ namespace xml
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
       {
-        _id_mapper->put (_id, *this);
-      }
-
-      module_type::module_type ( ID_CONS_PARAM(module)
-                               , PARENT_CONS_PARAM(function)
-                               , const util::position_type& pod
-                               , const std::string& name
-                               , const std::string & _function
-                               )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _name (name)
-        , function ()
-        , port_return ()
-        , port_arg ()
-      {
-        // implement the grammar
-        // S -> R F A
-        // F -> valid_name
-        // R -> eps | valid_name
-        // A -> eps | '(' L ')' | '(' ')'
-        // L -> valid_name | valid_name ',' L
-        //
-        // here R stands for the return port, F for the function
-        // name and A for the list of argument ports
-
-        std::size_t k (0);
-        std::string::const_iterator begin (_function.begin());
-        const std::string::const_iterator end (_function.end ());
-        fhg::util::parse::position pos (k, begin, end);
-
-        function = parse_name (pos);
-
-        if (!pos.end())
-        {
-          if (*pos != '(')
-          {
-            port_return = function;
-            function = parse_name (pos);
-          }
-
-          if (!pos.end())
-          {
-            if (*pos != '(')
-            {
-              throw error::parse_function::expected ( _name
-                                                    , _function
-                                                    , "("
-                                                    , pos()
-                                                    , pod.path()
-                                                    );
-            }
-
-            ++pos;
-
-            while (!pos.end() && *pos != ')')
-            {
-              port_arg.push_back (parse_name (pos));
-
-              if (!pos.end() && *pos != ')')
-              {
-                if (*pos != ',')
-                {
-                  throw error::parse_function::expected ( _name
-                                                        , _function
-                                                        , ","
-                                                        , pos()
-                                                        , pod.path()
-                                                        );
-                }
-
-                ++pos;
-              }
-            }
-
-            if (pos.end() || *pos != ')')
-            {
-              throw error::parse_function::expected ( _name
-                                                    , _function
-                                                    , ")"
-                                                    , pos()
-                                                    , pod.path()
-                                                    );
-            }
-
-            ++pos;
-          }
-
-          while (!pos.end() && isspace(*pos))
-          {
-            ++pos;
-          }
-
-          if (!pos.end())
-          {
-            throw error::parse_function::expected ( _name
-                                                  , _function
-                                                  , "<end of input>"
-                                                  , pos()
-                                                  , pod.path()
-                                                  );
-          }
-        }
-
         _id_mapper->put (_id, *this);
       }
 

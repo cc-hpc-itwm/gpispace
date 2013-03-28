@@ -44,12 +44,6 @@ namespace xml
         module_type ( ID_CONS_PARAM(module)
                     , PARENT_CONS_PARAM(function)
                     , const util::position_type&
-                    , const std::string & _name
-                    , const std::string & _function
-                    );
-        module_type ( ID_CONS_PARAM(module)
-                    , PARENT_CONS_PARAM(function)
-                    , const util::position_type&
                     , const std::string& name
                     , const std::string& function
                     , const boost::optional<std::string>& port_return

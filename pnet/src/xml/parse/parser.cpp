@@ -1030,25 +1030,149 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::module module_type (const xml_node_type* node, state::type& state)
+      namespace
+      {
+        boost::tuple< std::string
+                    , boost::optional<std::string>
+                    , std::list<std::string>
+                    >
+        parse_function_signature ( const std::string& input
+                                 , const std::string& _name
+                                 , const util::position_type& pod
+                                 )
+        {
+          // implement the grammar
+          // S -> R F A
+          // F -> valid_name
+          // R -> eps | valid_name
+          // A -> eps | '(' L ')' | '(' ')'
+          // L -> valid_name | valid_name ',' L
+          //
+          // here R stands for the return port, F for the function
+          // name and A for the list of argument ports
+
+          std::size_t k (0);
+          std::string::const_iterator begin (input.begin());
+          const std::string::const_iterator end (input.end ());
+          fhg::util::parse::position pos (k, begin, end);
+
+          std::string function (parse_name (pos));
+          boost::optional<std::string> port_return;
+          std::list<std::string> port_arg;
+
+          if (!pos.end())
+          {
+            if (*pos != '(')
+            {
+              port_return = function;
+              function = parse_name (pos);
+            }
+
+            if (!pos.end())
+            {
+              if (*pos != '(')
+              {
+                throw error::parse_function::expected ( _name
+                                                      , input
+                                                      , "("
+                                                      , pos()
+                                                      , pod.path()
+                                                      );
+              }
+
+              ++pos;
+
+              while (!pos.end() && *pos != ')')
+              {
+                port_arg.push_back (parse_name (pos));
+
+                if (!pos.end() && *pos != ')')
+                {
+                  if (*pos != ',')
+                  {
+                    throw error::parse_function::expected ( _name
+                                                          , input
+                                                          , ","
+                                                          , pos()
+                                                          , pod.path()
+                                                          );
+                  }
+
+                  ++pos;
+                }
+              }
+
+              if (pos.end() || *pos != ')')
+              {
+                throw error::parse_function::expected ( _name
+                                                      , input
+                                                      , ")"
+                                                      , pos()
+                                                      , pod.path()
+                                                      );
+              }
+
+              ++pos;
+            }
+
+            while (!pos.end() && isspace(*pos))
+            {
+              ++pos;
+            }
+
+            if (!pos.end())
+            {
+              throw error::parse_function::expected ( _name
+                                                    , input
+                                                    , "<end of input>"
+                                                    , pos()
+                                                    , pod.path()
+                                                    );
+            }
+          }
+
+          return boost::make_tuple (function, port_return, port_arg);
+        }
+      }
+
+      id::ref::module module_type ( const xml_node_type* node
+                                  , state::type& state
+                                  )
       {
         const id::module id (state.id_mapper()->next_id());
+        const std::string name (required ( "module_type"
+                                         , node
+                                         , "name"
+                                         , state.file_in_progress()
+                                         )
+                               );
+        const std::string signature (required ( "module_type"
+                                              , node
+                                              , "function"
+                                              , state.file_in_progress()
+                                              )
+                                    );
+        const util::position_type pod (state.position (node));
+        const boost::tuple
+          < std::string
+          , boost::optional<std::string>
+          , std::list<std::string>
+          > sig (parse_function_signature (signature, name, pod));
+        const std::string function (sig.get<0>());
+        const boost::optional<std::string> port_return (sig.get<1>());
+        const std::list<std::string> port_arg (sig.get<2>());
 
-        const id::ref::module module
-          ( type::module_type
-            ( id
-            , state.id_mapper()
-            , boost::none
-            , state.position (node)
-            , required ("module_type", node, "name", state.file_in_progress())
-            , required ("module_type", node, "function", state.file_in_progress())
-            ).make_reference_id()
-          );
+        boost::optional<std::string> code;
+        boost::optional<util::position_type> pod_of_code;
+        std::list<std::string> cincludes;
+        std::list<std::string> ldflags;
+        std::list<std::string> cxxflags;
+        std::list<type::link_type> links;
 
         for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
-          )
+            )
         {
           const std::string child_name
             (name_element (child, state.file_in_progress()));
@@ -1057,47 +1181,51 @@ namespace xml
           {
             if (child_name == "cinclude")
             {
-              const std::string href
-                (required ("module_type", child, "href", state.file_in_progress()));
-
-              module.get_ref().cincludes.push_back (href);
+              cincludes.push_back (required ( "module_type"
+                                            , child
+                                            , "href"
+                                            , state.file_in_progress()
+                                            )
+                                  );
             }
             else if (child_name == "ld")
             {
-              const std::string flag
-                (required ("module_type", child, "flag", state.file_in_progress()));
-
-              module.get_ref().ldflags.push_back (flag);
+              ldflags.push_back (required ("module_type"
+                                          , child
+                                          , "flag"
+                                          , state.file_in_progress()
+                                          )
+                                );
             }
             else if (child_name == "cxx")
             {
-              const std::string flag
-                (required ("module_type", child, "flag", state.file_in_progress()));
-
-              module.get_ref().cxxflags.push_back (flag);
+              cxxflags.push_back (required ( "module_type"
+                                           , child
+                                           , "flag"
+                                           , state.file_in_progress()
+                                           )
+                                 );
             }
             else if (child_name == "link")
             {
-              module.get_ref().links.push_back
-                ( type::link_type ( required ( "module_type"
-                                             , child
-                                             , "href"
-                                             , state.file_in_progress()
-                                             )
-                                  , optional (child, "prefix")
-                                  )
+              links.push_back
+                (type::link_type ( required ( "module_type"
+                                            , child
+                                            , "href"
+                                            , state.file_in_progress()
+                                            )
+                                 , optional (child, "prefix")
+                                 )
                 );
             }
             else if (child_name == "code")
             {
-              module.get_ref().position_of_definition_of_code
-                = state.position (child);
-              module.get_ref().code
-                = fhg::util::join ( parse_cdata ( child
-                                                , state.file_in_progress()
-                                                )
-                                  , "\n"
-                                  );
+              pod_of_code = state.position (child);
+              code = fhg::util::join ( parse_cdata ( child
+                                                   , state.file_in_progress()
+                                                   )
+                                     , "\n"
+                                     );
             }
             else
             {
@@ -1111,7 +1239,22 @@ namespace xml
           }
         }
 
-        return module;
+        return type::module_type
+          ( id
+          , state.id_mapper()
+          , boost::none
+          , pod
+          , name
+          , function
+          , port_return
+          , port_arg
+          , code
+          , pod_of_code
+          , cincludes
+          , ldflags
+          , cxxflags
+          , links
+          ).make_reference_id();
       }
 
       // ******************************************************************* //
