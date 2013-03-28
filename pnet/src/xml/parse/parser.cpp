@@ -3,8 +3,6 @@
 #include <xml/parse/parser.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/headergen.hpp>
-#include <xml/parse/headerlist.hpp>
 #include <xml/parse/state.hpp>
 #include <xml/parse/util.hpp>
 #include <xml/parse/warning.hpp>
@@ -1665,11 +1663,6 @@ namespace xml
 
       type::mk_wrapper (state, m);
       type::mk_makefile (state, m);
-
-      includes::descrs_type descrs;
-
-      includes::mks (descrs);
-      includes::we_header_gen (state, descrs);
 
       type::struct_to_cpp (state, function);
     }
