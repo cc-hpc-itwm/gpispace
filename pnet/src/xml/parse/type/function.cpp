@@ -2097,7 +2097,7 @@ namespace xml
             const path_t path (prefix / cpp_util::path::op() / mod.name());
             const std::string file_hpp (cpp_util::make::hpp (mod.function()));
             const std::string file_cpp
-              ( mod.code
+              ( mod.code()
               ? cpp_util::make::cpp (mod.function())
               : cpp_util::make::tmpl (mod.function())
               );
@@ -2173,7 +2173,7 @@ namespace xml
                 cpp_util::include (stream, *inc);
               }
 
-              if (not mod.code)
+              if (not mod.code())
               {
                 cpp_util::include (stream, "stdexcept");
               }
@@ -2187,7 +2187,7 @@ namespace xml
 
               stream << std::endl << "      {" << std::endl;
 
-              if (not mod.code)
+              if (not mod.code())
               {
                 stream << "        // INSERT CODE HERE" << std::endl
                        << "        throw std::runtime_error (\""
@@ -2196,16 +2196,16 @@ namespace xml
               }
               else
               {
-                if (!mod.position_of_definition_of_code)
+                if (!mod.position_of_definition_of_code())
                 {
                   throw std::runtime_error
                     ("STRANGE: There is code without a position of definition");
                 }
 
                 stream << "// defined at "
-                       << *mod.position_of_definition_of_code
+                       << *mod.position_of_definition_of_code()
                        << std::endl;
-                stream << *mod.code;
+                stream << *mod.code();
               }
 
               stream << std::endl << "      }" << std::endl;

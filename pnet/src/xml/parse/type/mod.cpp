@@ -52,8 +52,8 @@ namespace xml
         , _function (function)
         , _port_return (port_return)
         , _port_arg (port_arg)
-        , code (code)
-        , position_of_definition_of_code (pod_of_code)
+        , _code (code)
+        , _position_of_definition_of_code (pod_of_code)
         , cincludes (cincludes)
         , ldflags (ldflags)
         , cxxflags (cxxflags)
@@ -78,12 +78,21 @@ namespace xml
       {
         return _port_arg;
       }
+      const boost::optional<std::string>& module_type::code() const
+      {
+        return _code;
+      }
+      const boost::optional<util::position_type>
+        module_type::position_of_definition_of_code() const
+      {
+        return _position_of_definition_of_code;
+      }
 
       bool module_type::operator == (const module_type& other) const
       {
         return _port_return == other._port_return
           && _port_arg == other._port_arg
-          && code == other.code
+          && _code == other._code
           && cincludes == other.cincludes
           && ldflags == other.ldflags
           && cxxflags == other.cxxflags
@@ -141,8 +150,8 @@ namespace xml
           , _function
           , _port_return
           , _port_arg
-          , code
-          , position_of_definition_of_code
+          , _code
+          , _position_of_definition_of_code
           , cincludes
           , ldflags
           , cxxflags
@@ -224,10 +233,10 @@ namespace xml
               ::xml::parse::type::dump::dump (s, link);
             }
 
-          if (m.code)
+          if (m.code())
             {
               s.open ("code");
-              s.content ("<![CDATA[" + *m.code + "]]>");
+              s.content ("<![CDATA[" + *m.code() + "]]>");
               s.close ();
             }
 

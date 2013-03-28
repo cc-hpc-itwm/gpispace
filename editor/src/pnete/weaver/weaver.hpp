@@ -501,7 +501,7 @@ namespace fhg
           WEAVE(mod::ldflags) (mod.ldflags);
           WEAVE(mod::cxxflags) (mod.cxxflags);
           WEAVE(mod::links) (mod.links);
-          WEAVE(mod::code) (mod.code);
+          WEAVE(mod::code) (mod.code());
           WEAVE(mod::close)();
         }
 
