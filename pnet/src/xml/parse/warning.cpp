@@ -84,7 +84,7 @@ namespace xml
           : generic ( boost::format ( "the external function %1% in module %2%"
                                       " has multiple occurences in %3% and %4%"
                                     )
-                    % mod.get().function
+                    % mod.get().function()
                     % mod.get().name()
                     % old.get().position_of_definition()
                     % mod.get().position_of_definition()

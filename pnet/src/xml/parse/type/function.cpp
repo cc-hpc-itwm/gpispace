@@ -783,7 +783,7 @@ namespace xml
 
           we_transition_type trans
             ( name()
-            , we_module_type (mod.name(), mod.function)
+            , we_module_type (mod.name(), mod.function())
             , condition()
             , _internal.get_value_or (false)
             , _properties
@@ -1719,7 +1719,7 @@ namespace xml
           pre << "      "
               << (port_return ? mk_type ((*port_return).type) : "void")
               << " "
-              << mod.function
+              << mod.function()
               << " "
             ;
 
@@ -1795,7 +1795,7 @@ namespace xml
           namespace_open (s, mod);
 
           s << "      "
-            << "static void " << mod.function
+            << "static void " << mod.function()
             << " (void *, const ::we::loader::input_t & _pnetc_input, ::we::loader::output_t & _pnetc_output)"
             << std::endl
             << "      "
@@ -1862,7 +1862,7 @@ namespace xml
                                       , "pnetc"
                                       , "op"
                                       , mod.name()
-                                      , mod.function
+                                      , mod.function()
                                       )
             << " ("
             ;
@@ -1952,7 +1952,7 @@ namespace xml
             }
 
           s << "      "
-            << "} // " << mod.function << std::endl;
+            << "} // " << mod.function() << std::endl;
 
           namespace_close (s, mod);
         }
@@ -2001,7 +2001,7 @@ namespace xml
             if (old_map != mcs.end())
             {
               const mc_by_function_type::const_iterator old_mc
-                (old_map->second.find (mod.function));
+                (old_map->second.find (mod.function()));
 
               if (old_mc != old_map->second.end())
               {
@@ -2019,7 +2019,7 @@ namespace xml
               }
             }
 
-            mcs[mod.name()].insert (std::make_pair (mod.function, mod));
+            mcs[mod.name()].insert (std::make_pair (mod.function(), mod));
 
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
@@ -2098,11 +2098,11 @@ namespace xml
 
             const path_t prefix (state.path_to_cpp());
             const path_t path (prefix / cpp_util::path::op() / mod.name());
-            const std::string file_hpp (cpp_util::make::hpp (mod.function));
+            const std::string file_hpp (cpp_util::make::hpp (mod.function()));
             const std::string file_cpp
               ( mod.code
-              ? cpp_util::make::cpp (mod.function)
-              : cpp_util::make::tmpl (mod.function)
+              ? cpp_util::make::cpp (mod.function())
+              : cpp_util::make::tmpl (mod.function())
               );
 
             {
@@ -2117,7 +2117,7 @@ namespace xml
                           , port_return
                           );
 
-              const fun_info_type fun_info ( mod.function
+              const fun_info_type fun_info ( mod.function()
                                            , stream.str()
                                            , mod.ldflags
                                            , mod.cxxflags
@@ -2135,7 +2135,7 @@ namespace xml
 
               cpp_util::header_gen_full (stream);
               cpp_util::include_guard_begin
-                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function());
 
               mod_includes (stream, types);
 
@@ -2153,7 +2153,7 @@ namespace xml
               stream << std::endl;
 
               cpp_util::include_guard_end
-                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function());
             }
 
             {
@@ -2194,7 +2194,7 @@ namespace xml
               {
                 stream << "        // INSERT CODE HERE" << std::endl
                        << "        throw std::runtime_error (\""
-                       << mod.name() << "::" << mod.function
+                       << mod.name() << "::" << mod.function()
                        << ": NOT YET IMPLEMENTED\");";
               }
               else

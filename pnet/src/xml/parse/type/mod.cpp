@@ -49,7 +49,7 @@ namespace xml
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
-        , function (function)
+        , _function (function)
         , port_return (port_return)
         , port_arg (port_arg)
         , code (code)
@@ -65,6 +65,10 @@ namespace xml
       const std::string& module_type::name() const
       {
         return _name;
+      }
+      const std::string& module_type::function() const
+      {
+        return _function;
       }
 
       bool module_type::operator == (const module_type& other) const
@@ -92,7 +96,7 @@ namespace xml
               ( "return"
               , *port_return
               , name()
-              , function
+              , function()
               , outer_function.position_of_definition().path()
               );
           }
@@ -109,7 +113,7 @@ namespace xml
               ( "argument"
               , *port
               , name()
-              , function
+              , function()
               , outer_function.position_of_definition().path()
               );
           }
@@ -129,7 +133,7 @@ namespace xml
           , parent
           , _position_of_definition
           , _name
-          , function
+          , _function
           , port_return
           , port_arg
           , code
@@ -158,7 +162,7 @@ namespace xml
               s << *m.port_return << " ";
             }
 
-          s << m.function;
+          s << m.function();
 
           s << " (";
 

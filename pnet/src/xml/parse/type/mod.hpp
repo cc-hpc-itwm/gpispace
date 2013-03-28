@@ -57,6 +57,7 @@ namespace xml
                     );
 
         const std::string& name() const;
+        const std::string& function() const;
 
         bool operator == (const module_type& other) const;
 
@@ -71,10 +72,10 @@ namespace xml
 
       private:
         std::string _name;
+        std::string _function;
 
       public:
         //! \todo All these should be private with accessors
-        std::string function;
         boost::optional<std::string> port_return;
         port_args_type port_arg;
 

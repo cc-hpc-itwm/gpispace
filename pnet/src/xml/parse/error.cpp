@@ -322,7 +322,7 @@ namespace xml
             , boost::format ( "external function %1% in module %2%"
                               " has conflicting definition"
                             )
-            % early.get().function
+            % early.get().function()
             % early.get().name()
             )
       {}
