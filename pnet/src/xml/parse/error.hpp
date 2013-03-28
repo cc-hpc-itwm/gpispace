@@ -19,7 +19,7 @@
 
 #include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
-#include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
+#include <xml/parse/util/show_node_type.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
