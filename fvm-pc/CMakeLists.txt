@@ -19,7 +19,6 @@ set (FVM_SHM_FILE "${CMAKE_INSTALL_PREFIX}/etc/gpi/shm" CACHE STRING "Default SH
 
 message(STATUS "FVM config: shmsize=${FVM_SHM_SIZE} fvmsize=${FVM_FVM_SIZE}")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
-message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})

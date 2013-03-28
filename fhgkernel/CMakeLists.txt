@@ -17,8 +17,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
-message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
-
 include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include (CompilerFlags)

@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6.2)
 project(KDM_SDPA)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
-message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
 
 add_subdirectory(pnet)
 
