@@ -42,6 +42,6 @@ if (Boost_MAJOR_VERSION EQUAL 1)
     # This is the case when calling join() in some tests, while
     # joinable() == false.  This define is only a hacky workaround and
     # the precondition shall be checked everywhere, where needed.
-    add_definitions (-DBOOST_THREAD_TRROW_IF_PRECONDITION_NOT_SATISFIED)
+    add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
   endif()
 endif()
