@@ -210,22 +210,6 @@ install (TARGETS we-dev
   COMPONENT runtime
 )
 
-
-get_target_property(GEN_INCLUDE_EXE gen-includes LOCATION)
-
-set (headerlist_hpp ${CMAKE_CURRENT_BINARY_DIR}/xml/parse/headerlist.hpp)
-
-add_custom_command(OUTPUT ${headerlist_hpp}
-  COMMAND ${GEN_INCLUDE_EXE} -o ${headerlist_hpp}
-  DEPENDS gen-includes ${CMAKE_CURRENT_BINARY_DIR}/xml/parse/includes.hpp
-  COMMENT "generating internal pnetc headerlist"
-)
-
-set_source_files_properties (
-  "${CMAKE_CURRENT_SOURCE_DIR}/xml/parse/parser.cpp"
-  PROPERTIES OBJECT_DEPENDS "${headerlist_hpp}"
-)
-
 if (BUILD_TESTING)
   add_subdirectory (tests)
   add_subdirectory (xml/tests)

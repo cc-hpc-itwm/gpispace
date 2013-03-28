@@ -7,7 +7,6 @@ add_subdirectory (util)
 
 set (hdrs
   error.hpp
-  headergen.hpp
   parser.hpp
   state.hpp
   type_map_type.hpp
@@ -19,15 +18,6 @@ set (fwd_hdrs
   state.fwd.hpp
 )
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
-                ${CMAKE_CURRENT_BINARY_DIR}/includes.hpp
-                @ONLY
-               )
-
-add_executable(gen-includes includes.cpp)
-target_link_libraries(gen-includes fhg-revision)
-target_link_libraries(gen-includes ${Boost_LIBRARIES})
-
 add_executable(pnetc pnetc.cpp)
 target_link_libraries(pnetc fhg-revision)
 target_link_libraries(pnetc pnet)
@@ -36,7 +26,7 @@ target_link_libraries(pnetc  ${Boost_LIBRARIES})
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 
 if (ENABLE_STATIC_BINARIES)
-  add_executable(pnetc.static pnetc.cpp ${headerlist_hpp})
+  add_executable(pnetc.static pnetc.cpp)
   target_link_libraries(pnetc.static fhg-revision)
   target_link_libraries(pnetc.static pnet)
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
@@ -47,6 +37,6 @@ if (ENABLE_STATIC_BINARIES)
   install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
 endif (ENABLE_STATIC_BINARIES)
 
-install (FILES ${hdrs} ${headerlist_hpp} ${fwd_hdrs}
+install (FILES ${hdrs} ${fwd_hdrs}
   DESTINATION include/xml/parse
   COMPONENT headers)
