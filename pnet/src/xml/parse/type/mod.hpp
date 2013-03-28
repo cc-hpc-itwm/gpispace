@@ -32,8 +32,6 @@ namespace xml
         PARENT_SIGNATURES(function);
 
       public:
-        typedef std::list<link_type> links_type;
-
         module_type ( ID_CONS_PARAM(module)
                     , PARENT_CONS_PARAM(function)
                     , const util::position_type&
@@ -50,7 +48,7 @@ namespace xml
                     , const std::list<std::string>& cincludes
                     , const std::list<std::string>& ldflags
                     , const std::list<std::string>& cxxflags
-                    , const links_type& links
+                    , const std::list<link_type>& links
                     );
 
         const std::string& name() const;
@@ -63,6 +61,7 @@ namespace xml
         const std::list<std::string>& cincludes() const;
         const std::list<std::string>& ldflags() const;
         const std::list<std::string>& cxxflags() const;
+        const std::list<link_type>& links() const;
 
         bool operator == (const module_type& other) const;
 
@@ -85,10 +84,7 @@ namespace xml
         std::list<std::string> _cincludes;
         std::list<std::string> _ldflags;
         std::list<std::string> _cxxflags;
-
-      public:
-        //! \todo All these should be private with accessors
-        links_type links;
+        std::list<link_type> _links;
       };
 
       std::size_t hash_value (const module_type& m);

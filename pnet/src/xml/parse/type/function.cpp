@@ -1006,7 +1006,7 @@ namespace xml
                                    , const std::string & _code
                                    , const std::list<std::string>& _ldflags
                                    , const std::list<std::string>& _cxxflags
-                                   , const module_type::links_type & _links
+                                   , const std::list<link_type>& _links
                                    , const boost::filesystem::path & _path
                                    )
         : name (_name)
@@ -1252,7 +1252,7 @@ namespace xml
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
 
-                BOOST_FOREACH (module_type::links_type::value_type const& link, fun->links)
+                BOOST_FOREACH (const link_type& link, fun->links)
                   {
                     stream << objs << " += "
                            << boost::filesystem::absolute
@@ -2118,7 +2118,7 @@ namespace xml
                                            , stream.str()
                                            , mod.ldflags()
                                            , mod.cxxflags()
-                                           , mod.links
+                                           , mod.links()
                                            , mod.position_of_definition().path()
                                            );
 

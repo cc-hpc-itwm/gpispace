@@ -6,6 +6,7 @@
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/function.hpp>
+#include <xml/parse/type/link.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -500,7 +501,7 @@ namespace fhg
           WEAVE(mod::cincludes) (mod.cincludes());
           WEAVE(mod::ldflags) (mod.ldflags());
           WEAVE(mod::cxxflags) (mod.cxxflags());
-          WEAVE(mod::links) (mod.links);
+          WEAVE(mod::links) (mod.links());
           WEAVE(mod::code) (mod.code());
           WEAVE(mod::close)();
         }

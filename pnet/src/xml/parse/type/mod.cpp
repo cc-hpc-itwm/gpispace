@@ -43,7 +43,7 @@ namespace xml
                                , const std::list<std::string>& cincludes
                                , const std::list<std::string>& ldflags
                                , const std::list<std::string>& cxxflags
-                               , const links_type& links
+                               , const std::list<link_type>& links
                                )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -57,7 +57,7 @@ namespace xml
         , _cincludes (cincludes)
         , _ldflags (ldflags)
         , _cxxflags (cxxflags)
-        , links (links)
+        , _links (links)
       {
         _id_mapper->put (_id, *this);
       }
@@ -99,6 +99,10 @@ namespace xml
       {
         return _cxxflags;
       }
+      const std::list<link_type>& module_type::links() const
+      {
+        return _links;
+      }
 
       bool module_type::operator == (const module_type& other) const
       {
@@ -108,7 +112,7 @@ namespace xml
           && _cincludes == other._cincludes
           && _ldflags == other._ldflags
           && _cxxflags == other._cxxflags
-          && links == other.links
+          && _links == other._links
           ;
       }
 
@@ -167,7 +171,7 @@ namespace xml
           , _cincludes
           , _ldflags
           , _cxxflags
-          , links
+          , _links
           ).make_reference_id();
       }
 
@@ -237,7 +241,7 @@ namespace xml
               s.close ();
             }
 
-          BOOST_FOREACH (module_type::links_type::value_type const& link, m.links)
+          BOOST_FOREACH (const link_type& link, m.links())
             {
               ::xml::parse::type::dump::dump (s, link);
             }
