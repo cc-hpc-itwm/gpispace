@@ -21,7 +21,7 @@ set (fwd_hdrs
 add_executable(pnetc pnetc.cpp)
 target_link_libraries(pnetc fhg-revision)
 target_link_libraries(pnetc pnet)
-target_link_libraries(pnetc  ${Boost_LIBRARIES})
+target_link_libraries(pnetc ${Boost_LIBRARIES})
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 
