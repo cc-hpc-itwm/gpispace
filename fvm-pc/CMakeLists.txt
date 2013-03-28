@@ -32,15 +32,6 @@ include_directories(${CMAKE_INCLUDE_PATH})
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
-message(STATUS "CXXFLAGS: ${CMAKE_CXX_FLAGS}")
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  message(STATUS "Build type: default (not-set)")
-else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-  string(TOUPPER ${CMAKE_BUILD_TYPE} tmp)
-  message(STATUS "additional CXXFLAGS: ${CMAKE_CXX_FLAGS_${tmp}}")
-endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-
 add_definitions(-DSHMEM -DNDEBUGALLOC -DNDEBUG -DNDEBUGCOMM -DNDEBUGMSG)
 
 if (ENABLE_FAKE_PC)

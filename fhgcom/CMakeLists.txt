@@ -65,15 +65,6 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include(TargetDoc OPTIONAL)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-message(STATUS "CXXFLAGS: ${CMAKE_CXX_FLAGS}")
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  message(STATUS "Build type: default (not-set)")
-else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-  string(TOUPPER ${CMAKE_BUILD_TYPE} tmp)
-  message(STATUS "additional CXXFLAGS: ${CMAKE_CXX_FLAGS_${tmp}}")
-endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-
 # Reflect the package structure
 add_subdirectory(fhgcom)
 add_subdirectory(bin)
