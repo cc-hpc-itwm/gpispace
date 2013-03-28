@@ -97,7 +97,7 @@ macro(PNET_COMPILE)
 
   if (PNET_BUILD)
     add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
-      COMMAND "$(MAKE)" -C ${PNET_GENERATE} "BOOST_ROOT=${Boost_INCLUDE_DIR}/../"
+      COMMAND "$(MAKE)" -C ${PNET_GENERATE} "BOOST_ROOT=${Boost_INCLUDE_DIR}/../" "SDPA_INCLUDE=${CMAKE_SOURCE_DIR}/pnet/src/"
       COMMENT "Building modules for petri-net ${PNET_NAME}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       APPEND

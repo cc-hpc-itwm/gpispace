@@ -1141,7 +1141,17 @@ namespace xml
         stream << "  $(error Variable CXX is not defined)"         << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
+        stream << "ifndef SDPA_INCLUDE"                            << std::endl;
+        stream << "  ifndef SDPA_HOME"                             << std::endl;
+        stream << "    $(error Neither SDPA_INCLUDE nor SDPA_HOME are set)"
+                                                                   << std::endl;
+        stream << "  else"                                         << std::endl;
+        stream << "    SDPA_INCLUDE = $(SDPA_HOME)/include"        << std::endl;
+        stream << "  endif"                                        << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
+        stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
         stream << "LDFLAGS += -L$(BOOST_ROOT)/lib"                 << std::endl;
