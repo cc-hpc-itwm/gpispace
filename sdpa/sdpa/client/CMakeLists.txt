@@ -5,6 +5,7 @@ if (SMC_FOUND)
 else (SMC_FOUND)
     message (WARNING "SMC could not be found")
 endif (SMC_FOUND)
+include (SMCMacros)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
