@@ -12,6 +12,23 @@ namespace gspc
   {
     namespace server
     {
+      static const char SERVICE_SEPARATOR = '/';
+
+      static void trim_r (std::string & s, const char c)
+      {
+        while (s.size () && s [s.size ()-1] == c)
+        {
+          s.erase (s.end () - 1);
+        }
+      }
+
+      static bool s_starts_with ( std::string const &s
+                                , std::string const &prefix
+                                )
+      {
+        return s.find (prefix) == 0;
+      }
+
       service_demux_t::service_demux_t ()
       {}
 
@@ -20,8 +37,45 @@ namespace gspc
                                   )
       {
         unique_lock lock (m_mutex);
-        m_handler_map [dst] = h;
+
+        std::string mangled_dst = dst;
+        trim_r (mangled_dst, SERVICE_SEPARATOR);
+
+        m_handler_map [mangled_dst] = h;
         return 0;
+      }
+
+      template <typename Iterator>
+      Iterator find_best_prefix_match ( std::string dst
+                                      , Iterator begin
+                                      , Iterator end
+                                      )
+      {
+        size_t max_match_length = 0;
+        Iterator it = end;
+
+        while (begin != end)
+        {
+          const std::string & service = begin->first;
+
+          if (s_starts_with (dst, service))
+          {
+            if (  dst.size () <= service.size ()
+               || dst [service.size ()] == SERVICE_SEPARATOR
+               )
+            {
+              if (max_match_length <= service.size ())
+              {
+                max_match_length = service.size ();
+                it = begin;
+              }
+            }
+          }
+
+          ++begin;
+        }
+
+        return it;
       }
 
       int service_demux_t::handle_request ( std::string const & dst
@@ -30,7 +84,11 @@ namespace gspc
                                           )
       {
         shared_lock lock (m_mutex);
-        handler_map_t::iterator it = m_handler_map.find (dst);
+        handler_map_t::iterator it =
+          find_best_prefix_match ( dst
+                                 , m_handler_map.begin ()
+                                 , m_handler_map.end ()
+                                 );
         if (it == m_handler_map.end ())
         {
           rply = make::error_frame (E_SERVICE_LOOKUP, "no such service");
