@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_unsubscribe)
 
   gspc::net::server::queue_manager_t qmgr;
 
-  rc = qmgr.subscribe (&user, "/tests", "0");
+  rc = qmgr.subscribe (&user, "/tests", "0", gspc::net::frame ());
   BOOST_CHECK_EQUAL (rc, 0);
 
   gspc::net::frame dummy;
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_unsubscribe)
 
   user.frames.clear ();
 
-  rc = qmgr.unsubscribe (&user, "0");
+  rc = qmgr.unsubscribe (&user, "0", gspc::net::frame ());
   rc = qmgr.send (&user, "/tests", dummy);
   BOOST_CHECK_EQUAL (rc, 0);
   BOOST_CHECK_EQUAL (user.frames.size (), 0);
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_many_users)
 
   BOOST_FOREACH (mock::user *user, users)
   {
-    rc = qmgr.subscribe (user, "/tests", "0");
+    rc = qmgr.subscribe (user, "/tests", "0", gspc::net::frame ());
     BOOST_CHECK_EQUAL (rc, 0);
   }
 
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_many_users)
 
   BOOST_FOREACH (mock::user *user, users)
   {
-    rc = qmgr.unsubscribe (user, "0");
+    rc = qmgr.unsubscribe (user, "0", gspc::net::frame ());
     BOOST_CHECK_EQUAL (rc, 0);
     delete user;
   }
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE (test_async_sender)
   int rc;
 
   gspc::net::server::queue_manager_t qmgr;
-  rc = qmgr.subscribe (&client, "/tests", "sub-client-0");
+  rc = qmgr.subscribe (&client, "/tests", "sub-client-0", gspc::net::frame ());
 
   for (size_t i = 0 ; i < NUM_ASYNC_SENDER ; ++i)
   {
@@ -159,14 +159,13 @@ BOOST_AUTO_TEST_CASE (test_disconnect)
 
   gspc::net::server::queue_manager_t qmgr;
 
-  rc = qmgr.subscribe (&user, "/tests", "0");
+  rc = qmgr.subscribe (&user, "/tests", "0", gspc::net::frame ());
   BOOST_REQUIRE_EQUAL (rc, 0);
 
-  gspc::net::frame dummy;
-  rc = qmgr.disconnect (&user, dummy);
+  rc = qmgr.disconnect (&user, gspc::net::frame ());
   BOOST_REQUIRE_EQUAL (rc, 0);
 
-  rc = qmgr.send (&user, "/tests", dummy);
+  rc = qmgr.send (&user, "/tests", gspc::net::frame ());
   BOOST_CHECK_EQUAL (rc, 0);
   BOOST_CHECK_EQUAL (user.frames.size (), 0);
 }
@@ -184,7 +183,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_disconnect_loop)
 
   for (std::size_t i = 0 ; i < NUM_ITERATIONS ; ++i)
   {
-    rc = qmgr.subscribe (&user, "/tests", "0");
+    rc = qmgr.subscribe (&user, "/tests", "0", gspc::net::frame ());
     BOOST_REQUIRE_EQUAL (rc, 0);
 
     gspc::net::frame dummy;

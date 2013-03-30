@@ -52,6 +52,7 @@ namespace gspc
         int subscribe ( user_ptr u
                       , std::string const & dst
                       , std::string const & id
+                      , frame const &
                       );
 
         /**
@@ -59,6 +60,7 @@ namespace gspc
         */
         int unsubscribe ( user_ptr u
                         , std::string const &id
+                        , frame const &
                         );
 
         /**

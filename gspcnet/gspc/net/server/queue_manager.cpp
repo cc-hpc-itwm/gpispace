@@ -163,6 +163,7 @@ namespace gspc
       int queue_manager_t::subscribe ( user_ptr user
                                      , std::string const &dst
                                      , std::string const &id
+                                     , frame const &f
                                      )
       {
         int rc = 0;
@@ -204,6 +205,7 @@ namespace gspc
 
       int queue_manager_t::unsubscribe ( user_ptr user
                                        , std::string const & id
+                                       , frame const &f
                                        )
       {
         unique_lock lock (m_subscription_mutex);

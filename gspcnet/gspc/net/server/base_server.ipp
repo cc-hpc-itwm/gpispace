@@ -140,6 +140,7 @@ namespace gspc
           return m_qmgr.subscribe ( user
                                   , *f.get_header ("destination")
                                   , *f.get_header ("id")
+                                  , f
                                   );
         }
         else if (f.get_command () == "UNSUBSCRIBE")
@@ -156,6 +157,7 @@ namespace gspc
 
           return m_qmgr.unsubscribe ( user
                                     , *f.get_header ("id")
+                                    , f
                                     );
         }
         else if (f.get_command () == "DISCONNECT")
