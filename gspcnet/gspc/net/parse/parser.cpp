@@ -148,7 +148,10 @@ namespace gspc
                   return PARSE_FAILED;
                 }
 
-                m_frame_state = body_with_content_length;
+                if (m_remaining_body_bytes)
+                  m_frame_state = body_with_content_length;
+                else
+                  m_frame_state = body_with_content_length_final_null;
               }
               else
               {
