@@ -81,9 +81,12 @@ namespace gspc
 
     frame & frame::close ()
     {
-      set_header ( "content-length"
-                 , boost::lexical_cast<value_type>(m_body.size ())
-                 );
+      if (m_body.size ())
+      {
+        set_header ( "content-length"
+                   , boost::lexical_cast<value_type>(m_body.size ())
+                   );
+      }
       return *this;
     }
 
