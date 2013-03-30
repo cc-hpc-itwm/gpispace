@@ -62,6 +62,8 @@ namespace gspc
         bool write_in_progress = not m_frame_list.empty ();
         m_frame_list.push_back (f);
 
+        m_frame_list.back ().close ();
+
         if (not write_in_progress)
         {
           m_socket.async_send
