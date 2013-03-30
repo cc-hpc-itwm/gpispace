@@ -125,10 +125,6 @@ namespace gspc
             sub->user->deliver (frame_to_deliver);
           }
         }
-        else
-        {
-          rc = -ESRCH;
-        }
 
         gspc::net::header::receipt r (f);
         if (r.value ())

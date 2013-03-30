@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_unsubscribe)
 
   rc = qmgr.unsubscribe (&user, "0");
   rc = qmgr.send (&user, "/tests", dummy);
-  BOOST_CHECK_EQUAL (rc, -ESRCH);
+  BOOST_CHECK_EQUAL (rc, 0);
   BOOST_CHECK_EQUAL (user.frames.size (), 0);
 }
 
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE (test_disconnect)
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   rc = qmgr.send (&user, "/tests", dummy);
-  BOOST_CHECK_EQUAL (rc, -ESRCH);
+  BOOST_CHECK_EQUAL (rc, 0);
   BOOST_CHECK_EQUAL (user.frames.size (), 0);
 }
 
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_disconnect_loop)
     BOOST_REQUIRE_EQUAL (rc, 0);
 
     rc = qmgr.send (&user, "/tests", dummy);
-    BOOST_CHECK_EQUAL (rc, -ESRCH);
+    BOOST_CHECK_EQUAL (rc, 0);
   }
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), NUM_ITERATIONS);
