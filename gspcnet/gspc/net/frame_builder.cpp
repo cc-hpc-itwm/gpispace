@@ -27,6 +27,20 @@ namespace gspc
         return f;
       }
 
+      frame error_frame ( frame const &f
+                        , error_code_t ec
+                        , std::string const &message
+                        )
+      {
+        frame error = error_frame (ec, message);
+        if (frame::header_value h = f.get_header ("receipt"))
+        {
+          gspc::net::header::receipt_id r_id (*h);
+          r_id.apply_to (error);
+        }
+        return error;
+      }
+
       frame receipt_frame (gspc::net::header::receipt const &id)
       {
         frame f ("RECEIPT");
