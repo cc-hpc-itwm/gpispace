@@ -64,6 +64,11 @@ namespace gspc
       int
       queue_manager_t::connect (user_ptr u, frame const &)
       {
+        gspc::net::frame connected =
+          make::connected_frame (gspc::net::header::version ("1.0"));
+        connected.set_header ("heart-beat", "0,0");
+        u->deliver (connected);
+
         return 0;
       }
 
