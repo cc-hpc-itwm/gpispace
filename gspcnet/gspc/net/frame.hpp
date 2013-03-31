@@ -19,6 +19,7 @@ namespace gspc
       typedef std::string                        value_type;
       typedef std::map<std::string, value_type>  header_type;
       typedef std::vector<char>                  body_type;
+      typedef boost::optional<value_type>        header_value;
 
       frame () {}
 
@@ -49,7 +50,7 @@ namespace gspc
          Get a header entry. Returns  a boost::optional depending on whether the
          header entry was found or not.
        */
-      boost::optional<value_type> get_header (key_type const &key) const;
+      header_value get_header (key_type const &key) const;
 
       /**
          Check if a header entry exists or not.

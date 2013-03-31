@@ -40,7 +40,7 @@ namespace gspc
       return m_header;
     }
 
-    boost::optional<frame::value_type>
+    frame::header_value
     frame::get_header (std::string const & key) const
     {
       header_type::const_iterator it = m_header.find (key);
