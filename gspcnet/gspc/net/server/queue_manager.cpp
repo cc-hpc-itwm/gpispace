@@ -6,6 +6,7 @@
 
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_builder.hpp>
+#include <gspc/net/frame_util.hpp>
 
 #include <gspc/net/error.hpp>
 #include <gspc/net/user.hpp>
@@ -132,6 +133,10 @@ namespace gspc
 
           BOOST_FOREACH (subscription_t * sub, sub_it->second)
           {
+            frame_set_header ( frame_to_deliver
+                             , "subscription"
+                             , sub->id
+                             );
             sub->user->deliver (frame_to_deliver);
           }
         }
