@@ -93,7 +93,8 @@ namespace gspc
           if (not f.has_header ("destination"))
           {
             user->deliver
-              (gspc::net::make::error_frame ( gspc::net::E_BAD_REQUEST
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
                                             , "required header 'destination' is missing"
                                             )
               );
@@ -107,7 +108,8 @@ namespace gspc
           if (not f.has_header ("destination"))
           {
             user->deliver
-              (gspc::net::make::error_frame ( gspc::net::E_BAD_REQUEST
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
                                             , "required header 'destination' is missing"
                                             )
               );
@@ -121,7 +123,8 @@ namespace gspc
           if (not f.has_header ("destination"))
           {
             user->deliver
-              (gspc::net::make::error_frame ( gspc::net::E_BAD_REQUEST
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
                                             , "required header 'destination' is missing"
                                             )
               );
@@ -130,7 +133,8 @@ namespace gspc
           if (not f.has_header ("id"))
           {
             user->deliver
-              (gspc::net::make::error_frame ( gspc::net::E_BAD_REQUEST
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
                                             , "required header 'id' is missing"
                                             )
               );
@@ -148,7 +152,8 @@ namespace gspc
           if (not f.has_header ("id"))
           {
             user->deliver
-              (gspc::net::make::error_frame ( gspc::net::E_BAD_REQUEST
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
                                             , "required header 'id' is missing"
                                             )
               );
@@ -167,7 +172,8 @@ namespace gspc
         else
         {
           user->deliver
-            (gspc::net::make::error_frame ( gspc::net::E_BAD_REQUEST
+            (gspc::net::make::error_frame ( f
+                                          , gspc::net::E_BAD_REQUEST
                                           , "invalid command '" + f.get_command () + "'"
                                           )
             );
