@@ -61,6 +61,15 @@ namespace gspc
         }
       }
 
+      static void s_maybe_send_receipt (user_ptr user, frame const &f)
+      {
+        gspc::net::header::receipt r (f);
+        if (r.value ())
+        {
+          user->deliver (make::receipt_frame (r));
+        }
+      }
+
       int
       queue_manager_t::connect (user_ptr u, frame const &)
       {
@@ -100,11 +109,7 @@ namespace gspc
         }
         m_user_subscriptions.erase (user);
 
-        gspc::net::header::receipt r (f);
-        if (r.value ())
-        {
-          user->deliver (make::receipt_frame (r));
-        }
+        s_maybe_send_receipt (user, f);
 
         return 0;
       }
@@ -131,11 +136,7 @@ namespace gspc
           }
         }
 
-        gspc::net::header::receipt r (f);
-        if (r.value ())
-        {
-          user->deliver (make::receipt_frame (r));
-        }
+        s_maybe_send_receipt (user, f);
 
         return rc;
       }
@@ -204,6 +205,8 @@ namespace gspc
           m_user_subscriptions [user].push_back (sub);
         }
 
+        s_maybe_send_receipt (user, f);
+
         // sanity check the frame
         return rc;
       }
@@ -256,6 +259,8 @@ namespace gspc
           m_subscriptions.erase (sub_map_it);
 
         delete sub_to_remove;
+
+        s_maybe_send_receipt (user, f);
 
         return 0;
       }
