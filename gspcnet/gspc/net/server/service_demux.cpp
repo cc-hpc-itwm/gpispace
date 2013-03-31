@@ -91,17 +91,21 @@ namespace gspc
                                  );
         if (it == m_handler_map.end ())
         {
-          rply = make::error_frame (E_SERVICE_LOOKUP, "no such service");
+          rply = make::error_frame (rqst, E_SERVICE_LOOKUP, "no such service");
           return E_SERVICE_LOOKUP;
         }
 
         try
         {
           it->second (dst, rqst, rply);
+          rply.set_command ("REPLY");
         }
         catch (std::exception const &ex)
         {
-          rply = make::error_frame (E_SERVICE_FAILED, "service request failed");
+          rply = make::error_frame ( rqst
+                                   , E_SERVICE_FAILED
+                                   , "service request failed"
+                                   );
           rply.add_body ("Request to service '" + dst + "' failed:\n");
           rply.add_body (ex.what ());
           return E_SERVICE_FAILED;

@@ -151,20 +151,10 @@ namespace gspc
                                    , frame const & rqst
                                    )
       {
-        int rc = 0;
+        int rc;
         frame rply;
 
         rc = m_service_demux.handle_request (dst, rqst, rply);
-        if (rc == 0)
-        {
-          rply.set_command ("REPLY");
-        }
-        else if (rc < 0)
-        {
-          rply = make::error_frame ( E_SERVICE_FAILED
-                                   , strerror (-rc)
-                                   );
-        }
 
         user->deliver (rply);
 
