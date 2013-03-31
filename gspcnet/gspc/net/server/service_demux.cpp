@@ -99,6 +99,11 @@ namespace gspc
         {
           it->second (dst, rqst, rply);
           rply.set_command ("REPLY");
+          if (frame::header_value h = rqst.get_header ("receipt"))
+          {
+            gspc::net::header::receipt_id r_id (*h);
+            r_id.apply_to (rply);
+          }
         }
         catch (std::exception const &ex)
         {
