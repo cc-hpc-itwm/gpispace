@@ -171,6 +171,8 @@ namespace gspc
 
         unique_lock lock (m_subscription_mutex);
 
+        s_maybe_send_receipt (user, f);
+
         // check if we already have that subscription
         {
           user_subscription_map_t::iterator user_it =
@@ -199,8 +201,6 @@ namespace gspc
           m_subscriptions      [dst].push_back (sub);
           m_user_subscriptions [user].push_back (sub);
         }
-
-        s_maybe_send_receipt (user, f);
 
         // sanity check the frame
         return rc;
