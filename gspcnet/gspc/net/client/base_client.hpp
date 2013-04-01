@@ -41,7 +41,16 @@ namespace gspc
         int start ();
         int stop ();
 
+        void set_frame_handler (frame_handler_t &);
+
         int send_raw (frame const &);
+
+        int send (frame const &);
+        int request (frame const &rqst, frame &rply);
+        int subscribe ( std::string const &dest
+                      , std::string const &id
+                      );
+        int unsubscribe (std::string const &id);
 
         int handle_frame (user_ptr, frame const &);
         int handle_error (user_ptr, boost::system::error_code const &);
@@ -49,6 +58,8 @@ namespace gspc
         boost::asio::io_service         m_io_service;
         endpoint_type                   m_endpoint;
         connection_ptr_t                m_connection;
+
+        frame_handler_t                *m_frame_handler;
 
         typedef boost::shared_ptr<boost::thread> thread_ptr_t;
         typedef std::vector<thread_ptr_t>        thread_pool_t;

@@ -5,6 +5,7 @@
 
 #include <boost/foreach.hpp>
 #include <gspc/net/frame_io.hpp>
+#include <gspc/net/frame_builder.hpp>
 
 namespace gspc
 {
@@ -17,6 +18,7 @@ namespace gspc
         : m_io_service ()
         , m_endpoint (endpoint)
         , m_connection ()
+        , m_frame_handler (0)
         , m_thread_pool_size (1)
         , m_thread_pool ()
       {}
@@ -67,9 +69,49 @@ namespace gspc
       }
 
       template <class Proto>
+      void base_client<Proto>::set_frame_handler (frame_handler_t &h)
+      {
+        m_frame_handler = &h;
+      }
+
+      template <class Proto>
       int base_client<Proto>::send_raw (frame const &f)
       {
         return m_connection->deliver (f);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::send (frame const &f)
+      {
+        return send_raw (f);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::request (frame const &f, frame &rply)
+      {
+        // generate receipt: header
+        // add wait object to list of outstanding requests
+        // send_raw request
+        // wait for reply
+        return -ENOTSUP;
+      }
+
+      template <class Proto>
+      int base_client<Proto>::subscribe ( std::string const &dst
+                                        , std::string const &id
+                                        )
+      {
+        return send_raw
+          (make::subscribe_frame ( header::destination (dst)
+                                 , header::id (id)
+                                 )
+          );
+      }
+
+      template <class Proto>
+      int base_client<Proto>::unsubscribe (std::string const &id)
+      {
+        return send_raw (make::unsubscribe_frame (header::id (id)));
       }
 
       template <class Proto>
