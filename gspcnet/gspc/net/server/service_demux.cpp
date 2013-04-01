@@ -91,7 +91,10 @@ namespace gspc
                                  );
         if (it == m_handler_map.end ())
         {
-          rply = make::error_frame (rqst, E_SERVICE_LOOKUP, "no such service");
+          rply = make::error_frame ( rqst
+                                   , E_SERVICE_LOOKUP
+                                   , "no such service: '" + dst + "'"
+                                   );
           return E_SERVICE_LOOKUP;
         }
 
