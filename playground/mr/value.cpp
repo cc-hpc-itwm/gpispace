@@ -136,6 +136,49 @@ BOOST_AUTO_TEST_CASE (get)
   }
 }
 
+BOOST_AUTO_TEST_CASE (get_ref)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::put;
+  using pnet::type::value::get;
+  using pnet::type::value::get_ref;
+
+  const value_type l = std::list<value_type>();
+
+  std::list<std::string> keys;
+  keys.push_back ("l");
+
+  value_type m (put (keys, l, pnet::type::value::empty()));
+
+  BOOST_CHECK (get (keys, m));
+
+  {
+    const std::list<value_type>& g
+      (boost::get<const std::list<value_type>&> (*get (keys, m)));
+
+    BOOST_CHECK (g.empty());
+  }
+
+  BOOST_CHECK (get_ref (keys, m));
+
+  {
+    std::list<value_type>& r
+      (boost::get<std::list<value_type>&> (*get_ref (keys, m)));
+
+    BOOST_CHECK (r.empty());
+
+    r.push_back (19);
+  }
+
+  {
+    const std::list<value_type>& g
+      (boost::get<const std::list<value_type>&> (*get (keys, m)));
+
+    BOOST_CHECK (g.size() == 1);
+    BOOST_CHECK (*g.begin() == value_type (19));
+  }
+}
+
 BOOST_AUTO_TEST_CASE (put_get)
 {
   using pnet::type::value::value_type;
