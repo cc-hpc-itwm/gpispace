@@ -24,7 +24,8 @@
 #define WE_MOD_INITIALIZE_START(modname)\
   extern "C"\
   {\
-     void we_mod_initialize(::we::loader::IModule *, unsigned int);     \
+     void __attribute__ ((visibility ("default")))                    \
+          we_mod_initialize(::we::loader::IModule *, unsigned int);   \
      void we_mod_initialize(::we::loader::IModule *mod, unsigned int)                \
      {\
         (void)(mod);                               \
@@ -59,7 +60,8 @@
 #define WE_MOD_FINALIZE_START(modname)\
   extern "C"\
   {\
-     void we_mod_finalize(::we::loader::IModule *);\
+     void __attribute__ ((visibility ("default")))   \
+          we_mod_finalize(::we::loader::IModule *);  \
      void we_mod_finalize(::we::loader::IModule *mod)\
      {\
         (void)(mod)

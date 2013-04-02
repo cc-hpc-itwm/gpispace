@@ -1123,6 +1123,7 @@ namespace xml
 
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -fPIC"                              << std::endl;
+        stream << "CXXFLAGS += -fvisibility=hidden"                << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef BOOST_ROOT"                              << std::endl;
         stream << "  $(warning !!!)"                               << std::endl;
