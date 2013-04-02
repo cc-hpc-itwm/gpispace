@@ -91,10 +91,7 @@ namespace expr
 
     void tokenizer::get()
     {
-      while (!pos.end() && isspace(*pos))
-        {
-          ++pos;
-        }
+      pos.skip_spaces();
 
       if (is_eof())
         {
