@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE (get_ref)
   std::list<std::string> keys;
   keys.push_back ("l");
 
-  value_type m (put (keys, l, pnet::type::value::empty()));
+  value_type m (put (keys, pnet::type::value::empty(), l));
 
   BOOST_CHECK (get (keys, m));
 
@@ -189,13 +189,13 @@ BOOST_AUTO_TEST_CASE (put_get)
 
   std::list<std::string> keys1;
   keys1.push_back ("key1");
-  const value_type v1 (put (keys1, i, pnet::type::value::empty()));
+  const value_type v1 (put (keys1, pnet::type::value::empty(), i));
   BOOST_CHECK (get (keys1, v1));
   BOOST_CHECK (*get (keys1, v1) == i);
 
   std::list<std::string> keys2;
   keys2.push_back ("key2");
-  const value_type v2 (put (keys2, s, v1));
+  const value_type v2 (put (keys2, v1, s));
 
   BOOST_CHECK (get (keys1, v2));
   BOOST_CHECK (*get (keys1, v2) == i);
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE (put_get)
 
   std::list<std::string> keysm;
   keysm.push_back ("m");
-  const value_type m (put (keysm, v2, pnet::type::value::empty()));
+  const value_type m (put (keysm, pnet::type::value::empty(), v2));
 
   keysm.push_back ("key1");
   BOOST_CHECK (get (keysm, m));

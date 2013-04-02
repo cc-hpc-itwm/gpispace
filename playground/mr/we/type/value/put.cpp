@@ -64,8 +64,8 @@ namespace pnet
       }
 
       value_type put ( const std::list<std::string>& keys
-                     , const value_type& value
                      , const value_type& node
+                     , const value_type& value
                      )
       {
         return boost::apply_visitor
