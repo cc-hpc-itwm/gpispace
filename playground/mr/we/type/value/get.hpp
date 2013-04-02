@@ -13,10 +13,12 @@ namespace pnet
   {
     namespace value
     {
-      //! \todo Avoid the copy, get a ref instead!?
-      boost::optional<value_type> get ( const std::list<std::string>&
-                                      , const value_type&
-                                      );
+      boost::optional<const value_type&> get ( const std::list<std::string>&
+                                             , const value_type&
+                                             );
+      boost::optional<value_type&> get_ref ( const std::list<std::string>&
+                                           , value_type&
+                                           );
     }
   }
 }
