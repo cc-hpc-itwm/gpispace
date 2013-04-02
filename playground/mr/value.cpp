@@ -7,6 +7,7 @@
 #include <we/type/value/show.hpp>
 #include <we/type/value/get.hpp>
 #include <we/type/value/put.hpp>
+#include <we/type/value/poke.hpp>
 
 #include <sstream>
 
@@ -215,4 +216,42 @@ BOOST_AUTO_TEST_CASE (put_get)
   keysm.push_back ("key2");
   BOOST_CHECK (get (keysm, m));
   BOOST_CHECK (*get (keysm, m) == s);
+}
+
+BOOST_AUTO_TEST_CASE (poke)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::poke;
+  using pnet::type::value::get;
+
+  value_type v;
+
+  const value_type s (std::string ("s"));
+  const value_type i (int (1));
+
+  {
+    std::list<std::string> keys;
+    keys.push_back ("s");
+    poke (keys, v, s);
+
+    BOOST_CHECK (get (keys, v));
+    BOOST_CHECK (*get (keys, v) == s);
+  }
+  {
+    std::list<std::string> keys;
+    keys.push_back ("i");
+    poke (keys, v, i);
+    BOOST_CHECK (get (keys, v));
+    BOOST_CHECK (*get (keys, v) == i);
+
+    keys.push_back ("i");
+    poke (keys, v, i);
+    BOOST_CHECK (get (keys, v));
+    BOOST_CHECK (*get (keys, v) == i);
+
+    keys.pop_back();
+    BOOST_CHECK (get (keys, v));
+    BOOST_CHECK (get (keys, *get (keys, v)));
+    BOOST_CHECK (*get (keys, *get (keys, v)) == i);
+  }
 }
