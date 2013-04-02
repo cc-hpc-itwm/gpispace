@@ -29,21 +29,6 @@ namespace expr
       return pos.end() || *pos == ';';
     }
 
-    void tokenizer::require (const std::string& what)
-    {
-      std::string::const_iterator what_pos (what.begin());
-      const std::string::const_iterator what_end (what.end());
-
-      while (what_pos != what_end)
-        if (is_eof() || *pos != *what_pos)
-          throw exception::parse::expected
-            ("'" + std::string (what_pos, what_end) + "'", pos());
-        else
-          {
-            ++pos; ++what_pos;
-          }
-    }
-
     void tokenizer::cmp (const token::type& t, const token::type& e)
     {
       if (is_eof())
@@ -105,19 +90,19 @@ namespace expr
       else
         switch (*pos)
           {
-          case 'a': ++pos; require ("bs"); unary (abs, "abs"); break;
+          case 'a': ++pos; pos.require ("bs"); unary (abs, "abs"); break;
           case 'b':
-            ++pos; require ("itset_");
+            ++pos; pos.require ("itset_");
             if (is_eof())
               throw exception::parse::expected
                 ("'insert', 'delete', 'is_element', 'or', 'and', 'xor', 'count', 'tohex' or 'fromhex'", pos());
             else
               switch (*pos)
                 {
-                case 'a': ++pos; require ("nd"); token = _bitset_and; break;
-                case 'c': ++pos; require ("ount"); token = _bitset_count; break;
-                case 'd': ++pos; require ("elete"); token = _bitset_delete; break;
-                case 'f': ++pos; require ("romhex"); unary (_bitset_fromhex, "bitset_fromhex"); break;
+                case 'a': ++pos; pos.require ("nd"); token = _bitset_and; break;
+                case 'c': ++pos; pos.require ("ount"); token = _bitset_count; break;
+                case 'd': ++pos; pos.require ("elete"); token = _bitset_delete; break;
+                case 'f': ++pos; pos.require ("romhex"); unary (_bitset_fromhex, "bitset_fromhex"); break;
                 case 'i':
                   ++pos;
                   if (is_eof())
@@ -128,12 +113,12 @@ namespace expr
                       {
                       case 'n':
                         ++pos;
-                        require ("sert");
+                        pos.require ("sert");
                         token = _bitset_insert;
                         break;
                       case 's':
                         ++pos;
-                        require ("_element");
+                        pos.require ("_element");
                         token = _bitset_is_element;
                         break;
                       default:
@@ -141,9 +126,9 @@ namespace expr
                           ("'nsert' or 's_element'", pos());
                       }
                   break;
-                case 'o': ++pos; require ("r"); token = _bitset_or; break;
-                case 't': ++pos; require ("ohex"); unary (_bitset_tohex, "bitset_tohex"); break;
-                case 'x': ++pos; require ("or"); token = _bitset_xor; break;
+                case 'o': ++pos; pos.require ("r"); token = _bitset_or; break;
+                case 't': ++pos; pos.require ("ohex"); unary (_bitset_tohex, "bitset_tohex"); break;
+                case 'x': ++pos; pos.require ("or"); token = _bitset_xor; break;
                 default:
                   throw exception::parse::expected
                     ("'insert', 'delete', 'is_element', 'or', 'and', 'xor', 'count', 'tohex' or 'fromhex'", pos());
@@ -157,8 +142,8 @@ namespace expr
             else
               switch (*pos)
                 {
-                case 'o': ++pos; require("s"); unary (_cos, "cos"); break;
-                case 'e': ++pos; require("il"); unary (_ceil, "ceil"); break;
+                case 'o': ++pos; pos.require("s"); unary (_cos, "cos"); break;
+                case 'e': ++pos; pos.require("il"); unary (_ceil, "ceil"); break;
                 default: throw exception::parse::expected
                     ("'os' or 'eil'", pos());
                 }
@@ -170,8 +155,8 @@ namespace expr
             else
               switch (*pos)
                 {
-                case 'i': ++pos; require ("v"); token = divint; break;
-                case 'o': ++pos; require ("uble"); token = _todouble; break;
+                case 'i': ++pos; pos.require ("v"); token = divint; break;
+                case 'o': ++pos; pos.require ("uble"); token = _todouble; break;
                 default: throw exception::parse::expected
                     ("'iv' or 'ouble'", pos());
                 }
@@ -185,9 +170,9 @@ namespace expr
               switch (*pos)
                 {
                 case 'l':
-                  ++pos; require ("oor"); unary (_floor, "floor"); break;
+                  ++pos; pos.require ("oor"); unary (_floor, "floor"); break;
                 case 'a':
-                  ++pos; require ("lse"); token = val; tokval = false; break;
+                  ++pos; pos.require ("lse"); token = val; tokval = false; break;
                 default:
                   throw exception::parse::expected ("'loor' or 'alse'", pos());
                 }
@@ -200,7 +185,7 @@ namespace expr
             else
               switch (*pos)
                 {
-                case 'e': ++pos; require ("n"); unary (_len, "len"); break;
+                case 'e': ++pos; pos.require ("n"); unary (_len, "len"); break;
                 case 'o':
                   ++pos;
                   if (is_eof())
@@ -208,7 +193,7 @@ namespace expr
                   else
                     switch (*pos)
                       {
-                      case 'n': ++pos; require ("g"); token = _tolong; break;
+                      case 'n': ++pos; pos.require ("g"); token = _tolong; break;
                       case 'g': ++pos; unary (_log, "log"); break;
                       default: throw exception::parse::expected
                           ("'ng' or 'g'", pos());
@@ -227,8 +212,8 @@ namespace expr
             else
               switch (*pos)
                 {
-                case 'i': ++pos; require ("n"); token = min; break;
-                case 'o': ++pos; require ("d"); token = modint; break;
+                case 'i': ++pos; pos.require ("n"); token = min; break;
+                case 'o': ++pos; pos.require ("d"); token = modint; break;
                 case 'a': ++pos;
                   if (is_eof())
                     throw exception::parse::expected
@@ -237,19 +222,19 @@ namespace expr
                     switch (*pos)
                       {
                       case 'x': ++pos; token = max; break;
-                      case 'p': ++pos; require ("_");
+                      case 'p': ++pos; pos.require ("_");
                         if (is_eof())
                           throw exception::parse::expected
                             ("'assign', 'unassign', 'is_assigned', 'size', 'empty' or 'get_assignment'", pos());
                         else
                           switch (*pos)
                             {
-                            case 'a': ++pos; require ("ssign"); token = _map_assign; break;
-                            case 'e': ++pos; require ("mpty"); unary (_map_empty, "map_empty"); break;
-                            case 'u': ++pos; require ("nassign"); token = _map_unassign; break;
-                            case 'i': ++pos; require ("s_assigned"); token = _map_is_assigned; break;
-                            case 'g': ++pos; require ("et_assignment"); token = _map_get_assignment; break;
-                            case 's': ++pos; require ("ize"); unary (_map_size, "map_size"); break;
+                            case 'a': ++pos; pos.require ("ssign"); token = _map_assign; break;
+                            case 'e': ++pos; pos.require ("mpty"); unary (_map_empty, "map_empty"); break;
+                            case 'u': ++pos; pos.require ("nassign"); token = _map_unassign; break;
+                            case 'i': ++pos; pos.require ("s_assigned"); token = _map_is_assigned; break;
+                            case 'g': ++pos; pos.require ("et_assignment"); token = _map_get_assignment; break;
+                            case 's': ++pos; pos.require ("ize"); unary (_map_size, "map_size"); break;
                             default:
                               throw exception::parse::expected
                                 ("'assign', 'unassign', 'is_assigned', 'size', 'empty' or 'get_assignment'", pos());
@@ -264,8 +249,8 @@ namespace expr
                     ("'in' or 'ax', 'od' or 'map_...'", pos());
                 }
             break;
-          case 'p': ++pos; require("i"); set_PI(); break;
-          case 'r': ++pos; require("ound"); token = _round; break;
+          case 'p': ++pos; pos.require("i"); set_PI(); break;
+          case 'r': ++pos; pos.require("ound"); token = _round; break;
           case 's':
             ++pos;
             if (is_eof())
@@ -274,10 +259,10 @@ namespace expr
             else
               switch (*pos)
                 {
-                case 'i': ++pos; require ("n"); unary (_sin, "sin"); break;
-                case 'q': ++pos; require ("rt"); unary (_sqrt, "sqrt"); break;
-                case 'u': ++pos; require ("bstr"); token = _substr; break;
-                case 'e': ++pos; require ("t_");
+                case 'i': ++pos; pos.require ("n"); unary (_sin, "sin"); break;
+                case 'q': ++pos; pos.require ("rt"); unary (_sqrt, "sqrt"); break;
+                case 'u': ++pos; pos.require ("bstr"); token = _substr; break;
+                case 'e': ++pos; pos.require ("t_");
                   if (is_eof())
                     throw exception::parse::expected
                       ("'insert', 'erase', 'is_element', 'is_subset', 'pop', 'top', 'empty' or 'size'", pos());
@@ -291,8 +276,8 @@ namespace expr
                         else
                           switch (*pos)
                             {
-                            case 'r': ++pos; require ("ase"); token = _set_erase; break;
-                            case 'm': ++pos; require ("pty"); unary (_set_empty, "set_empty"); break;
+                            case 'r': ++pos; pos.require ("ase"); token = _set_erase; break;
+                            case 'm': ++pos; pos.require ("pty"); unary (_set_empty, "set_empty"); break;
                             default:
                               throw exception::parse::expected
                                 ("'mpty' or 'rase'", pos());
@@ -305,16 +290,16 @@ namespace expr
                         else
                           switch (*pos)
                             {
-                            case 'n': ++pos; require ("sert"); token = _set_insert; break;
-                            case 's': ++pos; require ("_");
+                            case 'n': ++pos; pos.require ("sert"); token = _set_insert; break;
+                            case 's': ++pos; pos.require ("_");
                               if (is_eof())
                                 throw exception::parse::expected
                                   ("'subset' or 'element'", pos());
                               else
                                 switch (*pos)
                                 {
-                                case 's': ++pos; require ("ubset"); token = _set_is_subset; break;
-                                case 'e': ++pos; require ("lement"); token = _set_is_element; break;
+                                case 's': ++pos; pos.require ("ubset"); token = _set_is_subset; break;
+                                case 'e': ++pos; pos.require ("lement"); token = _set_is_element; break;
                                 default:
                                   throw exception::parse::expected
                                     ("'subset' or 'element'", pos());
@@ -325,9 +310,9 @@ namespace expr
                                 ("'nsert', 's_subset' or 's_element'", pos());
                             }
                         break;
-                      case 'p': ++pos; require ("op");  unary (_set_pop, "set_pop"); break;
-                      case 's': ++pos; require ("ize"); unary (_set_size, "set_size"); break;
-                      case 't': ++pos; require ("op");  unary (_set_top, "set_top"); break;
+                      case 'p': ++pos; pos.require ("op");  unary (_set_pop, "set_pop"); break;
+                      case 's': ++pos; pos.require ("ize"); unary (_set_size, "set_size"); break;
+                      case 't': ++pos; pos.require ("op");  unary (_set_top, "set_top"); break;
                       default:
                         throw exception::parse::expected
                           ("'insert', 'erase', 'is_element', 'is_subset', 'pop', 'top', 'empty' or 'size'", pos());
@@ -335,7 +320,7 @@ namespace expr
                   break;
                 case 't':
                   ++pos;
-                  require ("ack_");
+                  pos.require ("ack_");
                   if (is_eof())
                     throw exception::parse::expected
                       ( "'empty', 'top', 'push', 'pop', 'size' or 'join'"
@@ -344,16 +329,16 @@ namespace expr
                   else
                     switch (*pos)
                       {
-                      case 'e': ++pos; require ("mpty");
+                      case 'e': ++pos; pos.require ("mpty");
                         unary (_stack_empty, "stack_empty");
                         break;
-                      case 'j': ++pos; require ("oin");
+                      case 'j': ++pos; pos.require ("oin");
                         token = _stack_join;
                         break;
-                      case 's': ++pos; require ("ize");
+                      case 's': ++pos; pos.require ("ize");
                         unary (_stack_size, "stack_size");
                         break;
-                      case 't': ++pos; require ("op");
+                      case 't': ++pos; pos.require ("op");
                         unary (_stack_top, "stack_top");
                         break;
                       case 'p':
@@ -364,10 +349,10 @@ namespace expr
                         else
                           switch (*pos)
                             {
-                            case 'u': ++pos; require ("sh");
+                            case 'u': ++pos; pos.require ("sh");
                               token = _stack_push;
                               break;
-                            case 'o': ++pos; require ("p");
+                            case 'o': ++pos; pos.require ("p");
                               unary (_stack_pop, "stack_pop");
                               break;
                             default:
@@ -395,12 +380,12 @@ namespace expr
             else
               switch (*pos)
                 {
-                case 'r': ++pos; require("ue"); token = val; tokval = true; break;
+                case 'r': ++pos; pos.require("ue"); token = val; tokval = true; break;
                 default: throw exception::parse::expected ("rue", pos());
                 }
             break;
-          case '|': ++pos; require ("|"); token = _or; break;
-          case '&': ++pos; require ("&"); token = _and; break;
+          case '|': ++pos; pos.require ("|"); token = _or; break;
+          case '&': ++pos; pos.require ("&"); token = _and; break;
           case '<': ++pos; cmp (lt, le); break;
           case '>': ++pos; cmp (gt, ge); break;
           case '!':
@@ -434,10 +419,10 @@ namespace expr
               switch (*pos)
                 {
                 case '=': ++pos; token = define; break;
-                case 'a': ++pos; require ("nd:"); token = _and; break;
-                case 'o': ++pos; require ("r:"); token = _or; break;
-                case 'e': ++pos; require ("q:"); token = eq; break;
-                case 'n': ++pos; require ("e:"); token = ne; break;
+                case 'a': ++pos; pos.require ("nd:"); token = _and; break;
+                case 'o': ++pos; pos.require ("r:"); token = _or; break;
+                case 'e': ++pos; pos.require ("q:"); token = eq; break;
+                case 'n': ++pos; pos.require ("e:"); token = ne; break;
                 case 'l':
                   ++pos;
                   if (is_eof())
@@ -445,8 +430,8 @@ namespace expr
                   else
                     switch (*pos)
                       {
-                      case 't': ++pos; require (":"); token = lt; break;
-                      case 'e': ++pos; require (":"); token = le; break;
+                      case 't': ++pos; pos.require (":"); token = lt; break;
+                      case 'e': ++pos; pos.require (":"); token = le; break;
                       default:
                         throw exception::parse::expected
                           ("'t:', 'e:'", pos());
@@ -459,8 +444,8 @@ namespace expr
                   else
                     switch (*pos)
                       {
-                      case 't': ++pos; require (":"); token = gt; break;
-                      case 'e': ++pos; require (":"); token = ge; break;
+                      case 't': ++pos; pos.require (":"); token = gt; break;
+                      case 'e': ++pos; pos.require (":"); token = ge; break;
                       default:
                         throw exception::parse::expected
                           ("'t:', 'e:'", pos());
@@ -535,7 +520,7 @@ namespace expr
                     }
                   while (!pos.end() && *pos != '}');
 
-                  require ("}");
+                  pos.require ("}");
 
                   break;
                 default: throw exception::parse::expected ("'{'", pos());
