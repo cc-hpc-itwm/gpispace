@@ -57,6 +57,7 @@ namespace bytearray
     friend std::ostream& operator<< (std::ostream&, const type&);
     friend std::size_t hash_value (const type&);
     friend bool operator== (const type&, const type&);
+    friend bool operator< (const type&, const type&);
 
     type& operator= (const type& other);
 

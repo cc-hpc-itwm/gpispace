@@ -66,4 +66,8 @@ namespace bytearray
   {
     return x._v == y._v;
   }
+  bool operator< (const type& x, const type& y)
+  {
+    return x._v < y._v;
+  }
 }
