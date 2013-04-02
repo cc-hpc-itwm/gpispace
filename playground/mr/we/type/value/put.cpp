@@ -15,31 +15,31 @@ namespace pnet
         class visitor_put : public boost::static_visitor<value_type>
         {
         public:
-          visitor_put ( const std::list<std::string>::const_iterator& pos_key
-                      , const std::list<std::string>::const_iterator& end_key
-                      , const value_type& x
+          visitor_put ( const std::list<std::string>::const_iterator& key
+                      , const std::list<std::string>::const_iterator& end
+                      , const value_type& value
                       )
-            : _pos_key (pos_key)
-            , _end_key (end_key)
-            , _x (x)
+            : _key (key)
+            , _end (end)
+            , _value (value)
           {}
 
           value_type
           operator() (const std::map<std::string, value_type>& m) const
           {
-            if (_pos_key == _end_key)
+            if (_key == _end)
               {
-                return _x;
+                return _value;
               }
 
-            const std::map<std::string, value_type>::const_iterator pos
-              (m.find (*_pos_key));
+            const std::map<std::string, value_type>::const_iterator field
+              (m.find (*_key));
 
             std::map<std::string, value_type> m_copy (m);
 
-            m_copy[*_pos_key] = boost::apply_visitor
-              ( visitor_put (boost::next (_pos_key), _end_key, _x)
-              , pos == m.end() ? empty() : pos->second
+            m_copy[*_key] = boost::apply_visitor
+              ( visitor_put (boost::next (_key), _end, _value)
+              , field == m.end() ? empty() : field->second
               );
 
             return value_type (m_copy);
@@ -48,28 +48,28 @@ namespace pnet
           template<typename T>
           value_type operator() (const T&) const
           {
-            if (_pos_key == _end_key)
+            if (_key == _end)
               {
-                return _x;
+                return _value;
               }
 
-            return this->operator() (std::map<std::string, value_type>());
+            return operator() (std::map<std::string, value_type>());
           }
 
         private:
-          const std::list<std::string>::const_iterator& _pos_key;
-          const std::list<std::string>::const_iterator& _end_key;
-          const value_type& _x;
+          const std::list<std::string>::const_iterator& _key;
+          const std::list<std::string>::const_iterator& _end;
+          const value_type& _value;
         };
       }
 
       value_type put ( const std::list<std::string>& keys
-                     , const value_type& x
-                     , const value_type& v
+                     , const value_type& value
+                     , const value_type& node
                      )
       {
         return boost::apply_visitor
-          (visitor_put (keys.begin(), keys.end(), x), v);
+          (visitor_put (keys.begin(), keys.end(), value), node);
       }
     }
   }

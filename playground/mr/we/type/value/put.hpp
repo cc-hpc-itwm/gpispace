@@ -11,9 +11,9 @@ namespace pnet
   {
     namespace value
     {
-      value_type put ( const std::list<std::string>&
-                     , const value_type&
-                     , const value_type&
+      value_type put ( const std::list<std::string>& path
+                     , const value_type& value
+                     , const value_type& node
                      );
     }
   }

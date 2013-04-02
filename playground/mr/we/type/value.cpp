@@ -10,7 +10,7 @@ namespace pnet
     {
       value_type empty()
       {
-        return (std::map<std::string, value_type>());
+        return std::map<std::string, value_type>();
       }
     }
   }
