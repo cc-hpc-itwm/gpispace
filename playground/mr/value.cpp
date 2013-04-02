@@ -118,8 +118,6 @@ BOOST_AUTO_TEST_CASE (get)
   _m2["set"] = set;
   const value_type m2 (_m2);
 
-  std::cout << m2 << std::endl;
-
   {
     std::list<std::string> keys;
     keys.push_back ("set");
