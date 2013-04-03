@@ -10,7 +10,6 @@ add_library (we-value
   we/type/value.cpp
   we/type/value/show.cpp
   we/type/value/get.cpp
-  we/type/value/put.cpp
   we/type/value/poke.cpp
 )
 
