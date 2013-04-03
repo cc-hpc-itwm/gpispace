@@ -40,8 +40,6 @@ function (get_revision_info REV_INFO)
   if (${_res_git} EQUAL 0)
     string (STRIP "${_out_git}" _out_git)
     set (${REV_INFO} ${_out_git} PARENT_SCOPE)
-  else()
-    message (WARNING "Could not discover revision information")
   endif()
 endfunction()
 
