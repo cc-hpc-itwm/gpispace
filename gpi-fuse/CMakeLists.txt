@@ -30,9 +30,9 @@ include_directories (${FhgLog_INCLUDE_DIR})
 find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-add_library (gpi-fuse gpifs/comm.cpp)
+add_library (gpi-fuse src/gpifs/comm.cpp)
 
 install (TARGETS gpi-fuse
   ARCHIVE
@@ -40,7 +40,7 @@ install (TARGETS gpi-fuse
   COMPONENT static-libraries
 )
 
-add_executable (gpifs gpifs/gpifs.cpp)
+add_executable (gpifs src/gpifs/gpifs.cpp)
 
 target_link_libraries (gpifs gpi-fuse)
 target_link_libraries (gpifs ${FUSE_LIBRARIES})
