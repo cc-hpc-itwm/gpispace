@@ -177,7 +177,7 @@ namespace gspc
                                           , "invalid command '" + f.get_command () + "'"
                                           )
             );
-          return -EBADRQC;
+          return -EBADMSG;
         }
       }
 
