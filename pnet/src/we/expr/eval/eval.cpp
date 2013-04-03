@@ -15,15 +15,15 @@ namespace expr
 {
   namespace eval
   {
-    namespace visitor
+    namespace
     {
-      class eval : public boost::static_visitor<value::type>
+      class visitor_eval : public boost::static_visitor<value::type>
       {
       private:
         context& c;
 
       public:
-        eval (context& _c) : c (_c) {}
+        visitor_eval (context& _c) : c (_c) {}
 
         value::type operator() (const value::type& v) const
         {
@@ -142,7 +142,7 @@ namespace expr
 
     value::type eval (context& c, const expr::parse::node::type& nd)
     {
-      return boost::apply_visitor (visitor::eval (c), nd);
+      return boost::apply_visitor (visitor_eval (c), nd);
     }
   }
 }
