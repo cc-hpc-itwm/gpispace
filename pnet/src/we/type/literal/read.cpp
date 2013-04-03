@@ -229,23 +229,6 @@ namespace literal
       return true;
     }
 
-    inline void require ( const std::string & what
-                        , fhg::util::parse::position & pos
-                        )
-    {
-      std::string::const_iterator what_pos (what.begin());
-      const std::string::const_iterator what_end (what.end());
-
-      while (what_pos != what_end)
-        if (pos.end() || *pos != *what_pos)
-          throw expr::exception::parse::expected
-            ("'" + std::string (what_pos, what_end) + "'", pos());
-        else
-        {
-          ++pos; ++what_pos;
-        }
-    }
-
     bool read_map_item ( long & key
                        , long & val
                        , fhg::util::parse::position & pos
@@ -258,7 +241,7 @@ namespace literal
 
       key = read_long (pos); pos.skip_spaces();
 
-      require ("->", pos); pos.skip_spaces();
+      pos.require ("->"); pos.skip_spaces();
 
       val = read_long (pos); pos.skip_spaces();
 
@@ -278,11 +261,11 @@ namespace literal
 
     switch (*pos)
     {
-    case 't': ++pos; require ("rue", pos); return true;
-    case 'f': ++pos; require ("alse", pos); return false;
+    case 't': ++pos; pos.require ("rue"); return true;
+    case 'f': ++pos; pos.require ("alse"); return false;
     case 'y': ++pos;
       {
-        require ("(", pos);
+        pos.require ("(");
 
         bytearray::type ba;
         long l;
@@ -292,11 +275,11 @@ namespace literal
           ba.push_back (l);
         }
 
-        require (")", pos);
+        pos.require (")");
 
         return ba;
       }
-    case '[': ++pos; require ("]", pos); return we::type::literal::control();
+    case '[': ++pos; pos.require ("]"); return we::type::literal::control();
     case '@': ++pos;
       {
         literal::stack_type s;
@@ -307,7 +290,7 @@ namespace literal
           s.push_front (l);
         }
 
-        require ("@", pos);
+        pos.require ("@");
 
         return s;
       }
@@ -370,7 +353,7 @@ namespace literal
               s.insert (l);
             }
 
-            require (":}", pos);
+            pos.require (":}");
 
             return s;
           }
@@ -385,7 +368,7 @@ namespace literal
               m.insert (std::make_pair (key, val));
             }
 
-            require ("|}", pos);
+            pos.require ("|}");
 
             return m;
           }
@@ -399,7 +382,7 @@ namespace literal
               bs.push_back (l);
             }
 
-            require ("}", pos);
+            pos.require ("}");
 
             return bs;
           }

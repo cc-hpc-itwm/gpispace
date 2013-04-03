@@ -20,7 +20,6 @@
 
 #include <fhg/revision.hpp>
 #include <fhg/util/getenv.hpp>
-#include <fhg/util/parse/position.hpp>
 #include <fhg/util/split.hpp>
 
 #include <fhglog/fhglog.hpp>

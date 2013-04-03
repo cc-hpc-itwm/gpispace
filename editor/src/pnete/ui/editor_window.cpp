@@ -731,13 +731,9 @@ namespace fhg
         {
           try
           {
-            std::size_t k (0);
-            std::string::const_iterator begin (value.begin());
-            fhg::util::parse::position pos (k, begin, value.end());
-
             try
             {
-              we::util::token::put (activity, port_name, ::value::read (pos));
+              we::util::token::put (activity, port_name, ::value::read (value));
             }
             catch (const expr::exception::parse::exception& e)
             {

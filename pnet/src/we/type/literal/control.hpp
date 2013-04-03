@@ -25,6 +25,7 @@ namespace we
         }
 
         friend std::size_t hash_value (const control&);
+        friend bool operator< (const control&, const control&);
       };
     }
   }

@@ -25,6 +25,11 @@ namespace we
       {
         return 42;
       }
+
+      bool operator< (const control&, const control&)
+      {
+        return false;
+      }
     }
   }
 }

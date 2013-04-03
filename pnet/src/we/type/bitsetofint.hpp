@@ -38,6 +38,8 @@ namespace bitsetofint
     friend bool operator== (const type&, const type&);
     friend std::string to_hex (const type&);
 
+    friend bool operator< (const type&, const type&);
+
   private:
     std::vector<uint64_t> _container;
 
@@ -54,6 +56,7 @@ namespace bitsetofint
   type operator^ (const type&, const type&);
 
   bool operator== (const type&, const type&);
+  bool operator< (const type&, const type&);
 
   std::size_t hash_value (const type&);
 

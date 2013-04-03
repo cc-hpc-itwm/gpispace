@@ -3,255 +3,62 @@
 #define BOOST_TEST_MODULE pnet_type_value
 #include <boost/test/unit_test.hpp>
 
-#include <boost/foreach.hpp>
-#include <boost/optional.hpp>
-#include <boost/utility.hpp>
-#include <boost/variant.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/show.hpp>
+#include <we/type/value/get.hpp>
+#include <we/type/value/put.hpp>
+#include <we/type/value/poke.hpp>
 
-#include <list>
-#include <map>
-#include <set>
-#include <string>
+#include <sstream>
 
-#include <iostream>
-
-namespace pnet
+namespace
 {
-  namespace type
+  template<typename T>
+  void test_show (const T& x, const std::string& expected)
   {
-    namespace value
-    {
-      typedef boost::make_recursive_variant
-              < int
-              , long
-              , std::string
-              , std::list<boost::recursive_variant_>
-              , std::map<boost::recursive_variant_, boost::recursive_variant_>
-              , std::set<boost::recursive_variant_>
-              , std::map<std::string, boost::recursive_variant_>
-              >::type value_type;
-
-      value_type empty()
-      {
-        return (std::map<std::string, value_type>());
-      }
-
-      namespace visitor
-      {
-        class show : public boost::static_visitor<std::ostream&>
-        {
-        public:
-          show (std::ostream& os) : _os (os) {}
-          std::ostream& operator() (const int& i) const
-          {
-            return _os << i;
-          }
-          std::ostream& operator() (const long& i) const
-          {
-            return _os << i << "L";
-          }
-          std::ostream& operator() (const std::string& s) const
-          {
-            return _os << "\"" << s << "\"";
-          }
-          std::ostream& operator() (const std::list<value_type>& l) const
-          {
-            _os << "list (";
-            bool first (true);
-            BOOST_FOREACH (const value_type& v, l)
-              {
-                if (!first)
-                  {
-                    _os << ", ";
-                  }
-                boost::apply_visitor (*this, v);
-                first = false;
-              }
-            return _os << ")";
-          }
-          std::ostream&
-          operator() (const std::map<value_type, value_type>& m) const
-          {
-            _os << "map [";
-            bool first (true);
-            typedef std::pair<value_type, value_type> kv_type;
-            BOOST_FOREACH (const kv_type& kv, m)
-              {
-                if (!first)
-                  {
-                    _os << ", ";
-                  }
-                boost::apply_visitor (*this, kv.first);
-                _os << " => ";
-                boost::apply_visitor (*this, kv.second);
-                first = false;
-              }
-            return _os << "]";
-          }
-          std::ostream& operator() (const std::set<value_type>& s) const
-          {
-            _os << "set {";
-            bool first (true);
-            BOOST_FOREACH (const value_type& v, s)
-              {
-                if (!first)
-                  {
-                    _os << ", ";
-                  }
-                boost::apply_visitor (*this, v);
-                first = false;
-              }
-            return _os << "}";
-          }
-          std::ostream& operator() (const std::map<std::string, value_type>& m) const
-          {
-            _os << "struct [";
-            bool first (true);
-            typedef std::pair<std::string, value_type> kv_type;
-            BOOST_FOREACH (const kv_type& kv, m)
-              {
-                if (!first)
-                  {
-                    _os << ", ";
-                  }
-                _os << kv.first << " := ";
-                boost::apply_visitor (*this, kv.second);
-                first = false;
-              }
-            return _os << "]";
-          }
-        private:
-          std::ostream& _os;
-        };
-      }
-
-      namespace visitor
-      {
-        class get : public boost::static_visitor<boost::optional<value_type> >
-        {
-        public:
-          get ( const std::list<std::string>::const_iterator& pos_key
-              , const std::list<std::string>::const_iterator& end_key
-              )
-            : _pos_key (pos_key)
-            , _end_key (end_key)
-          {}
-
-          boost::optional<value_type>
-          operator() (const std::map<std::string, value_type>& m) const
-          {
-            if (_pos_key == _end_key)
-              {
-                return value_type (m);
-              }
-
-            const std::map<std::string, value_type>::const_iterator pos
-              (m.find (*_pos_key));
-
-            if (pos != m.end())
-              {
-                return boost::apply_visitor
-                  (get (boost::next (_pos_key), _end_key), pos->second);
-              }
-
-            return boost::none;
-          }
-
-          template<typename T>
-          boost::optional<value_type> operator() (const T& x) const
-          {
-            if (_pos_key == _end_key)
-              {
-                return value_type (x);
-              }
-
-            return boost::none;
-          }
-
-        private:
-          const std::list<std::string>::const_iterator& _pos_key;
-          const std::list<std::string>::const_iterator& _end_key;
-        };
-      }
-
-      //! \todo Avoid the copy, get a ref instead!?
-      boost::optional<value_type> get ( const std::list<std::string>& keys
-                                      , const value_type& v
-                                      )
-      {
-        return boost::apply_visitor
-          (visitor::get (keys.begin(), keys.end()), v);
-      }
-
-      namespace visitor
-      {
-        class put : public boost::static_visitor<value_type>
-        {
-        public:
-          put ( const std::list<std::string>::const_iterator& pos_key
-              , const std::list<std::string>::const_iterator& end_key
-              , const value_type& x
-              )
-            : _pos_key (pos_key)
-            , _end_key (end_key)
-            , _x (x)
-          {}
-
-          value_type
-          operator() (const std::map<std::string, value_type>& m) const
-          {
-            if (_pos_key == _end_key)
-              {
-                return _x;
-              }
-
-            const std::map<std::string, value_type>::const_iterator pos
-              (m.find (*_pos_key));
-
-            std::map<std::string, value_type> m_copy (m);
-
-            m_copy[*_pos_key] = boost::apply_visitor
-              ( put (boost::next (_pos_key), _end_key, _x)
-              , pos == m.end() ? empty() : pos->second
-              );
-
-            return value_type (m_copy);
-          }
-
-          template<typename T>
-          value_type operator() (const T&) const
-          {
-            if (_pos_key == _end_key)
-              {
-                return _x;
-              }
-
-            return this->operator() (std::map<std::string, value_type>());
-          }
-
-        private:
-          const std::list<std::string>::const_iterator& _pos_key;
-          const std::list<std::string>::const_iterator& _end_key;
-          const value_type& _x;
-        };
-      }
-
-      value_type put ( const std::list<std::string>& keys
-                     , const value_type& x
-                     , const value_type& v
-                     )
-      {
-        return boost::apply_visitor
-          (visitor::put (keys.begin(), keys.end(), x), v);
-      }
-    }
+    std::ostringstream oss;
+    oss << pnet::type::value::value_type (x);
+    BOOST_REQUIRE_EQUAL (expected, oss.str());
   }
 }
 
-std::ostream&
-operator<< (std::ostream& os, const pnet::type::value::value_type& v)
+BOOST_AUTO_TEST_CASE (show)
 {
-  return boost::apply_visitor (pnet::type::value::visitor::show (os), v);
+  using pnet::type::value::value_type;
+
+  test_show (we::type::literal::control(), "[]");
+  test_show (true, "true");
+  test_show (false, "false");
+  test_show (0, "0");
+  test_show (23, "23");
+  test_show (42L, "42L");
+  test_show (-3L, "-3L");
+  test_show (2718U, "2718U");
+  test_show (3141UL, "3141UL");
+  test_show (3.1415926f, "3.14159f");
+  test_show (3e30f, "3.00000e+30f");
+  test_show (3.1415926, "3.14159");
+  test_show (3e30, "3.00000e+30");
+  test_show (0.0, "0.00000");
+  test_show ('\0', std::string("'\0'", 3));
+  test_show ('a', "'a'");
+  test_show (std::string(), "\"\"");
+  test_show (std::string("foo"), "\"foo\"");
+  test_show (bitsetofint::type(), "{}");
+  test_show (bitsetofint::type().ins (0), "{ 1}");
+  test_show (bitsetofint::type().ins (0).ins (64), "{ 1 1}");
+  test_show (bytearray::type(), "y()");
+  {
+    std::list<value_type> l;
+    test_show (l, "list ()");
+    l.push_back (value_type (int (3)));
+    test_show (l, "list (3)");
+    l.push_back (value_type (long (3)));
+    test_show (l, "list (3, 3L)");
+  }
+  test_show (std::vector<value_type>(), "vector ()");
+  test_show (std::set<value_type>(), "set {}");
+  test_show (std::map<value_type,value_type>(), "map []");
 }
 
 BOOST_AUTO_TEST_CASE (get)
@@ -311,8 +118,6 @@ BOOST_AUTO_TEST_CASE (get)
   _m2["set"] = set;
   const value_type m2 (_m2);
 
-  std::cout << m2 << std::endl;
-
   {
     std::list<std::string> keys;
     keys.push_back ("set");
@@ -330,6 +135,49 @@ BOOST_AUTO_TEST_CASE (get)
   }
 }
 
+BOOST_AUTO_TEST_CASE (get_ref)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::put;
+  using pnet::type::value::get;
+  using pnet::type::value::get_ref;
+
+  const value_type l = std::list<value_type>();
+
+  std::list<std::string> keys;
+  keys.push_back ("l");
+
+  value_type m (put (keys, pnet::type::value::empty(), l));
+
+  BOOST_CHECK (get (keys, m));
+
+  {
+    const std::list<value_type>& g
+      (boost::get<const std::list<value_type>&> (*get (keys, m)));
+
+    BOOST_CHECK (g.empty());
+  }
+
+  BOOST_CHECK (get_ref (keys, m));
+
+  {
+    std::list<value_type>& r
+      (boost::get<std::list<value_type>&> (*get_ref (keys, m)));
+
+    BOOST_CHECK (r.empty());
+
+    r.push_back (19);
+  }
+
+  {
+    const std::list<value_type>& g
+      (boost::get<const std::list<value_type>&> (*get (keys, m)));
+
+    BOOST_CHECK (g.size() == 1);
+    BOOST_CHECK (*g.begin() == value_type (19));
+  }
+}
+
 BOOST_AUTO_TEST_CASE (put_get)
 {
   using pnet::type::value::value_type;
@@ -341,13 +189,13 @@ BOOST_AUTO_TEST_CASE (put_get)
 
   std::list<std::string> keys1;
   keys1.push_back ("key1");
-  const value_type v1 (put (keys1, i, pnet::type::value::empty()));
+  const value_type v1 (put (keys1, pnet::type::value::empty(), i));
   BOOST_CHECK (get (keys1, v1));
   BOOST_CHECK (*get (keys1, v1) == i);
 
   std::list<std::string> keys2;
   keys2.push_back ("key2");
-  const value_type v2 (put (keys2, s, v1));
+  const value_type v2 (put (keys2, v1, s));
 
   BOOST_CHECK (get (keys1, v2));
   BOOST_CHECK (*get (keys1, v2) == i);
@@ -356,7 +204,7 @@ BOOST_AUTO_TEST_CASE (put_get)
 
   std::list<std::string> keysm;
   keysm.push_back ("m");
-  const value_type m (put (keysm, v2, pnet::type::value::empty()));
+  const value_type m (put (keysm, pnet::type::value::empty(), v2));
 
   keysm.push_back ("key1");
   BOOST_CHECK (get (keysm, m));
@@ -366,4 +214,42 @@ BOOST_AUTO_TEST_CASE (put_get)
   keysm.push_back ("key2");
   BOOST_CHECK (get (keysm, m));
   BOOST_CHECK (*get (keysm, m) == s);
+}
+
+BOOST_AUTO_TEST_CASE (poke)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::poke;
+  using pnet::type::value::get;
+
+  value_type v;
+
+  const value_type s (std::string ("s"));
+  const value_type i (int (1));
+
+  {
+    std::list<std::string> keys;
+    keys.push_back ("s");
+    poke (keys, v, s);
+
+    BOOST_CHECK (get (keys, v));
+    BOOST_CHECK (*get (keys, v) == s);
+  }
+  {
+    std::list<std::string> keys;
+    keys.push_back ("i");
+    poke (keys, v, i);
+    BOOST_CHECK (get (keys, v));
+    BOOST_CHECK (*get (keys, v) == i);
+
+    keys.push_back ("i");
+    poke (keys, v, i);
+    BOOST_CHECK (get (keys, v));
+    BOOST_CHECK (*get (keys, v) == i);
+
+    keys.pop_back();
+    BOOST_CHECK (get (keys, v));
+    BOOST_CHECK (get (keys, *get (keys, v)));
+    BOOST_CHECK (*get (keys, *get (keys, v)) == i);
+  }
 }
