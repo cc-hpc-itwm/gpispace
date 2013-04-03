@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" -o "$1" = "-h" ]; then
-  echo >&2 "usage: $0 MAJOR.MINOR.PATCH[-EXTRA]"
+  echo >&2 "usage: $0 MAJOR.MINOR-PATCH[-EXTRA]"
   echo >&2 "    -h: help"
   echo >&2 "    -n: dry-run"
   exit 1
@@ -16,20 +16,20 @@ fi
 
 cd $(dirname $(which "$0"))
 
-if ! echo "$1" | grep -q -E '^[0-9]+\.[0-9]+(\.[0-9]+(-.+)?)?$' ; then
+if ! echo "$1" | grep -q -E '^[0-9]+\.[0-9]+(-[0-9]+(-.+)?)?$' ; then
   echo "version input was not ok: $1"
-  echo "   must match '^[0-9]+\.[0-9]+(\.[0-9]+(-.+)?)?$'"
+  echo "   must match '^[0-9]+\.[0-9]+(-[0-9]+(-.+)?)?$'"
   exit 2
 fi
 
 major=$(echo "$1" | cut -d. -f1)
-minor=$(echo "$1" | cut -d. -f2)
-patch=$(echo "$1" | cut -d. -f3 | cut    -d- -f 1)
-extra=$(echo "$1" | cut -d. -f3 | cut -s -d- -f 2-)
+minor=$(echo "$1" | cut -d. -f2 | cut    -d- -f 1)
+patch=$(echo "$1" | cut -d. -f2 | cut    -d- -f 2)
+extra=$(echo "$1" | cut -d. -f2 | cut -s -d- -f 3-)
 
 version="${major}.${minor}"
 if [ -n "${patch}" ] ; then
-    version="${version}.${patch}"
+    version="${version}-${patch}"
 fi
 if [ -n "$extra" ] ; then
     version="${version}-${extra}"
@@ -48,7 +48,7 @@ else
 
     cur_version="${cur_major}.${cur_minor}"
     if [ -n "$cur_patch" ] ; then
-        cur_version="${cur_version}.${cur_patch}"
+        cur_version="${cur_version}-${cur_patch}"
     fi
     if [ -n "$cur_extra" ] ; then
         cur_version="${cur_version}-${cur_extra}"
@@ -65,16 +65,22 @@ else
 	    exit 4
         fi
 	if [ $minor -eq $cur_minor ]; then
-	    if [ $patch -lt $cur_patch ] ; then
-                echo >&2 "new patch cannot be less than current patch"
+            if [ -z "$patch" ] ; then
+                echo >&2 "patch must not be empty when major.minor are the same"
                 exit 4
             fi
-            if [ $patch -eq $cur_patch ] ; then
-                if [ "$extra" = "$cur_extra" ] ; then
-		    echo "new version ('$version') cannot be the same as the old one ('$cur_version')"
-		    exit 4
+            if [ -n "$cur_patch" ] ; then
+	        if [ -a $patch -lt $cur_patch ] ; then
+                    echo >&2 "new patch cannot be less than current patch"
+                    exit 4
                 fi
-	    fi
+                if [ "$patch" -eq "$cur_patch" ] ; then
+                    if [ "$extra" = "$cur_extra" ] ; then
+	                echo "new version ('$version') cannot be the same as the old one ('$cur_version')"
+	                exit 4
+                    fi
+	        fi
+            fi
 	fi
     fi
 fi

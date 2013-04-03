@@ -4,8 +4,8 @@ source "@CMAKE_BINARY_DIR@/test/env.sh"      || exit 255
 source "@CMAKE_BINARY_DIR@/test/measured.sh" || exit 255
 
 port_kvsd=8015
-num_worker=500
-num_reqsts=50
+num_worker=100
+num_reqsts=100
 
 while getopts ":hp:w:r:" opt ; do
     case $opt in

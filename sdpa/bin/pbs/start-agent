@@ -123,11 +123,21 @@ fi
 function agent_status ()
 {
     local name="$1" ; shift
-    local pids=$(ps aux | grep -v [s]tart-agent | grep "[a]gent.*-n \<$name\>" | awk '{print $2;}')
-    if [ -z "$pids" ] ; then
+    local sill_running
+    still_running=( $(ps -C agent -o pid=) )
+    local pids=()
+
+    for p in ${still_running[@]} ; do
+        name_opt=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
+        if [ "$name_opt" = "$name" ] ; then
+            pids+=( $p )
+        fi
+    done
+
+    if [ ${#pids[@]} -eq 0 ] ; then
         return 1
     else
-        echo $pids
+        echo ${pids[@]}
         return 0
     fi
 }

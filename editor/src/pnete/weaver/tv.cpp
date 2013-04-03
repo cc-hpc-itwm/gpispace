@@ -267,6 +267,15 @@ namespace fhg
           return append (f.str());
         }
 
+        template<>
+        QStandardItem* tv::append<xml::parse::type::link_type>
+          (const xml::parse::type::link_type& l)
+        {
+          return append ( boost::format ("href %1%, prefix %2%")
+                        % l.href()
+                        % l.prefix()
+                        );
+        }
 
         WSIG(tv, transition::name, std::string, name)
         {
@@ -545,19 +554,19 @@ namespace fhg
         {
           add_something (" -> ", fun);
         }
-        WSIG(tv, mod::cincludes, ::xml::parse::type::module_type::cincludes_type, cincludes)
+        WSIG(tv, mod::cincludes, std::list<std::string>, cincludes)
         {
           append_list ("cinclude", cincludes);
         }
-        WSIG(tv, mod::ldflags, ::xml::parse::type::module_type::flags_type, ldflags)
+        WSIG(tv, mod::ldflags, std::list<std::string>, ldflags)
         {
           append_list ("ldflag", ldflags);
         }
-        WSIG(tv, mod::cxxflags, ::xml::parse::type::module_type::flags_type, cxxflags)
+        WSIG(tv, mod::cxxflags, std::list<std::string>, cxxflags)
         {
           append_list ("cxxflag", cxxflags);
         }
-        WSIG(tv, mod::links, ::xml::parse::type::module_type::flags_type, links)
+        WSIG(tv, mod::links, std::list<xml::parse::type::link_type>, links)
         {
           append_list ("link", links);
         }

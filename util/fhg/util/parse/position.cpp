@@ -9,11 +9,16 @@ namespace fhg
   {
     namespace parse
     {
-      position::position ( std::size_t& k
-                         , std::string::const_iterator& begin
+      position::position (const std::string& input)
+        : _k (0)
+        , _pos (input.begin())
+        , _begin (input.begin())
+        , _end (input.end())
+      {}
+      position::position ( const std::string::const_iterator& begin
                          , const std::string::const_iterator& end
                          )
-        : _k (k)
+        : _k (0)
         , _pos (begin)
         , _begin (begin)
         , _end (end)

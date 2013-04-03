@@ -4,7 +4,7 @@ include(car_cdr_macros)
 macro(PNET_COMPILE)
   PARSE_ARGUMENTS(PNET
     "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS;CXXFLAGS;COMPONENT"
-    "QUIET;BUILD"
+    "VERBOSE;BUILD"
     ${ARGN}
     )
   CAR(PNET_NAME ${PNET_DEFAULT_ARGS})
@@ -19,11 +19,14 @@ macro(PNET_COMPILE)
         --Woverwrite-file=false
         --Wbackup-file=false
         --force-overwrite-file=true
+        --Winline-many-output-ports=false
+        --Wshadow-struct=false
+        --Windependent-place=false
+        --Wduplicate-external-function=false
       )
 
-  if (PNET_QUIET)
-  else()
-    message(STATUS "**** Adding pnet ${PNET_NAME} with source ${PNET_SOURCES}")
+  if (PNET_VERBOSE)
+    message (STATUS "adding pnet ${PNET_NAME} with source ${PNET_SOURCES}")
   endif()
 
   if (PNET_INCLUDES)
@@ -101,7 +104,7 @@ macro(PNET_COMPILE)
     # well, ninja for example doesn't know about $(MAKE) (and wants it quoted
     # as $$(MAKE) anyways)
     add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
-      COMMAND "${_make_cmd}" -C ${PNET_GENERATE} "BOOST_ROOT=${Boost_INCLUDE_DIR}/../"
+      COMMAND "${_make_cmd}" -C ${PNET_GENERATE} "BOOST_ROOT=${Boost_INCLUDE_DIR}/../" "SDPA_INCLUDE=${CMAKE_SOURCE_DIR}/pnet/src/"
       COMMENT "Building modules for petri-net ${PNET_NAME}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       APPEND

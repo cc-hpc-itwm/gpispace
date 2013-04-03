@@ -44,7 +44,9 @@ else( "${SMC_HOME}" STREQUAL "")
 endif( "${SMC_HOME}" STREQUAL "")
 ##
 
-message(STATUS "Looking for SMC in ${SMC_HOME}")
+if (NOT SMC_FIND_QUIETLY)
+  message(STATUS "Looking for SMC in ${SMC_HOME}")
+endif()
 
 IF( NOT ${SMC_HOME} STREQUAL "" )
     SET(_smc_INCLUDE_SEARCH_DIRS ${SMC_HOME}/lib/C++ ${_smc_INCLUDE_SEARCH_DIRS})

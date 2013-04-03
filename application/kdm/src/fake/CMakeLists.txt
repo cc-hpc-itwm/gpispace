@@ -1,16 +1,15 @@
 include(SDPAFindBoost)
-message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package(FVM REQUIRED)
+find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/we)
+include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
-find_package(UTIL REQUIRED)
+find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
-find_package(FhgLog REQUIRED)
+find_package(FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 add_library(kdm_mod_fake SHARED kdm_complex_mod.cpp)

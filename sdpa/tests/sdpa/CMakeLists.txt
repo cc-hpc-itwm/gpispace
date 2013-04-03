@@ -8,27 +8,13 @@ include_directories(${FVM_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 
 set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
-message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH}")
-
 set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
-message(STATUS "example modules are in: ${TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH}")
-
 set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/atomic")
-message(STATUS "example modules are in: ${TESTS_EXAMPLE_ATOMIC_MODULES_PATH}")
-
 set(TESTS_N_ATOMIC_TASKS 100)
-
 set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
-message(STATUS "example modules are in: ${TESTS_EXAMPLE_INOTIFY_MODULES_PATH}")
-
 set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
-message(STATUS "example modules are in: ${TESTS_TRANSFORM_FILE_MODULES_PATH}")
-
 get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
-message(STATUS "fvm module is in: ${TESTS_FVM_PC_MODULE}")
-
 get_target_property(TESTS_FVM_PC_FAKE_MODULE fvm-pc-fake.shared LOCATION)
-message(STATUS "fvm fake module is in: ${TESTS_FVM_PC_FAKE_MODULE}")
 
 fhg_add_plugin (fvm-fake fvm-fake.cpp
   EXPORTS FVM
@@ -39,7 +25,6 @@ fhg_add_plugin (fvm-fake fvm-fake.cpp
 get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
-message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
 get_target_property(TESTS_GUI_PLUGIN_PATH gui-plugin LOCATION)
@@ -198,7 +183,7 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
 )
 add_dependencies(pnet-transform_file-test-wf pnetput)
 ################################################################################################
-set (tc_srcs
+set (tests
   test_Atomic.cpp
   test_Inotify.cpp
   test_CancelJob.cpp
@@ -228,36 +213,29 @@ set (tc_srcs
   test_wfe_plugin.cpp
 )
 
-foreach (tc_src ${tc_srcs})
-  # get the filename without extension and insert the project name
-  string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
-  message(STATUS "adding test case ${tc_name} (using ${tc_src})")
-
-  add_executable(${tc_name} ${tc_src})
-  target_link_libraries(${tc_name}
-                        sdpa-daemon
-                        sdpa-com
-                        sdpa-client
-                        sdpa-events
-                        sdpa-util
-                        sdpa
-                        fhg-plugin
-                        fhg-revision
-                        ${SEDA_LIBRARY}
-                        ${FhgLog_LIBRARY}
-                        we
-                        ${Boost_UNIT_TEST_LIBRARIES}
-                        ${Boost_LIBRARIES}
-                        ${CMAKE_DL_LIBS}
-                        )
-  get_target_property(LOC ${tc_name} LOCATION_)
-  add_test(${tc_name} ${LOC})
-  add_dependencies(${tc_name} drts-plugin)
-  add_dependencies(${tc_name} fvm-fake-plugin)
-  add_dependencies(${tc_name} pnet-capabilities-test-wf)
-  add_dependencies(${tc_name} pnet-capabilities_no_mandatory-test-wf)
-  add_dependencies(${tc_name} pnet-atomic-test-wf)
-  add_dependencies(${tc_name} pnet-inotify-test-wf)
-  add_dependencies(${tc_name} pnet-transform_file-test-wf)
-endforeach(tc_src ${tc_srcs})
-
+foreach (test ${tests})
+    fhg_add_test (${test}
+      PROJECT sdpa
+      LINK_LIBRARIES sdpa-daemon
+                     sdpa-com
+                     sdpa-client
+                     sdpa-events
+                     sdpa-util
+                     sdpa
+                     fhg-plugin
+                     fhg-revision
+                     ${SEDA_LIBRARY}
+                     ${FhgLog_LIBRARY}
+                     pnet
+                     ${Boost_UNIT_TEST_LIBRARIES}
+                     ${Boost_LIBRARIES}
+                     ${CMAKE_DL_LIBS}
+      DEPENDS drts-plugin
+              fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-atomic-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+     )
+endforeach()

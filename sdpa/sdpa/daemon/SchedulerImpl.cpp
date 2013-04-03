@@ -106,6 +106,13 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
 void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
 {
   ostringstream os;
+  if(!ptr_comm_handler_)
+  {
+	  SDPA_LOG_ERROR("Invalid communication handler. ");
+	  stop();
+	  return;
+  }
+
   try {
 
     Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
@@ -129,6 +136,13 @@ void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
   ostringstream os;
+  if(!ptr_comm_handler_)
+  {
+	  SDPA_LOG_ERROR("Invalid communication handler. ");
+	  stop();
+	  return;
+  }
+
   try {
     // delete it from the worker's queues
     Worker::ptr_t pWorker = findWorker(worker_id);
@@ -162,8 +176,15 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 
 void SchedulerImpl::reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
-  ostringstream os;
-  try {
+   ostringstream os;
+   if(!ptr_comm_handler_)
+   {
+	   SDPA_LOG_ERROR("Invalid communication handler. ");
+	   stop();
+	   return;
+   }
+
+   try {
     // delete it from the worker's queues
     Worker::ptr_t pWorker = findWorker(worker_id);
     pWorker->delete_job(job_id);
@@ -238,7 +259,7 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (Wo
   }
   catch (const WorkerNotFoundException& ex)
   {
-    SDPA_LOG_ERROR("Could not find the worker "<<worker_id);
+    SDPA_LOG_WARN("Could not re-schedule the jobs of the worker "<<worker_id<<": no such worker exists!");
     throw ex;
   }
 }
@@ -627,25 +648,20 @@ void SchedulerImpl::start(IAgent* p)
 
 void SchedulerImpl::stop()
 {
-  bStopRequested = true;
+	bStopRequested = true;
 
-  m_thread_feed.interrupt();
-  DLOG(TRACE, "Feeding thread before join ...");
-  if (m_thread_feed.joinable ())
-    m_thread_feed.join();
+	m_thread_run.interrupt();
+	m_thread_feed.interrupt();
 
-  m_thread_run.interrupt();
-  DLOG(TRACE, "Scheduler thread before join ...");
-  if (m_thread_run.joinable ())
-    m_thread_run.join();
+	if (m_thread_run.joinable() )
+		m_thread_run.join();
 
-  if( jobs_to_be_scheduled.size() )
-  {
-    SDPA_LOG_WARN("There are still "<<jobs_to_be_scheduled.size()<<" jobs to be scheduled: " );
-    jobs_to_be_scheduled.print();
-  }
+	if (m_thread_feed.joinable() )
+		m_thread_feed.join();
 
-  //ptr_comm_handler_ = NULL;
+	jobs_to_be_scheduled.clear();
+	cancellation_list_.clear();
+	ptr_worker_man_->removeWorkers();
 }
 
 bool SchedulerImpl::post_request(const MasterInfo& masterInfo, bool force)

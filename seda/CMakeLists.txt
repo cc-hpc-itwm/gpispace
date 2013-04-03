@@ -60,11 +60,9 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## logging
 if (ENABLE_LOGGING)
-  message(STATUS "Project: '${PROJECT_NAME}'")
   set(${UPPER_PROJECT_NAME}_ENABLE_LOGGING ${ENABLE_LOGGING})
 
-    message(STATUS "Building with fhglog...")
-	find_package (FhgLog REQUIRED)
+	find_package (FhgLog REQUIRED QUIET)
     include_directories(${FhgLog_INCLUDE_DIR})
     set(${UPPER_PROJECT_NAME}_HAVE_FHGLOG 1)
 endif (ENABLE_LOGGING)
@@ -73,14 +71,12 @@ endif (ENABLE_LOGGING)
 Include(FindThreads)
 
 include(SDPAFindBoost)
-message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 ## find zlib
 if( NOT WIN32)
-  find_package(ZLIB REQUIRED)
+  find_package(ZLIB REQUIRED QUIET)
   include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
-  message(STATUS "ZLib: Inc:${ZLIB_INCLUDE_DIR} Lib:${ZLIB_LIBRARIES}")
 endif( NOT WIN32)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp)

@@ -1,7 +1,7 @@
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ext/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/ext/include/PSProMigIF")
 
-find_package(HWLOC REQUIRED)
+find_package(HWLOC REQUIRED QUIET)
 
 set(PSPROMIGIF_LIBRARY
   "${CMAKE_CURRENT_SOURCE_DIR}/ext/lib64/libPSProMigIF.a")

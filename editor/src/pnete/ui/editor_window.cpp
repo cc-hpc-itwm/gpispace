@@ -21,6 +21,7 @@
 #include <pnete/ui/transition_library_view.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
+#include <fhg/util/temporary_path.hpp>
 
 #include <sdpa/plugins/sdpactl.hpp>
 #include <sdpa/plugins/sdpac.hpp>
@@ -652,27 +653,6 @@ namespace fhg
           we::loader::loader& loader;
         };
 
-        struct temporary_path_type
-        {
-          temporary_path_type()
-            : _path (boost::filesystem::unique_path())
-          {
-            boost::filesystem::create_directories (_path);
-          }
-
-          ~temporary_path_type()
-          {
-            boost::filesystem::remove_all (_path);
-          }
-
-          operator boost::filesystem::path() const
-          {
-            return _path;
-          }
-
-          boost::filesystem::path _path;
-        };
-
         boost::optional<std::string> get_env (const std::string& name)
         {
           const char *var (getenv (name.c_str()));
@@ -751,13 +731,9 @@ namespace fhg
         {
           try
           {
-            std::size_t k (0);
-            std::string::const_iterator begin (value.begin());
-            fhg::util::parse::position pos (k, begin, value.end());
-
             try
             {
-              we::util::token::put (activity, port_name, ::value::read (pos));
+              we::util::token::put (activity, port_name, ::value::read (value));
             }
             catch (const expr::exception::parse::exception& e)
             {
@@ -889,7 +865,7 @@ namespace fhg
       void editor_window::execute_remote_inputs_via_prompt()
       try
       {
-        const temporary_path_type temporary_path;
+        const fhg::util::temporary_path temporary_path;
 
         we::mgmt::type::activity_t activity
           (prepare_activity (_accessed_widgets, temporary_path));
@@ -965,7 +941,7 @@ namespace fhg
       void editor_window::execute_locally_inputs_via_prompt()
       try
       {
-        const temporary_path_type temporary_path;
+        const fhg::util::temporary_path temporary_path;
 
         we::mgmt::type::activity_t activity
           (prepare_activity (_accessed_widgets, temporary_path));
@@ -1010,7 +986,7 @@ namespace fhg
       void editor_window::execute_locally_inputs_from_file()
       try
       {
-        const temporary_path_type temporary_path;
+        const fhg::util::temporary_path temporary_path;
 
         we::mgmt::type::activity_t activity
           (prepare_activity (_accessed_widgets, temporary_path));

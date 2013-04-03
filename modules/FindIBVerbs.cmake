@@ -6,9 +6,9 @@
 # * IBverbs_LIBRARY_SHARED The lib to link to (currently only a static unix lib)
 # * IBverbs_INCLUDE_DIR
 
-if (NOT IBverbs_FIND_QUIETLY)
+if (NOT IBVerbs_FIND_QUIETLY)
   message(STATUS "FindIBverbs check")
-endif (NOT IBverbs_FIND_QUIETLY)
+endif (NOT IBVerbs_FIND_QUIETLY)
 
 find_path (IBverbs_INCLUDE_DIR
   NAMES "infiniband/verbs.h"
@@ -24,11 +24,11 @@ find_library (IBverbs_LIBRARY
 
 if (IBverbs_INCLUDE_DIR AND IBverbs_LIBRARY)
   set (IBverbs_FOUND TRUE)
-  if (NOT IBverbs_FIND_QUIETLY)
+  if (NOT IBVerbs_FIND_QUIETLY)
     message (STATUS "Found IBverbs headers in ${IBverbs_INCLUDE_DIR} and libraries ${IBverbs_LIBRARY} ${IBverbs_LIBRARY_SHARED}")
-  endif (NOT IBverbs_FIND_QUIETLY)
+  endif (NOT IBVerbs_FIND_QUIETLY)
 else (IBverbs_INCLUDE_DIR AND IBverbs_LIBRARY)
-  if (IBverbs_FIND_REQUIRED)
+  if (IBVerbs_FIND_REQUIRED)
     message (FATAL_ERROR "IBverbs could not be found!")
-  endif (IBverbs_FIND_REQUIRED)
+  endif (IBVerbs_FIND_REQUIRED)
 endif (IBverbs_INCLUDE_DIR AND IBverbs_LIBRARY)

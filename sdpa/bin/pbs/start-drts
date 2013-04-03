@@ -265,7 +265,7 @@ fi
 # check if still running
 still_running=$(ps -C fhgkernel -o pid=)
 for p in $still_running ; do
-    name_opt=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '-n' | tail -n 1)
+    name_opt=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
 
     if [ "$name_opt" = "${name}" ] ; then
         if [ "$force" = "true" ] ; then

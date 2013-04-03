@@ -7,7 +7,7 @@
 # * LIBRT_SHARED_LIBRARY The lib to link to (currently only a static unix lib)
 # * LIBRT_INCLUDE_DIR
 
-if (NOT RT_FIND_QUIETLY)
+if (NOT LibRT_FIND_QUIETLY)
   message(STATUS "FindLibRT check")
 endif ()
 
@@ -35,11 +35,11 @@ endif()
 
 if (LIBRT_INCLUDE_DIR AND LIBRT_LIBRARY)
   set (LIBRT_FOUND TRUE)
-  if (NOT LIBRT_FIND_QUIETLY)
+  if (NOT LibRT_FIND_QUIETLY)
     message (STATUS "Found librt headers in ${LIBRT_INCLUDE_DIR} and libraries ${LIBRT_STATIC_LIBRARY} ${HWLOC_SHARED_LIBRARY}")
   endif ()
 else ()
-  if (LIBRT_FIND_REQUIRED)
+  if (LibRT_FIND_REQUIRED)
     message (FATAL_ERROR "librt could not be found!")
   endif ()
 endif ()

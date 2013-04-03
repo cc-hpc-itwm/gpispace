@@ -1,0 +1,6 @@
+<defun>
+  <net>
+    <transition name="t"/>
+    <transition name="t"/>
+  </net>
+</defun>

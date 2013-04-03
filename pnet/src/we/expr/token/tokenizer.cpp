@@ -1,0 +1,477 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#include <we/expr/token/tokenizer.hpp>
+
+#include <we/expr/token/prop.hpp>
+
+#include <we/expr/exception.hpp>
+
+#include <we/type/value/read.hpp>
+
+#include <boost/bind.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function.hpp>
+#include <boost/variant.hpp>
+#include <boost/utility.hpp>
+
+namespace expr
+{
+  namespace token
+  {
+    namespace
+    {
+      typedef boost::make_recursive_variant
+              < std::map<char, boost::recursive_variant_>
+              , boost::function<void (tokenizer&)>
+              >::type node_type;
+
+      typedef std::map<char, node_type> child_type;
+
+      void put ( const std::string::const_iterator pos
+               , const std::string::const_iterator end
+               , const boost::function<void (tokenizer&)> f
+               , child_type& m
+               )
+      {
+        const child_type::iterator child (m.find (*pos));
+
+        if (boost::next (pos) == end)
+        {
+          if (child != m.end())
+          {
+            throw std::runtime_error
+              (std::string ("Upps, doubled action(-path)!? ") + std::string (pos, end));
+          }
+
+          m.insert (child, std::make_pair (*pos, f));
+        }
+        else
+        {
+          put ( boost::next (pos)
+              , end
+              , f
+              , boost::get<child_type&>
+                ( child == m.end()
+                ? m.insert (child, std::make_pair (*pos, child_type()))->second
+                : child->second
+                )
+              );
+        }
+      }
+
+      void put ( const std::string& key
+               , const boost::function<void (tokenizer&)> f
+               , child_type& m
+               )
+      {
+        if (key.empty())
+        {
+          throw std::runtime_error ("Upps, action with empty key!?");
+        }
+
+        put (key.begin(), key.end(), f, m);
+      }
+
+      const child_type& create_description()
+      {
+        static child_type ts;
+
+#define ACTION(_key,_action) put (_key, _action, ts)
+
+#define UNARY(_key, _token)                                             \
+        ACTION (_key, boost::bind (&tokenizer::unary, _1, _token, _key))
+
+#define SET_TOKEN(_key, _token)                                         \
+        ACTION (_key, boost::bind (&tokenizer::set_token, _1, _token))
+
+#define SET_VALUE(_key, _value)                                         \
+        ACTION (_key, boost::bind (&tokenizer::set_value, _1, _value))
+
+        ACTION ("!", boost::bind (&tokenizer::notne, _1));
+        ACTION ("${", boost::bind (&tokenizer::identifier, _1));
+        ACTION ("*", boost::bind (&tokenizer::mulpow, _1));
+        ACTION ("-", boost::bind (&tokenizer::negsub, _1));
+        ACTION ("/", boost::bind (&tokenizer::divcomment, _1));
+        ACTION ("<", boost::bind (&tokenizer::cmp, _1, lt, le));
+        ACTION (">", boost::bind (&tokenizer::cmp, _1, gt, ge));
+
+        SET_TOKEN ("%", mod);
+        SET_TOKEN ("&&", _and);
+        SET_TOKEN ("(", lpr);
+        SET_TOKEN (")", rpr);
+        SET_TOKEN ("+", add);
+        SET_TOKEN (",", sep);
+        SET_TOKEN (":=", define);
+        SET_TOKEN (":and:", _and);
+        SET_TOKEN (":eq:", eq);
+        SET_TOKEN (":ge:", ge);
+        SET_TOKEN (":gt:", gt);
+        SET_TOKEN (":le:", le);
+        SET_TOKEN (":lt:", lt);
+        SET_TOKEN (":ne:", ne);
+        SET_TOKEN (":or:", _or);
+        SET_TOKEN ("==", eq);
+        SET_TOKEN ("^", _powint);
+        SET_TOKEN ("div", divint);
+        SET_TOKEN ("double", _todouble);
+        SET_TOKEN ("long", _tolong);
+        SET_TOKEN ("max", max);
+        SET_TOKEN ("min", min);
+        SET_TOKEN ("mod", modint);
+        SET_TOKEN ("round", _round);
+        SET_TOKEN ("substr", _substr);
+        SET_TOKEN ("||", _or);
+
+        SET_TOKEN ("map_assign", _map_assign);
+        SET_TOKEN ("map_get_assignment", _map_get_assignment);
+        SET_TOKEN ("map_is_assigned", _map_is_assigned);
+        SET_TOKEN ("map_unassign", _map_unassign);
+        UNARY ("map_empty", _map_empty);
+        UNARY ("map_size", _map_size);
+
+        SET_VALUE ("e", 2.7182818284590452354);
+        SET_VALUE ("pi", 3.14159265358979323846);
+
+        SET_VALUE ("false", false);
+        SET_VALUE ("true", true);
+
+        UNARY ("abs", abs);
+        UNARY ("ceil", _ceil);
+        UNARY ("cos", _cos);
+        UNARY ("floor", _floor);
+        UNARY ("len", _len);
+        UNARY ("log", _log);
+        UNARY ("sin", _sin);
+        UNARY ("sqrt", _sqrt);
+
+        SET_TOKEN ("bitset_and", _bitset_and);
+        SET_TOKEN ("bitset_count", _bitset_count);
+        SET_TOKEN ("bitset_delete", _bitset_delete);
+        SET_TOKEN ("bitset_insert", _bitset_insert);
+        SET_TOKEN ("bitset_is_element", _bitset_is_element);
+        SET_TOKEN ("bitset_or", _bitset_or);
+        SET_TOKEN ("bitset_xor", _bitset_xor);
+        UNARY ("bitset_fromhex", _bitset_fromhex);
+        UNARY ("bitset_tohex", _bitset_tohex);
+
+        SET_TOKEN ("set_insert", _set_insert);
+        SET_TOKEN ("set_erase", _set_erase);
+        SET_TOKEN ("set_is_element", _set_is_element);
+        SET_TOKEN ("set_is_subset", _set_is_subset);
+        UNARY ("set_empty", _set_empty);
+        UNARY ("set_pop", _set_pop);
+        UNARY ("set_size", _set_size);
+        UNARY ("set_top", _set_top);
+
+        SET_TOKEN ("stack_join", _stack_join);
+        SET_TOKEN ("stack_push", _stack_push);
+        UNARY ("stack_empty", _stack_empty);
+        UNARY ("stack_pop", _stack_pop);
+        UNARY ("stack_size", _stack_size);
+        UNARY ("stack_top", _stack_top);
+
+#undef SET_VALUE
+#undef SET_TOKEN
+#undef UNARY
+#undef ACTION
+
+        return ts;
+      }
+
+      const node_type& description()
+      {
+        static node_type m (create_description());
+
+        return m;
+      }
+
+      class visitor_names : public boost::static_visitor<void>
+      {
+      public:
+        visitor_names (std::string& names, const std::string& prefix = "")
+          : _names (names)
+          , _prefix (prefix)
+        {}
+
+        void operator() (const child_type& m) const
+        {
+          typedef std::pair<char, node_type> cn_type;
+
+          BOOST_FOREACH (const cn_type& cn, m)
+          {
+            boost::apply_visitor
+              ( visitor_names (_names, _prefix + cn.first)
+              , cn.second
+              );
+          }
+        }
+        void operator() (const boost::function<void (tokenizer&)>&) const
+        {
+          if (!_names.empty())
+          {
+            _names += ", ";
+          }
+          _names += _prefix;
+        }
+
+      private:
+        std::string& _names;
+        const std::string _prefix;
+      };
+
+      std::string names (const node_type& node)
+      {
+        std::string names;
+
+        boost::apply_visitor (visitor_names (names), node);
+
+        return names;
+      }
+
+      class visitor_parse : public boost::static_visitor<void>
+      {
+      public:
+        visitor_parse (tokenizer& t, const bool& first = true)
+          : _tokenizer (t)
+          , _first (first)
+        {}
+        void operator() (const child_type& m) const
+        {
+          if (_tokenizer.pos.end() || *_tokenizer.pos == ';')
+          {
+            throw exception::parse::expected (names (m), _tokenizer.pos());
+          }
+          else
+          {
+            typedef std::pair<char, node_type> cn_type;
+
+            BOOST_FOREACH (const cn_type& cn, m)
+              {
+                if (*_tokenizer.pos == cn.first)
+                  {
+                    ++_tokenizer.pos;
+
+                    return boost::apply_visitor
+                      (visitor_parse (_tokenizer, false), cn.second);
+                  }
+              }
+          }
+
+          if (_first)
+          {
+            _tokenizer.set_value (value::read (_tokenizer.pos));
+          }
+          else
+          {
+            throw exception::parse::expected (names (m), _tokenizer.pos());
+          }
+        }
+
+        void operator() (const boost::function<void (tokenizer&)>& f) const
+        {
+          f (_tokenizer);
+        }
+
+      private:
+        tokenizer& _tokenizer;
+        const bool _first;
+      };
+
+      void parse_from_node (const node_type& node, tokenizer& t)
+      {
+        boost::apply_visitor (visitor_parse (t), node);
+      }
+    }
+
+    void tokenizer::set_token (const token::type& t)
+    {
+      token = t;
+    }
+    void tokenizer::set_value (const value::type& v)
+    {
+      token = val;
+      tokval = v;
+    }
+
+    bool tokenizer::is_eof()
+    {
+      return pos.end() || *pos == ';';
+    }
+
+    void tokenizer::cmp (const token::type& t, const token::type& e)
+    {
+      if (is_eof())
+      {
+        token = t;
+      }
+      else
+      {
+        switch (*pos)
+        {
+        case '=': ++pos; token = e; break;
+        default: token = t; break;
+        }
+      }
+    }
+
+    void tokenizer::mulpow()
+    {
+      if (!is_eof() && *pos == '*')
+      {
+        token = _pow;
+        ++pos;
+      }
+      else
+      {
+        token = mul;
+      }
+    }
+
+    void tokenizer::negsub()
+    {
+      if (next_can_be_unary (token))
+      {
+        token = neg;
+      }
+      else
+      {
+        token = sub;
+      }
+    }
+
+    void tokenizer::divcomment()
+    {
+      if (is_eof())
+      {
+        token = div;
+      }
+      else
+      {
+        switch (*pos)
+          {
+          case '*': ++pos; skip_comment(pos()); get(); break;
+          default: token = div; break;
+          }
+      }
+    }
+
+    void tokenizer::identifier()
+    {
+      token = ref;
+
+      _ref.clear();
+
+      do
+        {
+          _ref.push_back (value::identifier (pos));
+
+          if (pos.end())
+          {
+            throw exception::parse::expected ("'.' or '}'", pos());
+          }
+
+          if (*pos == '.')
+          {
+            ++pos;
+          }
+        }
+      while (!pos.end() && *pos != '}');
+
+      pos.require ("}");
+    }
+
+    void tokenizer::notne()
+    {
+      if (is_eof())
+      {
+        throw exception::parse::expected("'=' or <expression>", pos());
+      }
+      else
+      {
+        switch (*pos)
+        {
+        case '=': ++pos; token = ne; break;
+        default: unary (_not, "negation"); break;
+        }
+      }
+    }
+
+    void tokenizer::unary (const token::type& t, const std::string& descr)
+    {
+      if (next_can_be_unary (token))
+      {
+        token = t;
+      }
+      else
+      {
+        throw exception::parse::misplaced (descr, pos());
+      }
+    }
+
+    void tokenizer::skip_comment (const unsigned int open)
+    {
+      while (!pos.end())
+        switch (*pos)
+          {
+          case '/':
+            ++pos;
+            if (!pos.end() && *pos == '*')
+              {
+                ++pos; skip_comment (pos());
+              }
+            break;
+          case '*':
+            ++pos;
+            if (!pos.end() && *pos == '/')
+              {
+                ++pos; return;
+              }
+            break;
+          default: ++pos; break;
+          }
+
+      throw exception::parse::unterminated ("comment", open-2, pos());
+    }
+
+    void tokenizer::get()
+    {
+      pos.skip_spaces();
+
+      if (is_eof())
+      {
+        if (!pos.end())
+        {
+          ++pos;
+        }
+
+        token = eof;
+      }
+      else
+      {
+        parse_from_node (description(), *this);
+      }
+    }
+
+    tokenizer::tokenizer (fhg::util::parse::position& _p)
+      : pos (_p)
+      , token (eof)
+    {}
+
+    const value::type& tokenizer::operator()() const
+    {
+      return tokval;
+    }
+    const token::type& tokenizer::operator*() const
+    {
+      return token;
+    }
+    void tokenizer::operator++()
+    {
+      get();
+    }
+    const std::list<std::string>& tokenizer::get_ref() const
+    {
+      return _ref;
+    }
+  }
+}
