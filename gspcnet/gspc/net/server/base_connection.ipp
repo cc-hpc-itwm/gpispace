@@ -121,9 +121,6 @@ namespace gspc
                 int error = m_frame_handler.handle_frame (this, m_frame);
                 if (error < 0)
                 {
-                  std::cerr << "error in connection: "
-                            << strerror (-error)
-                            << std::endl;
                   return;
                 }
               }
@@ -144,7 +141,6 @@ namespace gspc
         }
         else
         {
-          std::cerr << "handle connection lost event" << std::endl;
           m_frame_handler.handle_error (this, ec);
         }
       }
