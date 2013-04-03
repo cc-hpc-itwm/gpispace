@@ -284,7 +284,7 @@ namespace expr
     }
     void tokenizer::set_value (const value::type& v)
     {
-      token = val;
+      set_token (val);
       tokval = v;
     }
 
@@ -297,14 +297,14 @@ namespace expr
     {
       if (is_eof())
       {
-        token = t;
+        set_token (t);
       }
       else
       {
         switch (*pos)
         {
-        case '=': ++pos; token = e; break;
-        default: token = t; break;
+        case '=': ++pos; set_token (e); break;
+        default: set_token (t); break;
         }
       }
     }
@@ -313,12 +313,12 @@ namespace expr
     {
       if (!is_eof() && *pos == '*')
       {
-        token = _pow;
+        set_token (_pow);
         ++pos;
       }
       else
       {
-        token = mul;
+        set_token (mul);
       }
     }
 
@@ -326,11 +326,11 @@ namespace expr
     {
       if (next_can_be_unary (token))
       {
-        token = neg;
+        set_token (neg);
       }
       else
       {
-        token = sub;
+        set_token (sub);
       }
     }
 
@@ -338,21 +338,21 @@ namespace expr
     {
       if (is_eof())
       {
-        token = div;
+        set_token (div);
       }
       else
       {
         switch (*pos)
           {
           case '*': ++pos; skip_comment(pos()); get(); break;
-          default: token = div; break;
+          default: set_token (div); break;
           }
       }
     }
 
     void tokenizer::identifier()
     {
-      token = ref;
+      set_token (ref);
 
       _ref.clear();
 
@@ -385,7 +385,7 @@ namespace expr
       {
         switch (*pos)
         {
-        case '=': ++pos; token = ne; break;
+        case '=': ++pos; set_token (ne); break;
         default: unary (_not, "negation"); break;
         }
       }
@@ -395,7 +395,7 @@ namespace expr
     {
       if (next_can_be_unary (token))
       {
-        token = t;
+        set_token (t);
       }
       else
       {
@@ -439,7 +439,7 @@ namespace expr
           ++pos;
         }
 
-        token = eof;
+        set_token (eof);
       }
       else
       {
