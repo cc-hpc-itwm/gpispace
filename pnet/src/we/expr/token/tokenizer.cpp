@@ -18,6 +18,34 @@ namespace expr
 {
   namespace token
   {
+    tokenizer::tokenizer (fhg::util::parse::position& _p)
+      : _pos (_p)
+      , _token (eof)
+      , _tokval()
+      , _ref()
+    {}
+
+    const value::type& tokenizer::value() const
+    {
+      return _tokval;
+    }
+    const token::type& tokenizer::token() const
+    {
+      return _token;
+    }
+    void tokenizer::operator++()
+    {
+      get();
+    }
+    const std::list<std::string>& tokenizer::get_ref() const
+    {
+      return _ref;
+    }
+    fhg::util::parse::position& tokenizer::pos()
+    {
+      return _pos;
+    }
+
     namespace
     {
       typedef boost::make_recursive_variant
@@ -239,7 +267,7 @@ namespace expr
         {
           if (_tokenizer.is_eof())
           {
-            throw exception::parse::expected (names (m), _tokenizer.pos());
+            throw exception::parse::expected (names (m), _tokenizer.pos()());
           }
           else
           {
@@ -247,9 +275,9 @@ namespace expr
 
             BOOST_FOREACH (const cn_type& cn, m)
               {
-                if (*_tokenizer.pos == cn.first)
+                if (*_tokenizer.pos() == cn.first)
                   {
-                    ++_tokenizer.pos;
+                    ++_tokenizer.pos();
 
                     return boost::apply_visitor
                       (visitor_tokenize (_tokenizer, false), cn.second);
@@ -259,11 +287,11 @@ namespace expr
 
           if (_first)
           {
-            _tokenizer.set_value (value::read (_tokenizer.pos));
+            _tokenizer.set_value (value::read (_tokenizer.pos()));
           }
           else
           {
-            throw exception::parse::expected (names (m), _tokenizer.pos());
+            throw exception::parse::expected (names (m), _tokenizer.pos()());
           }
         }
 
@@ -280,17 +308,17 @@ namespace expr
 
     void tokenizer::set_token (const token::type& t)
     {
-      token = t;
+      _token = t;
     }
     void tokenizer::set_value (const value::type& v)
     {
       set_token (val);
-      tokval = v;
+      _tokval = v;
     }
 
     bool tokenizer::is_eof()
     {
-      return pos.end() || *pos == ';';
+      return _pos.end() || *_pos == ';';
     }
 
     void tokenizer::cmp (const token::type& t, const token::type& e)
@@ -301,9 +329,9 @@ namespace expr
       }
       else
       {
-        switch (*pos)
+        switch (*_pos)
         {
-        case '=': ++pos; set_token (e); break;
+        case '=': ++_pos; set_token (e); break;
         default: set_token (t); break;
         }
       }
@@ -311,10 +339,10 @@ namespace expr
 
     void tokenizer::mulpow()
     {
-      if (!is_eof() && *pos == '*')
+      if (!is_eof() && *_pos == '*')
       {
         set_token (_pow);
-        ++pos;
+        ++_pos;
       }
       else
       {
@@ -324,7 +352,7 @@ namespace expr
 
     void tokenizer::negsub()
     {
-      if (next_can_be_unary (token))
+      if (next_can_be_unary (_token))
       {
         set_token (neg);
       }
@@ -342,9 +370,9 @@ namespace expr
       }
       else
       {
-        switch (*pos)
+        switch (*_pos)
           {
-          case '*': ++pos; skip_comment(pos()); get(); break;
+          case '*': ++_pos; skip_comment(_pos()); get(); break;
           default: set_token (div); break;
           }
       }
@@ -358,34 +386,34 @@ namespace expr
 
       do
         {
-          _ref.push_back (value::identifier (pos));
+          _ref.push_back (value::identifier (_pos));
 
-          if (pos.end())
+          if (_pos.end())
           {
-            throw exception::parse::expected ("'.' or '}'", pos());
+            throw exception::parse::expected ("'.' or '}'", _pos());
           }
 
-          if (*pos == '.')
+          if (*_pos == '.')
           {
-            ++pos;
+            ++_pos;
           }
         }
-      while (!pos.end() && *pos != '}');
+      while (!_pos.end() && *_pos != '}');
 
-      pos.require ("}");
+      _pos.require ("}");
     }
 
     void tokenizer::notne()
     {
       if (is_eof())
       {
-        throw exception::parse::expected("'=' or <expression>", pos());
+        throw exception::parse::expected("'=' or <expression>", _pos());
       }
       else
       {
-        switch (*pos)
+        switch (*_pos)
         {
-        case '=': ++pos; set_token (ne); break;
+        case '=': ++_pos; set_token (ne); break;
         default: unary (_not, "negation"); break;
         }
       }
@@ -393,50 +421,50 @@ namespace expr
 
     void tokenizer::unary (const token::type& t, const std::string& descr)
     {
-      if (next_can_be_unary (token))
+      if (next_can_be_unary (_token))
       {
         set_token (t);
       }
       else
       {
-        throw exception::parse::misplaced (descr, pos());
+        throw exception::parse::misplaced (descr, _pos());
       }
     }
 
     void tokenizer::skip_comment (const unsigned int open)
     {
-      while (!pos.end())
-        switch (*pos)
+      while (!_pos.end())
+        switch (*_pos)
           {
           case '/':
-            ++pos;
-            if (!pos.end() && *pos == '*')
+            ++_pos;
+            if (!_pos.end() && *_pos == '*')
               {
-                ++pos; skip_comment (pos());
+                ++_pos; skip_comment (_pos());
               }
             break;
           case '*':
-            ++pos;
-            if (!pos.end() && *pos == '/')
+            ++_pos;
+            if (!_pos.end() && *_pos == '/')
               {
-                ++pos; return;
+                ++_pos; return;
               }
             break;
-          default: ++pos; break;
+          default: ++_pos; break;
           }
 
-      throw exception::parse::unterminated ("comment", open-2, pos());
+      throw exception::parse::unterminated ("comment", open-2, _pos());
     }
 
     void tokenizer::get()
     {
-      pos.skip_spaces();
+      _pos.skip_spaces();
 
       if (is_eof())
       {
-        if (!pos.end())
+        if (!_pos.end())
         {
-          ++pos;
+          ++_pos;
         }
 
         set_token (eof);
@@ -445,28 +473,6 @@ namespace expr
       {
         boost::apply_visitor (visitor_tokenize (*this), description());
       }
-    }
-
-    tokenizer::tokenizer (fhg::util::parse::position& _p)
-      : pos (_p)
-      , token (eof)
-    {}
-
-    const value::type& tokenizer::operator()() const
-    {
-      return tokval;
-    }
-    const token::type& tokenizer::operator*() const
-    {
-      return token;
-    }
-    void tokenizer::operator++()
-    {
-      get();
-    }
-    const std::list<std::string>& tokenizer::get_ref() const
-    {
-      return _ref;
     }
   }
 }
