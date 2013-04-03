@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include <boost/function.hpp>
+
 namespace fhg
 {
   namespace util
@@ -26,7 +28,13 @@ namespace fhg
         const std::size_t& operator() () const;
         void skip_spaces();
         void require (const std::string&);
+        void require (const char&);
         std::string identifier();
+        char character();
+        std::string until (const char c);
+        void list ( const char open, const char sep, const char close
+                  , const boost::function<void (position&)>&
+                  );
 
       private:
         std::size_t _k;
