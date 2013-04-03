@@ -40,7 +40,7 @@ namespace expr
           if (child != m.end())
           {
             throw std::runtime_error
-              (std::string ("Upps, doubled action(-path)!? ") + std::string (pos, end));
+              (std::string ("Upps, doubled action(-path)!? "));
           }
 
           m.insert (child, std::make_pair (*pos, f));
