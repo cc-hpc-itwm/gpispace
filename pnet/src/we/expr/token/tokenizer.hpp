@@ -20,27 +20,29 @@ namespace expr
 
     struct tokenizer
     {
-    private:
-      fhg::util::parse::position pos;
+    public:
+      void set_token (const token::type&);
+      void set_value (const value::type&);
+      void unary (const token::type&, const std::string&);
+      void cmp (const token::type&, const token::type&);
+      void negsub();
+      void mulpow();
+      void divcomment();
+      void identifier();
+      void notne();
+      fhg::util::parse::position& pos;
 
+    private:
       token::type token;
       value::type tokval;
       std::list<std::string> _ref;
 
-      inline void set_E();
-      inline void set_PI();
-      inline bool is_eof();
-      inline void require (const std::string&);
-      inline void cmp (const token::type&, const token::type&);
-      inline void unary (const token::type&, const std::string&);
+      bool is_eof();
       void skip_comment (const unsigned int);
       void get();
 
     public:
-      tokenizer ( std::size_t&
-                , std::string::const_iterator&
-                , const std::string::const_iterator&
-                );
+      tokenizer (fhg::util::parse::position& pos);
       const value::type& operator()() const;
       const token::type& operator*() const;
       void operator++();

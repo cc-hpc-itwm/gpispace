@@ -290,10 +290,11 @@ namespace expr
       std::string::const_iterator pos (input.begin());
       const std::string::const_iterator end (input.end());
       std::size_t k (0);
+      fhg::util::parse::position position (k, pos, end);
 
       op_stack.push (token::eof);
 
-      token::tokenizer token (k, pos, end);
+      token::tokenizer token (position);
 
       while (pos != end)
         {
