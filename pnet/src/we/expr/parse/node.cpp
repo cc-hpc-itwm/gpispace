@@ -55,15 +55,15 @@ namespace expr
         }
       }
 
-      namespace visitor
+      namespace
       {
-        class show : public boost::static_visitor<void>
+        class visitor_show : public boost::static_visitor<void>
         {
         private:
           std::ostream & s;
 
         public:
-          show (std::ostream & _s) : s (_s) {}
+          visitor_show (std::ostream & _s) : s (_s) {}
 
           void operator () (const value::type & v) const
           {
@@ -113,14 +113,15 @@ namespace expr
 
       std::ostream& operator << (std::ostream & s, const type & node)
       {
-        boost::apply_visitor (visitor::show (s), node);
+        boost::apply_visitor (visitor_show (s), node);
 
         return s;
       }
 
-      namespace visitor
+      namespace
       {
-        class get_value : public boost::static_visitor<const value::type &>
+        class visitor_get_value
+          : public boost::static_visitor<const value::type &>
         {
         public:
           const value::type & operator () (const value::type & v) const
@@ -137,12 +138,12 @@ namespace expr
 
       const value::type& get (const type & node)
       {
-        return boost::apply_visitor (visitor::get_value(), node);
+        return boost::apply_visitor (visitor_get_value(), node);
       }
 
-      namespace visitor
+      namespace
       {
-        class is_value : public boost::static_visitor<bool>
+        class visitor_is_value : public boost::static_visitor<bool>
         {
         public:
           bool operator () (const value::type &) const { return true; }
@@ -155,12 +156,12 @@ namespace expr
 
       bool is_value (const type& node)
       {
-        return boost::apply_visitor (visitor::is_value(), node);
+        return boost::apply_visitor (visitor_is_value(), node);
       }
 
-      namespace visitor
+      namespace
       {
-        class is_ref : public boost::static_visitor<bool>
+        class visitor_is_ref : public boost::static_visitor<bool>
         {
         public:
           bool operator () (const value::type &) const { return false; }
@@ -173,15 +174,15 @@ namespace expr
 
       bool is_ref (const type& node)
       {
-        return boost::apply_visitor (visitor::is_ref(), node);
+        return boost::apply_visitor (visitor_is_ref(), node);
       }
 
-      namespace visitor
+      namespace
       {
-        class rename : public boost::static_visitor<void>
+        class visitor_rename : public boost::static_visitor<void>
         {
         public:
-          rename (const std::string& _from, const std::string& _to)
+          visitor_rename (const std::string& _from, const std::string& _to)
             : from (_from), to (_to)
           {}
 
@@ -224,7 +225,7 @@ namespace expr
 
       void rename (type& t, const std::string& from, const std::string& to)
       {
-        boost::apply_visitor (visitor::rename (from, to), t);
+        boost::apply_visitor (visitor_rename (from, to), t);
       }
     }
   }
