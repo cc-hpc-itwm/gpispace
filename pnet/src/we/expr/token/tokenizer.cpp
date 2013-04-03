@@ -228,10 +228,10 @@ namespace expr
         return names;
       }
 
-      class visitor_parse : public boost::static_visitor<void>
+      class visitor_tokenize : public boost::static_visitor<void>
       {
       public:
-        visitor_parse (tokenizer& t, const bool& first = true)
+        visitor_tokenize (tokenizer& t, const bool& first = true)
           : _tokenizer (t)
           , _first (first)
         {}
@@ -252,7 +252,7 @@ namespace expr
                     ++_tokenizer.pos;
 
                     return boost::apply_visitor
-                      (visitor_parse (_tokenizer, false), cn.second);
+                      (visitor_tokenize (_tokenizer, false), cn.second);
                   }
               }
           }
@@ -276,11 +276,6 @@ namespace expr
         tokenizer& _tokenizer;
         const bool _first;
       };
-
-      void parse_from_node (const node_type& node, tokenizer& t)
-      {
-        boost::apply_visitor (visitor_parse (t), node);
-      }
     }
 
     void tokenizer::set_token (const token::type& t)
@@ -448,7 +443,7 @@ namespace expr
       }
       else
       {
-        parse_from_node (description(), *this);
+        boost::apply_visitor (visitor_tokenize (*this), description());
       }
     }
 
