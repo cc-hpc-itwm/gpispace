@@ -323,17 +323,15 @@ namespace expr
 
     void tokenizer::cmp (const token::type& t, const token::type& e)
     {
-      if (is_eof())
+      if (!is_eof() && *_pos == '=')
       {
-        set_token (t);
+        ++_pos;
+
+        set_token (e);
       }
       else
       {
-        switch (*_pos)
-        {
-        case '=': ++_pos; set_token (e); break;
-        default: set_token (t); break;
-        }
+        set_token (t);
       }
     }
 
@@ -341,8 +339,9 @@ namespace expr
     {
       if (!is_eof() && *_pos == '*')
       {
-        set_token (_pow);
         ++_pos;
+
+        set_token (_pow);
       }
       else
       {
@@ -352,29 +351,22 @@ namespace expr
 
     void tokenizer::negsub()
     {
-      if (next_can_be_unary (_token))
-      {
-        set_token (neg);
-      }
-      else
-      {
-        set_token (sub);
-      }
+      set_token (next_can_be_unary (_token) ? neg : sub);
     }
 
     void tokenizer::divcomment()
     {
-      if (is_eof())
+      if (!is_eof() && *_pos == '*')
       {
-        set_token (div);
+        ++_pos;
+
+        skip_comment (_pos());
+
+        get();
       }
       else
       {
-        switch (*_pos)
-          {
-          case '*': ++_pos; skip_comment(_pos()); get(); break;
-          default: set_token (div); break;
-          }
+        set_token (div);
       }
     }
 
@@ -405,17 +397,15 @@ namespace expr
 
     void tokenizer::notne()
     {
-      if (is_eof())
+      if (!is_eof() && *_pos == '=')
       {
-        throw exception::parse::expected("'=' or <expression>", _pos());
+        ++_pos;
+
+        set_token (ne);
       }
       else
       {
-        switch (*_pos)
-        {
-        case '=': ++_pos; set_token (ne); break;
-        default: unary (_not, "negation"); break;
-        }
+        unary (_not, "negation");
       }
     }
 
