@@ -6,25 +6,6 @@
 
 namespace literal
 {
-  std::string identifier (fhg::util::parse::position& pos)
-  {
-    std::string x;
-
-    if (pos.end() or not (isalpha (*pos) or *pos == '_'))
-    {
-      throw expr::exception::parse::expected ("identifier", pos());
-    }
-
-    x.push_back (*pos); ++pos;
-
-    while (not pos.end() and (isalpha (*pos) or isdigit (*pos) or *pos == '_'))
-    {
-      x.push_back (*pos); ++pos;
-    }
-
-    return x;
-  }
-
   namespace
   {
     char read_quoted_char (fhg::util::parse::position & pos)
