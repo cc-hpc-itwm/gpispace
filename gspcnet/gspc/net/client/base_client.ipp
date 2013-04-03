@@ -6,6 +6,7 @@
 #include <boost/foreach.hpp>
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_builder.hpp>
+#include <gspc/net/client/dummy_frame_handler.hpp>
 
 namespace gspc
 {
@@ -18,7 +19,7 @@ namespace gspc
         : m_io_service ()
         , m_endpoint (endpoint)
         , m_connection ()
-        , m_frame_handler (0)
+        , m_frame_handler (&dummy_frame_handler ())
         , m_thread_pool_size (1)
         , m_thread_pool ()
       {}
@@ -117,8 +118,7 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::handle_frame (user_ptr user, frame const &f)
       {
-        std::cout << f << std::endl;
-        return 0;
+        return m_frame_handler->handle_frame (user, f);
       }
 
       template <class Proto>
@@ -126,8 +126,7 @@ namespace gspc
                                            , boost::system::error_code const &ec
                                            )
       {
-        std::cerr << "handle error: " << ec << std::endl;
-        return 0;
+        return m_frame_handler->handle_error (user, ec);
       }
     }
   }
