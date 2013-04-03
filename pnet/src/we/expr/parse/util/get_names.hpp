@@ -14,7 +14,7 @@ namespace expr
   {
     namespace util
     {
-      typedef boost::unordered_set<node::key_vec_t> name_set_t;
+      typedef boost::unordered_set<std::list<std::string> > name_set_t;
 
       name_set_t get_names (const node::type&);
       name_set_t get_names (const parser&);

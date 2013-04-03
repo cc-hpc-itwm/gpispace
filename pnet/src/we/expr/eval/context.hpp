@@ -31,7 +31,6 @@ namespace expr
       ref_container_type _ref_container;
 
     public:
-      typedef std::list<std::string> key_vec_t;
       typedef container_type::const_iterator const_iterator;
 
       void bind (const std::list<std::string>&, const value::type&);

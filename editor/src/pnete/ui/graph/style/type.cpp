@@ -37,9 +37,9 @@ namespace fhg
 
           namespace store
           {
-            namespace visitor
+            namespace
             {
-              class clear_cache : public boost::static_visitor<void>
+              class visitor_clear_cache : public boost::static_visitor<void>
               {
               public:
                 template<typename T>
@@ -49,7 +49,7 @@ namespace fhg
 
             void clear_cache (const type& x)
             {
-              boost::apply_visitor (visitor::clear_cache(), x);
+              boost::apply_visitor (visitor_clear_cache(), x);
             }
           }
 

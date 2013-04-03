@@ -57,9 +57,7 @@ namespace we
       return modified;
     }
 
-    void expression_t::rename ( const ast_t::key_vec_t::value_type& from
-			      , const ast_t::key_vec_t::value_type& to
-			      )
+    void expression_t::rename (const std::string& from, const std::string& to)
     {
       _ast.rename (from, to);
       _expr = _ast.string();

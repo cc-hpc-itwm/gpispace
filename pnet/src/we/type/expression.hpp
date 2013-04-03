@@ -36,9 +36,7 @@ namespace we
 
       bool simplify (const expr::parse::util::name_set_t& needed_bindings);
 
-      void rename ( const ast_t::key_vec_t::value_type & from
-		  , const ast_t::key_vec_t::value_type & to
-		    );
+      void rename (const std::string& from, const std::string& to);
 
       void add (const expression_t&);
 
