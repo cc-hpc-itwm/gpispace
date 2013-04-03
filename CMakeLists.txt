@@ -37,7 +37,7 @@ function (get_revision_info REV_INFO)
     ERROR_VARIABLE _err_git
     RESULT_VARIABLE _res_git
     )
-  if (NOT _res_git)
+  if (${_res_git} EQUAL 0)
     string (STRIP "${_out_git}" _out_git)
     set (${REV_INFO} ${_out_git} PARENT_SCOPE)
   else()
