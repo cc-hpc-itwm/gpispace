@@ -38,15 +38,18 @@ namespace expr
       {}
 
       namespace {
-        std::string show_key_vec (const key_vec_t & key_vec)
+        std::string show_key_vec (const std::list<std::string>& key_vec)
         {
           std::string s;
 
-          for ( key_vec_t::const_iterator pos (key_vec.begin())
-              ; pos != key_vec.end()
-              ; ++pos
-              )
-            s += ((pos != key_vec.begin()) ? "." : "") + fhg::util::show (*pos);
+          BOOST_FOREACH (const std::string& k, key_vec)
+          {
+            if (!s.empty())
+            {
+              s += ".";
+            }
+            s += k;
+          }
 
           return s;
         }
@@ -67,7 +70,7 @@ namespace expr
             s << v;
           }
 
-          void operator () (const key_vec_t & key) const
+          void operator () (const std::list<std::string>& key) const
           {
             s << "${" << show_key_vec (key) << "}";
           }
@@ -143,7 +146,7 @@ namespace expr
         {
         public:
           bool operator () (const value::type &) const { return true; }
-          bool operator () (const key_vec_t &) const { return false; }
+          bool operator () (const std::list<std::string>&) const { return false; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
           bool operator () (const ternary_t &) const { return false; }
@@ -161,7 +164,7 @@ namespace expr
         {
         public:
           bool operator () (const value::type &) const { return false; }
-          bool operator () (const key_vec_t &) const { return true; }
+          bool operator () (const std::list<std::string>&) const { return true; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
           bool operator () (const ternary_t &) const { return false; }
@@ -177,14 +180,8 @@ namespace expr
       {
         class rename : public boost::static_visitor<void>
         {
-        private:
-          const key_vec_t::value_type from;
-          const key_vec_t::value_type to;
-
         public:
-          rename ( const key_vec_t::value_type & _from
-                 , const key_vec_t::value_type & _to
-                 )
+          rename (const std::string& _from, const std::string& _to)
             : from (_from), to (_to)
           {}
 
@@ -193,7 +190,7 @@ namespace expr
             return;
           }
 
-          void operator () (key_vec_t & v) const
+          void operator () (std::list<std::string>& v) const
           {
             if (v.size() > 0 && *v.begin() == from)
               {
@@ -218,13 +215,14 @@ namespace expr
             boost::apply_visitor (*this, t.child1);
             boost::apply_visitor (*this, t.child2);
           }
+
+        private:
+          const std::string from;
+          const std::string to;
         };
       }
 
-      void rename ( type & t
-                  , const key_vec_t::value_type & from
-                  , const key_vec_t::value_type & to
-                  )
+      void rename (type& t, const std::string& from, const std::string& to)
       {
         boost::apply_visitor (visitor::rename (from, to), t);
       }

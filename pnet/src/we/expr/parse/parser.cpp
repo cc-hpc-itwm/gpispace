@@ -119,9 +119,7 @@ namespace expr
       return eval_all_bool (c);
     }
 
-    void parser::rename ( const key_vec_t::value_type & from
-                        , const key_vec_t::value_type & to
-                        )
+      void parser::rename (const std::string& from, const std::string& to)
     {
       std::for_each (begin(), end(), boost::bind (node::rename, _1, from, to));
     }
@@ -283,9 +281,10 @@ namespace expr
     }
 
     void
-    parser::parse ( const std::string& input
-                  , const boost::function<nd_t (const key_vec_t &)> & refnode
-                  )
+    parser::parse
+      ( const std::string& input
+      , const boost::function<nd_t (const std::list<std::string>&)> & refnode
+      )
     {
       op_stack.push (token::eof);
 

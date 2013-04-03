@@ -14,7 +14,7 @@ namespace expr
   {
     namespace util
     {
-      typedef boost::unordered_set<node::key_vec_t> name_set_t;
+      typedef boost::unordered_set<std::list<std::string> > name_set_t;
 
       namespace detail
       {
@@ -29,7 +29,7 @@ namespace expr
           void operator () (const value::type &) const
           {}
 
-          void operator () (const node::key_vec_t & key) const
+          void operator () (const std::list<std::string>& key) const
           {
             _names.insert (key);
           }

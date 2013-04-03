@@ -33,10 +33,6 @@ namespace expr
     {
       return _token;
     }
-    void tokenizer::operator++()
-    {
-      get();
-    }
     const std::list<std::string>& tokenizer::get_ref() const
     {
       return _ref;
@@ -362,7 +358,7 @@ namespace expr
 
         skip_comment (_pos());
 
-        get();
+        operator++();
       }
       else
       {
@@ -446,7 +442,7 @@ namespace expr
       throw exception::parse::unterminated ("comment", open-2, _pos());
     }
 
-    void tokenizer::get()
+    void tokenizer::operator++()
     {
       _pos.skip_spaces();
 

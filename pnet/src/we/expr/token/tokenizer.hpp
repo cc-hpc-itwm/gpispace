@@ -16,8 +16,6 @@ namespace expr
 {
   namespace token
   {
-    typedef std::list<std::string> key_vec_t;
-
     struct tokenizer
     {
     public:
@@ -47,7 +45,6 @@ namespace expr
       std::list<std::string> _ref;
 
       void skip_comment (const unsigned int);
-      void get();
     };
   }
 }

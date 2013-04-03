@@ -30,7 +30,7 @@ namespace expr
           return v;
         }
 
-        value::type operator() (const expr::parse::node::key_vec_t& key) const
+        value::type operator() (const std::list<std::string>& key) const
         {
           return c.value (key);
         }
@@ -49,7 +49,7 @@ namespace expr
               value::type c1 (boost::apply_visitor (*this, b.r));
 
               c.bind_and_discard_ref
-                (boost::get<expr::parse::node::key_vec_t>(b.l), c1);
+                (boost::get<const std::list<std::string>&>(b.l), c1);
 
               return c1;
             }
