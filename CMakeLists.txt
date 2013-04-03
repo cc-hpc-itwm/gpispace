@@ -48,26 +48,25 @@ endfunction()
 function (get_version_info VSN_INFO)
   execute_process (
     COMMAND git describe
-    COMMAND sed -e 's/^v//'
+    COMMAND sed -e "s/^v//"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE _out
     ERROR_VARIABLE _err
     RESULT_VARIABLE _res
   )
-  if (NOT _res)
+  if (${_res} EQUAL 0)
     string (STRIP "${_out}" _out)
     set (${VSN_INFO} ${_out} PARENT_SCOPE)
   else()
     set(__new_vsn "${V_MAJOR}.${V_MINOR}")
-    if (V_PATCH)
+    if (NOT ${V_PATCH} STREQUAL "")
       set(__new_vsn "${__new_vsn}-${V_PATCH}")
     endif()
-    if (V_EXTRA)
+    if (NOT ${V_EXTRA} STREQUAL "")
       set(__new_vsn "${__new_vsn}-${V_EXTRA}")
     endif()
-    set(${VSN_INFO} "${__new_vsn}")
-    unset(__new_vsn)
-  endif (NOT _res)
+    set (${VSN_INFO} ${__new_vsn} PARENT_SCOPE)
+  endif ()
 endfunction()
 
 get_revision_info (PROJECT_REVISION)
