@@ -81,10 +81,9 @@ endif()
 
 get_version_info (PROJECT_VERSION)
 if (NOT PROJECT_VERSION)
-  set (PROJECT_VERSION "${V_MAJOR}.${V_MINOR}-${V_PATCH}" CACHE STRING "Project version" FORCE)
-else()
-  set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
+  message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
 endif()
+set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-dev.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-dev.cmake @ONLY)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
