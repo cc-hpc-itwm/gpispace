@@ -1,0 +1,28 @@
+* all responses are asynchronous, unless otherwise noted
+
+queryd:
+# < possible_status_list
+#  > [possible_status $statusname [$actionname]]
+#  ! $statusname shall always have the same [$actionname], thus also unique
+# < host_list
+#  > hosts [$hostname]
+# < status [$hostname]
+#  > [status $hostname $statusname $additional_information]
+ nyi   | no_host $hostname
+# < action $hostname $actionname
+ ???  > actionresult
+  ? was kommt zurück?
+ < describe_action $actionname
+  > action_long_text $actionname $long_text
+ nyi    action_short_text $actionname $short_text
+    (action_required_data ...?)
+  ! todo: request user input?
+  < layout_hint $state
+  > layout_hint $state [color=$hex_rgb] [border=$hex_rgb]
+
+gui:
+ once: possible_status_list
+ repeating with timer: host_list
+   on response: status $hostname for each $hostname
+   nyi: status [$hostname]
+ on user input: action $hostname $actionname ($input?)
