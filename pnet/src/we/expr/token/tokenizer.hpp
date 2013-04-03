@@ -30,6 +30,7 @@ namespace expr
       void divcomment();
       void identifier();
       void notne();
+      bool is_eof();
       fhg::util::parse::position& pos;
 
     private:
@@ -37,7 +38,6 @@ namespace expr
       value::type tokval;
       std::list<std::string> _ref;
 
-      bool is_eof();
       void skip_comment (const unsigned int);
       void get();
 
