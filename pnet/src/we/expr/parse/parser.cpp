@@ -287,16 +287,12 @@ namespace expr
                   , const boost::function<nd_t (const key_vec_t &)> & refnode
                   )
     {
-      std::string::const_iterator pos (input.begin());
-      const std::string::const_iterator end (input.end());
-      std::size_t k (0);
-      fhg::util::parse::position position (k, pos, end);
-
       op_stack.push (token::eof);
 
-      token::tokenizer token (position);
+      fhg::util::parse::position pos (input);
+      token::tokenizer token (pos);
 
-      while (pos != end)
+      while (!pos.end())
         {
           do
             {
@@ -319,7 +315,7 @@ namespace expr
                     switch (action)
                       {
                       case action::reduce:
-                        reduce(k);
+                        reduce (token.pos());
                         goto ACTION;
                         break;
                       case action::shift:
@@ -333,7 +329,7 @@ namespace expr
                         tmp_stack.clear();
                         break;
                       default:
-                        throw exception::parse::exception (fhg::util::show(action), k);
+                        throw exception::parse::exception (fhg::util::show(action), token.pos());
                       }
                     break;
                   }

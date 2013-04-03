@@ -1051,10 +1051,7 @@ namespace xml
           // here R stands for the return port, F for the function
           // name and A for the list of argument ports
 
-          std::size_t k (0);
-          std::string::const_iterator begin (input.begin());
-          const std::string::const_iterator end (input.end ());
-          fhg::util::parse::position pos (k, begin, end);
+          fhg::util::parse::position pos (input);
 
           std::string function (parse_name (pos));
           boost::optional<std::string> port_return;

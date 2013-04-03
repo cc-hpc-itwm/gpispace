@@ -111,10 +111,7 @@ namespace value
 
   type read (const std::string& s)
   {
-    std::size_t k (0);
-    std::string::const_iterator begin (s.begin());
-
-    fhg::util::parse::position pos (k, begin, s.end());
+    fhg::util::parse::position pos (s.begin(), s.end());
 
     return read (pos);
   }
