@@ -32,7 +32,7 @@ option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 function (get_revision_info REV_INFO)
   execute_process (
     COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE _out_git
     ERROR_VARIABLE _err_git
     RESULT_VARIABLE _res_git
