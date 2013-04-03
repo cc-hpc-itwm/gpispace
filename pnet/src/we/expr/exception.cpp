@@ -20,7 +20,7 @@ namespace expr
       {}
 
       expected::expected (const std::string& what, const std::size_t k)
-        : exception ("expected " + what, k)
+        : exception ("expected one of: " + what, k)
       {}
 
       misplaced::misplaced (const std::string& what, const std::size_t k)
