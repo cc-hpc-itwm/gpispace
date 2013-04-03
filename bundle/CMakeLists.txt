@@ -21,7 +21,8 @@ install(CODE "
   execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
-                          -v
+                          -f
+                          -L \"${CMAKE_INSTALL_PREFIX}/lib\"
                           -x libibverbs.*
                           -x libxcb.*
                           -x libstdc++.*
@@ -40,6 +41,10 @@ install(CODE "
                           -x libpthread.*
                           -x libgthread.*
                            ${APPS} \${PLUGINS}
+                  RESULT_VARIABLE __res
+                  ERROR_VARIABLE __err
   )
-
+  if (NOT \${__res} EQUAL 0)
+     message(FATAL_ERROR \"Could not bundle dependencies: \${__err}\")
+  endif()
   " COMPONENT dependencies)
