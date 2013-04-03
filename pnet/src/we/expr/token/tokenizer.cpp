@@ -237,7 +237,7 @@ namespace expr
         {}
         void operator() (const child_type& m) const
         {
-          if (_tokenizer.pos.end() || *_tokenizer.pos == ';')
+          if (_tokenizer.is_eof())
           {
             throw exception::parse::expected (names (m), _tokenizer.pos());
           }
