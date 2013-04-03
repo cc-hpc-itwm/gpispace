@@ -125,6 +125,9 @@ namespace prefix
       }
       else if (tokens[0] == "hosts")
       {
+        const int old_height (heightForWidth (width()));
+
+
         QStringList hostnames (tokens.mid (1));
 
         QMutableVectorIterator<node_type> i (_nodes);
@@ -151,6 +154,11 @@ namespace prefix
           _nodes << node_type (hostname);
           update (_nodes.size() - 1);
           _nodes_to_update << hostname;
+        }
+
+        if (old_height != heightForWidth (width()))
+        {
+          updateGeometry();
         }
       }
       else if (tokens[0] == "action_long_text")
