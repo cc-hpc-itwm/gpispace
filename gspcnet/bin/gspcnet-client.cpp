@@ -18,6 +18,30 @@ static void restore_term_attrs ()
 
 static const char EOF_BYTE = 0x04;
 
+class print_frame_handler_t : public gspc::net::frame_handler_t
+{
+public:
+  bool has_error;
+
+  int handle_frame (gspc::net::user_ptr, gspc::net::frame const &f)
+  {
+    if (f.get_command ().size ())
+    {
+      std::cout << "'";
+      std::cout << f;
+      std::cout << "'" << std::endl;
+    }
+    return 0;
+  }
+
+  int handle_error (gspc::net::user_ptr, boost::system::error_code const &ec)
+  {
+    std::cerr << "error: " << ec << std::endl;
+    has_error = true;
+    return 0;
+  }
+};
+
 int main (int argc, char *argv[])
 {
   struct termios newt;
@@ -34,9 +58,13 @@ int main (int argc, char *argv[])
 
   url = argv [1];
 
+  print_frame_handler_t print_handler;
+
   try
   {
     client = gspc::net::dial (url);
+    print_handler.has_error = false;
+    client->set_frame_handler (print_handler);
   }
   catch (std::exception const &ex)
   {
@@ -59,6 +87,24 @@ int main (int argc, char *argv[])
 
   while ((c = getchar ()) != EOF_BYTE)
   {
+    if (print_handler.has_error)
+    {
+      try
+      {
+        client = gspc::net::dial (url);
+      }
+      catch (std::exception const &ex)
+      {
+        std::cerr << "could not connect to '" << url << "': "
+                  << ex.what ()
+                  << std::endl;
+        return 1;
+      }
+
+      print_handler.has_error = false;
+      client->set_frame_handler (print_handler);
+    }
+
     gspc::net::parse::result_t result = parser.parse (&c, &c + 1, frame);
     if (result.state == gspc::net::parse::PARSE_FAILED)
     {
@@ -69,7 +115,8 @@ int main (int argc, char *argv[])
     }
     else if (result.state == gspc::net::parse::PARSE_FINISHED)
     {
-      std::cout << std::endl;
+      if (frame.get_command ().size ())
+        std::cout << std::endl;
       client->send_raw (frame);
     }
     else
