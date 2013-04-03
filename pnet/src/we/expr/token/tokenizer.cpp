@@ -374,7 +374,7 @@ namespace expr
 
       do
         {
-          _ref.push_back (value::identifier (_pos));
+          _ref.push_back (_pos.identifier());
 
           if (_pos.end())
           {
