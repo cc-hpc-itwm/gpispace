@@ -290,13 +290,13 @@ namespace mapreduce
 
 				if(kvp_l.first.compare(kvp_r.first)<0)
 				{
-					curr_item = *it_l++;
+					it_l++;
 					curr_key = kvp_l.first;
 					curr_val = kvp_l.second;
 				}
 				else
 				{
-					curr_item = *it_r++;
+					it_r++;
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
 				}
@@ -305,23 +305,17 @@ namespace mapreduce
 			{
 				if(it_r!=arr_items_r.end())
 				{
-					kvp_r = str2kvpair(*it_r);
-					curr_item = *it_r++;
+					kvp_r = str2kvpair(*it_r++);
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
 				}
 				else
 				{
-					kvp_l = str2kvpair(*it_l);
-					curr_item = *it_l++;
-					curr_key = kvp_r.first;
-					curr_val = kvp_r.second;
+					kvp_l = str2kvpair(*it_l++);
+					curr_key = kvp_l.first;
+					curr_val = kvp_l.second;
 				}
 			}
-
-			key_val_pair_t kv_pair = str2kvpair(curr_item);
-			curr_key = kv_pair.first;
-			curr_val = kv_pair.second;
 
 			if( curr_key != last_key )
 			{
@@ -376,13 +370,12 @@ namespace mapreduce
 
 				if( kvp_l.first.compare(kvp_r.first)<0 )
 				{
-					curr_item = *it++;
+					it++;
 					curr_key = kvp_l.first;
 					curr_val = kvp_l.second;
 				}
 				else
 				{
-					curr_item = pch;
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
 					pch = strtok(NULL, DELIMITERS.c_str());
@@ -392,15 +385,13 @@ namespace mapreduce
 				if( pch )
 				{
 					key_val_pair_t kvp_r = str2kvpair(pch);
-					curr_item = pch;
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
 					pch = strtok(NULL, DELIMITERS.c_str());
 				}
 				else
 				{
-					key_val_pair_t kvp_l = str2kvpair(*it);
-					curr_item = *it++;
+					key_val_pair_t kvp_l = str2kvpair(*it++);
 					curr_key = kvp_l.first;
 					curr_val = kvp_l.second;
 				}
@@ -476,13 +467,12 @@ namespace mapreduce
 
 				if(	kvp_l.first.compare(kvp_r.first)<0 )
 				{
-					curr_item = *it++;
+					it++;
 					curr_key = kvp_l.first;
 					curr_val = kvp_l.second;
 				}
 				else
 				{
-					curr_item = str_curr_line;
 					ifs.getline(str_curr_line, 256);
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
@@ -491,14 +481,14 @@ namespace mapreduce
 			else
 				if( !ifs.eof() )
 				{
-					curr_item = str_curr_line;
+					kvp_r = str2kvpair(str_curr_line);
 					ifs.getline(str_curr_line, 256);
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
 				}
 				else
 				{
-					curr_item = *it++;
+					kvp_l = str2kvpair(*it++);
 					curr_key = kvp_l.first;
 					curr_val = kvp_l.second;
 				}
@@ -531,6 +521,7 @@ namespace mapreduce
 		std::remove(str_out_file.data());
 		std::rename(str_tmp_file.data(), str_out_file.data());
 	}
+
 
 	// assume that the both input arrays are sorted reduced !!!!
 	void merge_and_reduce_files(const std::string& str_out_file_1, const std::string& str_out_file_2, const std::string& str_out_file)
