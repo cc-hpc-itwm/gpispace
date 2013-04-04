@@ -45,11 +45,3 @@ set (srcs
   )
 
 ADD_LIBRARY(sdpa-events ${srcs})
-
-install(FILES ${hdrs}
-  DESTINATION include/sdpa/events
-  COMPONENT headers)
-install(TARGETS sdpa-events
-  ARCHIVE
-  DESTINATION lib
-  COMPONENT static-libraries)

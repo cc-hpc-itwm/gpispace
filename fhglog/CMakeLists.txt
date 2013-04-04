@@ -53,10 +53,6 @@ if (DEBUG_FHGLOG)
 else (DEBUG_FHGLOG)
 endif (DEBUG_FHGLOG)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-  DESTINATION lib/shared
-  COMPONENT libraries)
-
 add_subdirectory(fhglog)
 add_subdirectory(apps)
 

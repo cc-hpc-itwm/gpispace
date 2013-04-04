@@ -67,7 +67,10 @@ set (srcs
 
 add_library (fhg-util ${srcs})
 add_library (fhg-util-shared SHARED ${srcs})
-set_target_properties(fhg-util-shared PROPERTIES OUTPUT_NAME fhg-util)
+set_target_properties(fhg-util-shared
+  PROPERTIES OUTPUT_NAME fhg-util
+             VERSION     1
+)
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util

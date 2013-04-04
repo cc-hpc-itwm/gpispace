@@ -18,17 +18,15 @@ set (sources
 
 add_library (mmgr ${sources})
 add_library (mmgr.shared SHARED ${sources})
-set_target_properties (mmgr.shared PROPERTIES OUTPUT_NAME mmgr)
-
-install (TARGETS mmgr
-  ARCHIVE
-  DESTINATION lib
-  COMPONENT static-libraries
+set_target_properties (mmgr.shared
+  PROPERTIES OUTPUT_NAME mmgr
+             VERSION     1
 )
+
 install (TARGETS mmgr.shared
   LIBRARY
   DESTINATION lib
-  COMPONENT libraries
+  COMPONENT runtime
 )
 
 set (tests
