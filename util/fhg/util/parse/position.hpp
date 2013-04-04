@@ -31,7 +31,7 @@ namespace fhg
         void require (const char&);
         std::string identifier();
         char character();
-        std::string until (const char c);
+        std::string until (const char c, const char escape = '\\');
         void list ( const char open, const char sep, const char close
                   , const boost::function<void (position&)>&
                   );

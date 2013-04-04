@@ -9,6 +9,8 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
+#include <fhg/util/parse/error.hpp>
+
 #include <sstream>
 
 namespace
@@ -71,6 +73,11 @@ BOOST_AUTO_TEST_CASE (_read)
   BOOST_CHECK (value_type (we::type::literal::control()) == read ("[]"));
   BOOST_CHECK (value_type ('a') == read ("'a'"));
   BOOST_CHECK (value_type (std::string ("foo")) == read ("\"foo\""));
+  BOOST_CHECK (value_type (std::string ("\"")) == read ("\"\\\"\""));
+  BOOST_CHECK (value_type (std::string ("\\\"")) == read ("\"\\\\\\\"\""));
+  BOOST_CHECK (value_type (std::string ("\"foo\"")) == read ("\"\\\"foo\\\"\""));
+
+  BOOST_CHECK_THROW (read ("\"\\n\""), fhg::util::parse::error::expected);
 
   {
     std::map<value_type, value_type> m;
