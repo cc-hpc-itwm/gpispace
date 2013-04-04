@@ -6,6 +6,7 @@
 
 ifndef MAIN
   MAIN = mapreduce_ml
+#  MAIN = mapreduce
 endif
 
 ###############################################################################
@@ -23,14 +24,14 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 ###############################################################################
 
-#PUT_PORT += input_file=\"/scratch/rotaru/data/words.500\"
-PUT_PORT += input_file_1=\"/scratch/rotaru/data/words.1000\"
-PUT_PORT += input_file_2=\"/scratch/rotaru/data/words.1000\"
-PUT_PORT += output_file=\"/scratch/rotaru/data/out.txt\"
-PUT_PORT += read_chunk_size=130108864 #260108864
-PUT_PORT += map_chunk_size=190943004 #360943004
-#PUT_PORT += map_chunk_size=35582912
-PUT_PORT += partition_slot_size=2097152 #63554432
+#PUT_PORT += input_file=\"/scratch/rotaru/data/words.20000\"
+PUT_PORT += input_file_1=\"/scratch/rotaru/data/words.10000\"
+PUT_PORT += input_file_2=\"/scratch/rotaru/data/words.10000\"
+PUT_PORT += output_file=\"/scratch/rotaru/data/out_20000.txt\"
+PUT_PORT += read_chunk_size=130108864 #130108864 #260108864
+PUT_PORT += map_chunk_size=180943004 #190943004 #190943004 #360943004
+#PUT_PORT += map_chunk_size=360943004 #35582912
+PUT_PORT += partition_slot_size=2097152 #63554432 #2097152
 #PUT_PORT += partition_slot_size=2097152
 #PUT_PORT += reduce_slot_size=61777216
 PUT_PORT += reduce_slot_size=150008864
