@@ -15,6 +15,7 @@ set (scripts
   status-agent
   status-drts
   pidof
+  sdpa-selftest
 )
 
 install(PROGRAMS ${prgs}
