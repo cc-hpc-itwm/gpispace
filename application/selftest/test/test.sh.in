@@ -9,6 +9,7 @@ tmpdir="${DIR_BUILD}"
 
 cleanup()
 {
+  rm -rf "${DIR_BUILD}/*"
   cleanup_dir_build
 }
 
