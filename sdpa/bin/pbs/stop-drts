@@ -133,7 +133,7 @@ for p in $still_running ; do
         continue
     fi
 
-    debug "found running drts: $name"
+    debug "found running drts: $name with pid $p"
 
     if echo "$name" | grep -q "^${pattern}$" ; then
         debug "drts matches pattern '^${pattern}\$'"
