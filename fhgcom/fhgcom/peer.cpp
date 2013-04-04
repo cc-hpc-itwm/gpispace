@@ -865,7 +865,7 @@ namespace fhg
           using namespace boost::system;
 
           lock.unlock ();
-          to_send.handler (errc::make_error_code(errc::operation_canceled));
+          to_send.handler (ec);
           lock.lock ();
         }
 
@@ -883,7 +883,7 @@ namespace fhg
           to_recv.message->header.dst = c->local_address();
 
           lock.unlock ();
-          to_recv.handler (errc::make_error_code(errc::operation_canceled));
+          to_recv.handler (ec);
           lock.lock ();
         }
 
