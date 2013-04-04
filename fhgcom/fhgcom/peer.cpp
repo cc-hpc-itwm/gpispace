@@ -536,19 +536,7 @@ namespace fhg
         if (connections_.find (a) != connections_.end())
         {
           connection_data_t & cd = connections_.find (a)->second;
-
           handle_error (cd.connection, ec);
-          while (! cd.o_queue.empty())
-          {
-            using namespace boost::system;
-
-            to_send_t to_send = cd.o_queue.front();
-            cd.o_queue.pop_front();
-
-            lock.unlock ();
-            to_send.handler (errc::make_error_code(errc::connection_refused));
-            lock.lock ();
-          }
         }
       }
     }
