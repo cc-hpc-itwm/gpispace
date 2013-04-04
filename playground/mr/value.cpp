@@ -25,11 +25,11 @@ namespace
 
     std::ostringstream oss;
     oss << value_type (x);
-    BOOST_REQUIRE_EQUAL (expected, oss.str());
+    BOOST_CHECK_EQUAL (expected, oss.str());
     const std::string inp (oss.str());
     position pos (inp);
-    BOOST_REQUIRE (value_type (x) == read (pos));
-    BOOST_REQUIRE (pos.end());
+    BOOST_CHECK (value_type (x) == read (pos));
+    BOOST_CHECK (pos.end());
   }
 }
 
@@ -187,17 +187,17 @@ BOOST_AUTO_TEST_CASE (get)
 
   const value_type s (std::string ("s"));
 
-  BOOST_REQUIRE_EQUAL (boost::get<std::string> (s), "s");
-  BOOST_REQUIRE_EQUAL (boost::get<const std::string&> (s), "s");
-  BOOST_REQUIRE_THROW (boost::get<std::string&> (s), boost::bad_get);
+  BOOST_CHECK_EQUAL (boost::get<std::string> (s), "s");
+  BOOST_CHECK_EQUAL (boost::get<const std::string&> (s), "s");
+  BOOST_CHECK_THROW (boost::get<std::string&> (s), boost::bad_get);
 
   value_type i (int (0));
 
-  BOOST_REQUIRE_EQUAL (boost::get<const int&> (i), 0);
+  BOOST_CHECK_EQUAL (boost::get<const int&> (i), 0);
 
   boost::get<int&> (i) = 1;
 
-  BOOST_REQUIRE_EQUAL (boost::get<const int&> (i), 1);
+  BOOST_CHECK_EQUAL (boost::get<const int&> (i), 1);
 
   value_type l1;
   {
