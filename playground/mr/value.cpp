@@ -101,6 +101,22 @@ BOOST_AUTO_TEST_CASE (_read)
   BOOST_CHECK (value_type (2.3) == read ("2.3"));
 
   {
+    bitsetofint::type bs;
+    BOOST_CHECK (value_type (bs) == read ("{}"));
+    bs.ins (0);
+    BOOST_CHECK (value_type (bs) == read ("{ 1}"));
+    bs.ins (64);
+    BOOST_CHECK (value_type (bs) == read ("{ 1 1}"));
+  }
+  {
+    bytearray::type ba;
+    BOOST_CHECK (value_type (ba) == read ("y()"));
+    ba.push_back (' ');
+    BOOST_CHECK (value_type (ba) == read ("y( 32)"));
+    ba.push_back ('A');
+    BOOST_CHECK (value_type (ba) == read ("y( 32 65)"));
+  }
+  {
     std::map<value_type, value_type> m;
 
     BOOST_CHECK (value_type (m) == read ("map []"));

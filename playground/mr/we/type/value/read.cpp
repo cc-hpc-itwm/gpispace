@@ -95,6 +95,48 @@ namespace pnet
           ++pos;
           return pos.until ('\"');
 
+        case '{':
+          {
+            ++pos;
+
+            bitsetofint::type bs;
+
+            pos.skip_spaces();
+
+            while (!pos.end() && *pos != '}')
+            {
+              bs.push_back (fhg::util::read_ulong (pos));
+
+              pos.skip_spaces();
+            }
+
+            pos.require ("}");
+
+            return bs;
+          }
+
+        case 'y':
+          {
+            ++pos;
+
+            pos.require ("(");
+
+            bytearray::type ba;
+
+            pos.skip_spaces();
+
+            while (!pos.end() && *pos != ')')
+            {
+              ba.push_back (fhg::util::read_ulong (pos));
+
+              pos.skip_spaces();
+            }
+
+            pos.require (")");
+
+            return ba;
+          }
+
         case 'm':
           {
             ++pos;
