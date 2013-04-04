@@ -566,21 +566,19 @@
                     if( it == tok.begin() && read_chunk_info.chunk_id > 0 )
                     {
                         std::string spec_left_prefix = ::mapreduce::util::make_spec_left_prefix(read_chunk_info.chunk_id);
-                        
-                        // the first char of the chunk is a separator/delimiter
           				std::string key = spec_left_prefix;
+           				part_id  = ::mapreduce::util::hash(key, n_part);
+          
+          				// the first char of the chunk is a separator/delimiter
                         if( first_char_is_delim )
                         {
           					key = spec_left_prefix;
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t(key, " " ));
-                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
                         {
-          					
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, curr_item)); 
-                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                             continue;
                         }
@@ -590,18 +588,17 @@
                     {
                         std::string spec_right_prefix = ::mapreduce::util::make_spec_right_prefix(read_chunk_info.chunk_id);
                     	std::string key = spec_right_prefix;
+          				part_id  = ::mapreduce::util::hash(key, n_part);
                         
                         // the last character of the chunk is a delimiter
                         if( last_char_is_delim )
                         {
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, " "));       
-                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
                         {
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, curr_item));
-                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                             continue;
                         }
@@ -675,7 +672,7 @@
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
       <connect-out port="counter_partial_updates" place="counter_partial_updates"/>
     </transition>
-
+   
     <place name="map_chunk_info_new" type="map_chunk_info_t"/>
   
     <place name="part_slice_info" type="part_slice_info"/>
@@ -817,7 +814,7 @@
             	if( partition_info.part_id < config.num.part-1 )
             	{
             		// sort the slice first!
-            		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(	partition_info.slot_id, 
+            		last_pos = ::mapreduce::util::merge_and_reduce_arr_arr_2_buff(	partition_info.slot_id, 
             																	config.size.partition.slot, 
             																	arr_part_items, 
             																	arr_slice_items,
@@ -982,17 +979,17 @@
             	{
             		/*std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
             		
-            		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(	partition_info.slot_id, 
+            		last_pos = ::mapreduce::util::merge_and_reduce_arr_arr_2_buff(	partition_info.slot_id, 
             																	config.size.partition.slot, 
             																	arr_part_items, 
             																	arr_slice_items,
             																	ptr_out_buff );*/
             		
-            		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff_2(	partition_info.slot_id, 
-            																	config.size.partition.slot, 
-            																	arr_slice_items,
-                                                                                ptr_shmem,
-            																	ptr_out_buff );
+            		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff_2_buff(	partition_info.slot_id, 
+            																		config.size.partition.slot, 
+            																		arr_slice_items,
+                                                                                	ptr_shmem,
+            																		ptr_out_buff );
 		            																	
 				}
 				else //  partition_info.part_id == config.num.part-1
@@ -1058,8 +1055,7 @@
     <connect-read port="config" place="config"/>
     <connect-out port="partition_result" place="partition_result"/>
     </transition>
-   
-    
+       
      <transition name="post_partition" inline="true">
       <defun>
         <in name="partition_result" type="partition_result"/>
@@ -1467,7 +1463,7 @@
 	                	timestamp_t time_start_mrg_red_arr = ::mapreduce::util::get_timestamp();
 	                	if( pre_reduce_info.part_id < config.num.part-1 )
 	                	{
-	                		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(pre_reduce_info.slot_id, 
+	                		last_pos = ::mapreduce::util::merge_and_reduce_arr_arr_2_buff(pre_reduce_info.slot_id, 
 	                																config.size.reduce.slot, 
 	                																arr_old_red_items, 
 	                																arr_part_items, 
@@ -2026,11 +2022,11 @@
                 arr_special_items.clear();
 			}
               	
-    		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(reduce_info.slot_id, 
-    																config.size.reduce.slot, 
-    																arr_red_items, 
-    																arr_part_items, 
-    																ptr_shmem );
+    		last_pos = ::mapreduce::util::merge_and_reduce_arr_arr_2_buff(	reduce_info.slot_id, 
+    																		config.size.reduce.slot, 
+    																		arr_red_items, 
+    																		arr_part_items, 
+    																		ptr_shmem );
 																									
 			if(last_pos>config.size.reduce.slot)
             {
