@@ -101,6 +101,7 @@ namespace prefix
         const QString& state (tokens[1]);
         const QStringList actions (tokens.mid (2));
 
+
         _connection->push (QString ("layout_hint %1").arg (state));
         _connection->push
           (QString ("describe_action %1").arg (actions.join (" ")));
@@ -109,26 +110,30 @@ namespace prefix
       }
       else if (tokens[0] == "status")
       {
-        _pending_updates.removeAll (tokens[1]);
+        const QString& hostname (tokens[1]);
+        const QString& state (tokens[2]);
+
+
+        _pending_updates.removeAll (hostname);
         const QVector<node_type>::iterator it
           ( std::find_if ( _nodes.begin()
                          , _nodes.end()
-                         , boost::bind (&node_type::hostname_is, _1, tokens[1])
+                         , boost::bind (&node_type::hostname_is, _1, hostname)
                          )
           );
         if (it != _nodes.end())
         {
-          it->state (tokens[2]);
+          it->state (state);
           update (it - _nodes.begin());
-          _nodes_to_update << tokens[1];
+          _nodes_to_update << hostname;
         }
       }
       else if (tokens[0] == "hosts")
       {
-        const int old_height (heightForWidth (width()));
-
-
         QStringList hostnames (tokens.mid (1));
+
+
+        const int old_height (heightForWidth (width()));
 
         QMutableVectorIterator<node_type> i (_nodes);
         while (i.hasNext())
@@ -163,12 +168,20 @@ namespace prefix
       }
       else if (tokens[0] == "action_long_text")
       {
-        _long_action[tokens[1]] = QStringList (tokens.mid (2)).join (" ");
+        const QString& action (tokens[1]);
+        const QString long_action_text (QStringList (tokens.mid (2)).join (" "));
+
+
+        _long_action[action] = long_action_text;
       }
       else if (tokens[0] == "layout_hint")
       {
-        state_description& desc (_states[tokens[1]]);
-        foreach (const QString& hint, tokens.mid (2))
+        const QString& state (tokens[1]);
+        const QStringList hints (tokens.mid (2));
+
+
+        state_description& desc (_states[state]);
+        foreach (const QString& hint, hints)
         {
           if (hint.startsWith ("color="))
           {
