@@ -17,11 +17,19 @@
 namespace
 {
   template<typename T>
-  void test_show (const T& x, const std::string& expected)
+  void test_show_and_read_showed (const T& x, const std::string& expected)
   {
+    using pnet::type::value::value_type;
+    using pnet::type::value::read;
+    using fhg::util::parse::position;
+
     std::ostringstream oss;
-    oss << pnet::type::value::value_type (x);
+    oss << value_type (x);
     BOOST_REQUIRE_EQUAL (expected, oss.str());
+    const std::string inp (oss.str());
+    position pos (inp);
+    BOOST_REQUIRE (value_type (x) == read (pos));
+    BOOST_REQUIRE (pos.end());
   }
 }
 
@@ -38,43 +46,43 @@ BOOST_AUTO_TEST_CASE (num_type)
   BOOST_CHECK (value_type (23.0f) == value_type (num_type (23.0f)));
 }
 
-BOOST_AUTO_TEST_CASE (show)
+BOOST_AUTO_TEST_CASE (show_and_read_showed)
 {
   using pnet::type::value::value_type;
 
-  test_show (we::type::literal::control(), "[]");
-  test_show (true, "true");
-  test_show (false, "false");
-  test_show (0, "0");
-  test_show (23, "23");
-  test_show (42L, "42L");
-  test_show (-3L, "-3L");
-  test_show (2718U, "2718U");
-  test_show (3141UL, "3141UL");
-  test_show (3.1415926f, "3.14159f");
-  test_show (3e30f, "3.00000e+30f");
-  test_show (3.1415926, "3.14159");
-  test_show (3e30, "3.00000e+30");
-  test_show (0.0, "0.00000");
-  test_show ('\0', std::string("'\0'", 3));
-  test_show ('a', "'a'");
-  test_show (std::string(), "\"\"");
-  test_show (std::string("foo"), "\"foo\"");
-  test_show (bitsetofint::type(), "{}");
-  test_show (bitsetofint::type().ins (0), "{ 1}");
-  test_show (bitsetofint::type().ins (0).ins (64), "{ 1 1}");
-  test_show (bytearray::type(), "y()");
+  test_show_and_read_showed (we::type::literal::control(), "[]");
+  test_show_and_read_showed (true, "true");
+  test_show_and_read_showed (false, "false");
+  test_show_and_read_showed (0, "0");
+  test_show_and_read_showed (23, "23");
+  test_show_and_read_showed (42L, "42L");
+  test_show_and_read_showed (-3L, "-3L");
+  test_show_and_read_showed (2718U, "2718U");
+  test_show_and_read_showed (3141UL, "3141UL");
+  test_show_and_read_showed (3.14159f, "3.14159f");
+  test_show_and_read_showed (3e30f, "3.00000e+30f");
+  test_show_and_read_showed (3.14159, "3.14159");
+  test_show_and_read_showed (3e30, "3.00000e+30");
+  test_show_and_read_showed (0.0, "0.00000");
+  test_show_and_read_showed ('\0', std::string("'\0'", 3));
+  test_show_and_read_showed ('a', "'a'");
+  test_show_and_read_showed (std::string(), "\"\"");
+  test_show_and_read_showed (std::string("foo"), "\"foo\"");
+  test_show_and_read_showed (bitsetofint::type(), "{}");
+  test_show_and_read_showed (bitsetofint::type().ins (0), "{ 1}");
+  test_show_and_read_showed (bitsetofint::type().ins (0).ins (64), "{ 1 1}");
+  test_show_and_read_showed (bytearray::type(), "y()");
   {
     std::list<value_type> l;
-    test_show (l, "list ()");
+    test_show_and_read_showed (l, "list ()");
     l.push_back (value_type (int (3)));
-    test_show (l, "list (3)");
+    test_show_and_read_showed (l, "list (3)");
     l.push_back (value_type (long (3)));
-    test_show (l, "list (3, 3L)");
+    test_show_and_read_showed (l, "list (3, 3L)");
   }
-  test_show (std::vector<value_type>(), "vector ()");
-  test_show (std::set<value_type>(), "set {}");
-  test_show (std::map<value_type,value_type>(), "map []");
+  test_show_and_read_showed (std::vector<value_type>(), "vector ()");
+  test_show_and_read_showed (std::set<value_type>(), "set {}");
+  test_show_and_read_showed (std::map<value_type,value_type>(), "map []");
 }
 
 BOOST_AUTO_TEST_CASE (_read)
