@@ -3,6 +3,7 @@
 #include <we/type/value/read.hpp>
 
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/num.hpp>
 
 #include <boost/bind.hpp>
 
@@ -176,7 +177,7 @@ namespace pnet
           }
 
         default:
-          throw std::runtime_error ("not yet implemented: " + pos.rest());
+          return fhg::util::read_num (pos);
         }
       }
 

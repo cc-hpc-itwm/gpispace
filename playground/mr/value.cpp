@@ -10,6 +10,7 @@
 #include <we/type/value/show.hpp>
 
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/num.hpp>
 
 #include <sstream>
 
@@ -22,6 +23,19 @@ namespace
     oss << pnet::type::value::value_type (x);
     BOOST_REQUIRE_EQUAL (expected, oss.str());
   }
+}
+
+BOOST_AUTO_TEST_CASE (num_type)
+{
+  using pnet::type::value::value_type;
+  using fhg::util::num_type;
+
+  BOOST_CHECK (value_type (23) == value_type (num_type (23)));
+  BOOST_CHECK (value_type (23U) == value_type (num_type (23U)));
+  BOOST_CHECK (value_type (23L) == value_type (num_type (23L)));
+  BOOST_CHECK (value_type (23UL) == value_type (num_type (23UL)));
+  BOOST_CHECK (value_type (23.0) == value_type (num_type (23.0)));
+  BOOST_CHECK (value_type (23.0f) == value_type (num_type (23.0f)));
 }
 
 BOOST_AUTO_TEST_CASE (show)
@@ -78,6 +92,13 @@ BOOST_AUTO_TEST_CASE (_read)
   BOOST_CHECK (value_type (std::string ("\"foo\"")) == read ("\"\\\"foo\\\"\""));
 
   BOOST_CHECK_THROW (read ("\"\\n\""), fhg::util::parse::error::expected);
+
+  BOOST_CHECK (value_type (23) == read ("23"));
+  BOOST_CHECK (value_type (23U) == read ("23U"));
+  BOOST_CHECK (value_type (23L) == read ("23L"));
+  BOOST_CHECK (value_type (23UL) == read ("23UL"));
+  BOOST_CHECK (value_type (2.3f) == read ("2.3f"));
+  BOOST_CHECK (value_type (2.3) == read ("2.3"));
 
   {
     std::map<value_type, value_type> m;
