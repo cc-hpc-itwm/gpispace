@@ -559,7 +559,7 @@ namespace mapreduce
 
 		// the array and the file are already reduced
 		std::string str_pair, curr_item;
-		std::string curr_key, last_key, curr_val;
+		std::string last_key;
 
 		while( !ifs_1.eof() || !ifs_2.eof() )
 		{
@@ -591,8 +591,8 @@ namespace mapreduce
 			if(!(curr_item.empty() || curr_item == str_sp) )
 			{
 				key_val_pair_t kv_pair = str2kvpair(curr_item);
-				curr_key = kv_pair.first;
-				curr_val = kv_pair.second;
+				std::string& curr_key = kv_pair.first;
+				std::string& curr_val = kv_pair.second;
 
 				if( curr_key != last_key )
 				{
