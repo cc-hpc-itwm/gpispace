@@ -20,7 +20,6 @@ find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 add_subdirectory (fhg)
-add_subdirectory (rewrite)
 add_subdirectory (bin)
 
 if (BUILD_TESTING)
