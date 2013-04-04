@@ -180,8 +180,6 @@ namespace fhg
         }
       }
 
-      backlog_.clear ();
-
       // TODO: call pending handlers and delete pending messages
       while (! connections_.empty ())
       {
@@ -218,6 +216,8 @@ namespace fhg
         using namespace boost::system;
         to_recv.handler (errc::make_error_code(errc::operation_canceled));
       }
+
+      backlog_.clear ();
 
       stopped_ = true;
     }
@@ -347,11 +347,8 @@ namespace fhg
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
-        io_service_.post (boost::bind ( &self::start_sender
-                                      , this
-                                      , addr
-                                      )
-                         );
+        if (cd.o_queue.size () == 1)
+          start_sender (addr);
       }
     }
 
