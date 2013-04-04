@@ -465,17 +465,27 @@ namespace mapreduce
 		// the array and the file are already reduced
 		std::string str_pair, curr_item;
 		std::string curr_key, last_key, curr_val;
+		key_val_pair_t kvp_l, kvp_r;
 
 		while( it != arr_items.end() || !ifs.eof() )
 		{
 			if( it != arr_items.end() && !ifs.eof() )
 			{
-				if(	my_comp(*it, str_curr_line) )
+				kvp_l = str2kvpair(*it);
+				kvp_r = str2kvpair(str_curr_line);
+
+				if(	kvp_l.first.compare(kvp_r.first)<0 )
+				{
 					curr_item = *it++;
+					curr_key = kvp_l.first;
+					curr_val = kvp_l.second;
+				}
 				else
 				{
 					curr_item = str_curr_line;
 					ifs.getline(str_curr_line, 256);
+					curr_key = kvp_r.first;
+					curr_val = kvp_r.second;
 				}
 			}
 			else
@@ -483,13 +493,15 @@ namespace mapreduce
 				{
 					curr_item = str_curr_line;
 					ifs.getline(str_curr_line, 256);
+					curr_key = kvp_r.first;
+					curr_val = kvp_r.second;
 				}
 				else
+				{
 					curr_item = *it++;
-
-			key_val_pair_t kv_pair = str2kvpair(curr_item);
-			curr_key = kv_pair.first;
-			curr_val = kv_pair.second;
+					curr_key = kvp_l.first;
+					curr_val = kvp_l.second;
+				}
 
 			if( curr_key != last_key )
 			{
