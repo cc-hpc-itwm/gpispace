@@ -104,21 +104,24 @@ void thread::may_read()
     }
     else if (tokens[0] == "describe_action")
     {
-      _socket->write
-        ( qPrintable ( QString ("action_long_text %1 %2\n")
-                     .arg (tokens[1])
-                     .arg ( tokens[1] == "add_to_working_set"
-                          ? "add this node to the working set"
-                          : tokens[1] == "reboot"
-                          ? "reboot node"
-                          : tokens[1] == "remove_from_working_set"
-                          ? "remove this node from the working set"
-                          : tokens[1] == "foo"
-                          ? "foo bar"
-                          : throw std::runtime_error ("unknown action name")
-                          )
-                     )
-        );
+      foreach (const QString& action, tokens.mid (1))
+      {
+        _socket->write
+          ( qPrintable ( QString ("action_long_text %1 %2\n")
+                       .arg (action)
+                       .arg ( action == "add_to_working_set"
+                            ? "add this node to the working set"
+                            : action == "reboot"
+                            ? "reboot node"
+                            : action == "remove_from_working_set"
+                            ? "remove this node from the working set"
+                            : action == "foo"
+                            ? "foo bar"
+                            : throw std::runtime_error ("unknown action name")
+                            )
+                       )
+          );
+      }
     }
     else if (tokens[0] == "layout_hint")
     {
