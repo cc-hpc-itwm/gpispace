@@ -206,7 +206,7 @@
     </transition>
   		
     <place name="result_1" type="string"/>   
-	<transition name="mapreduce_1" internal="false">
+	<transition name="mapreduce_1" inline="true">
        <include-function href="mapreduce.xpnet"/>
 		<connect-in port="input_file" place="input_file_1"/>
 	  	<connect-in port="output_file" place="output_file_1"/>
@@ -223,7 +223,7 @@
     </transition>
     
     <place name="result_2" type="string"/>
-	<transition name="mapreduce_2" internal="false">
+	<transition name="mapreduce_2" inline="true">
       <include-function href="mapreduce.xpnet"/>
 		<connect-in port="input_file" place="input_file_2"/>
 	  	<connect-in port="output_file" place="output_file_2"/>
