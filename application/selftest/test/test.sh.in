@@ -1,0 +1,19 @@
+# petry@itwm.fraunhofer.de
+
+source "@CMAKE_BINARY_DIR@/test/env.sh"
+source "@CMAKE_BINARY_DIR@/test/measured.sh"
+source "@CMAKE_BINARY_DIR@/test/die.sh"
+source "@CMAKE_BINARY_DIR@/test/dir_build.sh"
+
+tmpdir="${DIR_BUILD}"
+
+cleanup()
+{
+  cleanup_dir_build
+}
+
+trap 'cleanup' EXIT
+mkdir -p "${tmpdir}"
+echo $(hostname) > ${tmpdir}/nodes
+
+measured "run" PBS_NODEFILE=${tmpdir}/nodes SDPA_STATE_DIR=${tmpdir}/state sdpa selftest </dev/null  || die $EX_ERR_RUN
