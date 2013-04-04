@@ -175,7 +175,8 @@ namespace
     {
       std::ostringstream oss;
       oss << n;
-      position pos (oss.str());
+      const std::string inp (oss.str());
+      position pos (inp);
 
       BOOST_REQUIRE_EQUAL (n, read_num (pos));
       BOOST_REQUIRE (pos.end());
