@@ -221,9 +221,13 @@ namespace fhg
     namespace
     {
       template<typename From, typename To>
-        To cast (const From& x)
+        To cast (const From& x, const parse::position& pos)
       {
-        //! \todo check ranges!
+        if (x > static_cast<From> (std::numeric_limits<To>::max()))
+        {
+          throw parse::error::value_to_big<From, To> (x, pos);
+        }
+
         return static_cast<To> (x);
       }
     }
@@ -243,7 +247,7 @@ namespace fhg
         case 'L':
           ++pos;
 
-          return SIGNED (cast<unsigned long, long> (ul));
+          return SIGNED (cast<unsigned long, long> (ul, pos));
 
         case 'u':
         case 'U':
@@ -256,7 +260,7 @@ namespace fhg
 
           if (pos.end())
           {
-            return num_type (cast<unsigned long, unsigned int> (ul));
+            return num_type (cast<unsigned long, unsigned int> (ul, pos));
           }
 
           if (!pos.end() && (*pos == 'l' || *pos == 'L'))
@@ -285,7 +289,7 @@ namespace fhg
                     ++pos;
                   }
 
-                  return SIGNED (cast<double, float> (d));
+                  return SIGNED (cast<double, float> (d, pos));
                 }
 
                 return SIGNED (d);
@@ -297,7 +301,7 @@ namespace fhg
         }
       }
 
-      return SIGNED (cast<unsigned long, int> (ul));
+      return SIGNED (cast<unsigned long, int> (ul, pos));
     }
 
 #undef SIGNED

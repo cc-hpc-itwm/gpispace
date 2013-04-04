@@ -268,3 +268,51 @@ BOOST_AUTO_TEST_CASE (_num)
     BOOST_REQUIRE (pos.end());
   }
 }
+
+BOOST_AUTO_TEST_CASE (limits)
+{
+  using fhg::util::num_type;
+  using fhg::util::read_num;
+
+  {
+    const std::string inp ("9223372036854775807L");
+    position pos (inp);
+
+    BOOST_REQUIRE_EQUAL (num_type (9223372036854775807L), read_num (pos));
+  }
+  {
+    const std::string inp ("-9223372036854775807L");
+    position pos (inp);
+
+    BOOST_REQUIRE_EQUAL (num_type (-9223372036854775807L), read_num (pos));
+  }
+  {
+    const std::string inp ("9223372036854775808L");
+    position pos (inp);
+
+    typedef error::value_to_big<unsigned long, long> error_type;
+
+    BOOST_REQUIRE_THROW (read_num (pos), error_type);
+  }
+  {
+    const std::string inp ("-9223372036854775808L");
+    position pos (inp);
+
+    typedef error::value_to_big<unsigned long, long> error_type;
+
+    BOOST_REQUIRE_THROW (read_num (pos), error_type);
+  }
+  {
+    const double d ( 2.0
+                   * static_cast<double> (std::numeric_limits<float>::max())
+                   );
+    std::ostringstream oss;
+    oss << d << "f";
+    const std::string inp (oss.str());
+    position pos (inp);
+
+    typedef error::value_to_big<double, float> error_type;
+
+    BOOST_REQUIRE_THROW (read_num (pos), error_type);
+  }
+}
