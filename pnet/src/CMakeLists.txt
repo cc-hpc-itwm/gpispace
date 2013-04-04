@@ -89,6 +89,7 @@ set (wfhd_hdrs
 )
 
 add_library (wfhd SHARED ${wfhd_srcs})
+set_target_properties (wfhd PROPERTIES VERSION 1)
 install (TARGETS wfhd
   LIBRARY DESTINATION lib
   )
@@ -204,6 +205,9 @@ add_library (pnet-shared SHARED ${we_srcs} ${xml_sources})
 set_target_properties(pnet-shared PROPERTIES OUTPUT_NAME pnet)
 
 add_library (we-dev SHARED ${we_dev_srcs})
+set_target_properties(we-dev
+  PROPERTIES VERSION 1
+)
 
 install (TARGETS we-dev
   LIBRARY DESTINATION lib

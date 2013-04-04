@@ -69,7 +69,10 @@ endif (ENABLE_REMOTE_LOGGING)
 
 ADD_LIBRARY(fhglog ${hdrs} ${srcs} ${remote_srcs} ${remote_hdrs})
 ADD_LIBRARY(fhglog-shared SHARED ${hdrs} ${srcs} ${remote_srcs} ${remote_hdrs})
-set_target_properties(fhglog-shared PROPERTIES OUTPUT_NAME fhglog)
+set_target_properties (fhglog-shared
+  PROPERTIES OUTPUT_NAME fhglog
+             VERSION     1
+)
 
 install(FILES ${hdrs}
   DESTINATION include/fhglog
