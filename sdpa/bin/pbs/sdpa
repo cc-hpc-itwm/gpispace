@@ -1983,133 +1983,6 @@ function on_master_node ()
     return 1
 }
 
-function selftest ()
-{
-    log "I: performing self-test"
-
-    local xml="$SDPA_LIBEXEC/apps/selftest/selftest.xml"
-    if ! test -r "$xml" ; then
-        log "E: cannot read $xml"
-        return 1
-    fi
-
-    local pnetc=$(which pnetc)
-    if ! test -x "$pnetc" ; then
-        log "E: cannot execute $pnetc"
-        return 2
-    fi
-
-    local sdpac=$(which sdpac)
-    if ! test -x "$sdpac" ; then
-        log "E: cannot execute sdpac"
-        return 3
-    fi
-
-    local pnetput=$(which pnetput)
-    if ! test -x "$pnetput" ; then
-        log "E: cannot execute pnetput"
-        return 3
-    fi
-
-    local pnetget=$(which pnetget)
-    if ! test -x "$pnetget" ; then
-        log "E: cannot execute pnetget"
-        return 3
-    fi
-
-    local job_desc=$(mktemp)
-    local old_trap=$(trap -p EXIT)
-    trap -- "rm -f $job_desc" EXIT
-
-    log "I: building job description..."
-    local challenge=$(date +%s | md5sum | awk '{print $1}')
-    if [ $? -ne 0 ] ; then
-        challenge="dummy"
-    fi
-
-    local expected_response="sdpa.response.$challenge"
-
-    if ! cat "$xml" | $pnetc | $pnetput -p challenge=\"$challenge\" > "$job_desc" ; then
-        log "E: could not generate job description and place tokens"
-        return 5
-    fi
-
-    log "I: (re-)starting SDPA..."
-
-    if ! restart ; then
-        stop
-        log "E: restart failed"
-        return 4
-    fi
-
-    log "I: computing response for challenge: $challenge"
-
-    log "I: submitting job..."
-    local job_id=$(sdpac submit "$job_desc")
-    log "I: JOB-ID: $job_id"
-
-    local walltime=120
-    log "I: waiting at most $walltime seconds for job to return..."
-    local job_state=42
-    for ((i=0 ; i < $walltime ; ++i)) ; do
-        sleep 1
-        local job_status=$(sdpac status "$job_id")
-        if echo "$job_status" | grep -q -i -e 'finished' ; then
-            log "I: job has finished"
-            job_state=0
-            break
-        elif echo "$job_status" | grep -q -i -e 'failed' ; then
-            log "E: job has failed"
-            job_state=1
-            break
-        elif echo "$job_status" | grep -q -i -e 'cancelled' ; then
-            log "E: job has been cancelled"
-            job_state=2
-            break
-        fi
-    done
-
-    if [ "$job_state" -eq 0 ] ; then
-        log "I: retrieving results"
-        if ! sdpac --force -o "$job_desc" results "$job_id" ; then
-            log "E: could not retrieve results"
-            rm "$job_desc"
-            stop
-            return 6
-        fi
-
-        if ! sdpac delete "$job_id" ; then
-            log "E: could not delete job"
-            rm "$job_desc"
-            stop
-            return 7
-        fi
-        local response=$(pnetget < "$job_desc" --type=output response | sed -e 's/^"//g' -e 's/"$//g')
-        if [ x"$response" != x"$expected_response" ] ; then
-            log "E: response: '$response' does not match expected response: '$expected_response'"
-        else
-            log "I: got correct response"
-        fi
-
-        if [ -z "$USER" ] ; then
-            greeting="You-Know-Who"
-        else
-            greeting="user $USER"
-        fi
-
-        log "I: Congratulations $greeting, your SDPA installation is working!"
-    else
-        log "E: self test job could not be executed!"
-        stop
-        return 8
-    fi
-
-    rm "$job_desc"
-    stop
-
-    return 0
-}
-
 ##########################################################
 #                                                        #
 #          S C R I P T     B E H A V I O R               #
@@ -2178,6 +2051,12 @@ if [ "$1" = "gui" ] ; then
     start_gui
     exit $?
 fi
+
+function sigterm()
+{
+    trap sigterm TERM
+}
+trap sigterm TERM
 
 function require_state ()
 {
@@ -2269,7 +2148,7 @@ case "$1" in
         restart drts
         ;;
     boot)
-        "$0" -s "$state_dir" -c "$config_file" init || {
+        "$0" -s "$state_dir" -c "$config_file" init </dev/null || {
             echo >&2 "sdpa: could not initialize!"
             exit 1
         }
@@ -2285,7 +2164,8 @@ case "$1" in
             log "E: not on master node"
             exit 1
         fi
-        selftest
+        shift
+        "${SDPA_SCRIPT_DIR}/sdpa-selftest" "${@}"
         ;;
     '')
         help
