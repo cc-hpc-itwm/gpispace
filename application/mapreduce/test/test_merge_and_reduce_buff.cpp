@@ -23,7 +23,7 @@ void test1()
 		arr_items_1.push_back(arr1[i]);
 
 	char* ptr_shmem = new char[1000];
-	size_t last_pos = merge_and_reduce_arr_buff( 0, 1000000, arr_items_0, arr_items_1, ptr_shmem );
+	size_t last_pos = merge_and_reduce_arr_arr_2_buff( 0, 1000000, arr_items_0, arr_items_1, ptr_shmem );
 	ptr_shmem[last_pos]=0;
 	std::cout<<"The result is: \""<<ptr_shmem<<"\""<<std::endl;
 
