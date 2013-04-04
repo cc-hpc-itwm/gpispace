@@ -35,4 +35,8 @@ add_library (gspcnet        STATIC ${gspcnet_src})
 add_library (gspcnet.shared SHARED ${gspcnet_src})
 set_target_properties (gspcnet.shared
   PROPERTIES OUTPUT_NAME gspcnet
+             VERSION 0.1
 )
+
+install (TARGETS gspcnet ARCHIVE DESTINATION lib COMPONENT libraries)
+install (TARGETS gspcnet.shared LIBRARY DESTINATION lib COMPONENT libraries)
