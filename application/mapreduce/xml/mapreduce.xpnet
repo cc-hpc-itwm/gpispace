@@ -1953,8 +1953,10 @@
             
             if (special_reduce_info.red_used > fvmGetShmemSize ())
             {
-                 MLOG (ERROR, "reduce cannot continue: need " << reduce_info.red_used 
-                             << " bytes (reduce) but I only have " << fvmGetShmemSize() << ", increase shm size");
+                 MLOG (ERROR, "reduce cannot continue: need " 	<< reduce_info.red_used 
+                             									<< " bytes (reduce) but I only have " 
+                             									<< fvmGetShmemSize() 
+                             									<< ", increase shm size");
                  throw std::runtime_error ("out of memory: shm too small");
             }
               
