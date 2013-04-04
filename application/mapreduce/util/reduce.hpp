@@ -431,33 +431,33 @@ namespace mapreduce
 	}
 
 	// assume that the both input arrays are sorted reduced !!!!
-	void merge_and_reduce_arr_file(const std::vector<std::string>& arr_items, const std::string& str_out_file_2)
+	void merge_and_reduce_arr_file(const std::vector<std::string>& arr_items, const std::string& str_out_file)
 	{
 		std::list<std::string> list_in_values;
 
-		if( !file_exists(str_out_file_2) )
+		if( !file_exists(str_out_file) )
 		{
-			 MLOG(INFO, "Create new file "<<str_out_file_2);
-			 reduce_arr_file(arr_items, str_out_file_2);
+			 MLOG(INFO, "Create new file "<<str_out_file);
+			 reduce_arr_file(arr_items, str_out_file);
 			 return;
 		}
-		MLOG(INFO, "The file "<<str_out_file_2<<" already exists on disk!!!");
+		MLOG(INFO, "The file "<<str_out_file<<" already exists on disk!!!");
 
 		//else
-		if( file_size(str_out_file_2.data()) == (std::streampos)0 )
+		if( file_size(str_out_file.data()) == (std::streampos)0 )
 		{
-			MLOG(INFO, "The reduce file "<<str_out_file_2<<" exists but has the length 0!");
-			reduce_arr_file(arr_items, str_out_file_2);
+			MLOG(INFO, "The reduce file "<<str_out_file<<" exists but has the length 0!");
+			reduce_arr_file(arr_items, str_out_file);
 			return;
 		}
 
 		std::ifstream ifs;
-		ifs.open( str_out_file_2.data() );
-		std::string str_out_file = str_out_file_2 + std::string(".new");
-		std::ofstream ofs( str_out_file.data() );
+		ifs.open( str_out_file.data() );
+		std::string str_tmp_file = str_out_file + std::string(".new");
+		std::ofstream ofs( str_tmp_file.data() );
 
 		MLOG(INFO, "Merge and reduce ...");
-		std::vector<std::string>::const_iterator it_1 = arr_items.begin();
+		std::vector<std::string>::const_iterator it = arr_items.begin();
 
 		char str_curr_line[256];
 		ifs.getline(str_curr_line, 256);
@@ -466,12 +466,12 @@ namespace mapreduce
 		std::string str_pair, curr_item;
 		std::string curr_key, last_key, curr_val;
 
-		while( it_1 != arr_items.end() || !ifs.eof() )
+		while( it != arr_items.end() || !ifs.eof() )
 		{
-			if( it_1 != arr_items.end() && !ifs.eof() )
+			if( it != arr_items.end() && !ifs.eof() )
 			{
-				if(	my_comp(*it_1, str_curr_line) )
-					curr_item = *it_1++;
+				if(	my_comp(*it, str_curr_line) )
+					curr_item = *it++;
 				else
 				{
 					curr_item = str_curr_line;
@@ -485,7 +485,7 @@ namespace mapreduce
 					ifs.getline(str_curr_line, 256);
 				}
 				else
-					curr_item = *it_1++;
+					curr_item = *it++;
 
 			key_val_pair_t kv_pair = str2kvpair(curr_item);
 			curr_key = kv_pair.first;
@@ -516,8 +516,8 @@ namespace mapreduce
 		ifs.close();
 		ofs.close();
 
-		std::remove(str_out_file_2.data());
-		std::rename(str_out_file.data(), str_out_file_2.data());
+		std::remove(str_out_file.data());
+		std::rename(str_tmp_file.data(), str_out_file.data());
 	}
 
 	// assume that the both input arrays are sorted reduced !!!!
