@@ -63,6 +63,8 @@ set (srcs
 
   parse/position.cpp
   parse/error.cpp
+
+  num.cpp
 )
 
 add_library (fhg-util ${srcs})
