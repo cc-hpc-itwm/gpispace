@@ -11,15 +11,35 @@ set(hdrs
   storage.hpp
 )
 
-add_subdirectory(core)
+set (core_srcs
+  core/plugin.cpp
+  core/kernel.cpp
+  core/plugin_kernel_mediator.cpp
+  core/file_storage.cpp
+  core/null_storage.cpp
+)
 
-set(fhg-plugin-static-libs fhg-plugin-core)
+add_library(fhg-plugin-core ${core_srcs})
+add_library(fhg-plugin-shared SHARED ${core_srcs})
+target_link_libraries(fhg-plugin-shared ${Boost_FILESYSTEM_SHARED_LIBRARY})
+set_target_properties(fhg-plugin-shared
+  PROPERTIES OUTPUT_NAME fhg-plugin
+             VERSION     1
+)
+
+install (TARGETS fhg-plugin-shared
+  LIBRARY
+  DESTINATION lib
+  COMPONENT runtime
+)
+
+set (fhg-plugin-static-libs fhg-plugin-core)
 
 add_subdirectory(builtin)
 list(APPEND fhg-plugin-static-libs fhg-builtin-plugins)
 list(APPEND fhg-plugin-static-libs ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
 
-include(libutils)
+include (libutils)
 merge_static_libs(fhg-plugin fhg-plugin "${fhg-plugin-static-libs}")
 
 target_link_libraries(fhg-plugin ${UTIL_LIBRARIES} ${CMAKE_DL_LIBS})
