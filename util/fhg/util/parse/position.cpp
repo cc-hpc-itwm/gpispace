@@ -73,6 +73,127 @@ namespace fhg
           }
         }
       }
+      void position::require (const char& c)
+      {
+        require (std::string (1, c));
+      }
+
+      std::string position::identifier()
+      {
+        skip_spaces();
+
+        std::string id;
+
+        if (end() || !(isalpha (*_pos) || *_pos == '_'))
+        {
+          throw error::expected ("identifier [a-zA-Z_][a-zA-Z_0-9]*", *this);
+        }
+
+        id.push_back (*_pos); operator++();
+
+        while (!end() && (isalpha (*_pos) || *_pos == '_' || isdigit (*_pos)))
+        {
+          id.push_back (*_pos); operator++();
+        }
+
+        return id;
+      }
+
+      namespace
+      {
+        char unquote (char c)
+        {
+          throw std::runtime_error ("Quoted characters are not yet supported");
+        }
+      }
+
+      char position::character()
+      {
+        if (end())
+        {
+          throw error::expected ("character", *this);
+        }
+
+        bool quoted (false);
+
+        if (*_pos == '\\')
+        {
+          operator++();
+
+          quoted = true;
+        }
+
+        if (end())
+        {
+          throw error::expected ("character", *this);
+        }
+
+        const char c (quoted ? unquote (*_pos) : *_pos);
+
+        operator++();
+
+        return c;
+      }
+
+      std::string position::until (const char c)
+      {
+        std::string s;
+
+        while (!end() && *_pos != c)
+        {
+          s.push_back (character());
+        }
+
+        if (end())
+        {
+          throw error::expected (std::string (1, c), *this);
+        }
+
+        operator++();
+
+        return s;
+      }
+
+      void position::list ( const char open, const char sep, const char close
+                          , const boost::function<void (position&)>& f
+                          )
+      {
+        skip_spaces();
+
+        require (open);
+
+        skip_spaces();
+
+        bool closed (end());
+
+        while (!closed)
+        {
+          if (*_pos == close)
+          {
+            closed = true;
+            operator++();
+          }
+          else if (*_pos == sep)
+          {
+            operator++();
+          }
+          else
+          {
+            f (*this);
+
+            skip_spaces();
+
+            if (end() || (*_pos != sep && *_pos != close))
+            {
+              throw error::expected ( std::string (1, sep)
+                                    + " or "
+                                    + std::string (1, close)
+                                    , *this
+                                    );
+            }
+          }
+        }
+      }
     }
   }
 }
