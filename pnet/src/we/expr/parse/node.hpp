@@ -20,10 +20,8 @@ namespace expr
       struct binary_t;
       struct ternary_t;
 
-      typedef expr::token::key_vec_t key_vec_t;
-
       typedef boost::variant < value::type
-                             , key_vec_t
+                             , std::list<std::string>
                              , boost::recursive_wrapper<unary_t>
                              , boost::recursive_wrapper<binary_t>
                              , boost::recursive_wrapper<ternary_t>
@@ -33,10 +31,7 @@ namespace expr
       const value::type& get (const type&);
       bool is_value (const type&);
       bool is_ref (const type&);
-      void rename ( type&
-                  , const key_vec_t::value_type& from
-                  , const key_vec_t::value_type& to
-                  );
+      void rename (type&, const std::string& from, const std::string& to);
 
       struct unary_t
       {

@@ -32,42 +32,39 @@ option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 function (get_revision_info REV_INFO)
   execute_process (
     COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE _out_git
     ERROR_VARIABLE _err_git
     RESULT_VARIABLE _res_git
     )
-  if (NOT _res_git)
+  if (${_res_git} EQUAL 0)
     string (STRIP "${_out_git}" _out_git)
     set (${REV_INFO} ${_out_git} PARENT_SCOPE)
-  else()
-    message (WARNING "Could not discover revision information")
   endif()
 endfunction()
 
 function (get_version_info VSN_INFO)
   execute_process (
     COMMAND git describe
-    COMMAND sed -e 's/^v//'
+    COMMAND sed -e "s/^v//"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE _out
     ERROR_VARIABLE _err
     RESULT_VARIABLE _res
   )
-  if (NOT _res)
+  if (${_res} EQUAL 0)
     string (STRIP "${_out}" _out)
     set (${VSN_INFO} ${_out} PARENT_SCOPE)
   else()
     set(__new_vsn "${V_MAJOR}.${V_MINOR}")
-    if (V_PATCH)
+    if (NOT ${V_PATCH} STREQUAL "")
       set(__new_vsn "${__new_vsn}-${V_PATCH}")
     endif()
-    if (V_EXTRA)
+    if (NOT ${V_EXTRA} STREQUAL "")
       set(__new_vsn "${__new_vsn}-${V_EXTRA}")
     endif()
-    set(${VSN_INFO} "${__new_vsn}")
-    unset(__new_vsn)
-  endif (NOT _res)
+    set (${VSN_INFO} ${__new_vsn} PARENT_SCOPE)
+  endif ()
 endfunction()
 
 get_revision_info (PROJECT_REVISION)
@@ -84,10 +81,9 @@ endif()
 
 get_version_info (PROJECT_VERSION)
 if (NOT PROJECT_VERSION)
-  set (PROJECT_VERSION "${V_MAJOR}.${V_MINOR}-${V_PATCH}" CACHE STRING "Project version" FORCE)
-else()
-  set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
+  message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
 endif()
+set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-dev.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-dev.cmake @ONLY)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)

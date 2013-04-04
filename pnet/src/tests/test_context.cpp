@@ -12,7 +12,6 @@
 BOOST_AUTO_TEST_CASE (basic)
 {
   typedef expr::eval::context context_t;
-  typedef context_t::key_vec_t key_vec_t;
 
   context_t c;
 
@@ -22,19 +21,19 @@ BOOST_AUTO_TEST_CASE (basic)
   value::type z_x (value::read ("0.0"));
   value::type z_y (value::read ("\"a_string\""));
 
-  key_vec_t key_z_x;
+  std::list<std::string> key_z_x;
   key_z_x.push_back ("z");
   key_z_x.push_back ("x");
 
-  key_vec_t key_z_y;
+  std::list<std::string> key_z_y;
   key_z_y.push_back ("z");
   key_z_y.push_back ("y");
 
-  key_vec_t key_z_a;
+  std::list<std::string> key_z_a;
   key_z_a.push_back ("z");
   key_z_a.push_back ("a");
 
-  key_vec_t key_a_b;
+  std::list<std::string> key_a_b;
   key_a_b.push_back ("a");
   key_a_b.push_back ("b");
 
@@ -109,7 +108,6 @@ BOOST_AUTO_TEST_CASE (basic)
 BOOST_AUTO_TEST_CASE (reference)
 {
   typedef expr::eval::context context_t;
-  typedef context_t::key_vec_t key_vec_t;
 
   context_t c;
 
@@ -129,14 +127,14 @@ BOOST_AUTO_TEST_CASE (reference)
   BOOST_REQUIRE_EQUAL (c.value (key_b), value_b);
   BOOST_REQUIRE_EQUAL (c.value (key_c), value_c);
 
-  key_vec_t key_c_x;
+  std::list<std::string> key_c_x;
   key_c_x.push_back ("c");
   key_c_x.push_back ("x");
-  key_vec_t key_c_y_a;
+  std::list<std::string> key_c_y_a;
   key_c_y_a.push_back ("c");
   key_c_y_a.push_back ("y");
   key_c_y_a.push_back ("a");
-  key_vec_t key_c_y_b;
+  std::list<std::string> key_c_y_b;
   key_c_y_b.push_back ("c");
   key_c_y_b.push_back ("y");
   key_c_y_b.push_back ("b");

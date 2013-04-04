@@ -15,22 +15,22 @@ namespace expr
 {
   namespace eval
   {
-    namespace visitor
+    namespace
     {
-      class eval : public boost::static_visitor<value::type>
+      class visitor_eval : public boost::static_visitor<value::type>
       {
       private:
         context& c;
 
       public:
-        eval (context& _c) : c (_c) {}
+        visitor_eval (context& _c) : c (_c) {}
 
         value::type operator() (const value::type& v) const
         {
           return v;
         }
 
-        value::type operator() (const expr::parse::node::key_vec_t& key) const
+        value::type operator() (const std::list<std::string>& key) const
         {
           return c.value (key);
         }
@@ -49,7 +49,7 @@ namespace expr
               value::type c1 (boost::apply_visitor (*this, b.r));
 
               c.bind_and_discard_ref
-                (boost::get<expr::parse::node::key_vec_t>(b.l), c1);
+                (boost::get<const std::list<std::string>&>(b.l), c1);
 
               return c1;
             }
@@ -142,7 +142,7 @@ namespace expr
 
     value::type eval (context& c, const expr::parse::node::type& nd)
     {
-      return boost::apply_visitor (visitor::eval (c), nd);
+      return boost::apply_visitor (visitor_eval (c), nd);
     }
   }
 }

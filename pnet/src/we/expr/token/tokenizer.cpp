@@ -18,6 +18,30 @@ namespace expr
 {
   namespace token
   {
+    tokenizer::tokenizer (fhg::util::parse::position& _p)
+      : _pos (_p)
+      , _token (eof)
+      , _tokval()
+      , _ref()
+    {}
+
+    const value::type& tokenizer::value() const
+    {
+      return _tokval;
+    }
+    const token::type& tokenizer::token() const
+    {
+      return _token;
+    }
+    const std::list<std::string>& tokenizer::get_ref() const
+    {
+      return _ref;
+    }
+    fhg::util::parse::position& tokenizer::pos()
+    {
+      return _pos;
+    }
+
     namespace
     {
       typedef boost::make_recursive_variant
@@ -40,7 +64,7 @@ namespace expr
           if (child != m.end())
           {
             throw std::runtime_error
-              (std::string ("Upps, doubled action(-path)!? ") + std::string (pos, end));
+              (std::string ("Upps, doubled action(-path)!? "));
           }
 
           m.insert (child, std::make_pair (*pos, f));
@@ -228,18 +252,18 @@ namespace expr
         return names;
       }
 
-      class visitor_parse : public boost::static_visitor<void>
+      class visitor_tokenize : public boost::static_visitor<void>
       {
       public:
-        visitor_parse (tokenizer& t, const bool& first = true)
+        visitor_tokenize (tokenizer& t, const bool& first = true)
           : _tokenizer (t)
           , _first (first)
         {}
         void operator() (const child_type& m) const
         {
-          if (_tokenizer.pos.end() || *_tokenizer.pos == ';')
+          if (_tokenizer.is_eof())
           {
-            throw exception::parse::expected (names (m), _tokenizer.pos());
+            throw exception::parse::expected (names (m), _tokenizer.pos()());
           }
           else
           {
@@ -247,23 +271,23 @@ namespace expr
 
             BOOST_FOREACH (const cn_type& cn, m)
               {
-                if (*_tokenizer.pos == cn.first)
+                if (*_tokenizer.pos() == cn.first)
                   {
-                    ++_tokenizer.pos;
+                    ++_tokenizer.pos();
 
                     return boost::apply_visitor
-                      (visitor_parse (_tokenizer, false), cn.second);
+                      (visitor_tokenize (_tokenizer, false), cn.second);
                   }
               }
           }
 
           if (_first)
           {
-            _tokenizer.set_value (value::read (_tokenizer.pos));
+            _tokenizer.set_value (value::read (_tokenizer.pos()));
           }
           else
           {
-            throw exception::parse::expected (names (m), _tokenizer.pos());
+            throw exception::parse::expected (names (m), _tokenizer.pos()());
           }
         }
 
@@ -276,202 +300,165 @@ namespace expr
         tokenizer& _tokenizer;
         const bool _first;
       };
-
-      void parse_from_node (const node_type& node, tokenizer& t)
-      {
-        boost::apply_visitor (visitor_parse (t), node);
-      }
     }
 
     void tokenizer::set_token (const token::type& t)
     {
-      token = t;
+      _token = t;
     }
     void tokenizer::set_value (const value::type& v)
     {
-      token = val;
-      tokval = v;
+      set_token (val);
+      _tokval = v;
     }
 
     bool tokenizer::is_eof()
     {
-      return pos.end() || *pos == ';';
+      return _pos.end() || *_pos == ';';
     }
 
     void tokenizer::cmp (const token::type& t, const token::type& e)
     {
-      if (is_eof())
+      if (!is_eof() && *_pos == '=')
       {
-        token = t;
+        ++_pos;
+
+        set_token (e);
       }
       else
       {
-        switch (*pos)
-        {
-        case '=': ++pos; token = e; break;
-        default: token = t; break;
-        }
+        set_token (t);
       }
     }
 
     void tokenizer::mulpow()
     {
-      if (!is_eof() && *pos == '*')
+      if (!is_eof() && *_pos == '*')
       {
-        token = _pow;
-        ++pos;
+        ++_pos;
+
+        set_token (_pow);
       }
       else
       {
-        token = mul;
+        set_token (mul);
       }
     }
 
     void tokenizer::negsub()
     {
-      if (next_can_be_unary (token))
-      {
-        token = neg;
-      }
-      else
-      {
-        token = sub;
-      }
+      set_token (next_can_be_unary (_token) ? neg : sub);
     }
 
     void tokenizer::divcomment()
     {
-      if (is_eof())
+      if (!is_eof() && *_pos == '*')
       {
-        token = div;
+        ++_pos;
+
+        skip_comment (_pos());
+
+        operator++();
       }
       else
       {
-        switch (*pos)
-          {
-          case '*': ++pos; skip_comment(pos()); get(); break;
-          default: token = div; break;
-          }
+        set_token (div);
       }
     }
 
     void tokenizer::identifier()
     {
-      token = ref;
+      set_token (ref);
 
       _ref.clear();
 
       do
         {
-          _ref.push_back (value::identifier (pos));
+          _ref.push_back (_pos.identifier());
 
-          if (pos.end())
+          if (_pos.end())
           {
-            throw exception::parse::expected ("'.' or '}'", pos());
+            throw exception::parse::expected ("'.' or '}'", _pos());
           }
 
-          if (*pos == '.')
+          if (*_pos == '.')
           {
-            ++pos;
+            ++_pos;
           }
         }
-      while (!pos.end() && *pos != '}');
+      while (!_pos.end() && *_pos != '}');
 
-      pos.require ("}");
+      _pos.require ("}");
     }
 
     void tokenizer::notne()
     {
-      if (is_eof())
+      if (!is_eof() && *_pos == '=')
       {
-        throw exception::parse::expected("'=' or <expression>", pos());
+        ++_pos;
+
+        set_token (ne);
       }
       else
       {
-        switch (*pos)
-        {
-        case '=': ++pos; token = ne; break;
-        default: unary (_not, "negation"); break;
-        }
+        unary (_not, "negation");
       }
     }
 
     void tokenizer::unary (const token::type& t, const std::string& descr)
     {
-      if (next_can_be_unary (token))
+      if (next_can_be_unary (_token))
       {
-        token = t;
+        set_token (t);
       }
       else
       {
-        throw exception::parse::misplaced (descr, pos());
+        throw exception::parse::misplaced (descr, _pos());
       }
     }
 
     void tokenizer::skip_comment (const unsigned int open)
     {
-      while (!pos.end())
-        switch (*pos)
+      while (!_pos.end())
+        switch (*_pos)
           {
           case '/':
-            ++pos;
-            if (!pos.end() && *pos == '*')
+            ++_pos;
+            if (!_pos.end() && *_pos == '*')
               {
-                ++pos; skip_comment (pos());
+                ++_pos; skip_comment (_pos());
               }
             break;
           case '*':
-            ++pos;
-            if (!pos.end() && *pos == '/')
+            ++_pos;
+            if (!_pos.end() && *_pos == '/')
               {
-                ++pos; return;
+                ++_pos; return;
               }
             break;
-          default: ++pos; break;
+          default: ++_pos; break;
           }
 
-      throw exception::parse::unterminated ("comment", open-2, pos());
+      throw exception::parse::unterminated ("comment", open-2, _pos());
     }
 
-    void tokenizer::get()
+    void tokenizer::operator++()
     {
-      pos.skip_spaces();
+      _pos.skip_spaces();
 
       if (is_eof())
       {
-        if (!pos.end())
+        if (!_pos.end())
         {
-          ++pos;
+          ++_pos;
         }
 
-        token = eof;
+        set_token (eof);
       }
       else
       {
-        parse_from_node (description(), *this);
+        boost::apply_visitor (visitor_tokenize (*this), description());
       }
-    }
-
-    tokenizer::tokenizer (fhg::util::parse::position& _p)
-      : pos (_p)
-      , token (eof)
-    {}
-
-    const value::type& tokenizer::operator()() const
-    {
-      return tokval;
-    }
-    const token::type& tokenizer::operator*() const
-    {
-      return token;
-    }
-    void tokenizer::operator++()
-    {
-      get();
-    }
-    const std::list<std::string>& tokenizer::get_ref() const
-    {
-      return _ref;
     }
   }
 }

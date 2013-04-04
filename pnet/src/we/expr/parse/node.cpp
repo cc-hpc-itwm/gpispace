@@ -38,36 +38,39 @@ namespace expr
       {}
 
       namespace {
-        std::string show_key_vec (const key_vec_t & key_vec)
+        std::string show_key_vec (const std::list<std::string>& key_vec)
         {
           std::string s;
 
-          for ( key_vec_t::const_iterator pos (key_vec.begin())
-              ; pos != key_vec.end()
-              ; ++pos
-              )
-            s += ((pos != key_vec.begin()) ? "." : "") + fhg::util::show (*pos);
+          BOOST_FOREACH (const std::string& k, key_vec)
+          {
+            if (!s.empty())
+            {
+              s += ".";
+            }
+            s += k;
+          }
 
           return s;
         }
       }
 
-      namespace visitor
+      namespace
       {
-        class show : public boost::static_visitor<void>
+        class visitor_show : public boost::static_visitor<void>
         {
         private:
           std::ostream & s;
 
         public:
-          show (std::ostream & _s) : s (_s) {}
+          visitor_show (std::ostream & _s) : s (_s) {}
 
           void operator () (const value::type & v) const
           {
             s << v;
           }
 
-          void operator () (const key_vec_t & key) const
+          void operator () (const std::list<std::string>& key) const
           {
             s << "${" << show_key_vec (key) << "}";
           }
@@ -110,14 +113,15 @@ namespace expr
 
       std::ostream& operator << (std::ostream & s, const type & node)
       {
-        boost::apply_visitor (visitor::show (s), node);
+        boost::apply_visitor (visitor_show (s), node);
 
         return s;
       }
 
-      namespace visitor
+      namespace
       {
-        class get_value : public boost::static_visitor<const value::type &>
+        class visitor_get_value
+          : public boost::static_visitor<const value::type &>
         {
         public:
           const value::type & operator () (const value::type & v) const
@@ -134,16 +138,16 @@ namespace expr
 
       const value::type& get (const type & node)
       {
-        return boost::apply_visitor (visitor::get_value(), node);
+        return boost::apply_visitor (visitor_get_value(), node);
       }
 
-      namespace visitor
+      namespace
       {
-        class is_value : public boost::static_visitor<bool>
+        class visitor_is_value : public boost::static_visitor<bool>
         {
         public:
           bool operator () (const value::type &) const { return true; }
-          bool operator () (const key_vec_t &) const { return false; }
+          bool operator () (const std::list<std::string>&) const { return false; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
           bool operator () (const ternary_t &) const { return false; }
@@ -152,16 +156,16 @@ namespace expr
 
       bool is_value (const type& node)
       {
-        return boost::apply_visitor (visitor::is_value(), node);
+        return boost::apply_visitor (visitor_is_value(), node);
       }
 
-      namespace visitor
+      namespace
       {
-        class is_ref : public boost::static_visitor<bool>
+        class visitor_is_ref : public boost::static_visitor<bool>
         {
         public:
           bool operator () (const value::type &) const { return false; }
-          bool operator () (const key_vec_t &) const { return true; }
+          bool operator () (const std::list<std::string>&) const { return true; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
           bool operator () (const ternary_t &) const { return false; }
@@ -170,21 +174,15 @@ namespace expr
 
       bool is_ref (const type& node)
       {
-        return boost::apply_visitor (visitor::is_ref(), node);
+        return boost::apply_visitor (visitor_is_ref(), node);
       }
 
-      namespace visitor
+      namespace
       {
-        class rename : public boost::static_visitor<void>
+        class visitor_rename : public boost::static_visitor<void>
         {
-        private:
-          const key_vec_t::value_type from;
-          const key_vec_t::value_type to;
-
         public:
-          rename ( const key_vec_t::value_type & _from
-                 , const key_vec_t::value_type & _to
-                 )
+          visitor_rename (const std::string& _from, const std::string& _to)
             : from (_from), to (_to)
           {}
 
@@ -193,7 +191,7 @@ namespace expr
             return;
           }
 
-          void operator () (key_vec_t & v) const
+          void operator () (std::list<std::string>& v) const
           {
             if (v.size() > 0 && *v.begin() == from)
               {
@@ -218,15 +216,16 @@ namespace expr
             boost::apply_visitor (*this, t.child1);
             boost::apply_visitor (*this, t.child2);
           }
+
+        private:
+          const std::string from;
+          const std::string to;
         };
       }
 
-      void rename ( type & t
-                  , const key_vec_t::value_type & from
-                  , const key_vec_t::value_type & to
-                  )
+      void rename (type& t, const std::string& from, const std::string& to)
       {
-        boost::apply_visitor (visitor::rename (from, to), t);
+        boost::apply_visitor (visitor_rename (from, to), t);
       }
     }
   }

@@ -119,9 +119,7 @@ namespace expr
       return eval_all_bool (c);
     }
 
-    void parser::rename ( const key_vec_t::value_type & from
-                        , const key_vec_t::value_type & to
-                        )
+      void parser::rename (const std::string& from, const std::string& to)
     {
       std::for_each (begin(), end(), boost::bind (node::rename, _1, from, to));
     }
@@ -283,9 +281,10 @@ namespace expr
     }
 
     void
-    parser::parse ( const std::string& input
-                  , const boost::function<nd_t (const key_vec_t &)> & refnode
-                  )
+    parser::parse
+      ( const std::string& input
+      , const boost::function<nd_t (const std::list<std::string>&)> & refnode
+      )
     {
       op_stack.push (token::eof);
 
@@ -298,10 +297,10 @@ namespace expr
             {
               ++token;
 
-              switch (*token)
+              switch (token.token())
                 {
                 case token::val:
-                  tmp_stack.push_back (token());
+                  tmp_stack.push_back (token.value());
                   break;
                 case token::ref:
                   tmp_stack.push_back (refnode(token.get_ref()));
@@ -310,16 +309,16 @@ namespace expr
                   {
                   ACTION:
                     action::type action
-                      (action::action (op_stack.top(), *token));
+                      (action::action (op_stack.top(), token.token()));
 
                     switch (action)
                       {
                       case action::reduce:
-                        reduce (token.pos());
+                        reduce (token.pos()());
                         goto ACTION;
                         break;
                       case action::shift:
-                        op_stack.push (*token);
+                        op_stack.push (token.token());
                         break;
                       case action::accept:
                         std::copy ( tmp_stack.begin()
@@ -329,13 +328,13 @@ namespace expr
                         tmp_stack.clear();
                         break;
                       default:
-                        throw exception::parse::exception (fhg::util::show(action), token.pos());
+                        throw exception::parse::exception (fhg::util::show(action), token.pos()());
                       }
                     break;
                   }
                 }
             }
-          while (*token != token::eof);
+          while (token.token() != token::eof);
         }
     }
 
