@@ -54,6 +54,23 @@ namespace prefix
     }
   };
 
+  struct state_description
+  {
+    QStringList _actions;
+    boost::optional<char> _character;
+    QColor _brush;
+    QColor _pen;
+
+    QPixmap _pixmap;
+
+    state_description ( const QStringList& actions = QStringList()
+                      , boost::optional<char> = boost::none
+                      , QColor brush = Qt::lightGray
+                      , QColor pen = Qt::black
+                      );
+    void reset();
+  };
+
   class async_tcp_communication : public QObject
   {
     Q_OBJECT;
@@ -154,14 +171,6 @@ namespace prefix
     void refresh_stati();
 
   private:
-    struct state_description
-    {
-      QList<QString> _actions;
-      QColor _brush;
-      QColor _pen;
-      QPixmap _pixmap;
-    };
-
     QMap<QString, QString> _long_action;
 
     QList<QString> _pending_updates;

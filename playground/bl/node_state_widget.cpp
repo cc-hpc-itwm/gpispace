@@ -99,13 +99,13 @@ namespace prefix
       if (tokens[0] == "possible_status")
       {
         const QString& state (tokens[1]);
+        const QStringList actions (tokens.mid (2));
+
         _connection->push (QString ("layout_hint %1").arg (state));
-        _states[state]._pen = Qt::black;
-        foreach (const QString& action, tokens.mid (2))
-        {
-          _states[state]._actions << action;
-          _connection->push (QString ("describe_action %1").arg (action));
-        }
+        _connection->push
+          (QString ("describe_action %1").arg (actions.join (" ")));
+
+        _states.insert (state, state_description (actions));
       }
       else if (tokens[0] == "status")
       {
@@ -180,15 +180,40 @@ namespace prefix
           }
         }
 
-        desc._pixmap = QPixmap (node_size, node_size);
-        QPainter painter (&desc._pixmap);
-        painter.setRenderHint (QPainter::Antialiasing);
-
-        painter.setBrush (desc._brush);
-        painter.setPen (QPen (desc._pen, pen_size));
-
-        painter.drawRect (0, 0, node_size, node_size);
+        desc.reset();
       }
+    }
+  }
+
+  state_description::state_description ( const QStringList& actions
+                                       , boost::optional<char> character
+                                       , QColor brush
+                                       , QColor pen
+                                       )
+    : _actions (actions)
+    , _character (character)
+    , _brush (brush)
+    , _pen (pen)
+  {
+    reset();
+  }
+
+  void state_description::reset()
+  {
+    _pixmap = QPixmap (node_size, node_size);
+
+    QPainter painter (&_pixmap);
+    painter.setRenderHint (QPainter::Antialiasing);
+
+    painter.setBrush (_brush);
+    painter.setPen (QPen (_pen, pen_size));
+
+    painter.drawRect (0, 0, node_size, node_size);
+
+    if (_character)
+    {
+      painter.drawText
+        (0, 0, node_size, node_size, Qt::AlignCenter, QString (*_character));
     }
   }
 
@@ -231,7 +256,7 @@ namespace prefix
       );
   }
 
-  const node_state_widget::state_description& node_state_widget::state (const boost::optional<QString>& name) const
+  const state_description& node_state_widget::state (const boost::optional<QString>& name) const
   {
     if (name)
     {
@@ -239,20 +264,8 @@ namespace prefix
     }
     else
     {
-      static state_description default_state_description;
-
-      default_state_description._pixmap = QPixmap (node_size, node_size);
-      QPainter painter (&default_state_description._pixmap);
-      painter.setRenderHint (QPainter::Antialiasing);
-
-      painter.setBrush (Qt::lightGray);
-      painter.setPen (QPen (Qt::black, pen_size));
-
-      painter.drawRect (0, 0, node_size, node_size);
-      painter.drawText (0, 0, node_size, node_size, Qt::AlignCenter, "?");
-
-      //! \todo From where?
-      return default_state_description;
+      static state_description fallback (QStringList(), '?');
+      return fallback;
     }
   }
   const node_type& node_state_widget::node (int index) const
