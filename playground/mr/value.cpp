@@ -82,10 +82,43 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
     l.push_back (value_type (long (3)));
     test_show_and_read_showed (l, "list (3, 3L)");
   }
-  test_show_and_read_showed (std::vector<value_type>(), "vector ()");
-  test_show_and_read_showed (std::set<value_type>(), "set {}");
-  test_show_and_read_showed (std::map<value_type,value_type>(), "map []");
-  test_show_and_read_showed (structured_type(), "struct []");
+  {
+    std::vector<value_type> v;
+    test_show_and_read_showed (v, "vector ()");
+    v.push_back (std::string ("foo"));
+    v.push_back (3.141);
+    v.push_back (3.141);
+    v.push_back (3.141f);
+    test_show_and_read_showed
+      (v, "vector (\"foo\", 3.14100, 3.14100, 3.14100f)");
+  }
+  {
+    std::set<value_type> s;
+    test_show_and_read_showed (s, "set {}");
+    s.insert (std::string ("foo"));
+    s.insert (3.141);
+    s.insert (3.141);
+    s.insert (3.141f);
+    test_show_and_read_showed (s, "set {3.14100f, 3.14100, \"foo\"}");
+  }
+  {
+    std::map<value_type, value_type> m;
+    test_show_and_read_showed (m, "map []");
+    m[std::string ("foo")] = 314U;
+    m[14] = 14;
+    m[std::map<value_type,value_type>()] = 14;
+    test_show_and_read_showed
+      (m, "map [14 -> 14, \"foo\" -> 314U, map [] -> 14]");
+  }
+  {
+    structured_type m;
+    test_show_and_read_showed (m, "struct []");
+    m["foo"] = 314U;
+    m["bar"] = 14UL;
+    m["baz"] = std::list<value_type>();
+    test_show_and_read_showed
+      (m, "struct [bar := 14UL, baz := list (), foo := 314U]");
+  }
 }
 
 BOOST_AUTO_TEST_CASE (_read)
