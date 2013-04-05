@@ -14,6 +14,8 @@
 
 #include <sstream>
 
+using pnet::type::value::structured_type;
+
 namespace
 {
   template<typename T>
@@ -83,6 +85,7 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
   test_show_and_read_showed (std::vector<value_type>(), "vector ()");
   test_show_and_read_showed (std::set<value_type>(), "set {}");
   test_show_and_read_showed (std::map<value_type,value_type>(), "map []");
+  test_show_and_read_showed (structured_type(), "struct []");
 }
 
 BOOST_AUTO_TEST_CASE (_read)
@@ -136,7 +139,7 @@ BOOST_AUTO_TEST_CASE (_read)
   }
 
   {
-    std::map<std::string, value_type> m;
+    structured_type m;
 
     BOOST_CHECK (value_type (m) == read ("struct []"));
 
@@ -176,7 +179,7 @@ BOOST_AUTO_TEST_CASE (_read)
     BOOST_CHECK (value_type (v) == read (pos));
     BOOST_CHECK (value_type (l) == read (pos));
     BOOST_CHECK (value_type (m) == read (pos));
-    BOOST_CHECK (pos.rest().empty());
+    BOOST_CHECK (pos.end());
  }
 }
 
@@ -208,10 +211,10 @@ BOOST_AUTO_TEST_CASE (get)
     l1 = _l1;
   }
 
-  value_type m1 (pnet::type::value::empty());
-  boost::get<std::map<std::string, value_type>&> (m1)["i"] = i;
-  boost::get<std::map<std::string, value_type>&> (m1)["s"] = s;
-  boost::get<std::map<std::string, value_type>&> (m1)["l1"] = l1;
+  value_type m1 = structured_type();
+  boost::get<structured_type&> (m1)["i"] = i;
+  boost::get<structured_type&> (m1)["s"] = s;
+  boost::get<structured_type&> (m1)["l1"] = l1;
 
   std::list<value_type> _l2;
   _l2.push_back (l1);
@@ -230,7 +233,7 @@ BOOST_AUTO_TEST_CASE (get)
   _set.insert (l1);
   const value_type set (_set);
 
-  std::map<std::string, value_type> _m2;
+  structured_type _m2;
   _m2["m1"] = m1;
   _m2["l2"] = l2;
   _m2["mv"] = mv;

@@ -26,7 +26,7 @@ namespace pnet
 
           m[key] = read (pos);
         }
-        void struct_item ( std::map<std::string, value_type>& m
+        void struct_item ( structured_type& m
                          , fhg::util::parse::position& pos
                          )
         {
@@ -177,7 +177,7 @@ namespace pnet
               ++pos;
               pos.require ("ruct");
 
-              std::map<std::string, value_type> m;
+              structured_type m;
 
               pos.list ( '[', ',', ']'
                        , boost::bind (struct_item, boost::ref (m), _1)
