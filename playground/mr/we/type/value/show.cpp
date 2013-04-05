@@ -131,8 +131,7 @@ namespace pnet
             }
           return _os << "}";
         }
-        std::ostream&
-        operator() (const std::map<std::string, value_type>& m) const
+        std::ostream& operator() (const structured_type& m) const
         {
           _os << "struct [";
           bool first (true);

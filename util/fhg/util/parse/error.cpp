@@ -34,6 +34,10 @@ namespace fhg
         expected::expected (const std::string& what, const position& inp)
           : generic (boost::format ("expected '%1%'") % what, inp)
         {}
+
+        signed_unsigned::signed_unsigned (const position& pos)
+          : generic ("unsigned value but sign found", pos)
+        {}
       }
     }
   }

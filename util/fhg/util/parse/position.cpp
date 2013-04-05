@@ -135,13 +135,34 @@ namespace fhg
         return c;
       }
 
-      std::string position::until (const char c)
+      std::string position::until (const char c, const char escape)
       {
         std::string s;
 
         while (!end() && *_pos != c)
         {
-          s.push_back (character());
+          if (*_pos == escape)
+          {
+            operator++();
+
+            if (!end() && (*_pos == c || *_pos == escape))
+            {
+              s.push_back (*_pos);
+              operator++();
+            }
+            else
+            {
+              throw error::expected ( std::string (1, c)
+                                    + " or "
+                                    + std::string (1, escape)
+                                    , *this
+                                    );
+            }
+          }
+          else
+          {
+            s.push_back (character());
+          }
         }
 
         if (end())

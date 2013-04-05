@@ -30,7 +30,6 @@ set (hdrs
   RetrieveJobResultsEvent.hpp
   RunJobEvent.hpp
   SDPAEvent.hpp
-  sdpa-msg.proto
   Serialization.hpp
   StartUpEvent.hpp
   SubmitJobAckEvent.hpp

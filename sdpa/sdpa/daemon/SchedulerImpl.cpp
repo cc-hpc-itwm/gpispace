@@ -149,16 +149,19 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
     pWorker->delete_job(job_id);
 
     Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-    std::string status = pJob->getStatus();
-    if( status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+    if(pJob)
     {
-      pJob->Reschedule(); // put the job back into the pending state
-      schedule(job_id);
+		std::string status = pJob->getStatus();
+		if( status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+		  pJob->Reschedule(); // put the job back into the pending state
+		  schedule(job_id);
+		}
     }
   }
   catch (const WorkerNotFoundException& ex)
   {
-    SDPA_LOG_WARN("Cannot delete the worker "<<worker_id<<". Worker not found!");
+    SDPA_LOG_WARN("Cannot find the worker "<<worker_id);
   }
   catch(JobNotFoundException const &ex)
   {
@@ -227,7 +230,7 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::J
   }
 }
 
-void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
+void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 {
   // first re-schedule the work:
   // inspect all queues and re-schedule each job
@@ -260,7 +263,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (Wo
   catch (const WorkerNotFoundException& ex)
   {
     SDPA_LOG_WARN("Could not re-schedule the jobs of the worker "<<worker_id<<": no such worker exists!");
-    throw ex;
   }
 }
 

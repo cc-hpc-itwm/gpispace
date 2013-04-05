@@ -3,6 +3,7 @@
 #include <we/type/value/read.hpp>
 
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/num.hpp>
 
 #include <boost/bind.hpp>
 
@@ -25,7 +26,7 @@ namespace pnet
 
           m[key] = read (pos);
         }
-        void struct_item ( std::map<std::string, value_type>& m
+        void struct_item ( structured_type& m
                          , fhg::util::parse::position& pos
                          )
         {
@@ -94,6 +95,48 @@ namespace pnet
           ++pos;
           return pos.until ('\"');
 
+        case '{':
+          {
+            ++pos;
+
+            bitsetofint::type bs;
+
+            pos.skip_spaces();
+
+            while (!pos.end() && *pos != '}')
+            {
+              bs.push_back (fhg::util::read_ulong (pos));
+
+              pos.skip_spaces();
+            }
+
+            pos.require ("}");
+
+            return bs;
+          }
+
+        case 'y':
+          {
+            ++pos;
+
+            pos.require ("(");
+
+            bytearray::type ba;
+
+            pos.skip_spaces();
+
+            while (!pos.end() && *pos != ')')
+            {
+              ba.push_back (fhg::util::read_ulong (pos));
+
+              pos.skip_spaces();
+            }
+
+            pos.require (")");
+
+            return ba;
+          }
+
         case 'm':
           {
             ++pos;
@@ -134,7 +177,7 @@ namespace pnet
               ++pos;
               pos.require ("ruct");
 
-              std::map<std::string, value_type> m;
+              structured_type m;
 
               pos.list ( '[', ',', ']'
                        , boost::bind (struct_item, boost::ref (m), _1)
@@ -176,7 +219,7 @@ namespace pnet
           }
 
         default:
-          throw std::runtime_error ("not yet implemented: " + pos.rest());
+          return fhg::util::read_num (pos);
         }
       }
 

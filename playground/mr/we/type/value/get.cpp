@@ -73,8 +73,8 @@ namespace pnet
       {
         return boost::apply_visitor
           ( visitor_get< const value_type
-                       , const std::map<std::string, value_type>
-                       , const std::map<std::string, value_type>::const_iterator
+                       , const structured_type
+                       , const structured_type::const_iterator
                        > (path.begin(), path.end(), node)
           , node
           );
@@ -86,8 +86,8 @@ namespace pnet
       {
         return boost::apply_visitor
           ( visitor_get< value_type
-                       , std::map<std::string, value_type>
-                       , std::map<std::string, value_type>::iterator
+                       , structured_type
+                       , structured_type::iterator
                        > (path.begin(), path.end(), node)
           , node
           );
