@@ -11,8 +11,6 @@
 
 namespace value
 {
-  std::string identifier (fhg::util::parse::position&);
-
   type read (fhg::util::parse::position&);
   type read (const std::string&);
 }

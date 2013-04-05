@@ -221,14 +221,14 @@ void MyFixture::run_client_subscriber()
 
 		try {
 
-			LOG( DEBUG, "Submitting new workflow ..."); //<<m_strWorkflow);
+			LOG( INFO, "Submitting new workflow ..."); //<<m_strWorkflow);
 			job_id_user = ptrCli->submitJob(m_strWorkflow);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
 			if(nTrials++ > NMAXTRIALS)
 			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+				LOG( WARN, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 				ptrCli->shutdown_network();
 				ptrCli.reset();
@@ -238,17 +238,17 @@ void MyFixture::run_client_subscriber()
 			boost::this_thread::sleep(boost::posix_time::seconds(1));
 		}
 
-		LOG( DEBUG, "//JOB #"<<k<<"//");
+		LOG( INFO, "//JOB #"<<k<<"//");
 
 		subscribe_and_wait( job_id_user, ptrCli );
 
 		try {
-			LOG( DEBUG, "User: delete the job "<<job_id_user);
+			LOG( INFO, "The client requests to delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
+			LOG( WARN, "The maximum number of  trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
@@ -263,9 +263,9 @@ void MyFixture::run_client_subscriber()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
+BOOST_AUTO_TEST_CASE( Test1 )
 {
-	LOG( DEBUG, "testStop_2Agents_NoDrts_push_1");
+	LOG( INFO, "Begin Test1");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -279,7 +279,6 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	//LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
@@ -312,12 +311,12 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	ptrRecAgent0->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_2Agents_NoDrts_push_1 terminated!");
+	LOG( INFO, "End Test1");
 }
 
-BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
+BOOST_AUTO_TEST_CASE( Test2 )
 {
-	LOG( DEBUG, "testStop_AgentNoWE_push");
+	LOG( INFO, "Begin Test2");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -328,7 +327,6 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	//LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
@@ -359,12 +357,12 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_AgentNoWE_push terminated!");
+	LOG( INFO, "End Test2");
 }
 
-BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
+BOOST_AUTO_TEST_CASE( test3 )
 {
-	LOG( DEBUG, "testStop_2AgentsAndDrts_Push_RealWE");
+	LOG( INFO, "Begin Test3");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -415,12 +413,12 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 	ptrRecAgent0->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_2AgentsAndDrts_Push_RealWE terminated!");
+	LOG( INFO, "End Test3");
 }
 
-BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
+BOOST_AUTO_TEST_CASE( Test4 )
 {
-	LOG( DEBUG, "testStop_AgentRealWE_push");
+	LOG( INFO, "Begin Test4");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -466,7 +464,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	LOG( INFO, "Shutdown the orchestrator "<<ptrOrch->name() );
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_AgentRealWE_push terminated!");
+	LOG( INFO, "End Test4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

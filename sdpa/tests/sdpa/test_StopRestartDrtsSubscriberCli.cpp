@@ -289,27 +289,26 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
 
     boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
-    MLOG (INFO, "************ stopping drts_0");
+    MLOG (INFO, "Stopping drts_0");
     drts_0->stop();
     if(drts_0_thread.joinable())
     	drts_0_thread.join();
-    MLOG (INFO, "************ stopped drts_0");
+    MLOG (INFO, "The worker thread drts_0 has joined the main thread");
 
     // create new drts
-    sdpa::shared_ptr<fhg::core::kernel_t> drts_new( createDRTSWorker("drts_new", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
-    boost::thread drts_new_thread = boost::thread(&fhg::core::kernel_t::run, drts_new);
+    sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
+    boost::thread drts_1_thread = boost::thread(&fhg::core::kernel_t::run, drts_1);
 
-    MLOG (INFO, "************ stopping client");
     if( threadClient.joinable() )
     	threadClient.join();
-    MLOG (INFO, "************ stopped client");
+    MLOG (INFO, "The client thread joined the main thread");
 
     // and stop!!!
-    MLOG (INFO, "************ stopping drts_new");
-    drts_new->stop();
-    if(drts_new_thread.joinable())
-    	drts_new_thread.join();
-    MLOG (INFO, "************ stopped drts_new");
+    MLOG (INFO, "Stopping drts_1");
+    drts_1->stop();
+    if(drts_1_thread.joinable())
+    	drts_1_thread.join();
+    MLOG (INFO, "The worker thread drts_1 has joined the main thread");
 
     ptrAgent->shutdown();
     ptrOrch->shutdown();

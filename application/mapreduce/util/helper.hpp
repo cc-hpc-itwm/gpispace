@@ -77,6 +77,9 @@ namespace mapreduce
   	  std::string key(const std::string& item)
   	  {
   		  size_t split_pos = item.find_last_of(PAIRSEP);
+  		  if(split_pos==std::string::npos)
+  			throw std::runtime_error(std::string("Invalid string encoded key-value pair: ") + item);
+
   		  std::string key = item.substr(0,split_pos);
   		  return key;
   	  }
@@ -84,6 +87,9 @@ namespace mapreduce
   	  std::string val(const std::string& item)
   	  {
   		 size_t split_pos = item.find_last_of(PAIRSEP);
+  		 if(split_pos==std::string::npos)
+  			 throw std::runtime_error(std::string("Invalid string encoded key-value pair: ") + item);
+
   		 std::string val = item.substr(split_pos+1);
   		 return val;
   	  }
@@ -195,24 +201,35 @@ namespace mapreduce
   		  }
   	  }
 
-  	 bool is_special_key(const std::string& key)
-	 {
+  	  bool is_special_key(const std::string& key)
+  	  {
 		return is_special_key_regex(key);
-	 }
-
+  	  }
 
   	  bool my_comp_pairs(::mapreduce::util::key_val_pair_t lhs, ::mapreduce::util::key_val_pair_t rhs)
   	  {
   		  return lhs.first.compare(rhs.first)<0;
   	  }
 
-  	  bool my_comp(const std::string& lhs, const std::string& rhs)
-  	  {
-  		  std::string key_l(key(lhs));
-  		  std::string key_r(key(rhs));
+  	  bool string_comp( const std::string &left, const std::string &right )
+	  {
+		 for( std::string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
+			 if( *lit < *rit )
+				 return true;
+			 else if( *lit > *rit  )
+				 return false;
 
-  		  return key_l.compare(key_r)<0;
-  	  }
+		 if( left.size() < right.size() )
+			 return true;
+
+		 return false;
+	  }
+
+  	  bool my_comp(const std::string& lhs, const std::string& rhs)
+	  {
+		  return key(lhs).compare(key(rhs))<0;
+  		  //return string_comp(key(lhs), key(rhs));
+	  }
 
   	  void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
   	  {
@@ -301,20 +318,6 @@ namespace mapreduce
 	 {
 		 bool b = (DELIMITERS.find(x) != std::string::npos);
 		 return b;
-	 }
-
-	 bool string_comp( const std::string &left, const std::string &right )
-	 {
-		 for( std::string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
-			 if( *lit < *rit )
-				 return true;
-			 else if( *lit > *rit  )
-				 return false;
-
-		 if( left.size() < right.size() )
-			 return true;
-
-		 return false;
 	 }
 
 	 template <typename T>

@@ -38,6 +38,7 @@ namespace fhg
                    , std::string const & cookie
                    )
       : stopped_(true)
+      , stopping_ (false)
       , name_(name)
       , host_(host)
       , port_(port)
@@ -154,18 +155,24 @@ namespace fhg
       {
         lock_type lock(mutex_);
         stopped_ = false;
+        stopping_ = false;
       }
     }
 
     void peer_t::stop()
     {
-      io_service_.stop();
-
       DLOG(TRACE, "stopping peer " << name());
 
       lock_type lock(mutex_);
 
-      listen_.reset ();
+      stopping_ = true;
+
+      acceptor_.close ();
+
+      if (listen_)
+      {
+        listen_->socket ().close ();
+      }
 
       {
         try
@@ -176,11 +183,12 @@ namespace fhg
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "could not delete my information from the kvs: " << ex.what());
+          DLOG ( WARN
+               , "could not delete my information from the kvs: "
+               << ex.what()
+               );
         }
       }
-
-      backlog_.clear ();
 
       // TODO: call pending handlers and delete pending messages
       while (! connections_.empty ())
@@ -219,6 +227,11 @@ namespace fhg
         to_recv.handler (errc::make_error_code(errc::operation_canceled));
       }
 
+      backlog_.clear ();
+
+      io_service_.stop();
+
+      stopping_ = false;
       stopped_ = true;
     }
 
@@ -247,6 +260,13 @@ namespace fhg
       assert (completion_handler);
 
       lock_type lock(mutex_);
+
+      if (stopping_)
+      {
+        using namespace boost::system;
+        completion_handler (errc::make_error_code (errc::network_down));
+        return;
+      }
 
       // TODO: io_service_.post (...);
       const p2p::address_t addr (m->header.dst);
@@ -347,11 +367,8 @@ namespace fhg
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
-        io_service_.post (boost::bind ( &self::start_sender
-                                      , this
-                                      , addr
-                                      )
-                         );
+        if (cd.o_queue.size () == 1)
+          start_sender (addr);
       }
     }
 
@@ -407,6 +424,14 @@ namespace fhg
 
       {
         lock_type lock(mutex_);
+
+        if (stopping_)
+        {
+          using namespace boost::system;
+          completion_handler (errc::make_error_code (errc::network_down));
+          return;
+        }
+
         // TODO: implement async receive on connection!
         if (m_pending.empty())
         {
@@ -536,19 +561,7 @@ namespace fhg
         if (connections_.find (a) != connections_.end())
         {
           connection_data_t & cd = connections_.find (a)->second;
-
           handle_error (cd.connection, ec);
-          while (! cd.o_queue.empty())
-          {
-            using namespace boost::system;
-
-            to_send_t to_send = cd.o_queue.front();
-            cd.o_queue.pop_front();
-
-            lock.unlock ();
-            to_send.handler (errc::make_error_code(errc::connection_refused));
-            lock.lock ();
-          }
         }
       }
     }
@@ -711,25 +724,17 @@ namespace fhg
     {
       lock_type lock (mutex_);
 
-      if (ec)
+      if (! ec && !stopping_)
       {
-        LOG (WARN, "accept() failed: " << ec << " := " << ec.message ());
-      }
-      else
-      {
-        if (listen_)
-        {
-          DLOG(TRACE, "connection attempt from " << listen_->socket().remote_endpoint());
-          // TODO: work here schedule timeout
-          backlog_.insert (listen_);
+        assert (listen_);
 
-          // the connection will  call us back when it got the  hello packet or will
-          // timeout
-          listen_->set_option
-            (boost::asio::socket_base::keep_alive (true));
-          listen_->start ();
-          listen_.reset ();
-        }
+        DLOG(TRACE, "connection attempt from " << listen_->socket().remote_endpoint());
+        // TODO: work here schedule timeout
+        backlog_.insert (listen_);
+
+        // the connection will  call us back when it got the  hello packet or will
+        // timeout
+        listen_->start ();
 
         accept_new ();
       }
@@ -737,8 +742,6 @@ namespace fhg
 
     void peer_t::accept_new ()
     {
-      assert (! listen_);
-
       listen_ = connection_t::ptr_t (new connection_t
                                     ( io_service_
                                     , cookie_
@@ -877,7 +880,7 @@ namespace fhg
           using namespace boost::system;
 
           lock.unlock ();
-          to_send.handler (errc::make_error_code(errc::operation_canceled));
+          to_send.handler (ec);
           lock.lock ();
         }
 
@@ -895,7 +898,7 @@ namespace fhg
           to_recv.message->header.dst = c->local_address();
 
           lock.unlock ();
-          to_recv.handler (errc::make_error_code(errc::operation_canceled));
+          to_recv.handler (ec);
           lock.lock ();
         }
 

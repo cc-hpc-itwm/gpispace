@@ -11,7 +11,3 @@ set (hdrs
 )
 
 add_subdirectory(message)
-
-install(FILES ${hdrs}
-  DESTINATION include/fhgcom/kvs
-  COMPONENT headers)

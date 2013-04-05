@@ -9,7 +9,6 @@
 
 namespace literal
 {
-  std::string identifier (fhg::util::parse::position&);
   type read (fhg::util::parse::position& pos);
 }
 

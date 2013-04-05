@@ -204,7 +204,7 @@ set (hdrs src/do_load.hpp src/determine_size.hpp src/do_write.hpp)
 
 install(FILES ${hdrs}
   DESTINATION include/seis
-  COMPONENT headers
+  COMPONENT sdk
   )
 
 install(PROGRAMS kdm

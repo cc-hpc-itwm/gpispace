@@ -12,37 +12,35 @@ namespace pnet
     {
       namespace
       {
-        class visitor_get
-          : public boost::static_visitor<boost::optional<const value_type&> >
+        template<typename V, typename M, typename MIT>
+        class visitor_get : public boost::static_visitor<boost::optional<V&> >
         {
         public:
           visitor_get ( const std::list<std::string>::const_iterator& key
                       , const std::list<std::string>::const_iterator& end
-                      , const value_type& node
+                      , V& node
                       )
             : _key (key)
             , _end (end)
             , _node (node)
           {}
 
-          boost::optional<const value_type&>
-          operator() (const std::map<std::string, value_type>& m) const
+          boost::optional<V&> operator() (M& m) const
           {
             if (_key == _end)
             {
               return _node;
             }
 
-            const std::map<std::string, value_type>::const_iterator field
-              (m.find (*_key));
+            MIT field (m.find (*_key));
 
             if (field != m.end())
               {
                 return boost::apply_visitor
-                  ( visitor_get ( boost::next (_key)
-                                , _end
-                                , field->second
-                                )
+                  ( visitor_get<V,M,MIT> ( boost::next (_key)
+                                         , _end
+                                         , field->second
+                                         )
                   , field->second
                   );
               }
@@ -51,7 +49,7 @@ namespace pnet
           }
 
           template<typename T>
-          boost::optional<const value_type&> operator() (const T&) const
+          boost::optional<V&> operator() (T&) const
           {
             if (_key == _end)
             {
@@ -64,63 +62,7 @@ namespace pnet
         private:
           const std::list<std::string>::const_iterator& _key;
           const std::list<std::string>::const_iterator& _end;
-          const value_type& _node;
-        };
-
-        class visitor_get_ref
-          : public boost::static_visitor<boost::optional<value_type&> >
-        {
-        public:
-          visitor_get_ref
-            ( const std::list<std::string>::const_iterator& pos
-            , const std::list<std::string>::const_iterator& end
-            , value_type& value
-            )
-              : _key (pos)
-              , _end (end)
-              , _node (value)
-          {}
-
-          boost::optional<value_type&>
-          operator() (std::map<std::string, value_type>& m) const
-          {
-            if (_key == _end)
-            {
-              return _node;
-            }
-
-            const std::map<std::string, value_type>::iterator pos
-              (m.find (*_key));
-
-            if (pos != m.end())
-              {
-                return boost::apply_visitor
-                  ( visitor_get_ref ( boost::next (_key)
-                                    , _end
-                                    , pos->second
-                                    )
-                  , pos->second
-                  );
-              }
-
-            return boost::none;
-          }
-
-          template<typename T>
-          boost::optional<value_type&> operator() (T&) const
-          {
-            if (_key == _end)
-            {
-              return _node;
-            }
-
-            return boost::none;
-          }
-
-        private:
-          const std::list<std::string>::const_iterator& _key;
-          const std::list<std::string>::const_iterator& _end;
-          value_type& _node;
+          V& _node;
         };
       }
 
@@ -130,7 +72,12 @@ namespace pnet
           )
       {
         return boost::apply_visitor
-          (visitor_get (path.begin(), path.end(), node), node);
+          ( visitor_get< const value_type
+                       , const structured_type
+                       , const structured_type::const_iterator
+                       > (path.begin(), path.end(), node)
+          , node
+          );
       }
       boost::optional<value_type&>
       get_ref ( const std::list<std::string>& path
@@ -138,7 +85,12 @@ namespace pnet
               )
       {
         return boost::apply_visitor
-          (visitor_get_ref (path.begin(), path.end(), node), node);
+          ( visitor_get< value_type
+                       , structured_type
+                       , structured_type::iterator
+                       > (path.begin(), path.end(), node)
+          , node
+          );
       }
     }
   }

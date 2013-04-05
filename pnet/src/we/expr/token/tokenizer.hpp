@@ -16,10 +16,15 @@ namespace expr
 {
   namespace token
   {
-    typedef std::list<std::string> key_vec_t;
-
     struct tokenizer
     {
+    public:
+      tokenizer (fhg::util::parse::position&);
+      const value::type& value() const;
+      const token::type& token() const;
+      void operator++();
+      const std::list<std::string>& get_ref() const;
+
     public:
       void set_token (const token::type&);
       void set_value (const value::type&);
@@ -30,23 +35,16 @@ namespace expr
       void divcomment();
       void identifier();
       void notne();
-      fhg::util::parse::position& pos;
+      bool is_eof();
+      fhg::util::parse::position& pos();
 
     private:
-      token::type token;
-      value::type tokval;
+      fhg::util::parse::position& _pos;
+      token::type _token;
+      value::type _tokval;
       std::list<std::string> _ref;
 
-      bool is_eof();
       void skip_comment (const unsigned int);
-      void get();
-
-    public:
-      tokenizer (fhg::util::parse::position& pos);
-      const value::type& operator()() const;
-      const token::type& operator*() const;
-      void operator++();
-      const std::list<std::string>& get_ref() const;
     };
   }
 }

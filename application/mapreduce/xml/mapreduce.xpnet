@@ -566,21 +566,19 @@
                     if( it == tok.begin() && read_chunk_info.chunk_id > 0 )
                     {
                         std::string spec_left_prefix = ::mapreduce::util::make_spec_left_prefix(read_chunk_info.chunk_id);
-                        
-                        // the first char of the chunk is a separator/delimiter
           				std::string key = spec_left_prefix;
+           				part_id  = ::mapreduce::util::hash(key, n_part);
+          
+          				// the first char of the chunk is a separator/delimiter
                         if( first_char_is_delim )
                         {
           					key = spec_left_prefix;
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t(key, " " ));
-                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
                         {
-          					
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, curr_item)); 
-                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                             continue;
                         }
@@ -590,18 +588,17 @@
                     {
                         std::string spec_right_prefix = ::mapreduce::util::make_spec_right_prefix(read_chunk_info.chunk_id);
                     	std::string key = spec_right_prefix;
+          				part_id  = ::mapreduce::util::hash(key, n_part);
                         
                         // the last character of the chunk is a delimiter
                         if( last_char_is_delim )
                         {
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, " "));       
-                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
                         {
                             str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, curr_item));
-                            part_id  = ::mapreduce::util::hash(key, n_part);
                             arr_part_buffs[part_id].push_back(str_pair);
                             continue;
                         }
@@ -675,7 +672,7 @@
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
       <connect-out port="counter_partial_updates" place="counter_partial_updates"/>
     </transition>
-
+   
     <place name="map_chunk_info_new" type="map_chunk_info_t"/>
   
     <place name="part_slice_info" type="part_slice_info"/>
@@ -726,165 +723,6 @@
 	    <connect-out port="map_chunk_info" place="map_chunk_info"/> 
 	</transition> 
     
-   <!--
-	<place name="partition_result" type="partition_result"/>
-    <transition name="copy_into_partition_slot" inline="true">
-      <require key="GPI" />
-      <require key="RED" /> 
-    	<defun>
-        <in name="part_slice_info" type="part_slice_info"/>
-        <in name="partition_info" type="partition_info"/>
-        <in name="config" type="config"/>
-        <out name="partition_result" type="partition_result"/>
-        <module name="store_into_partition_slot" function="copy_map_slice_into_partition(part_slice_info, partition_info, config, partition_result)">
-           <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="sstream"/>
-          <cinclude href="ctype.h"/>
-          <cinclude href="cstdio"/>
-          <cinclude href="fstream"/>
-          <cinclude href="boost/tokenizer.hpp"/>
-          <cinclude href="vector"/>
-          <cinclude href="util/partition.hpp"/>
-          <cinclude href="util/helper.hpp"/>   <ld flag="-lboost_regex"/>
-          <cinclude href="util/map.hpp"/>
-          <cinclude href="util/reduce.hpp"/>        
-          <code><![CDATA[
-            MLOG (INFO, "copying the slice (offset="<<part_slice_info.part_offset<<", size="<<part_slice_info.part_used<<") of the map "<<part_slice_info.map_slot_id
-                         <<" into the corresponding partition (part_id="<<part_slice_info.part_id<<")"); 
-            // do partitioning copy from the map_chunk store in map_slot_id
-            // the data corresponding to the partition partition_result.partition_info.slot_id
-             
-            size_t avail_shmem(fvmGetShmemSize());
-            int offset_part = avail_shmem/2; // half of the shared memory buffer 
-			  	
-            // initialize partition_result
-            partition_result.partition_info = partition_info;
-            partition_result.part_slice_info = part_slice_info;
-            partition_result.succeeded = 0;
-                         
-            char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
-            
-		  	if( part_slice_info.part_used>avail_shmem )
-		  	{
-		  		throw std::runtime_error("The amount of shared memory should be larger than the partition used space!" );
-		  	}
-		  	
-            // get the map pairs
-            waitComm ( fvmGetGlobalData
-            ( static_cast<fvmAllocHandle_t> (config.handle.map)
-                                                , part_slice_info.map_slot_id*config.size.chunk.map + part_slice_info.part_offset
-                                                , part_slice_info.part_used
-                                                , 0
-                                                , 0
-                                            )
-            );
-    		
-    		ptr_shmem[part_slice_info.part_used]=0;
-    		std::vector<std::string> arr_slice_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);
-    		size_t last_pos = 0;
-    		
-            if( partition_info.part_used == 0 )
-			{
-				// sort the slice first!
-				if( partition_info.part_id < config.num.part-1 )
-            	{
-            		::mapreduce::util::my_sort(arr_slice_items.begin(), arr_slice_items.end());
-            		::mapreduce::util::reduce_arr_buff(partition_info.slot_id, config.size.partition.slot, arr_slice_items, ptr_shmem, last_pos);
-            	}
-            	else //  partition_info.part_id == config.num.part-1
-            	{
-					::mapreduce::util::write_arr_to_buff( arr_slice_items, ptr_shmem, last_pos, config.size.partition.slot );		
-            	}
-            }
-            else // partition_info.part_used > 0
-            {						
-	            
-	            waitComm ( fvmGetGlobalData
-	            ( static_cast<fvmAllocHandle_t> (	config.handle.partition)
-	                                                , partition_info.slot_id*config.size.partition.slot 
-	                                                , partition_info.part_used
-	                                                , 0
-	                                                , 0
-	                                            )
-	            );
-
-	            ptr_shmem[partition_info.part_used] = 0;
-	            // already sorted
-				std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);
-				
-				::mapreduce::util::my_sort(arr_slice_items.begin(), arr_slice_items.end());
-            	if( partition_info.part_id < config.num.part-1 )
-            	{
-            		// sort the slice first!
-            		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(	partition_info.slot_id, 
-            																	config.size.partition.slot, 
-            																	arr_part_items, 
-            																	arr_slice_items,
-            																	ptr_shmem );
-				}
-				else //  partition_info.part_id == config.num.part-1
-				{			
-					std::vector<std::string> arr_items(arr_slice_items.size()+arr_part_items.size());
-					std::merge( arr_slice_items.begin(), 
-								arr_slice_items.end(), 
-								arr_part_items.begin(), 
-								arr_part_items.end(), 
-								arr_items.begin() );
-					// don't reduce the border keys			
-					::mapreduce::util::write_arr_to_buff( arr_items, ptr_shmem, last_pos, config.size.partition.slot );			
-				}
-            }
-																				
-			if(last_pos>config.size.partition.slot)
-            {
-                std::ostringstream osstr;
-                osstr<<"Cannot write into the reduce slot "<<partition_info.slot_id<<"! (not enough space). Please, increase the reduce slot size!";
-                throw std::runtime_error(osstr.str());
-            }
-            
-			if(last_pos< config.size.partition.slot)
-        	{ 
-				waitComm ( fvmPutGlobalData
-	            ( static_cast<fvmAllocHandle_t> (config.handle.partition)
-	                                                , partition_info.slot_id*config.size.partition.slot
-	                                                , last_pos
-	                                                , 0
-	                                                , 0
-	                                            )
-	            );
-	            
-	                   
-	        	partition_result.partition_info.part_used = last_pos;
-	        	partition_result.succeeded = 1;
-	
-	            MLOG( INFO, "Stored partition slice of the map slot "<<part_slice_info.map_slot_id<<" into partition"
-	                	    << partition_info.slot_id << " of size " << partition_result.partition_info.part_used<<" ...");
-
-			}
-            else
-            {
-                partition_result.succeeded = 0;
-                MLOG (ERROR, "cannot continue: " << part_slice_info.part_used << " bytes required, but I only have: " << config.size.partition.slot << " increase partition slot size!");
-                throw std::runtime_error ("out of memory: partition slot too small");
-            }          
-	          
-            MLOG( INFO, "part_slice_info.part_id="<<part_slice_info.part_id
-          				<<", partition_info.part_id="<<partition_info.part_id
-          				<<", config.num.slots_per_part="<<config.num.slots_per_part);   	           
-          ]]></code>
-        </module>
-        <condition>
-         	${part_slice_info.part_id}:eq:${partition_info.part_id}
-        </condition>
-    </defun>
-    <connect-in port="part_slice_info" place="part_slice_info"/>
-    <connect-in port="partition_info" place="partition_info"/>
-    <connect-read port="config" place="config"/>
-    <connect-out port="partition_result" place="partition_result"/>
-    </transition>
-   -->
-   
    <place name="partition_result" type="partition_result"/>
     <transition name="copy_into_partition_slot" inline="true">
       <require key="GPI" />
@@ -982,17 +820,17 @@
             	{
             		/*std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
             		
-            		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(	partition_info.slot_id, 
+            		last_pos = ::mapreduce::util::merge_and_reduce_arr_arr_2_buff(	partition_info.slot_id, 
             																	config.size.partition.slot, 
             																	arr_part_items, 
             																	arr_slice_items,
             																	ptr_out_buff );*/
             		
-            		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff_2(	partition_info.slot_id, 
-            																	config.size.partition.slot, 
-            																	arr_slice_items,
-                                                                                ptr_shmem,
-            																	ptr_out_buff );
+            		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff_2_buff(	partition_info.slot_id, 
+            																		config.size.partition.slot, 
+            																		arr_slice_items,
+                                                                                	ptr_shmem,
+            																		ptr_out_buff );
 		            																	
 				}
 				else //  partition_info.part_id == config.num.part-1
@@ -1058,8 +896,7 @@
     <connect-read port="config" place="config"/>
     <connect-out port="partition_result" place="partition_result"/>
     </transition>
-   
-    
+       
      <transition name="post_partition" inline="true">
       <defun>
         <in name="partition_result" type="partition_result"/>
@@ -1400,6 +1237,8 @@
 		      MLOG (INFO, "Reduce the partition "<<pre_reduce_info.slot_id<<", reduce space used: "<<pre_reduce_info.red_used);
 		      
 		      size_t last_pos = 0;
+          	  size_t offset_buff_out = 0;
+          
 		      if( pre_reduce_info.red_used != 0)
 		      {
 			      // first find out what are the actual sizes of the partitions!
@@ -1415,16 +1254,19 @@
 					// read into local_buff from vm the reduce slot reduce_slot.id ((size: pre_reduce_info.red_used)
 		            long reduce_offset = pre_reduce_info.slot_id*config.size.reduce.slot;
 		   			MLOG(INFO, "Get the content of the reduce slot from VM ...");
+          
+          			long n_bytes_part = pre_reduce_info.red_used - pre_reduce_info.old_red_used;
+          
 		            waitComm ( fvmGetGlobalData
 		            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
-		                                                , reduce_offset+pre_reduce_info.old_red_used
-		                                                , pre_reduce_info.red_used - pre_reduce_info.old_red_used
+		                                                , reduce_offset + pre_reduce_info.old_red_used
+		                                                , n_bytes_part
 		                                                , 0
 		                                                , 0
 		                                            )
 		            );
 		            
-		            ptr_shmem[pre_reduce_info.red_used-pre_reduce_info.old_red_used] = 0;
+		            ptr_shmem[n_bytes_part] = 0;
 		            std::vector<std::string> arr_part_items = ::mapreduce::util::get_list_items(ptr_shmem);
 							             	                
 		            if( pre_reduce_info.old_red_used == 0 )
@@ -1456,25 +1298,40 @@
 			            );
 			            
 			            ptr_shmem[pre_reduce_info.old_red_used] = 0;
-			            
-						// these items are supposed to be already sorted!
-						timestamp_t time_start_parse = ::mapreduce::util::get_timestamp();
-						std::vector<std::string> arr_old_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
-						timestamp_t time_end_parse = ::mapreduce::util::get_timestamp();
-						MLOG(INFO, "parsing and tokenization took "<<(time_end_parse - time_start_parse)/MS<<"ms"); 
-						
-					
+			            				
 	                	timestamp_t time_start_mrg_red_arr = ::mapreduce::util::get_timestamp();
 	                	if( pre_reduce_info.part_id < config.num.part-1 )
 	                	{
-	                		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(pre_reduce_info.slot_id, 
-	                																config.size.reduce.slot, 
-	                																arr_old_red_items, 
-	                																arr_part_items, 
-	                																ptr_shmem );
+	                	    size_t avail_shmem(fvmGetShmemSize());
+	                		char* buff_old_red_items;
+	                	   
+	                	    // if tehere enough space within the shared memory area
+	                	    // use ptr_shmem for both buffers, if not, allocate 
+	                	    // new buffer on the heap
+	                	    if( pre_reduce_info.red_used >= offset_buff_out  )
+          						buff_old_red_items = strdup(ptr_shmem);
+	                		else
+	                		{
+	                			buff_old_red_items = ptr_shmem;
+	                			offset_buff_out = avail_shmem/2;
+	                		}
+	                	
+	                		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff_2_buff( pre_reduce_info.slot_id, 
+	                																		config.size.reduce.slot, 
+	                																		arr_part_items, 
+          																					buff_old_red_items,
+	                																		ptr_shmem + offset_buff_out );
+          					if( pre_reduce_info.red_used >= offset_buff_out  )
+	                			free(buff_old_red_items);
 						}
 						else //  pre_reduce_info.part_id == config.num.part-1
 						{
+							// these items are supposed to be already sorted!
+							timestamp_t time_start_parse = ::mapreduce::util::get_timestamp();
+							std::vector<std::string> arr_old_red_items = ::mapreduce::util::get_list_items(ptr_shmem);
+							timestamp_t time_end_parse = ::mapreduce::util::get_timestamp();
+							MLOG(INFO, "parsing and tokenization took "<<(time_end_parse - time_start_parse)/MS<<"ms"); 
+						
 							std::vector<std::string> arr_red_items(arr_old_red_items.size()+arr_part_items.size());
 							std::merge( arr_old_red_items.begin(), 
 										arr_old_red_items.end(), 
@@ -1502,7 +1359,7 @@
 		            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
 		                                                , pre_reduce_info.slot_id*config.size.reduce.slot
 		                                                , last_pos
-		                                                , 0
+		                                                , offset_buff_out
 		                                                , 0
 		                                            )
 		            );
@@ -1957,8 +1814,10 @@
             
             if (special_reduce_info.red_used > fvmGetShmemSize ())
             {
-                 MLOG (ERROR, "reduce cannot continue: need " << reduce_info.red_used 
-                             << " bytes (reduce) but I only have " << fvmGetShmemSize() << ", increase shm size");
+                 MLOG (ERROR, "reduce cannot continue: need " 	<< reduce_info.red_used 
+                             									<< " bytes (reduce) but I only have " 
+                             									<< fvmGetShmemSize() 
+                             									<< ", increase shm size");
                  throw std::runtime_error ("out of memory: shm too small");
             }
               
@@ -2026,11 +1885,11 @@
                 arr_special_items.clear();
 			}
               	
-    		last_pos = ::mapreduce::util::merge_and_reduce_arr_buff(reduce_info.slot_id, 
-    																config.size.reduce.slot, 
-    																arr_red_items, 
-    																arr_part_items, 
-    																ptr_shmem );
+    		last_pos = ::mapreduce::util::merge_and_reduce_arr_arr_2_buff(	reduce_info.slot_id, 
+    																		config.size.reduce.slot, 
+    																		arr_red_items, 
+    																		arr_part_items, 
+    																		ptr_shmem );
 																									
 			if(last_pos>config.size.reduce.slot)
             {

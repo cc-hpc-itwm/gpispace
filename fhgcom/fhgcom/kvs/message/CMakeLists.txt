@@ -17,7 +17,3 @@ set (hdrs
   term.hpp
   ping.hpp
 )
-
-install(FILES ${hdrs}
-  DESTINATION include/fhgcom/kvs/message
-  COMPONENT headers)

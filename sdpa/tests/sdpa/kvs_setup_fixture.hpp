@@ -22,32 +22,34 @@ struct KVSSetup
     , m_serv (0)
     , m_thrd (0)
   {
-    FHGLOG_SETUP();
+	  setenv("FHGLOG_level", "MIN", true);
+	  FHGLOG_SETUP();
 
-    m_pool = new fhg::com::io_service_pool(1);
-    m_kvsd = new fhg::com::kvs::server::kvsd ("");
-    m_serv = new fhg::com::tcp_server ( *m_pool
-                                      , *m_kvsd
-                                      , kvs_host ()
-                                      , kvs_port ()
-                                      , true
-                                      );
-    m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
+	  m_pool = new fhg::com::io_service_pool(1);
+	  m_kvsd = new fhg::com::kvs::server::kvsd ("");
+	  m_serv = new fhg::com::tcp_server ( *m_pool
+                                      	  , *m_kvsd
+                                      	  , kvs_host ()
+                                      	  , kvs_port ()
+                                      	  , true
+                                      	  );
+
+	  m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
                                             , m_pool
                                             )
                                );
 
-    m_serv->start();
+	  m_serv->start();
 
-    LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
+	  LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
 
-    current_kvs_port = boost::lexical_cast<std::string>(m_serv->port());
+	  current_kvs_port = boost::lexical_cast<std::string>(m_serv->port());
 
-    fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-                                              , kvs_port()
-                                              , boost::posix_time::seconds(10)
-                                              , 3
-                                              );
+	  fhg::com::kvs::global::get_kvs_info().init( kvs_host()
+                                              	  , kvs_port()
+                                              	  , boost::posix_time::seconds(10)
+                                              	  , 3
+                                              	  );
 
   }
 

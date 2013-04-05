@@ -89,8 +89,10 @@ set (wfhd_hdrs
 )
 
 add_library (wfhd SHARED ${wfhd_srcs})
+set_target_properties (wfhd PROPERTIES VERSION 1)
 install (TARGETS wfhd
   LIBRARY DESTINATION lib
+  COMPONENT runtime
   )
 install (FILES ${wfhd_hdrs}
   DESTINATION include/we/util
@@ -154,7 +156,23 @@ install (FILES
   COMPONENT sdk
 )
 
-add_subdirectory (xml/parse)
+add_executable(pnetc xml/parse/pnetc.cpp)
+target_link_libraries(pnetc fhg-revision)
+target_link_libraries(pnetc pnet)
+target_link_libraries(pnetc ${Boost_LIBRARIES})
+
+install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
+
+if (ENABLE_STATIC_BINARIES)
+  add_executable(pnetc.static xml/parse/pnetc.cpp)
+  target_link_libraries(pnetc.static fhg-revision)
+  target_link_libraries(pnetc.static pnet)
+  target_link_libraries(pnetc.static ${Boost_LIBRARIES})
+
+  set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
+
+  install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
+endif (ENABLE_STATIC_BINARIES)
 
 set (xml_sources
   xml/parse/error.cpp
@@ -204,6 +222,9 @@ add_library (pnet-shared SHARED ${we_srcs} ${xml_sources})
 set_target_properties(pnet-shared PROPERTIES OUTPUT_NAME pnet)
 
 add_library (we-dev SHARED ${we_dev_srcs})
+set_target_properties(we-dev
+  PROPERTIES VERSION 1
+)
 
 install (TARGETS we-dev
   LIBRARY DESTINATION lib

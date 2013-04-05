@@ -1,0 +1,147 @@
+#!/bin/bash
+
+if [ -z "$SDPA_HOME" ] ; then
+    echo >&2 "SDPA_HOME is not set"
+fi
+
+. "${SDPA_HOME}/etc/sdpa/sdpa.env"
+
+gspc_bin=$(which gspc)
+if ! test -x "${gspc_bin}" ; then
+    echo >&2 "gspc is not in the PATH"
+    exit 1
+fi
+
+gspc="gspc -v"
+log="$gspc log --tag selftest"
+
+function require_executable ()
+{
+    local name="${1}" ; shift
+    local bin=$(which "$name")
+
+    if ! test -x "$bin" ; then
+        $log --error "executable '$name' not found"
+        exit 2
+    fi
+}
+
+function require_readable ()
+{
+    local name="${1}" ; shift
+
+    if ! test -r "$name" ; then
+        $log --error "file '$name' not readable"
+        exit 2
+    fi
+}
+
+$log --info "performing self-test"
+
+xml="$SDPA_HOME/libexec/sdpa/apps/selftest/selftest.xml"
+require_readable "$xml"
+
+require_executable pnetc
+require_executable sdpac
+require_executable pnetput
+require_executable pnetget
+
+job_desc=$(mktemp)
+old_trap=$(trap -p EXIT)
+trap "rm -f $job_desc" EXIT
+
+function sigterm()
+{
+    trap sigterm TERM
+}
+trap sigterm TERM
+
+$log --info "building job description..."
+challenge=$(date +%s | md5sum | awk '{print $1}')
+if [ $? -ne 0 ] ; then
+    challenge="dummy"
+fi
+
+expected_response="sdpa.response.$challenge"
+
+if ! cat "$xml" | pnetc | pnetput -p challenge=\"$challenge\" > "$job_desc" ; then
+    $log --error "could not generate job description and place tokens"
+    exit 5
+fi
+
+$log --info "(re-)starting SDPA..."
+
+err=$(sdpa restart 2>&1)
+ec=$?
+if [ $ec -ne 0 ] ; then
+    sdpa stop >/dev/null 2>&1
+    $log --error "restart failed: $err"
+    exit $ec
+fi
+
+$log --info "computing response for challenge: $challenge"
+
+$log --info "submitting job..."
+job_id=$(sdpac submit "$job_desc")
+$log --info "JOB-ID: $job_id"
+
+walltime=120
+$log --info "waiting at most $walltime seconds for job to return..."
+job_state=42
+for ((i=0 ; i < $walltime ; ++i)) ; do
+    sleep 1
+    job_status=$(sdpac status "$job_id")
+    if echo "$job_status" | grep -q -i -e 'finished' ; then
+        $log --info "job has finished"
+        job_state=0
+        break
+    elif echo "$job_status" | grep -q -i -e 'failed' ; then
+        $log --error "job has failed"
+        job_state=1
+        break
+    elif echo "$job_status" | grep -q -i -e 'cancelled' ; then
+        $log --error "job has been cancelled"
+        job_state=2
+        break
+    fi
+done
+
+if [ "$job_state" -ne 0 ] ; then
+    $log --error "self test job could not be executed!"
+    sdpa stop
+    exit 8
+fi
+
+$log --info "I: retrieving results"
+if ! sdpac --force -o "$job_desc" results "$job_id" 2>/dev/null ; then
+    $log --error "could not retrieve results"
+    rm "$job_desc"
+    sdpa stop
+    exit 6
+fi
+
+if ! sdpac delete "$job_id" ; then
+    $log --error "could not delete job"
+    rm "$job_desc"
+    sdpa stop
+    exit 7
+fi
+
+response=$(pnetget < "$job_desc" --type=output response | sed -e 's/^"//g' -e 's/"$//g')
+if [ x"$response" != x"$expected_response" ] ; then
+    $log --error "response: '$response' does not match expected response: '$expected_response'"
+else
+    $log --info "got correct response"
+fi
+
+if [ -z "$USER" ] ; then
+    greeting="You-Know-Who"
+else
+    greeting="user $USER"
+fi
+
+rm "$job_desc"
+
+sdpa stop >/dev/null 2>&1
+
+$log --info "Congratulations $greeting, your SDPA installation is working!"

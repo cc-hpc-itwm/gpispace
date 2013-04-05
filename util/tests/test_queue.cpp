@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE (thread_queue_clear)
 
   items.clear ();
 
-  BOOST_REQUIRE_EQUAL (items.size (), 0);
+  BOOST_REQUIRE_EQUAL (items.size (), 0u);
   BOOST_REQUIRE       (items.empty ());
 }
 
