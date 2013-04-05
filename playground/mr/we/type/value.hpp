@@ -40,7 +40,9 @@ namespace pnet
               , std::map<std::string, boost::recursive_variant_>
               >::type value_type;
 
-      value_type empty();
+      typedef std::map<std::string, value_type> structured_type;
+
+      structured_type empty();
     }
   }
 }

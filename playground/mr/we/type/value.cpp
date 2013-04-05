@@ -8,9 +8,9 @@ namespace pnet
   {
     namespace value
     {
-      value_type empty()
+      structured_type empty()
       {
-        return std::map<std::string, value_type>();
+        return structured_type();
       }
     }
   }

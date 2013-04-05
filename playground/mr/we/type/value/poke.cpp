@@ -26,21 +26,17 @@ namespace pnet
             , _value (value)
           {}
 
-          value_type& operator() (std::map<std::string, value_type>& m) const
+          value_type& operator() (structured_type& m) const
           {
             return (_key == _end) ? (_node = _value) : deeper (m);
           }
 
           template<typename T> value_type& operator() (T&) const
           {
-            if (_key == _end)
-              {
-                return _node = _value;
-              }
-
-            return deeper ( boost::get<std::map<std::string,value_type>&>
-                            (_node = empty())
-                          );
+            return (_key == _end)
+              ? (_node = _value)
+              : deeper (boost::get<structured_type&> (_node = empty()))
+              ;
           }
 
         private:
@@ -49,7 +45,7 @@ namespace pnet
           value_type& _node;
           const value_type& _value;
 
-          value_type& deeper (std::map<std::string, value_type>& m) const
+          value_type& deeper (structured_type& m) const
           {
             value_type& v (m[*_key]);
 
