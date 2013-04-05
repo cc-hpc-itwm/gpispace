@@ -117,7 +117,7 @@ void MyFixture::run_client()
 	{
 		if(nTrials++ > NMAXTRIALS)
 		{
-			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+			LOG( WARN, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
@@ -145,7 +145,7 @@ void MyFixture::run_client()
 		{
 			if(nTrials++ > NMAXTRIALS)
 			{
-				LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
+				LOG( WARN, "The maximum number of job queries  was exceeded. Giving-up now!");
 
 				ptrCli->shutdown_network();
 				ptrCli.reset();
@@ -161,12 +161,12 @@ void MyFixture::run_client()
 	nTrials = 0;
 
 	try {
-		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+		LOG( INFO, "User: retrieve results of the job "<<job_id_user);
 		ptrCli->retrieveResults(job_id_user);
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-		LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
+		LOG( WARN, "The maximum number of trials was exceeded. Giving-up now!");
 
 		ptrCli->shutdown_network();
 		ptrCli.reset();
@@ -181,7 +181,7 @@ void MyFixture::run_client()
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-		LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
+		LOG( WARN, "The maximum number of  trials was exceeded. Giving-up now!");
 
 		ptrCli->shutdown_network();
 		ptrCli.reset();
@@ -195,7 +195,7 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
+BOOST_AUTO_TEST_CASE( Test1 )
 {
 	// topology:
 	// O
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 	// drts
 
 
-	LOG( DEBUG, "testCancelJobPath1AgentRealWE");
+	LOG( INFO, "Begin Test1");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -238,10 +238,10 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 	ptrAg0->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testCancelJobPath1AgentRealWE terminated!");
+	LOG( INFO, "End Test2");
 }
 
-BOOST_AUTO_TEST_CASE( testCancelJobTree2Drts )
+BOOST_AUTO_TEST_CASE( Test2 )
 {
 	// topology:
 	// O
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobTree2Drts )
 	// drts
 
 
-	LOG( DEBUG, "***** testCancelJobPath2Drts *****"<<std::endl);
+	LOG( INFO, "Begin Test2");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobTree2Drts )
 	ptrAg0->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	LOG( INFO, "End Test2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
