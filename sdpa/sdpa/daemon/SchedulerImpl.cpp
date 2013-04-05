@@ -220,14 +220,19 @@ void SchedulerImpl::reassign( const Worker::worker_id_t& worker_id, const sdpa::
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::JobQueue* pQueue )
 {
-  assert (pQueue);
+	if(!bStopRequested)
+	{
+		assert (pQueue);
 
-  while( !pQueue->empty() )
-  {
-    sdpa::job_id_t jobId = pQueue->pop_and_wait();
-    SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
-    reschedule(worker_id, jobId);
-  }
+		while( !pQueue->empty() )
+		{
+			sdpa::job_id_t jobId = pQueue->pop_and_wait();
+			SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
+			reschedule(worker_id, jobId);
+		}
+	}
+	else
+		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
 }
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
