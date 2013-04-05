@@ -41,8 +41,6 @@ namespace pnet
               >::type value_type;
 
       typedef std::map<std::string, value_type> structured_type;
-
-      structured_type empty();
     }
   }
 }
