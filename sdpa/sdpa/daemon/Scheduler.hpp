@@ -79,7 +79,7 @@ namespace daemon {
 
 	 virtual void reschedule(const sdpa::job_id_t &job) = 0;
      virtual void reschedule(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job) = 0;
-	 virtual void reschedule(const Worker::worker_id_t& ) throw (WorkerNotFoundException) = 0;
+	 virtual void reschedule(const Worker::worker_id_t& ) = 0;
 	 virtual void reschedule(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue ) = 0;
 	 virtual void reassign(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id ) = 0;
 

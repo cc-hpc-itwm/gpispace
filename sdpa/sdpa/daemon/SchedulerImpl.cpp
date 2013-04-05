@@ -227,7 +227,7 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::J
   }
 }
 
-void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
+void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 {
   // first re-schedule the work:
   // inspect all queues and re-schedule each job
@@ -260,7 +260,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (Wo
   catch (const WorkerNotFoundException& ex)
   {
     SDPA_LOG_WARN("Could not re-schedule the jobs of the worker "<<worker_id<<": no such worker exists!");
-    throw ex;
   }
 }
 
