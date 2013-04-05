@@ -177,43 +177,68 @@ namespace fhg
 
       void position::list ( const char open, const char sep, const char close
                           , const boost::function<void (position&)>& f
+                          , const bool skip_space_before_element
+                          , const bool skip_space_after_element
                           )
       {
         skip_spaces();
 
         require (open);
 
-        skip_spaces();
-
-        bool closed (end());
-
-        while (!closed)
+        if (skip_space_before_element)
         {
+          skip_spaces();
+        }
+
+        bool closed (false);
+        bool expect_sep (false);
+
+        do
+        {
+          if (end())
+          {
+            throw error::expected
+              ( std::string (1, close)
+              + " or "
+              + (expect_sep ? std::string (1, sep) : "<list_element>")
+              , *this
+              );
+          }
+
           if (*_pos == close)
           {
-            closed = true;
             operator++();
+
+            closed = true;
+          }
+          else if (expect_sep)
+          {
+            require (sep);
+
+            if (skip_space_before_element)
+            {
+              skip_spaces();
+            }
+
+            expect_sep = false;
           }
           else if (*_pos == sep)
           {
-            operator++();
+            throw error::expected ("<list_element>", *this);
           }
           else
           {
             f (*this);
 
-            skip_spaces();
-
-            if (end() || (*_pos != sep && *_pos != close))
+            if (skip_space_after_element)
             {
-              throw error::expected ( std::string (1, sep)
-                                    + " or "
-                                    + std::string (1, close)
-                                    , *this
-                                    );
+              skip_spaces();
             }
+
+            expect_sep = true;
           }
         }
+        while (!closed);
       }
     }
   }

@@ -34,6 +34,8 @@ namespace fhg
         std::string until (const char c, const char escape = '\\');
         void list ( const char open, const char sep, const char close
                   , const boost::function<void (position&)>&
+                  , const bool skip_space_before_element = true
+                  , const bool skip_space_after_element = true
                   );
 
       private:
