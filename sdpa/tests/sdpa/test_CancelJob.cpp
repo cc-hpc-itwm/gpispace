@@ -52,12 +52,14 @@ struct MyFixture
 
 	~MyFixture()
 	{
-		LOG(DEBUG, "Fixture's destructor called ...");
+		LOG(INFO, "Fixture's destructor called ...");
 
 		sstrOrch.str("");
 		sstrAgg.str("");
 
+		LOG(INFO, "Stop all stages ...");
 		seda::StageRegistry::instance().stopAll();
+		LOG(INFO, "Clear registry ...");
 		seda::StageRegistry::instance().clear();
 	}
 

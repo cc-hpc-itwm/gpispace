@@ -279,7 +279,6 @@ BOOST_AUTO_TEST_CASE( Test1 )
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	//LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
@@ -328,7 +327,6 @@ BOOST_AUTO_TEST_CASE( Test2 )
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	//LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
