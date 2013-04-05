@@ -35,7 +35,8 @@ namespace pnet
           {
             return (_key == _end)
               ? (_node = _value)
-              : deeper (boost::get<structured_type&> (_node = empty()))
+              : deeper (boost::get<structured_type&> (_node = structured_type())
+                       )
               ;
           }
 
