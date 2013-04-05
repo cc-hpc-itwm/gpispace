@@ -258,16 +258,15 @@ namespace fhg
 
           ++pos;
 
-          if (pos.end())
-          {
-            return num_type (cast<unsigned long, unsigned int> (ul, pos));
-          }
-
           if (!pos.end() && (*pos == 'l' || *pos == 'L'))
           {
             ++pos;
 
             return num_type (ul);
+          }
+          else
+          {
+            return num_type (cast<unsigned long, unsigned int> (ul, pos));
           }
 
         default:
@@ -282,12 +281,9 @@ namespace fhg
               {
                 const double d (read_fraction<double> (ul, pos));
 
-                if (!pos.end())
+                if (!pos.end() && (*pos == 'f' || *pos == 'F'))
                 {
-                  if (*pos == 'f' || *pos == 'F')
-                  {
-                    ++pos;
-                  }
+                  ++pos;
 
                   return SIGNED (cast<double, float> (d, pos));
                 }
