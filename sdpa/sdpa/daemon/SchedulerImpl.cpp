@@ -149,16 +149,19 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
     pWorker->delete_job(job_id);
 
     Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-    std::string status = pJob->getStatus();
-    if( status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+    if(pJob)
     {
-      pJob->Reschedule(); // put the job back into the pending state
-      schedule(job_id);
+		std::string status = pJob->getStatus();
+		if( status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+		  pJob->Reschedule(); // put the job back into the pending state
+		  schedule(job_id);
+		}
     }
   }
   catch (const WorkerNotFoundException& ex)
   {
-    SDPA_LOG_WARN("Cannot delete the worker "<<worker_id<<". Worker not found!");
+    SDPA_LOG_WARN("Cannot find the worker "<<worker_id);
   }
   catch(JobNotFoundException const &ex)
   {
