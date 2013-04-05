@@ -157,6 +157,7 @@ void MyFixture::run_client()
 	}
 
 	LOG( INFO, "The status of the job "<<job_id_user<<" is "<<job_status);
+	BOOST_CHECK_EQUAL(job_status, "SDPA::Canceled");
 
 	nTrials = 0;
 
@@ -215,7 +216,6 @@ BOOST_AUTO_TEST_CASE( Test1 )
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
 	ptrOrch->start_agent(false);
@@ -233,7 +233,8 @@ BOOST_AUTO_TEST_CASE( Test1 )
 	LOG( INFO, "The client thread joined the main thread°!" );
 
 	drts_0->stop();
-	drts_0_thread.join();
+	if(drts_0_thread.joinable())
+		drts_0_thread.join();
 
 	ptrAg0->shutdown();
 	ptrOrch->shutdown();
@@ -263,7 +264,6 @@ BOOST_AUTO_TEST_CASE( Test2 )
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
 	ptrOrch->start_agent(false);
@@ -284,10 +284,12 @@ BOOST_AUTO_TEST_CASE( Test2 )
 	LOG( INFO, "The client thread joined the main thread°!" );
 
 	drts_0->stop();
-	drts_0_thread.join();
+	if(drts_0_thread.joinable())
+		drts_0_thread.join();
 
 	drts_1->stop();
-	drts_1_thread.join();
+	if(drts_1_thread.joinable())
+		drts_1_thread.join();
 
 	ptrAg0->shutdown();
 	ptrOrch->shutdown();
