@@ -83,6 +83,7 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
   test_show_and_read_showed (std::vector<value_type>(), "vector ()");
   test_show_and_read_showed (std::set<value_type>(), "set {}");
   test_show_and_read_showed (std::map<value_type,value_type>(), "map []");
+  test_show_and_read_showed (pnet::type::value::empty(), "struct []");
 }
 
 BOOST_AUTO_TEST_CASE (_read)
