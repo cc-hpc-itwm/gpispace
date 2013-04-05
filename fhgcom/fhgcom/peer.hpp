@@ -138,6 +138,7 @@ namespace fhg
       mutable mutex_type mutex_;
 
       bool stopped_;
+      bool stopping_;
       std::string name_;
       std::string host_;
       std::string port_;
