@@ -105,13 +105,19 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
 
 void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
 {
-  ostringstream os;
-  if(!ptr_comm_handler_)
-  {
-	  SDPA_LOG_ERROR("Invalid communication handler. ");
-	  stop();
-	  return;
-  }
+	if(bStopRequested)
+	{
+		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
+		return;
+	}
+
+	ostringstream os;
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("Invalid communication handler. ");
+		stop();
+		return;
+	}
 
   try {
 
@@ -135,13 +141,19 @@ void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
-  ostringstream os;
-  if(!ptr_comm_handler_)
-  {
-	  SDPA_LOG_ERROR("Invalid communication handler. ");
-	  stop();
-	  return;
-  }
+	if(bStopRequested)
+	{
+		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-asignement is not anymore possible.");
+		return;
+	}
+
+	ostringstream os;
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("Invalid communication handler. ");
+		stop();
+		return;
+	}
 
   try {
     // delete it from the worker's queues
@@ -149,16 +161,19 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
     pWorker->delete_job(job_id);
 
     Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-    std::string status = pJob->getStatus();
-    if( status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+    if(pJob)
     {
-      pJob->Reschedule(); // put the job back into the pending state
-      schedule(job_id);
+		std::string status = pJob->getStatus();
+		if( status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		{
+		  pJob->Reschedule(); // put the job back into the pending state
+		  schedule(job_id);
+		}
     }
   }
   catch (const WorkerNotFoundException& ex)
   {
-    SDPA_LOG_WARN("Cannot delete the worker "<<worker_id<<". Worker not found!");
+    SDPA_LOG_WARN("Cannot find the worker "<<worker_id);
   }
   catch(JobNotFoundException const &ex)
   {
@@ -176,6 +191,12 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 
 void SchedulerImpl::reassign( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
+	if(bStopRequested)
+	{
+		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-asignement is not anymore possible.");
+		return;
+	}
+
    ostringstream os;
    if(!ptr_comm_handler_)
    {
@@ -217,18 +238,29 @@ void SchedulerImpl::reassign( const Worker::worker_id_t& worker_id, const sdpa::
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::JobQueue* pQueue )
 {
-  assert (pQueue);
+	if(!bStopRequested)
+	{
+		assert (pQueue);
 
-  while( !pQueue->empty() )
-  {
-    sdpa::job_id_t jobId = pQueue->pop_and_wait();
-    SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
-    reschedule(worker_id, jobId);
-  }
+		while( !pQueue->empty() )
+		{
+			sdpa::job_id_t jobId = pQueue->pop_and_wait();
+			SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
+			reschedule(worker_id, jobId);
+		}
+	}
+	else
+		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
 }
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 {
+	if(bStopRequested)
+	{
+		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
+		return;
+	}
+
   // first re-schedule the work:
   // inspect all queues and re-schedule each job
   try {

@@ -464,20 +464,30 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
   {
     peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"));
     boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
-    peer_2.start();
 
     try
     {
+      peer_2.start();
       peer_2.send (peer_1.name (), "hello world!");
+      peer_2.stop();
+    }
+    catch (boost::system::system_error const &se)
+    {
+      using namespace boost::system;
+
+      if (  se.code ().value () != errc::address_not_available
+         )
+      {
+        peer_2.stop ();
+        BOOST_ERROR (se.what ());
+      }
     }
     catch (std::exception const & ex)
     {
+      peer_2.stop ();
       BOOST_ERROR ( ex.what() );
     }
 
-    usleep (500);
-
-    peer_2.stop();
     thrd_2.join ();
   }
 
