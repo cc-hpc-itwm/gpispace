@@ -93,7 +93,7 @@ namespace gspc
         // generate receipt: header
         // add wait object to list of outstanding requests
         // send_raw request
-        // wait for reply
+        // wait on wait object
         return -ENOTSUP;
       }
 
