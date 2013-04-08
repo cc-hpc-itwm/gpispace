@@ -1079,7 +1079,13 @@ bool SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sd
 
 void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
 {
-  ptr_worker_man_->removeCapabilities(worker_id, cpbset);
+	if(bStopRequested)
+	{
+		SDPA_LOG_DEBUG("The scheduler is requested to stop, no need to remove capabilities ...");
+		return;
+	}
+
+	ptr_worker_man_->removeCapabilities(worker_id, cpbset);
 }
 
 void SchedulerImpl::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
