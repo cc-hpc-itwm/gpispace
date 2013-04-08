@@ -26,6 +26,7 @@ set (gspcnet_src
   net/client/tcp_client.cpp
   net/client/unix_client.cpp
   net/client/dummy_frame_handler.cpp
+  net/client/response.cpp
 
   net/service/echo.cpp
   net/service/strip_prefix.cpp
