@@ -281,11 +281,10 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
  */
 void GenericDaemon::shutdown(std::string& strBackup )
 {
-  if( !isStopped() )
-    stop();
+	shutdown();
 
-  SDPA_LOG_INFO("Get the last backup of the daemon "<<name());
-  strBackup = m_threadBkpService.getLastBackup();
+	SDPA_LOG_DEBUG("Get the last backup of the daemon "<<name());
+	strBackup = m_threadBkpService.getLastBackup();
 }
 
 /**
@@ -296,8 +295,11 @@ void GenericDaemon::shutdown(std::string& strBackup )
  */
 void GenericDaemon::shutdown( )
 {
-  if( !isStopped() )
-    stop();
+	SDPA_LOG_INFO("Shutting down the component "<<name()<<" ...");
+	if( !isStopped() )
+		stop();
+
+	SDPA_LOG_INFO("Succesfully shut down  "<<name()<<" ...");
 }
 
 /**
