@@ -41,7 +41,7 @@ WorkerManager::~WorkerManager()
 {
   lock_type lock(mtx_);
 
-  SDPA_LOG_DEBUG( "WorkerManager shutting down...");
+  SDPA_LOG_DEBUG("The destructor of the WorkerManager was called ...");
   if( worker_map_.size() )
   {
     SDPA_LOG_WARN( "there are still entries left in the worker map: " << worker_map_.size());
@@ -732,6 +732,6 @@ Worker::worker_id_t WorkerManager::getWorkerId(unsigned int r)
 void WorkerManager::removeWorkers()
 {
 	lock_type lock(mtx_);
-  common_queue_.clear();
-  worker_map_.clear();
+	common_queue_.clear();
+	worker_map_.clear();
 }
