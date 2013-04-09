@@ -11,21 +11,31 @@ using namespace mapreduce::util;
 
 void test1()
 {
-	std::string arr0[] = {"a@1", "a@1", "b@1", "c@1", "c@1", "c@1", "e@1", "h@1", "i@1"};
-	std::string arr1[] = {"a@1", "b@1", "c@1", "e@1", "e@1", "g@1", "h@1", "i@1"};
+	std::string arr0[] = {"a", "a", "b", "c", "c", "c", "e", "h", "i"};
+	std::string arr1[] = {"a", "b", "c", "e", "e", "g", "h", "i"};
 
 	std::vector<std::string> arr_items_0;
 	for(int k=0; k<9; k++)
-		arr_items_0.push_back(arr0[k]);
+	{
+		key_val_pair_t kvp(arr0[k],"1");
+		arr_items_0.push_back(kvpair2str(kvp));
+	}
 
 	std::vector<std::string> arr_items_1;
 	for(int i=0; i<8; i++)
-		arr_items_1.push_back(arr1[i]);
+	{
+		key_val_pair_t kvp(arr1[i],"1");
+		arr_items_1.push_back(kvpair2str(kvp));
+	}
 
 	char* ptr_shmem = new char[1000];
 	size_t last_pos = merge_and_reduce_arr_arr_2_buff( 0, 1000000, arr_items_0, arr_items_1, ptr_shmem );
 	ptr_shmem[last_pos]=0;
+
 	std::cout<<"The result is: \""<<ptr_shmem<<"\""<<std::endl;
+
+	if(strcmp(ptr_shmem, "a@[3] b@[2] c@[4] e@[3] g@[1] h@[2] i@[2] "))
+		throw std::runtime_error("test1 failed!");
 
 }
 
@@ -149,19 +159,18 @@ void validate(std::vector<std::string>& arr_in_file, std::string& str_out_file)
 			if (map_word_counters[kv_pair.first] == boost::lexical_cast<int>(kv_pair.second) )
 				std::cout<<"The result is ok for the word "<<kv_pair.first<<": "<<kv_pair.second<<" occurrences!"<<std::endl;
 			else
+			{
 				std::cout<<"The result is NOT ok for the word "<<kv_pair.first<<": "<<map_word_counters[kv_pair.first]<<" occurrences, but counted "
 						 <<kv_pair.second<<"!"<<std::endl;
+
+				throw std::runtime_error("test3 failed!");
+			}
 		}
 	}
 }
 
-int main ()
+void test3()
 {
-	//test1();
-	test2();
-
-	//produce test files
-
 	std::string str_out_file("test_out.txt");
 	std::vector<std::string> arr_in_file;
 	init(arr_in_file);
@@ -170,6 +179,13 @@ int main ()
 	std::vector<std::string> arr_file;
 	init(arr_file);
 	validate(arr_file, str_out_file);
+}
+
+int main ()
+{
+	test1();
+	test2();
+	test3();
 
 	return 0;
 }
