@@ -553,7 +553,7 @@
             long n = 0, part_id;
           
             std::string str_buff(ptr_shmem);
-            boost::char_separator<char> sep(DELIMITERS.c_str());
+            boost::char_separator<char> sep(DELIMITERS);
             boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
             
             for( boost::tokenizer<boost::char_separator<char> >::iterator it = tok.begin(); it != tok.end(); ++it )
