@@ -201,7 +201,7 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 {
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	LOG( INFO, "***** testOrchestratorNoWe *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_Drts )
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	LOG( INFO, "The test case testOrchestratorNoWe terminated!");
 }
 
 BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
@@ -265,23 +265,23 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/capabilities_no_mandatory.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+	LOG( INFO, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_1", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
 
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_1", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_1", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( createDRTSWorker("drts_2", "agent_0", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_2( createDRTSWorker("drts_2", "agent_1", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
 	boost::thread drts_2_thread = boost::thread( &fhg::core::kernel_t::run, drts_2 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	LOG( INFO, "The test case testOrchestratorNoWe terminated!");
 }
 
 
