@@ -37,12 +37,11 @@ const int MS = 1000;
 const int KEY_MAX_SIZE = 50;
 #define KEY_LENGTH 2
 
-const char SHRPCH = '#';
-const char NLCH = '\n';
-const char SPCH = ' ';
-const char PAIRSEP = '@';
-
-std::string DELIMITERS = " \n";
+#define SHRPCH '#'
+#define PAIRSEP '@'
+#define SPCH ' '
+#define NLCH '\n'
+char DELIMITERS[] = {SPCH, NLCH, '\0'};
 
 namespace mapreduce
 {
@@ -183,9 +182,7 @@ namespace mapreduce
   		  if(key[0] != SHRPCH)
   			  return false;
 
-  		  char szsep[2];
-  		  szsep[0]=SHRPCH;
-  		  szsep[1]='\0';
+  		  char szsep[] = {SHRPCH, '\0'};
   		  boost::char_separator<char> sep(szsep);
   		  boost::tokenizer<boost::char_separator<char> > tok(key, sep);
   		  std::vector<std::string> u(2, "");
@@ -260,8 +257,7 @@ namespace mapreduce
 
 		 // further checks are necessary
 		 key_val_pair_t kvp_v = str2kvpair(str_item);
-		 char szsep[2];
-		 szsep[0]=SHRPCH;szsep[1]='\0';
+		 char szsep[] = {SHRPCH, '\0'};
 		 boost::char_separator<char> sep(szsep);
 		 boost::tokenizer<boost::char_separator<char> > tok_v(kvp_v.first, sep);
 		 std::vector<std::string> v(2,"");
@@ -316,8 +312,7 @@ namespace mapreduce
 
 	 bool is_delimiter(char x)
 	 {
-		 bool b = (DELIMITERS.find(x) != std::string::npos);
-		 return b;
+		 return (strchr(DELIMITERS, x) != NULL);
 	 }
 
 	 template <typename T>
@@ -335,7 +330,7 @@ namespace mapreduce
 	 std::vector<std::string> get_list_items(char* local_buff)
      {
 		 std::string str_buff(local_buff);
-		 boost::char_separator<char> sep(DELIMITERS.c_str());
+		 boost::char_separator<char> sep(DELIMITERS);
 		 boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
 		 std::vector<std::string> v;
 		 v.assign(tok.begin(),tok.end());
@@ -347,28 +342,15 @@ namespace mapreduce
 	 {
 		 // attention, the input string is modified!!!!
 		 std::vector<std::string> v;
-		 char* pch_curr = strtok(local_buff, DELIMITERS.c_str());
+		 char* pch_curr = strtok(local_buff, DELIMITERS);
 		 while(pch_curr)
 		 {
 			 v.push_back(pch_curr);
-			 pch_curr = strtok(NULL, DELIMITERS.c_str());
+			 pch_curr = strtok(NULL, DELIMITERS);
 		 }
 
 		 return v;
 	 }
-
-
-	 void get_arr_pairs(char* local_buff, std::vector<key_val_pair_t>& arr_pairs)
-	{
-    	std::string str_buff(local_buff);
-    	boost::char_separator<char> sep(DELIMITERS.c_str());
-    	boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
-
-        BOOST_FOREACH (const std::string& s, tok)
-        {
-          arr_pairs.push_back(str2kvpair(s));
-        }
-	}
 
     std::string list2str(std::list<std::string>& list_values )
 	{
@@ -438,28 +420,28 @@ namespace mapreduce
 	   }
    }
 
-	size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t last_pos, const size_t& n_max_size, const int sp=SPCH )
-	{
-	  std::stringstream sstr;
-	  size_t item_size = str_pair.size();
+   size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t last_pos, const size_t& n_max_size, const int sp=SPCH )
+   {
+	   std::stringstream sstr;
+	   size_t item_size = str_pair.size();
 
-	  if(last_pos+item_size>n_max_size)
-	  {
-		  throw(std::runtime_error("Not enough shared memory!"));
-	  }
-	  else
-	  {
-		  memcpy(reduce_buff+last_pos, str_pair.data(), item_size);
-		  size_t new_pos = last_pos + item_size;
-		  if(sp)
-			  reduce_buff[new_pos++]=sp;
+	   if(last_pos+item_size>n_max_size)
+	   {
+		   throw(std::runtime_error("Not enough shared memory!"));
+	   }
+	   else
+	   {
+		   memcpy(reduce_buff+last_pos, str_pair.data(), item_size);
+		   size_t new_pos = last_pos + item_size;
+		   if(sp)
+			   reduce_buff[new_pos++]=sp;
 
-		  return new_pos;
-	  }
-	}
+		   return new_pos;
+	   }
+   }
 
-	void write_to_stream(std::string& key, std::list<std::string>& list_values, std::ofstream& ofs )
-	{
+   void write_to_stream(std::string& key, std::list<std::string>& list_values, std::ofstream& ofs )
+   {
 		key_val_pair_t kvp(key, list2str(list_values));
 		std::string str_pair = kvpair2str(kvp);
 		ofs<<str_pair<<std::endl;
