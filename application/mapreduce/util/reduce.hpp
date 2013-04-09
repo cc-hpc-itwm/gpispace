@@ -354,7 +354,7 @@ namespace mapreduce
 
 		MLOG(INFO, "Merge and reduce ...");
 		std::vector<std::string>::const_iterator it = arr_items.begin();
-		char* pch = in_buff?strtok(in_buff, DELIMITERS.c_str()):NULL;
+		char* pch = in_buff?strtok(in_buff, DELIMITERS):NULL;
 
 		// the array and the file are already reduced
 		std::string str_pair, curr_item;
@@ -378,7 +378,7 @@ namespace mapreduce
 				{
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
-					pch = strtok(NULL, DELIMITERS.c_str());
+					pch = strtok(NULL, DELIMITERS);
 				}
 			}
 			else
@@ -387,7 +387,7 @@ namespace mapreduce
 					key_val_pair_t kvp_r = str2kvpair(pch);
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
-					pch = strtok(NULL, DELIMITERS.c_str());
+					pch = strtok(NULL, DELIMITERS);
 				}
 				else
 				{
@@ -527,8 +527,7 @@ namespace mapreduce
 	void merge_and_reduce_files(const std::string& str_out_file_1, const std::string& str_out_file_2, const std::string& str_out_file)
 	{
 		std::list<std::string> list_in_values;
-		std::string str_sp;
-		str_sp[0]=' ';
+		std::string str_sp(" ");
 
 		std::ifstream ifs_1;
 		std::ifstream ifs_2;
@@ -630,6 +629,158 @@ namespace mapreduce
 		std::remove(str_out_file_1.data());
 		std::remove(str_out_file_2.data());
 		//std::rename(str_out_file.data(), str_out_file_1.data());
+	}
+
+	struct record_t
+	{
+		ifstream ifs;
+		std::string file_name;
+		std::string str_curr_line;
+
+		record_t(const std::string& arr_str_out_file)
+		{
+			file_name = arr_str_out_file;
+			ifs.open(file_name.data());
+		}
+
+		~record_t()
+		{
+			ifs.close();
+			std::remove(file_name.data());
+		}
+
+		bool eof() { return ifs.eof(); }
+		std::string get_new_line()
+		{
+			if(file_exists(file_name) )
+			{
+				try {
+					 std::getline(ifs, str_curr_line);
+				}
+				catch(const ios_base::failure& ex)
+				{
+					str_curr_line="";
+				}
+			}
+
+			return str_curr_line;
+		}
+
+		void print(int k_min)
+		{
+			std::cout<<"Current min: ("<<k_min<<", "<<file_name<<", "<<str_curr_line<<")"<<std::endl;
+		}
+	};
+
+	bool cmp_record_pointers(const boost::shared_ptr<record_t>& p1, const boost::shared_ptr<record_t>& p2)
+	{
+		if(p1->str_curr_line.empty())
+			return false;
+
+		if(p2->str_curr_line.empty())
+			return true;
+
+		return my_comp(p1->str_curr_line, p2->str_curr_line);
+	}
+
+	typedef std::vector<boost::shared_ptr<record_t> > arr_ptr_records_t;
+
+	int get_pos_min_non_empty(const arr_ptr_records_t& arr_ptr_records)
+	{
+		int k_min = 0;
+
+		int N = arr_ptr_records.size();
+		for(int k=0;k<N;k++)
+			if( arr_ptr_records[k_min]->str_curr_line.empty() ||
+			    (!arr_ptr_records[k]->str_curr_line.empty() && my_comp(arr_ptr_records[k]->str_curr_line, arr_ptr_records[k_min]->str_curr_line)) )
+			{
+				k_min = k;
+			}
+
+		return k_min;
+	}
+
+	// assume that the both input arrays are sorted reduced !!!!
+	void merge_and_reduce_files_k_way(std::vector<std::string>& arr_str_out_file, std::string& str_out_file)
+	{
+		std::list<std::string> list_in_values;
+
+		arr_ptr_records_t arr_ptr_records;
+
+		MLOG(INFO, "K-Way Merge and reduce ...");
+
+		size_t N = arr_str_out_file.size();
+		for(size_t k=0; k<N; k++)
+		{
+			boost::shared_ptr<record_t> pRec(new record_t(arr_str_out_file[k]));
+			arr_ptr_records.push_back(pRec);
+		}
+
+		for(size_t k=0;k<N;k++)
+			arr_ptr_records[k]->get_new_line();
+
+		std::ofstream ofs;
+		ofs.open( str_out_file.data());
+
+		// the array and the file are already reduced
+		std::string str_pair;
+		std::string last_key;
+
+		while(true)
+		{
+			int index_min = get_pos_min_non_empty(arr_ptr_records);
+
+			if( arr_ptr_records[index_min]->str_curr_line.empty() )
+				break;
+
+			std::string curr_item = arr_ptr_records[index_min]->str_curr_line;
+
+			std::cout << "The smallest element is " <<curr_item<< '\n';
+
+			if( !curr_item.empty() )
+			{
+				std::cout << "The current item is " <<curr_item<< '\n';
+
+				key_val_pair_t kv_pair = str2kvpair(curr_item);
+				std::string& curr_key  = kv_pair.first;
+				std::string& curr_val  = kv_pair.second;
+
+				if( curr_key != last_key )
+				{
+					if( !list_in_values.empty() )
+					{
+						if( !last_key.empty() )
+						{
+							std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+							::mapreduce::util::write_to_stream(last_key, list_out_values, ofs );
+							list_in_values.clear();
+						}
+					}
+
+					last_key = curr_key;
+					std::cout<<"The last key is now: "<<last_key<<std::endl;
+				}
+
+				std::cout<<"Push the value: "<<curr_val<<std::endl;
+				list_in_values.push_back(curr_val);
+			}
+
+			if( !arr_ptr_records[index_min]->eof() )
+				arr_ptr_records[index_min]->get_new_line();
+		}
+
+		if( !list_in_values.empty() )
+		{
+			if( !last_key.empty() )
+			{
+				std::list<std::string> list_out_values =::mapreduce::util::reduce(last_key, list_in_values);
+				::mapreduce::util::write_to_stream(last_key, list_out_values, ofs );
+				list_in_values.clear();
+			}
+		}
+
+		ofs.close();
+		arr_ptr_records.clear();
 	}
   }
 }
