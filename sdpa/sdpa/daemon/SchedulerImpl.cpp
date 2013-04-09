@@ -297,6 +297,12 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 
 void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
 {
+	if(bStopRequested)
+	{
+		SDPA_LOG_INFO("The scheduler is requested to stop ...");
+		return;
+	}
+
   // first re-schedule the work:
   // inspect all queues and re-schedule each job
   try {
@@ -1066,15 +1072,21 @@ void SchedulerImpl::getWorkerList(sdpa::worker_id_list_t& workerList)
 
 bool SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
-  try
-  {
-    return ptr_worker_man_->addCapabilities(worker_id, cpbset);
-  }
-  catch(const std::exception& exc)
-  {
-    SDPA_LOG_ERROR("Exception occured when trying to add new capabilities to the worker "<<worker_id<<": "<<exc.what());
-    throw exc;
-  }
+	if(bStopRequested)
+	{
+		SDPA_LOG_DEBUG("The scheduler was requested to stop ...");
+		return false;
+	}
+
+	try
+	{
+		return ptr_worker_man_->addCapabilities(worker_id, cpbset);
+	}
+	catch(const std::exception& exc)
+	{
+		SDPA_LOG_ERROR("Exception occured when trying to add new capabilities to the worker "<<worker_id<<": "<<exc.what());
+		throw exc;
+	}
 }
 
 void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
@@ -1095,48 +1107,48 @@ void SchedulerImpl::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
 
 void SchedulerImpl::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sdpa::capabilities_set_t& cpbset)
 {
-  try {
-    Worker::ptr_t ptrWorker = findWorker(worker_id);
-    cpbset = ptrWorker->capabilities();
-  }
-  catch(WorkerNotFoundException const &ex2 )
-  {
-    SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
-    cpbset = sdpa::capabilities_set_t();
-  }
+	try {
+		Worker::ptr_t ptrWorker = findWorker(worker_id);
+		cpbset = ptrWorker->capabilities();
+	}
+	catch(WorkerNotFoundException const &ex2 )
+	{
+		SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
+		cpbset = sdpa::capabilities_set_t();
+	}
 }
 
 void SchedulerImpl::removeRecoveryInconsistencies()
 {
-  SDPA_LOG_INFO("Remove recovery inconsistencies!");
-  std::list<JobQueue::iterator> listDirtyJobs;
-  for(JobQueue::iterator it = jobs_to_be_scheduled.begin(); it != jobs_to_be_scheduled.end(); it++ )
-  {
-    try {
-      ptr_comm_handler_->findJob(*it);
-    }
-    catch(const JobNotFoundException& ex)
-    {
-      listDirtyJobs.push_back(it);
-    }
-  }
+	SDPA_LOG_INFO("Remove recovery inconsistencies!");
+	std::list<JobQueue::iterator> listDirtyJobs;
+	for(JobQueue::iterator it = jobs_to_be_scheduled.begin(); it != jobs_to_be_scheduled.end(); it++ )
+	{
+		try {
+			ptr_comm_handler_->findJob(*it);
+		}
+		catch(const JobNotFoundException& ex)
+		{
+			listDirtyJobs.push_back(it);
+		}
+	}
 
-  while(!listDirtyJobs.empty())
-  {
-    SDPA_LOG_INFO("Removing the job id "<<*listDirtyJobs.front()<<" from the scheduler's queue ...");
-    jobs_to_be_scheduled.erase(listDirtyJobs.front());
-    listDirtyJobs.pop_front();
-  }
+	while(!listDirtyJobs.empty())
+	{
+		SDPA_LOG_INFO("Removing the job id "<<*listDirtyJobs.front()<<" from the scheduler's queue ...");
+		jobs_to_be_scheduled.erase(listDirtyJobs.front());
+		listDirtyJobs.pop_front();
+	}
 }
 
 void SchedulerImpl::cancelWorkerJobs()
 {
-  ptr_worker_man_->cancelWorkerJobs(this);
+	ptr_worker_man_->cancelWorkerJobs(this);
 }
 
 void SchedulerImpl::planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId)
 {
-  cancellation_list_.push_back(sdpa::worker_job_pair_t(workerId, jobId));
+	cancellation_list_.push_back(sdpa::worker_job_pair_t(workerId, jobId));
 }
 
 void SchedulerImpl::forceOldWorkerJobsTermination()
