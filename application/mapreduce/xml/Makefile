@@ -1,7 +1,7 @@
 # Start SDPA
 #
-#           #proc   GPI-mem    SHM-mem    init     finalize        read_chunk_size  def-shm 4xdef 2xdef-shm 4xdef-shm
-# sdpa boot -p 4 -m 5*2**30 -s 64*2**20 INI:1x1,0 FIN:1x1,0 LOAD:2,8*2**20   MAP:2 RED:8  
+#     #proc   GPI-mem    SHM-mem    init     finalize      
+# sdpa boot -m 32*2**30 -s 2*2**30 INI:1x1,0 FIN:1x1,0 LOAD:2,1024*2**20 MAP:1 MAP+RED:10 RED:1
 #
 
 ifndef MAIN
@@ -25,9 +25,9 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 ###############################################################################
 
 #PUT_PORT += input_file=\"/scratch/rotaru/data/words.20000\"
-PUT_PORT += input_file_1=\"/scratch/rotaru/data/words.10000\"
-PUT_PORT += input_file_2=\"/scratch/rotaru/data/words.10000\"
-PUT_PORT += output_file=\"/scratch/rotaru/data/out_20000.txt\"
+PUT_PORT += input_file_1=\"/scratch/rotaru/data/words.1000\"
+PUT_PORT += input_file_2=\"/scratch/rotaru/data/words.1000\"
+PUT_PORT += output_file=\"/scratch/rotaru/data/out_2x1000.txt\"
 PUT_PORT += read_chunk_size=130108864 #130108864 #260108864
 PUT_PORT += map_chunk_size=180943004 #190943004 #190943004 #360943004
 #PUT_PORT += map_chunk_size=360943004 #35582912
