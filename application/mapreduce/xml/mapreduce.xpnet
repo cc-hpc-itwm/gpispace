@@ -13,7 +13,7 @@
   <in name="input_n_map_slots" type="long" place="input_n_map_slots"/>
   <in name="input_n_slots_per_part" type="long" place="input_n_slots_per_part"/>
   <in name="input_n_slots_per_red" type="long" place="input_n_slots_per_red"/>
-  <out name="result" type="string" place="result"/>
+  <out name="result" type="control" place="result"/>
 
   <net>
     <place name="input_file" type="string"/>
@@ -38,7 +38,7 @@
     <place name="partition_slot_size" type="long"/>
     <place name="reduce_slot_size" type="long"/>
     
-    <place name="result" type="string"/>
+    <place name="result" type="control"/>
 
     <!-- template specializations -->
     <include-template href="dup.xml" />
@@ -672,17 +672,14 @@
       <connect-out port="map_chunk_info" place="map_chunk_info"/>
       <connect-out port="counter_partial_updates" place="counter_partial_updates"/>
     </transition>
-   
-    <place name="map_chunk_info_new" type="map_chunk_info_t"/>
-  
+     
     <place name="part_slice_info" type="part_slice_info"/>
     <transition name="gen_slice_infos" inline="true">
 		<defun>
-        <in name="map_chunk_info" type="map_chunk_info_t"/>
+        <inout name="map_chunk_info" type="map_chunk_info_t"/>
         <in name="config" type="config"/>
         <out name="part_slice_info" type="part_slice_info"/>
-        <out name="map_chunk_info_new" type="map_chunk_info_t"/>
-      	<expression>
+	     <expression>
 	        ${part_slice_info.map_slot_id}:=${map_chunk_info.map_slot_id}; 
 			${part_slice_info.chunk_id}:=${map_chunk_info.chunk_id};
 			
@@ -690,39 +687,21 @@
 			${part_slice_info.part_offset}:=stack_top(${map_chunk_info.arr_part_offset}); 
 			${part_slice_info.part_used}:=stack_top(${map_chunk_info.arr_part_used}); 
 			
-			${map_chunk_info_new.chunk_id}:=${map_chunk_info.chunk_id};
-			${map_chunk_info_new.map_slot_id}:=${map_chunk_info.map_slot_id};
-			
-	        ${map_chunk_info_new.arr_part_ids}:=stack_pop(${map_chunk_info.arr_part_ids});
-	        ${map_chunk_info_new.arr_part_offset}:=stack_pop(${map_chunk_info.arr_part_offset});
-	        ${map_chunk_info_new.arr_part_used}:=stack_pop(${map_chunk_info.arr_part_used});
+			${map_chunk_info.chunk_id}:=${map_chunk_info.chunk_id};
+			${map_chunk_info.map_slot_id}:=${map_chunk_info.map_slot_id};
+	        ${map_chunk_info.arr_part_ids}:=stack_pop(${map_chunk_info.arr_part_ids});
+	        ${map_chunk_info.arr_part_offset}:=stack_pop(${map_chunk_info.arr_part_offset});
+	        ${map_chunk_info.arr_part_used}:=stack_pop(${map_chunk_info.arr_part_used});
 	    </expression>
         <condition>
           !stack_empty(${map_chunk_info.arr_part_ids})
         </condition>
     </defun>
-    <connect-in port="map_chunk_info" place="map_chunk_info"/>
+    <connect-inout port="map_chunk_info" place="map_chunk_info"/>
     <connect-read port="config" place="config"/>
     <connect-out port="part_slice_info" place="part_slice_info"/>
-    <connect-out port="map_chunk_info_new" place="map_chunk_info_new"/>
     </transition>
-                            
-	<transition name="update_map_chunk_info" inline="true">
-		<defun>
-	    <in name="map_chunk_info_new" type="map_chunk_info_t"/>
-	    <out name="map_chunk_info" type="map_chunk_info_t"/>
-	    <expression>
-	    	${map_chunk_info.chunk_id}:=${map_chunk_info_new.chunk_id};
-			${map_chunk_info.map_slot_id}:=${map_chunk_info_new.map_slot_id};
-	    	${map_chunk_info.arr_part_ids}:=${map_chunk_info_new.arr_part_ids};
-	        ${map_chunk_info.arr_part_offset}:=${map_chunk_info_new.arr_part_offset};
-	        ${map_chunk_info.arr_part_used}:=${map_chunk_info_new.arr_part_used};
-		</expression>			  
-	    </defun>
-		<connect-in port="map_chunk_info_new" place="map_chunk_info_new"/>
-	    <connect-out port="map_chunk_info" place="map_chunk_info"/> 
-	</transition> 
-    
+      
    <place name="partition_result" type="partition_result"/>
     <transition name="copy_into_partition_slot" inline="true">
       <require key="GPI" />
@@ -980,42 +959,10 @@
 			${map_slot_id}:=${counter_partial_updates.map_slot_id};
 			${chunk_partitioned}:=[];
         </expression> 
-        <!-- <module name="free_map_slot" function="free_map_slot(map_chunk_info, counter_partial_updates, map_slot_id, chunk_partitioned)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="util/helper.hpp"/>   <ld flag="-lboost_regex"/>
-          <cinclude href="util/reduce.hpp"/>
-          <cinclude href="boost/utility.hpp"/>
-          <cinclude href="boost/thread.hpp"/>
-          <cinclude href="boost/bind.hpp"/>
-          <cinclude href="fhg/util/show.hpp"/>
-          <cinclude href="sstream"/>
-          <cinclude href="cstdio"/>
-          <cinclude href="algorithm"/>
-
-          <code><![CDATA[
-			timestamp_t time_start_reduce = ::mapreduce::util::get_timestamp();
-          	                
-			map_slot_id = map_chunk_info.map_slot_id;     
-            chunk_partitioned = control();    
-            
-            MLOG(INFO, "Free the map slot "<<map_slot_id<<"(chunk_id="<<map_chunk_info.chunk_id<<", size of the stack of partition ids: "<<map_chunk_info.arr_part_ids.size()
-                       <<",\n counter updates: "<<counter_partial_updates.counter<<", chunk_id="<<counter_partial_updates.chunk_id);
-
-          ]]></code>
-        </module>
-        -->
-       <!-- <condition>
-			stack_empty(${map_chunk_info.arr_part_ids})
-        </condition> -->
         <condition>
       		${counter_partial_updates.counter}:eq:0L
     	</condition>
-    <!--	<condition>
-      		${counter_partial_updates.chunk_id}:eq:${map_chunk_info.chunk_id}
-    	</condition> -->
       </defun>
-     <!-- <connect-in  port="map_chunk_info" place="map_chunk_info"/> -->
       <connect-in  port="counter_partial_updates" place="counter_partial_updates"/>
       <connect-out port="map_slot_id" place="map_slot_id"/>
       <connect-out port="chunk_partitioned" place="chunk_partitioned"/>
@@ -1163,31 +1110,9 @@
       <connect-out port="partition_move_info" place="partition_move_info"/> 
     </transition> 
     
-    <place name="pre_reduce_info"  type="reduce_info"/>
-    <!-- <transition name="release_partition" inline="true">
-      <defun>
-        <in name="partition_move_info" type="partition_move_info"/>
-        <out name="partition_info" type="partition_info"/>
-        <out name="pre_reduce_info" type="reduce_info"/>
-        <out name="update_gid" type="long"/>
-        <expression>
-        	${partition_info.slot_id}:=${partition_move_info.partition_info.slot_id};
-            ${partition_info.part_id}:=${partition_move_info.partition_info.part_id};
-        	${partition_info.part_used}:=0L;
-        	${pre_reduce_info}:=${partition_move_info.reduce_info};
-        	${update_gid}:=${partition_move_info.chunk_id};
-        </expression>
-        <condition>
-            ${partition_move_info.succeeded}:eq:1L
-        </condition>
-      </defun>
-      <connect-in port="partition_move_info" place="partition_move_info"/>
-      <connect-out port="partition_info" place="partition_info"/>
-      <connect-out port="pre_reduce_info" place="pre_reduce_info"/>
-      <connect-out port="update_gid" place="update_gid"/>
-    </transition> -->
-    
-     <transition name="retry_copy_slice" inline="true">
+	<place name="pre_reduce_info"  type="reduce_info"/>
+        
+	<transition name="retry_copy_slice" inline="true">
       <defun>
         <in name="partition_move_info" type="partition_move_info"/>
         <out name="partition_info" type="partition_info"/>
@@ -1920,9 +1845,7 @@
           ]]></code>
         </module>
       </defun>
-      <!-- <condition>
-        ${partition_info.part_id}:lt:${config.num.part}-1
-      </condition> -->
+
       <condition>
         ${reduce_info.part_id}:eq:${partition_info.part_id}
       </condition>
@@ -1995,7 +1918,7 @@
       <connect-out port="part_slots_released" place="part_slots_released"/>
     </transition> 
     
-   <place name="new_part_id" type="long" />
+   <!-- <place name="new_part_id" type="long" /> -->
 	<transition name="write">
       <require key="GPI" />
       <require key="RED" />
@@ -2005,13 +1928,13 @@
         
 		<!-- <in name="part_slots_released" type="control"/> -->
         <in name="new_reduce_info" type="reduce_info"/>
-        <in name="part_id" type="long"/>
-        <out name="new_part_id" type="long"/>  
+        <inout name="part_id" type="long"/>
+        <!-- <out name="new_part_id" type="long"/> -->  
         <in name="config" type="config"/>
         <out name="border_keys_recovered_red" type="control"/>
 	     <module name="mapred_write" function="write( 	map_slots_released, 
 	     	                                          	read_slots_released,
-	     	     										part_id, new_part_id,
+	     	     										part_id,
 	     												new_reduce_info,
 	     	     										config,
 	     												border_keys_recovered_red)">
@@ -2073,7 +1996,7 @@
             
             
             border_keys_recovered_red = control(); 
-            new_part_id = part_id;
+            //new_part_id = part_id;
 
           ]]></code>
         </module>
@@ -2086,12 +2009,12 @@
       <!-- <connect-read port="part_slots_released" place="part_slots_released"/> -->
       <connect-in port="new_reduce_info" place="new_reduce_info"/>
       <connect-read port="config" place="config"/>
-      <connect-in port="part_id" place="part_id" />
-      <connect-out port="new_part_id" place="new_part_id" />  
+      <connect-inout port="part_id" place="part_id" />
+     <!-- <connect-out port="new_part_id" place="new_part_id" /> -->  
       <connect-out port="border_keys_recovered_red" place="border_keys_recovered_red"/>
     </transition>
     
-     <transition name="update_part_id" inline="true">
+    <!-- <transition name="update_part_id" inline="true">
      <defun>
         <in name="new_part_id" type="long"/>
         <out name="part_id" type="long"/>
@@ -2101,7 +2024,7 @@
       </defun>
       <connect-in port="new_part_id" place="new_part_id"/>
       <connect-out port="part_id" place="part_id"/>
-    </transition> 
+    </transition> -->
     
     <transition name="finalize">
       <require key="GPI" />
@@ -2115,7 +2038,7 @@
         <in name="part_ids_released" type="control"/>
         <in name="special_partition_info" type="partition_info"/>
         <in name="special_reduce_info" type="reduce_info"/>
-        <out name="result" type="string"/>
+        <out name="result" type="control"/>
         <module name="mapreduce_done" function="finalize_mapreduce(config, result)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
@@ -2123,18 +2046,14 @@
           <code><![CDATA[
 	          LOG (INFO, "finalize: " << config);
 			
-           	  result=config.file.output;
-              std::string str_gen_out_part_file = ::mapreduce::util::get_generic_part_filename(result);
-          	  LOG (INFO, "The result is stored into the files " <<str_gen_out_part_file );
-          
+           	  result = control();
+                  
 	          namespace vm = ::mapreduce::util::memory::global;
 	
 	          vm::free(config.handle.read);
 	          vm::free(config.handle.map);
 	          vm::free(config.handle.partition);
 	          vm::free(config.handle.reduce);
-	
-          
           ]]></code>
         </module>
       </defun>
