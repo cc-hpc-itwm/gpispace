@@ -314,54 +314,6 @@ BOOST_AUTO_TEST_CASE( Test1)
 	LOG( DEBUG, "The test case Test1 terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( Test2 )
-{
-	LOG( DEBUG, "Test2");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false, strBackupAgent);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
-
-	LOG( DEBUG, "Shutdown the orchestrator");
-	ptrOrch->shutdown(strBackupOrch);
-	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, MAX_CAP);
-
-	LOG( INFO, "Re-start the orchestrator. The recovery string is "<<strBackupOrch);
-	ptrRecOrch->start_agent(false, strBackupOrch);
-
-	if( threadClient.joinable() ) threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-
-	ptrAgent->shutdown();
-	ptrRecOrch->shutdown();
-
-	LOG( DEBUG, "The test case Test2 terminated!");
-}
-
 BOOST_AUTO_TEST_CASE( Test3)
 {
 	LOG( DEBUG, "Test3");
