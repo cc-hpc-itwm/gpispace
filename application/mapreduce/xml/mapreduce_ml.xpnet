@@ -205,7 +205,7 @@
       <connect-out port="two" place="input_n_slots_per_red_2"/>
     </transition>
   		
-    <place name="result_1" type="string"/>   
+    <place name="result_1" type="control"/>   
 	<transition name="mapreduce_1" inline="true">
        <include-function href="mapreduce.xpnet"/>
 		<connect-in port="input_file" place="input_file_1"/>
@@ -222,7 +222,7 @@
 	  	<connect-out port="result" place="result_1" />
     </transition>
     
-    <place name="result_2" type="string"/>
+    <place name="result_2" type="control"/>
 	<transition name="mapreduce_2" inline="true">
       <include-function href="mapreduce.xpnet"/>
 		<connect-in port="input_file" place="input_file_2"/>
@@ -239,59 +239,13 @@
 	  	<connect-out port="result" place="result_2" />
     </transition>
     
-<!--
-	<place name="new_result_1" type="string" />        	
-	<transition name="log_result_1" inline="true">
-		<defun> 
-		<in name="result" type="string" />
-		<out name="result" type="string" />
-    	<module name="log_result_1" function="log_result (result)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="util/helper.hpp"/>
-          <cinclude href="util/reduce.hpp"/>
-          <cinclude href="fstream"/>
 
-          <code><![CDATA[
-              
-            
-            MLOG(INFO, "The first MapReduce scheme finished and the results are store within the files with the prefix "<<result);
-
-          ]]></code>
-        </module>	
-		</defun>
-		<connect-in port="result" place="result_1" />
-      	<connect-out port="result" place="new_result_1" />
-	</transition>
-	
-	<place name="new_result_2" type="string" />        	
-	<transition name="log_result_2" inline="true">
-		<defun> 
-		<in name="result" type="string" />
-		<out name="result" type="string" />
-    	<module name="log_result_2" function="log_result (result)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="util/helper.hpp"/>
-          <cinclude href="util/reduce.hpp"/>
-          <cinclude href="fstream"/>
-
-          <code><![CDATA[
-            
-            MLOG(INFO, "The second MapReduce scheme finished and the results are store within the files with the prefix "<<result);
-        
-          ]]></code>
-        </module>	
-		</defun>
-		<connect-in port="result" place="result_2" />
-      	<connect-out port="result" place="new_result_2" />
-	</transition>
-	-->
-        
 	<place name="partition_merged" type="control" />        	
 	<transition name="merge_results" inline="true">
 		<defun> 
         <in name="part_id" type="long" />
-		<in name="new_result_1" type="string" />
-    	<in name="new_result_2" type="string" />
+		<in name="new_result_1" type="control" />
+    	<in name="new_result_2" type="control" />
     	<in name="str_output_file_merge" type="string" />
     	<out name="partition_merged" type="control"/>
     	<module name="multilevel_merge" function="merge_results(part_id, str_output_file_merge, new_result_1, new_result_2, partition_merged)">
@@ -303,8 +257,22 @@
 
           <code><![CDATA[
             
-            std::string str_part_out_file_1 = ::mapreduce::util::get_part_filename(new_result_1, part_id);
-  	    	std::string str_part_out_file_2 = ::mapreduce::util::get_part_filename(new_result_2, part_id);
+           	std::vector<std::string> name_and_ext;
+			boost::split(name_and_ext, str_output_file_merge, boost::is_any_of("."));
+			
+			std::ostringstream sstr_part_out_file;
+			
+			sstr_part_out_file<<name_and_ext[0]<<"1";
+			sstr_part_out_file<<"."<<name_and_ext[1];                
+		    std::string output_file_1= sstr_part_out_file.str();
+            
+            sstr_part_out_file.str("");
+          	sstr_part_out_file<<name_and_ext[0]<<"2";
+			sstr_part_out_file<<"."<<name_and_ext[1];                
+		    std::string output_file_2= sstr_part_out_file.str();
+		    
+            std::string str_part_out_file_1 = ::mapreduce::util::get_part_filename(output_file_1, part_id);
+  	    	std::string str_part_out_file_2 = ::mapreduce::util::get_part_filename(output_file_2, part_id);
           
             std::string str_part_out_file = ::mapreduce::util::get_part_filename(str_output_file_merge, part_id);
             
@@ -335,8 +303,8 @@
       <defun>
         <in name="str_output_file_merge" type="string" />
 		<in name="part_ids_released" type="control"/>
-		<in name="new_result_1" type="string" />
-    	<in name="new_result_2" type="string" />
+		<in name="new_result_1" type="control" />
+    	<in name="new_result_2" type="control" />
         <out name="done" type="control"/>
         <!-- <expression>			  
 		  	${done}:=[];
