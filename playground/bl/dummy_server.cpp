@@ -140,9 +140,19 @@ void thread::send_some_status_updates()
   const QMutexLocker lock (&_pending_status_updates_mutex);
   while (!_pending_status_updates.empty() && qrand() % 1000)
   {
+    double p (0.8);
+    int q (-1);
+    for (int k (status_count - 1); k >= 0 && q < 0; --k, p += p / 10)
+    {
+      if (double(qrand()) < p * double(RAND_MAX))
+      {
+        q = k;
+      }
+    }
+
     _socket->write ( qPrintable ( QString ("status %1 %2\n")
                                 .arg (_pending_status_updates.takeFirst())
-                                .arg (states[qrand() % status_count])
+                                .arg (states[q])
                                 )
                    );
 
