@@ -39,9 +39,9 @@ const int KEY_MAX_SIZE = 50;
 
 #define SHRPCH '#'
 #define PAIRSEP '@'
-#define SPCH ' '
+#define ITEMSEP 7 //BEL
 #define NLCH '\n'
-char DELIMITERS[] = {SPCH, NLCH, '\0'};
+char DELIMITERS[] = {ITEMSEP, NLCH, '\0'};
 
 namespace mapreduce
 {
@@ -321,7 +321,7 @@ namespace mapreduce
 		 std::stringstream sstr;
 		 for(typename std::vector<T>::iterator it=arr.begin();it!=arr.end();it++)
 		 {
-			 sstr<<*it<<SPCH;
+			 sstr<<*it<<ITEMSEP;
 		 }
 
 		 return sstr.str();
@@ -362,7 +362,7 @@ namespace mapreduce
 		  oss<<*it;
 
 		  if( boost::next(it) != list_values.end() )
-			  oss<<SPCH;
+			  oss<<ITEMSEP;
 		  else
 			  oss<<"]";
 		}
@@ -414,13 +414,13 @@ namespace mapreduce
 	   {
 		   memcpy(reduce_buff+last_pos, str_pair.data(), item_size);
 		   size_t new_pos = last_pos + item_size;
-		   reduce_buff[new_pos++]=SPCH;
+		   reduce_buff[new_pos++]=ITEMSEP;
 
 		   return new_pos;
 	   }
    }
 
-   size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t last_pos, const size_t& n_max_size, const int sp=SPCH )
+   size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t last_pos, const size_t& n_max_size, const int sp=ITEMSEP )
    {
 	   std::stringstream sstr;
 	   size_t item_size = str_pair.size();
