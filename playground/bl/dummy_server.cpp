@@ -68,27 +68,31 @@ void thread::may_read()
 
     if (tokens[0] == "host_list")
     {
-      _socket->write ("hosts");
+      _socket->write ("hosts: [");
       int count (qrand() % 1000 + 5000);
       while (count--)
       {
-        _socket->write (qPrintable (QString (" node%1.cluster").arg (count)));
+        _socket->write (qPrintable (QString (" \"node%1.cluster\",").arg (count)));
       }
-      _socket->write ("\n");
+      _socket->write ("]\n");
     }
     else if (tokens[0] == "possible_status_list")
     {
+      _socket->write ("possible_status: [");
       for (size_t i (0); i < status_count; ++i)
       {
-        _socket->write ("possible_status ");
+        _socket->write ("\"");
         _socket->write (states[i]);
+        _socket->write ("\":[");
         if (actions[i])
         {
-          _socket->write (" ");
+          _socket->write (" \"");
           _socket->write (actions[i]);
+          _socket->write ("\",");
         }
-        _socket->write ("\n");
+        _socket->write ("],");
       }
+      _socket->write ("]\n");
     }
     else if (tokens[0] == "status")
     {
@@ -107,7 +111,8 @@ void thread::may_read()
       foreach (const QString& action, tokens.mid (1))
       {
         _socket->write
-          ( qPrintable ( QString ("action_long_text %1 %2\n")
+          ( qPrintable ( QString
+                         ("action_description: [\"%1\": [long_text: \"%2\",],]\n")
                        .arg (action)
                        .arg ( action == "add_to_working_set"
                             ? "add this node to the working set"
@@ -125,12 +130,14 @@ void thread::may_read()
     }
     else if (tokens[0] == "layout_hint")
     {
-      _socket->write ( qPrintable ( QString ("layout_hint %1 color=%2 border=%3\n")
-                                  .arg (tokens[1])
-                                  .arg (qrand() ^ qrand(), 0, 16)
-                                  .arg (qrand() ^ qrand(), 0, 16)
-                                  )
-                     );
+      _socket->write
+        ( qPrintable ( QString
+                       ("layout_hint: [\"%1\": [color:0x%2,border:0x%3,],]\n")
+                     .arg (tokens[1])
+                     .arg (qrand() ^ qrand(), 0, 16)
+                     .arg (qrand() ^ qrand(), 0, 16)
+                     )
+        );
     }
   }
 }
@@ -150,7 +157,7 @@ void thread::send_some_status_updates()
       }
     }
 
-    _socket->write ( qPrintable ( QString ("status %1 %2\n")
+    _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\"]]\n")
                                 .arg (_pending_status_updates.takeFirst())
                                 .arg (states[q])
                                 )

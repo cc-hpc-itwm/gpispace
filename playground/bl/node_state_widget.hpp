@@ -20,6 +20,8 @@
 #include <stdexcept>
 
 #include <boost/optional.hpp>
+#include <fhg/util/parse/position.hpp>
+
 
 namespace prefix
 {
@@ -178,6 +180,11 @@ namespace prefix
     QList<QString> _nodes_to_update;
 
     void update (int node);
+
+    void possible_status (fhg::util::parse::position&);
+    void action_description (fhg::util::parse::position&, const QString&);
+    void layout_hint (fhg::util::parse::position&, const QString&);
+    void status_update (fhg::util::parse::position&, const QString&);
 
     QVector<node_type> _nodes;
     QMap<QString, state_description> _states;

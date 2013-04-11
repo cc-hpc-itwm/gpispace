@@ -17,6 +17,9 @@
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
 
+#include <fhg/util/parse/error.hpp>
+#include <fhg/util/num.hpp>
+
 namespace prefix
 {
   namespace
@@ -47,6 +50,57 @@ namespace prefix
       fhg::util::qt::boost_connect<void()>
         (timer, SIGNAL (timeout()), parent, fun);
       timer->start (timeout);
+    }
+
+    namespace require
+    {
+      void token (fhg::util::parse::position& pos, const std::string& what)
+      {
+        pos.skip_spaces();
+        pos.require (what);
+      }
+
+      QString qstring (fhg::util::parse::position& pos)
+      {
+        token (pos, "\"");
+        return QString::fromStdString (pos.until ('"'));
+      }
+
+      QString label (fhg::util::parse::position& pos)
+      {
+        const QString key (qstring (pos));
+        token (pos, ":");
+        return key;
+      }
+
+      QColor qcolor (fhg::util::parse::position& pos)
+      {
+        pos.skip_spaces();
+        return QColor (fhg::util::read_uint (pos));
+      }
+
+      void list ( fhg::util::parse::position& pos
+                , const boost::function<void (fhg::util::parse::position&)>& f
+                )
+      {
+        pos.list ('[', ',', ']', f);
+      }
+
+      void named_list
+        ( fhg::util::parse::position& pos
+        , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+        )
+      {
+        list (pos, boost::bind (f, _1, label (pos)));
+      }
+
+      void list_of_named_lists
+        ( fhg::util::parse::position& pos
+        , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+        )
+      {
+        list (pos, boost::bind (named_list, _1, f));
+      }
     }
   }
 
@@ -89,111 +143,260 @@ namespace prefix
       (rect_for_node (node, per_row).toRect().adjusted (-1, -1, 1, 1));
   }
 
+  void node_state_widget::possible_status (fhg::util::parse::position& pos)
+  {
+    const QString state (require::label (pos));
+
+    QStringList actions;
+    require::list ( pos
+                 , boost::bind ( &QStringList::push_back
+                               , &actions
+                               , boost::bind (require::qstring, _1)
+                               )
+                 );
+
+    _connection->push (QString ("layout_hint %1").arg (state));
+    _connection->push (QString ("describe_action %1").arg (actions.join (" ")));
+
+    _states.insert (state, state_description (actions));
+  }
+
+  void node_state_widget::action_description
+    (fhg::util::parse::position& pos, const QString& action)
+  {
+    pos.skip_spaces();
+
+    if (pos.end() || (*pos != 'l'))
+    {
+      throw fhg::util::parse::error::expected ("long_text", pos);
+    }
+
+    switch (*pos)
+    {
+    case 'l':
+      ++pos;
+      pos.require ("ong_text");
+      require::token (pos, ":");
+      _long_action[action] = require::qstring (pos);
+      break;
+    }
+  }
+
+  void node_state_widget::layout_hint ( fhg::util::parse::position& pos
+                                      , const QString& state
+                                      )
+  {
+    pos.skip_spaces();
+
+    if (pos.end() || (*pos != 'b' && *pos != 'c'))
+    {
+      throw fhg::util::parse::error::expected
+        ("border' or 'character' or 'color", pos);
+    }
+
+    state_description& desc (_states[state]);
+
+    switch (*pos)
+    {
+    case 'b':
+      ++pos;
+      pos.require ("order");
+      require::token (pos, ":");
+      desc._pen = require::qcolor (pos);
+      break;
+
+    case 'c':
+      ++pos;
+      {
+        if (pos.end() || (*pos != 'h' && *pos != 'o'))
+        {
+          throw fhg::util::parse::error::expected ("haracter' or 'olor", pos);
+        }
+
+        switch (*pos)
+        {
+        case 'h':
+          ++pos;
+          pos.require ("aracter");
+          require::token (pos, ":");
+          desc._character = pos.character();
+          break;
+
+        case 'o':
+          ++pos;
+          pos.require ("lor");
+          require::token (pos, ":");
+          desc._brush = require::qcolor (pos);
+          break;
+        }
+      }
+      break;
+    }
+
+    desc.reset();
+  }
+
+  void node_state_widget::status_update
+    (fhg::util::parse::position& pos, const QString& hostname)
+  {
+    pos.skip_spaces();
+
+    if (pos.end() || (*pos != 's'))
+    {
+      throw fhg::util::parse::error::expected ("state", pos);
+    }
+
+    _pending_updates.removeAll (hostname);
+    const QVector<node_type>::iterator it
+      ( std::find_if ( _nodes.begin()
+                     , _nodes.end()
+                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     )
+      );
+
+    if (it != _nodes.end())
+    {
+      _nodes_to_update << hostname;
+    }
+
+    switch (*pos)
+    {
+    case 's':
+      ++pos;
+      pos.require ("tate");
+      require::token (pos, ":");
+
+      {
+        const QString state (require::qstring (pos));
+        if (it != _nodes.end())
+        {
+          it->state (state);
+          update (it - _nodes.begin());
+        }
+      }
+
+      break;
+    }
+  }
+
   void node_state_widget::check_for_incoming_messages()
   {
     const async_tcp_communication::messages_type messages (_connection->get());
     foreach (const QString& message, messages)
     {
-      const QStringList tokens (message.split (' '));
+      const std::string std_message (message.toStdString());
+      fhg::util::parse::position pos (std_message);
 
-      if (tokens[0] == "possible_status")
+      try
       {
-        const QString& state (tokens[1]);
-        const QStringList actions (tokens.mid (2));
+        pos.skip_spaces();
 
-
-        _connection->push (QString ("layout_hint %1").arg (state));
-        _connection->push
-          (QString ("describe_action %1").arg (actions.join (" ")));
-
-        _states.insert (state, state_description (actions));
-      }
-      else if (tokens[0] == "status")
-      {
-        const QString& hostname (tokens[1]);
-        const QString& state (tokens[2]);
-
-
-        _pending_updates.removeAll (hostname);
-        const QVector<node_type>::iterator it
-          ( std::find_if ( _nodes.begin()
-                         , _nodes.end()
-                         , boost::bind (&node_type::hostname_is, _1, hostname)
-                         )
-          );
-        if (it != _nodes.end())
+        if (pos.end())
         {
-          it->state (state);
-          update (it - _nodes.begin());
-          _nodes_to_update << hostname;
+          throw fhg::util::parse::error::expected ("packet", pos);
         }
-      }
-      else if (tokens[0] == "hosts")
-      {
-        QStringList hostnames (tokens.mid (1));
 
-
-        const int old_height (heightForWidth (width()));
-
-        QMutableVectorIterator<node_type> i (_nodes);
-        while (i.hasNext())
+        switch (*pos)
         {
-          const QString& hostname (i.next().hostname());
-          int index (hostnames.indexOf (hostname));
-          if (index == -1)
+        case 'a':
+          ++pos;
+          pos.require ("ction_description");
+          require::token (pos, ":");
+
+          require::list_of_named_lists
+            ( pos
+            , boost::bind (&node_state_widget::action_description, this, _1, _2)
+            );
+
+          break;
+
+        case 'h':
+          ++pos;
+          pos.require ("osts");
+          require::token (pos, ":");
+
           {
-            i.remove();
-            update (index);
-            update (_nodes.size());
-            _pending_updates.removeAll (hostname);
-            _nodes_to_update.removeAll (hostname);
-          }
-          else
-          {
-            hostnames.removeOne (hostname);
-          }
-        }
+            QStringList hostnames;
+            require::list ( pos
+                          , boost::bind ( &QStringList::push_back
+                                        , &hostnames
+                                        , boost::bind (require::qstring, _1)
+                                        )
+                          );
 
-        foreach (const QString& hostname, hostnames)
-        {
-          _nodes << node_type (hostname);
-          update (_nodes.size() - 1);
-          _nodes_to_update << hostname;
-        }
+            const int old_height (heightForWidth (width()));
 
-        if (old_height != heightForWidth (width()))
-        {
-          updateGeometry();
+            QMutableVectorIterator<node_type> i (_nodes);
+            while (i.hasNext())
+            {
+              const QString& hostname (i.next().hostname());
+              int index (hostnames.indexOf (hostname));
+              if (index == -1)
+              {
+                i.remove();
+                update (index);
+                update (_nodes.size());
+                _pending_updates.removeAll (hostname);
+                _nodes_to_update.removeAll (hostname);
+              }
+              else
+              {
+                hostnames.removeOne (hostname);
+              }
+            }
+
+            foreach (const QString& hostname, hostnames)
+            {
+              _nodes << node_type (hostname);
+              update (_nodes.size() - 1);
+              _nodes_to_update << hostname;
+            }
+
+            if (old_height != heightForWidth (width()))
+            {
+              updateGeometry();
+            }
+          }
+
+          break;
+
+        case 'l':
+          ++pos;
+          pos.require ("ayout_hint");
+          require::token (pos, ":");
+
+          require::list_of_named_lists
+            ( pos
+            , boost::bind (&node_state_widget::layout_hint, this, _1, _2)
+            );
+
+          break;
+
+        case 'p':
+          ++pos;
+          pos.require ("ossible_status");
+          require::token (pos, ":");
+
+          require::list
+            (pos, boost::bind (&node_state_widget::possible_status, this, _1));
+
+          break;
+
+        case 's':
+          ++pos;
+          pos.require ("tatus");
+          require::token (pos, ":");
+
+          require::list_of_named_lists
+            (pos, boost::bind (&node_state_widget::status_update, this, _1, _2));
+
+          break;
         }
       }
-      else if (tokens[0] == "action_long_text")
+      catch (const std::runtime_error& ex)
       {
-        const QString& action (tokens[1]);
-        const QString long_action_text (QStringList (tokens.mid (2)).join (" "));
-
-
-        _long_action[action] = long_action_text;
-      }
-      else if (tokens[0] == "layout_hint")
-      {
-        const QString& state (tokens[1]);
-        const QStringList hints (tokens.mid (2));
-
-
-        state_description& desc (_states[state]);
-        foreach (const QString& hint, hints)
-        {
-          if (hint.startsWith ("color="))
-          {
-            desc._brush = hint.section ('=', 1).toULong (NULL, 16);
-          }
-          else if (hint.startsWith ("border="))
-          {
-            desc._pen = hint.section ('=', 1).toULong (NULL, 16);
-          }
-        }
-
-        desc.reset();
+        //! \todo Report back to server?
+        std::cerr << "PARSE ERROR: " << ex.what() << "\nmessage: " << qPrintable (message) << "\nrest: " << pos.rest() << "\n";
       }
     }
   }
