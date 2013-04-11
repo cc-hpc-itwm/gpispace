@@ -58,7 +58,6 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
   sdpa::job_id_t jobId = ptrEvt->job_id();
 
-  SDPA_LOG_DEBUG("Check if there are subscribers for the job "<<jobId<<" ...");
   BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;
@@ -69,7 +68,7 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
       ptrEvt->to() = pair_subscr_joblist.first;
       sendEventToMaster(ptrEvt);
 
-      SDPA_LOG_INFO("Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
+      SDPA_LOG_DEBUG ("Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;
     }
   }
@@ -99,8 +98,9 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     Job::ptr_t pJob;
     try {
     	pJob = jobManager()->findJob(pEvt->job_id());
+    	SDPA_LOG_DEBUG("The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus()<<". Change its status to \"SDPA::Finished\"!");
     	pJob->JobFinished(pEvt);
-    	SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+    	SDPA_LOG_DEBUG("The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
     catch(JobNotFoundException const &)
     {
@@ -124,6 +124,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
             }
             else
             {
+            	SDPA_LOG_DEBUG("Notify the subscribers that the job "<<act_id<<" finished");
                 JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
                 notifySubscribers(ptrEvtJobFinished);
             }
