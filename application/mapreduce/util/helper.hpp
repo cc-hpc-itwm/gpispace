@@ -249,7 +249,7 @@ namespace mapreduce
 		  MLOG(INFO, msg<<" "<<osstr.str());
   	  }
 
-  	  std::string match_keys(const std::string& str_item, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
+  	  std::string match_keys(const std::string& str_item, const std::list<std::string>& list_border_items, std::string& matching_pair, int& cid, int& end)
   	  {
   		 // to do: use regex here
 		 std::string w;
@@ -263,17 +263,17 @@ namespace mapreduce
 		 std::vector<std::string> v(2,"");
 		 v.assign(tok_v.begin(), tok_v.end());
 
-		 cid = atoi(v[0].c_str()); //boost::lexical_cast<long>(v[0]);
-		 end = atoi(v[1].c_str()); //boost::lexical_cast<long>(v[1]);
+		 cid = /*atoi(v[0].c_str());*/ boost::lexical_cast<long>(v[0]);
+		 end = /*atoi(v[1].c_str());*/ boost::lexical_cast<long>(v[1]);
 
-		 if( list_border_keys.empty() )
+		 if( list_border_items.empty() )
 		 {
 			 LOG(WARN, "The array of border keys is empty ...");
 			 matching_pair = "";
 			 return "";
 		 }
 
-		 for(std::list<std::string>::const_iterator it = list_border_keys.begin(); it != list_border_keys.end(); it++ )
+		 for(std::list<std::string>::const_iterator it = list_border_items.begin(); it != list_border_items.end(); it++ )
 		 {
 			 key_val_pair_t kvp_u = str2kvpair(*it);
 			 boost::tokenizer<boost::char_separator<char> > tok_u(kvp_u.first, sep);
@@ -281,10 +281,10 @@ namespace mapreduce
 			 u.assign(tok_u.begin(), tok_u.end());
 
 			 int v0 = cid;
-			 int u0 = atoi(u[0].c_str()); //boost::lexical_cast<long>(u[0]);
+			 int u0 = /*atoi(u[0].c_str());*/ boost::lexical_cast<long>(u[0]);
 
 			 int v1 = end;
-			 int u1 = atoi(u[1].c_str()); //boost::lexical_cast<long>(u[1]);
+			 int u1 = /*atoi(u[1].c_str());*/ boost::lexical_cast<long>(u[1]);
 
 			 if( v0 + v1 == u0 + u1 )
 			 {
@@ -298,9 +298,9 @@ namespace mapreduce
 		 {
 			 std::ostringstream oss;
 			 oss<<"{";
-			 BOOST_FOREACH(const std::string& key, list_border_keys)
+			 BOOST_FOREACH(const std::string& item, list_border_items)
 			 {
-				 oss<<key<<std::endl;
+				 oss<<item<<std::endl;
 			 }
 			 oss<<"}";
 
