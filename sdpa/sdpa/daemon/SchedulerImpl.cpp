@@ -361,11 +361,10 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
     const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
     // Should set the workflow_id here, or send it together with the workflow description
-    SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE. ");
-    //SDPA_LOG_DEBUG("Workflow description follows: ");
-    //SDPA_LOG_DEBUG(pJob->description());
-
+    SDPA_LOG_DEBUG("The status of the job "<<jobId<<" is "<<pJob->getStatus());
+    SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<jobId<<" to WE. ");
     pJob->Dispatch();
+    SDPA_LOG_DEBUG("The status of the job "<<jobId<<" is "<<pJob->getStatus());
 
     if(pJob->description().empty() )
     {
