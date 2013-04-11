@@ -378,6 +378,14 @@ void GenericDaemon::stop()
 {
   SDPA_LOG_INFO("Shutting down...");
 
+  // first close the message pipe ...
+  SDPA_LOG_INFO("Shutdown the network...");
+  shutdown_network();
+
+  //  stop the network stage
+  SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
+  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+
   SDPA_LOG_INFO("Stop the scheduler now!");
   scheduler()->stop();
   SDPA_LOG_INFO("The scheduler was stopped!");
@@ -399,14 +407,6 @@ void GenericDaemon::stop()
 	  while(!m_bStopped)
 		  cond_can_stop_.wait(lock);
   }
-
-  // first close the message pipe ...
-  SDPA_LOG_INFO("Shutdown the network...");
-  shutdown_network();
-
-  //  stop the network stage
-  SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
-  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
 
   // stop the daemon stage
   SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
