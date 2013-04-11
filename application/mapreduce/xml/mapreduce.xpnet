@@ -1518,7 +1518,7 @@
               
             size_t used_size = 0;
             std::vector<std::string> arr_part_items;
-            std::vector<std::string> arr_items;
+            std::vector<std::string> arr_spec_items;
             if( partition_info.part_used )
             {
                 //bzero( ptr_shmem, partition_info.part_used+1);
@@ -1555,43 +1555,32 @@
                 arr_red_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);            
             }
             
-            arr_items.insert( arr_items.end(), arr_part_items.begin(), arr_part_items.end());
-            arr_items.insert( arr_items.end(), arr_red_items.begin(), arr_red_items.end() );    
+            arr_spec_items.insert( arr_spec_items.end(), arr_part_items.begin(), arr_part_items.end());
+            arr_spec_items.insert( arr_spec_items.end(), arr_red_items.begin(), arr_red_items.end() );    
 
-            if(arr_items.size()>0)
+            if(arr_spec_items.size()>0)
             {
-	            std::list<std::string> list_special_keys;
+	            std::list<std::string> list_special_items;
 	            std::ostringstream oss;
-	            //oss<<"{";
-	            for( int k=0; k<arr_items.size(); k++ )
-	            {
-	                std::string keyval_pair = arr_items[k];
-	                {
-	                    list_special_keys.push_back(keyval_pair);
-	                    //oss<<keyval_pair<<" ";
-	                }
-	            }
+	            for( int k=0; k<arr_spec_items.size(); k++ )
+	                list_special_items.push_back(arr_spec_items[k]);
 	           
-	           	/* oss<<"}";MLOG(INFO, "The list of border keys is: "<<oss.str());*/
-	            
-	            arr_items.resize(0);
+	            arr_spec_items.resize(0);
 	                                    
-	            while( !list_special_keys.empty() )
+	            while( !list_special_items.empty() )
 	            {                       
-	                std::string keyval_pair = list_special_keys.front();
-	                list_special_keys.pop_front();
+	                std::string spec_item = list_special_items.front();
+	                list_special_items.pop_front();
 	                
 	                // check if matches
-	                std::string matching_pair;
+	                std::string matching_item;
 	                int cid = -1;
 	                int end = -1;
 	                
-	                std:: string recovered_key = ::mapreduce::util::match_keys(keyval_pair, list_special_keys, matching_pair, cid, end );
+	                std:: string recovered_key = ::mapreduce::util::match_keys(spec_item, list_special_items, matching_item, cid, end );
 	                
 	                if(!recovered_key.empty())
 	                {                   
-	                    std::vector<std::string>::iterator it_items = find (arr_items.begin(), arr_items.end(), keyval_pair);
-	                        
 	                    ::mapreduce::util::list_key_val_pairs_t list_key_val_pairs = ::mapreduce::util::map(recovered_key, "");
 	                    
 	                    BOOST_FOREACH(::mapreduce::util::key_val_pair_t& pair, list_key_val_pairs)
@@ -1600,28 +1589,28 @@
 	                        std::string key = pair.first;
 	                        std::string val = pair.second;
 	                                                        
-	                        arr_items.push_back( mapreduce::util::kvpair2str(pair) );
+	                        arr_spec_items.push_back( mapreduce::util::kvpair2str(pair) );
 	                    }
 	                                            
-	                    if(!matching_pair.empty())
+	                    if(!matching_item.empty())
 	                    {
-	                        std::list<std::string>::iterator it_sp_matching_pair = find (list_special_keys.begin(), list_special_keys.end(), matching_pair);
-	                        if(it_sp_matching_pair != list_special_keys.end() )
-	                           list_special_keys.erase(it_sp_matching_pair);
+	                        std::list<std::string>::iterator it_matching_item = find (list_special_items.begin(), list_special_items.end(), matching_item);
+	                        if(it_matching_item != list_special_items.end() )
+	                           list_special_items.erase(it_matching_item);
 	                        
-	                        std::vector<std::string>::iterator it_items_matching_pair = find (arr_items.begin(), arr_items.end(), matching_pair);
-	                        if( it_items_matching_pair != arr_items.end() )
-	                           arr_items.erase(it_items_matching_pair);
+	                        std::vector<std::string>::iterator it_match_item = find (arr_spec_items.begin(), arr_spec_items.end(), matching_item);
+	                        if( it_match_item != arr_spec_items.end() )
+	                           arr_spec_items.erase(it_match_item);
 	                    }                   
 	                }
 	            }
 	                        
-	            std::sort( arr_items.begin(), arr_items.end());
+	            std::sort( arr_spec_items.begin(), arr_spec_items.end());
 	            bzero(ptr_shmem, total_size);
 	
 	            // call reduce here
 	            size_t last_pos = 0;
-                ::mapreduce::util::reduce_arr_buff(partition_info.slot_id, config.size.reduce.slot, arr_items, ptr_shmem, last_pos );
+                ::mapreduce::util::reduce_arr_buff(partition_info.slot_id, config.size.reduce.slot, arr_spec_items, ptr_shmem, last_pos );
 	
 	            if(last_pos>config.size.reduce.slot)
                 {
@@ -1631,7 +1620,7 @@
                 }
     
 	            waitComm ( fvmPutGlobalData
-	            ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
+	            ( static_cast<fvmAllocHandle_t> (	config.handle.reduce)
 	                                                , reduce_info.slot_id*config.size.reduce.slot
 	                                                , last_pos
 	                                                , 0
@@ -1918,18 +1907,14 @@
       <connect-out port="part_slots_released" place="part_slots_released"/>
     </transition> 
     
-   <!-- <place name="new_part_id" type="long" /> -->
 	<transition name="write">
       <require key="GPI" />
       <require key="RED" />
       <defun>
         <in name="map_slots_released" type="control"/>
         <in name="read_slots_released" type="control"/> 
-        
-		<!-- <in name="part_slots_released" type="control"/> -->
         <in name="new_reduce_info" type="reduce_info"/>
         <inout name="part_id" type="long"/>
-        <!-- <out name="new_part_id" type="long"/> -->  
         <in name="config" type="config"/>
         <out name="border_keys_recovered_red" type="control"/>
 	     <module name="mapred_write" function="write( 	map_slots_released, 
@@ -1996,7 +1981,6 @@
             
             
             border_keys_recovered_red = control(); 
-            //new_part_id = part_id;
 
           ]]></code>
         </module>
@@ -2006,25 +1990,12 @@
       </condition> 
       <connect-read port="map_slots_released" place="map_slots_released"/>
       <connect-read port="read_slots_released" place="read_slots_released"/> 
-      <!-- <connect-read port="part_slots_released" place="part_slots_released"/> -->
       <connect-in port="new_reduce_info" place="new_reduce_info"/>
       <connect-read port="config" place="config"/>
       <connect-inout port="part_id" place="part_id" />
-     <!-- <connect-out port="new_part_id" place="new_part_id" /> -->  
       <connect-out port="border_keys_recovered_red" place="border_keys_recovered_red"/>
     </transition>
     
-    <!-- <transition name="update_part_id" inline="true">
-     <defun>
-        <in name="new_part_id" type="long"/>
-        <out name="part_id" type="long"/>
-        <expression>
-        	${part_id}:=${new_part_id};
-        </expression>
-      </defun>
-      <connect-in port="new_part_id" place="new_part_id"/>
-      <connect-out port="part_id" place="part_id"/>
-    </transition> -->
     
     <transition name="finalize">
       <require key="GPI" />
