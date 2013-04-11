@@ -76,9 +76,10 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    async_tcp_communication()
+    async_tcp_communication (QObject* parent = NULL)
+      : QObject (parent)
     {
-      connect (&_socket, SIGNAL (readyRead()), this, SLOT (may_read()));
+      connect (&_socket, SIGNAL (readyRead()), SLOT (may_read()));
       _socket.connectToHost ("localhost", 44451);
       if (!_socket.waitForConnected())
       {
