@@ -62,7 +62,8 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
-  static const size_t NUM_CLIENTS = 100;
+  // one might have to increase ulimit nofile for that to work
+  static const size_t NUM_CLIENTS = 1000;
 
   gspc::net::server::queue_manager_t qmgr;
 
