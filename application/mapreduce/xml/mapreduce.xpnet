@@ -573,7 +573,7 @@
                         if( first_char_is_delim )
                         {
           					key = spec_left_prefix;
-                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t(key, " " ));
+                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t(key, "" ));
                             arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
@@ -593,7 +593,7 @@
                         // the last character of the chunk is a delimiter
                         if( last_char_is_delim )
                         {
-                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, " "));       
+                            str_pair = ::mapreduce::util::kvpair2str( ::mapreduce::util::key_val_pair_t( key, ""));       
                             arr_part_buffs[part_id].push_back(str_pair);
                         }
                         else
