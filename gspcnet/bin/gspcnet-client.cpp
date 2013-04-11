@@ -85,8 +85,11 @@ int main (int argc, char *argv[])
 
   char c;
 
-  while ((c = getchar ()) != EOF_BYTE)
+  while ((c = getchar ()) != -1)
   {
+    if (c == EOF_BYTE)
+      break;
+
     if (print_handler.has_error)
     {
       try
