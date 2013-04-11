@@ -78,6 +78,15 @@ namespace prefix
     void reset();
   };
 
+  class legend_entry : public QWidget
+  {
+    Q_OBJECT;
+
+  public:
+    legend_entry
+      (const QString&, const state_description&, QWidget* parent = NULL);
+  };
+
   class async_tcp_communication : public QObject
   {
     Q_OBJECT;
@@ -193,6 +202,10 @@ namespace prefix
 
     QVector<node_type> _nodes;
     QMap<QString, state_description> _states;
+    QMap<QString, legend_entry*> _state_legend;
+
+    QWidget* _legend_widget;
+    void update_legend (const QString&);
 
     const state_description& state (const boost::optional<QString>&) const;
     const node_type& node (int) const;

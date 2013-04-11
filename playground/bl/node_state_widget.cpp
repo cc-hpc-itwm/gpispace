@@ -8,6 +8,7 @@
 #include <QMenu>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QLabel>
 #include <QPen>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -106,6 +107,7 @@ namespace prefix
 
   node_state_widget::node_state_widget (QWidget* parent)
     : QWidget (parent)
+    , _legend_widget (new QWidget (parentWidget()))
     , _connection (new async_tcp_communication)
   {
     _connection->push ("possible_status_list");
@@ -124,6 +126,9 @@ namespace prefix
     QSizePolicy pol (QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     pol.setHeightForWidth (true);
     setSizePolicy (pol);
+
+    new QVBoxLayout (_legend_widget);
+    _legend_widget->show();
   }
 
   QRectF rect_for_node (const int node, const int per_row)
@@ -159,6 +164,8 @@ namespace prefix
     _connection->push (QString ("describe_action %1").arg (actions.join (" ")));
 
     _states.insert (state, state_description (actions));
+
+    update_legend (state);
   }
 
   void node_state_widget::action_description
@@ -234,6 +241,17 @@ namespace prefix
     }
 
     desc.reset();
+
+    update_legend (state);
+  }
+
+  void node_state_widget::update_legend (const QString& state)
+  {
+    delete _state_legend[state];
+    _state_legend[state] =
+      new legend_entry (state, _states[state], _legend_widget);
+
+    _legend_widget->layout()->addWidget (_state_legend[state]);
   }
 
   void node_state_widget::status_update
@@ -446,6 +464,17 @@ namespace prefix
       painter.drawText
         (0, 0, node_size, node_size, Qt::AlignCenter, QString (*_character));
     }
+  }
+
+  legend_entry::legend_entry
+    (const QString& name, const state_description& desc, QWidget* parent)
+    : QWidget (parent)
+  {
+    QGridLayout* layout (new QGridLayout (this));
+    QLabel* label (new QLabel (this));
+    label->setPixmap (desc._pixmap);
+    layout->addWidget (label, 0, 0);
+    layout->addWidget (new QLabel (name, this), 0, 1);
   }
 
   void node_state_widget::refresh_stati()
