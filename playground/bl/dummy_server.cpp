@@ -157,12 +157,24 @@ void thread::send_some_status_updates()
       }
     }
 
-    _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\"]]\n")
-                                .arg (_pending_status_updates.takeFirst())
-                                .arg (states[q])
-                                )
-                   );
-
+    if (q == 3)
+    {
+      static const char* transition[] = {"map", "reduce", "collect"};
+      _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\", details:\"%3\"]]\n")
+                                  .arg (_pending_status_updates.takeFirst())
+                                  .arg (states[q])
+                                  .arg (transition[qrand()%3])
+                                  )
+                     );
+    }
+    else
+    {
+      _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\"]]\n")
+                                  .arg (_pending_status_updates.takeFirst())
+                                  .arg (states[q])
+                                  )
+                     );
+    }
   }
 }
 

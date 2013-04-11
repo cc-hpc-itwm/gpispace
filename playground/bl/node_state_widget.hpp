@@ -32,15 +32,20 @@ namespace prefix
     node_type()
       : _state (boost::none)
       , _hostname (QString ("node%1.cluster").arg (++counter))
+      , _details (boost::none)
     { }
     node_type (const QString& hostname)
       : _state (boost::none)
       , _hostname (hostname)
+      , _details (boost::none)
     { }
     boost::optional<QString> _state;
     QString _hostname;
+    boost::optional<QString> _details;
     const boost::optional<QString>& state() const { return _state; }
     void state (const boost::optional<QString>& state_) { _state = state_; }
+    const boost::optional<QString>& details() const { return _details; }
+    void details (const boost::optional<QString>& details_) { _details = details_; }
     const QString& hostname() const { return _hostname; }
     bool less_by_state (const node_type& other) const
     {

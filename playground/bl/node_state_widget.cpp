@@ -241,9 +241,9 @@ namespace prefix
   {
     pos.skip_spaces();
 
-    if (pos.end() || (*pos != 's'))
+    if (pos.end() || (*pos != 'd' && *pos != 's'))
     {
-      throw fhg::util::parse::error::expected ("state", pos);
+      throw fhg::util::parse::error::expected ("details' or 'state", pos);
     }
 
     _pending_updates.removeAll (hostname);
@@ -261,6 +261,21 @@ namespace prefix
 
     switch (*pos)
     {
+    case 'd':
+      ++pos;
+      pos.require ("etails");
+      require::token (pos, ":");
+
+      {
+        const QString details (require::qstring (pos));
+        if (it != _nodes.end())
+        {
+          it->details (details);
+        }
+      }
+
+      break;
+
     case 's':
       ++pos;
       pos.require ("tate");
@@ -544,7 +559,16 @@ namespace prefix
         const boost::optional<int> node_index (node_at (help_event->x(), help_event->y()));
         if (node_index)
         {
-          QToolTip::showText (help_event->globalPos(), QString ("%1: %2").arg (node (*node_index).hostname()). arg (node (*node_index).state().get_value_or ("unknown state")));
+          QToolTip::showText
+            ( help_event->globalPos()
+            , QString ("%1: %2%3")
+            .arg (node (*node_index).hostname())
+            .arg (node (*node_index).state().get_value_or ("unknown state"))
+            .arg ( node (*node_index).details()
+                 ? QString (*node (*node_index).details()).prepend (" (").append (")")
+                 : ""
+                 )
+            );
           return true;
         }
 
