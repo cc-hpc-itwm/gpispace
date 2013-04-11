@@ -222,7 +222,6 @@ void MyFixture::run_client_subscriber()
 
 		try {
 
-			LOG( DEBUG, "Submitting new workflow ..."); //<<m_strWorkflow);
 			job_id_user = ptrCli->submitJob(m_strWorkflow);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
@@ -272,11 +271,7 @@ BOOST_AUTO_TEST_CASE( Test1)
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-
-	typedef void OrchWorkflowEngine;
-
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
@@ -290,11 +285,12 @@ BOOST_AUTO_TEST_CASE( Test1)
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
 	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch);
 
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	// now try to recover the system
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
@@ -316,18 +312,14 @@ BOOST_AUTO_TEST_CASE( Test1)
 
 BOOST_AUTO_TEST_CASE( Test3)
 {
-	LOG( DEBUG, "Test3");
+	LOG( INFO, "Test3");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-
-	typedef void OrchWorkflowEngine;
-
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false, strBackupOrch);
@@ -342,8 +334,9 @@ BOOST_AUTO_TEST_CASE( Test3)
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 	ptrOrch->shutdown(strBackupOrch);
-	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch);
+	LOG( INFO, "The orchestrator was shot down. The recovery string is "<<strBackupOrch);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
@@ -362,7 +355,7 @@ BOOST_AUTO_TEST_CASE( Test3)
 	ptrAgent->shutdown();
 	ptrRecOrch->shutdown();
 
-	LOG( DEBUG, "The test case Test3 terminated!");
+	LOG( INFO, "The test case Test3 terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
