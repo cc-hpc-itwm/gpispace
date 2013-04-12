@@ -149,7 +149,7 @@ namespace gspc
           m_frame_list.pop_front ();
           m_buffer_list.pop_front ();
 
-          if (not m_frame_list.empty ())
+          if (not m_buffer_list.empty ())
           {
             m_socket.async_send
               ( boost::asio::buffer (m_buffer_list.front ())
