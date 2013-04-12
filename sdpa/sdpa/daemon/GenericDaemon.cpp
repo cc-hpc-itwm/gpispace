@@ -372,19 +372,21 @@ void GenericDaemon::shutdown_network()
     if( !masterInfo.name().empty() && masterInfo.is_registered() )
       sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
   }
+
+  SDPA_LOG_INFO("Stopping the network stage "<<m_to_master_stage_name_);
+  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+
+  SDPA_LOG_INFO("Removing the network stage...");
+  seda::StageRegistry::instance().remove(m_to_master_stage_name_);
 }
 
 void GenericDaemon::stop()
 {
-  SDPA_LOG_INFO("Shutting down...");
+  SDPA_LOG_INFO("Stopping the agent "<<name());
 
   // first close the message pipe ...
-  SDPA_LOG_INFO("Shutdown the network...");
+  SDPA_LOG_INFO("Shut down the network...");
   shutdown_network();
-
-  //  stop the network stage
-  SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
-  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
 
   SDPA_LOG_INFO("Stop the scheduler now!");
   scheduler()->stop();
@@ -409,15 +411,10 @@ void GenericDaemon::stop()
   }
 
   // stop the daemon stage
-  SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
+  SDPA_LOG_INFO("Stopping the daemon stage "<<name());
   seda::StageRegistry::instance().lookup(name())->stop();
 
-  SDPA_LOG_INFO("Removing the network stage...");
-  // remove the network stage
-  seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-
   SDPA_LOG_INFO("Removing the daemon stage...");
-  // remove the daemon stage
   seda::StageRegistry::instance().remove(name());
 
   if( hasWorkflowEngine() )
@@ -426,7 +423,7 @@ void GenericDaemon::stop()
      ptr_workflow_engine_ = NULL;
   }
 
-  SDPA_LOG_INFO("The daemon "<<name()<<" was successfully stopped!");
+  SDPA_LOG_INFO("The agent "<<name()<<" was successfully stopped!");
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
