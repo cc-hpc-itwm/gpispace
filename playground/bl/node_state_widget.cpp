@@ -21,6 +21,8 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/num.hpp>
 
+#include <iostream>
+
 namespace prefix
 {
   namespace
