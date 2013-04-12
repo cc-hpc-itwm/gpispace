@@ -58,6 +58,7 @@ namespace gspc
       int base_connection<Proto>::deliver (frame const &f)
       {
         unique_lock lock (m_frame_list_mutex);
+
         bool write_in_progress = not m_frame_list.empty ();
         m_frame_list.push_back (f);
         m_frame_list.back ().close ();
