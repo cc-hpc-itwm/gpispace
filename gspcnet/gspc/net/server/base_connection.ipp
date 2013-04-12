@@ -67,11 +67,10 @@ namespace gspc
         {
           m_socket.async_send
             ( boost::asio::buffer (m_buffer_list.front ())
-            , m_strand.wrap (boost::bind
-                            ( &base_connection<Proto>::handle_write
-                            , this->shared_from_this ()
-                            , boost::asio::placeholders::error
-                            ))
+            , boost::bind ( &base_connection<Proto>::handle_write
+                          , this->shared_from_this ()
+                          , boost::asio::placeholders::error
+                          )
             );
         }
 
@@ -158,11 +157,10 @@ namespace gspc
           {
             m_socket.async_send
               ( boost::asio::buffer (m_buffer_list.front ())
-              , m_strand.wrap (boost::bind
-                              ( &base_connection<Proto>::handle_write
-                              , this->shared_from_this ()
-                              , boost::asio::placeholders::error
-                              ))
+              , boost::bind ( &base_connection<Proto>::handle_write
+                            , this->shared_from_this ()
+                            , boost::asio::placeholders::error
+                            )
               );
           }
         }
