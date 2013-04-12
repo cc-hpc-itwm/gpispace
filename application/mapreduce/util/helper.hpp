@@ -249,7 +249,7 @@ namespace mapreduce
 		  MLOG(INFO, msg<<" "<<osstr.str());
   	  }
 
-  	  std::string match_keys(const std::string& str_item, const std::list<std::string>& list_border_items, std::string& matching_pair, int& cid, int& end)
+  	  std::string match_keys(const std::string& str_item, std::vector<std::string>& arr_border_items, std::string& matching_pair)
   	  {
   		 // to do: use regex here
 		 std::string w;
@@ -263,17 +263,18 @@ namespace mapreduce
 		 std::vector<std::string> v(2,"");
 		 v.assign(tok_v.begin(), tok_v.end());
 
-		 cid = /*atoi(v[0].c_str());*/ boost::lexical_cast<long>(v[0]);
-		 end = /*atoi(v[1].c_str());*/ boost::lexical_cast<long>(v[1]);
+		 long cid = /*atoi(v[0].c_str());*/ boost::lexical_cast<long>(v[0]);
+		 long end = /*atoi(v[1].c_str());*/ boost::lexical_cast<long>(v[1]);
 
-		 if( list_border_items.empty() )
+		 if( arr_border_items.empty() )
 		 {
 			 LOG(WARN, "The array of border keys is empty ...");
 			 matching_pair = "";
 			 return "";
 		 }
 
-		 for(std::list<std::string>::const_iterator it = list_border_items.begin(); it != list_border_items.end(); it++ )
+		 std::vector<std::string>::iterator it = arr_border_items.begin();
+		 while( it != arr_border_items.end())
 		 {
 			 key_val_pair_t kvp_u = str2kvpair(*it);
 			 boost::tokenizer<boost::char_separator<char> > tok_u(kvp_u.first, sep);
@@ -291,14 +292,21 @@ namespace mapreduce
 				 w = (u0<v0)?kvp_u.second + kvp_v.second : w = kvp_v.second + kvp_u.second;
 				 bMatching = true;
 				 matching_pair = *it;
+				 break;
 			 }
+
+			 it++;
 		 }
+
+		 // remove the matching pair from the list
+		 if( it!=arr_border_items.end() )
+			 arr_border_items.erase(it);
 
 		 if(w.empty())
 		 {
 			 std::ostringstream oss;
 			 oss<<"{";
-			 BOOST_FOREACH(const std::string& item, list_border_items)
+			 BOOST_FOREACH(const std::string& item, arr_border_items)
 			 {
 				 oss<<item<<std::endl;
 			 }
