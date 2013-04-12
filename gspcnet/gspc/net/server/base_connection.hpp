@@ -48,6 +48,7 @@ namespace gspc
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
 
         typedef std::list<frame>        frame_list_t;
+        typedef std::list<std::string>  buffer_list_t;
 
         void handle_read ( const boost::system::error_code &
                          , std::size_t transferred
@@ -66,6 +67,7 @@ namespace gspc
         parse::parser m_parser;
         frame         m_frame;
         frame_list_t  m_frame_list;
+        buffer_list_t m_buffer_list;
       };
     }
   }

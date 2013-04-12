@@ -7,7 +7,6 @@ set (gspcnet_src
   net/frame.cpp
   net/frame_util.cpp
   net/frame_io.cpp
-  net/frame_buffer.cpp
   net/frame_builder.cpp
   net/handle.cpp
   net/serve.cpp

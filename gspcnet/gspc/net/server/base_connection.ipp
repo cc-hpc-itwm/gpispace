@@ -4,7 +4,6 @@
 #include <boost/bind.hpp>
 
 #include <gspc/net/frame_io.hpp>
-#include <gspc/net/frame_buffer.hpp>
 #include <gspc/net/frame_util.hpp>
 #include <gspc/net/frame_handler.hpp>
 
@@ -61,13 +60,13 @@ namespace gspc
         unique_lock lock (m_frame_list_mutex);
         bool write_in_progress = not m_frame_list.empty ();
         m_frame_list.push_back (f);
-
         m_frame_list.back ().close ();
+        m_buffer_list.push_back (m_frame_list.back ().to_string ());
 
         if (not write_in_progress)
         {
           m_socket.async_send
-            ( frame_to_buffers (m_frame_list.front ())
+            ( boost::asio::buffer (m_buffer_list.front ())
             , m_strand.wrap (boost::bind
                             ( &base_connection<Proto>::handle_write
                             , this->shared_from_this ()
@@ -101,11 +100,6 @@ namespace gspc
 
             if (result.state == gspc::net::parse::PARSE_FAILED)
             {
-              std::cerr << "parsing failed: "
-                        << gspc::net::error_string (result.reason)
-                        << std::endl
-                ;
-              std::cerr << m_frame.to_hex () << std::endl;
               return;
             }
 
@@ -158,11 +152,12 @@ namespace gspc
         {
           unique_lock lock (m_frame_list_mutex);
           m_frame_list.pop_front ();
+          m_buffer_list.pop_front ();
 
           if (not m_frame_list.empty ())
           {
             m_socket.async_send
-              ( frame_to_buffers (m_frame_list.front ())
+              ( boost::asio::buffer (m_buffer_list.front ())
               , m_strand.wrap (boost::bind
                               ( &base_connection<Proto>::handle_write
                               , this->shared_from_this ()
