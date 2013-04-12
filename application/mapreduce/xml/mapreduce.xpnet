@@ -1517,10 +1517,8 @@
             }
               
             size_t used_size = 0;
-            std::vector<std::string> arr_part_items;
             if( partition_info.part_used )
             {
-                //bzero( ptr_shmem, partition_info.part_used+1);
                 long part_offset = partition_info.slot_id*config.size.partition.slot;
                 waitComm ( fvmGetGlobalData
                 ( static_cast<fvmAllocHandle_t> (config.handle.partition)
@@ -1532,30 +1530,30 @@
                 );
 
                 ptr_shmem[partition_info.part_used]=0;
-                arr_part_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);
             }
             
             std::vector<std::string> arr_spec_items;
             if(reduce_info.red_used)
             {
+             	ptr_shmem[partition_info.part_used]=ITEMSEP;
+             	
                 // read into local_buff from vm the reduce slot reduce_slot.id ((size: reduce_info.red_used)
                 long reduce_offset = partition_info.slot_id*config.size.reduce.slot;
 
                 waitComm ( fvmGetGlobalData
                 ( static_cast<fvmAllocHandle_t> (config.handle.reduce)
                                                     , reduce_offset
-                                                    , reduce_info.red_used
+                                                    , partition_info.part_used + reduce_info.red_used + 1
                                                     , 0
                                                     , 0
                                                 )
                 );
                 
-                ptr_shmem[reduce_info.red_used]=0;
-                arr_spec_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);            
+                ptr_shmem[partition_info.part_used + reduce_info.red_used + 1 ]=0;           
             }
             
             // these are all the special items!
-            arr_spec_items.insert( arr_spec_items.end(), arr_part_items.begin(), arr_part_items.end() );    
+            arr_spec_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem); 
             
             std::vector<std::string> arr_orig_items;
 
