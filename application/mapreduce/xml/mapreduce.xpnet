@@ -1518,7 +1518,6 @@
               
             size_t used_size = 0;
             std::vector<std::string> arr_part_items;
-            std::vector<std::string> arr_spec_items;
             if( partition_info.part_used )
             {
                 //bzero( ptr_shmem, partition_info.part_used+1);
@@ -1536,7 +1535,7 @@
                 arr_part_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);
             }
             
-            std::vector<std::string> arr_red_items;
+            std::vector<std::string> arr_spec_items;
             if(reduce_info.red_used)
             {
                 // read into local_buff from vm the reduce slot reduce_slot.id ((size: reduce_info.red_used)
@@ -1552,32 +1551,24 @@
                 );
                 
                 ptr_shmem[reduce_info.red_used]=0;
-                arr_red_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);            
+                arr_spec_items = ::mapreduce::util::get_list_items_strtok(ptr_shmem);            
             }
             
-            arr_spec_items.insert( arr_spec_items.end(), arr_part_items.begin(), arr_part_items.end());
-            arr_spec_items.insert( arr_spec_items.end(), arr_red_items.begin(), arr_red_items.end() );    
+            // these are all the special items!
+            arr_spec_items.insert( arr_spec_items.end(), arr_part_items.begin(), arr_part_items.end() );    
+            
+            std::vector<std::string> arr_orig_items;
 
-            if(arr_spec_items.size()>0)
+            if( !arr_spec_items.empty() )
             {
-	            std::list<std::string> list_special_items;
-	            std::ostringstream oss;
-	            for( int k=0; k<arr_spec_items.size(); k++ )
-	                list_special_items.push_back(arr_spec_items[k]);
-	           
-	            arr_spec_items.resize(0);
-	                                    
-	            while( !list_special_items.empty() )
+	            while( !arr_spec_items.empty() )
 	            {                       
-	                std::string spec_item = list_special_items.front();
-	                list_special_items.pop_front();
+	                std::string spec_item = arr_spec_items.front();
+	                arr_spec_items.erase(arr_spec_items.begin());
 	                
 	                // check if matches
-	                std::string matching_item;
-	                int cid = -1;
-	                int end = -1;
-	                
-	                std:: string recovered_key = ::mapreduce::util::match_keys(spec_item, list_special_items, matching_item, cid, end );
+	                std::string matching_item;	                
+	                std:: string recovered_key = ::mapreduce::util::match_keys( spec_item, arr_spec_items, matching_item );
 	                
 	                if(!recovered_key.empty())
 	                {                   
@@ -1585,32 +1576,16 @@
 	                    
 	                    BOOST_FOREACH(::mapreduce::util::key_val_pair_t& pair, list_key_val_pairs)
 	                    {
-	                        // put it into the right partition
-	                        std::string key = pair.first;
-	                        std::string val = pair.second;
-	                                                        
-	                        arr_spec_items.push_back( mapreduce::util::kvpair2str(pair) );
-	                    }
-	                                            
-	                    if(!matching_item.empty())
-	                    {
-	                        std::list<std::string>::iterator it_matching_item = find (list_special_items.begin(), list_special_items.end(), matching_item);
-	                        if(it_matching_item != list_special_items.end() )
-	                           list_special_items.erase(it_matching_item);
-	                        
-	                        std::vector<std::string>::iterator it_match_item = find (arr_spec_items.begin(), arr_spec_items.end(), matching_item);
-	                        if( it_match_item != arr_spec_items.end() )
-	                           arr_spec_items.erase(it_match_item);
-	                    }                   
+	                        arr_orig_items.push_back( mapreduce::util::kvpair2str(pair) );
+	                    }      
 	                }
 	            }
 	                        
-	            std::sort( arr_spec_items.begin(), arr_spec_items.end());
-	            bzero(ptr_shmem, total_size);
+	            ::mapreduce::util::my_sort(arr_orig_items.begin(), arr_orig_items.end());
 	
 	            // call reduce here
 	            size_t last_pos = 0;
-                ::mapreduce::util::reduce_arr_buff(partition_info.slot_id, config.size.reduce.slot, arr_spec_items, ptr_shmem, last_pos );
+                ::mapreduce::util::reduce_arr_buff(partition_info.slot_id, config.size.reduce.slot, arr_orig_items, ptr_shmem, last_pos );
 	
 	            if(last_pos>config.size.reduce.slot)
                 {
