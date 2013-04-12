@@ -243,7 +243,7 @@ int main (int argc, char **argv)
         }
       }
 
-      LOG(INFO, "terminating...");
+      DMLOG (TRACE, "terminating...");
 
       ptrOrch->shutdown();
     }

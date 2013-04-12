@@ -119,7 +119,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
-  SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<pWorker->capacity() );
+  DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<pWorker->capacity() );
 
   if(worker_map_.size() == 1)
     iter_last_worker_ = worker_map_.begin();

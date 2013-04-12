@@ -35,9 +35,9 @@ public:
                                             );
     m_kvs_timeout = fhg_kernel ()->get<unsigned int> ("timeout", m_kvs_timeout);
 
-    MLOG( INFO
-        , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
-        );
+    DMLOG( TRACE
+         , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
+         );
 
     fhg::com::kvs::global::get_kvs_info().init
       ( m_host
