@@ -105,19 +105,27 @@ namespace prefix
     }
   }
 
+  communication::communication (QObject* parent)
+    : QObject (parent)
+    , _connection (new async_tcp_communication)
+  {
+    timer (this, 100, SLOT (check_for_incoming_messages()));
+
+    _connection->push ("possible_status_list");
+  }
+
+  void communication::request_hostlist()
+  {
+    _connection->push ("host_list");
+  }
+
   node_state_widget::node_state_widget (QWidget* parent)
     : QWidget (parent)
     , _legend_widget (new QWidget (parentWidget()))
-    , _connection (new async_tcp_communication)
+    , _communication (new communication (this))
   {
-    _connection->push ("possible_status_list");
-
-    timer (this, 100, SLOT (check_for_incoming_messages()));
-    timer (this, 1000, boost::bind ( &async_tcp_communication::push
-                                   , _connection
-                                   , QString ("host_list")
-                                   )
-          );
+    timer
+      (this, 1000, boost::bind (&communication::request_hostlist, _communication));
     timer (this, 200, SLOT (refresh_stati()));
 
     // qStableSort (_nodes.begin(), _nodes.end(), boost::bind (&node_type::less_by_hostname, _1, _2));
@@ -129,6 +137,32 @@ namespace prefix
 
     new QVBoxLayout (_legend_widget);
     _legend_widget->show();
+
+    connect ( _communication
+            , SIGNAL (nodes (QStringList))
+            , SLOT (nodes (QStringList)));
+    connect ( _communication
+            , SIGNAL (nodes_details (const QString&, const QString&))
+            , SLOT (nodes_details (const QString&, const QString&)));
+    connect ( _communication
+            , SIGNAL (nodes_state (const QString&, const QString&))
+            , SLOT (nodes_state (const QString&, const QString&)));
+    connect ( _communication
+            , SIGNAL (states_actions_long_text (const QString&, const QString&))
+            , SLOT (states_actions_long_text (const QString&, const QString&)));
+    connect ( _communication
+            , SIGNAL (states_add (const QString&, const QStringList&))
+            , SLOT (states_add (const QString&, const QStringList&)));
+    connect ( _communication
+            , SIGNAL (states_layout_hint_border (const QString&, const QColor&))
+            , SLOT (states_layout_hint_border (const QString&, const QColor&)));
+    connect ( _communication
+            , SIGNAL (states_layout_hint_character (const QString&, const char&))
+            , SLOT (states_layout_hint_character (const QString&, const char&)));
+    connect ( _communication
+            , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
+            , SLOT (states_layout_hint_color (const QString&, const QColor&)));
+
   }
 
   QRectF rect_for_node (const int node, const int per_row)
@@ -148,7 +182,167 @@ namespace prefix
       (rect_for_node (node, per_row).toRect().adjusted (-1, -1, 1, 1));
   }
 
-  void node_state_widget::possible_status (fhg::util::parse::position& pos)
+  void node_state_widget::states_add
+    (const QString& state, const QStringList& actions)
+  {
+    _states.insert (state, state_description (actions));
+    update_legend (state);
+  }
+
+  void node_state_widget::states_layout_hint_border
+    (const QString& state, const QColor& col)
+  {
+    state_description& desc (_states[state]);
+    desc._pen = col;
+    desc.reset();
+    update_legend (state);
+  }
+  void node_state_widget::states_layout_hint_character
+    (const QString& state, const char& ch)
+  {
+    state_description& desc (_states[state]);
+    desc._character = ch;
+    desc.reset();
+    update_legend (state);
+  }
+  void node_state_widget::states_layout_hint_color
+    (const QString& state, const QColor& col)
+  {
+    state_description& desc (_states[state]);
+    desc._brush = col;
+    desc.reset();
+    update_legend (state);
+  }
+
+  void node_state_widget::states_actions_long_text
+    (const QString& action, const QString& long_text)
+  {
+    _long_action[action] = long_text;
+  }
+
+
+  void node_state_widget::update_legend (const QString& state)
+  {
+    delete _state_legend[state];
+    _state_legend[state] =
+      new legend_entry (state, _states[state], _legend_widget);
+
+    _legend_widget->layout()->addWidget (_state_legend[state]);
+  }
+
+  void node_state_widget::nodes_details
+    (const QString& hostname, const QString& details)
+  {
+    const QVector<node_type>::iterator it
+      ( std::find_if ( _nodes.begin()
+                     , _nodes.end()
+                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     )
+      );
+
+    if (it != _nodes.end())
+    {
+      it->details (details);
+    }
+  }
+
+  void node_state_widget::nodes_state
+    (const QString& hostname, const QString& state)
+  {
+    const QVector<node_type>::iterator it
+      ( std::find_if ( _nodes.begin()
+                     , _nodes.end()
+                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     )
+      );
+
+    if (it != _nodes.end())
+    {
+      _pending_updates.removeAll (hostname);
+      _nodes_to_update << hostname;
+
+      it->state (state);
+      update (it - _nodes.begin());
+    }
+  }
+
+  void node_state_widget::nodes (QStringList hostnames)
+  {
+    const int old_height (heightForWidth (width()));
+
+    QMutableVectorIterator<node_type> i (_nodes);
+    while (i.hasNext())
+    {
+      const QString& hostname (i.next().hostname());
+      int index (hostnames.indexOf (hostname));
+      if (index == -1)
+      {
+        i.remove();
+        update (index);
+        update (_nodes.size());
+        _pending_updates.removeAll (hostname);
+        _nodes_to_update.removeAll (hostname);
+      }
+      else
+      {
+        hostnames.removeOne (hostname);
+      }
+    }
+
+    foreach (const QString& hostname, hostnames)
+    {
+      _nodes << node_type (hostname);
+      update (_nodes.size() - 1);
+      _nodes_to_update << hostname;
+    }
+
+    if (old_height != heightForWidth (width()))
+    {
+      updateGeometry();
+    }
+  }
+
+  void node_state_widget::refresh_stati()
+  {
+    _communication->request_status (_nodes_to_update);
+    _pending_updates << _nodes_to_update;
+    _nodes_to_update.clear();
+  }
+
+  void communication::request_status (QStringList nodes_to_update)
+  {
+    static const int chunk_size (1000);
+
+    while (!nodes_to_update.empty())
+    {
+      QString message ("status");
+      while (message.size() < chunk_size && !nodes_to_update.empty())
+      {
+        const QString hostname (nodes_to_update.takeFirst());
+        message.append (" ").append (hostname);
+      }
+
+      _connection->push (message);
+    }
+  }
+
+  void communication::request_layout_hint (const QString& state)
+  {
+    _connection->push (QString ("layout_hint %1").arg (state));
+  }
+
+  void communication::request_action_description (const QStringList& actions)
+  {
+    _connection->push (QString ("describe_action %1").arg (actions.join (" ")));
+  }
+
+  void communication::request_action
+    (const QString& hostname, const QString& action)
+  {
+    _connection->push (QString ("action %1 %2").arg (hostname).arg (action));
+  }
+
+  void communication::possible_status (fhg::util::parse::position& pos)
   {
     const QString state (require::label (pos));
 
@@ -160,15 +354,13 @@ namespace prefix
                                )
                  );
 
-    _connection->push (QString ("layout_hint %1").arg (state));
-    _connection->push (QString ("describe_action %1").arg (actions.join (" ")));
+    emit states_add (state, actions);
 
-    _states.insert (state, state_description (actions));
-
-    update_legend (state);
+    request_layout_hint (state);
+    request_action_description (actions);
   }
 
-  void node_state_widget::action_description
+  void communication::action_description
     (fhg::util::parse::position& pos, const QString& action)
   {
     pos.skip_spaces();
@@ -184,14 +376,15 @@ namespace prefix
       ++pos;
       pos.require ("ong_text");
       require::token (pos, ":");
-      _long_action[action] = require::qstring (pos);
+
+      emit states_actions_long_text (action, require::qstring (pos));
+
       break;
     }
   }
 
-  void node_state_widget::layout_hint ( fhg::util::parse::position& pos
-                                      , const QString& state
-                                      )
+  void communication::layout_hint
+    (fhg::util::parse::position& pos, const QString& state)
   {
     pos.skip_spaces();
 
@@ -201,15 +394,15 @@ namespace prefix
         ("border' or 'character' or 'color", pos);
     }
 
-    state_description& desc (_states[state]);
-
     switch (*pos)
     {
     case 'b':
       ++pos;
       pos.require ("order");
       require::token (pos, ":");
-      desc._pen = require::qcolor (pos);
+
+      emit states_layout_hint_border (state, require::qcolor (pos));
+
       break;
 
     case 'c':
@@ -226,35 +419,25 @@ namespace prefix
           ++pos;
           pos.require ("aracter");
           require::token (pos, ":");
-          desc._character = pos.character();
+
+          emit states_layout_hint_character (state, pos.character());
+
           break;
 
         case 'o':
           ++pos;
           pos.require ("lor");
           require::token (pos, ":");
-          desc._brush = require::qcolor (pos);
+
+          emit states_layout_hint_color (state, require::qcolor (pos));
+
           break;
         }
       }
       break;
     }
-
-    desc.reset();
-
-    update_legend (state);
   }
-
-  void node_state_widget::update_legend (const QString& state)
-  {
-    delete _state_legend[state];
-    _state_legend[state] =
-      new legend_entry (state, _states[state], _legend_widget);
-
-    _legend_widget->layout()->addWidget (_state_legend[state]);
-  }
-
-  void node_state_widget::status_update
+  void communication::status_update
     (fhg::util::parse::position& pos, const QString& hostname)
   {
     pos.skip_spaces();
@@ -264,19 +447,6 @@ namespace prefix
       throw fhg::util::parse::error::expected ("details' or 'state", pos);
     }
 
-    _pending_updates.removeAll (hostname);
-    const QVector<node_type>::iterator it
-      ( std::find_if ( _nodes.begin()
-                     , _nodes.end()
-                     , boost::bind (&node_type::hostname_is, _1, hostname)
-                     )
-      );
-
-    if (it != _nodes.end())
-    {
-      _nodes_to_update << hostname;
-    }
-
     switch (*pos)
     {
     case 'd':
@@ -284,13 +454,7 @@ namespace prefix
       pos.require ("etails");
       require::token (pos, ":");
 
-      {
-        const QString details (require::qstring (pos));
-        if (it != _nodes.end())
-        {
-          it->details (details);
-        }
-      }
+      emit nodes_details (hostname, require::qstring (pos));
 
       break;
 
@@ -299,20 +463,13 @@ namespace prefix
       pos.require ("tate");
       require::token (pos, ":");
 
-      {
-        const QString state (require::qstring (pos));
-        if (it != _nodes.end())
-        {
-          it->state (state);
-          update (it - _nodes.begin());
-        }
-      }
+      emit nodes_state (hostname, require::qstring (pos));
 
       break;
     }
   }
 
-  void node_state_widget::check_for_incoming_messages()
+  void communication::check_for_incoming_messages()
   {
     const async_tcp_communication::messages_type messages (_connection->get());
     foreach (const QString& message, messages)
@@ -338,7 +495,7 @@ namespace prefix
 
           require::list_of_named_lists
             ( pos
-            , boost::bind (&node_state_widget::action_description, this, _1, _2)
+            , boost::bind (&communication::action_description, this, _1, _2)
             );
 
           break;
@@ -357,38 +514,7 @@ namespace prefix
                                         )
                           );
 
-            const int old_height (heightForWidth (width()));
-
-            QMutableVectorIterator<node_type> i (_nodes);
-            while (i.hasNext())
-            {
-              const QString& hostname (i.next().hostname());
-              int index (hostnames.indexOf (hostname));
-              if (index == -1)
-              {
-                i.remove();
-                update (index);
-                update (_nodes.size());
-                _pending_updates.removeAll (hostname);
-                _nodes_to_update.removeAll (hostname);
-              }
-              else
-              {
-                hostnames.removeOne (hostname);
-              }
-            }
-
-            foreach (const QString& hostname, hostnames)
-            {
-              _nodes << node_type (hostname);
-              update (_nodes.size() - 1);
-              _nodes_to_update << hostname;
-            }
-
-            if (old_height != heightForWidth (width()))
-            {
-              updateGeometry();
-            }
+            emit nodes (hostnames);
           }
 
           break;
@@ -400,7 +526,7 @@ namespace prefix
 
           require::list_of_named_lists
             ( pos
-            , boost::bind (&node_state_widget::layout_hint, this, _1, _2)
+            , boost::bind (&communication::layout_hint, this, _1, _2)
             );
 
           break;
@@ -411,7 +537,7 @@ namespace prefix
           require::token (pos, ":");
 
           require::list
-            (pos, boost::bind (&node_state_widget::possible_status, this, _1));
+            (pos, boost::bind (&communication::possible_status, this, _1));
 
           break;
 
@@ -421,7 +547,7 @@ namespace prefix
           require::token (pos, ":");
 
           require::list_of_named_lists
-            (pos, boost::bind (&node_state_widget::status_update, this, _1, _2));
+            (pos, boost::bind (&communication::status_update, this, _1, _2));
 
           break;
         }
@@ -475,24 +601,6 @@ namespace prefix
     label->setPixmap (desc._pixmap);
     layout->addWidget (label, 0, 0);
     layout->addWidget (new QLabel (name, this), 0, 1);
-  }
-
-  void node_state_widget::refresh_stati()
-  {
-    static const int chunk_size (1000);
-
-    while (!_nodes_to_update.empty())
-    {
-      QString message ("status");
-      while (message.size() < chunk_size && !_nodes_to_update.empty())
-      {
-        const QString hostname (_nodes_to_update.takeFirst());
-        message.append (" ").append (hostname);
-        _pending_updates << hostname;
-      }
-
-      _connection->push (message);
-    }
   }
 
   boost::optional<int> node_state_widget::node_at (int x, int y) const
@@ -622,11 +730,11 @@ namespace prefix
               ( context_menu.addAction
                 (_long_action.contains (action) ? _long_action[action] : action)
               , SIGNAL (triggered())
-              , _connection
-              , boost::bind ( &async_tcp_communication::push
-                            , _connection
-                            , QString ("action %1 %2")
-                            .arg (n.hostname()).arg (action)
+              , _communication
+              , boost::bind ( &communication::request_action
+                            , _communication
+                            , n.hostname()
+                            , action
                             )
               );
           }
