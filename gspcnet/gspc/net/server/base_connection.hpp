@@ -7,7 +7,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_handler_fwd.hpp>
@@ -44,8 +44,7 @@ namespace gspc
 
         int deliver (frame const &);
       private:
-        typedef boost::shared_lock<boost::shared_mutex> shared_lock;
-        typedef boost::unique_lock<boost::shared_mutex> unique_lock;
+        typedef boost::lock_guard<boost::mutex> unique_lock;
 
         typedef std::list<frame>        frame_list_t;
         typedef std::list<std::string>  buffer_list_t;
@@ -55,7 +54,7 @@ namespace gspc
                          );
         void handle_write (const boost::system::error_code &);
 
-        mutable boost::shared_mutex     m_frame_list_mutex;
+        mutable boost::mutex     m_frame_list_mutex;
 
         frame_handler_t &m_frame_handler;
 
