@@ -1567,8 +1567,7 @@
 	                arr_spec_items.erase(arr_spec_items.begin());
 	                
 	                // check if matches
-	                std::string matching_item;	                
-	                std:: string recovered_key = ::mapreduce::util::match_keys( spec_item, arr_spec_items, matching_item );
+	                std:: string recovered_key = ::mapreduce::util::match_keys( spec_item, arr_spec_items );
 	                
 	                if(!recovered_key.empty())
 	                {                   
