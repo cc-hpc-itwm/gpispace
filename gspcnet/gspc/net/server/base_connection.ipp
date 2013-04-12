@@ -168,7 +168,6 @@ namespace gspc
         }
         else
         {
-          std::cerr << "handle write error (disconnect)" << std::endl;
           m_frame_handler.handle_error (this, ec);
         }
       }
