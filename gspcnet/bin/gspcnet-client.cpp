@@ -36,7 +36,7 @@ public:
 
   int handle_error (gspc::net::user_ptr, boost::system::error_code const &ec)
   {
-    std::cerr << "error: " << ec << std::endl;
+    std::cerr << "error: " << ec << ": " << ec.message () << std::endl;
     has_error = true;
     return 0;
   }
