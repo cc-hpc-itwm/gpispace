@@ -114,11 +114,6 @@ namespace gspc
                 int error = m_frame_handler.handle_frame (this, m_frame);
                 if (error < 0)
                 {
-                  // client did not respect the protocol, terminate him
-                  m_frame_handler.handle_error
-                    ( this
-                    , boost::system::errc::make_error_code (boost::system::errc::bad_message)
-                    );
                   return;
                 }
               }
