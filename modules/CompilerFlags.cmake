@@ -2,8 +2,11 @@
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions("-DNDEBUG")
+endif()
+
+if (NOT ENABLE_BACKTRACE_ON_PARSE_ERROR)
   add_definitions("-DNO_BACKTRACE_ON_PARSE_ERROR")
-endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
+endif()
 
 set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS_INIT} $ENV{LDFLAGS}
   CACHE STRING "Flags used by the linker during the creation of shared libraries")
