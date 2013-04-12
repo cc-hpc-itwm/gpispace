@@ -249,7 +249,7 @@ namespace mapreduce
 		  MLOG(INFO, msg<<" "<<osstr.str());
   	  }
 
-  	  std::string match_keys(const std::string& str_item, std::vector<std::string>& arr_border_items, std::string& matching_pair)
+  	  std::string match_keys(const std::string& str_item, std::vector<std::string>& arr_border_items )
   	  {
   		 // to do: use regex here
 		 std::string w;
@@ -269,7 +269,6 @@ namespace mapreduce
 		 if( arr_border_items.empty() )
 		 {
 			 LOG(WARN, "The array of border keys is empty ...");
-			 matching_pair = "";
 			 return "";
 		 }
 
@@ -291,7 +290,6 @@ namespace mapreduce
 			 {
 				 w = (u0<v0)?kvp_u.second + kvp_v.second : w = kvp_v.second + kvp_u.second;
 				 bMatching = true;
-				 matching_pair = *it;
 				 break;
 			 }
 
