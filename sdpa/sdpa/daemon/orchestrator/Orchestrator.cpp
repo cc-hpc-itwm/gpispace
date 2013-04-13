@@ -41,14 +41,14 @@ void Orchestrator::action_configure(const StartUpEvent &se)
   GenericDaemon::action_configure (se);
 
   // should be overriden by the orchestrator, aggregator and NRE
-  SDPA_LOG_INFO("Configuring myself (orchestrator)...");
+  DMLOG (TRACE, "Configuring myself (orchestrator)...");
 }
 
 void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	GenericDaemon::action_config_ok (e);
-	SDPA_LOG_INFO("Configuration (orchestrator) was ok");
+	DMLOG (TRACE, "Configuration (orchestrator) was ok");
 
 	cfg().print();
 }

@@ -57,7 +57,7 @@ namespace sdpa { namespace util {
       {
     	  std::ostringstream sstr;
     	  write(sstr);
-    	  LOG(INFO, "The daemon was configured with the following parameters: \n\n" << sstr.str());
+    	  DMLOG(TRACE, "The daemon was configured with the following parameters: \n\n" << sstr.str());
       }
 
       /*Config& load_defaults();*

@@ -388,7 +388,7 @@ namespace sdpa {
 
       if(workerList.empty())
       {
-        SDPA_LOG_INFO("The worker list is empty. No worker to be notified exist!");
+        DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
         return;
       }
 

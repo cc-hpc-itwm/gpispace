@@ -62,7 +62,7 @@ namespace sdpa {
           {
             m_guiService.open ();
             // attach gui observer
-            SDPA_LOG_INFO("Application GUI service at " << guiUrl << " attached...");
+            DMLOG (TRACE, "Application GUI service at " << guiUrl << " attached...");
           }
         }
 

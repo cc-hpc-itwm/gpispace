@@ -161,7 +161,7 @@ namespace sdpa {
 
     	  if( isConfigured() )
     	  {
-    		  LOG(INFO, "Starting the scheduler...");
+                  DMLOG (TRACE, "Starting the scheduler...");
     		  scheduler()->start(this);
 
     		  // start the network stage

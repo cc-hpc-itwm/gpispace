@@ -1088,7 +1088,7 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found&)
         {
-          LOG(WARN, "got cancelled notification for old activity: " << internal_id);
+          DLOG(WARN, "got cancelled notification for old activity: " << internal_id);
         }
       }
 
@@ -1117,11 +1117,11 @@ namespace we { namespace mgmt {
                   )
                )
             {
-              MLOG ( WARN
-                   , "cancelling external activity " << desc->to_external_id ()
-                   << " name: " << desc->name ()
-                   << " reason: " << desc->error_message ()
-                   );
+              DMLOG ( TRACE
+                    , "cancelling external activity " << desc->to_external_id ()
+                    << " name: " << desc->name ()
+                    << " reason: " << desc->error_message ()
+                    );
 
               ext_cancel ( desc->to_external_id()
                          , "WFE policy cancel-on-failure in place"

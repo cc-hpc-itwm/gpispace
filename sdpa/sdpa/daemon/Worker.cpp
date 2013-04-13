@@ -177,7 +177,7 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 		if( itwcpb == capabilities_.end() )
 		{
 			capabilities_.insert(*it);
-			SDPA_LOG_INFO("The worker "<<name()<<" gained the capability:"<<*it);
+			DMLOG (TRACE, "The worker "<<name()<<" gained the capability:"<<*it);
 			bModified = true;
 		}
 		else

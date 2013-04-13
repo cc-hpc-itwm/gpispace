@@ -45,14 +45,16 @@ JobManager::JobManager(const std::string& name)
 
 JobManager::~JobManager()
 {
-	if( job_map_.size())
+	if (job_map_.size())
 	{
-		SDPA_LOG_WARN( "there are still entries left in the job-map: " << job_map_.size() );
-		print();
+          DMLOG (WARN, "there are still entries left in the job-map: " << job_map_.size() );
+          print();
 	}
 
-	if( job_requirements_.size() )
-		SDPA_LOG_WARN( "there are still entries left in the requirements map: " << job_requirements_.size() );
+	if (job_requirements_.size() )
+        {
+          DMLOG (TRACE, "there are still entries left in the requirements map: " << job_requirements_.size() );
+        }
 }
 
 //helpers
@@ -111,7 +113,7 @@ std::string JobManager::print() const
   lock_type lock(mtx_);
   std::ostringstream os;
 
-  SDPA_LOG_DEBUG("Begin dumping the JobManager...");
+  DMLOG (TRACE, "Begin dumping the JobManager...");
 
   if( job_map_.begin() == job_map_.end() )
     os<<"The JobManager is empty!";
@@ -119,10 +121,12 @@ std::string JobManager::print() const
   {
     os<<"The list of jobs still owned by the JobManager:"<<std::endl;
     for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
+    {
       SDPA_LOG_INFO(it->second->print_info());
+    }
   }
 
-  SDPA_LOG_DEBUG("End dumping the JobManager...");
+  DMLOG (TRACE, "End dumping the JobManager...");
 
   return os.str();
 }
