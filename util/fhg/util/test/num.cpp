@@ -267,6 +267,25 @@ BOOST_AUTO_TEST_CASE (_num)
     BOOST_REQUIRE_EQUAL (num_type (23UL), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
+
+  {
+    const std::string inp ("23UL 44.0f 23U 23L 23 44.0 rest");
+    position pos (inp);
+
+    BOOST_REQUIRE_EQUAL (num_type (23UL), read_num (pos));
+    pos.skip_spaces();
+    BOOST_REQUIRE_EQUAL (num_type (44.0f), read_num (pos));
+    pos.skip_spaces();
+    BOOST_REQUIRE_EQUAL (num_type (23U), read_num (pos));
+    pos.skip_spaces();
+    BOOST_REQUIRE_EQUAL (num_type (23L), read_num (pos));
+    pos.skip_spaces();
+    BOOST_REQUIRE_EQUAL (num_type (23), read_num (pos));
+    pos.skip_spaces();
+    BOOST_REQUIRE_EQUAL (num_type (44.0), read_num (pos));
+    pos.skip_spaces();
+    BOOST_REQUIRE_EQUAL (pos.rest(), "rest");
+  }
 }
 
 BOOST_AUTO_TEST_CASE (limits)
