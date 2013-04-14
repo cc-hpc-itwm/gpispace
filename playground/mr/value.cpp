@@ -10,6 +10,7 @@
 #include <we/type/value/show.hpp>
 
 #include <we/type/value/signature/name.hpp>
+#include <we/type/value/signature/name_of.hpp>
 #include <we/type/value/signature/of_type.hpp>
 #include <we/type/value/signature/show.hpp>
 

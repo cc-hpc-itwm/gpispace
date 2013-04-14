@@ -2,7 +2,7 @@
 
 #include <we/type/value/show.hpp>
 
-#include <we/type/value/signature/name.hpp>
+#include <we/type/value/signature/name_of.hpp>
 
 #include <iostream>
 

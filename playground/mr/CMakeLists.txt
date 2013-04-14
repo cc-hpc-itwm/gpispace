@@ -20,6 +20,7 @@ add_library (we-value
   we/type/value/path/split.cpp
 
   we/type/value/signature/name.cpp
+  we/type/value/signature/name_of.cpp
   we/type/value/signature/of_type.cpp
   we/type/value/signature/show.cpp
 )

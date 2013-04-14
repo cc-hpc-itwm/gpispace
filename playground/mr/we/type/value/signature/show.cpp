@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/value/signature/show.hpp>
-#include <we/type/value/signature/name.hpp>
+#include <we/type/value/signature/name_of.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
