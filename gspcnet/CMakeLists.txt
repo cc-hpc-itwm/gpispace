@@ -8,7 +8,7 @@ project(gspcnet)
 string (TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 include (SDPAFindBoost)
-find_package(Threads REQUIRED)
+find_package(Threads REQUIRED QUIET)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
