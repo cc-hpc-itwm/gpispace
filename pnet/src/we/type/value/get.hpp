@@ -106,8 +106,8 @@ namespace value
     return boost::apply_visitor (visitor::get<T const&>(), v);
   }
 
-  template <typename T, typename V>
-  T& get_ref (V& v)
+  template <typename T>
+  T& get_ref (type& v)
   {
     return boost::apply_visitor (visitor::get_ref<T&>(), v);
   }
