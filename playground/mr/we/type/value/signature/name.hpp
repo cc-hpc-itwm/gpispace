@@ -3,6 +3,8 @@
 #ifndef PNET_SRC_WE_TYPE_VALUE_SIGNATURE_NAME_HPP
 #define PNET_SRC_WE_TYPE_VALUE_SIGNATURE_NAME_HPP
 
+#include <we/type/value.hpp>
+
 #include <string>
 
 namespace pnet
@@ -29,8 +31,11 @@ namespace pnet
       NAME (VECTOR);
       NAME (SET);
       NAME (MAP);
+      NAME (STRUCT);
 
 #undef NAME
+
+      template<typename T> const std::string& name_of (const T&);
     }
   }
 }
