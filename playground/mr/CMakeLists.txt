@@ -18,6 +18,9 @@ add_library (we-value
   we/type/value/show.cpp
 
   we/type/value/path/split.cpp
+
+  we/type/value/signature/name.cpp
+  we/type/value/signature/of_type.cpp
 )
 
 fhg_add_test (value.cpp
