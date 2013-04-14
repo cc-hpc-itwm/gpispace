@@ -21,6 +21,7 @@ add_library (we-value
 
   we/type/value/signature/name.cpp
   we/type/value/signature/of_type.cpp
+  we/type/value/signature/show.cpp
 )
 
 fhg_add_test (value.cpp
