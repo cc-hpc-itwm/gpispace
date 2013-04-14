@@ -14,7 +14,7 @@
 #include <gspc/net/parse/parser.hpp>
 
 #include <gspc/net/client.hpp>
-#include <gspc/net/server/base_connection.hpp>
+#include <gspc/net/common/base_connection.hpp>
 
 namespace gspc
 {

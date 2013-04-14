@@ -14,13 +14,14 @@ set (gspcnet_src
 
   net/parse/parser.cpp
 
+  net/common/tcp_connection.cpp
+  net/common/unix_connection.cpp
+
   net/server/queue_manager.cpp
   net/server/service_demux.cpp
   net/server/default_service_demux.cpp
   net/server/tcp_server.cpp
-  net/server/tcp_connection.cpp
   net/server/unix_server.cpp
-  net/server/unix_connection.cpp
 
   net/client/tcp_client.cpp
   net/client/unix_client.cpp

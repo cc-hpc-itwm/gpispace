@@ -11,7 +11,7 @@
 
 #include <gspc/net/server.hpp>
 #include <gspc/net/frame_handler.hpp>
-#include <gspc/net/server/base_connection.hpp>
+#include <gspc/net/common/base_connection.hpp>
 #include <gspc/net/server/queue_manager_fwd.hpp>
 
 namespace gspc
