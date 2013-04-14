@@ -2,6 +2,8 @@
 
 #include <we/type/value/get.hpp>
 
+#include <we/type/value/path/split.hpp>
+
 #include <boost/utility.hpp>
 
 namespace pnet
@@ -67,7 +69,8 @@ namespace pnet
       }
 
       boost::optional<const value_type&>
-      get ( const std::list<std::string>& path
+      get ( const std::list<std::string>::const_iterator& key
+          , const std::list<std::string>::const_iterator& end
           , const value_type& node
           )
       {
@@ -75,12 +78,24 @@ namespace pnet
           ( visitor_get< const value_type
                        , const structured_type
                        , const structured_type::const_iterator
-                       > (path.begin(), path.end(), node)
+                       > (key, end, node)
           , node
           );
       }
+      boost::optional<const value_type&>
+      get (const std::list<std::string>& path, const value_type& node)
+      {
+        return get (path.begin(), path.end(), node);
+      }
+      boost::optional<const value_type&>
+      get (const std::string& path, const value_type& node)
+      {
+        return get (path::split (path), node);
+      }
+
       boost::optional<value_type&>
-      get_ref ( const std::list<std::string>& path
+      get_ref ( const std::list<std::string>::const_iterator& key
+              , const std::list<std::string>::const_iterator& end
               , value_type& node
               )
       {
@@ -88,9 +103,19 @@ namespace pnet
           ( visitor_get< value_type
                        , structured_type
                        , structured_type::iterator
-                       > (path.begin(), path.end(), node)
+                       > (key, end, node)
           , node
           );
+      }
+      boost::optional<value_type&>
+      get_ref (const std::list<std::string>& path, value_type& node)
+      {
+        return get_ref (path.begin(), path.end(), node);
+      }
+      boost::optional<value_type&>
+      get_ref (const std::string& path, value_type& node)
+      {
+        return get_ref (path::split (path), node);
       }
     }
   }
