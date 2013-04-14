@@ -274,19 +274,14 @@ BOOST_AUTO_TEST_CASE (get)
   const value_type m2 (_m2);
 
   {
-    std::list<std::string> keys;
-    keys.push_back ("set");
-    BOOST_CHECK (get (keys, m2));
-    BOOST_CHECK (*get (keys, m2) == set);
-    // BOOST_REQUIRE_EQUAL (*get (keys, m2), set);
+    BOOST_CHECK (get ("set", m2));
+    BOOST_CHECK (*get ("set", m2) == set);
+    // BOOST_REQUIRE_EQUAL (*get ("set", m2), set);
     // | Does not compile. Why?
   }
   {
-    std::list<std::string> keys;
-    keys.push_back ("m1");
-    keys.push_back ("l1");
-    BOOST_CHECK (get (keys, m2));
-    BOOST_CHECK (*get (keys, m2) == l1);
+    BOOST_CHECK (get ("m1.l1", m2));
+    BOOST_CHECK (*get ("m1.l1", m2) == l1);
   }
 }
 
@@ -299,26 +294,23 @@ BOOST_AUTO_TEST_CASE (get_ref)
 
   const value_type l = std::list<value_type>();
 
-  std::list<std::string> keys;
-  keys.push_back ("l");
-
   value_type m;
-  poke (keys, m, l);
+  poke ("l", m, l);
 
-  BOOST_CHECK (get (keys, m));
+  BOOST_CHECK (get ("l", m));
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*get (keys, m)));
+      (boost::get<const std::list<value_type>&> (*get ("l", m)));
 
     BOOST_CHECK (g.empty());
   }
 
-  BOOST_CHECK (get_ref (keys, m));
+  BOOST_CHECK (get_ref ("l", m));
 
   {
     std::list<value_type>& r
-      (boost::get<std::list<value_type>&> (*get_ref (keys, m)));
+      (boost::get<std::list<value_type>&> (*get_ref ("l", m)));
 
     BOOST_CHECK (r.empty());
 
@@ -327,7 +319,7 @@ BOOST_AUTO_TEST_CASE (get_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*get (keys, m)));
+      (boost::get<const std::list<value_type>&> (*get ("l", m)));
 
     BOOST_CHECK (g.size() == 1);
     BOOST_CHECK (*g.begin() == value_type (19));
@@ -346,28 +338,22 @@ BOOST_AUTO_TEST_CASE (poke)
   const value_type i (int (1));
 
   {
-    std::list<std::string> keys;
-    keys.push_back ("s");
-    poke (keys, v, s);
+    poke ("s", v, s);
 
-    BOOST_CHECK (get (keys, v));
-    BOOST_CHECK (*get (keys, v) == s);
+    BOOST_CHECK (get ("s", v));
+    BOOST_CHECK (*get ("s", v) == s);
   }
   {
-    std::list<std::string> keys;
-    keys.push_back ("i");
-    poke (keys, v, i);
-    BOOST_CHECK (get (keys, v));
-    BOOST_CHECK (*get (keys, v) == i);
+    poke ("i", v, i);
+    BOOST_CHECK (get ("i", v));
+    BOOST_CHECK (*get ("i", v) == i);
 
-    keys.push_back ("i");
-    poke (keys, v, i);
-    BOOST_CHECK (get (keys, v));
-    BOOST_CHECK (*get (keys, v) == i);
+    poke ("i.i", v, i);
+    BOOST_CHECK (get ("i.i", v));
+    BOOST_CHECK (*get ("i.i", v) == i);
 
-    keys.pop_back();
-    BOOST_CHECK (get (keys, v));
-    BOOST_CHECK (get (keys, *get (keys, v)));
-    BOOST_CHECK (*get (keys, *get (keys, v)) == i);
+    BOOST_CHECK (get ("i", v));
+    BOOST_CHECK (get ("i", *get ("i", v)));
+    BOOST_CHECK (*get ("i", *get ("i", v)) == i);
   }
 }
