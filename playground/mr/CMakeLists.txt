@@ -12,10 +12,10 @@ include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 include_directories (${UTIL_INCLUDE_DIR})
 
 add_library (we-value
-  we/type/value/show.cpp
-  we/type/value/get.cpp
+  we/type/value/peek.cpp
   we/type/value/poke.cpp
   we/type/value/read.cpp
+  we/type/value/show.cpp
 
   we/type/value/path/split.cpp
 )

@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/get.hpp>
+#include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
@@ -216,10 +216,10 @@ BOOST_AUTO_TEST_CASE (_read)
  }
 }
 
-BOOST_AUTO_TEST_CASE (get)
+BOOST_AUTO_TEST_CASE (peek)
 {
   using pnet::type::value::value_type;
-  using pnet::type::value::get;
+  using pnet::type::value::peek;
 
   const value_type s (std::string ("s"));
 
@@ -274,43 +274,43 @@ BOOST_AUTO_TEST_CASE (get)
   const value_type m2 (_m2);
 
   {
-    BOOST_CHECK (get ("set", m2));
-    BOOST_CHECK (*get ("set", m2) == set);
-    // BOOST_REQUIRE_EQUAL (*get ("set", m2), set);
+    BOOST_CHECK (peek ("set", m2));
+    BOOST_CHECK (*peek ("set", m2) == set);
+    // BOOST_REQUIRE_EQUAL (*peek ("set", m2), set);
     // | Does not compile. Why?
   }
   {
-    BOOST_CHECK (get ("m1.l1", m2));
-    BOOST_CHECK (*get ("m1.l1", m2) == l1);
+    BOOST_CHECK (peek ("m1.l1", m2));
+    BOOST_CHECK (*peek ("m1.l1", m2) == l1);
   }
 }
 
-BOOST_AUTO_TEST_CASE (get_ref)
+BOOST_AUTO_TEST_CASE (peek_ref)
 {
   using pnet::type::value::value_type;
   using pnet::type::value::poke;
-  using pnet::type::value::get;
-  using pnet::type::value::get_ref;
+  using pnet::type::value::peek;
+  using pnet::type::value::peek_ref;
 
   const value_type l = std::list<value_type>();
 
   value_type m;
   poke ("l", m, l);
 
-  BOOST_CHECK (get ("l", m));
+  BOOST_CHECK (peek ("l", m));
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*get ("l", m)));
+      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
 
     BOOST_CHECK (g.empty());
   }
 
-  BOOST_CHECK (get_ref ("l", m));
+  BOOST_CHECK (peek_ref ("l", m));
 
   {
     std::list<value_type>& r
-      (boost::get<std::list<value_type>&> (*get_ref ("l", m)));
+      (boost::get<std::list<value_type>&> (*peek_ref ("l", m)));
 
     BOOST_CHECK (r.empty());
 
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE (get_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*get ("l", m)));
+      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
 
     BOOST_CHECK (g.size() == 1);
     BOOST_CHECK (*g.begin() == value_type (19));
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE (poke)
 {
   using pnet::type::value::value_type;
   using pnet::type::value::poke;
-  using pnet::type::value::get;
+  using pnet::type::value::peek;
 
   value_type v;
 
@@ -340,20 +340,20 @@ BOOST_AUTO_TEST_CASE (poke)
   {
     poke ("s", v, s);
 
-    BOOST_CHECK (get ("s", v));
-    BOOST_CHECK (*get ("s", v) == s);
+    BOOST_CHECK (peek ("s", v));
+    BOOST_CHECK (*peek ("s", v) == s);
   }
   {
     poke ("i", v, i);
-    BOOST_CHECK (get ("i", v));
-    BOOST_CHECK (*get ("i", v) == i);
+    BOOST_CHECK (peek ("i", v));
+    BOOST_CHECK (*peek ("i", v) == i);
 
     poke ("i.i", v, i);
-    BOOST_CHECK (get ("i.i", v));
-    BOOST_CHECK (*get ("i.i", v) == i);
+    BOOST_CHECK (peek ("i.i", v));
+    BOOST_CHECK (*peek ("i.i", v) == i);
 
-    BOOST_CHECK (get ("i", v));
-    BOOST_CHECK (get ("i", *get ("i", v)));
-    BOOST_CHECK (*get ("i", *get ("i", v)) == i);
+    BOOST_CHECK (peek ("i", v));
+    BOOST_CHECK (peek ("i", *peek ("i", v)));
+    BOOST_CHECK (*peek ("i", *peek ("i", v)) == i);
   }
 }
