@@ -5,6 +5,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <fhg/util/url.hpp>
+
 #include <gspc/net/resolver.hpp>
 #include <gspc/net/client.hpp>
 
@@ -84,7 +86,7 @@ namespace gspc
       return client;
     }
 
-    client_ptr_t dial ( std::string const &url
+    client_ptr_t dial ( std::string const &url_s
                       , boost::system::error_code & ec
                       )
     {
@@ -94,13 +96,15 @@ namespace gspc
 
       client_ptr_t client;
 
-      if (url.find ("unix://") == 0)
+      const fhg::util::url_t url (url_s);
+
+      if (url.type () == "unix")
       {
-        client = s_new_unix_client (url.substr (7), ec);
+        client = s_new_unix_client (url.path (), ec);
       }
-      else if (url.find ("tcp://") == 0)
+      else if (url.type () == "tcp")
       {
-        client = s_new_tcp_client (url.substr (6), ec);
+        client = s_new_tcp_client (url.path (), ec);
       }
       else
       {

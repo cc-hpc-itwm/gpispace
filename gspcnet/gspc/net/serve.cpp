@@ -5,6 +5,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <fhg/util/url.hpp>
+
 #include <gspc/net/server.hpp>
 
 #include <gspc/net/resolver.hpp>
@@ -88,7 +90,7 @@ namespace gspc
       return server;
     }
 
-    server_ptr_t serve ( std::string const &url
+    server_ptr_t serve ( std::string const &url_s
                        , server::queue_manager_t & qmgr
                        , boost::system::error_code & ec
                        )
@@ -99,13 +101,15 @@ namespace gspc
 
       server_ptr_t server;
 
-      if (url.find ("unix://") == 0)
+      const fhg::util::url_t url (url_s);
+
+      if (url.type () == "unix")
       {
-        server = s_new_unix_server (url.substr (7), qmgr, ec);
+        server = s_new_unix_server (url.path (), qmgr, ec);
       }
-      else if (url.find ("tcp://") == 0)
+      else if (url.type () == "tcp")
       {
-        server = s_new_tcp_server (url.substr (6), qmgr, ec);
+        server = s_new_tcp_server (url.path (), qmgr, ec);
       }
       else
       {
