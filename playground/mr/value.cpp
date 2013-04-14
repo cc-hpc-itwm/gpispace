@@ -9,6 +9,9 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
+#include <we/type/value/signature/name.hpp>
+#include <we/type/value/signature/of_type.hpp>
+
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/num.hpp>
 
@@ -356,4 +359,33 @@ BOOST_AUTO_TEST_CASE (poke)
     BOOST_CHECK (peek ("i", *peek ("i", v)));
     BOOST_CHECK (*peek ("i", *peek ("i", v)) == i);
   }
+}
+
+BOOST_AUTO_TEST_CASE (signature_of_type)
+{
+  using pnet::type::value::of_type;
+  using pnet::type::value::value_type;
+
+#define CHECK(_name, _value)                                            \
+  BOOST_CHECK (of_type (pnet::type::value::_name()) == value_type (_value))
+
+  CHECK (CONTROL, we::type::literal::control());
+  CHECK (BOOL, false);
+  CHECK (INT, 0);
+  CHECK (LONG, 0L);
+  CHECK (UINT, 0U);
+  CHECK (ULONG, 0UL);
+  CHECK (FLOAT, 0.0f);
+  CHECK (DOUBLE, 0.0);
+  CHECK (CHAR, '\0');
+  CHECK (STRING, std::string (""));
+  CHECK (BITSET, bitsetofint::type());
+  CHECK (BYTEARRAY, bytearray::type());
+  CHECK (LIST, std::list<value_type>());
+  CHECK (VECTOR, std::vector<value_type>());
+  CHECK (SET, std::set<value_type>());
+  std::map<value_type, value_type> m;
+  CHECK (MAP, m);
+
+#undef CHECK
 }
