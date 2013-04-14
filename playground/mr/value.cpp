@@ -23,19 +23,31 @@ using pnet::type::value::structured_type;
 namespace
 {
   template<typename T>
-  void test_show_and_read_showed (const T& x, const std::string& expected)
+  void test_show_and_read_showed ( const T& x
+                                 , const std::string& expected_show
+                                 , const std::string& expected_signature
+                                 )
   {
     using pnet::type::value::value_type;
     using pnet::type::value::read;
+    using pnet::type::value::as_signature;
     using fhg::util::parse::position;
 
-    std::ostringstream oss;
-    oss << value_type (x);
-    BOOST_CHECK_EQUAL (expected, oss.str());
-    const std::string inp (oss.str());
-    position pos (inp);
-    BOOST_CHECK (value_type (x) == read (pos));
-    BOOST_CHECK (pos.end());
+    {
+      std::ostringstream oss;
+      oss << value_type (x);
+      BOOST_CHECK_EQUAL (expected_show, oss.str());
+      const std::string inp (oss.str());
+      position pos (inp);
+      BOOST_CHECK (value_type (x) == read (pos));
+      BOOST_CHECK (pos.end());
+    }
+
+    {
+      std::ostringstream oss;
+      oss << as_signature (value_type (x));
+      BOOST_CHECK_EQUAL ("signature " + expected_signature, oss.str());
+    }
   }
 }
 
@@ -56,72 +68,80 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
 {
   using pnet::type::value::value_type;
 
-  test_show_and_read_showed (we::type::literal::control(), "[]");
-  test_show_and_read_showed (true, "true");
-  test_show_and_read_showed (false, "false");
-  test_show_and_read_showed (0, "0");
-  test_show_and_read_showed (23, "23");
-  test_show_and_read_showed (42L, "42L");
-  test_show_and_read_showed (-3L, "-3L");
-  test_show_and_read_showed (2718U, "2718U");
-  test_show_and_read_showed (3141UL, "3141UL");
-  test_show_and_read_showed (3.14159f, "3.14159f");
-  test_show_and_read_showed (3e30f, "3.00000e+30f");
-  test_show_and_read_showed (3.14159, "3.14159");
-  test_show_and_read_showed (3e30, "3.00000e+30");
-  test_show_and_read_showed (0.0, "0.00000");
-  test_show_and_read_showed ('\0', std::string("'\0'", 3));
-  test_show_and_read_showed ('a', "'a'");
-  test_show_and_read_showed (std::string(), "\"\"");
-  test_show_and_read_showed (std::string("foo"), "\"foo\"");
-  test_show_and_read_showed (bitsetofint::type(), "{}");
-  test_show_and_read_showed (bitsetofint::type().ins (0), "{ 1}");
-  test_show_and_read_showed (bitsetofint::type().ins (0).ins (64), "{ 1 1}");
-  test_show_and_read_showed (bytearray::type(), "y()");
+  test_show_and_read_showed (we::type::literal::control(), "[]", "control");
+  test_show_and_read_showed (true, "true", "bool");
+  test_show_and_read_showed (false, "false", "bool");
+  test_show_and_read_showed (0, "0", "int");
+  test_show_and_read_showed (23, "23", "int");
+  test_show_and_read_showed (42L, "42L", "long");
+  test_show_and_read_showed (-3L, "-3L", "long");
+  test_show_and_read_showed (2718U, "2718U", "unsigned int");
+  test_show_and_read_showed (3141UL, "3141UL", "unsigned long");
+  test_show_and_read_showed (3.14159f, "3.14159f", "float");
+  test_show_and_read_showed (3e30f, "3.00000e+30f", "float");
+  test_show_and_read_showed (3.14159, "3.14159", "double");
+  test_show_and_read_showed (3e30, "3.00000e+30", "double");
+  test_show_and_read_showed (0.0, "0.00000", "double");
+  test_show_and_read_showed ('\0', std::string("'\0'", 3), "char");
+  test_show_and_read_showed ('a', "'a'", "char");
+  test_show_and_read_showed (std::string(), "\"\"", "string");
+  test_show_and_read_showed (std::string("foo"), "\"foo\"", "string");
+  test_show_and_read_showed (bitsetofint::type(), "{}", "bitset");
+  test_show_and_read_showed (bitsetofint::type().ins (0), "{ 1}", "bitset");
+  test_show_and_read_showed (bitsetofint::type().ins (0).ins (64), "{ 1 1}", "bitset");
+  test_show_and_read_showed (bytearray::type(), "y()", "bytearray");
   {
     std::list<value_type> l;
-    test_show_and_read_showed (l, "list ()");
+    test_show_and_read_showed (l, "list ()", "list <>");
     l.push_back (value_type (int (3)));
-    test_show_and_read_showed (l, "list (3)");
+    test_show_and_read_showed (l, "list (3)", "list <int>");
     l.push_back (value_type (long (3)));
-    test_show_and_read_showed (l, "list (3, 3L)");
+    test_show_and_read_showed (l, "list (3, 3L)", "list <int|long>");
   }
   {
     std::vector<value_type> v;
-    test_show_and_read_showed (v, "vector ()");
+    test_show_and_read_showed (v, "vector ()", "vector <>");
     v.push_back (std::string ("foo"));
     v.push_back (3.141);
     v.push_back (3.141);
     v.push_back (3.141f);
     test_show_and_read_showed
-      (v, "vector (\"foo\", 3.14100, 3.14100, 3.14100f)");
+      (v, "vector (\"foo\", 3.14100, 3.14100, 3.14100f)"
+      , "vector <string|double|double|float>"
+      );
   }
   {
     std::set<value_type> s;
-    test_show_and_read_showed (s, "set {}");
+    test_show_and_read_showed (s, "set {}", "set <>");
     s.insert (std::string ("foo"));
     s.insert (3.141);
     s.insert (3.141);
     s.insert (3.141f);
-    test_show_and_read_showed (s, "set {3.14100f, 3.14100, \"foo\"}");
+    test_show_and_read_showed (s, "set {3.14100f, 3.14100, \"foo\"}"
+                              , "set <float|double|string>"
+                              );
   }
   {
     std::map<value_type, value_type> m;
-    test_show_and_read_showed (m, "map []");
+    test_show_and_read_showed (m, "map []", "map <>");
     m[std::string ("foo")] = 314U;
     m[14] = 14;
     m[std::map<value_type,value_type>()] = 14;
     test_show_and_read_showed
-      (m, "map [14 -> 14, \"foo\" -> 314U, map [] -> 14]");
+      (m, "map [14 -> 14, \"foo\" -> 314U, map [] -> 14]"
+      , "map <int -> int|string -> unsigned int|map <> -> int>"
+      );
   }
   {
     structured_type m;
-    test_show_and_read_showed (m, "struct []");
+    test_show_and_read_showed (m, "struct []", "struct []");
     m["foo"] = 314U;
     m["bar"] = 14UL;
     m["baz"] = std::list<value_type>();
     test_show_and_read_showed
-      (m, "struct [bar := 14UL, baz := list (), foo := 314U]");
+      (m, "struct [bar := 14UL, baz := list (), foo := 314U]"
+      , "struct [bar :: unsigned long, baz :: list <>, foo :: unsigned int]"
+      );
   }
 }
 
