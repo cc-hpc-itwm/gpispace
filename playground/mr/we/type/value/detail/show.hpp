@@ -5,6 +5,9 @@
 
 #include <we/type/value/signature/name_of.hpp>
 
+#include <we/type/value/detail/literal.hpp>
+#include <we/type/value/detail/container.hpp>
+
 #include <iostream>
 
 #include <boost/bind.hpp>
@@ -47,27 +50,6 @@ namespace pnet
           const std::string _sep;
           const std::string _close;
         };
-
-        typedef boost::variant< we::type::literal::control
-                              , bool
-                              , int
-                              , long
-                              , unsigned int
-                              , unsigned long
-                              , float
-                              , double
-                              , char
-                              , std::string
-                              , bitsetofint::type
-                              , bytearray::type
-                              > value_literal_type;
-
-        typedef boost::variant< std::list<value_type>
-                              , std::vector<value_type>
-                              , std::set<value_type>
-                              , std::map<value_type, value_type>
-                              , structured_type
-                              > value_container_type;
 
         typedef boost::function< parens_type (const value_container_type&)
                                > parens_of_type;
