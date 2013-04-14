@@ -2,6 +2,8 @@
 
 #include <we/type/value/show.hpp>
 
+#include <we/type/value/signature/name.hpp>
+
 #include <iostream>
 
 #include <boost/bind.hpp>
@@ -72,9 +74,7 @@ namespace pnet
         std::ostream& operator() (const std::list<value_type>& l) const
         {
           return print_container<std::list<value_type> >
-            ( "list ("
-            , ")"
-            , boost::ref (l)
+            ( "(", ", ", ")", boost::ref (l)
             , boost::bind (&visitor_show::print_value, this, _1)
             );
         }
@@ -82,36 +82,28 @@ namespace pnet
         operator() (const std::map<value_type, value_type>& m) const
         {
           return print_container<std::map<value_type, value_type> >
-            ( "map ["
-            , "]"
-            , boost::ref (m)
+            ( "[", ", ", "]", boost::ref (m)
             , boost::bind (&visitor_show::print_map_item, this, _1)
             );
         }
         std::ostream& operator() (const std::vector<value_type>& v) const
         {
           return print_container<std::vector<value_type> >
-            ( "vector ("
-            , ")"
-            , boost::ref (v)
+            ( "(", ", ", ")", boost::ref (v)
             , boost::bind (&visitor_show::print_value, this, _1)
             );
         }
         std::ostream& operator() (const std::set<value_type>& s) const
         {
           return print_container<std::set<value_type> >
-            ( "set {"
-            , "}"
-            , boost::ref (s)
+            ( "{", ", ", "}", boost::ref (s)
             , boost::bind (&visitor_show::print_value, this, _1)
             );
         }
         std::ostream& operator() (const structured_type& m) const
         {
           return print_container<structured_type>
-            ( "struct ["
-            , "]"
-            , boost::ref (m)
+            ( "[", ", ", "]", boost::ref (m)
             , boost::bind (&visitor_show::print_struct_item, this, _1)
             );
         }
@@ -138,18 +130,19 @@ namespace pnet
         template<typename C>
         std::ostream& print_container
           ( const std::string& open
+          , const std::string& sep
           , const std::string& close
           , const C& c
           , const boost::function<void (const typename C::value_type&)>& f
           ) const
         {
-          _os << open;
+          _os << name_of<C> (c) << " " << open;
           bool first (true);
           BOOST_FOREACH (const typename C::value_type& x, c)
           {
             if (!first)
             {
-              _os << ", ";
+              _os << sep;
             }
             f (x);
             first = false;
