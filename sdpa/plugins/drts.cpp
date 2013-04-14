@@ -128,7 +128,7 @@ public:
       {
         if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
         {
-          MLOG(INFO, "adding virtual capability: " << cap);
+          DMLOG(TRACE, "adding virtual capability: " << cap);
           m_virtual_capabilities.insert
             (std::make_pair(cap, new fhg::plugin::Capability(cap, "virtual")));
         }
@@ -194,7 +194,7 @@ public:
 
           if (m_masters.find(m->name()) == m_masters.end())
           {
-            MLOG(INFO, "adding master \"" << m->name() << "\"");
+            DMLOG(TRACE, "adding master \"" << m->name() << "\"");
             m_masters.insert (std::make_pair(m->name(), m));
 
             have_master_with_polling |= m->is_polling();
@@ -375,7 +375,7 @@ public:
     if (sig != SIGUSR2)
       return;
 
-    MLOG (INFO, "initiating graceful shutdown due to signal := " << sig);
+    DMLOG (TRACE, "initiating graceful shutdown due to signal := " << sig);
     bool something_running;
     {
       lock_type lck (m_job_in_progress_mutex);
@@ -454,7 +454,7 @@ public:
     {
       if (!master_it->second->is_connected())
       {
-        MLOG(INFO, "successfully connected to " << master_it->second->name());
+        DMLOG(TRACE, "successfully connected to " << master_it->second->name());
         master_it->second->is_connected(true);
         master_it->second->reset_poll_rate();
 
@@ -660,7 +660,7 @@ public:
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
-        MLOG (INFO, "trying to cancel running job " << e->job_id());
+        MLOG (TRACE, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
         drts_on_cancel ();
       }
@@ -1275,7 +1275,9 @@ private:
         map_of_masters_t::iterator master(m_masters.find(other_name));
         if (master != m_masters.end() && master->second->is_connected())
         {
-          MLOG(WARN, "connection to " << other_name << " lost: " << ec);
+          DMLOG ( INFO
+                , "connection to " << other_name << " lost: " << ec.message()
+                );
 
           master->second->is_connected(false);
 
@@ -1313,9 +1315,9 @@ private:
     }
     catch (std::exception const &ex)
     {
-      MLOG_EVERY_N( WARN, 10, "could not send "
-                  << evt->str() << " to " << evt->to() << ": " << ex.what()
-                  );
+      DMLOG_EVERY_N( WARN, 10, "could not send "
+                   << evt->str() << " to " << evt->to() << ": " << ex.what()
+                   );
       return -ESRCH;
     }
 

@@ -193,9 +193,9 @@ void MyFixture::run_client_polling()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
+BOOST_AUTO_TEST_CASE( Test1)
 {
-	LOG( DEBUG, "testStop_2Agents_NoDrts_push_1");
+	LOG( DEBUG, "Test1");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -205,8 +205,6 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 
 	std::string strBackupAgent0;
 	std::string strBackupAgent1;
-
-	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
@@ -242,73 +240,17 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push_1)
 	ptrRecAgent0->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_2Agents_NoDrts_push_1 terminated!");
+	LOG( DEBUG, "The test case Test1 terminated!");
 }
 
-
-BOOST_AUTO_TEST_CASE( testStop_AgentWithDrts_push)
+BOOST_AUTO_TEST_CASE( Test2)
 {
-	LOG( DEBUG, "testStop_AgentWithDrts_push");
+	LOG( DEBUG, "Test2");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-
-
-	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false, strBackupAgent);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
-
-	ptrAgent->shutdown(strBackupAgent);
-	LOG( INFO, "Shutdown the agent \"agent_0\". The recovery string is "<<strBackupAgent);
-
-	boost::this_thread::sleep(boost::posix_time::seconds(1));
-
-	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-
-	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	ptrRecAgent->start_agent(false, strBackupAgent);
-
-	if( threadClient.joinable() )
-		threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-
-	ptrRecAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testStop_AgentWithDrts_push terminated!");
-}
-
-
-BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
-{
-	LOG( DEBUG, "testStop_AgentEmptyWE_push");
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-
-	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
@@ -345,20 +287,17 @@ BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
 	ptrRecAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_AgentEmptyWE_push terminated!");
+	LOG( DEBUG, "The test case Test2 terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
+BOOST_AUTO_TEST_CASE( Test3)
 {
-	LOG( DEBUG, "testStop_AgentRealWE_push");
+	LOG( DEBUG, "Test3");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-
-
-	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
@@ -395,7 +334,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	ptrRecAgent->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( DEBUG, "The test case testStop_AgentRealWE_push terminated!");
+	LOG( DEBUG, "The test case Test3 terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

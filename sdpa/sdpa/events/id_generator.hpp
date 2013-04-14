@@ -33,21 +33,22 @@ namespace sdpa { namespace events {
   public:
 	static id_generator& instance()
 	{
-	  static id_generator gen;
-	  return gen;
+		static id_generator gen;
+		return gen;
 	}
 
 	std::string next()
 	{
-          //! \todo Do we really need the lock here?
-	  lock_type lock(mtx_);
-	  return boost::uuids::to_string (boost::uuids::random_generator()());
+		//! \todo Do we really need the lock here?
+		lock_type lock(mtx_);
+		return boost::uuids::to_string (boost::uuids::random_generator(ran)());
 	}
 
   private:
 	id_generator()
 	{}
 
+	boost::mt19937 ran;
 	mutex_type mtx_;
   };
 }}

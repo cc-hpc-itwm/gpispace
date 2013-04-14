@@ -96,7 +96,7 @@ int main (int argc, char **argv)
     }
     else
     {
-      LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
+      DMLOG(TRACE, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
       fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
     }
   }
@@ -148,7 +148,7 @@ int main (int argc, char **argv)
     break;
 
   case NO_BKP:
-    MLOG (INFO, "No backup folder and no backup file were specified! No backup for the agent will be available!");
+    DMLOG (TRACE, "No backup folder and no backup file were specified! No backup for the agent will be available!");
     break;
 
   default:
@@ -238,7 +238,7 @@ int main (int argc, char **argv)
       listMasterInfo.push_back (sdpa::MasterInfo (master));
     }
 
-    LOG (INFO, startup_message.str());
+    DMLOG (TRACE, startup_message.str());
   }
 
   try
@@ -290,14 +290,17 @@ int main (int argc, char **argv)
       }
     }
 
-    LOG(INFO, "terminating...");
+    DMLOG(TRACE, "terminating...");
 
     {
       std::ostringstream oss;
 
       FHG_UTIL_STAT_OUT (oss);
 
-      LOG (INFO, oss.str());
+      if (oss.str().size())
+      {
+        DMLOG (DEBUG, oss.str());
+      }
     }
 
     ptrAgent->shutdown();

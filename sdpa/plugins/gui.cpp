@@ -80,7 +80,7 @@ public:
   {
     if (observe::Observable* o = fhg_kernel()->acquire<observe::Observable>(plugin))
     {
-      MLOG(INFO, "GUI starts to observe: " << o << " (" << plugin << ")");
+      DMLOG(TRACE, "GUI starts to observe: " << o << " (" << plugin << ")");
       start_to_observe(o);
     }
   }

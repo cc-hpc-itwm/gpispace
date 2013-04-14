@@ -301,7 +301,8 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
       bStopRequested = true;
       m_thread.interrupt();
       DLOG(TRACE, "EmptyWE thread before join ...");
-      m_thread.join();
+      if(m_thread.joinable())
+    	  m_thread.join();
       DLOG(TRACE, "EmptyWE thread joined ...");
     }
 

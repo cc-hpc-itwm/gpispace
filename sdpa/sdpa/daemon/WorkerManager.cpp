@@ -41,7 +41,7 @@ WorkerManager::~WorkerManager()
 {
   lock_type lock(mtx_);
 
-  SDPA_LOG_DEBUG( "WorkerManager shutting down...");
+  SDPA_LOG_DEBUG("The destructor of the WorkerManager was called ...");
   if( worker_map_.size() )
   {
     SDPA_LOG_WARN( "there are still entries left in the worker map: " << worker_map_.size());
@@ -119,7 +119,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
-  SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<pWorker->capacity() );
+  DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<pWorker->capacity() );
 
   if(worker_map_.size() == 1)
     iter_last_worker_ = worker_map_.begin();
@@ -732,6 +732,6 @@ Worker::worker_id_t WorkerManager::getWorkerId(unsigned int r)
 void WorkerManager::removeWorkers()
 {
 	lock_type lock(mtx_);
-  common_queue_.clear();
-  worker_map_.clear();
+	common_queue_.clear();
+	worker_map_.clear();
 }

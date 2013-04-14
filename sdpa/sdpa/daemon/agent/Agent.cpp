@@ -42,7 +42,7 @@ void Agent::action_config_ok(const ConfigOkEvent& e)
   GenericDaemon::action_config_ok (e);
 
   // should be overriden by the orchestrator, aggregator and NRE
-  SDPA_LOG_INFO("Configuration (aggregator) was ok");
+  DMLOG (TRACE, "Configuration (aggregator) was ok");
 
   cfg().print();
 }
@@ -127,7 +127,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       }
       catch(WorkerNotFoundException const &)
       {
-        SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+        DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
         throw;
       }
       catch(const JobNotDeletedException&)
@@ -408,7 +408,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
       }
       catch(WorkerNotFoundException const &)
       {
-        SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+        DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
         throw;
       }
       catch(const JobNotDeletedException&)
@@ -602,7 +602,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
   }
   catch(const JobNotFoundException &)
   {
-    SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+    DMLOG (TRACE, "Job "<<pEvt->job_id()<<" not found!");
 
     if (pEvt->from () == sdpa::daemon::WE)
     {
@@ -730,7 +730,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
       // the job was not assigned to any worker yet -> this means that might
       // still be in the scheduler's queue
-      SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+      DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
     }
     catch(const JobNotDeletedException& jnde)
     {

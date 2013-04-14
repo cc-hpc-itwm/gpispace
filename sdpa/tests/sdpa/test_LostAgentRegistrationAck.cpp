@@ -260,7 +260,8 @@ public:
 		LOG( DEBUG, "Stop the client now ...");
 		bForceExit_ = true;
 		threadClient.interrupt();
-		threadClient.join();
+		if(threadClient.joinable())
+			threadClient.join();
 	}
 
 	void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
@@ -324,8 +325,6 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 
 	std::string strBackupAgent0;
 	std::string strBackupAgent1;
-
-	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);

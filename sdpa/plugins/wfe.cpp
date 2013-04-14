@@ -213,7 +213,7 @@ public:
       }
       else if (fhg::error::EXECUTION_CANCELLED == ec)
       {
-        MLOG(WARN, "task canceled: " << task.id << ": " << task.error_message);
+        DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
         result = task.result;
         error_message = task.error_message;
