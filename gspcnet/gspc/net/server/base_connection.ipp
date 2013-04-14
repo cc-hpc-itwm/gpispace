@@ -66,8 +66,9 @@ namespace gspc
 
         if (not write_in_progress)
         {
-          m_socket.async_send
-            ( boost::asio::buffer (m_buffer_list.front ())
+          boost::asio::async_write
+            ( m_socket
+            , boost::asio::buffer (m_buffer_list.front ())
             , boost::bind ( &base_connection<Proto>::handle_write
                           , this->shared_from_this ()
                           , boost::asio::placeholders::error
@@ -151,8 +152,9 @@ namespace gspc
 
           if (not m_buffer_list.empty ())
           {
-            m_socket.async_send
-              ( boost::asio::buffer (m_buffer_list.front ())
+            boost::asio::async_write
+              ( m_socket
+              , boost::asio::buffer (m_buffer_list.front ())
               , boost::bind ( &base_connection<Proto>::handle_write
                             , this->shared_from_this ()
                             , boost::asio::placeholders::error
