@@ -306,7 +306,7 @@ namespace fhg
           public:
             explicit token (State * state) : _state (state) {}
 
-            void operator () (const ::literal::type_name_t & t) const
+            void operator () (const ::std::string & t) const
             {
               WEAVE(token::literal::open) (t);
               WEAVE(token::literal::name) (t);
@@ -338,7 +338,7 @@ namespace fhg
           public:
             explicit structure (State * state) : _state (state) {}
 
-            void operator () (const ::literal::type_name_t & t) const
+            void operator () (const ::std::string & t) const
             {
               WEAVE(structure::type) (t);
             }

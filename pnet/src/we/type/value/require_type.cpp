@@ -29,7 +29,7 @@ namespace value
         , _value (value)
       {}
 
-      const type& operator () ( const literal::type_name_t& type_name
+      const type& operator () ( const std::string& type_name
                               , const literal::type& v
                               ) const
       {
@@ -87,7 +87,7 @@ namespace value
         throw ::type::error (s.str());
       }
 
-      const type& operator () ( const literal::type_name_t& type_name
+      const type& operator () ( const std::string& type_name
                               , const structured_t& v
                               ) const
       {

@@ -14,8 +14,8 @@ namespace type
       : std::runtime_error ("type error: " + what) {};
 
     error ( const std::string & field
-          , const literal::type_name_t & required
-          , const literal::type_name_t & given
+          , const std::string & required
+          , const std::string & given
           )
       : std::runtime_error ( "type error: " + field 
                            + " requires value of type " + required 

@@ -89,7 +89,7 @@ namespace signature
           : super (_s, _l), fieldname (_fieldname)
         {}
 
-        Stream& operator () (const literal::type_name_t & t) const
+        Stream& operator () (const std::string & t) const
         {
           this->level (this->l+1);
           this->s << "x." << fieldname << " = ";
@@ -170,7 +170,7 @@ namespace signature
           : super (_s, _l), fieldname (_fieldname)
         {}
 
-        Stream& operator () (const literal::type_name_t & t) const
+        Stream& operator () (const std::string & t) const
         {
           this->level (this->l+1);
 
@@ -234,7 +234,7 @@ namespace signature
           , levelname (_levelname)
         {}
 
-        Stream& operator () (const literal::type_name_t & t) const
+        Stream& operator () (const std::string & t) const
         {
           this->level (this->l); this->s << "v_" << (this->l-1) << "[\"" << levelname << "\"]"
                        << " = ";
@@ -300,7 +300,7 @@ namespace signature
 
     namespace visitor
     {
-      typedef boost::unordered_set<literal::type_name_t> seen_type;
+      typedef boost::unordered_set<std::string> seen_type;
 
       template<typename Stream>
       class cpp_includes : public boost::static_visitor<void>
@@ -318,7 +318,7 @@ namespace signature
           : os (_os), seen (_seen), incpath (_incpath)
         {}
 
-        void operator () (const literal::type_name_t & t) const
+        void operator () (const std::string & t) const
         {
           if (!literal::cpp::known (t))
             {
@@ -375,7 +375,7 @@ namespace signature
           : cpp_generic<Stream> (_s, _l), name (boost::none), sig (boost::none)
         {}
 
-        Stream& operator () (const literal::type_name_t & t) const
+        Stream& operator () (const std::string & t) const
         {
           if (literal::cpp::known (t))
             {
@@ -504,7 +504,7 @@ namespace signature
           , _is_toplevel (is_toplevel)
         {}
 
-        Stream& operator () (const literal::type_name_t & t) const
+        Stream& operator () (const std::string & t) const
         {
           this->level (l0);
 

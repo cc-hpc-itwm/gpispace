@@ -10,7 +10,7 @@
 namespace literal
 {
   const type& require_type ( const std::string& field
-                           , const type_name_t& req
+                           , const std::string& req
                            , const type& x
                            );
 }

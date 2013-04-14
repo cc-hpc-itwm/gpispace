@@ -12,10 +12,10 @@ namespace literal
 {
   namespace
   {
-    class visitor_type_name : public boost::static_visitor<const type_name_t&>
+    class visitor_type_name : public boost::static_visitor<const std::string&>
     {
     public:
-#define CASE const type_name_t& operator()
+#define CASE const std::string& operator()
 
       CASE (const we::type::literal::control&) const { return CONTROL(); }
       CASE (const bool&) const { return BOOL(); }
@@ -34,11 +34,11 @@ namespace literal
   }
 
   const type& require_type ( const std::string& field
-                           , const type_name_t& req
+                           , const std::string& req
                            , const type& x
                            )
   {
-    const type_name_t& has (boost::apply_visitor (visitor_type_name(), x));
+    const std::string& has (boost::apply_visitor (visitor_type_name(), x));
 
     if (has != req)
     {

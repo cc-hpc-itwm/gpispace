@@ -667,7 +667,7 @@ namespace xml
         {
         public:
           value::type
-          operator () (const literal::type_name_t & type_name) const
+          operator () (const std::string & type_name) const
           {
             return literal::of_type (type_name);
           }
@@ -712,8 +712,8 @@ namespace xml
             , state (_state)
           {}
 
-          value::type operator () ( const literal::type_name_t & signature
-                                  , const literal::type_name_t & value
+          value::type operator () ( const std::string & signature
+                                  , const std::string & value
                                   ) const
           {
             std::ostringstream s;
