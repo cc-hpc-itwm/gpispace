@@ -135,17 +135,17 @@ namespace pnet
           boost::apply_visitor (*this, x.second);
         }
 
-        template<typename Container>
+        template<typename C>
         std::ostream& print_container
           ( const std::string& open
           , const std::string& close
-          , const Container& c
-          , const boost::function<void (const typename Container::value_type&)>& f
+          , const C& c
+          , const boost::function<void (const typename C::value_type&)>& f
           ) const
         {
           _os << open;
           bool first (true);
-          BOOST_FOREACH (const typename Container::value_type& x, c)
+          BOOST_FOREACH (const typename C::value_type& x, c)
           {
             if (!first)
             {
