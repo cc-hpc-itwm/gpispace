@@ -18,11 +18,11 @@ namespace value
     class visitor_require_type : public boost::static_visitor<const type&>
     {
     private:
-      const signature::field_name_t & field_name;
+      const std::string & field_name;
       const type& _value;
 
     public:
-      visitor_require_type ( const signature::field_name_t & _field_name
+      visitor_require_type ( const std::string & _field_name
                            , const type& value
                            )
         : field_name (_field_name)
@@ -103,7 +103,7 @@ namespace value
     };
   }
 
-  const type& require_type ( const signature::field_name_t& field
+  const type& require_type ( const std::string& field
                            , const signature::type& sig
                            , const value::type& v
                            )

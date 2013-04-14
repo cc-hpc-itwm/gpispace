@@ -74,10 +74,10 @@ namespace xml
 
     namespace structure_type
     {
-      typedef boost::unordered_map< signature::field_name_t
+      typedef boost::unordered_map< std::string
                                   , type::structure_type
                                   > set_type;
-      typedef boost::unordered_map< signature::field_name_t
+      typedef boost::unordered_map< std::string
                                   , std::string
                                   > forbidden_type;
 

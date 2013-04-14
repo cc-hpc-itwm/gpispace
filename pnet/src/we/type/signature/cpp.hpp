@@ -69,10 +69,10 @@ namespace signature
       private:
         typedef cpp_generic<Stream> super;
 
-        signature::field_name_t fieldname;
+        std::string fieldname;
 
-        signature::field_name_t
-        longer (const signature::field_name_t & sub) const
+        std::string
+        longer (const std::string & sub) const
         {
           return fieldname.empty() ? sub : (fieldname + "." + sub);
         }
@@ -82,7 +82,7 @@ namespace signature
           : super (_s, _l), fieldname ()
         {}
 
-        cpp_from_value ( const signature::field_name_t & _fieldname
+        cpp_from_value ( const std::string & _fieldname
                        , Stream& _s
                        , const unsigned int _l = 0
                        )
@@ -150,10 +150,10 @@ namespace signature
       private:
         typedef cpp_generic<Stream> super;
 
-        signature::field_name_t fieldname;
+        std::string fieldname;
 
-        signature::field_name_t
-        longer (const signature::field_name_t & sub) const
+        std::string
+        longer (const std::string & sub) const
         {
           return fieldname.empty() ? sub : (fieldname + "." + sub);
         }
@@ -163,7 +163,7 @@ namespace signature
           : super (_s, _l), fieldname ()
         {}
 
-        cpp_serialize ( const signature::field_name_t & _fieldname
+        cpp_serialize ( const std::string & _fieldname
                       , Stream& _s
                       , const unsigned int _l = 0
                       )
@@ -210,11 +210,11 @@ namespace signature
       private:
         typedef cpp_generic<Stream> super;
 
-        signature::field_name_t fieldname;
-        signature::field_name_t levelname;
+        std::string fieldname;
+        std::string levelname;
 
-        signature::field_name_t
-        longer (const signature::field_name_t & sub) const
+        std::string
+        longer (const std::string & sub) const
         {
           return fieldname.empty() ? sub : (fieldname + "." + sub);
         }
@@ -224,8 +224,8 @@ namespace signature
           : super (_s, _l), fieldname ()
         {}
 
-        cpp_to_value ( const signature::field_name_t & _fieldname
-                     , const signature::field_name_t & _levelname
+        cpp_to_value ( const std::string & _fieldname
+                     , const std::string & _levelname
                      , Stream& _s
                      , const unsigned int _l = 0
                      )

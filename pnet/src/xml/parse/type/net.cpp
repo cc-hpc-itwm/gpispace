@@ -682,7 +682,7 @@ namespace xml
                 ; ++sig
                 )
             {
-              const signature::field_name_t field (sig->first);
+              const std::string field (sig->first);
               const signature::desc_t desc (sig->second);
 
               val[field] = boost::apply_visitor (*this, desc);
@@ -697,13 +697,13 @@ namespace xml
         private:
           const std::string & place_name;
           const boost::filesystem::path & path;
-          const signature::field_name_t field_name;
+          const std::string field_name;
           const state::type & state;
 
         public:
           construct_value ( const std::string & _place_name
                           , const boost::filesystem::path & _path
-                          , const signature::field_name_t & _field_name
+                          , const std::string & _field_name
                           , const state::type & _state
                           )
             : place_name (_place_name)
@@ -762,7 +762,7 @@ namespace xml
                 ; ++sig
                 )
             {
-              const signature::field_name_t field (sig->first);
+              const std::string field (sig->first);
               const signature::desc_t desc (sig->second);
               const std::string field_deeper
                 ((field_name == "") ? field : (field_name + "." + field));
@@ -795,7 +795,7 @@ namespace xml
                   ; ++pos
                   )
               {
-                const signature::field_name_t field (pos->first);
+                const std::string field (pos->first);
                 const std::string field_deeper
                   ((field_name == "") ? field : (field_name + "." + field));
 

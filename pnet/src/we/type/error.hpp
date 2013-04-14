@@ -13,7 +13,7 @@ namespace type
     error (const std::string & what)
       : std::runtime_error ("type error: " + what) {};
 
-    error ( const signature::field_name_t & field
+    error ( const std::string & field
           , const literal::type_name_t & required
           , const literal::type_name_t & given
           )
