@@ -37,6 +37,7 @@ namespace pnet
           by_name[VECTOR()] = std::vector<value_type>();
           by_name[SET()] = std::set<value_type>();
           by_name[MAP()] = std::map<value_type,value_type>();
+          by_name[STRUCT()] = structured_type();
 
           return by_name;
         }
