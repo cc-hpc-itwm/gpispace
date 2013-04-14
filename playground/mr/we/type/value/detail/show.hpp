@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_VALUE_UTIL_SHOW_HPP
-#define PNET_SRC_WE_TYPE_VALUE_UTIL_SHOW_HPP
+#ifndef PNET_SRC_WE_TYPE_VALUE_DETAIL_SHOW_HPP
+#define PNET_SRC_WE_TYPE_VALUE_DETAIL_SHOW_HPP
 
 #include <we/type/value/signature/name_of.hpp>
 
