@@ -26,7 +26,7 @@ namespace gspc
         , m_buffer ()
         , m_parser ()
         , m_frame ()
-        , m_frame_list ()
+        , m_buffer_list ()
       {}
 
       template <class Proto>
@@ -59,10 +59,10 @@ namespace gspc
       {
         unique_lock lock (m_frame_list_mutex);
 
-        bool write_in_progress = not m_frame_list.empty ();
-        m_frame_list.push_back (f);
-        m_frame_list.back ().close ();
-        m_buffer_list.push_back (m_frame_list.back ().to_string ());
+        bool write_in_progress = not m_buffer_list.empty ();
+        frame to_send (f);
+        to_send.close ();
+        m_buffer_list.push_back (to_send.to_string ());
 
         if (not write_in_progress)
         {
@@ -147,7 +147,6 @@ namespace gspc
         if (not ec)
         {
           unique_lock lock (m_frame_list_mutex);
-          m_frame_list.pop_front ();
           m_buffer_list.pop_front ();
 
           if (not m_buffer_list.empty ())
