@@ -1,221 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/value/show.hpp>
-
-#include <we/type/value/signature/name_of.hpp>
-
-#include <iostream>
-
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
-
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
-    {
-      namespace show
-      {
-        class parens_type
-        {
-        public:
-          parens_type ( const std::string& open
-                      , const std::string& sep
-                      , const std::string& close
-                      )
-            : _open (open)
-            , _sep (sep)
-            , _close (close)
-          {}
-          const std::string& open() const
-          {
-            return _open;
-          }
-          const std::string& sep() const
-          {
-            return _sep;
-          }
-          const std::string& close() const
-          {
-            return _close;
-          }
-        private:
-          const std::string _open;
-          const std::string _sep;
-          const std::string _close;
-        };
-
-        typedef boost::variant< we::type::literal::control
-                              , bool
-                              , int
-                              , long
-                              , unsigned int
-                              , unsigned long
-                              , float
-                              , double
-                              , char
-                              , std::string
-                              , bitsetofint::type
-                              , bytearray::type
-                              > value_literal_type;
-
-        typedef boost::variant< std::list<value_type>
-                              , std::vector<value_type>
-                              , std::set<value_type>
-                              , std::map<value_type, value_type>
-                              , structured_type
-                              > value_container_type;
-
-        typedef boost::function< parens_type (const value_container_type&)
-                               > parens_of_type;
-
-        class visitor_show : public boost::static_visitor<std::ostream&>
-        {
-        public:
-          visitor_show ( std::ostream& os
-                       , const parens_of_type& parens_of
-                       , const std::string& sep_struct_item
-                       )
-            : _os (os)
-            , _parens_of (parens_of)
-            , _sep_struct_item (sep_struct_item)
-          {}
-
-          std::ostream& operator() (const std::list<value_type>& l) const
-          {
-            return print_container<std::list<value_type> >
-              ( boost::ref (l)
-              , boost::bind (&visitor_show::print_value, this, _1)
-              );
-          }
-          std::ostream& operator() (const std::vector<value_type>& v) const
-          {
-            return print_container<std::vector<value_type> >
-              ( boost::ref (v)
-              , boost::bind (&visitor_show::print_value, this, _1)
-              );
-          }
-          std::ostream&
-          operator() (const std::map<value_type, value_type>& m) const
-          {
-            return print_container<std::map<value_type, value_type> >
-              ( boost::ref (m)
-              , boost::bind (&visitor_show::print_map_item, this, _1)
-              );
-          }
-          std::ostream& operator() (const std::set<value_type>& s) const
-          {
-            return print_container<std::set<value_type> >
-              ( boost::ref (s)
-              , boost::bind (&visitor_show::print_value, this, _1)
-              );
-          }
-          std::ostream& operator() (const structured_type& m) const
-          {
-            return print_container<structured_type>
-              ( boost::ref (m)
-              , boost::bind (&visitor_show::print_struct_item, this, _1)
-              );
-          }
-
-          std::ostream& operator() (const control& c) const
-          {
-            return _os << c;
-          }
-          std::ostream& operator() (const bool& b) const
-          {
-            return _os << b;
-          }
-          std::ostream& operator() (const int& i) const
-          {
-            return _os << i;
-          }
-          std::ostream& operator() (const long& i) const
-          {
-            return _os << i << "L";
-          }
-          std::ostream& operator() (const unsigned int& i) const
-          {
-            return _os << i << "U";
-          }
-          std::ostream& operator() (const unsigned long& i) const
-          {
-            return _os << i << "UL";
-          }
-          std::ostream& operator() (const float& f) const
-          {
-            return _os << f << "f";
-          }
-          std::ostream& operator() (const double& d) const
-          {
-            return _os << d;
-          }
-          std::ostream& operator() (const char& c) const
-          {
-            return _os << "'" << c << "'";
-          }
-          std::ostream& operator() (const std::string& s) const
-          {
-            return _os << "\"" << s << "\"";
-          }
-          std::ostream& operator() (const bitsetofint::type& bs) const
-          {
-            return _os << bs;
-          }
-          std::ostream& operator() (const bytearray::type& ba) const
-          {
-            return _os << ba;
-          }
-
-        private:
-          std::ostream& _os;
-          const parens_of_type _parens_of;
-          const std::string _sep_struct_item;
-
-          void print_value (const value_type& x) const
-          {
-            boost::apply_visitor (*this, x);
-          }
-          void print_map_item (const std::pair<value_type, value_type>& x) const
-          {
-            boost::apply_visitor (*this, x.first);
-            _os << " -> ";
-            boost::apply_visitor (*this, x.second);
-          }
-          void print_struct_item
-          (const std::pair<std::string, value_type>& x) const
-          {
-            _os << x.first << _sep_struct_item;
-            boost::apply_visitor (*this, x.second);
-          }
-
-          template<typename C>
-          std::ostream& print_container
-          ( const C& c
-          , const boost::function<void (const typename C::value_type&)>& f
-          ) const
-          {
-            const parens_type p (_parens_of (c));
-            _os << name_of<C> (c) << " " << p.open();
-            bool first (true);
-            BOOST_FOREACH (const typename C::value_type& x, c)
-              {
-                if (!first)
-                  {
-                    _os << p.sep();
-                  }
-                f (x);
-                first = false;
-              }
-            return _os << p.close();
-          }
-        };
-      }
-    }
-  }
-}
+#include <we/type/value/util/show.hpp>
 
 namespace
 {
@@ -247,6 +33,59 @@ namespace
       return parens_type ("[", ", ", "]");
     }
   };
+
+  class show_literal : public boost::static_visitor<std::ostream&>
+  {
+  public:
+    std::ostream& operator() (std::ostream& os, const control& c) const
+    {
+      return os << c;
+    }
+    std::ostream& operator() (std::ostream& os, const bool& b) const
+    {
+      return os << b;
+    }
+    std::ostream& operator() (std::ostream& os, const int& i) const
+    {
+      return os << i;
+    }
+    std::ostream& operator() (std::ostream& os, const long& i) const
+    {
+      return os << i << "L";
+    }
+    std::ostream& operator() (std::ostream& os, const unsigned int& i) const
+    {
+      return os << i << "U";
+    }
+    std::ostream& operator() (std::ostream& os, const unsigned long& i) const
+    {
+      return os << i << "UL";
+    }
+    std::ostream& operator() (std::ostream& os, const float& f) const
+    {
+      return os << f << "f";
+    }
+    std::ostream& operator() (std::ostream& os, const double& d) const
+    {
+      return os << d;
+    }
+    std::ostream& operator() (std::ostream& os, const char& c) const
+    {
+      return os << "'" << c << "'";
+    }
+    std::ostream& operator() (std::ostream& os, const std::string& s) const
+    {
+      return os << "\"" << s << "\"";
+    }
+    std::ostream& operator() (std::ostream& os, const bitsetofint::type& bs) const
+    {
+      return os << bs;
+    }
+    std::ostream& operator() (std::ostream& os, const bytearray::type& ba) const
+    {
+      return os << ba;
+    }
+  };
 }
 
 std::ostream& operator<< ( std::ostream& os
@@ -256,11 +95,14 @@ std::ostream& operator<< ( std::ostream& os
   const std::ios_base::fmtflags ff (os.flags());
   os << std::showpoint << std::boolalpha;
   parens_of parens_of;
+  show_literal show_literal;
   boost::apply_visitor
-    ( pnet::type::value::show::visitor_show ( os
-                                            , boost::apply_visitor (parens_of)
-                                            , " := "
-                                            )
+    ( pnet::type::value::show::visitor_show
+      ( os
+      , boost::apply_visitor (show_literal)
+      , boost::apply_visitor (parens_of)
+      , " := "
+      )
     , v
     );
   os.flags (ff);
