@@ -20,8 +20,8 @@ namespace pnet
       NAME (BOOL, "bool");
       NAME (INT, "int");
       NAME (LONG, "long");
-      NAME (UINT, "uint");
-      NAME (ULONG, "ulong");
+      NAME (UINT, "unsigned int");
+      NAME (ULONG, "unsigned long");
       NAME (FLOAT, "float");
       NAME (DOUBLE, "double");
       NAME (CHAR, "char");
