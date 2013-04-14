@@ -4,6 +4,10 @@ fhg_add_test(test_semaphore.cpp
   DESCRIPTION "Tests the semaphore implementation"
 )
 
+fhg_add_test(test_atomic.cpp
+  DESCRIPTION "Tests the semaphore implementation"
+)
+
 fhg_add_test(test_event.cpp
   DESCRIPTION "Tests the thread event implementation"
 )
