@@ -16,6 +16,8 @@ add_library (we-value
   we/type/value/get.cpp
   we/type/value/poke.cpp
   we/type/value/read.cpp
+
+  we/type/value/path/split.cpp
 )
 
 fhg_add_test (value.cpp
