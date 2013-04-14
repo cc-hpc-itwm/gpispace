@@ -22,6 +22,6 @@ add_library (we-value
 
 fhg_add_test (value.cpp
   PROJECT test_playground_mr
-  LINK_LIBRARIES we-dev we-value fhg-util
+  LINK_LIBRARIES we-value we-dev fhg-util
   DESCRIPTION "test recursive polymorphic value"
 )
