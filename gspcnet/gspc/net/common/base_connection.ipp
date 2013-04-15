@@ -59,7 +59,7 @@ namespace gspc
       {
         unique_lock lock (m_frame_list_mutex);
 
-        bool write_in_progress = not m_buffer_list.empty ();
+        const bool write_in_progress = not m_buffer_list.empty ();
         frame to_send (f);
         to_send.close ();
         m_buffer_list.push_back (to_send.to_string ());
