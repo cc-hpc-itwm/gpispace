@@ -437,7 +437,11 @@ namespace prefix
       {
         pos.skip_spaces();
 
-        if (pos.end())
+        if ( pos.end()
+          || ( *pos != 'a' && *pos != 'h' && *pos != 'l'
+            && *pos != 'p' && *pos != 's'
+             )
+           )
         {
           throw fhg::util::parse::error::expected ("packet", pos);
         }
