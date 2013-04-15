@@ -244,7 +244,12 @@ namespace prefix
     {
       _nodes << node_type (hostname);
       update (_nodes.size() - 1);
-      _nodes_to_update << hostname;
+      if ( !_pending_updates.contains (hostname)
+        && !_nodes_to_update.contains (hostname)
+         )
+      {
+        _nodes_to_update << hostname;
+      }
     }
 
     if (old_height != heightForWidth (width()))
