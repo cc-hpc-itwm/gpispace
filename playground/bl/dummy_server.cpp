@@ -54,7 +54,7 @@ namespace
 {
   const size_t status_count (4);
   const char* states[] = {"down", "available", "unavailable", "used"};
-  const char* actions[] = {NULL, "add_to_working_set", "reboot", "remove_from_working_set foo"};
+  const char* actions[] = {NULL, "add_to_working_set", "reboot", "remove_from_working_set\", \"foo"};
 }
 
 void thread::may_read()
