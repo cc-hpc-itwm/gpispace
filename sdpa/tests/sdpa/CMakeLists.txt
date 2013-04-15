@@ -86,7 +86,7 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
 )
 add_dependencies(pnet-capabilities_no_mandatory-test-wf pnetput)
 ############################################################################################
-pnet_compile(atomic-test-wf ${CMAKE_SOURCE_DIR}/application/example/atomic/atomic.xml
+pnet_compile(atomic-test-wf ${CMAKE_SOURCE_DIR}/application/example/atomic/atomic.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic-test-wf.in.pnet
   GENERATE atomic
   INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
