@@ -3,7 +3,7 @@
 #ifndef PNET_SRC_WE_TYPE_VALUE_SIGNATURE_SHOW_HPP
 #define PNET_SRC_WE_TYPE_VALUE_SIGNATURE_SHOW_HPP
 
-#include <we/type/value/signature/signature.hpp>
+#include <we/type/value/signature.hpp>
 
 #include <iosfwd>
 
