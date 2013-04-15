@@ -2,6 +2,12 @@
 
 #include "dummy_server.hpp"
 
+#include "parse.hpp"
+
+#include <fhg/util/parse/error.hpp>
+
+#include <iostream>
+
 #include <QApplication>
 #include <QDebug>
 #include <stdexcept>
@@ -55,89 +61,165 @@ namespace
   const size_t status_count (4);
   const char* states[] = {"down", "available", "unavailable", "used"};
   const char* actions[] = {NULL, "add_to_working_set", "reboot", "remove_from_working_set\", \"foo"};
+
+  const char* description (const QString& action)
+  {
+    return action == "add_to_working_set"
+      ? "add this node to the working set"
+      : action == "reboot"
+      ? "reboot node"
+      : action == "remove_from_working_set"
+      ? "remove this node from the working set"
+      : action == "foo"
+      ? "foo bar"
+      : throw std::runtime_error ("unknown action name");
+  }
+}
+
+void thread::execute_action (fhg::util::parse::position& pos)
+{
+  const QString host (prefix::require::qstring (pos));
+  prefix::require::token (pos, ":");
+  const QString action (prefix::require::qstring (pos));
+  qDebug() << "execute" << action << "for" << host;
+}
+
+void thread::send_action_description (fhg::util::parse::position& pos)
+{
+  const QString action (prefix::require::qstring (pos));
+  _socket->write
+    ( qPrintable ( QString
+                   ("action_description: [\"%1\": [long_text: \"%2\",],]\n")
+                 .arg (action)
+                 .arg (description (action))
+                 )
+    );
+}
+
+void thread::send_layout_hint (fhg::util::parse::position& pos)
+{
+  _socket->write
+    ( qPrintable ( QString
+                 ("layout_hint: [\"%1\": [color:0x%2,border:0x%3,],]\n")
+                 .arg (prefix::require::qstring (pos))
+                 .arg (qrand() ^ qrand(), 0, 16)
+                 .arg (qrand() ^ qrand(), 0, 16)
+                 )
+    );
 }
 
 void thread::may_read()
 {
   while (_socket->canReadLine())
   {
-    const QString line (_socket->readLine().trimmed());
-    // qDebug() << "server: read:" << line;
+    const std::string message
+      (QString (_socket->readLine()).trimmed().toStdString());
+    fhg::util::parse::position pos (message);
 
-    const QStringList tokens (line.split (' '));
-
-    if (tokens[0] == "host_list")
+    try
     {
-      _socket->write ("hosts: [");
-      int count (qrand() % 1000 + 5000);
-      while (count--)
+      pos.skip_spaces();
+
+      if ( pos.end()
+        || ( *pos != 'a' && *pos != 'd' && *pos != 'h'
+          && *pos != 'l' && *pos != 'p' && *pos != 's'
+           )
+         )
       {
-        _socket->write (qPrintable (QString (" \"node%1.cluster\",").arg (count)));
+        throw fhg::util::parse::error::expected ("packet", pos);
       }
-      _socket->write ("]\n");
-    }
-    else if (tokens[0] == "possible_status_list")
-    {
-      _socket->write ("possible_status: [");
-      for (size_t i (0); i < status_count; ++i)
+
+      switch (*pos)
       {
-        _socket->write ("\"");
-        _socket->write (states[i]);
-        _socket->write ("\":[");
-        if (actions[i])
+      case 'a':
+        ++pos;
+        pos.require ("ction");
+        prefix::require::token (pos, ":");
+
+        prefix::require::list (pos, boost::bind (&thread::execute_action, this, _1));
+
+        break;
+
+      case 'd':
+        ++pos;
+        pos.require ("escribe_action");
+        prefix::require::token (pos, ":");
+
+        prefix::require::list
+          (pos, boost::bind (&thread::send_action_description, this, _1));
+
+        break;
+
+      case 'h':
+        ++pos;
+        pos.require ("ost_list");
+
         {
-          _socket->write (" \"");
-          _socket->write (actions[i]);
-          _socket->write ("\",");
+          _socket->write ("hosts: [");
+          int count (qrand() % 1000 + 5000);
+          while (count--)
+          {
+            _socket->write (qPrintable (QString (" \"node%1.cluster\",").arg (count)));
+          }
+          _socket->write ("]\n");
         }
-        _socket->write ("],");
+
+        break;
+
+      case 'l':
+        ++pos;
+        pos.require ("ayout_hint");
+        prefix::require::token (pos, ":");
+
+        prefix::require::list (pos, boost::bind (&thread::send_layout_hint, this, _1));
+
+        break;
+
+      case 'p':
+        ++pos;
+        pos.require ("ossible_status_list");
+
+        {
+          _socket->write ("possible_status: [");
+          for (size_t i (0); i < status_count; ++i)
+          {
+            _socket->write ("\"");
+            _socket->write (states[i]);
+            _socket->write ("\":[");
+            if (actions[i])
+            {
+              _socket->write (" \"");
+              _socket->write (actions[i]);
+              _socket->write ("\",");
+            }
+            _socket->write ("],");
+          }
+          _socket->write ("]\n");
+        }
+
+        break;
+
+      case 's':
+        ++pos;
+        pos.require ("tatus");
+        prefix::require::token (pos, ":");
+
+        {
+          const QMutexLocker lock (&_pending_status_updates_mutex);
+          prefix::require::list
+            ( pos
+            , boost::bind ( &QStringList::push_back
+                          , &_pending_status_updates
+                          , boost::bind (prefix::require::qstring, _1)
+                          )
+            );
+        }
       }
-      _socket->write ("]\n");
     }
-    else if (tokens[0] == "status")
+    catch (const std::runtime_error& ex)
     {
-      const QMutexLocker lock (&_pending_status_updates_mutex);
-      foreach (const QString& host, tokens.mid (1))
-      {
-        _pending_status_updates.append (host);
-      }
-    }
-    else if (tokens[0] == "action")
-    {
-      qDebug() << "execute action " << tokens[2] << " on " << tokens[1];
-    }
-    else if (tokens[0] == "describe_action")
-    {
-      foreach (const QString& action, tokens.mid (1))
-      {
-        _socket->write
-          ( qPrintable ( QString
-                         ("action_description: [\"%1\": [long_text: \"%2\",],]\n")
-                       .arg (action)
-                       .arg ( action == "add_to_working_set"
-                            ? "add this node to the working set"
-                            : action == "reboot"
-                            ? "reboot node"
-                            : action == "remove_from_working_set"
-                            ? "remove this node from the working set"
-                            : action == "foo"
-                            ? "foo bar"
-                            : throw std::runtime_error ("unknown action name")
-                            )
-                       )
-          );
-      }
-    }
-    else if (tokens[0] == "layout_hint")
-    {
-      _socket->write
-        ( qPrintable ( QString
-                       ("layout_hint: [\"%1\": [color:0x%2,border:0x%3,],]\n")
-                     .arg (tokens[1])
-                     .arg (qrand() ^ qrand(), 0, 16)
-                     .arg (qrand() ^ qrand(), 0, 16)
-                     )
-        );
+      //! \todo Report back to client?
+      std::cerr << "PARSE ERROR: " << ex.what() << "\nmessage: " << message << "\nrest: " << pos.rest() << "\n";
     }
   }
 }

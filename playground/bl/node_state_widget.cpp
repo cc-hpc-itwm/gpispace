@@ -271,31 +271,46 @@ namespace prefix
 
     while (!nodes_to_update.empty())
     {
-      QString message ("status");
+      QString message ("status: [");
       while (message.size() < chunk_size && !nodes_to_update.empty())
       {
-        const QString hostname (nodes_to_update.takeFirst());
-        message.append (" ").append (hostname);
+        message.append ("\"")
+               .append (nodes_to_update.takeFirst())
+               .append ("\",");
       }
-
+      message.append ("]");
       _connection->push (message);
     }
   }
 
   void communication::request_layout_hint (const QString& state)
   {
-    _connection->push (QString ("layout_hint %1").arg (state));
+    _connection->push (QString ("layout_hint: [\"%1\"]").arg (state));
   }
 
   void communication::request_action_description (const QStringList& actions)
   {
-    _connection->push (QString ("describe_action %1").arg (actions.join (" ")));
+    if (!actions.empty())
+    {
+      QString message ("describe_action: [");
+      foreach (const QString& action, actions)
+      {
+        message.append ("\"")
+               .append (action)
+               .append ("\", ");
+      }
+      message.append ("]");
+      _connection->push (message);
+    }
   }
 
   void communication::request_action
     (const QString& hostname, const QString& action)
   {
-    _connection->push (QString ("action %1 %2").arg (hostname).arg (action));
+    _connection->push ( QString ("action: [\"%1\": \"%2\"]")
+                      .arg (hostname)
+                      .arg (action)
+                      );
   }
 
   void communication::possible_status (fhg::util::parse::position& pos)
