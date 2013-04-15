@@ -223,13 +223,12 @@ namespace prefix
   }
 
 
-  void node_state_widget::update_legend (const QString& state)
+  void node_state_widget::update_legend (const QString& s)
   {
-    delete _state_legend[state];
-    _state_legend[state] =
-      new legend_entry (state, _states[state], _legend_widget);
+    delete _state_legend[s];
+    _state_legend[s] = new legend_entry (s, state (s), _legend_widget);
 
-    _legend_widget->layout()->addWidget (_state_legend[state]);
+    _legend_widget->layout()->addWidget (_state_legend[s]);
   }
 
   void node_state_widget::nodes_details
