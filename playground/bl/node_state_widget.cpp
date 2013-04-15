@@ -2,6 +2,8 @@
 
 #include "node_state_widget.hpp"
 
+#include "parse.hpp"
+
 #include <util/qt/boost_connect.hpp>
 
 #include <QDebug>
@@ -19,7 +21,6 @@
 #include <boost/optional.hpp>
 
 #include <fhg/util/parse/error.hpp>
-#include <fhg/util/num.hpp>
 
 #include <iostream>
 
@@ -53,57 +54,6 @@ namespace prefix
       fhg::util::qt::boost_connect<void()>
         (timer, SIGNAL (timeout()), parent, fun);
       timer->start (timeout);
-    }
-
-    namespace require
-    {
-      void token (fhg::util::parse::position& pos, const std::string& what)
-      {
-        pos.skip_spaces();
-        pos.require (what);
-      }
-
-      QString qstring (fhg::util::parse::position& pos)
-      {
-        token (pos, "\"");
-        return QString::fromStdString (pos.until ('"'));
-      }
-
-      QString label (fhg::util::parse::position& pos)
-      {
-        const QString key (qstring (pos));
-        token (pos, ":");
-        return key;
-      }
-
-      QColor qcolor (fhg::util::parse::position& pos)
-      {
-        pos.skip_spaces();
-        return QColor (fhg::util::read_uint (pos));
-      }
-
-      void list ( fhg::util::parse::position& pos
-                , const boost::function<void (fhg::util::parse::position&)>& f
-                )
-      {
-        pos.list ('[', ',', ']', f);
-      }
-
-      void named_list
-        ( fhg::util::parse::position& pos
-        , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
-        )
-      {
-        list (pos, boost::bind (f, _1, label (pos)));
-      }
-
-      void list_of_named_lists
-        ( fhg::util::parse::position& pos
-        , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
-        )
-      {
-        list (pos, boost::bind (named_list, _1, f));
-      }
     }
   }
 
