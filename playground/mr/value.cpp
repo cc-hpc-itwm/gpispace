@@ -8,6 +8,8 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
+#include <we/type/value/require_type.hpp>
+#include <we/type/value/exception.hpp>
 
 #include <we/type/value/signature/name.hpp>
 #include <we/type/value/signature/name_of.hpp>
@@ -439,4 +441,72 @@ BOOST_AUTO_TEST_CASE (signature_name_of)
   CHECK (MAP, m);
 
 #undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (require_type)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::poke;
+  using pnet::type::value::structured_type;
+  using pnet::type::value::signature_type;
+  using pnet::type::value::require_type;
+  using pnet::type::value::exception::type_mismatch;
+  using pnet::type::value::exception::missing_field;
+  using pnet::type::value::exception::unknown_field;
+
+#define OKAY(l,r) BOOST_CHECK_NO_THROW (require_type (l, r))
+
+  OKAY (we::type::literal::control(), we::type::literal::control());
+  OKAY (true, true);
+  OKAY (true, false);
+  OKAY (false, true);
+  OKAY (false, false);
+  OKAY (0, 1);
+  OKAY (0L, 1L);
+  OKAY (0U, 1U);
+  OKAY (0UL, 1UL);
+  OKAY (0.0f, 1.0f);
+  OKAY (0.0, 1.0);
+  OKAY ('a', 'b');
+  OKAY (std::string ("foo"), std::string ("bar"));
+  OKAY (bitsetofint::type().ins(0), bitsetofint::type().ins(1));
+  OKAY (bytearray::type(), bytearray::type());
+
+  BOOST_CHECK_THROW (require_type (0, 0U), type_mismatch);
+
+  signature_type sig;
+  value_type val;
+
+  OKAY (sig, val);
+
+  poke ("f", sig, 0);
+
+  BOOST_CHECK_THROW (require_type (sig, val), type_mismatch);
+
+  poke ("f", val, 1);
+
+  OKAY (sig, val);
+
+  poke ("g", sig, std::list<value_type>());
+
+  BOOST_CHECK_THROW (require_type (sig, val), missing_field);
+
+  poke ("g", val, std::list<value_type>());
+
+  OKAY (sig, val);
+
+  poke ("h", val, 'a');
+
+  BOOST_CHECK_THROW (require_type (sig, val), unknown_field);
+
+  poke ("h", sig, 'x');
+
+  OKAY (sig, val);
+
+  poke ("a.b", sig, 0);
+  poke ("a.b", val, 1U);
+
+  BOOST_CHECK_THROW (require_type (sig, val), type_mismatch);
+
+#undef OKAY
 }
