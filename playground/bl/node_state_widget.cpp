@@ -319,11 +319,11 @@ namespace prefix
 
     QStringList actions;
     require::list ( pos
-                 , boost::bind ( &QStringList::push_back
-                               , &actions
-                               , boost::bind (require::qstring, _1)
-                               )
-                 );
+                  , boost::bind ( &QStringList::push_back
+                                , &actions
+                                , boost::bind (require::qstring, _1)
+                                )
+                  );
 
     emit states_add (state, actions);
 
