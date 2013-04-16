@@ -176,18 +176,16 @@ namespace sdpa {
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
       {
-        lock_type lock_cpb(mtx_cpb_);
-        sdpa::capabilities_set_t::iterator itOwnCcpb = m_capabilities.find(cpb);
-        return (itOwnCcpb != m_capabilities.end());
+    	  return (cpb.owner()==name());
       }
 
       virtual void print()
       {
-        SDPA_LOG_DEBUG("The content of the JobManager is:");
-        jobManager()->print();
+    	  SDPA_LOG_DEBUG("The content of the JobManager is:");
+    	  jobManager()->print();
 
-        SDPA_LOG_DEBUG("The content of the Scheduler is:");
-        scheduler()->print();
+    	  SDPA_LOG_DEBUG("The content of the Scheduler is:");
+    	  scheduler()->print();
       }
 
       // event handlers
@@ -236,10 +234,10 @@ namespace sdpa {
       template <typename T>
       T* createWorkflowEngine()
       {
-        T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-        assert (pWfE);
-        ptr_workflow_engine_ = pWfE;
-        return pWfE;
+    	  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
+    	  assert (pWfE);
+    	  ptr_workflow_engine_ = pWfE;
+    	  return pWfE;
       }
 
       // workflow engine notifications
@@ -294,11 +292,11 @@ namespace sdpa {
       template <class Archive>
       void serialize(Archive& ar, const unsigned int)
       {
-        ar & ptr_job_man_;
-        ar & ptr_scheduler_;
-        ar & ptr_workflow_engine_;
-        ar & m_arrMasterInfo;
-        ar & m_listSubscribers;
+    	  ar & ptr_job_man_;
+    	  ar & ptr_scheduler_;
+    	  ar & ptr_workflow_engine_;
+    	  ar & m_arrMasterInfo;
+    	  ar & m_listSubscribers;
       }
 
       void backupJobManager(boost::archive::text_oarchive& oa) { oa << ptr_job_man_;}
