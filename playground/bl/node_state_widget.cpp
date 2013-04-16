@@ -774,17 +774,34 @@ int main (int argc, char** argv)
 {
   QApplication app (argc, argv);
 
-  QScrollArea scroller;
+  QWidget window;
 
-  QWidget* inner (new QWidget (&scroller));
-  QVBoxLayout* layout (new QVBoxLayout (inner));
-  prefix::legend* legend_widget (new prefix::legend);
-  legend_widget->show();
-  layout->addWidget (new prefix::node_state_widget (legend_widget));
+  QWidget* sidebar (new QWidget (&window));
+  prefix::legend* legend_widget (new prefix::legend (sidebar));
+  QScrollArea* content (new QScrollArea (&window));
 
-  scroller.setWidget (inner);
-  scroller.setWidgetResizable (true);
-  scroller.show();
+  {
+    QVBoxLayout* layout (new QVBoxLayout (sidebar));
+    layout->addWidget (legend_widget);
+    layout->addStretch();
+  }
+
+  {
+    QWidget* inner (new QWidget (content));
+    QVBoxLayout* layout (new QVBoxLayout (inner));
+    layout->addWidget (new prefix::node_state_widget (legend_widget));
+
+    content->setWidget (inner);
+    content->setWidgetResizable (true);
+  }
+
+  {
+    QHBoxLayout* layout (new QHBoxLayout (&window));
+    layout->addWidget (content);
+    layout->addWidget (sidebar);
+  }
+
+  window.show();
 
   return app.exec();
 }
