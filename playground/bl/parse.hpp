@@ -52,7 +52,7 @@ namespace prefix
       , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
       )
     {
-      prefix::require::list (pos, boost::bind (f, _1, label (pos)));
+      require::list (pos, boost::bind (f, _1, label (pos)));
     }
 
     void list_of_named_lists
@@ -60,7 +60,7 @@ namespace prefix
       , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
       )
     {
-      prefix::require::list (pos, boost::bind (named_list, _1, f));
+      require::list (pos, boost::bind (named_list, _1, f));
     }
   }
 }
