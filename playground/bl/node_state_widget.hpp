@@ -229,6 +229,12 @@ namespace prefix
     void states_layout_hint_character (const QString&, const char&);
     void states_layout_hint_color (const QString&, const QColor&);
 
+    void update_nodes_with_state (const QString&);
+    void update_legend (const QString&);
+
+  signals:
+    void state_pixmap_changed (const QString&);
+
   private:
     QMap<QString, QString> _long_action;
 
@@ -242,7 +248,6 @@ namespace prefix
     QMap<QString, legend_entry*> _state_legend;
 
     QWidget* _legend_widget;
-    void update_legend (const QString&);
 
     const state_description& state (const boost::optional<QString>&) const;
     const node_type& node (int) const;

@@ -115,6 +115,14 @@ namespace prefix
             , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
             , SLOT (states_layout_hint_color (const QString&, const QColor&)));
 
+    connect ( this
+            , SIGNAL (state_pixmap_changed (const QString&))
+            , SLOT (update_legend (const QString&))
+            );
+    connect ( this
+            , SIGNAL (state_pixmap_changed (const QString&))
+            , SLOT (update_nodes_with_state (const QString&))
+            );
   }
 
   QRectF rect_for_node (const int node, const int per_row)
@@ -147,7 +155,7 @@ namespace prefix
     state_description& desc (_states[state]);
     desc._pen = col;
     desc.reset();
-    update_legend (state);
+    emit state_pixmap_changed (state);
   }
   void node_state_widget::states_layout_hint_character
     (const QString& state, const char& ch)
@@ -155,7 +163,7 @@ namespace prefix
     state_description& desc (_states[state]);
     desc._character = ch;
     desc.reset();
-    update_legend (state);
+    emit state_pixmap_changed (state);
   }
   void node_state_widget::states_layout_hint_color
     (const QString& state, const QColor& col)
@@ -163,7 +171,7 @@ namespace prefix
     state_description& desc (_states[state]);
     desc._brush = col;
     desc.reset();
-    update_legend (state);
+    emit state_pixmap_changed (state);
   }
 
   void node_state_widget::states_actions_long_text
@@ -172,6 +180,16 @@ namespace prefix
     _long_action[action] = long_text;
   }
 
+  void node_state_widget::update_nodes_with_state (const QString& s)
+  {
+    for (int i (0); i < _nodes.size(); ++i)
+    {
+      if (_nodes[i].state() == s)
+      {
+        update (i);
+      }
+    }
+  }
 
   void node_state_widget::update_legend (const QString& s)
   {
