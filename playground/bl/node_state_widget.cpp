@@ -239,8 +239,13 @@ namespace prefix
       _pending_updates.removeAll (hostname);
       _nodes_to_update << hostname;
 
+      const boost::optional<QString> old_state (it->state());
       it->state (state);
-      update (it - _nodes.begin());
+
+      if (old_state != state)
+      {
+        update (it - _nodes.begin());
+      }
     }
   }
 
