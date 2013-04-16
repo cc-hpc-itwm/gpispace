@@ -1304,14 +1304,15 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 
 void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent* pCpbGainEvt)
 {
-  DMLOG(TRACE, "Received CapabilitiesGainedEvent!");
-  // tell the scheduler to add the capabilities of the worker pCpbGainEvt->from
+	// tell the scheduler to add the capabilities of the worker pCpbGainEvt->from
   sdpa::worker_id_t worker_id = pCpbGainEvt->from();
 
   if (pCpbGainEvt->capabilities().empty())
   {
-    return;
-  }
+     return;
+   }
+
+  SDPA_LOG_DEBUG("The worker \""<<worker_id<<"\" reported its capabilities: "<<pCpbGainEvt->capabilities());
 
   try
   {
