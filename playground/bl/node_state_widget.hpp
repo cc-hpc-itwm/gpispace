@@ -87,6 +87,30 @@ namespace prefix
       (const QString&, const state_description&, QWidget* parent = NULL);
   };
 
+  class legend : public QWidget
+  {
+    Q_OBJECT;
+
+  public:
+    legend (QWidget* parent = NULL);
+
+    const state_description& state (const boost::optional<QString>&) const;
+
+  public slots:
+    void update (const QString&);
+    void states_add (const QString&, const QStringList&);
+    void states_layout_hint_border (const QString&, const QColor&);
+    void states_layout_hint_character (const QString&, const char&);
+    void states_layout_hint_color (const QString&, const QColor&);
+
+  signals:
+    void state_pixmap_changed (const QString&);
+
+  private:
+    QMap<QString, state_description> _states;
+    QMap<QString, legend_entry*> _state_legend;
+  };
+
   class async_tcp_communication : public QObject
   {
     Q_OBJECT;
@@ -210,7 +234,7 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    node_state_widget (QWidget* parent = NULL);
+    node_state_widget (legend*, QWidget* parent = NULL);
 
     virtual int heightForWidth (int) const;
 
@@ -224,16 +248,10 @@ namespace prefix
     void nodes_details (const QString&, const QString&);
     void nodes_state (const QString&, const QString&);
     void states_actions_long_text (const QString&, const QString&);
-    void states_add (const QString&, const QStringList&);
-    void states_layout_hint_border (const QString&, const QColor&);
-    void states_layout_hint_character (const QString&, const char&);
-    void states_layout_hint_color (const QString&, const QColor&);
 
     void update_nodes_with_state (const QString&);
-    void update_legend (const QString&);
 
   signals:
-    void state_pixmap_changed (const QString&);
 
   private:
     QMap<QString, QString> _long_action;
@@ -244,10 +262,8 @@ namespace prefix
     void update (int node);
 
     QVector<node_type> _nodes;
-    QMap<QString, state_description> _states;
-    QMap<QString, legend_entry*> _state_legend;
 
-    QWidget* _legend_widget;
+    legend* _legend_widget;
 
     const state_description& state (const boost::optional<QString>&) const;
     const node_type& node (int) const;

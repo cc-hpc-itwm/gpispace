@@ -71,9 +71,20 @@ namespace prefix
     _connection->push ("host_list");
   }
 
-  node_state_widget::node_state_widget (QWidget* parent)
+  legend::legend (QWidget* parent)
     : QWidget (parent)
-    , _legend_widget (new QWidget (parentWidget()))
+  {
+    new QVBoxLayout (this);
+
+    connect ( this
+            , SIGNAL (state_pixmap_changed (const QString&))
+            , SLOT (update (const QString&))
+            );
+  }
+
+  node_state_widget::node_state_widget (legend* legend_widget, QWidget* parent)
+    : QWidget (parent)
+    , _legend_widget (legend_widget)
     , _communication (new communication (this))
   {
     timer
@@ -87,9 +98,6 @@ namespace prefix
     pol.setHeightForWidth (true);
     setSizePolicy (pol);
 
-    new QVBoxLayout (_legend_widget);
-    _legend_widget->show();
-
     connect ( _communication
             , SIGNAL (nodes (QStringList))
             , SLOT (nodes (QStringList)));
@@ -102,24 +110,25 @@ namespace prefix
     connect ( _communication
             , SIGNAL (states_actions_long_text (const QString&, const QString&))
             , SLOT (states_actions_long_text (const QString&, const QString&)));
+
     connect ( _communication
             , SIGNAL (states_add (const QString&, const QStringList&))
+            , _legend_widget
             , SLOT (states_add (const QString&, const QStringList&)));
     connect ( _communication
             , SIGNAL (states_layout_hint_border (const QString&, const QColor&))
+            , _legend_widget
             , SLOT (states_layout_hint_border (const QString&, const QColor&)));
     connect ( _communication
             , SIGNAL (states_layout_hint_character (const QString&, const char&))
+            , _legend_widget
             , SLOT (states_layout_hint_character (const QString&, const char&)));
     connect ( _communication
             , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
+            , _legend_widget
             , SLOT (states_layout_hint_color (const QString&, const QColor&)));
 
-    connect ( this
-            , SIGNAL (state_pixmap_changed (const QString&))
-            , SLOT (update_legend (const QString&))
-            );
-    connect ( this
+    connect ( _legend_widget
             , SIGNAL (state_pixmap_changed (const QString&))
             , SLOT (update_nodes_with_state (const QString&))
             );
@@ -142,14 +151,14 @@ namespace prefix
       (rect_for_node (node, per_row).toRect().adjusted (-1, -1, 1, 1));
   }
 
-  void node_state_widget::states_add
+  void legend::states_add
     (const QString& state, const QStringList& actions)
   {
     _states.insert (state, state_description (actions));
-    update_legend (state);
+    update (state);
   }
 
-  void node_state_widget::states_layout_hint_border
+  void legend::states_layout_hint_border
     (const QString& state, const QColor& col)
   {
     state_description& desc (_states[state]);
@@ -157,7 +166,7 @@ namespace prefix
     desc.reset();
     emit state_pixmap_changed (state);
   }
-  void node_state_widget::states_layout_hint_character
+  void legend::states_layout_hint_character
     (const QString& state, const char& ch)
   {
     state_description& desc (_states[state]);
@@ -165,7 +174,7 @@ namespace prefix
     desc.reset();
     emit state_pixmap_changed (state);
   }
-  void node_state_widget::states_layout_hint_color
+  void legend::states_layout_hint_color
     (const QString& state, const QColor& col)
   {
     state_description& desc (_states[state]);
@@ -191,12 +200,12 @@ namespace prefix
     }
   }
 
-  void node_state_widget::update_legend (const QString& s)
+  void legend::update (const QString& s)
   {
     delete _state_legend[s];
-    _state_legend[s] = new legend_entry (s, state (s), _legend_widget);
+    _state_legend[s] = new legend_entry (s, state (s), this);
 
-    _legend_widget->layout()->addWidget (_state_legend[s]);
+    layout()->addWidget (_state_legend[s]);
   }
 
   void node_state_widget::nodes_details
@@ -617,7 +626,8 @@ namespace prefix
       );
   }
 
-  const state_description& node_state_widget::state (const boost::optional<QString>& name) const
+  const state_description&
+    legend::state (const boost::optional<QString>& name) const
   {
     if (name)
     {
@@ -629,6 +639,14 @@ namespace prefix
       return fallback;
     }
   }
+
+  const state_description&
+    node_state_widget::state (const boost::optional<QString>& name) const
+  {
+    return _legend_widget->state (name);
+  }
+
+
   const node_type& node_state_widget::node (int index) const
   {
     return _nodes.at (index);
@@ -760,7 +778,9 @@ int main (int argc, char** argv)
 
   QWidget* inner (new QWidget (&scroller));
   QVBoxLayout* layout (new QVBoxLayout (inner));
-  layout->addWidget (new prefix::node_state_widget);
+  prefix::legend* legend_widget (new prefix::legend);
+  legend_widget->show();
+  layout->addWidget (new prefix::node_state_widget (legend_widget));
 
   scroller.setWidget (inner);
   scroller.setWidgetResizable (true);
