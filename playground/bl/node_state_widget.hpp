@@ -170,6 +170,41 @@ namespace prefix
     QTcpSocket _socket;
   };
 
+  class communication : public QObject
+  {
+    Q_OBJECT;
+
+  public:
+    communication (QObject* parent = NULL);
+
+    void request_action (const QString&, const QString&);
+    void request_layout_hint (const QString&);
+    void request_action_description (const QStringList&);
+    void request_hostlist();
+    void request_status (QStringList);
+
+  signals:
+    void nodes (QStringList);
+    void nodes_details (const QString&, const QString&);
+    void nodes_state (const QString&, const QString&);
+    void states_actions_long_text (const QString&, const QString&);
+    void states_add (const QString&, const QStringList&);
+    void states_layout_hint_border (const QString&, const QColor&);
+    void states_layout_hint_character (const QString&, const char&);
+    void states_layout_hint_color (const QString&, const QColor&);
+
+  private slots:
+    void check_for_incoming_messages();
+
+  private:
+    void possible_status (fhg::util::parse::position&);
+    void action_description (fhg::util::parse::position&, const QString&);
+    void layout_hint (fhg::util::parse::position&, const QString&);
+    void status_update (fhg::util::parse::position&, const QString&);
+
+    async_tcp_communication* _connection;
+  };
+
   class node_state_widget : public QWidget
   {
     Q_OBJECT;
@@ -184,8 +219,15 @@ namespace prefix
     virtual bool event (QEvent*);
 
   private slots:
-    void check_for_incoming_messages();
     void refresh_stati();
+    void nodes (QStringList);
+    void nodes_details (const QString&, const QString&);
+    void nodes_state (const QString&, const QString&);
+    void states_actions_long_text (const QString&, const QString&);
+    void states_add (const QString&, const QStringList&);
+    void states_layout_hint_border (const QString&, const QColor&);
+    void states_layout_hint_character (const QString&, const char&);
+    void states_layout_hint_color (const QString&, const QColor&);
 
   private:
     QMap<QString, QString> _long_action;
@@ -194,11 +236,6 @@ namespace prefix
     QList<QString> _nodes_to_update;
 
     void update (int node);
-
-    void possible_status (fhg::util::parse::position&);
-    void action_description (fhg::util::parse::position&, const QString&);
-    void layout_hint (fhg::util::parse::position&, const QString&);
-    void status_update (fhg::util::parse::position&, const QString&);
 
     QVector<node_type> _nodes;
     QMap<QString, state_description> _states;
@@ -212,7 +249,7 @@ namespace prefix
     boost::optional<int> node_at (int x, int y) const;
     int node_count() const;
 
-    async_tcp_communication* _connection;
+    communication* _communication;
   };
 }
 
