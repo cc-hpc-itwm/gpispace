@@ -931,29 +931,32 @@ namespace prefix
         {
           QMenu context_menu;
           const node_type& n (node (*node_index));
-          foreach (const QString& action, state (n.state())._actions)
+          if (!state (n.state())._actions.empty())
           {
-            fhg::util::qt::boost_connect<void (void)>
-              ( context_menu.addAction
-                ( QString ( _long_action.contains (action)
-                          ? _long_action[action]
-                          : action
-                          )
-                .replace ("{hostname}", n.hostname())
-                )
-              , SIGNAL (triggered())
-              , _communication
-              , boost::bind ( &communication::request_action
-                            , _communication
-                            , n.hostname()
-                            , action
+            foreach (const QString& action, state (n.state())._actions)
+            {
+              fhg::util::qt::boost_connect<void (void)>
+                ( context_menu.addAction
+                  ( QString ( _long_action.contains (action)
+                            ? _long_action[action]
+                            : action
                             )
-              );
+                  .replace ("{hostname}", n.hostname())
+                  )
+                , SIGNAL (triggered())
+                , _communication
+                , boost::bind ( &communication::request_action
+                              , _communication
+                              , n.hostname()
+                              , action
+                              )
+                );
+            }
+            _communication->pause();
+            context_menu.exec (context_menu_event->globalPos());
+            _communication->resume();
+            return true;
           }
-          _communication->pause();
-          context_menu.exec (context_menu_event->globalPos());
-          _communication->resume();
-          return true;
         }
 
         event->ignore();
