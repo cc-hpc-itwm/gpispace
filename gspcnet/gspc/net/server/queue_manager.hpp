@@ -10,6 +10,7 @@
 
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/user_fwd.hpp>
+#include <gspc/net/frame_handler.hpp>
 #include <gspc/net/server/subscription_fwd.hpp>
 #include <gspc/net/server/service_demux_fwd.hpp>
 
@@ -19,13 +20,16 @@ namespace gspc
   {
     namespace server
     {
-      class queue_manager_t
+      class queue_manager_t : public frame_handler_t
       {
       public:
         queue_manager_t ();
         queue_manager_t (service_demux_t & demux);
 
         ~queue_manager_t ();
+
+        int handle_frame (user_ptr, frame const &);
+        int handle_error (user_ptr, boost::system::error_code const&);
 
         /**
            Handle a CONNECT message

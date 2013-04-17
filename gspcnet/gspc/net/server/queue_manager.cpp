@@ -72,6 +72,114 @@ namespace gspc
       }
 
       int
+      queue_manager_t::handle_frame (user_ptr user, frame const &f)
+      {
+        if      (f.get_command () == "CONNECT")
+        {
+          return connect (user, f);
+        }
+        else if (f.get_command () == "SEND")
+        {
+          if (not f.has_header ("destination"))
+          {
+            user->deliver
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
+                                            , "required header 'destination' is missing"
+                                            )
+              );
+            return -EPROTO;
+          }
+
+          return send (user, *f.get_header ("destination"), f);
+        }
+        else if (f.get_command () == "REQUEST")
+        {
+          if (not f.has_header ("destination"))
+          {
+            user->deliver
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
+                                            , "required header 'destination' is missing"
+                                            )
+              );
+            return -EPROTO;
+          }
+
+          return request (user, *f.get_header ("destination"), f);
+        }
+        else if (f.get_command () == "SUBSCRIBE")
+        {
+          if (not f.has_header ("destination"))
+          {
+            user->deliver
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
+                                            , "required header 'destination' is missing"
+                                            )
+              );
+            return -EPROTO;
+          }
+          if (not f.has_header ("id"))
+          {
+            user->deliver
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
+                                            , "required header 'id' is missing"
+                                            )
+              );
+            return -EPROTO;
+          }
+
+          return subscribe ( user
+                           , *f.get_header ("destination")
+                           , *f.get_header ("id")
+                           , f
+                           );
+        }
+        else if (f.get_command () == "UNSUBSCRIBE")
+        {
+          if (not f.has_header ("id"))
+          {
+            user->deliver
+              (gspc::net::make::error_frame ( f
+                                            , gspc::net::E_BAD_REQUEST
+                                            , "required header 'id' is missing"
+                                            )
+              );
+            return -EPROTO;
+          }
+
+          return unsubscribe ( user
+                             , *f.get_header ("id")
+                             , f
+                             );
+        }
+        else if (f.get_command () == "DISCONNECT")
+        {
+          return disconnect (user, f);
+        }
+        else
+        {
+          user->deliver
+            (gspc::net::make::error_frame ( f
+                                          , gspc::net::E_BAD_REQUEST
+                                          , "invalid command '" + f.get_command () + "'"
+                                          )
+            );
+          return -EBADMSG;
+        }
+      }
+
+      int
+      queue_manager_t::handle_error ( user_ptr user
+                                    , boost::system::error_code const &
+                                    )
+      {
+        return disconnect (user);
+      }
+
+      int
       queue_manager_t::connect (user_ptr u, frame const &)
       {
         gspc::net::frame connected =
