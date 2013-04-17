@@ -254,6 +254,8 @@ namespace prefix
     const int old_height (heightForWidth (width()));
 
     QMutableVectorIterator<node_type> i (_nodes);
+
+    bool removed_at_least_one (false);
     while (i.hasNext())
     {
       const QString& hostname (i.next().hostname());
@@ -261,15 +263,20 @@ namespace prefix
       if (index == -1)
       {
         i.remove();
-        update (index);
-        update (_nodes.size());
         _pending_updates.removeAll (hostname);
         _nodes_to_update.removeAll (hostname);
+
+        removed_at_least_one = true;
       }
       else
       {
         hostnames.removeOne (hostname);
       }
+    }
+
+    if (removed_at_least_one)
+    {
+      QWidget::update();
     }
 
     foreach (const QString& hostname, hostnames)
