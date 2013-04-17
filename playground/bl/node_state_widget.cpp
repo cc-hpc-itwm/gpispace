@@ -42,18 +42,20 @@ namespace prefix
       return (qMax (width - 2 * padding, per_step)) / per_step;
     }
 
-    void timer (QObject* parent, int timeout, const char* slot)
+    QTimer* timer (QObject* parent, int timeout, const char* slot)
     {
       QTimer* timer (new QTimer (parent));
       QObject::connect (timer, SIGNAL (timeout()), parent, slot);
       timer->start (timeout);
+      return timer;
     }
-    void timer (QObject* parent, int timeout, boost::function<void()> fun)
+    QTimer* timer (QObject* parent, int timeout, boost::function<void()> fun)
     {
       QTimer* timer (new QTimer (parent));
       fhg::util::qt::boost_connect<void()>
         (timer, SIGNAL (timeout()), parent, fun);
       timer->start (timeout);
+      return timer;
     }
   }
 
