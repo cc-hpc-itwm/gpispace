@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/value/poke.hpp>
+#include <we/type/value/path/split.hpp>
 
 #include <boost/utility.hpp>
 
@@ -56,13 +57,28 @@ namespace pnet
         };
       }
 
-      value_type& poke ( const std::list<std::string>& path
+      value_type& poke ( const std::list<std::string>::const_iterator& key
+                       , const std::list<std::string>::const_iterator& end
                        , value_type& node
                        , const value_type& value
                        )
       {
         return boost::apply_visitor
-          (visitor_poke (path.begin(), path.end(), node, value), node);
+          (visitor_poke (key, end, node, value), node);
+      }
+      value_type& poke ( const std::list<std::string>& path
+                       , value_type& node
+                       , const value_type& value
+                       )
+      {
+        return poke (path.begin(), path.end(), node, value);
+      }
+      value_type& poke ( const std::string& path
+                       , value_type& node
+                       , const value_type& value
+                       )
+      {
+        return poke (path::split (path), node, value);
       }
     }
   }

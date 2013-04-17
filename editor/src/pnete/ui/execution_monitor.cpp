@@ -1,7 +1,5 @@
 #include <pnete/ui/execution_monitor.hpp>
 
-#include <we/loader/putget.hpp>
-#include <we/type/value.hpp>
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/mgmt/type/activity.hpp>
 

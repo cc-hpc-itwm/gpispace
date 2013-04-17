@@ -9,10 +9,10 @@ namespace literal
 {
   namespace cpp
   {
-    const std::string& translate (const type_name_t&);
-    const std::string& include (const type_name_t&);
+    const std::string& translate (const std::string&);
+    const std::string& include (const std::string&);
 
-    bool known (const type_name_t&);
+    bool known (const std::string&);
     bool reserved (const std::string&);
   }
 }

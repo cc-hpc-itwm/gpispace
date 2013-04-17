@@ -302,12 +302,3 @@ BOOST_AUTO_TEST_CASE (ba_assign_from_alien)
   BOOST_CHECK (ba.copy (&f) == sizeof(float));
   BOOST_CHECK (f == 1.0f);
 }
-
-BOOST_AUTO_TEST_CASE (ba_cast_to_alien)
-{
-  bytearray::type ba;
-
-  ba = 1.0f;
-
-  BOOST_CHECK (static_cast<float>(ba) == 1.0f);
-}

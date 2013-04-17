@@ -170,11 +170,11 @@ namespace xml
 
       // ******************************************************************* //
 
-      literal::type_name_t get_literal_type_name::operator () (const literal::type_name_t & t) const
+      std::string get_literal_type_name::operator () (const std::string & t) const
       {
         return t;
       }
-      literal::type_name_t get_literal_type_name::operator () (const signature::structured_t &) const
+      std::string get_literal_type_name::operator () (const signature::structured_t &) const
       {
         throw error::strange
           ("try to get a literal typename from a structured type");
@@ -195,7 +195,7 @@ namespace xml
               , _resolving_function (resolving_function)
           {}
 
-          bool operator() (literal::type_name_t& t) const
+          bool operator() (std::string& t) const
           {
             return literal::valid_name (t);
           }
@@ -206,7 +206,7 @@ namespace xml
             {
               if (!boost::apply_visitor (*this, sub.second))
               {
-                const literal::type_name_t child_name
+                const std::string child_name
                   ( boost::apply_visitor
                     (parse::structure_type::get_literal_type_name(), sub.second)
                   );
@@ -263,7 +263,7 @@ namespace xml
         , sig_set (_sig_set)
       {}
 
-      bool resolve::operator () (literal::type_name_t & t) const
+      bool resolve::operator () (std::string & t) const
       {
         return literal::valid_name (t);
       }
@@ -279,7 +279,7 @@ namespace xml
 
           if (!resolved)
           {
-            const literal::type_name_t child_name
+            const std::string child_name
               (boost::apply_visitor ( get_literal_type_name()
                                     , pos->second
                                     )

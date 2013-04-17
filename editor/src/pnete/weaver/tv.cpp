@@ -367,7 +367,7 @@ namespace fhg
           push (append (name));
         }
         WSIGE(tv, structure::close) { pop(); }
-        WSIG(tv, structure::type, ::literal::type_name_t, type)
+        WSIG(tv, structure::type, ::std::string, type)
         {
           add_type (type);
         }
@@ -575,7 +575,7 @@ namespace fhg
           append_maybe ("code", code);
         }
 
-        WSIG(tv, token::literal::name, ::literal::type_name_t, token)
+        WSIG(tv, token::literal::name, ::std::string, token)
         {
           append (token);
         }

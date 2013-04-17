@@ -49,13 +49,6 @@ namespace fhg
           virtual ~expected() throw() {}
         };
 
-        class signed_unsigned : public generic
-        {
-        public:
-          signed_unsigned (const position&);
-          virtual ~signed_unsigned() throw() {}
-        };
-
         template<typename From, typename To>
           class value_to_big : public generic
         {

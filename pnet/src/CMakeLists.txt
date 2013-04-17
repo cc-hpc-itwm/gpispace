@@ -141,7 +141,6 @@ install (FILES
   COMPONENT sdk
 )
 install (FILES
-  we/type/signature/types.hpp
   DESTINATION include/we/type/signature
   COMPONENT sdk
 )

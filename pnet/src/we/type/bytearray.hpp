@@ -42,15 +42,6 @@ namespace bytearray
 
       return s;
     }
-    template<typename T>
-    operator T() const
-    {
-      T x;
-
-      copy (&x);
-
-      return x;
-    }
 
     std::string to_string() const;
 

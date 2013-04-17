@@ -4,8 +4,6 @@
 #ifndef _WE_TYPE_SIGNATURE_HPP
 #define _WE_TYPE_SIGNATURE_HPP
 
-#include <we/type/signature/types.hpp>
-
 #include <we/type/literal/name.hpp>
 #include <we/type/value/show.hpp>
 #include <fhg/util/show.hpp>
@@ -30,7 +28,7 @@ namespace signature
 {
   struct structured_t;
 
-  typedef boost::variant< literal::type_name_t
+  typedef boost::variant< std::string
                         , boost::recursive_wrapper<structured_t>
                         > desc_t;
 
@@ -38,7 +36,7 @@ namespace signature
   {
   public:
     // ordered map for equality!
-    typedef std::map<field_name_t, desc_t> map_t;
+    typedef std::map<std::string, desc_t> map_t;
     typedef map_t::const_iterator const_iterator;
     typedef map_t::iterator iterator;
 
@@ -52,12 +50,12 @@ namespace signature
       ar & BOOST_SERIALIZATION_NVP(map);
     }
   public:
-    desc_t & operator [] (const field_name_t & field_name)
+    desc_t & operator [] (const std::string& field_name)
     {
       return map[field_name];
     }
 
-    const desc_t & field (const field_name_t & field_name) const
+    const desc_t & field (const std::string & field_name) const
     {
       const_iterator pos (map.find (field_name));
 
@@ -75,7 +73,7 @@ namespace signature
     iterator begin (void) { return map.begin(); }
     iterator end (void) { return map.end(); }
 
-    bool has_field (const field_name_t & field_name) const
+    bool has_field (const std::string & field_name) const
     {
       return map.find (field_name) != map.end();
     }
@@ -95,7 +93,7 @@ namespace signature
         , s (_s)
       {}
 
-      void operator () (const literal::type_name_t & t) const
+      void operator () (const std::string & t) const
       {
         s.open ("field");
         s.attr ("name", name);
@@ -145,7 +143,7 @@ namespace signature
         , s (_s)
       {}
 
-      void operator () (const literal::type_name_t & t) const
+      void operator () (const std::string & t) const
       {
         open();
 
@@ -182,7 +180,7 @@ namespace signature
     public:
       show (std::ostream & _s) : s(_s) {};
 
-      std::ostream & operator () (const literal::type_name_t & t) const
+      std::ostream & operator () (const std::string & t) const
       {
         return s << fhg::util::show (t);
       }
@@ -252,25 +250,25 @@ namespace signature
     class has_field : public boost::static_visitor<bool>
     {
     private:
-      const field_name_t _field;
+      const std::string _field;
 
     public:
-      has_field (const field_name_t & field) : _field (field) {}
+      has_field (const std::string & field) : _field (field) {}
 
       bool operator () (structured_t & m) const { return m.has_field (_field); }
-      bool operator () (literal::type_name_t &) const { return false; }
+      bool operator () (std::string &) const { return false; }
     };
 
     class add_field : public boost::static_visitor<void>
     {
     private:
-      const field_name_t field;
-      const literal::type_name_t type;
+      const std::string field;
+      const std::string type;
       const std::string msg;
 
     public:
-      add_field ( const field_name_t & _field
-                , const literal::type_name_t & _type
+      add_field ( const std::string & _field
+                , const std::string & _type
                 , const std::string & _msg = "signature"
                 )
         : field (_field)
@@ -283,7 +281,7 @@ namespace signature
         map[field] = type;
       }
 
-      void operator () (literal::type_name_t &) const
+      void operator () (std::string &) const
       {
         throw std::runtime_error
           (msg + ": try to add a field to a non-structured " + msg);
@@ -293,11 +291,11 @@ namespace signature
     class get_field : public boost::static_visitor<desc_t &>
     {
     private:
-      const field_name_t field;
+      const std::string field;
       const std::string msg;
 
     public:
-      get_field ( const field_name_t & _field
+      get_field ( const std::string & _field
                 , const std::string & _msg = "signature"
                 )
         : field (_field)
@@ -309,7 +307,7 @@ namespace signature
         return map[field];
       }
 
-      desc_t & operator () (literal::type_name_t &) const
+      desc_t & operator () (std::string &) const
       {
         throw std::runtime_error
           (msg + ": try to get a field from a non-structured " + msg);
@@ -319,7 +317,7 @@ namespace signature
     class create_structured_field : public boost::static_visitor<void>
     {
     private:
-      const field_name_t field;
+      const std::string field;
       const std::string msg;
 
     public:
@@ -343,7 +341,7 @@ namespace signature
         map[field] = structured_t();
       }
 
-      void operator () (literal::type_name_t &) const
+      void operator () (std::string &) const
       {
         throw std::runtime_error
           (msg + ": try to create a field in a non-structured " + msg);
@@ -357,7 +355,7 @@ namespace signature
       : public boost::static_visitor<desc_t &>
     {
     private:
-      const field_name_t field;
+      const std::string field;
       const std::string msg;
 
     public:
@@ -378,7 +376,7 @@ namespace signature
         return map[field];
       }
 
-      desc_t & operator () (literal::type_name_t &) const
+      desc_t & operator () (std::string &) const
       {
         throw std::runtime_error
           (msg + ": try to create a field in a non-structured " + msg);
@@ -389,7 +387,7 @@ namespace signature
     class create_literal_field_visitor : public boost::static_visitor<void>
     {
     private:
-      const field_name_t field;
+      const std::string field;
       const T val;
       const std::string msg;
 
@@ -416,7 +414,7 @@ namespace signature
         map[field] = val;
       }
 
-      void operator () (literal::type_name_t &) const
+      void operator () (std::string &) const
       {
         throw std::runtime_error
           (msg + ": try to create a field in a non-structured " + msg);
