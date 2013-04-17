@@ -82,14 +82,20 @@ namespace gspc
       }
 
       template <class Proto>
-      int base_client<Proto>::send (frame const &f)
+      int base_client<Proto>::send ( std::string const & dst
+                                   , std::string const & body
+                                   )
       {
+        frame f (make::send_frame (header::destination (dst)));
+        f.set_body (body);
+        f.close ();
         return send_raw (f);
       }
 
       template <class Proto>
       int base_client<Proto>::request (frame const &f, frame &rply)
       {
+
         // generate receipt: header
         // add wait object to list of outstanding requests
         // send_raw request
