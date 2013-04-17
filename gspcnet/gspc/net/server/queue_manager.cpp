@@ -83,7 +83,7 @@ namespace gspc
       }
 
       int
-      queue_manager_t::disconnect (user_ptr user, frame const &f)
+      queue_manager_t::disconnect (user_ptr user)
       {
         unique_lock lock (m_subscription_mutex);
 
@@ -108,11 +108,20 @@ namespace gspc
           }
           delete sub;
         }
+
         m_user_subscriptions.erase (user);
+
+        return 0;
+      }
+
+      int
+      queue_manager_t::disconnect (user_ptr user, frame const &f)
+      {
+        int rc = disconnect (user);
 
         s_maybe_send_receipt (user, f);
 
-        return 0;
+        return rc;
       }
 
       int queue_manager_t::send ( user_ptr user

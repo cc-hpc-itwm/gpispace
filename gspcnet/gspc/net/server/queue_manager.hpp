@@ -36,6 +36,7 @@ namespace gspc
            Handle a DISCONNECT message
         */
         int disconnect (user_ptr u, frame const &);
+        int disconnect (user_ptr u);
 
         int send ( user_ptr u
                  , std::string const & dst
