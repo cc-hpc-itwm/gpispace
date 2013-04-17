@@ -778,7 +778,9 @@ namespace prefix
                             )
               );
           }
+          _communication->pause();
           context_menu.exec (context_menu_event->globalPos());
+          _communication->resume();
           return true;
         }
 
