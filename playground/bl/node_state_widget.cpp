@@ -62,15 +62,25 @@ namespace prefix
   communication::communication (QObject* parent)
     : QObject (parent)
     , _connection (new async_tcp_communication)
+    , _timer (NULL)
   {
-    timer (this, 100, SLOT (check_for_incoming_messages()));
-
+    resume();
     _connection->push ("possible_status_list");
   }
 
   void communication::request_hostlist()
   {
     _connection->push ("host_list");
+  }
+
+  void communication::pause()
+  {
+    delete _timer;
+  }
+
+  void communication::resume()
+  {
+    _timer = timer (this, 100, SLOT (check_for_incoming_messages()));
   }
 
   legend::legend (QWidget* parent)

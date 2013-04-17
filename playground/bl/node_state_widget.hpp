@@ -207,6 +207,9 @@ namespace prefix
     void request_hostlist();
     void request_status (QStringList);
 
+    void pause();
+    void resume();
+
   signals:
     void nodes (QStringList);
     void nodes_details (const QString&, const QString&);
@@ -227,6 +230,8 @@ namespace prefix
     void status_update (fhg::util::parse::position&, const QString&);
 
     async_tcp_communication* _connection;
+
+    QTimer* _timer;
   };
 
   class node_state_widget : public QWidget
