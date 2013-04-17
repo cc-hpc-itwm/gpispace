@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connection_refused)
 {
-  BOOST_CHECK_THROW ( gspc::net::dial ("unix://socket.foo")
+  BOOST_CHECK_THROW ( gspc::net::dial ("unix://this.socket.does.not.exist")
                     , boost::system::system_error
                     );
 }
