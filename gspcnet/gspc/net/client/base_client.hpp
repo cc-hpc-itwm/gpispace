@@ -9,6 +9,8 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
+#include <fhg/util/thread/atomic.hpp>
+
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_handler.hpp>
 #include <gspc/net/parse/parser.hpp>
@@ -65,6 +67,8 @@ namespace gspc
         typedef std::vector<thread_ptr_t>        thread_pool_t;
         size_t                                   m_thread_pool_size;
         thread_pool_t                            m_thread_pool;
+
+        fhg::thread::atomic<size_t> m_message_id;
       };
     }
   }

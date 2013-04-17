@@ -22,6 +22,7 @@ namespace gspc
         , m_frame_handler (&dummy_frame_handler ())
         , m_thread_pool_size (1)
         , m_thread_pool ()
+        , m_message_id (0)
       {}
 
       template <class Proto>
