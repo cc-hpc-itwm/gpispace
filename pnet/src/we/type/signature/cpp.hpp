@@ -604,15 +604,6 @@ namespace signature
       os << "}"                                   << std::endl;
     }
 
-    template<typename Stream>
-    void cpp_show ( Stream& os
-                  , const type & s
-                  , const unsigned int & l = 0
-                  )
-    {
-      cpp_show (os, s, s.nice(), l);
-    }
-
     // ********************************************************************* //
 
     template<typename Stream>
