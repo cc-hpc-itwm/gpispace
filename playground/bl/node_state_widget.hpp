@@ -228,6 +228,7 @@ namespace prefix
     void action_description (fhg::util::parse::position&, const QString&);
     void layout_hint (fhg::util::parse::position&, const QString&);
     void status_update (fhg::util::parse::position&, const QString&);
+    void action_result (fhg::util::parse::position&);
 
     async_tcp_communication* _connection;
 

@@ -16,6 +16,7 @@
 #include <QScrollBar>
 #include <QToolTip>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
@@ -500,6 +501,146 @@ namespace prefix
     }
   }
 
+  namespace
+  {
+    struct action_result_data
+    {
+      enum result_code
+      {
+        okay,
+        fail,
+        warn,
+      };
+
+      action_result_data (const QString& host, const QString& action)
+        : _host (host)
+        , _action (action)
+        , _result (boost::none)
+        , _message (boost::none)
+      { }
+
+      QString _host;
+      QString _action;
+      boost::optional<result_code> _result;
+      boost::optional<QString> _message;
+
+      void append (fhg::util::parse::position& pos)
+      {
+        pos.skip_spaces();
+
+        if (pos.end() || (*pos != 'm' && *pos != 'r'))
+        {
+          throw fhg::util::parse::error::expected ("message' or 'result", pos);
+        }
+
+        switch (*pos)
+        {
+        case 'm':
+          ++pos;
+          pos.require ("essage");
+          require::token (pos, ":");
+
+          _message = require::qstring (pos);
+
+          break;
+
+        case 'r':
+          ++pos;
+          pos.require ("esult");
+          require::token (pos, ":");
+
+          {
+            pos.skip_spaces();
+
+            if (pos.end() || (*pos != 'f' && *pos != 'o' && *pos != 'w'))
+            {
+              throw fhg::util::parse::error::expected
+                ("fail' or 'okay' or 'warn", pos);
+            }
+
+            switch (*pos)
+            {
+            case 'f':
+              ++pos;
+              pos.require ("ail");
+
+              _result = fail;
+
+              break;
+
+            case 'o':
+              ++pos;
+              pos.require ("kay");
+
+              _result = okay;
+
+              break;
+
+            case 'w':
+              ++pos;
+              pos.require ("arn");
+
+              _result = warn;
+
+              break;
+            }
+          }
+
+          break;
+        }
+      }
+
+      void show_in_messagebox() const
+      {
+        if (!_result)
+        {
+          throw std::runtime_error ("action result without result code");
+        }
+
+        const QString title ( QString ("\"%1\" on \"%2\"")
+                            .arg (_action)
+                            .arg (_host)
+                            );
+        QString message ( _message.get_value_or ( *_result == okay ? "okay"
+                                                : *_result == warn ? "warn"
+                                                : *_result == fail ? "fail"
+                                                : "UNKNOWN RESULT"
+                                                )
+                        );
+
+        switch (*_result)
+        {
+        case okay:
+          QMessageBox::information (NULL, title, message);
+          break;
+
+        case fail:
+          QMessageBox::critical (NULL, title, message);
+          break;
+
+        case warn:
+          QMessageBox::warning (NULL, title, message);
+          break;
+        }
+      }
+    };
+  }
+
+  void communication::action_result (fhg::util::parse::position& pos)
+  {
+    require::token (pos, "(");
+    const QString host (require::qstring (pos));
+    require::token (pos, ",");
+    const QString action (require::qstring (pos));
+    require::token (pos, ")");
+    require::token (pos, ":");
+
+    action_result_data result (host, action);
+    require::list (pos, boost::bind (&action_result_data::append, &result, _1));
+
+    result.show_in_messagebox();
+  }
+
   void communication::check_for_incoming_messages()
   {
     const async_tcp_communication::messages_type messages (_connection->get());
@@ -525,14 +666,36 @@ namespace prefix
         {
         case 'a':
           ++pos;
-          pos.require ("ction_description");
-          require::token (pos, ":");
+          pos.require ("ction_");
 
-          require::list_of_named_lists
-            ( pos
-            , boost::bind (&communication::action_description, this, _1, _2)
-            );
+          if (pos.end() || (*pos != 'd' && *pos != 'r'))
+          {
+            throw fhg::util::parse::error::expected
+              ("description' or 'result", pos);
+          }
 
+          switch (*pos)
+          {
+          case 'd':
+            ++pos;
+            pos.require ("escription");
+            require::token (pos, ":");
+
+            require::list_of_named_lists
+              ( pos
+              , boost::bind (&communication::action_description, this, _1, _2)
+              );
+
+            break;
+
+          case 'r':
+            ++pos;
+            pos.require ("esult");
+            require::token (pos, ":");
+
+            require::list
+              (pos, boost::bind (&communication::action_result, this, _1));
+          }
           break;
 
         case 'h':
