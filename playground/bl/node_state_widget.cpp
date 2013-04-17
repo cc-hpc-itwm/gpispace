@@ -751,7 +751,12 @@ namespace prefix
           {
             fhg::util::qt::boost_connect<void (void)>
               ( context_menu.addAction
-                (_long_action.contains (action) ? _long_action[action] : action)
+                ( QString ( _long_action.contains (action)
+                          ? _long_action[action]
+                          : action
+                          )
+                .replace ("{hostname}", n.hostname())
+                )
               , SIGNAL (triggered())
               , _communication
               , boost::bind ( &communication::request_action

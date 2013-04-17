@@ -67,7 +67,7 @@ namespace
     return action == "add_to_working_set"
       ? "add this node to the working set"
       : action == "reboot"
-      ? "reboot node"
+      ? "reboot {hostname}"
       : action == "remove_from_working_set"
       ? "remove this node from the working set"
       : action == "foo"
