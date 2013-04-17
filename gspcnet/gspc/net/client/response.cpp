@@ -49,14 +49,21 @@ namespace gspc
         m_wait_object.notify_all ();
       }
 
-      void response_t::abort ()
+      void response_t::abort (boost::system::error_code const &ec)
       {
         boost::unique_lock<boost::mutex> lock (m_mutex);
         assert (! m_reply);
         assert (! m_aborted);
 
+        m_ec = ec;
         m_aborted = true;
         m_wait_object.notify_all ();
+      }
+
+      boost::system::error_code const &response_t::error () const
+      {
+        boost::unique_lock<boost::mutex> lock (m_mutex);
+        return m_ec;
       }
 
       std::string const &response_t::id () const

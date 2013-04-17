@@ -5,6 +5,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include <boost/system/error_code.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <gspc/net/frame.hpp>
@@ -25,7 +26,8 @@ namespace gspc
         bool wait (boost::posix_time::time_duration timeout);
 
         void notify (frame const &);
-        void abort ();
+        void abort (boost::system::error_code const &ec);
+        boost::system::error_code const & error () const;
         std::string const &id () const;
 
         boost::optional<frame> const & get_reply () const;
@@ -36,6 +38,7 @@ namespace gspc
         mutable boost::mutex      m_mutex;
         boost::condition_variable m_wait_object;
         std::string               m_id;
+        boost::system::error_code m_ec;
       };
     }
   }
