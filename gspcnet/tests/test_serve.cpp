@@ -12,6 +12,8 @@
 #include <gspc/net/server.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 
+#include "mock_user.hpp"
+
 namespace fs = boost::filesystem;
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
@@ -104,4 +106,62 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connection_refused)
   BOOST_CHECK_THROW ( gspc::net::dial ("unix://this.socket.does.not.exist")
                     , boost::system::system_error
                     );
+}
+
+BOOST_AUTO_TEST_CASE (test_serve_send_unix)
+{
+  static const std::size_t NUM_MSGS_TO_SEND = 10000;
+  using namespace gspc::net::tests;
+
+  gspc::net::server::queue_manager_t qmgr;
+  mock::user subscriber;
+  qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
+
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("unix://socket.foo", qmgr);
+  BOOST_REQUIRE (server);
+
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  BOOST_REQUIRE (client);
+
+  for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
+    client->send ("/test/send", "hello world!");
+
+  while (subscriber.frames.size () != NUM_MSGS_TO_SEND)
+  {
+    usleep (100);
+  }
+
+  BOOST_REQUIRE_EQUAL ( subscriber.frames.size ()
+                      , NUM_MSGS_TO_SEND
+                      );
+}
+
+BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
+{
+  static const std::size_t NUM_MSGS_TO_SEND = 10000;
+  using namespace gspc::net::tests;
+
+  gspc::net::server::queue_manager_t qmgr;
+  mock::user subscriber;
+  qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
+
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("tcp://localhost:*", qmgr);
+  BOOST_REQUIRE (server);
+
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  BOOST_REQUIRE (client);
+
+  for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
+    client->send ("/test/send", "hello world!");
+
+  while (subscriber.frames.size () != NUM_MSGS_TO_SEND)
+  {
+    usleep (100);
+  }
+
+  BOOST_REQUIRE_EQUAL ( subscriber.frames.size ()
+                      , NUM_MSGS_TO_SEND
+                      );
 }
