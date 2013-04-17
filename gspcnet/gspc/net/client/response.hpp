@@ -18,13 +18,15 @@ namespace gspc
       class response_t : boost::noncopyable
       {
       public:
-        response_t ();
+        explicit
+        response_t (std::string const &id);
 
         void wait ();
         bool wait (boost::posix_time::time_duration timeout);
 
         void notify (frame const &);
         void abort ();
+        std::string const &id () const;
 
         boost::optional<frame> const & get_reply () const;
         bool is_aborted () const;
@@ -33,6 +35,7 @@ namespace gspc
         boost::optional<frame>    m_reply;
         mutable boost::mutex      m_mutex;
         boost::condition_variable m_wait_object;
+        std::string               m_id;
       };
     }
   }

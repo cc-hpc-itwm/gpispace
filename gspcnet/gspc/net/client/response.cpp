@@ -6,11 +6,12 @@ namespace gspc
   {
     namespace client
     {
-      response_t::response_t ()
+      response_t::response_t (std::string const &id)
         : m_aborted (false)
         , m_reply ()
         , m_mutex ()
         , m_wait_object ()
+        , m_id (id)
       {}
 
       void response_t::wait ()
@@ -56,6 +57,11 @@ namespace gspc
 
         m_aborted = true;
         m_wait_object.notify_all ();
+      }
+
+      std::string const &response_t::id () const
+      {
+        return m_id;
       }
 
       boost::optional<frame> const & response_t::get_reply () const
