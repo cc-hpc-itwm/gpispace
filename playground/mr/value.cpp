@@ -15,9 +15,11 @@
 #include <we/type/value/signature/name_of.hpp>
 #include <we/type/value/signature/of_type.hpp>
 #include <we/type/value/signature/show.hpp>
+#include <we/type/value/signature/cpp/struct.hpp>
 
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/num.hpp>
+#include <fhg/util/indenter.hpp>
 
 #include <sstream>
 
@@ -508,4 +510,46 @@ BOOST_AUTO_TEST_CASE (require_type)
   BOOST_CHECK_THROW (require_type (sig, val), type_mismatch);
 
 #undef OKAY
+}
+
+BOOST_AUTO_TEST_CASE (signature_cpp_struct)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::signature_type;
+  using pnet::type::value::poke;
+  using pnet::type::value::as_struct;
+
+  signature_type sig;
+
+  poke ("a", sig, 0);
+  poke ("b.a", sig, std::string());
+  poke ("b.b", sig, std::list<value_type>());
+  poke ("b.c.a.a", sig, 0U);
+  poke ("b.c.a.b", sig, 0L);
+  poke ("b.c.a.d", sig, std::map<value_type,value_type>());
+
+  fhg::util::indenter indent;
+
+  const std::string expected
+    ( "struct {\n"
+      "  int a;\n"
+      "  struct {\n"
+      "    string a;\n"
+      "    list b;\n"
+      "    struct {\n"
+      "      struct {\n"
+      "        unsigned int a;\n"
+      "        long b;\n"
+      "        map d;\n"
+      "      } a;\n"
+      "    } c;\n"
+      "  } b;\n"
+      "}"
+    );
+
+  std::ostringstream oss;
+
+  oss << as_struct (sig, indent);
+
+  BOOST_CHECK_EQUAL (oss.str(), expected);
 }
