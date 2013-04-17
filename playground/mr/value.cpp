@@ -317,7 +317,6 @@ BOOST_AUTO_TEST_CASE (peek_ref)
   using pnet::type::value::value_type;
   using pnet::type::value::poke;
   using pnet::type::value::peek;
-  using pnet::type::value::peek_ref;
 
   const value_type l = std::list<value_type>();
 
@@ -333,11 +332,11 @@ BOOST_AUTO_TEST_CASE (peek_ref)
     BOOST_CHECK (g.empty());
   }
 
-  BOOST_CHECK (peek_ref ("l", m));
+  BOOST_CHECK (peek ("l", m));
 
   {
     std::list<value_type>& r
-      (boost::get<std::list<value_type>&> (*peek_ref ("l", m)));
+      (boost::get<std::list<value_type>&> (*peek ("l", m)));
 
     BOOST_CHECK (r.empty());
 
