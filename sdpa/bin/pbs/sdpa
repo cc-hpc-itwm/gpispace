@@ -2164,10 +2164,6 @@ case "$1" in
         restart drts
         ;;
     boot)
-        "$0" -s "$state_dir" -c "$config_file" init </dev/null || {
-            echo >&2 "sdpa: could not initialize!"
-            exit 1
-        }
         shift
         "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -F "$config_file" "$@"
         ;;
