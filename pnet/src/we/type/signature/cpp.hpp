@@ -667,15 +667,6 @@ namespace signature
 
       cpp_util::include_guard_end (os, "PNETC_TYPE_" + n);
     }
-
-    template<typename Stream>
-    void cpp_header (Stream& os, const type & s)
-    {
-      cpp_header<Stream> ( os, s, s.nice()
-                         , boost::filesystem::path ("<unknown>")
-                         , boost::filesystem::path ("")
-                         );
-    }
   }
 }
 
