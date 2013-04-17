@@ -24,6 +24,7 @@ add_library (we-value
   we/type/value/signature/name_of.cpp
   we/type/value/signature/of_type.cpp
   we/type/value/signature/show.cpp
+  we/type/value/signature/cpp/struct.cpp
 )
 
 fhg_add_test (value.cpp
