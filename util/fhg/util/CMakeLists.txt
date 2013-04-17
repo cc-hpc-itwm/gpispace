@@ -65,6 +65,7 @@ set (srcs
   parse/error.cpp
 
   num.cpp
+  indenter.cpp
 )
 
 add_library (fhg-util ${srcs})
