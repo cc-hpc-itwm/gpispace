@@ -101,6 +101,10 @@ namespace gspc
           {
             port.push_back (c);
           }
+          else if (c == '*')
+          {
+            port = c;
+          }
           else
           {
             mode = PARSE_FAILED;

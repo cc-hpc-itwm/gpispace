@@ -49,6 +49,11 @@ namespace gspc
           return endpoint_type ();
       }
 
+      if (port == "*")
+      {
+        port = "0";
+      }
+
       boost::asio::io_service io_service;
       tcp::resolver r (io_service);
       tcp::resolver::query query ( host
