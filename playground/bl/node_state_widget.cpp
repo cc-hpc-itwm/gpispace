@@ -159,8 +159,17 @@ namespace prefix
   {
     const int per_row (items_per_row (width()));
 
+    QToolTip::hideText();
+
     QWidget::update
       (rect_for_node (node, per_row).toRect().adjusted (-1, -1, 1, 1));
+  }
+
+  void node_state_widget::update()
+  {
+    QToolTip::hideText();
+
+    QWidget::update();
   }
 
   void legend::states_add
@@ -288,7 +297,7 @@ namespace prefix
 
     if (removed_at_least_one)
     {
-      QWidget::update();
+      update();
     }
 
     foreach (const QString& hostname, hostnames)

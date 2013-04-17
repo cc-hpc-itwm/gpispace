@@ -265,6 +265,7 @@ namespace prefix
     QList<QString> _nodes_to_update;
 
     void update (int node);
+    void update();
 
     QVector<node_type> _nodes;
 
