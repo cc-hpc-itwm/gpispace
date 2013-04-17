@@ -1,6 +1,7 @@
 #ifndef GSPC_NET_SERVER_BASE_CLIENT_HPP
 #define GSPC_NET_SERVER_BASE_CLIENT_HPP
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include <gspc/net/parse/parser.hpp>
 
 #include <gspc/net/client.hpp>
+#include <gspc/net/client/response_fwd.hpp>
 #include <gspc/net/common/base_connection.hpp>
 
 namespace gspc
@@ -57,6 +59,12 @@ namespace gspc
         int handle_frame (user_ptr, frame const &);
         int handle_error (user_ptr, boost::system::error_code const &);
       private:
+        typedef boost::unique_lock<boost::shared_mutex> unique_lock;
+        typedef boost::shared_lock<boost::shared_mutex> shared_lock;
+
+        typedef boost::shared_ptr<response_t> response_ptr;
+        typedef std::map<std::string, response_ptr> response_map_t;
+
         boost::asio::io_service         m_io_service;
         endpoint_type                   m_endpoint;
         connection_ptr_t                m_connection;
@@ -69,6 +77,9 @@ namespace gspc
         thread_pool_t                            m_thread_pool;
 
         fhg::thread::atomic<size_t> m_message_id;
+
+        mutable boost::shared_mutex m_responses_mutex;
+        response_map_t              m_responses;
       };
     }
   }

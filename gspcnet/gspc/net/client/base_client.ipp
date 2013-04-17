@@ -4,9 +4,12 @@
 #include <fhg/assert.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/client/dummy_frame_handler.hpp>
+
+#include <gspc/net/client/response.hpp>
 
 namespace gspc
 {
@@ -23,6 +26,8 @@ namespace gspc
         , m_thread_pool_size (1)
         , m_thread_pool ()
         , m_message_id (0)
+        , m_responses_mutex ()
+        , m_responses ()
       {}
 
       template <class Proto>
@@ -96,12 +101,47 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::request (frame const &f, frame &rply)
       {
+        int rc = 0;
 
-        // generate receipt: header
-        // add wait object to list of outstanding requests
-        // send_raw request
-        // wait on wait object
-        return -ENOTSUP;
+        response_ptr response
+          (new response_t ( "message-"
+                          + boost::lexical_cast<std::string>(++m_message_id)
+                          ));
+
+        frame to_send (f);
+        to_send.set_command ("REQUEST");
+        gspc::net::header::receipt (response->id ()).apply_to (to_send);
+
+        {
+          unique_lock lock (m_responses_mutex);
+          m_responses [response->id ()] = response;
+        }
+
+        rc = send_raw (to_send);
+        if (0 == rc)
+        {
+          response->wait ();
+        }
+        else
+        {
+          rc = -EIO;
+        }
+
+        {
+          unique_lock lock (m_responses_mutex);
+          m_responses.erase (response->id ());
+        }
+
+        if (response->get_reply ())
+        {
+          rply = *response->get_reply ();
+        }
+        else
+        {
+          return -ETIME;
+        }
+
+        return rc;
       }
 
       template <class Proto>
@@ -125,6 +165,18 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::handle_frame (user_ptr user, frame const &f)
       {
+        if (f.has_header ("receipt-id"))
+        {
+          shared_lock lock (m_responses_mutex);
+          const response_map_t::iterator response_it =
+            m_responses.find (*f.get_header ("receipt-id"));
+          if (response_it != m_responses.end ())
+          {
+            response_it->second->notify (f);
+            return 0;
+          }
+        }
+
         return m_frame_handler->handle_frame (user, f);
       }
 
