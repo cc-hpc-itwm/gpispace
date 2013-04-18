@@ -4,6 +4,8 @@
 
 #include <we/type/value/signature/name_of.hpp>
 
+#include <fhg/util/cpp/block.hpp>
+
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
@@ -24,52 +26,6 @@ namespace pnet
 
       namespace
       {
-        class block_open
-        {
-        public:
-          block_open (fhg::util::indenter& indent)
-            : _indent (indent)
-            , _tag (boost::none)
-          {}
-          block_open (fhg::util::indenter& indent, const std::string tag)
-            : _indent (indent)
-            , _tag (tag)
-          {}
-          std::ostream& operator() (std::ostream& os) const
-          {
-            return _tag
-              ? os << _indent++ << *_tag << " {"
-              : os << _indent++ << "{"
-              ;
-          }
-        private:
-          fhg::util::indenter& _indent;
-          const boost::optional<std::string> _tag;
-        };
-        std::ostream& operator<< (std::ostream& os, const block_open& b)
-        {
-          return b (os);
-        }
-
-        class block_close
-        {
-        public:
-          block_close (fhg::util::indenter& indent)
-            : _indent (indent)
-          {}
-
-          std::ostream& operator() (std::ostream& os) const
-          {
-            return os << --_indent << "}";
-          }
-        private:
-          fhg::util::indenter& _indent;
-        };
-        std::ostream& operator<< (std::ostream& os, const block_close& b)
-        {
-          return b (os);
-        }
-
         class visitor_struct : public boost::static_visitor<std::ostream&>
         {
         public:
@@ -80,13 +36,15 @@ namespace pnet
 
           std::ostream& operator() (const structured_type& m) const
           {
-            _os << block_open (_indent, "struct") << std::endl;
+            namespace block = fhg::util::cpp::block;
+
+            _os << block::open (_indent, "struct") << std::endl;
             BOOST_FOREACH (const structured_type::value_type& nv, m)
-              {
-                boost::apply_visitor (*this, nv.second);
-                _os << " " << nv.first << ";" << std::endl;
-              }
-            return _os << block_close (_indent);
+            {
+              boost::apply_visitor (*this, nv.second);
+              _os << " " << nv.first << ";" << std::endl;
+            }
+            return _os << block::close (_indent);
           }
 
           template<typename T>
