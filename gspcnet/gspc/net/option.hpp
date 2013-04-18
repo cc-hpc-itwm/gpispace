@@ -3,6 +3,8 @@
 
 #include <string>
 #include <fhg/util/url.hpp>
+
+#include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
 
 namespace gspc
