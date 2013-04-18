@@ -12,6 +12,8 @@ namespace gspc
       std::size_t max_command_length ();
       std::size_t max_header_key_length ();
       std::size_t max_header_value_length ();
+
+      std::size_t max_pending_frames_per_connection ();
     }
   }
 }

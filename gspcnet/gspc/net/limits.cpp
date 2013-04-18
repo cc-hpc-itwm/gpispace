@@ -20,6 +20,11 @@ namespace gspc
       {
         return 4096;
       }
+
+      std::size_t max_pending_frames_per_connection ()
+      {
+        return 8192u;
+      }
     }
   }
 }
