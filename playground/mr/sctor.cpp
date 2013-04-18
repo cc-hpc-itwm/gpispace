@@ -1,12 +1,14 @@
+// mirko.rahn@itwm.fraunhofer.de
+
 #include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/show.hpp>
 #include <we/type/value/exception.hpp>
+
 #include <iostream>
 
 using pnet::type::value::value_type;
 using pnet::type::value::structured_type;
-using pnet::type::value::poke;
 using pnet::type::value::exception::missing_field;
 using pnet::type::value::exception::type_mismatch;
 
@@ -43,7 +45,7 @@ namespace
     template<typename X>
     const T& operator() (const X& x) const
     {
-      throw missing_field (T(), _path);
+      throw type_mismatch (T(), x, _path);
     }
 
   private:
@@ -51,7 +53,8 @@ namespace
     const std::string _field;
   };
   template<>
-  class visitor_field<value_type> : public boost::static_visitor<const value_type&>
+  class visitor_field<value_type>
+    : public boost::static_visitor<const value_type&>
   {
   public:
     visitor_field ( const std::list<std::string>& path
@@ -74,34 +77,34 @@ namespace
     template<typename X>
     const value_type& operator() (const X& x) const
     {
-      throw missing_field (structured_type(), _path);
+      throw type_mismatch (structured_type(), x, _path);
     }
 
   private:
     const std::list<std::string>& _path;
     const std::string _field;
   };
-}
 
-class append
-{
-public:
-  append (std::list<std::string>& path, const std::string& x)
-    : _path (path)
+  class append
   {
-    _path.push_back (x);
-  }
-  ~append()
-  {
-    _path.pop_back();
-  }
-  operator std::list<std::string>& () const
-  {
-    return _path;
-  }
-private:
-  std::list<std::string>& _path;
-};
+  public:
+    append (std::list<std::string>& path, const std::string& x)
+      : _path (path)
+    {
+      _path.push_back (x);
+    }
+    ~append()
+    {
+      _path.pop_back();
+    }
+    operator std::list<std::string>& () const
+    {
+      return _path;
+    }
+  private:
+    std::list<std::string>& _path;
+  };
+}
 
 template<typename T>
 const T& field ( std::list<std::string>& path
@@ -112,6 +115,7 @@ const T& field ( std::list<std::string>& path
   return boost::apply_visitor (visitor_field<T> (append (path, f), f), v);
 }
 
+// to be generated
 namespace z
 {
   namespace y
@@ -123,9 +127,7 @@ namespace z
         float f;
         std::string s;
 
-        type ( const value_type& v
-             , std::list<std::string>& path
-             )
+        type (const value_type& v, std::list<std::string>& path)
           : f (field<float> (path, "f", v))
           , s (field<std::string> (path, "s", v))
         {}
@@ -137,9 +139,7 @@ namespace z
       x::type x;
       int i;
 
-      type ( const value_type& v
-           , std::list<std::string>& path
-           )
+      type (const value_type& v, std::list<std::string>& path)
         : x (field<value_type> (path, "x", v), append (path, "x"))
         , i (field<int> (path, "i", v))
       {}
@@ -152,9 +152,7 @@ namespace z
     y::type y;
     y::type yy;
 
-    type ( const value_type& v
-         , std::list<std::string>& path
-         )
+    type (const value_type& v, std::list<std::string>& path)
       : l (field<std::list<value_type> > (path, "l", v))
       , y (field<value_type> (path, "y", v), append (path, "y"))
       , yy (field<value_type> (path, "yy", v), append (path, "yy"))
@@ -164,6 +162,8 @@ namespace z
 
 int main ()
 {
+  using pnet::type::value::poke;
+
   value_type v;
 
   poke ("l", v, std::list<value_type>());
