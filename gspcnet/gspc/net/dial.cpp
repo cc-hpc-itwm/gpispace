@@ -7,6 +7,7 @@
 
 #include <fhg/util/url.hpp>
 
+#include <gspc/net/option.hpp>
 #include <gspc/net/resolver.hpp>
 #include <gspc/net/client.hpp>
 
@@ -17,8 +18,16 @@ namespace gspc
 {
   namespace net
   {
+    template <typename Client>
+    void s_set_options ( Client *client
+                       , option_map_t const &opts
+                       , boost::system::error_code & ec
+                       )
+    {}
+
     static
     client_ptr_t s_new_unix_client ( std::string const & path
+                                   , option_map_t const &opts
                                    , boost::system::error_code & ec
                                    )
     {
@@ -37,7 +46,9 @@ namespace gspc
         if (ec)
           return client_ptr_t ();
 
-        return client_ptr_t (new unix_client (ep));
+        unix_client *c = new unix_client (ep);
+        s_set_options (c, opts, ec);
+        return client_ptr_t (c);
       }
       catch (boost::system::system_error const &se)
       {
@@ -49,6 +60,7 @@ namespace gspc
 
     static
     client_ptr_t s_new_tcp_client ( std::string const & location
+                                  , option_map_t const &opts
                                   , boost::system::error_code & ec
                                   )
     {
@@ -63,7 +75,9 @@ namespace gspc
         if (ec)
           return client_ptr_t ();
 
-        return client_ptr_t (new tcp_client (ep));
+        tcp_client *c = new tcp_client (ep);
+        s_set_options (c, opts, ec);
+        return client_ptr_t (c);
       }
       catch (boost::system::system_error const &se)
       {
@@ -100,11 +114,11 @@ namespace gspc
 
       if (url.type () == "unix")
       {
-        client = s_new_unix_client (url.path (), ec);
+        client = s_new_unix_client (url.path (), url.args (), ec);
       }
       else if (url.type () == "tcp")
       {
-        client = s_new_tcp_client (url.path (), ec);
+        client = s_new_tcp_client (url.path (), url.args (), ec);
       }
       else
       {
