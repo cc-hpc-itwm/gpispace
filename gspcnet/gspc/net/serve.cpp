@@ -17,8 +17,18 @@ namespace gspc
 {
   namespace net
   {
+    typedef fhg::util::url_t::arg_map_t option_map_t;
+
+    template <typename Server>
+    void s_set_options ( Server *server
+                       , option_map_t const &opts
+                       , boost::system::error_code & ec
+                       )
+    {}
+
     static
     server_ptr_t s_new_unix_server ( std::string const & path
+                                   , option_map_t const &opts
                                    , server::queue_manager_t &qmgr
                                    , boost::system::error_code & ec
                                    )
@@ -36,8 +46,9 @@ namespace gspc
 
         if (not ec)
         {
-          return server_ptr_t
-            (new server::unix_server (ep, qmgr));
+          server::unix_server *s = new server::unix_server (ep, qmgr);
+          s_set_options (s, opts, ec);
+          return server_ptr_t (s);
         }
       }
       catch (boost::system::system_error const &se)
@@ -50,6 +61,7 @@ namespace gspc
 
     static
     server_ptr_t s_new_tcp_server ( std::string const & location
+                                  , option_map_t const &opts
                                   , server::queue_manager_t &qmgr
                                   , boost::system::error_code & ec
                                   )
@@ -63,8 +75,9 @@ namespace gspc
 
         if (not ec)
         {
-          return server_ptr_t
-            (new server::tcp_server (ep, qmgr));
+          server::tcp_server *s = new server::tcp_server (ep, qmgr);
+          s_set_options (s, opts, ec);
+          return server_ptr_t (s);
         }
       }
       catch (boost::system::system_error const &se)
@@ -105,11 +118,11 @@ namespace gspc
 
       if (url.type () == "unix")
       {
-        server = s_new_unix_server (url.path (), qmgr, ec);
+        server = s_new_unix_server (url.path (), url.args (), qmgr, ec);
       }
       else if (url.type () == "tcp")
       {
-        server = s_new_tcp_server (url.path (), qmgr, ec);
+        server = s_new_tcp_server (url.path (), url.args (), qmgr, ec);
       }
       else
       {
