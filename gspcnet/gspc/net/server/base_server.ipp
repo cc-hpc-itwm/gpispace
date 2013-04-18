@@ -25,6 +25,7 @@ namespace gspc
         , m_new_connection ()
         , m_thread_pool_size (4u)
         , m_thread_pool ()
+        , m_queue_length (0)
       {
         m_acceptor.open (endpoint.protocol());
         m_acceptor.set_option (typename acceptor_type::reuse_address(true));
@@ -122,6 +123,13 @@ namespace gspc
         }
 
         start_accept ();
+      }
+
+      template <class Proto>
+      void
+      base_server<Proto>::set_queue_length (size_t len)
+      {
+        m_queue_length = len;
       }
     }
   }

@@ -39,6 +39,8 @@ namespace gspc
 
         int handle_frame (user_ptr, frame const &);
         int handle_error (user_ptr, boost::system::error_code const &);
+
+        void set_queue_length (size_t);
       private:
         typedef base_connection<protocol_type> connection;
         typedef boost::shared_ptr<connection>  connection_ptr;
@@ -56,6 +58,8 @@ namespace gspc
         typedef std::vector<thread_ptr_t>        thread_pool_t;
         size_t                                   m_thread_pool_size;
         thread_pool_t                            m_thread_pool;
+
+        size_t m_queue_length;
       };
     }
   }
