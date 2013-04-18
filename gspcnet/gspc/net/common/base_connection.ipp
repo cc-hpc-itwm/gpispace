@@ -27,6 +27,7 @@ namespace gspc
         , m_parser ()
         , m_frame ()
         , m_buffer_list ()
+        , m_max_queue_length (0)
       {}
 
       template <class Proto>
@@ -38,6 +39,12 @@ namespace gspc
       base_connection<Proto>::socket ()
       {
         return m_socket;
+      }
+
+      template <class Proto>
+      void base_connection<Proto>::set_queue_length (size_t len)
+      {
+        m_max_queue_length = len;
       }
 
       template <class Proto>
@@ -58,6 +65,9 @@ namespace gspc
       int base_connection<Proto>::deliver (frame const &f)
       {
         unique_lock lock (m_frame_list_mutex);
+
+        if (m_max_queue_length && m_buffer_list.size () >= m_max_queue_length)
+          return -ENOBUFS;
 
         const bool write_in_progress = not m_buffer_list.empty ();
         m_buffer_list.push_back (f.to_string ());

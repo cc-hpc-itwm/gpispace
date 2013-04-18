@@ -43,6 +43,8 @@ namespace gspc
         void start ();
 
         int deliver (frame const &);
+
+        void set_queue_length (size_t);
       private:
         typedef boost::lock_guard<boost::mutex> unique_lock;
 
@@ -65,6 +67,8 @@ namespace gspc
         parse::parser m_parser;
         frame         m_frame;
         buffer_list_t m_buffer_list;
+
+        size_t m_max_queue_length;
       };
     }
   }
