@@ -53,7 +53,10 @@ namespace gspc
                        , option_map_t const &opts
                        , boost::system::error_code & ec
                        )
-    {}
+    {
+      server->set_queue_length
+        (s_get_option<size_t>(opts, "queue_length", 0u, ec));
+    }
 
     static
     server_ptr_t s_new_unix_server ( std::string const & path
