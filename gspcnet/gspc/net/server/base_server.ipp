@@ -119,6 +119,7 @@ namespace gspc
       {
         if (not ec)
         {
+          m_new_connection->set_queue_length (m_queue_length);
           m_new_connection->start ();
         }
 
