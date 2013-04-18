@@ -99,20 +99,7 @@ namespace gspc
       }
 
       template <class Proto>
-      int base_client<Proto>::request ( std::string const &dst
-                                      , std::string const &body
-                                      , frame &rply
-                                      )
-      {
-        frame rqst ("REQUEST");
-        rqst.set_body (body);
-        rqst.set_header ("destination", dst);
-
-        return this->request (rqst, rply);
-      }
-
-      template <class Proto>
-      int base_client<Proto>::request (frame const &f, frame &rply)
+      int base_client<Proto>::send_and_wait (frame const &rqst, frame &rply)
       {
         int rc = 0;
 
@@ -121,8 +108,7 @@ namespace gspc
                           + boost::lexical_cast<std::string>(++m_message_id)
                           ));
 
-        frame to_send (f);
-        to_send.set_command ("REQUEST");
+        frame to_send (rqst);
         gspc::net::header::receipt (response->id ()).apply_to (to_send);
 
         {
@@ -155,6 +141,28 @@ namespace gspc
         }
 
         return rc;
+      }
+
+      template <class Proto>
+      int base_client<Proto>::request ( std::string const &dst
+                                      , std::string const &body
+                                      , frame &rply
+                                      )
+      {
+        frame rqst ("REQUEST");
+        rqst.set_body (body);
+        rqst.set_header ("destination", dst);
+
+        return this->request (rqst, rply);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::request (frame const &f, frame &rply)
+      {
+        frame rqst (f);
+        rqst.set_command ("REQUEST");
+
+        return send_and_wait (rqst, rply);
       }
 
       template <class Proto>

@@ -50,6 +50,7 @@ namespace gspc
         int send_raw (frame const &);
 
         int send (std::string const & dst, std::string const & body);
+        int send_and_wait (frame const &rqst, frame &rply);
 
         int request ( std::string const &dst
                     , std::string const &body
