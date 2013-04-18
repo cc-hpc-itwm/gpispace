@@ -1,7 +1,7 @@
 #ifndef GSPC_NET_SERVER_BASE_CONNECTION_HPP
 #define GSPC_NET_SERVER_BASE_CONNECTION_HPP
 
-#include <list>
+#include <deque>
 
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -48,7 +48,7 @@ namespace gspc
       private:
         typedef boost::lock_guard<boost::mutex> unique_lock;
 
-        typedef std::list<std::string>  buffer_list_t;
+        typedef std::deque<std::string>  buffer_list_t;
 
         void handle_read ( const boost::system::error_code &
                          , std::size_t transferred
