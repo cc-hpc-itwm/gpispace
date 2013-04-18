@@ -2,6 +2,7 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
+#include <we/type/value/exception.hpp>
 #include <boost/format.hpp>
 #include <iostream>
 
@@ -9,6 +10,8 @@ using pnet::type::value::value_type;
 using pnet::type::value::structured_type;
 using pnet::type::value::poke;
 using pnet::type::value::peek;
+using pnet::type::value::exception::missing_field;
+using pnet::type::value::exception::type_mismatch;
 
 namespace
 {
@@ -16,23 +19,28 @@ namespace
   class visitor_field : public boost::static_visitor<const T&>
   {
   public:
-    visitor_field (const std::string& field)
-      : _field (field)
-    {}
+    visitor_field ( const std::list<std::string>& path
+                  , const std::string& field
+                  )
+      : _path (path)
+      , _field (field)
+    {
+      _path.push_back (_field);
+    }
     const T& operator() (const structured_type& m) const
     {
       const structured_type::const_iterator pos (m.find (_field));
 
       if (pos == m.end())
       {
-        throw std::runtime_error ("missing field");
+        throw missing_field (T(), _path);
       }
 
       const T* x (boost::get<const T> (&pos->second));
 
       if (!x)
       {
-        throw std::runtime_error ("type error");
+        throw type_mismatch (T(), pos->second, _path);
       }
 
       return *x;
@@ -40,26 +48,32 @@ namespace
     template<typename X>
     const T& operator() (const X& x) const
     {
-      throw std::runtime_error ("missing field");
+      throw missing_field (T(), _path);
     }
 
   private:
+    std::list<std::string> _path;
     const std::string _field;
   };
   template<>
   class visitor_field<value_type> : public boost::static_visitor<const value_type&>
   {
   public:
-    visitor_field (const std::string& field)
-      : _field (field)
-    {}
+    visitor_field ( const std::list<std::string>& path
+                  , const std::string& field
+                  )
+      : _path (path)
+      , _field (field)
+    {
+      _path.push_back (_field);
+    }
     const value_type& operator() (const structured_type& m) const
     {
       const structured_type::const_iterator pos (m.find (_field));
 
       if (pos == m.end())
       {
-        throw std::runtime_error ("missing field");
+        throw missing_field (structured_type(), _path);
       }
 
       return pos->second;
@@ -67,18 +81,30 @@ namespace
     template<typename X>
     const value_type& operator() (const X& x) const
     {
-      throw std::runtime_error ("missing field");
+      throw missing_field (structured_type(), _path);
     }
 
   private:
+    std::list<std::string> _path;
     const std::string _field;
   };
 }
 
 template<typename T>
-const T& field (const std::string& f, const value_type& v)
+const T& field ( const std::list<std::string>& path
+               , const std::string& f
+               , const value_type& v
+               )
 {
-  return boost::apply_visitor (visitor_field<T> (f), v);
+  return boost::apply_visitor (visitor_field<T> (path, f), v);
+}
+
+std::list<std::string> append ( std::list<std::string> path
+                              , const std::string& x
+                              )
+{
+  path.push_back (x);
+  return path;
 }
 
 namespace z
@@ -92,9 +118,11 @@ namespace z
         float f;
         std::string s;
 
-        type (const value_type& v)
-          : f (field<float> ("f", v))
-          , s (field<std::string> ("s", v))
+        type ( const value_type& v
+             , const std::list<std::string>& path = std::list<std::string>()
+             )
+          : f (field<float> (path, "f", v))
+          , s (field<std::string> (path, "s", v))
         {}
       };
     }
@@ -104,9 +132,11 @@ namespace z
       x::type x;
       int i;
 
-      type (const value_type& v)
-        : x (field<value_type> ("x", v))
-        , i (field<int>("i", v))
+      type ( const value_type& v
+           , const std::list<std::string>& path = std::list<std::string>()
+           )
+        : x (field<value_type> (path, "x", v), append (path, "x"))
+        , i (field<int> (path, "i", v))
       {}
     };
   }
@@ -115,10 +145,14 @@ namespace z
   {
     std::list<value_type> l;
     y::type y;
+    y::type yy;
 
-    type (const value_type& v)
-      : l (field<std::list<value_type> > ("l", v))
-      , y (field<value_type> ("y", v))
+    type ( const value_type& v
+         , const std::list<std::string>& path = std::list<std::string>()
+         )
+      : l (field<std::list<value_type> > (path, "l", v))
+      , y (field<value_type> (path, "y", v), append (path, "y"))
+      , yy (field<value_type> (path, "yy", v), append (path, "yy"))
     {}
   };
 }
@@ -131,6 +165,9 @@ int main ()
   poke ("y.x.f", v, 1.0f);
   poke ("y.x.s", v, std::string ("string"));
   poke ("y.i", v, 42);
+  poke ("yy.x.f", v, 1.0f);
+  poke ("yy.x.s", v, std::string ("string"));
+  poke ("yy.i", v, 42);
 
   std::cout << v << std::endl;
 
