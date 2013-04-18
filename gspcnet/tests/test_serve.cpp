@@ -9,8 +9,11 @@
 #include <gspc/net/serve.hpp>
 #include <gspc/net/dial.hpp>
 
+#include <gspc/net/service/echo.hpp>
+
 #include <gspc/net/server.hpp>
 #include <gspc/net/server/queue_manager.hpp>
+#include <gspc/net/server/service_demux.hpp>
 
 #include "mock_user.hpp"
 
@@ -164,4 +167,59 @@ BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
   BOOST_REQUIRE_EQUAL ( subscriber.frames.size ()
                       , NUM_MSGS_TO_SEND
                       );
+}
+
+BOOST_AUTO_TEST_CASE (test_request_success)
+{
+  static const std::size_t NUM_MSGS_TO_SEND = 10000;
+  using namespace gspc::net::tests;
+
+  gspc::net::server::service_demux_t demux;
+  gspc::net::server::queue_manager_t qmgr (demux);
+
+  demux.handle ("/test/echo-1", gspc::net::service::echo ());
+
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("tcp://localhost:*", qmgr);
+  BOOST_REQUIRE (server);
+
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  BOOST_REQUIRE (client);
+
+  for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
+  {
+    gspc::net::frame rply;
+    int rc = client->request ( "/test/echo-1"
+                             , "hello world!"
+                             , rply
+                             );
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (rply.get_body_as_string (), "hello world!");
+  }
+}
+
+BOOST_AUTO_TEST_CASE (test_request_no_such_service)
+{
+  using namespace gspc::net::tests;
+
+  gspc::net::server::queue_manager_t qmgr;
+
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("tcp://localhost:*", qmgr);
+  BOOST_REQUIRE (server);
+
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  BOOST_REQUIRE (client);
+
+  gspc::net::frame rply;
+  int rc = client->request ( "/test/echo-1"
+                           , "hello world!"
+                           , rply
+                           );
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (rply.get_command (), "ERROR");
+  BOOST_REQUIRE (rply.has_header ("code"));
+  BOOST_REQUIRE_EQUAL (*rply.get_header ("code"), "404");
+  BOOST_REQUIRE (rply.has_header ("message"));
+  BOOST_REQUIRE_EQUAL (*rply.get_header ("message"), "no such service");
 }
