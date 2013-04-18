@@ -6,7 +6,6 @@ include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
-
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 include_directories (${UTIL_INCLUDE_DIR})
@@ -32,3 +31,6 @@ fhg_add_test (value.cpp
   LINK_LIBRARIES we-value we-dev fhg-util
   DESCRIPTION "test recursive polymorphic value"
 )
+
+add_executable (sctor sctor.cpp)
+target_link_libraries (sctor we-value we-dev fhg-util)
