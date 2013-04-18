@@ -21,6 +21,10 @@ namespace gspc
 
       virtual int send_raw (frame const &) = 0;
 
+      virtual int request ( std::string const &dst
+                          , std::string const &body
+                          , frame &rply
+                          ) = 0;
       virtual int request (frame const &rqst, frame &rply) = 0;
       virtual int send ( std::string const & dst
                        , std::string const & body

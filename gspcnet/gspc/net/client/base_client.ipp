@@ -99,6 +99,19 @@ namespace gspc
       }
 
       template <class Proto>
+      int base_client<Proto>::request ( std::string const &dst
+                                      , std::string const &body
+                                      , frame &rply
+                                      )
+      {
+        frame rqst ("REQUEST");
+        rqst.set_body (body);
+        rqst.set_header ("destination", dst);
+
+        return this->request (rqst, rply);
+      }
+
+      template <class Proto>
       int base_client<Proto>::request (frame const &f, frame &rply)
       {
         int rc = 0;
