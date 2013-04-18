@@ -24,9 +24,7 @@ namespace
                   )
       : _path (path)
       , _field (field)
-    {
-      _path.push_back (_field);
-    }
+    {}
     const T& operator() (const structured_type& m) const
     {
       const structured_type::const_iterator pos (m.find (_field));
@@ -52,7 +50,7 @@ namespace
     }
 
   private:
-    std::list<std::string> _path;
+    const std::list<std::string>& _path;
     const std::string _field;
   };
   template<>
@@ -64,9 +62,7 @@ namespace
                   )
       : _path (path)
       , _field (field)
-    {
-      _path.push_back (_field);
-    }
+    {}
     const value_type& operator() (const structured_type& m) const
     {
       const structured_type::const_iterator pos (m.find (_field));
@@ -85,26 +81,38 @@ namespace
     }
 
   private:
-    std::list<std::string> _path;
+    const std::list<std::string>& _path;
     const std::string _field;
   };
 }
 
+class append
+{
+public:
+  append (std::list<std::string>& path, const std::string& x)
+    : _path (path)
+  {
+    _path.push_back (x);
+  }
+  ~append()
+  {
+    _path.pop_back();
+  }
+  operator std::list<std::string>& () const
+  {
+    return _path;
+  }
+private:
+  std::list<std::string>& _path;
+};
+
 template<typename T>
-const T& field ( const std::list<std::string>& path
+const T& field ( std::list<std::string>& path
                , const std::string& f
                , const value_type& v
                )
 {
-  return boost::apply_visitor (visitor_field<T> (path, f), v);
-}
-
-std::list<std::string> append ( std::list<std::string> path
-                              , const std::string& x
-                              )
-{
-  path.push_back (x);
-  return path;
+  return boost::apply_visitor (visitor_field<T> (append (path, f), f), v);
 }
 
 namespace z
@@ -119,7 +127,7 @@ namespace z
         std::string s;
 
         type ( const value_type& v
-             , const std::list<std::string>& path = std::list<std::string>()
+             , std::list<std::string>& path
              )
           : f (field<float> (path, "f", v))
           , s (field<std::string> (path, "s", v))
@@ -133,7 +141,7 @@ namespace z
       int i;
 
       type ( const value_type& v
-           , const std::list<std::string>& path = std::list<std::string>()
+           , std::list<std::string>& path
            )
         : x (field<value_type> (path, "x", v), append (path, "x"))
         , i (field<int> (path, "i", v))
@@ -148,7 +156,7 @@ namespace z
     y::type yy;
 
     type ( const value_type& v
-         , const std::list<std::string>& path = std::list<std::string>()
+         , std::list<std::string>& path
          )
       : l (field<std::list<value_type> > (path, "l", v))
       , y (field<value_type> (path, "y", v), append (path, "y"))
@@ -171,7 +179,9 @@ int main ()
 
   std::cout << v << std::endl;
 
-  z::type z (v);
+  std::list<std::string> path;
+
+  z::type z (v, path);
 
   std::cout << z.y.x.f << std::endl;
   std::cout << z.y.x.s << std::endl;
