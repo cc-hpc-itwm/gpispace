@@ -1,15 +1,12 @@
 #include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
-#include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
 #include <we/type/value/exception.hpp>
-#include <boost/format.hpp>
 #include <iostream>
 
 using pnet::type::value::value_type;
 using pnet::type::value::structured_type;
 using pnet::type::value::poke;
-using pnet::type::value::peek;
 using pnet::type::value::exception::missing_field;
 using pnet::type::value::exception::type_mismatch;
 
