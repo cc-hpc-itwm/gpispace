@@ -8,6 +8,7 @@
 
 #include <fhg/util/url.hpp>
 
+#include <gspc/net/limits.hpp>
 #include <gspc/net/server.hpp>
 
 #include <gspc/net/resolver.hpp>
@@ -54,7 +55,13 @@ namespace gspc
                        , boost::system::error_code & ec
                        )
     {
-      server->set_queue_length (s_get_option(opts, "queue_length", 0u, ec));
+      server->set_queue_length
+        (s_get_option ( opts
+                      , "queue_length"
+                      , limits::max_pending_frames_per_connection ()
+                      , ec
+                      )
+        );
     }
 
     static
