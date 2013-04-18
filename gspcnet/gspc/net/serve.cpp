@@ -54,8 +54,7 @@ namespace gspc
                        , boost::system::error_code & ec
                        )
     {
-      server->set_queue_length
-        (s_get_option<size_t>(opts, "queue_length", 0u, ec));
+      server->set_queue_length (s_get_option(opts, "queue_length", 0u, ec));
     }
 
     static
