@@ -41,6 +41,7 @@ namespace gspc
         int handle_error (user_ptr, boost::system::error_code const &);
 
         void set_queue_length (size_t);
+        void set_thread_pool_size (size_t);
       private:
         typedef base_connection<protocol_type> connection;
         typedef boost::shared_ptr<connection>  connection_ptr;
