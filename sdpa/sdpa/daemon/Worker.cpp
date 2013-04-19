@@ -52,38 +52,36 @@ bool Worker::isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id )
   return false;
 }
 
-
 void Worker::update()
 {
 	lock_type lock(mtx_);
-  tstamp_ = sdpa::util::now();
-  set_timedout (false);
+	tstamp_ = sdpa::util::now();
+	set_timedout (false);
 }
 
 void Worker::dispatch(const sdpa::job_id_t& jobId)
 {
 	lock_type lock(mtx_);
-  SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
-  setLastScheduleTime(sdpa::util::now());
-  pending_.push(jobId);
+	SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
+	setLastScheduleTime(sdpa::util::now());
+	pending_.push(jobId);
 }
 
 bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
-  //update();
 	lock_type lock(mtx_);
-  try
-  {
-	  acknowledged().push(job_id);
-	  submitted().erase(job_id);
-	  DMLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
-	  return true;
-  }
-  catch (const sdpa::daemon::NotFoundItem& ex)
-  {
-	  SDPA_LOG_WARN("The job " << job_id.str() << " could not be acknowledged. It was not found into the worker's submitted queue!");
-	  return false;
-  }
+	try
+	{
+		acknowledged().push(job_id);
+		submitted().erase(job_id);
+		DMLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
+		return true;
+	}
+	catch (const sdpa::daemon::NotFoundItem& ex)
+	{
+		SDPA_LOG_WARN("The job " << job_id.str() << " could not be acknowledged. It was not found into the worker's submitted queue!");
+		return false;
+	}
 }
 
 void Worker::delete_job(const sdpa::job_id_t &job_id)
@@ -211,6 +209,24 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 			LOG(WARN, "The worker "<<name()<<" doesn't possess capability: " <<*it);
 		}*/
 	}
+}
+
+bool Worker::hasSimilarCapabilites(const Worker::ptr_t& ptrWorker)
+{
+	BOOST_FOREACH(sdpa::capability_t cpb, ptrWorker->capabilities())
+	{
+		bool hasSimilarCpb = false;
+		for(sdpa::capabilities_set_t::iterator it = capabilities_.begin(); it != capabilities_.end(); it++ )
+		{
+			if( cpb.name()==it->name() && cpb.type() == it->type() )
+				hasSimilarCpb = true;
+		}
+
+		if(!hasSimilarCpb)
+			return false;
+	}
+
+	return true;
 }
 
 bool Worker::hasCapability(const std::string& cpbName, bool bOwn)
