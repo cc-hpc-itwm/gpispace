@@ -270,7 +270,6 @@ namespace sdpa {
       void notifyWorkers(const T&);
 
       // jobs
-      JobManager::ptr_t jobManager() const { return ptr_job_man_; }
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
       std::string gen_id() { return sdpa::events::id_generator::instance().next(); }
@@ -279,6 +278,7 @@ namespace sdpa {
     public:
       // scheduler
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
+      JobManager::ptr_t jobManager() const { return ptr_job_man_; }
     protected:
       virtual void createScheduler(bool bUseReqModel) = 0;
       virtual void schedule(const sdpa::job_id_t& job);
