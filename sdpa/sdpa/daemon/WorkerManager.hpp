@@ -63,7 +63,7 @@ namespace sdpa { namespace daemon {
     virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
     const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-    const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
+    const sdpa::job_id_t stealWork(const Worker::ptr_t& ) throw (NoJobScheduledException);
 
     worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
     Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
@@ -114,7 +114,6 @@ namespace sdpa { namespace daemon {
       }
       else
       {
-        SDPA_LOG_DEBUG("The worker manager has workers! ");
         for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
           (*it).second->print();
       }

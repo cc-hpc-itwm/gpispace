@@ -239,11 +239,41 @@ sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundExce
   return it->first;
 }
 
-const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& workerId) throw (NoJobScheduledException)
+// simple work-stealing
+const sdpa::job_id_t WorkerManager::stealWork(const Worker::ptr_t& pThiefWorker) throw (NoJobScheduledException)
 {
   lock_type lock(mtx_);
 
-  // inspect/scan the pending queues of all workers which are have a different id from workerId
+  // scan the pending queues of other workers
+  worker_id_t workerIdThief = pThiefWorker->name();
+
+  BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
+  {
+    worker_id_t wid = pair.first;
+    Worker::ptr_t& pWorker = pair.second;
+
+    if( wid != workerIdThief && !pWorker->pending().empty() )
+    {
+    	Worker::ptr_t& pWorker = pair.second;
+    	//check if pThiefWorker has similar capabilities
+        if(pThiefWorker->hasSimilarCapabilites(pWorker))
+        {
+        	sdpa::job_id_t jobId = pWorker->pending().pop();
+        	return jobId;
+        }
+    }
+  }
+
+  // erase the job from
+  throw NoJobScheduledException(pThiefWorker->name());
+}
+
+// obsolete
+/*const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& workerId) throw (NoJobScheduledException)
+{
+  lock_type lock(mtx_);
+
+  // inspect/scan the pending queues of all workers that have a different id from workerId
   // find a job that prefers workerId, with the highest degree
 
   int secondBestDeg = -1;
@@ -297,6 +327,7 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& workerI
   // erase the job from
   throw NoJobScheduledException(workerId);
 }
+*/
 
 void WorkerManager::deteleJobPreferences(const sdpa::job_id_t& jobId)
 {
@@ -339,8 +370,9 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
         // if not possible, throw an exception
         try {
           //SDPA_LOG_INFO("Try to steal work from another worker ...");
-          jobId = stealWork(worker_id);
+          const job_id_t jobId = stealWork(ptrWorker);
           ptrWorker->submitted().push(jobId);
+          ptrWorker->update();
           deteleJobPreferences(jobId);
           return jobId;
         }
@@ -409,6 +441,7 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
     throw WorkerNotFoundException(workerId);
 
   worker_map_.erase (w);
+  SDPA_LOG_DEBUG("The Worker "<<workerId<<" was deleted!");
 }
 
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
