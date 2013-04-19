@@ -93,6 +93,7 @@ namespace sdpa {
 	    virtual void execute(const sdpa::job_id_t& jobId); //just for testing
 	    virtual void check_post_request();
 	    virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
+
 	    virtual void feedWorkers();
 
 	    void cancelWorkerJobs();
@@ -120,9 +121,9 @@ namespace sdpa {
 
 	    virtual void print();
 	    virtual void removeRecoveryInconsistencies();
-      void removeWorkers() { ptr_worker_man_->removeWorkers(); }
+        void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 
-      void printQ() { jobs_to_be_scheduled.print(); }
+        void printQ() { jobs_to_be_scheduled.print(); }
 
     protected:
 	    JobQueue jobs_to_be_scheduled;

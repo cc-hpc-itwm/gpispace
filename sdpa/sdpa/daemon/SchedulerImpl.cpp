@@ -34,10 +34,12 @@ using namespace std;
 
 SchedulerImpl::SchedulerImpl(sdpa::daemon::IAgent* pCommHandler, bool bUseRequestModel )
   : ptr_worker_man_(new WorkerManager())
+  , bStopRequested(false)
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
   , m_bUseRequestModel(bUseRequestModel)
+
 {
 }
 
@@ -164,10 +166,10 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
     if(pJob)
     {
 		std::string status = pJob->getStatus();
-		if( status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+		if( !pJob->completed() )
 		{
 		  pJob->Reschedule(); // put the job back into the pending state
-		  schedule(job_id);
+		  schedule_remote(job_id);
 		}
     }
   }
@@ -297,12 +299,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 
 void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
 {
-	if(bStopRequested)
-	{
-		SDPA_LOG_INFO("The scheduler is requested to stop ...");
-		return;
-	}
-
   // first re-schedule the work:
   // inspect all queues and re-schedule each job
   try {
@@ -981,7 +977,6 @@ void SchedulerImpl::print()
     SDPA_LOG_DEBUG("No job to be scheduled left!");
   }
 
-  SDPA_LOG_DEBUG("The content of agent's WorkerManager is:");
   ptr_worker_man_->print();
 }
 
