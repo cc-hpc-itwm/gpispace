@@ -246,6 +246,12 @@ namespace sdpa {
                 }
         }
 
+        bool completed()
+        {
+        	sdpa::status_t status = getStatus();
+        	return status=="SDPA::Finished" || status=="SDPA::Failed" || status=="SDPA::Canceled";
+        }
+
         template <class Archive>
         void serialize(Archive& ar, const unsigned int)
         {
