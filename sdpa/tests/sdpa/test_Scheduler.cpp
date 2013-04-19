@@ -31,6 +31,8 @@
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/agent/Agent.hpp>
+#include <sdpa/daemon/agent/AgentFactory.hpp>
 
 using namespace std;
 using namespace sdpa::tests;
@@ -79,6 +81,73 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 
    LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
    seda::StageRegistry::instance().remove(ptrOrch->name());
+}
+
+BOOST_AUTO_TEST_CASE(testWorkStealing)
+{
+	string addrAg = "127.0.0.1";
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	ostringstream oss;
+	sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler(new SchedulerImpl(pAgent.get(), false));
+
+	sdpa::worker_id_t worker_A("worker_A");
+	sdpa::worker_id_t worker_B("worker_B");
+
+	//create 2 workers
+	sdpa::capability_t cpb1("C", "virtual", worker_A);
+	sdpa::capabilities_set_t cpbSetA;
+	cpbSetA.insert(cpb1);
+	ptrScheduler->addWorker(worker_A, 1, cpbSetA);
+
+	sdpa::capability_t cpb2("C", "virtual", worker_B);
+	sdpa::capabilities_set_t cpbSetB;
+	cpbSetB.insert(cpb2);
+	ptrScheduler->addWorker(worker_B, 1, cpbSetB);
+
+	const sdpa::job_id_t jobId1("Job1");
+	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+	pAgent->jobManager()->addJob(jobId1, pJob1);
+	requirement_list_t req_list_1;
+	requirement_t req_1("C", true);
+	req_list_1.push_back(req_1);
+	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
+
+	LOG(INFO, "Schedule Job1 ...");
+	ptrScheduler->schedule_with_constraints(jobId1);
+
+	const sdpa::job_id_t jobId2("Job2");
+	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
+	pAgent->jobManager()->addJob(jobId2, pJob2);
+	requirement_list_t req_list_2;
+	requirement_t req_2("C", true);
+	req_list_2.push_back(req_2);
+	pAgent->jobManager()->addJobRequirements(jobId2, req_list_2);
+
+	LOG(INFO, "Schedule Job2 ...");
+	ptrScheduler->schedule_with_constraints(jobId2);
+
+	//sleep(1);
+
+	ptrScheduler->print();
+	LOG(INFO, "Delete the worker B now ...");
+	ptrScheduler->delWorker(worker_B );
+	ptrScheduler->print();
+
+	//sleep(1);
+	LOG(INFO, "Add the worker B again ...");
+	ptrScheduler->addWorker(worker_B, 1, cpbSetB);
+	//sleep(1);
+
+	LOG(INFO, "Get the next job assigned to the worker B ...");
+	ptrScheduler->getNextJob(worker_B,"");
+
+	ptrScheduler->print();
+
+	//sleep(5);
+
+   seda::StageRegistry::instance().remove(pAgent->name());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
