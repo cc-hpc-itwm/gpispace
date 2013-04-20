@@ -45,7 +45,7 @@ void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) thr
     } catch (const StageNotFound &) {
         _stages.insert(std::make_pair(name, stage));
         _stage_names.push_back (name);
-        SEDA_LOG_DEBUG("added stage `" << name << "'");
+        DMLOG (TRACE, "added stage `" << name << "'");
     }
 }
 void StageRegistry::insert(const std::string& name, Stage* stage) throw(StageAlreadyRegistered) {

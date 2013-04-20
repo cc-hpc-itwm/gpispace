@@ -38,9 +38,7 @@ namespace sdpa {
       : DaemonFSM( name, sdpa::master_info_list_t(), cap /*, NULL*/),
         SDPA_INIT_LOGGER(name),
         url_(url)
-      {
-        SDPA_LOG_DEBUG("Orchestrator's constructor called ...");
-      }
+      {}
 
       virtual ~Orchestrator();
 

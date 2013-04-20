@@ -247,7 +247,7 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::J
 		while( !pQueue->empty() )
 		{
 			sdpa::job_id_t jobId = pQueue->pop_and_wait();
-			SDPA_LOG_DEBUG ("Re-scheduling the job "<<jobId.str()<<" ... ");
+			DMLOG (TRACE "Re-scheduling the job "<<jobId.str()<<" ... ");
 			reschedule(worker_id, jobId);
 		}
 	}
@@ -676,8 +676,6 @@ void SchedulerImpl::start(IAgent* p)
 
   m_thread_run = boost::thread(boost::bind(&SchedulerImpl::run, this));
   m_thread_feed = boost::thread(boost::bind(&SchedulerImpl::feedWorkers, this));
-
-  SDPA_LOG_DEBUG("Scheduler thread started ...");
 }
 
 void SchedulerImpl::stop()
@@ -785,8 +783,6 @@ if(!ptr_comm_handler_)
   stop();
   return;
 }
-
-SDPA_LOG_DEBUG("Scheduler thread running ...");
 
 while(!bStopRequested)
 {

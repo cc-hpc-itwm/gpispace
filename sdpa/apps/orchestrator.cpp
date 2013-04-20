@@ -206,7 +206,7 @@ int main (int argc, char **argv)
       else
         ptrOrch->start_agent(bUseRequestModel);
 
-      LOG(DEBUG, "waiting for signals...");
+      DMLOG (TRACE, "waiting for signals...");
       sigset_t waitset;
       int sig(0);
       int result(0);
@@ -220,7 +220,7 @@ int main (int argc, char **argv)
         result = sigwait(&waitset, &sig);
         if (result == 0)
         {
-          LOG(DEBUG, "got signal: " << sig);
+          DMLOG (TRACE, "got signal: " << sig);
           switch (sig)
           {
             case SIGTERM:

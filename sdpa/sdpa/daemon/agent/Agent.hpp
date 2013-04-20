@@ -46,8 +46,6 @@ namespace sdpa {
           m_guiService("SDPA", guiUrl),
           m_bCanRunTasksLocally(bCanRunTasksLocally)
         {
-          SDPA_LOG_DEBUG("Agent's constructor called ...");
-
           if(rank>=0)
           {
             std::ostringstream oss;

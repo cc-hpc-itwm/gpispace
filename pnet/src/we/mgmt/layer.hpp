@@ -487,8 +487,6 @@ namespace we { namespace mgmt {
     private:
       void start()
       {
-        LOG(DEBUG, "Workflow Management layer starting...");
-
         lock_t lock (mutex_);
 
         manager_   = boost::thread(boost::bind(&layer::manager, this));

@@ -509,7 +509,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 {
-  LOG( DEBUG, e.from() << " requesting to delete job " << e.job_id() );
+  DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
 
   try{
     Job::ptr_t pJob = jobManager()->findJob(e.job_id());
