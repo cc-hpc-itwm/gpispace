@@ -76,7 +76,7 @@ namespace we {
       }
       else
       {
-        LOG(INFO, "loaded module " << module_name << " from " << path);
+        MLOG (TRACE, "loaded module " << module_name << " from " << path);
         module_load_order_.push_front (module_name);
         ++module_counter_;
         return mod;
