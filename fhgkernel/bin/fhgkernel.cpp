@@ -464,7 +464,7 @@ int main(int ac, char **av)
 
   int rc = kernel->run_and_unload (false);
 
-  DMMLOG (TRACE, "killing children...");
+  DMLOG (TRACE, "killing children...");
 
   kill (0, SIGTERM);
 
