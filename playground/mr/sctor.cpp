@@ -7,143 +7,203 @@
 #include <we/type/value/show.hpp>
 #include <we/type/value/signature.hpp>
 #include <we/type/value/signature/of_type.hpp>
+#include <we/type/value/signature/show.hpp>
 
 #include <iostream>
 
-using pnet::type::value::value_type;
-using pnet::type::value::signature_type;
-using pnet::type::value::structured_type;
-using pnet::type::value::peek;
-using pnet::type::value::poke;
-using pnet::type::value::of_type;
-using pnet::type::value::exception::missing_field;
-using pnet::type::value::exception::type_mismatch;
-
-static std::list<std::string> init_ctor_path()
+namespace pnet
 {
-  return std::list<std::string>();
-}
-static std::list<std::string>& ctor_path()
-{
-  static std::list<std::string> p (init_ctor_path());
-
-  return p;
-}
-class append
-{
-public:
-  append (const std::string& x)
+  namespace type
   {
-    ctor_path().push_back (x);
-  }
-  ~append()
-  {
-    ctor_path().pop_back();
-  }
-  operator std::list<std::string>&() const
-  {
-    return ctor_path();
-  }
-};
-
-const value_type& field ( const std::list<std::string>& path
-                        , const std::string& f
-                        , const value_type& v
-                        , const signature_type& signature
-                        )
-{
-  boost::optional<const value_type&> field (peek (f, v));
-
-  if (!field)
-  {
-    throw missing_field (signature, path);
-  }
-
-  return *field;
-}
-
-template<typename T>
-const T& field_as ( const std::list<std::string>& path
-                  , const std::string& f
-                  , const value_type& v
-                  , const signature_type& signature
-                  )
-{
-  const value_type& value (field (path, f, v, signature));
-
-  const T* x (boost::get<const T> (&value));
-
-  if (!x)
-  {
-    throw type_mismatch (signature, value, path);
-  }
-
-  return *x;
-}
-
-// to be generated
-namespace z
-{
-  namespace y
-  {
-    namespace x
+    namespace value
     {
-      struct type
+      class path
       {
-        float f;
-        std::string s;
-
-        type (const value_type& v)
-          : f (field_as<float> (append ("f"), "f", v, of_type ("float")))
-          , s (field_as<std::string> (append ("s"), "s", v, of_type ("string")))
+      public:
+        path (const std::string& x)
+          : _key (_path().insert (_path().end(), x))
+          , _end (_path().end())
         {}
-        static signature_type signature()
+        ~path()
         {
-          static signature_type sig (type::init_signature());
-
-          return sig;
+          _path().pop_back();
+        }
+        const std::list<std::string>::const_iterator& key() const
+        {
+          return _key;
+        }
+        const std::list<std::string>::const_iterator& end() const
+        {
+          return _end;
+        }
+        const std::list<std::string>& operator() () const
+        {
+          return _path();
         }
 
       private:
-        static signature_type init_signature()
+        const std::list<std::string>::const_iterator _key;
+        const std::list<std::string>::const_iterator _end;
+
+        static std::list<std::string> _init_path()
         {
-          signature_type s;
+          return std::list<std::string>();
+        }
+        static std::list<std::string>& _path()
+        {
+          static std::list<std::string> p (_init_path());
 
-          poke ("f", s, of_type ("float"));
-          poke ("s", s, of_type ("string"));
-
-          return s;
+          return p;
         }
       };
+
+      const value_type& field ( const path& p
+                              , const value_type& v
+                              , const signature_type& signature
+                              )
+      {
+        boost::optional<const value_type&> field (peek (p.key(), p.end(), v));
+
+        if (!field)
+        {
+          throw exception::missing_field (signature, p());
+        }
+
+        return *field;
+      }
+
+      template<typename T>
+      const T& field_as ( const path& p
+                        , const value_type& v
+                        , const signature_type& signature
+                        )
+      {
+        const value_type& value (field (p, v, signature));
+
+        const T* x (boost::get<const T> (&value));
+
+        if (!x)
+        {
+          throw exception::type_mismatch (signature, value, p());
+        }
+
+        return *x;
+      }
+    }
+  }
+}
+
+using pnet::type::value::value_type;
+using pnet::type::value::signature_type;
+using pnet::type::value::poke;
+using pnet::type::value::of_type;
+using pnet::type::value::as_signature;
+
+using pnet::type::value::field;
+using pnet::type::value::field_as;
+using pnet::type::value::path;
+
+// to be generated from
+// <struct name="y">
+//   <struct name="x">
+//     <field name="f" type="float"/>
+//     <field name="s" type="string"/>
+//   </struct>
+//   <field name="i" type="int"/>
+// </struct>
+// <struct name="z">
+//   <field name="l" type="list"/>
+//   <field name="y" type="y"/>
+//   <field name="yy" type="y"/>
+// </struct>
+namespace y
+{
+  namespace x
+  {
+    static signature_type init_signature()
+    {
+      signature_type s;
+
+      poke ("f", s, of_type ("float"));
+      poke ("s", s, of_type ("string"));
+
+      return s;
+    }
+
+    static signature_type signature()
+    {
+      static signature_type sig (init_signature());
+
+      return sig;
     }
 
     struct type
     {
-      x::type x;
-      int i;
+      float f;
+      std::string s;
 
-      type (const value_type& v)
-        : x (field (append ("x"), "x", v, x::type::signature()))
-        , i (field_as<int> (append ("i"), "i", v, of_type ("int")))
+      type()
+        : f()
+        , s()
       {}
-      static signature_type& signature()
-      {
-        static signature_type sig (type::init_signature());
-
-        return sig;
-      }
-
-    private:
-      static signature_type init_signature()
-      {
-        signature_type s;
-
-        poke ("x", s, x::type::signature());
-        poke ("i", s, of_type ("int"));
-
-        return s;
-      }
+      explicit type (const value_type& v)
+      : f (field_as<float> (path ("f"), v, of_type ("float")))
+      , s (field_as<std::string> (path ("s"), v, of_type ("string")))
+      {}
     };
+  }
+
+  static signature_type init_signature()
+  {
+    signature_type s;
+
+    poke ("x", s, x::signature());
+    poke ("i", s, of_type ("int"));
+
+    return s;
+  }
+
+  static signature_type& signature()
+  {
+    static signature_type sig (init_signature());
+
+    return sig;
+  }
+
+  struct type
+  {
+    x::type x;
+    int i;
+
+    type()
+      : x()
+      , i()
+    {}
+    explicit type (const value_type& v)
+    : x (field (path ("x"), v, x::signature()))
+    , i (field_as<int> (path ("i"), v, of_type ("int")))
+    {}
+  };
+}
+
+namespace z
+{
+  static signature_type init_signature()
+  {
+    signature_type s;
+
+    poke ("l", s, of_type ("list"));
+    poke ("y", s, y::signature());
+    poke ("yy", s, y::signature());
+
+    return s;
+  }
+
+  static const signature_type& signature()
+  {
+    static signature_type s (init_signature());
+
+    return s;
   }
 
   struct type
@@ -152,29 +212,16 @@ namespace z
     y::type y;
     y::type yy;
 
-    type (const value_type& v)
-      : l (field_as<std::list<value_type> > (append ("l"), "l", v, of_type ("list")))
-      , y (field (append ("y"), "y", v, y::type::signature()))
-      , yy (field (append ("yy"), "yy", v, y::type::signature()))
+    type()
+      : l()
+      , y()
+      , yy()
     {}
-    static const signature_type& signature()
-    {
-      static signature_type s (type::init_signature());
-
-      return s;
-    }
-
-  private:
-    static signature_type init_signature()
-    {
-      signature_type s;
-
-      poke ("l", s, of_type ("list"));
-      poke ("y", s, y::type::signature());
-      poke ("yy", s, y::type::signature());
-
-      return s;
-    }
+    explicit type (const value_type& v)
+      : l (field_as<std::list<value_type> > (path ("l"), v, of_type ("list")))
+      , y (field (path ("y"), v, y::signature()))
+      , yy (field (path ("yy"), v, y::signature()))
+    {}
   };
 }
 
@@ -193,6 +240,8 @@ int main ()
   std::cout << v << std::endl;
 
   z::type z (v);
+
+  std::cout << as_signature (z::signature()) << std::endl;
 
   std::cout << z.y.x.f << std::endl;
   std::cout << z.y.x.s << std::endl;
