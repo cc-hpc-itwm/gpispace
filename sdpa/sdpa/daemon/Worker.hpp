@@ -112,6 +112,7 @@ namespace sdpa { namespace daemon {
     bool addCapabilities(const capabilities_set_t& cpbset);
     void removeCapabilities(const capabilities_set_t& cpbset);
     bool hasCapability(const std::string& cpbName, bool bOwn = false);
+    bool hasSimilarCapabilites(const Worker::ptr_t& );
 
     /**
          Checks if the worker has job

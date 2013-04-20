@@ -207,6 +207,9 @@ namespace prefix
     void request_hostlist();
     void request_status (QStringList);
 
+    void pause();
+    void resume();
+
   signals:
     void nodes (QStringList);
     void nodes_details (const QString&, const QString&);
@@ -225,8 +228,11 @@ namespace prefix
     void action_description (fhg::util::parse::position&, const QString&);
     void layout_hint (fhg::util::parse::position&, const QString&);
     void status_update (fhg::util::parse::position&, const QString&);
+    void action_result (fhg::util::parse::position&);
 
     async_tcp_communication* _connection;
+
+    QTimer* _timer;
   };
 
   class node_state_widget : public QWidget
@@ -260,6 +266,7 @@ namespace prefix
     QList<QString> _nodes_to_update;
 
     void update (int node);
+    void update();
 
     QVector<node_type> _nodes;
 

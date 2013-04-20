@@ -604,15 +604,6 @@ namespace signature
       os << "}"                                   << std::endl;
     }
 
-    template<typename Stream>
-    void cpp_show ( Stream& os
-                  , const type & s
-                  , const unsigned int & l = 0
-                  )
-    {
-      cpp_show (os, s, s.nice(), l);
-    }
-
     // ********************************************************************* //
 
     template<typename Stream>
@@ -666,15 +657,6 @@ namespace signature
       os                                                         << std::endl;
 
       cpp_util::include_guard_end (os, "PNETC_TYPE_" + n);
-    }
-
-    template<typename Stream>
-    void cpp_header (Stream& os, const type & s)
-    {
-      cpp_header<Stream> ( os, s, s.nice()
-                         , boost::filesystem::path ("<unknown>")
-                         , boost::filesystem::path ("")
-                         );
     }
   }
 }

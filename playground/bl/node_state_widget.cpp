@@ -16,6 +16,7 @@
 #include <QScrollBar>
 #include <QToolTip>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
@@ -42,33 +43,45 @@ namespace prefix
       return (qMax (width - 2 * padding, per_step)) / per_step;
     }
 
-    void timer (QObject* parent, int timeout, const char* slot)
+    QTimer* timer (QObject* parent, int timeout, const char* slot)
     {
       QTimer* timer (new QTimer (parent));
       QObject::connect (timer, SIGNAL (timeout()), parent, slot);
       timer->start (timeout);
+      return timer;
     }
-    void timer (QObject* parent, int timeout, boost::function<void()> fun)
+    QTimer* timer (QObject* parent, int timeout, boost::function<void()> fun)
     {
       QTimer* timer (new QTimer (parent));
       fhg::util::qt::boost_connect<void()>
         (timer, SIGNAL (timeout()), parent, fun);
       timer->start (timeout);
+      return timer;
     }
   }
 
   communication::communication (QObject* parent)
     : QObject (parent)
     , _connection (new async_tcp_communication)
+    , _timer (NULL)
   {
-    timer (this, 100, SLOT (check_for_incoming_messages()));
-
+    resume();
     _connection->push ("possible_status_list");
   }
 
   void communication::request_hostlist()
   {
     _connection->push ("host_list");
+  }
+
+  void communication::pause()
+  {
+    delete _timer;
+  }
+
+  void communication::resume()
+  {
+    _timer = timer (this, 100, SLOT (check_for_incoming_messages()));
   }
 
   legend::legend (QWidget* parent)
@@ -147,8 +160,17 @@ namespace prefix
   {
     const int per_row (items_per_row (width()));
 
+    QToolTip::hideText();
+
     QWidget::update
       (rect_for_node (node, per_row).toRect().adjusted (-1, -1, 1, 1));
+  }
+
+  void node_state_widget::update()
+  {
+    QToolTip::hideText();
+
+    QWidget::update();
   }
 
   void legend::states_add
@@ -254,6 +276,8 @@ namespace prefix
     const int old_height (heightForWidth (width()));
 
     QMutableVectorIterator<node_type> i (_nodes);
+
+    bool removed_at_least_one (false);
     while (i.hasNext())
     {
       const QString& hostname (i.next().hostname());
@@ -261,15 +285,20 @@ namespace prefix
       if (index == -1)
       {
         i.remove();
-        update (index);
-        update (_nodes.size());
         _pending_updates.removeAll (hostname);
         _nodes_to_update.removeAll (hostname);
+
+        removed_at_least_one = true;
       }
       else
       {
         hostnames.removeOne (hostname);
       }
+    }
+
+    if (removed_at_least_one)
+    {
+      update();
     }
 
     foreach (const QString& hostname, hostnames)
@@ -472,6 +501,146 @@ namespace prefix
     }
   }
 
+  namespace
+  {
+    struct action_result_data
+    {
+      enum result_code
+      {
+        okay,
+        fail,
+        warn,
+      };
+
+      action_result_data (const QString& host, const QString& action)
+        : _host (host)
+        , _action (action)
+        , _result (boost::none)
+        , _message (boost::none)
+      { }
+
+      QString _host;
+      QString _action;
+      boost::optional<result_code> _result;
+      boost::optional<QString> _message;
+
+      void append (fhg::util::parse::position& pos)
+      {
+        pos.skip_spaces();
+
+        if (pos.end() || (*pos != 'm' && *pos != 'r'))
+        {
+          throw fhg::util::parse::error::expected ("message' or 'result", pos);
+        }
+
+        switch (*pos)
+        {
+        case 'm':
+          ++pos;
+          pos.require ("essage");
+          require::token (pos, ":");
+
+          _message = require::qstring (pos);
+
+          break;
+
+        case 'r':
+          ++pos;
+          pos.require ("esult");
+          require::token (pos, ":");
+
+          {
+            pos.skip_spaces();
+
+            if (pos.end() || (*pos != 'f' && *pos != 'o' && *pos != 'w'))
+            {
+              throw fhg::util::parse::error::expected
+                ("fail' or 'okay' or 'warn", pos);
+            }
+
+            switch (*pos)
+            {
+            case 'f':
+              ++pos;
+              pos.require ("ail");
+
+              _result = fail;
+
+              break;
+
+            case 'o':
+              ++pos;
+              pos.require ("kay");
+
+              _result = okay;
+
+              break;
+
+            case 'w':
+              ++pos;
+              pos.require ("arn");
+
+              _result = warn;
+
+              break;
+            }
+          }
+
+          break;
+        }
+      }
+
+      void show_in_messagebox() const
+      {
+        if (!_result)
+        {
+          throw std::runtime_error ("action result without result code");
+        }
+
+        const QString title ( QString ("\"%1\" on \"%2\"")
+                            .arg (_action)
+                            .arg (_host)
+                            );
+        QString message ( _message.get_value_or ( *_result == okay ? "okay"
+                                                : *_result == warn ? "warn"
+                                                : *_result == fail ? "fail"
+                                                : "UNKNOWN RESULT"
+                                                )
+                        );
+
+        switch (*_result)
+        {
+        case okay:
+          QMessageBox::information (NULL, title, message);
+          break;
+
+        case fail:
+          QMessageBox::critical (NULL, title, message);
+          break;
+
+        case warn:
+          QMessageBox::warning (NULL, title, message);
+          break;
+        }
+      }
+    };
+  }
+
+  void communication::action_result (fhg::util::parse::position& pos)
+  {
+    require::token (pos, "(");
+    const QString host (require::qstring (pos));
+    require::token (pos, ",");
+    const QString action (require::qstring (pos));
+    require::token (pos, ")");
+    require::token (pos, ":");
+
+    action_result_data result (host, action);
+    require::list (pos, boost::bind (&action_result_data::append, &result, _1));
+
+    result.show_in_messagebox();
+  }
+
   void communication::check_for_incoming_messages()
   {
     const async_tcp_communication::messages_type messages (_connection->get());
@@ -497,14 +666,36 @@ namespace prefix
         {
         case 'a':
           ++pos;
-          pos.require ("ction_description");
-          require::token (pos, ":");
+          pos.require ("ction_");
 
-          require::list_of_named_lists
-            ( pos
-            , boost::bind (&communication::action_description, this, _1, _2)
-            );
+          if (pos.end() || (*pos != 'd' && *pos != 'r'))
+          {
+            throw fhg::util::parse::error::expected
+              ("description' or 'result", pos);
+          }
 
+          switch (*pos)
+          {
+          case 'd':
+            ++pos;
+            pos.require ("escription");
+            require::token (pos, ":");
+
+            require::list_of_named_lists
+              ( pos
+              , boost::bind (&communication::action_description, this, _1, _2)
+              );
+
+            break;
+
+          case 'r':
+            ++pos;
+            pos.require ("esult");
+            require::token (pos, ":");
+
+            require::list
+              (pos, boost::bind (&communication::action_result, this, _1));
+          }
           break;
 
         case 'h':
@@ -740,22 +931,32 @@ namespace prefix
         {
           QMenu context_menu;
           const node_type& n (node (*node_index));
-          foreach (const QString& action, state (n.state())._actions)
+          if (!state (n.state())._actions.empty())
           {
-            fhg::util::qt::boost_connect<void (void)>
-              ( context_menu.addAction
-                (_long_action.contains (action) ? _long_action[action] : action)
-              , SIGNAL (triggered())
-              , _communication
-              , boost::bind ( &communication::request_action
-                            , _communication
-                            , n.hostname()
-                            , action
+            foreach (const QString& action, state (n.state())._actions)
+            {
+              fhg::util::qt::boost_connect<void (void)>
+                ( context_menu.addAction
+                  ( QString ( _long_action.contains (action)
+                            ? _long_action[action]
+                            : action
                             )
-              );
+                  .replace ("{hostname}", n.hostname())
+                  )
+                , SIGNAL (triggered())
+                , _communication
+                , boost::bind ( &communication::request_action
+                              , _communication
+                              , n.hostname()
+                              , action
+                              )
+                );
+            }
+            _communication->pause();
+            context_menu.exec (context_menu_event->globalPos());
+            _communication->resume();
+            return true;
           }
-          context_menu.exec (context_menu_event->globalPos());
-          return true;
         }
 
         event->ignore();

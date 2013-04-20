@@ -67,7 +67,7 @@ namespace
     return action == "add_to_working_set"
       ? "add this node to the working set"
       : action == "reboot"
-      ? "reboot node"
+      ? "reboot {hostname}"
       : action == "remove_from_working_set"
       ? "remove this node from the working set"
       : action == "foo"
@@ -82,6 +82,14 @@ void thread::execute_action (fhg::util::parse::position& pos)
   prefix::require::token (pos, ":");
   const QString action (prefix::require::qstring (pos));
   qDebug() << "execute" << action << "for" << host;
+
+  _socket->write
+    ( qPrintable ( QString
+                   ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"dummy server can't execute actions\"],]\n")
+                 .arg (host)
+                 .arg (action)
+                 )
+    );
 }
 
 void thread::send_action_description (fhg::util::parse::position& pos)

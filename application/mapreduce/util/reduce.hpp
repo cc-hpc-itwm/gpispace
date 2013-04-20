@@ -354,7 +354,7 @@ namespace mapreduce
 
 		MLOG(INFO, "Merge and reduce ...");
 		std::vector<std::string>::const_iterator it = arr_items.begin();
-		char* pch = in_buff?strtok(in_buff, DELIMITERS):NULL;
+		char* pch = in_buff?strtok(in_buff, INTERNAL_DELIMITERS):NULL;
 
 		// the array and the file are already reduced
 		std::string str_pair, curr_item;
@@ -378,7 +378,7 @@ namespace mapreduce
 				{
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
-					pch = strtok(NULL, DELIMITERS);
+					pch = strtok(NULL, INTERNAL_DELIMITERS);
 				}
 			}
 			else
@@ -387,7 +387,7 @@ namespace mapreduce
 					key_val_pair_t kvp_r = str2kvpair(pch);
 					curr_key = kvp_r.first;
 					curr_val = kvp_r.second;
-					pch = strtok(NULL, DELIMITERS);
+					pch = strtok(NULL, INTERNAL_DELIMITERS);
 				}
 				else
 				{

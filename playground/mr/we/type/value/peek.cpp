@@ -94,10 +94,10 @@ namespace pnet
       }
 
       boost::optional<value_type&>
-      peek_ref ( const std::list<std::string>::const_iterator& key
-               , const std::list<std::string>::const_iterator& end
-               , value_type& node
-               )
+      peek ( const std::list<std::string>::const_iterator& key
+           , const std::list<std::string>::const_iterator& end
+           , value_type& node
+           )
       {
         return boost::apply_visitor
           ( visitor_peek< value_type
@@ -108,14 +108,14 @@ namespace pnet
           );
       }
       boost::optional<value_type&>
-      peek_ref (const std::list<std::string>& path, value_type& node)
+      peek (const std::list<std::string>& path, value_type& node)
       {
-        return peek_ref (path.begin(), path.end(), node);
+        return peek (path.begin(), path.end(), node);
       }
       boost::optional<value_type&>
-      peek_ref (const std::string& path, value_type& node)
+      peek (const std::string& path, value_type& node)
       {
-        return peek_ref (path::split (path), node);
+        return peek (path::split (path), node);
       }
     }
   }

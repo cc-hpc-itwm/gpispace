@@ -24,14 +24,14 @@ namespace pnet
       peek (const std::string&, const value_type&);
 
       boost::optional<value_type&>
-      peek_ref ( const std::list<std::string>::const_iterator&
-               , const std::list<std::string>::const_iterator&
-               , value_type&
-               );
+      peek ( const std::list<std::string>::const_iterator&
+           , const std::list<std::string>::const_iterator&
+           , value_type&
+           );
       boost::optional<value_type&>
-      peek_ref (const std::list<std::string>& path, value_type& node);
+      peek (const std::list<std::string>& path, value_type& node);
       boost::optional<value_type&>
-      peek_ref (const std::string&, value_type&);
+      peek (const std::string&, value_type&);
     }
   }
 }
