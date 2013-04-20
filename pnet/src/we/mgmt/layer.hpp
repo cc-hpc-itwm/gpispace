@@ -476,7 +476,7 @@ namespace we { namespace mgmt {
           // clean up all activities
           while (! activities_.empty())
           {
-            LOG(WARN, "removing remaining activity: " << activities_.begin()->second);
+            DLOG(WARN, "removing remaining activity: " << activities_.begin()->second);
             activities_.erase (activities_.begin());
           }
           ext_to_int_.clear();

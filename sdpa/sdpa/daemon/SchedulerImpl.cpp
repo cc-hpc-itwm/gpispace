@@ -247,12 +247,14 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::J
 		while( !pQueue->empty() )
 		{
 			sdpa::job_id_t jobId = pQueue->pop_and_wait();
-			SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
+			SDPA_LOG_DEBUG ("Re-scheduling the job "<<jobId.str()<<" ... ");
 			reschedule(worker_id, jobId);
 		}
 	}
 	else
+        {
 		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
+        }
 }
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
@@ -1020,7 +1022,6 @@ void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
   catch(WorkerNotFoundException const &ex2)
   {
-    SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
     throw ex2;
   }
 }

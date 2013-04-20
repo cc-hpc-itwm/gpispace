@@ -83,7 +83,6 @@ int main (int argc, char **argv)
       }
       else
       {
-        LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
         fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
       }
     }
@@ -140,8 +139,6 @@ int main (int argc, char **argv)
               break;
 
       case NO_BKP:
-
-              MLOG (INFO, "No backup folder and no backup file were specified! No backup for the orchestrator will be available!");
               bDoBackup = false;
               break;
 
@@ -198,8 +195,6 @@ int main (int argc, char **argv)
       write(pidfile_fd, buf, strlen(buf));
       fsync(pidfile_fd);
     }
-
-    LOG(INFO, "Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl);
 
     try {
       sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( orchName, orchUrl, MAX_CAP  );

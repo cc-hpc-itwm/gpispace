@@ -122,7 +122,7 @@ std::string JobManager::print() const
     os<<"The list of jobs still owned by the JobManager:"<<std::endl;
     for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
     {
-      SDPA_LOG_INFO(it->second->print_info());
+      DMLOG (TRACE, it->second->print_info());
     }
   }
 

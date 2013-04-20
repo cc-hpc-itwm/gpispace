@@ -82,7 +82,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     // if it comes from a slave, one should inform WFE -> subjob
     // if it comes from WFE -> concerns the master job
 
-    MLOG(INFO, "The job " << pEvt->job_id() << " has finished!");
+    MLOG (TRACE, "The job " << pEvt->job_id() << " has finished!");
 
     if (pEvt->from() != sdpa::daemon::WE)
     {
