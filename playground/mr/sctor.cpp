@@ -46,11 +46,11 @@ public:
   }
 };
 
-const value_type& field_value ( const std::list<std::string>& path
-                              , const std::string& f
-                              , const value_type& v
-                              , const signature_type& signature
-                              )
+const value_type& field ( const std::list<std::string>& path
+                        , const std::string& f
+                        , const value_type& v
+                        , const signature_type& signature
+                        )
 {
   boost::optional<const value_type&> field (peek (f, v));
 
@@ -63,19 +63,19 @@ const value_type& field_value ( const std::list<std::string>& path
 }
 
 template<typename T>
-const T& field ( const std::list<std::string>& path
-               , const std::string& f
-               , const value_type& v
-               , const signature_type& signature
-               )
+const T& field_as ( const std::list<std::string>& path
+                  , const std::string& f
+                  , const value_type& v
+                  , const signature_type& signature
+                  )
 {
-  const value_type& field (field_value (path, f, v, signature));
+  const value_type& value (field (path, f, v, signature));
 
-  const T* x (boost::get<const T> (&field));
+  const T* x (boost::get<const T> (&value));
 
   if (!x)
   {
-    throw type_mismatch (signature, field, path);
+    throw type_mismatch (signature, value, path);
   }
 
   return *x;
@@ -94,8 +94,8 @@ namespace z
         std::string s;
 
         type (const value_type& v)
-          : f (field<float> (append ("f"), "f", v, of_type ("float")))
-          , s (field<std::string> (append ("s"), "s", v, of_type ("string")))
+          : f (field_as<float> (append ("f"), "f", v, of_type ("float")))
+          , s (field_as<std::string> (append ("s"), "s", v, of_type ("string")))
         {}
         static signature_type signature()
         {
@@ -123,8 +123,8 @@ namespace z
       int i;
 
       type (const value_type& v)
-        : x (field_value (append ("x"), "x", v, x::type::signature()))
-        , i (field<int> (append ("i"), "i", v, of_type ("int")))
+        : x (field (append ("x"), "x", v, x::type::signature()))
+        , i (field_as<int> (append ("i"), "i", v, of_type ("int")))
       {}
       static signature_type& signature()
       {
@@ -153,9 +153,9 @@ namespace z
     y::type yy;
 
     type (const value_type& v)
-      : l (field<std::list<value_type> > (append ("l"), "l", v, of_type ("list")))
-      , y (field_value (append ("y"), "y", v, y::type::signature()))
-      , yy (field_value (append ("yy"), "yy", v, y::type::signature()))
+      : l (field_as<std::list<value_type> > (append ("l"), "l", v, of_type ("list")))
+      , y (field (append ("y"), "y", v, y::type::signature()))
+      , yy (field (append ("yy"), "yy", v, y::type::signature()))
     {}
     static const signature_type& signature()
     {
