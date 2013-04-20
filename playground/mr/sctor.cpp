@@ -32,21 +32,18 @@ static std::list<std::string>& ctor_path()
 class append
 {
 public:
-  append (std::list<std::string>& path, const std::string& x)
-    : _path (path)
+  append (const std::string& x)
   {
-    _path.push_back (x);
+    ctor_path().push_back (x);
   }
   ~append()
   {
-    _path.pop_back();
+    ctor_path().pop_back();
   }
   operator std::list<std::string>&() const
   {
-    return _path;
+    return ctor_path();
   }
-private:
-  std::list<std::string>& _path;
 };
 
 const value_type& field_value ( const std::list<std::string>& path
@@ -97,8 +94,8 @@ namespace z
         std::string s;
 
         type (const value_type& v)
-          : f (field<float> (append (ctor_path(), "f"), "f", v, of_type ("float")))
-          , s (field<std::string> (append (ctor_path(), "s"), "s", v, of_type ("string")))
+          : f (field<float> (append ("f"), "f", v, of_type ("float")))
+          , s (field<std::string> (append ("s"), "s", v, of_type ("string")))
         {}
         static signature_type signature()
         {
@@ -126,8 +123,8 @@ namespace z
       int i;
 
       type (const value_type& v)
-        : x (field_value (append (ctor_path(), "x"), "x", v, x::type::signature()))
-        , i (field<int> (append (ctor_path(), "i"), "i", v, of_type ("int")))
+        : x (field_value (append ("x"), "x", v, x::type::signature()))
+        , i (field<int> (append ("i"), "i", v, of_type ("int")))
       {}
       static signature_type& signature()
       {
@@ -156,9 +153,9 @@ namespace z
     y::type yy;
 
     type (const value_type& v)
-      : l (field<std::list<value_type> > (append (ctor_path(), "l"), "l", v, of_type ("list")))
-      , y (field_value (append (ctor_path(), "y"), "y", v, y::type::signature()))
-      , yy (field_value (append (ctor_path(), "yy"), "yy", v, y::type::signature()))
+      : l (field<std::list<value_type> > (append ("l"), "l", v, of_type ("list")))
+      , y (field_value (append ("y"), "y", v, y::type::signature()))
+      , yy (field_value (append ("yy"), "yy", v, y::type::signature()))
     {}
     static const signature_type& signature()
     {
