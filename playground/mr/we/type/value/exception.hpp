@@ -18,6 +18,12 @@ namespace pnet
     {
       namespace exception
       {
+#define MEMBER(_name,_type)                               \
+      public:                                             \
+        const _type& _name() const { return _ ## _name; } \
+      private:                                            \
+        const _type _ ## _name
+
         class type_error : public std::runtime_error
         {
         public:
@@ -34,6 +40,10 @@ namespace pnet
                         , const std::list<std::string>&
                         );
           ~type_mismatch() throw() {}
+
+          MEMBER (signature, signature_type);
+          MEMBER (value, value_type);
+          MEMBER (path, std::list<std::string>);
         };
 
         class missing_field : public type_error
@@ -43,6 +53,9 @@ namespace pnet
                         , const std::list<std::string>&
                         );
           ~missing_field() throw() {}
+
+          MEMBER (signature, signature_type);
+          MEMBER (path, std::list<std::string>);
         };
 
         class unknown_field : public type_error
@@ -52,7 +65,12 @@ namespace pnet
                         , const std::list<std::string>&
                         );
           ~unknown_field() throw() {}
+
+          MEMBER (value, value_type);
+          MEMBER (path, std::list<std::string>);
         };
+
+#undef MEMBER
       }
     }
   }

@@ -33,6 +33,9 @@ namespace pnet
               % as_signature (value)
               ).str()
             )
+          , _signature (signature)
+          , _value (value)
+          , _path (path)
         {}
         missing_field::missing_field ( const signature_type& signature
                                      , const std::list<std::string>& path
@@ -43,6 +46,8 @@ namespace pnet
               % path::join (path)
               ).str()
             )
+          , _signature (signature)
+          , _path (path)
         {}
         unknown_field::unknown_field ( const value_type& value
                                      , const std::list<std::string>& path
@@ -53,6 +58,8 @@ namespace pnet
               % "value"
               ).str()
             )
+          , _value (value)
+          , _path (path)
         {}
       }
     }
