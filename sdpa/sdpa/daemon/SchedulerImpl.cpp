@@ -247,7 +247,7 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::J
 		while( !pQueue->empty() )
 		{
 			sdpa::job_id_t jobId = pQueue->pop_and_wait();
-			DMLOG (TRACE "Re-scheduling the job "<<jobId.str()<<" ... ");
+			DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
 			reschedule(worker_id, jobId);
 		}
 	}
