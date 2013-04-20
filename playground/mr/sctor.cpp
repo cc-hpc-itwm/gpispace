@@ -49,31 +49,11 @@ private:
   std::list<std::string>& _path;
 };
 
-template<typename T>
-const T& field ( const std::list<std::string>& path
-               , const std::string& f
-               , const value_type& v
-               , const signature_type& signature
-               )
-{
-  const value_type& field (field<value_type> (path, f, v, signature));
-
-  const T* x (boost::get<const T> (&field));
-
-  if (!x)
-  {
-    throw type_mismatch (signature, field, path);
-  }
-
-  return *x;
-}
-
-template<>
-const value_type& field<value_type> ( const std::list<std::string>& path
-                                    , const std::string& f
-                                    , const value_type& v
-                                    , const signature_type& signature
-                                    )
+const value_type& field_value ( const std::list<std::string>& path
+                              , const std::string& f
+                              , const value_type& v
+                              , const signature_type& signature
+                              )
 {
   boost::optional<const value_type&> field (peek (f, v));
 
@@ -83,6 +63,25 @@ const value_type& field<value_type> ( const std::list<std::string>& path
   }
 
   return *field;
+}
+
+template<typename T>
+const T& field ( const std::list<std::string>& path
+               , const std::string& f
+               , const value_type& v
+               , const signature_type& signature
+               )
+{
+  const value_type& field (field_value (path, f, v, signature));
+
+  const T* x (boost::get<const T> (&field));
+
+  if (!x)
+  {
+    throw type_mismatch (signature, field, path);
+  }
+
+  return *x;
 }
 
 // to be generated
@@ -127,7 +126,7 @@ namespace z
       int i;
 
       type (const value_type& v)
-        : x (field<value_type> (append (ctor_path(), "x"), "x", v, x::type::signature()))
+        : x (field_value (append (ctor_path(), "x"), "x", v, x::type::signature()))
         , i (field<int> (append (ctor_path(), "i"), "i", v, of_type ("int")))
       {}
       static signature_type& signature()
@@ -158,8 +157,8 @@ namespace z
 
     type (const value_type& v)
       : l (field<std::list<value_type> > (append (ctor_path(), "l"), "l", v, of_type ("list")))
-      , y (field<value_type> (append (ctor_path(), "y"), "y", v, y::type::signature()))
-      , yy (field<value_type> (append (ctor_path(), "yy"), "yy", v, y::type::signature()))
+      , y (field_value (append (ctor_path(), "y"), "y", v, y::type::signature()))
+      , yy (field_value (append (ctor_path(), "yy"), "yy", v, y::type::signature()))
     {}
     static const signature_type& signature()
     {
