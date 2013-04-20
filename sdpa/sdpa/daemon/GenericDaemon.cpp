@@ -1312,7 +1312,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
      return;
    }
 
-  SDPA_LOG_DEBUG("The worker \""<<worker_id<<"\" reported its capabilities: "<<pCpbGainEvt->capabilities());
+  DMLOG (TRACE, "The worker \""<<worker_id<<"\" reported its capabilities: "<<pCpbGainEvt->capabilities());
 
   try
   {

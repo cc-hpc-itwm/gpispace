@@ -41,7 +41,7 @@ WorkerManager::~WorkerManager()
 {
   lock_type lock(mtx_);
 
-  SDPA_LOG_DEBUG("The destructor of the WorkerManager was called ...");
+  DMLOG (TRACE, "The destructor of the WorkerManager was called ...");
   if( worker_map_.size() )
   {
     SDPA_LOG_WARN( "there are still entries left in the worker map: " << worker_map_.size());

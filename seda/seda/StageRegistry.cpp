@@ -121,7 +121,7 @@ void StageRegistry::stopAll() {
 void StageRegistry::clear() {
     lock_type lock (m_mutex);
 
-    SEDA_LOG_DEBUG("removing all registered stages");
+    DMLOG (TRACE, "removing all registered stages");
     stopAll();
     _stages.clear();
     _stage_names.clear();

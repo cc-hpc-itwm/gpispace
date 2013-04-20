@@ -272,7 +272,7 @@ int main (int argc, char **argv)
       result = sigwait(&waitset, &sig);
       if (result == 0)
       {
-        LOG(DEBUG, "got signal: " << sig);
+        DMLOG (TRACE, "got signal: " << sig);
         switch (sig)
         {
         case SIGTERM:
@@ -280,7 +280,7 @@ int main (int argc, char **argv)
           signal_ignored = false;
           break;
         default:
-          LOG(INFO, "ignoring signal: " << sig);
+          DMLOG (TRACE, "ignoring signal: " << sig);
           break;
         }
       }

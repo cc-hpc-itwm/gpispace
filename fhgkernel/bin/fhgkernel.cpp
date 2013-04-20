@@ -464,11 +464,11 @@ int main(int ac, char **av)
 
   int rc = kernel->run_and_unload (false);
 
-  MLOG (TRACE, "killing children...");
+  DMMLOG (TRACE, "killing children...");
 
   kill (0, SIGTERM);
 
-  MLOG (DEBUG, "shutting down... (" << rc << ")");
+  DMLOG (TRACE, "shutting down... (" << rc << ")");
 
   kernel->unload_all();
 

@@ -62,7 +62,7 @@ void Worker::update()
 void Worker::dispatch(const sdpa::job_id_t& jobId)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
+	DMLOG (TRACE, "appending job(" << jobId.str() << ") to the pending queue");
 	setLastScheduleTime(sdpa::util::now());
 	pending_.push(jobId);
 }

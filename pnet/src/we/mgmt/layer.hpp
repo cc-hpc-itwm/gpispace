@@ -532,7 +532,7 @@ namespace we { namespace mgmt {
 
       void stop()
       {
-        LOG(DEBUG, "Workflow Management layer stopping...");
+        DMLOG(TRACE, "Workflow Management layer stopping...");
 
         DLOG(TRACE, "cleaning up manager thread...");
         manager_.interrupt();
