@@ -284,7 +284,7 @@ namespace we { namespace mgmt {
         }
         catch (const std::exception &)
         {
-          LOG(ERROR, "tried to notify cancelled for unknown activity " << id);
+          DMLOG (WARN, "tried to notify cancelled for unknown activity " << id);
           return false;
         }
       }
@@ -986,10 +986,10 @@ namespace we { namespace mgmt {
           descriptor_ptr desc (lookup(internal_id));
           desc->failed();
 
-          MLOG ( WARN
-               , "failed (" << desc->name() << ")-" << desc->id() << " : "
-               << desc->error_message ()
-               );
+          DMLOG ( WARN
+                , "failed (" << desc->name() << ")-" << desc->id() << " : "
+                << desc->error_message ()
+                );
 
           if (sig_failed.connected())
             sig_failed ( this
@@ -1063,7 +1063,7 @@ namespace we { namespace mgmt {
           }
           else if (desc->came_from_external ())
           {
-            LOG(INFO, "notifying agent: failed (" << desc->name() << ")-" << desc->id());
+            DMLOG (TRACE, "notifying agent: failed (" << desc->name() << ")-" << desc->id());
 
             ext_failed ( desc->from_external_id()
                        , desc->activity().to_string()
@@ -1133,7 +1133,7 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found&)
         {
-          LOG (WARN, "got cancel request for old activity: " << internal_id);
+          DMLOG (WARN, "got cancel request for old activity: " << internal_id);
         }
       }
 

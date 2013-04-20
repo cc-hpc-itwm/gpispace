@@ -621,7 +621,7 @@ public:
 
     if (job_it == m_jobs.end())
     {
-      MLOG(ERROR, "could not cancel job: " << e->job_id() << ": not found");
+      DMLOG (WARN, "could not cancel job: " << e->job_id() << ": not found");
       send_event(new sdpa::events::ErrorEvent
                 ( m_my_name
                 , e->from()
@@ -631,7 +631,7 @@ public:
     }
     else if (job_it->second->owner() != e->from())
     {
-      MLOG(ERROR, "could not cancel job: " << e->job_id() << ": not owner");
+      DMLOG (ERROR, "could not cancel job: " << e->job_id() << ": not owner");
       send_event (new sdpa::events::ErrorEvent
                  ( m_my_name
                  , e->from()

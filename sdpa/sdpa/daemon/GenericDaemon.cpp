@@ -1023,7 +1023,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     }
     default:
     {
-      MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
+      DMLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
     }
   }
 }
