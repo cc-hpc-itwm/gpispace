@@ -1,118 +1,88 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/value.hpp>
+#include <we/type/value/exception.hpp>
+#include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/show.hpp>
-#include <we/type/value/exception.hpp>
+#include <we/type/value/signature.hpp>
+#include <we/type/value/signature/of_type.hpp>
 
 #include <iostream>
 
 using pnet::type::value::value_type;
+using pnet::type::value::signature_type;
 using pnet::type::value::structured_type;
+using pnet::type::value::peek;
+using pnet::type::value::poke;
+using pnet::type::value::of_type;
 using pnet::type::value::exception::missing_field;
 using pnet::type::value::exception::type_mismatch;
 
-namespace
+static std::list<std::string> init_ctor_path()
 {
-  template<typename T>
-  class visitor_field : public boost::static_visitor<const T&>
-  {
-  public:
-    visitor_field ( const std::list<std::string>& path
-                  , const std::string& field
-                  )
-      : _path (path)
-      , _field (field)
-    {}
-    const T& operator() (const structured_type& m) const
-    {
-      const structured_type::const_iterator pos (m.find (_field));
-
-      if (pos == m.end())
-      {
-        throw missing_field (T(), _path);
-      }
-
-      const T* x (boost::get<const T> (&pos->second));
-
-      if (!x)
-      {
-        throw type_mismatch (T(), pos->second, _path);
-      }
-
-      return *x;
-    }
-    template<typename X>
-    const T& operator() (const X& x) const
-    {
-      throw type_mismatch (T(), x, _path);
-    }
-
-  private:
-    const std::list<std::string>& _path;
-    const std::string _field;
-  };
-  template<>
-  class visitor_field<value_type>
-    : public boost::static_visitor<const value_type&>
-  {
-  public:
-    visitor_field ( const std::list<std::string>& path
-                  , const std::string& field
-                  )
-      : _path (path)
-      , _field (field)
-    {}
-    const value_type& operator() (const structured_type& m) const
-    {
-      const structured_type::const_iterator pos (m.find (_field));
-
-      if (pos == m.end())
-      {
-        throw missing_field (structured_type(), _path);
-      }
-
-      return pos->second;
-    }
-    template<typename X>
-    const value_type& operator() (const X& x) const
-    {
-      throw type_mismatch (structured_type(), x, _path);
-    }
-
-  private:
-    const std::list<std::string>& _path;
-    const std::string _field;
-  };
-
-  class append
-  {
-  public:
-    append (std::list<std::string>& path, const std::string& x)
-      : _path (path)
-    {
-      _path.push_back (x);
-    }
-    ~append()
-    {
-      _path.pop_back();
-    }
-    operator std::list<std::string>& () const
-    {
-      return _path;
-    }
-  private:
-    std::list<std::string>& _path;
-  };
+  return std::list<std::string>();
 }
+static std::list<std::string>& ctor_path()
+{
+  static std::list<std::string> p (init_ctor_path());
+
+  return p;
+}
+class append
+{
+public:
+  append (std::list<std::string>& path, const std::string& x)
+    : _path (path)
+  {
+    _path.push_back (x);
+  }
+  ~append()
+  {
+    _path.pop_back();
+  }
+  operator std::list<std::string>&() const
+  {
+    return _path;
+  }
+private:
+  std::list<std::string>& _path;
+};
 
 template<typename T>
-const T& field ( std::list<std::string>& path
+const T& field ( const std::list<std::string>& path
                , const std::string& f
                , const value_type& v
+               , const signature_type& signature
                )
 {
-  return boost::apply_visitor (visitor_field<T> (append (path, f), f), v);
+  const value_type& field (field<value_type> (path, f, v, signature));
+
+  const T* x (boost::get<const T> (&field));
+
+  if (!x)
+  {
+    throw type_mismatch (signature, field, path);
+  }
+
+  return *x;
+}
+
+template<>
+const value_type& field<value_type> ( const std::list<std::string>& path
+                                    , const std::string& f
+                                    , const value_type& v
+                                    , const signature_type& signature
+                                    )
+{
+  boost::optional<const value_type&> field (peek (f, v));
+
+  if (!field)
+  {
+    throw missing_field (signature, path);
+  }
+
+  return *field;
 }
 
 // to be generated
@@ -127,10 +97,27 @@ namespace z
         float f;
         std::string s;
 
-        type (const value_type& v, std::list<std::string>& path)
-          : f (field<float> (path, "f", v))
-          , s (field<std::string> (path, "s", v))
+        type (const value_type& v)
+          : f (field<float> (append (ctor_path(), "f"), "f", v, of_type ("float")))
+          , s (field<std::string> (append (ctor_path(), "s"), "s", v, of_type ("string")))
         {}
+        static signature_type signature()
+        {
+          static signature_type sig (type::init_signature());
+
+          return sig;
+        }
+
+      private:
+        static signature_type init_signature()
+        {
+          signature_type s;
+
+          poke ("f", s, of_type ("float"));
+          poke ("s", s, of_type ("string"));
+
+          return s;
+        }
       };
     }
 
@@ -139,10 +126,27 @@ namespace z
       x::type x;
       int i;
 
-      type (const value_type& v, std::list<std::string>& path)
-        : x (field<value_type> (path, "x", v), append (path, "x"))
-        , i (field<int> (path, "i", v))
+      type (const value_type& v)
+        : x (field<value_type> (append (ctor_path(), "x"), "x", v, x::type::signature()))
+        , i (field<int> (append (ctor_path(), "i"), "i", v, of_type ("int")))
       {}
+      static signature_type& signature()
+      {
+        static signature_type sig (type::init_signature());
+
+        return sig;
+      }
+
+    private:
+      static signature_type init_signature()
+      {
+        signature_type s;
+
+        poke ("x", s, x::type::signature());
+        poke ("i", s, of_type ("int"));
+
+        return s;
+      }
     };
   }
 
@@ -152,18 +156,34 @@ namespace z
     y::type y;
     y::type yy;
 
-    type (const value_type& v, std::list<std::string>& path)
-      : l (field<std::list<value_type> > (path, "l", v))
-      , y (field<value_type> (path, "y", v), append (path, "y"))
-      , yy (field<value_type> (path, "yy", v), append (path, "yy"))
+    type (const value_type& v)
+      : l (field<std::list<value_type> > (append (ctor_path(), "l"), "l", v, of_type ("list")))
+      , y (field<value_type> (append (ctor_path(), "y"), "y", v, y::type::signature()))
+      , yy (field<value_type> (append (ctor_path(), "yy"), "yy", v, y::type::signature()))
     {}
+    static const signature_type& signature()
+    {
+      static signature_type s (type::init_signature());
+
+      return s;
+    }
+
+  private:
+    static signature_type init_signature()
+    {
+      signature_type s;
+
+      poke ("l", s, of_type ("list"));
+      poke ("y", s, y::type::signature());
+      poke ("yy", s, y::type::signature());
+
+      return s;
+    }
   };
 }
 
 int main ()
 {
-  using pnet::type::value::poke;
-
   value_type v;
 
   poke ("l", v, std::list<value_type>());
@@ -176,9 +196,7 @@ int main ()
 
   std::cout << v << std::endl;
 
-  std::list<std::string> path;
-
-  z::type z (v, path);
+  z::type z (v);
 
   std::cout << z.y.x.f << std::endl;
   std::cout << z.y.x.s << std::endl;
