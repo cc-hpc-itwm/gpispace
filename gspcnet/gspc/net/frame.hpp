@@ -63,9 +63,6 @@ namespace gspc
       frame & add_body (std::string const & body);
       frame & add_body (const char *buf, std::size_t len);
 
-      // sets content-length header
-      frame & close ();
-
       body_type const & get_body () const { return m_body; }
       std::string get_body_as_string () const;
 

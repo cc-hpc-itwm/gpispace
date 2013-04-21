@@ -79,17 +79,6 @@ namespace gspc
       return *this;
     }
 
-    frame & frame::close ()
-    {
-      if (m_body.size ())
-      {
-        set_header ( "content-length"
-                   , boost::lexical_cast<value_type>(m_body.size ())
-                   );
-      }
-      return *this;
-    }
-
     std::string frame::get_body_as_string () const
     {
       return std::string (m_body.begin (), m_body.end ());

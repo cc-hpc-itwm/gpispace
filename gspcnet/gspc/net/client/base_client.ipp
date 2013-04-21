@@ -94,7 +94,6 @@ namespace gspc
       {
         frame f (make::send_frame (header::destination (dst)));
         f.set_body (body);
-        f.close ();
         return send_raw (f);
       }
 
