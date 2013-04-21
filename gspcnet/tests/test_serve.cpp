@@ -91,8 +91,8 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
-  // one might have to increase ulimit nofile for that to work
-  static const size_t NUM_CLIENTS = 1000;
+  using namespace gspc::net::tests;
+  static const size_t NUM_CLIENTS = 10000;
 
   gspc::net::server::queue_manager_t qmgr;
 
@@ -100,8 +100,12 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
     gspc::net::serve ("unix://socket.foo", qmgr);
   BOOST_REQUIRE (server);
 
+  mock::user subscriber;
+  qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
+
   std::vector<gspc::net::client_ptr_t> clients;
 
+  std::size_t msgs_sent = 0;
   for (size_t i = 0 ; i < NUM_CLIENTS ; ++i)
   {
     gspc::net::client_ptr_t client =
@@ -109,10 +113,22 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
     BOOST_CHECK (client);
 
     if (client)
+    {
       clients.push_back (client);
+
+      client->send ("/test/send", "hello world");
+      ++msgs_sent;
+    }
   }
 
   BOOST_REQUIRE_EQUAL (clients.size (), NUM_CLIENTS);
+
+  while (subscriber.frames.size () != msgs_sent)
+  {
+    usleep (100);
+  }
+
+  BOOST_REQUIRE_EQUAL (subscriber.frames.size (), msgs_sent);
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
