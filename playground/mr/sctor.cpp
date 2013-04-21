@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+// file: general/ctor.hpp/ctor.cpp
 namespace pnet
 {
   namespace type
@@ -116,18 +117,57 @@ using pnet::type::value::path;
 //   <field name="y" type="y"/>
 //   <field name="yy" type="y"/>
 // </struct>
+
+#define INCLUDE(...)
+
+// file type/y.hpp
 namespace y
 {
   namespace x
   {
-    static signature_type init_signature()
+    static signature_type signature();
+
+    struct type
     {
-      signature_type s;
+      float f;
+      std::string s;
 
-      poke ("f", s, of_type ("float"));
-      poke ("s", s, of_type ("string"));
+      type();
+      explicit type (const value_type&);
+    };
+  }
 
-      return s;
+  static signature_type& signature();
+
+  struct type
+  {
+    x::type x;
+    int i;
+
+    type();
+    explicit type (const value_type&);
+  };
+}
+
+// file type/y.cpp
+
+INCLUDE (type/y.hpp)
+
+namespace y
+{
+  namespace x
+  {
+    namespace
+    {
+      static signature_type init_signature()
+      {
+        signature_type s;
+
+        poke ("f", s, of_type ("float"));
+        poke ("s", s, of_type ("string"));
+
+        return s;
+      }
     }
 
     static signature_type signature()
@@ -137,30 +177,27 @@ namespace y
       return sig;
     }
 
-    struct type
-    {
-      float f;
-      std::string s;
-
-      type()
-        : f()
-        , s()
-      {}
-      explicit type (const value_type& v)
+    type::type()
+      : f()
+      , s()
+    {}
+    type::type (const value_type& v)
       : f (field_as<float> (path ("f"), v, of_type ("float")))
       , s (field_as<std::string> (path ("s"), v, of_type ("string")))
-      {}
-    };
+    {}
   }
 
-  static signature_type init_signature()
+  namespace
   {
-    signature_type s;
+    static signature_type init_signature()
+    {
+      signature_type s;
 
-    poke ("x", s, x::signature());
-    poke ("i", s, of_type ("int"));
+      poke ("x", s, x::signature());
+      poke ("i", s, of_type ("int"));
 
-    return s;
+      return s;
+    }
   }
 
   static signature_type& signature()
@@ -170,33 +207,51 @@ namespace y
     return sig;
   }
 
-  struct type
-  {
-    x::type x;
-    int i;
-
-    type()
-      : x()
-      , i()
-    {}
-    explicit type (const value_type& v)
+  type::type()
+    : x()
+    , i()
+  {}
+  type::type (const value_type& v)
     : x (field (path ("x"), v, x::signature()))
     , i (field_as<int> (path ("i"), v, of_type ("int")))
-    {}
+  {}
+}
+
+// file: type/z.hpp
+namespace z
+{
+  static const signature_type& signature();
+
+  struct type
+  {
+    std::list<value_type> l;
+    y::type y;
+    y::type yy;
+
+    type();
+    explicit type (const value_type&);
   };
 }
 
+
+// file: type/z.cpp
+
+INCLUDE (type/z.hpp)
+
 namespace z
 {
-  static signature_type init_signature()
+  namespace
   {
-    signature_type s;
+    static signature_type init_signature()
+    {
+      signature_type s;
 
-    poke ("l", s, of_type ("list"));
-    poke ("y", s, y::signature());
-    poke ("yy", s, y::signature());
+      poke ("l", s, of_type ("list"));
+      poke ("y", s, y::signature());
+      poke ("yy", s, y::signature());
 
-    return s;
+      return s;
+    }
   }
 
   static const signature_type& signature()
@@ -206,26 +261,19 @@ namespace z
     return s;
   }
 
-  struct type
-  {
-    std::list<value_type> l;
-    y::type y;
-    y::type yy;
-
-    type()
-      : l()
-      , y()
-      , yy()
-    {}
-    explicit type (const value_type& v)
-      : l (field_as<std::list<value_type> > (path ("l"), v, of_type ("list")))
-      , y (field (path ("y"), v, y::signature()))
-      , yy (field (path ("yy"), v, y::signature()))
-    {}
-  };
+  type::type()
+    : l()
+    , y()
+    , yy()
+  {}
+  type::type (const value_type& v)
+    : l (field_as<std::list<value_type> > (path ("l"), v, of_type ("list")))
+    , y (field (path ("y"), v, y::signature()))
+    , yy (field (path ("yy"), v, y::signature()))
+  {}
 }
 
-int main ()
+int main()
 {
   value_type v;
 
