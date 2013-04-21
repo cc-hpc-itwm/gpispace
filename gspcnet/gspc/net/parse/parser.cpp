@@ -299,7 +299,7 @@ namespace gspc
             }
             else
             {
-              frame.get_body ().push_back (c);
+              frame.add_body (&c, 1);
               return PARSE_NEED_MORE_DATA;
             }
           }
@@ -307,7 +307,7 @@ namespace gspc
           {
             if (m_remaining_body_bytes)
             {
-              frame.get_body ().push_back (c);
+              frame.add_body (&c, 1);
               --m_remaining_body_bytes;
             }
 
