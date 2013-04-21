@@ -67,7 +67,7 @@ namespace gspc
     {
       m_body.assign (body.begin (), body.end ());
 
-      return *this;
+      return update_content_length ();
     }
 
     frame & frame::add_body (std::string const &body)
@@ -76,7 +76,7 @@ namespace gspc
                     , body.begin ()
                     , body.end ()
                     );
-      return *this;
+      return update_content_length ();
     }
 
     frame & frame::add_body (const char *bytes, size_t len)
@@ -85,7 +85,7 @@ namespace gspc
                     , bytes
                     , bytes + len
                     );
-      return *this;
+      return update_content_length ();
     }
 
     std::string frame::get_body_as_string () const
@@ -136,6 +136,20 @@ namespace gspc
           ;
       }
       return os.str ();
+    }
+
+    frame & frame::update_content_length ()
+    {
+      if (not m_body.empty ())
+      {
+        return set_header ( "content-length"
+                          , boost::lexical_cast<value_type>(m_body.size ())
+                          );
+      }
+      else
+      {
+        return del_header ("content-length");
+      }
     }
   }
 }
