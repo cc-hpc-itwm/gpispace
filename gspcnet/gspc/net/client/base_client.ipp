@@ -92,9 +92,12 @@ namespace gspc
                                    , std::string const & body
                                    )
       {
-        frame f (make::send_frame (header::destination (dst)));
-        f.set_body (body);
-        return send_raw (f);
+        return send_raw
+          (make::send_frame ( header::destination (dst)
+                            , body.c_str ()
+                            , body.size ()
+                            )
+          );
       }
 
       template <class Proto>

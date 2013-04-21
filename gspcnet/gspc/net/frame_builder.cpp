@@ -63,9 +63,11 @@ namespace gspc
         return f;
       }
 
-      frame send_frame (gspc::net::header::destination const & dst)
+      frame send_frame ( gspc::net::header::destination const & dst
+                       , const char *body, size_t len
+                       )
       {
-        frame f ("SEND");
+        frame f ("SEND", body, len);
         dst.apply_to (f);
         return f;
       }

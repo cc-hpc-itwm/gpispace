@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE (test_connected_frame)
 BOOST_AUTO_TEST_CASE (test_send_frame)
 {
   frame f = make::send_frame
-    (header::destination ("foo"));
+    (header::destination ("foo"), "", 0);
 
   BOOST_REQUIRE_EQUAL (f.get_command (), "SEND");
   BOOST_REQUIRE_EQUAL (*f.get_header ("destination"), "foo");
@@ -48,8 +48,7 @@ BOOST_AUTO_TEST_CASE (test_send_frame)
 
 BOOST_AUTO_TEST_CASE (test_message_frame)
 {
-  frame s = make::send_frame
-    (header::destination ("foo"));
+  frame s = make::send_frame(header::destination ("foo"), "12345", 5);
   s.set_header ("my-header-1", "1");
   s.set_header ("my-header-2", "2");
   s.set_header ("my-header-3", "3");
@@ -61,6 +60,8 @@ BOOST_AUTO_TEST_CASE (test_message_frame)
   BOOST_REQUIRE_EQUAL (*f.get_header ("my-header-1"), "1");
   BOOST_REQUIRE_EQUAL (*f.get_header ("my-header-2"), "2");
   BOOST_REQUIRE_EQUAL (*f.get_header ("my-header-3"), "3");
+  BOOST_REQUIRE_EQUAL (f.get_body ().size (), 5);
+  BOOST_REQUIRE_EQUAL (f.get_body_as_string (), "12345");
 }
 
 BOOST_AUTO_TEST_CASE (test_subscribe_frame)
