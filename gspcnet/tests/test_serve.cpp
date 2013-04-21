@@ -1,6 +1,10 @@
 #define BOOST_TEST_MODULE GspcNetServe
 #include <boost/test/unit_test.hpp>
 
+#include <errno.h>
+#include <string.h>
+#include <sys/resource.h>
+
 #include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
 
@@ -18,6 +22,26 @@
 #include "mock_user.hpp"
 
 namespace fs = boost::filesystem;
+
+struct SetRLimits
+{
+  SetRLimits ()
+  {
+    struct rlimit lim;
+    lim.rlim_cur = 60000;
+    lim.rlim_max = 60000;
+
+    if (-1 == setrlimit (RLIMIT_NOFILE, &lim))
+    {
+      std::cerr << "setrlimit failed: " << strerror (errno) << std::endl;
+    }
+  }
+
+  ~SetRLimits ()
+  {}
+};
+
+BOOST_GLOBAL_FIXTURE (SetRLimits);
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
 {
