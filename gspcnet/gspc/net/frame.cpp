@@ -20,7 +20,9 @@ namespace gspc
       : m_command (command)
       , m_header ()
       , m_body (data, data + len)
-    {}
+    {
+      update_content_length ();
+    }
 
     frame & frame::set_command (std::string const & cmd)
     {
