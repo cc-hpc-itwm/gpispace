@@ -89,7 +89,7 @@ namespace gspc
         //
         // MEMBER VARIABLES
         //
-        mutable boost::shared_mutex m_subscription_mutex;
+        mutable boost::shared_mutex m_mutex;
 
         // subscriptions
         //     if queue not already there, create it

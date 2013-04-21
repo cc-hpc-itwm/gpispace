@@ -22,14 +22,14 @@ namespace gspc
     namespace server
     {
       queue_manager_t::queue_manager_t ()
-        : m_subscription_mutex ()
+        : m_mutex ()
         , m_subscriptions ()
         , m_user_subscriptions ()
         , m_service_demux (gspc::net::server::default_service_demux())
       {}
 
       queue_manager_t::queue_manager_t (service_demux_t &demux)
-        : m_subscription_mutex ()
+        : m_mutex ()
         , m_subscriptions ()
         , m_user_subscriptions ()
         , m_service_demux (demux)
@@ -193,7 +193,7 @@ namespace gspc
       int
       queue_manager_t::disconnect (user_ptr user)
       {
-        unique_lock lock (m_subscription_mutex);
+        unique_lock lock (m_mutex);
 
         user_subscription_map_t::iterator user_it =
           m_user_subscriptions.find (user);
@@ -238,7 +238,7 @@ namespace gspc
                                 )
       {
         int rc = 0;
-        shared_lock lock (m_subscription_mutex);
+        shared_lock lock (m_mutex);
 
         subscription_map_t::iterator sub_it =
           m_subscriptions.find (dst);
@@ -286,7 +286,7 @@ namespace gspc
       {
         int rc = 0;
 
-        unique_lock lock (m_subscription_mutex);
+        unique_lock lock (m_mutex);
 
         s_maybe_send_receipt (user, f);
 
@@ -328,7 +328,7 @@ namespace gspc
                                        , frame const &f
                                        )
       {
-        unique_lock lock (m_subscription_mutex);
+        unique_lock lock (m_mutex);
 
         user_subscription_map_t::iterator user_it =
           m_user_subscriptions.find (user);
