@@ -28,6 +28,8 @@ namespace gspc
         : m_command (command)
       {}
 
+      frame (std::string const & command, const char *data, const size_t len);
+
       std::string const & get_command () const { return m_command; }
       frame & set_command (std::string const &cmd);
 

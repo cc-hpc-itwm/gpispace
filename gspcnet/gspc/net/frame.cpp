@@ -13,6 +13,15 @@ namespace gspc
 {
   namespace net
   {
+    frame::frame ( std::string const & command
+                 , const char *data
+                 , const size_t len
+                 )
+      : m_command (command)
+      , m_header ()
+      , m_body (data, data + len)
+    {}
+
     frame & frame::set_command (std::string const & cmd)
     {
       m_command = cmd;
