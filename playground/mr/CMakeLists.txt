@@ -12,6 +12,7 @@ include_directories (${UTIL_INCLUDE_DIR})
 
 add_library (we-value
   we/type/value/exception.cpp
+  we/type/value/field.cpp
   we/type/value/path/join.cpp
   we/type/value/path/split.cpp
   we/type/value/peek.cpp
