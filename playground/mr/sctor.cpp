@@ -1,5 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE pnet_type_value_ctor
+#include <boost/test/unit_test.hpp>
+
 #include <we/type/value.hpp>
 #include <we/type/value/exception.hpp>
 #include <we/type/value/peek.hpp>
@@ -135,6 +138,8 @@ namespace y
       type();
       explicit type (const value_type&);
     };
+
+    value_type value (const type&);
   }
 
   static signature_type& signature();
@@ -147,6 +152,8 @@ namespace y
     type();
     explicit type (const value_type&);
   };
+
+  value_type value (const type&);
 }
 
 // file type/y.cpp
@@ -185,6 +192,16 @@ namespace y
       : f (field_as<float> (path ("f"), v, of_type ("float")))
       , s (field_as<std::string> (path ("s"), v, of_type ("string")))
     {}
+
+    value_type value (const type& x)
+    {
+      value_type v;
+
+      poke ("f", v, x.f);
+      poke ("s", v, x.s);
+
+      return v;
+    }
   }
 
   namespace
@@ -215,6 +232,16 @@ namespace y
     : x (field (path ("x"), v, x::signature()))
     , i (field_as<int> (path ("i"), v, of_type ("int")))
   {}
+
+  value_type value (const type& x)
+  {
+    value_type v;
+
+    poke ("x", v, x::value (x.x));
+    poke ("i", v, x.i);
+
+    return v;
+  }
 }
 
 // file: type/z.hpp
@@ -231,6 +258,8 @@ namespace z
     type();
     explicit type (const value_type&);
   };
+
+  value_type value (const type&);
 }
 
 
@@ -271,9 +300,20 @@ namespace z
     , y (field (path ("y"), v, y::signature()))
     , yy (field (path ("yy"), v, y::signature()))
   {}
+
+  value_type value (const type& x)
+  {
+    value_type v;
+
+    poke ("l", v, x.l);
+    poke ("y", v, y::value (x.y));
+    poke ("yy", v, y::value (x.yy));
+
+    return v;
+  }
 }
 
-int main()
+BOOST_AUTO_TEST_CASE (ctor)
 {
   value_type v;
 
@@ -285,14 +325,21 @@ int main()
   poke ("yy.x.s", v, std::string ("string"));
   poke ("yy.i", v, 42);
 
-  std::cout << v << std::endl;
-
   z::type z (v);
 
-  std::cout << as_signature (z::signature()) << std::endl;
+  BOOST_CHECK (v == z::value (z));
 
-  std::cout << z.y.x.f << std::endl;
-  std::cout << z.y.x.s << std::endl;
-  std::cout << z.y.i << std::endl;
-  std::cout << z.l.size() << std::endl;
+  {
+    std::ostringstream sig_z;
+
+    sig_z << as_signature (z::signature());
+
+    std::ostringstream sig_v;
+
+    sig_v << as_signature (v);
+
+    BOOST_CHECK_EQUAL (sig_z.str(), sig_v.str());
+
+  }
+
 }

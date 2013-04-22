@@ -32,5 +32,8 @@ fhg_add_test (value.cpp
   DESCRIPTION "test recursive polymorphic value"
 )
 
-add_executable (sctor sctor.cpp)
-target_link_libraries (sctor we-value we-dev fhg-util)
+fhg_add_test (sctor.cpp
+  PROJECT test_playground_mr
+  LINK_LIBRARIES we-value we-dev fhg-util
+  DESCRIPTION "test handwritten ctors"
+)
