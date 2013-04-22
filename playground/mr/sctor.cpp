@@ -253,7 +253,5 @@ BOOST_AUTO_TEST_CASE (ctor)
   poke ("yy.x.s", v, std::string ("string"));
   poke ("yy.i", v, 42);
 
-  z::type z (v);
-
-  BOOST_CHECK (v == value (z));
+  BOOST_CHECK (v == value (z::type (v)));
 }
