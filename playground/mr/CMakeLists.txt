@@ -20,11 +20,11 @@ add_library (we-value
   we/type/value/read.cpp
   we/type/value/require_type.cpp
   we/type/value/show.cpp
+  we/type/value/signature/cpp/struct.cpp
   we/type/value/signature/name.cpp
   we/type/value/signature/name_of.cpp
   we/type/value/signature/of_type.cpp
   we/type/value/signature/show.cpp
-  we/type/value/signature/cpp/struct.cpp
 )
 
 fhg_add_test (value.cpp
