@@ -95,10 +95,7 @@ namespace pnet
 #include <we/type/value/poke.hpp>
 
 #include <boost/serialization/nvp.hpp>
-#include <boost/serialization/variant.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/set.hpp>
+#include <we/type/value/serialize.hpp>
 
 // to be generated from
 // <struct name="y">
