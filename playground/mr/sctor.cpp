@@ -7,7 +7,6 @@
 #include <we/type/value/exception.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
-#include <we/type/value/show.hpp>
 #include <we/type/value/signature.hpp>
 #include <we/type/value/signature/of_type.hpp>
 #include <we/type/value/signature/show.hpp>
