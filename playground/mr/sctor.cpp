@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE (ctor)
 
   z::type z (v);
 
-  BOOST_CHECK (v == z::value (z));
+  BOOST_CHECK (v == value (z));
 
   {
     std::ostringstream sig_z;
