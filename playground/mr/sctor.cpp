@@ -94,6 +94,12 @@ namespace pnet
 #include <we/type/value/signature/of_type.hpp>
 #include <we/type/value/poke.hpp>
 
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/variant.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/set.hpp>
+
 // to be generated from
 // <struct name="y">
 //   <struct name="x">
@@ -122,6 +128,13 @@ namespace y
 
       type();
       explicit type (const pnet::type::value::value_type&);
+
+      template<typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & BOOST_SERIALIZATION_NVP (f);
+        ar & BOOST_SERIALIZATION_NVP (s);
+      }
     };
 
     pnet::type::value::value_type value (const type&);
@@ -134,6 +147,13 @@ namespace y
 
     type();
     explicit type (const pnet::type::value::value_type&);
+
+    template<typename Archive>
+    void serialize (Archive& ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP (x);
+      ar & BOOST_SERIALIZATION_NVP (i);
+    }
   };
 
   pnet::type::value::value_type value (const type&);
@@ -198,6 +218,14 @@ namespace z
 
     type();
     explicit type (const pnet::type::value::value_type&);
+
+    template<typename Archive>
+    void serialize (Archive& ar, const unsigned int)
+    {
+      ar & BOOST_SERIALIZATION_NVP (l);
+      ar & BOOST_SERIALIZATION_NVP (y);
+      ar & BOOST_SERIALIZATION_NVP (yy);
+    }
   };
 
   pnet::type::value::value_type value (const type&);
@@ -233,6 +261,9 @@ namespace z
   }
 }
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
 BOOST_AUTO_TEST_CASE (ctor)
 {
   using pnet::type::value::value_type;
@@ -248,5 +279,24 @@ BOOST_AUTO_TEST_CASE (ctor)
   poke ("yy.x.s", v, std::string ("string"));
   poke ("yy.i", v, 42);
 
-  BOOST_CHECK (v == value (z::type (v)));
+  std::ostringstream oss;
+
+  {
+    const z::type z (v);
+
+    BOOST_CHECK (v == value (z));
+
+    boost::archive::text_oarchive oa (oss);
+    oa << z;
+  }
+
+  {
+    std::istringstream iss (oss.str());
+    boost::archive::text_iarchive ia (iss);
+    z::type z;
+
+    ia >> z;
+
+    BOOST_CHECK (v == value (z));
+  }
 }
