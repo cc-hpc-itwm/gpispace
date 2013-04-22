@@ -94,14 +94,6 @@ namespace pnet
 #include <we/type/value/signature/of_type.hpp>
 #include <we/type/value/poke.hpp>
 
-using pnet::type::value::value_type;
-using pnet::type::value::poke;
-using pnet::type::value::of_type;
-
-using pnet::type::value::field;
-using pnet::type::value::field_as;
-using pnet::type::value::path;
-
 // to be generated from
 // <struct name="y">
 //   <struct name="x">
@@ -129,10 +121,10 @@ namespace y
       std::string s;
 
       type();
-      explicit type (const value_type&);
+      explicit type (const pnet::type::value::value_type&);
     };
 
-    value_type value (const type&);
+    pnet::type::value::value_type value (const type&);
   }
 
   struct type
@@ -141,10 +133,10 @@ namespace y
     int i;
 
     type();
-    explicit type (const value_type&);
+    explicit type (const pnet::type::value::value_type&);
   };
 
-  value_type value (const type&);
+  pnet::type::value::value_type value (const type&);
 }
 
 // file type/y.cpp
@@ -159,17 +151,17 @@ namespace y
       : f()
       , s()
     {}
-    type::type (const value_type& v)
-      : f (field_as<float> (path ("f"), v, of_type ("float")))
-      , s (field_as<std::string> (path ("s"), v, of_type ("string")))
+    type::type (const pnet::type::value::value_type& v)
+      : f (pnet::type::value::field_as<float> (pnet::type::value::path ("f"), v, pnet::type::value::of_type ("float")))
+      , s (pnet::type::value::field_as<std::string> (pnet::type::value::path ("s"), v, pnet::type::value::of_type ("string")))
     {}
 
-    value_type value (const type& x)
+    pnet::type::value::value_type value (const type& x)
     {
-      value_type v;
+      pnet::type::value::value_type v;
 
-      poke ("f", v, x.f);
-      poke ("s", v, x.s);
+      pnet::type::value::poke ("f", v, x.f);
+      pnet::type::value::poke ("s", v, x.s);
 
       return v;
     }
@@ -179,17 +171,17 @@ namespace y
     : x()
     , i()
   {}
-  type::type (const value_type& v)
-    : x (field (path ("x"), v, value (x::type())))
-    , i (field_as<int> (path ("i"), v, of_type ("int")))
+  type::type (const pnet::type::value::value_type& v)
+    : x (pnet::type::value::field (pnet::type::value::path ("x"), v, value (x::type())))
+    , i (pnet::type::value::field_as<int> (pnet::type::value::path ("i"), v, pnet::type::value::of_type ("int")))
   {}
 
-  value_type value (const type& x)
+  pnet::type::value::value_type value (const type& x)
   {
-    value_type v;
+    pnet::type::value::value_type v;
 
-    poke ("x", v, x::value (x.x));
-    poke ("i", v, x.i);
+    pnet::type::value::poke ("x", v, x::value (x.x));
+    pnet::type::value::poke ("i", v, x.i);
 
     return v;
   }
@@ -200,15 +192,15 @@ namespace z
 {
   struct type
   {
-    std::list<value_type> l;
+    std::list<pnet::type::value::value_type> l;
     y::type y;
     y::type yy;
 
     type();
-    explicit type (const value_type&);
+    explicit type (const pnet::type::value::value_type&);
   };
 
-  value_type value (const type&);
+  pnet::type::value::value_type value (const type&);
 }
 
 
@@ -223,19 +215,19 @@ namespace z
     , y()
     , yy()
   {}
-  type::type (const value_type& v)
-    : l (field_as<std::list<value_type> > (path ("l"), v, of_type ("list")))
-    , y (field (path ("y"), v, value (y::type())))
-    , yy (field (path ("yy"), v, value (y::type())))
+  type::type (const pnet::type::value::value_type& v)
+    : l (pnet::type::value::field_as<std::list<pnet::type::value::value_type> > (pnet::type::value::path ("l"), v, pnet::type::value::of_type ("list")))
+    , y (pnet::type::value::field (pnet::type::value::path ("y"), v, value (y::type())))
+    , yy (pnet::type::value::field (pnet::type::value::path ("yy"), v, value (y::type())))
   {}
 
-  value_type value (const type& x)
+  pnet::type::value::value_type value (const type& x)
   {
-    value_type v;
+    pnet::type::value::value_type v;
 
-    poke ("l", v, x.l);
-    poke ("y", v, y::value (x.y));
-    poke ("yy", v, y::value (x.yy));
+    pnet::type::value::poke ("l", v, x.l);
+    pnet::type::value::poke ("y", v, y::value (x.y));
+    pnet::type::value::poke ("yy", v, y::value (x.yy));
 
     return v;
   }
@@ -243,6 +235,9 @@ namespace z
 
 BOOST_AUTO_TEST_CASE (ctor)
 {
+  using pnet::type::value::value_type;
+  using pnet::type::value::poke;
+
   value_type v;
 
   poke ("l", v, std::list<value_type>());
