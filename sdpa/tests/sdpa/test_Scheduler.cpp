@@ -39,7 +39,7 @@ using namespace sdpa::tests;
 using namespace sdpa::daemon;
 
 const int NWORKERS = 12;
-const int NJOBS    = 20;
+const int NJOBS    = 4;
 const int MAX_CAP  = 100;
 
 const std::string WORKER_CPBS[] = {"CALC", "REDUCE", "MGMT"};
@@ -119,11 +119,12 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 
 	// at this point the job jobId1 should be assigned to one of the workers
 	// matching the requirements of jobId1, i.e. either worker_A or worker_B
+	Worker::worker_id_t workerId1, workerId2;
 	try {
-		Worker::worker_id_t workerId = ptrScheduler->findWorker(jobId1);
-		bool bInvariant = (workerId=="worker_A" || workerId=="worker_B");
+		workerId1 = ptrScheduler->findWorker(jobId1);
+		bool bInvariant = (workerId1=="worker_A" || workerId1=="worker_B");
 		BOOST_CHECK(bInvariant);
-		LOG(INFO, "The job Job1 was scheduled to "<<workerId);
+		LOG(INFO, "The job Job1 was scheduled to "<<workerId1);
 	}
 	catch(WorkerNotFoundException& ex)
 	{
@@ -143,16 +144,18 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 	// at this point the job jobId2 should be assigned to one of the workers
 	// that are matching the requirements of jobId2 and have no job assigned yet
 	try {
-		Worker::worker_id_t workerId = ptrScheduler->findWorker(jobId2);
-		bool bInvariant = (workerId=="worker_A" || workerId=="worker_B");
+		workerId2 = ptrScheduler->findWorker(jobId2);
+		bool bInvariant = (workerId2=="worker_A" || workerId2=="worker_B");
 		BOOST_CHECK(bInvariant);
-		LOG(INFO, "The job Job2 was scheduled to "<<workerId);
+		LOG(INFO, "The job Job2 was scheduled to "<<workerId2);
 	}
 	catch(WorkerNotFoundException& ex)
 	{
 		LOG(FATAL, "The job Job2 wasn't scheduled to any of the workers worker_A or worker_B");
 	}
 
+	// check if the two assigned workers are different
+	BOOST_CHECK(workerId1!=workerId2);
 
 	LOG(INFO, "Delete the worker B now ...");
 	ptrScheduler->delWorker(worker_B );
@@ -181,13 +184,12 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 		LOG(FATAL, "The job Job2 was supposed to be assigned or re-scheduled to worker_A!");
 	}
 
-
 	LOG(INFO, "Add the worker B again ...");
 	ptrScheduler->addWorker(worker_B, 1, cpbSetB);
 
 	LOG(INFO, "Get the next job assigned to the worker B ...");
 	ptrScheduler->getNextJob(worker_B,"");
-	// get the next job to be served to the worker B
+
 	try {
 		Worker::worker_id_t workerId = ptrScheduler->findWorker(jobId1);
 		bool bInvariant = (workerId=="worker_A" || workerId=="worker_B");
