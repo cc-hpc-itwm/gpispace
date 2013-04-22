@@ -6,12 +6,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/exception.hpp>
 #include <we/type/value/peek.hpp>
-#include <we/type/value/poke.hpp>
 #include <we/type/value/signature.hpp>
-#include <we/type/value/signature/of_type.hpp>
-#include <we/type/value/signature/show.hpp>
-
-#include <iostream>
 
 // file: general/ctor.hpp/ctor.cpp
 namespace pnet
@@ -96,11 +91,12 @@ namespace pnet
   }
 }
 
+#include <we/type/value/signature/of_type.hpp>
+#include <we/type/value/poke.hpp>
+
 using pnet::type::value::value_type;
-using pnet::type::value::signature_type;
 using pnet::type::value::poke;
 using pnet::type::value::of_type;
-using pnet::type::value::as_signature;
 
 using pnet::type::value::field;
 using pnet::type::value::field_as;
@@ -127,8 +123,6 @@ namespace y
 {
   namespace x
   {
-    static signature_type signature();
-
     struct type
     {
       float f;
@@ -140,8 +134,6 @@ namespace y
 
     value_type value (const type&);
   }
-
-  static signature_type& signature();
 
   struct type
   {
@@ -163,26 +155,6 @@ namespace y
 {
   namespace x
   {
-    namespace
-    {
-      static signature_type init_signature()
-      {
-        signature_type s;
-
-        poke ("f", s, of_type ("float"));
-        poke ("s", s, of_type ("string"));
-
-        return s;
-      }
-    }
-
-    static signature_type signature()
-    {
-      static signature_type sig (init_signature());
-
-      return sig;
-    }
-
     type::type()
       : f()
       , s()
@@ -203,32 +175,12 @@ namespace y
     }
   }
 
-  namespace
-  {
-    static signature_type init_signature()
-    {
-      signature_type s;
-
-      poke ("x", s, x::signature());
-      poke ("i", s, of_type ("int"));
-
-      return s;
-    }
-  }
-
-  static signature_type& signature()
-  {
-    static signature_type sig (init_signature());
-
-    return sig;
-  }
-
   type::type()
     : x()
     , i()
   {}
   type::type (const value_type& v)
-    : x (field (path ("x"), v, x::signature()))
+    : x (field (path ("x"), v, value (x::type())))
     , i (field_as<int> (path ("i"), v, of_type ("int")))
   {}
 
@@ -246,8 +198,6 @@ namespace y
 // file: type/z.hpp
 namespace z
 {
-  static const signature_type& signature();
-
   struct type
   {
     std::list<value_type> l;
@@ -268,27 +218,6 @@ INCLUDE (type/z.hpp)
 
 namespace z
 {
-  namespace
-  {
-    static signature_type init_signature()
-    {
-      signature_type s;
-
-      poke ("l", s, of_type ("list"));
-      poke ("y", s, y::signature());
-      poke ("yy", s, y::signature());
-
-      return s;
-    }
-  }
-
-  static const signature_type& signature()
-  {
-    static signature_type s (init_signature());
-
-    return s;
-  }
-
   type::type()
     : l()
     , y()
@@ -296,8 +225,8 @@ namespace z
   {}
   type::type (const value_type& v)
     : l (field_as<std::list<value_type> > (path ("l"), v, of_type ("list")))
-    , y (field (path ("y"), v, y::signature()))
-    , yy (field (path ("yy"), v, y::signature()))
+    , y (field (path ("y"), v, value (y::type())))
+    , yy (field (path ("yy"), v, value (y::type())))
   {}
 
   value_type value (const type& x)
@@ -327,18 +256,4 @@ BOOST_AUTO_TEST_CASE (ctor)
   z::type z (v);
 
   BOOST_CHECK (v == value (z));
-
-  {
-    std::ostringstream sig_z;
-
-    sig_z << as_signature (z::signature());
-
-    std::ostringstream sig_v;
-
-    sig_v << as_signature (v);
-
-    BOOST_CHECK_EQUAL (sig_z.str(), sig_v.str());
-
-  }
-
 }
