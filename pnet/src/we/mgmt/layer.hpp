@@ -284,7 +284,7 @@ namespace we { namespace mgmt {
         }
         catch (const std::exception &)
         {
-          LOG(ERROR, "tried to notify cancelled for unknown activity " << id);
+          DMLOG (WARN, "tried to notify cancelled for unknown activity " << id);
           return false;
         }
       }
@@ -476,7 +476,7 @@ namespace we { namespace mgmt {
           // clean up all activities
           while (! activities_.empty())
           {
-            LOG(WARN, "removing remaining activity: " << activities_.begin()->second);
+            DLOG(WARN, "removing remaining activity: " << activities_.begin()->second);
             activities_.erase (activities_.begin());
           }
           ext_to_int_.clear();
@@ -487,8 +487,6 @@ namespace we { namespace mgmt {
     private:
       void start()
       {
-        LOG(DEBUG, "Workflow Management layer starting...");
-
         lock_t lock (mutex_);
 
         manager_   = boost::thread(boost::bind(&layer::manager, this));
@@ -532,7 +530,7 @@ namespace we { namespace mgmt {
 
       void stop()
       {
-        LOG(DEBUG, "Workflow Management layer stopping...");
+        DMLOG(TRACE, "Workflow Management layer stopping...");
 
         DLOG(TRACE, "cleaning up manager thread...");
         manager_.interrupt();
@@ -988,10 +986,10 @@ namespace we { namespace mgmt {
           descriptor_ptr desc (lookup(internal_id));
           desc->failed();
 
-          MLOG ( WARN
-               , "failed (" << desc->name() << ")-" << desc->id() << " : "
-               << desc->error_message ()
-               );
+          DMLOG ( WARN
+                , "failed (" << desc->name() << ")-" << desc->id() << " : "
+                << desc->error_message ()
+                );
 
           if (sig_failed.connected())
             sig_failed ( this
@@ -1065,7 +1063,7 @@ namespace we { namespace mgmt {
           }
           else if (desc->came_from_external ())
           {
-            LOG(INFO, "notifying agent: failed (" << desc->name() << ")-" << desc->id());
+            DMLOG (TRACE, "notifying agent: failed (" << desc->name() << ")-" << desc->id());
 
             ext_failed ( desc->from_external_id()
                        , desc->activity().to_string()
@@ -1135,7 +1133,7 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found&)
         {
-          LOG (WARN, "got cancel request for old activity: " << internal_id);
+          DMLOG (WARN, "got cancel request for old activity: " << internal_id);
         }
       }
 

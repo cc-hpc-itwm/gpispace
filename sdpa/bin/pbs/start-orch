@@ -91,7 +91,7 @@ then
     exit 2
 fi
 
-log "Running $name at $bind_addr"
+log "Running $name on $(hostname)"
 
 argv="$SDPA_HOME/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
 stateful=$(fhgcfg -f "${config_file}" -g sdpa.stateful -v false)

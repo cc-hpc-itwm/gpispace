@@ -89,7 +89,9 @@ public:
       }
       else
       {
-        MLOG(INFO, "initialized loader with search path: " << search_path);
+        DMLOG ( DEBUG
+              , "initialized loader with search path: " << search_path
+              );
       }
 
       // TODO: figure out, why this doesn't work as it is supposed to

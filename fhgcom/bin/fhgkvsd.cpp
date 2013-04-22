@@ -20,7 +20,7 @@ void save_state (int s)
 {
   try
   {
-    LOG(DEBUG, "saving state due to signal: " << s);
+    DMLOG (TRACE, "saving state due to signal: " << s);
     g_kvsd->save();
   }
   catch (std::exception const & ex)
@@ -32,7 +32,7 @@ void load_state (int s)
 {
   try
   {
-    LOG(DEBUG, "loading state due to signal: " << s);
+    DMLOG (TRACE, "loading state due to signal: " << s);
     g_kvsd->load();
   }
   catch (std::exception const & ex)

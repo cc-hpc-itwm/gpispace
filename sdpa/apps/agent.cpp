@@ -258,7 +258,6 @@ int main (int argc, char **argv)
     else
       ptrAgent->start_agent(bUseRequestModel);
 
-    LOG(DEBUG, "waiting for signals...");
     sigset_t waitset;
     int sig(0);
     int result(0);
@@ -272,7 +271,7 @@ int main (int argc, char **argv)
       result = sigwait(&waitset, &sig);
       if (result == 0)
       {
-        LOG(DEBUG, "got signal: " << sig);
+        DMLOG (TRACE, "got signal: " << sig);
         switch (sig)
         {
         case SIGTERM:
@@ -280,7 +279,7 @@ int main (int argc, char **argv)
           signal_ignored = false;
           break;
         default:
-          LOG(INFO, "ignoring signal: " << sig);
+          DMLOG (TRACE, "ignoring signal: " << sig);
           break;
         }
       }

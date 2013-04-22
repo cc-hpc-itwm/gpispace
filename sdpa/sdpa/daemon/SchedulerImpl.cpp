@@ -247,12 +247,14 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::J
 		while( !pQueue->empty() )
 		{
 			sdpa::job_id_t jobId = pQueue->pop_and_wait();
-			SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
+			DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
 			reschedule(worker_id, jobId);
 		}
 	}
 	else
+        {
 		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
+        }
 }
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
@@ -342,7 +344,7 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 */
 void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 {
-  SDPA_LOG_DEBUG("Schedule the job "<<jobId.str()<<" to the workflow engine!");
+  DMLOG (TRACE, "Schedule the job "<<jobId.str()<<" to the workflow engine!");
 
   id_type wf_id = jobId.str();
 
@@ -357,10 +359,10 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
     const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
     // Should set the workflow_id here, or send it together with the workflow description
-    SDPA_LOG_DEBUG("The status of the job "<<jobId<<" is "<<pJob->getStatus());
-    SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<jobId<<" to WE. ");
+    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
+    DMLOG (TRACE, "Submit the workflow attached to the job "<<jobId<<" to WE. ");
     pJob->Dispatch();
-    SDPA_LOG_DEBUG("The status of the job "<<jobId<<" is "<<pJob->getStatus());
+    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
 
     if(pJob->description().empty() )
     {
@@ -432,7 +434,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const Worker::ptr_t
   sdpa::worker_id_t worker_id = pWorker->name();
 
   // attention! rank might not be of one of the preferred nodes when the preferences are not mandatory!
-  SDPA_LOG_DEBUG("Schedule job "<<jobId.str()<<" to the worker "<<worker_id);
+  DMLOG (DEBUG, "Schedule job "<<jobId.str()<<" to the worker "<<worker_id);
 
   // if the worker is marked for deletion don't schedule any job on it
   // should have a monitoring thread that detects the timed-out nodes
@@ -445,7 +447,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const Worker::ptr_t
       return false;
     }
 
-    SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
+    DMLOG (TRACE, "The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
     pWorker->dispatch(jobId);
     return true;
@@ -674,8 +676,6 @@ void SchedulerImpl::start(IAgent* p)
 
   m_thread_run = boost::thread(boost::bind(&SchedulerImpl::run, this));
   m_thread_feed = boost::thread(boost::bind(&SchedulerImpl::feedWorkers, this));
-
-  SDPA_LOG_DEBUG("Scheduler thread started ...");
 }
 
 void SchedulerImpl::stop()
@@ -783,8 +783,6 @@ if(!ptr_comm_handler_)
   stop();
   return;
 }
-
-SDPA_LOG_DEBUG("Scheduler thread running ...");
 
 while(!bStopRequested)
 {
@@ -1020,7 +1018,6 @@ void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
   catch(WorkerNotFoundException const &ex2)
   {
-    SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
     throw ex2;
   }
 }

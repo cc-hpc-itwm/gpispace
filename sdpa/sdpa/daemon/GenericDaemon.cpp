@@ -509,7 +509,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 {
-  LOG( DEBUG, e.from() << " requesting to delete job " << e.job_id() );
+  DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
 
   try{
     Job::ptr_t pJob = jobManager()->findJob(e.job_id());
@@ -1023,7 +1023,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     }
     default:
     {
-      MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
+      DMLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
     }
   }
 }
@@ -1312,7 +1312,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
      return;
    }
 
-  SDPA_LOG_DEBUG("The worker \""<<worker_id<<"\" reported its capabilities: "<<pCpbGainEvt->capabilities());
+  DMLOG (TRACE, "The worker \""<<worker_id<<"\" reported its capabilities: "<<pCpbGainEvt->capabilities());
 
   try
   {
