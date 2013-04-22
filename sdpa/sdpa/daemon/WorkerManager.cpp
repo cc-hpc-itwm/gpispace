@@ -258,7 +258,7 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::ptr_t& pThiefWorker)
     	//check if pThiefWorker has similar capabilities
         if(pThiefWorker->hasSimilarCapabilites(pWorker))
         {
-        	sdpa::job_id_t jobId = pWorker->pending().pop();
+        	sdpa::job_id_t jobId = pWorker->pending().pop_back();
         	return jobId;
         }
     }
