@@ -509,8 +509,11 @@ void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
   {
     Worker::ptr_t ptrWorker = iter->second;
-    if( !(ptrWorker->pending().empty() && common_queue_.empty()) &&
-        ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
+    if( !ptrWorker->lastTimeServed() )
+    	workerList.push_back(ptrWorker->name());
+    else
+    	if( !(ptrWorker->pending().empty() && common_queue_.empty()) &&
+    			ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
           workerList.push_back(ptrWorker->name());
   }
 
