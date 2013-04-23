@@ -61,7 +61,9 @@ namespace pnet
 
       std::ostream& as_struct::operator() (std::ostream& os) const
       {
-        return boost::apply_visitor (visitor_struct (os, _indent), _signature);
+        return boost::apply_visitor ( visitor_struct (os, _indent)
+                                    , _signature.value()
+                                    );
       }
 
       std::ostream& operator<< (std::ostream& os, const as_struct& as)

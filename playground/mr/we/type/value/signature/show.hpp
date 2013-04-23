@@ -16,10 +16,10 @@ namespace pnet
       class as_signature
       {
       public:
-        as_signature (const signature_type&);
+        as_signature (const value_type&);
         std::ostream& operator() (std::ostream&) const;
       private:
-        const signature_type& _signature;
+        const value_type& _value;
       };
       std::ostream& operator<< (std::ostream&, const as_signature&);
     }

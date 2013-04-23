@@ -455,7 +455,8 @@ BOOST_AUTO_TEST_CASE (require_type)
   using pnet::type::value::exception::missing_field;
   using pnet::type::value::exception::unknown_field;
 
-#define OKAY(l,r) BOOST_CHECK_NO_THROW (require_type (l, r))
+#define OKAY(l,r)                                                       \
+  BOOST_CHECK_NO_THROW (require_type (signature_type ("sig", l), r))
 
   OKAY (we::type::literal::control(), we::type::literal::control());
   OKAY (true, true);
@@ -473,9 +474,11 @@ BOOST_AUTO_TEST_CASE (require_type)
   OKAY (bitsetofint::type().ins(0), bitsetofint::type().ins(1));
   OKAY (bytearray::type(), bytearray::type());
 
-  BOOST_CHECK_THROW (require_type (0, 0U), type_mismatch);
+  BOOST_CHECK_THROW ( require_type (signature_type ("int", 0), 0U)
+                    , type_mismatch
+                    );
 
-  signature_type sig;
+  signature_type sig ("sig");
   value_type val;
 
   OKAY (sig, val);
@@ -519,7 +522,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp_struct)
   using pnet::type::value::poke;
   using pnet::type::value::as_struct;
 
-  signature_type sig;
+  signature_type sig ("sig");
 
   poke ("a", sig, 0);
   poke ("b.a", sig, std::string());

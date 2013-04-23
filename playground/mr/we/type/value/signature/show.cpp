@@ -11,8 +11,8 @@ namespace pnet
   {
     namespace value
     {
-      as_signature::as_signature (const signature_type& signature)
-        : _signature (signature)
+      as_signature::as_signature (const value_type& value)
+        : _value (value)
       {}
 
       namespace
@@ -68,7 +68,7 @@ namespace pnet
                  , boost::apply_visitor (parens_of)
                  , " :: "
                  )
-               , _signature
+               , _value
                );
       }
 

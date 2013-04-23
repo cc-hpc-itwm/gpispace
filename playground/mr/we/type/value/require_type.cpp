@@ -3,6 +3,8 @@
 #include <we/type/value/require_type.hpp>
 #include <we/type/value/exception.hpp>
 
+#include <we/type/value/path/join.hpp>
+
 #include <boost/format.hpp>
 
 namespace pnet
@@ -59,10 +61,16 @@ namespace pnet
 
               if (sig_pos->first != val_pos->first)
               {
-                throw exception::missing_field (sig_pos->second, _path);
+                throw exception::missing_field
+                  ( signature_type (sig_pos->first, sig_pos->second)
+                  , _path
+                  );
               }
 
-              boost::apply_visitor (*this, sig_pos->second, val_pos->second);
+              boost::apply_visitor ( *this
+                                   , sig_pos->second
+                                   , val_pos->second
+                                   );
 
               _path.pop_back();
 
@@ -74,7 +82,10 @@ namespace pnet
             {
               _path.push_back (sig_pos->first);
 
-              throw exception::missing_field (sig_pos->second, _path);
+              throw exception::missing_field
+                ( signature_type (sig_pos->first, sig_pos->second)
+                , _path
+                );
             }
 
             if (val_pos != val_end)
@@ -88,7 +99,11 @@ namespace pnet
           template<typename S, typename V>
           void operator() (const S& signature, const V& value) const
           {
-            throw exception::type_mismatch (signature, value, _path);
+            throw exception::type_mismatch
+              ( signature_type (path::join (_path), signature)
+              , value
+              , _path
+              );
           }
 
         private:
@@ -100,7 +115,10 @@ namespace pnet
                         , const value_type& value
                         )
       {
-        boost::apply_visitor (visitor_require_type(), signature, value);
+        boost::apply_visitor ( visitor_require_type()
+                             , signature.value()
+                             , value
+                             );
       }
     }
   }
