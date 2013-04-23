@@ -22,6 +22,8 @@ namespace pnet
         const value_type& _value;
       };
       std::ostream& operator<< (std::ostream&, const as_signature&);
+
+      std::ostream& operator<< (std::ostream&, const signature_type&);
     }
   }
 }

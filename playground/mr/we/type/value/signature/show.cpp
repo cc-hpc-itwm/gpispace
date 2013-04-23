@@ -5,6 +5,8 @@
 
 #include <we/type/value/detail/show.hpp>
 
+#include <we/type/value/option.hpp>
+
 namespace pnet
 {
   namespace type
@@ -57,8 +59,6 @@ namespace pnet
 
       std::ostream& as_signature::operator() (std::ostream& os) const
       {
-        os << "signature ";
-
         parens_of parens_of;
         show_literal show_literal;
         return boost::apply_visitor
@@ -75,6 +75,18 @@ namespace pnet
       std::ostream& operator<< (std::ostream& os, const as_signature& as_sig)
       {
         return as_sig (os);
+      }
+
+      std::ostream& operator<< (std::ostream& os, const signature_type& sig)
+      {
+        os << sig.name();
+
+        if (show_signatures_full())
+        {
+          os << " (" << as_signature (sig.value()) << ")";
+        }
+
+        return os;
       }
     }
   }

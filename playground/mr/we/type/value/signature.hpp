@@ -28,6 +28,10 @@ namespace pnet
         {
           return _value;
         }
+        const std::string& name() const
+        {
+          return _name;
+        }
 
       private:
         std::string _name;

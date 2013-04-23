@@ -10,6 +10,7 @@
 #include <we/type/value/show.hpp>
 #include <we/type/value/require_type.hpp>
 #include <we/type/value/exception.hpp>
+#include <we/type/value/option.hpp>
 
 #include <we/type/value/signature/name.hpp>
 #include <we/type/value/signature/name_of.hpp>
@@ -51,7 +52,7 @@ namespace
     {
       std::ostringstream oss;
       oss << as_signature (value_type (x));
-      BOOST_CHECK_EQUAL ("signature " + expected_signature, oss.str());
+      BOOST_CHECK_EQUAL (expected_signature, oss.str());
     }
   }
 }
@@ -555,4 +556,53 @@ BOOST_AUTO_TEST_CASE (signature_cpp_struct)
   oss << as_struct (sig, indent);
 
   BOOST_CHECK_EQUAL (oss.str(), expected);
+}
+
+BOOST_AUTO_TEST_CASE (signature_show)
+{
+  using pnet::type::value::signature_type;
+  using pnet::type::value::value_type;
+  using pnet::type::value::show_signatures_full;
+  using pnet::type::value::poke;
+
+  value_type v;
+
+#define CMP(_cmp)                               \
+  { std::ostringstream oss;                     \
+    oss << sig;                                 \
+    BOOST_CHECK_EQUAL (oss.str(), _cmp);        \
+  }
+#define CHECK(_short, _long)                                    \
+  show_signatures_full() = false;                               \
+  CMP (_short);                                                 \
+  show_signatures_full() = true;                                \
+  CMP (_long)
+
+  {
+    signature_type sig ("sig", v);
+
+    CHECK ("sig", "sig (control)");
+  }
+
+  v = 0;
+
+  {
+    signature_type sig ("sig", v);
+
+    CHECK ("sig", "sig (int)");
+  }
+
+  poke ("i", v, 0);
+  poke ("x.a", v, std::string());
+  poke ("x.b.a", v, std::list<value_type>());
+  poke ("x.b.b", v, 0U);
+
+  {
+    signature_type sig ("sig", v);
+
+    CHECK ("sig", "sig (struct [i :: int, x :: struct [a :: string, b :: struct [a :: list <>, b :: unsigned int]]])");
+  }
+
+#undef CHECK
+#undef CMP
 }
