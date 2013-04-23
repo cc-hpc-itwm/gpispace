@@ -168,7 +168,9 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
   BOOST_REQUIRE (client);
 
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
-    client->send ("/test/send", "hello world!");
+  {
+    BOOST_REQUIRE (0 == client->send ("/test/send", "hello world!"));
+  }
 
   while (subscriber.frames.size () != NUM_MSGS_TO_SEND)
   {
