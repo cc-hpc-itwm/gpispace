@@ -62,6 +62,12 @@ namespace gspc
         }
       }
 
+      bool queue_manager_t::is_connected (user_ptr user) const
+      {
+        shared_lock lock (m_mutex);
+        return m_connections.find (user) != m_connections.end ();
+      }
+
       static void s_maybe_send_receipt (user_ptr user, frame const &f)
       {
         gspc::net::header::receipt r (f);
@@ -78,7 +84,19 @@ namespace gspc
         {
           return connect (user, f);
         }
-        else if (f.get_command () == "SEND")
+
+        if (not is_connected (user))
+        {
+          user->deliver
+            (gspc::net::make::error_frame ( f
+                                          , gspc::net::E_UNAUTHORIZED
+                                          , "you are not connected"
+                                          )
+            );
+          return -EPERM;
+        }
+
+        if (f.get_command () == "SEND")
         {
           if (not f.has_header ("destination"))
           {
@@ -182,18 +200,31 @@ namespace gspc
       int
       queue_manager_t::connect (user_ptr u, frame const &)
       {
-        gspc::net::frame connected =
-          make::connected_frame (gspc::net::header::version ("1.0"));
-        connected.set_header ("heart-beat", "0,0");
-        u->deliver (connected);
+        unique_lock lock (m_mutex);
 
-        return 0;
+        if (m_connections.find (u) == m_connections.end ())
+        {
+          gspc::net::frame connected =
+            make::connected_frame (gspc::net::header::version ("1.0"));
+          connected.set_header ("heart-beat", "0,0");
+          u->deliver (connected);
+
+          m_connections.insert (u);
+
+          return 0;
+        }
+        else
+        {
+          return -EPROTO;
+        }
       }
 
       int
       queue_manager_t::disconnect (user_ptr user)
       {
         unique_lock lock (m_mutex);
+
+        m_connections.erase (user);
 
         user_subscription_map_t::iterator user_it =
           m_user_subscriptions.find (user);

@@ -2,6 +2,7 @@
 #define GSPC_NET_SERVER_QUEUE_MANAGER_HPP
 
 #include <map>
+#include <set>
 #include <list>
 #include <string>
 
@@ -86,10 +87,16 @@ namespace gspc
         typedef std::map<std::string, subscription_list_t> subscription_map_t;
         typedef std::map<user_ptr, subscription_list_t>    user_subscription_map_t;
 
+        typedef std::set<user_ptr> user_set_t;
+
+        bool is_connected (user_ptr) const;
+
         //
         // MEMBER VARIABLES
         //
         mutable boost::shared_mutex m_mutex;
+
+        user_set_t m_connections;
 
         // subscriptions
         //     if queue not already there, create it

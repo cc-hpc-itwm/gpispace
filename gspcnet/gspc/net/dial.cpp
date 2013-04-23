@@ -126,7 +126,10 @@ namespace gspc
       }
 
       if (client)
+      {
         client->start ();
+        client->connect ();
+      }
 
       return client;
     }
