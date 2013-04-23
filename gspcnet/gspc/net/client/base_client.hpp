@@ -45,6 +45,9 @@ namespace gspc
         int start ();
         int stop ();
 
+        int connect ();
+        int disconnect ();
+
         void set_frame_handler (frame_handler_t &);
 
         int send_raw (frame const &);

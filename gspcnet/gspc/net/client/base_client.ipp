@@ -76,6 +76,18 @@ namespace gspc
       }
 
       template <class Proto>
+      int base_client<Proto>::connect ()
+      {
+        return send_raw (make::connect_frame ());
+      }
+
+      template <class Proto>
+      int base_client<Proto>::disconnect ()
+      {
+        return send_raw (make::disconnect_frame ());
+      }
+
+      template <class Proto>
       void base_client<Proto>::set_frame_handler (frame_handler_t &h)
       {
         m_frame_handler = &h;

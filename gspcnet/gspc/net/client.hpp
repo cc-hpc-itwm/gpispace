@@ -17,6 +17,9 @@ namespace gspc
       virtual int start () = 0;
       virtual int stop () = 0;
 
+      virtual int connect () = 0;
+      virtual int disconnect () = 0;
+
       virtual void set_frame_handler (frame_handler_t &) = 0;
 
       virtual int send_raw (frame const &) = 0;
