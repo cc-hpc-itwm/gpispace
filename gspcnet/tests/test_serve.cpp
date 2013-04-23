@@ -180,6 +180,28 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
                       );
 }
 
+BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
+{
+  using namespace gspc::net::tests;
+
+  gspc::net::server::queue_manager_t qmgr;
+  mock::user subscriber;
+  qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
+
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("tcp://localhost:*", qmgr);
+  BOOST_REQUIRE (server);
+
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  BOOST_REQUIRE (client);
+
+  client->disconnect ();
+
+  BOOST_REQUIRE_EQUAL ( client->send ("/test/send", "hello world!")
+                      , gspc::net::E_UNAUTHORIZED
+                      );
+}
+
 BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 {
   static const std::size_t NUM_MSGS_TO_SEND = 10000;
