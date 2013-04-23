@@ -39,7 +39,7 @@ using namespace sdpa::tests;
 using namespace sdpa::daemon;
 
 const int NWORKERS = 12;
-const int NJOBS    = 20;
+const int NJOBS    = 4;
 const int MAX_CAP  = 100;
 
 const std::string WORKER_CPBS[] = {"CALC", "REDUCE", "MGMT"};
@@ -117,6 +117,20 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 	LOG(INFO, "Schedule Job1 ...");
 	ptrScheduler->schedule_with_constraints(jobId1);
 
+	// at this point the job jobId1 should be assigned to one of the workers
+	// matching the requirements of jobId1, i.e. either worker_A or worker_B
+	Worker::worker_id_t workerId1, workerId2;
+	try {
+		workerId1 = ptrScheduler->findWorker(jobId1);
+		bool bInvariant = (workerId1=="worker_A" || workerId1=="worker_B");
+		BOOST_CHECK(bInvariant);
+		LOG(INFO, "The job Job1 was scheduled to "<<workerId1);
+	}
+	catch(WorkerNotFoundException& ex)
+	{
+		LOG(FATAL, "The job Job1 wasn't scheduled to any of the workers worker_A or worker_B");
+	}
+
 	const sdpa::job_id_t jobId2("Job2");
 	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
 	pAgent->jobManager()->addJob(jobId2, pJob2);
@@ -127,25 +141,76 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 
 	LOG(INFO, "Schedule Job2 ...");
 	ptrScheduler->schedule_with_constraints(jobId2);
+	// at this point the job jobId2 should be assigned to one of the workers
+	// that are matching the requirements of jobId2 and have no job assigned yet
+	try {
+		workerId2 = ptrScheduler->findWorker(jobId2);
+		bool bInvariant = (workerId2=="worker_A" || workerId2=="worker_B");
+		BOOST_CHECK(bInvariant);
+		LOG(INFO, "The job Job2 was scheduled to "<<workerId2);
+	}
+	catch(WorkerNotFoundException& ex)
+	{
+		LOG(FATAL, "The job Job2 wasn't scheduled to any of the workers worker_A or worker_B");
+	}
 
-	//sleep(1);
+	// check if the two assigned workers are different
+	BOOST_CHECK(workerId1!=workerId2);
 
-	ptrScheduler->print();
 	LOG(INFO, "Delete the worker B now ...");
 	ptrScheduler->delWorker(worker_B );
-	ptrScheduler->print();
 
-	//sleep(1);
+	// at this point the jobs assigned to worker_B should be re-distributed
+    // to worker_A
+	try {
+		Worker::worker_id_t workerId = ptrScheduler->findWorker(jobId1);
+		bool bInvariant = (workerId=="worker_A");
+		BOOST_CHECK(bInvariant);
+		LOG(INFO, "The job Job1 was scheduled to "<<workerId);
+	}
+	catch(WorkerNotFoundException& ex)
+	{
+		LOG(FATAL, "The job Job1 was supposed to be assigned or re-scheduled to worker_A!");
+	}
+
+	try {
+		Worker::worker_id_t workerId = ptrScheduler->findWorker(jobId2);
+		bool bInvariant = (workerId=="worker_A");
+		BOOST_CHECK(bInvariant);
+		LOG(INFO, "The job Job2 was scheduled to "<<workerId);
+	}
+	catch(WorkerNotFoundException& ex)
+	{
+		LOG(FATAL, "The job Job2 was supposed to be assigned or re-scheduled to worker_A!");
+	}
+
 	LOG(INFO, "Add the worker B again ...");
 	ptrScheduler->addWorker(worker_B, 1, cpbSetB);
-	//sleep(1);
 
 	LOG(INFO, "Get the next job assigned to the worker B ...");
 	ptrScheduler->getNextJob(worker_B,"");
 
-	ptrScheduler->print();
+	try {
+		Worker::worker_id_t workerId = ptrScheduler->findWorker(jobId1);
+		bool bInvariant = (workerId=="worker_A" || workerId=="worker_B");
+		BOOST_CHECK(bInvariant);
+		LOG(INFO, "The job Job1 was scheduled to "<<workerId);
+	}
+	catch(WorkerNotFoundException& ex)
+	{
+		LOG(FATAL, "The job Job1 was supposed to be assigned to one of the workers A or B!");
+	}
 
-	//sleep(5);
+	try {
+		Worker::worker_id_t workerId = ptrScheduler->findWorker(jobId2);
+		bool bInvariant = (workerId=="worker_A" || workerId=="worker_B");
+		BOOST_CHECK(bInvariant);
+		LOG(INFO, "The job Job2 was scheduled to "<<workerId);
+	}
+	catch(WorkerNotFoundException& ex)
+	{
+		LOG(FATAL, "The job Job2 was supposed to be assigned to one of the workers A or B!");
+	}
 
    seda::StageRegistry::instance().remove(pAgent->name());
 }

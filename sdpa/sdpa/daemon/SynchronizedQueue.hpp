@@ -86,12 +86,23 @@ namespace sdpa { namespace daemon {
       return item;
     }
 
+    inline value_type pop_back()
+    {
+    	lock_type lock(mtx_);
+    	if (container_.empty()) throw QueueEmpty();
+
+    	value_type item = container_.back();
+    	container_.pop_back();
+    	return item;
+    }
+
     inline void stop()
     {
     	lock_type lock(mtx_);
     	stopped_ = true;
     	not_empty_.notify_all();
     }
+
     inline value_type pop_and_wait()
     {
       lock_type lock(mtx_);
