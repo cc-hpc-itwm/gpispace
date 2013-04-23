@@ -41,7 +41,7 @@ namespace pnet
                                      , const std::list<std::string>& path
                                      )
           : type_error
-            ( ( boost::format ( "missing field %2% of type %1%")
+            ( ( boost::format ("missing field %2% of type %1%")
               % signature
               % path::join (path)
               ).str()
