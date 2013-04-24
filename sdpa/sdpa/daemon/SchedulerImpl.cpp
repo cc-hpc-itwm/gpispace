@@ -528,11 +528,8 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
           bool first = true;
           while (begin != end)
           {
-            if (first) first = false;
-            else       ossReq << ", ";
-
-            ossReq << begin->value();
-            ++begin;
+        	  first?first = false:ossReq << ", ";
+        	  ossReq << begin++->value();
           }
           required_capabilities_as_string = ossReq.str ();
         }
@@ -980,27 +977,6 @@ void SchedulerImpl::print()
 
   ptr_worker_man_->print();
 }
-
-/*const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
-{
-  sdpa::job_id_t job_id = sdpa::job_id_t::invalid_job_id();
-
-  try {
-    job_id = ptr_worker_man_->getNextJob(worker_id, last_job_id);
-  }
-  catch(const NoJobScheduledException& ex1)
-  {
-    //SDPA_LOG_ERROR("Exception: no jobs scheduled!");
-    throw ex1;
-  }
-  catch(WorkerNotFoundException& ex2)
-  {
-    //SDPA_LOG_ERROR("Exception occurred: worker not found!");
-    throw ex2;
-  }
-
-  return job_id;
-}*/
 
 const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
