@@ -25,7 +25,7 @@ namespace pnet
         ( ( boost::format ( "type mismatch for field %2%: expected %1%"
                           ", value has %3%"
                           )
-          % "<<signature>>"
+          % type::signature::show (signature)
           % type::value::path::join (path)
           % "<<signature (value)>>"
           ).str()
@@ -40,7 +40,7 @@ namespace pnet
     )
       : type_error
         ( ( boost::format ("missing field %2% of type %1%")
-          % "<<signature>>"
+          % type::signature::show (signature)
           % type::value::path::join (path)
           ).str()
         )
@@ -54,7 +54,7 @@ namespace pnet
       : type_error
         ( ( boost::format ("unknown field %1% with value %2%")
           % type::value::path::join (path)
-          % "<<value>>"
+          % type::value::show (value)
           ).str()
         )
       , _value (value)
