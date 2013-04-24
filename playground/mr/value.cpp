@@ -92,16 +92,6 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
     test_show_and_read_showed (l, "list (3, 3L)");
   }
   {
-    std::vector<value_type> v;
-    test_show_and_read_showed (v, "vector ()");
-    v.push_back (std::string ("foo"));
-    v.push_back (3.141);
-    v.push_back (3.141);
-    v.push_back (3.141f);
-    test_show_and_read_showed
-      (v, "vector (\"foo\", 3.14100, 3.14100, 3.14100f)");
-  }
-  {
     std::set<value_type> s;
     test_show_and_read_showed (s, "set {}");
     s.insert (std::string ("foo"));
@@ -192,33 +182,11 @@ BOOST_AUTO_TEST_CASE (_read)
   }
 
   {
-    std::vector<value_type> v;
-
-    BOOST_CHECK (value_type (v) == read ("vector ()"));
-
-    v.push_back ('a');
-    v.push_back ('b');
-
-    BOOST_CHECK (value_type (v) == read ("vector ('a', 'b')"));
-
-    std::set<value_type> s;
-
-    BOOST_CHECK (value_type (s) == read ("set{}"));
-
-    s.insert (value_type ('a'));
-    s.insert (v);
-
-    BOOST_CHECK (value_type (s) == read ("set {'a', vector ('a', 'b')}"));
-  }
-
-  {
-    std::vector<value_type> v;
     std::list<value_type> l;
     std::map<value_type, value_type> m;
-    std::string input ("vector ()list( ) map[]");
+    std::string input ("list( ) map[]");
     fhg::util::parse::position pos (input);
 
-    BOOST_CHECK (value_type (v) == read (pos));
     BOOST_CHECK (value_type (l) == read (pos));
     BOOST_CHECK (value_type (m) == read (pos));
     BOOST_CHECK (pos.end());
@@ -387,7 +355,6 @@ BOOST_AUTO_TEST_CASE (signature_of_type)
   CHECK (BITSET, bitsetofint::type());
   CHECK (BYTEARRAY, bytearray::type());
   CHECK (LIST, std::list<value_type>());
-  CHECK (VECTOR, std::vector<value_type>());
   CHECK (SET, std::set<value_type>());
   std::map<value_type, value_type> m;
   CHECK (MAP, m);
@@ -416,7 +383,6 @@ BOOST_AUTO_TEST_CASE (signature_name_of)
   CHECK (BITSET, bitsetofint::type());
   CHECK (BYTEARRAY, bytearray::type());
   CHECK (LIST, std::list<value_type>());
-  CHECK (VECTOR, std::vector<value_type>());
   CHECK (SET, std::set<value_type>());
   std::map<value_type, value_type> m;
   CHECK (MAP, m);

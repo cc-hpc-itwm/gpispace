@@ -29,7 +29,6 @@ namespace pnet
       NAME (BITSET,"bitset");
       NAME (BYTEARRAY, "bytearray");
       NAME (LIST, "list");
-      NAME (VECTOR, "vector");
       NAME (SET, "set");
       NAME (MAP, "map");
       NAME (STRUCT, "struct");

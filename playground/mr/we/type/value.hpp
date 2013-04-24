@@ -34,7 +34,6 @@ namespace pnet
               , bitsetofint::type
               , bytearray::type
               , std::list<boost::recursive_variant_>
-              , std::vector<boost::recursive_variant_>
               , std::set<boost::recursive_variant_>
               , std::map<boost::recursive_variant_, boost::recursive_variant_>
               , std::map<std::string, boost::recursive_variant_>

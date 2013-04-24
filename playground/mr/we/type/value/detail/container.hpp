@@ -12,7 +12,6 @@ namespace pnet
     namespace value
     {
       typedef boost::variant< std::list<value_type>
-                            , std::vector<value_type>
                             , std::set<value_type>
                             , std::map<value_type, value_type>
                             , structured_type

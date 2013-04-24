@@ -30,7 +30,6 @@ namespace pnet
       NAME_OF (BITSET, bitsetofint::type);
       NAME_OF (BYTEARRAY, bytearray::type);
       NAME_OF (LIST, std::list<value_type>);
-      NAME_OF (VECTOR, std::vector<value_type>);
       NAME_OF (SET, std::set<value_type>);
       NAME_OF (MAP, std::map<value_type,value_type>);
       NAME_OF (STRUCT, structured_type);

@@ -20,10 +20,6 @@ namespace
     {
       return parens_type ("[", ", ", "]");
     }
-    parens_type operator() (const std::vector<value_type>&) const
-    {
-      return parens_type ("(", ", ", ")");
-    }
     parens_type operator() (const std::set<value_type>&) const
     {
       return parens_type ("{", ", ", "}");

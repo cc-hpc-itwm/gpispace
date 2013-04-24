@@ -34,7 +34,6 @@ namespace pnet
           by_name[BITSET()] = bitsetofint::type();
           by_name[BYTEARRAY()] = bytearray::type();
           by_name[LIST()] = std::list<value_type>();
-          by_name[VECTOR()] = std::vector<value_type>();
           by_name[SET()] = std::set<value_type>();
           by_name[MAP()] = std::map<value_type,value_type>();
           by_name[STRUCT()] = structured_type();

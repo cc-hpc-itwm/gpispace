@@ -80,13 +80,6 @@ namespace pnet
               , boost::bind (&visitor_show::print_value, this, _1)
               );
           }
-          std::ostream& operator() (const std::vector<value_type>& v) const
-          {
-            return print_container<std::vector<value_type> >
-              ( boost::ref (v)
-              , boost::bind (&visitor_show::print_value, this, _1)
-              );
-          }
           std::ostream&
           operator() (const std::map<value_type, value_type>& m) const
           {
