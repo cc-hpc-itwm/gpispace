@@ -367,8 +367,8 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
     if(pJob->description().empty() )
     {
-            SDPA_LOG_ERROR("Empty Workflow!!!!");
-            // declare job as failed
+    	SDPA_LOG_ERROR("Empty Workflow!!!!");
+        // declare job as failed
     }
 
     ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
@@ -617,17 +617,26 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
-  if( !numberOfWorkers() )
-  {
-    SDPA_LOG_WARN("No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
-    throw NoWorkerFoundException();
-  }
-  else
-  {
-    lock_type lock(mtx_);
-    schedule_with_constraints(jobId);
-    cond_feed_workers.notify_one();
-  }
+	if( !numberOfWorkers() )
+	{
+		SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
+		// do so as when no preferences were set, just ignore them right now
+		//ptr_worker_man_->dispatchJob(jobId);
+		//return;
+		 lock_type lock(mtx_);
+		 cond_workers_registered.wait(lock);
+	}
+
+	if(schedule_with_constraints(jobId))
+	{
+		cond_feed_workers.notify_one();
+	}
+	else
+	{
+		SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
+		// do so as when no preferences were set, just ignore them right now
+		ptr_worker_man_->dispatchJob(jobId);
+	 }
 }
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
@@ -756,6 +765,9 @@ void SchedulerImpl::feedWorkers()
     lock_type lock(mtx_);
     cond_feed_workers.timed_wait(lock, m_timeout);
 
+    if( ptr_comm_handler_->jobManager()->getNumberOfJobs() == 0 )
+         continue;
+
     sdpa::worker_id_list_t workerList;
     ptr_worker_man_->getWorkerListNotFull(workerList);
 
@@ -804,19 +816,9 @@ while(!bStopRequested)
       // or has an Worker Manager and the workers are threads
       if( numberOfWorkers()>0 ) //
       {
-        try
-        {
           schedule_remote(jobId);
-          jobs_to_be_scheduled.print();
-        }
-        catch( const NoWorkerFoundException& ex)
-        {
-          SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
-          // do so as when no preferences were set, just ignore them right now
-          ptr_worker_man_->dispatchJob(jobId);
-        }
       }
-      else //  if has backends, try to execute it
+      else //  if the agent has backends, try to execute the job!
       {
         // just for testing
         if(ptr_comm_handler_->canRunTasksLocally())
@@ -979,7 +981,7 @@ void SchedulerImpl::print()
   ptr_worker_man_->print();
 }
 
-const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
+/*const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
   sdpa::job_id_t job_id = sdpa::job_id_t::invalid_job_id();
 
@@ -998,7 +1000,92 @@ const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker
   }
 
   return job_id;
+}*/
+
+const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
+{
+	lock_type lock(mtx_);
+	sdpa::job_id_t jobId;
+	Worker::ptr_t ptrWorker;
+
+	try {
+		ptrWorker = findWorker(worker_id);
+	}
+	catch(const WorkerNotFoundException& ex )
+	{
+		SDPA_LOG_WARN("Worker not found!");
+		throw ex;
+	}
+
+	try
+	{
+		jobId = ptrWorker->get_next_job(last_job_id);
+		DLOG(TRACE, "The worker " << worker_id
+								<< " has a capacity of "<<ptrWorker->capacity()
+								<<" and " << ptrWorker->nbAllocatedJobs()
+								<<" jobs allocated!");
+
+		ptr_worker_man_->deteleJobPreferences(jobId);
+		return jobId;
+	}
+	catch(const NoJobScheduledException& ex)
+	{
+		size_t sizeQ = ptr_worker_man_->common_queue_.size();
+		size_t counter=0;
+
+		if(!ptr_worker_man_->common_queue_.empty())
+		{
+		  while(counter++<sizeQ)
+		  {
+			  jobId = ptr_worker_man_->common_queue_.pop();
+			  DMLOG( TRACE, "Putting job "<< jobId<< " into the submitted queue of the worker "<< worker_id );
+
+			  try {
+				  const requirement_list_t job_req_list = ptr_comm_handler_->getJobRequirements(jobId);
+				  // LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
+				  if( matchRequirements( ptrWorker, job_req_list, true ) != -1 ) // matching found
+				  {
+					  ptrWorker->submit(jobId);
+					  ptr_worker_man_->deteleJobPreferences(jobId);
+					  return jobId;
+				  }
+				  else // put it back
+					  ptr_worker_man_->common_queue_.push(jobId);
+			  }
+			  catch( const NoJobRequirements& ex ) // no requirements are specified
+			  {
+				  // schedule to the first worker that requests a job
+				  // LOG(INFO, "The job "<<jobId<<" has no requirements. Hence, it can be scheduled on the worker "<<worker_id);
+				  // you should change the status of the job jobId
+				  ptrWorker->submit(jobId);
+				  ptr_worker_man_->deteleJobPreferences(jobId);
+				  return jobId;
+			  }
+		  }
+		}
+
+		if( ptr_worker_man_->common_queue_.empty() || counter == sizeQ ) //counter == sizeQ when no matching job was found within the common queue
+		{
+			// try to steal some work from other workers
+			// if not possible, throw an exception
+			try {
+				// SDPA_LOG_INFO("Try to steal work from another worker ...");
+				const job_id_t jobId = ptr_worker_man_->stealWork(ptrWorker);
+				ptrWorker->submit(jobId);
+				ptr_worker_man_->deteleJobPreferences(jobId);
+				return jobId;
+			}
+			catch( const NoJobScheduledException& ex)
+			{
+				// SDPA_LOG_INFO("There is really no job to assign/steal for the worker "<<worker_id<<"  ...");
+				throw ex;
+			}
+		}
+	}
+
+	return jobId;
 }
+
 
 void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw( WorkerNotFoundException, JobNotFoundException)
 {
