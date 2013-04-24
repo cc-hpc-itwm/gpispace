@@ -11,6 +11,7 @@ include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 include_directories (${UTIL_INCLUDE_DIR})
 
 add_library (we-value
+  we/type/signature/show.cpp
   we/type/value/name.cpp
   we/type/value/name_of.cpp
   we/type/value/of_type.cpp
