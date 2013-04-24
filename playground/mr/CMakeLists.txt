@@ -10,7 +10,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 include_directories (${UTIL_INCLUDE_DIR})
 
-add_library (we-value
+add_library (we
   we/type/signature/show.cpp
   we/type/value/name.cpp
   we/type/value/name_of.cpp
@@ -21,16 +21,20 @@ add_library (we-value
   we/type/value/poke.cpp
   we/type/value/read.cpp
   we/type/value/show.cpp
+  we/require_type.cpp
 )
 
 fhg_add_test (value.cpp
   PROJECT test_playground_mr
-  LINK_LIBRARIES we-value we-dev fhg-util
-  DESCRIPTION "test recursive polymorphic value"
+  LINK_LIBRARIES we we-dev fhg-util
 )
 
 fhg_add_test (signature.cpp
   PROJECT test_playground_mr
-  LINK_LIBRARIES we-value we-dev fhg-util
-  DESCRIPTION "test signature type"
+  LINK_LIBRARIES we we-dev fhg-util
+)
+
+fhg_add_test (require_type.cpp
+  PROJECT test_playground_mr
+  LINK_LIBRARIES we we-dev fhg-util
 )
