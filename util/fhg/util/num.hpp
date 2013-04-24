@@ -7,8 +7,6 @@
 
 #include <boost/variant.hpp>
 
-#include <iosfwd>
-
 namespace fhg
 {
   namespace util
@@ -31,7 +29,5 @@ namespace fhg
     num_type read_num (parse::position&);
   }
 }
-
-std::ostream& operator<< (std::ostream&, const fhg::util::num_type&);
 
 #endif

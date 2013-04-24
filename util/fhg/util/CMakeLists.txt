@@ -65,6 +65,7 @@ set (srcs
   parse/error.cpp
 
   num.cpp
+  num/show.cpp
   indenter.cpp
   cpp/block.cpp
 )
