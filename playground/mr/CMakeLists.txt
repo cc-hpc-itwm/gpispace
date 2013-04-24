@@ -28,3 +28,9 @@ fhg_add_test (value.cpp
   LINK_LIBRARIES we-value we-dev fhg-util
   DESCRIPTION "test recursive polymorphic value"
 )
+
+fhg_add_test (signature.cpp
+  PROJECT test_playground_mr
+  LINK_LIBRARIES we-value we-dev fhg-util
+  DESCRIPTION "test signature type"
+)
