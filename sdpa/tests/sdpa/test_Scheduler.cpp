@@ -227,10 +227,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
 	sdpa::worker_id_t worker_A("worker_A");
 
-	//create 2 workers
-	//sdpa::capability_t cpb1("C", "virtual", worker_A);
 	sdpa::capabilities_set_t cpbSetA;
-	//cpbSetA.insert(cpb1);
 	ptrScheduler->addWorker(worker_A, 1, cpbSetA);
 
 	const sdpa::job_id_t jobId1("Job1");
