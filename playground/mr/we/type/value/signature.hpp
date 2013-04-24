@@ -20,10 +20,6 @@ namespace pnet
           : _name (name)
           , _value (value)
         {}
-        operator value_type&()
-        {
-          return _value;
-        }
         const value_type& value() const
         {
           return _value;
