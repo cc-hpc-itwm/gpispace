@@ -67,6 +67,14 @@ void Worker::dispatch(const sdpa::job_id_t& jobId)
 	pending_.push(jobId);
 }
 
+void Worker::submit(const sdpa::job_id_t& jobId)
+{
+	lock_type lock(mtx_);
+	DMLOG (TRACE, "appending job(" << jobId.str() << ") to the submitted queue");
+	setLastTimeServed(sdpa::util::now());
+	submitted_.push(jobId);
+}
+
 bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
 	lock_type lock(mtx_);

@@ -268,66 +268,6 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::ptr_t& pThiefWorker)
   throw NoJobScheduledException(pThiefWorker->name());
 }
 
-// obsolete
-/*const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& workerId) throw (NoJobScheduledException)
-{
-  lock_type lock(mtx_);
-
-  // inspect/scan the pending queues of all workers that have a different id from workerId
-  // find a job that prefers workerId, with the highest degree
-
-  int secondBestDeg = -1;
-  Worker::worker_id_t secondBestWorker("");
-  sdpa::job_id_t stolenJobId("");
-
-  BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
-  {
-    worker_id_t wid = pair.first;
-    if(wid != workerId)
-    {
-      Worker::ptr_t& pWorker = pair.second;
-
-      for( Worker::JobQueue::iterator it(pWorker->pending().begin()); it != pWorker->pending().end(); it++ )
-      {
-        sdpa::job_id_t jobId(*it);
-
-        // scan m_mapJob2PrefWorkersList
-        mapJob2PrefWorkersList_t::iterator itPrefList = m_mapJob2PrefWorkersList.find(jobId);
-        if( itPrefList != m_mapJob2PrefWorkersList.end() )
-        {
-          sdpa::job_pref_list_t listJobPrefs( itPrefList->second );
-
-          for( sdpa::job_pref_list_t::iterator itPair(listJobPrefs.begin()); itPair!=listJobPrefs.end(); itPair++ )
-          {
-            if( itPair->first == workerId && secondBestDeg < itPair->second )
-            {
-              secondBestDeg = itPair->second;
-              secondBestWorker = wid;
-              stolenJobId = jobId;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  if(secondBestDeg != -1)
-  {
-    // erase the job from the pending list of the donor worker
-    const Worker::ptr_t& ptrWorker = findWorker(secondBestWorker);
-    ptrWorker->pending().erase(stolenJobId);
-    // put into the submitted queue of the thief worker
-    // return the jobId
-
-    // what about the maps of preferences -> should be updated, HOW?
-
-    return stolenJobId;
-  }
-
-  // erase the job from
-  throw NoJobScheduledException(workerId);
-}
-*/
 
 void WorkerManager::deteleJobPreferences(const sdpa::job_id_t& jobId)
 {
@@ -336,60 +276,6 @@ void WorkerManager::deteleJobPreferences(const sdpa::job_id_t& jobId)
     m_mapJob2PrefWorkersList.erase(it);
 }
 
-const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
-{
-  lock_type lock(mtx_);
-  sdpa::job_id_t jobId;
-
-  try {
-    const Worker::ptr_t& ptrWorker = findWorker(worker_id);
-
-    try {
-      jobId = ptrWorker->get_next_job(last_job_id);
-      DLOG(TRACE, "The worker " << worker_id
-                                << " has a capacity of "<<ptrWorker->capacity()
-                                <<" and " << ptrWorker->nbAllocatedJobs()
-                                <<" jobs allocated!");
-
-      deteleJobPreferences(jobId);
-      return jobId;
-    }
-    catch(const NoJobScheduledException& ex)
-    {
-      try {
-        jobId = common_queue_.pop();
-        DMLOG( TRACE, "Putting job "<< jobId<< " into the submitted queue of the worker "<< worker_id );
-        ptrWorker->submitted().push(jobId);
-        ptrWorker->update();
-        deteleJobPreferences(jobId);
-        return jobId;
-      }
-      catch(const QueueEmpty& ex0)
-      {
-        // try to steal some work from other workers
-        // if not possible, throw an exception
-        try {
-          //SDPA_LOG_INFO("Try to steal work from another worker ...");
-          const job_id_t jobId = stealWork(ptrWorker);
-          ptrWorker->submitted().push(jobId);
-          ptrWorker->update();
-          deteleJobPreferences(jobId);
-          return jobId;
-        }
-        catch( const NoJobScheduledException& ex1)
-        {
-          //SDPA_LOG_INFO("There is really no job to assign/steal for the worker "<<worker_id<<"  ...");
-          throw ex1;
-        }
-      }
-    }
-  }
-  catch(const WorkerNotFoundException& ex2 )
-  {
-    SDPA_LOG_WARN("Worker not found!");
-    throw ex2;
-  }
-}
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
@@ -571,32 +457,6 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
     }
   }
 }
-
-template <typename TPtrWorker, typename TReqSet>
-int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, bool bOwn = false )
-{
-  int matchingDeg = 0;
-
-  // for all job requirements
-  for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
-  {
-    //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
-    if( pWorker->hasCapability(it->value(), bOwn ) )
-    {
-      // increase the number of matchings
-      matchingDeg++;
-    }
-    else // if the worker doesn't have the capability
-      if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
-      {
-        // At least one mandatory requiremenet is not fulfilled
-        return -1;
-      }
-  }
-
-  return matchingDeg;
-}
-
 
 bool compare_degrees( sdpa::job_pref_list_t::value_type left, sdpa::job_pref_list_t::value_type right )
 {

@@ -69,7 +69,6 @@ namespace sdpa { namespace daemon {
     Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
-    const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
     void dispatchJob(const sdpa::job_id_t& jobId);
     void delete_job(const sdpa::job_id_t& jobId);
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
@@ -97,6 +96,7 @@ namespace sdpa { namespace daemon {
     }
 
     friend class boost::serialization::access;
+    friend class SchedulerImpl;
 
     void print()
     {
@@ -130,6 +130,32 @@ protected:
     mutable mutex_type mtx_;
     mapJob2PrefWorkersList_t m_mapJob2PrefWorkersList;
   };
+
+  template <typename TPtrWorker, typename TReqSet>
+  int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, bool bOwn = false )
+  {
+    int matchingDeg = 0;
+
+    // for all job requirements
+    for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
+    {
+      //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
+      if( pWorker->hasCapability(it->value(), bOwn ) )
+      {
+        // increase the number of matchings
+        matchingDeg++;
+      }
+      else // if the worker doesn't have the capability
+        if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
+        {
+          // At least one mandatory requiremenet is not fulfilled
+          return -1;
+        }
+    }
+
+    return matchingDeg;
+  }
+
 }}
 
 #endif

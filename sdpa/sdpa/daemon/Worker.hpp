@@ -71,7 +71,10 @@ namespace sdpa { namespace daemon {
       Add a new job to the pending queue of this worker.
       Move it to the pending_ queue.
       */
-    void dispatch(const sdpa::job_id_t &job);
+    void dispatch(const sdpa::job_id_t&);
+
+
+    void submit(const sdpa::job_id_t&);
 
     /**
 	 Acknowledge a given job id and move it to the acknowledged_ queue.
@@ -79,7 +82,7 @@ namespace sdpa { namespace daemon {
 	 @param job_id the job_id to acknowledge
 	 @return true iff a job was moved
 	 */
-    bool acknowledge(const sdpa::job_id_t &job_id);
+    bool acknowledge(const sdpa::job_id_t&);
 
     // update last service time
     sdpa::util::time_type lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
