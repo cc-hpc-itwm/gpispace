@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/type/value/signature/name.hpp>
+#include <we/type/value/name.hpp>
 
 namespace pnet
 {

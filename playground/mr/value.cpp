@@ -4,14 +4,13 @@
 #include <boost/test/unit_test.hpp>
 
 #include <we/type/value.hpp>
+#include <we/type/value/name.hpp>
+#include <we/type/value/name_of.hpp>
+#include <we/type/value/of_type.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
-
-#include <we/type/value/signature/name.hpp>
-#include <we/type/value/signature/name_of.hpp>
-#include <we/type/value/signature/of_type.hpp>
 
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/num.hpp>

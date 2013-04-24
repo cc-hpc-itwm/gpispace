@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/type/value/signature/of_type.hpp>
-#include <we/type/value/signature/name.hpp>
+#include <we/type/value/of_type.hpp>
+#include <we/type/value/name.hpp>
 
 #include <boost/unordered_map.hpp>
 
