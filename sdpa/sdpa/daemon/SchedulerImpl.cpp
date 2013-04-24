@@ -1013,7 +1013,7 @@ const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker
 	}
 	catch(const WorkerNotFoundException& ex )
 	{
-		SDPA_LOG_WARN("Worker not found!");
+		DMLOG(WARN, "Worker not found!");
 		throw ex;
 	}
 
@@ -1038,7 +1038,6 @@ const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker
 		  while(counter++<sizeQ)
 		  {
 			  jobId = ptr_worker_man_->common_queue_.pop();
-			  DMLOG( TRACE, "Putting job "<< jobId<< " into the submitted queue of the worker "<< worker_id );
 
 			  try {
 				  const requirement_list_t job_req_list = ptr_comm_handler_->getJobRequirements(jobId);
@@ -1054,7 +1053,6 @@ const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker
 			  }
 			  catch( const NoJobRequirements& ex ) // no requirements are specified
 			  {
-				  // schedule to the first worker that requests a job
 				  // LOG(INFO, "The job "<<jobId<<" has no requirements. Hence, it can be scheduled on the worker "<<worker_id);
 				  // you should change the status of the job jobId
 				  ptrWorker->submit(jobId);
@@ -1064,7 +1062,7 @@ const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker
 		  }
 		}
 
-		if( ptr_worker_man_->common_queue_.empty() || counter == sizeQ ) //counter == sizeQ when no matching job was found within the common queue
+		if( counter == sizeQ ) //counter == sizeQ when no matching job was found within the common queue
 		{
 			// try to steal some work from other workers
 			// if not possible, throw an exception
