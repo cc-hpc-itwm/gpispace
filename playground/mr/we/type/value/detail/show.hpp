@@ -141,14 +141,14 @@ namespace pnet
             _os << name_of<C> (c) << " " << p.open();
             bool first (true);
             BOOST_FOREACH (const typename C::value_type& x, c)
+            {
+              if (!first)
               {
-                if (!first)
-                  {
-                    _os << p.sep();
-                  }
-                f (x);
-                first = false;
+                _os << p.sep();
               }
+              f (x);
+              first = false;
+            }
             return _os << p.close();
           }
         };
