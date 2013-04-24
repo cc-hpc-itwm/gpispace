@@ -20,7 +20,7 @@ namespace pnet
   {
     namespace value
     {
-      namespace show
+      namespace detail
       {
         class parens_type
         {

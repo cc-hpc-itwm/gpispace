@@ -98,13 +98,20 @@ namespace pnet
           }
         };
       }
+
+      show::show (const signature_type& signature)
+        : _signature (signature)
+      {}
+
+      std::ostream& show::operator() (std::ostream& os) const
+      {
+        return boost::apply_visitor (visitor_show (os), _signature);
+      }
+
+      std::ostream& operator<< (std::ostream& os, const show& s)
+      {
+        return s (os);
+      }
     }
   }
-}
-
-std::ostream& operator<< ( std::ostream& os
-                         , const pnet::type::signature::signature_type& sig
-                         )
-{
-  return boost::apply_visitor (pnet::type::signature::visitor_show (os), sig);
 }

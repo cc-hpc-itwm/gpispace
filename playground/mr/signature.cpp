@@ -13,12 +13,13 @@ BOOST_AUTO_TEST_CASE (signature_show)
   using pnet::type::signature::signature_type;
   using pnet::type::signature::structured_type;
   using pnet::type::signature::field_type;
+  using pnet::type::signature::show;
 
 #define CHECK(_expected,_sig...)                \
   {                                             \
     std::ostringstream oss;                     \
                                                 \
-    oss << signature_type (_sig);               \
+    oss << show (signature_type (_sig));        \
                                                 \
     BOOST_CHECK_EQUAL (oss.str(), _expected);   \
   }

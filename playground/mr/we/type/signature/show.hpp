@@ -7,8 +7,23 @@
 
 #include <iosfwd>
 
-std::ostream& operator<< ( std::ostream&
-                         , const pnet::type::signature::signature_type&
-                         );
+namespace pnet
+{
+  namespace type
+  {
+    namespace signature
+    {
+      class show
+      {
+      public:
+        show (const signature_type&);
+        std::ostream& operator() (std::ostream&) const;
+      private:
+        const signature_type& _signature;
+      };
+      std::ostream& operator<< (std::ostream&, const show&);
+    }
+  }
+}
 
 #endif
