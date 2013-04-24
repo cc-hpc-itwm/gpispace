@@ -22,6 +22,7 @@ add_library (we
   we/type/value/read.cpp
   we/type/value/show.cpp
   we/require_type.cpp
+  we/exception.cpp
 )
 
 fhg_add_test (value.cpp
