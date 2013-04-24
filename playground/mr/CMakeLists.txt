@@ -11,31 +11,19 @@ include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 include_directories (${UTIL_INCLUDE_DIR})
 
 add_library (we-value
-  we/type/value/exception.cpp
-  we/type/value/field.cpp
-  we/type/value/option.cpp
   we/type/value/path/join.cpp
   we/type/value/path/split.cpp
   we/type/value/peek.cpp
   we/type/value/poke.cpp
   we/type/value/read.cpp
-  we/type/value/require_type.cpp
   we/type/value/show.cpp
-  we/type/value/signature/cpp/struct.cpp
   we/type/value/signature/name.cpp
   we/type/value/signature/name_of.cpp
   we/type/value/signature/of_type.cpp
-  we/type/value/signature/show.cpp
 )
 
 fhg_add_test (value.cpp
   PROJECT test_playground_mr
   LINK_LIBRARIES we-value we-dev fhg-util
   DESCRIPTION "test recursive polymorphic value"
-)
-
-fhg_add_test (sctor.cpp
-  PROJECT test_playground_mr
-  LINK_LIBRARIES we-value we-dev fhg-util
-  DESCRIPTION "test handwritten ctors"
 )
