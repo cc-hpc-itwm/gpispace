@@ -160,7 +160,7 @@ void Worker::print()
 unsigned int Worker::nbAllocatedJobs()
 {
 	lock_type lock(mtx_);
-	unsigned int nJobs = pending().size() + submitted().size() + acknowledged().size();
+	unsigned int nJobs = /*pending().size() + */ submitted().size() + acknowledged().size();
 	return nJobs;
 }
 
