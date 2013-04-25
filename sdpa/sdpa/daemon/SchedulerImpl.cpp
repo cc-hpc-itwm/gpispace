@@ -624,15 +624,12 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 		 cond_workers_registered.wait(lock);
 	}
 
-
 	if(!schedule_with_constraints(jobId))
 	{
 		SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
 		// do so as when no preferences were set, just ignore them right now
 		ptr_worker_man_->dispatchJob(jobId);
 	 }
-
-	cond_feed_workers.notify_one();
 }
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
