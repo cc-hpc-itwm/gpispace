@@ -395,12 +395,8 @@ void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
   {
     Worker::ptr_t ptrWorker = iter->second;
-    if( !ptrWorker->lastTimeServed() )
+    if( ptrWorker->nbAllocatedJobs()<ptrWorker->capacity() )
     	workerList.push_back(ptrWorker->name());
-    else
-    	if( !(ptrWorker->pending().empty() && common_queue_.empty()) &&
-    			ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
-          workerList.push_back(ptrWorker->name());
   }
 
   CComparator comparator(this);
@@ -487,7 +483,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
     Worker::ptr_t pWorker = pair.second;
     if (pWorker->disconnected()) continue;
 
-    int matchingDeg = matchRequirements( pair.second, listJobReq, true ); // only proper capabilities of the worker
+    int matchingDeg = matchRequirements( pair.second, listJobReq, false ); // only proper capabilities of the worker
 
     DLOG(TRACE, "matching_degree(" << pair.first << ") = " << matchingDeg);
     if (matchingDeg == -1 )
@@ -530,58 +526,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
   }
   else
   {
-    int maxMatchingDeg = -1;
-    size_t least_load = numeric_limits<int>::max();
-
-    BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
-    {
-      Worker::ptr_t pWorker = pair.second;
-      if (pWorker->disconnected()) continue;
-
-      int matchingDeg = matchRequirements( pair.second, listJobReq, false ); // only proper capabilities of the worker
-
-      DLOG(TRACE, "matching_degree(" << pair.first << ") = " << matchingDeg);
-
-      if (matchingDeg == -1 )
-        continue;
-      else
-        listJobPrefs.push_back(sdpa::job_pref_list_t::value_type(pair.first, matchingDeg));
-
-      if( matchingDeg < maxMatchingDeg )
-        continue;
-
-      if (matchingDeg == maxMatchingDeg)
-      {
-        if (pWorker->nbAllocatedJobs() > least_load)
-          continue;
-
-        if (pWorker->nbAllocatedJobs() == least_load && pWorker->lastScheduleTime() >= last_schedule_time)
-          continue;
-      }
-
-      DLOG(TRACE, "worker " << pair.first << " (" << matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
-      maxMatchingDeg = matchingDeg;
-      bestMatchingWorkerId = pair.first;
-      last_schedule_time = pWorker->lastScheduleTime();
-      least_load = pWorker->nbAllocatedJobs();
-    }
-
-    if(maxMatchingDeg != -1)
-    {
-      assert (bestMatchingWorkerId != worker_id_t());
-      matching_degree = maxMatchingDeg;
-      listJobPrefs.sort(compare_degrees);
-      deteleJobPreferences(jobId);
-
-      if(!listJobPrefs.empty())
-        m_mapJob2PrefWorkersList.insert( mapJob2PrefWorkersList_t::value_type(jobId, listJobPrefs) );
-
-      return worker_map_[bestMatchingWorkerId];
-    }
-    else
-    {
-      throw NoWorkerFoundException();
-    }
+	  throw NoWorkerFoundException();
   }
 }
 
