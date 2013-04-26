@@ -338,12 +338,3 @@ namespace
     std::ostream& _os;
   };
 }
-
-std::ostream& operator<< (std::ostream& os, const fhg::util::num_type& v)
-{
-  const std::ios_base::fmtflags ff (os.flags());
-  os << std::showpoint;
-  boost::apply_visitor (visitor_show (os), v);
-  os.flags (ff);
-  return os;
-}
