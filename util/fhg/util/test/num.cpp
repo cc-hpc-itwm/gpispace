@@ -4,6 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/util/num.hpp>
+#include <fhg/util/num/show.hpp>
 #include <fhg/util/parse/error.hpp>
 
 #include <string>
@@ -178,8 +179,8 @@ namespace
       const std::string inp (oss.str());
       position pos (inp);
 
-      BOOST_REQUIRE_EQUAL (n, read_num (pos));
-      BOOST_REQUIRE (pos.end());
+      BOOST_CHECK_EQUAL (n, read_num (pos));
+      BOOST_CHECK (pos.end());
     }
   }
 }
