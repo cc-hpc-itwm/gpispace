@@ -2,8 +2,8 @@
 
 #include <we/type/signature/show.hpp>
 
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
+#include <fhg/util/print_container.hpp>
+
 #include <boost/bind.hpp>
 
 #include <iostream>
@@ -24,6 +24,8 @@ namespace pnet
           std::ostream& operator() (const fields_type&) const;
         private:
           std::ostream& _os;
+
+          void print_item (const fields_type::value_type&) const;
         };
 
         class visitor_show_rec : public boost::static_visitor<std::ostream&>
@@ -55,26 +57,17 @@ namespace pnet
         }
         std::ostream& visitor_show::operator() (const fields_type& fields) const
         {
-          bool first (true);
-
-          _os << "[";
-
-          BOOST_FOREACH (const fields_type::value_type& f, fields)
-          {
-            if (!first)
-            {
-              _os << ", ";
-            }
-
-            _os << f.first << " :: ";
-
-            boost::apply_visitor (visitor_show_rec (*this), f.second);
-
-            first = false;
-          }
-
-          return _os << "]";
+          return fhg::util::print_container<fields_type>
+            ( _os, "", "[", ",", "]", boost::ref (fields)
+            , boost::bind (&visitor_show::print_item, *this, _1)
+            );
         }
+      }
+      void visitor_show::print_item (const fields_type::value_type& f) const
+      {
+        _os << f.first << " :: ";
+
+        boost::apply_visitor (visitor_show_rec (*this), f.second);
       }
 
       show::show (const signature_type& signature)
