@@ -462,6 +462,17 @@ bool compare_degrees( sdpa::job_pref_list_t::value_type left, sdpa::job_pref_lis
     return false;
 }
 
+size_t numberOfMandReqs( const requirement_list_t& listJobReq )
+{
+	size_t count = 0;
+	BOOST_FOREACH(const requirement_t& req, listJobReq)
+	{
+		count+=(int)req.is_mandatory();
+	}
+
+	return count;
+}
+
 // add here a
 Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)
 {
@@ -471,6 +482,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
 
   sdpa::util::time_type last_schedule_time = sdpa::util::now();
   size_t least_load = numeric_limits<int>::max();
+  size_t nMaxMandReq =  numeric_limits<int>::max();
 
   // the worker id of the worker that fulfills most of the requirements
   // a matching degree 0 means that either at least a mandatory requirement
@@ -481,7 +493,8 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
   BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
   {
     Worker::ptr_t pWorker = pair.second;
-    if (pWorker->disconnected()) continue;
+    if (pWorker->disconnected())
+    	continue;
 
     int matchingDeg = matchRequirements( pair.second, listJobReq, false ); // only proper capabilities of the worker
 
@@ -496,15 +509,19 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
 
     if (matchingDeg == maxMatchingDeg)
     {
-      if (pWorker->nbAllocatedJobs() > least_load)
-        continue;
+    	if(numberOfMandReqs(listJobReq)<nMaxMandReq)
+    		continue;
 
-      if (pWorker->nbAllocatedJobs() == least_load && pWorker->lastScheduleTime() >= last_schedule_time)
-        continue;
+    	if (pWorker->nbAllocatedJobs() > least_load)
+    		continue;
+
+    	if (pWorker->nbAllocatedJobs() == least_load && pWorker->lastScheduleTime() >= last_schedule_time)
+    		continue;
     }
 
     DLOG(TRACE, "worker " << pair.first << " (" << matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
     maxMatchingDeg = matchingDeg;
+    nMaxMandReq = numberOfMandReqs(listJobReq);
     bestMatchingWorkerId = pair.first;
     last_schedule_time = pWorker->lastScheduleTime();
     least_load = pWorker->nbAllocatedJobs();
