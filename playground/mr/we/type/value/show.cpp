@@ -2,9 +2,9 @@
 
 #include <we/type/value/show.hpp>
 
+#include <fhg/util/print_container.hpp>
+
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
 
 namespace pnet
 {
@@ -23,30 +23,30 @@ namespace pnet
 
           std::ostream& operator() (const std::list<value_type>& l) const
           {
-            return print_container<std::list<value_type> >
-              ( "list", "(", ",", ")", boost::ref (l)
+            return fhg::util::print_container<std::list<value_type> >
+              ( _os, "list ", "(", ",", ")", boost::ref (l)
               , boost::bind (&visitor_show::print_value, this, _1)
               );
           }
           std::ostream&
           operator() (const std::map<value_type, value_type>& m) const
           {
-            return print_container<std::map<value_type, value_type> >
-              ( "map", "[", ",", "]", boost::ref (m)
+            return fhg::util::print_container<std::map<value_type, value_type> >
+              ( _os, "map ", "[", ",", "]", boost::ref (m)
               , boost::bind (&visitor_show::print_map_item, this, _1)
               );
           }
           std::ostream& operator() (const std::set<value_type>& s) const
           {
-            return print_container<std::set<value_type> >
-              ( "set", "{", ",", "}", boost::ref (s)
+            return fhg::util::print_container<std::set<value_type> >
+              ( _os, "set ", "{", ",", "}", boost::ref (s)
               , boost::bind (&visitor_show::print_value, this, _1)
               );
           }
           std::ostream& operator() (const structured_type& m) const
           {
-            return print_container<structured_type>
-              ( "struct", "[", ",", "]", boost::ref (m)
+            return fhg::util::print_container<structured_type>
+              ( _os, "struct ", "[", ",", "]", boost::ref (m)
               , boost::bind (&visitor_show::print_struct_item, this, _1)
               );
           }
@@ -117,30 +117,6 @@ namespace pnet
           {
             _os << x.first << " := ";
             boost::apply_visitor (*this, x.second);
-          }
-
-          template<typename C>
-          std::ostream& print_container
-          ( const std::string& header
-          , const std::string& open
-          , const std::string& sep
-          , const std::string& close
-          , const C& c
-          , const boost::function<void (const typename C::value_type&)>& f
-          ) const
-          {
-            _os << header << " " << open;
-            bool first (true);
-            BOOST_FOREACH (const typename C::value_type& x, c)
-            {
-              if (!first)
-              {
-                _os << sep << " ";
-              }
-              f (x);
-              first = false;
-            }
-            return _os << close;
           }
         };
       }
