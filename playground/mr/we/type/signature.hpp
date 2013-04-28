@@ -16,12 +16,21 @@ namespace pnet
   {
     namespace signature
     {
-      typedef std::pair<std::string, std::size_t> name_with_position_type;
-
       typedef boost::make_recursive_variant
-              < std::map<name_with_position_type, std::string>
-              , std::map<name_with_position_type, boost::recursive_variant_>
+              <std::list<std::pair< std::string
+                                  , boost::variant< std::string
+                                                  , boost::recursive_variant_
+                                                  >
+                                  >
+                        >
               >::type signature_type;
+
+      typedef std::list<std::pair< std::string
+                                 , boost::variant< std::string
+                                                 , signature_type
+                                                 >
+                                  >
+                       > fields_type;
     }
   }
 }
