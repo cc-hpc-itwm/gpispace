@@ -16,69 +16,97 @@ namespace pnet
     {
       namespace
       {
-        class visitor_show : public boost::static_visitor<std::ostream&>
+        class show_field : public boost::static_visitor<std::ostream&>
         {
         public:
-          visitor_show (std::ostream& os);
-          std::ostream& os() const;
-          std::ostream& operator() (const fields_type&) const;
+          show_field (std::ostream&);
+          std::ostream& operator() (const std::pair< std::string
+                                                   , std::string
+                                                   >&
+                                   ) const;
+          std::ostream& operator() (const signature_structured_type&) const;
         private:
           std::ostream& _os;
-
-          void print_item (const fields_type::value_type&) const;
         };
-
-        class visitor_show_rec : public boost::static_visitor<std::ostream&>
+        class show_struct : public boost::static_visitor<std::ostream&>
         {
         public:
-          visitor_show_rec (const visitor_show& vs)
-          : _vs (vs)
-          {}
-
-          std::ostream& operator() (const std::string& tname) const
-          {
-            return _vs.os() << tname;
-          }
-          std::ostream& operator() (const signature_type& sig) const
-          {
-            return boost::apply_visitor (_vs, sig);
-          }
-
+          show_struct (std::ostream&);
+          std::ostream& operator() (const std::pair< std::string
+                                                   , std::list<field_type>
+                                                   >&
+                                   ) const;
         private:
-          const visitor_show& _vs;
+          std::ostream& _os;
+          void print (const field_type&) const;
         };
 
-        visitor_show::visitor_show (std::ostream& os)
+        class show_sig : public boost::static_visitor<std::ostream&>
+        {
+        public:
+          show_sig (std::ostream&);
+          std::ostream& operator() (const std::string&) const;
+          std::ostream& operator() (const signature_structured_type&) const;
+        private:
+          std::ostream& _os;
+        };
+
+        show_field::show_field (std::ostream& os)
           : _os (os)
         {}
-        std::ostream& visitor_show::os() const
+        std::ostream& show_field::operator() (const std::pair< std::string
+                                                             , std::string
+                                                             >& f
+                                             ) const
         {
-          return _os;
+          return _os << f.first << " :: " << f.second;
         }
-        std::ostream& visitor_show::operator() (const fields_type& fields) const
+        std::ostream&
+        show_field::operator() (const signature_structured_type& s) const
         {
-          return fhg::util::print_container<fields_type>
-            ( _os, "", "[", ",", "]", boost::ref (fields)
-            , boost::bind (&visitor_show::print_item, *this, _1)
+          return boost::apply_visitor (show_struct (_os), s);
+        }
+
+        show_struct::show_struct (std::ostream& os)
+          : _os (os)
+        {}
+        std::ostream&
+        show_struct::operator() (const std::pair< std::string
+                                                , std::list<field_type>
+                                                >& s
+                                ) const
+        {
+          return fhg::util::print_container<std::list<field_type> >
+            ( _os, s.first, " :: [", ",", "]", boost::ref (s.second)
+            , boost::bind (&show_struct::print, *this, _1)
             );
         }
-      }
-      void visitor_show::print_item (const fields_type::value_type& f) const
-      {
-        _os << f.first << " :: ";
+        void show_struct::print (const field_type& f) const
+        {
+          boost::apply_visitor (show_field (_os), f);
+        }
 
-        boost::apply_visitor (visitor_show_rec (*this), f.second);
+        show_sig::show_sig (std::ostream& os)
+          : _os (os)
+        {}
+        std::ostream& show_sig::operator() (const std::string& tname) const
+        {
+          return _os << tname;
+        }
+        std::ostream&
+        show_sig::operator() (const signature_structured_type& s) const
+        {
+          return boost::apply_visitor (show_struct (_os), s);
+        }
       }
 
       show::show (const signature_type& signature)
         : _signature (signature)
       {}
-
       std::ostream& show::operator() (std::ostream& os) const
       {
-        return boost::apply_visitor (visitor_show (os), _signature);
+        return boost::apply_visitor (show_sig (os), _signature);
       }
-
       std::ostream& operator<< (std::ostream& os, const show& s)
       {
         return s (os);

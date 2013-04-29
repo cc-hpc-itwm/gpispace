@@ -10,12 +10,10 @@
 
 BOOST_AUTO_TEST_CASE (signature_show)
 {
-  using pnet::type::signature::signature_type;
-  using pnet::type::signature::fields_type;
-  using pnet::type::signature::show;
-
 #define CHECK(_expected,_sig...)                \
   {                                             \
+    using pnet::type::signature::show;          \
+                                                \
     std::ostringstream oss;                     \
                                                 \
     oss << show (signature_type (_sig));        \
@@ -23,32 +21,34 @@ BOOST_AUTO_TEST_CASE (signature_show)
     BOOST_CHECK_EQUAL (oss.str(), _expected);   \
   }
 
-  fields_type point2D;
+  using pnet::type::signature::signature_type;
+  using pnet::type::signature::signature_structured_type;
+  using pnet::type::signature::structure_type;
+  using pnet::type::signature::field_type;
 
-  point2D.push_back (std::make_pair ("x", std::string ("float")));
-  point2D.push_back (std::make_pair ("y", std::string ("float")));
+  CHECK ("float", std::string ("float"));
 
-  CHECK ("[x :: float, y :: float]", point2D);
+  structure_type f;
 
-  {
-    fields_type line2D;
+  CHECK ("s :: []", signature_structured_type (std::make_pair ("s", f)));
 
-    line2D.push_back (std::make_pair ("p", signature_type (point2D)));
-    line2D.push_back (std::make_pair ("q", signature_type (point2D)));
+  f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
 
-    CHECK ( "[p :: [x :: float, y :: float], q :: [x :: float, y :: float]]"
-          , line2D
-          );
-  }
+  CHECK ("s :: [x :: float]", signature_structured_type (std::make_pair ("s", f)));
 
-  {
-    fields_type line2D;
+  f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
 
-    line2D.push_back (std::make_pair ("p", std::string ("point2D")));
-    line2D.push_back (std::make_pair ("q", std::string ("point2D")));
+  CHECK ( "point2D :: [x :: float, y :: float]"
+        , signature_structured_type (std::make_pair ("point2D", f))
+        );
 
-    CHECK ( "[p :: point2D, q :: point2D]", line2D);
-  }
+  structure_type ps;
 
+  ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
+  ps.push_back (signature_structured_type (std::make_pair ("q", f)));
+
+  CHECK ( "line2D :: [p :: point2D, q :: [x :: float, y :: float]]"
+        , signature_structured_type (std::make_pair ("line2D", ps))
+        );
 #undef CHECK
 }

@@ -6,8 +6,6 @@
 #include <boost/variant.hpp>
 
 #include <list>
-#include <map>
-#include <set>
 #include <string>
 
 namespace pnet
@@ -17,20 +15,24 @@ namespace pnet
     namespace signature
     {
       typedef boost::make_recursive_variant
-              <std::list<std::pair< std::string
-                                  , boost::variant< std::string
-                                                  , boost::recursive_variant_
-                                                  >
-                                  >
-                        >
-              >::type signature_type;
+              < std::pair
+                < std::string
+                , std::list< boost::variant< std::pair<std::string, std::string>
+                                           , boost::recursive_variant_
+                                           >
+                           >
+                >
+              >::type signature_structured_type;
 
-      typedef std::list<std::pair< std::string
-                                 , boost::variant< std::string
-                                                 , signature_type
-                                                 >
-                                  >
-                       > fields_type;
+      typedef boost::variant< std::pair<std::string, std::string>
+                            , signature_structured_type
+                            > field_type;
+
+      typedef std::list<field_type> structure_type;
+
+      typedef boost::variant< std::string
+                            , signature_structured_type
+                            > signature_type;
     }
   }
 }
