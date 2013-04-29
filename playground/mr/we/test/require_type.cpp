@@ -5,8 +5,6 @@
 
 #include <we/require_type.hpp>
 
-#include <sstream>
-
-BOOST_AUTO_TEST_CASE (signature_show)
+BOOST_AUTO_TEST_CASE (require_type)
 {
 }

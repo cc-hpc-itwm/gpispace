@@ -13,7 +13,6 @@ include_directories (${UTIL_INCLUDE_DIR})
 add_library (we
   we/exception.cpp
   we/require_type.cpp
-  we/signature.cpp
   we/type/signature/dump.cpp
   we/type/signature/show.cpp
   we/type/value/name.cpp
