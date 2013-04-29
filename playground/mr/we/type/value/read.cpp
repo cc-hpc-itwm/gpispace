@@ -35,13 +35,7 @@ namespace pnet
           pos.skip_spaces();
           pos.require (":=");
 
-          m[fieldname] = read (pos);
-        }
-        void vector_item ( std::vector<value_type>& v
-                         , fhg::util::parse::position& pos
-                         )
-        {
-          v.push_back (read (pos));
+          m.push_back (std::make_pair (fieldname, read (pos)));
         }
         void list_item ( std::list<value_type>& l
                        , fhg::util::parse::position& pos
@@ -189,20 +183,6 @@ namespace pnet
             throw fhg::util::parse::error::expected ("truct, et", pos);
           }
           break;
-
-        case 'v':
-          {
-            ++pos;
-            pos.require ("ector");
-
-            std::vector<value_type> v;
-
-            pos.list ( '(', ',', ')'
-                     , boost::bind (vector_item, boost::ref (v), _1)
-                     );
-
-            return v;
-          }
 
         case 'l':
           {

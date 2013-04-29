@@ -81,7 +81,7 @@ bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
     acceptor_.listen (tcp::acceptor::max_connections, ec);
     if (! ec)
     {
-      LOG(DEBUG, "successfully bound to: " << acceptor_.local_endpoint());
+      DMLOG (TRACE, "successfully bound to: " << acceptor_.local_endpoint());
       accept ();
     }
   }

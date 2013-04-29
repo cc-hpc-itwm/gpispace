@@ -87,6 +87,30 @@ namespace prefix
       (const QString&, const state_description&, QWidget* parent = NULL);
   };
 
+  class legend : public QWidget
+  {
+    Q_OBJECT;
+
+  public:
+    legend (QWidget* parent = NULL);
+
+    const state_description& state (const boost::optional<QString>&) const;
+
+  public slots:
+    void update (const QString&);
+    void states_add (const QString&, const QStringList&);
+    void states_layout_hint_border (const QString&, const QColor&);
+    void states_layout_hint_character (const QString&, const char&);
+    void states_layout_hint_color (const QString&, const QColor&);
+
+  signals:
+    void state_pixmap_changed (const QString&);
+
+  private:
+    QMap<QString, state_description> _states;
+    QMap<QString, legend_entry*> _state_legend;
+  };
+
   class async_tcp_communication : public QObject
   {
     Q_OBJECT;
@@ -170,12 +194,53 @@ namespace prefix
     QTcpSocket _socket;
   };
 
+  class communication : public QObject
+  {
+    Q_OBJECT;
+
+  public:
+    communication (QObject* parent = NULL);
+
+    void request_action (const QString&, const QString&);
+    void request_layout_hint (const QString&);
+    void request_action_description (const QStringList&);
+    void request_hostlist();
+    void request_status (QStringList);
+
+    void pause();
+    void resume();
+
+  signals:
+    void nodes (QStringList);
+    void nodes_details (const QString&, const QString&);
+    void nodes_state (const QString&, const QString&);
+    void states_actions_long_text (const QString&, const QString&);
+    void states_add (const QString&, const QStringList&);
+    void states_layout_hint_border (const QString&, const QColor&);
+    void states_layout_hint_character (const QString&, const char&);
+    void states_layout_hint_color (const QString&, const QColor&);
+
+  private slots:
+    void check_for_incoming_messages();
+
+  private:
+    void possible_status (fhg::util::parse::position&);
+    void action_description (fhg::util::parse::position&, const QString&);
+    void layout_hint (fhg::util::parse::position&, const QString&);
+    void status_update (fhg::util::parse::position&, const QString&);
+    void action_result (fhg::util::parse::position&);
+
+    async_tcp_communication* _connection;
+
+    QTimer* _timer;
+  };
+
   class node_state_widget : public QWidget
   {
     Q_OBJECT;
 
   public:
-    node_state_widget (QWidget* parent = NULL);
+    node_state_widget (legend*, QWidget* parent = NULL);
 
     virtual int heightForWidth (int) const;
 
@@ -184,8 +249,15 @@ namespace prefix
     virtual bool event (QEvent*);
 
   private slots:
-    void check_for_incoming_messages();
     void refresh_stati();
+    void nodes (QStringList);
+    void nodes_details (const QString&, const QString&);
+    void nodes_state (const QString&, const QString&);
+    void states_actions_long_text (const QString&, const QString&);
+
+    void update_nodes_with_state (const QString&);
+
+  signals:
 
   private:
     QMap<QString, QString> _long_action;
@@ -194,25 +266,18 @@ namespace prefix
     QList<QString> _nodes_to_update;
 
     void update (int node);
-
-    void possible_status (fhg::util::parse::position&);
-    void action_description (fhg::util::parse::position&, const QString&);
-    void layout_hint (fhg::util::parse::position&, const QString&);
-    void status_update (fhg::util::parse::position&, const QString&);
+    void update();
 
     QVector<node_type> _nodes;
-    QMap<QString, state_description> _states;
-    QMap<QString, legend_entry*> _state_legend;
 
-    QWidget* _legend_widget;
-    void update_legend (const QString&);
+    legend* _legend_widget;
 
     const state_description& state (const boost::optional<QString>&) const;
     const node_type& node (int) const;
     boost::optional<int> node_at (int x, int y) const;
     int node_count() const;
 
-    async_tcp_communication* _connection;
+    communication* _communication;
   };
 }
 

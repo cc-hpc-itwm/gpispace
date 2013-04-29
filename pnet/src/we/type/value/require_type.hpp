@@ -9,7 +9,7 @@
 
 namespace value
 {
-  const type& require_type ( const signature::field_name_t&
+  const type& require_type ( const std::string&
                            , const signature::type&
                            , const value::type&
                            );

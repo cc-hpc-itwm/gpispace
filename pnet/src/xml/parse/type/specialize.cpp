@@ -132,7 +132,7 @@ namespace xml
             : map_in (_map_in)
           {}
 
-          signature::desc_t operator() (literal::type_name_t& t) const
+          signature::desc_t operator() (std::string& t) const
           {
             const type::type_map_type::const_iterator mapped (map_in.find (t));
 

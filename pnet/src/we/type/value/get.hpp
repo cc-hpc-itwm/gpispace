@@ -53,7 +53,7 @@ namespace value
     {
     public:
       get_field (const path_type&);
-      get_field (const signature::field_name_t&);
+      get_field (const std::string&);
 
       const type& operator() (const structured_t&);
       const type& operator() (const literal::type&);
@@ -106,18 +106,18 @@ namespace value
     return boost::apply_visitor (visitor::get<T const&>(), v);
   }
 
-  template <typename T, typename V>
-  T& get_ref (V& v)
+  template <typename T>
+  T& get_ref (type& v)
   {
     return boost::apply_visitor (visitor::get_ref<T&>(), v);
   }
 
-  const type& get_field (const signature::field_name_t&, const type&);
+  const type& get_field (const std::string&, const type&);
   const type& get_field (const path_type&, const type&);
 
   // to get something means to get a literal value...
   template<typename T>
-  const T& get (const signature::field_name_t& field, const type& v)
+  const T& get (const std::string& field, const type& v)
   {
     return get<T, type> (get_field (field, v));
   }
@@ -130,7 +130,7 @@ namespace value
 
   // ...but not when stated explicitely to be a value::type
   template<>
-  const type& get<type> (const signature::field_name_t&, const type&);
+  const type& get<type> (const std::string&, const type&);
 
   template<>
   const type& get<type> (const path_type&, const type&);

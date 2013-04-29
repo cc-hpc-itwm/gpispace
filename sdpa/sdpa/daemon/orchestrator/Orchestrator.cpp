@@ -32,8 +32,6 @@ namespace sdpa {
 
 Orchestrator::~Orchestrator()
 {
-  SDPA_LOG_DEBUG("Orchestrator's destructor called ...");
-  //daemon_stage_ = NULL;
 }
 
 void Orchestrator::action_configure(const StartUpEvent &se)
@@ -82,7 +80,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     // if it comes from a slave, one should inform WFE -> subjob
     // if it comes from WFE -> concerns the master job
 
-    MLOG(INFO, "The job " << pEvt->job_id() << " has finished!");
+    MLOG (TRACE, "The job " << pEvt->job_id() << " has finished!");
 
     if (pEvt->from() != sdpa::daemon::WE)
     {
@@ -98,9 +96,9 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     Job::ptr_t pJob;
     try {
     	pJob = jobManager()->findJob(pEvt->job_id());
-    	SDPA_LOG_DEBUG("The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus()<<". Change its status to \"SDPA::Finished\"!");
+    	DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus()<<". Change its status to \"SDPA::Finished\"!");
     	pJob->JobFinished(pEvt);
-    	SDPA_LOG_DEBUG("The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
+    	DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
     catch(JobNotFoundException const &)
     {
@@ -124,13 +122,13 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
             }
             else
             {
-            	SDPA_LOG_DEBUG("Notify the subscribers that the job "<<act_id<<" finished");
+                DMLOG (TRACE, "Notify the subscribers that the job "<<act_id<<" finished");
                 JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
                 notifySubscribers(ptrEvtJobFinished);
             }
 
             try {
-                SDPA_LOG_DEBUG("Remove job "<<act_id<<" from the worker "<<worker_id);
+                DMLOG (TRACE, "Remove job "<<act_id<<" from the worker "<<worker_id);
                 scheduler()->deleteWorkerJob ( worker_id, act_id );
             }
             catch(WorkerNotFoundException const &)

@@ -391,7 +391,7 @@ namespace xml
       private:
         std::string nice  ( const std::string & place
                           , const std::string & field
-                          , const literal::type_name_t & sig
+                          , const std::string & sig
                           , const signature::structured_t & val
                           , const boost::filesystem::path & path
                           ) const
@@ -411,7 +411,7 @@ namespace xml
         std::string nice  ( const std::string & place
                           , const std::string & field
                           , const signature::structured_t & sig
-                          , const literal::type_name_t & val
+                          , const std::string & val
                           , const boost::filesystem::path & path
                           ) const
         {
@@ -430,7 +430,7 @@ namespace xml
       public:
         parse_type_mismatch ( const std::string & place
                             , const std::string & field
-                            , const literal::type_name_t & sig
+                            , const std::string & sig
                             , const signature::structured_t & val
                             , const boost::filesystem::path & path
                             )
@@ -440,7 +440,7 @@ namespace xml
         parse_type_mismatch ( const std::string & place
                             , const std::string & field
                             , const signature::structured_t & sig
-                            , const literal::type_name_t & val
+                            , const std::string & val
                             , const boost::filesystem::path & path
                             )
           : generic (nice (place, field, sig, val, path))

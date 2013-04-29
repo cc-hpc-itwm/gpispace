@@ -4,13 +4,17 @@
 #include <boost/test/unit_test.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/get.hpp>
+#include <we/type/value/name.hpp>
+#include <we/type/value/name_of.hpp>
+#include <we/type/value/of_type.hpp>
+#include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/num.hpp>
+#include <fhg/util/indenter.hpp>
 
 #include <sstream>
 
@@ -19,19 +23,24 @@ using pnet::type::value::structured_type;
 namespace
 {
   template<typename T>
-  void test_show_and_read_showed (const T& x, const std::string& expected)
+  void test_show_and_read_showed ( const T& x
+                                 , const std::string& expected_show
+                                 )
   {
     using pnet::type::value::value_type;
+    using pnet::type::value::show;
     using pnet::type::value::read;
     using fhg::util::parse::position;
 
-    std::ostringstream oss;
-    oss << value_type (x);
-    BOOST_CHECK_EQUAL (expected, oss.str());
-    const std::string inp (oss.str());
-    position pos (inp);
-    BOOST_CHECK (value_type (x) == read (pos));
-    BOOST_CHECK (pos.end());
+    {
+      std::ostringstream oss;
+      oss << show (value_type (x));
+      BOOST_CHECK_EQUAL (expected_show, oss.str());
+      const std::string inp (oss.str());
+      position pos (inp);
+      BOOST_CHECK (value_type (x) == read (pos));
+      BOOST_CHECK (pos.end());
+    }
   }
 }
 
@@ -83,16 +92,6 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
     test_show_and_read_showed (l, "list (3, 3L)");
   }
   {
-    std::vector<value_type> v;
-    test_show_and_read_showed (v, "vector ()");
-    v.push_back (std::string ("foo"));
-    v.push_back (3.141);
-    v.push_back (3.141);
-    v.push_back (3.141f);
-    test_show_and_read_showed
-      (v, "vector (\"foo\", 3.14100, 3.14100, 3.14100f)");
-  }
-  {
     std::set<value_type> s;
     test_show_and_read_showed (s, "set {}");
     s.insert (std::string ("foo"));
@@ -113,11 +112,11 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
   {
     structured_type m;
     test_show_and_read_showed (m, "struct []");
-    m["foo"] = 314U;
-    m["bar"] = 14UL;
-    m["baz"] = std::list<value_type>();
+    m.push_back (std::make_pair ("foo", 314U));
+    m.push_back (std::make_pair ("bar", 14UL));
+    m.push_back (std::make_pair ("baz", std::list<value_type>()));
     test_show_and_read_showed
-      (m, "struct [bar := 14UL, baz := list (), foo := 314U]");
+      (m, "struct [foo := 314U, bar := 14UL, baz := list ()]");
   }
 }
 
@@ -176,50 +175,28 @@ BOOST_AUTO_TEST_CASE (_read)
 
     BOOST_CHECK (value_type (m) == read ("struct []"));
 
-    m["a"] = value_type ('a');
-    m["foo"] = value_type ('b');
+    m.push_back (std::make_pair ("a", value_type ('a')));
+    m.push_back (std::make_pair ("foo", value_type ('b')));
 
     BOOST_CHECK (value_type (m) == read ("struct [a:='a',foo:='b']"));
   }
 
   {
-    std::vector<value_type> v;
-
-    BOOST_CHECK (value_type (v) == read ("vector ()"));
-
-    v.push_back ('a');
-    v.push_back ('b');
-
-    BOOST_CHECK (value_type (v) == read ("vector ('a', 'b')"));
-
-    std::set<value_type> s;
-
-    BOOST_CHECK (value_type (s) == read ("set{}"));
-
-    s.insert (value_type ('a'));
-    s.insert (v);
-
-    BOOST_CHECK (value_type (s) == read ("set {'a', vector ('a', 'b')}"));
-  }
-
-  {
-    std::vector<value_type> v;
     std::list<value_type> l;
     std::map<value_type, value_type> m;
-    std::string input ("vector ()list( ) map[]");
+    std::string input ("list( ) map[]");
     fhg::util::parse::position pos (input);
 
-    BOOST_CHECK (value_type (v) == read (pos));
     BOOST_CHECK (value_type (l) == read (pos));
     BOOST_CHECK (value_type (m) == read (pos));
     BOOST_CHECK (pos.end());
  }
 }
 
-BOOST_AUTO_TEST_CASE (get)
+BOOST_AUTO_TEST_CASE (peek)
 {
   using pnet::type::value::value_type;
-  using pnet::type::value::get;
+  using pnet::type::value::peek;
 
   const value_type s (std::string ("s"));
 
@@ -245,9 +222,9 @@ BOOST_AUTO_TEST_CASE (get)
   }
 
   value_type m1 = structured_type();
-  boost::get<structured_type&> (m1)["i"] = i;
-  boost::get<structured_type&> (m1)["s"] = s;
-  boost::get<structured_type&> (m1)["l1"] = l1;
+  boost::get<structured_type&> (m1).push_back (std::make_pair ("i", i));
+  boost::get<structured_type&> (m1).push_back (std::make_pair ("s", s));
+  boost::get<structured_type&> (m1).push_back (std::make_pair ("l1", l1));
 
   std::list<value_type> _l2;
   _l2.push_back (l1);
@@ -267,58 +244,49 @@ BOOST_AUTO_TEST_CASE (get)
   const value_type set (_set);
 
   structured_type _m2;
-  _m2["m1"] = m1;
-  _m2["l2"] = l2;
-  _m2["mv"] = mv;
-  _m2["set"] = set;
+  _m2.push_back (std::make_pair ("m1", m1));
+  _m2.push_back (std::make_pair ("l2", l2));
+  _m2.push_back (std::make_pair ("mv", mv));
+  _m2.push_back (std::make_pair ("set", set));
   const value_type m2 (_m2);
 
   {
-    std::list<std::string> keys;
-    keys.push_back ("set");
-    BOOST_CHECK (get (keys, m2));
-    BOOST_CHECK (*get (keys, m2) == set);
-    // BOOST_REQUIRE_EQUAL (*get (keys, m2), set);
+    BOOST_CHECK (peek ("set", m2));
+    BOOST_CHECK (*peek ("set", m2) == set);
+    // BOOST_REQUIRE_EQUAL (*peek ("set", m2), set);
     // | Does not compile. Why?
   }
   {
-    std::list<std::string> keys;
-    keys.push_back ("m1");
-    keys.push_back ("l1");
-    BOOST_CHECK (get (keys, m2));
-    BOOST_CHECK (*get (keys, m2) == l1);
+    BOOST_CHECK (peek ("m1.l1", m2));
+    BOOST_CHECK (*peek ("m1.l1", m2) == l1);
   }
 }
 
-BOOST_AUTO_TEST_CASE (get_ref)
+BOOST_AUTO_TEST_CASE (peek_ref)
 {
   using pnet::type::value::value_type;
   using pnet::type::value::poke;
-  using pnet::type::value::get;
-  using pnet::type::value::get_ref;
+  using pnet::type::value::peek;
 
   const value_type l = std::list<value_type>();
 
-  std::list<std::string> keys;
-  keys.push_back ("l");
-
   value_type m;
-  poke (keys, m, l);
+  poke ("l", m, l);
 
-  BOOST_CHECK (get (keys, m));
+  BOOST_CHECK (peek ("l", m));
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*get (keys, m)));
+      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
 
     BOOST_CHECK (g.empty());
   }
 
-  BOOST_CHECK (get_ref (keys, m));
+  BOOST_CHECK (peek ("l", m));
 
   {
     std::list<value_type>& r
-      (boost::get<std::list<value_type>&> (*get_ref (keys, m)));
+      (boost::get<std::list<value_type>&> (*peek ("l", m)));
 
     BOOST_CHECK (r.empty());
 
@@ -327,7 +295,7 @@ BOOST_AUTO_TEST_CASE (get_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*get (keys, m)));
+      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
 
     BOOST_CHECK (g.size() == 1);
     BOOST_CHECK (*g.begin() == value_type (19));
@@ -338,7 +306,7 @@ BOOST_AUTO_TEST_CASE (poke)
 {
   using pnet::type::value::value_type;
   using pnet::type::value::poke;
-  using pnet::type::value::get;
+  using pnet::type::value::peek;
 
   value_type v;
 
@@ -346,28 +314,78 @@ BOOST_AUTO_TEST_CASE (poke)
   const value_type i (int (1));
 
   {
-    std::list<std::string> keys;
-    keys.push_back ("s");
-    poke (keys, v, s);
+    poke ("s", v, s);
 
-    BOOST_CHECK (get (keys, v));
-    BOOST_CHECK (*get (keys, v) == s);
+    BOOST_CHECK (peek ("s", v));
+    BOOST_CHECK (*peek ("s", v) == s);
   }
   {
-    std::list<std::string> keys;
-    keys.push_back ("i");
-    poke (keys, v, i);
-    BOOST_CHECK (get (keys, v));
-    BOOST_CHECK (*get (keys, v) == i);
+    poke ("i", v, i);
+    BOOST_CHECK (peek ("i", v));
+    BOOST_CHECK (*peek ("i", v) == i);
 
-    keys.push_back ("i");
-    poke (keys, v, i);
-    BOOST_CHECK (get (keys, v));
-    BOOST_CHECK (*get (keys, v) == i);
+    poke ("i.i", v, i);
+    BOOST_CHECK (peek ("i.i", v));
+    BOOST_CHECK (*peek ("i.i", v) == i);
 
-    keys.pop_back();
-    BOOST_CHECK (get (keys, v));
-    BOOST_CHECK (get (keys, *get (keys, v)));
-    BOOST_CHECK (*get (keys, *get (keys, v)) == i);
+    BOOST_CHECK (peek ("i", v));
+    BOOST_CHECK (peek ("i", *peek ("i", v)));
+    BOOST_CHECK (*peek ("i", *peek ("i", v)) == i);
   }
+}
+
+BOOST_AUTO_TEST_CASE (signature_of_type)
+{
+  using pnet::type::value::of_type;
+  using pnet::type::value::value_type;
+
+#define CHECK(_name, _value)                                            \
+  BOOST_CHECK (of_type (pnet::type::value::_name()) == value_type (_value))
+
+  CHECK (CONTROL, we::type::literal::control());
+  CHECK (BOOL, false);
+  CHECK (INT, 0);
+  CHECK (LONG, 0L);
+  CHECK (UINT, 0U);
+  CHECK (ULONG, 0UL);
+  CHECK (FLOAT, 0.0f);
+  CHECK (DOUBLE, 0.0);
+  CHECK (CHAR, '\0');
+  CHECK (STRING, std::string (""));
+  CHECK (BITSET, bitsetofint::type());
+  CHECK (BYTEARRAY, bytearray::type());
+  CHECK (LIST, std::list<value_type>());
+  CHECK (SET, std::set<value_type>());
+  std::map<value_type, value_type> m;
+  CHECK (MAP, m);
+
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (signature_name_of)
+{
+  using pnet::type::value::name_of;
+  using pnet::type::value::value_type;
+
+#define CHECK(_name, _value)                                    \
+  BOOST_CHECK (pnet::type::value::_name() == name_of (_value))
+
+  CHECK (CONTROL, we::type::literal::control());
+  CHECK (BOOL, false);
+  CHECK (INT, 0);
+  CHECK (LONG, 0L);
+  CHECK (UINT, 0U);
+  CHECK (ULONG, 0UL);
+  CHECK (FLOAT, 0.0f);
+  CHECK (DOUBLE, 0.0);
+  CHECK (CHAR, '\0');
+  CHECK (STRING, std::string (""));
+  CHECK (BITSET, bitsetofint::type());
+  CHECK (BYTEARRAY, bytearray::type());
+  CHECK (LIST, std::list<value_type>());
+  CHECK (SET, std::set<value_type>());
+  std::map<value_type, value_type> m;
+  CHECK (MAP, m);
+
+#undef CHECK
 }

@@ -5,8 +5,6 @@
 
 #include <we/type/value.hpp>
 
-#include <we/type/signature/types.hpp>
-
 #include <we/type/literal.hpp>
 
 #include <stdexcept>
@@ -31,10 +29,10 @@ namespace value
     class get_level : public boost::static_visitor<const type &>
     {
     private:
-      const signature::field_name_t & name;
+      const std::string & name;
 
     public:
-      get_level (const signature::field_name_t & _name) : name (_name) {}
+      get_level (const std::string & _name) : name (_name) {}
 
       const type & operator () (const structured_t & s) const
       {
@@ -84,7 +82,7 @@ namespace value
   }
 
   inline const type &
-  get_level (const signature::field_name_t & field, const type & v)
+  get_level (const std::string & field, const type & v)
   {
     return boost::apply_visitor (cpp::get_level (field), v);
   }

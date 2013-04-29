@@ -309,7 +309,7 @@ namespace fhg
       {
         if (not m_mtx_plugins.try_lock ())
         {
-          MLOG (WARN, "ignoring signal: mutex still locked");
+          DMLOG (WARN, "ignoring signal: mutex still locked");
           errno = EAGAIN;
           return -1;
         }
@@ -318,7 +318,7 @@ namespace fhg
         m_mtx_plugins.unlock ();
       }
 
-      MLOG (DEBUG, "handling signal: " << signum);
+      DMLOG (DEBUG, "handling signal: " << signum);
 
       for ( plugin_map_t::iterator it = to_signal.begin ()
           ; it != to_signal.end()

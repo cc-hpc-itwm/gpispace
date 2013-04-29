@@ -13,9 +13,9 @@ namespace type
     error (const std::string & what)
       : std::runtime_error ("type error: " + what) {};
 
-    error ( const signature::field_name_t & field
-          , const literal::type_name_t & required
-          , const literal::type_name_t & given
+    error ( const std::string & field
+          , const std::string & required
+          , const std::string & given
           )
       : std::runtime_error ( "type error: " + field 
                            + " requires value of type " + required 

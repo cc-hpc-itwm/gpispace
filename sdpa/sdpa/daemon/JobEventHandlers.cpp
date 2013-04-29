@@ -72,11 +72,11 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
   }
   catch(WorkerNotFoundException const &ex1)
   {
-    SDPA_LOG_ERROR( "job " << pEvent->job_id()
-                        << " could not be acknowledged:"
-                        << " worker " << worker_id
-                        << " not found!"
-                        );
+    DMLOG ( WARN,  "job " << pEvent->job_id()
+          << " could not be acknowledged:"
+          << " worker " << worker_id
+          << " not found!"
+          );
 
     // the worker should register first, before posting a job request
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
@@ -158,11 +158,11 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
   Worker::worker_id_t worker_id = pEvt->from();
 
   try {
-    SDPA_LOG_INFO("Got acknowledgment for the finished job " << pEvt->job_id() << "!");
+    DMLOG (TRACE, "Got acknowledgment for the finished job " << pEvt->job_id() << "!");
 
     jobManager()->findJob(pEvt->job_id());
 
-    SDPA_LOG_INFO("Delete the job " << pEvt->job_id() << " from the JobManager!");
+    DMLOG (TRACE, "Delete the job " << pEvt->job_id() << " from the JobManager!");
     // delete it from the map when you receive a JobFinishedAckEvent!
     jobManager()->deleteJob(pEvt->job_id());
   }

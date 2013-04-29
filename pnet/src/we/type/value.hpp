@@ -4,7 +4,6 @@
 #define _WE_TYPE_VALUE_HPP
 
 #include <we/type/literal.hpp>
-#include <we/type/signature/types.hpp>
 
 #include <string>
 #include <map>
@@ -17,7 +16,7 @@
 
 namespace value
 {
-  typedef std::list<signature::field_name_t> path_type;
+  typedef std::list<std::string> path_type;
 
   struct structured_t;
 
@@ -25,7 +24,7 @@ namespace value
                         , boost::recursive_wrapper<structured_t>
                         > type;
 
-  typedef std::map<signature::field_name_t, type> map_type;
+  typedef std::map<std::string, type> map_type;
   typedef std::pair<std::string, type> key_node_type;
 
   struct structured_t
@@ -41,7 +40,7 @@ namespace value
     }
 
   public:
-    type & operator [] (const signature::field_name_t & field_name)
+    type & operator [] (const std::string & field_name)
     {
       return _map[field_name];
     }

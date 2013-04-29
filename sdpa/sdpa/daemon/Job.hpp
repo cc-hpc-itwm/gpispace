@@ -86,6 +86,7 @@ namespace sdpa {
 
     virtual void setResult(const sdpa::job_result_t& ) =0;
     virtual sdpa::status_t getStatus() { return "Undefined"; }
+    virtual bool completed() = 0;
 
     friend class boost::serialization::access;
     template<class Archive>

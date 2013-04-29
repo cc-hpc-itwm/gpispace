@@ -41,7 +41,7 @@ public:
                                                                  , m_url
                                                                  )
                             )));
-        MLOG(INFO, "GUI sending events to " << m_url);
+        DMLOG (TRACE, "GUI sending events to " << m_url);
       }
       catch (std::exception const &ex)
       {

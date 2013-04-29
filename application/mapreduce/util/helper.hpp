@@ -39,9 +39,11 @@ const int KEY_MAX_SIZE = 50;
 
 #define SHRPCH '#'
 #define PAIRSEP '@'
-#define ITEMSEP 7 //BEL
+#define ITEMSEP 7
+#define EXTSEP ' '
 #define NLCH '\n'
-char DELIMITERS[] = {ITEMSEP, NLCH, '\0'};
+char INTERNAL_DELIMITERS[] = {ITEMSEP, NLCH, '\0'};
+char EXTERNAL_DELIMITERS[] = {EXTSEP, NLCH, '\0'};
 
 namespace mapreduce
 {
@@ -318,7 +320,7 @@ namespace mapreduce
 
 	 bool is_delimiter(char x)
 	 {
-		 return (strchr(DELIMITERS, x) != NULL);
+		 return (strchr(INTERNAL_DELIMITERS, x) != NULL);
 	 }
 
 	 template <typename T>
@@ -336,7 +338,7 @@ namespace mapreduce
 	 std::vector<std::string> get_list_items(char* local_buff)
      {
 		 std::string str_buff(local_buff);
-		 boost::char_separator<char> sep(DELIMITERS);
+		 boost::char_separator<char> sep(INTERNAL_DELIMITERS);
 		 boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
 		 std::vector<std::string> v;
 		 v.assign(tok.begin(),tok.end());
@@ -344,15 +346,26 @@ namespace mapreduce
 		 return v;
      }
 
+	 std::vector<std::string> get_list_items(char* local_buff, char* delims)
+	 {
+		 std::string str_buff(local_buff);
+		 boost::char_separator<char> sep(delims);
+		 boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
+		 std::vector<std::string> v;
+		 v.assign(tok.begin(),tok.end());
+
+		 return v;
+	 }
+
 	 std::vector<std::string> get_list_items_strtok(char* local_buff)
 	 {
 		 // attention, the input string is modified!!!!
 		 std::vector<std::string> v;
-		 char* pch_curr = strtok(local_buff, DELIMITERS);
+		 char* pch_curr = strtok(local_buff, INTERNAL_DELIMITERS);
 		 while(pch_curr)
 		 {
 			 v.push_back(pch_curr);
-			 pch_curr = strtok(NULL, DELIMITERS);
+			 pch_curr = strtok(NULL, INTERNAL_DELIMITERS);
 		 }
 
 		 return v;

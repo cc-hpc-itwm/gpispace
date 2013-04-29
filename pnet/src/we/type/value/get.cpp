@@ -20,7 +20,7 @@ namespace value
 
 
       cannot_get_field_from_literal::cannot_get_field_from_literal
-        ( const signature::field_name_t& name
+        ( const std::string& name
         , const literal::type& l
         )
           : std::runtime_error
@@ -40,8 +40,8 @@ namespace value
       , _pos (_path.begin())
     {}
 
-    get_field::get_field (const signature::field_name_t& name)
-      : _path (fhg::util::split<signature::field_name_t, path_type> (name, '.'))
+    get_field::get_field (const std::string& name)
+      : _path (fhg::util::split<std::string, path_type> (name, '.'))
       , _pos (_path.begin())
     {}
 
@@ -82,7 +82,7 @@ namespace value
     }
   }
 
-  const type& get_field (const signature::field_name_t& field, const type& v)
+  const type& get_field (const std::string& field, const type& v)
   {
     visitor::get_field get (field);
 
@@ -97,7 +97,7 @@ namespace value
   }
 
   template<>
-  const type& get<type> (const signature::field_name_t& field, const type& v)
+  const type& get<type> (const std::string& field, const type& v)
   {
     return get_field (field, v);
   }

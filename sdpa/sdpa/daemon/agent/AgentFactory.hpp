@@ -44,7 +44,6 @@ namespace daemon {
                                 const unsigned int rank = 0,
                                 const std::string& appGuiUrl = "" )
     {
-      LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
       pAgent->createWorkflowEngine<T>();
 

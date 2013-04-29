@@ -2,6 +2,7 @@
 <defun name="mapreduce">
   <include-structs href="types.xpnet"/>
 
+  <in name="id" type="string" place="id"/>
   <in name="input_file" type="string" place="input_file"/>
   <in name="output_file" type="string" place="output_file"/>
   <in name="read_chunk_size" type="long" place="read_chunk_size"/>
@@ -16,6 +17,7 @@
   <out name="result" type="control" place="result"/>
 
   <net>
+    <place name="id" type="string"/>
     <place name="input_file" type="string"/>
     <place name="output_file" type="string"/>
     <place name="read_chunk_size" type="long"/>
@@ -64,6 +66,7 @@
       <defun>
       <require key="GPI" />
       <require key="INI" />
+        <in name="id" type="string"/>
         <in name="input_file" type="string"/>
         <in name="output_file" type="string"/>
         <in name="read_chunk_size" type="long"/>
@@ -83,7 +86,7 @@
         <out name="n_chunks" type="long"/>
         <out name="n_partitions" type="long"/>
 
-        <module name="mapredmod_cfg" function="config create_config(input_file, output_file, 
+        <module name="mapredmod_cfg" function="config create_config(id, input_file, output_file, 
         															read_chunk_size, map_chunk_size,
                                                						input_n_read_slots, input_n_map_slots,
                                                						n_chunks, n_read_slots, n_map_slots,
@@ -168,18 +171,26 @@
 	          
 	          	config.file.input = input_file;
 	          	config.file.output = output_file;
+	          	
+	          	std::string prefix("mapreduce_");
+	          	prefix+=id;
+	          	
+	          	std::string read_area(prefix+".read_area");
+				std::string map_area(prefix+".map_area");
+	          	std::string partition_area(prefix+".partition_area");
+	          	std::string reduce_area(prefix+".reduce_area");
 	
 				std::ostringstream oss;
-				config.handle.read = fvmGlobalAlloc(size_read_area, "mapred.read_area");
+				config.handle.read = fvmGlobalAlloc(size_read_area, read_area.data());
 			  	if(config.handle.read)
 			  	{
-			  		config.handle.map = fvmGlobalAlloc(size_map_area, "mapred.map_area");
+			  		config.handle.map = fvmGlobalAlloc(size_map_area, map_area.data());
 			  		if(config.handle.map)
 			  		{
-			  			config.handle.partition = fvmGlobalAlloc(size_partition_area, "mapred.partition_area");
+			  			config.handle.partition = fvmGlobalAlloc(size_partition_area, partition_area.data());
 			  			if(config.handle.partition)
 			  			{
-			  				config.handle.reduce = fvmGlobalAlloc(size_reduce_area, "mapred.reduce_area");
+			  				config.handle.reduce = fvmGlobalAlloc(size_reduce_area, reduce_area.data());
 			  				if(!config.handle.reduce)
 			  				{
 			  					fvmGlobalFree(static_cast<fvmAllocHandle_t>(config.handle.read));
@@ -235,6 +246,7 @@
         </module>
 
       </defun>
+      <connect-read  port="id" place="id"/>
       <connect-in  port="input_file" place="input_file"/>
       <connect-in  port="output_file"  place="output_file"/>
       <connect-in  port="read_chunk_size" place="read_chunk_size"/>
@@ -548,12 +560,12 @@
             std::vector< std::vector<std::string> > arr_part_buffs(n_part);
             
             bool first_char_is_delim = ::mapreduce::util::is_delimiter(ptr_shmem[0]);
-            bool last_char_is_delim  = ::mapreduce::util::is_delimiter(ptr_shmem[read_chunk_info.used - 1]);
+            bool last_char_is_delim = ::mapreduce::util::is_delimiter(ptr_shmem[read_chunk_info.used - 1]);
            
             long n = 0, part_id;
           
             std::string str_buff(ptr_shmem);
-            boost::char_separator<char> sep(DELIMITERS);
+            boost::char_separator<char> sep(EXTERNAL_DELIMITERS);
             boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
             
             for( boost::tokenizer<boost::char_separator<char> >::iterator it = tok.begin(); it != tok.end(); ++it )
@@ -850,7 +862,7 @@
 	        	partition_result.partition_info.part_used = last_pos;
 	        	partition_result.succeeded = 1;
 	
-	            MLOG( INFO, "Stored partition slice of the map slot "<<part_slice_info.map_slot_id<<" into partition"
+	            MLOG( INFO, "Stored partition slice of the map slot "<<part_slice_info.map_slot_id<<" into the partition slot"
 	                	    << partition_info.slot_id << " of size " << partition_result.partition_info.part_used<<" ...");
 
 			}
@@ -1951,7 +1963,6 @@
 	       	else
           		 MLOG(INFO, "The slot is empty!");
             
-            
             border_keys_recovered_red = control(); 
 
           ]]></code>
@@ -1973,6 +1984,7 @@
       <require key="GPI" />
       <require key="FIN" />
       <defun>
+        <in name="id" type="string"/>
         <in name="config" type="config"/>
         <in name="map_slots_released" type="control"/>
         <in name="read_slots_released" type="control"/>
@@ -1982,12 +1994,15 @@
         <in name="special_partition_info" type="partition_info"/>
         <in name="special_reduce_info" type="reduce_info"/>
         <out name="result" type="control"/>
-        <module name="mapreduce_done" function="finalize_mapreduce(config, result)">
+        <module name="mapreduce_done" function="finalize_mapreduce(id, config, result)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <cinclude href="util/helper.hpp"/>   <ld flag="-lboost_regex"/>
           <code><![CDATA[
-	          LOG (INFO, "finalize: " << config);
+              if(id.empty())
+              	throw std::runtime_error(std::string("Non-valid id: \"") + id + "\"");
+              	
+	          LOG (INFO, "The mapreduce "<<id<<" terminated! Call finalize! (configuration: " << config<<")");
 			
            	  result = control();
                   
@@ -2000,6 +2015,7 @@
           ]]></code>
         </module>
       </defun>
+        <connect-in port="id" place="id"/>
       	<connect-in port="config" place="config"/>
     	<connect-in port="map_slots_released" place="map_slots_released"/>
     	<connect-in port="read_slots_released" place="read_slots_released"/>

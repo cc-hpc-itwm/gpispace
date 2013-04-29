@@ -1,6 +1,6 @@
 include(pnet_macros)
 
-pnet_compile(atomic atomic.xml
+pnet_compile(atomic atomic.xpnet
   OUTPUT atomic.pnet
   GENERATE atomic
   INSTALL ${SDPA_APPS_DIR}/atomic

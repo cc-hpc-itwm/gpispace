@@ -7,6 +7,23 @@
 
 #include <iosfwd>
 
-std::ostream& operator<< (std::ostream&, const pnet::type::value::value_type&);
+namespace pnet
+{
+  namespace type
+  {
+    namespace value
+    {
+      class show
+      {
+      public:
+        show (const value_type&);
+        std::ostream& operator() (std::ostream&) const;
+      private:
+        const value_type& _value;
+      };
+      std::ostream& operator<< (std::ostream&, const show&);
+    }
+  }
+}
 
 #endif

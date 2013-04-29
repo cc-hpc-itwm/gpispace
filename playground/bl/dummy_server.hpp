@@ -3,6 +3,8 @@
 #ifndef PREFIX_DUMMY_SERVER_HPP
 #define PREFIX_DUMMY_SERVER_HPP
 
+#include <fhg/util/parse/position.hpp>
+
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QThread>
@@ -34,6 +36,10 @@ private slots:
   void send_some_status_updates();
 
 private:
+  void execute_action (fhg::util::parse::position&);
+  void send_action_description (fhg::util::parse::position&);
+  void send_layout_hint (fhg::util::parse::position&);
+
   int _socket_descriptor;
   QTcpSocket* _socket;
 

@@ -68,12 +68,12 @@ namespace seda {
         try {
             /* log input queue if not empty */
             if (!queue()->empty()) {
-                SEDA_LOG_DEBUG("cleaning up input queue");
+                DMLOG (TRACE, "cleaning up input queue");
                 while (!queue()->empty()) {
                     IEvent::Ptr e(queue()->pop());
-                    SEDA_LOG_DEBUG("removed incoming event: " << e->str());
+                    DMLOG (TRACE, "removed incoming event: " << e->str());
                 }
-                SEDA_LOG_DEBUG("done");
+                DMLOG (TRACE, "done");
             }
         } catch (...) {}
     }

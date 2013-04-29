@@ -110,13 +110,13 @@ namespace sdpa
       {
         if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
         {
-          LOG ( WARN
-              , "send failed:"
-              << " ec := " << ec
-              << " event := " << e->str()
-              << " to := " << sdpa_event->to ()
-              << " from := " << sdpa_event->from ()
-              );
+          DMLOG ( WARN
+                , "send failed:"
+                << " ec := " << ec
+                << " event := " << e->str()
+                << " to := " << sdpa_event->to ()
+                << " from := " << sdpa_event->from ()
+                );
 
           //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
           sdpa::events::ErrorEvent::Ptr ptrErrEvt

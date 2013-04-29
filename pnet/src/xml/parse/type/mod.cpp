@@ -11,7 +11,6 @@
 #include <fhg/util/xml.hpp>
 
 #include <boost/foreach.hpp>
-#include <boost/tuple/tuple.hpp>
 
 namespace xml
 {

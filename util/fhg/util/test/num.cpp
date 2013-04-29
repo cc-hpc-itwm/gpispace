@@ -4,6 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/util/num.hpp>
+#include <fhg/util/num/show.hpp>
 #include <fhg/util/parse/error.hpp>
 
 #include <string>
@@ -178,8 +179,8 @@ namespace
       const std::string inp (oss.str());
       position pos (inp);
 
-      BOOST_REQUIRE_EQUAL (n, read_num (pos));
-      BOOST_REQUIRE (pos.end());
+      BOOST_CHECK_EQUAL (n, read_num (pos));
+      BOOST_CHECK (pos.end());
     }
   }
 }
@@ -240,11 +241,11 @@ BOOST_AUTO_TEST_CASE (_num)
     BOOST_REQUIRE (pos.end());
   }
   {
-    const std::string inp ("-23U");
+    const std::string inp ("-1U");
     position pos (inp);
 
-    BOOST_REQUIRE_THROW (read_num (pos), error::signed_unsigned);
-    BOOST_REQUIRE_EQUAL (pos.rest(), std::string ("U"));
+    BOOST_REQUIRE_EQUAL (num_type (-1U), read_num (pos));
+    BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("23L");

@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/value/poke.hpp>
+#include <we/type/value/path/split.hpp>
 
 #include <boost/utility.hpp>
 
@@ -48,7 +49,22 @@ namespace pnet
 
           value_type& deeper (structured_type& m) const
           {
-            value_type& v (m[*_key]);
+            structured_type::iterator pos (m.begin());
+
+            while (pos != m.end())
+            {
+              if (pos->first == *_key)
+              {
+                pos = m.erase (pos);
+
+                break;
+              }
+
+              ++pos;
+            }
+
+            pos = m.insert (pos, std::make_pair (*_key, value_type()));
+            value_type& v (pos->second);
 
             return boost::apply_visitor
               (visitor_poke (boost::next (_key), _end, v, _value), v);
@@ -56,13 +72,28 @@ namespace pnet
         };
       }
 
-      value_type& poke ( const std::list<std::string>& path
+      value_type& poke ( const std::list<std::string>::const_iterator& key
+                       , const std::list<std::string>::const_iterator& end
                        , value_type& node
                        , const value_type& value
                        )
       {
         return boost::apply_visitor
-          (visitor_poke (path.begin(), path.end(), node, value), node);
+          (visitor_poke (key, end, node, value), node);
+      }
+      value_type& poke ( const std::list<std::string>& path
+                       , value_type& node
+                       , const value_type& value
+                       )
+      {
+        return poke (path.begin(), path.end(), node, value);
+      }
+      value_type& poke ( const std::string& path
+                       , value_type& node
+                       , const value_type& value
+                       )
+      {
+        return poke (path::split (path), node, value);
       }
     }
   }

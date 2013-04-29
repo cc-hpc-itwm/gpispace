@@ -251,22 +251,17 @@ namespace fhg
 
         case 'u':
         case 'U':
-          if (negative)
-          {
-            throw parse::error::signed_unsigned (pos);
-          }
-
           ++pos;
 
           if (!pos.end() && (*pos == 'l' || *pos == 'L'))
           {
             ++pos;
 
-            return num_type (ul);
+            return SIGNED (ul);
           }
           else
           {
-            return num_type (cast<unsigned long, unsigned int> (ul, pos));
+            return SIGNED (cast<unsigned long, unsigned int> (ul, pos));
           }
 
         default:
@@ -342,13 +337,4 @@ namespace
   private:
     std::ostream& _os;
   };
-}
-
-std::ostream& operator<< (std::ostream& os, const fhg::util::num_type& v)
-{
-  const std::ios_base::fmtflags ff (os.flags());
-  os << std::showpoint;
-  boost::apply_visitor (visitor_show (os), v);
-  os.flags (ff);
-  return os;
 }
