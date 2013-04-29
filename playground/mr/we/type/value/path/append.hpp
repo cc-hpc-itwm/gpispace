@@ -19,10 +19,7 @@ namespace pnet
         public:
           append (std::list<std::string>&, const std::string&);
           ~append();
-          operator std::list<std::string>&() const
-          {
-            return _path;
-          }
+          operator std::list<std::string>&() const;
         private:
           std::list<std::string>& _path;
         };

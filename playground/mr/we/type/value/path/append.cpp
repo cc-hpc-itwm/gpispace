@@ -21,6 +21,10 @@ namespace pnet
         {
           _path.pop_back();
         }
+        append::operator std::list<std::string>&() const
+        {
+          return _path;
+        }
       }
     }
   }
