@@ -14,10 +14,13 @@ add_library (we
   we/exception.cpp
   we/require_type.cpp
   we/type/signature/dump.cpp
+  we/type/signature/name.cpp
   we/type/signature/show.cpp
+  we/type/signature/signature.cpp
   we/type/value/name.cpp
   we/type/value/name_of.cpp
   we/type/value/of_type.cpp
+  we/type/value/path/append.cpp
   we/type/value/path/join.cpp
   we/type/value/path/split.cpp
   we/type/value/peek.cpp
