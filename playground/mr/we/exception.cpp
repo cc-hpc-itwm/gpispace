@@ -22,12 +22,13 @@ namespace pnet
     , const std::list<std::string>& path
     )
       : type_error
-        ( ( boost::format ( "type mismatch for field %2%: expected %1%"
-                          ", value has %3%"
+        ( ( boost::format ( "type mismatch for field '%2%': expected type '%1%'"
+                            ", value '%4%' has type '%3%'"
                           )
           % type::signature::show (signature)
           % type::value::path::join (path)
           % "<<signature (value)>>"
+          % type::value::show (value)
           ).str()
         )
       , _signature (signature)
@@ -39,7 +40,7 @@ namespace pnet
     , const std::list<std::string>& path
     )
       : type_error
-        ( ( boost::format ("missing field %2% of type %1%")
+        ( ( boost::format ("missing field '%2%' of type '%1%'")
           % type::signature::show (signature)
           % type::value::path::join (path)
           ).str()
@@ -52,9 +53,10 @@ namespace pnet
     , const std::list<std::string>& path
     )
       : type_error
-        ( ( boost::format ("unknown field %1% with value %2%")
+        ( ( boost::format ("unknown field '%1%' with value '%2%' of type '%3%'")
           % type::value::path::join (path)
           % type::value::show (value)
+          % "<<signature (value)>>"
           ).str()
         )
       , _value (value)
