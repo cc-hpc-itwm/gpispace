@@ -4,6 +4,8 @@
 #define PNET_SRC_WE_TYPE_VALUE_SIGNATURE_NAME_HPP
 
 #include <string>
+#include <set>
+#include <iosfwd>
 
 namespace pnet
 {
@@ -32,6 +34,16 @@ namespace pnet
       NAME (STRUCT);
 
 #undef NAME
+
+      class typename_of
+      {
+      public:
+        typename_of (const std::string&);
+        std::ostream& operator() (std::ostream&) const;
+      private:
+        const std::string& _name;
+      };
+      std::ostream& operator<< (std::ostream&, const typename_of&);
     }
   }
 }
