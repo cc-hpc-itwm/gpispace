@@ -1,0 +1,188 @@
+.\" Manpage for xpnet file format.
+.\" Contact @PROJECT_CONTACT@ to correct errors or typos.
+.TH man 5 "2013" "@PROJECT_VERSION@" "xpnet man page"
+.SH NAME
+xpnet - the GPISpace Petri-Net XML format
+.SH DESCRIPTION
+.B "xpnet"
+general structure of an xpnet file.
+.SS TYPES
+.B "control"
+        just a simple  token, you can take it  as a thing whose value  is not of
+        interest just  whether it's there  or not.   For example, in  petri nets
+        there are  no functions  returning void, every  function is  required to
+        return something  - a  control token  is such  a 'something'.
+
+        Represented as: []
+
+.B "bool"
+        A bool token is represented as: true, false
+
+.B "long"
+        A token that can carry a long value.
+
+        Represented as: 42L
+
+.B "double"
+        A token that can carry a double value.
+
+        Represented as: 0.0f
+
+.B "char"
+        A token that can carry a char value.
+
+.B "string"
+        A token that can carry a string.
+
+        Represented as: "Hello World!"
+
+.B "bitset"
+        A token that can carry a bitset. The set can contain an arbitrary number
+        of bits.
+
+        Represented as: {<long> ...}
+
+.B "map"
+        A map from long -> long values.
+
+        Represented as: {|<long> -> <long>, ...|}
+
+.B "set"
+        A set of long values.
+
+        Represented as: {:<long> ...:}
+
+.B "stack"
+        A stack of long values.
+
+        Represented as: @<long> ...@
+
+.B "bytearray"
+        An arbitrary blob of bytes. Expressions cannot directly operate on them,
+        but you can use  them in C++ code. The "bytearray" can  be casted to any
+        type you want and you can assign (memcpy) any type you like.
+
+        Represented as: y(<long> ...)
+
+.SS OPERATIONS
+
+Most binary operations  are strongly typed, i.e. they only  accept tokens of the
+same type.  For  example, you cannot evaluate "max(1L, 0.0f)",  you have to cast
+one of the inputs explicitly: "max(1L, tolong(0.0f))".
+
+.B :or: :and: :not:
+        Simple boolean algebra on boolean expressions. :not: can also be written
+        as "!". Evaluation is short-circuit.
+
+.B :lt: :le: :gt: :ge: :ne: :eq:
+        Simple comparisons on tokens of type
+.I long
+
+.B add (a, b), sub(a, b)
+        Concatenate chars and strings, otherwise add.
+
+.B substr(string s, long len) -> string
+        Get a substring of length len of string s.
+
+.B mul, div, divint
+
+.B mod, modint
+
+.B pow, powint
+
+.B neg(x)
+        Unary minus operator.
+
+.B min(x,y), max(x,y), abs(x)
+        Return minimu/maximum/absolute value.
+
+.B floor(x), ceil(x), round(x), sin (x), cos (x), sqrt (x), log (x)
+        Return the equivalent results of std::F(x).
+
+.B tolong (double f) -> long, todouble (long f) -> double
+        Explicitly cast a token. I.e. to cast a token of type "double" to a "long", use tolong(1.0f).
+
+.B bitset_insert (bitset bs, long bit) -> bitset
+        Return a new bitset in which the bit "bit" is set to 1.
+
+.B bitset_delete (bitset bs, long bit) -> bitset
+        Return a new bitset in which the bit "bit" is set to 0.
+
+.B bitset_is_element (bitset bs, long bit) -> bool
+        Return "true" when bit "bit" is set, false otherwise.
+
+.B bitset_or, bitset_and, bitset_xor (bitset lhs, bitset rhs) -> bitset
+        Return a new bitset which is the bitwise combination of both bitsets.
+
+.B bitset_count (bitset bs) -> long
+        Return the number of bits that are set to "1".
+
+.B bitset_tohex (bitset bs) -> string
+        Return a hexadecimal string represenation of the bitset.
+
+.B bitset_fromhex (string s) -> bitset
+        Return a bitset that is parsed from the given string.
+
+.B stack_empty (stack s) -> bool
+        Return true iff the given stack is empty.
+
+.B stack_top (stack s) -> long
+        Return the top element of the stack without removing it.
+
+.B stack_push (stack s, long val) -> stack
+        Push a new value to the stack.
+
+.B stack_pop (stack s) -> stack
+        Remove the topmost element of the stack. The stack must not be empty!
+
+.B stack_size (stack s) -> long
+        Return the size of the stack.
+
+.B stack_join (stack a, stack b) -> stack
+        Return a new stack with all of "b" pushed to stack "a".
+
+.B map_assign (map m, long k, long v) -> map
+
+.B map_unassign (map m, long k) -> map
+        Remove mapping of key "k" from map "m".
+
+.B map_is_assigned (map m, long k) -> bool
+        Return true iff key "k" has a valid mapping in map "m".
+
+.B map_get_assignment (map m, long k) -> long
+        Return the mapped value of key "k" in map "m".
+
+.B map_size (map m) -> long
+        Return the number of mappings in map "m".
+
+.B map_empty (map m) -> bool
+        Return true iff the map "m" is empty.
+
+.B set_insert (set s, long v) -> set
+        Insert the value "v" into set "s".
+
+.B set_erase (set s, long v) -> set
+        Erase the value "v" from set "s".
+
+.B set_is_element (set s, long v) -> bool
+        Return true iff the value "v" is an element of set "s".
+
+.B set_pop (set s) -> set
+        Remove the first element from set "s".
+
+.B set_top (set s) -> long
+        Return the first element of set "s". set_empty(s) must return false.
+
+.B set_empty (set s) -> bool
+        Return true iff the set "s" is empty.
+
+.B set_size (set s) -> long
+        Return the number of elements in set "s".
+
+.B set_is_subset (set a, set b) -> bool
+        Return true iff set "a" is a subset of set "b".
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+@PROJECT_CONTACT@
