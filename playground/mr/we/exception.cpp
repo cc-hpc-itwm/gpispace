@@ -5,6 +5,7 @@
 #include <we/type/signature/show.hpp>
 #include <we/type/value/path/join.hpp>
 #include <we/type/value/show.hpp>
+#include <we/signature_of.hpp>
 
 namespace pnet
 {
@@ -27,7 +28,7 @@ namespace pnet
                           )
           % type::signature::show (signature)
           % type::value::path::join (path)
-          % "<<signature (value)>>"
+          % type::signature::show (signature_of (value))
           % type::value::show (value)
           ).str()
         )
@@ -56,7 +57,7 @@ namespace pnet
         ( ( boost::format ("unknown field '%1%' with value '%2%' of type '%3%'")
           % type::value::path::join (path)
           % type::value::show (value)
-          % "<<signature (value)>>"
+          % type::signature::show (signature_of (value))
           ).str()
         )
       , _value (value)
