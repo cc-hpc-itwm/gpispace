@@ -34,9 +34,11 @@ namespace pnet
               return _node;
             }
 
-            MIT field (m.find (*_key));
+            MIT field (m.begin());
 
-            if (field != m.end())
+            while (field != m.end())
+            {
+              if (field->first == *_key)
               {
                 return boost::apply_visitor
                   ( visitor_peek<V,M,MIT> ( boost::next (_key)
@@ -46,6 +48,9 @@ namespace pnet
                   , field->second
                   );
               }
+
+              ++field;
+            }
 
             return boost::none;
           }
@@ -77,7 +82,7 @@ namespace pnet
         return boost::apply_visitor
           ( visitor_peek< const value_type
                         , const structured_type
-                        , const structured_type::const_iterator
+                        , structured_type::const_iterator
                         > (key, end, node)
           , node
           );

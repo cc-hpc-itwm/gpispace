@@ -49,7 +49,22 @@ namespace pnet
 
           value_type& deeper (structured_type& m) const
           {
-            value_type& v (m[*_key]);
+            structured_type::iterator pos (m.begin());
+
+            while (pos != m.end())
+            {
+              if (pos->first == *_key)
+              {
+                pos = m.erase (pos);
+
+                break;
+              }
+
+              ++pos;
+            }
+
+            pos = m.insert (pos, std::make_pair (*_key, value_type()));
+            value_type& v (pos->second);
 
             return boost::apply_visitor
               (visitor_poke (boost::next (_key), _end, v, _value), v);

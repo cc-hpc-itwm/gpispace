@@ -35,7 +35,7 @@ namespace pnet
           pos.skip_spaces();
           pos.require (":=");
 
-          m[fieldname] = read (pos);
+          m.push_back (std::make_pair (fieldname, read (pos)));
         }
         void list_item ( std::list<value_type>& l
                        , fhg::util::parse::position& pos

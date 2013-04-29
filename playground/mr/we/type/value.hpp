@@ -36,10 +36,10 @@ namespace pnet
               , std::list<boost::recursive_variant_>
               , std::set<boost::recursive_variant_>
               , std::map<boost::recursive_variant_, boost::recursive_variant_>
-              , std::map<std::string, boost::recursive_variant_>
+              , std::list<std::pair<std::string, boost::recursive_variant_> >
               >::type value_type;
 
-      typedef std::map<std::string, value_type> structured_type;
+      typedef std::list<std::pair<std::string, value_type> > structured_type;
     }
   }
 }

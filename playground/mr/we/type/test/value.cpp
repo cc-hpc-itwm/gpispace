@@ -112,11 +112,11 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
   {
     structured_type m;
     test_show_and_read_showed (m, "struct []");
-    m["foo"] = 314U;
-    m["bar"] = 14UL;
-    m["baz"] = std::list<value_type>();
+    m.push_back (std::make_pair ("foo", 314U));
+    m.push_back (std::make_pair ("bar", 14UL));
+    m.push_back (std::make_pair ("baz", std::list<value_type>()));
     test_show_and_read_showed
-      (m, "struct [bar := 14UL, baz := list (), foo := 314U]");
+      (m, "struct [foo := 314U, bar := 14UL, baz := list ()]");
   }
 }
 
@@ -175,8 +175,8 @@ BOOST_AUTO_TEST_CASE (_read)
 
     BOOST_CHECK (value_type (m) == read ("struct []"));
 
-    m["a"] = value_type ('a');
-    m["foo"] = value_type ('b');
+    m.push_back (std::make_pair ("a", value_type ('a')));
+    m.push_back (std::make_pair ("foo", value_type ('b')));
 
     BOOST_CHECK (value_type (m) == read ("struct [a:='a',foo:='b']"));
   }
@@ -222,9 +222,9 @@ BOOST_AUTO_TEST_CASE (peek)
   }
 
   value_type m1 = structured_type();
-  boost::get<structured_type&> (m1)["i"] = i;
-  boost::get<structured_type&> (m1)["s"] = s;
-  boost::get<structured_type&> (m1)["l1"] = l1;
+  boost::get<structured_type&> (m1).push_back (std::make_pair ("i", i));
+  boost::get<structured_type&> (m1).push_back (std::make_pair ("s", s));
+  boost::get<structured_type&> (m1).push_back (std::make_pair ("l1", l1));
 
   std::list<value_type> _l2;
   _l2.push_back (l1);
@@ -244,10 +244,10 @@ BOOST_AUTO_TEST_CASE (peek)
   const value_type set (_set);
 
   structured_type _m2;
-  _m2["m1"] = m1;
-  _m2["l2"] = l2;
-  _m2["mv"] = mv;
-  _m2["set"] = set;
+  _m2.push_back (std::make_pair ("m1", m1));
+  _m2.push_back (std::make_pair ("l2", l2));
+  _m2.push_back (std::make_pair ("mv", mv));
+  _m2.push_back (std::make_pair ("set", set));
   const value_type m2 (_m2);
 
   {
