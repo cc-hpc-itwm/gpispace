@@ -5,9 +5,10 @@
 
 #include <we/type/signature.hpp>
 #include <we/type/signature/show.hpp>
- #include <we/type/signature/dump.hpp>
- #include <we/type/signature/name.hpp>
- #include <we/type/signature/signature.hpp>
+#include <we/type/signature/cpp.hpp>
+#include <we/type/signature/dump.hpp>
+#include <we/type/signature/name.hpp>
+#include <we/type/signature/signature.hpp>
 
 #include <sstream>
 
@@ -110,6 +111,113 @@ BOOST_AUTO_TEST_CASE (signature_dump)
           "</struct>\n"
         , structured_type (std::make_pair ("line2D", ps))
         );
+
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (signature_cpp)
+{
+#define CHECK(_expected,_sig...)                        \
+  {                                                     \
+    using pnet::type::signature::cpp::header;           \
+                                                        \
+    std::ostringstream oss;                             \
+                                                        \
+    oss << header (structured_type (_sig));             \
+                                                        \
+    BOOST_CHECK_EQUAL (oss.str(), _expected);           \
+  }
+
+  using pnet::type::signature::structured_type;
+  using pnet::type::signature::structure_type;
+  using pnet::type::signature::field_type;
+  using pnet::type::signature::cpp::header;
+
+  structure_type f;
+  f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
+  f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
+
+  CHECK ( "\n"
+          "namespace point2D\n"
+          "{\n"
+          "  struct type\n"
+          "  {\n"
+          "    float x;\n"
+          "    float y;\n"
+          "    type();\n"
+          "    type (const pnet::type::value::value_type&);\n"
+          "  };\n"
+          "}"
+        , std::make_pair ("point2D", f)
+        );
+
+  structure_type ps;
+  ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
+  ps.push_back (structured_type (std::make_pair ("q", f)));
+
+  CHECK ( "\n"
+          "namespace line2D\n"
+          "{\n"
+          "  namespace q\n"
+          "  {\n"
+          "    struct type\n"
+          "    {\n"
+          "      float x;\n"
+          "      float y;\n"
+          "      type();\n"
+          "      type (const pnet::type::value::value_type&);\n"
+          "    };\n"
+          "  }\n"
+          "  struct type\n"
+          "  {\n"
+          "    point2D::type p;\n"
+          "    q::type q;\n"
+          "    type();\n"
+          "    type (const pnet::type::value::value_type&);\n"
+          "  };\n"
+          "}"
+        , std::make_pair ("line2D", ps)
+        );
+
+  {
+    structure_type a;
+    a.push_back (std::make_pair (std::string ("a"), std::string ("int")));
+    structure_type b;
+    b.push_back (structured_type (std::make_pair ("b", a)));
+    structure_type c;
+    c.push_back (structured_type (std::make_pair ("c", b)));
+
+    CHECK ( "\n"
+            "namespace s\n"
+            "{\n"
+            "  namespace c\n"
+            "  {\n"
+            "    namespace b\n"
+            "    {\n"
+            "      struct type\n"
+            "      {\n"
+            "        int a;\n"
+            "        type();\n"
+            "        type (const pnet::type::value::value_type&);\n"
+            "      };\n"
+            "    }\n"
+            "    struct type\n"
+            "    {\n"
+            "      b::type b;\n"
+            "      type();\n"
+            "      type (const pnet::type::value::value_type&);\n"
+            "    };\n"
+            "  }\n"
+            "  struct type\n"
+            "  {\n"
+            "    c::type c;\n"
+            "    type();\n"
+            "    type (const pnet::type::value::value_type&);\n"
+            "  };\n"
+            "}"
+          , std::make_pair ("s", c)
+          );
+  }
 
 #undef CHECK
 }
