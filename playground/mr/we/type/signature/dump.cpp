@@ -28,10 +28,7 @@ namespace pnet
         {
         public:
           show_struct (fhg::util::xml::xmlstream&);
-          void operator() (const std::pair< std::string
-                                          , std::list<field_type>
-                                          >&
-                          ) const;
+          void operator() (const std::pair<std::string, structure_type>&) const;
         private:
           fhg::util::xml::xmlstream& _os;
           void print (const field_type&) const;
@@ -59,7 +56,7 @@ namespace pnet
           : _os (os)
         {}
         void show_struct::operator() (const std::pair< std::string
-                                                     , std::list<field_type>
+                                                     , structure_type
                                                      >& s
                                      ) const
         {
