@@ -11,6 +11,9 @@ include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 include_directories (${UTIL_INCLUDE_DIR})
 
 add_library (we
+  we/exception.cpp
+  we/require_type.cpp
+  we/signature.cpp
   we/type/signature/dump.cpp
   we/type/signature/show.cpp
   we/type/value/name.cpp
@@ -22,21 +25,19 @@ add_library (we
   we/type/value/poke.cpp
   we/type/value/read.cpp
   we/type/value/show.cpp
-  we/require_type.cpp
-  we/exception.cpp
 )
 
-fhg_add_test (value.cpp
-  PROJECT test_playground_mr
+fhg_add_test (we/type/test/value.cpp
+  PROJECT test_we_type
   LINK_LIBRARIES we we-dev fhg-util
 )
 
-fhg_add_test (signature.cpp
-  PROJECT test_playground_mr
+fhg_add_test (we/type/test/signature.cpp
+  PROJECT test_we_type
   LINK_LIBRARIES we we-dev fhg-util
 )
 
-fhg_add_test (require_type.cpp
-  PROJECT test_playground_mr
+fhg_add_test (we/test/require_type.cpp
+  PROJECT test_we
   LINK_LIBRARIES we we-dev fhg-util
 )
