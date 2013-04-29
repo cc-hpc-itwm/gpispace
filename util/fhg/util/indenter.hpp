@@ -23,6 +23,17 @@ namespace fhg
       unsigned int _depth;
     };
     std::ostream& operator<< (std::ostream&, const indenter&);
+
+    class deeper
+    {
+    public:
+      deeper (indenter&);
+      ~deeper();
+      std::ostream& operator() (std::ostream&) const;
+    private:
+      indenter& _indenter;
+    };
+    std::ostream& operator<< (std::ostream&, const deeper&);
   }
 }
 
