@@ -15,28 +15,23 @@ namespace pnet
     {
       namespace
       {
-        class show_field
-          : public boost::static_visitor<fhg::util::xml::xmlstream&>
+        class show_field : public boost::static_visitor<>
         {
         public:
           show_field (fhg::util::xml::xmlstream&);
-          fhg::util::xml::xmlstream&
-          operator() (const std::pair<std::string, std::string>&) const;
-          fhg::util::xml::xmlstream&
-          operator() (const signature_structured_type&) const;
+          void operator() (const std::pair<std::string, std::string>&) const;
+          void operator() (const signature_structured_type&) const;
         private:
           fhg::util::xml::xmlstream& _os;
         };
-        class show_struct
-          : public boost::static_visitor<fhg::util::xml::xmlstream&>
+        class show_struct : public boost::static_visitor<>
         {
         public:
           show_struct (fhg::util::xml::xmlstream&);
-          fhg::util::xml::xmlstream&
-          operator() (const std::pair< std::string
-                                     , std::list<field_type>
-                                     >&
-                     ) const;
+          void operator() (const std::pair< std::string
+                                          , std::list<field_type>
+                                          >&
+                          ) const;
         private:
           fhg::util::xml::xmlstream& _os;
           void print (const field_type&) const;
@@ -45,19 +40,17 @@ namespace pnet
         show_field::show_field (fhg::util::xml::xmlstream& os)
           : _os (os)
         {}
-        fhg::util::xml::xmlstream&
-        show_field::operator() (const std::pair< std::string
-                                               , std::string
-                                               >& f
-                               ) const
+        void show_field::operator() (const std::pair< std::string
+                                                    , std::string
+                                                    >& f
+                                    ) const
         {
           _os.open ("field");
           _os.attr ("name", f.first);
           _os.attr ("type", f.second);
           _os.close();
         }
-        fhg::util::xml::xmlstream&
-        show_field::operator() (const signature_structured_type& s) const
+        void show_field::operator() (const signature_structured_type& s) const
         {
           return boost::apply_visitor (show_struct (_os), s);
         }
@@ -65,11 +58,10 @@ namespace pnet
         show_struct::show_struct (fhg::util::xml::xmlstream& os)
           : _os (os)
         {}
-        fhg::util::xml::xmlstream&
-        show_struct::operator() (const std::pair< std::string
-                                                , std::list<field_type>
-                                                >& s
-                                ) const
+        void show_struct::operator() (const std::pair< std::string
+                                                     , std::list<field_type>
+                                                     >& s
+                                     ) const
         {
           _os.open ("struct");
           _os.attr ("name", s.first);
