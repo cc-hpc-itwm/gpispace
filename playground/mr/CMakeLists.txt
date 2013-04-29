@@ -49,3 +49,8 @@ fhg_add_test (we/test/signature_of.cpp
   PROJECT test_we
   LINK_LIBRARIES we we-dev fhg-util
 )
+
+fhg_add_test (we/test/exception.cpp
+  PROJECT test_we
+  LINK_LIBRARIES we we-dev fhg-util
+)
