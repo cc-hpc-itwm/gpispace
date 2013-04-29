@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE (signature_show)
   }
 
   using pnet::type::signature::signature_type;
-  using pnet::type::signature::signature_structured_type;
+  using pnet::type::signature::structured_type;
   using pnet::type::signature::structure_type;
   using pnet::type::signature::field_type;
 
@@ -31,25 +31,25 @@ BOOST_AUTO_TEST_CASE (signature_show)
 
   structure_type f;
 
-  CHECK ("s :: []", signature_structured_type (std::make_pair ("s", f)));
+  CHECK ("s :: []", structured_type (std::make_pair ("s", f)));
 
   f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
 
-  CHECK ("s :: [x :: float]", signature_structured_type (std::make_pair ("s", f)));
+  CHECK ("s :: [x :: float]", structured_type (std::make_pair ("s", f)));
 
   f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
 
   CHECK ( "point2D :: [x :: float, y :: float]"
-        , signature_structured_type (std::make_pair ("point2D", f))
+        , structured_type (std::make_pair ("point2D", f))
         );
 
   structure_type ps;
 
   ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
-  ps.push_back (signature_structured_type (std::make_pair ("q", f)));
+  ps.push_back (structured_type (std::make_pair ("q", f)));
 
   CHECK ( "line2D :: [p :: point2D, q :: [x :: float, y :: float]]"
-        , signature_structured_type (std::make_pair ("line2D", ps))
+        , structured_type (std::make_pair ("line2D", ps))
         );
 #undef CHECK
 }
@@ -62,19 +62,19 @@ BOOST_AUTO_TEST_CASE (signature_dump)
                                                         \
     std::ostringstream oss;                             \
                                                         \
-    oss << dump (signature_structured_type (_sig));     \
+    oss << dump (structured_type (_sig));               \
                                                         \
     BOOST_CHECK_EQUAL (oss.str(), _expected);           \
   }
 
-  using pnet::type::signature::signature_structured_type;
+  using pnet::type::signature::structured_type;
   using pnet::type::signature::structure_type;
   using pnet::type::signature::field_type;
 
   structure_type f;
 
   CHECK ( "<struct name=\"s\"/>\n"
-        , signature_structured_type (std::make_pair ("s", f))
+        , structured_type (std::make_pair ("s", f))
         );
 
   f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE (signature_dump)
   CHECK ( "<struct name=\"s\">\n"
           "  <field name=\"x\" type=\"float\"/>\n"
           "</struct>\n"
-        , signature_structured_type (std::make_pair ("s", f))
+        , structured_type (std::make_pair ("s", f))
         );
 
   f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
@@ -91,13 +91,13 @@ BOOST_AUTO_TEST_CASE (signature_dump)
           "  <field name=\"x\" type=\"float\"/>\n"
           "  <field name=\"y\" type=\"float\"/>\n"
           "</struct>\n"
-        , signature_structured_type (std::make_pair ("point2D", f))
+        , structured_type (std::make_pair ("point2D", f))
         );
 
   structure_type ps;
 
   ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
-  ps.push_back (signature_structured_type (std::make_pair ("q", f)));
+  ps.push_back (structured_type (std::make_pair ("q", f)));
 
   CHECK ( "<struct name=\"line2D\">\n"
           "  <field name=\"p\" type=\"point2D\"/>\n"
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE (signature_dump)
           "    <field name=\"y\" type=\"float\"/>\n"
           "  </struct>\n"
           "</struct>\n"
-        , signature_structured_type (std::make_pair ("line2D", ps))
+        , structured_type (std::make_pair ("line2D", ps))
         );
 #undef CHECK
 }

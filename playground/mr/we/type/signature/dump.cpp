@@ -20,7 +20,7 @@ namespace pnet
         public:
           show_field (fhg::util::xml::xmlstream&);
           void operator() (const std::pair<std::string, std::string>&) const;
-          void operator() (const signature_structured_type&) const;
+          void operator() (const structured_type&) const;
         private:
           fhg::util::xml::xmlstream& _os;
         };
@@ -50,7 +50,7 @@ namespace pnet
           _os.attr ("type", f.second);
           _os.close();
         }
-        void show_field::operator() (const signature_structured_type& s) const
+        void show_field::operator() (const structured_type& s) const
         {
           return boost::apply_visitor (show_struct (_os), s);
         }
@@ -73,14 +73,14 @@ namespace pnet
         }
       }
 
-      dump::dump (const signature_structured_type& signature_structured)
-        : _signature_structured (signature_structured)
+      dump::dump (const structured_type& structured)
+        : _structured (structured)
       {}
       std::ostream& dump::operator() (std::ostream& os) const
       {
         fhg::util::xml::xmlstream s (os);
 
-        boost::apply_visitor (show_struct (s), _signature_structured);
+        boost::apply_visitor (show_struct (s), _structured);
 
         return os;
       }

@@ -16,10 +16,10 @@ namespace pnet
       class dump
       {
       public:
-        dump (const signature_structured_type&);
+        dump (const structured_type&);
         std::ostream& operator() (std::ostream&) const;
       private:
-        const signature_structured_type& _signature_structured;
+        const structured_type& _structured;
       };
       std::ostream& operator<< (std::ostream&, const dump&);
     }

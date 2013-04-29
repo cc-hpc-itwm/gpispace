@@ -22,16 +22,16 @@ namespace pnet
                                            >
                            >
                 >
-              >::type signature_structured_type;
+              >::type structured_type;
 
       typedef boost::variant< std::pair<std::string, std::string>
-                            , signature_structured_type
+                            , structured_type
                             > field_type;
 
       typedef std::list<field_type> structure_type;
 
       typedef boost::variant< std::string
-                            , signature_structured_type
+                            , structured_type
                             > signature_type;
     }
   }

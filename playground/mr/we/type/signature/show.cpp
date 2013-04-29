@@ -24,7 +24,7 @@ namespace pnet
                                                    , std::string
                                                    >&
                                    ) const;
-          std::ostream& operator() (const signature_structured_type&) const;
+          std::ostream& operator() (const structured_type&) const;
         private:
           std::ostream& _os;
         };
@@ -46,7 +46,7 @@ namespace pnet
         public:
           show_sig (std::ostream&);
           std::ostream& operator() (const std::string&) const;
-          std::ostream& operator() (const signature_structured_type&) const;
+          std::ostream& operator() (const structured_type&) const;
         private:
           std::ostream& _os;
         };
@@ -61,8 +61,7 @@ namespace pnet
         {
           return _os << f.first << " :: " << f.second;
         }
-        std::ostream&
-        show_field::operator() (const signature_structured_type& s) const
+        std::ostream& show_field::operator() (const structured_type& s) const
         {
           return boost::apply_visitor (show_struct (_os), s);
         }
@@ -93,8 +92,7 @@ namespace pnet
         {
           return _os << tname;
         }
-        std::ostream&
-        show_sig::operator() (const signature_structured_type& s) const
+        std::ostream& show_sig::operator() (const structured_type& s) const
         {
           return boost::apply_visitor (show_struct (_os), s);
         }
