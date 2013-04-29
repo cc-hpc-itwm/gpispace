@@ -30,9 +30,7 @@ namespace pnet
 
       typedef std::list<field_type> structure_type;
 
-      typedef boost::variant< std::string
-                            , structured_type
-                            > signature_type;
+      typedef boost::variant<std::string, structured_type> signature_type;
     }
   }
 }
