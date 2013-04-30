@@ -47,7 +47,9 @@ endif ()
 MATH(EXPR FHG_BUILD_COUNT "${FHG_BUILD_COUNT}+1")
 
 if ("${FHG_BUILD_TIMESTAMP}" STREQUAL "")
-  set(FHG_BUILD_TIMESTAMP "Sun Jan  1 12:00:00 CET 2012")
+  execute_process (COMMAND "date" "+%y-%m" OUTPUT_VARIABLE __year_and_month OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(FHG_BUILD_TIMESTAMP "${__year_and_month}")
+  set(__year_and_month)
 endif ()
 
 set(FHG_BUILD_INFO "${FHG_BUILD_KERNEL} ${FHG_BUILD_CPU} Build #${FHG_BUILD_COUNT} at ${FHG_BUILD_TIMESTAMP} by ${FHG_BUILD_USER}@${FHG_BUILD_HOST}")
