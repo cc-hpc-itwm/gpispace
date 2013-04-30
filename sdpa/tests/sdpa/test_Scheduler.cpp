@@ -293,4 +293,61 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 	BOOST_CHECK(bOutcome);
 }
 
+BOOST_AUTO_TEST_CASE(tesLoadBalancing)
+{
+	string addrAg = "127.0.0.1";
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	ostringstream oss;
+	sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler(new SchedulerImpl(pAgent.get(), false));
+
+	// number of workers
+	const int nWorkers = 10;
+	const int nJobs = 20;
+
+	// create a give number of workers with different capabilities:
+	std::ostringstream osstr;
+	std::vector<sdpa::worker_id_t> arrWorkerIds;
+	for(int k=0;k<nWorkers;k++)
+	{
+		osstr<<"worker_"<<k;
+		sdpa::worker_id_t workerId(osstr.str());
+		osstr.str("");
+		arrWorkerIds.push_back(workerId);
+		std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+		sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
+		ptrScheduler->addWorker(workerId, 1, cpbSet);
+	}
+
+	// submit a bunch of jobs now
+	std::vector<sdpa::job_id_t> arrJobIds;
+	for(int i=0;i<nJobs;i++)
+	{
+		osstr<<"job_"<<i;
+		sdpa::job_id_t jobId(osstr.str());
+		arrJobIds.push_back(jobId);
+		osstr.str("");
+		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
+		pAgent->jobManager()->addJob(jobId, pJob);
+		requirement_list_t req_list_1(1,requirement_t("C", true));
+		pAgent->jobManager()->addJobRequirements(jobId, req_list_1);
+	}
+
+	// schedule all jobs now
+	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
+	{
+		ptrScheduler->schedule_with_constraints(jobId);
+	}
+
+	sdpa::worker_id_list_t workerList;
+	ptrScheduler->getListWorkersNotFull(workerList);
+
+	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
+	{
+	  sdpa::job_id_t jobId = ptrScheduler->getNextJob(workerId, "");
+	  LOG(INFO, "The job "<<jobId<<" was served to the worker "<<workerId);
+	}
+}
+
 BOOST_AUTO_TEST_SUITE_END()
