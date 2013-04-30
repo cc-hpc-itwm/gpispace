@@ -7,6 +7,8 @@
 
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/cpp/block.hpp>
+#include <fhg/util/cpp/namespace.hpp>
+#include <fhg/util/cpp/struct.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -24,6 +26,18 @@ namespace pnet
         namespace
         {
           namespace block = fhg::util::cpp::block;
+          namespace ns = fhg::util::cpp::ns;
+          namespace structure = fhg::util::cpp::structure;
+
+          std::ostream& decl ( std::ostream& os
+                             , fhg::util::indenter& indent
+                             , const std::string& name
+                             , const std::string& type
+                             )
+          {
+            return os << fhg::util::deeper (indent)
+                      << value::typename_of (type) << " " << name <<  ";";
+          }
 
           class header_struct : public boost::static_visitor<std::ostream&>
           {
@@ -56,8 +70,7 @@ namespace pnet
                                                      >& s
                                      ) const
             {
-              _field << fhg::util::deeper (_indenter)
-                     << value::typename_of (s.first) << " " << s.first << ";";
+              decl (_field, _indenter, s.first, s.first);
 
               return header_struct (_os, _indenter)(s);
             }
@@ -84,8 +97,7 @@ namespace pnet
                                                      >& f
                                      ) const
             {
-              return _field << fhg::util::deeper (_indenter)
-                << value::typename_of (f.second) << " " << f.first << ";";
+              return decl (_field, _indenter, f.first, f.second);
             }
             std::ostream& operator() (const structured_type& s) const
             {
@@ -110,8 +122,7 @@ namespace pnet
                                                     >& s
                                     ) const
           {
-            _os << _indenter << "namespace " << s.first
-                << block::open (_indenter);
+            _os << ns::open (_indenter, s.first);
 
             std::ostringstream field;
             BOOST_FOREACH (const field_type& f, s.second)
@@ -119,13 +130,12 @@ namespace pnet
               boost::apply_visitor (header_field (_os, _indenter, field), f);
             }
             return _os
-              << _indenter << "struct type"
-              << block::open (_indenter)
+              << structure::open (_indenter, "type")
               << field.str()
               << _indenter << "type();"
               << _indenter << "type (const pnet::type::value::value_type&);"
-              << block::close (_indenter) << ";"
-              << block::close (_indenter);
+              << structure::close (_indenter)
+              << ns::close (_indenter);
           }
         }
 
