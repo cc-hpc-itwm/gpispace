@@ -12,10 +12,13 @@ include_directories (${UTIL_INCLUDE_DIR})
 
 add_library (we
   we/exception.cpp
+  we/field.cpp
   we/require_type.cpp
   we/signature_of.cpp
+  we/type/signature/complete.cpp
   we/type/signature/cpp.cpp
   we/type/signature/dump.cpp
+  we/type/signature/is_literal.cpp
   we/type/signature/name.cpp
   we/type/signature/show.cpp
   we/type/signature/signature.cpp
@@ -55,3 +58,6 @@ fhg_add_test (we/test/exception.cpp
   PROJECT test_we
   LINK_LIBRARIES we we-dev fhg-util
 )
+
+add_executable (ctor ctor.cpp)
+target_link_libraries (ctor we we-dev fhg-util)

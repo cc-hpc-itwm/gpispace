@@ -12,6 +12,8 @@
 
 #include <sstream>
 
+#include <iostream>
+
 BOOST_AUTO_TEST_CASE (signature_show)
 {
 #define CHECK(_expected,_sig...)                \
@@ -131,93 +133,105 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
   using pnet::type::signature::structured_type;
   using pnet::type::signature::structure_type;
   using pnet::type::signature::field_type;
-  using pnet::type::signature::cpp::header;
 
   structure_type f;
   f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
   f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
 
-  CHECK ( "\n"
-          "namespace point2D\n"
-          "{\n"
-          "  struct type\n"
-          "  {\n"
-          "    float x;\n"
-          "    float y;\n"
-          "    type();\n"
-          "    type (const pnet::type::value::value_type&);\n"
-          "  };\n"
-          "}"
-        , std::make_pair ("point2D", f)
-        );
+  // CHECK ( "\n"
+  //         "namespace point2D\n"
+  //         "{\n"
+  //         "  struct type\n"
+  //         "  {\n"
+  //         "    float x;\n"
+  //         "    float y;\n"
+  //         "    type();\n"
+  //         "    explicit type (const pnet::type::value::value_type&);\n"
+  //         "  };\n"
+  //         "}"
+  //       , std::make_pair ("point2D", f)
+  //       );
 
   structure_type ps;
   ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
   ps.push_back (structured_type (std::make_pair ("q", f)));
 
-  CHECK ( "\n"
-          "namespace line2D\n"
-          "{\n"
-          "  namespace q\n"
-          "  {\n"
-          "    struct type\n"
-          "    {\n"
-          "      float x;\n"
-          "      float y;\n"
-          "      type();\n"
-          "      type (const pnet::type::value::value_type&);\n"
-          "    };\n"
-          "  }\n"
-          "  struct type\n"
-          "  {\n"
-          "    point2D::type p;\n"
-          "    q::type q;\n"
-          "    type();\n"
-          "    type (const pnet::type::value::value_type&);\n"
-          "  };\n"
-          "}"
-        , std::make_pair ("line2D", ps)
-        );
+  // CHECK ( "\n"
+  //         "namespace line2D\n"
+  //         "{\n"
+  //         "  namespace q\n"
+  //         "  {\n"
+  //         "    struct type\n"
+  //         "    {\n"
+  //         "      float x;\n"
+  //         "      float y;\n"
+  //         "      type();\n"
+  //         "      explicit type (const pnet::type::value::value_type&);\n"
+  //         "    };\n"
+  //         "  }\n"
+  //         "  struct type\n"
+  //         "  {\n"
+  //         "    point2D::type p;\n"
+  //         "    q::type q;\n"
+  //         "    type();\n"
+  //         "    explicit type (const pnet::type::value::value_type&);\n"
+  //         "  };\n"
+  //         "}"
+  //       , std::make_pair ("line2D", ps)
+  //       );
 
-  {
-    structure_type a;
-    a.push_back (std::make_pair (std::string ("a"), std::string ("int")));
-    structure_type b;
-    b.push_back (structured_type (std::make_pair ("b", a)));
-    structure_type c;
-    c.push_back (structured_type (std::make_pair ("c", b)));
+  // {
+  //   structure_type a;
+  //   a.push_back (std::make_pair (std::string ("a"), std::string ("int")));
+  //   structure_type b;
+  //   b.push_back (structured_type (std::make_pair ("b", a)));
+  //   structure_type c;
+  //   c.push_back (structured_type (std::make_pair ("c", b)));
 
-    CHECK ( "\n"
-            "namespace s\n"
-            "{\n"
-            "  namespace c\n"
-            "  {\n"
-            "    namespace b\n"
-            "    {\n"
-            "      struct type\n"
-            "      {\n"
-            "        int a;\n"
-            "        type();\n"
-            "        type (const pnet::type::value::value_type&);\n"
-            "      };\n"
-            "    }\n"
-            "    struct type\n"
-            "    {\n"
-            "      b::type b;\n"
-            "      type();\n"
-            "      type (const pnet::type::value::value_type&);\n"
-            "    };\n"
-            "  }\n"
-            "  struct type\n"
-            "  {\n"
-            "    c::type c;\n"
-            "    type();\n"
-            "    type (const pnet::type::value::value_type&);\n"
-            "  };\n"
-            "}"
-          , std::make_pair ("s", c)
-          );
-  }
+  //   CHECK ( "\n"
+  //           "namespace s\n"
+  //           "{\n"
+  //           "  namespace c\n"
+  //           "  {\n"
+  //           "    namespace b\n"
+  //           "    {\n"
+  //           "      struct type\n"
+  //           "      {\n"
+  //           "        int a;\n"
+  //           "        type();\n"
+  //           "        explicit type (const pnet::type::value::value_type&);\n"
+  //           "      };\n"
+  //           "    }\n"
+  //           "    struct type\n"
+  //           "    {\n"
+  //           "      b::type b;\n"
+  //           "      type();\n"
+  //           "      explicit type (const pnet::type::value::value_type&);\n"
+  //           "    };\n"
+  //           "  }\n"
+  //           "  struct type\n"
+  //           "  {\n"
+  //           "    c::type c;\n"
+  //           "    type();\n"
+  //           "    explicit type (const pnet::type::value::value_type&);\n"
+  //           "  };\n"
+  //           "}"
+  //         , std::make_pair ("s", c)
+  //         );
+  // }
+
+  using pnet::type::signature::cpp::impl;
+  using pnet::type::signature::cpp::header;
+
+  std::cout << header (structured_type (std::make_pair ("point2D", f)))
+            << std::endl;
+  std::cout << impl (structured_type (std::make_pair ("point2D", f)))
+            << std::endl;
+
+  std::cout << header (structured_type (std::make_pair ("line2D", ps)))
+            << std::endl;
+  std::cout << impl (structured_type (std::make_pair ("line2D", ps)))
+            << std::endl;
 
 #undef CHECK
 }
