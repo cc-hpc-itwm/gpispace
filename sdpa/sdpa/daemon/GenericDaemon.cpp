@@ -578,13 +578,15 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
 }
 
-void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id)
+void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
 
   try {
     // you should consume from the  worker's pending list; put the job into the worker's submitted list
-    sdpa::job_id_t jobId = scheduler()->getNextJob(worker_id, last_job_id);
+    //sdpa::job_id_t jobId = scheduler()->getNextJob(worker_id, last_job_id);
+	//check first if the worker exist
+	Worker::ptr_t ptrWorker(findWorker(worker_id));
     DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
 
     const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
@@ -646,7 +648,22 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
   //To do: replace this with schedule
   Worker::worker_id_t worker_id = e.from();
-  serveJob( worker_id, e.last_job_id() );
+  try {
+	  sdpa::job_id_t jobId = scheduler()->getNextJob(worker_id,  e.last_job_id());
+	  serveJob( worker_id, jobId );
+  }
+  catch(const NoJobScheduledException&)
+  {
+	  DMLOG (TRACE, "There is no job to be served to the worker "<<worker_id);
+  }
+  catch(const WorkerNotFoundException&)
+  {
+     DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
+
+     // the worker should register first, before posting a job request
+     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
+     sendEventToSlave(pErrorEvt);
+  }
 }
 
 bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
