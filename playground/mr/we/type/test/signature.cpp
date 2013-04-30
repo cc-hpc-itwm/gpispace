@@ -12,8 +12,6 @@
 
 #include <sstream>
 
-#include <iostream>
-
 BOOST_AUTO_TEST_CASE (signature_show)
 {
 #define CHECK(_expected,_sig...)                \
@@ -117,9 +115,11 @@ BOOST_AUTO_TEST_CASE (signature_dump)
 #undef CHECK
 }
 
+#include <fstream>
+
 BOOST_AUTO_TEST_CASE (signature_cpp)
 {
-#define CHECK(_expected,_sig...)                        \
+#define CHECK_HEADER(_expected,_sig...)                 \
   {                                                     \
     using pnet::type::signature::cpp::header;           \
                                                         \
@@ -128,6 +128,20 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
     oss << header (structured_type (_sig));             \
                                                         \
     BOOST_CHECK_EQUAL (oss.str(), _expected);           \
+                                                        \
+  }
+#define CHECK_IMPL(_expected,_sig...)                   \
+  {                                                     \
+    using pnet::type::signature::cpp::impl;             \
+                                                        \
+    std::ostringstream oss;                             \
+                                                        \
+    oss << impl (structured_type (_sig));               \
+                                                        \
+    BOOST_CHECK_EQUAL (oss.str(), _expected);           \
+    {std::ofstream f ("/u/r/rahn/out.oss"); f << oss.str();}    \
+    {std::ofstream f ("/u/r/rahn/out.exp"); f << _expected;}    \
+                                                        \
   }
 
   using pnet::type::signature::structured_type;
@@ -138,101 +152,181 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
   f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
   f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
 
-  // CHECK ( "\n"
-  //         "namespace point2D\n"
-  //         "{\n"
-  //         "  struct type\n"
-  //         "  {\n"
-  //         "    float x;\n"
-  //         "    float y;\n"
-  //         "    type();\n"
-  //         "    explicit type (const pnet::type::value::value_type&);\n"
-  //         "  };\n"
-  //         "}"
-  //       , std::make_pair ("point2D", f)
-  //       );
+  CHECK_HEADER
+    ("#include <we/type/value.hpp>\n"
+     "#include <boost/serialization.hpp>\n"
+     "\n"
+     "namespace point2D\n"
+     "{\n"
+     "  struct type\n"
+     "  {\n"
+     "    float x;\n"
+     "    float y;\n"
+     "\n"
+     "    type();\n"
+     "    explicit type (const pnet::type::value::value_type&);\n"
+     "\n"
+     "    template<typename Archive>\n"
+     "    void serialize (Archive& ar, const unsigned int)\n"
+     "    {\n"
+     "      ar & BOOST_SERIALIZATION_NVP (x);\n"
+     "      ar & BOOST_SERIALIZATION_NVP (y);\n"
+     "    }\n"
+     "  };\n"
+     "\n"
+     "  pnet::type::value::value_type value (const type&);\n"
+     "}"
+     , std::make_pair ("point2D", f)
+    );
 
-  structure_type ps;
-  ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
-  ps.push_back (structured_type (std::make_pair ("q", f)));
+  CHECK_IMPL
+    ("#include <we/type/value/poke.hpp>\n"
+     "#include <we/field.hpp>\n"
+     "#include <we/signature_of.hpp>\n"
+     "\n"
+     "namespace point2D\n"
+     "{\n"
+     "  type::type()\n"
+     "    : x()\n"
+     "    , y()\n"
+     "  {}\n"
+     "  type::type (const pnet::type::value::value_type& v)\n"
+     "    : x (pnet::field_as<float> (pnet::path (\"x\"), v, std::string(\"float\")))\n"
+     "    , y (pnet::field_as<float> (pnet::path (\"y\"), v, std::string(\"float\")))\n"
+     "  {}\n"
+     "  pnet::type::value::value_type value (const type& x)\n"
+     "  {\n"
+     "    pnet::type::value::value_type v;\n"
+     "    pnet::type::value::poke (\"x\", v, x.x);\n"
+     "    pnet::type::value::poke (\"y\", v, x.y);\n"
+     "    return v;\n"
+     "  }\n"
+     "}"
+     , std::make_pair ("point2D", f)
+    );
 
-  // CHECK ( "\n"
-  //         "namespace line2D\n"
-  //         "{\n"
-  //         "  namespace q\n"
-  //         "  {\n"
-  //         "    struct type\n"
-  //         "    {\n"
-  //         "      float x;\n"
-  //         "      float y;\n"
-  //         "      type();\n"
-  //         "      explicit type (const pnet::type::value::value_type&);\n"
-  //         "    };\n"
-  //         "  }\n"
-  //         "  struct type\n"
-  //         "  {\n"
-  //         "    point2D::type p;\n"
-  //         "    q::type q;\n"
-  //         "    type();\n"
-  //         "    explicit type (const pnet::type::value::value_type&);\n"
-  //         "  };\n"
-  //         "}"
-  //       , std::make_pair ("line2D", ps)
-  //       );
+  {
+    structure_type a;
+    a.push_back (std::make_pair (std::string ("i"), std::string ("int")));
+    structure_type b;
+    b.push_back (structured_type (std::make_pair ("a", a)));
+    structure_type c;
+    c.push_back (structured_type (std::make_pair ("b", b)));
 
-  // {
-  //   structure_type a;
-  //   a.push_back (std::make_pair (std::string ("a"), std::string ("int")));
-  //   structure_type b;
-  //   b.push_back (structured_type (std::make_pair ("b", a)));
-  //   structure_type c;
-  //   c.push_back (structured_type (std::make_pair ("c", b)));
+    CHECK_HEADER
+      ("#include <we/type/value.hpp>\n"
+       "#include <boost/serialization.hpp>\n"
+       "\n"
+       "namespace c\n"
+       "{\n"
+       "  namespace b\n"
+       "  {\n"
+       "    namespace a\n"
+       "    {\n"
+       "      struct type\n"
+       "      {\n"
+       "        int i;\n"
+       "\n"
+       "        type();\n"
+       "        explicit type (const pnet::type::value::value_type&);\n"
+       "\n"
+       "        template<typename Archive>\n"
+       "        void serialize (Archive& ar, const unsigned int)\n"
+       "        {\n"
+       "          ar & BOOST_SERIALIZATION_NVP (i);\n"
+       "        }\n"
+       "      };\n"
+       "\n"
+       "      pnet::type::value::value_type value (const type&);\n"
+       "    }\n"
+       "    struct type\n"
+       "    {\n"
+       "      a::type a;\n"
+       "\n"
+       "      type();\n"
+       "      explicit type (const pnet::type::value::value_type&);\n"
+       "\n"
+       "      template<typename Archive>\n"
+       "      void serialize (Archive& ar, const unsigned int)\n"
+       "      {\n"
+       "        ar & BOOST_SERIALIZATION_NVP (a);\n"
+       "      }\n"
+       "    };\n"
+       "\n"
+       "    pnet::type::value::value_type value (const type&);\n"
+       "  }\n"
+       "  struct type\n"
+       "  {\n"
+       "    b::type b;\n"
+       "\n"
+       "    type();\n"
+       "    explicit type (const pnet::type::value::value_type&);\n"
+       "\n"
+       "    template<typename Archive>\n"
+       "    void serialize (Archive& ar, const unsigned int)\n"
+       "    {\n"
+       "      ar & BOOST_SERIALIZATION_NVP (b);\n"
+       "    }\n"
+       "  };\n"
+       "\n"
+       "  pnet::type::value::value_type value (const type&);\n"
+       "}"
+      , std::make_pair ("c", c)
+      );
 
-  //   CHECK ( "\n"
-  //           "namespace s\n"
-  //           "{\n"
-  //           "  namespace c\n"
-  //           "  {\n"
-  //           "    namespace b\n"
-  //           "    {\n"
-  //           "      struct type\n"
-  //           "      {\n"
-  //           "        int a;\n"
-  //           "        type();\n"
-  //           "        explicit type (const pnet::type::value::value_type&);\n"
-  //           "      };\n"
-  //           "    }\n"
-  //           "    struct type\n"
-  //           "    {\n"
-  //           "      b::type b;\n"
-  //           "      type();\n"
-  //           "      explicit type (const pnet::type::value::value_type&);\n"
-  //           "    };\n"
-  //           "  }\n"
-  //           "  struct type\n"
-  //           "  {\n"
-  //           "    c::type c;\n"
-  //           "    type();\n"
-  //           "    explicit type (const pnet::type::value::value_type&);\n"
-  //           "  };\n"
-  //           "}"
-  //         , std::make_pair ("s", c)
-  //         );
-  // }
-
-  using pnet::type::signature::cpp::impl;
-  using pnet::type::signature::cpp::header;
-
-  std::cout << header (structured_type (std::make_pair ("point2D", f)))
-            << std::endl;
-  std::cout << impl (structured_type (std::make_pair ("point2D", f)))
-            << std::endl;
-
-  std::cout << header (structured_type (std::make_pair ("line2D", ps)))
-            << std::endl;
-  std::cout << impl (structured_type (std::make_pair ("line2D", ps)))
-            << std::endl;
-
+    CHECK_IMPL
+      ("#include <we/type/value/poke.hpp>\n"
+       "#include <we/field.hpp>\n"
+       "#include <we/signature_of.hpp>\n"
+       "\n"
+       "namespace c\n"
+       "{\n"
+       "  namespace b\n"
+       "  {\n"
+       "    namespace a\n"
+       "    {\n"
+       "      type::type()\n"
+       "        : i()\n"
+       "      {}\n"
+       "      type::type (const pnet::type::value::value_type& v)\n"
+       "        : i (pnet::field_as<int> (pnet::path (\"i\"), v, std::string(\"int\")))\n"
+       "      {}\n"
+       "      pnet::type::value::value_type value (const type& x)\n"
+       "      {\n"
+       "        pnet::type::value::value_type v;\n"
+       "        pnet::type::value::poke (\"i\", v, x.i);\n"
+       "        return v;\n"
+       "      }\n"
+       "    }\n"
+       "    type::type()\n"
+       "      : a()\n"
+       "    {}\n"
+       "    type::type (const pnet::type::value::value_type& v)\n"
+       "      : a (pnet::field (pnet::path (\"a\"), v, pnet::signature_of (a::value (a::type()))))\n"
+       "    {}\n"
+       "    pnet::type::value::value_type value (const type& x)\n"
+       "    {\n"
+       "      pnet::type::value::value_type v;\n"
+       "      pnet::type::value::poke (\"a\", v, a::value (x.a));\n"
+       "      return v;\n"
+       "    }\n"
+       "  }\n"
+       "  type::type()\n"
+       "    : b()\n"
+       "  {}\n"
+       "  type::type (const pnet::type::value::value_type& v)\n"
+       "    : b (pnet::field (pnet::path (\"b\"), v, pnet::signature_of (b::value (b::type()))))\n"
+       "  {}\n"
+       "  pnet::type::value::value_type value (const type& x)\n"
+       "  {\n"
+       "    pnet::type::value::value_type v;\n"
+       "    pnet::type::value::poke (\"b\", v, b::value (x.b));\n"
+       "    return v;\n"
+       "  }\n"
+       "}"
+      , std::make_pair ("c", c)
+      );
+  }
 #undef CHECK
 }
 
