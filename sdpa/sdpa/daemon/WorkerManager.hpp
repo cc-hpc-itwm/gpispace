@@ -67,6 +67,12 @@ namespace sdpa { namespace daemon {
 
     worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
     Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
+    /*Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
+													const requirement_list_t& listJobReq,
+													const worker_id_list_t& workerList,
+													int& matching_degree,
+													sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException) */
+
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
     void dispatchJob(const sdpa::job_id_t& jobId);
@@ -75,7 +81,7 @@ namespace sdpa { namespace daemon {
 
     size_t numberOfWorkers() { return worker_map_.size(); }
     void getWorkerList(sdpa::worker_id_list_t& workerList);
-    void getWorkerListNotFull(sdpa::worker_id_list_t& workerList);
+    void getListWorkersNotFull(sdpa::worker_id_list_t& workerList);
 
     void balanceWorkers();
     void cancelWorkerJobs(sdpa::daemon::Scheduler*);
