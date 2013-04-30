@@ -753,6 +753,11 @@ void SchedulerImpl::check_post_request()
   }
 }
 
+void SchedulerImpl::getListWorkersNotFull(sdpa::worker_id_list_t& workerList)
+{
+   ptr_worker_man_->getListWorkersNotFull(workerList);
+}
+
 void SchedulerImpl::feedWorkers()
 {
   while(!bStopRequested)
@@ -764,7 +769,7 @@ void SchedulerImpl::feedWorkers()
          continue;
 
     sdpa::worker_id_list_t workerList;
-    ptr_worker_man_->getWorkerListNotFull(workerList);
+    ptr_worker_man_->getListWorkersNotFull(workerList);
 
     if(!workerList.empty())
     {
@@ -772,7 +777,18 @@ void SchedulerImpl::feedWorkers()
       {
         if(ptr_comm_handler_)
         {
-          ptr_comm_handler_->serveJob(worker_id);
+        	try {
+        		sdpa::job_id_t jobId = getNextJob(worker_id, "");
+        		ptr_comm_handler_->serveJob(worker_id, jobId);
+        	}
+        	catch(const NoJobScheduledException&)
+        	{
+        		DMLOG (TRACE, "No job that fits with the worker "<<worker_id<<" was found!");
+        	}
+        	catch(const WorkerNotFoundException&)
+        	{
+        		DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
+        	}
         }
         else
         {
@@ -993,8 +1009,32 @@ const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker
 
 	try
 	{
-		jobId = ptrWorker->get_next_job(last_job_id);
+		jobId = getNextJob(ptrWorker, last_job_id);
 		DLOG(TRACE, "The worker " << worker_id
+								<< " has a capacity of "<<ptrWorker->capacity()
+								<<" and " << ptrWorker->nbAllocatedJobs()
+								<<" jobs allocated!");
+
+		return jobId;
+	}
+	catch( const NoJobScheduledException& ex)
+	{
+		// SDPA_LOG_INFO("There is really no job to assign/steal for the worker "<<worker_id<<"  ...");
+		throw ex;
+	}
+
+	return jobId;
+}
+
+const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::ptr_t ptrWorker, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+{
+	lock_type lock(mtx_);
+	sdpa::job_id_t jobId;
+
+	try
+	{
+		jobId = ptrWorker->get_next_job(last_job_id);
+		DLOG(TRACE, "The worker " << ptrWorker->name()
 								<< " has a capacity of "<<ptrWorker->capacity()
 								<<" and " << ptrWorker->nbAllocatedJobs()
 								<<" jobs allocated!");
