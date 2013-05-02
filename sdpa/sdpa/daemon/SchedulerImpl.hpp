@@ -86,8 +86,8 @@ namespace sdpa {
 	    virtual void getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset);
 	    virtual void getWorkerCapabilities(const sdpa::worker_id_t&, sdpa::capabilities_set_t& cpbset);
 
-	    virtual const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
-	    const sdpa::job_id_t getNextJob(const Worker::ptr_t ptrWorker, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
+	    virtual const sdpa::job_id_t assignNewJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
+	    const sdpa::job_id_t assignNewJob(const Worker::ptr_t ptrWorker, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException);
 	    virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
 	    virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
