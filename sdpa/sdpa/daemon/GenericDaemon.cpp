@@ -649,7 +649,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
   //To do: replace this with schedule
   Worker::worker_id_t worker_id = e.from();
   try {
-	  sdpa::job_id_t jobId = scheduler()->getNextJob(worker_id,  e.last_job_id());
+	  sdpa::job_id_t jobId = scheduler()->assignNewJob(worker_id,  e.last_job_id());
 	  serveJob( worker_id, jobId );
   }
   catch(const NoJobScheduledException&)
