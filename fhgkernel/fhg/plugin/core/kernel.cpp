@@ -162,7 +162,16 @@ namespace fhg
               << full_path_to_file
               << "'"
               );
-        return -EFAULT;
+        return EFAULT;
+      }
+
+      if (fs::is_directory (full_path_to_file))
+      {
+        return EISDIR;
+      }
+      else if (not fs::is_regular_file (full_path_to_file))
+      {
+        return EINVAL;
       }
 
       plugin_t::ptr_t p (plugin_t::create( full_path_to_file
