@@ -114,7 +114,7 @@ namespace fhg
 
         DMLOG (TRACE, "trying: " << plugin_path);
 
-        if (fs::exists (plugin_path))
+        if (fs::is_regular_file (plugin_path))
         {
           try
           {
