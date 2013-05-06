@@ -24,6 +24,16 @@ namespace pnet
           const structured_type& _structured;
         };
         std::ostream& operator<< (std::ostream&, const header&);
+
+        class impl
+        {
+        public:
+          impl (const structured_type&);
+          std::ostream& operator() (std::ostream&) const;
+        private:
+          const structured_type& _structured;
+        };
+        std::ostream& operator<< (std::ostream&, const impl&);
       }
     }
   }
