@@ -68,6 +68,8 @@ set (srcs
   num/show.cpp
   indenter.cpp
   cpp/block.cpp
+  cpp/namespace.cpp
+  cpp/struct.cpp
 )
 
 add_library (fhg-util ${srcs})

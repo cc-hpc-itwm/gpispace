@@ -35,6 +35,8 @@ namespace fhg
     }
     std::ostream& indenter::operator() (std::ostream& os) const
     {
+      os << std::endl;
+
       for (unsigned int i (0); i < _depth; ++i)
       {
         os << "  ";
@@ -45,6 +47,23 @@ namespace fhg
     std::ostream& operator<< (std::ostream& os, const indenter& indent)
     {
       return indent (os);
+    }
+
+    deeper::deeper (indenter& indenter)
+      : _indenter (++indenter)
+    {}
+    deeper::~deeper()
+    {
+      --_indenter;
+    }
+    std::ostream& deeper::operator() (std::ostream& os) const
+    {
+      return _indenter (os);
+    }
+
+    std::ostream& operator<< (std::ostream& os, const deeper& d)
+    {
+      return d (os);
     }
   }
 }

@@ -2,6 +2,8 @@
 
 #include <we/type/value/name.hpp>
 
+#include <iostream>
+
 namespace pnet
 {
   namespace type

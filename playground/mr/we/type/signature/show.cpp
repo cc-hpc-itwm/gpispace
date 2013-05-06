@@ -33,7 +33,7 @@ namespace pnet
         public:
           show_struct (std::ostream&);
           std::ostream& operator() (const std::pair< std::string
-                                                   , std::list<field_type>
+                                                   , structure_type
                                                    >&
                                    ) const;
         private:
@@ -71,11 +71,11 @@ namespace pnet
         {}
         std::ostream&
         show_struct::operator() (const std::pair< std::string
-                                                , std::list<field_type>
+                                                , structure_type
                                                 >& s
                                 ) const
         {
-          return fhg::util::print_container<std::list<field_type> >
+          return fhg::util::print_container<structure_type>
             ( _os, s.first, " :: [", ",", "]", boost::ref (s.second)
             , boost::bind (&show_struct::print, *this, _1)
             );

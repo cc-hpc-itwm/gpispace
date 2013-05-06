@@ -4,6 +4,8 @@
 #define PNET_SRC_WE_TYPE_VALUE_SIGNATURE_NAME_HPP
 
 #include <string>
+#include <set>
+#include <iosfwd>
 
 namespace pnet
 {
