@@ -58,6 +58,3 @@ fhg_add_test (we/test/exception.cpp
   PROJECT test_we
   LINK_LIBRARIES we we-dev fhg-util
 )
-
-add_executable (ctor ctor.cpp)
-target_link_libraries (ctor we we-dev fhg-util)
