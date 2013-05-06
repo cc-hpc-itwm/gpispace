@@ -5,7 +5,7 @@
 
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame.hpp>
-#include <gspc/net/header.hpp>
+#include <gspc/net/header_util.hpp>
 
 namespace gspc
 {
