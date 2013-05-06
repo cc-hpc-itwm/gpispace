@@ -800,8 +800,11 @@ namespace prefix
     layout->addWidget (new QLabel (name, this), 0, 1);
   }
 
-  boost::optional<int> node_state_widget::node_at (int x, int y) const
+  boost::optional<int> node_state_widget::node_at (const QPoint& pos) const
   {
+    const int x (pos.x());
+    const int y (pos.y());
+
     if ( x < base_coord || y < base_coord
        || x > (base_coord + items_per_row (width()) * per_step)
        )
@@ -899,7 +902,7 @@ namespace prefix
       {
         QHelpEvent* help_event (static_cast<QHelpEvent*> (event));
 
-        const boost::optional<int> node_index (node_at (help_event->x(), help_event->y()));
+        const boost::optional<int> node_index (node_at (help_event->pos()));
         if (node_index)
         {
           QToolTip::showText
@@ -925,7 +928,7 @@ namespace prefix
         //! state of node changes.
         QContextMenuEvent* context_menu_event (static_cast<QContextMenuEvent*> (event));
 
-        const boost::optional<int> node_index (node_at (context_menu_event->x(), context_menu_event->y()));
+        const boost::optional<int> node_index (node_at (context_menu_event->pos()));
         if (node_index)
         {
           QMenu context_menu;
