@@ -157,11 +157,11 @@ namespace fhg
                                                   )
          )
       {
-        MLOG ( TRACE
-             , "avoiding another attempt to load from '"
-             << full_path_to_file
-             << "'"
-             );
+        DMLOG ( TRACE
+              , "avoiding another attempt to load from '"
+              << full_path_to_file
+              << "'"
+              );
         return -EFAULT;
       }
 
