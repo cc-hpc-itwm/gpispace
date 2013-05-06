@@ -281,8 +281,7 @@ namespace prefix
     while (i.hasNext())
     {
       const QString& hostname (i.next().hostname());
-      int index (hostnames.indexOf (hostname));
-      if (index == -1)
+      if (!hostnames.contains (hostname))
       {
         i.remove();
         _pending_updates.removeAll (hostname);
