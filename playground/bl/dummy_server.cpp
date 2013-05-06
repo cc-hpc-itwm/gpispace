@@ -160,7 +160,7 @@ void thread::may_read()
 
       case 'h':
         ++pos;
-        pos.require ("ost_list");
+        pos.require ("osts");
 
         {
           _socket->write ("hosts: [");
@@ -185,7 +185,7 @@ void thread::may_read()
 
       case 'p':
         ++pos;
-        pos.require ("ossible_status_list");
+        pos.require ("ossible_status");
 
         {
           _socket->write ("possible_status: [");

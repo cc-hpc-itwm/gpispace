@@ -66,12 +66,12 @@ namespace prefix
     , _timer (NULL)
   {
     resume();
-    _connection->push ("possible_status_list");
+    _connection->push ("possible_status");
   }
 
   void communication::request_hostlist()
   {
-    _connection->push ("host_list");
+    _connection->push ("hosts");
   }
 
   void communication::pause()
