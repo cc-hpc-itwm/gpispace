@@ -743,4 +743,168 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 	BOOST_CHECK(bInvariant);
 }
 
+BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
+{
+	LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
+
+	string addrAg = "127.0.0.1";
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	ostringstream oss;
+	sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler(new SchedulerImpl(pAgent.get(), false));
+
+	// number of workers
+	const int nWorkers = 10;
+	const int nJobs = 15;
+
+	// create a give number of workers with different capabilities:
+	std::ostringstream osstr;
+	std::vector<sdpa::worker_id_t> arrWorkerIds;
+	for(int k=0;k<nWorkers;k++)
+	{
+		osstr<<"worker_"<<k;
+		sdpa::worker_id_t workerId(osstr.str());
+		osstr.str("");
+		arrWorkerIds.push_back(workerId);
+
+		std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+		sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
+		ptrScheduler->addWorker(workerId, 1, cpbSet);
+	}
+
+	// submit a bunch of jobs now
+	std::vector<sdpa::job_id_t> arrJobIds;
+	for(int i=0;i<nJobs;i++)
+	{
+		osstr<<"job_"<<i;
+		sdpa::job_id_t jobId(osstr.str());
+		arrJobIds.push_back(jobId);
+		osstr.str("");
+		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
+		pAgent->jobManager()->addJob(jobId, pJob);
+		requirement_list_t req_list_1(1,requirement_t("C", true));
+		pAgent->jobManager()->addJobRequirements(jobId, req_list_1);
+	}
+
+	// schedule all jobs now
+	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
+	{
+		ptrScheduler->schedule_with_constraints(jobId);
+	}
+
+	sdpa::worker_id_list_t workerList;
+	ptrScheduler->getListWorkersNotFull(workerList);
+
+    // first round: try serve all the workers a job
+	mapJob2Worker_t mapJob2Worker;
+	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
+	{
+		try {
+			sdpa::job_id_t jobId = ptrScheduler->assignNewJob(workerId, "");
+			LOG(INFO, "The job "<<jobId<<" was assigned to "<<workerId);
+			mapJob2Worker.insert(mapJob2Worker_t::value_type(jobId, workerId));
+		}
+		catch( const NoJobScheduledException& ex)
+		{
+			LOG(INFO, "There is no job to assign to the worker "<<workerId<<", as it doesn't possess the required capability  ...");
+		}
+	}
+
+	osstr<<"worker_"<<nWorkers-1;
+	sdpa::worker_id_t lastWorkerId(osstr.str());
+	osstr.str("");
+
+	LOG(INFO, "One worker goes down now ...");
+	ptrScheduler->delWorker(lastWorkerId);
+
+	// at this point, inspect the workers, all of them should be assigned exactly one job
+	// except, the last one who shouldn't have any job assigned!
+	LOG(INFO, "Check if all the workers have exactly one job assigned ...");
+	ptrScheduler->getWorkerList(workerList);
+	bool bInvariant = true;
+	Worker::ptr_t ptrWorker;
+	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
+	{
+		ptrWorker = ptrScheduler->findWorker(workerId);
+		bInvariant = bInvariant && (ptrWorker->nbAllocatedJobs()==1);
+	}
+
+	BOOST_CHECK(bInvariant);
+
+	LOG(INFO, "The worker "<<lastWorkerId<<" re-registers ...");
+	ptrScheduler->addWorker(lastWorkerId, 1);
+
+	LOG(INFO, "Check if the last worker really has no job assigned ...");
+	ptrWorker = ptrScheduler->findWorker(lastWorkerId);
+	bool bInvNoJobAssgnd(ptrWorker->nbAllocatedJobs()==0);
+	BOOST_CHECK(bInvNoJobAssgnd);
+
+	LOG(INFO, "The last worker gains the capability \"C\" now ...");
+	std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
+	sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
+	ptrScheduler->addCapabilities(lastWorkerId, cpbSet);
+
+	// try to assign a job to the last worker
+	LOG(INFO, "Try to assign a job to the last worker ...");
+	try {
+		sdpa::job_id_t jobId = ptrScheduler->assignNewJob(lastWorkerId, "");
+		LOG(INFO, "The job "<<jobId<<" was assigned to "<<lastWorkerId);
+		mapJob2Worker.insert(mapJob2Worker_t::value_type(jobId, lastWorkerId));
+	}
+	catch( const NoJobScheduledException& ex)
+	{
+		LOG(INFO, "There is no job to assign to the worker "<<lastWorkerId<<" ...");
+	}
+
+	// at this point, inspect the workers, all of them should be assigned exactly one job
+	// except, the last one who shouldn't have any job assigned!
+	LOG(INFO, "Check if the last worker has a job assigned, too, now ...");
+	ptrWorker = ptrScheduler->findWorker(lastWorkerId);
+	BOOST_CHECK(ptrWorker->nbAllocatedJobs()==1);
+
+	// consume the first wave of jobs
+	BOOST_FOREACH(const mapJob2Worker_t::value_type& pair, mapJob2Worker)
+	{
+		sdpa::job_id_t jobId = pair.first;
+		sdpa::worker_id_t workerId = pair.second;
+
+		// acknowledge the job
+		LOG(INFO, "Acknowledge the "<<jobId<<" to the worker "<<workerId);
+		ptrScheduler->acknowledgeJob(workerId, jobId);
+
+		LOG(INFO, "Delete the job "<<jobId<<" (assigned to "<<workerId<<")");
+		// acknowledge the job
+		ptrScheduler->deleteWorkerJob(workerId, jobId);
+	}
+
+	// second round: serve the rest of the remaining jobs
+	LOG(INFO, "Schedule the rest of the jobs and ...");
+	ptrScheduler->getListWorkersNotFull(workerList);
+	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
+	{
+		try {
+			sdpa::job_id_t jobId = ptrScheduler->assignNewJob(workerId, "");
+			LOG(INFO, "The job "<<jobId<<" was assigned to "<<workerId);
+		}
+		catch( const NoJobScheduledException& ex)
+		{
+			LOG(INFO, "There is no job to assign to the worker "<<workerId<<"  ...");
+		}
+	}
+
+	// at this point, inspect the workers, all of them should be assigned at most one job
+	LOG(INFO, "Check if all the workers have at most one job assigned ...");
+	ptrScheduler->getWorkerList(workerList);
+	bInvariant = true;
+	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
+	{
+		Worker::ptr_t ptrWorker(ptrScheduler->findWorker(workerId));
+		LOG(INFO, "The worker "<<workerId<<" has "<<ptrWorker->nbAllocatedJobs()<<" jobs allocated!");
+		bInvariant = bInvariant && (ptrWorker->nbAllocatedJobs()<=1);
+	}
+
+	BOOST_CHECK(bInvariant);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
