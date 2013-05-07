@@ -770,7 +770,6 @@ void SchedulerImpl::feedWorkers()
          continue;
 
     sdpa::worker_id_list_t workerList;
-    //ptr_worker_man_->getListWorkersNotFull(workerList);
     getListWorkersNotFull(workerList);
 
     if(!workerList.empty())
