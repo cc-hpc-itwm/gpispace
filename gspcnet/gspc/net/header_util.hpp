@@ -1,5 +1,5 @@
-#ifndef GSPC_NET_HEADER_HPP
-#define GSPC_NET_HEADER_HPP
+#ifndef GSPC_NET_HEADER_UTIL_HPP
+#define GSPC_NET_HEADER_UTIL_HPP
 
 #include <gspc/net/frame.hpp>
 
