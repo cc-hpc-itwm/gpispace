@@ -883,14 +883,23 @@ namespace prefix
       : ((event->rect().bottom() - base_coord + per_step - 1) / per_step - 1) + 2
       );
 
-    for ( int i (row_begin * per_row + column_begin)
-        ; i < node_count() && i < (row_end * per_row + column_end)
-        ; ++i
-        )
+    for (int row (row_begin); row < row_end; ++row)
     {
-      painter.drawPixmap ( rect_for_node (i, per_row).toRect()
-                         , state (node (i).state())._pixmap
-                         );
+      const int row_base (row * per_row);
+      for (int column (column_begin); column < column_end; ++column)
+      {
+        const int i (row_base + column);
+        if (i < node_count())
+        {
+          painter.drawPixmap ( rect_for_node (i, per_row).toRect()
+                             , state (node (i).state())._pixmap
+                             );
+        }
+        else
+        {
+          break;
+        }
+      }
     }
   }
 
