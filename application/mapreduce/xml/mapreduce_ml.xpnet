@@ -20,13 +20,13 @@
     <place name="input_file_1" type="string"/>
     <place name="input_file_2" type="string"/>
     <place name="output_file" type="string"/>
+    <place name="input_n_part" type="long"/>
     <place name="read_chunk_size" type="long"/>
     <place name="map_chunk_size" type="long"/>
     <place name="input_n_read_slots" type="long"/>
     <place name="input_n_map_slots" type="long"/>
     <place name="input_n_slots_per_part" type="long" />
   	<place name="input_n_slots_per_red" type="long" />
-    <place name="input_n_part" type="long"/>
     <place name="partition_slot_size" type="long"/>
     <place name="reduce_slot_size" type="long"/>
     <place name="done" type="control"/>
@@ -56,30 +56,38 @@
   
     <place name="output_file_1" type="string"/>
     <place name="output_file_2" type="string"/>
+    <place name="mapreduce_id_1" type="string"/>    
+    <place name="mapreduce_id_2" type="string"/>
 	<transition name="init" inline="true">
 		<defun> 
         <in name="str_output_file_children" type="string" />
 		<out name="output_file_1" type="string" />
     	<out name="output_file_2" type="string" />
-    	<module name="multilevel_init" function="init(str_output_file_children, output_file_1, output_file_2)">
+    	<out name="mapreduce_id_1" type="string" />
+    	<out name="mapreduce_id_2" type="string" />
+    	<module name="multilevel_init" function="init(str_output_file_children, output_file_1, output_file_2, mapreduce_id_1, mapreduce_id_2)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="fstream"/>
+          <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
             
             std::vector<std::string> name_and_ext;
 			boost::split(name_and_ext, str_output_file_children, boost::is_any_of("."));
 			std::ostringstream sstr_part_out_file;
-			sstr_part_out_file<<name_and_ext[0]<<"1";
+			sstr_part_out_file<<name_and_ext[0]<<"_1";
 			sstr_part_out_file<<"."<<name_and_ext[1];                
 		    output_file_1= sstr_part_out_file.str();
             
             sstr_part_out_file.str("");
-          	sstr_part_out_file<<name_and_ext[0]<<"2";
+          	sstr_part_out_file<<name_and_ext[0]<<"_2";
 			sstr_part_out_file<<"."<<name_and_ext[1];                
 		    output_file_2= sstr_part_out_file.str();
+			
+			mapreduce_id_1 = "1";			
+			mapreduce_id_2 = "2";
 						
 			]]></code>
         </module>	
@@ -87,38 +95,21 @@
         <connect-in  port="str_output_file_children" place="str_output_file_children" />
         <connect-out port="output_file_1" place="output_file_1" />
 		<connect-out port="output_file_2" place="output_file_2" />
+		<connect-out port="mapreduce_id_1" place="mapreduce_id_1" />
+		<connect-out port="mapreduce_id_2" place="mapreduce_id_2" />
 	</transition>
   
-	<place name="read_chunk_size_1" type="long"/>
-    <place name="read_chunk_size_2" type="long"/>
-    <transition name="dup_read_chunk_size" inline="true">
-      <use name="dup_long" />
-      <connect-in port="in" place="read_chunk_size"/>
-      <connect-out port="one" place="read_chunk_size_1"/>
-      <connect-out port="two" place="read_chunk_size_2"/>
-    </transition>
-    
-	<place name="map_chunk_size_1" type="long"/>
-    <place name="map_chunk_size_2" type="long"/>
-    <transition name="dup_map_chunk_size" inline="true">
-      <use name="dup_long" />
-      <connect-in port="in" place="map_chunk_size"/>
-      <connect-out port="one" place="map_chunk_size_1"/>
-      <connect-out port="two" place="map_chunk_size_2"/>
-    </transition>
-   
+	   
 	<!-- use here triple and generate a number of n_part tokens for the final reduce
     of the result files! -->
 	
-	<place name="input_n_part_1" type="long"/>
-    <place name="input_n_part_2" type="long"/>
+    <place name="n_part" type="long"/>
     <place name="n_part_merge" type="long"/>
-    <transition name="triple_input_n_part" inline="true">
-      <use name="triple_long" />
+    <transition name="dup_input_n_part" inline="true">
+      <use name="dup_long" />
       <connect-in port="in" place="input_n_part"/>
-      <connect-out port="one" place="input_n_part_1"/>
-      <connect-out port="two" place="input_n_part_2"/>
-      <connect-out port="three" place="n_part_merge"/>
+      <connect-out port="one" place="n_part"/>
+      <connect-out port="two" place="n_part_merge"/>
     </transition>
     
    <place name="new_n_part_merge" type="long"/>
@@ -150,147 +141,50 @@
       <connect-out port="out" place="part_id"/>
     </transition>
     
-   <place name="partition_slot_size_1" type="long"/>
-    <place name="partition_slot_size_2" type="long"/>
-    <transition name="dup_partition_slot_size" inline="true">
-      <use name="dup_long" />
-      <connect-in port="in" place="partition_slot_size"/>
-      <connect-out port="one" place="partition_slot_size_1"/>
-      <connect-out port="two" place="partition_slot_size_2"/>
-    </transition>
-    
-    <place name="reduce_slot_size_1" type="long"/>
-    <place name="reduce_slot_size_2" type="long"/>
-    <transition name="dup_reduce_slot_size" inline="true">
-      <use name="dup_long" />
-      <connect-in port="in" place="reduce_slot_size"/>
-      <connect-out port="one" place="reduce_slot_size_1"/>
-      <connect-out port="two" place="reduce_slot_size_2"/>
-    </transition>
-    
-	<place name="input_n_read_slots_1" type="long"/>
- 	<place name="input_n_read_slots_2" type="long"/>
- 	<transition name="dup_read_slots" inline="true">
-      <use name="dup_long" />
-      <connect-in port="in" place="input_n_read_slots"/>
-      <connect-out port="one" place="input_n_read_slots_1"/>
-      <connect-out port="two" place="input_n_read_slots_2"/>
-    </transition>
- 	
-    <place name="input_n_map_slots_1" type="long"/>
-    <place name="input_n_map_slots_2" type="long"/>
-    <transition name="dup_map_slots" inline="true">
-      <use name="dup_long" />
-      <connect-in port="in" place="input_n_map_slots"/>
-      <connect-out port="one" place="input_n_map_slots_1"/>
-      <connect-out port="two" place="input_n_map_slots_2"/>
-    </transition>
-     
-    <place name="input_n_slots_per_part_1" type="long" />
-    <place name="input_n_slots_per_part_2" type="long" />
-    <transition name="dup_input_n_slots_per_part" inline="true">
-      <use name="dup_long" />
-      <connect-in port="in" place="input_n_slots_per_part"/>
-      <connect-out port="one" place="input_n_slots_per_part_1"/>
-      <connect-out port="two" place="input_n_slots_per_part_2"/>
-    </transition>
-    
-  	<place name="input_n_slots_per_red_1" type="long" />
-  	<place name="input_n_slots_per_red_2" type="long" />
-  	<transition name="dup_input_n_slots_per_red" inline="true">
-      <use name="dup_long" />
-      <connect-in port="in" place="input_n_slots_per_red"/>
-      <connect-out port="one" place="input_n_slots_per_red_1"/>
-      <connect-out port="two" place="input_n_slots_per_red_2"/>
-    </transition>
   		
-    <place name="result_1" type="string"/>   
-	<transition name="mapreduce_1" internal="false">
+    <place name="result_1" type="control"/>   
+	<transition name="mapreduce_1" inline="true">
        <include-function href="mapreduce.xpnet"/>
+        <connect-in port="id" place="mapreduce_id_1"/>    
 		<connect-in port="input_file" place="input_file_1"/>
 	  	<connect-in port="output_file" place="output_file_1"/>
-	  	<connect-in port="read_chunk_size" place="read_chunk_size_1"/>
-	  	<connect-in port="map_chunk_size" place="map_chunk_size_1"/>
-	  	<connect-in port="n_part" place="input_n_part_1"/>
-	  	<connect-in port="partition_slot_size" place="partition_slot_size_1"/>
-	  	<connect-in port="reduce_slot_size" place="reduce_slot_size_1"/>
-	  	<connect-in port="input_n_read_slots" place="input_n_read_slots_1"/>
-	  	<connect-in port="input_n_map_slots" place="input_n_map_slots_1"/>
-	  	<connect-in port="input_n_slots_per_part" place="input_n_slots_per_part_1"/>
-	  	<connect-in port="input_n_slots_per_red" place="input_n_slots_per_red_1"/>
+	  	<connect-read port="n_part" place="n_part"/>
+	    <connect-read port="read_chunk_size" place="read_chunk_size"/>
+	  	<connect-read port="map_chunk_size" place="map_chunk_size"/>
+	  	<connect-read port="partition_slot_size" place="partition_slot_size"/>
+	  	<connect-read port="reduce_slot_size" place="reduce_slot_size"/>
+	  	<connect-read port="input_n_read_slots" place="input_n_read_slots"/>
+	  	<connect-read port="input_n_map_slots" place="input_n_map_slots"/>
+	  	<connect-read port="input_n_slots_per_part" place="input_n_slots_per_part"/>
+	  	<connect-read port="input_n_slots_per_red" place="input_n_slots_per_red"/>
 	  	<connect-out port="result" place="result_1" />
     </transition>
     
-    <place name="result_2" type="string"/>
-	<transition name="mapreduce_2" internal="false">
+    <place name="result_2" type="control"/>
+	<transition name="mapreduce_2" inline="true">
       <include-function href="mapreduce.xpnet"/>
+        <connect-in port="id" place="mapreduce_id_2"/>    
 		<connect-in port="input_file" place="input_file_2"/>
 	  	<connect-in port="output_file" place="output_file_2"/>
-	  	<connect-in port="read_chunk_size" place="read_chunk_size_2"/>
-	  	<connect-in port="map_chunk_size" place="map_chunk_size_2"/>
-	  	<connect-in port="n_part" place="input_n_part_2"/>
-	  	<connect-in port="partition_slot_size" place="partition_slot_size_2"/>
-	  	<connect-in port="reduce_slot_size" place="reduce_slot_size_2"/>
-	  	<connect-in port="input_n_read_slots" place="input_n_read_slots_2"/>
-	  	<connect-in port="input_n_map_slots" place="input_n_map_slots_2"/>
-	  	<connect-in port="input_n_slots_per_part" place="input_n_slots_per_part_2"/>
-	  	<connect-in port="input_n_slots_per_red" place="input_n_slots_per_red_2"/>
+	  	<connect-read port="n_part" place="n_part"/>
+	  	<connect-read port="read_chunk_size" place="read_chunk_size"/>
+	  	<connect-read port="map_chunk_size" place="map_chunk_size"/>
+	  	<connect-read port="partition_slot_size" place="partition_slot_size"/>
+	  	<connect-read port="reduce_slot_size" place="reduce_slot_size"/>
+	  	<connect-read port="input_n_read_slots" place="input_n_read_slots"/>
+	  	<connect-read port="input_n_map_slots" place="input_n_map_slots"/>
+	  	<connect-read port="input_n_slots_per_part" place="input_n_slots_per_part"/>
+	  	<connect-read port="input_n_slots_per_red" place="input_n_slots_per_red"/>
 	  	<connect-out port="result" place="result_2" />
     </transition>
     
-<!--
-	<place name="new_result_1" type="string" />        	
-	<transition name="log_result_1" inline="true">
-		<defun> 
-		<in name="result" type="string" />
-		<out name="result" type="string" />
-    	<module name="log_result_1" function="log_result (result)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="util/helper.hpp"/>
-          <cinclude href="util/reduce.hpp"/>
-          <cinclude href="fstream"/>
 
-          <code><![CDATA[
-              
-            
-            MLOG(INFO, "The first MapReduce scheme finished and the results are store within the files with the prefix "<<result);
-
-          ]]></code>
-        </module>	
-		</defun>
-		<connect-in port="result" place="result_1" />
-      	<connect-out port="result" place="new_result_1" />
-	</transition>
-	
-	<place name="new_result_2" type="string" />        	
-	<transition name="log_result_2" inline="true">
-		<defun> 
-		<in name="result" type="string" />
-		<out name="result" type="string" />
-    	<module name="log_result_2" function="log_result (result)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="util/helper.hpp"/>
-          <cinclude href="util/reduce.hpp"/>
-          <cinclude href="fstream"/>
-
-          <code><![CDATA[
-            
-            MLOG(INFO, "The second MapReduce scheme finished and the results are store within the files with the prefix "<<result);
-        
-          ]]></code>
-        </module>	
-		</defun>
-		<connect-in port="result" place="result_2" />
-      	<connect-out port="result" place="new_result_2" />
-	</transition>
-	-->
-        
 	<place name="partition_merged" type="control" />        	
 	<transition name="merge_results" inline="true">
 		<defun> 
         <in name="part_id" type="long" />
-		<in name="new_result_1" type="string" />
-    	<in name="new_result_2" type="string" />
+		<in name="new_result_1" type="control" />
+    	<in name="new_result_2" type="control" />
     	<in name="str_output_file_merge" type="string" />
     	<out name="partition_merged" type="control"/>
     	<module name="multilevel_merge" function="merge_results(part_id, str_output_file_merge, new_result_1, new_result_2, partition_merged)">
@@ -298,11 +192,26 @@
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="fstream"/>
+		  <ld flag="-lboost_regex"/>
 
           <code><![CDATA[
             
-            std::string str_part_out_file_1 = ::mapreduce::util::get_part_filename(new_result_1, part_id);
-  	    	std::string str_part_out_file_2 = ::mapreduce::util::get_part_filename(new_result_2, part_id);
+           	std::vector<std::string> name_and_ext;
+			boost::split(name_and_ext, str_output_file_merge, boost::is_any_of("."));
+			
+			std::ostringstream sstr_part_out_file;
+			
+			sstr_part_out_file<<name_and_ext[0]<<"_1";
+			sstr_part_out_file<<"."<<name_and_ext[1];                
+		    std::string output_file_1= sstr_part_out_file.str();
+            
+            sstr_part_out_file.str("");
+          	sstr_part_out_file<<name_and_ext[0]<<"_2";
+			sstr_part_out_file<<"."<<name_and_ext[1];                
+		    std::string output_file_2= sstr_part_out_file.str();
+		    
+            std::string str_part_out_file_1 = ::mapreduce::util::get_part_filename(output_file_1, part_id);
+  	    	std::string str_part_out_file_2 = ::mapreduce::util::get_part_filename(output_file_2, part_id);
           
             std::string str_part_out_file = ::mapreduce::util::get_part_filename(str_output_file_merge, part_id);
             
@@ -333,8 +242,17 @@
       <defun>
         <in name="str_output_file_merge" type="string" />
 		<in name="part_ids_released" type="control"/>
-		<in name="new_result_1" type="string" />
-    	<in name="new_result_2" type="string" />
+		<in name="new_result_1" type="control" />
+    	<in name="new_result_2" type="control" />
+    	<in name="n_part" type="long" />
+    	<in name="read_chunk_size" type="long" />
+    	<in name="map_chunk_size" type="long" />
+    	<in name="input_n_read_slots" type="long"/>
+		<in name="input_n_map_slots" type="long"/>
+		<in name="input_n_slots_per_part" type="long" />
+		<in name="input_n_slots_per_red" type="long" />
+		<in name="partition_slot_size" type="long"/>
+		<in name="reduce_slot_size" type="long"/>
         <out name="done" type="control"/>
         <!-- <expression>			  
 		  	${done}:=[];
@@ -350,10 +268,19 @@
           ]]></code>
         </module>	
       </defun>
-      <connect-in port="str_output_file_merge" place="str_output_file_merge" />
-      <connect-in port="part_ids_released" place="part_ids_released" />
-      <connect-in port="new_result_1" place="result_1" />
-      <connect-in port="new_result_2" place="result_2" />
+      	<connect-in port="str_output_file_merge" place="str_output_file_merge" />
+      	<connect-in port="part_ids_released" place="part_ids_released" />
+      	<connect-in port="new_result_1" place="result_1" />
+      	<connect-in port="new_result_2" place="result_2" />
+      	<connect-in port="n_part" place="n_part" />
+      	<connect-in port="read_chunk_size" place="read_chunk_size" />
+      	<connect-in port="map_chunk_size" place="map_chunk_size" />
+		<connect-in port="partition_slot_size" place="partition_slot_size"/>
+	  	<connect-in port="reduce_slot_size" place="reduce_slot_size"/>
+	  	<connect-in port="input_n_read_slots" place="input_n_read_slots"/>
+	  	<connect-in port="input_n_map_slots" place="input_n_map_slots"/>
+	  	<connect-in port="input_n_slots_per_part" place="input_n_slots_per_part"/>
+	  	<connect-in port="input_n_slots_per_red" place="input_n_slots_per_red"/>
       <connect-out port="done" place="done" />
     </transition> 
 

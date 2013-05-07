@@ -189,7 +189,7 @@ namespace fhg
     {
       if (has_permission (permission::SHUTDOWN))
       {
-        LOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
+        DLOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
         m_kernel->stop();
         return 0;
       }

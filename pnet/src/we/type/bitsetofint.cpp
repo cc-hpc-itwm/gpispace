@@ -278,4 +278,9 @@ namespace bitsetofint
 
     return true;
   }
+
+  bool operator< (const type& x, const type& y)
+  {
+    return x._container < y._container;
+  }
 }

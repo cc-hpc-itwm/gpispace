@@ -17,37 +17,24 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
-message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
-
 include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-message(STATUS "CXXFLAGS: ${CMAKE_CXX_FLAGS}")
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  message(STATUS "Build type: default (not-set)")
-else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-  string(TOUPPER ${CMAKE_BUILD_TYPE} tmp)
-  message(STATUS "additional CXXFLAGS: ${CMAKE_CXX_FLAGS_${tmp}}")
-endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-
 # threads
-message(STATUS "checking for thread package")
-find_package(Threads REQUIRED)
+find_package(Threads REQUIRED QUIET)
 if(CMAKE_USE_PTHREADS_INIT)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 
 include(SDPAFindBoost)
-message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package(FhgLog REQUIRED)
+find_package(FhgLog REQUIRED QUIET)
 include_directories(${FhgLog_INCLUDE_DIR})
 
-find_package(UTIL REQUIRED)
+find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
 # Reflect the package structure

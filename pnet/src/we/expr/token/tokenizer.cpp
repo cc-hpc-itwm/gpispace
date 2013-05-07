@@ -8,572 +8,457 @@
 
 #include <we/type/value/read.hpp>
 
+#include <boost/bind.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function.hpp>
+#include <boost/variant.hpp>
+#include <boost/utility.hpp>
+
 namespace expr
 {
   namespace token
   {
-    void tokenizer::set_E()
+    tokenizer::tokenizer (fhg::util::parse::position& _p)
+      : _pos (_p)
+      , _token (eof)
+      , _tokval()
+      , _ref()
+    {}
+
+    const value::type& tokenizer::value() const
     {
-      token = val;
-      tokval = 2.7182818284590452354;
+      return _tokval;
+    }
+    const token::type& tokenizer::token() const
+    {
+      return _token;
+    }
+    const std::list<std::string>& tokenizer::get_ref() const
+    {
+      return _ref;
+    }
+    fhg::util::parse::position& tokenizer::pos()
+    {
+      return _pos;
     }
 
-    void tokenizer::set_PI()
+    namespace
     {
-      token = val;
-      tokval = 3.14159265358979323846;
+      typedef boost::make_recursive_variant
+              < std::map<char, boost::recursive_variant_>
+              , boost::function<void (tokenizer&)>
+              >::type node_type;
+
+      typedef std::map<char, node_type> child_type;
+
+      void put ( const std::string::const_iterator pos
+               , const std::string::const_iterator end
+               , const boost::function<void (tokenizer&)> f
+               , child_type& m
+               )
+      {
+        const child_type::iterator child (m.find (*pos));
+
+        if (boost::next (pos) == end)
+        {
+          if (child != m.end())
+          {
+            throw std::runtime_error
+              (std::string ("Upps, doubled action(-path)!? "));
+          }
+
+          m.insert (child, std::make_pair (*pos, f));
+        }
+        else
+        {
+          put ( boost::next (pos)
+              , end
+              , f
+              , boost::get<child_type&>
+                ( child == m.end()
+                ? m.insert (child, std::make_pair (*pos, child_type()))->second
+                : child->second
+                )
+              );
+        }
+      }
+
+      void put ( const std::string& key
+               , const boost::function<void (tokenizer&)> f
+               , child_type& m
+               )
+      {
+        if (key.empty())
+        {
+          throw std::runtime_error ("Upps, action with empty key!?");
+        }
+
+        put (key.begin(), key.end(), f, m);
+      }
+
+      const child_type& create_description()
+      {
+        static child_type ts;
+
+#define ACTION(_key,_action) put (_key, _action, ts)
+
+#define UNARY(_key, _token)                                             \
+        ACTION (_key, boost::bind (&tokenizer::unary, _1, _token, _key))
+
+#define SET_TOKEN(_key, _token)                                         \
+        ACTION (_key, boost::bind (&tokenizer::set_token, _1, _token))
+
+#define SET_VALUE(_key, _value)                                         \
+        ACTION (_key, boost::bind (&tokenizer::set_value, _1, _value))
+
+        ACTION ("!", boost::bind (&tokenizer::notne, _1));
+        ACTION ("${", boost::bind (&tokenizer::identifier, _1));
+        ACTION ("*", boost::bind (&tokenizer::mulpow, _1));
+        ACTION ("-", boost::bind (&tokenizer::negsub, _1));
+        ACTION ("/", boost::bind (&tokenizer::divcomment, _1));
+        ACTION ("<", boost::bind (&tokenizer::cmp, _1, lt, le));
+        ACTION (">", boost::bind (&tokenizer::cmp, _1, gt, ge));
+
+        SET_TOKEN ("%", mod);
+        SET_TOKEN ("&&", _and);
+        SET_TOKEN ("(", lpr);
+        SET_TOKEN (")", rpr);
+        SET_TOKEN ("+", add);
+        SET_TOKEN (",", sep);
+        SET_TOKEN (":=", define);
+        SET_TOKEN (":and:", _and);
+        SET_TOKEN (":eq:", eq);
+        SET_TOKEN (":ge:", ge);
+        SET_TOKEN (":gt:", gt);
+        SET_TOKEN (":le:", le);
+        SET_TOKEN (":lt:", lt);
+        SET_TOKEN (":ne:", ne);
+        SET_TOKEN (":or:", _or);
+        SET_TOKEN ("==", eq);
+        SET_TOKEN ("^", _powint);
+        SET_TOKEN ("div", divint);
+        SET_TOKEN ("double", _todouble);
+        SET_TOKEN ("long", _tolong);
+        SET_TOKEN ("max", max);
+        SET_TOKEN ("min", min);
+        SET_TOKEN ("mod", modint);
+        SET_TOKEN ("round", _round);
+        SET_TOKEN ("substr", _substr);
+        SET_TOKEN ("||", _or);
+
+        SET_TOKEN ("map_assign", _map_assign);
+        SET_TOKEN ("map_get_assignment", _map_get_assignment);
+        SET_TOKEN ("map_is_assigned", _map_is_assigned);
+        SET_TOKEN ("map_unassign", _map_unassign);
+        UNARY ("map_empty", _map_empty);
+        UNARY ("map_size", _map_size);
+
+        SET_VALUE ("e", 2.7182818284590452354);
+        SET_VALUE ("pi", 3.14159265358979323846);
+
+        SET_VALUE ("false", false);
+        SET_VALUE ("true", true);
+
+        UNARY ("abs", abs);
+        UNARY ("ceil", _ceil);
+        UNARY ("cos", _cos);
+        UNARY ("floor", _floor);
+        UNARY ("len", _len);
+        UNARY ("log", _log);
+        UNARY ("sin", _sin);
+        UNARY ("sqrt", _sqrt);
+
+        SET_TOKEN ("bitset_and", _bitset_and);
+        SET_TOKEN ("bitset_count", _bitset_count);
+        SET_TOKEN ("bitset_delete", _bitset_delete);
+        SET_TOKEN ("bitset_insert", _bitset_insert);
+        SET_TOKEN ("bitset_is_element", _bitset_is_element);
+        SET_TOKEN ("bitset_or", _bitset_or);
+        SET_TOKEN ("bitset_xor", _bitset_xor);
+        UNARY ("bitset_fromhex", _bitset_fromhex);
+        UNARY ("bitset_tohex", _bitset_tohex);
+
+        SET_TOKEN ("set_insert", _set_insert);
+        SET_TOKEN ("set_erase", _set_erase);
+        SET_TOKEN ("set_is_element", _set_is_element);
+        SET_TOKEN ("set_is_subset", _set_is_subset);
+        UNARY ("set_empty", _set_empty);
+        UNARY ("set_pop", _set_pop);
+        UNARY ("set_size", _set_size);
+        UNARY ("set_top", _set_top);
+
+        SET_TOKEN ("stack_join", _stack_join);
+        SET_TOKEN ("stack_push", _stack_push);
+        UNARY ("stack_empty", _stack_empty);
+        UNARY ("stack_pop", _stack_pop);
+        UNARY ("stack_size", _stack_size);
+        UNARY ("stack_top", _stack_top);
+
+#undef SET_VALUE
+#undef SET_TOKEN
+#undef UNARY
+#undef ACTION
+
+        return ts;
+      }
+
+      const node_type& description()
+      {
+        static node_type m (create_description());
+
+        return m;
+      }
+
+      class visitor_names : public boost::static_visitor<void>
+      {
+      public:
+        visitor_names (std::string& names, const std::string& prefix = "")
+          : _names (names)
+          , _prefix (prefix)
+        {}
+
+        void operator() (const child_type& m) const
+        {
+          typedef std::pair<char, node_type> cn_type;
+
+          BOOST_FOREACH (const cn_type& cn, m)
+          {
+            boost::apply_visitor
+              ( visitor_names (_names, _prefix + cn.first)
+              , cn.second
+              );
+          }
+        }
+        void operator() (const boost::function<void (tokenizer&)>&) const
+        {
+          if (!_names.empty())
+          {
+            _names += ", ";
+          }
+          _names += _prefix;
+        }
+
+      private:
+        std::string& _names;
+        const std::string _prefix;
+      };
+
+      std::string names (const node_type& node)
+      {
+        std::string names;
+
+        boost::apply_visitor (visitor_names (names), node);
+
+        return names;
+      }
+
+      class visitor_tokenize : public boost::static_visitor<void>
+      {
+      public:
+        visitor_tokenize (tokenizer& t, const bool& first = true)
+          : _tokenizer (t)
+          , _first (first)
+        {}
+        void operator() (const child_type& m) const
+        {
+          if (_tokenizer.is_eof())
+          {
+            throw exception::parse::expected (names (m), _tokenizer.pos()());
+          }
+          else
+          {
+            typedef std::pair<char, node_type> cn_type;
+
+            BOOST_FOREACH (const cn_type& cn, m)
+              {
+                if (*_tokenizer.pos() == cn.first)
+                  {
+                    ++_tokenizer.pos();
+
+                    return boost::apply_visitor
+                      (visitor_tokenize (_tokenizer, false), cn.second);
+                  }
+              }
+          }
+
+          if (_first)
+          {
+            _tokenizer.set_value (value::read (_tokenizer.pos()));
+          }
+          else
+          {
+            throw exception::parse::expected (names (m), _tokenizer.pos()());
+          }
+        }
+
+        void operator() (const boost::function<void (tokenizer&)>& f) const
+        {
+          f (_tokenizer);
+        }
+
+      private:
+        tokenizer& _tokenizer;
+        const bool _first;
+      };
+    }
+
+    void tokenizer::set_token (const token::type& t)
+    {
+      _token = t;
+    }
+    void tokenizer::set_value (const value::type& v)
+    {
+      set_token (val);
+      _tokval = v;
     }
 
     bool tokenizer::is_eof()
     {
-      return pos.end() || *pos == ';';
-    }
-
-    void tokenizer::require (const std::string& what)
-    {
-      std::string::const_iterator what_pos (what.begin());
-      const std::string::const_iterator what_end (what.end());
-
-      while (what_pos != what_end)
-        if (is_eof() || *pos != *what_pos)
-          throw exception::parse::expected
-            ("'" + std::string (what_pos, what_end) + "'", pos());
-        else
-          {
-            ++pos; ++what_pos;
-          }
+      return _pos.end() || *_pos == ';';
     }
 
     void tokenizer::cmp (const token::type& t, const token::type& e)
     {
-      if (is_eof())
-        token = t;
+      if (!is_eof() && *_pos == '=')
+      {
+        ++_pos;
+
+        set_token (e);
+      }
       else
-        switch (*pos)
+      {
+        set_token (t);
+      }
+    }
+
+    void tokenizer::mulpow()
+    {
+      if (!is_eof() && *_pos == '*')
+      {
+        ++_pos;
+
+        set_token (_pow);
+      }
+      else
+      {
+        set_token (mul);
+      }
+    }
+
+    void tokenizer::negsub()
+    {
+      set_token (next_can_be_unary (_token) ? neg : sub);
+    }
+
+    void tokenizer::divcomment()
+    {
+      if (!is_eof() && *_pos == '*')
+      {
+        ++_pos;
+
+        skip_comment (_pos());
+
+        operator++();
+      }
+      else
+      {
+        set_token (div);
+      }
+    }
+
+    void tokenizer::identifier()
+    {
+      set_token (ref);
+
+      _ref.clear();
+
+      do
+        {
+          _ref.push_back (_pos.identifier());
+
+          if (_pos.end())
           {
-          case '=': ++pos; token = e; break;
-          default: token = t; break;
+            throw exception::parse::expected ("'.' or '}'", _pos());
           }
+
+          if (*_pos == '.')
+          {
+            ++_pos;
+          }
+        }
+      while (!_pos.end() && *_pos != '}');
+
+      _pos.require ("}");
+    }
+
+    void tokenizer::notne()
+    {
+      if (!is_eof() && *_pos == '=')
+      {
+        ++_pos;
+
+        set_token (ne);
+      }
+      else
+      {
+        unary (_not, "negation");
+      }
     }
 
     void tokenizer::unary (const token::type& t, const std::string& descr)
     {
-      if (next_can_be_unary (token))
-        token = t;
+      if (next_can_be_unary (_token))
+      {
+        set_token (t);
+      }
       else
-        throw exception::parse::misplaced (descr, pos());
+      {
+        throw exception::parse::misplaced (descr, _pos());
+      }
     }
 
     void tokenizer::skip_comment (const unsigned int open)
     {
-      while (!pos.end())
-        switch (*pos)
+      while (!_pos.end())
+        switch (*_pos)
           {
           case '/':
-            ++pos;
-            if (!pos.end() && *pos == '*')
+            ++_pos;
+            if (!_pos.end() && *_pos == '*')
               {
-                ++pos; skip_comment (pos());
+                ++_pos; skip_comment (_pos());
               }
             break;
           case '*':
-            ++pos;
-            if (!pos.end() && *pos == '/')
+            ++_pos;
+            if (!_pos.end() && *_pos == '/')
               {
-                ++pos; return;
+                ++_pos; return;
               }
             break;
-          default: ++pos; break;
+          default: ++_pos; break;
           }
 
-      throw exception::parse::unterminated ("comment", open-2, pos());
-    }
-
-    void tokenizer::get()
-    {
-      while (!pos.end() && isspace(*pos))
-        {
-          ++pos;
-        }
-
-      if (is_eof())
-        {
-          if (!pos.end())
-            {
-              ++pos;
-            }
-
-          token = eof;
-        }
-      else
-        switch (*pos)
-          {
-          case 'a': ++pos; require ("bs"); unary (abs, "abs"); break;
-          case 'b':
-            ++pos; require ("itset_");
-            if (is_eof())
-              throw exception::parse::expected
-                ("'insert', 'delete', 'is_element', 'or', 'and', 'xor', 'count', 'tohex' or 'fromhex'", pos());
-            else
-              switch (*pos)
-                {
-                case 'a': ++pos; require ("nd"); token = _bitset_and; break;
-                case 'c': ++pos; require ("ount"); token = _bitset_count; break;
-                case 'd': ++pos; require ("elete"); token = _bitset_delete; break;
-                case 'f': ++pos; require ("romhex"); unary (_bitset_fromhex, "bitset_fromhex"); break;
-                case 'i':
-                  ++pos;
-                  if (is_eof())
-                    throw exception::parse::expected
-                      ("'nsert' or 's_element'", pos());
-                  else
-                    switch (*pos)
-                      {
-                      case 'n':
-                        ++pos;
-                        require ("sert");
-                        token = _bitset_insert;
-                        break;
-                      case 's':
-                        ++pos;
-                        require ("_element");
-                        token = _bitset_is_element;
-                        break;
-                      default:
-                        throw exception::parse::expected
-                          ("'nsert' or 's_element'", pos());
-                      }
-                  break;
-                case 'o': ++pos; require ("r"); token = _bitset_or; break;
-                case 't': ++pos; require ("ohex"); unary (_bitset_tohex, "bitset_tohex"); break;
-                case 'x': ++pos; require ("or"); token = _bitset_xor; break;
-                default:
-                  throw exception::parse::expected
-                    ("'insert', 'delete', 'is_element', 'or', 'and', 'xor', 'count', 'tohex' or 'fromhex'", pos());
-                }
-            break;
-          case 'c':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected
-                ("'os' or 'eil'", pos());
-            else
-              switch (*pos)
-                {
-                case 'o': ++pos; require("s"); unary (_cos, "cos"); break;
-                case 'e': ++pos; require("il"); unary (_ceil, "ceil"); break;
-                default: throw exception::parse::expected
-                    ("'os' or 'eil'", pos());
-                }
-            break;
-          case 'd':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected ("'iv' or 'ouble'", pos());
-            else
-              switch (*pos)
-                {
-                case 'i': ++pos; require ("v"); token = divint; break;
-                case 'o': ++pos; require ("uble"); token = _todouble; break;
-                default: throw exception::parse::expected
-                    ("'iv' or 'ouble'", pos());
-                }
-            break;
-          case 'e': ++pos; set_E(); break;
-          case 'f':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected ("'loor' or 'alse'", pos());
-            else
-              switch (*pos)
-                {
-                case 'l':
-                  ++pos; require ("oor"); unary (_floor, "floor"); break;
-                case 'a':
-                  ++pos; require ("lse"); token = val; tokval = false; break;
-                default:
-                  throw exception::parse::expected ("'loor' or 'alse'", pos());
-                }
-            break;
-         case 'l':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected
-                ("'en', 'ong' or 'og'", pos());
-            else
-              switch (*pos)
-                {
-                case 'e': ++pos; require ("n"); unary (_len, "len"); break;
-                case 'o':
-                  ++pos;
-                  if (is_eof())
-                    throw exception::parse::expected ("'ng' or 'g'", pos());
-                  else
-                    switch (*pos)
-                      {
-                      case 'n': ++pos; require ("g"); token = _tolong; break;
-                      case 'g': ++pos; unary (_log, "log"); break;
-                      default: throw exception::parse::expected
-                          ("'ng' or 'g'", pos());
-                      }
-                  break;
-                default:
-                  throw exception::parse::expected
-                    ("'en', 'ong' or 'og'", pos());
-                }
-            break;
-          case 'm':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected
-                ("'in' or 'ax', 'od' or 'map_...'", pos());
-            else
-              switch (*pos)
-                {
-                case 'i': ++pos; require ("n"); token = min; break;
-                case 'o': ++pos; require ("d"); token = modint; break;
-                case 'a': ++pos;
-                  if (is_eof())
-                    throw exception::parse::expected
-                      ("'x' or 'p_...'", pos());
-                  else
-                    switch (*pos)
-                      {
-                      case 'x': ++pos; token = max; break;
-                      case 'p': ++pos; require ("_");
-                        if (is_eof())
-                          throw exception::parse::expected
-                            ("'assign', 'unassign', 'is_assigned', 'size', 'empty' or 'get_assignment'", pos());
-                        else
-                          switch (*pos)
-                            {
-                            case 'a': ++pos; require ("ssign"); token = _map_assign; break;
-                            case 'e': ++pos; require ("mpty"); unary (_map_empty, "map_empty"); break;
-                            case 'u': ++pos; require ("nassign"); token = _map_unassign; break;
-                            case 'i': ++pos; require ("s_assigned"); token = _map_is_assigned; break;
-                            case 'g': ++pos; require ("et_assignment"); token = _map_get_assignment; break;
-                            case 's': ++pos; require ("ize"); unary (_map_size, "map_size"); break;
-                            default:
-                              throw exception::parse::expected
-                                ("'assign', 'unassign', 'is_assigned', 'size', 'empty' or 'get_assignment'", pos());
-                            }
-                        break;
-                      default:
-                        throw exception::parse::expected
-                          ("'x' or 'p_...'", pos());
-                      }
-                  break;
-                default: throw exception::parse::expected
-                    ("'in' or 'ax', 'od' or 'map_...'", pos());
-                }
-            break;
-          case 'p': ++pos; require("i"); set_PI(); break;
-          case 'r': ++pos; require("ound"); token = _round; break;
-          case 's':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected
-                ("'in', 'ubstr', 'qrt', 'tack_...' or 'et_...'", pos());
-            else
-              switch (*pos)
-                {
-                case 'i': ++pos; require ("n"); unary (_sin, "sin"); break;
-                case 'q': ++pos; require ("rt"); unary (_sqrt, "sqrt"); break;
-                case 'u': ++pos; require ("bstr"); token = _substr; break;
-                case 'e': ++pos; require ("t_");
-                  if (is_eof())
-                    throw exception::parse::expected
-                      ("'insert', 'erase', 'is_element', 'is_subset', 'pop', 'top', 'empty' or 'size'", pos());
-                  else
-                    switch (*pos)
-                      {
-                      case 'e': ++pos;
-                        if (is_eof())
-                          throw exception::parse::expected
-                            ("'mpty' or 'rase'", pos());
-                        else
-                          switch (*pos)
-                            {
-                            case 'r': ++pos; require ("ase"); token = _set_erase; break;
-                            case 'm': ++pos; require ("pty"); unary (_set_empty, "set_empty"); break;
-                            default:
-                              throw exception::parse::expected
-                                ("'mpty' or 'rase'", pos());
-                            }
-                        break;
-                      case 'i': ++pos;
-                        if (is_eof())
-                          throw exception::parse::expected
-                            ("'nsert', 's_subset' or 's_element'", pos());
-                        else
-                          switch (*pos)
-                            {
-                            case 'n': ++pos; require ("sert"); token = _set_insert; break;
-                            case 's': ++pos; require ("_");
-                              if (is_eof())
-                                throw exception::parse::expected
-                                  ("'subset' or 'element'", pos());
-                              else
-                                switch (*pos)
-                                {
-                                case 's': ++pos; require ("ubset"); token = _set_is_subset; break;
-                                case 'e': ++pos; require ("lement"); token = _set_is_element; break;
-                                default:
-                                  throw exception::parse::expected
-                                    ("'subset' or 'element'", pos());
-                                }
-                              break;
-                            default:
-                              throw exception::parse::expected
-                                ("'nsert', 's_subset' or 's_element'", pos());
-                            }
-                        break;
-                      case 'p': ++pos; require ("op");  unary (_set_pop, "set_pop"); break;
-                      case 's': ++pos; require ("ize"); unary (_set_size, "set_size"); break;
-                      case 't': ++pos; require ("op");  unary (_set_top, "set_top"); break;
-                      default:
-                        throw exception::parse::expected
-                          ("'insert', 'erase', 'is_element', 'is_subset', 'pop', 'top', 'empty' or 'size'", pos());
-                      }
-                  break;
-                case 't':
-                  ++pos;
-                  require ("ack_");
-                  if (is_eof())
-                    throw exception::parse::expected
-                      ( "'empty', 'top', 'push', 'pop', 'size' or 'join'"
-                      , pos()
-                      );
-                  else
-                    switch (*pos)
-                      {
-                      case 'e': ++pos; require ("mpty");
-                        unary (_stack_empty, "stack_empty");
-                        break;
-                      case 'j': ++pos; require ("oin");
-                        token = _stack_join;
-                        break;
-                      case 's': ++pos; require ("ize");
-                        unary (_stack_size, "stack_size");
-                        break;
-                      case 't': ++pos; require ("op");
-                        unary (_stack_top, "stack_top");
-                        break;
-                      case 'p':
-                        ++pos;
-                        if (is_eof())
-                          throw exception::parse::expected
-                            ("'ush' or 'op'", pos());
-                        else
-                          switch (*pos)
-                            {
-                            case 'u': ++pos; require ("sh");
-                              token = _stack_push;
-                              break;
-                            case 'o': ++pos; require ("p");
-                              unary (_stack_pop, "stack_pop");
-                              break;
-                            default:
-                              throw exception::parse::expected
-                                ("'ush' or 'op'", pos());
-                            }
-                        break;
-                      default:
-                        throw exception::parse::expected
-                          ( "'empty', 'top', 'push', 'pop', 'size' or 'join'"
-                          , pos()
-                          );
-                      }
-
-                  break;
-                default:
-                  throw exception::parse::expected
-                    ("'in', 'ubstr', 'qrt', 'tack_...' or 'et_...'", pos());
-                }
-            break;
-          case 't':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected ("rue", pos());
-            else
-              switch (*pos)
-                {
-                case 'r': ++pos; require("ue"); token = val; tokval = true; break;
-                default: throw exception::parse::expected ("rue", pos());
-                }
-            break;
-          case '|': ++pos; require ("|"); token = _or; break;
-          case '&': ++pos; require ("&"); token = _and; break;
-          case '<': ++pos; cmp (lt, le); break;
-          case '>': ++pos; cmp (gt, ge); break;
-          case '!':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected("'=' or <expression>", pos());
-            else
-              switch (*pos)
-                {
-                case '=': ++pos; token = ne; break;
-                default: unary (_not, "negation"); break;
-                }
-            break;
-          case '=':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected("'='", pos());
-            else
-              switch (*pos)
-                {
-                case '=': ++pos; token = eq; break;
-                default: throw exception::parse::expected ("'='", pos());
-                }
-            break;
-          case ':':
-            ++pos;
-            if (is_eof())
-              throw exception::parse::expected
-                ("'=', 'eq:', 'ne:', 'lt:', 'le:', 'gt:', 'ge:', 'and:' or 'or:'", pos());
-            else
-              switch (*pos)
-                {
-                case '=': ++pos; token = define; break;
-                case 'a': ++pos; require ("nd:"); token = _and; break;
-                case 'o': ++pos; require ("r:"); token = _or; break;
-                case 'e': ++pos; require ("q:"); token = eq; break;
-                case 'n': ++pos; require ("e:"); token = ne; break;
-                case 'l':
-                  ++pos;
-                  if (is_eof())
-                    throw exception::parse::expected ("'t:', 'e:'", pos());
-                  else
-                    switch (*pos)
-                      {
-                      case 't': ++pos; require (":"); token = lt; break;
-                      case 'e': ++pos; require (":"); token = le; break;
-                      default:
-                        throw exception::parse::expected
-                          ("'t:', 'e:'", pos());
-                      }
-                  break;
-                case 'g':
-                  ++pos;
-                  if (is_eof())
-                    throw exception::parse::expected ("'t:', 'e:'", pos());
-                  else
-                    switch (*pos)
-                      {
-                      case 't': ++pos; require (":"); token = gt; break;
-                      case 'e': ++pos; require (":"); token = ge; break;
-                      default:
-                        throw exception::parse::expected
-                          ("'t:', 'e:'", pos());
-                      }
-                  break;
-                default:
-                  throw exception::parse::expected
-                    ("'=', 'eq:', 'ne:', 'lt:', 'le:', 'gt:', 'ge:', 'and:' or 'or:'", pos());
-                }
-            break;
-          case '+': ++pos; token = add; break;
-          case '-':
-            ++pos;
-            if (next_can_be_unary (token))
-              token = neg;
-            else
-              token = sub;
-            break;
-          case '*':
-            ++pos;
-            if (!is_eof() && *pos == '*')
-              {
-                token = _pow;
-                ++pos;
-              }
-            else
-              token = mul;
-            break;
-          case '/':
-            ++pos;
-            if (is_eof())
-              token = div;
-            else
-              switch (*pos)
-                {
-                case '*': ++pos; skip_comment(pos()); get(); break;
-                default: token = div; break;
-                }
-            break;
-          case '%': ++pos; token = mod; break;
-          case '^': ++pos; token = _powint; break;
-          case ',': ++pos; token = sep; break;
-          case '(': ++pos; token = lpr; break;
-          case ')': ++pos; token = rpr; break;
-          case '$':
-            ++pos;
-            token = ref;
-            if (is_eof())
-              throw exception::parse::expected ("'{'", pos());
-            else
-              switch (*pos)
-                {
-                case '{':
-                  ++pos;
-
-                  _ref.clear();
-
-                  do
-                    {
-                      _ref.push_back (value::identifier (pos));
-
-                      if (pos.end())
-                        {
-                          throw exception::parse::expected
-                            ("'.' or '}'", pos());
-                        }
-
-                      if (*pos == '.')
-                        {
-                          ++pos;
-                        }
-                    }
-                  while (!pos.end() && *pos != '}');
-
-                  require ("}");
-
-                  break;
-                default: throw exception::parse::expected ("'{'", pos());
-                }
-            break;
-          default: token = val; tokval = value::read (pos); break;
-          }
-    }
-
-    tokenizer::tokenizer ( std::size_t & _k
-                         , std::string::const_iterator & _pos
-                         , const std::string::const_iterator & _end
-                         )
-      : pos (_k, _pos,_end)
-      , token (eof)
-    {}
-
-    const value::type& tokenizer::operator()() const
-    {
-      return tokval;
-    }
-
-    const token::type& tokenizer::operator*() const
-    {
-      return token;
+      throw exception::parse::unterminated ("comment", open-2, _pos());
     }
 
     void tokenizer::operator++()
     {
-      get();
-    }
+      _pos.skip_spaces();
 
-    const std::list<std::string>& tokenizer::get_ref() const
-    {
-      return _ref;
+      if (is_eof())
+      {
+        if (!_pos.end())
+        {
+          ++_pos;
+        }
+
+        set_token (eof);
+      }
+      else
+      {
+        boost::apply_visitor (visitor_tokenize (*this), description());
+      }
     }
   }
 }

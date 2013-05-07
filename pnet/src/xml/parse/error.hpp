@@ -19,7 +19,7 @@
 
 #include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
-#include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
+#include <xml/parse/util/show_node_type.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -70,9 +70,9 @@ namespace xml
           std::ostringstream s;
 
           s << "expected node of type "
-            << util::quote (util::show_node_type (want))
+            << util::show_node_type (want)
             << ": got node of type "
-            << util::quote(util::show_node_type (got))
+            << util::show_node_type (got)
             << " in " << path
             ;
 
@@ -88,11 +88,11 @@ namespace xml
           std::ostringstream s;
 
           s << "expected node of type "
-            << util::quote (util::show_node_type (want1))
+            << util::show_node_type (want1)
             << " or "
-            << util::quote (util::show_node_type (want2))
+            << util::show_node_type (want2)
             << ": got node of type "
-            << util::quote(util::show_node_type (got))
+            << util::show_node_type (got)
             << " in " << path
             ;
 
@@ -128,7 +128,7 @@ namespace xml
           std::ostringstream s;
 
           s << "expected node of type "
-            << util::quote (util::show_node_type (want))
+            << util::show_node_type (want)
             << " in " << path
             ;
 
@@ -143,9 +143,9 @@ namespace xml
           std::ostringstream s;
 
           s << "expected node of type "
-            << util::quote (util::show_node_type (want1))
+            << util::show_node_type (want1)
             << " or "
-            << util::quote (util::show_node_type (want2))
+            << util::show_node_type (want2)
             << " in " << path
             ;
 
@@ -181,7 +181,7 @@ namespace xml
 
           s << pre
             << ": missing attribute "
-            << util::quote (attr)
+            << attr
             << " in " << path
             ;
 
@@ -391,7 +391,7 @@ namespace xml
       private:
         std::string nice  ( const std::string & place
                           , const std::string & field
-                          , const literal::type_name_t & sig
+                          , const std::string & sig
                           , const signature::structured_t & val
                           , const boost::filesystem::path & path
                           ) const
@@ -411,7 +411,7 @@ namespace xml
         std::string nice  ( const std::string & place
                           , const std::string & field
                           , const signature::structured_t & sig
-                          , const literal::type_name_t & val
+                          , const std::string & val
                           , const boost::filesystem::path & path
                           ) const
         {
@@ -430,7 +430,7 @@ namespace xml
       public:
         parse_type_mismatch ( const std::string & place
                             , const std::string & field
-                            , const literal::type_name_t & sig
+                            , const std::string & sig
                             , const signature::structured_t & val
                             , const boost::filesystem::path & path
                             )
@@ -440,7 +440,7 @@ namespace xml
         parse_type_mismatch ( const std::string & place
                             , const std::string & field
                             , const signature::structured_t & sig
-                            , const literal::type_name_t & val
+                            , const std::string & val
                             , const boost::filesystem::path & path
                             )
           : generic (nice (place, field, sig, val, path))

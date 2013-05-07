@@ -116,7 +116,7 @@ namespace xml
         // ***************************************************************** //
 
         const conditions_type& conditions() const;
-        void add_conditions (const conditions_type&);
+        void add_conditions (const std::list<std::string>&);
 
         // ***************************************************************** //
 

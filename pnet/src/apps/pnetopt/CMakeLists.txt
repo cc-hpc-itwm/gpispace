@@ -1,4 +1,4 @@
-find_package(LUA)
+find_package(LUA QUIET)
 
 if (LUA_FOUND)
 

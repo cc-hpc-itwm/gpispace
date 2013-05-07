@@ -49,6 +49,19 @@ namespace fhg
           virtual ~expected() throw() {}
         };
 
+        template<typename From, typename To>
+          class value_to_big : public generic
+        {
+        public:
+          value_to_big (const From& f, const position& pos)
+            : generic ( boost::format ("value %1% larger than maximum %2%")
+                      % f
+                      % std::numeric_limits<To>::max()
+                      , pos
+                      )
+          {}
+          virtual ~value_to_big() throw() {}
+        };
       }
     }
   }

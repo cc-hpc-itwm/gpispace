@@ -25,20 +25,6 @@ BOOST_AUTO_TEST_CASE (path)
   BOOST_REQUIRE_EQUAL (position.path(), p);
 }
 
-BOOST_AUTO_TEST_CASE (pos_zero)
-{
-  const xml::parse::util::position_type position (input, input, "");
-
-  BOOST_REQUIRE_EQUAL (position.pos(), input);
-}
-
-BOOST_AUTO_TEST_CASE (pos_advanced)
-{
-  const xml::parse::util::position_type position (input, input + 10, "");
-
-  BOOST_REQUIRE_EQUAL (position.pos(), input + 10);
-}
-
 BOOST_AUTO_TEST_CASE (null)
 {
   const xml::parse::util::position_type position (0, 0, "");

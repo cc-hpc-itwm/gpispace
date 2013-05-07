@@ -45,7 +45,7 @@ void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) thr
     } catch (const StageNotFound &) {
         _stages.insert(std::make_pair(name, stage));
         _stage_names.push_back (name);
-        SEDA_LOG_DEBUG("added stage `" << name << "'");
+        DMLOG (TRACE, "added stage `" << name << "'");
     }
 }
 void StageRegistry::insert(const std::string& name, Stage* stage) throw(StageAlreadyRegistered) {
@@ -121,7 +121,7 @@ void StageRegistry::stopAll() {
 void StageRegistry::clear() {
     lock_type lock (m_mutex);
 
-    SEDA_LOG_DEBUG("removing all registered stages");
+    DMLOG (TRACE, "removing all registered stages");
     stopAll();
     _stages.clear();
     _stage_names.clear();

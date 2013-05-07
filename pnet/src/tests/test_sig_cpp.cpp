@@ -28,7 +28,12 @@ main ()
 
   signature::type sig (cross, "cross");
 
-  signature::cpp::cpp_header (std::cout, sig);
+  signature::cpp::cpp_header ( std::cout
+                             , sig
+                             , sig.nice()
+                             , boost::filesystem::path ("")
+                             , boost::filesystem::path ("")
+                             );
 
   return EXIT_SUCCESS;
 }

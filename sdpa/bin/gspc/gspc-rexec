@@ -22,11 +22,11 @@ function is_host_same_as_localhost ()
     then
         return 0
     fi
-    if [ "${hostname_short}" = "$node" ]
+    if [ "${hostname_short}" = "$host" ]
     then
         return 0
     fi
-    if [ "${hostname}" = "$node" ]
+    if [ "${hostname}" = "$host" ]
     then
         return 0
     fi

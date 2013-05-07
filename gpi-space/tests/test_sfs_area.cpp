@@ -45,7 +45,7 @@ struct F
   F ()
   {
     path_to_shared_file =
-      "/tmp/sfs_area." + boost::lexical_cast<std::string> (getpid ());
+      "sfs_area." + boost::lexical_cast<std::string> (getpid ());
     BOOST_TEST_MESSAGE ("fixture setup");
   }
 

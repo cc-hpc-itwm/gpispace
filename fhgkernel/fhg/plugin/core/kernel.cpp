@@ -114,7 +114,7 @@ namespace fhg
 
         DMLOG (TRACE, "trying: " << plugin_path);
 
-        if (fs::exists (plugin_path))
+        if (fs::is_regular_file (plugin_path))
         {
           try
           {
@@ -157,12 +157,21 @@ namespace fhg
                                                   )
          )
       {
-        MLOG ( TRACE
-             , "avoiding another attempt to load from '"
-             << full_path_to_file
-             << "'"
-             );
-        return -EFAULT;
+        DMLOG ( TRACE
+              , "avoiding another attempt to load from '"
+              << full_path_to_file
+              << "'"
+              );
+        return EFAULT;
+      }
+
+      if (fs::is_directory (full_path_to_file))
+      {
+        return EISDIR;
+      }
+      else if (not fs::is_regular_file (full_path_to_file))
+      {
+        return EINVAL;
       }
 
       plugin_t::ptr_t p (plugin_t::create( full_path_to_file
@@ -309,7 +318,7 @@ namespace fhg
       {
         if (not m_mtx_plugins.try_lock ())
         {
-          MLOG (WARN, "ignoring signal: mutex still locked");
+          DMLOG (WARN, "ignoring signal: mutex still locked");
           errno = EAGAIN;
           return -1;
         }
@@ -318,7 +327,7 @@ namespace fhg
         m_mtx_plugins.unlock ();
       }
 
-      MLOG (DEBUG, "handling signal: " << signum);
+      DMLOG (DEBUG, "handling signal: " << signum);
 
       for ( plugin_map_t::iterator it = to_signal.begin ()
           ; it != to_signal.end()

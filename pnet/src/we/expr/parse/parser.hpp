@@ -45,7 +45,6 @@ namespace expr
     struct parser
     {
     public:
-      typedef node::key_vec_t key_vec_t;
       typedef node::type nd_t;
       typedef std::list<nd_t> nd_stack_t;
 
@@ -76,7 +75,7 @@ namespace expr
       void reduce (const std::size_t k);
       void
       parse ( const std::string& input
-            , const boost::function<nd_t (const key_vec_t &)> & refnode
+            , const boost::function<nd_t (const std::list<std::string>&)>&
             );
 
     public:
@@ -113,9 +112,7 @@ namespace expr
       value::type eval_all() const;
       bool eval_all_bool() const;
 
-      void rename ( const key_vec_t::value_type & from
-                  , const key_vec_t::value_type & to
-                  );
+      void rename (const std::string& from, const std::string& to);
 
       std::string string (void) const;
 

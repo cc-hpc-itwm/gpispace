@@ -62,7 +62,7 @@ namespace daemon {
 											   const std::string& url,
 											   const unsigned int capacity )
 			{
-				LOG( DEBUG, "Create Orchestrator "<<name<<" with no workflow engine" );
+                          DMLOG (TRACE, "Create Orchestrator "<<name<<" with no workflow engine" );
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
 
 //				seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", orchestrator::MAX_Q_SIZE));

@@ -8,7 +8,7 @@ namespace xml
 {
   namespace parse
   {
-    std::string parse_name (fhg::util::parse::position pos)
+    std::string parse_name (fhg::util::parse::position& pos)
     {
       std::string name;
 
@@ -44,10 +44,9 @@ namespace xml
                               , const boost::filesystem::path & path
                               )
     {
-      std::size_t k (0);
-      std::string::const_iterator begin (name.begin());
-      const std::string::const_iterator end (name.end());
-      if (parse_name (fhg::util::parse::position (k, begin, end)) != name)
+      fhg::util::parse::position pos (name);
+
+      if (parse_name (pos) != name)
       {
         throw error::invalid_name (name, type, path);
       }

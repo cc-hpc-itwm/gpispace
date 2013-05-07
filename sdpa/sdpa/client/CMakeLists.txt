@@ -1,11 +1,9 @@
 # -*- mode: cmake; -*-
-find_package(SMC)
+find_package(SMC QUIET)
 if (SMC_FOUND)
-    message(STATUS "Found StateMachineCompiler: ${SMC_JAR}")
     include_directories(SYSTEM ${SMC_INCLUDE_DIR})
-else (SMC_FOUND)
-    message(STATUS "WARNING: SMC could not be found!")
 endif (SMC_FOUND)
+include (SMCMacros)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
@@ -35,11 +33,3 @@ else (SMC_FOUND)
 endif (SMC_FOUND)
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})
-
-install(FILES ${hdrs}
-  DESTINATION include/sdpa/client
-  COMPONENT headers)
-install(TARGETS sdpa-client
-  ARCHIVE
-  DESTINATION lib
-  COMPONENT static-libraries)

@@ -43,7 +43,6 @@ IF (DOXYGEN_FOUND)
   ENDIF (NOT DVIPS_CONVERTER)
 
   IF   (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/doxy.config.in")
-    MESSAGE(STATUS "configured ${CMAKE_CURRENT_SOURCE_DIR}/doxy.config.in --> ${CMAKE_CURRENT_BINARY_DIR}/doxy.config")
     CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/doxy.config.in
       ${CMAKE_CURRENT_BINARY_DIR}/doxy.config
       @ONLY )

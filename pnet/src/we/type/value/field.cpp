@@ -14,10 +14,10 @@ namespace value
     class visitor_field : public boost::static_visitor<type&>
     {
     private:
-      signature::field_name_t name;
+      std::string name;
 
     public:
-      visitor_field (const signature::field_name_t& _name)
+      visitor_field (const std::string& _name)
         : name (_name)
       {}
 
@@ -35,7 +35,7 @@ namespace value
     };
   }
 
-  type& field (const signature::field_name_t& field, type& v)
+  type& field (const std::string& field, type& v)
   {
     return boost::apply_visitor (visitor_field (field), v);
   }

@@ -108,7 +108,8 @@ BOOST_AUTO_TEST_CASE(testQueue)
   }
 
   thrd.interrupt();
-  thrd.join();
+  if(thrd.joinable())
+	  thrd.join();
 
   SDPA_LOG_INFO(thrd_data.val);
 

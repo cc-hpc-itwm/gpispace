@@ -14,8 +14,8 @@ namespace literal
       struct info
       {
       private:
-        boost::unordered_map<type_name_t, std::string> _trans;
-        boost::unordered_map<type_name_t, std::string> _inc;
+        boost::unordered_map<std::string, std::string> _trans;
+        boost::unordered_map<std::string, std::string> _inc;
 
       public:
         info ()
@@ -47,37 +47,37 @@ namespace literal
           _inc[literal::BYTEARRAY()] = "we/type/bytearray.hpp";
         }
 
-        const std::string& translate (const type_name_t& t) const
+        const std::string& translate (const std::string& t) const
         {
           return _trans.at (t);
         }
 
-        const std::string& include (const type_name_t& t) const
+        const std::string& include (const std::string& t) const
         {
           return _inc.at (t);
         }
 
-        bool known (const type_name_t& t) const
+        bool known (const std::string& t) const
         {
           return _trans.find (t) != _trans.end();
         }
       };
     }
 
-    const std::string& translate (const type_name_t& t)
+    const std::string& translate (const std::string& t)
     {
       static info i;
 
       return i.translate (t);
     }
-    const std::string& include (const type_name_t& t)
+    const std::string& include (const std::string& t)
     {
       static info i;
 
       return i.include (t);
     }
 
-    bool known (const type_name_t& t)
+    bool known (const std::string& t)
     {
       static info n;
 

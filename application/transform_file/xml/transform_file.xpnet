@@ -299,7 +299,7 @@
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="ctype.h"/>
           <code><![CDATA[
-          LOG (INFO, "Transform the chunk now ...");
+          LOG (INFO, "Transform the chunk "<<chunk_read_info.chunk_id<<" now ...");
 
           pnetc::type::chunk_write_info::chunk_write_info c_w_info;
 
@@ -364,25 +364,26 @@
           <cinclude href="errno.h"/>
           <cinclude href="string.h"/>
           <code><![CDATA[
-          LOG (INFO, "write the chunk " << chunk_write_info.chunk_id << " now ...");
-
-          // get data from vm::write_area
-          waitComm( fvmGetGlobalData
-          ( static_cast<fvmAllocHandle_t> (config.write_area)
-          	, chunk_write_info.write_slot_id*config.chunk_size
-          	, chunk_write_info.size
-          	, 0
-          	, 0
-          )
-          );
-
-          char* ptrChunk = static_cast<char *> (fvmGetShmemPtr());
-
-          // write the data into file at the position
-          // chunk_id*config.chunk_size
-
+       
 		  if(!config.output_file.empty())
 		  {
+			  // write the data into file at the position
+          	  // chunk_id*config.chunk_size
+          	
+			  MLOG (INFO, "write the chunk " << chunk_write_info.chunk_id << " now ...");
+			  
+			  // get data from vm::write_area
+	          waitComm( fvmGetGlobalData
+	          ( static_cast<fvmAllocHandle_t> (config.write_area)
+	          	, chunk_write_info.write_slot_id*config.chunk_size
+	          	, chunk_write_info.size
+	          	, 0
+	          	, 0
+	          )
+	          );
+	
+	          char* ptrChunk = static_cast<char *> (fvmGetShmemPtr());
+	          
 	          int fd = open (config.output_file.c_str (), O_RDWR);
 	          if (fd == -1)
 	          {
@@ -401,7 +402,7 @@
 		  }
 		  else
 		  {
-			MLOG (DEBUG, "No output file was specified, therefore the result will not be stored");
+			MLOG (INFO, "No output file was specified, therefore the result will not be stored");
 	      }
 		  
           write_slot_id = chunk_write_info.write_slot_id;

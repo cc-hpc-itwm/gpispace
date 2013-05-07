@@ -21,20 +21,30 @@ install(CODE "
   execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
-                          -x \"libgcc_s\"
-                          -x \"libc.so\"
-                          -x \"libdl.so\"
-                          -x \"libstdc++.so\"
-                          -x \"libpthread.so\"
-                          -x \"libgthread.so\"
-                          -x \"libglib.so\"
-                          -x \"libfontconfig.so\"
-                          -x \"libibverbs.so\"
-                          -w \"libQt.*.so\"
-                          -w \"libboost.*.so\"
-                          -w \"libhwloc.*.so\"
-                          -v
+                          -f
+                          -L \"${CMAKE_INSTALL_PREFIX}/lib\"
+                          -x libibverbs.*
+                          -x libxcb.*
+                          -x libstdc++.*
+                          -x libSM.*
+                          -x libgcc_s.so
+                          -x libc.so.*
+                          -x librt.*
+                          -x libfont.*
+                          -x libfreetype.*
+                          -x libaudio.*
+                          -x libICE.*
+                          -x libglib.*
+                          -x libgobject.*
+                          -x libdl.*
+                          -x libX.*so
+                          -x libpthread.*
+                          -x libgthread.*
                            ${APPS} \${PLUGINS}
+                  RESULT_VARIABLE __res
+                  ERROR_VARIABLE __err
   )
-
+  if (NOT \${__res} EQUAL 0)
+     message(FATAL_ERROR \"Could not bundle dependencies: \${__err}\")
+  endif()
   " COMPONENT dependencies)

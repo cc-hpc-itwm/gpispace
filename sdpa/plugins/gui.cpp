@@ -41,7 +41,7 @@ public:
                                                                  , m_url
                                                                  )
                             )));
-        MLOG(INFO, "GUI sending events to " << m_url);
+        DMLOG (TRACE, "GUI sending events to " << m_url);
       }
       catch (std::exception const &ex)
       {
@@ -80,7 +80,7 @@ public:
   {
     if (observe::Observable* o = fhg_kernel()->acquire<observe::Observable>(plugin))
     {
-      MLOG(INFO, "GUI starts to observe: " << o << " (" << plugin << ")");
+      DMLOG(TRACE, "GUI starts to observe: " << o << " (" << plugin << ")");
       start_to_observe(o);
     }
   }

@@ -1,0 +1,29 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#ifndef PNET_SRC_WE_TYPE_SIGNATURE_SHOW_HPP
+#define PNET_SRC_WE_TYPE_SIGNATURE_SHOW_HPP
+
+#include <we/type/signature.hpp>
+
+#include <iosfwd>
+
+namespace pnet
+{
+  namespace type
+  {
+    namespace signature
+    {
+      class show
+      {
+      public:
+        show (const signature_type&);
+        std::ostream& operator() (std::ostream&) const;
+      private:
+        const signature_type& _signature;
+      };
+      std::ostream& operator<< (std::ostream&, const show&);
+    }
+  }
+}
+
+#endif

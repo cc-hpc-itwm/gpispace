@@ -1,12 +1,9 @@
-# -*- mode: cmake; -*-
-
-# search for libreadline
-find_package (LibReadline REQUIRED)
+find_package (LibReadline REQUIRED QUIET)
 include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(tc_srcs
+set(tests
     test_activity.cpp
     test_adjacency.cpp
     test_bitset.cpp
@@ -18,10 +15,8 @@ set(tc_srcs
     test_expr_simplify.cpp
     test_layer_atomics.cpp
     test_layer_cancel.cpp
-    test_loader.cpp
     test_load_module.cpp
     test_port.cpp
-#    test_requirements.cpp
     test_property.cpp
     test_queue.cpp
     test_signal.cpp
@@ -34,57 +29,46 @@ set(tc_srcs
     test_literal_show.cpp
    )
 
-# answer module
-add_library(answer SHARED answer.cpp)
-add_library(question SHARED question.cpp)
-target_link_libraries(question answer)
-target_link_libraries(answer pnet)
-
-function(construct_tests )
-  foreach (tc_src ${ARGN})
-    # get the filename without extension
-    string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_we_\\2" tc_name ${tc_src})
-    message(STATUS "adding test case ${tc_name} (using ${tc_src})")
-
-    add_executable(${tc_name} ${tc_src})
-    target_link_libraries(${tc_name} pnet)
-    target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
-    target_link_libraries(${tc_name} ${UTIL_LIBRARIES})
-    target_link_libraries(${tc_name} ${Boost_UNIT_TEST_LIBRARIES})
-    target_link_libraries(${tc_name} ${Boost_LIBRARIES})
-    target_link_libraries(${tc_name} ${LibReadline_LIBRARY})
-    target_link_libraries(${tc_name} ${CMAKE_DL_LIBS})
-    get_target_property(LOC ${tc_name} LOCATION_)
-    add_test(${tc_name} ${LOC})
-  endforeach(tc_src ${tc_srcs})
-endfunction(construct_tests)
-
-list(SORT tc_srcs)
-construct_tests(${tc_srcs})
+foreach (test ${tests})
+  fhg_add_test (${test}
+    PROJECT we
+    LINK_LIBRARIES pnet
+                   ${FhgLog_LIBRARY}
+                   ${UTIL_LIBRARIES}
+                   ${Boost_UNIT_TEST_LIBRARIES}
+                   ${Boost_LIBRARIES}
+                   ${LibReadline_LIBRARY}
+                   ${CMAKE_DL_LIBS}
+  )
+endforeach()
 
 fhg_add_test (evaluate_net.cpp
+  PROJECT test_we
   LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
   DESCRIPTION "evaluate various nets and compare the results with given reference nets"
   ARGS ${CMAKE_CURRENT_SOURCE_DIR}/pnets
 )
 
-set(cross_hpp
-    ${CMAKE_CURRENT_BINARY_DIR}/cross.hpp
-   )
-set(cross_gen test_we_sig_cpp)
-add_custom_command(OUTPUT ${cross_hpp}
-                   COMMAND ${cross_gen} > ${cross_hpp}
-                   DEPENDS ${cross_gen}
-                  )
+set (cross_hpp ${CMAKE_CURRENT_BINARY_DIR}/cross.hpp)
+add_custom_command (
+  OUTPUT ${cross_hpp}
+  COMMAND we_test_sig_cpp > ${cross_hpp}
+  DEPENDS we_test_sig_cpp
+)
 
-set(tc_src
-    test_sig_cpp_result.cpp
-   )
-string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_we_\\2" tc_name ${tc_src})
-add_executable(${tc_name} ${tc_src} ${cross_hpp})
-target_link_libraries(${tc_name} pnet ${Boost_LIBRARIES})
-get_target_property(LOC ${tc_name} LOCATION_)
-add_test(${tc_name} ${LOC})
+fhg_add_test (test_sig_cpp_result.cpp ${cross_hpp}
+  PROJECT we
+  LINK_LIBRARIES pnet ${Boost_LIBRARIES}
+  DESCRIPTION "signature to cpp"
+)
 
-string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_we_\\2" tc_name test_loader.cpp)
-add_dependencies(${tc_name} question answer)
+fhg_add_test (test_loader.cpp
+  PROJECT we
+  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
+  DEPENDS question answer
+)
+
+add_library (answer SHARED answer.cpp)
+add_library (question SHARED question.cpp)
+target_link_libraries (question answer)
+target_link_libraries (answer pnet)

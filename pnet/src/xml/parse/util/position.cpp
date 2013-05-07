@@ -40,7 +40,6 @@ namespace xml
         : _line (line)
         , _column (column)
         , _path (path)
-        , _pos (pos)
       {
         inc_line_and_column (const_cast<char*>(begin), pos, _line, _column);
       }
@@ -56,10 +55,6 @@ namespace xml
       const boost::filesystem::path& position_type::path() const
       {
         return _path;
-      }
-      const char* const& position_type::pos() const
-      {
-        return _pos;
       }
 
       std::ostream& operator<< (std::ostream& os, const position_type& p)

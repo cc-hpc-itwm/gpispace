@@ -96,7 +96,7 @@ namespace sdpa
 			bool operator==(const Capability& b) const
 			{
 				// ignore depth
-				return (uuid_ == uuid());
+				return uuid_ == b.uuid();
 			}
 
 	    private:

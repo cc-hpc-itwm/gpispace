@@ -1,7 +1,6 @@
-find_package (FVM REQUIRED)
+find_package (FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
-message(STATUS "the fvm compat module should not require we loader stuff")
 include_directories ("${CMAKE_SOURCE_DIR}/pnet/src")
 
 set (srcs

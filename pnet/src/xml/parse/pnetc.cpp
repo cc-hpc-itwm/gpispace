@@ -19,9 +19,6 @@
 
 #include <fhg/revision.hpp>
 
-#include <xml/parse/headerlist.hpp>
-#include <xml/parse/headergen.hpp>
-
 // ************************************************************************* //
 
 namespace // anonymous

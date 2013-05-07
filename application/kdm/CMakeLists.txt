@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6.2)
 project(KDM_SDPA)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
-message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
 
 add_subdirectory(pnet)
 
@@ -63,21 +62,20 @@ set(SRC ./src/main.cpp
 add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM  -DSHMEM)
 
 include(SDPAFindBoost)
-message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package(FVM REQUIRED)
+find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
-find_package(UTIL REQUIRED)
+find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
-find_package(FhgLog REQUIRED)
+find_package(FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-find_package(Process REQUIRED)
+find_package(Process REQUIRED QUIET)
 include_directories (${PROCESS_INCLUDE_DIR})
 
 set(KDM_MOD_INITIALIZE_SRCS
@@ -206,7 +204,7 @@ set (hdrs src/do_load.hpp src/determine_size.hpp src/do_write.hpp)
 
 install(FILES ${hdrs}
   DESTINATION include/seis
-  COMPONENT headers
+  COMPONENT sdk
   )
 
 install(PROGRAMS kdm

@@ -52,12 +52,14 @@ struct MyFixture
 
 	~MyFixture()
 	{
-		LOG(DEBUG, "Fixture's destructor called ...");
+		LOG(INFO, "Fixture's destructor called ...");
 
 		sstrOrch.str("");
 		sstrAgg.str("");
 
+		LOG(INFO, "Stop all stages ...");
 		seda::StageRegistry::instance().stopAll();
+		LOG(INFO, "Clear registry ...");
 		seda::StageRegistry::instance().clear();
 	}
 
@@ -117,7 +119,7 @@ void MyFixture::run_client()
 	{
 		if(nTrials++ > NMAXTRIALS)
 		{
-			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+			LOG( WARN, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
@@ -128,6 +130,7 @@ void MyFixture::run_client()
 	std::string job_status = ptrCli->queryJob(job_id_user);
 	LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
+	boost::this_thread::sleep(boost::posix_time::milliseconds(1));
 	ptrCli->cancelJob(job_id_user);
 
 	nTrials = 0;
@@ -145,7 +148,7 @@ void MyFixture::run_client()
 		{
 			if(nTrials++ > NMAXTRIALS)
 			{
-				LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
+				LOG( WARN, "The maximum number of job queries  was exceeded. Giving-up now!");
 
 				ptrCli->shutdown_network();
 				ptrCli.reset();
@@ -161,12 +164,12 @@ void MyFixture::run_client()
 	nTrials = 0;
 
 	try {
-		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+		LOG( INFO, "User: retrieve results of the job "<<job_id_user);
 		ptrCli->retrieveResults(job_id_user);
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-		LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
+		LOG( WARN, "The maximum number of trials was exceeded. Giving-up now!");
 
 		ptrCli->shutdown_network();
 		ptrCli.reset();
@@ -181,7 +184,7 @@ void MyFixture::run_client()
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-		LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
+		LOG( WARN, "The maximum number of  trials was exceeded. Giving-up now!");
 
 		ptrCli->shutdown_network();
 		ptrCli.reset();
@@ -195,7 +198,7 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
+BOOST_AUTO_TEST_CASE( Test1 )
 {
 	// topology:
 	// O
@@ -205,17 +208,14 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 	// drts
 
 
-	LOG( DEBUG, "testCancelJobPath1AgentRealWE");
+	LOG( INFO, "Begin Test1");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-	typedef void OrchWorkflowEngine;
-
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
 	ptrOrch->start_agent(false);
@@ -233,15 +233,19 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
 	LOG( INFO, "The client thread joined the main thread°!" );
 
 	drts_0->stop();
-	drts_0_thread.join();
+	if(drts_0_thread.joinable())
+		drts_0_thread.join();
 
 	ptrAg0->shutdown();
-	ptrOrch->shutdown();
+	LOG( INFO, "The agent "<<ptrAg0->name()<<" was successfully shut down°!" );
 
-	LOG( DEBUG, "The test case testCancelJobPath1AgentRealWE terminated!");
+	ptrOrch->shutdown();
+	LOG( INFO, "The orchestrator "<<ptrOrch->name()<<" was successfully shut down°!" );
+
+	LOG( INFO, "End Test2");
 }
 
-BOOST_AUTO_TEST_CASE( testCancelJobTree2Drts )
+BOOST_AUTO_TEST_CASE( Test2 )
 {
 	// topology:
 	// O
@@ -253,17 +257,14 @@ BOOST_AUTO_TEST_CASE( testCancelJobTree2Drts )
 	// drts
 
 
-	LOG( DEBUG, "***** testCancelJobPath2Drts *****"<<std::endl);
+	LOG( INFO, "Begin Test2");
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-	typedef void OrchWorkflowEngine;
-
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
 	ptrOrch->start_agent(false);
@@ -275,7 +276,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobTree2Drts )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
@@ -284,15 +285,20 @@ BOOST_AUTO_TEST_CASE( testCancelJobTree2Drts )
 	LOG( INFO, "The client thread joined the main thread°!" );
 
 	drts_0->stop();
-	drts_0_thread.join();
+	if(drts_0_thread.joinable())
+		drts_0_thread.join();
 
 	drts_1->stop();
-	drts_1_thread.join();
+	if(drts_1_thread.joinable())
+		drts_1_thread.join();
 
 	ptrAg0->shutdown();
-	ptrOrch->shutdown();
+	LOG( INFO, "The agent "<<ptrAg0->name()<<" was successfully shut down°!" );
 
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+	ptrOrch->shutdown();
+	LOG( INFO, "The orchestrator "<<ptrOrch->name()<<" was successfully shut down°!" );
+
+	LOG( INFO, "End Test2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

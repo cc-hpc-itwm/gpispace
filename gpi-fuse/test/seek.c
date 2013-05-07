@@ -42,30 +42,30 @@ void run ( const char * filename
       FAILURE ("cannot stat %i (%s)", fd, filename);
     }
 
-  printf ("dev %u\n", sbuf.st_dev);
-  printf ("ino %u\n", sbuf.st_ino);
+  printf ("dev %lu\n", sbuf.st_dev);
+  printf ("ino %lu\n", sbuf.st_ino);
   printf ("mode %u\n", sbuf.st_mode);
-  printf ("nlink %u\n", sbuf.st_nlink);
+  printf ("nlink %lu\n", sbuf.st_nlink);
   printf ("uid %u\n", sbuf.st_uid);
   printf ("gid %u\n", sbuf.st_gid);
-  printf ("rdev %u\n", sbuf.st_rdev);
-  printf ("size %u\n", sbuf.st_size);
-  printf ("bklsize %u\n", sbuf.st_blksize);
-  printf ("blocks %u\n", sbuf.st_blocks);
-  printf ("atime %u\n", sbuf.st_atime);
-  printf ("mtime %u\n", sbuf.st_mtime);
-  printf ("ctime %u\n", sbuf.st_ctime);
+  printf ("rdev %lu\n", sbuf.st_rdev);
+  printf ("size %lu\n", sbuf.st_size);
+  printf ("bklsize %lu\n", sbuf.st_blksize);
+  printf ("blocks %lu\n", sbuf.st_blocks);
+  printf ("atime %lu\n", sbuf.st_atime);
+  printf ("mtime %lu\n", sbuf.st_mtime);
+  printf ("ctime %lu\n", sbuf.st_ctime);
 
   if (lseek (fd, pos, SEEK_SET) == (off_t) -1)
     {
-      FAILURE ("cannot seek %i (%s): %u", fd, filename, pos);
+      FAILURE ("cannot seek %i (%s): %lu", fd, filename, pos);
     }
 
   char * buf = malloc (count);
 
   if (!buf)
     {
-      FAILURE ("cannot allocate %u bytes", count);
+      FAILURE ("cannot allocate %lu bytes", count);
     }
 
   size_t left = count;

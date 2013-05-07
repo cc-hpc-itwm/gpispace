@@ -212,10 +212,8 @@ namespace xml
         {
           BOOST_FOREACH (const std::string& kv, _link_prefix)
           {
-            std::string key;
-            std::size_t k (0);
-            std::string::const_iterator pos (kv.begin());
-            fhg::util::parse::position inp (k, pos, kv.end());
+            std::string parsed_key;
+            fhg::util::parse::position inp (kv.begin(), kv.end());
             bool found_eq (false);
 
             while (!found_eq && !inp.end())
@@ -226,28 +224,28 @@ namespace xml
               }
               else
               {
-                key += *inp;
+                parsed_key += *inp;
               }
 
               ++inp;
             }
 
-            if (!key.size())
+            if (!parsed_key.size())
             {
-              throw error::parse_link_prefix ("Missing key", kv, k);
+              throw error::parse_link_prefix ("Missing key", kv, inp());
             }
 
             if (!found_eq)
             {
-              throw error::parse_link_prefix ("Missing =", kv, k);
+              throw error::parse_link_prefix ("Missing =", kv, inp());
             }
 
             if (inp.end())
             {
-              throw error::parse_link_prefix ("Missing value", kv, k);
+              throw error::parse_link_prefix ("Missing value", kv, inp());
             }
 
-            _link_prefix_by_key[key] = inp.rest();
+            _link_prefix_by_key[parsed_key] = inp.rest();
           }
 
           _link_prefix_parsed = true;
@@ -393,7 +391,7 @@ namespace xml
           throw std::runtime_error ("no prior position found");
         }
 
-        const util::position_type p ( before->second.pos()
+        const util::position_type p ( before->first
                                     , node->name()
                                     , file_in_progress()
                                     , before->second.line()

@@ -25,9 +25,7 @@ namespace xml
 
         if (_prefix)
         {
-          std::size_t k (0);
-          std::string::const_iterator pos (_prefix->begin());
-          fhg::util::parse::position inp (k, pos, _prefix->end());
+          fhg::util::parse::position inp (*_prefix);
 
           while (!inp.end())
           {

@@ -24,7 +24,7 @@ fi
 
 major=$(echo "$1" | cut -d. -f1)
 minor=$(echo "$1" | cut -d. -f2 | cut    -d- -f 1)
-patch=$(echo "$1" | cut -d. -f2 | cut    -d- -f 2)
+patch=$(echo "$1" | cut -d. -f2 | cut -s -d- -f 2)
 extra=$(echo "$1" | cut -d. -f2 | cut -s -d- -f 3-)
 
 version="${major}.${minor}"

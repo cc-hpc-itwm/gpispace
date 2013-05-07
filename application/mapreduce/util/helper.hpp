@@ -37,12 +37,13 @@ const int MS = 1000;
 const int KEY_MAX_SIZE = 50;
 #define KEY_LENGTH 2
 
-const char SHRPCH = '#';
-const char NLCH = '\n';
-const char SPCH = ' ';
-const char PAIRSEP = '@';
-
-std::string DELIMITERS = " \n";
+#define SHRPCH '#'
+#define PAIRSEP '@'
+#define ITEMSEP 7
+#define EXTSEP ' '
+#define NLCH '\n'
+char INTERNAL_DELIMITERS[] = {ITEMSEP, NLCH, '\0'};
+char EXTERNAL_DELIMITERS[] = {EXTSEP, NLCH, '\0'};
 
 namespace mapreduce
 {
@@ -77,6 +78,9 @@ namespace mapreduce
   	  std::string key(const std::string& item)
   	  {
   		  size_t split_pos = item.find_last_of(PAIRSEP);
+  		  if(split_pos==std::string::npos)
+  			throw std::runtime_error(std::string("Invalid string encoded key-value pair: ") + item);
+
   		  std::string key = item.substr(0,split_pos);
   		  return key;
   	  }
@@ -84,6 +88,9 @@ namespace mapreduce
   	  std::string val(const std::string& item)
   	  {
   		 size_t split_pos = item.find_last_of(PAIRSEP);
+  		 if(split_pos==std::string::npos)
+  			 throw std::runtime_error(std::string("Invalid string encoded key-value pair: ") + item);
+
   		 std::string val = item.substr(split_pos+1);
   		 return val;
   	  }
@@ -115,123 +122,123 @@ namespace mapreduce
   	  }
 
   	  /*
-  	  std::string key(const std::string& item)
+	  std::string key(const std::string& item)
+	  {
+		  int sizeKey;
+		  sscanf(item.data(), "%2d%*s", &sizeKey);
+		  std::string key = item.substr(KEY_LENGTH,sizeKey);
+		  return key;
+	  }
+
+	  std::string val(const std::string& item)
+	  {
+		 int sizeKey;
+		 sscanf(item.data(), "%2d%*s", &sizeKey);
+		 std::string val = item.substr(sizeKey+KEY_LENGTH);
+		 return val;
+	  }
+
+	  key_val_pair_t str2kvpair(const std::string& item)
+	  {
+		 int sizeKey;
+		 sscanf(item.data(), "%2d%*s", &sizeKey);
+
+		 key_val_pair_t kvs_pair;
+		 kvs_pair.first = item.substr(KEY_LENGTH,sizeKey);
+		 std::string str_val("");
+
+		 if(sizeKey+KEY_LENGTH<item.size())
+			str_val = item.substr(sizeKey+KEY_LENGTH);
+
+		 while( boost::algorithm::starts_with(str_val, "[") && boost::algorithm::ends_with(str_val, "]") )
+		 {
+			 std::string val = str_val.substr(1, str_val.size()-2);
+			 str_val = val;
+		 }
+
+		 kvs_pair.second = str_val;
+		 return kvs_pair;
+	  }
+
+	  std::string kvpair2str(const key_val_pair_t& pair)
+	  {
+		  int size_key(pair.first.size());
+
+		  std::ostringstream oss;
+		  oss<<setfill('0')<<std::setw(KEY_LENGTH)<<size_key<<pair.first<<pair.second;
+		  return oss.str();
+	  }
+	  */
+
+  	  bool is_special_key_regex(const std::string& key)
   	  {
-  		  int sizeKey;
-  		  sscanf(item.data(), "%2d%*s", &sizeKey);
-  		  std::string key = item.substr(KEY_LENGTH,sizeKey);
-  		  return key;
+  		 if(key[0] != SHRPCH)
+  			 return false;
+
+  		 const boost::regex pattern("^#\\d+#\\d+");
+  		 return boost::regex_match(key, pattern);
   	  }
 
-  	  std::string val(const std::string& item)
+  	  bool is_special_key_simple(const std::string& key)
   	  {
-  		 int sizeKey;
-  		 sscanf(item.data(), "%2d%*s", &sizeKey);
-  		 std::string val = item.substr(sizeKey+KEY_LENGTH);
-  		 return val;
+  		  if(key[0] != SHRPCH)
+  			  return false;
+
+  		  char szsep[] = {SHRPCH, '\0'};
+  		  boost::char_separator<char> sep(szsep);
+  		  boost::tokenizer<boost::char_separator<char> > tok(key, sep);
+  		  std::vector<std::string> u(2, "");
+  		  u.assign(tok.begin(), tok.end());
+
+  		  try {
+  			  (void)(boost::lexical_cast<long>(u[0]));
+  			  (void)(boost::lexical_cast<long>(u[1]));
+  			  return true;
+  		  }
+  		  catch(const boost::bad_lexical_cast& ex) {
+  			  return false;
+  		  }
   	  }
 
-  	  key_val_pair_t str2kvpair(const std::string& item)
+  	  bool is_special_key(const std::string& key)
   	  {
-  		 int sizeKey;
-  		 sscanf(item.data(), "%2d%*s", &sizeKey);
-
-  		 key_val_pair_t kvs_pair;
-  		 kvs_pair.first = item.substr(KEY_LENGTH,sizeKey);
-  		 std::string str_val("");
-
-  		 if(sizeKey+KEY_LENGTH<item.size())
-  			str_val = item.substr(sizeKey+KEY_LENGTH);
-
-  		 while( boost::algorithm::starts_with(str_val, "[") && boost::algorithm::ends_with(str_val, "]") )
-  		 {
-  			 std::string val = str_val.substr(1, str_val.size()-2);
-  			 str_val = val;
-  		 }
-
-  		 kvs_pair.second = str_val;
-  		 return kvs_pair;
+		return is_special_key_regex(key);
   	  }
 
-  	  std::string kvpair2str(const key_val_pair_t& pair)
+  	  bool my_comp_pairs(::mapreduce::util::key_val_pair_t lhs, ::mapreduce::util::key_val_pair_t rhs)
   	  {
-  		  int size_key(pair.first.size());
-
-  		  std::ostringstream oss;
-  		  oss<<setfill('0')<<std::setw(KEY_LENGTH)<<size_key<<pair.first<<pair.second;
-  		  return oss.str();
+  		  return lhs.first.compare(rhs.first)<0;
   	  }
-  	  */
 
-  	/*
-	bool is_special_item_regex(const std::string& str_item)
-	{
-		// further checks are necessary
-		key_val_pair_t kv_pair = str2kvpair(str_item);
-		if (kv_pair.first[0] != SHRPCH)
-			return false;
+  	  bool string_comp( const std::string &left, const std::string &right )
+	  {
+		 for( std::string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
+			 if( *lit < *rit )
+				 return true;
+			 else if( *lit > *rit  )
+				 return false;
 
-		std::string strPattern(1, SHRPCH);
-		strPattern += "\\d+";
-		strPattern += string(1, SHRPCH);
-		strPattern+= "\\d+";
-		strPattern += string(1, PAIRSEP);
-		strPattern += "[a-z]";
+		 if( left.size() < right.size() )
+			 return true;
 
-		const boost::regex pattern(strPattern);
-		return boost::regex_match(kv_pair.first, pattern);
-	}
-	*/
+		 return false;
+	  }
 
-	bool is_special_item(const std::string& str_item)
-	{
-		key_val_pair_t kvp = str2kvpair(str_item);
-		if(kvp.first[0] != SHRPCH)
-			return false;
+  	  bool my_comp(const std::string& lhs, const std::string& rhs)
+	  {
+		  return key(lhs).compare(key(rhs))<0;
+  		  //return string_comp(key(lhs), key(rhs));
+	  }
 
-		char szsep[2];
-		szsep[0]=SHRPCH;
-		szsep[1]='\0';
-		boost::char_separator<char> sep(szsep);
-		boost::tokenizer<boost::char_separator<char> > tok(kvp.first, sep);
-		std::vector<std::string> u(2, "");
-		u.assign(tok.begin(), tok.end());
+  	  void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
+  	  {
+  		  std::sort(iter_beg, iter_end, my_comp);
+  	  }
 
-		try {
-			(void)(boost::lexical_cast<long>(u[0]));
-			(void)(boost::lexical_cast<long>(u[1]));
-			return true;
-		}
-		catch(const boost::bad_lexical_cast& ex) {
-			return false;
-		}
-	}
-
-	bool my_comp_pairs(::mapreduce::util::key_val_pair_t lhs, ::mapreduce::util::key_val_pair_t rhs)
-	{
-		return lhs.first.compare(rhs.first)<0;
-	}
-
-  	bool my_comp(const std::string& lhs, const std::string& rhs)
-  	{
-  		/*std::string key_l(lhs);
-		std::string key_r(rhs);*/
-
-  		std::string key_l(key(lhs));
-  		std::string key_r(key(rhs));
-
-  		return key_l.compare(key_r)<0;
-  	}
-
-	void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
-	{
-		std::sort(iter_beg, iter_end, my_comp);
-	}
-
-	template <typename T>
-	void print_keys(const std::string& msg, T& arr_keys )
-	{
-		  std::ostringstream osstr;
+  	  template <typename T>
+  	  void print_keys(const std::string& msg, T& arr_keys )
+  	  {
+  		  std::ostringstream osstr;
 
 		  int k=0;
 		  for( typename T::iterator it = arr_keys.begin(); it!= arr_keys.end(); it++ )
@@ -242,34 +249,33 @@ namespace mapreduce
 		  }
 
 		  MLOG(INFO, msg<<" "<<osstr.str());
-	}
+  	  }
 
-	 std::string match_keys(const std::string& str_item, const std::list<std::string>& list_border_keys, std::string& matching_pair, int& cid, int& end)
-	 {
-		 // to do: use regex here
+  	  std::string match_keys(const std::string& str_item, std::vector<std::string>& arr_border_items )
+  	  {
+  		 // to do: use regex here
 		 std::string w;
 		 bool bMatching = false;
 
 		 // further checks are necessary
 		 key_val_pair_t kvp_v = str2kvpair(str_item);
-		 char szsep[2];
-		 szsep[0]=SHRPCH;szsep[1]='\0';
+		 char szsep[] = {SHRPCH, '\0'};
 		 boost::char_separator<char> sep(szsep);
 		 boost::tokenizer<boost::char_separator<char> > tok_v(kvp_v.first, sep);
 		 std::vector<std::string> v(2,"");
 		 v.assign(tok_v.begin(), tok_v.end());
 
-		 cid = atoi(v[0].c_str()); //boost::lexical_cast<long>(v[0]);
-		 end = atoi(v[1].c_str()); //boost::lexical_cast<long>(v[1]);
+		 long cid = /*atoi(v[0].c_str());*/ boost::lexical_cast<long>(v[0]);
+		 long end = /*atoi(v[1].c_str());*/ boost::lexical_cast<long>(v[1]);
 
-		 if( list_border_keys.empty() )
+		 if( arr_border_items.empty() )
 		 {
 			 LOG(WARN, "The array of border keys is empty ...");
-			 matching_pair = "";
 			 return "";
 		 }
 
-		 for(std::list<std::string>::const_iterator it = list_border_keys.begin(); it != list_border_keys.end(); it++ )
+		 std::vector<std::string>::iterator it = arr_border_items.begin();
+		 while( it != arr_border_items.end())
 		 {
 			 key_val_pair_t kvp_u = str2kvpair(*it);
 			 boost::tokenizer<boost::char_separator<char> > tok_u(kvp_u.first, sep);
@@ -277,26 +283,32 @@ namespace mapreduce
 			 u.assign(tok_u.begin(), tok_u.end());
 
 			 int v0 = cid;
-			 int u0 = atoi(u[0].c_str()); //boost::lexical_cast<long>(u[0]);
+			 int u0 = /*atoi(u[0].c_str());*/ boost::lexical_cast<long>(u[0]);
 
 			 int v1 = end;
-			 int u1 = atoi(u[1].c_str()); //boost::lexical_cast<long>(u[1]);
+			 int u1 = /*atoi(u[1].c_str());*/ boost::lexical_cast<long>(u[1]);
 
 			 if( v0 + v1 == u0 + u1 )
 			 {
 				 w = (u0<v0)?kvp_u.second + kvp_v.second : w = kvp_v.second + kvp_u.second;
 				 bMatching = true;
-				 matching_pair = *it;
+				 break;
 			 }
+
+			 it++;
 		 }
+
+		 // remove the matching pair from the list
+		 if( it!=arr_border_items.end() )
+			 arr_border_items.erase(it);
 
 		 if(w.empty())
 		 {
 			 std::ostringstream oss;
 			 oss<<"{";
-			 BOOST_FOREACH(const std::string& key, list_border_keys)
+			 BOOST_FOREACH(const std::string& item, arr_border_items)
 			 {
-				 oss<<key<<std::endl;
+				 oss<<item<<std::endl;
 			 }
 			 oss<<"}";
 
@@ -308,22 +320,7 @@ namespace mapreduce
 
 	 bool is_delimiter(char x)
 	 {
-		 bool b = (DELIMITERS.find(x) != std::string::npos);
-		 return b;
-	 }
-
-	 bool string_comp( const std::string &left, const std::string &right )
-	 {
-		 for( std::string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
-			 if( *lit < *rit )
-				 return true;
-			 else if( *lit > *rit  )
-				 return false;
-
-		 if( left.size() < right.size() )
-			 return true;
-
-		 return false;
+		 return (strchr(INTERNAL_DELIMITERS, x) != NULL);
 	 }
 
 	 template <typename T>
@@ -332,7 +329,7 @@ namespace mapreduce
 		 std::stringstream sstr;
 		 for(typename std::vector<T>::iterator it=arr.begin();it!=arr.end();it++)
 		 {
-			 sstr<<*it<<SPCH;
+			 sstr<<*it<<ITEMSEP;
 		 }
 
 		 return sstr.str();
@@ -341,7 +338,7 @@ namespace mapreduce
 	 std::vector<std::string> get_list_items(char* local_buff)
      {
 		 std::string str_buff(local_buff);
-		 boost::char_separator<char> sep(DELIMITERS.c_str());
+		 boost::char_separator<char> sep(INTERNAL_DELIMITERS);
 		 boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
 		 std::vector<std::string> v;
 		 v.assign(tok.begin(),tok.end());
@@ -349,33 +346,30 @@ namespace mapreduce
 		 return v;
      }
 
-	 std::vector<std::string> get_list_items_strtok(char* local_buff)
+	 std::vector<std::string> get_list_items(char* local_buff, char* delims)
 	 {
-		 // attention, the input string is modified!!!!
+		 std::string str_buff(local_buff);
+		 boost::char_separator<char> sep(delims);
+		 boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
 		 std::vector<std::string> v;
-		 char* pch_curr = strtok(local_buff, DELIMITERS.c_str());
-		 while(pch_curr)
-		 {
-			 v.push_back(pch_curr);
-			 pch_curr = strtok(NULL, DELIMITERS.c_str());
-		 }
+		 v.assign(tok.begin(),tok.end());
 
 		 return v;
 	 }
 
+	 std::vector<std::string> get_list_items_strtok(char* local_buff)
+	 {
+		 // attention, the input string is modified!!!!
+		 std::vector<std::string> v;
+		 char* pch_curr = strtok(local_buff, INTERNAL_DELIMITERS);
+		 while(pch_curr)
+		 {
+			 v.push_back(pch_curr);
+			 pch_curr = strtok(NULL, INTERNAL_DELIMITERS);
+		 }
 
-	 void get_arr_pairs(char* local_buff, std::vector<key_val_pair_t>& arr_pairs)
-	{
-    	std::string str_buff(local_buff);
-    	boost::char_separator<char> sep(DELIMITERS.c_str());
-    	boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
-
-        BOOST_FOREACH (const std::string& s, tok)
-        {
-          arr_pairs.push_back(str2kvpair(s));
-        }
-	}
-
+		 return v;
+	 }
 
     std::string list2str(std::list<std::string>& list_values )
 	{
@@ -387,7 +381,7 @@ namespace mapreduce
 		  oss<<*it;
 
 		  if( boost::next(it) != list_values.end() )
-			  oss<<SPCH;
+			  oss<<ITEMSEP;
 		  else
 			  oss<<"]";
 		}
@@ -439,34 +433,34 @@ namespace mapreduce
 	   {
 		   memcpy(reduce_buff+last_pos, str_pair.data(), item_size);
 		   size_t new_pos = last_pos + item_size;
-		   reduce_buff[new_pos++]=SPCH;
+		   reduce_buff[new_pos++]=ITEMSEP;
 
 		   return new_pos;
 	   }
    }
 
-	size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t last_pos, const size_t& n_max_size, const int sp=SPCH )
-	{
-	  std::stringstream sstr;
-	  size_t item_size = str_pair.size();
+   size_t write_to_buff(const std::string& str_pair, char* reduce_buff, size_t last_pos, const size_t& n_max_size, const int sp=ITEMSEP )
+   {
+	   std::stringstream sstr;
+	   size_t item_size = str_pair.size();
 
-	  if(last_pos+item_size>n_max_size)
-	  {
-		  throw(std::runtime_error("Not enough shared memory!"));
-	  }
-	  else
-	  {
-		  memcpy(reduce_buff+last_pos, str_pair.data(), item_size);
-		  size_t new_pos = last_pos + item_size;
-		  if(sp)
-			  reduce_buff[new_pos++]=sp;
+	   if(last_pos+item_size>n_max_size)
+	   {
+		   throw(std::runtime_error("Not enough shared memory!"));
+	   }
+	   else
+	   {
+		   memcpy(reduce_buff+last_pos, str_pair.data(), item_size);
+		   size_t new_pos = last_pos + item_size;
+		   if(sp)
+			   reduce_buff[new_pos++]=sp;
 
-		  return new_pos;
-	  }
-	}
+		   return new_pos;
+	   }
+   }
 
-	void write_to_stream(std::string& key, std::list<std::string>& list_values, std::ofstream& ofs )
-	{
+   void write_to_stream(std::string& key, std::list<std::string>& list_values, std::ofstream& ofs )
+   {
 		key_val_pair_t kvp(key, list2str(list_values));
 		std::string str_pair = kvpair2str(kvp);
 		ofs<<str_pair<<std::endl;

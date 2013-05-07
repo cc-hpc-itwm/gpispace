@@ -36,11 +36,7 @@ namespace
     void put_token_from_string
       (const std::string& port, const std::string& value)
     {
-      std::size_t k (0);
-      std::string::const_iterator begin (value.begin());
-      fhg::util::parse::position pos (k, begin, value.end());
-
-      put_token (port, ::value::read (pos));
+      put_token (port, ::value::read (value));
     }
 
     void put_token (const std::string& port, const value::type& value)

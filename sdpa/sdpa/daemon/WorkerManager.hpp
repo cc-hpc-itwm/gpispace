@@ -63,20 +63,25 @@ namespace sdpa { namespace daemon {
     virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
     const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-    const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
+    const sdpa::job_id_t stealWork(const Worker::ptr_t& ) throw (NoJobScheduledException);
 
     worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
     Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
+    /*Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
+													const requirement_list_t& listJobReq,
+													const worker_id_list_t& workerList,
+													int& matching_degree,
+													sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException) */
+
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
-    const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
     void dispatchJob(const sdpa::job_id_t& jobId);
     void delete_job(const sdpa::job_id_t& jobId);
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
     size_t numberOfWorkers() { return worker_map_.size(); }
     void getWorkerList(sdpa::worker_id_list_t& workerList);
-    void getWorkerListNotFull(sdpa::worker_id_list_t& workerList);
+    void getListWorkersNotFull(sdpa::worker_id_list_t& workerList);
 
     void balanceWorkers();
     void cancelWorkerJobs(sdpa::daemon::Scheduler*);
@@ -97,6 +102,7 @@ namespace sdpa { namespace daemon {
     }
 
     friend class boost::serialization::access;
+    friend class SchedulerImpl;
 
     void print()
     {
@@ -114,7 +120,6 @@ namespace sdpa { namespace daemon {
       }
       else
       {
-        SDPA_LOG_DEBUG("The worker manager has workers! ");
         for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
           (*it).second->print();
       }
@@ -131,6 +136,32 @@ protected:
     mutable mutex_type mtx_;
     mapJob2PrefWorkersList_t m_mapJob2PrefWorkersList;
   };
+
+  template <typename TPtrWorker, typename TReqSet>
+  int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, bool bOwn = false )
+  {
+    int matchingDeg = 0;
+
+    // for all job requirements
+    for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
+    {
+      //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
+      if( pWorker->hasCapability(it->value(), bOwn ) )
+      {
+        // increase the number of matchings
+        matchingDeg++;
+      }
+      else // if the worker doesn't have the capability
+        if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
+        {
+          // At least one mandatory requiremenet is not fulfilled
+          return -1;
+        }
+    }
+
+    return matchingDeg;
+  }
+
 }}
 
 #endif

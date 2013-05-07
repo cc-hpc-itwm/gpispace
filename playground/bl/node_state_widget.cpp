@@ -1,0 +1,1013 @@
+// bernd.loerwald@itwm.fraunhofer.de
+
+#include "node_state_widget.hpp"
+
+#include "parse.hpp"
+
+#include <util/qt/boost_connect.hpp>
+
+#include <QDebug>
+#include <QMenu>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QLabel>
+#include <QPen>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QToolTip>
+#include <QVBoxLayout>
+#include <QMessageBox>
+
+#include <boost/bind.hpp>
+#include <boost/optional.hpp>
+
+#include <fhg/util/parse/error.hpp>
+
+#include <iostream>
+
+namespace prefix
+{
+  namespace
+  {
+    const qreal item_size (20.0);
+    const qreal pen_size (0.0);
+    const qreal padding (0.0);
+
+    const qreal per_step (item_size + padding);
+    const qreal node_size (item_size - pen_size);
+
+    const qreal base_coord (padding + pen_size / 2.0);
+
+    int items_per_row (int width)
+    {
+      return (qMax (width - 2 * padding, per_step)) / per_step;
+    }
+
+    QTimer* timer (QObject* parent, int timeout, const char* slot)
+    {
+      QTimer* timer (new QTimer (parent));
+      QObject::connect (timer, SIGNAL (timeout()), parent, slot);
+      timer->start (timeout);
+      return timer;
+    }
+    QTimer* timer (QObject* parent, int timeout, boost::function<void()> fun)
+    {
+      QTimer* timer (new QTimer (parent));
+      fhg::util::qt::boost_connect<void()>
+        (timer, SIGNAL (timeout()), parent, fun);
+      timer->start (timeout);
+      return timer;
+    }
+  }
+
+  communication::communication (QObject* parent)
+    : QObject (parent)
+    , _connection (new async_tcp_communication)
+    , _timer (NULL)
+  {
+    resume();
+    _connection->push ("possible_status_list");
+  }
+
+  void communication::request_hostlist()
+  {
+    _connection->push ("host_list");
+  }
+
+  void communication::pause()
+  {
+    delete _timer;
+  }
+
+  void communication::resume()
+  {
+    _timer = timer (this, 100, SLOT (check_for_incoming_messages()));
+  }
+
+  legend::legend (QWidget* parent)
+    : QWidget (parent)
+  {
+    new QVBoxLayout (this);
+
+    connect ( this
+            , SIGNAL (state_pixmap_changed (const QString&))
+            , SLOT (update (const QString&))
+            );
+  }
+
+  node_state_widget::node_state_widget (legend* legend_widget, QWidget* parent)
+    : QWidget (parent)
+    , _legend_widget (legend_widget)
+    , _communication (new communication (this))
+  {
+    timer
+      (this, 1000, boost::bind (&communication::request_hostlist, _communication));
+    timer (this, 200, SLOT (refresh_stati()));
+
+    // qStableSort (_nodes.begin(), _nodes.end(), boost::bind (&node_type::less_by_hostname, _1, _2));
+
+    setSizeIncrement (per_step, per_step);
+    QSizePolicy pol (QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+    pol.setHeightForWidth (true);
+    setSizePolicy (pol);
+
+    connect ( _communication
+            , SIGNAL (nodes (QStringList))
+            , SLOT (nodes (QStringList)));
+    connect ( _communication
+            , SIGNAL (nodes_details (const QString&, const QString&))
+            , SLOT (nodes_details (const QString&, const QString&)));
+    connect ( _communication
+            , SIGNAL (nodes_state (const QString&, const QString&))
+            , SLOT (nodes_state (const QString&, const QString&)));
+    connect ( _communication
+            , SIGNAL (states_actions_long_text (const QString&, const QString&))
+            , SLOT (states_actions_long_text (const QString&, const QString&)));
+
+    connect ( _communication
+            , SIGNAL (states_add (const QString&, const QStringList&))
+            , _legend_widget
+            , SLOT (states_add (const QString&, const QStringList&)));
+    connect ( _communication
+            , SIGNAL (states_layout_hint_border (const QString&, const QColor&))
+            , _legend_widget
+            , SLOT (states_layout_hint_border (const QString&, const QColor&)));
+    connect ( _communication
+            , SIGNAL (states_layout_hint_character (const QString&, const char&))
+            , _legend_widget
+            , SLOT (states_layout_hint_character (const QString&, const char&)));
+    connect ( _communication
+            , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
+            , _legend_widget
+            , SLOT (states_layout_hint_color (const QString&, const QColor&)));
+
+    connect ( _legend_widget
+            , SIGNAL (state_pixmap_changed (const QString&))
+            , SLOT (update_nodes_with_state (const QString&))
+            );
+  }
+
+  QRectF rect_for_node (const int node, const int per_row)
+  {
+    return QRectF ( (node % per_row) * per_step + base_coord
+                 , (node / per_row) * per_step + base_coord
+                 , node_size
+                 , node_size
+                 );
+  }
+
+  void node_state_widget::update (int node)
+  {
+    const int per_row (items_per_row (width()));
+
+    QToolTip::hideText();
+
+    QWidget::update
+      (rect_for_node (node, per_row).toRect().adjusted (-1, -1, 1, 1));
+  }
+
+  void node_state_widget::update()
+  {
+    QToolTip::hideText();
+
+    QWidget::update();
+  }
+
+  void legend::states_add
+    (const QString& state, const QStringList& actions)
+  {
+    _states.insert (state, state_description (actions));
+    update (state);
+  }
+
+  void legend::states_layout_hint_border
+    (const QString& state, const QColor& col)
+  {
+    state_description& desc (_states[state]);
+    desc._pen = col;
+    desc.reset();
+    emit state_pixmap_changed (state);
+  }
+  void legend::states_layout_hint_character
+    (const QString& state, const char& ch)
+  {
+    state_description& desc (_states[state]);
+    desc._character = ch;
+    desc.reset();
+    emit state_pixmap_changed (state);
+  }
+  void legend::states_layout_hint_color
+    (const QString& state, const QColor& col)
+  {
+    state_description& desc (_states[state]);
+    desc._brush = col;
+    desc.reset();
+    emit state_pixmap_changed (state);
+  }
+
+  void node_state_widget::states_actions_long_text
+    (const QString& action, const QString& long_text)
+  {
+    _long_action[action] = long_text;
+  }
+
+  void node_state_widget::update_nodes_with_state (const QString& s)
+  {
+    for (int i (0); i < _nodes.size(); ++i)
+    {
+      if (_nodes[i].state() == s)
+      {
+        update (i);
+      }
+    }
+  }
+
+  void legend::update (const QString& s)
+  {
+    delete _state_legend[s];
+    _state_legend[s] = new legend_entry (s, state (s), this);
+
+    layout()->addWidget (_state_legend[s]);
+  }
+
+  void node_state_widget::nodes_details
+    (const QString& hostname, const QString& details)
+  {
+    const QVector<node_type>::iterator it
+      ( std::find_if ( _nodes.begin()
+                     , _nodes.end()
+                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     )
+      );
+
+    if (it != _nodes.end())
+    {
+      it->details (details);
+    }
+  }
+
+  void node_state_widget::nodes_state
+    (const QString& hostname, const QString& state)
+  {
+    const QVector<node_type>::iterator it
+      ( std::find_if ( _nodes.begin()
+                     , _nodes.end()
+                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     )
+      );
+
+    if (it != _nodes.end())
+    {
+      _pending_updates.removeAll (hostname);
+      _nodes_to_update << hostname;
+
+      const boost::optional<QString> old_state (it->state());
+      it->state (state);
+
+      if (old_state != state)
+      {
+        update (it - _nodes.begin());
+      }
+    }
+  }
+
+  void node_state_widget::nodes (QStringList hostnames)
+  {
+    const int old_height (heightForWidth (width()));
+
+    QMutableVectorIterator<node_type> i (_nodes);
+
+    bool removed_at_least_one (false);
+    while (i.hasNext())
+    {
+      const QString& hostname (i.next().hostname());
+      int index (hostnames.indexOf (hostname));
+      if (index == -1)
+      {
+        i.remove();
+        _pending_updates.removeAll (hostname);
+        _nodes_to_update.removeAll (hostname);
+
+        removed_at_least_one = true;
+      }
+      else
+      {
+        hostnames.removeOne (hostname);
+      }
+    }
+
+    if (removed_at_least_one)
+    {
+      update();
+    }
+
+    foreach (const QString& hostname, hostnames)
+    {
+      _nodes << node_type (hostname);
+      update (_nodes.size() - 1);
+      if ( !_pending_updates.contains (hostname)
+        && !_nodes_to_update.contains (hostname)
+         )
+      {
+        _nodes_to_update << hostname;
+      }
+    }
+
+    if (old_height != heightForWidth (width()))
+    {
+      updateGeometry();
+    }
+  }
+
+  void node_state_widget::refresh_stati()
+  {
+    _communication->request_status (_nodes_to_update);
+    _pending_updates << _nodes_to_update;
+    _nodes_to_update.clear();
+  }
+
+  void communication::request_status (QStringList nodes_to_update)
+  {
+    static const int chunk_size (1000);
+
+    while (!nodes_to_update.empty())
+    {
+      QString message ("status: [");
+      while (message.size() < chunk_size && !nodes_to_update.empty())
+      {
+        message.append ("\"")
+               .append (nodes_to_update.takeFirst())
+               .append ("\",");
+      }
+      message.append ("]");
+      _connection->push (message);
+    }
+  }
+
+  void communication::request_layout_hint (const QString& state)
+  {
+    _connection->push (QString ("layout_hint: [\"%1\"]").arg (state));
+  }
+
+  void communication::request_action_description (const QStringList& actions)
+  {
+    if (!actions.empty())
+    {
+      QString message ("describe_action: [");
+      foreach (const QString& action, actions)
+      {
+        message.append ("\"")
+               .append (action)
+               .append ("\", ");
+      }
+      message.append ("]");
+      _connection->push (message);
+    }
+  }
+
+  void communication::request_action
+    (const QString& hostname, const QString& action)
+  {
+    _connection->push ( QString ("action: [\"%1\": \"%2\"]")
+                      .arg (hostname)
+                      .arg (action)
+                      );
+  }
+
+  void communication::possible_status (fhg::util::parse::position& pos)
+  {
+    const QString state (require::label (pos));
+
+    QStringList actions;
+    require::list ( pos
+                  , boost::bind ( &QStringList::push_back
+                                , &actions
+                                , boost::bind (require::qstring, _1)
+                                )
+                  );
+
+    emit states_add (state, actions);
+
+    request_layout_hint (state);
+    request_action_description (actions);
+  }
+
+  void communication::action_description
+    (fhg::util::parse::position& pos, const QString& action)
+  {
+    pos.skip_spaces();
+
+    if (pos.end() || (*pos != 'l'))
+    {
+      throw fhg::util::parse::error::expected ("long_text", pos);
+    }
+
+    switch (*pos)
+    {
+    case 'l':
+      ++pos;
+      pos.require ("ong_text");
+      require::token (pos, ":");
+
+      emit states_actions_long_text (action, require::qstring (pos));
+
+      break;
+    }
+  }
+
+  void communication::layout_hint
+    (fhg::util::parse::position& pos, const QString& state)
+  {
+    pos.skip_spaces();
+
+    if (pos.end() || (*pos != 'b' && *pos != 'c'))
+    {
+      throw fhg::util::parse::error::expected
+        ("border' or 'character' or 'color", pos);
+    }
+
+    switch (*pos)
+    {
+    case 'b':
+      ++pos;
+      pos.require ("order");
+      require::token (pos, ":");
+
+      emit states_layout_hint_border (state, require::qcolor (pos));
+
+      break;
+
+    case 'c':
+      ++pos;
+      {
+        if (pos.end() || (*pos != 'h' && *pos != 'o'))
+        {
+          throw fhg::util::parse::error::expected ("haracter' or 'olor", pos);
+        }
+
+        switch (*pos)
+        {
+        case 'h':
+          ++pos;
+          pos.require ("aracter");
+          require::token (pos, ":");
+
+          emit states_layout_hint_character (state, pos.character());
+
+          break;
+
+        case 'o':
+          ++pos;
+          pos.require ("lor");
+          require::token (pos, ":");
+
+          emit states_layout_hint_color (state, require::qcolor (pos));
+
+          break;
+        }
+      }
+      break;
+    }
+  }
+  void communication::status_update
+    (fhg::util::parse::position& pos, const QString& hostname)
+  {
+    pos.skip_spaces();
+
+    if (pos.end() || (*pos != 'd' && *pos != 's'))
+    {
+      throw fhg::util::parse::error::expected ("details' or 'state", pos);
+    }
+
+    switch (*pos)
+    {
+    case 'd':
+      ++pos;
+      pos.require ("etails");
+      require::token (pos, ":");
+
+      emit nodes_details (hostname, require::qstring (pos));
+
+      break;
+
+    case 's':
+      ++pos;
+      pos.require ("tate");
+      require::token (pos, ":");
+
+      emit nodes_state (hostname, require::qstring (pos));
+
+      break;
+    }
+  }
+
+  namespace
+  {
+    struct action_result_data
+    {
+      enum result_code
+      {
+        okay,
+        fail,
+        warn,
+      };
+
+      action_result_data (const QString& host, const QString& action)
+        : _host (host)
+        , _action (action)
+        , _result (boost::none)
+        , _message (boost::none)
+      { }
+
+      QString _host;
+      QString _action;
+      boost::optional<result_code> _result;
+      boost::optional<QString> _message;
+
+      void append (fhg::util::parse::position& pos)
+      {
+        pos.skip_spaces();
+
+        if (pos.end() || (*pos != 'm' && *pos != 'r'))
+        {
+          throw fhg::util::parse::error::expected ("message' or 'result", pos);
+        }
+
+        switch (*pos)
+        {
+        case 'm':
+          ++pos;
+          pos.require ("essage");
+          require::token (pos, ":");
+
+          _message = require::qstring (pos);
+
+          break;
+
+        case 'r':
+          ++pos;
+          pos.require ("esult");
+          require::token (pos, ":");
+
+          {
+            pos.skip_spaces();
+
+            if (pos.end() || (*pos != 'f' && *pos != 'o' && *pos != 'w'))
+            {
+              throw fhg::util::parse::error::expected
+                ("fail' or 'okay' or 'warn", pos);
+            }
+
+            switch (*pos)
+            {
+            case 'f':
+              ++pos;
+              pos.require ("ail");
+
+              _result = fail;
+
+              break;
+
+            case 'o':
+              ++pos;
+              pos.require ("kay");
+
+              _result = okay;
+
+              break;
+
+            case 'w':
+              ++pos;
+              pos.require ("arn");
+
+              _result = warn;
+
+              break;
+            }
+          }
+
+          break;
+        }
+      }
+
+      void show_in_messagebox() const
+      {
+        if (!_result)
+        {
+          throw std::runtime_error ("action result without result code");
+        }
+
+        const QString title ( QString ("\"%1\" on \"%2\"")
+                            .arg (_action)
+                            .arg (_host)
+                            );
+        QString message ( _message.get_value_or ( *_result == okay ? "okay"
+                                                : *_result == warn ? "warn"
+                                                : *_result == fail ? "fail"
+                                                : "UNKNOWN RESULT"
+                                                )
+                        );
+
+        switch (*_result)
+        {
+        case okay:
+          QMessageBox::information (NULL, title, message);
+          break;
+
+        case fail:
+          QMessageBox::critical (NULL, title, message);
+          break;
+
+        case warn:
+          QMessageBox::warning (NULL, title, message);
+          break;
+        }
+      }
+    };
+  }
+
+  void communication::action_result (fhg::util::parse::position& pos)
+  {
+    require::token (pos, "(");
+    const QString host (require::qstring (pos));
+    require::token (pos, ",");
+    const QString action (require::qstring (pos));
+    require::token (pos, ")");
+    require::token (pos, ":");
+
+    action_result_data result (host, action);
+    require::list (pos, boost::bind (&action_result_data::append, &result, _1));
+
+    result.show_in_messagebox();
+  }
+
+  void communication::check_for_incoming_messages()
+  {
+    const async_tcp_communication::messages_type messages (_connection->get());
+    foreach (const QString& message, messages)
+    {
+      const std::string std_message (message.toStdString());
+      fhg::util::parse::position pos (std_message);
+
+      try
+      {
+        pos.skip_spaces();
+
+        if ( pos.end()
+          || ( *pos != 'a' && *pos != 'h' && *pos != 'l'
+            && *pos != 'p' && *pos != 's'
+             )
+           )
+        {
+          throw fhg::util::parse::error::expected ("packet", pos);
+        }
+
+        switch (*pos)
+        {
+        case 'a':
+          ++pos;
+          pos.require ("ction_");
+
+          if (pos.end() || (*pos != 'd' && *pos != 'r'))
+          {
+            throw fhg::util::parse::error::expected
+              ("description' or 'result", pos);
+          }
+
+          switch (*pos)
+          {
+          case 'd':
+            ++pos;
+            pos.require ("escription");
+            require::token (pos, ":");
+
+            require::list_of_named_lists
+              ( pos
+              , boost::bind (&communication::action_description, this, _1, _2)
+              );
+
+            break;
+
+          case 'r':
+            ++pos;
+            pos.require ("esult");
+            require::token (pos, ":");
+
+            require::list
+              (pos, boost::bind (&communication::action_result, this, _1));
+          }
+          break;
+
+        case 'h':
+          ++pos;
+          pos.require ("osts");
+          require::token (pos, ":");
+
+          {
+            QStringList hostnames;
+            require::list ( pos
+                          , boost::bind ( &QStringList::push_back
+                                        , &hostnames
+                                        , boost::bind (require::qstring, _1)
+                                        )
+                          );
+
+            emit nodes (hostnames);
+          }
+
+          break;
+
+        case 'l':
+          ++pos;
+          pos.require ("ayout_hint");
+          require::token (pos, ":");
+
+          require::list_of_named_lists
+            ( pos
+            , boost::bind (&communication::layout_hint, this, _1, _2)
+            );
+
+          break;
+
+        case 'p':
+          ++pos;
+          pos.require ("ossible_status");
+          require::token (pos, ":");
+
+          require::list
+            (pos, boost::bind (&communication::possible_status, this, _1));
+
+          break;
+
+        case 's':
+          ++pos;
+          pos.require ("tatus");
+          require::token (pos, ":");
+
+          require::list_of_named_lists
+            (pos, boost::bind (&communication::status_update, this, _1, _2));
+
+          break;
+        }
+      }
+      catch (const std::runtime_error& ex)
+      {
+        //! \todo Report back to server?
+        std::cerr << "PARSE ERROR: " << ex.what() << "\nmessage: " << qPrintable (message) << "\nrest: " << pos.rest() << "\n";
+      }
+    }
+  }
+
+  state_description::state_description ( const QStringList& actions
+                                       , boost::optional<char> character
+                                       , QColor brush
+                                       , QColor pen
+                                       )
+    : _actions (actions)
+    , _character (character)
+    , _brush (brush)
+    , _pen (pen)
+  {
+    reset();
+  }
+
+  void state_description::reset()
+  {
+    _pixmap = QPixmap (node_size, node_size);
+
+    QPainter painter (&_pixmap);
+    painter.setRenderHint (QPainter::Antialiasing);
+
+    painter.setBrush (_brush);
+    painter.setPen (QPen (_pen, pen_size));
+
+    painter.drawRect (0, 0, node_size, node_size);
+
+    if (_character)
+    {
+      painter.drawText
+        (0, 0, node_size, node_size, Qt::AlignCenter, QString (*_character));
+    }
+  }
+
+  legend_entry::legend_entry
+    (const QString& name, const state_description& desc, QWidget* parent)
+    : QWidget (parent)
+  {
+    QGridLayout* layout (new QGridLayout (this));
+    QLabel* label (new QLabel (this));
+    label->setPixmap (desc._pixmap);
+    layout->addWidget (label, 0, 0);
+    layout->addWidget (new QLabel (name, this), 0, 1);
+  }
+
+  boost::optional<int> node_state_widget::node_at (int x, int y) const
+  {
+    if ( x < base_coord || y < base_coord
+       || x > (base_coord + items_per_row (width()) * per_step)
+       )
+    {
+      return boost::none;
+    }
+
+    const int row ((y - base_coord + per_step - 1) / per_step - 1);
+    const int column ((x - base_coord + per_step - 1) / per_step - 1);
+    const int i (row * items_per_row (width()) + column);
+
+    return boost::make_optional
+      ( i < node_count()
+      && (column * per_step + base_coord + item_size) >= x
+      && (row * per_step + base_coord + item_size) >= y
+      , i
+      );
+  }
+
+  const state_description&
+    legend::state (const boost::optional<QString>& name) const
+  {
+    if (name)
+    {
+      return *_states.find (*name);
+    }
+    else
+    {
+      static state_description fallback (QStringList(), '?');
+      return fallback;
+    }
+  }
+
+  const state_description&
+    node_state_widget::state (const boost::optional<QString>& name) const
+  {
+    return _legend_widget->state (name);
+  }
+
+
+  const node_type& node_state_widget::node (int index) const
+  {
+    return _nodes.at (index);
+  }
+  int node_state_widget::node_count() const
+  {
+    return _nodes.size();
+  }
+
+  void node_state_widget::paintEvent (QPaintEvent* event)
+  {
+    QPainter painter (this);
+    painter.setRenderHint (QPainter::Antialiasing);
+
+    const int per_row (items_per_row (width()));
+
+    const int column_begin
+      ( event->rect().left() < base_coord
+      ? 0
+      : ((event->rect().left() - base_coord + per_step - 1) / per_step - 1)
+      );
+    const int column_end
+      ( event->rect().right() > per_row * per_step + base_coord + item_size
+      ? per_row + 1
+      : ((event->rect().right() - base_coord + per_step - 1) / per_step - 1) + 1
+      );
+
+    const int row_begin
+      ( event->rect().top() < base_coord
+      ? 0
+      : ((event->rect().top() - base_coord + per_step - 1) / per_step - 1)
+      );
+    const int row_end
+      ( event->rect().bottom() > ((node_count() + per_row - 1) / per_row) * per_step + base_coord + item_size
+      ? ((node_count() + per_row - 1) / per_row) + 1
+      : ((event->rect().bottom() - base_coord + per_step - 1) / per_step - 1) + 2
+      );
+
+    for ( int i (row_begin * per_row + column_begin)
+        ; i < node_count() && i < (row_end * per_row + column_end)
+        ; ++i
+        )
+    {
+      painter.drawPixmap ( rect_for_node (i, per_row).toRect()
+                         , state (node (i).state())._pixmap
+                         );
+    }
+  }
+
+  bool node_state_widget::event (QEvent* event)
+  {
+    switch (event->type())
+    {
+    case QEvent::ToolTip:
+      {
+        QHelpEvent* help_event (static_cast<QHelpEvent*> (event));
+
+        const boost::optional<int> node_index (node_at (help_event->x(), help_event->y()));
+        if (node_index)
+        {
+          QToolTip::showText
+            ( help_event->globalPos()
+            , QString ("%1: %2%3")
+            .arg (node (*node_index).hostname())
+            .arg (node (*node_index).state().get_value_or ("unknown state"))
+            .arg ( node (*node_index).details()
+                 ? QString (*node (*node_index).details()).prepend (" (").append (")")
+                 : ""
+                 )
+            );
+          return true;
+        }
+
+        QToolTip::hideText();
+        event->ignore();
+        return false;
+      }
+    case QEvent::ContextMenu:
+      {
+        //! \todo Block updates while menu is open or close menu when
+        //! state of node changes.
+        QContextMenuEvent* context_menu_event (static_cast<QContextMenuEvent*> (event));
+
+        const boost::optional<int> node_index (node_at (context_menu_event->x(), context_menu_event->y()));
+        if (node_index)
+        {
+          QMenu context_menu;
+          const node_type& n (node (*node_index));
+          if (!state (n.state())._actions.empty())
+          {
+            foreach (const QString& action, state (n.state())._actions)
+            {
+              fhg::util::qt::boost_connect<void (void)>
+                ( context_menu.addAction
+                  ( QString ( _long_action.contains (action)
+                            ? _long_action[action]
+                            : action
+                            )
+                  .replace ("{hostname}", n.hostname())
+                  )
+                , SIGNAL (triggered())
+                , _communication
+                , boost::bind ( &communication::request_action
+                              , _communication
+                              , n.hostname()
+                              , action
+                              )
+                );
+            }
+            _communication->pause();
+            context_menu.exec (context_menu_event->globalPos());
+            _communication->resume();
+            return true;
+          }
+        }
+
+        event->ignore();
+        return false;
+      }
+    default:
+      return QWidget::event (event);
+    }
+  }
+
+  int node_state_widget::heightForWidth (int width) const
+  {
+    const int per_row (items_per_row (width));
+    return (node_count() + per_row - 1) / per_row * per_step;
+  }
+}
+
+#include <QApplication>
+
+int main (int argc, char** argv)
+{
+  QApplication app (argc, argv);
+
+  QWidget window;
+
+  QWidget* sidebar (new QWidget (&window));
+  prefix::legend* legend_widget (new prefix::legend (sidebar));
+  QScrollArea* content (new QScrollArea (&window));
+
+  {
+    QVBoxLayout* layout (new QVBoxLayout (sidebar));
+    layout->addWidget (legend_widget);
+    layout->addStretch();
+  }
+
+  {
+    QWidget* inner (new QWidget (content));
+    QVBoxLayout* layout (new QVBoxLayout (inner));
+    layout->addWidget (new prefix::node_state_widget (legend_widget));
+
+    content->setWidget (inner);
+    content->setWidgetResizable (true);
+  }
+
+  {
+    QHBoxLayout* layout (new QHBoxLayout (&window));
+    layout->addWidget (content);
+    layout->addWidget (sidebar);
+  }
+
+  window.show();
+
+  return app.exec();
+}

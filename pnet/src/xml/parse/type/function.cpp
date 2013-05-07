@@ -483,7 +483,7 @@ namespace xml
       {
         return _conditions;
       }
-      void function_type::add_conditions (const conditions_type& other)
+      void function_type::add_conditions (const std::list<std::string>& other)
       {
         _conditions.insert (_conditions.end(), other.begin(), other.end());
       }
@@ -783,7 +783,7 @@ namespace xml
 
           we_transition_type trans
             ( name()
-            , we_module_type (mod.name(), mod.function)
+            , we_module_type (mod.name(), mod.function())
             , condition()
             , _internal.get_value_or (false)
             , _properties
@@ -1004,9 +1004,9 @@ namespace xml
 
       fun_info_type::fun_info_type ( const std::string & _name
                                    , const std::string & _code
-                                   , const module_type::flags_type & _ldflags
-                                   , const module_type::flags_type & _cxxflags
-                                   , const module_type::links_type & _links
+                                   , const std::list<std::string>& _ldflags
+                                   , const std::list<std::string>& _cxxflags
+                                   , const std::list<link_type>& _links
                                    , const boost::filesystem::path & _path
                                    )
         : name (_name)
@@ -1137,11 +1137,21 @@ namespace xml
         stream << "  BOOST_ROOT = /usr"                            << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
-        stream << "ifeq \"$(CXX)\" \"\""                           << std::endl;
-        stream << "  $(error Variable CXX is empty.)"              << std::endl;
+        stream << "ifndef CXX"                                     << std::endl;
+        stream << "  $(error Variable CXX is not defined)"         << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifndef SDPA_INCLUDE"                            << std::endl;
+        stream << "  ifndef SDPA_HOME"                             << std::endl;
+        stream << "    $(error Neither SDPA_INCLUDE nor SDPA_HOME are set)"
+                                                                   << std::endl;
+        stream << "  else"                                         << std::endl;
+        stream << "    SDPA_INCLUDE = $(SDPA_HOME)/include"        << std::endl;
+        stream << "  endif"                                        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
+        stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
         stream << "LDFLAGS += -L$(BOOST_ROOT)/lib"                 << std::endl;
@@ -1242,7 +1252,7 @@ namespace xml
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
 
-                BOOST_FOREACH (module_type::links_type::value_type const& link, fun->links)
+                BOOST_FOREACH (const link_type& link, fun->links)
                   {
                     stream << objs << " += "
                            << boost::filesystem::absolute
@@ -1257,7 +1267,7 @@ namespace xml
                            << std::endl;
                   }
 
-                BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->ldflags)
+                BOOST_FOREACH (const std::string& flag, fun->ldflags)
                   {
                     ldflags_module << ldflags << " += " << flag << std::endl;
                   }
@@ -1266,7 +1276,7 @@ namespace xml
                   util::check_no_change_fstream cxxflags_function
                     (state, prefix / file_function_cxxflags);
 
-                  BOOST_FOREACH (module_type::flags_type::value_type const& flag, fun->cxxflags)
+                  BOOST_FOREACH (const std::string& flag, fun->cxxflags)
                   {
                     cxxflags_function << cxxflags << " += " << flag << std::endl;
                   }
@@ -1359,7 +1369,12 @@ namespace xml
                    << " "
                    << file_module_ldflags                          << std::endl;
             stream << "\t$(CXX)"
-                   << " -shared $(" << objs << ") -o $@"
+                   << " -shared "
+                   << "$(filter-out"
+                   << " " << file_global_ldflags
+                   << " " << file_module_ldflags
+                   << ", $^)"
+                   << " -o $@"
                    << " $(" << ldflags << ")"
                    << " $(LDFLAGS)"                                << std::endl;
             stream                                                 << std::endl;
@@ -1709,7 +1724,7 @@ namespace xml
           pre << "      "
               << (port_return ? mk_type ((*port_return).type) : "void")
               << " "
-              << mod.function
+              << mod.function()
               << " "
             ;
 
@@ -1785,7 +1800,7 @@ namespace xml
           namespace_open (s, mod);
 
           s << "      "
-            << "static void " << mod.function
+            << "static void " << mod.function()
             << " (void *, const ::we::loader::input_t & _pnetc_input, ::we::loader::output_t & _pnetc_output)"
             << std::endl
             << "      "
@@ -1852,7 +1867,7 @@ namespace xml
                                       , "pnetc"
                                       , "op"
                                       , mod.name()
-                                      , mod.function
+                                      , mod.function()
                                       )
             << " ("
             ;
@@ -1942,7 +1957,7 @@ namespace xml
             }
 
           s << "      "
-            << "} // " << mod.function << std::endl;
+            << "} // " << mod.function() << std::endl;
 
           namespace_close (s, mod);
         }
@@ -1991,7 +2006,7 @@ namespace xml
             if (old_map != mcs.end())
             {
               const mc_by_function_type::const_iterator old_mc
-                (old_map->second.find (mod.function));
+                (old_map->second.find (mod.function()));
 
               if (old_mc != old_map->second.end())
               {
@@ -2009,7 +2024,7 @@ namespace xml
               }
             }
 
-            mcs[mod.name()].insert (std::make_pair (mod.function, mod));
+            mcs[mod.name()].insert (std::make_pair (mod.function(), mod));
 
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
@@ -2017,70 +2032,67 @@ namespace xml
             boost::optional<port_with_type> port_return;
             types_type types;
 
-            if (mod.port_return)
+            if (mod.port_return())
             {
               boost::optional<const id::ref::port&> id_port
-                (_id_function.get().get_port_out (*mod.port_return));
+                (_id_function.get().get_port_out (*mod.port_return()));
 
               const port_type& port (id_port->get());
 
-              port_return = port_with_type (*mod.port_return, port.type());
+              port_return = port_with_type (*mod.port_return(), port.type());
               types.insert (port.type());
             }
 
-            for ( module_type::port_args_type::const_iterator name (mod.port_arg.begin())
-                ; name != mod.port_arg.end()
-                ; ++name
-                )
+            BOOST_FOREACH (const std::string& name, mod.port_arg())
             {
-              if (_id_function.get().is_known_port_inout (*name))
+              if (_id_function.get().is_known_port_inout (name))
               {
                 boost::optional<const id::ref::port&> id_port_in
-                  (_id_function.get().get_port_in (*name));
+                  (_id_function.get().get_port_in (name));
                 boost::optional<const id::ref::port&> id_port_out
-                  (_id_function.get().get_port_out (*name));
+                  (_id_function.get().get_port_out (name));
 
                 const port_type& port_in (id_port_in->get());
 
-                if (    mod.port_return
-                   && (*mod.port_return == port_in.name())
+                if (    mod.port_return()
+                   && (*mod.port_return() == port_in.name())
                    )
                 {
-                  ports_const.push_back (port_with_type (*name, port_in.type()));
+                  ports_const.push_back (port_with_type (name, port_in.type()));
                   types.insert (port_in.type());
                 }
                 else
                 {
-                  ports_mutable.push_back (port_with_type (*name, port_in.type()));
+                  ports_mutable.push_back (port_with_type (name, port_in.type()));
                   types.insert (port_in.type());
                 }
               }
-              else if (_id_function.get().is_known_port_in (*name))
+              else if (_id_function.get().is_known_port_in (name))
               {
                 boost::optional<const id::ref::port&> id_port_in
-                  (_id_function.get().get_port_in (*name));
+                  (_id_function.get().get_port_in (name));
 
                 const port_type& port_in (id_port_in->get());
 
-                ports_const.push_back (port_with_type (*name, port_in.type()));
+                ports_const.push_back (port_with_type (name, port_in.type()));
                 types.insert (port_in.type());
               }
-              else if (_id_function.get().is_known_port_out (*name))
+              else if (_id_function.get().is_known_port_out (name))
               {
                 boost::optional<const id::ref::port&> id_port_out
-                  (_id_function.get().get_port_out (*name));
+                  (_id_function.get().get_port_out (name));
 
                 const port_type& port_out (id_port_out->get());
 
-                if (    mod.port_return
-                   && (*mod.port_return == port_out.name())
+                if (    mod.port_return()
+                   && (*mod.port_return() == port_out.name())
                    )
                 {
                   // do nothing, it is the return port
                 }
                 else
                 {
-                  ports_out.push_back (port_with_type (*name, port_out.type()));
+                  ports_out.push_back (port_with_type (name, port_out.type()));
                   types.insert (port_out.type());
                 }
               }
@@ -2088,11 +2100,11 @@ namespace xml
 
             const path_t prefix (state.path_to_cpp());
             const path_t path (prefix / cpp_util::path::op() / mod.name());
-            const std::string file_hpp (cpp_util::make::hpp (mod.function));
+            const std::string file_hpp (cpp_util::make::hpp (mod.function()));
             const std::string file_cpp
-              ( mod.code
-              ? cpp_util::make::cpp (mod.function)
-              : cpp_util::make::tmpl (mod.function)
+              ( mod.code()
+              ? cpp_util::make::cpp (mod.function())
+              : cpp_util::make::tmpl (mod.function())
               );
 
             {
@@ -2107,11 +2119,11 @@ namespace xml
                           , port_return
                           );
 
-              const fun_info_type fun_info ( mod.function
+              const fun_info_type fun_info ( mod.function()
                                            , stream.str()
-                                           , mod.ldflags
-                                           , mod.cxxflags
-                                           , mod.links
+                                           , mod.ldflags()
+                                           , mod.cxxflags()
+                                           , mod.links()
                                            , mod.position_of_definition().path()
                                            );
 
@@ -2125,7 +2137,7 @@ namespace xml
 
               cpp_util::header_gen_full (stream);
               cpp_util::include_guard_begin
-                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function());
 
               mod_includes (stream, types);
 
@@ -2143,7 +2155,7 @@ namespace xml
               stream << std::endl;
 
               cpp_util::include_guard_end
-                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function);
+                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function());
             }
 
             {
@@ -2157,16 +2169,12 @@ namespace xml
                                 , cpp_util::path::op() / mod.name() / file_hpp
                                 );
 
-              for ( module_type::cincludes_type::const_iterator inc
-                      (mod.cincludes.begin())
-                  ; inc != mod.cincludes.end()
-                  ; ++inc
-                  )
+              BOOST_FOREACH (const std::string& inc, mod.cincludes())
               {
-                cpp_util::include (stream, *inc);
+                cpp_util::include (stream, inc);
               }
 
-              if (not mod.code)
+              if (not mod.code())
               {
                 cpp_util::include (stream, "stdexcept");
               }
@@ -2180,16 +2188,25 @@ namespace xml
 
               stream << std::endl << "      {" << std::endl;
 
-              if (not mod.code)
+              if (not mod.code())
               {
                 stream << "        // INSERT CODE HERE" << std::endl
                        << "        throw std::runtime_error (\""
-                       << mod.name() << "::" << mod.function
+                       << mod.name() << "::" << mod.function()
                        << ": NOT YET IMPLEMENTED\");";
               }
               else
               {
-                stream << *mod.code;
+                if (!mod.position_of_definition_of_code())
+                {
+                  throw std::runtime_error
+                    ("STRANGE: There is code without a position of definition");
+                }
+
+                stream << "// defined at "
+                       << *mod.position_of_definition_of_code()
+                       << std::endl;
+                stream << *mod.code();
               }
 
               stream << std::endl << "      }" << std::endl;

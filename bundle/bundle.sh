@@ -9,6 +9,7 @@ force=false
 keep_going=false
 dst=lib # folder within prefix where libs shall be copied to
 delete=false
+library_path="$LD_LIBRARY_PATH"
 
 function usage ()
 {
@@ -24,6 +25,7 @@ usage: $(basename $0) [options]
   -p : installation prefix (=$prefix)
   -x : exclude pattern (can occur multiple times)
   -w : include pattern (can occur multiple times)
+  -L : library path (can occur multiple times)
 
   -o  : output destination  folder  for  dependencies, if  not  absolute,  interpreted
         as a relative to <prefix> (=$dst)
@@ -108,9 +110,17 @@ function bundle_dependencies ()
     OLDIFS="$IFS"
     export IFS="
 "
-    for dep_and_path in $(ldd "$file" | grep '=>' | grep '/' | awk '{printf("%s:%s\n", $1, $3)}') ; do
-        dep=$(echo "$dep_and_path" | cut -d: -f 1)
-        pth=$(echo "$dep_and_path" | cut -d: -f 2)
+    for dep_and_path in $(ldd "$file" | grep '=> \(not\|/\)' | awk '{printf("%s:%s\n", $1, $3)}') ; do
+        dep=$(echo -n "$dep_and_path" | cut -d: -f 1)
+        pth=$(echo -n "$dep_and_path" | cut -d: -f 2)
+
+        if [ "$pth" = "not" ] ; then
+            echo >&2 "cannot resolve dependency: '$dep' of file '$file'"
+            echo >&2 "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+            if ! $keep_going ; then
+                exit 2
+            fi
+        fi
 
         if is_filtered "$dep" ; then
             debug $(printf "%${indent}s" "") "$file >- $pth  (filtered)"
@@ -125,12 +135,11 @@ function bundle_dependencies ()
             debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
 
-        path="$pth"
-        if [ -n "$path" ] ; then
-            if test "$path" -nt "$dst/$dep" || $force ; then
-                debug $(printf "%$((indent + 2))s" "") cp "$path" "$dst/$dep"
-                dry_run cp "$path" "$dst/$dep"
-                bundle_dependencies "$path" "$dst" $(( lvl + 1 ))
+        if [[ ! "$pth" = "$dst/$dep" ]] ; then
+            if test "$pth" -nt "$dst/$dep" || $force ; then
+                debug $(printf "%$((indent + 2))s" "") cp "$pth" "$dst/$dep"
+                dry_run cp "$pth" "$dst/$dep"
+                bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
             fi
         fi
     done
@@ -138,7 +147,7 @@ function bundle_dependencies ()
 }
 
 shiftcount=0
-while getopts ":hvnkfp:x:w:o:d" opt ; do
+while getopts ":hvnkfp:x:w:o:dL:" opt ; do
     case $opt in
         h)
             usage
@@ -180,6 +189,14 @@ while getopts ":hvnkfp:x:w:o:d" opt ; do
             delete=true
             shiftcount=$(( shiftcount + 1 ))
             ;;
+        L)
+            if [ -z "${library_path}" ] ; then
+                library_path="$OPTARG"
+            else
+                library_path="${library_path}:$OPTARG"
+            fi
+            shiftcount=$(( shiftcount + 2 ))
+            ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
             echo "try: $(basename $0) -h" >&2
@@ -201,7 +218,9 @@ esac
 
 dry_run mkdir -p "$dst"
 
+export LD_LIBRARY_PATH="${library_path}"
+
 for bin ;  do
-   echo >&2 "# bundling dependencies for '$bin'"
+   debug "# bundling dependencies for '$bin'"
    bundle_dependencies "$bin" "$dst"
 done

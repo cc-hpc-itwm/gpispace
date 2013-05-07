@@ -15,6 +15,7 @@ fhg_add_test (test_remove_prefix.cpp
   DESCRIPTION "Tests the remove_prefix implementation"
 )
 
-fhg_add_test (test_rmap.cpp
-  DESCRIPTION "Tests for generic rmap"
+fhg_add_test (num.cpp
+  PROJECT fhg_util_test
+  LINK_LIBRARIES fhg-util
 )

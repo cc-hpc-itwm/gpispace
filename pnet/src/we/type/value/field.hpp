@@ -9,7 +9,7 @@
 
 namespace value
 {
-  type& field (const signature::field_name_t& field, type& v);
+  type& field (const std::string& field, type& v);
 }
 
 #endif

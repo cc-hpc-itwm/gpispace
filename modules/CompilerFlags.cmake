@@ -2,8 +2,11 @@
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions("-DNDEBUG")
+endif()
+
+if (NOT ENABLE_BACKTRACE_ON_PARSE_ERROR)
   add_definitions("-DNO_BACKTRACE_ON_PARSE_ERROR")
-endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
+endif()
 
 set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS_INIT} $ENV{LDFLAGS}
   CACHE STRING "Flags used by the linker during the creation of shared libraries")
@@ -41,6 +44,9 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-format")
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 
+# to avoid warnings when using gcc 4.5
+add_definitions ("-fno-strict-aliasing")
+
 if(NOT WIN32)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   include (CheckCXXSourceCompiles)
@@ -49,7 +55,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 
   set (CMAKE_REQUIRED_FLAGS "-Wno-ignored-qualifiers")
   set (__CXX_FLAG_CHECK_SOURCE "int main () { return 0; }")
-  message(STATUS "checking if ${CMAKE_REQUIRED_FLAGS} works")
   CHECK_CXX_SOURCE_COMPILES ("${__CXX_FLAG_CHECK_SOURCE}" W_NO_IGNORED_QUALIFIERS)
   set (CMAKE_REQUIRED_FLAGS)
   if (W_NO_IGNORED_QUALIFIERS)
@@ -80,9 +85,8 @@ endif()
 # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
   set(CMAKE_CXX_FLAGS "${CXXFLAGS} -wd191 -wd1170 -wd1292 -wd2196 -fPIC -fpic")
-  message(STATUS "compiler: ${CMAKE_CXX_COMPILER_MAJOR}.${CMAKE_CXX_COMPILER_MINOR}")
   if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
-    message(STATUS "Warning: adding __aligned__=ignored to the list of definitions")
+    message(WARNING "adding __aligned__=ignored to the list of definitions")
     add_definitions("-D__aligned__=ignored")
   endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")

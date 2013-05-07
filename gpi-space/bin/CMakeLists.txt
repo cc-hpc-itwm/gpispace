@@ -14,7 +14,7 @@ target_link_libraries (gpi-space
 )
 
 # search for libreadline
-find_package (LibReadline REQUIRED)
+find_package (LibReadline REQUIRED QUIET)
 include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
 set (srcs

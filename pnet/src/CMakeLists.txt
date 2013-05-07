@@ -11,10 +11,10 @@ endif()
 include (SDPAFindBoost)
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package (FhgLog REQUIRED)
+find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-include (FindUTIL REQUIRED)
+find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
 add_subdirectory (apps)
@@ -89,8 +89,10 @@ set (wfhd_hdrs
 )
 
 add_library (wfhd SHARED ${wfhd_srcs})
+set_target_properties (wfhd PROPERTIES VERSION 1)
 install (TARGETS wfhd
   LIBRARY DESTINATION lib
+  COMPONENT runtime
   )
 install (FILES ${wfhd_hdrs}
   DESTINATION include/we/util
@@ -112,103 +114,64 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 install (FILES
-  we/util/token.hpp
-  DESTINATION include/we/util
-  COMPONENT headers
+  we/expr/eval/context.hpp
+  DESTINATION include/we/expr/eval
+  COMPONENT sdk
 )
-
 install (FILES
-  we/container/adjacency.hpp
-  DESTINATION include/we/container
-  COMPONENT headers
-)
-
-install (FILES
-  we/loader/api-guard.hpp
-  we/loader/exceptions.hpp
   we/loader/IModule.hpp
+  we/loader/api-guard.hpp
   we/loader/macros.hpp
-  we/loader/module_call.hpp
-  we/loader/Module.hpp
-  we/loader/module_traits.hpp
-  we/loader/putget.hpp
   we/loader/types.hpp
   DESTINATION include/we/loader
-  COMPONENT headers
+  COMPONENT sdk
 )
-
 install (FILES
-  we/serialize/unordered_map.hpp
-  we/serialize/unordered_set.hpp
-  DESTINATION include/we/serialize
-  COMPONENT headers
-)
-
-install (FILES
-  we/mgmt/basic_layer.hpp
-  we/mgmt/context.hpp
-  we/mgmt/exception.hpp
-  we/mgmt/layer.hpp
-  DESTINATION include/we/mgmt
-  COMPONENT headers
-)
-
-install (FILES
-  we/mgmt/bits/commands.hpp
-  we/mgmt/bits/execution_policy.hpp
-  we/mgmt/bits/queue.hpp
-  we/mgmt/bits/set.hpp
-  we/mgmt/bits/signal.hpp
-  DESTINATION include/we/mgmt/bits/
-  COMPONENT headers
-)
-
-install (FILES
-  we/type/bits/transition/optimize.hpp
-  we/type/bits/transition/toDot.hpp
-  DESTINATION include/we/type/bits/transition
-  COMPONENT headers
-)
-
-install (FILES
-  we/type/bits/transition/optimize/is_associated.hpp
-  we/type/bits/transition/optimize/merge_expressions.hpp
-  we/type/bits/transition/optimize/merge_places.hpp
-  we/type/bits/transition/optimize/option.hpp
-  we/type/bits/transition/optimize/simple_pipe_elimination.hpp
-  DESTINATION include/we/type/bits/transition/optimize
-  COMPONENT headers
-)
-
-install (FILES
-  we/type/condition.hpp
-  we/type/error.hpp
-  we/type/literal.hpp
-  we/type/module_call.hpp
-  we/type/requirement.hpp
-  we/type/signature.hpp
-  we/type/transition.hpp
-  we/type/value.hpp
   we/type/bitsetofint.hpp
   we/type/bytearray.hpp
+  we/type/literal.hpp
+  we/type/value.hpp
   DESTINATION include/we/type
-  COMPONENT headers
+  COMPONENT sdk
 )
-
 install (FILES
   we/type/literal/control.hpp
+  we/type/literal/show.hpp
   DESTINATION include/we/type/literal
-  COMPONENT headers
+  COMPONENT sdk
 )
-
 install (FILES
-  we/type/signature/cpp.hpp
-  we/type/signature/types.hpp
   DESTINATION include/we/type/signature
-  COMPONENT headers
+  COMPONENT sdk
+)
+install (FILES
+  we/type/value/cpp/get.hpp
+  DESTINATION include/we/type/value/cpp
+  COMPONENT sdk
+)
+install (FILES
+  we/type/value/missing_binding.hpp
+  DESTINATION include/we/type/value
+  COMPONENT sdk
 )
 
-add_subdirectory (xml/parse)
+add_executable(pnetc xml/parse/pnetc.cpp)
+target_link_libraries(pnetc fhg-revision)
+target_link_libraries(pnetc pnet)
+target_link_libraries(pnetc ${Boost_LIBRARIES})
+
+install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
+
+if (ENABLE_STATIC_BINARIES)
+  add_executable(pnetc.static xml/parse/pnetc.cpp)
+  target_link_libraries(pnetc.static fhg-revision)
+  target_link_libraries(pnetc.static pnet)
+  target_link_libraries(pnetc.static ${Boost_LIBRARIES})
+
+  set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
+
+  install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
+endif (ENABLE_STATIC_BINARIES)
 
 set (xml_sources
   xml/parse/error.cpp
@@ -258,26 +221,13 @@ add_library (pnet-shared SHARED ${we_srcs} ${xml_sources})
 set_target_properties(pnet-shared PROPERTIES OUTPUT_NAME pnet)
 
 add_library (we-dev SHARED ${we_dev_srcs})
+set_target_properties(we-dev
+  PROPERTIES VERSION 1
+)
 
 install (TARGETS we-dev
   LIBRARY DESTINATION lib
   COMPONENT runtime
-)
-
-
-get_target_property(GEN_INCLUDE_EXE gen-includes LOCATION)
-
-set (headerlist_hpp ${CMAKE_CURRENT_BINARY_DIR}/xml/parse/headerlist.hpp)
-
-add_custom_command(OUTPUT ${headerlist_hpp}
-  COMMAND ${GEN_INCLUDE_EXE} -o ${headerlist_hpp}
-  DEPENDS gen-includes ${CMAKE_CURRENT_BINARY_DIR}/xml/parse/includes.hpp
-  COMMENT "generating internal pnetc headerlist"
-)
-
-set_source_files_properties (
-  "${CMAKE_CURRENT_SOURCE_DIR}/xml/parse/parser.cpp"
-  PROPERTIES OBJECT_DEPENDS "${headerlist_hpp}"
 )
 
 if (BUILD_TESTING)

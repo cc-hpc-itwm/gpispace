@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include <boost/function.hpp>
+
 namespace fhg
 {
   namespace util
@@ -14,8 +16,8 @@ namespace fhg
       class position
       {
       public:
-        position ( std::size_t& k
-                 , std::string::const_iterator& begin
+        position (const std::string&);
+        position ( const std::string::const_iterator& begin
                  , const std::string::const_iterator& end
                  );
         std::string consumed() const;
@@ -26,12 +28,21 @@ namespace fhg
         const std::size_t& operator() () const;
         void skip_spaces();
         void require (const std::string&);
+        void require (const char&);
+        std::string identifier();
+        char character();
+        std::string until (const char c, const char escape = '\\');
+        void list ( const char open, const char sep, const char close
+                  , const boost::function<void (position&)>&
+                  , const bool skip_space_before_element = true
+                  , const bool skip_space_after_element = true
+                  );
 
       private:
-        std::size_t& _k;
-        std::string::const_iterator& _pos;
+        std::size_t _k;
+        std::string::const_iterator _pos;
         const std::string::const_iterator _begin;
-        const std::string::const_iterator& _end;
+        const std::string::const_iterator _end;
       };
     }
   }

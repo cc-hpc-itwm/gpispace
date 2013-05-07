@@ -27,11 +27,6 @@ namespace xml
           default: throw std::runtime_error ("STRANGE: unknown node type");
           }
       }
-
-      std::string quote (const std::string & str)
-      {
-        return "\"" + str + "\"";
-      }
     }
   }
 }

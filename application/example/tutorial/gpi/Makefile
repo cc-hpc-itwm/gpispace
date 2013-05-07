@@ -25,4 +25,6 @@ ifndef SDPA_HOME
  $(error variable SDPA_HOME not set)
 endif
 
+WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
+
 include $(SDPA_HOME)/share/sdpa/make/common.mk

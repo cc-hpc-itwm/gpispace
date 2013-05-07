@@ -23,7 +23,9 @@
 # *   <XPREFIX> = <PREFIX>  when |MODULES| == 1, else
 # *   <XPREFIX> = <PREFIX>_<MODNAME>
 
-message(STATUS "FindSEDA check")
+if (NOT SEDA_FIND_QUIETLY)
+  message(STATUS "FindSEDA check")
+endif()
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include(FindPackageHelper)
   check_package(SEDA seda/IEvent.hpp seda 1.0)

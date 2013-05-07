@@ -176,18 +176,16 @@ namespace sdpa {
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
       {
-        lock_type lock_cpb(mtx_cpb_);
-        sdpa::capabilities_set_t::iterator itOwnCcpb = m_capabilities.find(cpb);
-        return (itOwnCcpb != m_capabilities.end());
+    	  return (cpb.owner()==name());
       }
 
       virtual void print()
       {
-        SDPA_LOG_DEBUG("The content of the JobManager is:");
-        jobManager()->print();
+    	  SDPA_LOG_DEBUG("The content of the JobManager is:");
+    	  jobManager()->print();
 
-        SDPA_LOG_DEBUG("The content of the Scheduler is:");
-        scheduler()->print();
+    	  SDPA_LOG_DEBUG("The content of the Scheduler is:");
+    	  scheduler()->print();
       }
 
       // event handlers
@@ -236,10 +234,10 @@ namespace sdpa {
       template <typename T>
       T* createWorkflowEngine()
       {
-        T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-        assert (pWfE);
-        ptr_workflow_engine_ = pWfE;
-        return pWfE;
+    	  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
+    	  assert (pWfE);
+    	  ptr_workflow_engine_ = pWfE;
+    	  return pWfE;
       }
 
       // workflow engine notifications
@@ -260,7 +258,7 @@ namespace sdpa {
       virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const;
       const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) const;
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
-      virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& last_job_id = sdpa::JobId::invalid_job_id() );
+      virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId );
       virtual void requestJob(const MasterInfo& masterInfo);
       virtual void addWorker( const Worker::worker_id_t& workerId,
                               unsigned int cap,
@@ -272,7 +270,6 @@ namespace sdpa {
       void notifyWorkers(const T&);
 
       // jobs
-      JobManager::ptr_t jobManager() const { return ptr_job_man_; }
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
       std::string gen_id() { return sdpa::events::id_generator::instance().next(); }
@@ -281,6 +278,7 @@ namespace sdpa {
     public:
       // scheduler
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
+      JobManager::ptr_t jobManager() const { return ptr_job_man_; }
     protected:
       virtual void createScheduler(bool bUseReqModel) = 0;
       virtual void schedule(const sdpa::job_id_t& job);
@@ -294,11 +292,11 @@ namespace sdpa {
       template <class Archive>
       void serialize(Archive& ar, const unsigned int)
       {
-        ar & ptr_job_man_;
-        ar & ptr_scheduler_;
-        ar & ptr_workflow_engine_;
-        ar & m_arrMasterInfo;
-        ar & m_listSubscribers;
+    	  ar & ptr_job_man_;
+    	  ar & ptr_scheduler_;
+    	  ar & ptr_workflow_engine_;
+    	  ar & m_arrMasterInfo;
+    	  ar & m_listSubscribers;
       }
 
       void backupJobManager(boost::archive::text_oarchive& oa) { oa << ptr_job_man_;}
@@ -388,7 +386,7 @@ namespace sdpa {
 
       if(workerList.empty())
       {
-        SDPA_LOG_INFO("The worker list is empty. No worker to be notified exist!");
+        DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
         return;
       }
 

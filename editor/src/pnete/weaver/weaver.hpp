@@ -6,6 +6,7 @@
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/function.hpp>
+#include <xml/parse/type/link.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -305,7 +306,7 @@ namespace fhg
           public:
             explicit token (State * state) : _state (state) {}
 
-            void operator () (const ::literal::type_name_t & t) const
+            void operator () (const ::std::string & t) const
             {
               WEAVE(token::literal::open) (t);
               WEAVE(token::literal::name) (t);
@@ -337,7 +338,7 @@ namespace fhg
           public:
             explicit structure (State * state) : _state (state) {}
 
-            void operator () (const ::literal::type_name_t & t) const
+            void operator () (const ::std::string & t) const
             {
               WEAVE(structure::type) (t);
             }
@@ -497,11 +498,11 @@ namespace fhg
           const ::xml::parse::type::module_type& mod (id.get());
           WEAVE(mod::name) (mod.name());
           WEAVE(mod::fun) (::xml::parse::type::dump::dump_fun (mod));
-          WEAVE(mod::cincludes) (mod.cincludes);
-          WEAVE(mod::ldflags) (mod.ldflags);
-          WEAVE(mod::cxxflags) (mod.cxxflags);
-          WEAVE(mod::links) (mod.links);
-          WEAVE(mod::code) (mod.code);
+          WEAVE(mod::cincludes) (mod.cincludes());
+          WEAVE(mod::ldflags) (mod.ldflags());
+          WEAVE(mod::cxxflags) (mod.cxxflags());
+          WEAVE(mod::links) (mod.links());
+          WEAVE(mod::code) (mod.code());
           WEAVE(mod::close)();
         }
 

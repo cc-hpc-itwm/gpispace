@@ -18,8 +18,8 @@ namespace xml
   {
     namespace type
     {
-      module_type::module_type ( ID_CONS_PARAM(module)
-                               , PARENT_CONS_PARAM(function)
+      module_type::module_type ( ID_CONS_PARAM (module)
+                               , PARENT_CONS_PARAM (function)
                                , const util::position_type& pod
                                )
         : with_position_of_definition (pod)
@@ -29,136 +29,33 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      module_type::module_type ( ID_CONS_PARAM(module)
-                               , PARENT_CONS_PARAM(function)
-                               , const util::position_type& pod
-                               , const std::string& name
-                               , const std::string & _function
-                               )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _name (name)
-        , function ()
-        , port_return ()
-        , port_arg ()
-      {
-        // implement the grammar
-        // S -> R F A
-        // F -> valid_name
-        // R -> eps | valid_name
-        // A -> eps | '(' L ')' | '(' ')'
-        // L -> valid_name | valid_name ',' L
-        //
-        // here R stands for the return port, F for the function
-        // name and A for the list of argument ports
-
-        std::size_t k (0);
-        std::string::const_iterator begin (_function.begin());
-        const std::string::const_iterator end (_function.end ());
-        fhg::util::parse::position pos (k, begin, end);
-
-        function = parse_name (pos);
-
-        if (!pos.end())
-        {
-          if (*pos != '(')
-          {
-            port_return = function;
-            function = parse_name (pos);
-          }
-
-          if (!pos.end())
-          {
-            if (*pos != '(')
-            {
-              throw error::parse_function::expected ( _name
-                                                    , _function
-                                                    , "("
-                                                    , pos()
-                                                    , pod.path()
-                                                    );
-            }
-
-            ++pos;
-
-            while (!pos.end() && *pos != ')')
-            {
-              port_arg.push_back (parse_name (pos));
-
-              if (!pos.end() && *pos != ')')
-              {
-                if (*pos != ',')
-                {
-                  throw error::parse_function::expected ( _name
-                                                        , _function
-                                                        , ","
-                                                        , pos()
-                                                        , pod.path()
-                                                        );
-                }
-
-                ++pos;
-              }
-            }
-
-            if (pos.end() || *pos != ')')
-            {
-              throw error::parse_function::expected ( _name
-                                                    , _function
-                                                    , ")"
-                                                    , pos()
-                                                    , pod.path()
-                                                    );
-            }
-
-            ++pos;
-          }
-
-          while (!pos.end() && isspace(*pos))
-          {
-            ++pos;
-          }
-
-          if (!pos.end())
-          {
-            throw error::parse_function::expected ( _name
-                                                  , _function
-                                                  , "<end of input>"
-                                                  , pos()
-                                                  , pod.path()
-                                                  );
-          }
-        }
-
-        _id_mapper->put (_id, *this);
-      }
-
-      module_type::module_type ( ID_CONS_PARAM(module)
-                               , PARENT_CONS_PARAM(function)
+      module_type::module_type ( ID_CONS_PARAM (module)
+                               , PARENT_CONS_PARAM (function)
                                , const util::position_type& pod
                                , const std::string& name
                                , const std::string& function
                                , const boost::optional<std::string>& port_return
-                               , const port_args_type& port_arg
+                               , const std::list<std::string>& port_arg
                                , const boost::optional<std::string>& code
-                               , const cincludes_type& cincludes
-                               , const flags_type& ldflags
-                               , const flags_type& cxxflags
-                               , const links_type& links
+                               , const boost::optional<util::position_type>& pod_of_code
+                               , const std::list<std::string>& cincludes
+                               , const std::list<std::string>& ldflags
+                               , const std::list<std::string>& cxxflags
+                               , const std::list<link_type>& links
                                )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
-        , function (function)
-        , port_return (port_return)
-        , port_arg (port_arg)
-        , code (code)
-        , cincludes (cincludes)
-        , ldflags (ldflags)
-        , cxxflags (cxxflags)
-        , links (links)
+        , _function (function)
+        , _port_return (port_return)
+        , _port_arg (port_arg)
+        , _code (code)
+        , _position_of_definition_of_code (pod_of_code)
+        , _cincludes (cincludes)
+        , _ldflags (ldflags)
+        , _cxxflags (cxxflags)
+        , _links (links)
       {
         _id_mapper->put (_id, *this);
       }
@@ -167,16 +64,53 @@ namespace xml
       {
         return _name;
       }
+      const std::string& module_type::function() const
+      {
+        return _function;
+      }
+      const boost::optional<std::string>& module_type::port_return() const
+      {
+        return _port_return;
+      }
+      const std::list<std::string>& module_type::port_arg() const
+      {
+        return _port_arg;
+      }
+      const boost::optional<std::string>& module_type::code() const
+      {
+        return _code;
+      }
+      const boost::optional<util::position_type>
+        module_type::position_of_definition_of_code() const
+      {
+        return _position_of_definition_of_code;
+      }
+      const std::list<std::string>& module_type::cincludes() const
+      {
+        return _cincludes;
+      }
+      const std::list<std::string>& module_type::ldflags() const
+      {
+        return _ldflags;
+      }
+      const std::list<std::string>& module_type::cxxflags() const
+      {
+        return _cxxflags;
+      }
+      const std::list<link_type>& module_type::links() const
+      {
+        return _links;
+      }
 
       bool module_type::operator == (const module_type& other) const
       {
-        return port_return == other.port_return
-          && port_arg == other.port_arg
-          && code == other.code
-          && cincludes == other.cincludes
-          && ldflags == other.ldflags
-          && cxxflags == other.cxxflags
-          && links == other.links
+        return _port_return == other._port_return
+          && _port_arg == other._port_arg
+          && _code == other._code
+          && _cincludes == other._cincludes
+          && _ldflags == other._ldflags
+          && _cxxflags == other._cxxflags
+          && _links == other._links
           ;
       }
 
@@ -185,32 +119,29 @@ namespace xml
         assert (has_parent());
 
         const function_type& outer_function (*parent());
-        if (port_return)
+        if (_port_return)
         {
-          if (!outer_function.is_known_port (*port_return))
+          if (!outer_function.is_known_port (*_port_return))
           {
             throw error::function_description_with_unknown_port
               ( "return"
-              , *port_return
+              , *_port_return
               , name()
-              , function
+              , function()
               , outer_function.position_of_definition().path()
               );
           }
         }
 
-        for ( port_args_type::const_iterator port (port_arg.begin())
-            ; port != port_arg.end()
-            ; ++port
-            )
+        BOOST_FOREACH (const std::string& port, _port_arg)
         {
-          if (!outer_function.is_known_port (*port))
+          if (!outer_function.is_known_port (port))
           {
             throw error::function_description_with_unknown_port
               ( "argument"
-              , *port
+              , port
               , name()
-              , function
+              , function()
               , outer_function.position_of_definition().path()
               );
           }
@@ -230,51 +161,49 @@ namespace xml
           , parent
           , _position_of_definition
           , _name
-          , function
-          , port_return
-          , port_arg
-          , code
-          , cincludes
-          , ldflags
-          , cxxflags
-          , links
+          , _function
+          , _port_return
+          , _port_arg
+          , _code
+          , _position_of_definition_of_code
+          , _cincludes
+          , _ldflags
+          , _cxxflags
+          , _links
           ).make_reference_id();
       }
 
       std::size_t hash_value (const module_type& m)
       {
-        boost::hash<std::string> hasher;
-        return hasher (m.name());
+        return boost::hash<std::string>()(m.name());
       }
 
       namespace dump
       {
-        std::string dump_fun (const module_type & m)
+        std::string dump_fun (const module_type& m)
         {
           std::ostringstream s;
 
-          if (m.port_return)
+          if (m.port_return())
             {
-              s << *m.port_return << " ";
+              s << *m.port_return() << " ";
             }
 
-          s << m.function;
+          s << m.function();
 
           s << " (";
 
           bool first (true);
 
-          for ( module_type::port_args_type::const_iterator arg (m.port_arg.begin())
-              ; arg != m.port_arg.end()
-              ; ++arg, first = false
-              )
+          BOOST_FOREACH (const std::string& arg, m.port_arg())
             {
               if (!first)
                 {
                   s << ", ";
+                  first = false;
                 }
 
-              s << *arg;
+              s << arg;
             }
 
           s << ")";
@@ -282,45 +211,42 @@ namespace xml
           return s.str();
         }
 
-        void dump (::fhg::util::xml::xmlstream & s, const module_type & m)
+        void dump (::fhg::util::xml::xmlstream& s, const module_type& m)
         {
           s.open ("module");
           s.attr ("name", m.name());
           s.attr ("function", dump_fun (m));
 
-          for ( module_type::cincludes_type::const_iterator inc (m.cincludes.begin())
-              ; inc != m.cincludes.end()
-              ; ++inc
-              )
+          BOOST_FOREACH (const std::string& inc, m.cincludes())
             {
               s.open ("cinclude");
-              s.attr ("href", *inc);
+              s.attr ("href", inc);
               s.close ();
             }
 
-          BOOST_FOREACH (module_type::flags_type::value_type const& flag, m.ldflags)
+          BOOST_FOREACH (const std::string& flag, m.ldflags())
             {
               s.open ("ld");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (module_type::flags_type::value_type const& flag, m.cxxflags)
+          BOOST_FOREACH (const std::string& flag, m.cxxflags())
             {
               s.open ("cxx");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (module_type::links_type::value_type const& link, m.links)
+          BOOST_FOREACH (const link_type& link, m.links())
             {
               ::xml::parse::type::dump::dump (s, link);
             }
 
-          if (m.code)
+          if (m.code())
             {
               s.open ("code");
-              s.content ("<![CDATA[" + *m.code + "]]>");
+              s.content ("<![CDATA[" + *m.code() + "]]>");
               s.close ();
             }
 

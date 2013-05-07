@@ -74,10 +74,10 @@ namespace xml
 
     namespace structure_type
     {
-      typedef boost::unordered_map< signature::field_name_t
+      typedef boost::unordered_map< std::string
                                   , type::structure_type
                                   > set_type;
-      typedef boost::unordered_map< signature::field_name_t
+      typedef boost::unordered_map< std::string
                                   , std::string
                                   > forbidden_type;
 
@@ -95,11 +95,11 @@ namespace xml
                     );
 
       class get_literal_type_name
-        : public boost::static_visitor<literal::type_name_t>
+        : public boost::static_visitor<std::string>
       {
       public:
-        literal::type_name_t operator () (const literal::type_name_t & t) const;
-        literal::type_name_t operator () (const signature::structured_t &) const;
+        std::string operator () (const std::string & t) const;
+        std::string operator () (const signature::structured_t &) const;
       };
 
       typedef boost::function < boost::optional<signature::type>
@@ -119,7 +119,7 @@ namespace xml
       public:
         resolve (const set_type&, const type::structure_type&);
 
-        bool operator () (literal::type_name_t & t) const;
+        bool operator () (std::string & t) const;
         bool operator () (signature::structured_t & map) const;
       };
     }

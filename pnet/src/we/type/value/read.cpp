@@ -49,12 +49,7 @@ namespace value
 
           while (not pos.end() && not struct_closed)
           {
-            const std::string name (identifier (pos));
-
-            if (name.empty())
-            {
-              throw expr::exception::parse::expected ("identifier", pos());
-            }
+            const std::string name (pos.identifier());
 
             pos.skip_spaces();
 
@@ -102,19 +97,9 @@ namespace value
     return type();
   }
 
-  std::string identifier (fhg::util::parse::position& pos)
-  {
-    pos.skip_spaces();
-
-    return literal::identifier (pos);
-  }
-
   type read (const std::string& s)
   {
-    std::size_t k (0);
-    std::string::const_iterator begin (s.begin());
-
-    fhg::util::parse::position pos (k, begin, s.end());
+    fhg::util::parse::position pos (s.begin(), s.end());
 
     return read (pos);
   }

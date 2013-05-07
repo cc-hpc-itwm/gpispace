@@ -14,22 +14,22 @@ namespace expr
   {
     namespace util
     {
-      typedef boost::unordered_set<node::key_vec_t> name_set_t;
+      typedef boost::unordered_set<std::list<std::string> > name_set_t;
 
-      namespace detail
+      namespace
       {
-        class get_names : public boost::static_visitor<void>
+        class visitor_get_names : public boost::static_visitor<void>
         {
         private:
           name_set_t & _names;
 
         public:
-          get_names (name_set_t & names) : _names (names) {}
+          visitor_get_names (name_set_t & names) : _names (names) {}
 
           void operator () (const value::type &) const
           {}
 
-          void operator () (const node::key_vec_t & key) const
+          void operator () (const std::list<std::string>& key) const
           {
             _names.insert (key);
           }
@@ -58,7 +58,7 @@ namespace expr
       {
         name_set_t names;
 
-        boost::apply_visitor (detail::get_names (names), nd);
+        boost::apply_visitor (visitor_get_names (names), nd);
 
         return names;
       }
@@ -72,7 +72,7 @@ namespace expr
             ; ++it
             )
         {
-          boost::apply_visitor (detail::get_names (names), *it);
+          boost::apply_visitor (visitor_get_names (names), *it);
         }
 
         return names;

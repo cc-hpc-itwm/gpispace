@@ -46,8 +46,6 @@ namespace sdpa {
           m_guiService("SDPA", guiUrl),
           m_bCanRunTasksLocally(bCanRunTasksLocally)
         {
-          SDPA_LOG_DEBUG("Agent's constructor called ...");
-
           if(rank>=0)
           {
             std::ostringstream oss;
@@ -62,7 +60,7 @@ namespace sdpa {
           {
             m_guiService.open ();
             // attach gui observer
-            SDPA_LOG_INFO("Application GUI service at " << guiUrl << " attached...");
+            DMLOG (TRACE, "Application GUI service at " << guiUrl << " attached...");
           }
         }
 

@@ -42,7 +42,7 @@ void Agent::action_config_ok(const ConfigOkEvent& e)
   GenericDaemon::action_config_ok (e);
 
   // should be overriden by the orchestrator, aggregator and NRE
-  SDPA_LOG_INFO("Configuration (aggregator) was ok");
+  DMLOG (TRACE, "Configuration (aggregator) was ok");
 
   cfg().print();
 }
@@ -127,7 +127,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       }
       catch(WorkerNotFoundException const &)
       {
-        SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+        DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
         throw;
       }
       catch(const JobNotDeletedException&)
@@ -175,13 +175,6 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
     SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
     return false;
   }
-
-#if 0
-#  ifdef STATISTICS_CONDITION
-      statistics::dump_maps();
-      statistics::reset_maps();
-#  endif
-#endif
 
   try {
     // forward it up
@@ -253,13 +246,6 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
     SDPA_LOG_WARN( "got finished message for old/unknown Job "<<job_id.str());
     return false;
   }
-
-#if 0
-#  ifdef STATISTICS_CONDITION
-      statistics::dump_maps();
-      statistics::reset_maps();
-#  endif
-#endif
 
   try {
     // forward it up
@@ -422,7 +408,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
       }
       catch(WorkerNotFoundException const &)
       {
-        SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+        DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
         throw;
       }
       catch(const JobNotDeletedException&)
@@ -477,13 +463,6 @@ bool Agent::failed( const id_type& wfid
     SDPA_LOG_WARN( "got failed message for old/unknown Job "<<id.str());
     return false;
   }
-
-#if 0
-#  ifdef STATISTICS_CONDITION
-      statistics::dump_maps();
-      statistics::reset_maps();
-#  endif
-#endif
 
   try {
     // forward it up
@@ -623,7 +602,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
   }
   catch(const JobNotFoundException &)
   {
-    SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+    DMLOG (TRACE, "Job "<<pEvt->job_id()<<" not found!");
 
     if (pEvt->from () == sdpa::daemon::WE)
     {
@@ -751,7 +730,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
       // the job was not assigned to any worker yet -> this means that might
       // still be in the scheduler's queue
-      SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+      DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
     }
     catch(const JobNotDeletedException& jnde)
     {
