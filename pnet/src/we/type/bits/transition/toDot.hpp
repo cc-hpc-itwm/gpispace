@@ -7,6 +7,9 @@
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 
+#include <we/expr/parse/parser.hpp>
+#include <sstream>
+
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 
@@ -672,9 +675,12 @@ namespace we { namespace type {
         std::ostringstream cond;
 
         if (fhg::util::show (t.condition()) != "true")
-          {
-            cond << "|" << lines ('&', quote (fhg::util::show (t.condition())));
-          }
+        {
+          std::ostringstream oss;
+          oss << expr::parse::parser (fhg::util::show (t.condition()));
+
+          cond << "|" << lines ('&', quote (oss.str()));
+        }
 
         level (s, l + 1)
           << name (id_trans, "condition")

@@ -1369,7 +1369,12 @@ namespace xml
                    << " "
                    << file_module_ldflags                          << std::endl;
             stream << "\t$(CXX)"
-                   << " -shared $(" << objs << ") -o $@"
+                   << " -shared "
+                   << "$(filter-out"
+                   << " " << file_global_ldflags
+                   << " " << file_module_ldflags
+                   << ", $^)"
+                   << " -o $@"
                    << " $(" << ldflags << ")"
                    << " $(LDFLAGS)"                                << std::endl;
             stream                                                 << std::endl;

@@ -34,16 +34,6 @@ namespace pnet
       NAME (STRUCT);
 
 #undef NAME
-
-      class typename_of
-      {
-      public:
-        typename_of (const std::string&);
-        std::ostream& operator() (std::ostream&) const;
-      private:
-        const std::string& _name;
-      };
-      std::ostream& operator<< (std::ostream&, const typename_of&);
     }
   }
 }
