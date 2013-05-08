@@ -1035,30 +1035,86 @@ namespace prefix
         QContextMenuEvent* context_menu_event (static_cast<QContextMenuEvent*> (event));
 
         const boost::optional<int> node_index (node_at (context_menu_event->pos()));
+
+        if (!node_index || !_selection.contains (*node_index))
+        {
+          _selection.clear();
+        }
+
         if (node_index)
         {
-          QMenu context_menu;
-          const node_type& n (node (*node_index));
-          if (!state (n.state())._actions.empty())
+          QSet<int> nodes (QSet<int>::fromList (_selection));
+          const QString hostname_replacement ( nodes.empty()
+                                             ? node (*node_index).hostname()
+                                             : QString ("%1 (and %2 others)")
+                                             .arg (node (*node_index).hostname())
+                                             .arg (nodes.size() - 1)
+                                             );
+          nodes << *node_index;
+
+          QStringList hostnames;
+
+          QSet<QString> action_name_intersection
+            (QSet<QString>::fromList (state (node (*node_index).state())._actions));
+          QSet<QString> action_name_union;
+
+          foreach (const int index, nodes)
           {
-            foreach (const QString& action, state (n.state())._actions)
+            const node_type& n (node (index));
+            hostnames << n.hostname();
+
+            const QSet<QString> actions
+              (QSet<QString>::fromList (state (n.state())._actions));
+
+            action_name_union.unite (actions);
+            action_name_intersection.intersect (actions);
+          }
+
+          QList<QAction*> actions;
+
+          foreach (const QString& action_name, action_name_union)
+          {
+            QAction* action
+              ( new QAction
+                ( QString ( _long_action.contains (action_name)
+                          ? _long_action[action_name]
+                          : action_name
+                          )
+                .replace ("{hostname}", hostname_replacement)
+                , this
+                )
+              );
+
+            if (action_name_intersection.contains (action_name))
             {
-              fhg::util::qt::boost_connect<void (void)>
-                ( context_menu.addAction
-                  ( QString ( _long_action.contains (action)
-                            ? _long_action[action]
-                            : action
-                            )
-                  .replace ("{hostname}", n.hostname())
-                  )
-                , SIGNAL (triggered())
-                , _communication
-                , boost::bind ( &communication::request_action
-                              , _communication
-                              , n.hostname()
-                              , action
-                              )
-                );
+              foreach (const QString& hostname, hostnames)
+              {
+                fhg::util::qt::boost_connect<void (void)>
+                  ( action
+                  , SIGNAL (triggered())
+                  , _communication
+                  , boost::bind ( &communication::request_action
+                                , _communication
+                                , hostname
+                                , action_name
+                                )
+                  );
+              }
+            }
+            else
+            {
+              action->setEnabled (false);
+            }
+
+            actions << action;
+          }
+
+          if (!actions.empty())
+          {
+            QMenu context_menu;
+            foreach (QAction* action, actions)
+            {
+              context_menu.addAction (action);
             }
             _communication->pause();
             context_menu.exec (context_menu_event->globalPos());
