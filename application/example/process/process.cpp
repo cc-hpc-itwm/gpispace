@@ -578,11 +578,15 @@ namespace process
         }
     }
 
+    ret.exit_code = 255;
+    ret.bytes_read_stdout = 0;
+    ret.bytes_read_stderr = 0;
+
     DMLOG (TRACE, "run command: " << fhg::util::show (av,av+cmdline.size()));
 
     if ((pid = fork()) < 0)
       {
-        ret.exit_code = -errno;
+        ret.exit_code = 254;
         LOG(ERROR, "fork failed: " << strerror(errno));
       }
     else if (pid == pid_t (0))
@@ -598,7 +602,12 @@ namespace process
             close (1);
             close (2);
 
-            _exit (-ec);
+            if (ec == EACCES)
+              _exit (126);
+            if (ec == ENOENT)
+              _exit (127);
+            else
+              _exit (254);
           }
       }
     else
@@ -659,13 +668,11 @@ namespace process
 
         if (WIFEXITED (status))
           {
-            const int ec (WEXITSTATUS(status));
-            ret.exit_code = ec;
+            ret.exit_code = WEXITSTATUS (status);
           }
         else if (WIFSIGNALED (status))
           {
-            const int ec (WTERMSIG(status));
-            ret.exit_code = -ec;
+            ret.exit_code = 128 + WTERMSIG (status);
           }
         else
           {
