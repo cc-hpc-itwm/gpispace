@@ -580,7 +580,16 @@ namespace process
 
     DMLOG (TRACE, "run command: " << fhg::util::show (av,av+cmdline.size()));
 
-    if ((pid = fork()) < 0)
+    sigset_t signals_to_block;
+    sigset_t signals_to_restore;
+    sigemptyset (&signals_to_block);
+    sigaddset (&signals_to_block, SIGCHLD);
+    sigaddset (&signals_to_block, SIGPIPE);
+    sigprocmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
+
+    pid = fork();
+
+    if (pid < 0)
       {
         ret.exit_code = 254;
         LOG(ERROR, "fork failed: " << strerror(errno));
@@ -644,8 +653,18 @@ namespace process
 
         int status (0);
 
-        waitpid (pid, &status, 0);
+        pid_t wait_ret;
+        do
+        {
+          wait_ret = waitpid (pid, &status, 0);
+          int ec = errno;
+          if (wait_ret == -1)
+          {
+            DMLOG (ERROR, "waitpid returned: " << wait_ret << ": " << strerror (ec));
+          }
+        } while (wait_ret == pid);
 
+        DMLOG (TRACE, "child returned: " << status);
 
         DLOG (TRACE, "join threads");
 
