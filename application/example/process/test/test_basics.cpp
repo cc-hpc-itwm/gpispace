@@ -2,24 +2,25 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/minimal.hpp>
+#include <csignal>
 
 #include <process.hpp>
 
-struct SetupLogging
+struct Setup
 {
-  SetupLogging ()
+  Setup ()
   {
     FHGLOG_SETUP();
   }
 };
 
-BOOST_FIXTURE_TEST_SUITE( setup_logging, SetupLogging )
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_GLOBAL_FIXTURE( Setup )
 
 struct F
 {
-  F()
-  {}
+  F ()
+  {
+  }
 
   process::file_const_buffer_list m_input_files;
   process::file_buffer_list       m_output_files;
@@ -43,6 +44,7 @@ BOOST_AUTO_TEST_CASE (no_such_file_or_directory)
                      , m_input_files
                      , m_output_files
                      );
+
   BOOST_REQUIRE_EQUAL (result.exit_code, 127);
 }
 
