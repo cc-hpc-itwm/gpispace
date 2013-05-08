@@ -192,10 +192,6 @@ namespace process
               DLOG (TRACE, "circ read " << r << " bytes, sum " << bytes_read);
 
               std::copy (buf, buf + r, std::back_inserter (circ_buf));
-
-              DLOG ( TRACE
-                   , "circ read: \"" << std::string (buf, buf + r) << "\""
-                   );
             }
         }
 
