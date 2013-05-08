@@ -294,6 +294,7 @@ namespace prefix
           if (val == index)
           {
             selection.remove();
+            update (index);
           }
           else if (val > index)
           {
@@ -924,6 +925,27 @@ namespace prefix
     }
   }
 
+  void node_state_widget::clear_selection()
+  {
+    foreach (const int index, _selection)
+    {
+      update (index);
+    }
+    _selection.clear();
+  }
+
+  void node_state_widget::add_to_selection (const int& node)
+  {
+    _selection.append (node);
+    update (node);
+  }
+
+  void node_state_widget::remove_from_selection (const int& node)
+  {
+    _selection.removeOne (node);
+    update (node);
+  }
+
   void node_state_widget::mouseReleaseEvent (QMouseEvent* event)
   {
     if (event->button() == Qt::LeftButton && event->buttons() == Qt::NoButton)
@@ -934,20 +956,20 @@ namespace prefix
       {
         if (event->modifiers() == Qt::NoModifier)
         {
-          _selection.clear();
-          _selection.append (*node);
+          clear_selection();
+          add_to_selection (*node);
           _last_manual_selection = *node;
         }
         else if (event->modifiers() == Qt::ControlModifier)
         {
           if (_selection.contains (*node))
           {
-            _selection.removeOne (*node);
+            remove_from_selection (*node);
             _last_manual_selection = boost::none;
           }
           else
           {
-            _selection.append (*node);
+            add_to_selection (*node);
             _last_manual_selection = *node;
           }
         }
@@ -955,8 +977,8 @@ namespace prefix
         {
           if (!(event->modifiers() & Qt::ControlModifier))
           {
-            _selection.clear();
-            _selection.append (*_last_manual_selection);
+            clear_selection();
+            add_to_selection (*_last_manual_selection);
           }
           if (_last_manual_selection)
           {
@@ -965,14 +987,14 @@ namespace prefix
                 ; ++i
                 )
             {
-              _selection.append (i);
+              add_to_selection (i);
             }
           }
           else
           {
             _last_manual_selection = *node;
           }
-          _selection.append (*node);
+          add_to_selection (*node);
         }
         else
         {
@@ -983,7 +1005,7 @@ namespace prefix
       {
         if (event->modifiers() == Qt::NoModifier)
         {
-          _selection.clear();
+          clear_selection();
           _last_manual_selection = boost::none;
         }
         else
@@ -1037,7 +1059,7 @@ namespace prefix
 
         if (!node_index || !_selection.contains (*node_index))
         {
-          _selection.clear();
+          clear_selection();
         }
 
         if (node_index)

@@ -272,6 +272,11 @@ namespace prefix
 
     QVector<node_type> _nodes;
     QList<int> _selection;
+
+    void clear_selection();
+    void add_to_selection (const int&);
+    void remove_from_selection (const int&);
+
     boost::optional<int> _last_manual_selection;
 
     legend* _legend_widget;
