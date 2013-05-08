@@ -653,16 +653,7 @@ namespace process
 
         int status (0);
 
-        pid_t wait_ret;
-        do
-        {
-          wait_ret = waitpid (pid, &status, 0);
-          int ec = errno;
-          if (wait_ret == -1)
-          {
-            DMLOG (ERROR, "waitpid returned: " << wait_ret << ": " << strerror (ec));
-          }
-        } while (wait_ret == pid);
+        waitpid (pid, &status, 0);
 
         DMLOG (TRACE, "child returned: " << status);
 
