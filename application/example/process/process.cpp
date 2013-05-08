@@ -686,7 +686,7 @@ namespace process
             LOG(ERROR, "strange child status: " << status);
           }
 
-        DMLOG (TRACE, "finished command: " << command);
+        DMLOG (TRACE, "finished command: " << command << ": " << ret.exit_code);
       }
 
     {
