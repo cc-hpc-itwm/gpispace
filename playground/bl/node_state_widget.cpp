@@ -925,6 +925,80 @@ namespace prefix
     }
   }
 
+  void node_state_widget::mouseReleaseEvent (QMouseEvent* event)
+  {
+    if (event->button() == Qt::LeftButton && event->buttons() == Qt::NoButton)
+    {
+      const boost::optional<int> node (node_at (event->pos()));
+
+      if (node)
+      {
+        if (event->modifiers() == Qt::NoModifier)
+        {
+          _selection.clear();
+          _selection.append (*node);
+          _last_manual_selection = *node;
+        }
+        else if (event->modifiers() == Qt::ControlModifier)
+        {
+          if (_selection.contains (*node))
+          {
+            _selection.removeOne (*node);
+            _last_manual_selection = boost::none;
+          }
+          else
+          {
+            _selection.append (*node);
+            _last_manual_selection = *node;
+          }
+        }
+        else if (event->modifiers() & Qt::ShiftModifier)
+        {
+          if (!(event->modifiers() & Qt::ControlModifier))
+          {
+            _selection.clear();
+            _selection.append (*_last_manual_selection);
+          }
+          if (_last_manual_selection)
+          {
+            for ( int i (qMin (*_last_manual_selection, *node) + 1)
+                ; i < qMax (*_last_manual_selection, *node)
+                ; ++i
+                )
+            {
+              _selection.append (i);
+            }
+          }
+          else
+          {
+            _last_manual_selection = *node;
+          }
+          _selection.append (*node);
+        }
+        else
+        {
+          QWidget::mouseReleaseEvent (event);
+        }
+      }
+      else
+      {
+        if (event->modifiers() == Qt::NoModifier)
+        {
+          _selection.clear();
+          _last_manual_selection = boost::none;
+        }
+        else
+        {
+          QWidget::mouseReleaseEvent (event);
+        }
+      }
+    }
+    else
+    {
+      QWidget::mouseReleaseEvent (event);
+    }
+  }
+
   bool node_state_widget::event (QEvent* event)
   {
     switch (event->type())

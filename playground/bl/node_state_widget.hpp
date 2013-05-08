@@ -248,6 +248,8 @@ namespace prefix
     virtual void paintEvent (QPaintEvent*);
     virtual bool event (QEvent*);
 
+    virtual void mouseReleaseEvent (QMouseEvent*);
+
   private slots:
     void refresh_stati();
     void nodes (QStringList);
@@ -270,6 +272,7 @@ namespace prefix
 
     QVector<node_type> _nodes;
     QList<int> _selection;
+    boost::optional<int> _last_manual_selection;
 
     legend* _legend_widget;
 
