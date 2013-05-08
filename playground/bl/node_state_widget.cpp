@@ -147,9 +147,9 @@ namespace prefix
             );
   }
 
-  QRectF rect_for_node (const int node, const int per_row)
+  QRect rect_for_node (const int node, const int per_row)
   {
-    return QRectF ( (node % per_row) * per_step + base_coord
+    return QRect ( (node % per_row) * per_step + base_coord
                  , (node / per_row) * per_step + base_coord
                  , node_size
                  , node_size
@@ -162,8 +162,7 @@ namespace prefix
 
     QToolTip::hideText();
 
-    QWidget::update
-      (rect_for_node (node, per_row).toRect().adjusted (-1, -1, 1, 1));
+    QWidget::update (rect_for_node (node, per_row).adjusted (-1, -1, 1, 1));
   }
 
   void node_state_widget::update()
@@ -907,14 +906,14 @@ namespace prefix
         const int i (row_base + column);
         if (i < node_count())
         {
-          painter.drawPixmap ( rect_for_node (i, per_row).toRect()
+          painter.drawPixmap ( rect_for_node (i, per_row)
                              , state (node (i).state())._pixmap
                              );
 
           if (_selection.contains (i))
           {
             painter.setBrush (Qt::Dense3Pattern);
-            painter.drawRect (rect_for_node (i, per_row).toRect());
+            painter.drawRect (rect_for_node (i, per_row));
           }
         }
         else
