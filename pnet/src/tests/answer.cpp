@@ -10,10 +10,11 @@ int get_answer ()
   return ++ans;
 }
 
-static void answer (void * state, const we::loader::input_t & input, we::loader::output_t & output)
+static void answer ( void * state
+                   , const we::loader::input_t & input
+                   , we::loader::output_t & output
+                   )
 {
-  std::cerr << "state := " << state << std::endl;
-  std::cerr << "input := " << input << std::endl;
   output.bind ("out", 42L);
 }
 

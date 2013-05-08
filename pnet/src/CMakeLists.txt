@@ -217,8 +217,6 @@ add_library (pnet ${we_srcs} ${xml_sources})
 target_link_libraries (pnet
   fhg-util
 )
-add_library (pnet-shared SHARED ${we_srcs} ${xml_sources})
-set_target_properties(pnet-shared PROPERTIES OUTPUT_NAME pnet)
 
 add_library (we-dev SHARED ${we_dev_srcs})
 set_target_properties(we-dev

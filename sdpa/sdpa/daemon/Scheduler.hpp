@@ -43,11 +43,11 @@ namespace daemon {
 
 	 virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException) = 0;
 
-	 virtual void addWorker(  const Worker::worker_id_t& workerId,
-			 	 	 	 	              const unsigned int& capacity = 10000,
-			                      const capabilities_set_t& cpbset = capabilities_set_t(),
-			                      const unsigned int& agent_rank = 0,
-			                      const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException) = 0;
+	 virtual void addWorker( const Worker::worker_id_t& workerId,
+			 	 	 	 	 const unsigned int& capacity = 10000,
+			 	 	 	 	 const capabilities_set_t& cpbset = capabilities_set_t(),
+			                 const unsigned int& agent_rank = 0,
+			                 const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException) = 0;
 
 	 virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException) = 0;
 

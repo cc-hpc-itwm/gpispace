@@ -192,10 +192,6 @@ namespace process
               DLOG (TRACE, "circ read " << r << " bytes, sum " << bytes_read);
 
               std::copy (buf, buf + r, std::back_inserter (circ_buf));
-
-              DLOG ( TRACE
-                   , "circ read: \"" << std::string (buf, buf + r) << "\""
-                   );
             }
         }
 
@@ -578,11 +574,24 @@ namespace process
         }
     }
 
+    ret.exit_code = 255;
+    ret.bytes_read_stdout = 0;
+    ret.bytes_read_stderr = 0;
+
     DMLOG (TRACE, "run command: " << fhg::util::show (av,av+cmdline.size()));
 
-    if ((pid = fork()) < 0)
+    sigset_t signals_to_block;
+    sigset_t signals_to_restore;
+    sigemptyset (&signals_to_block);
+    sigaddset (&signals_to_block, SIGCHLD);
+    sigaddset (&signals_to_block, SIGPIPE);
+    sigprocmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
+
+    pid = fork();
+
+    if (pid < 0)
       {
-        ret.exit_code = -errno;
+        ret.exit_code = 254;
         LOG(ERROR, "fork failed: " << strerror(errno));
       }
     else if (pid == pid_t (0))
@@ -598,7 +607,12 @@ namespace process
             close (1);
             close (2);
 
-            _exit (-ec);
+            if (ec == EACCES)
+              _exit (126);
+            if (ec == ENOENT)
+              _exit (127);
+            else
+              _exit (254);
           }
       }
     else
@@ -641,6 +655,7 @@ namespace process
 
         waitpid (pid, &status, 0);
 
+        DMLOG (TRACE, "child returned: " << status);
 
         DLOG (TRACE, "join threads");
 
@@ -659,13 +674,11 @@ namespace process
 
         if (WIFEXITED (status))
           {
-            const int ec (WEXITSTATUS(status));
-            ret.exit_code = ec;
+            ret.exit_code = WEXITSTATUS (status);
           }
         else if (WIFSIGNALED (status))
           {
-            const int ec (WTERMSIG(status));
-            ret.exit_code = -ec;
+            ret.exit_code = 128 + WTERMSIG (status);
           }
         else
           {
@@ -673,7 +686,7 @@ namespace process
             LOG(ERROR, "strange child status: " << status);
           }
 
-        DMLOG (TRACE, "finished command: " << command);
+        DMLOG (TRACE, "finished command: " << command << ": " << ret.exit_code);
       }
 
     {
