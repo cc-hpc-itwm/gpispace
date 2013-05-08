@@ -1020,6 +1020,7 @@ namespace prefix
                  : ""
                  )
             );
+          event->accept();
           return true;
         }
 
@@ -1062,6 +1063,7 @@ namespace prefix
             _communication->pause();
             context_menu.exec (context_menu_event->globalPos());
             _communication->resume();
+            event->accept();
             return true;
           }
         }
