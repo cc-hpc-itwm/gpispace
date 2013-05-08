@@ -276,6 +276,7 @@ namespace prefix
     const int old_height (heightForWidth (width()));
 
     QMutableVectorIterator<node_type> i (_nodes);
+    int index (0);
 
     bool removed_at_least_one (false);
     while (i.hasNext())
@@ -287,11 +288,26 @@ namespace prefix
         _pending_updates.removeAll (hostname);
         _nodes_to_update.removeAll (hostname);
 
+        QMutableListIterator<int> selection (_selection);
+        while (selection.hasNext())
+        {
+          int& val (selection.next());
+          if (val == index)
+          {
+            selection.remove();
+          }
+          else if (val > index)
+          {
+            --val;
+          }
+        }
+
         removed_at_least_one = true;
       }
       else
       {
         hostnames.removeOne (hostname);
+        ++index;
       }
     }
 
@@ -894,6 +910,12 @@ namespace prefix
           painter.drawPixmap ( rect_for_node (i, per_row).toRect()
                              , state (node (i).state())._pixmap
                              );
+
+          if (_selection.contains (i))
+          {
+            painter.setBrush (Qt::Dense3Pattern);
+            painter.drawRect (rect_for_node (i, per_row).toRect());
+          }
         }
         else
         {

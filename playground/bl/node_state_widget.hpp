@@ -269,6 +269,7 @@ namespace prefix
     void update();
 
     QVector<node_type> _nodes;
+    QList<int> _selection;
 
     legend* _legend_widget;
 
