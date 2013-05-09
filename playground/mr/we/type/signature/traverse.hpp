@@ -19,10 +19,7 @@ namespace pnet
           : _p (p)
         {}
 
-        void operator() (const std::pair< std::string
-                        , structure_type
-                        >& s
-                        ) const
+        void operator() (const std::pair<std::string, structure_type>& s) const
         {
           _p._field_struct (s);
         }
@@ -38,10 +35,7 @@ namespace pnet
           : _p (p)
         {}
 
-        void operator() (const std::pair< std::string
-                        , std::string
-                        >& f
-                        ) const
+        void operator() (const std::pair<std::string, std::string>& f) const
         {
           _p._field (f);
         }
@@ -60,10 +54,7 @@ namespace pnet
         traverse_struct (P p)
           : _p (p)
         {}
-        void operator() (const std::pair< std::string
-                        , structure_type
-                        >& s
-                        ) const
+        void operator() (const std::pair<std::string, structure_type>& s) const
         {
           _p._struct (s);
         }
