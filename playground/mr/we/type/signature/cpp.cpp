@@ -191,7 +191,7 @@ namespace pnet
           fhg::util::indenter indent;
 
           os << "#include <we/type/value.hpp>" << std::endl;
-          os << "#include <boost/serialization.hpp>" << std::endl;
+          os << "#include <boost/serialization/nvp.hpp>" << std::endl;
 
           traverse (print_header (os, indent), _structured);
 
