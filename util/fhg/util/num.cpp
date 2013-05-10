@@ -58,22 +58,62 @@ namespace fhg
       };
 
       template<typename Base, typename I>
-        inline I generic_base_read_integral (parse::position& pos)
+        inline I generic_base_read_integral ( parse::position& pos
+                                            , const bool has_sign
+                                            )
       {
         I l (0);
 
-        while (!pos.end() && Base::isdig (*pos))
+        if (has_sign)
         {
-          l *= Base::base();
-          l += Base::val (*pos);
-          ++pos;
+          while (!pos.end() && Base::isdig (*pos))
+          {
+            if (l < std::numeric_limits<I>::min() / Base::base())
+            {
+              throw parse::error::unexpected_digit<I> (pos);
+            }
+
+            l *= Base::base();
+
+            if (l < std::numeric_limits<I>::min() + Base::val (*pos))
+            {
+              throw parse::error::unexpected_digit<I> (pos);
+            }
+
+            l -= Base::val (*pos);
+
+            ++pos;
+          }
+        }
+        else
+        {
+          while (!pos.end() && Base::isdig (*pos))
+          {
+            if (l > std::numeric_limits<I>::max() / Base::base())
+            {
+              throw parse::error::unexpected_digit<I> (pos);
+            }
+
+            l *= Base::base();
+
+            if (l > std::numeric_limits<I>::max() - Base::val (*pos))
+            {
+              throw parse::error::unexpected_digit<I> (pos);
+            }
+
+            l += Base::val (*pos);
+
+            ++pos;
+          }
         }
 
         return l;
       }
 
       template<typename I>
-        inline I generic_read_integral (parse::position& pos)
+        inline I generic_read_integral ( parse::position& pos
+                                       , const bool has_sign = false
+                                       )
       {
         if (pos.end() || !isdigit(*pos))
         {
@@ -95,11 +135,11 @@ namespace fhg
           {
             ++pos;
 
-            return generic_base_read_integral<hex<I>, I> (pos);
+            return generic_base_read_integral<hex<I>, I> (pos, has_sign);
           }
           else
           {
-            return generic_base_read_integral<dec<I>,I> (pos);
+            return generic_base_read_integral<dec<I>,I> (pos, has_sign);
           }
         }
 
@@ -130,8 +170,7 @@ namespace fhg
       template<typename I>
         inline I generic_read_signed_integral (parse::position& pos)
       {
-        return read_sign (pos)
-          ? -generic_read_integral<I> (pos) : generic_read_integral<I> (pos);
+        return generic_read_integral<I> (pos, read_sign (pos));
       }
 
       template<typename F>

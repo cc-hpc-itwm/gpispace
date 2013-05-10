@@ -62,6 +62,22 @@ namespace fhg
           {}
           virtual ~value_too_big() throw() {}
         };
+
+        template<typename I>
+          class unexpected_digit : public generic
+        {
+        public:
+          unexpected_digit (const position& pos)
+            : generic ( boost::format
+                        ( "unexpected digit"
+                        " (parsed value would be larger than %1%)"
+                        )
+                      % std::numeric_limits<I>::max()
+                      , pos
+                      )
+          {}
+          virtual ~unexpected_digit() throw() {}
+        };
       }
     }
   }
