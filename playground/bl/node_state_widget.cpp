@@ -1067,9 +1067,10 @@ namespace prefix
           QSet<int> nodes (QSet<int>::fromList (_selection));
           const QString hostname_replacement ( nodes.empty()
                                              ? node (*node_index).hostname()
-                                             : QString ("%1 (and %2 others)")
+                                             : QString ("%1 (and %2 other%3)")
                                              .arg (node (*node_index).hostname())
                                              .arg (nodes.size() - 1)
+                                             .arg (nodes.size() > 2 ? "s" : "")
                                              );
           nodes << *node_index;
 
