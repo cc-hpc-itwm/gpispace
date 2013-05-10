@@ -225,7 +225,7 @@ namespace fhg
       {
         if (x > static_cast<From> (std::numeric_limits<To>::max()))
         {
-          throw parse::error::value_to_big<From, To> (x, pos);
+          throw parse::error::value_too_big<From, To> (x, pos);
         }
 
         return static_cast<To> (x);

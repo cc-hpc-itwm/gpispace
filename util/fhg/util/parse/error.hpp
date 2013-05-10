@@ -50,17 +50,17 @@ namespace fhg
         };
 
         template<typename From, typename To>
-          class value_to_big : public generic
+          class value_too_big : public generic
         {
         public:
-          value_to_big (const From& f, const position& pos)
+          value_too_big (const From& f, const position& pos)
             : generic ( boost::format ("value %1% larger than maximum %2%")
                       % f
                       % std::numeric_limits<To>::max()
                       , pos
                       )
           {}
-          virtual ~value_to_big() throw() {}
+          virtual ~value_too_big() throw() {}
         };
       }
     }

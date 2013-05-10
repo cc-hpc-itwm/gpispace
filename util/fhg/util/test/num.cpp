@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp ("9223372036854775808L");
     position pos (inp);
 
-    typedef error::value_to_big<unsigned long, long> error_type;
+    typedef error::value_too_big<unsigned long, long> error_type;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }
@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp ("-9223372036854775808L");
     position pos (inp);
 
-    typedef error::value_to_big<unsigned long, long> error_type;
+    typedef error::value_too_big<unsigned long, long> error_type;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp (oss.str());
     position pos (inp);
 
-    typedef error::value_to_big<double, float> error_type;
+    typedef error::value_too_big<double, float> error_type;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }
