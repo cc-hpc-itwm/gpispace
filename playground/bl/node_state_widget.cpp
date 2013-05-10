@@ -638,6 +638,40 @@ namespace prefix
           break;
         }
       }
+
+      void show_in_console() const
+      {
+        if (!_result)
+        {
+          throw std::runtime_error ("action result without result code");
+        }
+
+        const QString msg ( QString ("\"%1\" on \"%2\" -> %3")
+                          .arg (_action)
+                          .arg (_host)
+                          .arg (_message.get_value_or ( *_result == okay ? "okay"
+                                                      : *_result == warn ? "warn"
+                                                      : *_result == fail ? "fail"
+                                                      : "UNKNOWN RESULT"
+                                                      )
+                               )
+                          );
+
+        switch (*_result)
+        {
+        case okay:
+          qDebug (qPrintable (msg));
+          break;
+
+        case fail:
+          qCritical (qPrintable (msg));
+          break;
+
+        case warn:
+          qWarning (qPrintable (msg));
+          break;
+        }
+      }
     };
   }
 
@@ -653,7 +687,8 @@ namespace prefix
     action_result_data result (host, action);
     require::list (pos, boost::bind (&action_result_data::append, &result, _1));
 
-    result.show_in_messagebox();
+    // result.show_in_messagebox();
+    result.show_in_console();
   }
 
   void communication::check_for_incoming_messages()
