@@ -144,10 +144,12 @@ void thread::execute_action (fhg::util::parse::position& pos)
   }
 
   QString& state (_hosts[host].first);
+  int& last_change (_hosts[host].second);
 
   if (action == "reboot" && (state == "unavailable" || state == "available"))
   {
     state = "down";
+    last_change = 0;
 
     _socket->write
       ( qPrintable ( QString
@@ -160,6 +162,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
   else if (action == "add_to_working_set" && state == "available")
   {
     state = "used";
+    last_change = 0;
 
     _socket->write
       ( qPrintable ( QString
@@ -172,6 +175,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
   else if (action == "remove_from_working_set" && state == "used")
   {
     state = "available";
+    last_change = 0;
 
     _socket->write
       ( qPrintable ( QString
