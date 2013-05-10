@@ -65,7 +65,7 @@ target_link_libraries (mk_cpp we we-dev fhg-util ${Boost_LIBRARIES})
 add_custom_command (
   OUTPUT sig.hpp sig.cpp
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig.hpp -I sig.cpp
-  MAIN_DEPENDENCY mk_cpp
+  DEPENDS mk_cpp
 )
 
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
