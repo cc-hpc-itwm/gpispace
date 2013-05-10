@@ -106,12 +106,17 @@ void thread::send_action_description (fhg::util::parse::position& pos)
 
 void thread::send_layout_hint (fhg::util::parse::position& pos)
 {
+  const QString state (prefix::require::qstring (pos));
   _socket->write
     ( qPrintable ( QString
-                 ("layout_hint: [\"%1\": [color:0x%2,border:0x%3,],]\n")
-                 .arg (prefix::require::qstring (pos))
-                 .arg (qrand() ^ qrand(), 0, 16)
-                 .arg (qrand() ^ qrand(), 0, 16)
+                 ("layout_hint: [\"%1\": [color: %2, border: 0,],]\n")
+                 .arg (state)
+                 .arg ( state == "down" ? 0xEF0A06
+                      : state == "available" ? 0x23AEB8
+                      : state == "unavailable" ? 0xFF5405
+                      : state == "used" ? 0x155F22
+                      : 0xFFFFFF
+                      )
                  )
     );
 }
