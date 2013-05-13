@@ -660,15 +660,15 @@ namespace prefix
         switch (*_result)
         {
         case okay:
-          qDebug (qPrintable (msg));
+          qDebug ("%s", qPrintable (msg));
           break;
 
         case fail:
-          qCritical (qPrintable (msg));
+          qCritical ("%s", qPrintable (msg));
           break;
 
         case warn:
-          qWarning (qPrintable (msg));
+          qWarning ("%s", qPrintable (msg));
           break;
         }
       }
