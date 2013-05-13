@@ -327,49 +327,40 @@ namespace prefix
     QMutableListIterator<node_type> i (_nodes);
     int index (0);
 
-    bool removed_at_least_one (false);
+    QStringList update_requests;
     while (i.hasNext())
     {
-      const QString& hostname (i.next().hostname());
+      node_type& node (i.next());
+      const QString& hostname (node.hostname());
       if (!hostnames.contains (hostname))
       {
-        i.remove();
+        node.state (boost::none);
+
         _pending_updates.removeAll (hostname);
         _nodes_to_update.removeAll (hostname);
 
-        QMutableListIterator<int> selection (_selection);
-        while (selection.hasNext())
-        {
-          int& val (selection.next());
-          if (val == index)
-          {
-            selection.remove();
-            update (index);
-          }
-          else if (val > index)
-          {
-            --val;
-          }
-        }
-
-        removed_at_least_one = true;
+        remove_from_selection (index);
       }
       else
       {
+        if (node.state() == boost::none)
+        {
+          update_requests << hostname;
+        }
         hostnames.removeOne (hostname);
-        ++index;
       }
-    }
-
-    if (removed_at_least_one)
-    {
-      update();
+      ++index;
     }
 
     foreach (const QString& hostname, hostnames)
     {
       _nodes << node_type (hostname);
       update (_nodes.size() - 1);
+      update_requests << hostname;
+    }
+
+    foreach (const QString& hostname, update_requests)
+    {
       if ( !_pending_updates.contains (hostname)
         && !_nodes_to_update.contains (hostname)
          )
