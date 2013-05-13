@@ -5,6 +5,7 @@
 #include <boost/foreach.hpp>
 
 #include <gspc/net/frame.hpp>
+#include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/frame_util.hpp>
 
@@ -198,7 +199,7 @@ namespace gspc
       }
 
       int
-      queue_manager_t::connect (user_ptr u, frame const &)
+      queue_manager_t::connect (user_ptr u, frame const &f)
       {
         unique_lock lock (m_mutex);
 
@@ -207,6 +208,7 @@ namespace gspc
           gspc::net::frame connected =
             make::connected_frame (gspc::net::header::version ("1.0"));
           connected.set_header ("heart-beat", "0,0");
+          connected.set_header ("correlation-id", f.get_header ("message-id"));
           u->deliver (connected);
 
           m_connections.insert (u);
