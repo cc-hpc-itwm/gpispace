@@ -63,6 +63,20 @@ namespace gspc
         return f;
       }
 
+      frame reply_frame (frame const & send_frame)
+      {
+        frame f (send_frame);
+        f.set_command ("REPLY");
+
+        if (frame::header_value h = send_frame.get_header ("receipt"))
+        {
+          gspc::net::header::receipt_id r_id (*h);
+          r_id.apply_to (f);
+        }
+
+        return f;
+      }
+
       frame send_frame ( gspc::net::header::destination const & dst
                        , const char *body, size_t len
                        )

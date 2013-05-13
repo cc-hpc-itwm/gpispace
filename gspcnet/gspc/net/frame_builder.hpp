@@ -24,6 +24,7 @@ namespace gspc
       frame connected_frame (gspc::net::header::version const &);
       frame message_frame (frame const & send_frame);
 
+      frame reply_frame (frame const &f);
       frame send_frame ( gspc::net::header::destination const &
                        , const char *data, size_t len
                        );
