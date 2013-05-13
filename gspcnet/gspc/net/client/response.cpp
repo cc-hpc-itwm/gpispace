@@ -24,7 +24,7 @@ namespace gspc
         }
       }
 
-      bool response_t::wait (boost::posix_time::time_duration t)
+      int response_t::wait (boost::posix_time::time_duration t)
       {
         boost::unique_lock<boost::mutex> lock (m_mutex);
 
@@ -32,11 +32,15 @@ namespace gspc
         {
           if (m_wait_object.timed_wait (lock, t))
           {
-            return true;
+            return 0;
+          }
+          else
+          {
+            return -ETIME;
           }
         }
 
-        return false;
+        return -ECANCELED;
       }
 
       void response_t::notify (frame const & f)

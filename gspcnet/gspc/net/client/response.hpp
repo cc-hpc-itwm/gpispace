@@ -23,7 +23,7 @@ namespace gspc
         response_t (std::string const &id);
 
         void wait ();
-        bool wait (boost::posix_time::time_duration timeout);
+        int  wait (boost::posix_time::time_duration timeout);
 
         void notify (frame const &);
         void abort (boost::system::error_code const &ec);
