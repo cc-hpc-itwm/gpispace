@@ -23,7 +23,15 @@ namespace gspc
                        , option_map_t const &opts
                        , boost::system::error_code & ec
                        )
-    {}
+    {
+      client->set_timeout
+        (get_option ( opts
+                    , "timeout"
+                    , -1
+                    , ec
+                    )
+        );
+    }
 
     static
     client_ptr_t s_new_unix_client ( std::string const & path
