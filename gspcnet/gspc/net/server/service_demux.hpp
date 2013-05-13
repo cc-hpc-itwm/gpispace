@@ -9,7 +9,6 @@
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/service/handler.hpp>
 
 namespace gspc
@@ -29,7 +28,7 @@ namespace gspc
 
         int handle_request ( std::string const &dst
                            , frame const & rqst
-                           , frame & rply
+                           , user_ptr user
                            );
       private:
         service_demux_t (service_demux_t const &);

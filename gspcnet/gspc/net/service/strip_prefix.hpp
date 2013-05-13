@@ -18,7 +18,7 @@ namespace gspc
 
         void operator () ( std::string const &
                          , frame const &rqst
-                         , frame & rply
+                         , user_ptr user
                          );
       private:
         std::string m_prefix;

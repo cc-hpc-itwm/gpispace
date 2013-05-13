@@ -17,7 +17,7 @@ namespace gspc
 
       void strip_prefix::operator() ( std::string const &dst
                                     , frame const &rqst
-                                    , frame & rply
+                                    , user_ptr user
                                     )
       {
         std::string new_dst (dst);
@@ -28,7 +28,7 @@ namespace gspc
           new_dst.replace (0, m_prefix.size (), "");
         }
 
-        m_next (new_dst, rqst, rply);
+        m_next (new_dst, rqst, user);
       }
     }
   }

@@ -299,14 +299,7 @@ namespace gspc
                                    , frame const & rqst
                                    )
       {
-        int rc;
-        frame rply;
-
-        rc = m_service_demux.handle_request (dst, rqst, rply);
-
-        user->deliver (rply);
-
-        return rc;
+        return m_service_demux.handle_request (dst, rqst, user);
       }
 
       int queue_manager_t::subscribe ( user_ptr user

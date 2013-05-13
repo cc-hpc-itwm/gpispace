@@ -101,7 +101,7 @@ struct counting_service_t
 
   void operator() ( std::string const &dst
                   , gspc::net::frame const &
-                  , gspc::net::frame &
+                  , gspc::net::user_ptr
                   )
   {
     ++counter;
@@ -118,7 +118,6 @@ BOOST_AUTO_TEST_CASE (test_best_prefix_match)
   int rc;
   mock::user user;
   gspc::net::frame rqst_frame;
-  gspc::net::frame rply_frame;
 
   gspc::net::server::service_demux_t demux;
 
@@ -131,25 +130,25 @@ BOOST_AUTO_TEST_CASE (test_best_prefix_match)
   BOOST_REQUIRE_EQUAL (service_A.counter, 0);
   BOOST_REQUIRE_EQUAL (service_B.counter, 0);
 
-  rc = demux.handle_request ("/echo", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo", rqst_frame, &user);
 
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 0);
   BOOST_REQUIRE_EQUAL (service_B.counter, 1);
 
-  rc = demux.handle_request ("/echo/A", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo/A", rqst_frame, &user);
 
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 1);
 
-  rc = demux.handle_request ("/echo/B", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo/B", rqst_frame, &user);
 
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 2);
 
-  rc = demux.handle_request ("/echo/BCD/EFG", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo/BCD/EFG", rqst_frame, &user);
 
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
@@ -163,7 +162,6 @@ BOOST_AUTO_TEST_CASE (test_best_prefix_match_no_separator)
   int rc;
   mock::user user;
   gspc::net::frame rqst_frame;
-  gspc::net::frame rply_frame;
 
   gspc::net::server::service_demux_t demux;
 
@@ -176,23 +174,23 @@ BOOST_AUTO_TEST_CASE (test_best_prefix_match_no_separator)
   BOOST_REQUIRE_EQUAL (service_A.counter, 0);
   BOOST_REQUIRE_EQUAL (service_B.counter, 0);
 
-  rc = demux.handle_request ("/echo", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo", rqst_frame, &user);
 
   BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_LOOKUP);
   BOOST_REQUIRE_EQUAL (service_A.counter, 0);
   BOOST_REQUIRE_EQUAL (service_B.counter, 0);
 
-  rc = demux.handle_request ("/echoA", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echoA", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 0);
 
-  rc = demux.handle_request ("/echoB", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echoB", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 1);
 
-  rc = demux.handle_request ("/echoAB", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echoAB", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_LOOKUP);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 1);
@@ -205,7 +203,6 @@ BOOST_AUTO_TEST_CASE (test_best_prefix_match_subservice)
   int rc;
   mock::user user;
   gspc::net::frame rqst_frame;
-  gspc::net::frame rply_frame;
 
   gspc::net::server::service_demux_t demux;
 
@@ -215,19 +212,19 @@ BOOST_AUTO_TEST_CASE (test_best_prefix_match_subservice)
 
   BOOST_REQUIRE_EQUAL (service.counter, 0);
 
-  rc = demux.handle_request ("/echo", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service.counter, 1);
 
-  rc = demux.handle_request ("/echo/A", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo/A", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service.counter, 2);
 
-  rc = demux.handle_request ("/echo/B", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo/B", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service.counter, 3);
 
-  rc = demux.handle_request ("/echoA", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echoA", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_LOOKUP);
   BOOST_REQUIRE_EQUAL (service.counter, 3);
 }
@@ -239,7 +236,6 @@ BOOST_AUTO_TEST_CASE (test_catch_all_service)
   int rc;
   mock::user user;
   gspc::net::frame rqst_frame;
-  gspc::net::frame rply_frame;
 
   gspc::net::server::service_demux_t demux;
 
@@ -249,23 +245,23 @@ BOOST_AUTO_TEST_CASE (test_catch_all_service)
 
   BOOST_REQUIRE_EQUAL (service.counter, 0);
 
-  rc = demux.handle_request ("/echo", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service.counter, 1);
 
-  rc = demux.handle_request ("/echo/A", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo/A", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service.counter, 2);
 
-  rc = demux.handle_request ("/echo/B", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echo/B", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service.counter, 3);
 
-  rc = demux.handle_request ("/echoA", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/echoA", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service.counter, 4);
 
-  rc = demux.handle_request ("/", rqst_frame, rply_frame);
+  rc = demux.handle_request ("/", rqst_frame, &user);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (service.counter, 5);
 }

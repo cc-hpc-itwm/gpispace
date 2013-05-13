@@ -86,7 +86,7 @@ struct erroneous_handler_t
 
   int operator() ( std::string const &
                  , gspc::net::frame const &
-                 , gspc::net::frame &
+                 , gspc::net::user_ptr
                  )
   {
     throw std::runtime_error (m_msg);

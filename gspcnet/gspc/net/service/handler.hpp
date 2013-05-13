@@ -3,7 +3,9 @@
 
 #include <string>
 #include <boost/function.hpp>
-#include <gspc/net/frame_fwd.hpp>
+#include <gspc/net/frame.hpp>
+#include <gspc/net/user_fwd.hpp>
+#include <gspc/net/user.hpp>
 
 namespace gspc
 {
@@ -13,7 +15,7 @@ namespace gspc
     {
       typedef boost::function<void ( std::string const &
                                    , frame const &
-                                   , frame &
+                                   , user_ptr user
                                    )
                              > handler_t;
     }

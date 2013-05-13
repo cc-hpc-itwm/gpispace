@@ -3,6 +3,7 @@
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/error.hpp>
+#include <gspc/net/user.hpp>
 
 #include "service_demux.hpp"
 
@@ -80,7 +81,7 @@ namespace gspc
 
       int service_demux_t::handle_request ( std::string const & dst
                                           , frame const & rqst
-                                          , frame & rply
+                                          , user_ptr user
                                           )
       {
         shared_lock lock (m_mutex);
@@ -91,31 +92,29 @@ namespace gspc
                                  );
         if (it == m_handler_map.end ())
         {
-          rply = make::error_frame ( rqst
-                                   , E_SERVICE_LOOKUP
-                                   , "no such service: '" + dst + "'"
-                                   );
+          user->deliver (make::error_frame ( rqst
+                                           , E_SERVICE_LOOKUP
+                                           , "no such service: '" + dst + "'"
+                                           )
+                        );
           return E_SERVICE_LOOKUP;
         }
 
         try
         {
-          it->second (dst, rqst, rply);
-          rply.set_command ("REPLY");
-          if (frame::header_value h = rqst.get_header ("receipt"))
-          {
-            gspc::net::header::receipt_id r_id (*h);
-            r_id.apply_to (rply);
-          }
+          it->second (dst, rqst, user);
         }
         catch (std::exception const &ex)
         {
-          rply = make::error_frame ( rqst
-                                   , E_SERVICE_FAILED
-                                   , "service request failed"
-                                   );
+          frame rply = make::error_frame ( rqst
+                                         , E_SERVICE_FAILED
+                                         , "service request failed"
+                                         );
           rply.add_body ("Request to service '" + dst + "' failed:\n");
           rply.add_body (ex.what ());
+
+          user->deliver (rply);
+
           return E_SERVICE_FAILED;
         }
 

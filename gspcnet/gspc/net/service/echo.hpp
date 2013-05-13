@@ -2,7 +2,7 @@
 #define GSPC_NET_HANDLER_ECHO_HPP
 
 #include <string>
-#include <gspc/net/frame_fwd.hpp>
+#include <gspc/net/service/handler.hpp>
 
 namespace gspc
 {
@@ -14,7 +14,7 @@ namespace gspc
       {
         void operator () ( std::string const &
                          , frame const &rqst
-                         , frame & rply
+                         , user_ptr user
                          );
       };
     }
