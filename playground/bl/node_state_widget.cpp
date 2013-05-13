@@ -1105,6 +1105,8 @@ namespace prefix
 
         if (node_index)
         {
+          _communication->pause();
+
           QSet<int> nodes (QSet<int>::fromList (_selection));
           const QString hostname_replacement ( nodes.size() <= 1
                                              ? node (*node_index).hostname()
@@ -1139,16 +1141,14 @@ namespace prefix
 
           foreach (const QString& action_name, action_name_union)
           {
-            QAction* action
-              ( new QAction
-                ( QString ( _long_action.contains (action_name)
-                          ? _long_action[action_name]
-                          : action_name
-                          )
-                .replace ("{hostname}", hostname_replacement)
-                , this
-                )
-              );
+            QAction* action ( context_menu.addAction
+                              ( QString ( _long_action.contains (action_name)
+                                        ? _long_action[action_name]
+                                        : action_name
+                                        )
+                              .replace ("{hostname}", hostname_replacement)
+                              )
+                            );
 
             if (action_name_intersection.contains (action_name))
             {
@@ -1170,23 +1170,69 @@ namespace prefix
             {
               action->setEnabled (false);
             }
-
-            actions << action;
           }
 
-          if (!actions.empty())
+          if (!action_name_union.empty())
           {
-            QMenu context_menu;
-            foreach (QAction* action, actions)
-            {
-              context_menu.addAction (action);
-            }
-            _communication->pause();
-            context_menu.exec (context_menu_event->globalPos());
-            _communication->resume();
-            event->accept();
-            return true;
+            context_menu.addSeparator();
           }
+
+          {
+            bool all (true);
+            bool none (true);
+
+            foreach (const int index, nodes)
+            {
+              all = all && node (index).watched();
+              none = none && !node (index).watched();
+            }
+
+            const QString text (tr ("Notify on state changes"));
+
+            if (all || none)
+            {
+              QAction* action (context_menu.addAction (text));
+              action->setCheckable (true);
+              action->setChecked (all);
+              foreach (const int index, nodes)
+              {
+                fhg::util::qt::boost_connect<void (bool)>
+                  ( action
+                  , SIGNAL (toggled (bool))
+                  , _communication
+                  , boost::bind (&node_type::watched, &(node (index)), !all)
+                  );
+              }
+            }
+            else
+            {
+              QMenu* menu (context_menu.addMenu (text));
+
+              QAction* watch_all (menu->addAction (tr ("All")));
+              QAction* unwatch_all (menu->addAction (tr ("None")));
+
+              foreach (const int index, nodes)
+              {
+                fhg::util::qt::boost_connect<void (void)>
+                  ( unwatch_all
+                  , SIGNAL (triggered())
+                  , _communication
+                  , boost::bind (&node_type::watched, &(node (index)), false)
+                  );
+                fhg::util::qt::boost_connect<void (void)>
+                  ( watch_all
+                  , SIGNAL (triggered())
+                  , _communication
+                  , boost::bind (&node_type::watched, &(node (index)), true)
+                  );
+              }
+            }
+          }
+
+          context_menu.exec (context_menu_event->globalPos());
+          _communication->resume();
+          event->accept();
+          return true;
         }
 
         event->ignore();
