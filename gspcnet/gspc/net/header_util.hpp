@@ -2,6 +2,7 @@
 #define GSPC_NET_HEADER_UTIL_HPP
 
 #include <gspc/net/frame.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace gspc
 {
@@ -9,6 +10,31 @@ namespace gspc
   {
     namespace header
     {
+      template <typename T>
+      T get (frame const &f, frame::key_type const & key, T const &dflt)
+      {
+        frame::header_value v = f.get_header (key);
+        if (v)
+        {
+          try
+          {
+            return boost::lexical_cast<T>(*v);
+          }
+          catch (boost::bad_lexical_cast const &)
+          {
+            return dflt;
+          }
+        }
+
+        return dflt;
+      }
+
+      template <typename T>
+      void set (frame &f, frame::key_type const &key, T const &val)
+      {
+        f.set_header (key, boost::lexical_cast<frame::value_type>(val));
+      }
+
       class item_t
       {
       public:
@@ -70,6 +96,8 @@ namespace gspc
       MK_HEADER (destination, "destination");
       MK_HEADER (receipt, "receipt");
       MK_HEADER (receipt_id, "receipt-id");
+      MK_HEADER (message_id, "message-id");
+      MK_HEADER (correlation_id, "correlation-id");
       MK_HEADER (content_length, "content-length");
       MK_HEADER (content_type, "content-type");
       MK_HEADER (id, "id");
