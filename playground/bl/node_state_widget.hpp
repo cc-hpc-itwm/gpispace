@@ -195,6 +195,14 @@ namespace prefix
     QTcpSocket _socket;
   };
 
+  //! action_result
+  enum result_code
+  {
+    okay,
+    fail,
+    warn,
+  };
+
   class communication : public QObject
   {
     Q_OBJECT;
@@ -212,6 +220,11 @@ namespace prefix
     void resume();
 
   signals:
+    void action_result ( const QString&
+                       , const QString&
+                       , const result_code&
+                       , const boost::optional<QString>&
+                       );
     void nodes (QStringList);
     void nodes_details (const QString&, const QString&);
     void nodes_state (const QString&, const QString&);
@@ -271,6 +284,12 @@ namespace prefix
     void states_actions_long_text (const QString&, const QString&);
 
     void update_nodes_with_state (const QString&);
+
+    void action_result ( const QString&
+                       , const QString&
+                       , const result_code&
+                       , const boost::optional<QString>&
+                       );
 
   signals:
 

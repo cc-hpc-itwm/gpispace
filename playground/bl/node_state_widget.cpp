@@ -177,6 +177,10 @@ namespace prefix
             , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
             , _legend_widget
             , SLOT (states_layout_hint_color (const QString&, const QColor&)));
+    connect ( _communication
+            , SIGNAL (action_result (const QString&, const QString&, const result_code&, const boost::optional<QString>&))
+            , SLOT (action_result (const QString&, const QString&, const result_code&, const boost::optional<QString>&))
+            );
 
     connect ( _legend_widget
             , SIGNAL (state_pixmap_changed (const QString&))
@@ -557,22 +561,11 @@ namespace prefix
   {
     struct action_result_data
     {
-      enum result_code
-      {
-        okay,
-        fail,
-        warn,
-      };
-
-      action_result_data (const QString& host, const QString& action)
-        : _host (host)
-        , _action (action)
-        , _result (boost::none)
+      action_result_data()
+        : _result (boost::none)
         , _message (boost::none)
       { }
 
-      QString _host;
-      QString _action;
       boost::optional<result_code> _result;
       boost::optional<QString> _message;
 
@@ -641,74 +634,6 @@ namespace prefix
           break;
         }
       }
-
-      void show_in_messagebox() const
-      {
-        if (!_result)
-        {
-          throw std::runtime_error ("action result without result code");
-        }
-
-        const QString title ( QString ("\"%1\" on \"%2\"")
-                            .arg (_action)
-                            .arg (_host)
-                            );
-        QString message ( _message.get_value_or ( *_result == okay ? "okay"
-                                                : *_result == warn ? "warn"
-                                                : *_result == fail ? "fail"
-                                                : "UNKNOWN RESULT"
-                                                )
-                        );
-
-        switch (*_result)
-        {
-        case okay:
-          QMessageBox::information (NULL, title, message);
-          break;
-
-        case fail:
-          QMessageBox::critical (NULL, title, message);
-          break;
-
-        case warn:
-          QMessageBox::warning (NULL, title, message);
-          break;
-        }
-      }
-
-      void show_in_console() const
-      {
-        if (!_result)
-        {
-          throw std::runtime_error ("action result without result code");
-        }
-
-        const QString msg ( QString ("\"%1\" on \"%2\" -> %3")
-                          .arg (_action)
-                          .arg (_host)
-                          .arg (_message.get_value_or ( *_result == okay ? "okay"
-                                                      : *_result == warn ? "warn"
-                                                      : *_result == fail ? "fail"
-                                                      : "UNKNOWN RESULT"
-                                                      )
-                               )
-                          );
-
-        switch (*_result)
-        {
-        case okay:
-          qDebug ("%s", qPrintable (msg));
-          break;
-
-        case fail:
-          qCritical ("%s", qPrintable (msg));
-          break;
-
-        case warn:
-          qWarning ("%s", qPrintable (msg));
-          break;
-        }
-      }
     };
   }
 
@@ -721,11 +646,42 @@ namespace prefix
     require::token (pos, ")");
     require::token (pos, ":");
 
-    action_result_data result (host, action);
+    action_result_data result;
     require::list (pos, boost::bind (&action_result_data::append, &result, _1));
 
-    // result.show_in_messagebox();
-    result.show_in_console();
+    if (!result._result)
+    {
+      throw std::runtime_error ("action result without result code");
+    }
+
+    emit action_result (host, action, *result._result, result._message);
+  }
+
+  void node_state_widget::action_result ( const QString& host
+                                        , const QString& action
+                                        , const result_code& result
+                                        , const boost::optional<QString>& message
+                                        )
+  {
+    if (message)
+    {
+      const QString msg (QString ("%1: %2").arg (host).arg (*message));
+
+      switch (result)
+      {
+      case okay:
+        _log->information (msg);
+        break;
+
+      case fail:
+        _log->critical (msg);
+        break;
+
+      case warn:
+        _log->warning (msg);
+        break;
+      }
+    }
   }
 
   void communication::check_for_incoming_messages()
