@@ -71,6 +71,8 @@ namespace gspc
 
         int handle_frame (user_ptr, frame const &);
         int handle_error (user_ptr, boost::system::error_code const &);
+
+        boost::system::error_code const & last_error_code () const;
       private:
         bool try_notify_response ( std::string const & id
                                  , frame const & f
@@ -98,6 +100,8 @@ namespace gspc
         mutable boost::shared_mutex      m_responses_mutex;
         response_map_t                   m_responses;
         boost::posix_time::time_duration m_timeout;
+
+        boost::system::error_code   m_last_error_code;
       };
     }
   }

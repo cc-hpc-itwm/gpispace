@@ -29,6 +29,7 @@ namespace gspc
         , m_responses_mutex ()
         , m_responses ()
         , m_timeout (boost::posix_time::pos_infin)
+        , m_last_error_code ()
       {}
 
       template <class Proto>
@@ -74,6 +75,13 @@ namespace gspc
         m_thread_pool.clear ();
 
         return 0;
+      }
+
+      template <class Proto>
+      boost::system::error_code const &
+      base_client<Proto>::last_error_code () const
+      {
+        return this->m_last_error_code;
       }
 
       template <class Proto>
