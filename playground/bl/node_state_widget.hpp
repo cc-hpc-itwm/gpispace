@@ -34,15 +34,20 @@ namespace prefix
       : _state (boost::none)
       , _hostname (QString ("node%1.cluster").arg (++counter))
       , _details (boost::none)
+      , _watched (false)
     { }
     node_type (const QString& hostname)
       : _state (boost::none)
       , _hostname (hostname)
       , _details (boost::none)
+      , _watched (false)
     { }
     boost::optional<QString> _state;
     QString _hostname;
     boost::optional<QString> _details;
+    bool _watched;
+    const bool& watched() const { return _watched; }
+    void watched (const bool& watched_) { _watched = watched_; }
     const boost::optional<QString>& state() const { return _state; }
     void state (const boost::optional<QString>& state_) { _state = state_; }
     const boost::optional<QString>& details() const { return _details; }

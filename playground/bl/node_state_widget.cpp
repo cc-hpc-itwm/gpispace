@@ -307,6 +307,15 @@ namespace prefix
       if (old_state != state)
       {
         update (it - _nodes.begin());
+
+        if (it->watched())
+        {
+          _log->warning ( QString ("%3: State changed from %1 to %2.")
+                        .arg (old_state.get_value_or ("unknown"))
+                        .arg (state)
+                        .arg (hostname)
+                        );
+        }
       }
     }
   }
