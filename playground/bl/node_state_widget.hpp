@@ -15,6 +15,7 @@
 #include <QMutexLocker>
 #include <QPixmap>
 #include <QTcpSocket>
+#include <QListWidget>
 #include <QTimer>
 
 #include <stdexcept>
@@ -235,12 +236,24 @@ namespace prefix
     QTimer* _timer;
   };
 
+  class log_widget : public QListWidget
+  {
+    Q_OBJECT;
+
+  public:
+    log_widget (QWidget* parent = NULL);
+
+    void critical (const QString&);
+    void information (const QString&);
+    void warning (const QString&);
+  };
+
   class node_state_widget : public QWidget
   {
     Q_OBJECT;
 
   public:
-    node_state_widget (legend*, QWidget* parent = NULL);
+    node_state_widget (legend*, log_widget*, QWidget* parent = NULL);
 
     virtual int heightForWidth (int) const;
 
@@ -280,6 +293,7 @@ namespace prefix
     boost::optional<int> _last_manual_selection;
 
     legend* _legend_widget;
+    log_widget* _log;
 
     const state_description& state (const boost::optional<QString>&) const;
     const node_type& node (int) const;

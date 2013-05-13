@@ -6,6 +6,7 @@
 
 #include <util/qt/boost_connect.hpp>
 
+#include <QApplication>
 #include <QDebug>
 #include <QMenu>
 #include <QPaintEvent>
@@ -14,6 +15,9 @@
 #include <QPen>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QSplitter>
+#include <QStyle>
+#include <QListWidgetItem>
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QMessageBox>
@@ -95,10 +99,43 @@ namespace prefix
             );
   }
 
-  node_state_widget::node_state_widget (legend* legend_widget, QWidget* parent)
-    : QWidget (parent)
-    , _legend_widget (legend_widget)
-    , _communication (new communication (this))
+  log_widget::log_widget (QWidget* parent)
+    : QListWidget (parent)
+  { }
+
+  void log_widget::information (const QString& message)
+  {
+    new QListWidgetItem
+      ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxInformation)
+      , message
+      , this
+      );
+  }
+
+  void log_widget::warning (const QString& message)
+  {
+    new QListWidgetItem
+      ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxWarning)
+      , message
+      , this
+      );
+  }
+
+  void log_widget::critical (const QString& message)
+  {
+    new QListWidgetItem
+      ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxCritical)
+      , message
+      , this
+      );
+  }
+
+  node_state_widget::node_state_widget
+    (legend* legend_widget, log_widget* log, QWidget* parent)
+      : QWidget (parent)
+      , _legend_widget (legend_widget)
+      , _log (log)
+      , _communication (new communication (this))
   {
     timer
       (this, 1000, boost::bind (&communication::request_hostlist, _communication));
@@ -1204,11 +1241,14 @@ int main (int argc, char** argv)
 {
   QApplication app (argc, argv);
 
-  QWidget window;
+  QSplitter window (Qt::Vertical);
 
-  QWidget* sidebar (new QWidget (&window));
+  QWidget* main (new QWidget (&window));
+  prefix::log_widget* log (new prefix::log_widget (&window));
+
+  QWidget* sidebar (new QWidget (main));
   prefix::legend* legend_widget (new prefix::legend (sidebar));
-  QScrollArea* content (new QScrollArea (&window));
+  QScrollArea* content (new QScrollArea (main));
 
   {
     QVBoxLayout* layout (new QVBoxLayout (sidebar));
@@ -1219,14 +1259,14 @@ int main (int argc, char** argv)
   {
     QWidget* inner (new QWidget (content));
     QVBoxLayout* layout (new QVBoxLayout (inner));
-    layout->addWidget (new prefix::node_state_widget (legend_widget));
+    layout->addWidget (new prefix::node_state_widget (legend_widget, log));
 
     content->setWidget (inner);
     content->setWidgetResizable (true);
   }
 
   {
-    QHBoxLayout* layout (new QHBoxLayout (&window));
+    QHBoxLayout* layout (new QHBoxLayout (main));
     layout->addWidget (content);
     layout->addWidget (sidebar);
   }
