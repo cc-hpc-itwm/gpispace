@@ -28,6 +28,7 @@ namespace gspc
         , m_message_id (0)
         , m_responses_mutex ()
         , m_responses ()
+        , m_timeout (boost::posix_time::pos_infin)
       {}
 
       template <class Proto>
@@ -78,7 +79,31 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::connect ()
       {
-        return send_raw (make::connect_frame ());
+        frame rply;
+        int rc;
+
+        rc = send_and_wait ( make::connect_frame ()
+                           , rply
+                           , m_timeout
+                           );
+
+        if (rc != 0)
+        {
+          return rc;
+        }
+
+        if (rply.get_command () == "CONNECTED")
+        {
+          return 0;
+        }
+        else if (rply.get_command () == "ERROR")
+        {
+          return header::get (rply, "code", -EPERM);
+        }
+        else
+        {
+          return -EPROTO;
+        }
       }
 
       template <class Proto>
@@ -113,7 +138,10 @@ namespace gspc
       }
 
       template <class Proto>
-      int base_client<Proto>::send_and_wait (frame const &rqst, frame &rply)
+      int base_client<Proto>::send_and_wait ( frame const &rqst
+                                            , frame &rply
+                                            , const boost::posix_time::time_duration to_wait
+                                            )
       {
         int rc = 0;
 
@@ -124,6 +152,7 @@ namespace gspc
 
         frame to_send (rqst);
         gspc::net::header::receipt (response->id ()).apply_to (to_send);
+        gspc::net::header::message_id (response->id ()).apply_to (to_send);
 
         {
           unique_lock lock (m_responses_mutex);
@@ -133,11 +162,7 @@ namespace gspc
         rc = send_raw (to_send);
         if (0 == rc)
         {
-          response->wait ();
-        }
-        else
-        {
-          rc = -EIO;
+          rc = response->wait (to_wait);
         }
 
         {
@@ -145,13 +170,16 @@ namespace gspc
           m_responses.erase (response->id ());
         }
 
-        if (response->get_reply ())
+        if (rc == 0)
         {
-          rply = *response->get_reply ();
-        }
-        else
-        {
-          return -ETIME;
+          if (response->get_reply ())
+          {
+            rply = *response->get_reply ();
+          }
+          else
+          {
+            return -ETIME;
+          }
         }
 
         return rc;
@@ -176,7 +204,7 @@ namespace gspc
         frame rqst (f);
         rqst.set_command ("REQUEST");
 
-        return send_and_wait (rqst, rply);
+        return send_and_wait (rqst, rply, m_timeout);
       }
 
       template <class Proto>
@@ -198,18 +226,37 @@ namespace gspc
       }
 
       template <class Proto>
+      bool base_client<Proto>::try_notify_response ( std::string const &id
+                                                   , frame const &f
+                                                   )
+      {
+        shared_lock lock (m_responses_mutex);
+        const response_map_t::iterator response_it = m_responses.find (id);
+        if (response_it != m_responses.end ())
+        {
+          response_it->second->notify (f);
+          return true;
+        }
+        else
+        {
+          return false;
+        }
+      }
+
+      template <class Proto>
       int base_client<Proto>::handle_frame (user_ptr user, frame const &f)
       {
-        if (f.has_header ("receipt-id"))
+        if (  f.has_header ("receipt-id")
+           && try_notify_response (*f.get_header ("receipt-id"), f)
+           )
         {
-          shared_lock lock (m_responses_mutex);
-          const response_map_t::iterator response_it =
-            m_responses.find (*f.get_header ("receipt-id"));
-          if (response_it != m_responses.end ())
-          {
-            response_it->second->notify (f);
-            return 0;
-          }
+          return 0;
+        }
+        else if (  f.has_header ("correlation-id")
+                && try_notify_response (*f.get_header ("correlation-id"), f)
+                )
+        {
+          return 0;
         }
 
         return m_frame_handler->handle_frame (user, f);

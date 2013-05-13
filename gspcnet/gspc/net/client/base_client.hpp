@@ -53,7 +53,10 @@ namespace gspc
         int send_raw (frame const &);
 
         int send (std::string const & dst, std::string const & body);
-        int send_and_wait (frame const &rqst, frame &rply);
+        int send_and_wait ( frame const &rqst
+                          , frame &rply
+                          , const boost::posix_time::time_duration
+                          );
 
         int request ( std::string const &dst
                     , std::string const &body
@@ -69,6 +72,10 @@ namespace gspc
         int handle_frame (user_ptr, frame const &);
         int handle_error (user_ptr, boost::system::error_code const &);
       private:
+        bool try_notify_response ( std::string const & id
+                                 , frame const & f
+                                 );
+
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
         typedef boost::shared_lock<boost::shared_mutex> shared_lock;
 
@@ -88,8 +95,9 @@ namespace gspc
 
         fhg::thread::atomic<size_t> m_message_id;
 
-        mutable boost::shared_mutex m_responses_mutex;
-        response_map_t              m_responses;
+        mutable boost::shared_mutex      m_responses_mutex;
+        response_map_t                   m_responses;
+        boost::posix_time::time_duration m_timeout;
       };
     }
   }
