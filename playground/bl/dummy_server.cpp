@@ -153,7 +153,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
 
     _socket->write
       ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Shut down for reboot.\"],]\n")
+                     ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Will reboot.\"],]\n")
                    .arg (host)
                    .arg (action)
                    )
@@ -166,7 +166,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
 
     _socket->write
       ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: okay,]]\n")
+                     ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Added to working set.\"]]\n")
                    .arg (host)
                    .arg (action)
                    )
@@ -179,7 +179,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
 
     _socket->write
       ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: okay,]]\n")
+                     ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Removed from working set.\"]]\n")
                    .arg (host)
                    .arg (action)
                    )
@@ -189,7 +189,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
   {
     _socket->write
       ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"bar\"]]\n")
+                     ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"bar\"]]\n")
                    .arg (host)
                    .arg (action)
                    )
