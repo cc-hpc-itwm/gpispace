@@ -65,6 +65,13 @@ namespace gspc
       return m_header.find (key) != m_header.end ();
     }
 
+    frame & frame::set_body (frame::body_type const & body)
+    {
+      m_body = body;
+
+      return update_content_length ();
+    }
+
     frame & frame::set_body (std::string const &body)
     {
       m_body.assign (body.begin (), body.end ());
