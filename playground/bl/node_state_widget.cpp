@@ -937,6 +937,10 @@ namespace prefix
   {
     return _nodes.at (index);
   }
+  node_type& node_state_widget::node (int index)
+  {
+    return _nodes[index];
+  }
   int node_state_widget::node_count() const
   {
     return _nodes.size();
@@ -1166,7 +1170,7 @@ namespace prefix
             action_name_intersection.intersect (actions);
           }
 
-          QList<QAction*> actions;
+          QMenu context_menu;
 
           foreach (const QString& action_name, action_name_union)
           {

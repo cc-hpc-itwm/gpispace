@@ -297,6 +297,7 @@ namespace prefix
 
     const state_description& state (const boost::optional<QString>&) const;
     const node_type& node (int) const;
+    node_type& node (int);
     boost::optional<int> node_at (const QPoint&) const;
     int node_count() const;
 
