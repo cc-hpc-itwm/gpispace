@@ -85,6 +85,20 @@ namespace gspc
       }
 
       template <class Proto>
+      void
+      base_client<Proto>::set_timeout (size_t ms)
+      {
+        if (std::size_t (-1) == ms)
+        {
+          m_timeout = boost::posix_time::pos_infin;
+        }
+        else
+        {
+          m_timeout = boost::posix_time::milliseconds (ms);
+        }
+      }
+
+      template <class Proto>
       int base_client<Proto>::connect ()
       {
         frame rply;

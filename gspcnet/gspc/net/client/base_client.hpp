@@ -73,6 +73,8 @@ namespace gspc
         int handle_error (user_ptr, boost::system::error_code const &);
 
         boost::system::error_code const & last_error_code () const;
+
+        void set_timeout (size_t ms);
       private:
         bool try_notify_response ( std::string const & id
                                  , frame const & f
