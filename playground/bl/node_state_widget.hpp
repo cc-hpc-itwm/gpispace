@@ -26,16 +26,9 @@
 
 namespace prefix
 {
-  static int counter (0);
   class node_type
   {
   public:
-    node_type()
-      : _state (boost::none)
-      , _hostname (QString ("node%1.cluster").arg (++counter))
-      , _details (boost::none)
-      , _watched (false)
-    { }
     node_type (const QString& hostname)
       : _state (boost::none)
       , _hostname (hostname)
@@ -307,7 +300,7 @@ namespace prefix
     void update (int node);
     void update();
 
-    QVector<node_type> _nodes;
+    QList<node_type> _nodes;
     QList<int> _selection;
 
     void clear_selection();

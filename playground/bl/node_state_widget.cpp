@@ -273,7 +273,7 @@ namespace prefix
   void node_state_widget::nodes_details
     (const QString& hostname, const QString& details)
   {
-    const QVector<node_type>::iterator it
+    const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
                      , boost::bind (&node_type::hostname_is, _1, hostname)
@@ -289,7 +289,7 @@ namespace prefix
   void node_state_widget::nodes_state
     (const QString& hostname, const QString& state)
   {
-    const QVector<node_type>::iterator it
+    const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
                      , boost::bind (&node_type::hostname_is, _1, hostname)
@@ -324,7 +324,7 @@ namespace prefix
   {
     const int old_height (heightForWidth (width()));
 
-    QMutableVectorIterator<node_type> i (_nodes);
+    QMutableListIterator<node_type> i (_nodes);
     int index (0);
 
     bool removed_at_least_one (false);
