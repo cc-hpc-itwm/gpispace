@@ -1404,8 +1404,14 @@ int main (int argc, char** argv)
 {
   QApplication app (argc, argv);
 
-  const QString host ("localhost");
-  const int port (44451);
+  if (argc != 3)
+  {
+    std::cerr << "usage: " << argv[0] << " <host> <port>\n";
+    return -1;
+  }
+
+  const QString host (argv[1]);
+  const int port (QString (argv[2]).toInt());
 
   QSplitter window (Qt::Vertical);
 
