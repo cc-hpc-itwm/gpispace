@@ -948,6 +948,12 @@ namespace prefix
             painter.setBrush (Qt::Dense3Pattern);
             painter.drawRect (rect_for_node (i, per_row));
           }
+
+          if (node (i).watched())
+          {
+            painter.setBrush (Qt::Dense6Pattern);
+            painter.drawRect (rect_for_node (i, per_row));
+          }
         }
         else
         {
@@ -1193,6 +1199,13 @@ namespace prefix
                   , _communication
                   , boost::bind (&node_type::watched, &(node (index)), !all)
                   );
+
+                fhg::util::qt::boost_connect<void (void)>
+                  ( action
+                  , SIGNAL (triggered())
+                  , this
+                  , boost::bind (&node_state_widget::update, this, index)
+                  );
               }
             }
             else
@@ -1215,6 +1228,19 @@ namespace prefix
                   , SIGNAL (triggered())
                   , _communication
                   , boost::bind (&node_type::watched, &(node (index)), true)
+                  );
+
+                fhg::util::qt::boost_connect<void (void)>
+                  ( unwatch_all
+                  , SIGNAL (triggered())
+                  , this
+                  , boost::bind (&node_state_widget::update, this, index)
+                  );
+                fhg::util::qt::boost_connect<void (void)>
+                  ( watch_all
+                  , SIGNAL (triggered())
+                  , this
+                  , boost::bind (&node_state_widget::update, this, index)
                   );
               }
             }
