@@ -15,33 +15,32 @@
 #include <QMutexLocker>
 #include <QPixmap>
 #include <QTcpSocket>
+#include <QListWidget>
 #include <QTimer>
 
 #include <stdexcept>
 
 #include <boost/optional.hpp>
 #include <fhg/util/parse/position.hpp>
-
+#include <fhg/util/alphanum.hpp>
 
 namespace prefix
 {
-  static int counter (0);
   class node_type
   {
   public:
-    node_type()
-      : _state (boost::none)
-      , _hostname (QString ("node%1.cluster").arg (++counter))
-      , _details (boost::none)
-    { }
     node_type (const QString& hostname)
       : _state (boost::none)
       , _hostname (hostname)
       , _details (boost::none)
+      , _watched (false)
     { }
     boost::optional<QString> _state;
     QString _hostname;
     boost::optional<QString> _details;
+    bool _watched;
+    const bool& watched() const { return _watched; }
+    void watched (const bool& watched_) { _watched = watched_; }
     const boost::optional<QString>& state() const { return _state; }
     void state (const boost::optional<QString>& state_) { _state = state_; }
     const boost::optional<QString>& details() const { return _details; }
@@ -53,7 +52,8 @@ namespace prefix
     }
     bool less_by_hostname (const node_type& other) const
     {
-      return _hostname < other._hostname;
+      return fhg::util::alphanum::less()
+        (_hostname.toStdString(), other._hostname.toStdString());
     }
     bool hostname_is (const QString& name) const
     {
@@ -194,6 +194,14 @@ namespace prefix
     QTcpSocket _socket;
   };
 
+  //! action_result
+  enum result_code
+  {
+    okay,
+    fail,
+    warn,
+  };
+
   class communication : public QObject
   {
     Q_OBJECT;
@@ -211,6 +219,11 @@ namespace prefix
     void resume();
 
   signals:
+    void action_result ( const QString&
+                       , const QString&
+                       , const result_code&
+                       , const boost::optional<QString>&
+                       );
     void nodes (QStringList);
     void nodes_details (const QString&, const QString&);
     void nodes_state (const QString&, const QString&);
@@ -235,18 +248,35 @@ namespace prefix
     QTimer* _timer;
   };
 
+  class log_widget : public QListWidget
+  {
+    Q_OBJECT;
+
+  public:
+    log_widget (QWidget* parent = NULL);
+
+    void critical (const QString&);
+    void information (const QString&);
+    void warning (const QString&);
+
+  public slots:
+    void follow (bool);
+  };
+
   class node_state_widget : public QWidget
   {
     Q_OBJECT;
 
   public:
-    node_state_widget (legend*, QWidget* parent = NULL);
+    node_state_widget (legend*, log_widget*, QWidget* parent = NULL);
 
     virtual int heightForWidth (int) const;
 
   protected:
     virtual void paintEvent (QPaintEvent*);
     virtual bool event (QEvent*);
+
+    virtual void mouseReleaseEvent (QMouseEvent*);
 
   private slots:
     void refresh_stati();
@@ -256,6 +286,15 @@ namespace prefix
     void states_actions_long_text (const QString&, const QString&);
 
     void update_nodes_with_state (const QString&);
+
+    void action_result ( const QString&
+                       , const QString&
+                       , const result_code&
+                       , const boost::optional<QString>&
+                       );
+
+    void sort_by_name();
+    void sort_by_state();
 
   signals:
 
@@ -268,13 +307,22 @@ namespace prefix
     void update (int node);
     void update();
 
-    QVector<node_type> _nodes;
+    QList<node_type> _nodes;
+    QList<int> _selection;
+
+    void clear_selection();
+    void add_to_selection (const int&);
+    void remove_from_selection (const int&);
+
+    boost::optional<int> _last_manual_selection;
 
     legend* _legend_widget;
+    log_widget* _log;
 
     const state_description& state (const boost::optional<QString>&) const;
     const node_type& node (int) const;
-    boost::optional<int> node_at (int x, int y) const;
+    node_type& node (int);
+    boost::optional<int> node_at (const QPoint&) const;
     int node_count() const;
 
     communication* _communication;

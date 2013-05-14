@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
 
   CHECK_HEADER
     ("#include <we/type/value.hpp>\n"
-     "#include <boost/serialization.hpp>\n"
+     "#include <boost/serialization/nvp.hpp>\n"
      "\n"
      "namespace point2D\n"
      "{\n"
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
 
     CHECK_HEADER
       ("#include <we/type/value.hpp>\n"
-       "#include <boost/serialization.hpp>\n"
+       "#include <boost/serialization/nvp.hpp>\n"
        "\n"
        "namespace c\n"
        "{\n"

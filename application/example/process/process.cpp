@@ -18,6 +18,7 @@
 #include <boost/thread/barrier.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/filesystem.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/util/show.hpp>
@@ -356,11 +357,25 @@ namespace process
           throw std::runtime_error ("neither TMPDIR nor P_tmpdir are set");
         }
 
-      std::ostringstream sstr;
+      bool file_already_exists = true;
+      std::string fname;
+      while (file_already_exists)
+      {
+        namespace fs = boost::filesystem;
 
-      sstr << dir << "/" << "process." << getpid() << "." << i++;
+        std::ostringstream sstr;
+        sstr << dir
+             << "/"
+             << "process." << getuid () << "." << getpid() << "." << i++;
+        fname = sstr.str ();
 
-      return sstr.str();
+        if (not fs::exists (fname))
+        {
+          file_already_exists = false;
+        }
+      }
+
+      return fname;
     }
 
     static void fifo (std::string & filename)
@@ -373,10 +388,11 @@ namespace process
 
           ec = mkfifo (filename.c_str(), S_IWUSR | S_IRUSR);
 
-          if (ec != 0 && errno != EEXIST)
-            {
-              detail::do_error ("mkfifo failed", filename);
-            }
+          if (ec != 0)
+          {
+            unlink (filename.c_str ());
+            detail::do_error ("mkfifo failed", filename);
+          }
         }
       while (ec != 0);
     }
@@ -534,7 +550,16 @@ namespace process
                                           )
                            );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        param_map[file_input->param()] = filename;
+        try
+        {
+          param_map[file_input->param()] = filename;
+        }
+        catch (...)
+        {
+          writers.interrupt_all ();
+          writers.join_all ();
+          throw;
+        }
       }
 
     writer_barrier.wait ();
@@ -560,7 +585,16 @@ namespace process
                            );
 
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        param_map[file_output->param()] = filename;
+        try
+        {
+          param_map[file_output->param()] = filename;
+        }
+        catch (...)
+        {
+          readers.interrupt_all ();
+          readers.join_all ();
+          throw;
+        }
       }
 
     reader_barrier.wait ();
@@ -602,7 +636,6 @@ namespace process
     sigset_t signals_to_block;
     sigset_t signals_to_restore;
     sigemptyset (&signals_to_block);
-    sigaddset (&signals_to_block, SIGCHLD);
     sigaddset (&signals_to_block, SIGPIPE);
     sigprocmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
 
@@ -721,6 +754,8 @@ namespace process
 
       delete[] av;
     }
+
+    sigprocmask (SIG_UNBLOCK, &signals_to_restore, NULL);
 
     return ret;
   }

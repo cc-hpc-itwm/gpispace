@@ -406,8 +406,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
   QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), this));
   follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
-                                       "automatically scroll the view, drop "
-                                       "events otherwise"
+                                       "automatically scroll the view"
                                      )
                                 );
   connect ( follow_logging_cb, SIGNAL (toggled (bool))

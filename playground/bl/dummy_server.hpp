@@ -15,17 +15,20 @@ class server : public QTcpServer
 {
   Q_OBJECT;
 public:
-  server (QObject* parent = NULL);
+  server (int port, const QString& hostlist, QObject* parent = NULL);
 
 protected:
   virtual void incomingConnection (int);
+
+private:
+  QString _hostlist;
 };
 
 class thread : public QThread
 {
   Q_OBJECT;
 public:
-  thread (int socket_descriptor, QObject* parent = NULL);
+  thread (int socket_descriptor, const QString& hostlist, QObject* parent = NULL);
 
 protected:
   void run();
@@ -35,6 +38,8 @@ private slots:
 
   void send_some_status_updates();
 
+  void read_hostlist (const QString&);
+
 private:
   void execute_action (fhg::util::parse::position&);
   void send_action_description (fhg::util::parse::position&);
@@ -42,6 +47,9 @@ private:
 
   int _socket_descriptor;
   QTcpSocket* _socket;
+
+  mutable QMutex _hosts_mutex;
+  QMap<QString, QPair<QString, int /*ticks since last change*/> > _hosts;
 
   mutable QMutex _pending_status_updates_mutex;
   QStringList _pending_status_updates;
