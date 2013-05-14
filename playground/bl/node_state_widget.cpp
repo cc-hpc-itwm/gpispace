@@ -1423,10 +1423,9 @@ try
   prefix::legend* legend_widget (new prefix::legend (sidebar));
 
   QScrollArea* content (new QScrollArea (main));
-  QWidget* inner (new QWidget (content));
 
   prefix::node_state_widget* node_widget
-    (new prefix::node_state_widget (host, port, legend_widget, log, inner));
+    (new prefix::node_state_widget (host, port, legend_widget, log, content));
 
   QGroupBox* sort_box (new QGroupBox (QObject::tr ("sort"), sidebar));
 
@@ -1465,10 +1464,7 @@ try
   }
 
   {
-    QVBoxLayout* layout (new QVBoxLayout (inner));
-    layout->addWidget (node_widget);
-
-    content->setWidget (inner);
+    content->setWidget (node_widget);
     content->setWidgetResizable (true);
   }
 
