@@ -22,7 +22,7 @@
 
 #include <boost/optional.hpp>
 #include <fhg/util/parse/position.hpp>
-
+#include <fhg/util/alphanum.hpp>
 
 namespace prefix
 {
@@ -52,7 +52,8 @@ namespace prefix
     }
     bool less_by_hostname (const node_type& other) const
     {
-      return _hostname < other._hostname;
+      return fhg::util::alphanum::less()
+        (_hostname.toStdString(), other._hostname.toStdString());
     }
     bool hostname_is (const QString& name) const
     {
