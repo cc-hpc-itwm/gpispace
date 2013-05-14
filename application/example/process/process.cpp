@@ -634,7 +634,6 @@ namespace process
     sigset_t signals_to_block;
     sigset_t signals_to_restore;
     sigemptyset (&signals_to_block);
-    sigaddset (&signals_to_block, SIGCHLD);
     sigaddset (&signals_to_block, SIGPIPE);
     sigprocmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
 
@@ -753,6 +752,8 @@ namespace process
 
       delete[] av;
     }
+
+    sigprocmask (SIG_UNBLOCK, &signals_to_restore, NULL);
 
     return ret;
   }
