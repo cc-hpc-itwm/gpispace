@@ -203,7 +203,7 @@ namespace prefix
 
     QToolTip::hideText();
 
-    QWidget::update (rect_for_node (node, per_row).adjusted (-1, -1, 1, 1));
+    QWidget::update (rect_for_node (node, per_row).adjusted (-2, -2, 2, 2));
   }
 
   void node_state_widget::update()
