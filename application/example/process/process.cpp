@@ -15,6 +15,7 @@
 #include <stdexcept>
 
 #include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -245,13 +246,16 @@ namespace process
       DLOG (TRACE, "done thread read");
     }
 
-    static void reader_from_file ( const std::string & filename
+    static void reader_from_file ( boost::barrier & barrier
+                                 , const std::string & filename
                                  , void * buf
                                  , const std::size_t max_size
                                  , std::size_t & bytes_read
                                  , const std::size_t & block_size
                                  )
     {
+      barrier.wait ();
+
       int fd (open (filename.c_str(), O_RDONLY));
 
       if (fd == -1)
@@ -312,12 +316,15 @@ namespace process
       DLOG (TRACE, "done thread write");
     }
 
-    static void writer_from_file ( const std::string & filename
+    static void writer_from_file ( boost::barrier & barrier
+                                 , const std::string & filename
                                  , const void * buf
                                  , std::size_t bytes_left
                                  , const std::size_t & block_size
                                  )
     {
+      barrier.wait ();
+
       int fd (open (filename.c_str(), O_WRONLY));
 
       if (fd == -1)
@@ -400,7 +407,8 @@ namespace process
 
   namespace start
   {
-    static boost::thread * writer ( const void * buf
+    static boost::thread * writer ( boost::barrier & barrier
+                                  , const void * buf
                                   , std::string & filename
                                   , std::size_t bytes_left
                                   )
@@ -408,6 +416,7 @@ namespace process
       detail::fifo (filename);
 
       return new boost::thread ( thread::writer_from_file
+                               , boost::ref (barrier)
                                , filename
                                , buf
                                , bytes_left
@@ -415,7 +424,8 @@ namespace process
                                );
     }
 
-    static boost::thread * reader ( void * buf
+    static boost::thread * reader ( boost::barrier & barrier
+                                  , void * buf
                                   , std::string & filename
                                   , const std::size_t max_size
                                   , std::size_t & bytes_read
@@ -424,6 +434,7 @@ namespace process
       detail::fifo (filename);
 
       return new boost::thread ( thread::reader_from_file
+                               , boost::ref (barrier)
                                , filename
                                , buf
                                , max_size
@@ -508,6 +519,7 @@ namespace process
     boost::thread_group readers;
     tempfile_list_t tempfiles;
 
+    boost::barrier writer_barrier (1 + files_input.size ());
     for ( file_const_buffer_list::const_iterator file_input (files_input.begin())
         ; file_input != files_input.end()
         ; ++file_input
@@ -515,7 +527,8 @@ namespace process
       {
         std::string filename;
 
-        writers.add_thread (start::writer ( file_input->buf()
+        writers.add_thread (start::writer ( writer_barrier
+                                          , file_input->buf()
                                           , filename
                                           , file_input->size()
                                           )
@@ -524,10 +537,13 @@ namespace process
         param_map[file_input->param()] = filename;
       }
 
+    writer_barrier.wait ();
+
     ret.bytes_read_files_output.resize (files_output.size());
 
     std::size_t i (0);
 
+    boost::barrier reader_barrier (1 + files_output.size ());
     for ( file_buffer_list::const_iterator file_output (files_output.begin())
         ; file_output != files_output.end()
         ; ++file_output, ++i
@@ -535,7 +551,8 @@ namespace process
       {
         std::string filename;
 
-        readers.add_thread (start::reader ( file_output->buf()
+        readers.add_thread (start::reader ( reader_barrier
+                                          , file_output->buf()
                                           , filename
                                           , file_output->size()
                                           , ret.bytes_read_files_output[i]
@@ -545,6 +562,8 @@ namespace process
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         param_map[file_output->param()] = filename;
       }
+
+    reader_barrier.wait ();
 
     DLOG (TRACE, "prepare commandline");
 
