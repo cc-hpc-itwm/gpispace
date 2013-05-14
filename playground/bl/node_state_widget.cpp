@@ -297,7 +297,7 @@ namespace prefix
     const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
-                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     , boost::bind (&node_type::hostname, _1) == hostname
                      )
       );
 
@@ -313,7 +313,7 @@ namespace prefix
     const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
-                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     , boost::bind (&node_type::hostname, _1) == hostname
                      )
       );
 
@@ -1298,9 +1298,23 @@ namespace prefix
       selected_hostnames << node (index).hostname();
     }
 
-    qStableSort ( _nodes.begin(), _nodes.end()
-                , boost::bind (&node_type::less_by_hostname, _1, _2)
-                );
+    fhg::util::alphanum::less less;
+
+    qStableSort
+      ( _nodes.begin(), _nodes.end()
+      // , [](const QString& l, const QString& r) -> bool
+      // {
+      //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
+      // }
+      , boost::bind ( &fhg::util::alphanum::less::operator(), less
+                    , boost::bind ( &QString::toStdString
+                                  , boost::bind (&node_type::hostname, _1)
+                                  )
+                    , boost::bind ( &QString::toStdString
+                                  , boost::bind (&node_type::hostname, _2)
+                                  )
+                    )
+      );
 
     _selection.clear();
     _last_manual_selection = boost::none;
@@ -1331,7 +1345,8 @@ namespace prefix
     }
 
     qStableSort ( _nodes.begin(), _nodes.end()
-                , boost::bind (&node_type::less_by_state, _1, _2)
+                , boost::bind (&node_type::state, _1)
+                < boost::bind (&node_type::state, _2)
                 );
 
     _selection.clear();

@@ -46,19 +46,6 @@ namespace prefix
     const boost::optional<QString>& details() const { return _details; }
     void details (const boost::optional<QString>& details_) { _details = details_; }
     const QString& hostname() const { return _hostname; }
-    bool less_by_state (const node_type& other) const
-    {
-      return _state < other._state;
-    }
-    bool less_by_hostname (const node_type& other) const
-    {
-      return fhg::util::alphanum::less()
-        (_hostname.toStdString(), other._hostname.toStdString());
-    }
-    bool hostname_is (const QString& name) const
-    {
-      return hostname() == name;
-    }
   };
 
   struct state_description
