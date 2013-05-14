@@ -364,7 +364,9 @@ namespace process
         namespace fs = boost::filesystem;
 
         std::ostringstream sstr;
-        sstr << dir << "/" << "process." << getpid() << "." << i++;
+        sstr << dir
+             << "/"
+             << "process." << getuid () << "." << getpid() << "." << i++;
         fname = sstr.str ();
 
         if (not fs::exists (fname))
