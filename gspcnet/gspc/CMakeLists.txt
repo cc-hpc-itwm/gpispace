@@ -30,6 +30,9 @@ set (gspcnet_src
 
   net/service/echo.cpp
   net/service/strip_prefix.cpp
+
+  net/auth/simple.cpp
+  net/auth/default_auth.cpp
 )
 
 add_library (gspcnet        STATIC ${gspcnet_src})
