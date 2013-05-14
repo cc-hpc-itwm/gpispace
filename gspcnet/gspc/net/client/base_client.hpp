@@ -53,6 +53,10 @@ namespace gspc
         int send_raw (frame const &);
 
         int send (std::string const & dst, std::string const & body);
+        int send_sync ( std::string const & dst
+                      , std::string const & body
+                      , const boost::posix_time::time_duration
+                      );
         int send_and_wait ( frame const &rqst
                           , frame &rply
                           , const boost::posix_time::time_duration

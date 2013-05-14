@@ -172,6 +172,69 @@ namespace gspc
       }
 
       template <class Proto>
+      int base_client<Proto>::send_sync ( std::string const & dst
+                                        , std::string const & body
+                                        , const boost::posix_time::time_duration to_wait
+                                        )
+      {
+        int rc = 0;
+
+        response_ptr receipt
+          (new response_t ( "message-"
+                          + boost::lexical_cast<std::string>(++m_message_id)
+                          ));
+
+        frame to_send (make::send_frame ( header::destination (dst)
+                                        , body.c_str ()
+                                        , body.size ()
+                                        )
+                      );
+        gspc::net::header::receipt (receipt->id ()).apply_to (to_send);
+
+        {
+          unique_lock lock (m_responses_mutex);
+          m_responses [receipt->id ()] = receipt;
+        }
+
+        rc = send_raw (to_send);
+        if (0 == rc)
+        {
+          rc = receipt->wait (to_wait);
+        }
+
+        {
+          unique_lock lock (m_responses_mutex);
+          m_responses.erase (receipt->id ());
+        }
+
+        if (rc == 0)
+        {
+          if (receipt->get_reply ())
+          {
+            frame rply = *receipt->get_reply ();
+            if (rply.get_command () == "RECEIPT")
+            {
+              rc = 0;
+            }
+            else if (rply.get_command () == "ERROR")
+            {
+              rc = header::get (rply, "code", -EPERM);
+            }
+            else
+            {
+              rc = -EPROTO;
+            }
+          }
+          else
+          {
+            rc = -ETIME;
+          }
+        }
+
+        return rc;
+      }
+
+      template <class Proto>
       int base_client<Proto>::send_and_wait ( frame const &rqst
                                             , frame &rply
                                             , const boost::posix_time::time_duration to_wait

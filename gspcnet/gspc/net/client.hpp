@@ -4,6 +4,7 @@
 #include <string>
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/frame_handler_fwd.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace gspc
 {
@@ -32,6 +33,10 @@ namespace gspc
       virtual int send ( std::string const & dst
                        , std::string const & body
                        ) = 0;
+      virtual int send_sync ( std::string const & dst
+                            , std::string const & body
+                            , const boost::posix_time::time_duration
+                            ) = 0;
       virtual int subscribe ( std::string const &dest
                             , std::string const &id
                             ) = 0;
