@@ -20,6 +20,7 @@ struct F
 {
   F ()
   {
+    signal (SIGCHLD, SIG_DFL);
   }
 
   process::file_const_buffer_list m_input_files;

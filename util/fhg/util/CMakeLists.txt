@@ -14,6 +14,8 @@ if (HAVE_PTHREAD_SETNAME)
 endif()
 
 set (hdrs
+  alphanum.hpp
+
   join.hpp
   read_bool.hpp
   read.hpp
