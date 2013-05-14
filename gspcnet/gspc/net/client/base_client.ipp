@@ -17,10 +17,18 @@ namespace gspc
   {
     namespace client
     {
+      enum state_t
+        {
+          DISCONNECTED
+        , CONNECTED
+        , FAILED
+        };
+
       template <class Proto>
       base_client<Proto>::base_client (endpoint_type const &endpoint)
         : m_io_service ()
         , m_endpoint (endpoint)
+        , m_state (DISCONNECTED)
         , m_connection ()
         , m_frame_handler (&dummy_frame_handler ())
         , m_thread_pool_size (1)
@@ -111,19 +119,23 @@ namespace gspc
 
         if (rc != 0)
         {
+          m_state = FAILED;
           return rc;
         }
 
         if (rply.get_command () == "CONNECTED")
         {
+          m_state = CONNECTED;
           return 0;
         }
         else if (rply.get_command () == "ERROR")
         {
+          m_state = FAILED;
           return header::get (rply, "code", -EPERM);
         }
         else
         {
+          m_state = FAILED;
           return -EPROTO;
         }
       }
@@ -234,6 +246,11 @@ namespace gspc
                                         , std::string const &id
                                         )
       {
+        if (m_state != CONNECTED)
+        {
+          return -ENOTCONN;
+        }
+
         return send_raw
           (make::subscribe_frame ( header::destination (dst)
                                  , header::id (id)
@@ -244,6 +261,11 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::unsubscribe (std::string const &id)
       {
+        if (m_state != CONNECTED)
+        {
+          return -ENOTCONN;
+        }
+
         return send_raw (make::unsubscribe_frame (header::id (id)));
       }
 
@@ -289,6 +311,7 @@ namespace gspc
                                            , boost::system::error_code const &ec
                                            )
       {
+        m_state = FAILED;
         return m_frame_handler->handle_error (user, ec);
       }
     }

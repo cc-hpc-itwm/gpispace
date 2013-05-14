@@ -88,6 +88,7 @@ namespace gspc
 
         boost::asio::io_service         m_io_service;
         endpoint_type                   m_endpoint;
+        int                             m_state;
         connection_ptr_t                m_connection;
 
         frame_handler_t                *m_frame_handler;
