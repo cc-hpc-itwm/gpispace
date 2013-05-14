@@ -109,11 +109,12 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    async_tcp_communication (QObject* parent = NULL)
+    async_tcp_communication
+        (const QString& host, int port, QObject* parent = NULL)
       : QObject (parent)
     {
       connect (&_socket, SIGNAL (readyRead()), SLOT (may_read()));
-      _socket.connectToHost ("localhost", 44451);
+      _socket.connectToHost (host, port);
       if (!_socket.waitForConnected())
       {
         throw std::runtime_error (qPrintable (_socket.errorString()));
@@ -200,7 +201,7 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    communication (QObject* parent = NULL);
+    communication (const QString& host, int port, QObject* parent = NULL);
 
     void request_action (const QString&, const QString&);
     void request_layout_hint (const QString&);
@@ -261,7 +262,12 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    node_state_widget (legend*, log_widget*, QWidget* parent = NULL);
+    node_state_widget ( const QString& host
+                      , int port
+                      , legend*
+                      , log_widget*
+                      , QWidget* parent = NULL
+                      );
 
     virtual int heightForWidth (int) const;
 

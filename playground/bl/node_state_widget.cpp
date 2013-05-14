@@ -67,9 +67,9 @@ namespace prefix
     }
   }
 
-  communication::communication (QObject* parent)
+  communication::communication (const QString& host, int port, QObject* parent)
     : QObject (parent)
-    , _connection (new async_tcp_communication)
+    , _connection (new async_tcp_communication (host, port, this))
     , _timer (NULL)
   {
     resume();
@@ -153,12 +153,16 @@ namespace prefix
     log_follower->start (refresh_rate);
   }
 
-  node_state_widget::node_state_widget
-    (legend* legend_widget, log_widget* log, QWidget* parent)
+  node_state_widget::node_state_widget ( const QString& host
+                                       , int port
+                                       , legend* legend_widget
+                                       , log_widget* log
+                                       , QWidget* parent
+                                       )
       : QWidget (parent)
       , _legend_widget (legend_widget)
       , _log (log)
-      , _communication (new communication (this))
+      , _communication (new communication (host, port, this))
   {
     timer
       (this, 1000, boost::bind (&communication::request_hostlist, _communication));
@@ -1400,6 +1404,9 @@ int main (int argc, char** argv)
 {
   QApplication app (argc, argv);
 
+  const QString host ("localhost");
+  const int port (44451);
+
   QSplitter window (Qt::Vertical);
 
   QWidget* main (new QWidget (&window));
@@ -1409,7 +1416,7 @@ int main (int argc, char** argv)
   prefix::legend* legend_widget (new prefix::legend (sidebar));
 
   prefix::node_state_widget* node_widget
-    (new prefix::node_state_widget (legend_widget, log));
+    (new prefix::node_state_widget (host, port, legend_widget, log));
 
   QGroupBox* sort_box (new QGroupBox (QObject::tr ("sort"), sidebar));
 
