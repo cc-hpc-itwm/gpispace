@@ -199,7 +199,10 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 
   client->disconnect ();
 
-  BOOST_REQUIRE_EQUAL ( client->send ("/test/send", "hello world!")
+  BOOST_REQUIRE_EQUAL ( client->send_sync ( "/test/send"
+                                          , "hello world!"
+                                          , boost::posix_time::pos_infin
+                                          )
                       , gspc::net::E_UNAUTHORIZED
                       );
 }
