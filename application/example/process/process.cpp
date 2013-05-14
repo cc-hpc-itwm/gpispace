@@ -534,7 +534,16 @@ namespace process
                                           )
                            );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        param_map[file_input->param()] = filename;
+        try
+        {
+          param_map[file_input->param()] = filename;
+        }
+        catch (...)
+        {
+          writers.interrupt_all ();
+          writers.join_all ();
+          throw;
+        }
       }
 
     writer_barrier.wait ();
@@ -560,7 +569,16 @@ namespace process
                            );
 
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        param_map[file_output->param()] = filename;
+        try
+        {
+          param_map[file_output->param()] = filename;
+        }
+        catch (...)
+        {
+          readers.interrupt_all ();
+          readers.join_all ();
+          throw;
+        }
       }
 
     reader_barrier.wait ();
