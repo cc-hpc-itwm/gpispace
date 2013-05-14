@@ -10,6 +10,7 @@
 #include <QCheckBox>
 #include <QDebug>
 #include <QMenu>
+#include <QPushButton>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QLabel>
@@ -1308,11 +1309,15 @@ int main (int argc, char** argv)
   log->connect (follow_logging, SIGNAL (toggled (bool)), SLOT (follow (bool)));
   follow_logging->setChecked (true);
 
+  QPushButton* clear_log (new QPushButton (QObject::tr ("clear log"), sidebar));
+  log->connect (clear_log, SIGNAL (clicked()), SLOT (clear()));
+
   {
     QVBoxLayout* layout (new QVBoxLayout (sidebar));
     layout->addWidget (legend_widget);
     layout->addStretch();
     layout->addWidget (follow_logging);
+    layout->addWidget (clear_log);
   }
 
   {
