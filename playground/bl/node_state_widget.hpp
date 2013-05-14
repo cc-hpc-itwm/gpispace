@@ -257,6 +257,9 @@ namespace prefix
     void critical (const QString&);
     void information (const QString&);
     void warning (const QString&);
+
+  public slots:
+    void follow (bool);
   };
 
   class node_state_widget : public QWidget

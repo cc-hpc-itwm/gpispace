@@ -7,6 +7,7 @@
 #include <util/qt/boost_connect.hpp>
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QDebug>
 #include <QMenu>
 #include <QPaintEvent>
@@ -128,6 +129,26 @@ namespace prefix
       , message
       , this
       );
+  }
+
+  void log_widget::follow (bool follow)
+  {
+    if (!follow)
+    {
+      return;
+    }
+
+    scrollToBottom();
+
+    QTimer* log_follower (new QTimer (this));
+
+    connect (log_follower, SIGNAL (timeout()), this, SLOT (scrollToBottom()));
+    connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (stop()));
+    connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (deleteLater()));
+
+    //! \todo Configurable refresh rate.
+    static const int refresh_rate (20 /*ms*/);
+    log_follower->start (refresh_rate);
   }
 
   node_state_widget::node_state_widget
@@ -1282,10 +1303,16 @@ int main (int argc, char** argv)
   prefix::legend* legend_widget (new prefix::legend (sidebar));
   QScrollArea* content (new QScrollArea (main));
 
+  QCheckBox* follow_logging
+    (new QCheckBox (QObject::tr ("follow logging"), sidebar));
+  log->connect (follow_logging, SIGNAL (toggled (bool)), SLOT (follow (bool)));
+  follow_logging->setChecked (true);
+
   {
     QVBoxLayout* layout (new QVBoxLayout (sidebar));
     layout->addWidget (legend_widget);
     layout->addStretch();
+    layout->addWidget (follow_logging);
   }
 
   {
