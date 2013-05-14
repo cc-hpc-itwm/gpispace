@@ -1401,6 +1401,7 @@ namespace prefix
 #include <QApplication>
 
 int main (int argc, char** argv)
+try
 {
   QApplication app (argc, argv);
 
@@ -1480,4 +1481,12 @@ int main (int argc, char** argv)
   window.show();
 
   return app.exec();
+}
+catch (const prefix::connection_error& err)
+{
+  std::cerr << "failed to connect: " << err.what() << "\n";
+}
+catch (const std::runtime_error& err)
+{
+  std::cerr << "error: " << err.what() << "\n";
 }

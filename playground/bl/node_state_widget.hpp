@@ -104,6 +104,13 @@ namespace prefix
     QMap<QString, legend_entry*> _state_legend;
   };
 
+  struct connection_error : public std::runtime_error
+  {
+    connection_error (const QTcpSocket& socket)
+      : std::runtime_error (qPrintable (socket.errorString()))
+    { }
+  };
+
   class async_tcp_communication : public QObject
   {
     Q_OBJECT;
@@ -117,7 +124,7 @@ namespace prefix
       _socket.connectToHost (host, port);
       if (!_socket.waitForConnected())
       {
-        throw std::runtime_error (qPrintable (_socket.errorString()));
+        throw connection_error (_socket);
       }
 
       QTimer* timer (new QTimer (this));
