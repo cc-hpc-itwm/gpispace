@@ -289,6 +289,9 @@ namespace prefix
     void sort_by_name();
     void sort_by_state();
 
+    void select_all();
+    void clear_selection();
+
   signals:
 
   private:
@@ -303,7 +306,6 @@ namespace prefix
     QList<node_type> _nodes;
     QList<int> _selection;
 
-    void clear_selection();
     void add_to_selection (const int&);
     void remove_from_selection (const int&);
 

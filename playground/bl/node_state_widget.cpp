@@ -169,6 +169,20 @@ namespace prefix
     pol.setHeightForWidth (true);
     setSizePolicy (pol);
 
+    {
+      QAction* select_all_nodes (new QAction (this));
+      select_all_nodes->setShortcuts (QKeySequence::SelectAll);
+      connect (select_all_nodes, SIGNAL (triggered()), SLOT (select_all()));
+      addAction (select_all_nodes);
+    }
+
+    {
+      QAction* clear_selection (new QAction (this));
+      clear_selection->setShortcuts (QList<QKeySequence>() << Qt::Key_Escape);
+      connect (clear_selection, SIGNAL (triggered()), SLOT (clear_selection()));
+      addAction (clear_selection);
+    }
+
     connect ( _communication
             , SIGNAL (nodes (QStringList))
             , SLOT (nodes (QStringList)));
@@ -1365,6 +1379,18 @@ namespace prefix
 
     update();
     _communication->resume();
+  }
+
+  void node_state_widget::select_all()
+  {
+    _selection.clear();
+
+    for (int i (_nodes.size() - 1); i >= 0; --i)
+    {
+      _selection << i;
+    }
+
+    update();
   }
 }
 
