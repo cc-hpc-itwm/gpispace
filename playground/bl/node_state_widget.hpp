@@ -35,17 +35,23 @@ namespace prefix
       , _details (boost::none)
       , _watched (false)
     { }
+
+    const bool& watched() const { return _watched; }
+    void watched (const bool& watched_) { _watched = watched_; }
+
+    const boost::optional<QString>& state() const { return _state; }
+    void state (const boost::optional<QString>& state_) { _state = state_; }
+
+    const boost::optional<QString>& details() const { return _details; }
+    void details (const boost::optional<QString>& details_) { _details = details_; }
+
+    const QString& hostname() const { return _hostname; }
+
+  private:
     boost::optional<QString> _state;
     QString _hostname;
     boost::optional<QString> _details;
     bool _watched;
-    const bool& watched() const { return _watched; }
-    void watched (const bool& watched_) { _watched = watched_; }
-    const boost::optional<QString>& state() const { return _state; }
-    void state (const boost::optional<QString>& state_) { _state = state_; }
-    const boost::optional<QString>& details() const { return _details; }
-    void details (const boost::optional<QString>& details_) { _details = details_; }
-    const QString& hostname() const { return _hostname; }
   };
 
   struct state_description
