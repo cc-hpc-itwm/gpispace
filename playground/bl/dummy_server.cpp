@@ -5,6 +5,7 @@
 #include "parse.hpp"
 
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/alphanum.hpp>
 
 #include <iostream>
 
@@ -237,6 +238,19 @@ void thread::send_layout_hint (fhg::util::parse::position& pos)
     );
 }
 
+namespace
+{
+  struct less
+    : public std::binary_function<QString, QString, bool>
+  {
+    bool operator() (const QString& left, const QString& right) const
+    {
+      return fhg::util::alphanum::less()
+        (left.toStdString(), right.toStdString());
+    }
+  };
+}
+
 void thread::may_read()
 {
   while (_socket->canReadLine())
@@ -288,7 +302,10 @@ void thread::may_read()
 
           const QMutexLocker lock (&_hosts_mutex);
 
-          foreach (const QString& host, _hosts.keys())
+          QList<QString> hosts (_hosts.keys());
+          qStableSort (hosts.begin(), hosts.end(), less());
+
+          foreach (const QString& host, hosts)
           {
             _socket->write (qPrintable (QString (" \"%1\",").arg (host)));
           }
