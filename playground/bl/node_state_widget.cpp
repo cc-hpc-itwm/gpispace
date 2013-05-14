@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QDebug>
+#include <QGroupBox>
 #include <QMenu>
 #include <QPushButton>
 #include <QPaintEvent>
@@ -162,8 +163,6 @@ namespace prefix
     timer
       (this, 1000, boost::bind (&communication::request_hostlist, _communication));
     timer (this, 200, SLOT (refresh_stati()));
-
-    // qStableSort (_nodes.begin(), _nodes.end(), boost::bind (&node_type::less_by_hostname, _1, _2));
 
     setSizeIncrement (per_step, per_step);
     QSizePolicy pol (QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
@@ -1287,6 +1286,71 @@ namespace prefix
     const int per_row (items_per_row (width));
     return (node_count() + per_row - 1) / per_row * per_step;
   }
+
+  void node_state_widget::sort_by_name()
+  {
+    _communication->pause();
+
+    QList<QString> selected_hostnames;
+
+    foreach (const int& index, _selection)
+    {
+      selected_hostnames << node (index).hostname();
+    }
+
+    qStableSort ( _nodes.begin(), _nodes.end()
+                , boost::bind (&node_type::less_by_hostname, _1, _2)
+                );
+
+    _selection.clear();
+    _last_manual_selection = boost::none;
+
+    int i (0);
+    foreach (const node_type& node, _nodes)
+    {
+      if (selected_hostnames.contains (node.hostname()))
+      {
+        _selection << i;
+      }
+
+      ++i;
+    }
+
+    update();
+    _communication->resume();
+  }
+  void node_state_widget::sort_by_state()
+  {
+    _communication->pause();
+
+    QList<QString> selected_hostnames;
+
+    foreach (const int& index, _selection)
+    {
+      selected_hostnames << node (index).hostname();
+    }
+
+    qStableSort ( _nodes.begin(), _nodes.end()
+                , boost::bind (&node_type::less_by_state, _1, _2)
+                );
+
+    _selection.clear();
+    _last_manual_selection = boost::none;
+
+    int i (0);
+    foreach (const node_type& node, _nodes)
+    {
+      if (selected_hostnames.contains (node.hostname()))
+      {
+        _selection << i;
+      }
+
+      ++i;
+    }
+
+    update();
+    _communication->resume();
+  }
 }
 
 #include <QApplication>
@@ -1302,28 +1366,52 @@ int main (int argc, char** argv)
 
   QWidget* sidebar (new QWidget (main));
   prefix::legend* legend_widget (new prefix::legend (sidebar));
-  QScrollArea* content (new QScrollArea (main));
 
-  QCheckBox* follow_logging
-    (new QCheckBox (QObject::tr ("follow logging"), sidebar));
-  log->connect (follow_logging, SIGNAL (toggled (bool)), SLOT (follow (bool)));
-  follow_logging->setChecked (true);
+  prefix::node_state_widget* node_widget
+    (new prefix::node_state_widget (legend_widget, log));
 
-  QPushButton* clear_log (new QPushButton (QObject::tr ("clear log"), sidebar));
-  log->connect (clear_log, SIGNAL (clicked()), SLOT (clear()));
+  QGroupBox* sort_box (new QGroupBox (QObject::tr ("sort"), sidebar));
 
   {
+    QPushButton* sort_by_state
+      (new QPushButton (QObject::tr ("by state"), sort_box));
+    QPushButton* sort_by_name
+      (new QPushButton (QObject::tr ("by name"), sort_box));
+
+    node_widget->connect
+      (sort_by_state, SIGNAL (clicked()), SLOT (sort_by_state()));
+    node_widget->connect
+      (sort_by_name, SIGNAL (clicked()), SLOT (sort_by_name()));
+
+    QVBoxLayout* layout (new QVBoxLayout (sort_box));
+    layout->addWidget (sort_by_state);
+    layout->addWidget (sort_by_name);
+  }
+
+  {
+    QPushButton* clear_log
+      (new QPushButton (QObject::tr ("clear log"), sidebar));
+    log->connect (clear_log, SIGNAL (clicked()), SLOT (clear()));
+
+    QCheckBox* follow_logging
+      (new QCheckBox (QObject::tr ("follow logging"), sidebar));
+    log->connect (follow_logging, SIGNAL (toggled (bool)), SLOT (follow (bool)));
+    follow_logging->setChecked (true);
+
     QVBoxLayout* layout (new QVBoxLayout (sidebar));
     layout->addWidget (legend_widget);
+    layout->addWidget (sort_box);
     layout->addStretch();
     layout->addWidget (follow_logging);
     layout->addWidget (clear_log);
   }
 
+  QScrollArea* content (new QScrollArea (main));
+
   {
     QWidget* inner (new QWidget (content));
     QVBoxLayout* layout (new QVBoxLayout (inner));
-    layout->addWidget (new prefix::node_state_widget (legend_widget, log));
+    layout->addWidget (node_widget);
 
     content->setWidget (inner);
     content->setWidgetResizable (true);

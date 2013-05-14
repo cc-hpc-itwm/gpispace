@@ -292,6 +292,9 @@ namespace prefix
                        , const boost::optional<QString>&
                        );
 
+    void sort_by_name();
+    void sort_by_state();
+
   signals:
 
   private:
