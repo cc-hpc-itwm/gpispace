@@ -159,7 +159,7 @@ namespace gspc
           }
           else if (E_UNAUTHORIZED == rc)
           {
-            ec = errc::make_error_code (errc::permission_denied);
+            ec = errc::make_error_code (errc::operation_not_permitted);
             return client_ptr_t ();
           }
           else
