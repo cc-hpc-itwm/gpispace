@@ -113,10 +113,10 @@ done
 #
 if [ -z "$SDPA_HOME" ] ; then
     export SDPA_HOME=$(dirname $(dirname $(which "$0")))
-    export SDPA_LIBEXEC="${SDPA_HOME}/libexec/sdpa"
     prepend_to_path PATH "$SDPA_HOME/bin"
 fi
 
+export SDPA_LIBEXEC="${SDPA_HOME}/libexec/sdpa"
 export SDPA_SCRIPT_DIR="$SDPA_LIBEXEC/scripts"
 prepend_to_path PATH "$SDPA_SCRIPT_DIR"
 
