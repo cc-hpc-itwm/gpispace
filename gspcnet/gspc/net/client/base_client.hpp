@@ -112,6 +112,7 @@ namespace gspc
         boost::posix_time::time_duration m_timeout;
 
         boost::system::error_code   m_last_error_code;
+        std::string m_priv_queue;
       };
     }
   }

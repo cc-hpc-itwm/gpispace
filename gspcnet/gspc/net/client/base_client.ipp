@@ -3,6 +3,7 @@
 
 #include <fhg/assert.hpp>
 
+#include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <gspc/net/frame_io.hpp>
@@ -130,7 +131,17 @@ namespace gspc
 
         if (rply.get_command () == "CONNECTED")
         {
+          static size_t connect_counter = 0;
+          m_priv_queue =
+            ( boost::format ("/client-%1%.%2%/replies")
+            % getpid ()
+            % connect_counter++
+            ).str ();
+
           m_state = CONNECTED;
+
+          subscribe (m_priv_queue, m_priv_queue);
+
           return 0;
         }
         else if (rply.get_command () == "ERROR")
@@ -310,6 +321,7 @@ namespace gspc
         int rc;
         frame rqst (f);
         rqst.set_command ("REQUEST");
+        rqst.set_header ("reply-to", m_priv_queue);
 
         rc = send_and_wait (rqst, rply, t);
 
