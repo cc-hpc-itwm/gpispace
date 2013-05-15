@@ -35,6 +35,7 @@ static void s_echo_roundtrip ( gspc::net::server::queue_manager_t & qmgr
   rqst_frame.set_command ("REQUEST");
   rqst_frame.set_header ("destination", destination);
   rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
   std::size_t old_frames_size = user.frames.size ();
@@ -64,6 +65,8 @@ BOOST_AUTO_TEST_CASE (test_multiple_echo_service)
 
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
+
+  qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   demux.handle ("/test/echo-1", gspc::net::service::echo ());
   demux.handle ("/test/echo-2", gspc::net::service::echo ());
@@ -105,6 +108,8 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
 
+  qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
+
   demux.handle ( "/tests/error"
                , erroneous_handler_t
                  ("erroneous_handler_t could not handle request")
@@ -114,6 +119,7 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
   rqst_frame.set_command ("REQUEST");
   rqst_frame.set_header ("destination", "/tests/error");
   rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
   rc = qmgr.request (&user, "/tests/error", rqst_frame);
@@ -141,11 +147,13 @@ BOOST_AUTO_TEST_CASE (test_no_such_service)
 
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
+  qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   gspc::net::frame rqst_frame;
   rqst_frame.set_command ("REQUEST");
   rqst_frame.set_header ("destination", "/tests/echo");
   rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
   rc = qmgr.request (&user, "/tests/error", rqst_frame);
@@ -172,6 +180,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
   mock::user user;
 
   gspc::net::server::queue_manager_t qmgr;
+  qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   gspc::net::handle ("/test/echo", gspc::net::service::echo ());
 
@@ -179,6 +188,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
   rqst_frame.set_command ("REQUEST");
   rqst_frame.set_header ("destination", "/test/echo");
   rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
   rc = qmgr.request (&user, "/test/echo", rqst_frame);
@@ -202,7 +212,9 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
   mock::user user;
 
   gspc::net::server::queue_manager_t qmgr_1;
+  qmgr_1.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
   gspc::net::server::queue_manager_t qmgr_2;
+  qmgr_2.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   gspc::net::handle ("/test/echo", gspc::net::service::echo ());
 
@@ -210,6 +222,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
   rqst_frame.set_command ("REQUEST");
   rqst_frame.set_header ("destination", "/test/echo");
   rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
   rc = qmgr_1.request (&user, "/test/echo", rqst_frame);

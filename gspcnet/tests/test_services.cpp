@@ -35,6 +35,7 @@ BOOST_AUTO_TEST_CASE (test_echo_service)
 
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
+  qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   demux.handle ("/test/echo", gspc::net::service::echo ());
 
@@ -42,6 +43,7 @@ BOOST_AUTO_TEST_CASE (test_echo_service)
   rqst_frame.set_command ("REQUEST");
   rqst_frame.set_header ("destination", "/test/echo");
   rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
   rc = qmgr.request (&user, "/test/echo", rqst_frame);
@@ -66,6 +68,7 @@ BOOST_AUTO_TEST_CASE (test_strip_prefix)
 
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
+  qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   demux.handle ( "/test/echo"
                , gspc::net::service::strip_prefix ( "/test"
@@ -77,6 +80,7 @@ BOOST_AUTO_TEST_CASE (test_strip_prefix)
   rqst_frame.set_command ("REQUEST");
   rqst_frame.set_header ("destination", "/test/echo");
   rqst_frame.set_header ("test-id", "42");
+  rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
   rc = qmgr.request (&user, "/test/echo", rqst_frame);
