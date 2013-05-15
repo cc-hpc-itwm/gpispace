@@ -18,6 +18,8 @@ namespace gspc
       virtual int start () = 0;
       virtual int stop () = 0;
 
+      virtual std::string const & get_private_queue () const = 0;
+
       virtual int connect () = 0;
       virtual int disconnect () = 0;
 

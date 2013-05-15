@@ -95,6 +95,13 @@ namespace gspc
       }
 
       template <class Proto>
+      std::string const &
+      base_client<Proto>::get_private_queue () const
+      {
+        return this->m_priv_queue;
+      }
+
+      template <class Proto>
       void
       base_client<Proto>::set_timeout (size_t ms)
       {
