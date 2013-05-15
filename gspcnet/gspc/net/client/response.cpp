@@ -40,7 +40,11 @@ namespace gspc
           }
         }
 
-        return -ECANCELED;
+        if (m_aborted)
+          return -ECANCELED;
+        if (m_reply)
+          return 0;
+        return -ETIME;
       }
 
       void response_t::notify (frame const & f)
