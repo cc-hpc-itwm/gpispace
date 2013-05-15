@@ -34,14 +34,14 @@ struct SetRLimits
 
     if (-1 == getrlimit (RLIMIT_NOFILE, &lim))
     {
-      std::cerr << "setrlimit failed: " << strerror (errno) << std::endl;
+      BOOST_TEST_MESSAGE ("setrlimit failed: " << strerror (errno));
     }
 
     lim.rlim_cur = lim.rlim_max;
 
     if (-1 == setrlimit (RLIMIT_NOFILE, &lim))
     {
-      std::cerr << "setrlimit failed: " << strerror (errno) << std::endl;
+      BOOST_TEST_MESSAGE ("setrlimit failed: " << strerror (errno));
     }
 
     max_open_files = (lim.rlim_cur == RLIM_INFINITY) ? 60000 : lim.rlim_cur;
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
   using namespace gspc::net::tests;
   static const size_t NUM_CLIENTS = (SetRLimits::max_open_files / 6);
 
-  std::cerr << "simulating " << NUM_CLIENTS << " concurrent clients" << std::endl;
+  BOOST_TEST_MESSAGE ("simulating " << NUM_CLIENTS << " concurrent clients");
 
   gspc::net::server::queue_manager_t qmgr;
 
