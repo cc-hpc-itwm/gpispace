@@ -259,6 +259,7 @@ BOOST_AUTO_TEST_CASE (test_request_success)
     int rc = client->request ( "/test/echo-1"
                              , "hello world!"
                              , rply
+                             , boost::posix_time::seconds (1)
                              );
     BOOST_REQUIRE_EQUAL (rc, 0);
     BOOST_REQUIRE_EQUAL (rply.get_body_as_string (), "hello world!");
@@ -282,6 +283,7 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
   int rc = client->request ( "/test/echo-1"
                            , "hello world!"
                            , rply
+                           , boost::posix_time::seconds (1)
                            );
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (rply.get_command (), "ERROR");
