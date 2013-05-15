@@ -157,6 +157,11 @@ namespace gspc
             ec = errc::make_error_code (errc::permission_denied);
             return client_ptr_t ();
           }
+          else if (E_UNAUTHORIZED == rc)
+          {
+            ec = errc::make_error_code (errc::permission_denied);
+            return client_ptr_t ();
+          }
           else
           {
             ec = errc::make_error_code (errc::protocol_error);
