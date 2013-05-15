@@ -44,9 +44,7 @@ namespace gspc
 
       try
       {
-        fs::path full_path = fs::canonical (path, ec);
-        if (ec)
-          return client_ptr_t ();
+        fs::path full_path = fs::absolute (path);
 
         unix_client::endpoint_type ep;
         ep = resolver<unix_client::protocol_type>::resolve
