@@ -38,6 +38,10 @@ namespace gspc
           gspc::net::header::receipt_id r_id (*h);
           r_id.apply_to (error);
         }
+        if (frame::header_value h = f.get_header ("reply-to"))
+        {
+          header::set (error, "destination", *h);
+        }
         return error;
       }
 
