@@ -201,6 +201,41 @@ namespace gspc
       }
 
       int
+      queue_manager_t::deliver (frame const &f)
+      {
+        if (not f.has_header ("destination"))
+        {
+          return -EPROTO;
+        }
+
+        int rc = 0;
+        std::string const & dst = *f.get_header ("destination");
+
+        shared_lock lock (m_mutex);
+
+        subscription_map_t::iterator sub_it =
+          m_subscriptions.find (dst);
+
+        if (sub_it != m_subscriptions.end ())
+        {
+          frame frame_to_deliver (f);
+          frame_to_deliver.set_command ("MESSAGE");
+          frame_to_deliver.del_header ("reply-to");
+
+          BOOST_FOREACH (subscription_t * sub, sub_it->second)
+          {
+            frame_set_header ( frame_to_deliver
+                             , "subscription"
+                             , sub->id
+                             );
+            sub->user->deliver (frame_to_deliver);
+          }
+        }
+
+        return rc;
+      }
+
+      int
       queue_manager_t::connect (user_ptr u, frame const &f)
       {
         unique_lock lock (m_mutex);

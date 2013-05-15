@@ -10,7 +10,7 @@
 #include <boost/thread/shared_mutex.hpp>
 
 #include <gspc/net/frame_fwd.hpp>
-#include <gspc/net/user_fwd.hpp>
+#include <gspc/net/user.hpp>
 #include <gspc/net/frame_handler.hpp>
 #include <gspc/net/server/subscription_fwd.hpp>
 #include <gspc/net/server/service_demux_fwd.hpp>
@@ -22,6 +22,7 @@ namespace gspc
     namespace server
     {
       class queue_manager_t : public frame_handler_t
+                            , public user_t
       {
       public:
         queue_manager_t ();
@@ -31,6 +32,7 @@ namespace gspc
 
         int handle_frame (user_ptr, frame const &);
         int handle_error (user_ptr, boost::system::error_code const&);
+        int deliver (frame const &f);
 
         /**
            Handle a CONNECT message
