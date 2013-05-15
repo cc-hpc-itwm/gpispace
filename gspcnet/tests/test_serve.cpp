@@ -25,6 +25,8 @@ namespace fs = boost::filesystem;
 
 struct SetRLimits
 {
+  static size_t max_open_files;
+
   SetRLimits ()
   {
     struct rlimit lim;
@@ -41,11 +43,14 @@ struct SetRLimits
     {
       std::cerr << "setrlimit failed: " << strerror (errno) << std::endl;
     }
+
+    max_open_files = (lim.rlim_cur == RLIM_INFINITY) ? 60000 : lim.rlim_cur;
   }
 
   ~SetRLimits ()
   {}
 };
+size_t SetRLimits::max_open_files = 0;
 
 BOOST_GLOBAL_FIXTURE (SetRLimits);
 
@@ -98,7 +103,9 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
   using namespace gspc::net::tests;
-  static const size_t NUM_CLIENTS = 10000;
+  static const size_t NUM_CLIENTS = (SetRLimits::max_open_files / 6);
+
+  std::cerr << "simulating " << NUM_CLIENTS << " concurrent clients" << std::endl;
 
   gspc::net::server::queue_manager_t qmgr;
 
