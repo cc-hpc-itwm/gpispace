@@ -28,8 +28,14 @@ struct SetRLimits
   SetRLimits ()
   {
     struct rlimit lim;
-    lim.rlim_cur = 60000;
-    lim.rlim_max = 60000;
+    lim.rlim_cur = lim.rlim_max = 60000;
+
+    if (-1 == getrlimit (RLIMIT_NOFILE, &lim))
+    {
+      std::cerr << "setrlimit failed: " << strerror (errno) << std::endl;
+    }
+
+    lim.rlim_cur = lim.rlim_max;
 
     if (-1 == setrlimit (RLIMIT_NOFILE, &lim))
     {
