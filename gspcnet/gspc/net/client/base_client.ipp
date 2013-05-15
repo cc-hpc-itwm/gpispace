@@ -326,11 +326,11 @@ namespace gspc
           return -ENOTCONN;
         }
 
-        return send_raw
-          (make::subscribe_frame ( header::destination (dst)
-                                 , header::id (id)
-                                 )
-          );
+        frame f_sub = make::subscribe_frame ( header::destination (dst)
+                                            , header::id (id)
+                                            );
+        frame f_rep;
+        return send_and_wait (f_sub, f_rep, m_timeout);
       }
 
       template <class Proto>
