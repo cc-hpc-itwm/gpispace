@@ -35,30 +35,23 @@ namespace prefix
       , _details (boost::none)
       , _watched (false)
     { }
+
+    const bool& watched() const { return _watched; }
+    void watched (const bool& watched_) { _watched = watched_; }
+
+    const boost::optional<QString>& state() const { return _state; }
+    void state (const boost::optional<QString>& state_) { _state = state_; }
+
+    const boost::optional<QString>& details() const { return _details; }
+    void details (const boost::optional<QString>& details_) { _details = details_; }
+
+    const QString& hostname() const { return _hostname; }
+
+  private:
     boost::optional<QString> _state;
     QString _hostname;
     boost::optional<QString> _details;
     bool _watched;
-    const bool& watched() const { return _watched; }
-    void watched (const bool& watched_) { _watched = watched_; }
-    const boost::optional<QString>& state() const { return _state; }
-    void state (const boost::optional<QString>& state_) { _state = state_; }
-    const boost::optional<QString>& details() const { return _details; }
-    void details (const boost::optional<QString>& details_) { _details = details_; }
-    const QString& hostname() const { return _hostname; }
-    bool less_by_state (const node_type& other) const
-    {
-      return _state < other._state;
-    }
-    bool less_by_hostname (const node_type& other) const
-    {
-      return fhg::util::alphanum::less()
-        (_hostname.toStdString(), other._hostname.toStdString());
-    }
-    bool hostname_is (const QString& name) const
-    {
-      return hostname() == name;
-    }
   };
 
   struct state_description
@@ -111,19 +104,27 @@ namespace prefix
     QMap<QString, legend_entry*> _state_legend;
   };
 
+  struct connection_error : public std::runtime_error
+  {
+    connection_error (const QTcpSocket& socket)
+      : std::runtime_error (qPrintable (socket.errorString()))
+    { }
+  };
+
   class async_tcp_communication : public QObject
   {
     Q_OBJECT;
 
   public:
-    async_tcp_communication (QObject* parent = NULL)
+    async_tcp_communication
+        (const QString& host, int port, QObject* parent = NULL)
       : QObject (parent)
     {
       connect (&_socket, SIGNAL (readyRead()), SLOT (may_read()));
-      _socket.connectToHost ("localhost", 44451);
+      _socket.connectToHost (host, port);
       if (!_socket.waitForConnected())
       {
-        throw std::runtime_error (qPrintable (_socket.errorString()));
+        throw connection_error (_socket);
       }
 
       QTimer* timer (new QTimer (this));
@@ -207,7 +208,7 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    communication (QObject* parent = NULL);
+    communication (const QString& host, int port, QObject* parent = NULL);
 
     void request_action (const QString&, const QString&);
     void request_layout_hint (const QString&);
@@ -268,7 +269,12 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    node_state_widget (legend*, log_widget*, QWidget* parent = NULL);
+    node_state_widget ( const QString& host
+                      , int port
+                      , legend*
+                      , log_widget*
+                      , QWidget* parent = NULL
+                      );
 
     virtual int heightForWidth (int) const;
 
@@ -296,6 +302,9 @@ namespace prefix
     void sort_by_name();
     void sort_by_state();
 
+    void select_all();
+    void clear_selection();
+
   signals:
 
   private:
@@ -310,7 +319,6 @@ namespace prefix
     QList<node_type> _nodes;
     QList<int> _selection;
 
-    void clear_selection();
     void add_to_selection (const int&);
     void remove_from_selection (const int&);
 

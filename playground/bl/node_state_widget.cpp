@@ -67,9 +67,9 @@ namespace prefix
     }
   }
 
-  communication::communication (QObject* parent)
+  communication::communication (const QString& host, int port, QObject* parent)
     : QObject (parent)
-    , _connection (new async_tcp_communication)
+    , _connection (new async_tcp_communication (host, port, this))
     , _timer (NULL)
   {
     resume();
@@ -153,12 +153,16 @@ namespace prefix
     log_follower->start (refresh_rate);
   }
 
-  node_state_widget::node_state_widget
-    (legend* legend_widget, log_widget* log, QWidget* parent)
+  node_state_widget::node_state_widget ( const QString& host
+                                       , int port
+                                       , legend* legend_widget
+                                       , log_widget* log
+                                       , QWidget* parent
+                                       )
       : QWidget (parent)
       , _legend_widget (legend_widget)
       , _log (log)
-      , _communication (new communication (this))
+      , _communication (new communication (host, port, this))
   {
     timer
       (this, 1000, boost::bind (&communication::request_hostlist, _communication));
@@ -168,6 +172,20 @@ namespace prefix
     QSizePolicy pol (QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     pol.setHeightForWidth (true);
     setSizePolicy (pol);
+
+    {
+      QAction* select_all_nodes (new QAction (this));
+      select_all_nodes->setShortcuts (QKeySequence::SelectAll);
+      connect (select_all_nodes, SIGNAL (triggered()), SLOT (select_all()));
+      addAction (select_all_nodes);
+    }
+
+    {
+      QAction* clear_selection (new QAction (this));
+      clear_selection->setShortcuts (QList<QKeySequence>() << Qt::Key_Escape);
+      connect (clear_selection, SIGNAL (triggered()), SLOT (clear_selection()));
+      addAction (clear_selection);
+    }
 
     connect ( _communication
             , SIGNAL (nodes (QStringList))
@@ -297,7 +315,7 @@ namespace prefix
     const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
-                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     , boost::bind (&node_type::hostname, _1) == hostname
                      )
       );
 
@@ -313,7 +331,7 @@ namespace prefix
     const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
-                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     , boost::bind (&node_type::hostname, _1) == hostname
                      )
       );
 
@@ -1298,9 +1316,23 @@ namespace prefix
       selected_hostnames << node (index).hostname();
     }
 
-    qStableSort ( _nodes.begin(), _nodes.end()
-                , boost::bind (&node_type::less_by_hostname, _1, _2)
-                );
+    fhg::util::alphanum::less less;
+
+    qStableSort
+      ( _nodes.begin(), _nodes.end()
+      // , [](const QString& l, const QString& r) -> bool
+      // {
+      //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
+      // }
+      , boost::bind ( &fhg::util::alphanum::less::operator(), less
+                    , boost::bind ( &QString::toStdString
+                                  , boost::bind (&node_type::hostname, _1)
+                                  )
+                    , boost::bind ( &QString::toStdString
+                                  , boost::bind (&node_type::hostname, _2)
+                                  )
+                    )
+      );
 
     _selection.clear();
     _last_manual_selection = boost::none;
@@ -1331,7 +1363,8 @@ namespace prefix
     }
 
     qStableSort ( _nodes.begin(), _nodes.end()
-                , boost::bind (&node_type::less_by_state, _1, _2)
+                , boost::bind (&node_type::state, _1)
+                < boost::bind (&node_type::state, _2)
                 );
 
     _selection.clear();
@@ -1351,13 +1384,35 @@ namespace prefix
     update();
     _communication->resume();
   }
+
+  void node_state_widget::select_all()
+  {
+    _selection.clear();
+
+    for (int i (_nodes.size() - 1); i >= 0; --i)
+    {
+      _selection << i;
+    }
+
+    update();
+  }
 }
 
 #include <QApplication>
 
 int main (int argc, char** argv)
+try
 {
   QApplication app (argc, argv);
+
+  if (argc != 3)
+  {
+    std::cerr << "usage: " << argv[0] << " <host> <port>\n";
+    return -1;
+  }
+
+  const QString host (argv[1]);
+  const int port (QString (argv[2]).toInt());
 
   QSplitter window (Qt::Vertical);
 
@@ -1367,28 +1422,33 @@ int main (int argc, char** argv)
   QWidget* sidebar (new QWidget (main));
   prefix::legend* legend_widget (new prefix::legend (sidebar));
 
+  QScrollArea* content (new QScrollArea (main));
+
   prefix::node_state_widget* node_widget
-    (new prefix::node_state_widget (legend_widget, log));
+    (new prefix::node_state_widget (host, port, legend_widget, log, content));
 
-  QGroupBox* sort_box (new QGroupBox (QObject::tr ("sort"), sidebar));
-
-  {
-    QPushButton* sort_by_state
-      (new QPushButton (QObject::tr ("by state"), sort_box));
-    QPushButton* sort_by_name
-      (new QPushButton (QObject::tr ("by name"), sort_box));
-
-    node_widget->connect
-      (sort_by_state, SIGNAL (clicked()), SLOT (sort_by_state()));
-    node_widget->connect
-      (sort_by_name, SIGNAL (clicked()), SLOT (sort_by_name()));
-
-    QVBoxLayout* layout (new QVBoxLayout (sort_box));
-    layout->addWidget (sort_by_state);
-    layout->addWidget (sort_by_name);
-  }
+  content->setWidget (node_widget);
+  content->setWidgetResizable (true);
 
   {
+    QGroupBox* sort_box (new QGroupBox (QObject::tr ("sort"), sidebar));
+
+    {
+      QPushButton* sort_by_state
+        (new QPushButton (QObject::tr ("by state"), sort_box));
+      QPushButton* sort_by_name
+        (new QPushButton (QObject::tr ("by name"), sort_box));
+
+      node_widget->connect
+        (sort_by_state, SIGNAL (clicked()), SLOT (sort_by_state()));
+      node_widget->connect
+        (sort_by_name, SIGNAL (clicked()), SLOT (sort_by_name()));
+
+      QVBoxLayout* layout (new QVBoxLayout (sort_box));
+      layout->addWidget (sort_by_state);
+      layout->addWidget (sort_by_name);
+    }
+
     QPushButton* clear_log
       (new QPushButton (QObject::tr ("clear log"), sidebar));
     log->connect (clear_log, SIGNAL (clicked()), SLOT (clear()));
@@ -1406,17 +1466,6 @@ int main (int argc, char** argv)
     layout->addWidget (clear_log);
   }
 
-  QScrollArea* content (new QScrollArea (main));
-
-  {
-    QWidget* inner (new QWidget (content));
-    QVBoxLayout* layout (new QVBoxLayout (inner));
-    layout->addWidget (node_widget);
-
-    content->setWidget (inner);
-    content->setWidgetResizable (true);
-  }
-
   {
     QHBoxLayout* layout (new QHBoxLayout (main));
     layout->addWidget (content);
@@ -1426,4 +1475,12 @@ int main (int argc, char** argv)
   window.show();
 
   return app.exec();
+}
+catch (const prefix::connection_error& err)
+{
+  std::cerr << "failed to connect: " << err.what() << "\n";
+}
+catch (const std::runtime_error& err)
+{
+  std::cerr << "error: " << err.what() << "\n";
 }
