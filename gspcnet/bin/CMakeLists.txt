@@ -28,3 +28,8 @@ target_link_libraries (gspcnet-ping
   ${Boost_SYSTEM_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
 )
+
+install (TARGETS gspcnetd gspcnetc gspcnet-ping
+  DESTINATION bin
+  COMPONENT runtime
+)
