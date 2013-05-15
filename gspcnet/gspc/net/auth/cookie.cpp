@@ -1,6 +1,5 @@
 #include "cookie.hpp"
 
-#include <iostream>
 #include <fstream>
 
 #include <unistd.h>             // getuid
@@ -64,15 +63,11 @@ namespace gspc
           return false;
         }
 
-        std::cerr << "reading from " << f << std::endl;
-
         rc = fstat (fd, &stat_buf);
         if (rc < 0)
         {
           return false;
         }
-
-        std::cerr << "mode = " << std::oct << stat_buf.st_mode << std::endl;
 
         if (not S_ISREG (stat_buf.st_mode))
         {
@@ -99,8 +94,6 @@ namespace gspc
         }
 
         out = cookie;
-
-        std::cerr << "cookie = " << cookie << std::endl;
 
         return true;
       }
