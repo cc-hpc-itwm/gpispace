@@ -92,7 +92,7 @@ public:
     os << "--- ping statistics ---" << std::endl;
     os << sent << " packets transmitted, "
        << recv << " packets received, "
-       << packet_loss  << "% packet loss, "
+       << packet_loss*100.0  << "% packet loss, "
        << "time " << (end - start)
        << std::endl
        << "rtt min/avg/max = "
