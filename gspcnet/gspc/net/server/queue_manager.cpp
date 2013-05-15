@@ -16,6 +16,8 @@
 #include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/server/default_service_demux.hpp>
 
+#include <gspc/net/auth/default_auth.hpp>
+
 namespace gspc
 {
   namespace net
@@ -205,15 +207,32 @@ namespace gspc
 
         if (m_connections.find (u) == m_connections.end ())
         {
-          gspc::net::frame connected =
-            make::connected_frame (gspc::net::header::version ("1.0"));
-          connected.set_header ("heart-beat", "0,0");
-          connected.set_header ("correlation-id", f.get_header ("message-id"));
-          u->deliver (connected);
+          if (auth::default_auth ().is_authorized (header::get ( f
+                                                               , "cookie"
+                                                               , std::string ("")
+                                                               )
+                                                  )
+             )
+          {
+            gspc::net::frame connected =
+              make::connected_frame (gspc::net::header::version ("1.0"));
+            connected.set_header ("heart-beat", "0,0");
+            connected.set_header ("correlation-id", f.get_header ("message-id"));
+            u->deliver (connected);
 
-          m_connections.insert (u);
+            m_connections.insert (u);
 
-          return 0;
+            return 0;
+          }
+          else
+          {
+            u->deliver (gspc::net::make::error_frame ( f
+                                                     , gspc::net::E_UNAUTHORIZED
+                                                     , "you shall not pass"
+                                                     )
+            );
+            return -EPERM;
+          }
         }
         else
         {
