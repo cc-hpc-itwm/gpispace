@@ -219,7 +219,6 @@ namespace gspc
         if (sub_it != m_subscriptions.end ())
         {
           frame frame_to_deliver (f);
-          frame_to_deliver.set_command ("MESSAGE");
           frame_to_deliver.del_header ("reply-to");
 
           BOOST_FOREACH (subscription_t * sub, sub_it->second)
