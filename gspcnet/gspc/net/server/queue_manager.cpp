@@ -355,7 +355,7 @@ namespace gspc
                                    , frame const & rqst
                                    )
       {
-        return m_service_demux.handle_request (dst, rqst, user);
+        return m_service_demux.handle_request (dst, rqst, this);
       }
 
       int queue_manager_t::subscribe ( user_ptr user
