@@ -291,22 +291,29 @@ namespace gspc
       int base_client<Proto>::request ( std::string const &dst
                                       , std::string const &body
                                       , frame &rply
+                                      , const boost::posix_time::time_duration t
                                       )
       {
         frame rqst ("REQUEST");
         rqst.set_body (body);
         rqst.set_header ("destination", dst);
 
-        return this->request (rqst, rply);
+        return this->request (rqst, rply, t);
       }
 
       template <class Proto>
-      int base_client<Proto>::request (frame const &f, frame &rply)
+      int base_client<Proto>::request ( frame const &f
+                                      , frame &rply
+                                      , const boost::posix_time::time_duration t
+                                      )
       {
+        int rc;
         frame rqst (f);
         rqst.set_command ("REQUEST");
 
-        return send_and_wait (rqst, rply, m_timeout);
+        rc = send_and_wait (rqst, rply, t);
+
+        return rc;
       }
 
       template <class Proto>
