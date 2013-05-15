@@ -1,11 +1,5 @@
 #include "simple.hpp"
-
-#include <fstream>
-
-#include <unistd.h>             // getuid
-#include <stdlib.h>             // getenv
-#include <sys/types.h>          // uid_t
-#include <pwd.h>                // getpwuid_r
+#include "cookie.hpp"
 
 namespace gspc
 {
@@ -13,40 +7,8 @@ namespace gspc
   {
     namespace auth
     {
-      static std::string get_or_create_cookie (std::string const &dflt)
-      {
-        char *cookie = 0;
-        int rc = 0;
-        char buf [4096];
-
-        if ((cookie = getenv ("GSPC_COOKIE")))
-        {
-          return cookie;
-        }
-
-        struct passwd pwd;
-        struct passwd *result;
-        rc = getpwuid_r (getuid (), &pwd, buf, sizeof(buf), &result);
-        if (result)
-        {
-          std::string fname (pwd.pw_dir);
-          fname += "/.gspc.cookie";
-
-          std::ifstream ifs (fname.c_str ());
-          if (ifs)
-          {
-            std::string cookie_str;
-            ifs >> std::noskipws >> cookie_str;
-
-            return cookie_str;
-          }
-        }
-
-        return dflt;
-      }
-
       simple_auth_t::simple_auth_t ()
-        : m_cookie (get_or_create_cookie (""))
+        : m_cookie (gspc::net::auth::get_cookie ())
       {}
 
       simple_auth_t::simple_auth_t (std::string const &cookie)
