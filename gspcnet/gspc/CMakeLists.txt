@@ -31,6 +31,7 @@ set (gspcnet_src
   net/service/echo.cpp
   net/service/strip_prefix.cpp
 
+  net/auth/cookie.cpp
   net/auth/simple.cpp
   net/auth/default_auth.cpp
 )
