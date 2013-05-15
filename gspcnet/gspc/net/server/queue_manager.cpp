@@ -111,8 +111,16 @@ namespace gspc
               );
             return -EPROTO;
           }
+          const std::string dst = *f.get_header ("destination");
 
-          return send (user, *f.get_header ("destination"), f);
+          if (dst.substr (0, 9) == "/service/")
+          {
+            return request (user, dst, f);
+          }
+          else
+          {
+            return send (user, *f.get_header ("destination"), f);
+          }
         }
         else if (f.get_command () == "REQUEST")
         {
