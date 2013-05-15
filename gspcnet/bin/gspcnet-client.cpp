@@ -65,6 +65,7 @@ int main (int argc, char *argv[])
     client = gspc::net::dial (url);
     print_handler.has_error = false;
     client->set_frame_handler (print_handler);
+    std::cerr << "Connected! private queue: " << client->get_private_queue () << std::endl;
   }
   catch (std::exception const &ex)
   {
@@ -106,6 +107,7 @@ int main (int argc, char *argv[])
 
       print_handler.has_error = false;
       client->set_frame_handler (print_handler);
+      std::cerr << "Connected! private queue: " << client->get_private_queue () << std::endl;
     }
 
     gspc::net::parse::result_t result = parser.parse (&c, &c + 1, frame);
