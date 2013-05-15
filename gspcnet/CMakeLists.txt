@@ -12,7 +12,7 @@ find_package(Threads REQUIRED QUIET)
 find_package(UTIL REQUIRED QUIET)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 include_directories(${UTIL_INCLUDE_DIR})
 
 add_subdirectory(gspc)
