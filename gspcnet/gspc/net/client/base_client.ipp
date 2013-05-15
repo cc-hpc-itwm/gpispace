@@ -8,8 +8,9 @@
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/client/dummy_frame_handler.hpp>
-
 #include <gspc/net/client/response.hpp>
+
+#include <gspc/net/auth/cookie.hpp>
 
 namespace gspc
 {
@@ -110,9 +111,13 @@ namespace gspc
       int base_client<Proto>::connect ()
       {
         frame rply;
+        frame cnct;
         int rc;
 
-        rc = send_and_wait ( make::connect_frame ()
+        cnct = make::connect_frame ();
+        header::set (cnct, "cookie", auth::get_cookie ());
+
+        rc = send_and_wait ( cnct
                            , rply
                            , m_timeout
                            );
