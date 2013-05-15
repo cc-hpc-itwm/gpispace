@@ -12,7 +12,7 @@ int main (int argc, char *argv[])
     return 1;
   }
 
-  gspc::net::handle ("/test/echo", gspc::net::service::echo ());
+  gspc::net::handle ("/service/echo", gspc::net::service::echo ());
 
   std::vector<gspc::net::server_ptr_t> servers;
   gspc::net::server::queue_manager_t qmgr;
