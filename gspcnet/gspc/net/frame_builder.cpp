@@ -67,11 +67,16 @@ namespace gspc
       {
         frame f (send_frame);
         f.set_command ("REPLY");
+        f.set_header ("destination", send_frame.get_header ("reply-to"));
 
         if (frame::header_value h = send_frame.get_header ("receipt"))
         {
           gspc::net::header::receipt_id r_id (*h);
           r_id.apply_to (f);
+        }
+        if (frame::header_value h = send_frame.get_header ("message-id"))
+        {
+          f.set_header ("correlation-id", *h);
         }
 
         return f;
