@@ -215,5 +215,5 @@ int main (int argc, char *argv[])
 
   reply_handler.dump_stats_to (std::cerr);
 
-  return 0;
+  return reply_handler.had_error ? 1 : 0;
 }

@@ -284,7 +284,7 @@ done
 # config values (kernel)
 
 cfg="$cfg -n $name"
-cfg="$cfg -L $SDPA_PLUGINS"
+cfg="$cfg -L $SDPA_HOME/libexec/fhg/plugins"
 lazy=$(fhgcfg -f "${config_file}" -g kernel.lazy -v false)
 if [ x"$lazy" = x"true" ] ; then
     cfg="$cfg -s kernel.load.lazy=1"

@@ -26,8 +26,13 @@ void session::async_send (const std::string & data)
 
   // TODO: create  id or  something to identify  this write and  call callback
   // later
-  bool send_in_progress_ = !to_send_.empty();
-  to_send_.push_back (sstr.str());
+  bool send_in_progress_;
+  {
+    unique_lock lock (m_mutex);
+    send_in_progress_ = !to_send_.empty();
+    to_send_.push_back (sstr.str());
+  }
+
   if (!send_in_progress_)
   {
     DLOG(TRACE, "initiating write of " << data.length() << " bytes " << util::log_raw (data));
@@ -145,6 +150,8 @@ void session::handle_write (const boost::system::error_code & e)
 
   if (! e)
   {
+    unique_lock lock (m_mutex);
+
     DLOG(TRACE, "write completed");
 
     if (to_send_.empty())
