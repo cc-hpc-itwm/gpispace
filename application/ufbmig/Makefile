@@ -219,7 +219,7 @@ boot:
 stop:
 	SDPA_LIBEXEC=$(SDPA_HOME)/libexec/sdpa sdpa stop
 
-run: puts boot
+run: install puts boot
 	sdpa submit init.pnet.put
 	sdpa submit calc.pnet.put calc.out
 	sdpa submit finalize.pnet.put
