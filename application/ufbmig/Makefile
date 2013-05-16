@@ -76,6 +76,7 @@ WE_EXEC_LIBPATHS += $(PATH_LIB)
 
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)/process
+CXXINCLUDEPATHS += $(SDPA_INCLUDE)/fhg
 
 CXXINCLUDEPATHS += $(PATH_MAIN)
 
@@ -97,6 +98,8 @@ PNETC += --gen-ldflags=-L$(SDPA_HOME)/libexec
 PNETC += --gen-ldflags=-L$(SDPA_HOME)/lib
 PNETC += --gen-cxxflags=-O3
 PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include
+PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include/process
+PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include/fhg
 PNETC += --gen-cxxflags=-I..
 
 PNETC += --force-overwrite-file=true
@@ -140,7 +143,7 @@ ps: $(PS)
 noinline.ps: $(NOINLINE_PS)
 pss: ps noinline.ps
 
-put: $(addsuffix .put,$(PNET))
+puts: $(addsuffix .put,$(PNET))
 
 ###############################################################################
 
@@ -199,7 +202,7 @@ $(PATH_GEN): $(foreach n,$(NETS),$(call xml,$(n))) $(DEP)
 	echo $(GEN_HEADER) \
               $(foreach n,$(NETS),$(call GEN_TRANS,$(n))) \
               $(GEN_FOOTER) | $(PNETC_GEN)
-	CXXINCLUDEPATHS="$(CXXINCLUDEPATHS)" $(MAKE) -j -C $(PATH_GEN)
+	CXXINCLUDEPATHS="$(CXXINCLUDEPATHS)" $(MAKE) -C $(PATH_GEN)
 	$(TOUCH) $@
 
 ###############################################################################
@@ -207,7 +210,23 @@ $(PATH_GEN): $(foreach n,$(NETS),$(call xml,$(n))) $(DEP)
 .PHONY: install
 
 install: $(PATH_GEN)
-	$(CP) $(LIB) $(LIB_DESTDIR)
+	$(CP) $(PATH_GEN)/pnetc/op/libufbmig_*.so $(LIB_DESTDIR)
+
+###############################################################################
+
+.PHONY: boot stop run
+
+boot:
+	SDPA_LIBEXEC=$(SDPA_HOME)/libexec/sdpa sdpa boot -m 1073741824 -s 1073741824 worker:1
+
+stop:
+	SDPA_LIBEXEC=$(SDPA_HOME)/libexec/sdpa sdpa stop
+
+run: install puts boot
+	sdpa submit init.pnet.put
+	sdpa submit calc.pnet.put calc.out
+	sdpa submit finalize.pnet.put
+	$(MAKE) stop
 
 ###############################################################################
 
