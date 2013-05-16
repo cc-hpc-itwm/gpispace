@@ -1267,7 +1267,7 @@ function start_orch ()
         log "E: Orchestrator must be started on the master node"
         exit 1
     fi
-    if ! start_proc "orchestrator" "start-orch" "-s" "$state_dir" "-P" "$state_dir/orchestrator.pid" "-D" ; then
+    if ! start_proc "orchestrator" "$SDPA_SCRIPT_DIR/start-orch" "-s" "$state_dir" "-P" "$state_dir/orchestrator.pid" "-D" ; then
         echo "E: could not start orchestrator, giving up!" >&2
         return 1
     else
@@ -1278,7 +1278,7 @@ function start_orch ()
 function stop_orch ()
 {
     echo "orchestrator"
-    if ! stop_proc "orchestrator" "start-orch" ; then
+    if ! stop_proc "orchestrator" "$SDPA_SCRIPT_DIR/start-orch" ; then
         echo "E: could not stop orchestrator" >&2
         return 1
     fi
