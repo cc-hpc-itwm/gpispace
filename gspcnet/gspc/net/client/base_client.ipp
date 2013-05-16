@@ -27,14 +27,14 @@ namespace gspc
         };
 
       template <class Proto>
-      base_client<Proto>::base_client (endpoint_type const &endpoint)
-        : m_io_service ()
+      base_client<Proto>::base_client ( boost::asio::io_service &io
+                                      , endpoint_type const &endpoint
+                                      )
+        : m_io_service (io)
         , m_endpoint (endpoint)
         , m_state (DISCONNECTED)
         , m_connection ()
         , m_frame_handler (&dummy_frame_handler ())
-        , m_thread_pool_size (1)
-        , m_thread_pool ()
         , m_message_id (0)
         , m_responses_mutex ()
         , m_responses ()
@@ -51,23 +51,11 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::start ()
       {
-        assert (m_thread_pool.empty ());
-
-        m_io_service.reset ();
-
-        m_connection.reset (new connection_type (m_io_service, *this));
-        m_connection->socket ().connect (m_endpoint);
-        m_connection->start ();
-
-        for (size_t i = 0 ; i < m_thread_pool_size ; ++i)
+        if (not m_connection)
         {
-          thread_ptr_t thrd
-            (new boost::thread (boost::bind ( &boost::asio::io_service::run
-                                            , &m_io_service
-                                            )
-                               )
-            );
-          m_thread_pool.push_back (thrd);
+          m_connection.reset (new connection_type (m_io_service, *this));
+          m_connection->socket ().connect (m_endpoint);
+          m_connection->start ();
         }
 
         return 0;
@@ -76,13 +64,11 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::stop ()
       {
-        m_io_service.stop ();
-
-        BOOST_FOREACH (thread_ptr_t thrd, m_thread_pool)
+        if (m_connection)
         {
-          thrd->join ();
+          m_connection->stop ();
+          m_connection.reset ();
         }
-        m_thread_pool.clear ();
 
         return 0;
       }
@@ -174,7 +160,7 @@ namespace gspc
       template <class Proto>
       void base_client<Proto>::set_frame_handler (frame_handler_t &h)
       {
-        m_frame_handler = &h;
+        this->m_frame_handler = &h;
       }
 
       template <class Proto>
@@ -412,7 +398,7 @@ namespace gspc
         if (try_notify_response (f))
           return 0;
 
-        return m_frame_handler->handle_frame (user, f);
+        return this->m_frame_handler->handle_frame (user, f);
       }
 
       template <class Proto>

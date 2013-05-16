@@ -30,7 +30,10 @@ namespace gspc
         typedef typename protocol_type::endpoint endpoint_type;
         typedef typename protocol_type::acceptor acceptor_type;
 
-        base_server (endpoint_type const &, queue_manager_t &qmgr);
+        base_server ( boost::asio::io_service &
+                    , endpoint_type const &
+                    , queue_manager_t &qmgr
+                    );
         ~base_server ();
 
         int start ();
@@ -51,14 +54,11 @@ namespace gspc
 
         queue_manager_t & m_qmgr;
 
-        boost::asio::io_service m_io_service;
+        boost::asio::io_service &m_io_service;
+        boost::asio::io_service::strand m_strand;
+        endpoint_type           m_endpoint;
         acceptor_type           m_acceptor;
         connection_ptr          m_new_connection;
-
-        typedef boost::shared_ptr<boost::thread> thread_ptr_t;
-        typedef std::vector<thread_ptr_t>        thread_pool_t;
-        size_t                                   m_thread_pool_size;
-        thread_pool_t                            m_thread_pool;
 
         size_t m_queue_length;
       };

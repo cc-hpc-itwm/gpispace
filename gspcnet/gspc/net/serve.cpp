@@ -8,6 +8,7 @@
 
 #include <fhg/util/url.hpp>
 
+#include <gspc/net/io.hpp>
 #include <gspc/net/option.hpp>
 #include <gspc/net/limits.hpp>
 #include <gspc/net/server.hpp>
@@ -62,7 +63,7 @@ namespace gspc
 
         if (not ec)
         {
-          server::unix_server *s = new server::unix_server (ep, qmgr);
+          server::unix_server *s = new server::unix_server (gspc::net::io (), ep, qmgr);
           s_set_options (s, opts, ec);
           return server_ptr_t (s);
         }
@@ -91,7 +92,7 @@ namespace gspc
 
         if (not ec)
         {
-          server::tcp_server *s = new server::tcp_server (ep, qmgr);
+          server::tcp_server *s = new server::tcp_server (gspc::net::io (), ep, qmgr);
           s_set_options (s, opts, ec);
           return server_ptr_t (s);
         }
@@ -124,6 +125,8 @@ namespace gspc
                        , boost::system::error_code & ec
                        )
     {
+      gspc::net::initialize ();
+
       using namespace boost::system;
 
       ec = errc::make_error_code (errc::success);

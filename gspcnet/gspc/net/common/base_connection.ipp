@@ -32,7 +32,9 @@ namespace gspc
 
       template <class Proto>
       base_connection<Proto>::~base_connection ()
-      {}
+      {
+        stop ();
+      }
 
       template <class Proto>
       typename base_connection<Proto>::socket_type &
@@ -59,6 +61,13 @@ namespace gspc
                           , boost::asio::placeholders::bytes_transferred
                           ))
           );
+      }
+
+      template <class Proto>
+      void base_connection<Proto>::stop ()
+      {
+        boost::system::error_code ec;
+        m_socket.close (ec);
       }
 
       template <class Proto>
@@ -121,7 +130,7 @@ namespace gspc
 
               if (not is_heartbeat (m_frame))
               {
-                int error = m_frame_handler.handle_frame (this, m_frame);
+                int error = this->m_frame_handler.handle_frame (this, m_frame);
                 if (error < 0)
                 {
                   return;
@@ -144,7 +153,7 @@ namespace gspc
         }
         else
         {
-          m_frame_handler.handle_error (this, ec);
+          this->m_frame_handler.handle_error (this, ec);
         }
       }
 
@@ -171,7 +180,7 @@ namespace gspc
         }
         else
         {
-          m_frame_handler.handle_error (this, ec);
+          this->m_frame_handler.handle_error (this, ec);
         }
       }
     }

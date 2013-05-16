@@ -41,6 +41,7 @@ namespace gspc
         socket_type & socket ();
 
         void start ();
+        void stop ();
 
         int deliver (frame const &);
 

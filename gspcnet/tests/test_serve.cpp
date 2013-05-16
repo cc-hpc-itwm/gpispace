@@ -11,6 +11,7 @@
 #include <boost/system/system_error.hpp>
 
 #include <gspc/net.hpp>
+#include <gspc/net/io.hpp>
 #include <gspc/net/error.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/dial.hpp>
@@ -31,6 +32,8 @@ struct SetRLimits
 
   SetRLimits ()
   {
+    gspc::net::initialize ();
+
     struct rlimit lim;
     lim.rlim_cur = lim.rlim_max = 60000;
 
@@ -52,7 +55,9 @@ struct SetRLimits
   }
 
   ~SetRLimits ()
-  {}
+  {
+    gspc::net::shutdown ();
+  }
 };
 size_t SetRLimits::max_open_files = 0;
 
@@ -69,6 +74,7 @@ BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
     gspc::net::server_ptr_t server =
       gspc::net::serve ("tcp://localhost:*", qmgr);
     BOOST_REQUIRE (server);
+    server->stop ();
   }
 }
 
@@ -102,6 +108,8 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
     gspc::net::dial (server->url ());
 
   BOOST_REQUIRE (client);
+
+  client->stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
@@ -228,6 +236,10 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
   BOOST_REQUIRE_EQUAL ( subscriber.frames.size ()
                       , NUM_MSGS_TO_SEND
                       );
+
+
+  server->stop ();
+  client->stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
@@ -282,6 +294,9 @@ BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
   BOOST_REQUIRE_EQUAL ( subscriber.frames.size ()
                       , NUM_MSGS_TO_SEND
                       );
+
+
+  client->stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_request_success)
@@ -312,6 +327,8 @@ BOOST_AUTO_TEST_CASE (test_request_success)
     BOOST_REQUIRE_EQUAL (rc, 0);
     BOOST_REQUIRE_EQUAL (rply.get_body_as_string (), "hello world!");
   }
+
+  client->stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_request_no_such_service)
@@ -339,4 +356,6 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
   BOOST_REQUIRE_EQUAL (*rply.get_header ("code"), "404");
   BOOST_REQUIRE (rply.has_header ("message"));
   BOOST_REQUIRE_EQUAL (*rply.get_header ("message"), "no such service");
+
+  client->stop ();
 }
