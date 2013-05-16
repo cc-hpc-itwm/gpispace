@@ -217,7 +217,7 @@ namespace gspc
         int rc = 0;
 
         response_ptr receipt
-          (new response_t ( "message-"
+          (new response_t ( "receipt-"
                           + boost::lexical_cast<std::string>(++m_message_id)
                           ));
         frame to_send (f);
@@ -275,7 +275,7 @@ namespace gspc
         int rc = 0;
 
         response_ptr response
-          (new response_t ( "message-"
+          (new response_t ( "request-"
                           + boost::lexical_cast<std::string>(++m_message_id)
                           ));
 
