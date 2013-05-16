@@ -140,7 +140,7 @@ ps: $(PS)
 noinline.ps: $(NOINLINE_PS)
 pss: ps noinline.ps
 
-put: $(addsuffix .put,$(PNET))
+puts: $(addsuffix .put,$(PNET))
 
 ###############################################################################
 
