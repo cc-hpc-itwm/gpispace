@@ -34,7 +34,7 @@
 	      <module name="ufbmig_calc" function="read_config (filename, config)">
 		<cinclude href="fhglog/fhglog.hpp"/>
 		<cinclude href="util/rw.hpp"/>
-		<cinclude href="plugins/progress.h"/>
+		<cinclude href="fhg/plugins/progress.h"/>
 		<code><![CDATA[
 		MLOG (INFO, "reading config from file " << filename);
 
@@ -192,7 +192,7 @@
               <out name="done" type="control"/>
               <module name="ufbmig_calc" function="done finalize_calc (config)">
                 <cinclude href="fhglog/fhglog.hpp"/>
-		<cinclude href="plugins/progress.h" />
+		<cinclude href="fhg/plugins/progress.h" />
                 <code><![CDATA[
                   LOG (INFO, "FINALIZE " << config);
 
