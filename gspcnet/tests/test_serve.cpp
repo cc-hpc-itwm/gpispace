@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE (test_request_success)
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
 
-  demux.handle ("/test/echo-1", gspc::net::service::echo ());
+  demux.handle ("/service/echo-1", gspc::net::service::echo ());
 
   gspc::net::server_ptr_t server =
     gspc::net::serve ("tcp://localhost:*", qmgr);
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE (test_request_success)
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
   {
     gspc::net::frame rply;
-    int rc = client->request ( "/test/echo-1"
+    int rc = client->request ( "/service/echo-1"
                              , "hello world!"
                              , rply
                              , boost::posix_time::seconds (1)
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
   BOOST_REQUIRE (client);
 
   gspc::net::frame rply;
-  int rc = client->request ( "/test/echo-1"
+  int rc = client->request ( "/service/unknown"
                            , "hello world!"
                            , rply
                            , boost::posix_time::seconds (1)
