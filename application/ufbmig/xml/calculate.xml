@@ -40,7 +40,7 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="string"/>
-          <cinclude href="fhg/plugins/progress.h"/>
+          <cinclude href="plugins/progress.h"/>
           <code><![CDATA[
             LOG (INFO, "RUN " << ready_package);
 

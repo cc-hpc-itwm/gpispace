@@ -76,6 +76,7 @@ WE_EXEC_LIBPATHS += $(PATH_LIB)
 
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)/process
+CXXINCLUDEPATHS += $(SDPA_INCLUDE)/fhg
 
 CXXINCLUDEPATHS += $(PATH_MAIN)
 
@@ -97,6 +98,8 @@ PNETC += --gen-ldflags=-L$(SDPA_HOME)/libexec
 PNETC += --gen-ldflags=-L$(SDPA_HOME)/lib
 PNETC += --gen-cxxflags=-O3
 PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include
+PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include/process
+PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include/fhg
 PNETC += --gen-cxxflags=-I..
 
 PNETC += --force-overwrite-file=true
