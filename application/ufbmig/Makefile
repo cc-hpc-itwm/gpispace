@@ -199,7 +199,7 @@ $(PATH_GEN): $(foreach n,$(NETS),$(call xml,$(n))) $(DEP)
 	echo $(GEN_HEADER) \
               $(foreach n,$(NETS),$(call GEN_TRANS,$(n))) \
               $(GEN_FOOTER) | $(PNETC_GEN)
-	CXXINCLUDEPATHS="$(CXXINCLUDEPATHS)" $(MAKE) -j -C $(PATH_GEN)
+	CXXINCLUDEPATHS="$(CXXINCLUDEPATHS)" $(MAKE) -C $(PATH_GEN)
 	$(TOUCH) $@
 
 ###############################################################################
