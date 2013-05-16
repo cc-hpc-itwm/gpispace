@@ -136,7 +136,6 @@ int main (int argc, char *argv[])
   rqst.set_body (body);
 
   gspc::net::header::set (rqst, "destination", destination);
-  gspc::net::header::set (rqst, "reply-to", client->get_private_queue ());
 
   gspc::net::frame rply;
   int rc = client->request ( rqst
