@@ -207,7 +207,23 @@ $(PATH_GEN): $(foreach n,$(NETS),$(call xml,$(n))) $(DEP)
 .PHONY: install
 
 install: $(PATH_GEN)
-	$(CP) $(LIB) $(LIB_DESTDIR)
+	$(CP) $(PATH_GEN)/pnetc/op/libufbmig_*.so $(LIB_DESTDIR)
+
+###############################################################################
+
+.PHONY: boot stop run
+
+boot:
+	SDPA_LIBEXEC=$(SDPA_HOME)/libexec/sdpa sdpa boot -m 1073741824 -s 1073741824 worker:1
+
+stop:
+	SDPA_LIBEXEC=$(SDPA_HOME)/libexec/sdpa sdpa stop
+
+run: puts boot
+	sdpa submit init.pnet.put
+	sdpa submit calc.pnet.put calc.out
+	sdpa submit finalize.pnet.put
+	$(MAKE) stop
 
 ###############################################################################
 
