@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 #include <stack>
-#include <stdexcept>
 
 #include <boost/optional.hpp>
 
@@ -23,17 +22,13 @@ namespace fhg
         struct tag
         {
         public:
-          tag (const std::string& tag)
-            : _tag (tag)
-            , _has_content (false)
-            , _has_text_content (false)
-          {}
+          tag (const std::string& tag);
 
-          const std::string& string() const { return _tag; }
-          const bool& has_content() const { return _has_content; }
-          const bool& has_text_content() const { return _has_text_content; }
-          void has_content (bool x) { _has_content = x; }
-          void has_text_content (bool x) { _has_text_content = x; }
+          const std::string& string() const;
+          const bool& has_content() const;
+          const bool& has_text_content() const;
+          void has_content (bool x);
+          void has_text_content (bool x);
 
         private:
           const std::string _tag;
@@ -45,43 +40,11 @@ namespace fhg
       class xmlstream
       {
       public:
-        xmlstream (std::ostream& s) : _s (s), _tag() {}
-        ~xmlstream() { endl(); }
+        xmlstream (std::ostream& s);
+        ~xmlstream();
 
-        void open (const std::string& tag)
-        {
-          if (!_tag.empty())
-          {
-            add_content (false);
-          }
-
-          _s << "<" << tag;
-
-          _tag.push (detail::tag (tag));
-        }
-
-        void close()
-        {
-          assert_nonempty ("close");
-
-          const detail::tag tag (_tag.top());
-
-          _tag.pop();
-
-          if (tag.has_content())
-          {
-            if (!tag.has_text_content())
-            {
-              newline();
-            }
-
-            _s << "</" << tag.string() << ">";
-          }
-          else
-          {
-            _s << "/>";
-          }
-        }
+        void open (const std::string& tag);
+        void close();
 
         template<typename Key, typename Val>
         void attr (const Key& key, const Val& val) const
@@ -121,42 +84,12 @@ namespace fhg
         std::ostream& _s;
         std::stack<detail::tag> _tag;
 
-        void endl() const
-        {
-          _s << std::endl;
-        }
-        void newline() const
-        {
-          endl();
-          _s << std::string (_tag.size() * 2, ' ');
-        }
+        void endl() const;
+        void newline() const;
 
-        void assert_nonempty (const std::string& msg) const
-        {
-          if (_tag.empty())
-          {
-            throw std::runtime_error (msg + ": tag stack empty");
-          }
-        }
+        void assert_nonempty (const std::string& msg) const;
 
-        void add_content (const bool text)
-        {
-          if (!_tag.top().has_content())
-          {
-            _s << ">";
-
-            _tag.top().has_content(true);
-            if (text)
-            {
-              _tag.top().has_text_content (true);
-            }
-          }
-
-          if (!text)
-          {
-            newline();
-          }
-        }
+        void add_content (const bool text);
       };
     }
   }
