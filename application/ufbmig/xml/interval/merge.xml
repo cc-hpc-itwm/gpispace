@@ -89,13 +89,6 @@
     </place>
     <place name="pre_small_interval" type="interval"/>
 
-    <transition name="select_small_interval">
-      <use name="select_interval_get_credit"/>
-      <connect-in port="object" place="pre_small_interval"/>
-      <connect-out port="object" place="small_interval"/>
-      <connect-in port="trigger" place="credit_small_interval"/>
-    </transition>
-
     <transition name="interval_to_big">
       <defun>
         <in name="size_wanted" type="long"/>
@@ -121,17 +114,36 @@
       <connect-out port="credit_empty_interval" place="credit_empty_interval"/>
     </transition>
 
+    <transition name="select_small_interval">
+      <defun>
+        <in name="trigger" type="control"/>
+        <inout name="interval" type="interval"/>
+        <out name="num" type="long"/>
+        <expression>
+          ${num} := 0L;
+        </expression>
+      </defun>
+      <connect-in port="trigger" place="credit_small_interval"/>
+      <connect-in port="interval" place="pre_small_interval"/>
+      <connect-out port="interval" place="small_interval"/>
+      <connect-out port="num" place="num_tested"/>
+    </transition>
+
+    <place name="num_tested" type="long"/>
+
     <transition name="mergeR">
       <defun>
         <in name="a" type="interval"/>
         <in name="b" type="interval"/>
         <out name="s" type="interval"/>
-        <out name="credit_small_interval" type="control"/>
+        <inout name="num_intervals" type="long"/>
+        <out name="trigger_return" type="control"/>
         <expression>
           ${s.offset} := ${b.offset};
           ${s.size} := ${a.size} + ${b.size};
           ${s.used} := 0L;
-          ${credit_small_interval} := []
+          ${num_intervals} := ${num_intervals} - 1L;
+          ${trigger_return} := []
         </expression>
       </defun>
       <condition>
@@ -140,20 +152,22 @@
       <connect-in port="a" place="small_interval"/>
       <connect-in port="b" place="small_intervals"/>
       <connect-out port="s" place="pre_empty"/>
-      <connect-out port="credit_small_interval" place="credit_small_interval"/>
+      <connect-inout port="num_intervals" place="num_small_intervals"/>
+      <connect-out port="trigger_return" place="trigger_return"/>
     </transition>
-
     <transition name="mergeL">
       <defun>
         <in name="a" type="interval"/>
         <in name="b" type="interval"/>
         <out name="s" type="interval"/>
-        <out name="credit_small_interval" type="control"/>
+        <inout name="num_intervals" type="long"/>
+        <out name="trigger_return" type="control"/>
         <expression>
           ${s.offset} := ${a.offset};
           ${s.size} := ${a.size} + ${b.size};
           ${s.used} := 0L;
-          ${credit_small_interval} := []
+          ${num_intervals} := ${num_intervals} - 1L;
+          ${trigger_return} := []
         </expression>
       </defun>
       <condition>
@@ -162,18 +176,16 @@
       <connect-in port="a" place="small_interval"/>
       <connect-in port="b" place="small_intervals"/>
       <connect-out port="s" place="pre_empty"/>
-      <connect-out port="credit_small_interval" place="credit_small_interval"/>
+      <connect-inout port="num_intervals" place="num_small_intervals"/>
+      <connect-out port="trigger_return" place="trigger_return"/>
     </transition>
-
-    <place name="small_intervals" type="interval"/>
-
     <transition name="no_merge">
       <defun>
-        <inout name="a" type="interval"/>
-        <in name="b" type="interval"/>
-        <out name="credit_small_interval" type="control"/>
+        <in name="a" type="interval"/>
+        <inout name="b" type="interval"/>
+        <inout name="num" type="long"/>
         <expression>
-          ${credit_small_interval} := []
+          ${num} := ${num} + 1L;
         </expression>
       </defun>
       <condition>
@@ -182,11 +194,70 @@
       <condition>
         ${b.offset} + ${b.size} :ne: ${a.offset}
       </condition>
-      <connect-in port="a" place="small_interval"/>
-      <connect-out port="a" place="small_intervals"/>
-      <connect-read port="b" place="small_intervals"/>
-      <connect-out port="credit_small_interval" place="credit_small_interval"/>
+      <connect-read port="a" place="small_interval"/>
+      <connect-in port="b" place="small_intervals"/>
+      <connect-out port="b" place="tested"/>
+      <connect-inout port="num" place="num_tested"/>
     </transition>
+
+    <transition name="all_tested">
+      <defun>
+        <inout name="interval" type="interval"/>
+        <in name="num_tested" type="long"/>
+        <inout name="num_intervals" type="long"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${num_intervals} := ${num_intervals} + 1L;
+          ${trigger} := [];
+        </expression>
+        <condition>
+          ${num_tested} :eq: ${num_intervals}
+        </condition>
+      </defun>
+      <connect-read port="num_tested" place="num_tested"/>
+      <connect-inout port="num_intervals" place="num_small_intervals"/>
+      <connect-out port="trigger" place="trigger_return"/>
+      <connect-in port="interval" place="small_interval"/>
+      <connect-out port="interval" place="small_intervals"/>
+    </transition>
+
+    <place name="trigger_return" type="control"/>
+
+    <transition name="return">
+      <defun>
+        <inout name="num" type="long"/>
+        <in name="trigger" type="control"/>
+        <inout name="interval" type="interval"/>
+        <expression>
+          ${num} := ${num} - 1L;
+        </expression>
+      </defun>
+      <connect-inout port="num" place="num_tested"/>
+      <connect-read port="trigger" place="trigger_return"/>
+      <connect-in port="interval" place="tested"/>
+      <connect-out port="interval" place="small_intervals"/>
+    </transition>
+
+    <transition name="done_return">
+      <defun>
+        <inout name="trigger" type="control"/>
+        <in name="num" type="long"/>
+        <expression/>
+        <condition>
+          ${num} :eq: 0
+        </condition>
+      </defun>
+      <connect-in port="trigger" place="trigger_return"/>
+      <connect-out port="trigger" place="credit_small_interval"/>
+      <connect-in port="num" place="num_tested"/>
+    </transition>
+
+    <place name="small_intervals" type="interval"/>
+    <place name="num_small_intervals" type="long">
+      <token><value>0L</value></token>
+    </place>
+
+    <place name="tested" type="interval"/>
   </net>
 
 </defun>
