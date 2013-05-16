@@ -3,6 +3,7 @@
 #include <cerrno>
 
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_io.hpp>
@@ -256,10 +257,18 @@ namespace gspc
                                                   )
              )
           {
+            ++m_session_id;
+
             gspc::net::frame connected =
               make::connected_frame (gspc::net::header::version ("1.0"));
             connected.set_header ("heart-beat", "0,0");
             connected.set_header ("correlation-id", f.get_header ("message-id"));
+            gspc::net::header::set ( connected
+                                   , "session-id"
+                                   , boost::format ("session-%1%-%2%")
+                                   % time (NULL)
+                                   % m_session_id
+                                   );
             u->deliver (connected);
 
             m_connections.insert (u);

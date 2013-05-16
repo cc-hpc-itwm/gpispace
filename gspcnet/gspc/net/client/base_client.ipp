@@ -138,11 +138,13 @@ namespace gspc
 
         if (rply.get_command () == "CONNECTED")
         {
-          static size_t connect_counter = 0;
+          std::string session_id =
+            header::get (rply, "session-id", std::string ());
+
           m_priv_queue =
-            ( boost::format ("/client-%1%.%2%/replies")
+            ( boost::format ("/queue/%1%-%2%/replies")
+            % session_id
             % getpid ()
-            % connect_counter++
             ).str ();
 
           m_state = CONNECTED;

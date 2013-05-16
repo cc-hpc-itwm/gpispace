@@ -9,6 +9,8 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
+#include <fhg/util/thread/atomic.hpp>
+
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/user.hpp>
 #include <gspc/net/frame_handler.hpp>
@@ -98,7 +100,8 @@ namespace gspc
         //
         mutable boost::shared_mutex m_mutex;
 
-        user_set_t m_connections;
+        user_set_t                  m_connections;
+        fhg::thread::atomic<size_t> m_session_id;
 
         // subscriptions
         //     if queue not already there, create it
