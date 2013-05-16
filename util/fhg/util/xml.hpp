@@ -24,15 +24,19 @@ namespace fhg
           tag (const std::string & tag)
             : _tag (tag)
             , _has_content (false)
+            , _has_text_content (false)
           {}
 
           const std::string & string () const { return _tag; }
           const bool & has_content () const { return _has_content; }
+          const bool& has_text_content() const { return _has_text_content; }
           void has_content (bool x) { _has_content = x; }
+          void has_text_content (bool x) { _has_text_content = x; }
 
         private:
           const std::string _tag;
           bool _has_content;
+          bool _has_text_content;
         };
 
         typedef std::stack<tag> tag_stack;
@@ -48,7 +52,7 @@ namespace fhg
         {
           if (!_tag.empty())
             {
-              add_content();
+              add_content (false);
             }
 
           _s << "<" << tag;
@@ -66,7 +70,10 @@ namespace fhg
 
           if (tag.has_content())
             {
-              newline();
+              if (!tag.has_text_content())
+              {
+                newline();
+              }
 
               _s << "</" << tag.string() << ">";
             }
@@ -105,7 +112,7 @@ namespace fhg
         {
           assert_nonempty ("content");
 
-          add_content();
+          add_content (true);
 
           _s << x;
         }
@@ -133,21 +140,28 @@ namespace fhg
             }
         }
 
-        void set_content ()
+        void set_content (const bool text)
         {
           if (!_tag.top().has_content())
             {
               _s << ">";
 
               _tag.top().has_content(true);
+              if (text)
+              {
+                _tag.top().has_text_content (true);
+              }
             }
         }
 
-        void add_content ()
+        void add_content (const bool text)
         {
-          set_content ();
+          set_content (text);
 
-          newline ();
+          if (!text)
+          {
+            newline();
+          }
         }
       };
     }
