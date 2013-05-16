@@ -3,6 +3,8 @@
 #ifndef _FHG_UTIL_XML_HPP
 #define _FHG_UTIL_XML_HPP 1
 
+#include <fhg/util/xml.fwd.hpp>
+
 #include <iostream>
 #include <string>
 #include <stack>
@@ -38,8 +40,6 @@ namespace fhg
           bool _has_content;
           bool _has_text_content;
         };
-
-        typedef std::stack<tag> tag_stack;
       }
 
       class xmlstream
@@ -119,7 +119,7 @@ namespace fhg
 
       private:
         std::ostream& _s;
-        detail::tag_stack _tag;
+        std::stack<detail::tag> _tag;
 
         void endl() const
         {
