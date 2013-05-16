@@ -29,7 +29,18 @@ target_link_libraries (gspcnet-ping
   ${CMAKE_THREAD_LIBS_INIT}
 )
 
-install (TARGETS gspcnetd gspcnetc gspcnet-ping
+add_executable (gspcnet-req gspcnet-req.cpp)
+target_link_libraries (gspcnet-req
+  gspcnet
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_DATE_TIME_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${CMAKE_THREAD_LIBS_INIT}
+)
+
+install (TARGETS gspcnetd gspcnetc gspcnet-ping gspcnet-req
   DESTINATION bin
   COMPONENT runtime
 )
