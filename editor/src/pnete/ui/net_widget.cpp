@@ -9,11 +9,11 @@
 
 #include <xml/parse/type/function.hpp>
 
+#include <util/qt/no_undoredo_lineedit.hpp>
 #include <util/qt/scoped_signal_block.hpp>
 
 #include <QFormLayout>
 #include <QGroupBox>
-#include <QLineEdit>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -29,7 +29,7 @@ namespace fhg
                              )
         : QSplitter (parent)
         , _function (function)
-        , _name_edit (new QLineEdit())
+        , _name_edit (new util::qt::no_undoredo_lineedit())
       {
         QWidget* exp_widget (new QWidget (this));
         QVBoxLayout* vbox (new QVBoxLayout (exp_widget));

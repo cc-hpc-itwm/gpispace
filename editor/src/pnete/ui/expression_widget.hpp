@@ -6,12 +6,13 @@
 #include <pnete/data/handle/expression.hpp>
 #include <pnete/data/handle/function.hpp>
 
+#include <util/qt/no_undoredo_lineedit.fwd.hpp>
+
 #include <boost/optional.hpp>
 
 #include <QWidget>
 
 class QTextEdit;
-class QLineEdit;
 
 namespace fhg
 {
@@ -58,7 +59,7 @@ namespace fhg
         data::handle::function _function;
         port_lists_widget* _port_lists;
         QTextEdit* _expression_edit;
-        QLineEdit* _name_edit;
+        util::qt::no_undoredo_lineedit* _name_edit;
         QTextEdit* _parse_result;
       };
     }
