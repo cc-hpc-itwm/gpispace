@@ -87,9 +87,7 @@ namespace gspc
 
         void set_timeout (size_t ms);
       private:
-        bool try_notify_response ( std::string const & id
-                                 , frame const & f
-                                 );
+        bool try_notify_response (frame const & f);
 
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
         typedef boost::shared_lock<boost::shared_mutex> shared_lock;

@@ -280,7 +280,6 @@ namespace gspc
                           ));
 
         frame to_send (rqst);
-        gspc::net::header::receipt (response->id ()).apply_to (to_send);
         gspc::net::header::message_id (response->id ()).apply_to (to_send);
 
         {
@@ -356,8 +355,7 @@ namespace gspc
         frame f_sub = make::subscribe_frame ( header::destination (dst)
                                             , header::id (id)
                                             );
-        frame f_rep;
-        return send_and_wait (f_sub, f_rep, m_timeout);
+      return send_sync (f_sub, m_timeout);
       }
 
       template <class Proto>
@@ -372,10 +370,18 @@ namespace gspc
       }
 
       template <class Proto>
-      bool base_client<Proto>::try_notify_response ( std::string const &id
-                                                   , frame const &f
-                                                   )
+      bool base_client<Proto>::try_notify_response (frame const &f)
       {
+        std::string id;
+        if (frame::header_value h = f.get_header ("receipt-id"))
+        {
+          id = *h;
+        }
+        else if (frame::header_value h = f.get_header ("correlation-id"))
+        {
+          id = *h;
+        }
+
         shared_lock lock (m_responses_mutex);
         const response_map_t::iterator response_it = m_responses.find (id);
         if (response_it != m_responses.end ())
@@ -392,18 +398,8 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::handle_frame (user_ptr user, frame const &f)
       {
-        if (  f.has_header ("receipt-id")
-           && try_notify_response (*f.get_header ("receipt-id"), f)
-           )
-        {
+        if (try_notify_response (f))
           return 0;
-        }
-        else if (  f.has_header ("correlation-id")
-                && try_notify_response (*f.get_header ("correlation-id"), f)
-                )
-        {
-          return 0;
-        }
 
         return m_frame_handler->handle_frame (user, f);
       }
