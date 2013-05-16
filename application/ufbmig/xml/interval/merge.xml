@@ -121,7 +121,7 @@
       <connect-out port="credit_empty_interval" place="credit_empty_interval"/>
     </transition>
 
-    <transition name="mergeR" priority="1">
+    <transition name="mergeR">
       <defun>
         <in name="a" type="interval"/>
         <in name="b" type="interval"/>
@@ -143,7 +143,7 @@
       <connect-out port="credit_small_interval" place="credit_small_interval"/>
     </transition>
 
-    <transition name="mergeL" priority="1">
+    <transition name="mergeL">
       <defun>
         <in name="a" type="interval"/>
         <in name="b" type="interval"/>
@@ -168,10 +168,24 @@
     <place name="small_intervals" type="interval"/>
 
     <transition name="no_merge">
-      <use name="select_interval_put_credit"/>
-      <connect-in port="object" place="small_interval"/>
-      <connect-out port="object" place="small_intervals"/>
-      <connect-out port="trigger" place="credit_small_interval"/>
+      <defun>
+        <inout name="a" type="interval"/>
+        <in name="b" type="interval"/>
+        <out name="credit_small_interval" type="control"/>
+        <expression>
+          ${credit_small_interval} := []
+        </expression>
+      </defun>
+      <condition>
+        ${a.offset} + ${a.size} :ne: ${b.offset}
+      </condition>
+      <condition>
+        ${b.offset} + ${b.size} :ne: ${a.offset}
+      </condition>
+      <connect-in port="a" place="small_interval"/>
+      <connect-out port="a" place="small_intervals"/>
+      <connect-read port="b" place="small_intervals"/>
+      <connect-out port="credit_small_interval" place="credit_small_interval"/>
     </transition>
   </net>
 
