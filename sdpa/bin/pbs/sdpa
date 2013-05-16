@@ -6,10 +6,6 @@
 # increment this value if anything config related changes!
 CONFIG_VERSION=10
 
-config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
-state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
-debug_enabled=false
-
 function log ()
 {
     echo "$@" >&2
@@ -39,8 +35,22 @@ function prepend_to_path ()
             val="$v:$val"
         fi
     done
-    eval "$var=$val"
+    eval "export $var=$val"
 }
+
+if [ -z "$HOME" ]
+then
+    export HOME=$(echo ~)
+fi
+
+export SDPA_HOME=$(dirname $(dirname $(which "$0")))
+export SDPA_LIBEXEC="${SDPA_HOME}/libexec/sdpa"
+export SDPA_SCRIPT_DIR="$SDPA_LIBEXEC/scripts"
+prepend_to_path PATH "$SDPA_HOME/bin"
+
+config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
+state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
+debug_enabled=false
 
 ##############################################
 #                                            #
@@ -107,18 +117,6 @@ for system_default in "/etc/sdpa/defaults"               \
         source "$system_default"
     fi
 done
-
-#
-# if SDPA_HOME is still empty, try to guess it
-#
-if [ -z "$SDPA_HOME" ] ; then
-    export SDPA_HOME=$(dirname $(dirname $(which "$0")))
-    prepend_to_path PATH "$SDPA_HOME/bin"
-fi
-
-export SDPA_LIBEXEC="${SDPA_HOME}/libexec/sdpa"
-export SDPA_SCRIPT_DIR="$SDPA_LIBEXEC/scripts"
-prepend_to_path PATH "$SDPA_SCRIPT_DIR"
 
 ##############################################
 #                                            #
