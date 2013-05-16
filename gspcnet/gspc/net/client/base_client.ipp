@@ -202,18 +202,25 @@ namespace gspc
                                         , const boost::posix_time::time_duration to_wait
                                         )
       {
+        frame f_send ("SEND");
+        f_send.set_body (body);
+        f_send.set_header ("destination", dst);
+
+        return this->send_sync (f_send, to_wait);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::send_sync ( frame const &f
+                                        , const boost::posix_time::time_duration to_wait
+                                        )
+      {
         int rc = 0;
 
         response_ptr receipt
           (new response_t ( "message-"
                           + boost::lexical_cast<std::string>(++m_message_id)
                           ));
-
-        frame to_send (make::send_frame ( header::destination (dst)
-                                        , body.c_str ()
-                                        , body.size ()
-                                        )
-                      );
+        frame to_send (f);
         gspc::net::header::receipt (receipt->id ()).apply_to (to_send);
 
         {

@@ -57,6 +57,9 @@ namespace gspc
                       , std::string const & body
                       , const boost::posix_time::time_duration
                       );
+        int send_sync ( frame const &rqst
+                      , const boost::posix_time::time_duration
+                      );
         int send_and_wait ( frame const &rqst
                           , frame &rply
                           , const boost::posix_time::time_duration
