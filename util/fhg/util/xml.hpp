@@ -21,14 +21,14 @@ namespace fhg
         struct tag
         {
         public:
-          tag (const std::string & tag)
+          tag (const std::string& tag)
             : _tag (tag)
             , _has_content (false)
             , _has_text_content (false)
           {}
 
-          const std::string & string () const { return _tag; }
-          const bool & has_content () const { return _has_content; }
+          const std::string& string() const { return _tag; }
+          const bool& has_content() const { return _has_content; }
           const bool& has_text_content() const { return _has_text_content; }
           void has_content (bool x) { _has_content = x; }
           void has_text_content (bool x) { _has_text_content = x; }
@@ -45,22 +45,22 @@ namespace fhg
       class xmlstream
       {
       public:
-        xmlstream (std::ostream & s) : _s (s), _tag() {}
-        ~xmlstream () { endl(); }
+        xmlstream (std::ostream& s) : _s (s), _tag() {}
+        ~xmlstream() { endl(); }
 
-        void open (const std::string & tag)
+        void open (const std::string& tag)
         {
           if (!_tag.empty())
-            {
-              add_content (false);
-            }
+          {
+            add_content (false);
+          }
 
           _s << "<" << tag;
 
           _tag.push (detail::tag (tag));
         }
 
-        void close ()
+        void close()
         {
           assert_nonempty ("close");
 
@@ -69,22 +69,22 @@ namespace fhg
           _tag.pop();
 
           if (tag.has_content())
+          {
+            if (!tag.has_text_content())
             {
-              if (!tag.has_text_content())
-              {
-                newline();
-              }
+              newline();
+            }
 
-              _s << "</" << tag.string() << ">";
-            }
+            _s << "</" << tag.string() << ">";
+          }
           else
-            {
-              _s << "/>";
-            }
+          {
+            _s << "/>";
+          }
         }
 
         template<typename Key, typename Val>
-        void attr (const Key & key, const Val & val) const
+        void attr (const Key& key, const Val& val) const
         {
           assert_nonempty ("attr");
 
@@ -94,12 +94,12 @@ namespace fhg
         }
 
         template<typename Key, typename Val>
-          void attr (const Key & key, const boost::optional<Val> & val) const
+          void attr (const Key& key, const boost::optional<Val>& val) const
         {
           if (val)
-            {
-              attr<Key, Val> (key, *val);
-            }
+          {
+            attr<Key, Val> (key, *val);
+          }
         }
 
         template<typename Key>
@@ -118,45 +118,39 @@ namespace fhg
         }
 
       private:
-        std::ostream & _s;
+        std::ostream& _s;
         detail::tag_stack _tag;
 
-        void level () const
+        void endl() const
         {
-          for (detail::tag_stack::size_type i (0); i < _tag.size(); ++i)
-            {
-              _s << "  ";
-            }
+          _s << std::endl;
+        }
+        void newline() const
+        {
+          endl();
+          _s << std::string (_tag.size() * 2, ' ');
         }
 
-        void endl () const { _s << std::endl; }
-        void newline () const { endl(); level(); }
-
-        void assert_nonempty (const std::string & msg) const
+        void assert_nonempty (const std::string& msg) const
         {
           if (_tag.empty())
-            {
-              throw std::runtime_error (msg + ": tag stack empty");
-            }
-        }
-
-        void set_content (const bool text)
-        {
-          if (!_tag.top().has_content())
-            {
-              _s << ">";
-
-              _tag.top().has_content(true);
-              if (text)
-              {
-                _tag.top().has_text_content (true);
-              }
-            }
+          {
+            throw std::runtime_error (msg + ": tag stack empty");
+          }
         }
 
         void add_content (const bool text)
         {
-          set_content (text);
+          if (!_tag.top().has_content())
+          {
+            _s << ">";
+
+            _tag.top().has_content(true);
+            if (text)
+            {
+              _tag.top().has_text_content (true);
+            }
+          }
 
           if (!text)
           {
