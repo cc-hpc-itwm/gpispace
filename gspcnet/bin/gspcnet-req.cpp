@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
   std::string destination;
   std::vector<std::string> header;
   gspc::net::client_ptr_t client;
-  size_t timeout = -1;
+  size_t timeout = 120 * MS;
   bool show_reply_headers = false;
 
   namespace po = boost::program_options;
