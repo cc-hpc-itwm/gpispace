@@ -314,7 +314,7 @@ namespace gspc
                                       , const boost::posix_time::time_duration t
                                       )
       {
-        frame rqst ("REQUEST");
+        frame rqst ("SEND");
         rqst.set_body (body);
         rqst.set_header ("destination", dst);
 
@@ -329,7 +329,6 @@ namespace gspc
       {
         int rc;
         frame rqst (f);
-        rqst.set_command ("REQUEST");
         rqst.set_header ("reply-to", m_priv_queue);
 
         rc = send_and_wait (rqst, rply, t);

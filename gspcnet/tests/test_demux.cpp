@@ -32,7 +32,7 @@ static void s_echo_roundtrip ( gspc::net::server::queue_manager_t & qmgr
   int rc;
 
   gspc::net::frame rqst_frame;
-  rqst_frame.set_command ("REQUEST");
+  rqst_frame.set_command ("SEND");
   rqst_frame.set_header ("destination", destination);
   rqst_frame.set_header ("test-id", "42");
   rqst_frame.set_header ("reply-to", "/test/replies");
@@ -49,7 +49,7 @@ static void s_echo_roundtrip ( gspc::net::server::queue_manager_t & qmgr
 
   gspc::net::frame & rply_frame = user.frames.back ();
 
-  BOOST_CHECK_EQUAL (rply_frame.get_command (), "REPLY");
+  BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body_as_string (), "Hello echo!");
   BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
@@ -68,15 +68,15 @@ BOOST_AUTO_TEST_CASE (test_multiple_echo_service)
 
   qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
-  demux.handle ("/test/echo-1", gspc::net::service::echo ());
-  demux.handle ("/test/echo-2", gspc::net::service::echo ());
-  demux.handle ("/test/echo-3", gspc::net::service::echo ());
+  demux.handle ("/service/echo-1", gspc::net::service::echo ());
+  demux.handle ("/service/echo-2", gspc::net::service::echo ());
+  demux.handle ("/service/echo-3", gspc::net::service::echo ());
 
   for (std::size_t i = 0 ; i < NUM_REQUESTS ; ++i)
   {
-    s_echo_roundtrip (qmgr, user, "/test/echo-1");
-    s_echo_roundtrip (qmgr, user, "/test/echo-2");
-    s_echo_roundtrip (qmgr, user, "/test/echo-3");
+    s_echo_roundtrip (qmgr, user, "/service/echo-1");
+    s_echo_roundtrip (qmgr, user, "/service/echo-2");
+    s_echo_roundtrip (qmgr, user, "/service/echo-3");
   }
 }
 
@@ -110,19 +110,19 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
 
   qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
-  demux.handle ( "/tests/error"
+  demux.handle ( "/service/error"
                , erroneous_handler_t
                  ("erroneous_handler_t could not handle request")
                );
 
   gspc::net::frame rqst_frame;
-  rqst_frame.set_command ("REQUEST");
-  rqst_frame.set_header ("destination", "/tests/error");
+  rqst_frame.set_command ("SEND");
+  rqst_frame.set_header ("destination", "/service/error");
   rqst_frame.set_header ("test-id", "42");
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.request (&user, "/tests/error", rqst_frame);
+  rc = qmgr.request (&user, "/service/error", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_FAILED);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
@@ -150,13 +150,13 @@ BOOST_AUTO_TEST_CASE (test_no_such_service)
   qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   gspc::net::frame rqst_frame;
-  rqst_frame.set_command ("REQUEST");
-  rqst_frame.set_header ("destination", "/tests/echo");
+  rqst_frame.set_command ("SEND");
+  rqst_frame.set_header ("destination", "/service/echo");
   rqst_frame.set_header ("test-id", "42");
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.request (&user, "/tests/error", rqst_frame);
+  rc = qmgr.request (&user, "/service/error", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_LOOKUP);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
@@ -182,23 +182,23 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
   gspc::net::server::queue_manager_t qmgr;
   qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
-  gspc::net::handle ("/test/echo", gspc::net::service::echo ());
+  gspc::net::handle ("/service/echo", gspc::net::service::echo ());
 
   gspc::net::frame rqst_frame;
-  rqst_frame.set_command ("REQUEST");
-  rqst_frame.set_header ("destination", "/test/echo");
+  rqst_frame.set_command ("SEND");
+  rqst_frame.set_header ("destination", "/service/echo");
   rqst_frame.set_header ("test-id", "42");
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.request (&user, "/test/echo", rqst_frame);
+  rc = qmgr.request (&user, "/service/echo", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
 
   gspc::net::frame & rply_frame = user.frames.back ();
 
-  BOOST_CHECK_EQUAL (rply_frame.get_command (), "REPLY");
+  BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body_as_string (), "Hello echo!");
   BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
@@ -216,26 +216,26 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
   gspc::net::server::queue_manager_t qmgr_2;
   qmgr_2.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
-  gspc::net::handle ("/test/echo", gspc::net::service::echo ());
+  gspc::net::handle ("/service/echo", gspc::net::service::echo ());
 
   gspc::net::frame rqst_frame;
-  rqst_frame.set_command ("REQUEST");
-  rqst_frame.set_header ("destination", "/test/echo");
+  rqst_frame.set_command ("SEND");
+  rqst_frame.set_header ("destination", "/service/echo");
   rqst_frame.set_header ("test-id", "42");
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr_1.request (&user, "/test/echo", rqst_frame);
+  rc = qmgr_1.request (&user, "/service/echo", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
 
-  rc = qmgr_2.request (&user, "/test/echo", rqst_frame);
+  rc = qmgr_2.request (&user, "/service/echo", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (user.frames.size (), 2);
 
   gspc::net::frame & rply_frame = user.frames.back ();
 
-  BOOST_CHECK_EQUAL (rply_frame.get_command (), "REPLY");
+  BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body_as_string (), "Hello echo!");
   BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");

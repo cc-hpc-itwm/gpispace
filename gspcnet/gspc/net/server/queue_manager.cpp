@@ -123,21 +123,6 @@ namespace gspc
             return send (user, *f.get_header ("destination"), f);
           }
         }
-        else if (f.get_command () == "REQUEST")
-        {
-          if (not f.has_header ("destination"))
-          {
-            user->deliver
-              (gspc::net::make::error_frame ( f
-                                            , gspc::net::E_BAD_REQUEST
-                                            , "required header 'destination' is missing"
-                                            )
-              );
-            return -EPROTO;
-          }
-
-          return request (user, *f.get_header ("destination"), f);
-        }
         else if (f.get_command () == "SUBSCRIBE")
         {
           if (not f.has_header ("destination"))
