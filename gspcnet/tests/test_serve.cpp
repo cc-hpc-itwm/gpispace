@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/resource.h>
 
+#include <iostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
 
@@ -34,17 +36,19 @@ struct SetRLimits
 
     if (-1 == getrlimit (RLIMIT_NOFILE, &lim))
     {
-      BOOST_TEST_MESSAGE ("setrlimit failed: " << strerror (errno));
+      std::cerr << "getrlimit failed: " << strerror (errno) << std::endl;
     }
 
     lim.rlim_cur = lim.rlim_max;
 
     if (-1 == setrlimit (RLIMIT_NOFILE, &lim))
     {
-      BOOST_TEST_MESSAGE ("setrlimit failed: " << strerror (errno));
+      std::cerr << "setrlimit failed: " << strerror (errno) << std::endl;
     }
 
     max_open_files = (lim.rlim_cur == RLIM_INFINITY) ? 60000 : lim.rlim_cur;
+
+    std::cerr << "max_open_files := " << max_open_files << std::endl;
   }
 
   ~SetRLimits ()
@@ -103,9 +107,15 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
   using namespace gspc::net::tests;
-  static const size_t NUM_CLIENTS = (SetRLimits::max_open_files / 6);
 
-  BOOST_TEST_MESSAGE ("simulating " << NUM_CLIENTS << " concurrent clients");
+  const size_t N_FD_PER_CLIENT = 5; // io_service + c_socket + s_socket
+  const size_t N_FD_SERVER     = 5; // io_service + s_socket
+  const size_t N_FD_BASE       = 3; // stdin, stdout, stderr
+
+  static const size_t NUM_CLIENTS =
+    (SetRLimits::max_open_files - (N_FD_SERVER + N_FD_BASE)) / N_FD_PER_CLIENT;
+
+  std::cerr << "simulating " << NUM_CLIENTS << " concurrent clients" << std::endl;
 
   gspc::net::server::queue_manager_t qmgr;
 
