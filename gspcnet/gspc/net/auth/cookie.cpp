@@ -66,11 +66,13 @@ namespace gspc
         rc = fstat (fd, &stat_buf);
         if (rc < 0)
         {
+          close (fd);
           return false;
         }
 
         if (not S_ISREG (stat_buf.st_mode))
         {
+          close (fd);
           return false;
         }
 
@@ -78,6 +80,7 @@ namespace gspc
            || stat_buf.st_mode & S_IRWXO
            )
         {
+          close (fd);
           return false;
         }
 
@@ -93,6 +96,7 @@ namespace gspc
           --rc;
         }
 
+        close (fd);
         out = cookie;
 
         return true;
