@@ -37,6 +37,9 @@ include_directories(${FhgLog_INCLUDE_DIR})
 find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
+find_package(HWLOC REQUIRED QUIET)
+include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
+
 # Reflect the package structure
 add_subdirectory(fhg)
 add_subdirectory(bin)
