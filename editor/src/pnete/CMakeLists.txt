@@ -78,6 +78,8 @@ set (editor_ui_uis
 
 set (editor_ui_tomoc
   ui/StructureView.hpp
+  ui/StructureEditor.hpp
+  ui/PropertiesEditor.hpp
   ui/TransitionLibraryItem.hpp
   ui/TransitionLibraryModel.hpp
   ui/execution_monitor.hpp
