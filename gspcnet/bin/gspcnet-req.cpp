@@ -3,11 +3,23 @@
 #include <sysexits.h>
 
 #include <csignal>
+#include <fstream>
+#include <sstream>
+
 #include <boost/foreach.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
 
+#include <fhg/util/split.hpp>
+
 #include <gspc/net.hpp>
+
+static std::string consume_stream (std::istream &is)
+{
+  std::stringstream sstr;
+  is >> std::noskipws >> sstr.rdbuf();
+  return sstr.str ();
+}
 
 class reply_frame_handler_t : public gspc::net::frame_handler_t
 {
@@ -35,13 +47,12 @@ public:
       std::cout << f.get_body_as_string () << std::endl;
     }
 
-    end =boost::posix_time::microsec_clock::universal_time ();
+    end = boost::posix_time::microsec_clock::universal_time ();
     return 0;
   }
 
   int handle_error (gspc::net::user_ptr, boost::system::error_code const &ec)
   {
-    std::cerr << "error: " << ec << ": " << ec.message () << std::endl;
     error_code = ec;
     return 0;
   }
@@ -58,23 +69,27 @@ int main (int argc, char *argv[])
 {
   std::string url;
   std::string body;
+  std::string input_file = "-";
+  std::string output_file = "-";
   std::string destination;
   std::vector<std::string> header;
   gspc::net::client_ptr_t client;
   size_t timeout = 120 * MS;
-  bool show_reply_headers = false;
+  bool show_headers = true;
 
   namespace po = boost::program_options;
 
   po::options_description desc ("options");
   desc.add_options ()
     ("help,h", "print help message")
-    ("body,b", po::value<std::string>(&body)->default_value (body), "body to send")
+    ("body,b", po::value<std::string>(&body), "body to send (overrides --input)")
+    ("input,i", po::value<std::string>(&input_file)->default_value (input_file), "read body from this file")
+    ("output,o", po::value<std::string>(&output_file)->default_value (output_file), "write body to this file")
     ("timeout,T", po::value<size_t>(&timeout), "request timeout in milliseconds")
     ("url", po::value<std::string>(&url), "remote server to connect to")
     ("destination,d", po::value<std::string>(&destination), "service to request from")
-    ("header,H", po::value<std::vector<std::string> >(&header), "header entries")
-    ("show-reply-headers", "show headers of reply")
+    ("header,H", po::value<std::vector<std::string> >(&header), "header entries (key:value)")
+    ("no-headers", "do not show headers of reply")
     ;
 
   po::positional_options_description p;
@@ -115,7 +130,7 @@ int main (int argc, char *argv[])
     return EX_USAGE;
   }
 
-  show_reply_headers = vm.count ("show-reply-headers") > 0;
+  show_headers = not vm.count ("no-headers");
 
   reply_frame_handler_t reply_handler;
 
@@ -129,13 +144,42 @@ int main (int argc, char *argv[])
     std::cerr << "could not connect to '" << url << "': "
               << ex.what ()
               << std::endl;
-    return 1;
+    return EX_TEMPFAIL;
   }
 
   gspc::net::frame rqst ("SEND");
-  rqst.set_body (body);
+  if (vm.count ("body"))
+  {
+    rqst.set_body (body);
+  }
+  else
+  {
+    if (input_file == "-")
+    {
+      rqst.set_body (consume_stream (std::cin));
+    }
+    else
+    {
+      std::ifstream ifs (input_file.c_str ());
+      if (ifs)
+      {
+        rqst.set_body (consume_stream (ifs));
+      }
+      else
+      {
+        std::cerr << "could not open input: " << input_file << std::endl;
+        return EX_NOINPUT;
+      }
+    }
+  }
 
   gspc::net::header::set (rqst, "destination", destination);
+
+  BOOST_FOREACH (std::string const &kv, header)
+  {
+    const std::pair<std::string, std::string> kvp = fhg::util::split (kv, ":");
+    rqst.set_header (kvp.first, kvp.second);
+  }
 
   gspc::net::frame rply;
   int rc = client->request ( rqst
@@ -144,14 +188,14 @@ int main (int argc, char *argv[])
                            );
   if (0 == rc)
   {
-    if (show_reply_headers)
+    if (show_headers)
     {
       gspc::net::frame::header_type header = rply.get_header ();
       BOOST_FOREACH (gspc::net::frame::header_type::value_type item, header)
       {
         std::cout << item.first << ":" << item.second << std::endl;
       }
-      if (header.size ())
+      if (header.size () && output_file == "-")
         std::cout << std::endl;
     }
 
@@ -159,7 +203,7 @@ int main (int argc, char *argv[])
     {
       rc = gspc::net::header::get (rply, "code", (int)gspc::net::E_BAD_REQUEST);
 
-      std::cout << "failed: "
+      std::cerr << "failed: "
                 << rc
                 << ": "
                 << gspc::net::header::get (rply, "message", std::string ())
@@ -170,7 +214,22 @@ int main (int argc, char *argv[])
     }
     else
     {
-      std::cout << rply.get_body_as_string ();
+      const std::string result_body = rply.get_body_as_string ();
+      if (output_file == "-")
+      {
+        std::cout << result_body;
+      }
+      else
+      {
+        std::ofstream ofs (output_file.c_str ());
+        if (! ofs)
+        {
+          std::cerr << "could not open output file: " << output_file << std::endl;
+          return EX_CANTCREAT;
+        }
+
+        ofs << result_body;
+      }
     }
   }
   else
@@ -185,7 +244,9 @@ int main (int argc, char *argv[])
       std::cerr << gspc::net::error_string ((gspc::net::error_code_t)(rc));
     }
     std::cerr << std::endl;
+
+    return EX_UNAVAILABLE;
   }
 
-  return rc;
+  return EX_OK;
 }
