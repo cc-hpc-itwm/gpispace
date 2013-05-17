@@ -396,6 +396,17 @@ namespace gspc
       }
 
       template <class Proto>
+      void
+      base_client<Proto>::abort_all_responses (boost::system::error_code const &ec)
+      {
+        shared_lock lock (m_responses_mutex);
+        BOOST_FOREACH (response_map_t::value_type resp, m_responses)
+        {
+          resp.second->abort (ec);
+        }
+      }
+
+      template <class Proto>
       int base_client<Proto>::handle_frame (user_ptr user, frame const &f)
       {
         if (try_notify_response (f))
@@ -410,6 +421,9 @@ namespace gspc
                                            )
       {
         m_state = FAILED;
+
+        abort_all_responses (ec);
+
         return m_frame_handler->handle_error (user, ec);
       }
     }
