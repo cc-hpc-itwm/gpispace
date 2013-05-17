@@ -30,14 +30,7 @@ namespace gspc
 
         while (!m_reply && !m_aborted)
         {
-          if (m_wait_object.timed_wait (lock, t))
-          {
-            return 0;
-          }
-          else
-          {
-            return -ETIME;
-          }
+          m_wait_object.timed_wait (lock, t);
         }
 
         if (m_aborted)
