@@ -10,7 +10,6 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lambda/lambda.hpp>
