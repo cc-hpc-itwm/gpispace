@@ -16,8 +16,9 @@
 #include <fhg/util/join.hpp>
 #include <sstream>
 #include <QAction>
-#include <pnete/ui/ui_StructureEditorForm.h>
+#include <pnete/ui_StructureEditorForm.h>
 #include <pnete/ui/ComboItemDelegate.hpp>
+#include <boost/optional.hpp>
 
 
 namespace prop = we::type::property;
@@ -26,10 +27,9 @@ typedef std::string key_type;
 typedef std::string value_type;
 
 namespace structedit {
-
 // build property from QTreeView
 template <typename T>
-void buildProp(T itemK, const we::type::property::path_type& path,  we::type::property::type& prop )
+void build_property(T itemK, const we::type::property::path_type& path,  we::type::property::type& prop )
 {
 	for( int k=0; k<itemK->rowCount(); k++ )
 	{
@@ -59,20 +59,20 @@ void buildProp(T itemK, const we::type::property::path_type& path,  we::type::pr
 				prop.set(pathChild, strItemVal.toStdString());
 		}
 
-		buildProp(childItem, pathChild, prop);
+		build_property(childItem, pathChild, prop);
 	}
 }
 
 // build QTreeView from property
 template <typename E, typename T>
-void buildTreeView( E* editor, QStandardItem* item, const we::type::property::type& p )
+void build_tree(E* editor, QStandardItem* item, const we::type::property::type& p )
 {
 	for( we::type::property::map_type::const_iterator pos (p.get_map().begin()); pos != p.get_map().end() ; ++pos)
 		 boost::apply_visitor( T(editor, item, pos->first), pos->second);
 }
 
 template <typename E>
-class treeBuilder : public boost::static_visitor<void>
+class tree_builder : public boost::static_visitor<void>
 {
 private:
 	E* editor;
@@ -80,7 +80,7 @@ private:
 	const key_type& key;
 
 public:
-	treeBuilder (E* _editor, QStandardItem* _item, const key_type & _key)
+	tree_builder (E* _editor, QStandardItem* _item, const key_type & _key)
 	: editor(_editor)
 	, item (_item)
 	, key (_key)
@@ -95,7 +95,7 @@ public:
 	void operator () (const T& x) const
 	{
 		QStandardItem *currItem = editor->addItem(QString::fromStdString(key), "", item);
-		buildTreeView<E, treeBuilder>(editor, currItem, x);
+		build_tree<E, tree_builder>(editor, currItem, x);
 	}
 };
 
@@ -114,8 +114,8 @@ public:
 		model.setHorizontalHeaderLabels(headerLabels);
 		m_treeView->setModel(&model);
 
-		m_treeView->setColumnWidth(0, 200);
-		m_treeView->setColumnWidth(1, 300);
+		m_treeView->setColumnWidth(0, 300);
+		m_treeView->setColumnWidth(1, 200);
 
 		m_treeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	}
@@ -127,7 +127,7 @@ public:
 		delete m_widgetPropEdit;
 	}
 
-	// buildTreeView another init method
+	// build_tree another init method
 	// that loads items from a we::type::property object!
 	void initEditor(QStringList qarrPredefTypes)
 	{
@@ -165,10 +165,9 @@ public slots:
 			QModelIndex currModelIdx = listSelectedItems.at(0);
      		QStandardItem* currItem = model.itemFromIndex(currModelIdx);
 
-     		QStandardItem* parent = currItem->parent();
-     		if( parent )
+     		if( QStandardItem* parent = currItem->parent() )
      		{
-     			parent->removeRow( currItem->row() );
+     			parent->removeRow(currItem->row());
 
      			if( !parent->hasChildren() )
      			{
@@ -177,9 +176,7 @@ public slots:
 
 					int row = parent->row();
 					if(parent->parent())
-					{
 						parent->parent()->setChild( row, 1, itemV );
-					}
      			}
 
      			m_treeView->scrollTo(model.indexFromItem(parent));
@@ -227,9 +224,9 @@ public slots:
 		we::type::property::path_type rootPath;
 
 		QStandardItem* rootItem = model.invisibleRootItem();
-		buildProp(rootItem, rootPath, propOut);
+		build_property(rootItem, rootPath, propOut);
 
-		printProp(propOut);
+		print_property(propOut);
 		m_widgetPropEdit->close();
 	}
 
@@ -263,10 +260,10 @@ public:
 
 	void loadFromProp(const we::type::property::type& prop)
 	{
-		buildTreeView<StructureEditor, treeBuilder<StructureEditor> >(this,  model.invisibleRootItem(), prop);
+		build_tree<StructureEditor, tree_builder<StructureEditor> >(this,  model.invisibleRootItem(), prop);
 	}
 
-	void printProp(const we::type::property::type& prop)
+	void print_property(const we::type::property::type& prop)
 	{
 		qDebug() << "# visit all leafs:";
 
