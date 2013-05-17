@@ -55,6 +55,24 @@ namespace fhg
           return boost::apply_visitor (read_qreal_visitor(), i);
         }
 
+        template<typename ID>
+          bool is_hard_hidden (const ID& id)
+        {
+          try
+          {
+            return fhg::util::read_bool
+              ( id.get().properties().get_with_default
+                ("fhg.pnete.is_hard_hidden", "false")
+              );
+          }
+          //! \note read_bool throws on invalid input while we want
+          //! false for anything not evaluating to true.
+          catch (...)
+          {
+            return false;
+          }
+        }
+
         template<typename ID_TYPE>
           void initialize_and_set_position ( ui::graph::base_item* item
                                            , const ID_TYPE& id
@@ -102,6 +120,11 @@ namespace fhg
 
         WSIG (transition, transition::open, xml::parse::id::ref::transition, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           const ::xml::parse::type::transition_type& trans (id.get());
 
           _transition = new ui::graph::transition_item
@@ -121,16 +144,31 @@ namespace fhg
 
         WSIG (transition, connection::open, ::xml::parse::id::ref::connect, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           _scene->create_connection (data::handle::connect (id, _root));
         }
 
         WSIG (transition, place_map::open, ::xml::parse::id::ref::place_map, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           _scene->create_place_map (data::handle::place_map (id, _root));
         }
 
         WSIG (transition, port::open, ::xml::parse::id::ref::port, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           display::port (data::handle::port (id, _root), _transition);
         }
 
@@ -154,6 +192,11 @@ namespace fhg
 
         WSIG (port_toplevel, port::open, ::xml::parse::id::ref::port, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           data::handle::port port (id, _root);
 
           if (port.is_tunnel())
@@ -194,6 +237,11 @@ namespace fhg
 
         WSIG (net, net::open, ::xml::parse::id::ref::net, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           const ::xml::parse::type::net_type& net (id.get());
           from::many_place (this, net.places().ids());
           from::many_transition (this, net.transitions().ids());
@@ -202,16 +250,31 @@ namespace fhg
 
         WSIG (net, transition::open, ::xml::parse::id::ref::transition, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           display::transition (data::handle::transition (id, _root), _scene);
         }
 
         WSIG (net, place::open, ::xml::parse::id::ref::place, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           display::place (data::handle::place (id, _root), _scene);
         }
 
         WSIG (net, port::open, ::xml::parse::id::ref::port, id)
         {
+          if (is_hard_hidden (id))
+          {
+            return;
+          }
+
           display::top_level_port (data::handle::port (id, _root), _scene);
         }
       }
