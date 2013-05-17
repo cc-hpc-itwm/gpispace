@@ -865,6 +865,67 @@ namespace fhg
 
       namespace
       {
+        std::string prompt_for ( const QString& port_name
+                               , const boost::optional<std::string>& type
+                               , bool* ok
+                               )
+        {
+          if (type == std::string ("file_type"))
+          {
+            const QString res
+              ( QFileDialog::getOpenFileName
+                ( NULL
+                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+                )
+              );
+            *ok = !res.isNull();
+            return res.toStdString();
+          }
+          else if (type == std::string ("long"))
+          {
+            return QString ("%1").arg
+              ( QInputDialog::getInt
+                ( NULL
+                , QObject::tr ("value_for_input_token")
+                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+                , 0
+                //! \note These horrible defaults are from Qt.
+                , -2147483647
+                , 2147483647
+                , 1
+                , ok
+                )
+              ).toStdString();
+          }
+          else if (type == std::string ("double"))
+          {
+            return QString ("%1").arg
+              ( QInputDialog::getDouble
+                ( NULL
+                , QObject::tr ("value_for_input_token")
+                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+                , 0
+                //! \note These horrible defaults are from Qt.
+                , -2147483647
+                , 2147483647
+                , 1
+                , ok
+                )
+              ).toStdString();
+          }
+          else
+          {
+            return QInputDialog::getText
+              ( NULL
+              , QObject::tr ("value_for_input_token")
+              , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+              , QLineEdit::Normal
+              , "[]"
+              , ok
+              ).toStdString();
+          }
+        }
+
         void request_tokens_for_ports
           ( std::pair < we::mgmt::type::activity_t
                       , xml::parse::id::ref::function
@@ -879,17 +940,17 @@ namespace fhg
             bool retry (true);
             while (retry)
             {
+              const boost::optional<const xml::parse::id::ref::port&> xml_port
+                (activity_and_fun->second.get().get_port_in (port_name));
+
               bool ok;
               const std::string value
-                ( QInputDialog::getText
-                  ( NULL
-                  , QObject::tr ("value_for_input_token")
-                  , QObject::tr ("enter_value_for_input_port_%1")
-                  .arg (QString::fromStdString (port_name))
-                  , QLineEdit::Normal
-                  , "[]"
-                  , &ok
-                  ).toStdString()
+                ( prompt_for ( QString::fromStdString (port_name)
+                             , xml_port
+                             ? xml_port->get().type()
+                             : boost::optional<std::string> (boost::none)
+                             , &ok
+                             )
                 );
               if (!ok)
               {
