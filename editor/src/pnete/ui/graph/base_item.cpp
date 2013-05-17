@@ -7,8 +7,7 @@
 #include <util/qt/cast.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
-
-#include <boost/lexical_cast.hpp>
+#include <fhg/util/num.hpp>
 
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
@@ -188,6 +187,17 @@ namespace fhg
             ("base_item::handle() called: sub-class didn't define handle()");
         }
 
+
+        namespace
+        {
+          qreal read_qreal (const std::string& inp)
+          {
+            util::parse::position pos (inp);
+            pos.skip_spaces();
+            return util::read_double (pos);
+          }
+        }
+
         void base_item::handle_property_change
           ( const ::we::type::property::key_type& key
           , const ::we::type::property::value_type& value
@@ -205,16 +215,12 @@ namespace fhg
                 if (path[3] == "x")
                 {
                   set_just_pos_but_not_in_property
-                    ( boost::lexical_cast<qreal>(value)
-                    , pos().y()
-                    );
+                    (read_qreal (value), pos().y());
                 }
                 else if (path[3] == "y")
                 {
                   set_just_pos_but_not_in_property
-                    ( pos().x()
-                    , boost::lexical_cast<qreal>(value)
-                    );
+                    (pos().x(), read_qreal (value));
                 }
               }
             }

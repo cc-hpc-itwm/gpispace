@@ -17,6 +17,8 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/weaver/weaver.hpp>
 
+#include <fhg/util/num.hpp>
+
 #include <util/qt/cast.hpp>
 
 #include <we/type/property.hpp>
@@ -33,6 +35,26 @@ namespace fhg
     {
       namespace
       {
+        struct read_qreal_visitor : public boost::static_visitor<qreal>
+        {
+          qreal operator() (const std::string& inp) const
+          {
+            util::parse::position pos (inp);
+            pos.skip_spaces();
+            return util::read_double (pos);
+          }
+          template<typename T>
+            qreal operator() (T) const
+          {
+            throw std::runtime_error ("bad input: not a string");
+          }
+        };
+        template<typename T>
+          qreal read_qreal (const T& i)
+        {
+          return boost::apply_visitor (read_qreal_visitor(), i);
+        }
+
         template<typename ID_TYPE>
           void initialize_and_set_position ( ui::graph::base_item* item
                                            , const ID_TYPE& id
@@ -54,10 +76,8 @@ namespace fhg
           }
 
           item->set_just_pos_but_not_in_property
-            ( boost::lexical_cast<qreal>
-              (id.get().properties().get (var_name + ".x"))
-            , boost::lexical_cast<qreal>
-              (id.get().properties().get (var_name + ".y"))
+            ( read_qreal (id.get().properties().get (var_name + ".x"))
+            , read_qreal (id.get().properties().get (var_name + ".y"))
             );
         }
 
