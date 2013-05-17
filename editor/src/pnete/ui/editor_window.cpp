@@ -663,10 +663,10 @@ namespace fhg
           return boost::none;
         }
 
-        we::mgmt::type::activity_t prepare_activity
-          ( const QStack<document_view*>& accessed_widgets
-          , const boost::filesystem::path& temporary_path
-          )
+        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+          prepare_activity ( const QStack<document_view*>& accessed_widgets
+                           , const boost::filesystem::path& temporary_path
+                           )
         {
           if (accessed_widgets.empty())
           {
@@ -721,7 +721,8 @@ namespace fhg
             throw std::runtime_error (sf.str());
           }
 
-          return xml::parse::xml_to_we (function, state);
+          return std::make_pair
+            (xml::parse::xml_to_we (function, state), function);
         }
 
         bool put_token ( we::mgmt::type::activity_t& activity
@@ -867,12 +868,13 @@ namespace fhg
       {
         const fhg::util::temporary_path temporary_path;
 
-        we::mgmt::type::activity_t activity
-          (prepare_activity (_accessed_widgets, temporary_path));
+        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+          activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        BOOST_FOREACH ( const std::string& port_name
-                      , activity.transition().port_names (we::type::PORT_IN)
-                      )
+        BOOST_FOREACH
+          ( const std::string& port_name
+          , activity_and_fun.first.transition().port_names (we::type::PORT_IN)
+          )
         {
           bool retry (true);
           while (retry)
@@ -893,7 +895,7 @@ namespace fhg
               return;
             }
 
-            retry = put_token (activity, port_name, value);
+            retry = put_token (activity_and_fun.first, port_name, value);
           }
         }
 
@@ -906,7 +908,7 @@ namespace fhg
         sdpa::Client* client (load_plugin<sdpa::Client> (kernel, "sdpac"));
 
         std::string job_id;
-        if (client->submit (activity.to_string(), job_id) == 0)
+        if (client->submit (activity_and_fun.first.to_string(), job_id) == 0)
         {
           remote_job_waiting* waiter (new remote_job_waiting (client, job_id));
           connect ( waiter
@@ -943,12 +945,13 @@ namespace fhg
       {
         const fhg::util::temporary_path temporary_path;
 
-        we::mgmt::type::activity_t activity
-          (prepare_activity (_accessed_widgets, temporary_path));
+        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+          activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        BOOST_FOREACH ( const std::string& port_name
-                      , activity.transition().port_names (we::type::PORT_IN)
-                      )
+        BOOST_FOREACH
+          ( const std::string& port_name
+          , activity_and_fun.first.transition().port_names (we::type::PORT_IN)
+          )
         {
           bool retry (true);
           while (retry)
@@ -969,11 +972,11 @@ namespace fhg
               return;
             }
 
-            retry = put_token (activity, port_name, value);
+            retry = put_token (activity_and_fun.first, port_name, value);
           }
         }
 
-        execute_activity_locally (activity, temporary_path);
+        execute_activity_locally (activity_and_fun.first, temporary_path);
       }
       catch (const std::runtime_error& e)
       {
@@ -989,7 +992,7 @@ namespace fhg
         const fhg::util::temporary_path temporary_path;
 
         we::mgmt::type::activity_t activity
-          (prepare_activity (_accessed_widgets, temporary_path));
+          (prepare_activity (_accessed_widgets, temporary_path).first);
 
         const QString input_filename
           (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));
