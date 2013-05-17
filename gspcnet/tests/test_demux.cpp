@@ -40,10 +40,10 @@ static void s_echo_roundtrip ( gspc::net::server::queue_manager_t & qmgr
 
   std::size_t old_frames_size = user.frames.size ();
 
-  rc = qmgr.request ( &user
-                    , *rqst_frame.get_header ("destination")
-                    , rqst_frame
-                    );
+  rc = qmgr.send ( &user
+                 , *rqst_frame.get_header ("destination")
+                 , rqst_frame
+                 );
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (user.frames.size (), old_frames_size + 1);
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
 
   demux.handle ( "/service/error"
                , erroneous_handler_t
-                 ("erroneous_handler_t could not handle request")
+               ("erroneous_handler_t could not handle request")
                );
 
   gspc::net::frame rqst_frame;
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.request (&user, "/service/error", rqst_frame);
+  rc = qmgr.send (&user, "/service/error", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_FAILED);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE (test_no_such_service)
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.request (&user, "/service/error", rqst_frame);
+  rc = qmgr.send (&user, "/service/error", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, gspc::net::E_SERVICE_LOOKUP);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.request (&user, "/service/echo", rqst_frame);
+  rc = qmgr.send (&user, "/service/echo", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
@@ -225,11 +225,11 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr_1.request (&user, "/service/echo", rqst_frame);
+  rc = qmgr_1.send (&user, "/service/echo", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
 
-  rc = qmgr_2.request (&user, "/service/echo", rqst_frame);
+  rc = qmgr_2.send (&user, "/service/echo", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (user.frames.size (), 2);
 

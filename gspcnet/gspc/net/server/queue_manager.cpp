@@ -113,15 +113,7 @@ namespace gspc
             return -EPROTO;
           }
           const std::string dst = *f.get_header ("destination");
-
-          if (dst.substr (0, 9) == "/service/")
-          {
-            return request (user, dst, f);
-          }
-          else
-          {
-            return send (user, *f.get_header ("destination"), f);
-          }
+          return send (user, *f.get_header ("destination"), f);
         }
         else if (f.get_command () == "SUBSCRIBE")
         {
@@ -325,6 +317,11 @@ namespace gspc
                                 , frame const &f
                                 )
       {
+        if (dst.substr (0, 9) == "/service/")
+        {
+          return m_service_demux.handle_request (dst, f, this);
+        }
+
         int rc = 0;
         shared_lock lock (m_mutex);
 
@@ -349,14 +346,6 @@ namespace gspc
         s_maybe_send_receipt (user, f);
 
         return rc;
-      }
-
-      int queue_manager_t::request ( user_ptr user
-                                   , std::string const & dst
-                                   , frame const & rqst
-                                   )
-      {
-        return m_service_demux.handle_request (dst, rqst, this);
       }
 
       int queue_manager_t::subscribe ( user_ptr user

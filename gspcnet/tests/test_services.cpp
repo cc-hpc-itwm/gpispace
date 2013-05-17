@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE (test_echo_service)
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.request (&user, "/service/echo", rqst_frame);
+  rc = qmgr.send (&user, "/service/echo", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE (test_strip_prefix)
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.request (&user, "/service/echo", rqst_frame);
+  rc = qmgr.send (&user, "/service/echo", rqst_frame);
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);

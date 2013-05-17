@@ -51,10 +51,6 @@ namespace gspc
                  , std::string const & dst
                  , frame const &
                  );
-        int request ( user_ptr u
-                    , std::string const & dst
-                    , frame const &
-                    );
 
         /**
            subscribe to some event queue
@@ -109,7 +105,7 @@ namespace gspc
         subscription_map_t      m_subscriptions;
         user_subscription_map_t m_user_subscriptions;
 
-        // used to handle requests
+        // used to handle services
         service_demux_t & m_service_demux;
       };
     }
