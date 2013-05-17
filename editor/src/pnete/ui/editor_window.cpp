@@ -863,6 +863,45 @@ namespace fhg
         show_results_of_activity (output);
       }
 
+      namespace
+      {
+        void request_tokens_for_ports
+          ( std::pair < we::mgmt::type::activity_t
+                      , xml::parse::id::ref::function
+                      >* activity_and_fun
+          )
+        {
+          BOOST_FOREACH
+            ( const std::string& port_name
+            , activity_and_fun->first.transition().port_names (we::type::PORT_IN)
+            )
+          {
+            bool retry (true);
+            while (retry)
+            {
+              bool ok;
+              const std::string value
+                ( QInputDialog::getText
+                  ( NULL
+                  , QObject::tr ("value_for_input_token")
+                  , QObject::tr ("enter_value_for_input_port_%1")
+                  .arg (QString::fromStdString (port_name))
+                  , QLineEdit::Normal
+                  , "[]"
+                  , &ok
+                  ).toStdString()
+                );
+              if (!ok)
+              {
+                return;
+              }
+
+              retry = put_token (activity_and_fun->first, port_name, value);
+            }
+          }
+        }
+      }
+
       void editor_window::execute_remote_inputs_via_prompt()
       try
       {
@@ -871,33 +910,7 @@ namespace fhg
         std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
           activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        BOOST_FOREACH
-          ( const std::string& port_name
-          , activity_and_fun.first.transition().port_names (we::type::PORT_IN)
-          )
-        {
-          bool retry (true);
-          while (retry)
-          {
-            bool ok;
-            const std::string value
-              ( QInputDialog::getText ( this
-                                      , tr ("value_for_input_token")
-                                      , tr ("enter_value_for_input_port_%1")
-                                      .arg (QString::fromStdString (port_name))
-                                      , QLineEdit::Normal
-                                      , "[]"
-                                      , &ok
-                                      ).toStdString()
-              );
-            if (!ok)
-            {
-              return;
-            }
-
-            retry = put_token (activity_and_fun.first, port_name, value);
-          }
-        }
+        request_tokens_for_ports (&activity_and_fun);
 
         //! \todo Add search path into config (temporarily)!
         // loader.append_search_path (temporary_path / "pnetc" / "op");
@@ -948,33 +961,7 @@ namespace fhg
         std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
           activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        BOOST_FOREACH
-          ( const std::string& port_name
-          , activity_and_fun.first.transition().port_names (we::type::PORT_IN)
-          )
-        {
-          bool retry (true);
-          while (retry)
-          {
-            bool ok;
-            const std::string value
-              ( QInputDialog::getText ( this
-                                      , tr ("value_for_input_token")
-                                      , tr ("enter_value_for_input_port_%1")
-                                      .arg (QString::fromStdString (port_name))
-                                      , QLineEdit::Normal
-                                      , "[]"
-                                      , &ok
-                                      ).toStdString()
-              );
-            if (!ok)
-            {
-              return;
-            }
-
-            retry = put_token (activity_and_fun.first, port_name, value);
-          }
-        }
+        request_tokens_for_ports (&activity_and_fun);
 
         execute_activity_locally (activity_and_fun.first, temporary_path);
       }
