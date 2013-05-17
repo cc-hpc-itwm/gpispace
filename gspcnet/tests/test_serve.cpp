@@ -115,8 +115,6 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
   static const size_t NUM_CLIENTS =
     (SetRLimits::max_open_files - (N_FD_SERVER + N_FD_BASE)) / N_FD_PER_CLIENT;
 
-  std::cerr << "simulating " << NUM_CLIENTS << " concurrent clients" << std::endl;
-
   gspc::net::server::queue_manager_t qmgr;
 
   gspc::net::server_ptr_t server =
@@ -128,30 +126,49 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 
   std::vector<gspc::net::client_ptr_t> clients;
 
-  std::size_t msgs_sent = 0;
+  std::size_t clients_created = 0;
   for (size_t i = 0 ; i < NUM_CLIENTS ; ++i)
   {
-    gspc::net::client_ptr_t client =
-      gspc::net::dial (server->url ());
-    BOOST_CHECK (client);
+    using namespace boost::system;
 
-    if (client)
+    gspc::net::client_ptr_t client;
+
+    try
     {
-      clients.push_back (client);
-
-      client->send ("/test/send", "hello world");
-      ++msgs_sent;
+      client = gspc::net::dial (server->url ());
+      BOOST_REQUIRE (client);
     }
+    catch (system_error const &se)
+    {
+      if (se.code () == errc::make_error_code (errc::too_many_files_open))
+      {
+        break;
+      }
+      else
+      {
+        throw;
+      }
+    }
+
+    clients.push_back (client);
+    ++clients_created;
+
+    client->send ("/test/send", "hello world");
   }
 
-  BOOST_REQUIRE_EQUAL (clients.size (), NUM_CLIENTS);
+  BOOST_REQUIRE (clients_created > 0);
+  BOOST_REQUIRE_EQUAL (clients.size (), clients_created);
 
-  while (subscriber.frames.size () != msgs_sent)
+  while (subscriber.frames.size () != clients_created)
   {
     usleep (100);
   }
 
-  BOOST_REQUIRE_EQUAL (subscriber.frames.size (), msgs_sent);
+  BOOST_REQUIRE_EQUAL (subscriber.frames.size (), clients_created);
+
+  std::cerr << "simulated " << clients_created
+            << " clients in one process"
+            << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
