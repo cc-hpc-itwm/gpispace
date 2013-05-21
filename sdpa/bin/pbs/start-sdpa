@@ -478,9 +478,14 @@ function start_workers_for_capability
     for ((i=${group_start} ; i < ${group_end} ; ++i)) ; do
         host=${hosts[$i]}
 
+        local name="$capability"
+        if [ $socket -ne -1 ] ; then
+            name="$name#$socket"
+        fi
+
         dry_run rexec $host "$script_start_drts" \
             -D \
-            -c $num_per_node -n "$capability" \
+            -c $num_per_node -n "$name" \
             -m "$master" $caps_arg \
             -s "$state_dir" \
             -F "$config_file" \
