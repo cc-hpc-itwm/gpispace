@@ -286,7 +286,31 @@ namespace fhg
           }
           else
           {
-            //! \todo Cap for tunnel ports.
+            const boost::optional<std::string> tunnel_direction
+              (handle().get().properties().get_maybe_val
+                ("fhg.pnete.tunnel.direction")
+              );
+
+            if (tunnel_direction)
+            {
+              if (*tunnel_direction == "out")
+              {
+                cap::add_outgoing (poly, pos);
+              }
+              else if (*tunnel_direction == "in")
+              {
+                cap::add_incoming (poly, pos);
+              }
+              else
+              {
+                throw std::runtime_error
+                  ("bad fhg.pnete.tunnel.direction (neither 'in' nor 'out')");
+              }
+            }
+            else
+            {
+              //! \todo Cap for tunnel ports.
+            }
           }
         }
 
