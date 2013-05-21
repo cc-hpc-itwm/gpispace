@@ -226,6 +226,7 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 {
   using namespace gspc::net::tests;
 
+  int rc;
   gspc::net::server::queue_manager_t qmgr;
   mock::user subscriber;
   qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
@@ -239,12 +240,13 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 
   client->disconnect ();
 
-  BOOST_REQUIRE_EQUAL ( client->send_sync ( "/test/send"
-                                          , "hello world!"
-                                          , boost::posix_time::pos_infin
-                                          )
-                      , gspc::net::E_UNAUTHORIZED
-                      );
+  rc = client->send_sync ( "/test/send"
+                         , "hello world!"
+                         , boost::posix_time::pos_infin
+                         );
+  BOOST_REQUIRE (  rc == gspc::net::E_UNAUTHORIZED
+                || rc == -ECANCELED
+                );
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
