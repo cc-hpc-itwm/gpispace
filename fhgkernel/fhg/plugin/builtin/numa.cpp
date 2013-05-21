@@ -78,9 +78,9 @@ public:
           m_cpuset = hwloc_bitmap_to_ulong (obj->cpuset);
           hwloc_bitmap_snprintf (buf, sizeof(buf), obj->cpuset);
 
-          DMLOG ( DEBUG
-                , "bound to socket #" << m_socket << " with cpuset " << buf
-                );
+          MLOG ( TRACE
+               , "bound to socket #" << m_socket << " with cpuset " << buf
+               );
         }
         else
         {
@@ -89,8 +89,6 @@ public:
         }
       }
     }
-
-    fhg_kernel ()->shutdown ();
 
     FHG_PLUGIN_STARTED();
   }
