@@ -435,7 +435,7 @@ int main(int ac, char **av)
     }
     else
     {
-      MLOG(TRACE, "setting " << kv.first << " to " << kv.second);
+      DMLOG(TRACE, "setting " << kv.first << " to " << kv.second);
       kernel->put(kv.first, kv.second);
     }
   }

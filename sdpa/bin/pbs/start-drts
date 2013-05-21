@@ -25,6 +25,7 @@ state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
 logdir=
 shm_size=
+numa_socket=-1
 
 function usage ()
 {
@@ -50,6 +51,7 @@ usage: $(basename "$0") [options]
     -F config file
     -M shared memory size
     -B communication buffer size
+    -N numa socket
 EOF
 }
 
@@ -76,7 +78,7 @@ function to_bg ()
     /bin/kill -CONT "$pid"
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:" opt; do
+while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
     case $opt in
         h)
             usage
@@ -143,6 +145,9 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:" opt; do
             ;;
         B)
             echo >&2 "W: ignoring obosolete option -B <com_size>"
+            ;;
+        N)
+            numa_socket=$OPTARG
             ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
@@ -220,6 +225,7 @@ if [ x"$identity" == x"0" ] ; then
         opts="$opts -F $config_file"
         opts="$opts -n $name_prefix"
         opts="$opts -M $shm_size"
+        opts="$opts -N $numa_socket"
 
         for cap in ${capabilities//,/ } ; do
             opts="$opts -C $cap"
@@ -308,6 +314,9 @@ logc_port=$(fhgcfg -f "${config_file}" -g plugin.logd.port -v "3456")
 logc_host=$(head -n 1 "${state_dir}/nodefile")
 cfg="$cfg -s plugin.logc.url=${logc_host}:${logc_port}"
 
+# config values (numa plugin)
+cfg="$cfg -s plugin.numa.socket=$numa_socket"
+
 # config values (drts plugin)
 cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
@@ -333,6 +342,7 @@ cfg="$cfg -s plugin.gui.url=$gui"
 cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
 
 plugins=$(fhgcfg -f "${config_file}" -g kernel.plugins)
+plugins="numa,$plugins"
 
 plugin_load_flags=""
 for p in $(echo $plugins | tr ',' ' '); do
