@@ -70,7 +70,7 @@ public:
       std::cout << f.to_string ().size () << " bytes:"
                 << " seq=" << recv_seq
                 << " ttl=" << recv_ttl
-                << " time=" << rtt
+                << " time=" << (rtt.total_microseconds () / 1000.0) << " ms"
                 << std::endl;
     }
     return 0;
@@ -89,14 +89,19 @@ public:
 
     double packet_loss = (double)(sent - recv)/(double)(sent);
 
-    os << "--- ping statistics ---" << std::endl;
+    os << std::endl << "--- ping statistics ---" << std::endl;
     os << sent << " packets transmitted, "
-       << recv << " packets received, "
+       << recv << " received, "
        << packet_loss*100.0  << "% packet loss, "
-       << "time " << (end - start)
+       << "time " << (end - start).total_milliseconds () << "ms"
        << std::endl
        << "rtt min/avg/max = "
-       << rtt_min << "/" << rtt_avg << "/" << rtt_max
+       << (rtt_min.total_microseconds () / 1000.0)
+       << "/"
+       << (rtt_avg.total_microseconds () / 1000.0)
+       << "/"
+       << (rtt_max.total_microseconds () / 1000.0)
+       << " ms"
        << std::endl;
   }
 
@@ -186,6 +191,8 @@ int main (int argc, char *argv[])
   std::string payload;
   payload.resize (packetsize);
   std::fill (payload.begin (), payload.end (), '0');
+
+  std::cout << "PING " << url << " " << payload.size () << " bytes of data." << std::endl;
 
   while (not stop_requested && not reply_handler.had_error)
   {
