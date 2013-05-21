@@ -17,8 +17,6 @@ endif()
 set(PLUGIN_DESTINATION_DIR "libexec/fhg/plugins")
 set(HEADER_DESTINATION_DIR "include/fhg/plugins")
 
-message(STATUS "HWLOC := ${HWLOC_SHARED_LIBRARY}")
-
 fhg_add_plugin(numa numa.cpp
   EXPORTS NUMA
   LINK_LIBRARIES ${FhgLog_LIBRARY_SHARED}
