@@ -369,6 +369,17 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
     {
     	SDPA_LOG_ERROR("Empty Workflow!!!!");
         // declare job as failed
+    	JobFailedEvent::Ptr pEvtJobFailed
+    	      (new JobFailedEvent( sdpa::daemon::WE
+    	                         , ptr_comm_handler_->name()
+    	                         , jobId
+    	                         , ""
+    	                         )
+    	      );
+
+    	pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
+    	pEvtJobFailed->error_message() = "The job has an empty workflow attached!";
+    	ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
     }
 
     ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
