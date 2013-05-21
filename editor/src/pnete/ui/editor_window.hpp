@@ -124,6 +124,8 @@ namespace fhg
 
         void readSettings();
         void writeSettings();
+
+        void addDockWidget (QDockWidget*);
       };
     }
   }
