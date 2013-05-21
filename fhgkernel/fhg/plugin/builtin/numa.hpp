@@ -9,7 +9,13 @@ namespace fhg
     {
     public:
       virtual ~Numa () {}
+
+      size_t socket () const;
+      unsigned long cpuset () const;
     };
+
+    size_t get_socket ();
+    unsigned long get_cpuset ();
   }
 }
 
