@@ -58,19 +58,10 @@ namespace fhg
         template<typename ID>
           bool is_hard_hidden (const ID& id)
         {
-          try
-          {
-            return fhg::util::read_bool
-              ( id.get().properties().get_with_default
-                ("fhg.pnete.is_hard_hidden", "false")
-              );
-          }
-          //! \note read_bool throws on invalid input while we want
-          //! false for anything not evaluating to true.
-          catch (...)
-          {
-            return false;
-          }
+          return fhg::util::read_bool
+            ( id.get().properties().get_with_default
+              ("fhg.pnete.is_hard_hidden", "false")
+            );
         }
 
         template<typename ID_TYPE>
