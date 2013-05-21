@@ -9,6 +9,8 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
+#include <fhg/util/thread/atomic.hpp>
+
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/user.hpp>
 #include <gspc/net/frame_handler.hpp>
@@ -49,10 +51,6 @@ namespace gspc
                  , std::string const & dst
                  , frame const &
                  );
-        int request ( user_ptr u
-                    , std::string const & dst
-                    , frame const &
-                    );
 
         /**
            subscribe to some event queue
@@ -98,7 +96,8 @@ namespace gspc
         //
         mutable boost::shared_mutex m_mutex;
 
-        user_set_t m_connections;
+        user_set_t                  m_connections;
+        fhg::thread::atomic<size_t> m_session_id;
 
         // subscriptions
         //     if queue not already there, create it
@@ -106,7 +105,7 @@ namespace gspc
         subscription_map_t      m_subscriptions;
         user_subscription_map_t m_user_subscriptions;
 
-        // used to handle requests
+        // used to handle services
         service_demux_t & m_service_demux;
       };
     }

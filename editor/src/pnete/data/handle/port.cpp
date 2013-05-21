@@ -7,7 +7,9 @@
 #include <pnete/data/handle/place.hpp>
 
 #include <xml/parse/type/function.hpp>
+#include <xml/parse/type/net.hpp>
 #include <xml/parse/type/port.hpp>
+#include <xml/parse/type/transition.hpp>
 
 namespace fhg
 {
@@ -58,13 +60,66 @@ namespace fhg
           return get().direction() == direction;
         }
 
+        namespace
+        {
+          // not_null_equal
+          template<typename opt>
+            bool nne (const opt& lhs, const opt& rhs)
+          {
+            return lhs && rhs && lhs == rhs;
+          }
+        }
+
         bool port::is_connectable (const port& other) const
         {
-          return get().parent() && other.get().parent()
-            && ( get().parent()->id() == other.get().parent()->id()
-               ? get().direction() != other.get().direction()
-               : get().direction() == other.get().direction()
-               );
+          if (get().type() != other.get().type())
+          {
+            return false;
+          }
+
+          const boost::optional<xml::parse::id::function> this_function
+            ( get().parent()
+            ? get().parent()->id()
+            : boost::optional<xml::parse::id::function> (boost::none)
+            );
+          const boost::optional<xml::parse::id::function> other_function
+            ( other.get().parent()
+            ? other.get().parent()->id()
+            : boost::optional<xml::parse::id::function> (boost::none)
+            );
+
+          const boost::optional<xml::parse::id::function> this_net_function
+            ( this_function
+            && get().parent()->parent_transition()
+            && get().parent()->parent_transition()->get().parent()
+            && get().parent()->parent_transition()->get().parent()->parent()
+            ? get().parent()->parent_transition()->get().parent()->parent()->id()
+            : boost::optional<xml::parse::id::function> (boost::none)
+            );
+          const boost::optional<xml::parse::id::function> other_net_function
+            ( other_function
+            && other.get().parent()->parent_transition()
+            && other.get().parent()->parent_transition()->get().parent()
+            && other.get().parent()->parent_transition()->get().parent()->parent()
+            ? other.get().parent()->parent_transition()
+            ->get().parent()->parent()->id()
+            : boost::optional<xml::parse::id::function> (boost::none)
+            );
+
+          const bool one_is_tunnel (is_tunnel() || other.is_tunnel());
+          const bool same_direction
+            (get().direction() == other.get().direction());
+
+          return ( ( nne (this_function, other_function)
+                   || nne (other_net_function, this_net_function)
+                   )
+                 && (!same_direction || one_is_tunnel)
+                 )
+              || ( ( nne (this_function, other_net_function)
+                   || nne (this_net_function, other_function)
+                   )
+                 && (same_direction || one_is_tunnel)
+                 );
         }
 
         bool port::is_connected() const

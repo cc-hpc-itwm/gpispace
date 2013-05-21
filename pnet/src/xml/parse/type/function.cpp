@@ -1254,17 +1254,21 @@ namespace xml
 
                 BOOST_FOREACH (const link_type& link, fun->links)
                   {
-                    stream << objs << " += "
-                           << boost::filesystem::absolute
-                              ( link.link
-                                ( boost::bind ( &state::type::link_prefix_by_key
-                                              , boost::ref (state)
-                                              , _1
-                                              )
-                                )
-                              , fun->path.parent_path()
-                              ).string()
-                           << std::endl;
+                    stream
+                      << objs << " += "
+                      << ( link.prefix()
+                         ? boost::filesystem::absolute
+                           ( link.link
+                             ( boost::bind ( &state::type::link_prefix_by_key
+                                           , boost::ref (state)
+                                           , _1
+                                           )
+                             )
+                           , fun->path.parent_path()
+                           ).string()
+                         : link.href()
+                         )
+                      << std::endl;
                   }
 
                 BOOST_FOREACH (const std::string& flag, fun->ldflags)

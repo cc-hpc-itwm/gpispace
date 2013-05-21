@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/resource.h>
 
+#include <iostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
 
@@ -34,17 +36,19 @@ struct SetRLimits
 
     if (-1 == getrlimit (RLIMIT_NOFILE, &lim))
     {
-      BOOST_TEST_MESSAGE ("setrlimit failed: " << strerror (errno));
+      std::cerr << "getrlimit failed: " << strerror (errno) << std::endl;
     }
 
     lim.rlim_cur = lim.rlim_max;
 
     if (-1 == setrlimit (RLIMIT_NOFILE, &lim))
     {
-      BOOST_TEST_MESSAGE ("setrlimit failed: " << strerror (errno));
+      std::cerr << "setrlimit failed: " << strerror (errno) << std::endl;
     }
 
     max_open_files = (lim.rlim_cur == RLIM_INFINITY) ? 60000 : lim.rlim_cur;
+
+    std::cerr << "max_open_files := " << max_open_files << std::endl;
   }
 
   ~SetRLimits ()
@@ -103,9 +107,13 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
   using namespace gspc::net::tests;
-  static const size_t NUM_CLIENTS = (SetRLimits::max_open_files / 6);
 
-  BOOST_TEST_MESSAGE ("simulating " << NUM_CLIENTS << " concurrent clients");
+  const size_t N_FD_PER_CLIENT = 5; // io_service + c_socket + s_socket
+  const size_t N_FD_SERVER     = 5; // io_service + s_socket
+  const size_t N_FD_BASE       = 3; // stdin, stdout, stderr
+
+  static const size_t NUM_CLIENTS =
+    (SetRLimits::max_open_files - (N_FD_SERVER + N_FD_BASE)) / N_FD_PER_CLIENT;
 
   gspc::net::server::queue_manager_t qmgr;
 
@@ -118,30 +126,49 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 
   std::vector<gspc::net::client_ptr_t> clients;
 
-  std::size_t msgs_sent = 0;
+  std::size_t clients_created = 0;
   for (size_t i = 0 ; i < NUM_CLIENTS ; ++i)
   {
-    gspc::net::client_ptr_t client =
-      gspc::net::dial (server->url ());
-    BOOST_CHECK (client);
+    using namespace boost::system;
 
-    if (client)
+    gspc::net::client_ptr_t client;
+
+    try
     {
-      clients.push_back (client);
-
-      client->send ("/test/send", "hello world");
-      ++msgs_sent;
+      client = gspc::net::dial (server->url ());
+      BOOST_REQUIRE (client);
     }
+    catch (system_error const &se)
+    {
+      if (se.code () == errc::make_error_code (errc::too_many_files_open))
+      {
+        break;
+      }
+      else
+      {
+        throw;
+      }
+    }
+
+    clients.push_back (client);
+    ++clients_created;
+
+    client->send ("/test/send", "hello world");
   }
 
-  BOOST_REQUIRE_EQUAL (clients.size (), NUM_CLIENTS);
+  BOOST_REQUIRE (clients_created > 0);
+  BOOST_REQUIRE_EQUAL (clients.size (), clients_created);
 
-  while (subscriber.frames.size () != msgs_sent)
+  while (subscriber.frames.size () != clients_created)
   {
     usleep (100);
   }
 
-  BOOST_REQUIRE_EQUAL (subscriber.frames.size (), msgs_sent);
+  BOOST_REQUIRE_EQUAL (subscriber.frames.size (), clients_created);
+
+  std::cerr << "simulated " << clients_created
+            << " clients in one process"
+            << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
@@ -199,6 +226,7 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 {
   using namespace gspc::net::tests;
 
+  int rc;
   gspc::net::server::queue_manager_t qmgr;
   mock::user subscriber;
   qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
@@ -212,12 +240,13 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 
   client->disconnect ();
 
-  BOOST_REQUIRE_EQUAL ( client->send_sync ( "/test/send"
-                                          , "hello world!"
-                                          , boost::posix_time::pos_infin
-                                          )
-                      , gspc::net::E_UNAUTHORIZED
-                      );
+  rc = client->send_sync ( "/test/send"
+                         , "hello world!"
+                         , boost::posix_time::pos_infin
+                         );
+  BOOST_REQUIRE (  rc == gspc::net::E_UNAUTHORIZED
+                || rc == -ECANCELED
+                );
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
@@ -257,7 +286,7 @@ BOOST_AUTO_TEST_CASE (test_request_success)
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
 
-  demux.handle ("/test/echo-1", gspc::net::service::echo ());
+  demux.handle ("/service/echo-1", gspc::net::service::echo ());
 
   gspc::net::server_ptr_t server =
     gspc::net::serve ("tcp://localhost:*", qmgr);
@@ -269,7 +298,7 @@ BOOST_AUTO_TEST_CASE (test_request_success)
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
   {
     gspc::net::frame rply;
-    int rc = client->request ( "/test/echo-1"
+    int rc = client->request ( "/service/echo-1"
                              , "hello world!"
                              , rply
                              , boost::posix_time::seconds (1)
@@ -293,7 +322,7 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
   BOOST_REQUIRE (client);
 
   gspc::net::frame rply;
-  int rc = client->request ( "/test/echo-1"
+  int rc = client->request ( "/service/unknown"
                            , "hello world!"
                            , rply
                            , boost::posix_time::seconds (1)

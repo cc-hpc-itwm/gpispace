@@ -94,7 +94,7 @@ namespace gspc
         {
           user->deliver (make::error_frame ( rqst
                                            , E_SERVICE_LOOKUP
-                                           , "no such service: '" + dst + "'"
+                                           , dst
                                            )
                         );
           return E_SERVICE_LOOKUP;
@@ -108,9 +108,9 @@ namespace gspc
         {
           frame rply = make::error_frame ( rqst
                                          , E_SERVICE_FAILED
-                                         , "service request failed"
+                                         , dst
                                          );
-          rply.add_body ("Request to service '" + dst + "' failed:\n");
+          rply.add_body (" failed: ");
           rply.add_body (ex.what ());
 
           user->deliver (rply);

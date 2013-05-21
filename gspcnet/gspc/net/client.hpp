@@ -38,6 +38,9 @@ namespace gspc
       virtual int send ( std::string const & dst
                        , std::string const & body
                        ) = 0;
+      virtual int send_sync ( frame const &
+                            , const boost::posix_time::time_duration
+                            ) = 0;
       virtual int send_sync ( std::string const & dst
                             , std::string const & body
                             , const boost::posix_time::time_duration

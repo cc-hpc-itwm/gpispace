@@ -3,6 +3,7 @@
 
 #include <gspc/net/handle.hpp>
 
+#include <gspc/net/error.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_handler.hpp>

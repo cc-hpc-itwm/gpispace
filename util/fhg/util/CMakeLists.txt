@@ -72,6 +72,8 @@ set (srcs
   cpp/block.cpp
   cpp/namespace.cpp
   cpp/struct.cpp
+
+  xml.cpp
 )
 
 add_library (fhg-util ${srcs})

@@ -8,12 +8,12 @@
 
 #include <xml/parse/type/function.hpp>
 
+#include <util/qt/no_undoredo_lineedit.hpp>
 #include <util/qt/scoped_signal_block.hpp>
 
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
-#include <QLineEdit>
 #include <QSplitter>
 #include <QTextEdit>
 #include <QVBoxLayout>
@@ -35,7 +35,7 @@ namespace fhg
           , _function (function)
           , _port_lists (new port_lists_widget (_function, QStringList()))
           , _expression_edit (new QTextEdit())
-          , _name_edit (new QLineEdit())
+          , _name_edit (new util::qt::no_undoredo_lineedit())
           , _parse_result (new QTextEdit())
       {
         QWidget* name_widget (new QWidget ());

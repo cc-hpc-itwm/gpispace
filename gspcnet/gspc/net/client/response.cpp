@@ -30,14 +30,7 @@ namespace gspc
 
         while (!m_reply && !m_aborted)
         {
-          if (m_wait_object.timed_wait (lock, t))
-          {
-            return 0;
-          }
-          else
-          {
-            return -ETIME;
-          }
+          m_wait_object.timed_wait (lock, t);
         }
 
         if (m_aborted)
@@ -51,7 +44,6 @@ namespace gspc
       {
         boost::unique_lock<boost::mutex> lock (m_mutex);
         assert (! m_reply);
-        assert (! m_aborted);
 
         m_reply = f;
         m_wait_object.notify_all ();
@@ -60,7 +52,6 @@ namespace gspc
       void response_t::abort (boost::system::error_code const &ec)
       {
         boost::unique_lock<boost::mutex> lock (m_mutex);
-        assert (! m_reply);
         assert (! m_aborted);
 
         m_ec = ec;

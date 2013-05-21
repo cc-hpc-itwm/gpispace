@@ -19,6 +19,8 @@
 #include <pnete/ui/graph/style/cap.hpp>
 #include <pnete/ui/graph/style/predicate.hpp>
 
+#include <fhg/util/num.hpp>
+
 #include <xml/parse/type/port.hpp>
 
 namespace fhg
@@ -432,6 +434,16 @@ namespace fhg
           }
         }
 
+        namespace
+        {
+          qreal read_qreal (const std::string& inp)
+          {
+            util::parse::position pos (inp);
+            pos.skip_spaces();
+            return util::read_double (pos);
+          }
+        }
+
         void port_item::property_changed
           ( const data::handle::port& changed_handle
           , const ::we::type::property::key_type& key
@@ -461,12 +473,12 @@ namespace fhg
                 if (path[3] == "x")
                 {
                   set_just_pos_but_not_in_property
-                    (boost::lexical_cast<qreal>(value), pos().y());
+                    (read_qreal (value), pos().y());
                 }
                 else if (path[3] == "y")
                 {
                   set_just_pos_but_not_in_property
-                    (pos().x(), boost::lexical_cast<qreal>(value));
+                    (pos().x(), read_qreal (value));
                 }
               }
             }

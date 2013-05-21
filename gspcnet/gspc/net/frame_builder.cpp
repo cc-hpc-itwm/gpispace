@@ -35,8 +35,11 @@ namespace gspc
         frame error = error_frame (ec, message);
         if (frame::header_value h = f.get_header ("receipt"))
         {
-          gspc::net::header::receipt_id r_id (*h);
-          r_id.apply_to (error);
+          header::set (error, "receipt-id", *h);
+        }
+        if (frame::header_value h = f.get_header ("message-id"))
+        {
+          header::set (error, "correlation-id", *h);
         }
         if (frame::header_value h = f.get_header ("reply-to"))
         {
@@ -70,7 +73,7 @@ namespace gspc
       frame reply_frame (frame const & send_frame)
       {
         frame f (send_frame);
-        f.set_command ("REPLY");
+        f.set_command ("MESSAGE");
         f.set_header ("destination", send_frame.get_header ("reply-to"));
 
         if (frame::header_value h = send_frame.get_header ("receipt"))

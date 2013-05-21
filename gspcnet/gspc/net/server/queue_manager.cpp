@@ -3,6 +3,7 @@
 #include <cerrno>
 
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_io.hpp>
@@ -112,30 +113,7 @@ namespace gspc
             return -EPROTO;
           }
           const std::string dst = *f.get_header ("destination");
-
-          if (dst.substr (0, 9) == "/service/")
-          {
-            return request (user, dst, f);
-          }
-          else
-          {
-            return send (user, *f.get_header ("destination"), f);
-          }
-        }
-        else if (f.get_command () == "REQUEST")
-        {
-          if (not f.has_header ("destination"))
-          {
-            user->deliver
-              (gspc::net::make::error_frame ( f
-                                            , gspc::net::E_BAD_REQUEST
-                                            , "required header 'destination' is missing"
-                                            )
-              );
-            return -EPROTO;
-          }
-
-          return request (user, *f.get_header ("destination"), f);
+          return send (user, *f.get_header ("destination"), f);
         }
         else if (f.get_command () == "SUBSCRIBE")
         {
@@ -256,10 +234,18 @@ namespace gspc
                                                   )
              )
           {
+            ++m_session_id;
+
             gspc::net::frame connected =
               make::connected_frame (gspc::net::header::version ("1.0"));
             connected.set_header ("heart-beat", "0,0");
             connected.set_header ("correlation-id", f.get_header ("message-id"));
+            gspc::net::header::set ( connected
+                                   , "session-id"
+                                   , boost::format ("session-%1%-%2%")
+                                   % time (NULL)
+                                   % m_session_id
+                                   );
             u->deliver (connected);
 
             m_connections.insert (u);
@@ -331,6 +317,11 @@ namespace gspc
                                 , frame const &f
                                 )
       {
+        if (dst.substr (0, 9) == "/service/")
+        {
+          return m_service_demux.handle_request (dst, f, this);
+        }
+
         int rc = 0;
         shared_lock lock (m_mutex);
 
@@ -355,14 +346,6 @@ namespace gspc
         s_maybe_send_receipt (user, f);
 
         return rc;
-      }
-
-      int queue_manager_t::request ( user_ptr user
-                                   , std::string const & dst
-                                   , frame const & rqst
-                                   )
-      {
-        return m_service_demux.handle_request (dst, rqst, this);
       }
 
       int queue_manager_t::subscribe ( user_ptr user

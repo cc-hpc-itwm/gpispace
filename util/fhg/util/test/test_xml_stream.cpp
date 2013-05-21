@@ -37,9 +37,7 @@ BOOST_AUTO_TEST_CASE (assemble_and_output)
   BOOST_REQUIRE_EQUAL ( output.str()
                       , "<first>\n"
                         "  <second key=\"val\" maybe_key=\"Just val\"/>\n"
-                        "  <content>\n"
-                        "    23\n"
-                        "  </content>\n"
+                        "  <content>23</content>\n"
                         "  <more>\n"
                         "    <deeper key=\"23\"/>\n"
                         "  </more>\n"

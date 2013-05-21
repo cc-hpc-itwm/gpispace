@@ -1,6 +1,7 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-add_library (fhg_util_qt boost_connect_impl.cpp)
+qt4_wrap_cpp (moc_undoredo no_undoredo_lineedit.hpp)
+add_library (fhg_util_qt boost_connect_impl.cpp no_undoredo_lineedit.cpp ${moc_undoredo})
 target_link_libraries (fhg_util_qt ${QT_LIBRARIES})
 
 add_subdirectory (test)

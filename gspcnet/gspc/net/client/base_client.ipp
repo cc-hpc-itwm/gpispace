@@ -138,11 +138,13 @@ namespace gspc
 
         if (rply.get_command () == "CONNECTED")
         {
-          static size_t connect_counter = 0;
+          std::string session_id =
+            header::get (rply, "session-id", std::string ());
+
           m_priv_queue =
-            ( boost::format ("/client-%1%.%2%/replies")
+            ( boost::format ("/queue/%1%-%2%/replies")
+            % session_id
             % getpid ()
-            % connect_counter++
             ).str ();
 
           m_state = CONNECTED;
@@ -200,18 +202,25 @@ namespace gspc
                                         , const boost::posix_time::time_duration to_wait
                                         )
       {
+        frame f_send ("SEND");
+        f_send.set_body (body);
+        f_send.set_header ("destination", dst);
+
+        return this->send_sync (f_send, to_wait);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::send_sync ( frame const &f
+                                        , const boost::posix_time::time_duration to_wait
+                                        )
+      {
         int rc = 0;
 
         response_ptr receipt
-          (new response_t ( "message-"
+          (new response_t ( "receipt-"
                           + boost::lexical_cast<std::string>(++m_message_id)
                           ));
-
-        frame to_send (make::send_frame ( header::destination (dst)
-                                        , body.c_str ()
-                                        , body.size ()
-                                        )
-                      );
+        frame to_send (f);
         gspc::net::header::receipt (receipt->id ()).apply_to (to_send);
 
         {
@@ -266,12 +275,11 @@ namespace gspc
         int rc = 0;
 
         response_ptr response
-          (new response_t ( "message-"
+          (new response_t ( "request-"
                           + boost::lexical_cast<std::string>(++m_message_id)
                           ));
 
         frame to_send (rqst);
-        gspc::net::header::receipt (response->id ()).apply_to (to_send);
         gspc::net::header::message_id (response->id ()).apply_to (to_send);
 
         {
@@ -312,7 +320,7 @@ namespace gspc
                                       , const boost::posix_time::time_duration t
                                       )
       {
-        frame rqst ("REQUEST");
+        frame rqst ("SEND");
         rqst.set_body (body);
         rqst.set_header ("destination", dst);
 
@@ -327,7 +335,6 @@ namespace gspc
       {
         int rc;
         frame rqst (f);
-        rqst.set_command ("REQUEST");
         rqst.set_header ("reply-to", m_priv_queue);
 
         rc = send_and_wait (rqst, rply, t);
@@ -348,8 +355,7 @@ namespace gspc
         frame f_sub = make::subscribe_frame ( header::destination (dst)
                                             , header::id (id)
                                             );
-        frame f_rep;
-        return send_and_wait (f_sub, f_rep, m_timeout);
+      return send_sync (f_sub, m_timeout);
       }
 
       template <class Proto>
@@ -364,10 +370,18 @@ namespace gspc
       }
 
       template <class Proto>
-      bool base_client<Proto>::try_notify_response ( std::string const &id
-                                                   , frame const &f
-                                                   )
+      bool base_client<Proto>::try_notify_response (frame const &f)
       {
+        std::string id;
+        if (frame::header_value h = f.get_header ("receipt-id"))
+        {
+          id = *h;
+        }
+        else if (frame::header_value h = f.get_header ("correlation-id"))
+        {
+          id = *h;
+        }
+
         shared_lock lock (m_responses_mutex);
         const response_map_t::iterator response_it = m_responses.find (id);
         if (response_it != m_responses.end ())
@@ -382,20 +396,21 @@ namespace gspc
       }
 
       template <class Proto>
+      void
+      base_client<Proto>::abort_all_responses (boost::system::error_code const &ec)
+      {
+        shared_lock lock (m_responses_mutex);
+        BOOST_FOREACH (response_map_t::value_type resp, m_responses)
+        {
+          resp.second->abort (ec);
+        }
+      }
+
+      template <class Proto>
       int base_client<Proto>::handle_frame (user_ptr user, frame const &f)
       {
-        if (  f.has_header ("receipt-id")
-           && try_notify_response (*f.get_header ("receipt-id"), f)
-           )
-        {
+        if (try_notify_response (f))
           return 0;
-        }
-        else if (  f.has_header ("correlation-id")
-                && try_notify_response (*f.get_header ("correlation-id"), f)
-                )
-        {
-          return 0;
-        }
 
         return m_frame_handler->handle_frame (user, f);
       }
@@ -406,6 +421,9 @@ namespace gspc
                                            )
       {
         m_state = FAILED;
+
+        abort_all_responses (ec);
+
         return m_frame_handler->handle_error (user, ec);
       }
     }

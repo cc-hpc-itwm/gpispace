@@ -663,10 +663,10 @@ namespace fhg
           return boost::none;
         }
 
-        we::mgmt::type::activity_t prepare_activity
-          ( const QStack<document_view*>& accessed_widgets
-          , const boost::filesystem::path& temporary_path
-          )
+        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+          prepare_activity ( const QStack<document_view*>& accessed_widgets
+                           , const boost::filesystem::path& temporary_path
+                           )
         {
           if (accessed_widgets.empty())
           {
@@ -721,7 +721,8 @@ namespace fhg
             throw std::runtime_error (sf.str());
           }
 
-          return xml::parse::xml_to_we (function, state);
+          return std::make_pair
+            (xml::parse::xml_to_we (function, state), function);
         }
 
         bool put_token ( we::mgmt::type::activity_t& activity
@@ -862,40 +863,115 @@ namespace fhg
         show_results_of_activity (output);
       }
 
+      namespace
+      {
+        std::string prompt_for ( const QString& port_name
+                               , const boost::optional<std::string>& type
+                               , bool* ok
+                               )
+        {
+          if (type == std::string ("file_type"))
+          {
+            const QString res
+              ( QFileDialog::getOpenFileName
+                ( NULL
+                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+                )
+              );
+            *ok = !res.isNull();
+            return res.toStdString();
+          }
+          else if (type == std::string ("long"))
+          {
+            return QString ("%1").arg
+              ( QInputDialog::getInt
+                ( NULL
+                , QObject::tr ("value_for_input_token")
+                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+                , 0
+                //! \note These horrible defaults are from Qt.
+                , -2147483647
+                , 2147483647
+                , 1
+                , ok
+                )
+              ).toStdString();
+          }
+          else if (type == std::string ("double"))
+          {
+            return QString ("%1").arg
+              ( QInputDialog::getDouble
+                ( NULL
+                , QObject::tr ("value_for_input_token")
+                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+                , 0
+                //! \note These horrible defaults are from Qt.
+                , -2147483647
+                , 2147483647
+                , 1
+                , ok
+                )
+              ).toStdString();
+          }
+          else
+          {
+            return QInputDialog::getText
+              ( NULL
+              , QObject::tr ("value_for_input_token")
+              , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+              , QLineEdit::Normal
+              , "[]"
+              , ok
+              ).toStdString();
+          }
+        }
+
+        void request_tokens_for_ports
+          ( std::pair < we::mgmt::type::activity_t
+                      , xml::parse::id::ref::function
+                      >* activity_and_fun
+          )
+        {
+          BOOST_FOREACH
+            ( const std::string& port_name
+            , activity_and_fun->first.transition().port_names (we::type::PORT_IN)
+            )
+          {
+            bool retry (true);
+            while (retry)
+            {
+              const boost::optional<const xml::parse::id::ref::port&> xml_port
+                (activity_and_fun->second.get().get_port_in (port_name));
+
+              bool ok;
+              const std::string value
+                ( prompt_for ( QString::fromStdString (port_name)
+                             , xml_port
+                             ? xml_port->get().type()
+                             : boost::optional<std::string> (boost::none)
+                             , &ok
+                             )
+                );
+              if (!ok)
+              {
+                return;
+              }
+
+              retry = put_token (activity_and_fun->first, port_name, value);
+            }
+          }
+        }
+      }
+
       void editor_window::execute_remote_inputs_via_prompt()
       try
       {
         const fhg::util::temporary_path temporary_path;
 
-        we::mgmt::type::activity_t activity
-          (prepare_activity (_accessed_widgets, temporary_path));
+        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+          activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        BOOST_FOREACH ( const std::string& port_name
-                      , activity.transition().port_names (we::type::PORT_IN)
-                      )
-        {
-          bool retry (true);
-          while (retry)
-          {
-            bool ok;
-            const std::string value
-              ( QInputDialog::getText ( this
-                                      , tr ("value_for_input_token")
-                                      , tr ("enter_value_for_input_port_%1")
-                                      .arg (QString::fromStdString (port_name))
-                                      , QLineEdit::Normal
-                                      , "[]"
-                                      , &ok
-                                      ).toStdString()
-              );
-            if (!ok)
-            {
-              return;
-            }
-
-            retry = put_token (activity, port_name, value);
-          }
-        }
+        request_tokens_for_ports (&activity_and_fun);
 
         //! \todo Add search path into config (temporarily)!
         // loader.append_search_path (temporary_path / "pnetc" / "op");
@@ -906,7 +982,7 @@ namespace fhg
         sdpa::Client* client (load_plugin<sdpa::Client> (kernel, "sdpac"));
 
         std::string job_id;
-        if (client->submit (activity.to_string(), job_id) == 0)
+        if (client->submit (activity_and_fun.first.to_string(), job_id) == 0)
         {
           remote_job_waiting* waiter (new remote_job_waiting (client, job_id));
           connect ( waiter
@@ -943,37 +1019,12 @@ namespace fhg
       {
         const fhg::util::temporary_path temporary_path;
 
-        we::mgmt::type::activity_t activity
-          (prepare_activity (_accessed_widgets, temporary_path));
+        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+          activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        BOOST_FOREACH ( const std::string& port_name
-                      , activity.transition().port_names (we::type::PORT_IN)
-                      )
-        {
-          bool retry (true);
-          while (retry)
-          {
-            bool ok;
-            const std::string value
-              ( QInputDialog::getText ( this
-                                      , tr ("value_for_input_token")
-                                      , tr ("enter_value_for_input_port_%1")
-                                      .arg (QString::fromStdString (port_name))
-                                      , QLineEdit::Normal
-                                      , "[]"
-                                      , &ok
-                                      ).toStdString()
-              );
-            if (!ok)
-            {
-              return;
-            }
+        request_tokens_for_ports (&activity_and_fun);
 
-            retry = put_token (activity, port_name, value);
-          }
-        }
-
-        execute_activity_locally (activity, temporary_path);
+        execute_activity_locally (activity_and_fun.first, temporary_path);
       }
       catch (const std::runtime_error& e)
       {
@@ -989,7 +1040,7 @@ namespace fhg
         const fhg::util::temporary_path temporary_path;
 
         we::mgmt::type::activity_t activity
-          (prepare_activity (_accessed_widgets, temporary_path));
+          (prepare_activity (_accessed_widgets, temporary_path).first);
 
         const QString input_filename
           (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));

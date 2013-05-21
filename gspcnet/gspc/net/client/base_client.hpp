@@ -57,6 +57,9 @@ namespace gspc
                       , std::string const & body
                       , const boost::posix_time::time_duration
                       );
+        int send_sync ( frame const &rqst
+                      , const boost::posix_time::time_duration
+                      );
         int send_and_wait ( frame const &rqst
                           , frame &rply
                           , const boost::posix_time::time_duration
@@ -84,9 +87,8 @@ namespace gspc
 
         void set_timeout (size_t ms);
       private:
-        bool try_notify_response ( std::string const & id
-                                 , frame const & f
-                                 );
+        bool try_notify_response (frame const & f);
+        void abort_all_responses (boost::system::error_code const &);
 
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
         typedef boost::shared_lock<boost::shared_mutex> shared_lock;
