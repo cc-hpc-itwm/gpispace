@@ -2,7 +2,6 @@
 
 #include <hwloc.h>
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 
 #include <fhg/plugin/plugin.hpp>
@@ -73,14 +72,24 @@ public:
           obj = hwloc_get_obj_by_type (m_topology, HWLOC_OBJ_SOCKET, m_socket);
           rc = hwloc_set_cpubind ( m_topology
                                  , obj->cpuset
-                                 , HWLOC_CPUBIND_PROCESS + HWLOC_CPUBIND_STRICT
+                                 , HWLOC_CPUBIND_PROCESS
                                  );
           m_cpuset = hwloc_bitmap_to_ulong (obj->cpuset);
           hwloc_bitmap_snprintf (buf, sizeof(buf), obj->cpuset);
 
-          MLOG ( TRACE
-               , "bound to socket #" << m_socket << " with cpuset " << buf
-               );
+          if (rc < 0)
+          {
+            MLOG ( WARN
+                 , "could not bind to socket #" << m_socket << " with cpuset " << buf
+                 << ": " << strerror (errno)
+                 );
+          }
+          else
+          {
+            MLOG ( TRACE
+                 , "bound to socket #" << m_socket << " with cpuset " << buf
+                 );
+          }
         }
         else
         {
