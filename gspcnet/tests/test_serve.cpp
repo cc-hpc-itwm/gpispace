@@ -244,9 +244,7 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
                          , "hello world!"
                          , boost::posix_time::pos_infin
                          );
-  BOOST_REQUIRE (  rc == gspc::net::E_UNAUTHORIZED
-                || rc == -ECANCELED
-                );
+  BOOST_REQUIRE_EQUAL (rc, gspc::net::E_UNAUTHORIZED);
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
