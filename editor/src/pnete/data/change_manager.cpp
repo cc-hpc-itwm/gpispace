@@ -29,6 +29,7 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/smart_ptr.hpp>
 
+#include <QList>
 #include <QPointF>
 
 #define VARIADIC_SIZE(...) VARIADIC_SIZE_I(__VA_ARGS__, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,)
@@ -1260,11 +1261,14 @@ namespace fhg
 
         if (connect.get().resolved_place())
         {
-          const handle::place place
-            (*connect.get().resolved_place(), connect.document());
-          if (place.is_implicit())
+          static QList<handle::connect> recurse_check;
+          if (!recurse_check.contains (connect))
           {
-            make_explicit (place);
+            recurse_check.append (connect);
+            const handle::place place
+              (*connect.get().resolved_place(), connect.document());
+            delete_place (place);
+            recurse_check.removeAll (connect);
           }
         }
 
@@ -2054,11 +2058,14 @@ namespace fhg
 
         if (port.get().place && !place)
         {
-          const handle::place place
-            (*port.get().resolved_place(), port.document());
-          if (place.is_implicit())
+          static QList<handle::port> recurse_check;
+          if (!recurse_check.contains (port))
           {
-            make_explicit (place);
+            recurse_check.append (port);
+            const handle::place place
+              (*port.get().resolved_place(), port.document());
+            delete_place (place);
+            recurse_check.removeAll (port);
           }
         }
 
