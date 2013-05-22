@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <list>
 
 namespace gspc
 {
@@ -13,6 +14,7 @@ namespace gspc
     typedef std::vector<arg_t>                 argv_t;
     typedef std::map<std::string, std::string> env_t;
     typedef int                                proc_t;
+    typedef std::list<proc_t>                  proc_list_t;
   }
 }
 
