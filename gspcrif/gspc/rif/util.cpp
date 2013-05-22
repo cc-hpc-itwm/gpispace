@@ -23,6 +23,11 @@ namespace gspc
       , E_ARG
       };
 
+    int parse (std::string const &s, std::vector<std::string> &v)
+    {
+      return parse (s.c_str (), v);
+    }
+
     int parse ( const char *buffer
               , std::vector<std::string> &argv
               )

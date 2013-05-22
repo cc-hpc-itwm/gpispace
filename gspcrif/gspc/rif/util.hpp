@@ -8,6 +8,8 @@ namespace gspc
 {
   namespace rif
   {
+    int parse (std::string const &, std::vector<std::string> &);
+
     int parse ( const char *cmdline
               , std::vector<std::string> &
               );
