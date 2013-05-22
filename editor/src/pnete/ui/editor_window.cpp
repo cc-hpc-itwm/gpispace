@@ -345,6 +345,7 @@ namespace fhg
             action->setVisible (false);
           }
         }
+        delete _document_specific_action_menu;
 
         if (_accessed_widgets.contains (to))
         {
@@ -354,8 +355,11 @@ namespace fhg
         _accessed_widgets.push (to);
         to->function().change_manager().setActive (true);
 
+        _document_specific_action_menu =
+          menuBar()->addMenu ("document_specific_actions");
         foreach (QAction* action, to->actions())
         {
+          _document_specific_action_menu->addAction (action);
           action->setVisible (true);
         }
         _document_specific_action_menu->menuAction()->setVisible
