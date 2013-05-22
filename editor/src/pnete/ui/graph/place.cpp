@@ -220,11 +220,11 @@ namespace fhg
         {
           if (handle().is_implicit())
           {
-            setOpacity (0.2);
+            hide();
           }
           else
           {
-            setOpacity (1.0);
+            show();
           }
         }
 
