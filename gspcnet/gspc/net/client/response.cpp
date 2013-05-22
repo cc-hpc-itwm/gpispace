@@ -54,8 +54,11 @@ namespace gspc
         boost::unique_lock<boost::mutex> lock (m_mutex);
         assert (! m_aborted);
 
-        m_ec = ec;
-        m_aborted = true;
+        if (not m_reply)
+        {
+          m_ec = ec;
+          m_aborted = true;
+        }
         m_wait_object.notify_all ();
       }
 
