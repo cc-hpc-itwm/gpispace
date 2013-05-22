@@ -20,7 +20,7 @@ usage: $(basename $0) [options]
   -G: number of segments
 
         format:
-           <CAP>[+CAP1...][:N[xM][,shm]]
+           <CAP>[+CAP1...][#socket][:N[xM][,shm]]
 
         examples:
            INIT:1x1,0
@@ -102,7 +102,7 @@ parse_capability()
 {
     cap_spec="$1"; shift
 
-    cap_spec_regex='^[^:]+(:[0-9]+(x[0-9]+)?(,[^,]+)?)?$'
+    cap_spec_regex='^[^:]+(#[0-9]+)?(:[0-9]+(x[0-9]+)?(,[^,]+)?)?$'
 
     if ! echo "$cap_spec" | grep -q -E "$cap_spec_regex" ; then
         error 1 "Invalid capability specification: $cap_spec"
@@ -112,7 +112,13 @@ parse_capability()
     max_nodes=0
     shm_size="$def_shm_mem"
 
-    capability=$(echo "$cap_spec" | cut -d: -f1)
+    capability_with_socket=$(echo "$cap_spec" | cut -d: -f1)
+    capability=$(echo "$capability_with_socket" | cut -d# -f1)
+    socket=$(echo "$capability_with_socket" | cut -s -d# -f 2)
+    if [ -z "$socket" ]
+    then
+        error 1 "invalid socket spec: $socket"
+    fi
     rest=$(echo "$cap_spec" | cut -s -d: -f 2)
     if [ -n "$rest" ] ; then
         amount_spec=$(echo "$rest" | cut -d, -f 1)
@@ -138,7 +144,7 @@ parse_capability()
 
     shm_size=$(( $shm_size ))
 
-    echo "$capability $num_per_node $max_nodes $shm_size"
+    echo "$capability $num_per_node $max_nodes $shm_size $socket"
     return 0
 }
 
@@ -450,6 +456,7 @@ function start_workers_for_capability
     local num_per_node="$1" ; shift
     local max_nodes="$1"    ; shift
     local shm_size="$1"     ; shift
+    local socket="$1"       ; shift
 
     human_max="global max: $max_nodes"
     if [ $max_nodes -eq 0 ] ; then
@@ -471,13 +478,19 @@ function start_workers_for_capability
     for ((i=${group_start} ; i < ${group_end} ; ++i)) ; do
         host=${hosts[$i]}
 
+        local name="$capability"
+        if [ $socket -ne -1 ] ; then
+            name="$name#$socket"
+        fi
+
         dry_run rexec $host "$script_start_drts" \
             -D \
-            -c $num_per_node -n "$capability" \
+            -c $num_per_node -n "$name" \
             -m "$master" $caps_arg \
             -s "$state_dir" \
             -F "$config_file" \
-            -M "$shm_size" &
+            -M "$shm_size" \
+            -N "$socket" &
         pids+=( $! )
 
         wait_if_necessary
@@ -494,14 +507,15 @@ function start_workers
 {
     local seg=
     for (( seg=0 ; seg < ${number_of_groups} ; ++seg )) ; do
-        sizeof_capstruct=4
+        sizeof_capstruct=5
         local i=
         for (( i=0 ; i < ${#capabilities[@]} ; i += $sizeof_capstruct )) ; do
             capability=${capabilities[   $(( i+0 )) ]}
             num_per_node=${capabilities[ $(( i+1 )) ]}
             max_nodes=${capabilities[    $(( i+2 )) ]}
             shm_size=${capabilities[     $(( i+3 )) ]}
-            start_workers_for_capability $seg "$capability" "$num_per_node" "$max_nodes" "$shm_size"
+            socket=${capabilities[       $(( i+4 )) ]}
+            start_workers_for_capability $seg "$capability" "$num_per_node" "$max_nodes" "$shm_size" "$socket"
         done
     done
 }

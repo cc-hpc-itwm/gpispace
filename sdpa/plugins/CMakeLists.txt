@@ -178,3 +178,16 @@ fhg_add_plugin(logc logc.cpp
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
+
+fhg_add_plugin(netd netd.cpp
+  EXPORTS NETD
+  LINK_LIBRARIES ${GSPC_NET_LIBRARY_SHARED}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_DATE_TIME_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADERS netd.hpp
+  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
+  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
+  COMPONENT plugins
+)

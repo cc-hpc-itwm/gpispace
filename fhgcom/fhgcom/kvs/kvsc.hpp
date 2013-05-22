@@ -237,7 +237,7 @@ namespace fhg
               ar & msg;
             }
             std::stringstream i_sstr( client.request ( o_sstr.str()
-                                                     , boost::posix_time::seconds(0)
+                                                     , boost::posix_time::pos_infin
                                                      )
                                     );
             {

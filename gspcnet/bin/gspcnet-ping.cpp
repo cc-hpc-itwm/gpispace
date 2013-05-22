@@ -21,7 +21,7 @@ public:
     , end ()
     , rtt_min (boost::posix_time::pos_infin)
     , rtt_max (boost::posix_time::neg_infin)
-    , rtt_avg (boost::posix_time::pos_infin)
+    , rtt_sum (0)
     , sent (0)
     , recv (0)
     , last (-1)
@@ -52,17 +52,11 @@ public:
         boost::posix_time::microsec_clock::universal_time ();
       boost::posix_time::time_duration rtt = now - sent_t;
 
+      rtt_sum += rtt.total_microseconds ();
+      rtt_sqsum += rtt.total_microseconds () * rtt.total_microseconds ();
+
       if (rtt < rtt_min) rtt_min = rtt;
       if (rtt > rtt_max) rtt_max = rtt;
-
-      if (rtt_avg.is_pos_infinity ())
-      {
-        rtt_avg = rtt;
-      }
-      else
-      {
-        rtt_avg = (rtt + rtt_avg*recv) / (recv+1);
-      }
 
       size_t recv_ttl =
         gspc::net::header::get (f, "ttl", 0);
@@ -70,7 +64,7 @@ public:
       std::cout << f.to_string ().size () << " bytes:"
                 << " seq=" << recv_seq
                 << " ttl=" << recv_ttl
-                << " time=" << rtt
+                << " time=" << (rtt.total_microseconds () / 1000.0) << " ms"
                 << std::endl;
     }
     return 0;
@@ -88,15 +82,23 @@ public:
     end = boost::posix_time::microsec_clock::universal_time ();
 
     double packet_loss = (double)(sent - recv)/(double)(sent);
+    float rtt_avg = (float)rtt_sum / (float)(recv);
 
-    os << "--- ping statistics ---" << std::endl;
+    os << std::endl << "--- ping statistics ---" << std::endl;
     os << sent << " packets transmitted, "
-       << recv << " packets received, "
+       << recv << " received, "
        << packet_loss*100.0  << "% packet loss, "
-       << "time " << (end - start)
+       << "time " << (rtt_sum/1000.0) << "ms"
        << std::endl
-       << "rtt min/avg/max = "
-       << rtt_min << "/" << rtt_avg << "/" << rtt_max
+       << "rtt min/avg/max/mdev = "
+       << (rtt_min.total_microseconds () / 1000.0)
+       << "/"
+       << (rtt_avg / 1000.0)
+       << "/"
+       << (rtt_max.total_microseconds () / 1000.0)
+       << "/"
+       << sqrt (((float)rtt_sqsum/recv - (rtt_avg*rtt_avg))) / (1000.0*1000.0)
+       << " ms"
        << std::endl;
   }
 
@@ -104,7 +106,9 @@ public:
   boost::posix_time::ptime end;
   boost::posix_time::time_duration rtt_min;
   boost::posix_time::time_duration rtt_max;
-  boost::posix_time::time_duration rtt_avg;
+
+  size_t rtt_sum;
+  size_t rtt_sqsum;
 
   size_t sent;
   size_t recv;
@@ -186,6 +190,8 @@ int main (int argc, char *argv[])
   std::string payload;
   payload.resize (packetsize);
   std::fill (payload.begin (), payload.end (), '0');
+
+  std::cout << "PING " << url << " " << payload.size () << " bytes of data." << std::endl;
 
   while (not stop_requested && not reply_handler.had_error)
   {
