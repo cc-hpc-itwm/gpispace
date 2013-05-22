@@ -124,7 +124,7 @@ int main (int argc, char *argv[])
   std::string url;
   gspc::net::client_ptr_t client;
   size_t interval = 1000;
-  size_t deadline = 500;
+  long deadline = -1;
   size_t count = 0;
   size_t packetsize = 0;
 
@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
     ("help,h", "print help message")
     ("count,c", po::value<size_t>(&count)->default_value (count), "how many ECHO_REQUESTS to send")
     ("interval,I", po::value<size_t>(&interval)->default_value (interval), "time in ms between ECHO_REQUESTS")
-    ("deadline,w", po::value<size_t>(&deadline)->default_value (deadline), "time in ms to wait for outstanding requests")
+    ("deadline,w", po::value<long>(&deadline)->default_value (deadline), "time in ms to wait for outstanding requests")
     ("url", po::value<std::string>(&url), "remote server to ping")
     ("packetsize,s", po::value<size_t>(&packetsize)->default_value (packetsize), "simulate a body with that many bytes")
     ;
@@ -216,7 +216,13 @@ int main (int argc, char *argv[])
 
   if (reply_handler.sent > reply_handler.recv)
   {
-    usleep (deadline * MS);
+    boost::posix_time::time_duration deadline_time =
+      boost::posix_time::milliseconds
+      (std::max ( 2*reply_handler.rtt_max.total_milliseconds ()
+                , deadline
+                )
+      );
+    boost::this_thread::sleep (deadline_time);
   }
 
   reply_handler.dump_stats_to (std::cerr);
