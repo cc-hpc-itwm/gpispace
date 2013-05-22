@@ -170,10 +170,10 @@ void JobManager::resubmitResults(IAgent* pComm)
   {
     sdpa::daemon::Job::ptr_t pJob = it->second;
     std::string job_status = pJob->getStatus();
-    SDPA_LOG_INFO("Re-submit to the master "<<pJob->owner()<<" the status of the job"<<pJob->id()<<" ("<<job_status<<" )");
 
     if( pJob->isMasterJob() )
     {
+    	LOG(INFO, "Re-submit to the master "<<pJob->owner()<<" the status of the job"<<pJob->id()<<" ("<<job_status<<" )");
 		if( job_status.find("Finished") != std::string::npos )
 		{
 		  // create jobFinishedEvent
