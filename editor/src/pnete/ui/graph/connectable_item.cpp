@@ -45,6 +45,10 @@ namespace fhg
           //! \note Default to connecting to anything with the same type.
           return i->we_type() == we_type();
         }
+        bool connectable_item::may_be_connected() const
+        {
+          return true;
+        }
 
         const QSet<association*>& connectable_item::associations() const
         {
@@ -78,9 +82,12 @@ namespace fhg
         {
           if (event->modifiers() == Qt::ShiftModifier)
           {
-            //! \todo Ports can start a connection when they are
-            //! already connected to something!
-            scene()->create_pending_connection (this);
+            //! \todo Instead of prohibiting connections, remove
+            //! existing ones and create a new one.
+            if (may_be_connected())
+            {
+              scene()->create_pending_connection (this);
+            }
           }
           else
           {

@@ -48,6 +48,7 @@ namespace fhg
           port::orientation::type orientation() const;
 
           virtual bool is_connectable_with (const connectable_item*) const;
+          virtual bool may_be_connected() const;
 
           enum { Type = port_graph_type };
           virtual int type() const { return Type; }

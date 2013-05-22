@@ -119,10 +119,15 @@ namespace fhg
         bool port_item::is_connectable_with (const connectable_item* item) const
         {
           const port_item* rhs (qobject_cast<const port_item*> (item));
-          //! \note Only allow one connection.
-          return _associations.isEmpty()
+          return may_be_connected()
             && (!rhs || handle().is_connectable (rhs->handle()))
             && connectable_item::is_connectable_with (item);
+        }
+
+        bool port_item::may_be_connected() const
+        {
+          //! \note Only allow one connection.
+          return _associations.isEmpty();
         }
 
         static qreal quad (const qreal x)

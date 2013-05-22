@@ -32,6 +32,7 @@ namespace fhg
           void remove_association (association * c);
 
           virtual bool is_connectable_with (const connectable_item*) const;
+          virtual bool may_be_connected() const;
 
           const QSet<association*>& associations() const;
 
