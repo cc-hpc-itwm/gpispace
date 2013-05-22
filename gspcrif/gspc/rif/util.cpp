@@ -23,13 +23,13 @@ namespace gspc
       , E_ARG
       };
 
-    int parse (std::string const &s, std::vector<std::string> &v)
+    int parse (std::string const &s, argv_t &v)
     {
       return parse (s.c_str (), v);
     }
 
     int parse ( const char *buffer
-              , std::vector<std::string> &argv
+              , argv_t &argv
               )
     {
       return parse (buffer, strlen (buffer), argv);
@@ -37,7 +37,7 @@ namespace gspc
 
     int parse ( const char *buffer
               , size_t len
-              , std::vector<std::string> &argv
+              , argv_t &argv
               )
     {
       std::stack<parse_state_e> states;
