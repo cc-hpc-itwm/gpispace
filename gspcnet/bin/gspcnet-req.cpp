@@ -248,5 +248,8 @@ int main (int argc, char *argv[])
     return EX_UNAVAILABLE;
   }
 
-  return EX_OK;
+  if (rc)
+    return EX_UNAVAILABLE;
+  else
+    return EX_OK;
 }
