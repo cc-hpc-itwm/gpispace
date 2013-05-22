@@ -78,8 +78,8 @@ namespace sdpa {
 	    SDPA_DECLARE_LOGGER();
 	    job_map_t job_map_;
 	    mutable mutex_type mtx_;
-      boost::condition_variable_any free_slot_;
-      requirements_map_t job_requirements_;
+	    boost::condition_variable_any free_slot_;
+	    requirements_map_t job_requirements_;
   };
 }}
 
