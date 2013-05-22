@@ -1,5 +1,6 @@
 set (gspcrif_src
   rif/util.cpp
+  rif/manager.cpp
 )
 
 add_library (gspcrif        STATIC ${gspcrif_src})
