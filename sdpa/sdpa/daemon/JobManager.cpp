@@ -173,7 +173,7 @@ void JobManager::resubmitResults(IAgent* pComm)
 
     if( pJob->isMasterJob() )
     {
-    	LOG(INFO, "Re-submit to the master "<<pJob->owner()<<" the status of the job"<<pJob->id()<<" ("<<job_status<<" )");
+    	DLOG(TRACE, "Re-submit to the master "<<pJob->owner()<<" the status of the job"<<pJob->id()<<" ("<<job_status<<" )");
 		if( job_status.find("Finished") != std::string::npos )
 		{
 		  // create jobFinishedEvent
