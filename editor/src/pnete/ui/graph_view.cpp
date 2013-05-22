@@ -41,12 +41,12 @@ namespace fhg
             QSlider* bar (new QSlider (Qt::Horizontal, parent));
             bar->setMaximumWidth (size::zoom::slider::max_length());
             bar->setRange (size::zoom::min_value(), size::zoom::max_value());
-            bar->setValue (size::zoom::default_value());
+            bar->setValue (_graph->zoom_level());
 
             QSpinBox* box (new QSpinBox (parent));
             box->setSuffix ("%");
             box->setRange (size::zoom::min_value(), size::zoom::max_value());
-            box->setValue (size::zoom::default_value());
+            box->setValue (_graph->zoom_level());
 
             connect (box, SIGNAL (valueChanged (int)), bar, SLOT (setValue (int)));
             connect (bar, SIGNAL (valueChanged (int)), box, SLOT (setValue (int)));
@@ -169,6 +169,11 @@ namespace fhg
         _currentScale = target;
 
         emit zoomed (_currentScale);
+      }
+
+      int graph_view::zoom_level() const
+      {
+        return _currentScale;
       }
     }
   }

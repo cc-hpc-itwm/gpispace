@@ -30,6 +30,8 @@ namespace fhg
 
         graph::scene_type* scene() const;
 
+        int zoom_level() const;
+
       public slots:
         void zoom (int to);
 
