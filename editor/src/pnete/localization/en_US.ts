@@ -2,195 +2,839 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="en_US">
 <context>
-    <name>fhg::pnete::graph::Port</name>
+    <name>PropertiesEditorWidget</name>
     <message>
-        <location filename="ui/GraphPort.cpp" line="48"/>
-        <source>Set type</source>
-        <translation>Set type</translation>
+        <location filename="../ui/PropertiesWidget.ui" line="14"/>
+        <source>Properties Editor</source>
+        <translation>Properties editor</translation>
     </message>
     <message>
-        <location filename="ui/GraphPort.cpp" line="53"/>
-        <source>Delete</source>
-        <translation>Delete</translation>
-    </message>
-</context>
-<context>
-    <name>fhg::pnete::graph::Scene</name>
-    <message>
-        <location filename="ui/GraphScene.cpp" line="27"/>
-        <source>(untitled)</source>
-        <translation>(untitled)</translation>
+        <location filename="../ui/PropertiesWidget.ui" line="23"/>
+        <source>1</source>
+        <translation>1</translation>
     </message>
     <message>
-        <location filename="ui/GraphScene.cpp" line="48"/>
-        <source>new</source>
+        <location filename="../ui/PropertiesWidget.ui" line="31"/>
+        <source>Add</source>
         <translation>Add</translation>
     </message>
     <message>
-        <location filename="ui/GraphScene.cpp" line="49"/>
-        <source>transition</source>
-        <translation>Transition</translation>
+        <location filename="../ui/PropertiesWidget.ui" line="51"/>
+        <source>Delete</source>
+        <translation>Delete</translation>
     </message>
     <message>
-        <location filename="ui/GraphScene.cpp" line="55"/>
-        <source>place</source>
-        <translation>Place</translation>
-    </message>
-    <message>
-        <location filename="ui/GraphScene.cpp" line="63"/>
-        <source>struct</source>
-        <translation>Structure</translation>
+        <location filename="../ui/PropertiesWidget.ui" line="71"/>
+        <source>Close</source>
+        <translation>Close</translation>
     </message>
 </context>
 <context>
-    <name>fhg::pnete::graph::Transition</name>
+    <name>PropertiesEditorWidgetMCV</name>
     <message>
-        <location filename="ui/GraphTransition.cpp" line="64"/>
-        <source>Add Port</source>
+        <location filename="../ui/PropertiesEditorForm.ui" line="14"/>
+        <source>Properties Editor</source>
+        <translation type="unfinished">Properties editor</translation>
+    </message>
+    <message>
+        <location filename="../ui/PropertiesEditorForm.ui" line="25"/>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <location filename="../ui/PropertiesEditorForm.ui" line="45"/>
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/PropertiesEditorForm.ui" line="65"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="../data/manager.cpp" line="54"/>
+        <source>unnamed-%1.xml</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../monitor.cpp" line="62"/>
+        <source>Execution Monitor</source>
+        <translation>Execution Monitor</translation>
+    </message>
+    <message>
+        <location filename="../monitor.cpp" line="65"/>
+        <source>Logging</source>
+        <translation>Logging</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="215"/>
+        <source>&lt;&lt;anonymous expression&gt;&gt;</source>
+        <translation>&lt;&lt;unnamed expression&gt;&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="224"/>
+        <source>&lt;&lt;anonymous module call&gt;&gt;</source>
+        <translation>&lt;&lt;unnamed module call&gt;&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="233"/>
+        <source>&lt;&lt;anonymous net&gt;&gt;</source>
+        <translation>&lt;&lt;unnamed net&gt;&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="878"/>
+        <location filename="../ui/editor_window.cpp" line="890"/>
+        <location filename="../ui/editor_window.cpp" line="906"/>
+        <location filename="../ui/editor_window.cpp" line="921"/>
+        <source>enter_value_for_input_port_%1</source>
+        <translation>Select file for input %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="889"/>
+        <location filename="../ui/editor_window.cpp" line="905"/>
+        <location filename="../ui/editor_window.cpp" line="920"/>
+        <source>value_for_input_token</source>
+        <translation>Value for input</translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="273"/>
+        <source>%1 on %2 (id = %3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="237"/>
+        <source>name_already_exists_head</source>
+        <translation>Duplicate name</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="238"/>
+        <source>name_already_exists_msg</source>
+        <translation>The given name already exists. Please choose a different one.</translation>
+    </message>
+    <message>
+        <location filename="../ui/port_lists_widget.cpp" line="231"/>
+        <source>dummy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/port_lists_widget.cpp" line="234"/>
+        <source>add_in_port</source>
+        <translation>Add input port</translation>
+    </message>
+    <message>
+        <location filename="../ui/port_lists_widget.cpp" line="245"/>
+        <source>add_out_port</source>
+        <translation>Add output port</translation>
+    </message>
+    <message>
+        <location filename="../ui/port_lists_widget.cpp" line="258"/>
+        <source>add_tunnel_port</source>
+        <translation>Add tunnel port</translation>
+    </message>
+</context>
+<context>
+    <name>StructureEditorForm</name>
+    <message>
+        <location filename="../ui/StructureEditorForm.ui" line="14"/>
+        <source>Structure Editor</source>
+        <translation>Structure editor</translation>
+    </message>
+    <message>
+        <location filename="../ui/StructureEditorForm.ui" line="25"/>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <location filename="../ui/StructureEditorForm.ui" line="45"/>
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/StructureEditorForm.ui" line="65"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+</context>
+<context>
+    <name>detail::log_table_model</name>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="155"/>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="158"/>
+        <source>Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="161"/>
+        <source>Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="164"/>
+        <source>Message</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>execution_monitor</name>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="114"/>
+        <source>Legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="147"/>
+        <source>Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="149"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="150"/>
+        <source>Clear all events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="155"/>
+        <source>follow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="157"/>
+        <source>Follow the stream of log events and automatically scroll the view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="166"/>
+        <source>automatically sort by component</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="173"/>
+        <source>sort by component</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/execution_monitor.cpp" line="314"/>
+        <source>Select new color for state %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>fhg::pnete::data::change_manager_t</name>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1652"/>
+        <source>place_set_name_action</source>
+        <translation>Rename place</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1681"/>
+        <source>place_set_type_action</source>
+        <translation>Set type of place</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1717"/>
+        <source>make_virtual_action</source>
+        <translation>Make place virtual</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1752"/>
+        <source>make_real_action</source>
+        <translation>Make place real</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1822"/>
+        <source>add_port_action</source>
         <translation>Add port</translation>
     </message>
     <message>
-        <location filename="ui/GraphTransition.cpp" line="69"/>
-        <source>Delete</source>
-        <translation>Delete</translation>
+        <location filename="../data/change_manager.cpp" line="1987"/>
+        <source>port_set_name_action</source>
+        <translation>Rename port</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="2011"/>
+        <source>port_set_type_action</source>
+        <translation>Set type of port</translation>
     </message>
 </context>
 <context>
     <name>fhg::pnete::ui::TransitionLibraryModel</name>
     <message>
-        <location filename="ui/TransitionLibraryModel.cpp" line="165"/>
+        <location filename="../ui/TransitionLibraryModel.cpp" line="203"/>
         <source>Trusted Transition</source>
         <translation>Trusted transition</translation>
     </message>
     <message>
-        <location filename="ui/TransitionLibraryModel.cpp" line="184"/>
+        <location filename="../ui/TransitionLibraryModel.cpp" line="230"/>
         <source>Transition</source>
         <translation>Transition</translation>
     </message>
 </context>
 <context>
+    <name>fhg::pnete::ui::detail::ports_model</name>
+    <message>
+        <location filename="../ui/port_lists_widget.cpp" line="135"/>
+        <source>port_name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <location filename="../ui/port_lists_widget.cpp" line="137"/>
+        <source>port_type</source>
+        <translation>Type</translation>
+    </message>
+</context>
+<context>
     <name>fhg::pnete::ui::editor_window</name>
     <message>
-        <location filename="ui/editor_window.cpp" line="48"/>
+        <location filename="../ui/editor_window.cpp" line="94"/>
         <source>editor_window_title</source>
         <translation>Petri net editor</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="136"/>
+        <location filename="../ui/editor_window.cpp" line="147"/>
+        <source>XPNET files (*.xpnet);;All (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="166"/>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="168"/>
+        <source>XPNET files (*.xpnet);; All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="376"/>
+        <source>duplicate_current_window</source>
+        <translation>Duplicate current window</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="396"/>
+        <source>remote_logging</source>
+        <translation>Remote Logging</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="398"/>
+        <source>remote_execution</source>
+        <translation>Remote Execution Monitor</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="414"/>
+        <source>port_for_remote_logging</source>
+        <translation>Port for Logging</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="415"/>
+        <location filename="../ui/editor_window.cpp" line="439"/>
+        <source>port</source>
+        <translation>Port</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="426"/>
+        <source>log_monitor_for_%1</source>
+        <translation>Remote Logging on port %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="438"/>
+        <source>port_for_remote_execution</source>
+        <translation>Port for Execution Monitor</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="450"/>
+        <source>execution_monitor_for_%1</source>
+        <translation>Execution Monitor on port %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="495"/>
+        <source>runtime_menu</source>
+        <translation>Runtime</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="497"/>
+        <source>runtime_toolbar</source>
+        <translation>Runtime</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="502"/>
+        <source>execute_locally_input_prompt</source>
+        <translation>Execute locally</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="507"/>
+        <source>execute_locally_input_file</source>
+        <translation>Execute locally (input from file)</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="512"/>
+        <source>execute_remote_input_prompt</source>
+        <translation>Execute remote</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="530"/>
         <source>file_menu</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="139"/>
+        <location filename="../ui/editor_window.cpp" line="533"/>
         <source>file_tool_bar</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="142"/>
+        <location filename="../ui/editor_window.cpp" line="537"/>
         <source>new</source>
         <translation>New</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="143"/>
+        <location filename="../ui/editor_window.cpp" line="539"/>
+        <source>expression</source>
+        <translation>New expression</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="544"/>
+        <source>module_call</source>
+        <translation>New module call</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="549"/>
+        <source>net</source>
+        <translation>New net</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="553"/>
         <source>open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="144"/>
+        <location filename="../ui/editor_window.cpp" line="556"/>
         <source>save</source>
         <translation>Save As</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="145"/>
-        <location filename="ui/editor_window.cpp" line="291"/>
-        <source>close_current_window</source>
-        <translation>Close net</translation>
+        <location filename="../ui/editor_window.cpp" line="577"/>
+        <source>undo_prefix</source>
+        <translation>Undo</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="146"/>
+        <location filename="../ui/editor_window.cpp" line="579"/>
+        <source>redo_prefix</source>
+        <translation>Redo</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="588"/>
+        <source>windows_menu</source>
+        <translation>Windows</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="1046"/>
+        <source>value_file_for_input</source>
+        <translation>Value-file for inputs</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="381"/>
+        <source>close_current_window</source>
+        <translation>Close current window</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="84"/>
+        <source>undo_window</source>
+        <translation>Undo/redo-history</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="560"/>
+        <source>close_document</source>
+        <translation>Close document</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="562"/>
         <source>quit_application</source>
         <translation>Exit</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="173"/>
+        <location filename="../ui/editor_window.cpp" line="573"/>
         <source>edit_menu</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="176"/>
-        <source>auto_layout</source>
-        <translation>Automatically layout</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="177"/>
-        <source>add_transition</source>
-        <translation>Add transition</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="178"/>
-        <source>add_place</source>
-        <translation>Add place</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="179"/>
-        <source>add_struct</source>
-        <translation>Add structure</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="208"/>
-        <source>zoom_menu</source>
-        <translation>Zoom</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="211"/>
-        <source>zoom_tool_bar</source>
-        <translation>Zoom</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="217"/>
-        <source>zoom_in</source>
-        <translation>Zoom in</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="218"/>
-        <source>zoom_out</source>
-        <translation>Zoom out</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="219"/>
-        <source>zoom_default</source>
-        <translation>Reset to default</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="290"/>
-        <source>duplicate_view</source>
-        <translation>New window for this net</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="342"/>
+        <location filename="../ui/editor_window.cpp" line="77"/>
         <source>library_window</source>
         <translation>Transition library</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="355"/>
+        <location filename="../ui/editor_window.cpp" line="80"/>
         <source>structure_window</source>
         <translation>Net structure</translation>
     </message>
     <message>
-        <location filename="ui/editor_window.cpp" line="371"/>
-        <source>Save net</source>
-        <translation>Save net</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="371"/>
-        <location filename="ui/editor_window.cpp" line="389"/>
-        <source>XML files (*.xml)</source>
-        <translation>XML files (*.xml)</translation>
-    </message>
-    <message>
-        <location filename="ui/editor_window.cpp" line="389"/>
+        <location filename="../ui/editor_window.cpp" line="147"/>
         <source>Load net</source>
         <translation>Open net</translation>
+    </message>
+</context>
+<context>
+    <name>fhg::pnete::ui::expression_widget</name>
+    <message>
+        <location filename="../ui/expression_widget.cpp" line="43"/>
+        <source>&amp;Name</source>
+        <translation>&amp;Name</translation>
+    </message>
+</context>
+<context>
+    <name>fhg::pnete::ui::graph_view</name>
+    <message>
+        <location filename="../ui/graph_view.cpp" line="81"/>
+        <source>zoom_in</source>
+        <translation>Zoom in</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph_view.cpp" line="95"/>
+        <source>zoom_out</source>
+        <translation>Zoom out</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph_view.cpp" line="109"/>
+        <source>zoom_default</source>
+        <translation>Reset to default</translation>
+    </message>
+</context>
+<context>
+    <name>fhg::pnete::ui::net_widget</name>
+    <message>
+        <location filename="../ui/net_widget.cpp" line="38"/>
+        <source>&amp;Name</source>
+        <translation>&amp;Name</translation>
+    </message>
+</context>
+<context>
+    <name>log_monitor</name>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="348"/>
+        <source>Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="354"/>
+        <source>Filter events according to level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="359"/>
+        <source>Trace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="360"/>
+        <source>Debug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="361"/>
+        <source>Info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="362"/>
+        <source>Warn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="363"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="364"/>
+        <source>Fatal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="387"/>
+        <source>drop filtered</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="390"/>
+        <source>Drop filtered events instead of keeping them</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="397"/>
+        <source>Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="399"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="400"/>
+        <source>Clear all events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="406"/>
+        <source>follow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="407"/>
+        <source>Follow the stream of log events and automatically scroll the view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/log_monitor.cpp" line="436"/>
+        <source>save_log</source>
+        <translation>Save log</translation>
+    </message>
+</context>
+<context>
+    <name>propedit::PropertiesEditor</name>
+    <message>
+        <location filename="../ui/PropertiesEditor.hpp" line="136"/>
+        <source>Add</source>
+        <translation type="unfinished">Add</translation>
+    </message>
+    <message>
+        <location filename="../ui/PropertiesEditor.hpp" line="139"/>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/PropertiesEditor.hpp" line="154"/>
+        <location filename="../ui/PropertiesEditor.hpp" line="199"/>
+        <source>Properties editor</source>
+        <translation type="unfinished">Properties editor</translation>
+    </message>
+    <message>
+        <location filename="../ui/PropertiesEditor.hpp" line="154"/>
+        <source>Please, select a property to delete first!</source>
+        <translation type="unfinished">Please select a property to delete first!</translation>
+    </message>
+    <message>
+        <location filename="../ui/PropertiesEditor.hpp" line="199"/>
+        <source>Please, select a property first!</source>
+        <translation type="unfinished">Please select a property first!</translation>
+    </message>
+</context>
+<context>
+    <name>scene_type</name>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="114"/>
+        <location filename="../ui/graph/scene.cpp" line="612"/>
+        <source>new_transition</source>
+        <translation>New transition</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="122"/>
+        <location filename="../ui/graph/scene.cpp" line="620"/>
+        <source>new_place</source>
+        <translation>New place</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="130"/>
+        <location filename="../ui/graph/scene.cpp" line="628"/>
+        <source>new_top_level_port_in</source>
+        <translation>New input port</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="139"/>
+        <location filename="../ui/graph/scene.cpp" line="639"/>
+        <source>new_top_level_port_out</source>
+        <translation>New output port</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="148"/>
+        <location filename="../ui/graph/scene.cpp" line="650"/>
+        <source>new_top_level_port_tunnel</source>
+        <translation>New tunnel port</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="157"/>
+        <source>auto_layout</source>
+        <translation>Automatically layout</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="171"/>
+        <location filename="../ui/graph/scene.cpp" line="678"/>
+        <source>set_function_name</source>
+        <translation>Rename</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="174"/>
+        <location filename="../ui/graph/scene.cpp" line="683"/>
+        <source>set_function_name_title</source>
+        <translation>Rename function</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="175"/>
+        <location filename="../ui/graph/scene.cpp" line="684"/>
+        <source>set_function_name_prompt</source>
+        <translation>Specify name of function</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="316"/>
+        <source>port_set_name</source>
+        <translation>Rename</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="321"/>
+        <source>port_set_name_dialog_title_for_%1</source>
+        <translation>Rename port %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="323"/>
+        <source>port_set_name_prompt</source>
+        <translation>Specify name of port</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="330"/>
+        <location filename="../ui/graph/scene.cpp" line="362"/>
+        <source>port_set_type</source>
+        <translation>Set type</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="335"/>
+        <location filename="../ui/graph/scene.cpp" line="367"/>
+        <source>port_set_type_dialog_title_for_%1</source>
+        <translation>Set type of port %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="337"/>
+        <location filename="../ui/graph/scene.cpp" line="369"/>
+        <source>port_set_type_prompt</source>
+        <translation>Specify new type of port</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="346"/>
+        <source>port_delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="385"/>
+        <source>new_port_in</source>
+        <translation>New input port</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="396"/>
+        <source>new_port_out</source>
+        <translation>New output port</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="409"/>
+        <source>new_port_tunnel</source>
+        <translation>New tunnel port</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="423"/>
+        <source>transition_set_name</source>
+        <translation>Rename</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="428"/>
+        <source>transition_set_name_dialog_title_for_%1</source>
+        <translation>Rename transition %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="430"/>
+        <source>transition_set_name_prompt</source>
+        <translation>Specify new name of transition</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="439"/>
+        <source>transition_delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="448"/>
+        <source>dive_into_transition</source>
+        <translation>Dive into transition</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="466"/>
+        <source>place_make_explicit</source>
+        <translation>Make explicit</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="475"/>
+        <source>place_set_name</source>
+        <translation>Rename</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="480"/>
+        <source>place_set_name_dialog_title_for_%1</source>
+        <translation>Rename place %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="482"/>
+        <source>place_set_name_prompt</source>
+        <translation>Specify name for place</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="489"/>
+        <source>place_set_type</source>
+        <translation>Set type</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="494"/>
+        <source>place_set_type_dialog_title_for_%1</source>
+        <translation>Set type of place %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="496"/>
+        <source>place_set_type_prompt</source>
+        <translation>Specify new type of place</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="505"/>
+        <source>place_make_real</source>
+        <translation>Mark as real</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="514"/>
+        <source>place_make_virtual</source>
+        <translation>Mark as virtual</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="525"/>
+        <source>place_delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="542"/>
+        <source>is_read_connect</source>
+        <translation>only-read</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="557"/>
+        <source>connection_delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="573"/>
+        <source>port_place_assoc_delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="591"/>
+        <source>place_map_delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../ui/graph/scene.cpp" line="664"/>
+        <source>new_struct</source>
+        <translation>New structure (type)</translation>
     </message>
 </context>
 </TS>
