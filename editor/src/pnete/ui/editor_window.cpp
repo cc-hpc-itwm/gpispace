@@ -37,6 +37,12 @@
 #include <we/type/value/show.hpp>
 
 #include <xml/parse/parser.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/transition.hpp>
+#include <xml/parse/type/connect.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -719,6 +725,103 @@ namespace fhg
 
           const xml::parse::id::ref::function function
             (accessed_widgets.top()->function().get().clone());
+
+          const xml::parse::id::ref::net net (*function.get().get_net());
+
+          foreach ( const xml::parse::id::ref::transition& trans
+                  , net.get().transitions().ids()
+                  )
+          {
+            foreach ( const xml::parse::id::ref::port& pid
+                    , trans.get().resolved_function().get().ports().ids()
+                    )
+            {
+              xml::parse::type::port_type& port (pid.get_ref());
+
+              const std::string name (trans.get().name() + "_" + port.name());
+
+              bool has_any_connection (false);
+              foreach ( const xml::parse::type::connect_type& connect
+                      , trans.get().connections().values()
+                      )
+              {
+                if (connect.port() == port.name())
+                {
+                  has_any_connection = true;
+                  break;
+                }
+              }
+              if (!has_any_connection)
+              {
+                //! \todo which types?
+                if (port.type() == "file_type")
+                {
+                  net.get_ref().push_place
+                    ( ::xml::parse::type::place_type
+                      ( net.id_mapper()->next_id()
+                      , net.id_mapper()
+                      , boost::none
+                      , XML_PARSE_UTIL_POSITION_GENERATED()
+                      , name
+                      , port.type()
+                      , boost::none
+                      ).make_reference_id()
+                    );
+
+                  function.get_ref().push_port
+                    ( ::xml::parse::type::port_type
+                      ( function.id_mapper()->next_id()
+                      , function.id_mapper()
+                      , boost::none
+                      , XML_PARSE_UTIL_POSITION_GENERATED()
+                      , name
+                      , port.type()
+                      , name
+                      , port.direction() == we::type::PORT_TUNNEL
+                      ? we::type::PORT_IN
+                      : port.direction()
+                      ).make_reference_id()
+                    );
+
+                  if (port.direction() == we::type::PORT_TUNNEL)
+                  {
+                    trans.get_ref().push_place_map
+                      ( ::xml::parse::type::place_map_type
+                        ( trans.id_mapper()->next_id()
+                        , trans.id_mapper()
+                        , boost::none
+                        , XML_PARSE_UTIL_POSITION_GENERATED()
+                        , port.name()
+                        , name
+                        , we::type::property::type()
+                        ).make_reference_id()
+                      );
+                  }
+                  else
+                  {
+                    trans.get_ref().push_connection
+                     ( ::xml::parse::type::connect_type
+                       ( trans.id_mapper()->next_id()
+                       , trans.id_mapper()
+                       , boost::none
+                       , XML_PARSE_UTIL_POSITION_GENERATED()
+                       , name
+                       , port.name()
+                       , port.direction() == we::type::PORT_IN
+                       ? we::edge::PT
+                       : we::edge::TP
+                       ).make_reference_id()
+                     );
+                  }
+                }
+                else
+                {
+                  throw std::runtime_error (std::string ("unconnected port ") + port.name() + " with non-auto-connectable type " + port.type());
+                }
+              }
+            }
+          }
+
           xml::parse::post_processing_passes (function, &state);
 
           xml::parse::generate_cpp (function, state);
