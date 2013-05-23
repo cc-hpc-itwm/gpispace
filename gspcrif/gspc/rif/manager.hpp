@@ -1,9 +1,16 @@
 #ifndef GSPC_RIF_MANAGER_HPP
 #define GSPC_RIF_MANAGER_HPP
 
-#include <gspc/rif/types.hpp>
+#include <stack>
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/utility.hpp>      // noncopyable
+#include <boost/thread/thread.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp> // time_duration
+
+#include <fhg/util/thread/atomic.hpp>
+#include <gspc/rif/types.hpp>
 
 namespace gspc
 {
@@ -12,11 +19,14 @@ namespace gspc
     class proc_info_t;
     class proc_handler_t;
 
-    class manager_t
+    class manager_t : boost::noncopyable
     {
     public:
       manager_t ();
       ~manager_t ();
+
+      void start ();
+      void stop ();
 
       /**
          executes the given command
@@ -77,6 +87,25 @@ namespace gspc
        */
       void register_handler (proc_handler_t);
     private:
+      void io_thread (int fd);
+      void notify_io_thread () const;
+
+      typedef boost::shared_lock<boost::shared_mutex> shared_lock;
+      typedef boost::unique_lock<boost::shared_mutex> unique_lock;
+
+      bool m_stopping;
+
+      mutable boost::shared_mutex m_mutex;
+      fhg::thread::atomic<proc_t> m_proc_ids;
+      std::stack<proc_t>          m_available_proc_ids;
+
+      boost::shared_ptr<boost::thread> m_io_thread;
+
+      int           m_pipe_to_io_thread;
+
+      // map proc to process_t to actually get hands on to a process
+      // map pid to proc to get easy access to the process struct
+      // map fd to proc to get easy access to the buffers of a given process
     };
   }
 }
