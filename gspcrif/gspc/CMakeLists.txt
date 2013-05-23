@@ -1,5 +1,6 @@
 set (gspcrif_src
   rif/util.cpp
+  rif/pipe.cpp
   rif/manager.cpp
 )
 
