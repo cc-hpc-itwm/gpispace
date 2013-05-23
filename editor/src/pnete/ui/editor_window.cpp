@@ -510,7 +510,8 @@ namespace fhg
         runtime_toolbar->setFloatable (false);
 
         _action_execute_current_file_locally_via_prompt = runtime_menu->addAction
-          ( tr ("execute_locally_input_prompt")
+          ( QIcon (":/icons/execute.png")
+          , tr ("execute_locally_input_prompt")
           , this
           , SLOT (execute_locally_inputs_via_prompt())
           );
@@ -520,7 +521,8 @@ namespace fhg
           , SLOT (execute_locally_inputs_from_file())
           );
         _action_execute_current_file_remote_via_prompt = runtime_menu->addAction
-          ( tr ("execute_remote_input_prompt")
+          ( QIcon (":/icons/execute_remote.png")
+          , tr ("execute_remote_input_prompt")
           , this
           , SLOT (execute_remote_inputs_via_prompt())
           );
