@@ -536,6 +536,13 @@ namespace fhg
           (_action_execute_current_file_locally_from_file);
         runtime_toolbar->addAction
           (_action_execute_current_file_remote_via_prompt);
+
+        runtime_toolbar->addAction ( QIcon (":/icons/monitor.png")
+                                   , tr ("remote_execution")
+                                   , this
+                                   , SLOT (open_remote_execution())
+                                   );
+
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)
