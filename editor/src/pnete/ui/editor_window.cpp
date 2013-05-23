@@ -586,6 +586,8 @@ namespace fhg
           (_undo_group->createUndoAction (this, tr ("undo_prefix")));
         QAction* redo_action
           (_undo_group->createRedoAction (this, tr ("redo_prefix")));
+        undo_action->setIcon (QIcon (":/icons/undo.png"));
+        redo_action->setIcon (QIcon (":/icons/redo.png"));
         undo_action->setShortcuts (QKeySequence::Undo);
         redo_action->setShortcuts (QKeySequence::Redo);
         edit_menu->addAction (undo_action);
