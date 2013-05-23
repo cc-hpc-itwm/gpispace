@@ -82,7 +82,7 @@
     <message>
         <location filename="../ui/editor_window.cpp" line="239"/>
         <source>&lt;&lt;anonymous net&gt;&gt;</source>
-        <translation>&lt;&lt;unnamed net&gt;&gt;</translation>
+        <translation>&lt;&lt;unnamed workflow&gt;&gt;</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="908"/>
@@ -298,7 +298,7 @@
     <message>
         <location filename="../ui/editor_window.cpp" line="92"/>
         <source>editor_window_title</source>
-        <translation>Petri net editor</translation>
+        <translation>GPI-Space Seismic Workbench</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="153"/>
@@ -318,7 +318,7 @@
     <message>
         <location filename="../ui/editor_window.cpp" line="361"/>
         <source>document_specific_actions</source>
-        <translation type="unfinished"></translation>
+        <translation>Workflow</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="386"/>
@@ -415,7 +415,7 @@
     <message>
         <location filename="../ui/editor_window.cpp" line="568"/>
         <source>net</source>
-        <translation>New net</translation>
+        <translation>New</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="572"/>
