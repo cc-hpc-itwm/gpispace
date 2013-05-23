@@ -85,10 +85,8 @@ namespace gspc
 
       notify_io_thread (io_thread_command::SHUTDOWN);
 
-      // join io thread
       m_io_thread->join ();
       m_io_thread.reset ();
-
       m_io_thread_pipe.close ();
 
       {
