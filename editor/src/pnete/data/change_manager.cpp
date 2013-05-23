@@ -1381,6 +1381,8 @@ namespace fhg
         , const boost::optional<QPointF>& position
         )
       {
+        beginMacro ("add_transition_action");
+
         const ::xml::parse::id::ref::transition transition
           ( ::xml::parse::type::transition_type
             ( net.id().id_mapper()->next_id()
@@ -1405,6 +1407,32 @@ namespace fhg
                                           , transition
                                           )
              );
+
+        foreach ( const xml::parse::id::ref::port& port
+                , fun.get().ports().ids()
+                )
+        {
+          const boost::optional<std::string> place_name
+            (port.get().properties().get ("fhg.pnete.auto-connect"));
+          if (place_name)
+          {
+            boost::optional<xml::parse::id::ref::place> place
+              (net.get().places().get (*place_name));
+            if (place)
+            {
+              add_connection ( data::handle::place (*place, net.document())
+                             , data::handle::port (port, net.document())
+                             );
+            }
+            else
+            {
+              throw std::runtime_error
+                (std::string ("auto-connect to unknown place") + *place_name);
+            }
+          }
+        }
+
+        endMacro();
       }
 
       void change_manager_t::add_transition
