@@ -21,6 +21,7 @@
 #include <pnete/ui/transition_library_view.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
+#include <fhg/util/num.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <sdpa/plugins/sdpactl.hpp>
@@ -694,6 +695,41 @@ namespace fhg
           return boost::none;
         }
 
+        bool put_token ( we::type::activity_t& activity
+                       , const std::string& port_name
+                       , const std::string& value
+                       )
+        {
+          try
+          {
+            try
+            {
+              activity.add_input
+                ( activity.transition().input_port_by_name (port_name)
+                , pnet::type::value::read (value)
+                );
+            }
+            catch (const expr::exception::parse::exception& e)
+            {
+              //! \todo fixed width font
+              std::stringstream temp;
+              temp << e.what() << std::endl;
+              temp << value << std::endl;
+              temp << std::string (e.eaten, ' ') << "^" << std::endl;
+              throw std::runtime_error (temp.str().c_str());
+            }
+          }
+          catch (const std::runtime_error& e)
+          {
+            QMessageBox msgBox;
+            msgBox.setText (e.what());
+            msgBox.setIcon (QMessageBox::Critical);
+            msgBox.exec();
+            return true;
+          }
+          return false;
+        }
+
         std::pair<we::type::activity_t, xml::parse::id::ref::function>
           prepare_activity ( const QStack<document_view*>& accessed_widgets
                            , const boost::filesystem::path& temporary_path
@@ -728,12 +764,24 @@ namespace fhg
 
           const xml::parse::id::ref::net net (*function.get().get_net());
 
+          int slot_gen_count (0);
+
           foreach ( const xml::parse::id::ref::transition& trans
                   , net.get().transitions().ids()
                   )
           {
+            const xml::parse::id::ref::function fun
+              (trans.get().resolved_function());
+
+            const std::string gens
+              ( fun.get().properties().get ("fhg.seislib.slot.num.generator")
+              .get_value_or ("0")
+              );
+            fhg::util::parse::position_string pos (gens);
+            slot_gen_count += fhg::util::read_int (pos);
+
             foreach ( const xml::parse::id::ref::port& pid
-                    , trans.get().resolved_function().get().ports().ids()
+                    , fun.get().ports().ids()
                     )
             {
               xml::parse::type::port_type& port (pid.get_ref());
@@ -849,43 +897,12 @@ namespace fhg
             throw std::runtime_error (sf.str());
           }
 
-          return std::make_pair
-            (xml::parse::xml_to_we (function, state), function);
-        }
+          we::type::activity_t activity
+            (xml::parse::xml_to_we (function, state));
 
-        bool put_token ( we::type::activity_t& activity
-                       , const std::string& port_name
-                       , const std::string& value
-                       )
-        {
-          try
-          {
-            try
-            {
-              activity.add_input
-                ( activity.transition().input_port_by_name (port_name)
-                , pnet::type::value::read (value)
-                );
-            }
-            catch (const expr::exception::parse::exception& e)
-            {
-              //! \todo fixed width font
-              std::stringstream temp;
-              temp << e.what() << std::endl;
-              temp << value << std::endl;
-              temp << std::string (e.eaten, ' ') << "^" << std::endl;
-              throw std::runtime_error (temp.str().c_str());
-            }
-          }
-          catch (const std::runtime_error& e)
-          {
-            QMessageBox msgBox;
-            msgBox.setText (e.what());
-            msgBox.setIcon (QMessageBox::Critical);
-            msgBox.exec();
-            return true;
-          }
-          return false;
+          put_token (activity, "REFLECT_seislib_slot_num_generator", (boost::format ("%1%") % slot_gen_count).str());
+
+          return std::make_pair (activity, function);
         }
 
         void show_results_of_activity
@@ -1066,8 +1083,26 @@ namespace fhg
             | boost::adaptors::map_values
             )
           {
-              bool retry (true);
-              while (retry)
+            if (QString::fromStdString (port.name()).startsWith ("REFLECT_"))
+            {
+              continue;
+            }
+            bool retry (true);
+            while (retry)
+            {
+              const boost::optional<const xml::parse::id::ref::port&> xml_port
+                (activity_and_fun->second.get().get_port_in (port.name()));
+
+              bool ok;
+              const std::string value
+                ( prompt_for ( QString::fromStdString (port.name())
+                             , xml_port
+                             ? xml_port->get().type()
+                             : boost::optional<std::string> (boost::none)
+                             , &ok
+                             )
+                );
+              if (!ok)
               {
                 const boost::optional<const xml::parse::id::ref::port&> xml_port
                   (activity_and_fun->second.get().get_port_in (port.name()));
@@ -1088,6 +1123,7 @@ namespace fhg
 
                 retry = put_token (activity_and_fun->first, port.name(), value);
               }
+            }
           }
         }
       }
