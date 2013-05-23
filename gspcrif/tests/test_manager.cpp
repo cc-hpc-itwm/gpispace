@@ -14,12 +14,15 @@ BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE (test_start_stop)
 {
+  static const int NUM_IERATIONS = 100;
+
   gspc::rif::manager_t manager;
-  manager.start ();
 
-  sleep (1);
-
-  manager.stop ();
+  for (size_t iter = 0 ; iter < NUM_IERATIONS ; ++iter)
+  {
+    manager.start ();
+    manager.stop ();
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
