@@ -11,6 +11,8 @@
 #include <pnete/data/handle/port.hpp>
 #include <pnete/data/handle/transition.hpp>
 
+#include <fhg/util/read_bool.hpp>
+
 #include <xml/parse/error.hpp>
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/state.hpp>
@@ -1116,6 +1118,29 @@ namespace fhg
 
 #define ACTION_CTOR_ARGS(HANDLE) *this, HANDLE.document()
 
+      namespace
+      {
+        template<typename ID>
+          bool is_hard_hidden (const ID& id)
+        {
+          return fhg::util::read_bool
+            ( id.get().properties().get ("fhg.pnete.is_hard_hidden")
+            .get_value_or ("false")
+            );
+        }
+
+        template<typename A, typename B>
+        we::type::property::type maybe_hard_hidden (const A& a, const B& b)
+        {
+          we::type::property::type prop;
+          if (is_hard_hidden (a) || is_hard_hidden (b))
+          {
+            prop.set ("fhg.pnete.is_hard_hidden", "true");
+          }
+          return prop;
+        }
+      }
+
       // ## editing methods ##########################################
       // - net -------------------------------------------------------
       // -- connection -----------------------------------------------
@@ -1172,7 +1197,7 @@ namespace fhg
                        , XML_PARSE_UTIL_POSITION_GENERATED()
                        , port.get().name()
                        , place.get().name()
-                       , we::type::property::type()
+                       , maybe_hard_hidden (port, place)
                        ).make_reference_id()
                      )
                    );
@@ -1201,6 +1226,7 @@ namespace fhg
                        , port.is_input()
                        ? we::edge::PT
                        : we::edge::TP
+                       , maybe_hard_hidden (port, place)
                        ).make_reference_id()
                      )
                    );
