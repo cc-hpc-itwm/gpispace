@@ -190,7 +190,7 @@ namespace fhg
                    && item->trusted()
                    )
                   {
-                    return QIcon(":/lock.png"); // hardcoded constant
+                    return QIcon(":/icons/trusted.png"); // hardcoded constant
                   }
                 break;
 

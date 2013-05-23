@@ -555,14 +555,14 @@ namespace fhg
           , QKeySequence ("Ctrl+M")
           );
         QAction* action_new_net = menu_new->addAction
-          (tr ("net"), this, SLOT (slot_new_net()), QKeySequence::New);
+          (QIcon (":/icons/new.png"), tr ("net"), this, SLOT (slot_new_net()), QKeySequence::New);
 
 
         QAction* open_action = file_menu->addAction
-          (tr ("open"), this, SLOT (open()), QKeySequence::Open);
+          (QIcon (":/icons/open.png"), tr ("open"), this, SLOT (open()), QKeySequence::Open);
 
         _action_save_current_file = file_menu->addAction
-          (tr ("save"), this, SLOT (save_file()), QKeySequence::Save);
+          (QIcon (":/icons/save.png"), tr ("save"), this, SLOT (save_file()), QKeySequence::Save);
         _action_save_current_file->setEnabled (false);
 
         file_menu->addAction

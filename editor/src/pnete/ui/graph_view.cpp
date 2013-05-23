@@ -78,7 +78,8 @@ namespace fhg
 
         setFocusPolicy (Qt::WheelFocus);
 
-        QAction* zoom_in (new QAction (tr ("zoom_in"), this));
+        QAction* zoom_in
+          (new QAction (QIcon (":/icons/zoom_in.png"), tr ("zoom_in"), this));
         fhg::util::qt::boost_connect<void()>
           ( zoom_in
           , SIGNAL (triggered())
@@ -92,7 +93,8 @@ namespace fhg
         zoom_in->setShortcuts (QKeySequence::ZoomIn);
         addAction (zoom_in);
 
-        QAction* zoom_out (new QAction (tr ("zoom_out"), this));
+        QAction* zoom_out
+          (new QAction (QIcon (":/icons/zoom_out.png"), tr ("zoom_out"), this));
         fhg::util::qt::boost_connect<void()>
           ( zoom_out
           , SIGNAL (triggered())
@@ -106,7 +108,8 @@ namespace fhg
         zoom_out->setShortcuts (QKeySequence::ZoomOut);
         addAction (zoom_out);
 
-        QAction* zoom_default (new QAction (tr ("zoom_default"), this));
+        QAction* zoom_default
+          (new QAction (QIcon (":/icons/zoom_reset.png"), tr ("zoom_default"), this));
         fhg::util::qt::boost_connect<void()>
           ( zoom_default
           , SIGNAL (triggered())

@@ -154,7 +154,7 @@ namespace fhg
                              )
             )
           , _auto_layout_action
-            ( connect_action ( new QAction (tr ("auto_layout"), this)
+            ( connect_action ( new QAction (QIcon (":/icons/auto_layout.png"), tr ("Automatically layout"), this)
                              , SLOT (auto_layout())
                              )
             )
