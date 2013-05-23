@@ -31,33 +31,9 @@ namespace fhg
         , _function (function)
         , _name_edit (new util::qt::no_undoredo_lineedit())
       {
-        QWidget* exp_widget (new QWidget (this));
-        QVBoxLayout* vbox (new QVBoxLayout (exp_widget));
-
-        QWidget* name_widget (new QWidget (exp_widget));
-        (new QFormLayout (name_widget))->addRow (tr ("&Name"), _name_edit);
-
-        vbox->addWidget (name_widget);
-        vbox->addWidget
-          (new port_lists_widget (_function, QStringList(), exp_widget));
-
         const graph_view* const gv
           (new graph_view (weaver::display::net (net, function), this));
         addActions (gv->actions());
-
-        _function.connect_to_change_mgr
-          ( this
-          , "function_name_changed", "name_changed"
-          , "data::handle::function, QString"
-          );
-
-        set_name
-          (QString::fromStdString (_function.get().name().get_value_or ("")));
-
-        connect ( _name_edit
-                , SIGNAL (textEdited (QString))
-                , SLOT (name_edit_changed (QString))
-                );
       }
 
       void net_widget::set_name (const QString& name)
