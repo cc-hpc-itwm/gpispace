@@ -3,6 +3,7 @@
 #ifndef FHG_PNETE_WEAVER_DISPLAY_HPP
 #define FHG_PNETE_WEAVER_DISPLAY_HPP
 
+#include <pnete/data/handle/connect.fwd.hpp>
 #include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 #include <pnete/data/handle/place.fwd.hpp>
@@ -28,6 +29,7 @@ namespace fhg
         void top_level_port (const data::handle::port&, ui::graph::scene_type*);
         void port (const data::handle::port&, ui::graph::transition_item*);
         void place_map (const data::handle::place_map&, ui::graph::scene_type*);
+        void connection (const data::handle::connect&, ui::graph::scene_type*);
       }
     }
   }

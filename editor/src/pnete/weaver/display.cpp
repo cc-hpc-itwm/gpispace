@@ -317,6 +317,14 @@ namespace fhg
           weaver::transition wt (place_map.document(), scene);
           from::place_map (&wt, place_map.id());
         }
+
+        void connection ( const data::handle::connect& connection
+                        , ui::graph::scene_type* scene
+                        )
+        {
+          weaver::transition wt (connection.document(), scene);
+          from::connection (&wt, connection.id());
+        }
       }
     }
   }

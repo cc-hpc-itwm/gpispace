@@ -819,7 +819,7 @@ namespace fhg
         {
           if (place.parent_is (net()))
           {
-            create_connection (connection);
+            weaver::display::connection (connection, this);
           }
         }
 
