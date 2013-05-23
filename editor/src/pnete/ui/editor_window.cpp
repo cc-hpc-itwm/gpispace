@@ -582,16 +582,25 @@ namespace fhg
         QMenu* edit_menu (new QMenu (tr ("edit_menu"), menu_bar));
         menu_bar->addAction (edit_menu->menuAction());
 
+        QToolBar* edit_tool_bar (new QToolBar (tr ("edit_tool_bar"), this));
+        addToolBar (Qt::TopToolBarArea, edit_tool_bar);
+        edit_tool_bar->setFloatable (false);
+
         QAction* undo_action
           (_undo_group->createUndoAction (this, tr ("undo_prefix")));
         QAction* redo_action
           (_undo_group->createRedoAction (this, tr ("redo_prefix")));
         undo_action->setIcon (QIcon (":/icons/undo.png"));
         redo_action->setIcon (QIcon (":/icons/redo.png"));
+        undo_action->setIconText (tr ("undo"));
+        redo_action->setIconText (tr ("redo"));
         undo_action->setShortcuts (QKeySequence::Undo);
         redo_action->setShortcuts (QKeySequence::Redo);
         edit_menu->addAction (undo_action);
         edit_menu->addAction (redo_action);
+
+        edit_tool_bar->addAction (undo_action);
+        edit_tool_bar->addAction (redo_action);
       }
 
       void editor_window::setup_window_actions (QMenuBar* menu_bar)
