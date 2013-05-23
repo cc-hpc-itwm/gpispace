@@ -111,6 +111,8 @@ namespace fhg
                 );
 
         readSettings();
+
+        setToolButtonStyle (Qt::ToolButtonTextBesideIcon);
       }
 
       void editor_window::addDockWidget (QDockWidget* widget)
