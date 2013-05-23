@@ -12,3 +12,11 @@ fhg_add_test(test_manager.cpp
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   DESCRIPTION "GSPCRif - process manager tests"
 )
+
+fhg_add_test(test_process.cpp
+  LINK_LIBRARIES gspcrif
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_DATE_TIME_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+  DESCRIPTION "GSPCRif - process tests"
+)
