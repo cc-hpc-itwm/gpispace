@@ -533,8 +533,6 @@ namespace fhg
         runtime_toolbar->addAction
           (_action_execute_current_file_locally_via_prompt);
         runtime_toolbar->addAction
-          (_action_execute_current_file_locally_from_file);
-        runtime_toolbar->addAction
           (_action_execute_current_file_remote_via_prompt);
 
         runtime_toolbar->addAction ( QIcon (":/icons/monitor.png")
@@ -581,8 +579,6 @@ namespace fhg
         file_menu->addAction
           (tr ("quit_application"), this, SLOT (quit()), QKeySequence::Quit);
 
-        file_tool_bar->addAction (action_new_expression);
-        file_tool_bar->addAction (action_new_module_call);
         file_tool_bar->addAction (action_new_net);
         file_tool_bar->addAction (open_action);
         file_tool_bar->addAction (_action_save_current_file);

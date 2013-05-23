@@ -159,22 +159,7 @@ namespace fhg
                              )
             )
           , _actions ( QList<QAction*>()
-                     << _add_transition_action
-                     << _add_place_action
-                     << _add_top_level_port_in_action
-                     << _add_top_level_port_out_action
-                     << _add_top_level_port_tunnel_action
-                     << separator (this)
                      << _auto_layout_action
-                     << separator (this)
-                     << connect_action
-                       ( new QAction (tr ("set_function_name"), this)
-                       , boost::bind ( set_function_name
-                                     , _function
-                                     , tr ("set_function_name_title")
-                                     , tr ("set_function_name_prompt")
-                                     )
-                       )
                      )
         {
           _net.connect_to_change_mgr
@@ -311,43 +296,6 @@ namespace fhg
                 ( fhg::util::qt::throwing_qobject_cast<port_item*>
                   (item_below_cursor)->handle()
                 );
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction(tr ("port_set_name"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind ( set_name_for_handle<data::handle::port>
-                              , handle
-                              , tr ("port_set_name_dialog_title_for_%1").arg
-                                (QString::fromStdString (handle.get().name()))
-                              , tr ("port_set_name_prompt")
-                              , QString::fromStdString (handle.get().name())
-                              , event->widget()
-                              )
-                );
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction(tr ("port_set_type"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind ( set_we_type_for_handle<data::handle::port>
-                              , handle
-                              , tr ("port_set_type_dialog_title_for_%1").arg
-                                (QString::fromStdString (handle.get().name()))
-                              , tr ("port_set_type_prompt")
-                              , QString::fromStdString (handle.get().type())
-                              , event->widget()
-                              )
-                );
-
-              menu->addSeparator();
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction (tr ("port_delete"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind (&data::handle::port::remove, handle)
-                );
             }
             break;
 
@@ -356,20 +304,6 @@ namespace fhg
               const data::handle::port handle
                 ( fhg::util::qt::throwing_qobject_cast<port_item*>
                   (item_below_cursor)->handle()
-                );
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction(tr ("port_set_type"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind ( set_we_type_for_handle<data::handle::port>
-                              , handle
-                              , tr ("port_set_type_dialog_title_for_%1").arg
-                                (QString::fromStdString (handle.get().name()))
-                              , tr ("port_set_type_prompt")
-                              , QString::fromStdString (handle.get().type())
-                              , event->widget()
-                              )
                 );
             }
             break;
@@ -382,73 +316,10 @@ namespace fhg
                 );
 
               fhg::util::qt::boost_connect<void()>
-                ( menu->addAction (tr ("new_port_in"))
-                , SIGNAL (triggered())
-                , this
-                , boost::bind ( &data::handle::function::add_port
-                              , handle.function()
-                              , we::type::PORT_IN
-                              , boost::none
-                              )
-                );
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction (tr ("new_port_out"))
-                , SIGNAL (triggered())
-                , this
-                , boost::bind ( &data::handle::function::add_port
-                              , handle.function()
-                              , we::type::PORT_OUT
-                              , boost::none
-                              )
-                );
-
-              if (handle.function().content_is_net())
-              {
-                fhg::util::qt::boost_connect<void()>
-                  ( menu->addAction (tr ("new_port_tunnel"))
-                  , SIGNAL (triggered())
-                  , this
-                  , boost::bind ( &data::handle::function::add_port
-                                , handle.function()
-                                , we::type::PORT_TUNNEL
-                                , boost::none
-                                )
-                  );
-              }
-
-              menu->addSeparator();
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction(tr ("transition_set_name"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind ( set_name_for_handle<data::handle::transition>
-                              , handle
-                              , tr ("transition_set_name_dialog_title_for_%1").arg
-                                (QString::fromStdString (handle.get().name()))
-                              , tr ("transition_set_name_prompt")
-                              , QString::fromStdString (handle.get().name())
-                              , event->widget()
-                              )
-                );
-
-              menu->addSeparator();
-
-              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("transition_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
                 , boost::bind (&data::handle::transition::remove, handle)
-                );
-
-              menu->addSeparator();
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu->addAction (tr ("dive_into_transition"))
-                , SIGNAL (triggered())
-                , item_below_cursor
-                , boost::bind (dive_into_transition, handle, event->widget())
                 );
             }
             break;
@@ -537,22 +408,6 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              if (handle.is_in())
-              {
-                QAction* action_read (menu->addAction(tr ("is_read_connect")));
-                action_read->setCheckable (true);
-                action_read->setChecked (handle.is_read());
-
-                fhg::util::qt::boost_connect<void (bool)>
-                  ( action_read
-                  , SIGNAL (toggled (bool))
-                  , item_below_cursor
-                  , boost::bind (&data::handle::connect::is_read, handle, _1)
-                  );
-
-                menu->addSeparator();
-              }
-
               fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("connection_delete"))
                 , SIGNAL (triggered())
@@ -605,85 +460,7 @@ namespace fhg
           }
           else
           {
-            {
-              QMenu* menu_new (menu->addMenu ("menu_new_element"));
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu_new->addAction (tr ("new_transition"))
-                , SIGNAL (triggered())
-                , this
-                , boost::bind
-                  (&data::handle::net::add_transition, net(), event->scenePos())
-                );
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu_new->addAction (tr ("new_place"))
-                , SIGNAL (triggered())
-                , this
-                , boost::bind
-                  (&data::handle::net::add_place, net(), event->scenePos())
-                );
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu_new->addAction (tr ("new_top_level_port_in"))
-                , SIGNAL (triggered())
-                , this
-                , boost::bind ( &data::handle::function::add_port
-                              , function()
-                              , we::type::PORT_IN
-                              , event->scenePos()
-                              )
-                );
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu_new->addAction (tr ("new_top_level_port_out"))
-                , SIGNAL (triggered())
-                , this
-                , boost::bind ( &data::handle::function::add_port
-                              , function()
-                              , we::type::PORT_OUT
-                              , event->scenePos()
-                              )
-                );
-
-              fhg::util::qt::boost_connect<void()>
-                ( menu_new->addAction (tr ("new_top_level_port_tunnel"))
-                , SIGNAL (triggered())
-                , this
-                , boost::bind ( &data::handle::function::add_port
-                              , function()
-                              , we::type::PORT_TUNNEL
-                              , event->scenePos()
-                              )
-                );
-
-              menu_new->addSeparator();
-
-              //! \todo Is this really needed?
-              fhg::util::qt::boost_connect<void()>
-                ( menu_new->addAction (tr ("new_struct"))
-                , SIGNAL (triggered())
-                , this
-                , boost::bind (nyi, "net: new struct")
-                );
-            }
-
-            menu->addSeparator();
-
             menu->addAction (_auto_layout_action);
-
-            menu->addSeparator();
-
-            fhg::util::qt::boost_connect<void()>
-              ( menu->addAction (tr ("set_function_name"))
-              , SIGNAL (triggered())
-              , this
-              , boost::bind ( set_function_name
-                            , function()
-                            , tr ("set_function_name_title")
-                            , tr ("set_function_name_prompt")
-                            )
-              );
 
             menu->popup (event->screenPos());
           }
