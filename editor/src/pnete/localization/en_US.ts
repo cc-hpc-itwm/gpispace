@@ -70,32 +70,32 @@
         <translation>Logging</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="215"/>
+        <location filename="../ui/editor_window.cpp" line="221"/>
         <source>&lt;&lt;anonymous expression&gt;&gt;</source>
         <translation>&lt;&lt;unnamed expression&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="224"/>
+        <location filename="../ui/editor_window.cpp" line="230"/>
         <source>&lt;&lt;anonymous module call&gt;&gt;</source>
         <translation>&lt;&lt;unnamed module call&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="233"/>
+        <location filename="../ui/editor_window.cpp" line="239"/>
         <source>&lt;&lt;anonymous net&gt;&gt;</source>
         <translation>&lt;&lt;unnamed net&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="878"/>
-        <location filename="../ui/editor_window.cpp" line="890"/>
-        <location filename="../ui/editor_window.cpp" line="906"/>
-        <location filename="../ui/editor_window.cpp" line="921"/>
+        <location filename="../ui/editor_window.cpp" line="908"/>
+        <location filename="../ui/editor_window.cpp" line="920"/>
+        <location filename="../ui/editor_window.cpp" line="936"/>
+        <location filename="../ui/editor_window.cpp" line="951"/>
         <source>enter_value_for_input_port_%1</source>
         <translation>Select file for input %1</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="889"/>
-        <location filename="../ui/editor_window.cpp" line="905"/>
-        <location filename="../ui/editor_window.cpp" line="920"/>
+        <location filename="../ui/editor_window.cpp" line="919"/>
+        <location filename="../ui/editor_window.cpp" line="935"/>
+        <location filename="../ui/editor_window.cpp" line="950"/>
         <source>value_for_input_token</source>
         <translation>Value for input</translation>
     </message>
@@ -296,188 +296,209 @@
 <context>
     <name>fhg::pnete::ui::editor_window</name>
     <message>
-        <location filename="../ui/editor_window.cpp" line="94"/>
+        <location filename="../ui/editor_window.cpp" line="92"/>
         <source>editor_window_title</source>
         <translation>Petri net editor</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="147"/>
+        <location filename="../ui/editor_window.cpp" line="153"/>
         <source>XPNET files (*.xpnet);;All (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="166"/>
+        <location filename="../ui/editor_window.cpp" line="172"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="168"/>
+        <location filename="../ui/editor_window.cpp" line="174"/>
         <source>XPNET files (*.xpnet);; All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="376"/>
+        <location filename="../ui/editor_window.cpp" line="361"/>
+        <source>document_specific_actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="386"/>
         <source>duplicate_current_window</source>
         <translation>Duplicate current window</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="396"/>
+        <location filename="../ui/editor_window.cpp" line="406"/>
         <source>remote_logging</source>
         <translation>Remote Logging</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="398"/>
+        <location filename="../ui/editor_window.cpp" line="408"/>
+        <location filename="../ui/editor_window.cpp" line="540"/>
         <source>remote_execution</source>
         <translation>Remote Execution Monitor</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="414"/>
+        <location filename="../ui/editor_window.cpp" line="424"/>
         <source>port_for_remote_logging</source>
         <translation>Port for Logging</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="415"/>
-        <location filename="../ui/editor_window.cpp" line="439"/>
+        <location filename="../ui/editor_window.cpp" line="425"/>
+        <location filename="../ui/editor_window.cpp" line="449"/>
         <source>port</source>
         <translation>Port</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="426"/>
+        <location filename="../ui/editor_window.cpp" line="436"/>
         <source>log_monitor_for_%1</source>
         <translation>Remote Logging on port %1</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="438"/>
+        <location filename="../ui/editor_window.cpp" line="448"/>
         <source>port_for_remote_execution</source>
         <translation>Port for Execution Monitor</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="450"/>
+        <location filename="../ui/editor_window.cpp" line="460"/>
         <source>execution_monitor_for_%1</source>
         <translation>Execution Monitor on port %1</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="495"/>
+        <location filename="../ui/editor_window.cpp" line="505"/>
         <source>runtime_menu</source>
         <translation>Runtime</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="497"/>
+        <location filename="../ui/editor_window.cpp" line="507"/>
         <source>runtime_toolbar</source>
         <translation>Runtime</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="502"/>
+        <location filename="../ui/editor_window.cpp" line="513"/>
         <source>execute_locally_input_prompt</source>
         <translation>Execute locally</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="507"/>
+        <location filename="../ui/editor_window.cpp" line="518"/>
         <source>execute_locally_input_file</source>
         <translation>Execute locally (input from file)</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="512"/>
+        <location filename="../ui/editor_window.cpp" line="524"/>
         <source>execute_remote_input_prompt</source>
         <translation>Execute remote</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="530"/>
+        <location filename="../ui/editor_window.cpp" line="549"/>
         <source>file_menu</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="533"/>
+        <location filename="../ui/editor_window.cpp" line="552"/>
         <source>file_tool_bar</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="537"/>
+        <location filename="../ui/editor_window.cpp" line="556"/>
         <source>new</source>
         <translation>New</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="539"/>
+        <location filename="../ui/editor_window.cpp" line="558"/>
         <source>expression</source>
         <translation>New expression</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="544"/>
+        <location filename="../ui/editor_window.cpp" line="563"/>
         <source>module_call</source>
         <translation>New module call</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="549"/>
+        <location filename="../ui/editor_window.cpp" line="568"/>
         <source>net</source>
         <translation>New net</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="553"/>
+        <location filename="../ui/editor_window.cpp" line="572"/>
         <source>open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="556"/>
+        <location filename="../ui/editor_window.cpp" line="575"/>
         <source>save</source>
         <translation>Save As</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="577"/>
+        <location filename="../ui/editor_window.cpp" line="595"/>
+        <source>edit_tool_bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="600"/>
         <source>undo_prefix</source>
         <translation>Undo</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="579"/>
+        <location filename="../ui/editor_window.cpp" line="602"/>
         <source>redo_prefix</source>
         <translation>Redo</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="588"/>
+        <location filename="../ui/editor_window.cpp" line="605"/>
+        <source>undo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="606"/>
+        <source>redo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="618"/>
         <source>windows_menu</source>
         <translation>Windows</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="1046"/>
+        <location filename="../ui/editor_window.cpp" line="1076"/>
         <source>value_file_for_input</source>
         <translation>Value-file for inputs</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="381"/>
+        <location filename="../ui/editor_window.cpp" line="391"/>
         <source>close_current_window</source>
         <translation>Close current window</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="84"/>
+        <location filename="../ui/editor_window.cpp" line="82"/>
         <source>undo_window</source>
         <translation>Undo/redo-history</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="560"/>
+        <location filename="../ui/editor_window.cpp" line="579"/>
         <source>close_document</source>
         <translation>Close document</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="562"/>
+        <location filename="../ui/editor_window.cpp" line="581"/>
         <source>quit_application</source>
         <translation>Exit</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="573"/>
+        <location filename="../ui/editor_window.cpp" line="592"/>
         <source>edit_menu</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="77"/>
+        <location filename="../ui/editor_window.cpp" line="75"/>
         <source>library_window</source>
         <translation>Transition library</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="80"/>
+        <location filename="../ui/editor_window.cpp" line="78"/>
         <source>structure_window</source>
         <translation>Net structure</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="147"/>
+        <location filename="../ui/editor_window.cpp" line="153"/>
         <source>Load net</source>
         <translation>Open net</translation>
     </message>
@@ -493,17 +514,17 @@
 <context>
     <name>fhg::pnete::ui::graph_view</name>
     <message>
-        <location filename="../ui/graph_view.cpp" line="81"/>
+        <location filename="../ui/graph_view.cpp" line="82"/>
         <source>zoom_in</source>
         <translation>Zoom in</translation>
     </message>
     <message>
-        <location filename="../ui/graph_view.cpp" line="95"/>
+        <location filename="../ui/graph_view.cpp" line="97"/>
         <source>zoom_out</source>
         <translation>Zoom out</translation>
     </message>
     <message>
-        <location filename="../ui/graph_view.cpp" line="109"/>
+        <location filename="../ui/graph_view.cpp" line="112"/>
         <source>zoom_default</source>
         <translation>Reset to default</translation>
     </message>
