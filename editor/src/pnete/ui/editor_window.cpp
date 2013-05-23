@@ -357,7 +357,7 @@ namespace fhg
         to->function().change_manager().setActive (true);
 
         _document_specific_action_menu =
-          menuBar()->addMenu ("document_specific_actions");
+          menuBar()->addMenu (tr ("document_specific_actions"));
         foreach (QAction* action, to->actions())
         {
           _document_specific_action_menu->addAction (action);
