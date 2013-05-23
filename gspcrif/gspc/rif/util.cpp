@@ -23,21 +23,22 @@ namespace gspc
       , E_ARG
       };
 
-    int parse (std::string const &s, argv_t &v)
+    int parse (std::string const &s, argv_t &v, size_t & consumed)
     {
-      return parse (s.c_str (), s.size (), v);
+      return parse (s.c_str (), s.size (), v, consumed);
     }
 
     int parse ( const char *buffer
               , size_t len
               , argv_t &argv
+              , size_t & pos
               )
     {
       std::stack<parse_state_e> states;
       states.push (E_SKIPWS);
 
       char value = 0; // used for \xAB values
-      size_t pos = 0;
+      pos = 0;
       std::string arg;
 
       while (pos < len)
@@ -150,8 +151,7 @@ namespace gspc
               value = ((c - 'A') & 0x0f) << 4;
               break;
             default:
-              errno = EINVAL;
-              return pos;
+              return -EINVAL;
             }
           }
           break;
@@ -170,8 +170,7 @@ namespace gspc
               value |= ((c - 'A') & 0x0f);
               break;
             default:
-              errno = EINVAL;
-              return pos;
+              return -EINVAL;
             }
           }
 
@@ -216,7 +215,7 @@ namespace gspc
         arg.clear ();
       }
 
-      return (int)pos;
+      return 0;
     }
   }
 }

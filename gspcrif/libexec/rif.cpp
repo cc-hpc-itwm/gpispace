@@ -21,8 +21,10 @@ static void s_handle_rif ( std::string const &dst
   std::string cmd = rqst.get_body_as_string ();
 
   std::vector<std::string> argv;
-  gspc::rif::parse ( rqst.get_body_as_string ()
+  size_t consumed;
+  gspc::rif::parse ( cmd
                    , argv
+                   , consumed
                    );
 
   for (size_t i = 0 ; i < argv.size () ; ++i)
