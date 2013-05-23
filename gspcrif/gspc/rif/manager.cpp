@@ -130,39 +130,46 @@ namespace gspc
 
         BOOST_FOREACH (const pollfd &pfd, to_poll)
         {
+          if (pfd.fd == me.rd () && pfd.revents & POLLIN)
+          {
+            int cmd = -1;
+            me.read (&cmd, sizeof(cmd));
+            switch (cmd)
+            {
+            case io_thread_command::SHUTDOWN:
+              done = true;
+              break;
+            default:
+              break;
+            }
+
+            continue;
+          }
+
           if (pfd.revents & POLLIN)
           {
-            // can read
-            if (pfd.fd == me.rd ())
-            {
-              int cmd = -1;
-
-              me.read (&cmd, sizeof(cmd));
-
-              switch (cmd)
-              {
-              case io_thread_command::SHUTDOWN:
-                done = true;
-                break;
-              default:
-                abort ();
-              }
-            }
-            else
-            {
-            }
+            // lookup related process
+            // read into process buffer
+            //    if buffer full, do not poll for read
           }
 
           if (pfd.revents & POLLOUT)
           {
+            // lookup related process
+            // write pending data to process
+            //    if buffer empty, do not poll for write anymore
           }
 
           if (pfd.revents & POLLERR || pfd.revents & POLLNVAL)
           {
+            // lookup related process and see what can be done about it
+            //    close the other side of the pipe
           }
 
           if (pfd.revents & POLLHUP)
           {
+            // lookup related process and see what can be done about it
+            //    close the other side of the pipe
           }
         }
       }
