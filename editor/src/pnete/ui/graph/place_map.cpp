@@ -23,8 +23,6 @@ namespace fhg
             : association (port, place)
             , _handle (handle)
         {
-          _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, Qt::DotLine);
-
           handle.connect_to_change_mgr
             (this, "place_map_removed", "data::handle::place_map");
         }
