@@ -375,17 +375,17 @@
     <message>
         <location filename="../ui/editor_window.cpp" line="513"/>
         <source>execute_locally_input_prompt</source>
-        <translation>Execute locally</translation>
+        <translation>Simulate</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="518"/>
         <source>execute_locally_input_file</source>
-        <translation>Execute locally (input from file)</translation>
+        <translation>Simulate (input from file)</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="524"/>
         <source>execute_remote_input_prompt</source>
-        <translation>Execute remote</translation>
+        <translation>Execute</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="549"/>
