@@ -68,8 +68,6 @@ namespace fhg
   {
     namespace ui
     {
-      static const Qt::DockWidgetArea dock_position (Qt::LeftDockWidgetArea);
-
       editor_window::editor_window (QWidget* parent)
         : QMainWindow (parent)
         , _transition_library (new transition_library_view (20, 5, this))
@@ -97,9 +95,9 @@ namespace fhg
         setDockNestingEnabled (true);
         setTabPosition (Qt::AllDockWidgetAreas, QTabWidget::North);
 
-        addDockWidget (dock_position, _transition_library_dock);
-        addDockWidget (dock_position, _structure_view_dock);
-        addDockWidget (dock_position, _undo_view_dock);
+        addDockWidget (_transition_library_dock);
+        addDockWidget (_structure_view_dock);
+        addDockWidget (_undo_view_dock);
 
         setup_menu_and_toolbar();
 
@@ -112,6 +110,12 @@ namespace fhg
                 );
 
         readSettings();
+      }
+
+      void editor_window::addDockWidget (QDockWidget* widget)
+      {
+        QMainWindow::addDockWidget
+          (Qt::LeftDockWidgetArea, widget, Qt::Horizontal);
       }
 
       void editor_window::add_transition_library_path ( const QString& path
@@ -262,7 +266,7 @@ namespace fhg
         }
         else
         {
-          addDockWidget (Qt::LeftDockWidgetArea, doc_view);
+          addDockWidget (doc_view);
         }
 
         doc_view->show();
@@ -341,6 +345,7 @@ namespace fhg
             action->setVisible (false);
           }
         }
+        delete _document_specific_action_menu;
 
         if (_accessed_widgets.contains (to))
         {
@@ -350,8 +355,11 @@ namespace fhg
         _accessed_widgets.push (to);
         to->function().change_manager().setActive (true);
 
+        _document_specific_action_menu =
+          menuBar()->addMenu ("document_specific_actions");
         foreach (QAction* action, to->actions())
         {
+          _document_specific_action_menu->addAction (action);
           action->setVisible (true);
         }
         _document_specific_action_menu->menuAction()->setVisible
@@ -428,7 +436,7 @@ namespace fhg
                               )
             );
           widget->show();
-          addDockWidget (dock_position, widget);
+          addDockWidget (widget);
         }
       }
       void editor_window::open_remote_execution()
@@ -452,7 +460,7 @@ namespace fhg
                               )
             );
           widget->show();
-          addDockWidget (dock_position, widget);
+          addDockWidget (widget);
         }
       }
 
