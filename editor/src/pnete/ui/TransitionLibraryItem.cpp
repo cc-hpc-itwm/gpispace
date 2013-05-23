@@ -13,6 +13,19 @@ namespace fhg
   {
     namespace ui
     {
+      namespace
+      {
+        QString name_for_file (const QString& filename)
+        {
+          const data::handle::function f
+            (data::manager::instance().load (filename));
+          return QString::fromStdString (f.get().properties()
+            .get ("fhg.pnete.library_name")
+            .get_value_or (f.get().name()
+            .get_value_or ("<<anonymous>>")));
+        }
+      }
+
       TransitionLibraryItem::TransitionLibraryItem (QObject* parent)
         : QObject(parent)
         , _is_folder (true)
@@ -34,10 +47,7 @@ namespace fhg
         , _trusted (trusted)
         , _name ( _is_folder
                 ? _fileinfo.baseName()
-                : QString::fromStdString
-                  ( data::manager::instance().load (_fileinfo.absoluteFilePath())
-                  .get().name().get_value_or ("<<anonymous>>")
-                  )
+                : name_for_file (_fileinfo.absoluteFilePath())
                 )
         , _children ()
         , _parent (qobject_cast<TransitionLibraryItem*>(parent))
