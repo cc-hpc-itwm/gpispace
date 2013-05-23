@@ -650,7 +650,7 @@
     </message>
 </context>
 <context>
-    <name>scene_type</name>
+    <name>fhg::pnete::ui::graph::scene_type</name>
     <message>
         <location filename="../ui/graph/scene.cpp" line="114"/>
         <location filename="../ui/graph/scene.cpp" line="612"/>
