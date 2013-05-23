@@ -799,6 +799,16 @@ namespace fhg
                   break;
                 }
               }
+              foreach ( const xml::parse::type::place_map_type& place_map
+                      , trans.get().place_map().values()
+                      )
+              {
+                if (place_map.place_virtual() == port.name())
+                {
+                  has_any_connection = true;
+                  break;
+                }
+              }
               if (!has_any_connection)
               {
                 //! \todo which types?
