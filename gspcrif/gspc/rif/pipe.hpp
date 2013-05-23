@@ -20,6 +20,11 @@ namespace gspc
       ssize_t write (const void *buffer, size_t len);
 
       int open (int flags, bool close_on_exec);
+      int open ( int rd_flags
+               , int wr_flags
+               , bool close_on_exec
+               );
+
       int close ();
       int close_rd ();
       int close_wr ();

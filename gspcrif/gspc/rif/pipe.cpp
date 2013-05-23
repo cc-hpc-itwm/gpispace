@@ -32,6 +32,11 @@ namespace gspc
 
     int pipe_t::open (int flags, bool close_on_exec)
     {
+      return this->open (flags, flags, close_on_exec);
+    }
+
+    int pipe_t::open (int rd_flags, int wr_flags, bool close_on_exec)
+    {
       int rc;
 
       rc = ::pipe (&m_fd[0]);
@@ -40,17 +45,21 @@ namespace gspc
         return rc;
       }
 
-      for (size_t i = 0 ; i < 2 ; ++i)
+      rc = ::fcntl (rd (), F_SETFL, rd_flags);
+      if (rc < 0)
       {
-
-        rc = ::fcntl (m_fd [i], F_SETFL, flags);
-        if (rc < 0)
-        {
-          int err = errno;
-          close ();
-          errno = err;
-          return rc;
-        }
+        int err = errno;
+        close ();
+        errno = err;
+        return rc;
+      }
+      rc = ::fcntl (wr (), F_SETFL, wr_flags);
+      if (rc < 0)
+      {
+        int err = errno;
+        close ();
+        errno = err;
+        return rc;
       }
 
       if (close_on_exec)
