@@ -430,7 +430,7 @@
     <message>
         <location filename="../ui/editor_window.cpp" line="595"/>
         <source>edit_tool_bar</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="600"/>
@@ -445,12 +445,12 @@
     <message>
         <location filename="../ui/editor_window.cpp" line="605"/>
         <source>undo</source>
-        <translation type="unfinished"></translation>
+        <translation>Undo</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="606"/>
         <source>redo</source>
-        <translation type="unfinished"></translation>
+        <translation>Redo</translation>
     </message>
     <message>
         <location filename="../ui/editor_window.cpp" line="618"/>
