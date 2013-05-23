@@ -25,14 +25,7 @@ namespace gspc
 
     int parse (std::string const &s, argv_t &v)
     {
-      return parse (s.c_str (), v);
-    }
-
-    int parse ( const char *buffer
-              , argv_t &argv
-              )
-    {
-      return parse (buffer, strlen (buffer), argv);
+      return parse (s.c_str (), s.size (), v);
     }
 
     int parse ( const char *buffer

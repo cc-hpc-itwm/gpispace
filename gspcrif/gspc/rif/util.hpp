@@ -8,7 +8,6 @@ namespace gspc
   namespace rif
   {
     int parse (std::string const &, argv_t &);
-    int parse (const char *cmdline, argv_t &);
     int parse (const char *buffer, size_t len, argv_t &);
   }
 }
