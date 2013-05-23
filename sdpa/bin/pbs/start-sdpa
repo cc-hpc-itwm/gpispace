@@ -117,7 +117,7 @@ parse_capability()
     socket=$(echo "$capability_with_socket" | cut -s -d# -f 2)
     if [ -z "$socket" ]
     then
-        error 1 "invalid socket spec: $socket"
+        socket=-1
     fi
     rest=$(echo "$cap_spec" | cut -s -d: -f 2)
     if [ -n "$rest" ] ; then
