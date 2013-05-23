@@ -309,6 +309,14 @@ namespace fhg
 
           initialize_and_set_position (item, port, true);
         }
+
+        void place_map ( const data::handle::place_map& place_map
+                       , ui::graph::scene_type* scene
+                       )
+        {
+          weaver::transition wt (place_map.document(), scene);
+          from::place_map (&wt, place_map.id());
+        }
       }
     }
   }

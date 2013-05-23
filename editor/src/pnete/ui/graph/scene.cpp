@@ -828,7 +828,7 @@ namespace fhg
         {
           if (place_map.resolved_real_place().parent_is (net()))
           {
-            create_place_map (place_map);
+            weaver::display::place_map (place_map, this);
           }
         }
 
