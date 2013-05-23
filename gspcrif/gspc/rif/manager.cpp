@@ -1,48 +1,36 @@
 #include "manager.hpp"
 
 #include <errno.h>
-#include <unistd.h>             // pipe
-#include <fcntl.h>              /* Obtain O_* constant definitions */
+#include <poll.h>               // poll()
+#include <fcntl.h> // O_NONBLOCK
 
+#include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
 
 namespace gspc
 {
   namespace rif
   {
+    namespace io_thread_command
+    {
+      enum io_thread_cmd_e
+        {
+          SHUTDOWN
+        };
+    }
+
     namespace detail
     {
-      int pipe (int fd[2], int flags)
+      static void add_pollfd ( int fd
+                             , int flags
+                             , std::vector<pollfd> & to_poll
+                             )
       {
-        int rc;
-
-        rc = ::pipe (fd);
-        if (rc < 0)
-        {
-          return rc;
-        }
-
-        rc = fcntl (fd [0], F_SETFL, flags);
-        if (rc < 0)
-        {
-          int err = errno;
-          close (fd [0]);
-          close (fd [1]);
-          errno = err;
-          return rc;
-        }
-
-        rc = fcntl (fd [1], F_SETFL, flags);
-        if (rc < 0)
-        {
-          int err = errno;
-          close (fd [0]);
-          close (fd [1]);
-          errno = err;
-          return rc;
-        }
-
-        return 0;
+        struct pollfd p;
+        p.fd = fd;
+        p.events = flags;
+        p.revents = 0;
+        to_poll.push_back (p);
       }
     }
 
@@ -51,6 +39,7 @@ namespace gspc
       , m_proc_ids ()
       , m_available_proc_ids ()
       , m_io_thread ()
+      , m_io_thread_pipe ()
     {}
 
     manager_t::~manager_t ()
@@ -65,17 +54,19 @@ namespace gspc
       unique_lock lock (m_mutex);
       if (m_io_thread)
         return;
-      int io_thread_pipe [2];
-      rc = detail::pipe (io_thread_pipe, O_NONBLOCK);
+
+      rc = m_io_thread_pipe.open (O_NONBLOCK, true);
       if (rc < 0)
       {
         using namespace boost::system;
         throw system_error (errc::make_error_code ((errc::errc_t)errno));
       }
 
-      m_pipe_to_io_thread = io_thread_pipe [1];
       m_io_thread.reset
-        (new boost::thread (&manager_t::io_thread, this, io_thread_pipe [0]));
+        (new boost::thread ( &manager_t::io_thread
+                           , this
+                           , boost::ref (m_io_thread_pipe)
+                           ));
     }
 
     void manager_t::stop ()
@@ -92,10 +83,13 @@ namespace gspc
 
       // kill all procs
 
-      notify_io_thread ();
+      notify_io_thread (io_thread_command::SHUTDOWN);
 
       // join io thread
       m_io_thread->join ();
+      m_io_thread.reset ();
+
+      m_io_thread_pipe.close ();
 
       {
         unique_lock lock (m_mutex);
@@ -103,29 +97,77 @@ namespace gspc
       }
     }
 
-    void manager_t::notify_io_thread () const
+    void manager_t::notify_io_thread (int cmd) const
     {
       unique_lock lock (m_mutex);
-      int data = 0;
-      write (m_pipe_to_io_thread, &data, sizeof(data));
+      m_io_thread_pipe.write (&cmd, sizeof(cmd));
     }
 
-    void manager_t::io_thread (int fd)
+    void manager_t::io_thread (pipe_t & me)
     {
-      if (fd < 0)
-        return;
+      bool done = false;
 
-      for (;;)
+      for (; not done ;)
       {
-        int cmd = -1;
-        read (fd, &cmd, sizeof(cmd));
-        if (cmd == 0)
+        int nready;
+
+        // build poll array
+        std::vector<pollfd> to_poll;
+        detail::add_pollfd (me.rd (), POLLIN, to_poll);
+
+        nready = poll (&to_poll [0], to_poll.size (), -1);
+
+        if (nready < 0)
         {
-          break;
+          if (errno == EINTR)
+            continue;
+          using namespace boost::system;
+          throw system_error (errc::make_error_code ((errc::errc_t)errno));
+        }
+
+        if (nready == 0)
+        {
+          continue;
+        }
+
+        BOOST_FOREACH (const pollfd &pfd, to_poll)
+        {
+          if (pfd.revents & POLLIN)
+          {
+            // can read
+            if (pfd.fd == me.rd ())
+            {
+              int cmd = -1;
+
+              me.read (&cmd, sizeof(cmd));
+
+              switch (cmd)
+              {
+              case io_thread_command::SHUTDOWN:
+                done = true;
+                break;
+              default:
+                abort ();
+              }
+            }
+            else
+            {
+            }
+          }
+
+          if (pfd.revents & POLLOUT)
+          {
+          }
+
+          if (pfd.revents & POLLERR || pfd.revents & POLLNVAL)
+          {
+          }
+
+          if (pfd.revents & POLLHUP)
+          {
+          }
         }
       }
-
-      close (fd);
     }
   }
 }

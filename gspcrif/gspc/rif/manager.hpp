@@ -10,7 +10,9 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp> // time_duration
 
 #include <fhg/util/thread/atomic.hpp>
+
 #include <gspc/rif/types.hpp>
+#include <gspc/rif/pipe.hpp>
 
 namespace gspc
 {
@@ -87,8 +89,8 @@ namespace gspc
        */
       void register_handler (proc_handler_t);
     private:
-      void io_thread (int fd);
-      void notify_io_thread () const;
+      void io_thread (pipe_t &);
+      void notify_io_thread (int cmd) const;
 
       typedef boost::shared_lock<boost::shared_mutex> shared_lock;
       typedef boost::unique_lock<boost::shared_mutex> unique_lock;
@@ -100,8 +102,7 @@ namespace gspc
       std::stack<proc_t>          m_available_proc_ids;
 
       boost::shared_ptr<boost::thread> m_io_thread;
-
-      int           m_pipe_to_io_thread;
+      mutable pipe_t                   m_io_thread_pipe;
 
       // map proc to process_t to actually get hands on to a process
       // map pid to proc to get easy access to the process struct
