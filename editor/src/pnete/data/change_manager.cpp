@@ -1242,6 +1242,15 @@ namespace fhg
         }
       }
 
+      namespace
+      {
+        template<typename opt>
+          opt any (const opt& a, const opt& b)
+        {
+          return a ? a : b;
+        }
+      }
+
       void change_manager_t::add_connection ( const data::handle::port& port_a
                                             , const data::handle::port& port_b
                                             , const data::handle::net& net
@@ -1282,12 +1291,98 @@ namespace fhg
         add_connection (place_handle, port_a, true);
         add_connection (place_handle, port_b, true);
 
+        const boost::optional<std::string> port_a_slot_return
+          (port_a.get().properties().get ("fhg.seislib.slot.return"));
+        const boost::optional<std::string> port_b_slot_return
+          (port_b.get().properties().get ("fhg.seislib.slot.return"));
+        const boost::optional<std::string> port_a_slot_uses
+          (port_a.get().properties().get ("fhg.seislib.slot.uses"));
+        const boost::optional<std::string> port_b_slot_uses
+          (port_b.get().properties().get ("fhg.seislib.slot.uses"));
+
+        // one does, other does not
+        if (  !port_a_slot_uses && !port_a_slot_return
+           && !port_b_slot_uses && !port_b_slot_return
+           )
+        {
+          // fine, do nothing
+        }
+        else if (  (port_a_slot_uses && port_b_slot_return)
+                || (port_a_slot_return && port_b_slot_uses)
+                )
+        {
+          const boost::optional<xml::parse::id::ref::port> a_equiv
+            ( port_a_slot_uses
+            ? any ( port_a.parent().get().ports().get
+                    (std::make_pair (*port_a_slot_uses, we::type::PORT_TUNNEL))
+                  , port_a.parent().get().ports().get
+                    (std::make_pair (*port_a_slot_uses, we::type::PORT_IN))
+                  )
+            : port_a.parent().get().ports().get
+              (std::make_pair (*port_a_slot_return, we::type::PORT_OUT))
+            );
+          const boost::optional<xml::parse::id::ref::port> b_equiv
+            ( port_b_slot_uses
+            ? any ( port_b.parent().get().ports().get
+                    (std::make_pair (*port_b_slot_uses, we::type::PORT_TUNNEL))
+                  , port_b.parent().get().ports().get
+                    (std::make_pair (*port_b_slot_uses, we::type::PORT_IN))
+                  )
+            : port_b.parent().get().ports().get
+              (std::make_pair (*port_b_slot_return, we::type::PORT_OUT))
+            );
+
+          if (!a_equiv || !b_equiv)
+          {
+            throw std::runtime_error ("given slot management ports do not exist");
+          }
+
+          const std::string place_name (unique_name_for_place (net, "slot_exc"));
+
+          add_connection ( handle::port (*a_equiv, port_a.document())
+                         , handle::port (*b_equiv, port_b.document())
+                         , net
+                         , place_name
+                         );
+
+          port_a.get_ref().properties().set
+            ("fhg.seislib.slot.connected_via", place_name);
+          port_b.get_ref().properties().set
+            ("fhg.seislib.slot.connected_via", place_name);
+        }
+        else
+        {
+          throw std::runtime_error ("connecting ports where one does slot management while the other does not or more than one return+use given");
+        }
+
         endMacro();
       }
 
       void change_manager_t::remove_connection (const handle::connect& connect)
       {
         beginMacro (tr ("remove_connection_action"));
+
+        if (connect.get().resolved_port())
+        {
+          const boost::optional<std::string> connected_via
+            ( connect.get().resolved_port()->get().properties().get
+              ("fhg.seislib.slot.connected_via")
+            );
+          if (connected_via)
+          {
+            const boost::optional<xml::parse::id::ref::place> pl
+              (connect.get().parent()->parent()->places().get (*connected_via));
+            //! \note Might be the second connection which gets
+            //! deleted from deleting the place, which then no longer
+            //! has that place.
+            if (pl)
+            {
+              delete_place (handle::place (*pl, connect.document()));
+            }
+            connect.get().resolved_port()->get_ref().properties().del
+              ("fhg.seislib.slot.connected_via");
+          }
+        }
 
         if (connect.get().resolved_place())
         {
@@ -1351,9 +1446,35 @@ namespace fhg
       // -- place_map -----------------------------------------------
       void change_manager_t::remove_place_map (const handle::place_map& place_map)
       {
+        beginMacro ("remove_place_map");
+
+        if (place_map.get().resolved_tunnel_port())
+        {
+          const boost::optional<std::string> connected_via
+            ( place_map.get().resolved_tunnel_port()->get().properties().get
+              ("fhg.seislib.slot.connected_via")
+            );
+          if (connected_via)
+          {
+            const boost::optional<xml::parse::id::ref::place> pl
+              (place_map.get().parent()->parent()->places().get (*connected_via));
+            //! \note Might be the second connection which gets
+            //! deleted from deleting the place, which then no longer
+            //! has that place.
+            if (pl)
+            {
+              delete_place (handle::place (*pl, place_map.document()));
+            }
+            place_map.get().resolved_tunnel_port()->get_ref().properties().del
+              ("fhg.seislib.slot.connected_via");
+          }
+        }
+
         push ( new action::remove_place_map
                (ACTION_CTOR_ARGS (place_map), place_map.id())
              );
+
+        endMacro();
       }
 
       void change_manager_t::set_property
