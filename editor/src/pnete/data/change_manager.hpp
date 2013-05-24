@@ -62,6 +62,7 @@ namespace fhg
         void add_connection ( const data::handle::port&
                             , const data::handle::port&
                             , const data::handle::net&
+                            , const boost::optional<std::string>& = boost::none
                             );
         void remove_connection (const data::handle::connect&);
         void connection_is_read (const data::handle::connect&, const bool&);

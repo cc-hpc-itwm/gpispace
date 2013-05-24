@@ -1245,6 +1245,7 @@ namespace fhg
       void change_manager_t::add_connection ( const data::handle::port& port_a
                                             , const data::handle::port& port_b
                                             , const data::handle::net& net
+                                            , const boost::optional<std::string>& implicit_place_name
                                             )
       {
         //! \todo Check for ports being in that or in transitions of that net?
@@ -1262,9 +1263,12 @@ namespace fhg
             , net.id().id_mapper()
             , boost::none
             , XML_PARSE_UTIL_POSITION_GENERATED()
-            , unique_name_for_place (net, "implicit")
-            , port_a.get().type()
             , boost::none
+            , implicit_place_name.get_value_or
+              (unique_name_for_place (net, "implicit"))
+            , port_a.get().type()
+            , std::list<xml::parse::type::place_type::token_type>()
+            , maybe_hard_hidden (port_a, port_b)
             ).make_reference_id()
           );
 
