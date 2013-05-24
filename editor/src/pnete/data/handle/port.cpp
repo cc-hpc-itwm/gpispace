@@ -68,6 +68,27 @@ namespace fhg
           {
             return lhs && rhs && lhs == rhs;
           }
+
+          we::type::PortDirection fake_dir (const handle::port& port)
+          {
+            if (port.get().direction() == we::type::PORT_TUNNEL)
+            {
+              const boost::optional<std::string> tunnel_direction
+                (port.get().properties().get
+                  ("fhg.pnete.tunnel.direction")
+                );
+
+              return !tunnel_direction ? we::type::PORT_TUNNEL
+                :  *tunnel_direction == "out" ? we::type::PORT_OUT
+                : *tunnel_direction == "in" ? we::type::PORT_IN
+                : throw std::runtime_error
+                  ("bad fhg.pnete.tunnel.direction (neither 'in' nor 'out')");
+            }
+            else
+            {
+              return port.get().direction();
+            }
+          }
         }
 
         bool port::is_connectable (const port& other) const
@@ -106,9 +127,13 @@ namespace fhg
             : boost::optional<xml::parse::id::function> (boost::none)
             );
 
-          const bool one_is_tunnel (is_tunnel() || other.is_tunnel());
-          const bool same_direction
-            (get().direction() == other.get().direction());
+          const we::type::PortDirection this_dir (fake_dir (*this));
+          const we::type::PortDirection other_dir (fake_dir (other));
+
+          const bool one_is_tunnel ( this_dir == we::type::PORT_TUNNEL
+                                   || other_dir == we::type::PORT_TUNNEL
+                                   );
+          const bool same_direction (this_dir == other_dir);
 
           return ( ( nne (this_function, other_function)
                    || nne (other_net_function, this_net_function)
