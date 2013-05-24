@@ -1386,14 +1386,11 @@ namespace fhg
 
         if (connect.get().resolved_place())
         {
-          static QList<handle::connect> recurse_check;
-          if (!recurse_check.contains (connect))
+          const handle::place place
+            (*connect.get().resolved_place(), connect.document());
+          if (place.is_implicit())
           {
-            recurse_check.append (connect);
-            const handle::place place
-              (*connect.get().resolved_place(), connect.document());
-            delete_place (place);
-            recurse_check.removeAll (connect);
+            make_explicit (place);
           }
         }
 
@@ -2237,14 +2234,11 @@ namespace fhg
 
         if (port.get().place && !place)
         {
-          static QList<handle::port> recurse_check;
-          if (!recurse_check.contains (port))
+          const handle::place place
+            (*port.get().resolved_place(), port.document());
+          if (place.is_implicit())
           {
-            recurse_check.append (port);
-            const handle::place place
-              (*port.get().resolved_place(), port.document());
-            delete_place (place);
-            recurse_check.removeAll (port);
+            make_explicit (place);
           }
         }
 
