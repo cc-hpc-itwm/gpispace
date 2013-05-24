@@ -412,7 +412,7 @@ namespace fhg
                 ( menu->addAction (tr ("connection_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::connect::remove, handle)
+                , boost::bind (&data::handle::place::remove, handle.resolved_place())
                 );
             }
             break;
@@ -446,7 +446,7 @@ namespace fhg
                 ( menu->addAction (tr ("place_map_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::place_map::remove, handle)
+                , boost::bind (&data::handle::place::remove, handle.resolved_real_place())
                 );
             }
 
