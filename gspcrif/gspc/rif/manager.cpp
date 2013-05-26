@@ -7,6 +7,8 @@
 #include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
 
+#include "process.hpp"
+
 namespace gspc
 {
   namespace rif
@@ -16,6 +18,7 @@ namespace gspc
       enum io_thread_cmd_e
         {
           SHUTDOWN
+        , NEWPROCESS
         };
     }
 
@@ -95,15 +98,112 @@ namespace gspc
       }
     }
 
-    void manager_t::notify_io_thread (int cmd) const
+    proc_t
+    manager_t::exec (argv_t const & argv)
+    {
+      return this->exec (argv, m_environment);
+    }
+
+    proc_t
+    manager_t::exec (argv_t const & argv, env_t const &env)
     {
       unique_lock lock (m_mutex);
+
+      proc_t id;
+
+      if (not m_available_proc_ids.empty ())
+      {
+        id = m_available_proc_ids.top ();
+        m_available_proc_ids.pop ();
+      }
+      else
+      {
+        id = ++m_proc_ids;
+      }
+
+      process_ptr_t p (new process_t (id, argv.front (), argv, env));
+
+      int rc = p->fork_and_exec ();
+      if (rc < 0)
+      {
+        m_available_proc_ids.push (p->id ());
+        return rc;
+      }
+
+      std::cerr << "forked new process " << p->id ()
+                << " with pid " << p->pid () << std::endl;
+
+      m_processes [id] = p;
+      m_fd_to_proc [p->stdin  ().wr ()] = p->id ();
+      m_fd_to_proc [p->stdout ().rd ()] = p->id ();
+      m_fd_to_proc [p->stderr ().rd ()] = p->id ();
+      m_pid_to_proc [p->pid ()] = p->id ();
+
+      ::fcntl (p->stdin ().wr (), F_SETFL, O_NONBLOCK);
+      ::fcntl (p->stdout ().rd (), F_SETFL, O_NONBLOCK);
+      ::fcntl (p->stderr ().rd (), F_SETFL, O_NONBLOCK);
+
+      notify_io_thread (io_thread_command::NEWPROCESS);
+
+      return id;
+    }
+
+    int manager_t::wait (proc_t proc, int *status)
+    {
+      return this->wait (proc, status, boost::posix_time::pos_infin);
+    }
+
+    int manager_t::wait ( proc_t proc
+                        , int *status
+                        , boost::posix_time::time_duration td
+                        )
+    {
+      process_ptr_t p = process_by_id (proc);
+      if (not p)
+        return -ESRCH;
+
+      p->wait (td);
+      if (status)
+        *status = *p->status ();
+      return 0;
+    }
+
+    void manager_t::notify_io_thread (int cmd) const
+    {
       m_io_thread_pipe.write (&cmd, sizeof(cmd));
+    }
+
+    manager_t::process_ptr_t manager_t::process_by_fd (int fd)
+    {
+      fd_to_proc_map_t::iterator it = m_fd_to_proc.find (fd);
+      if (it == m_fd_to_proc.end ())
+        return process_ptr_t ();
+      return process_by_id (it->second);
+    }
+
+    manager_t::process_ptr_t manager_t::process_by_pid (pid_t pid)
+    {
+      pid_to_proc_map_t::iterator it = m_pid_to_proc.find (pid);
+      if (it == m_pid_to_proc.end ())
+        return process_ptr_t ();
+      return process_by_id (it->second);
+    }
+
+    manager_t::process_ptr_t manager_t::process_by_id (proc_t proc)
+    {
+      shared_lock lock (m_mutex);
+
+      proc_map_t::iterator it = m_processes.find (proc);
+      if (it == m_processes.end ())
+        return process_ptr_t ();
+      return it->second;
     }
 
     void manager_t::io_thread (pipe_t & me)
     {
       bool done = false;
+
+      char buf [4096];
 
       for (; not done ;)
       {
@@ -113,7 +213,25 @@ namespace gspc
         std::vector<pollfd> to_poll;
         detail::add_pollfd (me.rd (), POLLIN, to_poll);
 
-        nready = poll (&to_poll [0], to_poll.size (), -1);
+        {
+          shared_lock lock (m_mutex);
+          BOOST_FOREACH ( proc_map_t::value_type const &id_to_proc
+                        , m_processes
+                        )
+          {
+            process_ptr_t p = id_to_proc.second;
+
+            // only add stdin if there is any data to be written
+            //detail::add_pollfd (p->stdin ().wr (), POLLOUT, to_poll);
+
+            if (p->stdout ().rd () >= 0)
+              detail::add_pollfd (p->stdout ().rd (), POLLIN, to_poll);
+            if (p->stderr ().rd () >= 0)
+              detail::add_pollfd (p->stderr ().rd (), POLLIN, to_poll);
+          }
+        }
+
+        nready = poll (&to_poll [0], to_poll.size (), 500);
 
         if (nready < 0)
         {
@@ -125,6 +243,11 @@ namespace gspc
 
         if (nready == 0)
         {
+          BOOST_FOREACH (proc_map_t::value_type proc_it, m_processes)
+          {
+            proc_it.second->try_waitpid ();
+          }
+
           continue;
         }
 
@@ -133,11 +256,18 @@ namespace gspc
           if (pfd.fd == me.rd () && pfd.revents & POLLIN)
           {
             int cmd = -1;
-            me.read (&cmd, sizeof(cmd));
+            ssize_t bytes = me.read (&cmd, sizeof(cmd));
+            if (bytes != sizeof(cmd))
+            {
+              abort ();
+            }
+
             switch (cmd)
             {
             case io_thread_command::SHUTDOWN:
               done = true;
+              break;
+            case io_thread_command::NEWPROCESS:
               break;
             default:
               break;
@@ -151,10 +281,18 @@ namespace gspc
             // lookup related process
             // read into process buffer
             //    if buffer full, do not poll for read
+
+            ssize_t nbytes = read (pfd.fd, buf, sizeof(buf) - 1);
+            if (nbytes > 0)
+            {
+              buf [nbytes] = 0;
+              std::cerr << "read: '" << buf << "'" << std::endl;
+            }
           }
 
           if (pfd.revents & POLLOUT)
           {
+            std::cerr << "can write to " << pfd.fd << std::endl;
             // lookup related process
             // write pending data to process
             //    if buffer empty, do not poll for write anymore
@@ -162,12 +300,30 @@ namespace gspc
 
           if (pfd.revents & POLLERR || pfd.revents & POLLNVAL)
           {
+            std::cerr << "error on " << pfd.fd << std::endl;
             // lookup related process and see what can be done about it
             //    close the other side of the pipe
           }
 
           if (pfd.revents & POLLHUP)
           {
+            process_ptr_t p = process_by_fd (pfd.fd);
+            if (p)
+            {
+              if (pfd.fd == p->stdin ().wr ())
+                p->stdin ().close_wr ();
+              else if (pfd.fd == p->stdout ().rd ())
+                p->stdout ().close_rd ();
+              else if (pfd.fd == p->stderr ().rd ())
+                p->stderr ().close_rd ();
+
+              p->try_waitpid ();
+
+              if (p->status ())
+              {
+              }
+            }
+
             // lookup related process and see what can be done about it
             //    close the other side of the pipe
           }

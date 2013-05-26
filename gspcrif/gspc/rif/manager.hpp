@@ -20,6 +20,7 @@ namespace gspc
   {
     class proc_info_t;
     class proc_handler_t;
+    class process_t;
 
     class manager_t : boost::noncopyable
     {
@@ -89,11 +90,20 @@ namespace gspc
        */
       void register_handler (proc_handler_t);
     private:
+      typedef boost::shared_lock<boost::shared_mutex> shared_lock;
+      typedef boost::unique_lock<boost::shared_mutex> unique_lock;
+
+      typedef boost::shared_ptr<process_t> process_ptr_t;
+      typedef std::map<proc_t, process_ptr_t> proc_map_t;
+      typedef std::map<pid_t, proc_t> pid_to_proc_map_t;
+      typedef std::map<int, proc_t> fd_to_proc_map_t;
+
       void io_thread (pipe_t &);
       void notify_io_thread (int cmd) const;
 
-      typedef boost::shared_lock<boost::shared_mutex> shared_lock;
-      typedef boost::unique_lock<boost::shared_mutex> unique_lock;
+      process_ptr_t process_by_fd (int);
+      process_ptr_t process_by_pid (pid_t);
+      process_ptr_t process_by_id (proc_t);
 
       bool m_stopping;
 
@@ -104,9 +114,10 @@ namespace gspc
       boost::shared_ptr<boost::thread> m_io_thread;
       mutable pipe_t                   m_io_thread_pipe;
 
-      // map proc to process_t to actually get hands on to a process
-      // map pid to proc to get easy access to the process struct
-      // map fd to proc to get easy access to the buffers of a given process
+      env_t             m_environment;
+      proc_map_t        m_processes;
+      pid_to_proc_map_t m_pid_to_proc;
+      fd_to_proc_map_t  m_fd_to_proc;
     };
   }
 }

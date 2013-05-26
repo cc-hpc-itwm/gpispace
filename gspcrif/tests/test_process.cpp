@@ -49,11 +49,11 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
 
   BOOST_REQUIRE_EQUAL (rc, 0);
 
-  rc = proc.wait ();
+  rc = proc.waitpid ();
 
   BOOST_REQUIRE (rc == proc.pid ());
 
-  int status = proc.status ();
+  int status = *proc.status ();
   if (not WIFSIGNALED (status))
   {
     BOOST_REQUIRE_MESSAGE (false, "expected process to be signaled");
@@ -80,11 +80,11 @@ BOOST_AUTO_TEST_CASE (test_no_such_file_or_directory)
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE (proc.pid () > 0);
 
-  rc = proc.wait ();
+  rc = proc.waitpid ();
 
   BOOST_REQUIRE (rc == proc.pid ());
 
-  int status = proc.status ();
+  int status = *proc.status ();
   if (not WIFEXITED (status))
   {
     BOOST_REQUIRE_MESSAGE (false, "expected process to exit on its own");
@@ -111,11 +111,11 @@ BOOST_AUTO_TEST_CASE (test_permission_denied)
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE (proc.pid () > 0);
 
-  rc = proc.wait ();
+  rc = proc.waitpid ();
 
   BOOST_REQUIRE (rc == proc.pid ());
 
-  int status = proc.status ();
+  int status = *proc.status ();
   if (not WIFEXITED (status))
   {
     BOOST_REQUIRE_MESSAGE (false, "expected process to exit on its own");
@@ -160,11 +160,11 @@ BOOST_AUTO_TEST_CASE (test_environment)
 
   proc.read (buf, sizeof(buf));
 
-  rc = proc.wait ();
+  rc = proc.waitpid ();
 
   BOOST_REQUIRE (rc == proc.pid ());
 
-  int status = proc.status ();
+  int status = *proc.status ();
   if (not WIFEXITED (status))
   {
     BOOST_REQUIRE_MESSAGE (false, "expected process to exit on its own");

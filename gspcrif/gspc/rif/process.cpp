@@ -68,7 +68,7 @@ namespace gspc
       , m_argv (argv)
       , m_env (env)
       , m_pid (-1)
-      , m_status (0)
+      , m_status ()
     {}
 
     process_t::~process_t ()
@@ -181,32 +181,65 @@ namespace gspc
       return m_pid;
     }
 
-    proc_t process_t::proc_id () const
+    proc_t process_t::id () const
     {
       return m_proc_id;
     }
 
-    int process_t::status () const
+    boost::optional<int> process_t::status () const
     {
       return m_status;
     }
 
     int process_t::wait ()
     {
-      return this->wait (0);
+      return this->wait (boost::posix_time::pos_infin);
     }
 
-    int process_t::wait (int flags)
+    int process_t::wait (boost::posix_time::time_duration td)
     {
-      if (m_pid == -1)
+      boost::unique_lock<mutex_type> lock (m_mutex);
+
+      while (not m_status)
       {
-        return -ECHILD;
+        m_terminated.timed_wait (lock, td);
+        if (not m_status)
+          return -ETIME;
       }
 
-      pid_t err = waitpid (m_pid, &m_status, flags);
+      return 0;
+    }
+
+    int process_t::try_waitpid ()
+    {
+      return waitpid_and_notify (WNOHANG);
+    }
+
+    int process_t::waitpid ()
+    {
+      return waitpid_and_notify (0);
+    }
+
+    void process_t::notify (int s)
+    {
+      boost::unique_lock<mutex_type> lock (m_mutex);
+
+      m_status = s;
+      m_terminated.notify_all ();
+    }
+
+    int process_t::waitpid_and_notify (int flags)
+    {
+      int s;
+      pid_t err = ::waitpid (m_pid, &s, flags);
       if (err < 0)
       {
         return -errno;
+      }
+
+      if (err == m_pid)
+      {
+        this->notify (s);
       }
 
       return err; // 0 -> not finished, >0 finished
