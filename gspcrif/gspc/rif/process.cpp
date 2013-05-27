@@ -18,7 +18,7 @@ namespace gspc
     {
       static char **argv_to_array (argv_t const &argv)
       {
-        char **a_arg = (char**)(malloc (argv.size () + 1));
+        char **a_arg = (char**)(malloc ((argv.size () + 1) * sizeof(char*)));
         a_arg [argv.size ()] = (char*)0;
         for (size_t i = 0 ; i < argv.size () ; ++i)
         {
@@ -31,7 +31,7 @@ namespace gspc
 
       static char **env_to_array (env_t const &env)
       {
-        char **a_env = (char**)(malloc (env.size () + 1));
+        char **a_env = (char**)(malloc ((env.size () + 1) * sizeof(char*)));
         a_env [env.size ()] = (char*)0;
 
         env_t::const_iterator it = env.begin ();
