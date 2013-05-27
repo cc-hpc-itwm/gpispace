@@ -32,6 +32,15 @@ namespace gspc
       pid_t pid () const;
       proc_t id () const;
       boost::optional<int> status () const;
+      /**
+         Return a unified exit code within the range [0,255].
+
+         0-128 exit code by the process itself
+         128+signal in case the process terminated due to a signal
+
+         returns -EBUSY if it is not yet finished.
+       */
+      int exit_code () const;
 
       boost::filesystem::path const & filename () const;
       argv_t const & argv () const;
@@ -70,9 +79,7 @@ namespace gspc
       pid_t  m_pid;
       boost::optional<int>    m_status;
 
-      pipe_t m_stdin;
-      pipe_t m_stdout;
-      pipe_t m_stderr;
+      std::vector<pipe_t> m_pipes;
     };
   }
 }

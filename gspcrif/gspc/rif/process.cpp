@@ -69,13 +69,17 @@ namespace gspc
       , m_env (env)
       , m_pid (-1)
       , m_status ()
-    {}
+    {
+      for (size_t i = 0 ; i < 3 ; ++i)
+      {
+        m_pipes.push_back (pipe_t ());
+      }
+    }
 
     process_t::~process_t ()
     {
-      this->stdin ().close ();
-      this->stdout ().close ();
-      this->stderr ().close ();
+      for (size_t i = 0 ; i < m_pipes.size () ; ++i)
+        m_pipes [i].close ();
     }
 
     int process_t::kill (int sig)
@@ -102,35 +106,41 @@ namespace gspc
       if (m_argv.empty ())
         return -EINVAL;
 
+      for (size_t i = 0 ; i < m_pipes.size () ; ++i)
+      {
+        m_pipes [i].open (0, false);
+      }
+
+      /*
       // prepare pipes
-      m_stdin.open  (0, false);
-      m_stdout.open (0, false);
-      m_stderr.open (0, false);
+      m_pipes [STDIN_FILENO].open  (0, false);
+      m_pipes [STDOUT_FILENO].open (0, false);
+      m_pipes [STDERR_FILENO].open (0, false);
+      */
 
       pid_t new_pid = fork ();
 
       if (new_pid < 0)
       {
         int err = errno;
-        m_stdin.close ();
-        m_stdout.close ();
-        m_stderr.close ();
+        for (size_t i = 0 ; i < m_pipes.size () ; ++i)
+          m_pipes [i].close ();
         return -err;
       }
 
       if (0 == new_pid)
       {
-        m_stdin.close_wr ();
-        m_stdout.close_rd ();
-        m_stderr.close_rd ();
+        this->stdin ().close_wr ();
+        this->stdout ().close_rd ();
+        this->stderr ().close_rd ();
 
-        dup2 (m_stdin.rd (), STDIN_FILENO);
-        dup2 (m_stdout.wr (), STDOUT_FILENO);
-        dup2 (m_stderr.wr (), STDERR_FILENO);
+        dup2 (this->stdin ().rd () , STDIN_FILENO);
+        dup2 (this->stdout ().wr (), STDOUT_FILENO);
+        dup2 (this->stderr ().wr (), STDERR_FILENO);
 
         for (int fd = 3 ; fd < 1024 ; ++fd)
         {
-          close (fd);
+          ::close (fd);
         }
 
         if (execve ( m_filename.string ().c_str ()
@@ -168,9 +178,9 @@ namespace gspc
       else
       {
         m_pid = new_pid;
-        m_stdin.close_rd ();
-        m_stdout.close_wr ();
-        m_stderr.close_wr ();
+        this->stdin ().close_rd ();
+        this->stdout ().close_wr ();
+        this->stderr ().close_wr ();
       }
 
       return 0;
@@ -183,12 +193,33 @@ namespace gspc
 
     proc_t process_t::id () const
     {
+      shared_lock lock (m_mutex);
       return m_proc_id;
     }
 
     boost::optional<int> process_t::status () const
     {
+      shared_lock lock (m_mutex);
       return m_status;
+    }
+
+    int process_t::exit_code () const
+    {
+      shared_lock lock (m_mutex);
+
+      if (m_status)
+      {
+        if (WIFEXITED (*m_status))
+        {
+          return WEXITSTATUS (*m_status) & 0xff;
+        }
+        else if (WIFSIGNALED (*m_status))
+        {
+          return (128 + WTERMSIG (*m_status)) & 0xff;
+        }
+      }
+
+      return -EBUSY;
     }
 
     int process_t::wait ()
@@ -268,17 +299,17 @@ namespace gspc
 
     pipe_t & process_t::stdin ()
     {
-      return m_stdin;
+      return m_pipes [STDIN_FILENO];
     }
 
     pipe_t & process_t::stdout ()
     {
-      return m_stdout;
+      return m_pipes [STDOUT_FILENO];
     }
 
     pipe_t & process_t::stderr ()
     {
-      return m_stderr;
+      return m_pipes [STDERR_FILENO];
     }
 
     ssize_t process_t::read (void *buffer, size_t len)
