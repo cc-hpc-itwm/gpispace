@@ -8,6 +8,10 @@
 
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/convenience.hpp>
+#include <gspc/rif/proc_info.hpp>
+
+BOOST_TEST_DONT_PRINT_LOG_VALUE(gspc::rif::argv_t);
+BOOST_TEST_DONT_PRINT_LOG_VALUE(gspc::rif::env_t);
 
 struct F
 {
@@ -215,6 +219,8 @@ BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
 
   std::cerr << ids.size () << " processes started" << std::endl;
 
+  BOOST_REQUIRE_EQUAL (manager.processes ().size (), ids.size ());
+
   BOOST_FOREACH (gspc::rif::proc_t p, ids)
   {
     int status;
@@ -228,6 +234,59 @@ BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
   }
 
   std::cerr << ids.size () << " processes finished" << std::endl;
+
+  BOOST_REQUIRE_EQUAL (manager.processes ().size (), 0);
+
+  manager.stop ();
+}
+
+BOOST_AUTO_TEST_CASE (test_proc_info)
+{
+  int rc;
+  int status;
+  gspc::rif::proc_t p;
+  gspc::rif::manager_t manager;
+  gspc::rif::proc_info_t info;
+
+  manager.start ();
+
+  gspc::rif::argv_t argv;
+
+  argv.push_back ("/bin/cat");
+
+  p = manager.exec (argv);
+  BOOST_REQUIRE (p > 0);
+
+  rc = manager.proc_info (p, info);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (info.id (), p);
+  BOOST_REQUIRE (info.pid () > 1);
+  BOOST_REQUIRE_EQUAL (info.argv (), argv);
+  BOOST_REQUIRE (info.env ().empty ());
+  BOOST_REQUIRE (not info.status ());
+
+  rc = manager.kill (p, SIGTERM);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = manager.wait (p, &status);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  BOOST_REQUIRE (WIFSIGNALED (status));
+  BOOST_REQUIRE_EQUAL (WTERMSIG (status), SIGTERM);
+
+  rc = manager.proc_info (p, info);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (info.id (), p);
+  BOOST_REQUIRE (info.pid () == -1);
+  BOOST_REQUIRE_EQUAL (info.argv (), argv);
+  BOOST_REQUIRE (info.env ().empty ());
+  BOOST_REQUIRE (info.status ());
+
+  rc = manager.remove (p);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = manager.proc_info (p, info);
+  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
 
   manager.stop ();
 }
