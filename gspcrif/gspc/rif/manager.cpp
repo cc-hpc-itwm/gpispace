@@ -196,6 +196,42 @@ namespace gspc
       return it->second;
     }
 
+    void
+    manager_t::remove_fd_mapping (int fd)
+    {
+      unique_lock lock (m_mutex);
+      m_fd_to_proc.erase (fd);
+    }
+
+    void
+    manager_t::remove_pid_mapping (pid_t pid)
+    {
+      unique_lock lock (m_mutex);
+      m_pid_to_proc.erase (pid);
+    }
+
+    int
+    manager_t::remove (proc_t proc)
+    {
+      process_ptr_t p = process_by_id (proc);
+      if (not p)
+        return -ESRCH;
+
+      if (not p->status ())
+        return -EBUSY;
+
+      remove_fd_mapping (p->stdin ().wr ());
+      remove_fd_mapping (p->stdout ().rd ());
+      remove_fd_mapping (p->stderr ().rd ());
+      remove_pid_mapping (p->pid ());
+
+      unique_lock lock (m_mutex);
+      m_processes.erase (proc);
+      m_available_proc_ids.push (proc);
+
+      return 0;
+    }
+
     void manager_t::io_thread (pipe_t & me)
     {
       bool done = false;
@@ -217,6 +253,10 @@ namespace gspc
                         )
           {
             process_ptr_t p = id_to_proc.second;
+
+            if (p->status ())
+              continue;
+            p->try_waitpid ();
 
             // only add stdin if there is any data to be written
             //detail::add_pollfd (p->stdin ().wr (), POLLOUT, to_poll);
@@ -240,11 +280,6 @@ namespace gspc
 
         if (nready == 0)
         {
-          BOOST_FOREACH (proc_map_t::value_type proc_it, m_processes)
-          {
-            proc_it.second->try_waitpid ();
-          }
-
           continue;
         }
 
@@ -308,11 +343,18 @@ namespace gspc
             if (p)
             {
               if (pfd.fd == p->stdin ().wr ())
+              {
                 p->stdin ().close_wr ();
+
+              }
               else if (pfd.fd == p->stdout ().rd ())
+              {
                 p->stdout ().close_rd ();
+              }
               else if (pfd.fd == p->stderr ().rd ())
+              {
                 p->stderr ().close_rd ();
+              }
 
               p->try_waitpid ();
 

@@ -102,7 +102,11 @@ namespace gspc
       void notify_io_thread (int cmd) const;
 
       process_ptr_t process_by_fd (int);
+      void remove_fd_mapping (int);
+
       process_ptr_t process_by_pid (pid_t);
+      void remove_pid_mapping (pid_t);
+
       process_ptr_t process_by_id (proc_t);
 
       bool m_stopping;
