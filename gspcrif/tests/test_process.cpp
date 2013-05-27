@@ -59,6 +59,71 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
   BOOST_REQUIRE_EQUAL (WTERMSIG (status), SIGTERM);
 }
 
+BOOST_AUTO_TEST_CASE (test_echo)
+{
+  gspc::rif::argv_t argv;
+  gspc::rif::env_t env;
+  int rc;
+  char buf [4096];
+
+  memset (buf, 0, sizeof(buf));
+
+  argv.push_back ("/bin/echo");
+  argv.push_back ("hello");
+  argv.push_back ("world");
+
+  gspc::rif::process_t proc (0, argv.front (), argv, env);
+
+  rc = proc.fork_and_exec ();
+
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE (proc.pid () > 0);
+
+  std::string text ("hello world\n");
+  BOOST_REQUIRE_EQUAL ( proc.read (buf, sizeof(buf))
+                      , (ssize_t)(text.size ())
+                      );
+  BOOST_REQUIRE_EQUAL (buf, "hello world\n");
+
+  rc = proc.waitpid ();
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  BOOST_REQUIRE_EQUAL (proc.exit_code (), 0);
+}
+
+BOOST_AUTO_TEST_CASE (test_echo_no_newline)
+{
+  gspc::rif::argv_t argv;
+  gspc::rif::env_t env;
+  int rc;
+  char buf [4096];
+
+  memset (buf, 0, sizeof(buf));
+
+  argv.push_back ("/bin/echo");
+  argv.push_back ("-n");
+  argv.push_back ("hello");
+  argv.push_back ("world");
+
+  gspc::rif::process_t proc (0, argv.front (), argv, env);
+
+  rc = proc.fork_and_exec ();
+
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE (proc.pid () > 0);
+
+  std::string text ("hello world");
+  BOOST_REQUIRE_EQUAL ( proc.read (buf, sizeof (buf))
+                      , (ssize_t)(text.size ())
+                      );
+  BOOST_REQUIRE_EQUAL (buf, "hello world");
+
+  rc = proc.waitpid ();
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  BOOST_REQUIRE_EQUAL (proc.exit_code (), 0);
+}
+
 BOOST_AUTO_TEST_CASE (test_no_such_file_or_directory)
 {
   gspc::rif::argv_t argv;
