@@ -87,7 +87,7 @@ namespace gspc
         return -ECHILD;
       }
 
-      rc = ::kill (pid (), sig);
+      rc = ::kill (m_pid, sig);
       if (rc < 0)
         return -errno;
       else
