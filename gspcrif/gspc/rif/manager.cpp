@@ -9,6 +9,7 @@
 #include <boost/system/system_error.hpp>
 
 #include "process.hpp"
+#include "proc_info.hpp"
 
 namespace gspc
 {
@@ -144,6 +145,35 @@ namespace gspc
       notify_io_thread (io_thread_command::NEWPROCESS);
 
       return id;
+    }
+
+    proc_list_t manager_t::processes () const
+    {
+      proc_list_t pl;
+
+      shared_lock lock (m_mutex);
+
+      BOOST_FOREACH ( proc_map_t::value_type const &id_to_proc
+                    , m_processes
+                    )
+      {
+        pl.push_back (id_to_proc.first);
+      }
+
+      return pl;
+    }
+
+    int manager_t::proc_info (proc_t procid, proc_info_t &info) const
+    {
+      process_ptr_t p = process_by_id (procid);
+      if (not p)
+      {
+        return -ESRCH;
+      }
+
+      info.assign_from (*p);
+
+      return 0;
     }
 
     int manager_t::term (proc_t proc, boost::posix_time::time_duration td)
