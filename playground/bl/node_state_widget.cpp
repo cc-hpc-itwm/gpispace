@@ -472,7 +472,7 @@ namespace prefix
   void communication::request_action
     (const QString& hostname, const QString& action)
   {
-    _connection->push ( QString ("action: [\"%1\": \"%2\"]")
+    _connection->push ( QString ("action: [[host: \"%1\", action: \"%2\"]]")
                       .arg (hostname)
                       .arg (action)
                       );

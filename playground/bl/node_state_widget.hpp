@@ -231,7 +231,10 @@ namespace prefix
   public:
     communication (const QString& host, int port, QObject* parent = NULL);
 
-    void request_action (const QString&, const QString&);
+    void request_action ( const QString&
+                        , const QString&
+                        , const QMap<QString, boost::function<QString()> >&
+                        );
     void request_layout_hint (const QString&);
     void request_action_description (const QStringList&);
     void request_hostlist();

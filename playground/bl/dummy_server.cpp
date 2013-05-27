@@ -122,32 +122,117 @@ void thread::read_hostlist (const QString& hostlist)
   }
 }
 
+namespace
+{
+  void insert_into_map
+    (fhg::util::parse::position& pos, QMap<QString, QString>* map)
+  {
+    const QString key (prefix::require::qstring (pos));
+    prefix::require::token (pos, ":");
+    map->insert (key, prefix::require::qstring (pos));
+  }
+
+  struct action_invocation
+  {
+    boost::optional<QString> _host;
+    boost::optional<QString> _action;
+    QMap<QString, QString> _arguments;
+
+    void append (fhg::util::parse::position& pos)
+    {
+      pos.skip_spaces();
+
+      if (pos.end() || (*pos != 'a' && *pos != 'h'))
+      {
+        throw fhg::util::parse::error::expected ("a' or 'host", pos);
+      }
+
+      switch (*pos)
+      {
+      case 'a':
+        ++pos;
+        {
+          if (pos.end() || (*pos != 'c' && *pos != 'r'))
+          {
+            throw fhg::util::parse::error::expected ("ction' or 'rguments", pos);
+          }
+
+          switch (*pos)
+          {
+          case 'c':
+            ++pos;
+            pos.require ("tion");
+            prefix::require::token (pos, ":");
+
+            _action = prefix::require::qstring (pos);
+
+            break;
+
+          case 'r':
+            ++pos;
+            pos.require ("guments");
+            prefix::require::token (pos, ":");
+
+            prefix::require::list
+              (pos, boost::bind (insert_into_map, _1, &_arguments));
+
+            break;
+          }
+        }
+
+        break;
+
+      case 'h':
+        ++pos;
+        pos.require ("ost");
+        prefix::require::token (pos, ":");
+
+        _host = prefix::require::qstring (pos);
+
+        break;
+      }
+    }
+  };
+}
+
 void thread::execute_action (fhg::util::parse::position& pos)
 {
-  const QString host (prefix::require::qstring (pos));
-  prefix::require::token (pos, ":");
-  const QString action (prefix::require::qstring (pos));
-  qDebug() << "execute" << action << "for" << host;
+  action_invocation invoc;
+  prefix::require::list
+    (pos, boost::bind (&action_invocation::append, &invoc, _1));
+
+  if (!invoc._host || !invoc._action)
+  {
+    throw std::runtime_error ("action missing action name or host");
+  }
+
+  qDebug() << "execute" << *invoc._action << "for" << *invoc._host << "with arguments:";
+  QMap<QString, QString>::const_iterator i (invoc._arguments.constBegin());
+  while (i != invoc._arguments.constEnd())
+  {
+    qDebug() << ">" << i.key() << "="<< i.value();
+    ++i;
+  }
 
   const QMutexLocker lock (&_hosts_mutex);
 
-  if (!_hosts.contains (host))
+  if (!_hosts.contains (*invoc._host))
   {
     _socket->write
       ( qPrintable ( QString
                      ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Unknown host.\"],]\n")
-                   .arg (host)
-                   .arg (action)
+                   .arg (*invoc._host)
+                   .arg (*invoc._action)
                    )
     );
 
     return;
   }
 
-  QString& state (_hosts[host].first);
-  int& last_change (_hosts[host].second);
+  QString& state (_hosts[*invoc._host].first);
+  int& last_change (_hosts[*invoc._host].second);
 
-  if (action == "reboot" && (state == "unavailable" || state == "available"))
+  if (*invoc._action == "reboot" && (state == "unavailable" || state == "available"))
   {
     state = "down";
     last_change = 0;
@@ -155,12 +240,12 @@ void thread::execute_action (fhg::util::parse::position& pos)
     _socket->write
       ( qPrintable ( QString
                      ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Will reboot.\"],]\n")
-                   .arg (host)
-                   .arg (action)
+                   .arg (*invoc._host)
+                   .arg (*invoc._action)
                    )
     );
   }
-  else if (action == "add_to_working_set" && state == "available")
+  else if (*invoc._action == "add_to_working_set" && state == "available")
   {
     state = "used";
     last_change = 0;
@@ -168,12 +253,12 @@ void thread::execute_action (fhg::util::parse::position& pos)
     _socket->write
       ( qPrintable ( QString
                      ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Added to working set.\"]]\n")
-                   .arg (host)
-                   .arg (action)
+                   .arg (*invoc._host)
+                   .arg (*invoc._action)
                    )
     );
   }
-  else if (action == "remove_from_working_set" && state == "used")
+  else if (*invoc._action == "remove_from_working_set" && state == "used")
   {
     state = "available";
     last_change = 0;
@@ -181,18 +266,18 @@ void thread::execute_action (fhg::util::parse::position& pos)
     _socket->write
       ( qPrintable ( QString
                      ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Removed from working set.\"]]\n")
-                   .arg (host)
-                   .arg (action)
+                   .arg (*invoc._host)
+                   .arg (*invoc._action)
                    )
     );
   }
-  else if (action == "foo" && state == "used")
+  else if (*invoc._action == "foo" && state == "used")
   {
     _socket->write
       ( qPrintable ( QString
                      ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"bar\"]]\n")
-                   .arg (host)
-                   .arg (action)
+                   .arg (*invoc._host)
+                   .arg (*invoc._action)
                    )
     );
   }
@@ -201,8 +286,8 @@ void thread::execute_action (fhg::util::parse::position& pos)
     _socket->write
       ( qPrintable ( QString
                      ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Can't execute %2 on host %1 in state %3.\"],]\n")
-                   .arg (host)
-                   .arg (action)
+                   .arg (*invoc._host)
+                   .arg (*invoc._action)
                    .arg (state)
                    )
       );
