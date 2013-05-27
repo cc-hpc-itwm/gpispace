@@ -98,8 +98,6 @@ namespace fhg
       private:
         transition_library_view* _transition_library;
         dock_widget* _transition_library_dock;
-        StructureView* _structure_view;
-        dock_widget* _structure_view_dock;
         QUndoGroup* _undo_group;
         dock_widget* _undo_view_dock;
 

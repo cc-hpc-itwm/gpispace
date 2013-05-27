@@ -81,9 +81,6 @@ namespace fhg
         , _transition_library (new transition_library_view (20, 5, this))
         , _transition_library_dock
           (new dock_widget (tr ("library_window"), _transition_library))
-        , _structure_view (new StructureView (this))
-        , _structure_view_dock
-          (new dock_widget (tr ("structure_window"), _structure_view))
         , _undo_group (new QUndoGroup (this))
         , _undo_view_dock
           ( new dock_widget
@@ -104,7 +101,6 @@ namespace fhg
         setTabPosition (Qt::AllDockWidgetAreas, QTabWidget::North);
 
         addDockWidget (_transition_library_dock);
-        addDockWidget (_structure_view_dock);
         addDockWidget (_undo_view_dock);
 
         setup_menu_and_toolbar();
@@ -297,7 +293,6 @@ namespace fhg
       void editor_window::create_windows (const data::handle::function& function)
       {
         create_widget (function);
-        _structure_view->append (function);
       }
 
       void editor_window::duplicate_active_widget()
@@ -405,7 +400,6 @@ namespace fhg
         menu->addSeparator();
 
         menu->addAction (_transition_library_dock->toggleViewAction());
-        menu->addAction (_structure_view_dock->toggleViewAction());
         menu->addAction (_undo_view_dock->toggleViewAction());
 
         menu->addSeparator();
