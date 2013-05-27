@@ -240,9 +240,12 @@ namespace gspc
       if (err == m_pid)
       {
         this->notify (s);
+        return 0;
       }
-
-      return err; // 0 -> not finished, >0 finished
+      else
+      {
+        return -EBUSY;
+      }
     }
 
     boost::filesystem::path const & process_t::filename () const

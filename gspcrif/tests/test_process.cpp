@@ -45,20 +45,17 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
 
   BOOST_REQUIRE_EQUAL (buf, "hello world\n");
 
-  rc = proc.kill (SIGTERM);
+  rc = proc.try_waitpid ();
+  BOOST_REQUIRE_EQUAL (rc, -EBUSY);
 
+  rc = proc.kill (SIGTERM);
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   rc = proc.waitpid ();
-
-  BOOST_REQUIRE (rc == proc.pid ());
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
   int status = *proc.status ();
-  if (not WIFSIGNALED (status))
-  {
-    BOOST_REQUIRE_MESSAGE (false, "expected process to be signaled");
-  }
-
+  BOOST_REQUIRE (WIFSIGNALED (status));
   BOOST_REQUIRE_EQUAL (WTERMSIG (status), SIGTERM);
 }
 
@@ -81,15 +78,10 @@ BOOST_AUTO_TEST_CASE (test_no_such_file_or_directory)
   BOOST_REQUIRE (proc.pid () > 0);
 
   rc = proc.waitpid ();
-
-  BOOST_REQUIRE (rc == proc.pid ());
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
   int status = *proc.status ();
-  if (not WIFEXITED (status))
-  {
-    BOOST_REQUIRE_MESSAGE (false, "expected process to exit on its own");
-  }
-
+  BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 127);
 }
 
@@ -112,15 +104,10 @@ BOOST_AUTO_TEST_CASE (test_permission_denied)
   BOOST_REQUIRE (proc.pid () > 0);
 
   rc = proc.waitpid ();
-
-  BOOST_REQUIRE (rc == proc.pid ());
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
   int status = *proc.status ();
-  if (not WIFEXITED (status))
-  {
-    BOOST_REQUIRE_MESSAGE (false, "expected process to exit on its own");
-  }
-
+  BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 126);
 }
 
@@ -136,7 +123,6 @@ BOOST_AUTO_TEST_CASE (test_empty_argv)
   gspc::rif::process_t proc (0, "", argv, env);
 
   rc = proc.fork_and_exec ();
-
   BOOST_REQUIRE_EQUAL (rc, -EINVAL);
 }
 
@@ -161,14 +147,10 @@ BOOST_AUTO_TEST_CASE (test_environment)
   proc.read (buf, sizeof(buf));
 
   rc = proc.waitpid ();
-
-  BOOST_REQUIRE (rc == proc.pid ());
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
   int status = *proc.status ();
-  if (not WIFEXITED (status))
-  {
-    BOOST_REQUIRE_MESSAGE (false, "expected process to exit on its own");
-  }
+  BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
 
   BOOST_REQUIRE_EQUAL (buf, "foo=bar\n");
