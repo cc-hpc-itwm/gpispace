@@ -111,13 +111,6 @@ namespace gspc
         m_pipes [i].open (0, false);
       }
 
-      /*
-      // prepare pipes
-      m_pipes [STDIN_FILENO].open  (0, false);
-      m_pipes [STDOUT_FILENO].open (0, false);
-      m_pipes [STDERR_FILENO].open (0, false);
-      */
-
       pid_t new_pid = fork ();
 
       if (new_pid < 0)
