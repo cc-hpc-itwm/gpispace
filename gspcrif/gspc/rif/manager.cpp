@@ -198,27 +198,27 @@ namespace gspc
       m_io_thread_pipe.write (&cmd, sizeof(cmd));
     }
 
-    manager_t::process_ptr_t manager_t::process_by_fd (int fd)
+    manager_t::process_ptr_t manager_t::process_by_fd (int fd) const
     {
-      fd_to_proc_map_t::iterator it = m_fd_to_proc.find (fd);
+      fd_to_proc_map_t::const_iterator it = m_fd_to_proc.find (fd);
       if (it == m_fd_to_proc.end ())
         return process_ptr_t ();
       return process_by_id (it->second);
     }
 
-    manager_t::process_ptr_t manager_t::process_by_pid (pid_t pid)
+    manager_t::process_ptr_t manager_t::process_by_pid (pid_t pid) const
     {
-      pid_to_proc_map_t::iterator it = m_pid_to_proc.find (pid);
+      pid_to_proc_map_t::const_iterator it = m_pid_to_proc.find (pid);
       if (it == m_pid_to_proc.end ())
         return process_ptr_t ();
       return process_by_id (it->second);
     }
 
-    manager_t::process_ptr_t manager_t::process_by_id (proc_t proc)
+    manager_t::process_ptr_t manager_t::process_by_id (proc_t proc) const
     {
       shared_lock lock (m_mutex);
 
-      proc_map_t::iterator it = m_processes.find (proc);
+      proc_map_t::const_iterator it = m_processes.find (proc);
       if (it == m_processes.end ())
         return process_ptr_t ();
       return it->second;
