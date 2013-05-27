@@ -224,7 +224,10 @@ namespace gspc
     {
       boost::unique_lock<mutex_type> lock (m_mutex);
 
-      m_status = s;
+      if (not m_status)
+      {
+        m_status = s;
+      }
       m_terminated.notify_all ();
     }
 
