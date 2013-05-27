@@ -317,6 +317,7 @@ namespace prefix
       (const QString&, const QList<action_argument_data>&);
 
     void update_nodes_with_state (const QString&);
+    void trigger_action (const QString& host, const QString& action);
 
     void action_result ( const QString&
                        , const QString&

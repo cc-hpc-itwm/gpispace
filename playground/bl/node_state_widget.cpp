@@ -1234,6 +1234,12 @@ namespace prefix
     }
   }
 
+  void node_state_widget::trigger_action
+    (const QString& host, const QString& action)
+  {
+    _communication->request_action (host, action);
+  }
+
   bool node_state_widget::event (QEvent* event)
   {
     switch (event->type())
@@ -1330,9 +1336,9 @@ namespace prefix
                 fhg::util::qt::boost_connect<void (void)>
                   ( action
                   , SIGNAL (triggered())
-                  , _communication
-                  , boost::bind ( &communication::request_action
-                                , _communication
+                  , this
+                  , boost::bind ( &node_state_widget::trigger_action
+                                , this
                                 , hostname
                                 , action_name
                                 )
