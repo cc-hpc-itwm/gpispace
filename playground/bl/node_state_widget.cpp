@@ -741,7 +741,8 @@ namespace prefix
              )
            )
         {
-          throw fhg::util::parse::error::expected ("packet", pos);
+          throw fhg::util::parse::error::expected
+            ("action_' or 'hosts' or 'layout_hint' or 'possible_status' or 'status", pos);
         }
 
         switch (*pos)
