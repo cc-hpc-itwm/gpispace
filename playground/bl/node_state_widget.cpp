@@ -3,27 +3,31 @@
 #include "node_state_widget.hpp"
 
 #include "parse.hpp"
+#include "file_line_edit.hpp"
 
 #include <util/qt/boost_connect.hpp>
 
 #include <QApplication>
 #include <QCheckBox>
 #include <QDebug>
+#include <QDialogButtonBox>
+#include <QFormLayout>
 #include <QGroupBox>
+#include <QLabel>
+#include <QListWidgetItem>
 #include <QMenu>
-#include <QPushButton>
+#include <QMessageBox>
 #include <QPaintEvent>
 #include <QPainter>
-#include <QLabel>
 #include <QPen>
+#include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QSpinBox>
 #include <QSplitter>
 #include <QStyle>
-#include <QListWidgetItem>
 #include <QToolTip>
 #include <QVBoxLayout>
-#include <QMessageBox>
 
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
@@ -32,6 +36,7 @@
 #include <fhg/util/parse/error.hpp>
 
 #include <iostream>
+#include <sstream>
 
 namespace prefix
 {
@@ -470,11 +475,37 @@ namespace prefix
   }
 
   void communication::request_action
-    (const QString& hostname, const QString& action)
+    ( const QString& hostname
+    , const QString& action
+    , const QMap<QString, boost::function<QString()> >& value_getters
+    )
   {
-    _connection->push ( QString ("action: [[host: \"%1\", action: \"%2\"]]")
+    std::stringstream ss;
+    if (!value_getters.isEmpty())
+    {
+      ss << ", arguments: [";
+
+      QMap<QString, boost::function<QString()> >::const_iterator i
+        (value_getters.constBegin());
+      while (i != value_getters.constEnd())
+      {
+        ss << "\""
+           << i.key().toStdString()
+           << "\" : \""
+           << i.value()()
+          .replace ("\\", "\\\\").replace ("\"", "\\\"")
+          .toStdString()
+           << "\",";
+        ++i;
+      }
+
+      ss << "]";
+    }
+
+    _connection->push ( QString ("action: [[host: \"%1\", action: \"%2\"%3]]")
                       .arg (hostname)
                       .arg (action)
+                      .arg (QString::fromStdString (ss.str()))
                       );
   }
 
@@ -1234,10 +1265,127 @@ namespace prefix
     }
   }
 
+  namespace
+  {
+    int string_to_int (const QString& str)
+    {
+      const std::string stdstr (str.toStdString());
+      fhg::util::parse::position pos (stdstr);
+      return fhg::util::read_int (pos);
+    }
+
+    QString checkbox_to_string (const QCheckBox* box)
+    {
+      return box->isChecked() ? "true" : "false";
+    }
+    QString spinbox_to_string (const QSpinBox* box)
+    {
+      return QString ("%1").arg (box->value());
+    }
+
+    std::pair<QWidget*, boost::function<QString()> > widget_for_item
+      (const action_argument_data& item)
+    {
+      switch (*item._type)
+      {
+      case action_argument_data::boolean:
+        {
+          QCheckBox* box (new QCheckBox);
+          box->setChecked ( fhg::util::read_bool
+                             (item._default.get_value_or ("false").toStdString())
+                          );
+          return std::pair<QWidget*, boost::function<QString()> >
+            (box, boost::bind (checkbox_to_string, box));
+        }
+
+      case action_argument_data::directory:
+        {
+          file_line_edit* edit
+            ( new file_line_edit
+               (QFileDialog::Directory, item._default.get_value_or (""))
+            );
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (&file_line_edit::text, edit));
+        }
+
+      case action_argument_data::filename:
+        {
+          file_line_edit* edit
+            ( new file_line_edit
+               (QFileDialog::AnyFile, item._default.get_value_or (""))
+            );
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (&file_line_edit::text, edit));
+        }
+
+      case action_argument_data::integer: // min max
+        {
+          QSpinBox* edit (new QSpinBox);
+          edit->setValue (string_to_int (item._default.get_value_or ("0")));
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (spinbox_to_string, edit));
+        }
+
+      case action_argument_data::string:
+        {
+          QLineEdit* edit (new QLineEdit (item._default.get_value_or ("")));
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (&QLineEdit::text, edit));
+        }
+      }
+    }
+  }
+
   void node_state_widget::trigger_action
     (const QString& host, const QString& action)
   {
-    _communication->request_action (host, action);
+    QMap<QString, boost::function<QString()> > value_getters;
+
+    if ( _action_arguments.contains (action)
+       && !_action_arguments[action].isEmpty()
+       )
+    {
+      QDialog* dialog (new QDialog);
+      dialog->setWindowTitle
+        (tr ("Parameters for %1 on %2").arg (action).arg (host));
+      new QVBoxLayout (dialog);
+
+      QWidget* wid (new QWidget (dialog));
+      QFormLayout* layout (new QFormLayout (wid));
+
+      foreach (const action_argument_data& item, _action_arguments[action])
+      {
+        if (!item._type)
+        {
+          throw std::runtime_error ("action argument without type");
+        }
+
+        const std::pair<QWidget*, boost::function<QString()> > ret
+          (widget_for_item (item));
+        layout->addRow (item._label.get_value_or (item._name), ret.first);
+        value_getters[item._name] = ret.second;
+      }
+
+      QDialogButtonBox* buttons
+        ( new QDialogButtonBox ( QDialogButtonBox::Abort | QDialogButtonBox::Ok
+                               , Qt::Horizontal
+                               , dialog
+                               )
+        );
+
+      dialog->connect (buttons, SIGNAL (accepted()), SLOT (accept()));
+      dialog->connect (buttons, SIGNAL (rejected()), SLOT (reject()));
+
+      dialog->layout()->addWidget (wid);
+      dialog->layout()->addWidget (buttons);
+
+      if (!dialog->exec())
+      {
+        return;
+      }
+    }
+
+    _communication->request_action (host, action, value_getters);
   }
 
   bool node_state_widget::event (QEvent* event)
