@@ -338,15 +338,20 @@ namespace gspc
 
           if (pfd.revents & POLLIN)
           {
-            // lookup related process
-            // read into process buffer
-            //    if buffer full, do not poll for read
+            process_ptr_t p = process_by_fd (pfd.fd);
 
-            ssize_t nbytes = read (pfd.fd, buf, sizeof(buf) - 1);
-            if (nbytes > 0)
+            if (p)
             {
-              buf [nbytes] = 0;
-              std::cerr << "read: '" << buf << "'" << std::endl;
+              ssize_t nbytes = read (pfd.fd, buf, sizeof(buf) - 1);
+              if (nbytes > 0)
+              {
+                buf [nbytes] = 0;
+                std::cerr << "read " << nbytes << " from process " << p->id () << std::endl;
+              }
+            }
+            else
+            {
+              std::cerr << "inp fd " << pfd.fd << " does not belong to any proc" << std::endl;
             }
           }
 
@@ -360,9 +365,23 @@ namespace gspc
 
           if (pfd.revents & POLLERR || pfd.revents & POLLNVAL)
           {
-            std::cerr << "error on " << pfd.fd << std::endl;
-            // lookup related process and see what can be done about it
-            //    close the other side of the pipe
+            process_ptr_t p = process_by_fd (pfd.fd);
+            if (p)
+            {
+              if (pfd.fd == p->stdin ().wr ())
+              {
+                p->stdin ().close_wr ();
+              }
+              else if (pfd.fd == p->stdout ().rd ())
+              {
+                p->stdout ().close_rd ();
+              }
+              else if (pfd.fd == p->stderr ().rd ())
+              {
+                p->stderr ().close_rd ();
+              }
+              remove_fd_mapping (pfd.fd);
+            }
           }
 
           if (pfd.revents & POLLHUP)
@@ -383,10 +402,6 @@ namespace gspc
                 p->stderr ().close_rd ();
               }
               remove_fd_mapping (pfd.fd);
-            }
-            else
-            {
-              abort ();
             }
           }
         }
