@@ -28,6 +28,7 @@
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
 
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/parse/error.hpp>
 
 #include <iostream>
@@ -199,6 +200,9 @@ namespace prefix
     connect ( _communication
             , SIGNAL (states_actions_long_text (const QString&, const QString&))
             , SLOT (states_actions_long_text (const QString&, const QString&)));
+    connect ( _communication
+            , SIGNAL (states_actions_arguments (const QString&, const QList<action_argument_data>&))
+            , SLOT (states_actions_arguments (const QString&, const QList<action_argument_data>&)));
 
     connect ( _communication
             , SIGNAL (states_add (const QString&, const QStringList&))
@@ -288,6 +292,11 @@ namespace prefix
     (const QString& action, const QString& long_text)
   {
     _long_action[action] = long_text;
+  }
+  void node_state_widget::states_actions_arguments
+    (const QString& action, const QList<action_argument_data>& arguments)
+  {
+    _action_arguments[action] = arguments;
   }
 
   void node_state_widget::update_nodes_with_state (const QString& s)
@@ -487,18 +496,145 @@ namespace prefix
     request_action_description (actions);
   }
 
+  action_argument_data::action_argument_data (const QString& name)
+    : _name (name)
+  { }
+
+  void action_argument_data::append (fhg::util::parse::position& pos)
+  {
+    pos.skip_spaces();
+
+    if (pos.end() || (*pos != 'd' && *pos != 'l' && *pos != 't'))
+    {
+      throw fhg::util::parse::error::expected
+        ("default' or 'label' or 'type", pos);
+    }
+
+    switch (*pos)
+    {
+    case 'd':
+      ++pos;
+      pos.require ("efault");
+      require::token (pos, ":");
+
+      _default = require::qstring (pos);
+
+      break;
+
+    case 'l':
+      ++pos;
+      pos.require ("abel");
+      require::token (pos, ":");
+
+      _label = require::qstring (pos);
+
+      break;
+
+    case 't':
+      ++pos;
+      pos.require ("ype");
+      require::token (pos, ":");
+      pos.skip_spaces();
+
+      if ( pos.end() || ( *pos != 'b' && *pos != 'd'
+                        && *pos != 'f' && *pos != 'i' && *pos != 's'
+                        )
+         )
+      {
+        throw fhg::util::parse::error::expected
+          ("boolean' or 'directory' or 'filename' or 'integer' or 'string", pos);
+      }
+
+      switch (*pos)
+      {
+      case 'b':
+        ++pos;
+        pos.require ("oolean");
+
+        _type = boolean;
+
+        break;
+
+      case 'd':
+        ++pos;
+        pos.require ("irectory");
+
+        _type = directory;
+
+        break;
+
+      case 'f':
+        ++pos;
+        pos.require ("ilename");
+
+        _type = filename;
+
+        break;
+
+      case 'i':
+        ++pos;
+        pos.require ("nteger");
+
+        _type = integer;
+
+        break;
+
+      case 's':
+        ++pos;
+        pos.require ("tring");
+
+        _type = string;
+
+        break;
+      }
+
+      break;
+    }
+  }
+
+  namespace
+  {
+    void action_argument ( fhg::util::parse::position& pos
+                         , QList<action_argument_data>* data_list
+                         )
+    {
+      const QString name (require::qstring (pos));
+      require::token (pos, ":");
+
+      action_argument_data data (name);
+      require::list (pos, boost::bind (&action_argument_data::append, &data, _1));
+
+      data_list->append (data);
+    }
+  }
+
   void communication::action_description
     (fhg::util::parse::position& pos, const QString& action)
   {
     pos.skip_spaces();
 
-    if (pos.end() || (*pos != 'l'))
+    if (pos.end() || (*pos != 'l' && *pos != 'a'))
     {
-      throw fhg::util::parse::error::expected ("long_text", pos);
+      throw fhg::util::parse::error::expected ("long_text' or 'arguments", pos);
     }
 
     switch (*pos)
     {
+    case 'a':
+      ++pos;
+      pos.require ("rguments");
+      require::token (pos, ":");
+
+      {
+        QList<action_argument_data> data;
+        require::list (pos, boost::bind (action_argument, _1, &data));
+
+        emit states_actions_arguments (action, data);
+      }
+
+
+      break;
+
     case 'l':
       ++pos;
       pos.require ("ong_text");

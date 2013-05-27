@@ -203,6 +203,27 @@ namespace prefix
     warn,
   };
 
+  struct action_argument_data
+  {
+    enum type
+    {
+      boolean,
+      directory,
+      filename,
+      integer,
+      string,
+    };
+
+    action_argument_data (const QString& name);
+
+    QString _name;
+    boost::optional<type> _type;
+    boost::optional<QString> _label;
+    boost::optional<QString> _default;
+
+    void append (fhg::util::parse::position&);
+  };
+
   class communication : public QObject
   {
     Q_OBJECT;
@@ -229,6 +250,8 @@ namespace prefix
     void nodes_details (const QString&, const QString&);
     void nodes_state (const QString&, const QString&);
     void states_actions_long_text (const QString&, const QString&);
+    void states_actions_arguments
+      (const QString&, const QList<action_argument_data>&);
     void states_add (const QString&, const QStringList&);
     void states_layout_hint_border (const QString&, const QColor&);
     void states_layout_hint_character (const QString&, const char&);
@@ -290,6 +313,8 @@ namespace prefix
     void nodes_details (const QString&, const QString&);
     void nodes_state (const QString&, const QString&);
     void states_actions_long_text (const QString&, const QString&);
+    void states_actions_arguments
+      (const QString&, const QList<action_argument_data>&);
 
     void update_nodes_with_state (const QString&);
 
@@ -309,6 +334,7 @@ namespace prefix
 
   private:
     QMap<QString, QString> _long_action;
+    QMap<QString, QList<action_argument_data> > _action_arguments;
 
     QList<QString> _pending_updates;
     QList<QString> _nodes_to_update;
