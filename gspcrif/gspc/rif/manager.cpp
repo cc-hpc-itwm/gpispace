@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <poll.h>               // poll()
 #include <fcntl.h> // O_NONBLOCK
+#include <signal.h>
 
 #include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
@@ -145,6 +146,30 @@ namespace gspc
       return id;
     }
 
+    int manager_t::term (proc_t proc, boost::posix_time::time_duration td)
+    {
+      int rc;
+      rc = this->kill (proc, SIGTERM);
+      if (rc < 0)
+        return rc;
+
+      if (this->wait (proc, 0, td) != 0)
+      {
+        this->kill (proc, SIGKILL);
+        this->wait (proc, 0, td);
+      }
+      return 0;
+    }
+
+    int manager_t::kill (proc_t proc, int sig)
+    {
+      process_ptr_t p = process_by_id (proc);
+      if (not p)
+        return -ESRCH;
+
+      return p->kill (sig);
+    }
+
     int manager_t::wait (proc_t proc, int *status)
     {
       return this->wait (proc, status, boost::posix_time::pos_infin);
@@ -159,10 +184,13 @@ namespace gspc
       if (not p)
         return -ESRCH;
 
-      p->wait (td);
-      if (status)
+      int rc;
+      rc = p->wait (td);
+      if (0 == rc && status)
+      {
         *status = *p->status ();
-      return 0;
+      }
+      return rc;
     }
 
     void manager_t::notify_io_thread (int cmd) const
@@ -345,7 +373,6 @@ namespace gspc
               if (pfd.fd == p->stdin ().wr ())
               {
                 p->stdin ().close_wr ();
-
               }
               else if (pfd.fd == p->stdout ().rd ())
               {
@@ -355,16 +382,12 @@ namespace gspc
               {
                 p->stderr ().close_rd ();
               }
-
-              p->try_waitpid ();
-
-              if (p->status ())
-              {
-              }
+              remove_fd_mapping (pfd.fd);
             }
-
-            // lookup related process and see what can be done about it
-            //    close the other side of the pipe
+            else
+            {
+              abort ();
+            }
           }
         }
       }

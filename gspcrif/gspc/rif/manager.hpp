@@ -53,7 +53,7 @@ namespace gspc
       /**
          send the given signal to the specified process
        */
-      int signal (proc_t proc, int sig);
+      int kill (proc_t proc, int sig);
 
       /**
          query the status of the given process
