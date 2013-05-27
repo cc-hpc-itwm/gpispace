@@ -18,11 +18,11 @@ namespace gspc
     {
       static char **argv_to_array (argv_t const &argv)
       {
-        char **a_arg = (char**)(malloc ((argv.size () + 1) * sizeof(char*)));
+        char **a_arg = reinterpret_cast<char**>(malloc ((argv.size () + 1) * sizeof(char*)));
         a_arg [argv.size ()] = (char*)0;
         for (size_t i = 0 ; i < argv.size () ; ++i)
         {
-          a_arg [i] = (char*)(malloc (argv[i].size ()+1));
+          a_arg [i] = reinterpret_cast<char*>(malloc (argv[i].size ()+1));
           memcpy (a_arg [i], argv[i].c_str (), argv [i].size ()+1);
         }
 
@@ -31,7 +31,7 @@ namespace gspc
 
       static char **env_to_array (env_t const &env)
       {
-        char **a_env = (char**)(malloc ((env.size () + 1) * sizeof(char*)));
+        char **a_env = reinterpret_cast<char**>(malloc ((env.size () + 1) * sizeof(char*)));
         a_env [env.size ()] = (char*)0;
 
         env_t::const_iterator it = env.begin ();
@@ -43,7 +43,7 @@ namespace gspc
           const size_t length_of_entry =
             //         key      =             value     \0
             it->first.size () + 1 + it->second.size () + 1;
-          a_env [i] = (char*)(malloc (length_of_entry));
+          a_env [i] = reinterpret_cast<char*>(malloc (length_of_entry));
 
           snprintf ( a_env [i]
                    , length_of_entry
