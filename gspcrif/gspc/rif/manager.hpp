@@ -8,6 +8,7 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp> // time_duration
+#include <boost/unordered_map.hpp>
 
 #include <fhg/util/thread/atomic.hpp>
 
@@ -94,9 +95,9 @@ namespace gspc
       typedef boost::unique_lock<boost::shared_mutex> unique_lock;
 
       typedef boost::shared_ptr<process_t> process_ptr_t;
-      typedef std::map<proc_t, process_ptr_t> proc_map_t;
-      typedef std::map<pid_t, proc_t> pid_to_proc_map_t;
-      typedef std::map<int, proc_t> fd_to_proc_map_t;
+      typedef boost::unordered_map<proc_t, process_ptr_t> proc_map_t;
+      typedef boost::unordered_map<pid_t, proc_t> pid_to_proc_map_t;
+      typedef boost::unordered_map<int, proc_t> fd_to_proc_map_t;
 
       void io_thread (pipe_t &);
       void notify_io_thread (int cmd) const;
