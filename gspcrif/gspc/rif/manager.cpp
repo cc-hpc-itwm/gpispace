@@ -130,9 +130,6 @@ namespace gspc
         return rc;
       }
 
-      std::cerr << "forked new process " << p->id ()
-                << " with pid " << p->pid () << std::endl;
-
       m_processes [id] = p;
       m_fd_to_proc [p->stdin  ().wr ()] = p->id ();
       m_fd_to_proc [p->stdout ().rd ()] = p->id ();
