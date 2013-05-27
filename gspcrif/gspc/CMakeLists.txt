@@ -3,6 +3,7 @@ set (gspcrif_src
   rif/pipe.cpp
   rif/process.cpp
   rif/manager.cpp
+  rif/convenience.cpp
 )
 
 add_library (gspcrif        STATIC ${gspcrif_src})
