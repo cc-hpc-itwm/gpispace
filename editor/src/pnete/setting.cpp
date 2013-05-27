@@ -45,6 +45,14 @@ namespace fhg
         bool show() { return QSettings().value (key()).toBool(); }
       }
 
+      namespace template_filename
+      {
+        CONST(QString, key, "template_filename");
+
+        void update (const QString& value) { QSettings().setValue (key(), value); }
+        QString show() { return QSettings().value (key()).toString(); }
+      }
+
       namespace library_transition
       {
         namespace key

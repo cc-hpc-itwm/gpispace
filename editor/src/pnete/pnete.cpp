@@ -30,6 +30,7 @@ int main (int argc, char *argv[])
   setting::path_list_type paths_trusted_new;
   setting::path_list_type paths_untrusted_new;
   bool show_splash (setting::splash::show());
+  std::string template_filename (setting::template_filename::show().toStdString());
 
   desc.add_options()
     ( "help,h", "this message")
@@ -44,6 +45,10 @@ int main (int argc, char *argv[])
     ( "lib-untrusted,T"
     , po::value<setting::path_list_type>(&paths_untrusted_new)
     , "path to untrusted library"
+    )
+    ( "template"
+    , po::value<std::string> (&template_filename)
+    , "template for new workflows"
     )
     ( "show-splash,s"
     , po::value<bool>(&show_splash)->default_value(show_splash)
@@ -75,6 +80,7 @@ int main (int argc, char *argv[])
 
   setting::library_transition::update (paths_trusted_new, paths_untrusted_new);
   setting::splash::update (show_splash);
+  setting::template_filename::update (QString::fromStdString (template_filename));
 
   try
   {

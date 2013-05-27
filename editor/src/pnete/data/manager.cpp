@@ -3,6 +3,7 @@
 #include <pnete/data/manager.hpp>
 
 #include <pnete/data/handle/function.hpp>
+#include <pnete/setting.hpp>
 
 #include <xml/parse/type/function.hpp>
 
@@ -55,7 +56,8 @@ namespace fhg
                                . arg (++_unnamed_current)
                                );
 
-        internal_type* ret (new internal_type (kind));
+        internal_type* ret (new internal_type (setting::template_filename::show()));
+        ret->function().get_ref().name (boost::none);
 
         _files.insert (bimap_type::value_type (filename, ret));
 

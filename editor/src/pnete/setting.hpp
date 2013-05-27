@@ -24,6 +24,11 @@ namespace fhg
         void update (const bool);
         bool show();
       }
+      namespace template_filename
+      {
+        void update (const QString&);
+        QString show();
+      }
 
       typedef std::string path_type;
       typedef std::set<std::string> path_set_type;
