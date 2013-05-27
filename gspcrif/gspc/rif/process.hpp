@@ -5,7 +5,7 @@
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/thread/locks.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
 #include <gspc/rif/types.hpp>
@@ -56,9 +56,11 @@ namespace gspc
     private:
       int waitpid_and_notify (int flags);
 
-      typedef boost::mutex              mutex_type;
+      typedef boost::shared_mutex            mutex_type;
+      typedef boost::shared_lock<mutex_type> shared_lock;
+      typedef boost::unique_lock<mutex_type> unique_lock;
       mutable mutex_type                m_mutex;
-      mutable boost::condition_variable m_terminated;
+      mutable boost::condition_variable_any m_terminated;
 
       proc_t                  m_proc_id;
       boost::filesystem::path m_filename;

@@ -198,7 +198,7 @@ namespace gspc
 
     int process_t::wait (boost::posix_time::time_duration td)
     {
-      boost::unique_lock<mutex_type> lock (m_mutex);
+      unique_lock lock (m_mutex);
 
       while (not m_status)
       {
