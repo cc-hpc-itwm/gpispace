@@ -16,8 +16,7 @@ namespace gspc
 
     pipe_t::~pipe_t ()
     {
-      close_rd ();
-      close_wr ();
+      this->close ();
     }
 
     ssize_t pipe_t::read (void *buffer, size_t len)
