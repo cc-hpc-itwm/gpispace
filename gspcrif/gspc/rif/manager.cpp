@@ -346,7 +346,7 @@ namespace gspc
               if (nbytes > 0)
               {
                 buf [nbytes] = 0;
-                std::cerr << "read " << nbytes << " from process " << p->id () << std::endl;
+                std::cerr << "read " << nbytes << " bytes from process " << p->id () << std::endl;
               }
             }
             else
