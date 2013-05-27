@@ -248,6 +248,7 @@ namespace gspc
       if (not m_status)
       {
         m_status = s;
+        m_pid = -1;
       }
       m_terminated.notify_all ();
     }
