@@ -3,7 +3,11 @@
 
 #include <errno.h>
 #include <signal.h>
+
+#include <boost/foreach.hpp>
+
 #include <gspc/rif/manager.hpp>
+#include <gspc/rif/convenience.hpp>
 
 struct F
 {
@@ -44,7 +48,32 @@ BOOST_AUTO_TEST_CASE (test_exec)
 
   p = manager.exec (argv);
   BOOST_REQUIRE (p > 0);
-  std::cerr << "process created: " << p << std::endl;
+
+  rc = manager.wait (p, &status);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE (WIFEXITED (status));
+  BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
+
+  manager.stop ();
+}
+
+BOOST_AUTO_TEST_CASE (test_echo_no_newline)
+{
+  int rc;
+  int status;
+  gspc::rif::proc_t p;
+  gspc::rif::manager_t manager;
+  manager.start ();
+
+  gspc::rif::argv_t argv;
+
+  argv.push_back ("/bin/echo");
+  argv.push_back ("-n");
+  argv.push_back ("hello");
+  argv.push_back ("world");
+
+  p = manager.exec (argv);
+  BOOST_REQUIRE (p > 0);
 
   rc = manager.wait (p, &status);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -68,7 +97,6 @@ BOOST_AUTO_TEST_CASE (test_no_output)
 
   p = manager.exec (argv);
   BOOST_REQUIRE (p > 0);
-  std::cerr << "process created: " << p << std::endl;
 
   rc = manager.wait (p, &status);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -93,7 +121,6 @@ BOOST_AUTO_TEST_CASE (test_cat)
 
   p = manager.exec (argv);
   BOOST_REQUIRE (p > 0);
-  std::cerr << "process created: " << p << std::endl;
 
   rc = manager.wait (p, &status);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -160,6 +187,47 @@ BOOST_AUTO_TEST_CASE (test_sigterm)
 
   rc = manager.remove (p);
   BOOST_REQUIRE_EQUAL (rc, 0);
+
+  manager.stop ();
+}
+
+BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
+{
+  const std::size_t NUM_PROCS = 128;
+
+  int rc;
+  gspc::rif::manager_t manager;
+  gspc::rif::proc_list_t ids;
+  manager.start ();
+
+  for (size_t i = 0 ; i < NUM_PROCS ; ++i)
+  {
+    gspc::rif::proc_t p = gspc::rif::exec (manager, "/bin/sleep 5");
+    if (p > 0)
+    {
+      ids.push_back (p);
+    }
+    else
+    {
+      std::cerr << "failed to exec: " << p << ": " << strerror (-p) << std::endl;
+    }
+  }
+
+  std::cerr << ids.size () << " processes started" << std::endl;
+
+  BOOST_FOREACH (gspc::rif::proc_t p, ids)
+  {
+    int status;
+    rc = manager.wait (p, &status);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE (WIFEXITED (status));
+    BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
+
+    rc = manager.remove (p);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+  }
+
+  std::cerr << ids.size () << " processes finished" << std::endl;
 
   manager.stop ();
 }
