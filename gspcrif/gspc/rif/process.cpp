@@ -142,7 +142,7 @@ namespace gspc
                    ) < 0
            )
         {
-          int ec = 255;
+          int ec;
 
           switch (errno)
           {
@@ -151,17 +151,14 @@ namespace gspc
             break;
           case ENOEXEC:
           case EPERM:
+          case EFAULT:
           case EACCES:
-            ec = 126;
-            break;
           case E2BIG:
           case EINVAL:
           case EIO:
           case EISDIR:
-            ec = 125;
-            break;
           default:
-            ec = 255;
+            ec = 126;
             break;
           }
 
