@@ -58,9 +58,9 @@ public:
 };
 
 void s_handle_rif ( std::string const &dst
-                         , gspc::net::frame const &rqst
-                         , gspc::net::user_ptr user
-                         )
+                  , gspc::net::frame const &rqst
+                  , gspc::net::user_ptr user
+                  )
 {
   std::string cmd = rqst.get_body_as_string ();
 
