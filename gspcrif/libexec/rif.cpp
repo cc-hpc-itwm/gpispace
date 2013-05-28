@@ -552,10 +552,10 @@ void s_handle_rif ( std::string const &dst
          << "   status [proc...]" << std::endl
          << "   term [proc...]" << std::endl
          << "   kill <signal> [proc...]" << std::endl
-         << "   read proc FD" << std::endl
-         << "   write proc FD data" << std::endl
-         << "   remove proc" << std::endl
-         << "   ps [pid]" << std::endl
+         << "   read FD [proc...]" << std::endl
+         << "   write proc FD data..." << std::endl
+         << "   purge [proc...]" << std::endl
+         << "   ps [proc...]" << std::endl
       ;
     rply.add_body (sstr.str ());
   }
