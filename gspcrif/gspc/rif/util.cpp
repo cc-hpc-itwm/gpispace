@@ -217,5 +217,21 @@ namespace gspc
 
       return 0;
     }
+
+    int make_exit_code (int status)
+    {
+      if (WIFEXITED (status))
+      {
+        return WEXITSTATUS (status) & 0xff;
+      }
+      else if (WIFSIGNALED (status))
+      {
+        return (128 + WTERMSIG (status)) & 0xff;
+      }
+      else
+      {
+        return -EBUSY;
+      }
+    }
   }
 }

@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <boost/format.hpp>
 
+#include "util.hpp"
 #include "buffer.hpp"
 
 namespace fs = boost::filesystem;
@@ -213,14 +214,7 @@ namespace gspc
 
       if (m_status)
       {
-        if (WIFEXITED (*m_status))
-        {
-          return WEXITSTATUS (*m_status) & 0xff;
-        }
-        else if (WIFSIGNALED (*m_status))
-        {
-          return (128 + WTERMSIG (*m_status)) & 0xff;
-        }
+        return make_exit_code (*m_status);
       }
 
       return -EBUSY;
