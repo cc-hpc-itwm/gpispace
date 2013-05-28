@@ -261,6 +261,8 @@ namespace gspc
         m_status = s;
         m_pid = -1;
       }
+
+      lock.unlock ();
       m_terminated.notify_all ();
     }
 
