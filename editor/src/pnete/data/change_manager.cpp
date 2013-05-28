@@ -1245,7 +1245,7 @@ namespace fhg
       namespace
       {
         template<typename opt>
-          opt any (const opt& a, const opt& b)
+          opt first_valid (const opt& a, const opt& b)
         {
           return a ? a : b;
         }
@@ -1313,21 +1313,23 @@ namespace fhg
         {
           const boost::optional<xml::parse::id::ref::port> a_equiv
             ( port_a_slot_uses
-            ? any ( port_a.parent().get().ports().get
-                    (std::make_pair (*port_a_slot_uses, we::type::PORT_TUNNEL))
-                  , port_a.parent().get().ports().get
-                    (std::make_pair (*port_a_slot_uses, we::type::PORT_IN))
-                  )
+            ? first_valid
+              ( port_a.parent().get().ports().get
+                (std::make_pair (*port_a_slot_uses, we::type::PORT_TUNNEL))
+              , port_a.parent().get().ports().get
+                (std::make_pair (*port_a_slot_uses, we::type::PORT_IN))
+              )
             : port_a.parent().get().ports().get
               (std::make_pair (*port_a_slot_return, we::type::PORT_OUT))
             );
           const boost::optional<xml::parse::id::ref::port> b_equiv
             ( port_b_slot_uses
-            ? any ( port_b.parent().get().ports().get
-                    (std::make_pair (*port_b_slot_uses, we::type::PORT_TUNNEL))
-                  , port_b.parent().get().ports().get
-                    (std::make_pair (*port_b_slot_uses, we::type::PORT_IN))
-                  )
+            ? first_valid
+              ( port_b.parent().get().ports().get
+                (std::make_pair (*port_b_slot_uses, we::type::PORT_TUNNEL))
+              , port_b.parent().get().ports().get
+                (std::make_pair (*port_b_slot_uses, we::type::PORT_IN))
+              )
             : port_b.parent().get().ports().get
               (std::make_pair (*port_b_slot_return, we::type::PORT_OUT))
             );
