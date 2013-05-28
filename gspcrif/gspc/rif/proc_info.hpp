@@ -22,6 +22,10 @@ namespace gspc
       env_t const & env () const { return m_env; }
       boost::optional<int> status () const { return m_status; }
 
+      bool inp_pending () const { return m_inp_pending; }
+      bool out_pending () const { return m_out_pending; }
+      bool err_pending () const { return m_err_pending; }
+
       void assign_from (process_t const &);
     private:
       proc_t m_proc;
@@ -29,6 +33,10 @@ namespace gspc
       argv_t m_argv;
       env_t  m_env;
       boost::optional<int> m_status;
+
+      bool m_inp_pending;
+      bool m_out_pending;
+      bool m_err_pending;
     };
   }
 }

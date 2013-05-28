@@ -1,6 +1,7 @@
 #include "proc_info.hpp"
 
 #include "process.hpp"
+#include "buffer.hpp"
 
 namespace gspc
 {
@@ -12,6 +13,9 @@ namespace gspc
       , m_argv ()
       , m_env ()
       , m_status ()
+      , m_inp_pending (false)
+      , m_out_pending (false)
+      , m_err_pending (false)
     {}
 
     void proc_info_t::assign_from (process_t const &p)
@@ -21,6 +25,10 @@ namespace gspc
       m_argv = p.argv ();
       m_env = p.env ();
       m_status = p.status ();
+
+      m_inp_pending = p.buffer  (STDIN_FILENO).size ();
+      m_out_pending = p.buffer (STDOUT_FILENO).size ();
+      m_err_pending = p.buffer (STDERR_FILENO).size ();
     }
   }
 }
