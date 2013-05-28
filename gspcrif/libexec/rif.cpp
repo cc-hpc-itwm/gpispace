@@ -207,21 +207,38 @@ void s_handle_rif ( std::string const &dst
       return;
     }
 
-    int sig;
+    int sig = 0;
     try
     {
       sig = boost::lexical_cast<int> (argv [0]);
     }
     catch (boost::bad_lexical_cast const&)
     {
-      std::stringstream sstr;
-      sstr << "invalid sig: " << argv [0];
-      rply = gspc::net::make::error_frame ( rqst
-                                          , gspc::net::E_SERVICE_FAILED
-                                          , sstr.str ()
-                                          );
-      user->deliver (rply);
-      return;
+      const std::string s (argv[0]);
+
+      if      (s == "HUP")  sig = SIGHUP;
+      else if (s == "INT")  sig = SIGINT;
+      else if (s == "QUIT") sig = SIGQUIT;
+      else if (s == "KILL") sig = SIGKILL;
+      else if (s == "TERM") sig = SIGTERM;
+      else if (s == "USR1") sig = SIGUSR1;
+      else if (s == "USR2") sig = SIGUSR2;
+      else if (s == "ALRM") sig = SIGALRM;
+      else if (s == "SEGV") sig = SIGSEGV;
+      else if (s == "STOP") sig = SIGSTOP;
+      else if (s == "CONT") sig = SIGCONT;
+      else if (s == "URG")  sig = SIGURG;
+      else
+      {
+        std::stringstream sstr;
+        sstr << "invalid sig: " << argv [0];
+        rply = gspc::net::make::error_frame ( rqst
+                                            , gspc::net::E_SERVICE_FAILED
+                                            , sstr.str ()
+                                            );
+        user->deliver (rply);
+        return;
+      }
     }
 
     gspc::rif::proc_list_t procs;
