@@ -1,6 +1,7 @@
 set (gspcrif_src
   rif/util.cpp
   rif/pipe.cpp
+  rif/buffer.cpp
   rif/proc_info.cpp
   rif/process.cpp
   rif/manager.cpp
