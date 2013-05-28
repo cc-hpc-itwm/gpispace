@@ -331,8 +331,6 @@ namespace gspc
     {
       bool done = false;
 
-      char buf [4096];
-
       for (; not done ;)
       {
         int nready;
@@ -354,8 +352,8 @@ namespace gspc
             p->try_waitpid ();
 
             // only add stdin if there is any data to be written
-            //detail::add_pollfd (p->stdin ().wr (), POLLOUT, to_poll);
-
+            if (p->stdin ().wr () >= 0 && p->buffer (STDIN_FILENO).size ())
+              detail::add_pollfd (p->stdin ().wr (), POLLOUT, to_poll);
             if (p->stdout ().rd () >= 0)
               detail::add_pollfd (p->stdout ().rd (), POLLIN, to_poll);
             if (p->stderr ().rd () >= 0)
@@ -409,25 +407,44 @@ namespace gspc
 
             if (p)
             {
-              ssize_t nbytes = read (pfd.fd, buf, sizeof(buf) - 1);
-              if (nbytes > 0)
+              if (pfd.fd == p->stdout ().rd ())
               {
-                buf [nbytes] = 0;
-                std::cerr << "read " << nbytes << " bytes from process " << p->id () << std::endl;
+                p->buffer (STDOUT_FILENO).read_from (pfd.fd);
+              }
+              else if (pfd.fd == p->stderr ().rd ())
+              {
+                p->buffer (STDERR_FILENO).read_from (pfd.fd);
+              }
+              else
+              {
+                close (pfd.fd);
               }
             }
             else
             {
-              std::cerr << "inp fd " << pfd.fd << " does not belong to any proc" << std::endl;
+              close (pfd.fd);
             }
           }
 
           if (pfd.revents & POLLOUT)
           {
-            std::cerr << "can write to " << pfd.fd << std::endl;
-            // lookup related process
-            // write pending data to process
-            //    if buffer empty, do not poll for write anymore
+            process_ptr_t p = process_by_fd (pfd.fd);
+
+            if (p)
+            {
+              if (pfd.fd == p->stdin ().wr ())
+              {
+                p->buffer (STDIN_FILENO).write_to (pfd.fd);
+              }
+              else
+              {
+                close (pfd.fd);
+              }
+            }
+            else
+            {
+              close (pfd.fd);
+            }
           }
 
           if (pfd.revents & POLLERR || pfd.revents & POLLNVAL)
