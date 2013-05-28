@@ -99,6 +99,9 @@ namespace gspc
     {
       int rc;
 
+      if (m_status)
+        return 0;
+
       if (m_pid == -1)
       {
         return -ECHILD;
