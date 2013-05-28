@@ -3,5 +3,6 @@
 
 #include <gspc/rif/util.hpp>
 #include <gspc/rif/convenience.hpp>
+#include <gspc/rif/manager.hpp>
 
 #endif
