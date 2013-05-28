@@ -10,6 +10,7 @@
 
 #include <gspc/rif/types.hpp>
 #include <gspc/rif/pipe.hpp>
+#include <gspc/rif/buffer_fwd.hpp>
 
 namespace gspc
 {
@@ -62,6 +63,9 @@ namespace gspc
       ssize_t write (const void *buf, size_t len);
       ssize_t read (void *buf, size_t len);
       ssize_t readerr (void *buf, size_t len);
+
+      buffer_t & buffer (int fd);
+      const buffer_t & buffer (int fd) const;
     private:
       int waitpid_and_notify (int flags);
 
@@ -79,7 +83,8 @@ namespace gspc
       pid_t  m_pid;
       boost::optional<int>    m_status;
 
-      std::vector<pipe_t> m_pipes;
+      std::vector<pipe_t>    m_pipes;
+      std::vector<buffer_t*> m_buffers;
     };
   }
 }

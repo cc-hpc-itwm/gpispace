@@ -8,6 +8,11 @@
 #include <sys/wait.h>           // waitpid
 #include <signal.h>             // kill
 
+#include <stdexcept>
+#include <boost/format.hpp>
+
+#include "buffer.hpp"
+
 namespace fs = boost::filesystem;
 
 namespace gspc
@@ -73,13 +78,20 @@ namespace gspc
       for (size_t i = 0 ; i < 3 ; ++i)
       {
         m_pipes.push_back (pipe_t ());
+        m_buffers.push_back (new buffer_t (2097152));
       }
     }
 
     process_t::~process_t ()
     {
       for (size_t i = 0 ; i < m_pipes.size () ; ++i)
+      {
         m_pipes [i].close ();
+      }
+      for (size_t i = 0 ; i < m_buffers.size () ; ++i)
+      {
+        delete m_buffers [i];
+      }
     }
 
     int process_t::kill (int sig)
@@ -316,6 +328,22 @@ namespace gspc
     ssize_t process_t::write (const void *buffer, size_t len)
     {
       return stdin ().write (buffer, len);
+    }
+
+    buffer_t & process_t::buffer (int fd)
+    {
+      if (fd < 0 || (size_t)fd >= m_buffers.size ())
+        throw std::out_of_range
+          ((boost::format ("process_t::buffer(): fd out of range: %1%") % fd).str ());
+      return *m_buffers [fd];
+    }
+
+    buffer_t const & process_t::buffer (int fd) const
+    {
+      if (fd < 0 || (size_t)fd >= m_buffers.size ())
+        throw std::out_of_range
+          ((boost::format ("process_t::buffer(): fd out of range: %1%") % fd).str ());
+      return *m_buffers [fd];
     }
   }
 }
