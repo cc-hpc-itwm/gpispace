@@ -298,6 +298,7 @@ private:
                             )
   {
     m_loader->unload_autoloaded ();
+    user->deliver (gspc::net::make::reply_frame (rqst));
   }
 
   void execution_thread ()
