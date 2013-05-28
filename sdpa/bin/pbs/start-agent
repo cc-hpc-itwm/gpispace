@@ -172,6 +172,9 @@ fi
 if [ -n "$pidfile" ] ; then
     opts="$opts --pidfile $pidfile"
 fi
+if [ -n "$gui" ]; then
+    opts="$opts -a $gui"
+fi
 
 cmd="${SDPA_HOME}/bin/agent $opts"
 
