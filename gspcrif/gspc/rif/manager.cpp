@@ -87,12 +87,6 @@ namespace gspc
         m_stopping = true;
       }
 
-      notify_io_thread (io_thread_command::SHUTDOWN);
-
-      m_io_thread->join ();
-      m_io_thread.reset ();
-      m_io_thread_pipe.close ();
-
       {
         while (not m_processes.empty ())
         {
@@ -101,6 +95,12 @@ namespace gspc
           this->remove (proc);
         }
       }
+
+      notify_io_thread (io_thread_command::SHUTDOWN);
+
+      m_io_thread->join ();
+      m_io_thread.reset ();
+      m_io_thread_pipe.close ();
 
       {
         unique_lock lock (m_mutex);
