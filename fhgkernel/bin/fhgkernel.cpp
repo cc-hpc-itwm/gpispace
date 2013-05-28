@@ -115,11 +115,6 @@ static void shutdown_kernel ()
 
 static void handle_sig_pipe() {}
 
-static void handle_sig_child()
-{
-  waitpid(-1, 0, WNOHANG);
-}
-
 void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
   if (kernel)
@@ -136,15 +131,6 @@ void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
   if (kernel)
   {
     kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
-    kernel->handle_signal (sig_num, info, ucontext);
-  }
-}
-
-void sigchild_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-{
-  if (kernel)
-  {
-    kernel->schedule("kernel", "wait_on_child", &handle_sig_child);
     kernel->handle_signal (sig_num, info, ucontext);
   }
 }
@@ -235,16 +221,6 @@ void install_signal_handler()
     exit(EXIT_FAILURE);
   }
 
-  sigact.sa_sigaction = sigchild_hdlr;
-  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-  if (sigaction(SIGCHLD, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGCHLD, strsignal(SIGCHLD));
-
-    exit(EXIT_FAILURE);
-  }
-
   sigact.sa_sigaction = sigpipe_hdlr;
   sigact.sa_flags = SA_SIGINFO;
   if (sigaction(SIGPIPE, &sigact, (struct sigaction *)NULL) != 0)
@@ -260,7 +236,7 @@ void install_signal_handler()
   if (sigaction(SIGUSR1, &sigact, (struct sigaction *)NULL) != 0)
   {
     fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGCHLD, strsignal(SIGUSR1));
+           SIGUSR1, strsignal(SIGUSR1));
 
     exit(EXIT_FAILURE);
   }
@@ -270,7 +246,7 @@ void install_signal_handler()
   if (sigaction(SIGUSR2, &sigact, (struct sigaction *)NULL) != 0)
   {
     fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGCHLD, strsignal(SIGUSR1));
+           SIGUSR2, strsignal(SIGUSR2));
 
     exit(EXIT_FAILURE);
   }
