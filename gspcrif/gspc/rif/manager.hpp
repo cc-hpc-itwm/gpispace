@@ -73,6 +73,9 @@ namespace gspc
       int wait (proc_t proc, int *status);
       int wait (proc_t proc, int *status, boost::posix_time::time_duration t);
 
+      ssize_t read (proc_t, int fd, char *, size_t len, boost::system::error_code &);
+      ssize_t write (proc_t, int fd, const char *, size_t len, boost::system::error_code &);
+
       /**
          Retrieve additional information about the process.
 

@@ -9,6 +9,7 @@
 #include <boost/system/system_error.hpp>
 
 #include "process.hpp"
+#include "buffer.hpp"
 #include "proc_info.hpp"
 
 namespace gspc
@@ -221,6 +222,42 @@ namespace gspc
         *status = *p->status ();
       }
       return rc;
+    }
+
+    ssize_t
+    manager_t::read ( proc_t proc
+                    , int fd
+                    , char *buf, size_t len
+                    , boost::system::error_code &ec
+                    )
+    {
+      process_ptr_t p = process_by_id (proc);
+      if (not p)
+      {
+        using namespace boost::system;
+        ec = errc::make_error_code (errc::no_such_process);
+        return -1;
+      }
+
+      return p->buffer (fd).read (buf, len);
+    }
+
+    ssize_t
+    manager_t::write ( proc_t proc
+                     , int fd
+                     , const char *buf, size_t len
+                     , boost::system::error_code &ec
+                     )
+    {
+      process_ptr_t p = process_by_id (proc);
+      if (not p)
+      {
+        using namespace boost::system;
+        ec = errc::make_error_code (errc::no_such_process);
+        return -1;
+      }
+
+      return p->buffer (fd).write (buf, len);
     }
 
     void manager_t::notify_io_thread (int cmd) const
