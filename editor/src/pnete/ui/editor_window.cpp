@@ -881,9 +881,16 @@ namespace fhg
           const boost::filesystem::path make_output
             (temporary_path / "MAKEOUTPUT");
 
+          const boost::optional<std::string> HOME (get_env ("HOME"));
+
+          if (!HOME)
+          {
+            throw std::runtime_error ("$HOME not set!?");
+          }
+
           if ( system ( ( "make -C "
                         + temporary_path.string()
-                        + " > "
+                        + " LIB_DESTDIR=" + *HOME + "/.sdpa/modules install > "
                         + make_output.string()
                         + " 2>&1 "
                         ).c_str()
@@ -1147,6 +1154,14 @@ namespace fhg
 
         //! \todo Setup plugin search path.
         static fhg::core::kernel_t kernel;
+
+        const boost::optional<std::string> SDPA_HOME (get_env ("SDPA_HOME"));
+        if (!SDPA_HOME)
+        {
+          throw std::runtime_error ("SDPA_HOME not set");
+        }
+
+        kernel.add_search_path (*SDPA_HOME + "/libexec/fhg/plugins/");
 
         sdpa::Client* client (load_plugin<sdpa::Client> (kernel, "sdpac"));
 
