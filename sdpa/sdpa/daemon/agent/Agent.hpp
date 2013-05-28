@@ -83,6 +83,8 @@ namespace sdpa {
 
         const std::string url() const {return url_;}
 
+      virtual NotificationService* gui_service() { return &m_guiService; }
+
         template <class Archive>
         void serialize(Archive& ar, const unsigned int)
         {
