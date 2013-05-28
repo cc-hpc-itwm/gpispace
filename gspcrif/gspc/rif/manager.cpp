@@ -87,8 +87,6 @@ namespace gspc
         m_stopping = true;
       }
 
-      // kill all procs
-
       notify_io_thread (io_thread_command::SHUTDOWN);
 
       m_io_thread->join ();
@@ -96,9 +94,51 @@ namespace gspc
       m_io_thread_pipe.close ();
 
       {
+        while (not m_processes.empty ())
+        {
+          proc_t proc = m_processes.begin ()->first;
+          this->term (proc, boost::posix_time::seconds (1));
+          this->remove (proc);
+        }
+      }
+
+      {
         unique_lock lock (m_mutex);
         m_stopping = false;
       }
+    }
+
+    void manager_t::setenv (std::string const &key, std::string const &val)
+    {
+      unique_lock lock (m_mutex);
+      m_environment [key] = val;
+    }
+
+    int manager_t::getenv (std::string const &key, std::string &val) const
+    {
+      shared_lock lock (m_mutex);
+      env_t::const_iterator it = m_environment.find (key);
+      if (it != m_environment.end ())
+      {
+        val = it->second;
+        return 0;
+      }
+      else
+      {
+        return -1;
+      }
+    }
+
+    void manager_t::delenv (std::string const &key)
+    {
+      unique_lock lock (m_mutex);
+      m_environment.erase (key);
+    }
+
+    env_t const &manager_t::env () const
+    {
+      shared_lock lock (m_mutex);
+      return m_environment;
     }
 
     proc_t

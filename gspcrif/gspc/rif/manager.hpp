@@ -32,6 +32,11 @@ namespace gspc
       void start ();
       void stop ();
 
+      void setenv (std::string const &key, std::string const &val);
+      int  getenv (std::string const &key, std::string &val) const;
+      void delenv (std::string const &key);
+      env_t const &env () const;
+
       /**
          executes the given command
 
