@@ -38,9 +38,17 @@ namespace sdpa { namespace daemon {
     typedef typename Service::event_t event_t;
     typedef typename event_t::state_t state_t;
 
-    explicit notify_helper(const Service &s)
+    explicit notify_helper(Service* s, const std::string& activity_encoded)
       : service_(s)
-    {}
+      , event_()
+    {
+      event_.activity() = activity_encoded;
+    }
+    notify_helper& component (const std::string& component)
+    {
+      event_.component() = component;
+      return *this;
+    }
 
     notify_helper &activity_id(const std::string &id)     { event_.activity_id() = id; return *this; }
     notify_helper &activity_name(const std::string &name) { event_.activity_name() = name; return *this; }
@@ -63,9 +71,9 @@ namespace sdpa { namespace daemon {
       event_.activity_state() = NotificationEvent::STATE_CANCELLED; return *this;
     }
 
-    ~notify_helper() { try { service_.notify(event_); } catch(...) {} }
+    ~notify_helper() { try { service_->notify(event_); } catch(...) {} }
   private:
-    const Service &service_;
+    Service* service_;
     event_t event_;
   };
 
