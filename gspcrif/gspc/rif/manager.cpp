@@ -179,7 +179,7 @@ namespace gspc
       m_fd_to_proc [p->stderr ().rd ()] = p->id ();
       m_pid_to_proc [p->pid ()] = p->id ();
 
-      ::fcntl (p->stdin ().wr (), F_SETFL, O_NONBLOCK);
+      ::fcntl (p->stdin  ().wr (), F_SETFL, O_NONBLOCK);
       ::fcntl (p->stdout ().rd (), F_SETFL, O_NONBLOCK);
       ::fcntl (p->stderr ().rd (), F_SETFL, O_NONBLOCK);
 
