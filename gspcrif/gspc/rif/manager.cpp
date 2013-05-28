@@ -150,6 +150,8 @@ namespace gspc
     proc_t
     manager_t::exec (argv_t const & argv, env_t const &env)
     {
+      namespace fs = boost::filesystem;
+
       unique_lock lock (m_mutex);
 
       proc_t id;
@@ -164,7 +166,8 @@ namespace gspc
         id = ++m_proc_ids;
       }
 
-      process_ptr_t p (new process_t (id, argv.front (), argv, env));
+      const fs::path filename = argv.front ();
+      process_ptr_t p (new process_t (id, filename, argv, env));
 
       int rc = p->fork_and_exec ();
       if (rc < 0)
