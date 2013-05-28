@@ -24,6 +24,8 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/capability.hpp>
 
+#include <gspc/net.hpp>
+
 //! \todo eliminate this include (that completes the type transition_t::data)
 #include <we/type/net.hpp>
 
@@ -103,6 +105,11 @@ public:
 
     m_worker.reset(new boost::thread(&WFEImpl::execution_thread, this));
     fhg::util::set_threadname (*m_worker, "[wfe]");
+
+    gspc::net::handle
+      ("/service/module/unload"
+      , boost::bind (&WFEImpl::handle_module_unload, this, _1, _2, _3)
+      );
 
     FHG_PLUGIN_STARTED();
   }
@@ -285,6 +292,14 @@ public:
     return 0;
   }
 private:
+  void handle_module_unload ( std::string const &dst
+                            , gspc::net::frame const &rqst
+                            , gspc::net::user_ptr user
+                            )
+  {
+    m_loader->unload_autoloaded ();
+  }
+
   void execution_thread ()
   {
     for (;;)
