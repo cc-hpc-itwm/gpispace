@@ -188,8 +188,6 @@ void s_handle_rif ( std::string const &dst
 
     int rc = s_rif->mgr ().term (p, boost::posix_time::seconds (5));
 
-    std::cerr << "term(" << p << ") = " << rc << std::endl;
-
     if (rc < 0)
     {
       std::stringstream sstr;
