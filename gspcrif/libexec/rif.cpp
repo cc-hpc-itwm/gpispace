@@ -118,95 +118,90 @@ void s_handle_rif ( std::string const &dst
   }
   else if (command == "status")
   {
+    gspc::rif::proc_list_t procs;
     if (argv.empty ())
     {
-      rply = gspc::net::make::error_frame ( rqst
-                                          , gspc::net::E_SERVICE_FAILED
-                                          , "no process specified"
-                                          );
-      user->deliver (rply);
-      return;
-    }
-
-    gspc::rif::proc_t p;
-    try
-    {
-      p = boost::lexical_cast<gspc::rif::proc_t> (*argv.begin ());
-    }
-    catch (boost::bad_lexical_cast const&)
-    {
-      rply = gspc::net::make::error_frame ( rqst
-                                          , gspc::net::E_SERVICE_FAILED
-                                          , "invalid proc"
-                                          );
-      user->deliver (rply);
-      return;
-    }
-
-    int status;
-    int rc = s_rif->mgr ().wait (p, &status, boost::posix_time::seconds (0));
-    if (rc < 0)
-    {
-      std::stringstream sstr;
-      sstr << "running: " << p << std::endl;
-      rply.add_body (sstr.str ());
+      procs = s_rif->mgr ().processes ();
     }
     else
     {
+      for (size_t i = 0 ; i < argv.size () ; ++i)
+      {
+        try
+        {
+          procs.push_back (boost::lexical_cast<gspc::rif::proc_t> (argv [i]));
+        }
+        catch (boost::bad_lexical_cast const&)
+        {
+          continue;
+        }
+      }
+    }
+
+    BOOST_FOREACH (gspc::rif::proc_t p, procs)
+    {
       std::stringstream sstr;
-      sstr << "terminated: " << p << ": " <<  gspc::rif::make_exit_code (status)
-           << std::endl;
+      sstr << "[" << p << "] ";
+
+      int status;
+      int rc = s_rif->mgr ().wait (p, &status, boost::posix_time::seconds (0));
+      if (-ESRCH == rc)
+      {
+        sstr << "no such process" << std::endl;
+      }
+      else if (rc < 0)
+      {
+        sstr << "Running";
+      }
+      else
+      {
+        sstr << "Terminated: " <<  gspc::rif::make_exit_code (status);
+      }
+
+      sstr << std::endl;
       rply.add_body (sstr.str ());
     }
   }
   else if (command == "term")
   {
+    gspc::rif::proc_list_t procs;
     if (argv.empty ())
     {
-      rply = gspc::net::make::error_frame ( rqst
-                                          , gspc::net::E_SERVICE_FAILED
-                                          , "no process specified"
-                                          );
-      user->deliver (rply);
-      return;
+      procs = s_rif->mgr ().processes ();
+    }
+    else
+    {
+      for (size_t i = 0 ; i < argv.size () ; ++i)
+      {
+        try
+        {
+          procs.push_back (boost::lexical_cast<gspc::rif::proc_t> (argv [i]));
+        }
+        catch (boost::bad_lexical_cast const&)
+        {
+          continue;
+        }
+      }
     }
 
-    gspc::rif::proc_t p;
-    try
+    BOOST_FOREACH (gspc::rif::proc_t p, procs)
     {
-      p = boost::lexical_cast<gspc::rif::proc_t> (*argv.begin ());
-    }
-    catch (boost::bad_lexical_cast const&)
-    {
-      rply = gspc::net::make::error_frame ( rqst
-                                          , gspc::net::E_SERVICE_FAILED
-                                          , "invalid proc"
-                                          );
-      user->deliver (rply);
-      return;
-    }
-
-    int rc = s_rif->mgr ().term (p, boost::posix_time::seconds (5));
-
-    if (rc < 0)
-    {
-      std::stringstream sstr;
-      sstr << "failed: " << -rc << ": " << strerror (-rc);
-      user->deliver (gspc::net::make::error_frame ( rqst
-                                                  , gspc::net::E_SERVICE_FAILED
-                                                  , sstr.str ()
-                                                  )
-                    );
-      return;
+      int rc = s_rif->mgr ().term (p, boost::posix_time::seconds (1));
+      if (rc < 0)
+      {
+        std::stringstream sstr;
+        sstr << "failed on: " << p << ": " << strerror (-rc) << std::endl;
+        rply.add_body (sstr.str ());
+      }
     }
   }
   else if (command == "kill")
   {
-    if (argv.size () < 2)
+    if (argv.size () < 1)
     {
       rply = gspc::net::make::error_frame ( rqst
                                           , gspc::net::E_SERVICE_FAILED
-                                          , "usage: kill SIG proc..."
+                                          , "usage: kill SIG [proc...]"
                                           );
       user->deliver (rply);
       return;
@@ -219,82 +214,82 @@ void s_handle_rif ( std::string const &dst
     }
     catch (boost::bad_lexical_cast const&)
     {
+      std::stringstream sstr;
+      sstr << "invalid sig: " << argv [0];
       rply = gspc::net::make::error_frame ( rqst
                                           , gspc::net::E_SERVICE_FAILED
-                                          , "usage: kill SIG proc..."
+                                          , sstr.str ()
                                           );
       user->deliver (rply);
       return;
     }
 
-    for (size_t i = 1 ; i < argv.size () ; ++i)
+    gspc::rif::proc_list_t procs;
+    if (argv.size () == 1)
     {
-      gspc::rif::proc_t p;
-      try
+      procs = s_rif->mgr ().processes ();
+    }
+    else
+    {
+      for (size_t i = 1 ; i < argv.size () ; ++i)
       {
-        p = boost::lexical_cast<gspc::rif::proc_t> (argv [i]);
+        try
+        {
+          procs.push_back (boost::lexical_cast<gspc::rif::proc_t> (argv [i]));
+        }
+        catch (boost::bad_lexical_cast const&)
+        {
+          continue;
+        }
       }
-      catch (boost::bad_lexical_cast const&)
-      {
-        std::stringstream sstr;
-        sstr << "invalid proc: " << argv [i] << std::endl;
-        continue;
-      }
+    }
 
+    BOOST_FOREACH (gspc::rif::proc_t p, procs)
+    {
+      std::stringstream sstr;
+
+      sstr << "[" << p << "] ";
       int rc = s_rif->mgr ().kill (p, sig);
       if (rc < 0)
       {
-        std::stringstream sstr;
-        sstr << "failed on: " << p << ": " << strerror (-rc) << std::endl;
-        rply.add_body (sstr.str ());
+        sstr << "failed: " << strerror (-rc) << std::endl;
       }
       else
       {
-        int status;
-        rc = s_rif->mgr ().wait (p, &status, boost::posix_time::milliseconds (500));
-        std::stringstream sstr;
-        sstr << "terminated: " << p << ": " << gspc::rif::make_exit_code (status) << std::endl;
-        rply.add_body (sstr.str ());
+        sstr << "ok" << std::endl;
       }
+      rply.add_body (sstr.str ());
     }
   }
-  else if (command == "remove")
+  else if (command == "purge")
   {
-    if (argv.size () < 1)
+    gspc::rif::proc_list_t procs;
+    if (argv.empty ())
     {
-      rply = gspc::net::make::error_frame ( rqst
-                                          , gspc::net::E_SERVICE_FAILED
-                                          , "usage: remove proc..."
-                                          );
-      user->deliver (rply);
-      return;
+      procs = s_rif->mgr ().processes ();
+    }
+    else
+    {
+      for (size_t i = 0 ; i < argv.size () ; ++i)
+      {
+        try
+        {
+          procs.push_back (boost::lexical_cast<gspc::rif::proc_t> (argv [i]));
+        }
+        catch (boost::bad_lexical_cast const&)
+        {
+          continue;
+        }
+      }
     }
 
-    for (size_t i = 0 ; i < argv.size () ; ++i)
+    BOOST_FOREACH (gspc::rif::proc_t p, procs)
     {
-      gspc::rif::proc_t p;
-      try
-      {
-        p = boost::lexical_cast<gspc::rif::proc_t> (argv [i]);
-      }
-      catch (boost::bad_lexical_cast const&)
-      {
-        std::stringstream sstr;
-        sstr << "invalid proc: " << argv [i] << std::endl;
-        continue;
-      }
-
       int rc = s_rif->mgr ().remove (p);
       if (rc < 0)
       {
         std::stringstream sstr;
         sstr << "failed on: " << p << ": " << strerror (-rc) << std::endl;
-        rply.add_body (sstr.str ());
-      }
-      else
-      {
-        std::stringstream sstr;
-        sstr << "removed: " << p << std::endl;
         rply.add_body (sstr.str ());
       }
     }
@@ -345,28 +340,11 @@ void s_handle_rif ( std::string const &dst
   }
   else if (command == "read")
   {
-    if (argv.size () != 2)
+    if (argv.size () < 1)
     {
       rply = gspc::net::make::error_frame ( rqst
                                           , gspc::net::E_SERVICE_FAILED
-                                          , "usage: read proc FD"
-                                          );
-      user->deliver (rply);
-      return;
-    }
-
-    gspc::rif::proc_t p;
-    try
-    {
-      p = boost::lexical_cast<gspc::rif::proc_t> (argv [0]);
-    }
-    catch (boost::bad_lexical_cast const&)
-    {
-      std::stringstream sstr;
-      sstr << "invalid proc: " << argv [0];
-      rply = gspc::net::make::error_frame ( rqst
-                                          , gspc::net::E_SERVICE_FAILED
-                                          , sstr.str ()
+                                          , "usage: read FD [proc...]"
                                           );
       user->deliver (rply);
       return;
@@ -375,44 +353,67 @@ void s_handle_rif ( std::string const &dst
     int fd;
     try
     {
-      fd = boost::lexical_cast<int> (argv [1]);
+      fd = boost::lexical_cast<int> (argv [0]);
     }
     catch (boost::bad_lexical_cast const&)
     {
       std::stringstream sstr;
-      sstr << "invalid fd: " << argv [1];
+      sstr << "invalid fd: " << argv [0];
       rply = gspc::net::make::error_frame ( rqst
                                           , gspc::net::E_SERVICE_FAILED
                                           , sstr.str ()
                                           );
       user->deliver (rply);
       return;
+    }
+
+    gspc::rif::proc_list_t procs;
+    if (argv.size () == 1)
+    {
+      procs = s_rif->mgr ().processes ();
+    }
+    else
+    {
+      for (size_t i = 1 ; i < argv.size () ; ++i)
+      {
+        try
+        {
+          procs.push_back (boost::lexical_cast<gspc::rif::proc_t> (argv [i]));
+        }
+        catch (boost::bad_lexical_cast const&)
+        {
+          continue;
+        }
+      }
     }
 
     int rc;
     char buf [4096];
     boost::system::error_code ec;
-    std::stringstream sstr;
-    do
-    {
-      rc = s_rif->mgr ().read (p, fd, buf, sizeof(buf) - 1, ec);
-      if (rc > 0)
-      {
-        buf [rc] = 0;
-        sstr << std::string (&buf[0], rc);
-      }
-    }
-    while (rc > 0);
 
-    rply.add_body (sstr.str ());
+    BOOST_FOREACH (gspc::rif::proc_t p, procs)
+    {
+      std::stringstream sstr;
+      do
+      {
+        rc = s_rif->mgr ().read (p, fd, buf, sizeof(buf) - 1, ec);
+        if (rc > 0)
+        {
+          buf [rc] = 0;
+          sstr << std::string (&buf[0], rc);
+        }
+      }
+      while (rc > 0);
+      rply.add_body (sstr.str ());
+    }
   }
   else if (command == "write")
   {
-    if (argv.size () != 3)
+    if (argv.size () < 2)
     {
       rply = gspc::net::make::error_frame ( rqst
                                           , gspc::net::E_SERVICE_FAILED
-                                          , "usage: write proc FD 'data'"
+                                          , "usage: write proc FD [data...]"
                                           );
       user->deliver (rply);
       return;
@@ -452,11 +453,25 @@ void s_handle_rif ( std::string const &dst
       return;
     }
 
-    boost::system::error_code ec;
-    std::stringstream sstr;
+    for (size_t i = 2 ; i < argv.size () ; ++i)
+    {
+      boost::system::error_code ec;
+      s_rif->mgr ().write (p, fd, argv [i].c_str (), argv [i].size (), ec);
+      if (i < (argv.size () - 1))
+        s_rif->mgr ().write (p, fd, " ", 1, ec);
 
-    s_rif->mgr ().write (p, fd, argv [2].c_str (), argv [2].size (), ec);
-    rply.set_body ("");
+      if (ec)
+      {
+        std::stringstream sstr;
+        sstr << "invalid proc: " << argv [0];
+        rply = gspc::net::make::error_frame ( rqst
+                                            , gspc::net::E_SERVICE_FAILED
+                                            , ec.message ()
+                                            );
+        user->deliver (rply);
+        return;
+      }
+    }
   }
   else if (command == "setenv")
   {
@@ -522,9 +537,9 @@ void s_handle_rif ( std::string const &dst
          << std::endl
          << " commands" << std::endl
          << "   exec command <args...>" << std::endl
-         << "   wait proc" << std::endl
-         << "   term proc" << std::endl
-         << "   kill proc <signal>" << std::endl
+         << "   status [proc...]" << std::endl
+         << "   term [proc...]" << std::endl
+         << "   kill <signal> [proc...]" << std::endl
          << "   read proc FD" << std::endl
          << "   write proc FD data" << std::endl
          << "   remove proc" << std::endl
