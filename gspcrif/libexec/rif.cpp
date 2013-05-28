@@ -331,9 +331,21 @@ void s_handle_rif ( std::string const &dst
              << "\t" << info.inp_pending ()
              << "\t" << info.out_pending ()
              << "\t" << info.err_pending ()
-             << "\t" << info.argv ().front ()
-             << std::endl
-          ;
+             << "\t";
+        bool first = true;
+        BOOST_FOREACH (std::string const &arg, info.argv ())
+        {
+          if (not first)
+          {
+            sstr << " ";
+          }
+          else
+          {
+            first = false;
+          }
+          sstr << arg;
+        }
+        sstr << std::endl;
       }
     }
     rply.set_body (sstr.str ());
