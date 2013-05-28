@@ -28,6 +28,8 @@
 #include <cassert>
 #include <sdpa/capability.hpp>
 
+#include <sdpa/daemon/NotificationService.hpp>
+
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
@@ -169,6 +171,14 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 		std::string status = pJob->getStatus();
 		if( !pJob->completed() )
 		{
+                  sdpa::daemon::notify_helper<sdpa::daemon::NotificationService>
+                    ( ptr_comm_handler_->gui_service()
+                    , pJob->description()
+                    )
+                    .component (worker_id)
+                    .activity_id (pJob->id().str())
+                    .activity_failed();
+
 		  pJob->Reschedule(); // put the job back into the pending state
 		  schedule_remote(job_id);
 		}
