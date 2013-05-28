@@ -78,18 +78,14 @@ void s_handle_rif ( std::string const &dst
     return;
   }
 
-  if (argv.empty ())
+
+  std::string command;
+  if (not argv.empty ())
   {
-    user->deliver (gspc::net::make::error_frame ( rqst
-                                                , gspc::net::E_SERVICE_FAILED
-                                                , "empty commandline"
-                                                )
-                  );
-    return;
+    command = argv [0];
+    argv.erase (argv.begin ());
   }
 
-  std::string command = argv [0];
-  argv.erase (argv.begin ());
   std::transform ( command.begin ()
                  , command.end ()
                  , command.begin ()
@@ -463,6 +459,63 @@ void s_handle_rif ( std::string const &dst
 
     s_rif->mgr ().write (p, fd, argv [2].c_str (), argv [2].size (), ec);
     rply.set_body ("");
+  }
+  else if (command == "setenv")
+  {
+    if (argv.size () != 2)
+    {
+      rply = gspc::net::make::error_frame ( rqst
+                                          , gspc::net::E_SERVICE_FAILED
+                                          , "usage: setenv <key> <value>"
+                                          );
+      user->deliver (rply);
+      return;
+    }
+
+    s_rif->mgr ().setenv (argv [0], argv [1]);
+  }
+  else if (command == "getenv")
+  {
+    if (argv.size () != 1)
+    {
+      rply = gspc::net::make::error_frame ( rqst
+                                          , gspc::net::E_SERVICE_FAILED
+                                          , "usage: getenv <key>"
+                                          );
+      user->deliver (rply);
+      return;
+    }
+
+    std::string val;
+    if (0 == s_rif->mgr ().getenv (argv [0], val))
+    {
+      rply.set_body (val);
+    }
+  }
+  else if (command == "delenv")
+  {
+    if (argv.size () != 1)
+    {
+      rply = gspc::net::make::error_frame ( rqst
+                                          , gspc::net::E_SERVICE_FAILED
+                                          , "usage: delenv <key>"
+                                          );
+      user->deliver (rply);
+      return;
+    }
+
+    s_rif->mgr ().delenv (argv [0]);
+  }
+  else if (command == "env")
+  {
+    gspc::rif::env_t env = s_rif->mgr ().env ();
+    BOOST_FOREACH (gspc::rif::env_t::value_type const &e, env)
+    {
+      rply.add_body (e.first);
+      rply.add_body ("=");
+      rply.add_body (e.second);
+      rply.add_body ("\n");
+    }
   }
   else
   {
