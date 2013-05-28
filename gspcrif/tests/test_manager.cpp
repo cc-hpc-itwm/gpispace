@@ -291,4 +291,56 @@ BOOST_AUTO_TEST_CASE (test_proc_info)
   manager.stop ();
 }
 
+BOOST_AUTO_TEST_CASE (test_communicate)
+{
+  int rc;
+  int status;
+  gspc::rif::proc_t p;
+  gspc::rif::manager_t manager;
+  char buf [4096];
+  boost::system::error_code ec;
+
+  manager.start ();
+
+  gspc::rif::argv_t argv;
+
+  argv.push_back ("/bin/cat");
+
+  p = manager.exec (argv);
+  BOOST_REQUIRE (p > 0);
+
+  const std::string text = "hello world!";
+
+  rc = manager.write (p, STDIN_FILENO, text.c_str (), text.size (), ec);
+  BOOST_REQUIRE (rc > 0);
+  BOOST_REQUIRE_EQUAL ((std::size_t)rc, text.size ());
+
+  do
+  {
+    rc = manager.read (p, STDOUT_FILENO, buf, sizeof(buf), ec);
+    if (rc <= 0)
+      usleep (500);
+  }
+  while (rc <= 0);
+  BOOST_REQUIRE (rc > 0);
+  BOOST_REQUIRE_EQUAL ((std::size_t)rc, text.size ());
+
+  rc = manager.read (p, STDOUT_FILENO, buf, sizeof(buf), ec);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = manager.kill (p, SIGTERM);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = manager.wait (p, &status);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  BOOST_REQUIRE (WIFSIGNALED (status));
+  BOOST_REQUIRE_EQUAL (WTERMSIG (status), SIGTERM);
+
+  rc = manager.remove (p);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  manager.stop ();
+}
+
 BOOST_AUTO_TEST_SUITE_END()
