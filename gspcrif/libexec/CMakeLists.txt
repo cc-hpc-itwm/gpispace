@@ -3,6 +3,9 @@ include(fhg_plugin_macros)
 find_package (FhgKernel REQUIRED QUIET)
 include_directories (${FhgKernel_INCLUDE_DIR})
 
+find_package (FhgLog REQUIRED QUIET)
+include_directories (${FhgLog_INCLUDE_DIR})
+
 find_package(GSPC_NET REQUIRED QUIET)
 include_directories("${GSPC_NET_INCLUDE_DIR}")
 
