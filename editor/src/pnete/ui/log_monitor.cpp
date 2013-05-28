@@ -312,7 +312,7 @@ namespace detail
 
 log_monitor::log_monitor (unsigned short port, QWidget* parent)
   : QWidget (parent)
-  , _drop_filtered (true)
+  , _drop_filtered (false)
   , _filter_level (2)
   , _log_table (new QTableView (this))
   , _log_model (new detail::log_table_model)
