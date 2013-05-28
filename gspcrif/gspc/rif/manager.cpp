@@ -386,10 +386,17 @@ namespace gspc
                         )
           {
             process_ptr_t p = id_to_proc.second;
-
             if (p->status ())
               continue;
-            p->try_waitpid ();
+
+            if (0 == p->try_waitpid ())
+            {
+              p->stdin ().close_wr ();
+              p->stdout ().close_rd ();
+              p->stderr ().close_rd ();
+
+              continue;
+            }
 
             // only add stdin if there is any data to be written
             if (p->stdin ().wr () >= 0 && p->buffer (STDIN_FILENO).size ())
