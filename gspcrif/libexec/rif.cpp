@@ -36,6 +36,11 @@ public:
 
   gspc::rif::manager_t & mgr () { return m_mgr; }
 
+  void shutdown ()
+  {
+    fhg_kernel ()->shutdown ();
+  }
+
   FHG_PLUGIN_START()
   {
     signal (SIGCHLD, SIG_DFL);
@@ -568,6 +573,10 @@ void s_handle_rif ( std::string const &dst
       rply.add_body ("\n");
     }
   }
+  else if (command == "shutdown")
+  {
+    s_rif->shutdown ();
+  }
   else
   {
     std::stringstream sstr;
@@ -582,6 +591,7 @@ void s_handle_rif ( std::string const &dst
          << "   write proc FD data..." << std::endl
          << "   purge [proc...]" << std::endl
          << "   ps [proc...]" << std::endl
+         << "   shutdown" << std::endl
       ;
     rply.add_body (sstr.str ());
   }
