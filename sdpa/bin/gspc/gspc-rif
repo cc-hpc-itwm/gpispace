@@ -31,9 +31,12 @@ Options:
 
    --fanout N            how many parallel tasks (${rif_fanout})
    --sync                synonym for --fanout 1
+
 Actions:
 
 $(gspc --no-alias list-commands --prefix=rif --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
+
+    everything else will handed as is to 'raw'
 EOF
 }
 
