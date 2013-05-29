@@ -77,8 +77,8 @@ namespace gspc
         if (s > 0)
         {
           m_data.push_back (c);
-          ++count;
-          --len;
+          count += s;
+          len -= s;
         }
         else
         {
