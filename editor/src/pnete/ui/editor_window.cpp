@@ -738,6 +738,29 @@ namespace fhg
           return false;
         }
 
+        namespace
+        {
+          we::type::PortDirection fake_dir
+            (const xml::parse::type::port_type& port)
+          {
+            if (port.direction() == we::type::PORT_TUNNEL)
+            {
+              const boost::optional<std::string> tunnel_direction
+                (port.properties().get ("fhg.pnete.tunnel.direction"));
+
+              return !tunnel_direction ? we::type::PORT_IN
+                : *tunnel_direction == "out" ? we::type::PORT_OUT
+                : *tunnel_direction == "in" ? we::type::PORT_IN
+                : throw std::runtime_error
+                  ("bad fhg.pnete.tunnel.direction (neither 'in' nor 'out')");
+            }
+            else
+            {
+              return port.direction();
+            }
+          }
+        }
+
         std::pair<we::type::activity_t, xml::parse::id::ref::function>
           prepare_activity ( const QStack<document_view*>& accessed_widgets
                            , const boost::filesystem::path& temporary_path
@@ -843,9 +866,7 @@ namespace fhg
                       , name
                       , port.type()
                       , name
-                      , port.direction() == we::type::PORT_TUNNEL
-                      ? we::type::PORT_IN
-                      : port.direction()
+                      , fake_dir (port)
                       ).make_reference_id()
                     );
 
