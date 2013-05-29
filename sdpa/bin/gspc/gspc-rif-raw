@@ -27,7 +27,7 @@ tmpnodes=()
 
 while true ; do
     case "$1" in
-        -h|--help) usage ; exit 0 ;;
+        -h|--help) usage ; exit ${GSPC_EX_OK} ;;
         --rif-port)
             rif_port="$2"
             shift ; shift
@@ -75,7 +75,7 @@ done
 if [ ${#nodes[@]} -eq 0 ]
 then
     gspc_log_error rif "at least one node is required"
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 cmd=("$(gspc --bin-path)/gspcnet-req")

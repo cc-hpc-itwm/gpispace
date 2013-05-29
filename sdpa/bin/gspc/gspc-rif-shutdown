@@ -22,7 +22,7 @@ EOF
 opts=()
 while true ; do
     case "$1" in
-        -h|--help) usage ; exit 0 ;;
+        -h|--help) usage ; exit ${GSPC_EX_OK} ;;
         --rif-port)
             opts+=("$1" "$2")
             shift; shift

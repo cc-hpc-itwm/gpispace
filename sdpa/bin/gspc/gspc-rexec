@@ -38,7 +38,7 @@ ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictH
 method=ssh
 while true ; do
     case "$1" in
-        -h|--help) usage; exit 0 ;;
+        -h|--help) usage; exit ${GSPC_EX_OK} ;;
         -R|--method)
             method="$2"
             shift; shift
@@ -51,19 +51,19 @@ done
 if [ "$method" != "ssh" ]
 then
     gspc_log_error rexec "invalid method: $method"
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 node="${1}"; shift
 
 if [ -z "$node" ] ; then
     usage
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 if [ $# -eq 0 ] ; then
     usage
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 gspc_log_trace rexec "$node $@"

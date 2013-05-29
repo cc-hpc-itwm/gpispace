@@ -46,29 +46,28 @@ function set_cookie()
             cookie+=$(printf "%02x" $((${RANDOM} % 256)))
         done
     fi
-    echo "${cookie}" > "${GSPC_COOKIE_FILE}"
-    chmod 0600 "${GSPC_COOKIE_FILE}"
+    echo "${cookie}" > "${GSPC_COOKIE_FILE}" && chmod 0600 "${GSPC_COOKIE_FILE}"
 }
 
 if [ ! -e "${GSPC_COOKIE_FILE}" ]
 then
     set_cookie || {
         gspc_log_error rif "could not set cookie"
-        exit 1
+        exit ${GSPC_EX_CANTCREAT}
     }
 fi
 
 opts=()
 while true ; do
     case "$1" in
-        -h|--help) usage ; exit 0 ;;
+        -h|--help) usage ; exit ${GSPC_EX_OK} ;;
         --rif-port)
             rif_port="$2"
             shift ; shift
             ;;
         --default-port)
             echo "${RIF_DEFAULT_PORT}"
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --get-cookie)
             cat "${GSPC_COOKIE_FILE}"
@@ -103,7 +102,7 @@ action="$1"
 
 if [ -z "$action" ] ; then
     usage
-    exit 1
+    exit ${GSPC_EX_USAGE}
 else
     shift
 fi
