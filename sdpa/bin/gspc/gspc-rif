@@ -21,12 +21,15 @@ Options:
    --rif-port <port>     specify the port of the RIF (${rif_port})
    --default-port        print the default port
 
+   -F|--file file        use nodes from file
+   -N|--node node        use this node
 Actions:
 
 $(gspc --no-alias list-commands --prefix=rif --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
 EOF
 }
 
+opts=()
 while true ; do
     case "$1" in
         -h|--help) usage ; exit 0 ;;
@@ -37,6 +40,14 @@ while true ; do
         --default-port)
             echo "${RIF_DEFAULT_PORT}"
             exit 0
+            ;;
+        -F|--file)
+            opts+=("$1" "$2")
+            shift; shift
+            ;;
+        -N|--node)
+            opts+=("$1" "$2")
+            shift; shift
             ;;
         --) shift; break ;;
         *) break ;;
@@ -52,7 +63,7 @@ else
     shift
 fi
 
-options=(--rif-port "$rif_port")
+opts+=(--rif-port "$rif_port")
 
 cmd=$(gspc_resolve_command "rif-${action}")
 
@@ -67,7 +78,7 @@ then
 fi
 
 if [ ! -x "${cmd}" ] ; then
-    "$(gspc --exec-path)/gspc-rif-raw" "${options[@]}" "${action}" "${@}"
+    "$(gspc --exec-path)/gspc-rif-raw" "${opts[@]}" "${action}" "${@}"
 else
-    "${cmd}" "${options[@]}" "$@"
+    "${cmd}" "${opts[@]}" "$@"
 fi
