@@ -337,7 +337,12 @@
         <translation>Remote Execution Monitor</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="424"/>
+        <location filename="../ui/editor_window.cpp" line="419"/>
+        <source>toolbars_menu</source>
+        <translation>Toolbars</translation>
+    </message>
+    <message>
+        <location filename="../ui/editor_window.cpp" line="439"/>
         <source>port_for_remote_logging</source>
         <translation>Port for Logging</translation>
     </message>
