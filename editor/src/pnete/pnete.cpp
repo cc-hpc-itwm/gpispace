@@ -128,6 +128,9 @@ namespace fhg
       _splash.close();
 
       editor_window->show();
+
+      editor_window->slot_new_net();
+      editor_window->show_transition_library();
     }
 
     PetriNetEditor::~PetriNetEditor ()

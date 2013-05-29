@@ -92,6 +92,8 @@ namespace fhg
         void remote_job_finished (sdpa::Client*, const QString&);
         void remote_job_failed (sdpa::Client*, const QString&);
 
+        void show_transition_library();
+
       protected:
         virtual void closeEvent (QCloseEvent*);
 

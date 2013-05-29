@@ -118,6 +118,12 @@ namespace fhg
         setToolButtonStyle (Qt::ToolButtonTextBesideIcon);
       }
 
+      void editor_window::show_transition_library()
+      {
+        _transition_library_dock->show();
+        _transition_library->expandAll();
+      }
+
       void editor_window::addDockWidget (QDockWidget* widget)
       {
         QMainWindow::addDockWidget
