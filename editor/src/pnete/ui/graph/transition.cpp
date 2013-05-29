@@ -180,10 +180,10 @@ namespace fhg
           painter->setPen (QPen (QBrush (Qt::black), 1.0));
           painter->setBackgroundMode (Qt::TransparentMode);
 
-          painter->drawText ( rectangle().adjusted ( size::port::width()
-                                                   , size::port::width()
-                                                   , -size::port::width()
-                                                   , -size::port::width()
+          painter->drawText ( rectangle().adjusted ( size::port::height()
+                                                   , size::port::height()
+                                                   , -size::port::height()
+                                                   , -size::port::height()
                                                    )
                             , Qt::AlignCenter | Qt::TextWordWrap
                             , QString::fromStdString (name())
