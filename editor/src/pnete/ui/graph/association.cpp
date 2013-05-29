@@ -70,6 +70,11 @@ namespace fhg
         {
           style::draw_shape (this, painter);
         }
+
+        bool association::is_movable() const
+        {
+          return false;
+        }
       }
     }
   }

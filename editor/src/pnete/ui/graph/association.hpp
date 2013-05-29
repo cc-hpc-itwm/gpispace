@@ -43,6 +43,8 @@ namespace fhg
 
           void invert();
 
+          virtual bool is_movable() const;
+
           virtual QPainterPath shape() const;
           virtual void paint
             (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
