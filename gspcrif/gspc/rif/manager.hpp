@@ -118,11 +118,14 @@ namespace gspc
 
       process_ptr_t process_by_id (proc_t) const;
 
+      void update_search_path (std::string const &val);
+
       bool m_stopping;
 
       mutable boost::shared_mutex m_mutex;
       fhg::thread::atomic<proc_t> m_proc_ids;
       std::stack<proc_t>          m_available_proc_ids;
+      search_path_t               m_search_path;
 
       boost::shared_ptr<boost::thread> m_io_thread;
       mutable pipe_t                   m_io_thread_pipe;

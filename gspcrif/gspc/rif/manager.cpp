@@ -1,4 +1,5 @@
 #include "manager.hpp"
+#include "util.hpp"
 
 #include <errno.h>
 #include <poll.h>               // poll()
@@ -7,6 +8,9 @@
 
 #include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
+
+#include <fhg/util/split.hpp>
+#include <fhg/util/getenv.hpp>
 
 #include "process.hpp"
 #include "buffer.hpp"
@@ -46,7 +50,21 @@ namespace gspc
       , m_available_proc_ids ()
       , m_io_thread ()
       , m_io_thread_pipe ()
-    {}
+    {
+      std::string val;
+      if (0 == gspc::rif::getenv ("PATH", val))
+        this->setenv ("PATH", val);
+      if (0 == gspc::rif::getenv ("HOME", val))
+        this->setenv ("HOME", val);
+      if (0 == gspc::rif::getenv ("LD_LIBRARY_PATH", val))
+        this->setenv ("LD_LIBRARY_PATH", val);
+      if (0 == gspc::rif::getenv ("DISPLAY", val))
+        this->setenv ("DISPLAY", val);
+      if (0 == gspc::rif::getenv ("GSPC_COOKIE", val))
+        this->setenv ("GSPC_COOKIE", val);
+      if (0 == gspc::rif::getenv ("USER", val))
+        this->setenv ("USER", val);
+    }
 
     manager_t::~manager_t ()
     {
@@ -110,8 +128,12 @@ namespace gspc
 
     void manager_t::setenv (std::string const &key, std::string const &val)
     {
-      unique_lock lock (m_mutex);
-      m_environment [key] = val;
+      {
+        unique_lock lock (m_mutex);
+        m_environment [key] = val;
+      }
+      if (key == "PATH")
+        update_search_path (val);
     }
 
     int manager_t::getenv (std::string const &key, std::string &val) const
@@ -131,8 +153,12 @@ namespace gspc
 
     void manager_t::delenv (std::string const &key)
     {
-      unique_lock lock (m_mutex);
-      m_environment.erase (key);
+      {
+        unique_lock lock (m_mutex);
+        m_environment.erase (key);
+      }
+      if (key == "PATH")
+        update_search_path ("");
     }
 
     env_t const &manager_t::env () const
@@ -155,6 +181,14 @@ namespace gspc
       unique_lock lock (m_mutex);
 
       proc_t id;
+      int rc;
+
+      fs::path filename;
+      rc = resolve (argv.front (), m_search_path, filename);
+      if (rc < 0)
+      {
+        return rc;
+      }
 
       if (not m_available_proc_ids.empty ())
       {
@@ -166,10 +200,9 @@ namespace gspc
         id = ++m_proc_ids;
       }
 
-      const fs::path filename = argv.front ();
       process_ptr_t p (new process_t (id, filename, argv, env));
 
-      int rc = p->fork_and_exec ();
+      rc = p->fork_and_exec ();
       if (rc < 0)
       {
         m_available_proc_ids.push (p->id ());
@@ -368,6 +401,24 @@ namespace gspc
       m_available_proc_ids.push (proc);
 
       return 0;
+    }
+
+    void manager_t::update_search_path (std::string const &val)
+    {
+      search_path_t sp;
+
+      std::pair<std::string, std::string> head_tail;
+      head_tail.second = val;
+
+      while (not head_tail.second.empty ())
+      {
+        head_tail = fhg::util::split_string (head_tail.second, ":");
+        if (not head_tail.first.empty ())
+          sp.push_back (head_tail.first);
+      }
+
+      unique_lock lock (m_mutex);
+      m_search_path = sp;
     }
 
     void manager_t::io_thread (pipe_t & me)
