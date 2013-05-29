@@ -23,7 +23,7 @@ namespace fhg
       PetriNetEditor (int& argc, char *argv[]);
       virtual ~PetriNetEditor ();
 
-      void startup ();
+      void startup (int exec, int logs);
 
     private:
       QSplashScreen _splash;

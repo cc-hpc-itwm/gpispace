@@ -124,6 +124,28 @@ namespace fhg
         _transition_library->expandAll();
       }
 
+      void editor_window::show_log_and_execution_monitor (int exec, int log)
+      {
+        {
+          dock_widget* widget
+            ( new dock_widget ( tr ("log_monitor_for_%1").arg (log)
+                              , new log_monitor (log, this)
+                              )
+            );
+          widget->show();
+          addDockWidget (widget);
+        }
+        {
+          dock_widget* widget
+            ( new dock_widget ( tr ("execution_monitor_for_%1").arg (exec)
+                              , new execution_monitor (exec, this)
+                              )
+            );
+          widget->show();
+          addDockWidget (widget);
+        }
+      }
+
       void editor_window::addDockWidget (QDockWidget* widget)
       {
         QMainWindow::addDockWidget
