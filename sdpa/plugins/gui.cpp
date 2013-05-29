@@ -157,43 +157,26 @@ private:
 
   static inline std::string encode (const task_event_t & e)
   {
-    sdpa::daemon::NotificationEvent n_evt;
-    n_evt.activity_id() = e.id;
-    n_evt.activity_name() = e.name;
-    n_evt.activity() = e.activity;
-    if (e.meta.find("agent.name") != e.meta.end())
-    {
-      n_evt.component() = e.meta.find("agent.name")->second;
-    }
-    else
-    {
-      n_evt.component() = "unknown";
-    }
-    switch (e.state)
-    {
-    case task_event_t::ENQUEUED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_CREATED;
-      break;
-    case task_event_t::DEQUEUED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_STARTED;
-      break;
-    case task_event_t::FINISHED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_FINISHED;
-      break;
-    case task_event_t::FAILED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_FAILED;
-      break;
-    case task_event_t::CANCELED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_CANCELLED;
-      break;
-    default:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_IGNORE;
-      break;
-    }
-
     std::ostringstream sstr;
-    boost::archive::text_oarchive ar(sstr);
-    ar << n_evt;
+    boost::archive::text_oarchive ar (sstr);
+
+    const sdpa::daemon::NotificationEvent evt
+      ( e.meta.find("agent.name") != e.meta.end()
+      ? e.meta.find("agent.name")->second
+      : "unknown"
+      , e.id
+      , e.name
+      , e.state == task_event_t::ENQUEUED ? sdpa::daemon::NotificationEvent::STATE_CREATED
+      : e.state == task_event_t::DEQUEUED ? sdpa::daemon::NotificationEvent::STATE_STARTED
+      : e.state == task_event_t::FINISHED ? sdpa::daemon::NotificationEvent::STATE_FINISHED
+      : e.state == task_event_t::FAILED ? sdpa::daemon::NotificationEvent::STATE_FAILED
+      : e.state == task_event_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELLED
+      : sdpa::daemon::NotificationEvent::STATE_IGNORE
+      , e.activity
+      );
+
+    ar << evt;
+
     return sstr.str();
   }
 

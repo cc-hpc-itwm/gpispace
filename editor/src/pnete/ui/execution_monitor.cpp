@@ -2,9 +2,6 @@
 
 #include <fhg/util/alphanum.hpp>
 
-#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
-#include <we/mgmt/type/activity.hpp>
-
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/bind.hpp>
@@ -388,24 +385,6 @@ void execution_monitor::advance()
   }
 }
 
-namespace
-{
-  std::string nice_name (const sdpa::daemon::NotificationEvent& notification)
-  try
-  {
-    const we::mgmt::type::activity_t activity (notification.activity());
-
-    const we::type::module_call_t mod_call
-      (boost::get<we::type::module_call_t> (activity.transition().data()));
-
-    return mod_call.module() + ":" + mod_call.function();
-  }
-  catch (boost::bad_get const &)
-  {
-    return notification.activity_name();
-  }
-}
-
 void execution_monitor::append_exe (const fhg::log::LogEvent& event)
 {
   static const qreal task_height (8.0);
@@ -472,7 +451,7 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
      )
   {
     Task* task ( new Task ( QString::fromStdString (component)
-                          , QString::fromStdString (nice_name (notification))
+                          , QString::fromStdString (notification.activity_name())
                           , QString::fromStdString (activity_id)
                           )
                );

@@ -19,4 +19,4 @@ set (srcs
 add_library (sdpa-daemon ${srcs})
 
 target_link_libraries (sdpa-daemon
-  ${UTIL_LIBRARIES} ${ZLIB_LIBRARIES} sdpa-com sdpa-events sdpa-daemon)
+  ${UTIL_LIBRARIES} ${ZLIB_LIBRARIES} pnet sdpa-com sdpa-events sdpa-daemon)
