@@ -46,7 +46,8 @@ done
 action="$1"
 
 if [ -z "$action" ] ; then
-    action=list
+    usage
+    exit 1
 else
     shift
 fi
@@ -54,6 +55,16 @@ fi
 options=(--rif-port "$rif_port")
 
 cmd=$(gspc_resolve_command "rif-${action}")
+
+if [ ! -e "$HOME/.gspc.cookie" ]
+then
+    for ((i=0 ; i < 16 ; ++i))
+    do
+        cookie+=$(printf "%02x" $((${RANDOM} % 256)))
+    done
+    echo "${cookie}" > "$HOME/.gspc.cookie"
+    chmod 0600 "$HOME/.gspc.cookie"
+fi
 
 if [ ! -x "${cmd}" ] ; then
     gspc_log_error rif "Invalid action: ${action}"
