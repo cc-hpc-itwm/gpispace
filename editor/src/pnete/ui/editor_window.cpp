@@ -1049,7 +1049,7 @@ namespace fhg
                 )
               );
             *ok = !res.isNull();
-            return res.toStdString();
+            return QString ("[name:=\"%1\",type:=\"raw\"]").arg (res).toStdString();
           }
           else if (type == std::string ("long"))
           {
