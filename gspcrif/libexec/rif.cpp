@@ -416,23 +416,32 @@ void s_handle_rif ( std::string const &dst
       }
     }
 
-    int rc;
-    char buf [4096];
     boost::system::error_code ec;
 
     BOOST_FOREACH (gspc::rif::proc_t p, procs)
     {
       std::stringstream sstr;
-      do
+      size_t maxlen = 2097152;
+      while (maxlen > 0)
       {
-        rc = s_rif->mgr ().read (p, fd, buf, sizeof(buf) - 1, ec);
+        char buf [4096];
+        int rc = s_rif->mgr ().read ( p
+                                    , fd
+                                    , buf
+                                    , std::min (sizeof(buf) - 1, maxlen)
+                                    , ec
+                                    );
         if (rc > 0)
         {
           buf [rc] = 0;
           sstr << std::string (&buf[0], rc);
+          maxlen -= rc;
+        }
+        else
+        {
+          break;
         }
       }
-      while (rc > 0);
       rply.add_body (sstr.str ());
     }
   }
