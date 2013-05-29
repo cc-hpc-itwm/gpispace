@@ -67,19 +67,24 @@ namespace gspc
     {
       unique_lock lock (m_mutex);
 
+      ssize_t len = m_data.capacity ();
       ssize_t count = 0;
-      ssize_t s;
 
-      do
+      while (len > 0)
       {
         char c;
-        s = ::read (fd, &c, 1);
+        ssize_t s = ::read (fd, &c, 1);
         if (s > 0)
         {
           m_data.push_back (c);
           ++count;
+          --len;
         }
-      } while (s > 0);
+        else
+        {
+          break;
+        }
+      }
 
       return (ssize_t)count;
     }
