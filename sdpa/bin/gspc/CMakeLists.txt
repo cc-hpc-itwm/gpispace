@@ -20,6 +20,8 @@ set (scripts
   gspc-init
   gspc-kvs
   gspc-version
+  gspc-rif
+  gspc-rif-bootstrap
 )
 
 set (files

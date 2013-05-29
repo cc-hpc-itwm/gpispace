@@ -1,0 +1,118 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="bootstrap the RIF"
+GSPC_API_COMMAND_LEVEL=2
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: rif-bootstrap [-h|--help] [options]
+
+Options:
+
+   --rif-port <port>     specify the rif-port to use
+
+   -F|--file file        use nodes from file
+   -N|--node node        use this node
+   -R|--method ssh|pdsh  use either pdsh or ssh
+EOF
+}
+
+TEMP=`getopt -o hF:N:R: --long help,rif-port:,method:,node:,file: -n 'rif' -- "$@"`
+
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+rif_port=
+
+method=
+tmpnodes=()
+bunch_size=16
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --rif-port)
+            rif_port="$2"
+            shift; shift
+            ;;
+        --method)
+            method="$2"
+            shift; shift
+            ;;
+        -F|--file)
+            f="$2"
+            for n in $(cat "$f" 2>/dev/null | grep -v '^#' | sed -e '/^$/d' | sort | uniq)
+            do
+                tmpnodes+=($n)
+            done
+            shift; shift
+            ;;
+        -N|--node)
+            n="$2"
+            tmpnodes+=($n)
+            shift; shift
+            ;;
+        --) shift; break ;;
+        *) gspc_log_error rif "Internal error on argument: '$1'"; exit 1 ;;
+    esac
+done
+
+nodes=()
+for n in $(echo "${tmpnodes[@]}" | tr ' ' '\n' | sort | uniq)
+do
+    nodes+=($n)
+done
+
+if [ ${#nodes[@]} -eq 0 ]
+then
+    gspc_log_error rif "at least one node is required"
+    exit 1
+fi
+
+cmd=()
+cmd+=("$(gspc --bin-path)/fhgkernel")
+cmd+=(-s plugin.netd.url="tcp://*:${rif_port}")
+cmd+=(-L "$(gspc --plugin-path)")
+cmd+=(--daemonize)
+cmd+=(rif)
+cmd+=(netd)
+
+function bootstrap_pdsh ()
+{
+    local hosts=""
+    hosts=$(echo "${@}" | tr ' ' ',')
+    pdsh -R ssh -w "${hosts}" LD_LIBRARY_PATH="$(gspc --lib-path)" "${cmd[@]}"
+}
+
+function bootstrap_ssh ()
+{
+    for h
+    do
+        gspc rexec "$h" "${cmd[@]}"
+    done
+}
+
+function select_best_bootstrap_method()
+{
+    local bin
+    for p in pdsh ssh
+    do
+        if which $p >/dev/null 2>&1
+        then
+            echo "$p"
+            return 0
+        fi
+    done
+}
+
+if [ -z "$method" ] ; then
+    method=$(select_best_bootstrap_method)
+fi
+
+gspc_log_info rif "booting using $method on: ${nodes[@]}"
+
+bootstrap_${method} "${nodes[@]}"
