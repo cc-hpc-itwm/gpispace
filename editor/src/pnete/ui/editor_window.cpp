@@ -509,11 +509,11 @@ namespace fhg
         setup_window_actions (menu_bar);
 
         _document_specific_action_menu =
-          menu_bar->addMenu ("document_specific_actions");
+          menu_bar->addMenu (tr ("document_specific_actions"));
         _document_specific_action_menu->menuAction()->setVisible (false);
 
         _document_specific_action_toolbar =
-          new QToolBar ("document_specific_actions", this);
+          new QToolBar (tr ("document_specific_actions"), this);
         _document_specific_action_toolbar->setVisible (false);
         addToolBar (Qt::TopToolBarArea, _document_specific_action_toolbar);
         _document_specific_action_toolbar->setFloatable (false);
