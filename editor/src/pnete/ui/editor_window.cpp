@@ -417,6 +417,14 @@ namespace fhg
 
         menu->addSeparator();
 
+        QMenu* toolbars (menu->addMenu (tr ("toolbars_menu")));
+        foreach (QToolBar* toolbar, findChildren<QToolBar*>())
+        {
+          toolbars->addAction (toolbar->toggleViewAction());
+        }
+
+        menu->addSeparator();
+
         foreach (document_view* view, findChildren<document_view*>())
         {
           menu->addAction (view->toggleViewAction());
