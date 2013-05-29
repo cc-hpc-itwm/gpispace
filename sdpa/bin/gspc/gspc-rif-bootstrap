@@ -61,6 +61,14 @@ while true ; do
     esac
 done
 
+if [ ${#tmpnodes[@]} -eq 0 -a -n "${PBS_NODEFILE}" ]
+then
+    for n in $(cat "$PBS_NODEFILE" 2>/dev/null | grep -v '^#' | sed -e '/^$/d' | sort | uniq)
+    do
+        tmpnodes+=($n)
+    done
+fi
+
 nodes=()
 for n in $(echo "${tmpnodes[@]}" | tr ' ' '\n' | sort | uniq)
 do
@@ -81,6 +89,11 @@ cmd+=(--daemonize)
 cmd+=(rif)
 cmd+=(netd)
 
+function bootstrap_pbsdsh ()
+{
+    pbsdsh -u /usr/bin/env LD_LIBRARY_PATH="$(gspc --lib-path)" "${cmd[@]}"
+}
+
 function bootstrap_pdsh ()
 {
     local hosts=""
@@ -99,6 +112,16 @@ function bootstrap_ssh ()
 function select_best_bootstrap_method()
 {
     local bin
+
+    if which pbsdsh >/dev/null 2>&1
+    then
+       if [ -n "${PBS_NODEFILE}" -a -n "${PBS_JOBCOOKIE}" -a -n "${PBS_MOMPORT}" ]
+       then
+           echo "pbsdsh"
+           return 0
+       fi
+    fi
+
     for p in pdsh ssh
     do
         if which $p >/dev/null 2>&1
