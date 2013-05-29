@@ -573,6 +573,14 @@ void s_handle_rif ( std::string const &dst
       rply.add_body ("\n");
     }
   }
+  else if (command == "info")
+  {
+    std::stringstream sstr;
+
+    sstr << "GspcRIFD running with PID " << getpid () << std::endl;
+
+    rply.set_body (sstr.str ());
+  }
   else if (command == "shutdown")
   {
     s_rif->shutdown ();
