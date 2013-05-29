@@ -343,6 +343,7 @@ cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
 
 plugins=$(fhgcfg -f "${config_file}" -g kernel.plugins)
 plugins="numa,$plugins"
+plugins="${plugins},netd"
 
 plugin_load_flags=""
 for p in $(echo $plugins | tr ',' ' '); do
