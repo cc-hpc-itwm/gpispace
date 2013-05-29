@@ -67,8 +67,7 @@ then
 fi
 
 if [ ! -x "${cmd}" ] ; then
-    gspc_log_error rif "Invalid action: ${action}"
-    exit 1
+    "$(gspc --exec-path)/gspc-rif-raw" "${options[@]}" "${action}" "${@}"
 else
     "${cmd}" "${options[@]}" "$@"
 fi

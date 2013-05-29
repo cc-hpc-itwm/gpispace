@@ -23,7 +23,7 @@ set (scripts
   gspc-rif
   gspc-rif-bootstrap
   gspc-rif-shutdown
-  gspc-rif-eval
+  gspc-rif-raw
 )
 
 set (files

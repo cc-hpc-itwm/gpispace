@@ -40,4 +40,4 @@ while true ; do
     esac
 done
 
-gspc rif eval "${opts[@]}" shutdown
+gspc rif raw "${opts[@]}" shutdown
