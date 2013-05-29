@@ -741,7 +741,10 @@ namespace fhg
 
           BOOST_FOREACH (nodes_map_type::value_type& it, nodes)
           {
-            it.first->setPos (style::raster::snap (it.second.position()));
+            if (it.first->type() != base_item::place_graph_type)
+            {
+              it.first->setPos (style::raster::snap (it.second.position()));
+            }
           }
 
           // BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
