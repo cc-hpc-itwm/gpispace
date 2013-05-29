@@ -22,6 +22,8 @@ set (scripts
   gspc-version
   gspc-rif
   gspc-rif-bootstrap
+  gspc-rif-shutdown
+  gspc-rif-eval
 )
 
 set (files
