@@ -152,7 +152,7 @@ void s_handle_rif ( std::string const &dst
       int rc = s_rif->mgr ().wait (p, &status, boost::posix_time::seconds (0));
       if (-ESRCH == rc)
       {
-        sstr << "no such process" << std::endl;
+        sstr << "no such process";
       }
       else if (rc < 0)
       {
