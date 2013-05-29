@@ -19,6 +19,12 @@ namespace gspc
        returns -EBUSY if it is not yet finished.
     */
     int make_exit_code (int status);
+
+    int resolve ( boost::filesystem::path const &file
+                , search_path_t const &
+                , boost::filesystem::path &resolved
+                );
+    int getenv (std::string const &key, std::string &val);
   }
 }
 

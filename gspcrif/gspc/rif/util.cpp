@@ -1,12 +1,18 @@
 #include "util.hpp"
 
+#include <sys/types.h> // stat
+#include <sys/stat.h> // stat
+#include <unistd.h> // stat
 #include <errno.h>
-#include <stdlib.h> // abort
+#include <stdlib.h> // abort, getenv
 #include <ctype.h>  // character classes
 #include <string.h> // strlen
 
 #include <stack>
 #include <iostream>
+
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 
 namespace gspc
 {
@@ -231,6 +237,57 @@ namespace gspc
       else
       {
         return -EBUSY;
+      }
+    }
+
+    int resolve ( boost::filesystem::path const &file
+                , search_path_t const &search_path
+                , boost::filesystem::path &resolved
+                )
+    {
+      namespace fs = boost::filesystem;
+
+      if (file.is_absolute ())
+      {
+        resolved = file;
+        return 0;
+      }
+
+      BOOST_FOREACH (fs::path const &p, search_path)
+      {
+        fs::path candidate = p / file;
+
+        while (fs::is_symlink (candidate))
+        {
+          candidate = fs::read_symlink (candidate);
+        }
+
+        if (fs::is_regular_file (candidate))
+        {
+          struct stat sbuf;
+          int rc = ::stat (p.string ().c_str (), &sbuf);
+          if (0 == rc && (sbuf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)))
+          {
+            resolved = candidate;
+            return 0;
+          }
+        }
+      }
+
+      return -ENOENT;
+    }
+
+    int getenv (std::string const &key, std::string & val)
+    {
+      char *v = ::getenv (key.c_str ());
+      if (v)
+      {
+        val = v;
+        return 0;
+      }
+      else
+      {
+        return -ENOKEY;
       }
     }
   }
