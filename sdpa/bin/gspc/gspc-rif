@@ -29,7 +29,7 @@ Options:
    -F|--file file        use nodes from file
    -N|--node node        use this node
 
-   --fanout N            how many parallel tasks
+   --fanout N            how many parallel tasks (${rif_fanout})
    --sync                synonym for --fanout 1
 Actions:
 
