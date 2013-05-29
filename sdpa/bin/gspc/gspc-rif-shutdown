@@ -35,9 +35,22 @@ while true ; do
             opts+=("$1" "$2")
             shift; shift
             ;;
+        --fanout)
+            opts+=("$1" "$2")
+            shift; shift
+            ;;
+        --sync)
+            opts+=("$1")
+            shift
+            ;;
         --) shift; break ;;
         *) break ;;
     esac
+done
+
+for n
+do
+    opts+=(-N "$n")
 done
 
 gspc rif raw "${opts[@]}" shutdown

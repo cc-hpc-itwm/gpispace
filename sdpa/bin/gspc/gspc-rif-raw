@@ -16,10 +16,15 @@ Options:
 
    -F|--file file        use nodes from file
    -N|--node node        use this node
+
+   --fanout N            how many parallel tasks
+   --sync                synonym for --fanout 1
 EOF
 }
 
+fanout=1
 tmpnodes=()
+
 while true ; do
     case "$1" in
         -h|--help) usage ; exit 0 ;;
@@ -39,6 +44,14 @@ while true ; do
             n="$2"
             tmpnodes+=($n)
             shift; shift
+            ;;
+        --fanout)
+            fanout="$2"
+            shift; shift
+            ;;
+        --sync)
+            fanout=1
+            shift
             ;;
         --) shift; break ;;
         *) break ;;
@@ -69,7 +82,19 @@ cmd=("$(gspc --bin-path)/gspcnet-req")
 cmd+=(-d /service/rif)
 cmd+=(--no-header)
 
+count=0
 for n in "${nodes[@]}"
 do
-    echo "${@}" | "${cmd[@]}" "tcp://${n}:${rif_port}"
+    if [ $count -ge $fanout ]
+    then
+        wait
+        count=0
+    fi
+    echo "${@}" | "${cmd[@]}" "tcp://${n}:${rif_port}" &
+    count=$((count + 1))
 done
+if [ $count -ge $fanout ]
+then
+    wait
+    count=0
+fi

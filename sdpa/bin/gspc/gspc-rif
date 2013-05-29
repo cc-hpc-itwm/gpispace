@@ -11,6 +11,8 @@ rif_port="$(gspc config --get rif.port)"
 if [ -z "$rif_port" ] ; then
     rif_port="${RIF_DEFAULT_PORT}"
 fi
+RIF_DEFAULT_FANOUT=64
+rif_fanout=${RIF_DEFAULT_FANOUT}
 
 function usage()
 {
@@ -26,6 +28,9 @@ Options:
 
    -F|--file file        use nodes from file
    -N|--node node        use this node
+
+   --fanout N            how many parallel tasks
+   --sync                synonym for --fanout 1
 Actions:
 
 $(gspc --no-alias list-commands --prefix=rif --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
@@ -79,6 +84,14 @@ while true ; do
             ;;
         -N|--node)
             opts+=("$1" "$2")
+            shift; shift
+            ;;
+        --sync)
+            opts+=(--fanout 1)
+            shift;
+            ;;
+        --fanout)
+            opts+=(--fanout "$2")
             shift; shift
             ;;
         --) shift; break ;;
