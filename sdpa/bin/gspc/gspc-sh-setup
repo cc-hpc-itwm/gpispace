@@ -21,6 +21,23 @@ GSPC_COLOR_CYAN='\e[0;36m'
 GSPC_COLOR_WHITE='\e[0;37m'
 GSPC_COLOR_OFF='\e[0m'
 
+GSPC_EX_OK=0           # everything alright
+GSPC_EX_USAGE=64       # command line usage error
+GSPC_EX_DATAERR=65     # data format error
+GSPC_EX_NOINPUT=66     # cannot open input
+GSPC_EX_NOUSER=67      # addressee unknown
+GSPC_EX_NOHOST=68      # host name unknown
+GSPC_EX_UNAVAILABLE=69 # service unavailable
+GSPC_EX_SOFTWARE=70    # internal software error
+GSPC_EX_OSERR=71       # system error (e.g., can't fork)
+GSPC_EX_OSFILE=72      # critical OS file missing
+GSPC_EX_CANTCREAT=73   # can't create (user) output file
+GSPC_EX_IOERR=74       # input/output error
+GSPC_EX_TEMPFAIL=75    # temp failure; user is invited to retry
+GSPC_EX_PROTOCOL=76    # remote error in protocol
+GSPC_EX_NOPERM=77      # permission denied
+GSPC_EX_CONFIG=78      # configuration error
+
 ################################################################################
 #                                                                              #
 #                        Log functions                                         #
@@ -189,19 +206,19 @@ function gspc_require_gspc_dir ()
     if [ -z "$GSPC_DIR" ]
     then
         gspc_log_error core "GSPC_DIR is not set"
-        exit 1
+        exit ${GSPC_EX_UNAVAILABLE}
     fi
 
     if [ ! -d "$GSPC_DIR" ]
     then
         gspc_log_error core "GSPC_DIR ('$GSPC_DIR') is not accessible"
-        exit 1
+        exit ${GSPC_EX_UNAVAILABLE}
     fi
 
     if [ ! -e "$GSPC_DIR"/.gspc_dir ]
     then
         gspc_log_error core "GSPC_DIR ('$GSPC_DIR') not initialized"
-        exit 1
+        exit ${GSPC_EX_UNAVAILABLE}
     fi
 
     return 0
