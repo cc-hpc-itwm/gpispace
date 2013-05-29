@@ -86,11 +86,11 @@ while true ; do
             shift; shift
             ;;
         --sync)
-            opts+=(--fanout 1)
+            rif_fanout=1
             shift;
             ;;
         --fanout)
-            opts+=(--fanout "$2")
+            rif_fanout="$2"
             shift; shift
             ;;
         --) shift; break ;;
@@ -108,6 +108,7 @@ else
 fi
 
 opts+=(--rif-port "$rif_port")
+opts+=(--fanout   "$rif_fanout")
 
 cmd=$(gspc_resolve_command "rif-${action}")
 
