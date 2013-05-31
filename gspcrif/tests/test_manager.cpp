@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE (test_cat)
 
 BOOST_AUTO_TEST_CASE (test_many_processes)
 {
-  static const std::size_t NUM_PROCS = 1024;
+  static const std::size_t NUM_PROCS = 128;
 
   int rc;
   int status;
