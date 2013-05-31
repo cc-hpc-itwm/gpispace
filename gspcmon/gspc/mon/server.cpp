@@ -28,7 +28,7 @@ namespace gspc
       : QTcpServer (parent)
       , _hostlist (hostlist)
     {
-      if (!listen (QHostAddress::LocalHost, port))
+      if (!listen (QHostAddress::Any, port))
       {
         throw std::runtime_error (qPrintable (errorString()));
       }
