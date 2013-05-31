@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE (test_proc_info)
 
   argv.push_back ("/bin/cat");
 
-  p = manager.exec (argv);
+  p = manager.exec (argv, gspc::rif::env_t ());
   BOOST_REQUIRE (p > 0);
 
   rc = manager.proc_info (p, info);
