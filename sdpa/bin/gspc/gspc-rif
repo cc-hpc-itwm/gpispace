@@ -23,7 +23,7 @@ Options:
 
    --rif-port <port>     specify the port of the RIF (${rif_port})
    --default-port        print the default port
-   --get-cookie         shows the current cookie
+   --get-cookie          shows the current cookie
    --set-cookie <cookie> sets the cookie
 
    -F|--file file        use nodes from file
