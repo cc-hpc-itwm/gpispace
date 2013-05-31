@@ -362,5 +362,5 @@ log "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
     $cmd >"${logprefix}.out" 2>"${logprefix}.err" </dev/null &
 else
-    $cmd
+    exec $cmd
 fi
