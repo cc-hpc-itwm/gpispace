@@ -64,6 +64,8 @@ namespace sdpa { namespace daemon {
                          )));
     }
 
+    std::string location() { return m_destination_location; }
+
     ~BasicNotificationService() {}
 
     void notify(const event_t &evt)

@@ -64,6 +64,7 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
   EXPORTS WFE
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  pnet
+                 ${GSPC_NET_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}

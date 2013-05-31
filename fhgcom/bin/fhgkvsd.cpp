@@ -86,9 +86,7 @@ int main(int ac, char *av[])
   }
 
   bool reuse_address (true);
-  std::string home (getenv("HOME") ? getenv("HOME") : ".");
-  std::string default_store_path(home + "/.fhgkvsd.dat");
-  std::string store_path (getenv("KVS_STORE") ? getenv("KVS_STORE") : default_store_path);
+  std::string store_path ("");
 
   po::options_description desc ("options");
   desc.add_options()
@@ -96,7 +94,7 @@ int main(int ac, char *av[])
     ("bind,b", po::value<std::string>(&server_address)->default_value(server_address), "bind to this address")
     ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
     ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
-    ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store, set KVS_STORE to override default")
+    ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store")
     ("clear,C", "start with an empty store")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")

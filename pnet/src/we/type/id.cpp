@@ -1,6 +1,9 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/id.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <limits>
 
@@ -26,6 +29,9 @@ namespace petri_net
   _prefix ## _type _prefix ## _generate()               \
   {                                                     \
     static _prefix ## _type v (0);                      \
+    static boost::mutex mtx;                            \
+                                                        \
+    boost::lock_guard<boost::mutex> lock (mtx);         \
                                                         \
     return v++;                                         \
   }

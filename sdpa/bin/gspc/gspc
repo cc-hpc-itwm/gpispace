@@ -15,13 +15,13 @@ resolve_alias=true
 . "${exec_path}/gspc-sh-version"
 if [ $? -ne 0 ] ; then
     echo >&2 "Installation incomplete, please contact the admin!"
-    exit 1
+    exit 70
 fi
 
 . "${exec_path}/gspc-sh-setup"
 if [ $? -ne 0 ] ; then
     echo >&2 "Installation incomplete, please contact the admin!"
-    exit 1
+    exit 70
 fi
 
 function usage()
@@ -31,13 +31,13 @@ function usage()
 
 while true ; do
     case "$1" in
-        --help) usage; exit 0 ;;
+        --help) usage; exit ${GSPC_EX_OK} ;;
         --gspc-dir)
             if [ -z "$GSPC_DIR" ] ; then
-                exit 1
+                exit ${GSPC_EX_UNAVAILABLE}
             else
                 echo "$GSPC_DIR"
-                exit 0
+                exit ${GSPC_EX_OK}
             fi
             shift
             ;;
@@ -48,62 +48,62 @@ while true ; do
         --exec-path)
             if [ -z "$exec_path" ] ; then
                 echo >&2 "could not deduce exec-path"
-                exit 1
+                exit ${GSPC_EX_UNAVAILABLE}
             fi
             echo "$exec_path"
             shift
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --etc-path)
             if [ -z "${etc_path}" ] ; then
                 echo >&2 "could not deduce etc-path"
-                exit 1
+                exit ${GSPC_EX_UNAVAILABLE}
             fi
             echo "$etc_path"
             shift
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --bin-path)
             if [ -z "${bin_path}" ] ; then
                 echo >&2 "could not deduce bin-path"
-                exit 1
+                exit ${GSPC_EX_UNAVAILABLE}
             fi
             echo "$bin_path"
             shift
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --lib-path)
             if [ -z "${lib_path}" ] ; then
                 echo >&2 "could not deduce lib-path"
-                exit 1
+                exit ${GSPC_EX_UNAVAILABLE}
             fi
             echo "$lib_path"
             shift
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --plugin-path)
             if [ -z "${plugin_path}" ] ; then
                 echo >&2 "could not deduce plugin-path"
-                exit 1
+                exit ${GSPC_EX_UNAVAILABLE}
             fi
             echo "$plugin_path"
             shift
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --version)
             echo "GPI-Space ${GSPC_INFO_VERSION}"
             shift
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --dumpversion)
             echo "${GSPC_INFO_VERSION}"
             shift
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --revision)
             echo "${GSPC_INFO_REVISION}"
             shift
-            exit 0
+            exit ${GSPC_EX_OK}
             ;;
         --no-alias)
             resolve_alias=false
@@ -117,10 +117,10 @@ while true ; do
                 flags="${flags:1}"
                 case "$flag" in
                     v) verbose=$((verbose+1)) ;;
-                    h) usage ; exit 0 ;;
+                    h) usage ; exit ${GSPC_EX_OK} ;;
                     *)
                         echo >&2 "gspc: invalid flag: $flag"
-                        exit 1
+                        exit ${GSPC_EX_USAGE}
                         ;;
                 esac
             done
@@ -129,7 +129,7 @@ while true ; do
         --) shift; break ;;
         -*)
             echo >&2 "gspc: invalid option: $1"
-            exit 1
+            exit ${GSPC_EX_USAGE}
             ;;
         *) break ;;
     esac
@@ -137,7 +137,7 @@ done
 
 if [ -z "$1" ] ; then
     usage
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 if [ -n "$GSPC_DIR" ] ; then

@@ -36,6 +36,11 @@ namespace gspc
       /**
          Sets a header key to the given value.
        */
+      frame & set_header (header_type const &);
+
+      /**
+         Sets a header key to the given value.
+       */
       frame & set_header (key_type const &key, value_type const &val);
 
       /**

@@ -171,6 +171,8 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 		std::string status = pJob->getStatus();
 		if( !pJob->completed() )
 		{
+			if(ptr_comm_handler_->gui_service())
+			{
                   const sdpa::daemon::NotificationEvent evt
                     ( worker_id
                     , pJob->id().str()
@@ -180,9 +182,10 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
                     );
 
                   ptr_comm_handler_->gui_service()->notify (evt);
+			}
 
-		  pJob->Reschedule(); // put the job back into the pending state
-		  schedule_remote(job_id);
+			pJob->Reschedule(); // put the job back into the pending state
+			schedule_remote(job_id);
 		}
     }
   }
