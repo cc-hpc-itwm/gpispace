@@ -24,6 +24,7 @@ include_directories(${UTIL_INCLUDE_DIR})
 
 add_subdirectory (gspc)
 add_subdirectory (bin)
+add_subdirectory (hooks)
 add_subdirectory (libexec)
 
 if (BUILD_TESTING)
