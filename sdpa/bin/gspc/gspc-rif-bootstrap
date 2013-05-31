@@ -141,7 +141,7 @@ function bootstrap_ssh ()
         gspc rexec -R ssh "$h" "${cmd[@]}"
         count=$((count + 1))
     done
-    if [ $count -ge $fanout ]
+    if [ $count -gt 0 ]
     then
         wait
         count=0

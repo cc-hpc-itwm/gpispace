@@ -93,7 +93,7 @@ do
     echo "${@}" | "${cmd[@]}" "tcp://${n}:${rif_port}" &
     count=$((count + 1))
 done
-if [ $count -ge $fanout ]
+if [ $count -gt 0 ]
 then
     wait
     count=0
