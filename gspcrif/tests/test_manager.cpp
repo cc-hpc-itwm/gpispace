@@ -25,7 +25,7 @@ BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE (test_start_stop)
 {
-  static const int NUM_IERATIONS = 100;
+  static const size_t NUM_IERATIONS = 100;
 
   gspc::rif::manager_t manager;
 
