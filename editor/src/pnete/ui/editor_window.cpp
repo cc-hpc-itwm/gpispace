@@ -815,12 +815,17 @@ namespace fhg
             const boost::filesystem::path sdpa_home (*SDPA_HOME);
             const boost::filesystem::path sdpa_include (sdpa_home / "include");
             const boost::filesystem::path sdpa_lib (sdpa_home / "lib");
+            const boost::filesystem::path sdpa_libexec (sdpa_home / "libexec" / "sdpa");
             state.gen_cxxflags().push_back ( ( boost::format ("-I\"%1%\"")
                                              % sdpa_include
                                              ).str()
                                            );
             state.gen_ldflags().push_back ( ( boost::format ("-L\"%1%\"")
                                             % sdpa_lib
+                                            ).str()
+                                          );
+            state.gen_ldflags().push_back ( ( boost::format ("-L\"%1%\"")
+                                            % sdpa_libexec
                                             ).str()
                                           );
           }
