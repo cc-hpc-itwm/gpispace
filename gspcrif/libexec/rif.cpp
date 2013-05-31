@@ -324,13 +324,7 @@ void s_handle_rif ( std::string const &dst
 
     BOOST_FOREACH (gspc::rif::proc_t p, procs)
     {
-      int rc = s_rif->mgr ().remove (p);
-      if (rc < 0)
-      {
-        std::stringstream sstr;
-        sstr << "failed on: " << p << ": " << strerror (-rc) << std::endl;
-        rply.add_body (sstr.str ());
-      }
+      s_rif->mgr ().remove (p);
     }
   }
   else if (command == "ps")
