@@ -692,7 +692,7 @@ namespace we { namespace mgmt {
       // WORK HERE: rewrite!
       void extractor()
       {
-        DLOG(INFO, "extractor thread started...");
+        DLOG (TRACE, "extractor thread started...");
         for (;;)
         {
           internal_id_type active_id = active_nets_->get();
@@ -840,7 +840,7 @@ namespace we { namespace mgmt {
 
       void injector()
       {
-        DLOG(INFO, "injector thread started...");
+        DLOG (TRACE, "injector thread started...");
         for (;;)
         {
           const internal_id_type act_id = inj_q_->get();
