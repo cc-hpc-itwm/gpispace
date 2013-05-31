@@ -59,6 +59,7 @@ namespace gspc
       void execute_action (fhg::util::parse::position&);
       void send_action_description (fhg::util::parse::position&);
       void send_layout_hint (fhg::util::parse::position&);
+      QString description (QString const& action);
 
       int _socket_descriptor;
       QTcpSocket* _socket;
@@ -66,6 +67,12 @@ namespace gspc
 
       mutable QMutex _hosts_mutex;
       QMap<QString, QPair<QString, int /*ticks since last change*/> > _hosts;
+
+      // maps from short hook name to full-path + description
+      QMap<QString, QPair<QString, QString> > _hooks;
+
+      // maps actions to list of possible hooks
+      QMap<QString, QStringList> _actions;
 
       mutable QMutex _pending_status_updates_mutex;
       QStringList _pending_status_updates;

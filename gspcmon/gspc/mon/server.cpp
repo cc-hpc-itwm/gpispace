@@ -54,7 +54,6 @@ namespace gspc
       gspc::mon::thread* t (new gspc::mon::thread ( socket_descriptor
                                                   , _hostlist
                                                   , _hookdir
-                                                  , this
                                                   )
                            );
       t->moveToThread (t);
@@ -78,6 +77,25 @@ namespace gspc
 
       watcher->addPath (hostlist);
       read_hostlist (hostlist);
+
+      // initialize actions
+
+      //!\todo scan _hookdir for executable  files, call "file --description" to
+      // get the list of descriptions, maybe split path by "state-action"?
+
+      _hooks ["reboot"].first = _hookdir.absoluteFilePath ("reboot");
+      _hooks ["reboot"].second = "reboot the node";
+
+      _hooks ["add"].first = _hookdir.absoluteFilePath ("add");
+      _hooks ["add"].second = "add the node to the working set";
+
+      _hooks ["remove"].first = _hookdir.absoluteFilePath ("remove");
+      _hooks ["remove"].second = "remove the node to the working set";
+
+      _actions ["down"] << "reboot";
+      _actions ["available"] << "add";
+      _actions ["unavailable"] << "reboot";
+      _actions ["inuse"] << "remove";
     }
 
     thread::~thread () {}
@@ -102,26 +120,12 @@ namespace gspc
     namespace
     {
       const size_t status_count (4);
-      const char* states[] = {"down", "available", "unavailable", "used"};
+      const char* states[] = {"down", "available", "unavailable", "inuse"};
       const double initial_state_probabilities[] = {
         0.1, 0.6, 0.2, 0.1
       };
-      const char* actions[] = {NULL, "add_to_working_set\", \"reboot", "reboot", "remove_from_working_set\", \"foo"};
 
-      const char* description (const QString& action)
-      {
-        return action == "add_to_working_set"
-          ? "add this node to the working set"
-          : action == "reboot"
-          ? "reboot {hostname}"
-          : action == "remove_from_working_set"
-          ? "remove this node from the working set"
-          : action == "foo"
-          ? "foo bar"
-          : throw std::runtime_error ("unknown action name");
-      }
-
-      QString random_initial_state()
+      QString random_initial_state ()
       {
         static boost::mt19937 gen;
         static boost::random::discrete_distribution<> dist
@@ -272,9 +276,9 @@ namespace gspc
                        )
           );
       }
-      else if (*invoc._action == "add_to_working_set" && state == "available")
+      else if (*invoc._action == "add" && state == "available")
       {
-        state = "used";
+        state = "inuse";
         last_change = 0;
 
         _socket->write
@@ -285,7 +289,7 @@ namespace gspc
                        )
           );
       }
-      else if (*invoc._action == "remove_from_working_set" && state == "used")
+      else if (*invoc._action == "remove" && state == "inuse")
       {
         state = "available";
         last_change = 0;
@@ -293,16 +297,6 @@ namespace gspc
         _socket->write
           ( qPrintable ( QString
                        ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Removed from working set.\"]]\n")
-                       .arg (*invoc._host)
-                       .arg (*invoc._action)
-                       )
-          );
-      }
-      else if (*invoc._action == "foo" && state == "used")
-      {
-        _socket->write
-          ( qPrintable ( QString
-                       ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"bar\"]]\n")
                        .arg (*invoc._host)
                        .arg (*invoc._action)
                        )
@@ -319,6 +313,13 @@ namespace gspc
                        )
           );
       }
+    }
+
+    QString thread::description (const QString& action)
+    {
+      if (_hooks.contains (action))
+        return _hooks.value (action).second;
+      throw std::runtime_error ("unknown action: " + action.toStdString ());
     }
 
     void thread::send_action_description (fhg::util::parse::position& pos)
@@ -343,7 +344,7 @@ namespace gspc
                      .arg ( state == "down" ? 0xEF0A06
                           : state == "available" ? 0x23AEB8
                           : state == "unavailable" ? 0xFF5405
-                          : state == "used" ? 0x155F22
+                          : state == "inuse" ? 0x155F22
                           : 0xFFFFFF
                           )
                      )
@@ -369,6 +370,9 @@ namespace gspc
       {
         const std::string message
           (QString (_socket->readLine()).trimmed().toStdString());
+
+        qDebug () << "got message: " << QString (message.c_str ());
+
         fhg::util::parse::position pos (message);
 
         try
@@ -443,13 +447,16 @@ namespace gspc
               _socket->write ("possible_status: [");
               for (size_t i (0); i < status_count; ++i)
               {
+                QString s (states [i]);
+
                 _socket->write ("\"");
-                _socket->write (states[i]);
+                _socket->write (qPrintable (s));
                 _socket->write ("\":[");
-                if (actions[i])
+
+                foreach (const QString& a, _actions [s])
                 {
-                  _socket->write (" \"");
-                  _socket->write (actions[i]);
+                  _socket->write ("\"");
+                  _socket->write (qPrintable (a));
                   _socket->write ("\",");
                 }
                 _socket->write ("],");
@@ -515,7 +522,7 @@ namespace gspc
           state = "available";
           last_change = 0;
         }
-        else if (chance (0.1) && (state == "available" || state == "used"))
+        else if (chance (0.1) && (state == "available" || state == "inuse"))
         {
           state = "unavailable";
           last_change = 0;
@@ -530,7 +537,7 @@ namespace gspc
           ++last_change;
         }
 
-        if (state == "used")
+        if (state == "inuse")
         {
           static const char* transition[] = {"map", "reduce", "collect"};
           _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\", details:\"%3\"]]\n")
