@@ -1124,6 +1124,24 @@ namespace fhg
             *ok = !res.isNull();
             return QString ("[binary:=\"%1\"]").arg (res).toStdString();
           }
+          else if (type == std::string ("memory_size_type"))
+          {
+            return QString ("[size:=%1L]").arg
+              ( (1UL << 20) * static_cast<long>
+                ( QInputDialog::getInt
+                  ( NULL
+                  , QObject::tr ("value_for_input_token (in MiB)")
+                  , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+                  , 0
+                  //! \note These horrible defaults are from Qt.
+                  , -2147483647
+                  , 2147483647
+                  , 1
+                  , ok
+                  )
+                )
+              ).toStdString();
+          }
           else if (type == std::string ("long"))
           {
             return QString ("%1").arg
