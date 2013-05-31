@@ -49,6 +49,7 @@
 #include <sstream>
 
 #include <boost/thread.hpp>
+#include <boost/unordered_set.hpp>
 
 #include <QAction>
 #include <QApplication>
@@ -783,6 +784,19 @@ namespace fhg
           }
         }
 
+        namespace
+        {
+          boost::unordered_set<std::string> init_typenames()
+          {
+            boost::unordered_set<std::string> tns;
+
+            tns.insert ("file_type");
+            tns.insert ("function_type");
+
+            return tns;
+          }
+        }
+
         std::pair<we::type::activity_t, xml::parse::id::ref::function>
           prepare_activity ( const QStack<document_view*>& accessed_widgets
                            , const boost::filesystem::path& temporary_path
@@ -865,67 +879,67 @@ namespace fhg
               if (!has_any_connection)
               {
                 //! \todo which types?
-                if (port.type() == "file_type")
+                static boost::unordered_set<std::string> tns (init_typenames());
+
+                if (tns.find (port.type()) == tns.end())
                 {
-                  net.get_ref().push_place
-                    ( ::xml::parse::type::place_type
-                      ( net.id_mapper()->next_id()
-                      , net.id_mapper()
+                  throw std::runtime_error (std::string ("unconnected port ") + port.name() + " with non-auto-connectable type " + port.type());
+                }
+
+                net.get_ref().push_place
+                  ( ::xml::parse::type::place_type
+                    ( net.id_mapper()->next_id()
+                    , net.id_mapper()
+                    , boost::none
+                    , XML_PARSE_UTIL_POSITION_GENERATED()
+                    , name
+                    , port.type()
+                    , boost::none
+                    ).make_reference_id()
+                  );
+
+                function.get_ref().push_port
+                  ( ::xml::parse::type::port_type
+                    ( function.id_mapper()->next_id()
+                    , function.id_mapper()
+                    , boost::none
+                    , XML_PARSE_UTIL_POSITION_GENERATED()
+                    , name
+                    , port.type()
+                    , name
+                    , fake_dir (port)
+                    ).make_reference_id()
+                  );
+
+                if (port.direction() == we::type::PORT_TUNNEL)
+                {
+                  trans.get_ref().push_place_map
+                    ( ::xml::parse::type::place_map_type
+                      ( trans.id_mapper()->next_id()
+                      , trans.id_mapper()
                       , boost::none
                       , XML_PARSE_UTIL_POSITION_GENERATED()
+                      , port.name()
                       , name
-                      , port.type()
-                      , boost::none
+                      , we::type::property::type()
                       ).make_reference_id()
                     );
-
-                  function.get_ref().push_port
-                    ( ::xml::parse::type::port_type
-                      ( function.id_mapper()->next_id()
-                      , function.id_mapper()
-                      , boost::none
-                      , XML_PARSE_UTIL_POSITION_GENERATED()
-                      , name
-                      , port.type()
-                      , name
-                      , fake_dir (port)
-                      ).make_reference_id()
-                    );
-
-                  if (port.direction() == we::type::PORT_TUNNEL)
-                  {
-                    trans.get_ref().push_place_map
-                      ( ::xml::parse::type::place_map_type
-                        ( trans.id_mapper()->next_id()
-                        , trans.id_mapper()
-                        , boost::none
-                        , XML_PARSE_UTIL_POSITION_GENERATED()
-                        , port.name()
-                        , name
-                        , we::type::property::type()
-                        ).make_reference_id()
-                      );
-                  }
-                  else
-                  {
-                    trans.get_ref().push_connection
-                     ( ::xml::parse::type::connect_type
-                       ( trans.id_mapper()->next_id()
-                       , trans.id_mapper()
-                       , boost::none
-                       , XML_PARSE_UTIL_POSITION_GENERATED()
-                       , name
-                       , port.name()
-                       , port.direction() == we::type::PORT_IN
-                       ? we::edge::PT
-                       : we::edge::TP
-                       ).make_reference_id()
-                     );
-                  }
                 }
                 else
                 {
-                  throw std::runtime_error (std::string ("unconnected port ") + port.name() + " with non-auto-connectable type " + port.type());
+                  trans.get_ref().push_connection
+                    ( ::xml::parse::type::connect_type
+                      ( trans.id_mapper()->next_id()
+                      , trans.id_mapper()
+                      , boost::none
+                      , XML_PARSE_UTIL_POSITION_GENERATED()
+                      , name
+                      , port.name()
+                      , port.direction() == we::type::PORT_IN
+                      ? we::edge::PT
+                      : we::edge::TP
+                      ).make_reference_id()
+                    );
                 }
               }
             }
@@ -1093,6 +1107,17 @@ namespace fhg
               );
             *ok = !res.isNull();
             return QString ("[name:=\"%1\",type:=\"raw\"]").arg (res).toStdString();
+          }
+          else if (type == std::string ("function_type"))
+          {
+            const QString res
+              ( QFileDialog::getOpenFileName
+                ( NULL
+                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
+                )
+              );
+            *ok = !res.isNull();
+            return QString ("[binary:=\"%1\"]").arg (res).toStdString();
           }
           else if (type == std::string ("long"))
           {
