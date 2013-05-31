@@ -113,6 +113,7 @@ namespace sdpa
           DMLOG ( WARN
                 , "send failed:"
                 << " ec := " << ec
+                << " msg := " << ec.message ()
                 << " event := " << e->str()
                 << " to := " << sdpa_event->to ()
                 << " from := " << sdpa_event->from ()

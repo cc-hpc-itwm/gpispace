@@ -25,14 +25,14 @@ mode="version"
 
 while true ; do
     case "$1" in
-        -h|--help) usage; exit 0 ;;
+        -h|--help) usage; exit ${GSPC_EX_OK} ;;
         -r) mode="revision" ; shift ;;
         --) shift; break ;;
     esac
 done
 
 case "${mode}" in
-    version) gspc --version ; exit 0 ;;
-    revision) gspc --revision ; exit 0 ;;
-    *) gspc_log_error version "Invalid mode: '${mode}'" ; exit 1 ;;
+    version) gspc --version ; exit ${GSPC_EX_OK} ;;
+    revision) gspc --revision ; exit ${GSPC_EX_OK} ;;
+    *) gspc_log_error version "Invalid mode: '${mode}'" ; exit ${GSPC_EX_USAGE} ;;
 esac

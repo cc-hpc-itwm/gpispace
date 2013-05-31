@@ -18,7 +18,7 @@ EOF
 
 TEMP=`getopt -o h,f --long help,force -n 'init' -- "$@"`
 
-if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit ${GSPC_EX_USAGE} ; fi
 
 eval set -- "$TEMP"
 
@@ -26,10 +26,10 @@ force=false
 
 while true ; do
     case "$1" in
-        -h|--help) usage; exit 0 ;;
+        -h|--help) usage; exit ${GSPC_EX_OK} ;;
         -f|--force) force=true; shift ;;
         --) shift; break ;;
-        *) gspc_log_error init "Internal error on argument: '$1'"; exit 1 ;;
+        *) gspc_log_error init "Internal error on argument: '$1'"; exit ${GSPC_EX_USAGE} ;;
     esac
 done
 
@@ -46,7 +46,7 @@ fi
 if [ -z "$dir" ]
 then
     gspc_log_error init "gspc-dir was not specified. try 'gspc -h'"
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 if [ -d "$dir" ]
@@ -54,7 +54,7 @@ then
     if ! $force
     then
         gspc_log_error init "directory '${dir}' does already exist!"
-        exit 1
+        exit ${GSPC_EX_UNAVAILABLE}
     fi
 fi
 
@@ -63,7 +63,7 @@ ec=$?
 if [ $? -ne 0 ]
 then
     gspc_log_error init "could not create directory '$dir': ${err}"
-    exit 1
+    exit ${GSPC_EX_CANTCREAT}
 fi
 
 err=$(mkdir -p "$dir"/{var,run,lock,log} 2>&1)
@@ -71,7 +71,7 @@ ec=$?
 if [ $? -ne 0 ]
 then
     gspc_log_error init "could not create directory '$dir': ${err}"
-    exit 1
+    exit ${GSPC_EX_CANTCREAT}
 fi
 
 gspc --revision > "${dir}/.gspc_dir"

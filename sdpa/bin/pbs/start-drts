@@ -326,8 +326,7 @@ cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
 # config values (gpi plugin)
 if [ -z "$gpi_socket" ] ; then
     gpi_socket=$(fhgcfg -f "${config_file}" -g gpi.socket_path -v "/tmp")
-    numa_socket=0
-    gpi_socket="$gpi_socket/S-gpi-space.$(id -u).${numa_socket}"
+    gpi_socket="$gpi_socket/S-gpi-space.$(id -u).0"
 fi
 cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
 cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.startmode -v wait)"
@@ -343,6 +342,7 @@ cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
 
 plugins=$(fhgcfg -f "${config_file}" -g kernel.plugins)
 plugins="numa,$plugins"
+plugins="${plugins},netd"
 
 plugin_load_flags=""
 for p in $(echo $plugins | tr ',' ' '); do
@@ -361,5 +361,5 @@ log "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
     $cmd >"${logprefix}.out" 2>"${logprefix}.err" </dev/null &
 else
-    $cmd
+    exec $cmd
 fi

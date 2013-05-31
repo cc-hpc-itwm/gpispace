@@ -1,4 +1,5 @@
 #include "netd.hpp"
+#include "kvs.hpp"
 
 #include <fhglog/minimal.hpp>
 #include <gspc/net.hpp>
@@ -21,6 +22,25 @@ public:
     m_listen_url = m_server->url ();
 
     MLOG (DEBUG, "listening on " << m_listen_url);
+
+    kvs::KeyValueStore *kvs = fhg_kernel ()->acquire<kvs::KeyValueStore>("kvs");
+    if (kvs)
+    {
+      try
+      {
+        kvs->put ( "gspc.net."
+                 + fhg_kernel ()->get_name ()
+                 + ".url"
+                 , m_listen_url
+                 );
+      }
+      catch (std::exception const &ex)
+      {
+        MLOG (WARN, "could not store url to KVS: " << ex.what ());
+      }
+
+      fhg_kernel ()->release ("kvs");
+    }
 
     FHG_PLUGIN_STARTED();
   }

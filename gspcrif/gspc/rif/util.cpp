@@ -1,0 +1,294 @@
+#include "util.hpp"
+
+#include <sys/types.h> // stat
+#include <sys/stat.h> // stat
+#include <unistd.h> // stat
+#include <errno.h>
+#include <stdlib.h> // abort, getenv
+#include <ctype.h>  // character classes
+#include <string.h> // strlen
+
+#include <stack>
+#include <iostream>
+
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+
+namespace gspc
+{
+  namespace rif
+  {
+    enum parse_state_e
+      {
+        E_SKIPWS
+      , E_SINGLE_QUOTES
+      , E_DOUBLE_QUOTES
+      , E_ESCAPE
+      , E_HEXVALUE_HI
+      , E_HEXVALUE_LO
+      , E_ARG
+      };
+
+    int parse (std::string const &s, argv_t &v, size_t & consumed)
+    {
+      return parse (s.c_str (), s.size (), v, consumed);
+    }
+
+    int parse ( const char *buffer
+              , size_t len
+              , argv_t &argv
+              , size_t & pos
+              )
+    {
+      std::stack<parse_state_e> states;
+      states.push (E_SKIPWS);
+
+      char value = 0; // used for \xAB values
+      pos = 0;
+      std::string arg;
+
+      while (pos < len)
+      {
+        int mode = states.top ();
+
+        char c = buffer [pos];
+
+        switch (mode)
+        {
+        case E_SKIPWS:
+          if (isspace (c))
+            break;
+
+          switch (c)
+          {
+          case '\'':
+            states.push (E_ARG);
+            states.push (E_SINGLE_QUOTES);
+            break;
+          case '\"':
+            states.push (E_ARG);
+            states.push (E_DOUBLE_QUOTES);
+            break;
+          case '\\':
+            states.push (E_ARG);
+            states.push (E_ESCAPE);
+            break;
+          default:
+            arg.push_back (c);
+            states.push (E_ARG);
+            break;
+          }
+          break;
+        case E_SINGLE_QUOTES:
+          switch (c)
+          {
+          case '\'':
+            states.pop ();
+            break;
+          case '\\':
+            states.push (E_ESCAPE);
+            break;
+          default:
+            arg.push_back (c);
+          }
+          break;
+        case E_DOUBLE_QUOTES:
+          switch (c)
+          {
+          case '\"':
+            states.pop ();
+            break;
+          case '\\':
+            states.push (E_ESCAPE);
+            break;
+          default:
+            arg.push_back (c);
+          }
+          break;
+        case E_ESCAPE:
+          states.pop ();
+          switch (c)
+          {
+          case 'a':
+            arg.push_back ('\a');
+            break;
+          case 'b':
+            arg.push_back ('\b');
+            break;
+          case 'f':
+            arg.push_back ('\f');
+            break;
+          case 'n':
+            arg.push_back ('\n');
+            break;
+          case 'r':
+            arg.push_back ('\r');
+            break;
+          case 't':
+            arg.push_back ('\t');
+            break;
+          case '\\':
+            arg.push_back ('\\');
+            break;
+          case '\'':
+            arg.push_back ('\'');
+            break;
+          case '\"':
+            arg.push_back ('\"');
+            break;
+          case 'x':
+            states.push (E_HEXVALUE_LO);
+            states.push (E_HEXVALUE_HI);
+            break;
+          }
+          break;
+        case E_HEXVALUE_HI:
+          states.pop ();
+          {
+            switch (c)
+            {
+            case '0'...'9':
+              value = ((c - '0') & 0x0f) << 4;
+              break;
+            case 'a'...'f':
+              value = ((c - 'a') & 0x0f) << 4;
+              break;
+            case 'A'...'F':
+              value = ((c - 'A') & 0x0f) << 4;
+              break;
+            default:
+              return -EINVAL;
+            }
+          }
+          break;
+        case E_HEXVALUE_LO:
+          states.pop ();
+          {
+            switch (c)
+            {
+            case '0'...'9':
+              value |= ((c - '0') & 0x0f);
+              break;
+            case 'a'...'f':
+              value |= ((c - 'a') & 0x0f);
+              break;
+            case 'A'...'F':
+              value |= ((c - 'A') & 0x0f);
+              break;
+            default:
+              return -EINVAL;
+            }
+          }
+
+          arg.push_back (value);
+          value = 0;
+          break;
+        case E_ARG:
+          if (isspace (c))
+          {
+            argv.push_back (arg);
+            arg.clear ();
+            states.pop ();
+          }
+          else
+          {
+            switch (c)
+            {
+            case '\'':
+              states.push (E_SINGLE_QUOTES);
+              break;
+            case '\"':
+              states.push (E_DOUBLE_QUOTES);
+              break;
+            case '\\':
+              states.push (E_ESCAPE);
+              break;
+            default:
+              arg.push_back (c);
+            }
+          }
+          break;
+        default:
+          abort ();
+        }
+
+        ++pos;
+      }
+
+      if (states.top () == E_ARG && not arg.empty ())
+      {
+        argv.push_back (arg);
+        arg.clear ();
+      }
+
+      return 0;
+    }
+
+    int make_exit_code (int status)
+    {
+      if (WIFEXITED (status))
+      {
+        return WEXITSTATUS (status) & 0xff;
+      }
+      else if (WIFSIGNALED (status))
+      {
+        return (128 + WTERMSIG (status)) & 0xff;
+      }
+      else
+      {
+        return -EBUSY;
+      }
+    }
+
+    int resolve ( boost::filesystem::path const &file
+                , search_path_t const &search_path
+                , boost::filesystem::path &resolved
+                )
+    {
+      namespace fs = boost::filesystem;
+
+      if (file.is_absolute ())
+      {
+        resolved = file;
+        return 0;
+      }
+
+      BOOST_FOREACH (fs::path const &p, search_path)
+      {
+        fs::path candidate = p / file;
+
+        while (fs::is_symlink (candidate))
+        {
+          candidate = fs::read_symlink (candidate);
+        }
+
+        if (fs::is_regular_file (candidate))
+        {
+          struct stat sbuf;
+          int rc = ::stat (p.string ().c_str (), &sbuf);
+          if (0 == rc && (sbuf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)))
+          {
+            resolved = candidate;
+            return 0;
+          }
+        }
+      }
+
+      return -ENOENT;
+    }
+
+    int getenv (std::string const &key, std::string & val)
+    {
+      char *v = ::getenv (key.c_str ());
+      if (v)
+      {
+        val = v;
+        return 0;
+      }
+      else
+      {
+        return -ENOKEY;
+      }
+    }
+  }
+}

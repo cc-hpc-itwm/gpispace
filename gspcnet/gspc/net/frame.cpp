@@ -30,6 +30,12 @@ namespace gspc
       return *this;
     }
 
+    frame & frame::set_header (frame::header_type const &hdr)
+    {
+      m_header = hdr;
+      return *this;
+    }
+
     frame & frame::set_header ( std::string const & key
                               , std::string const & val
                               )
