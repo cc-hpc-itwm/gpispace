@@ -16,6 +16,7 @@
 #include <QMutexLocker>
 #include <QFileSystemWatcher>
 #include <QFile>
+#include <QProcess>
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
@@ -24,17 +25,25 @@ namespace gspc
 {
   namespace mon
   {
-    server::server (int port, const QString& hostlist, QObject* parent)
+    server::server ( int port
+                   , const QString& hostlist
+                   , const QDir& hookdir
+                   , QObject* parent)
       : QTcpServer (parent)
       , _hostlist (hostlist)
+      , _hookdir (hookdir)
     {
       if (!listen (QHostAddress::Any, port))
       {
         throw std::runtime_error (qPrintable (errorString()));
       }
 
+      _hookdir.makeAbsolute ();
+
       qDebug() << "listening on port" << serverPort()
-               << "using hostlist" << _hostlist;
+               << "using hostlist" << _hostlist
+               << "and hooks from" << _hookdir.absolutePath ()
+        ;
     }
 
     server::~server ()
@@ -42,15 +51,25 @@ namespace gspc
 
     void server::incomingConnection (int socket_descriptor)
     {
-      gspc::mon::thread* t (new gspc::mon::thread (socket_descriptor, _hostlist));
+      gspc::mon::thread* t (new gspc::mon::thread ( socket_descriptor
+                                                  , _hostlist
+                                                  , _hookdir
+                                                  , this
+                                                  )
+                           );
       t->moveToThread (t);
       t->start();
     }
 
-    thread::thread (int socket_descriptor, const QString& hostlist, QObject* parent)
+    thread::thread ( int socket_descriptor
+                   , const QString& hostlist
+                   , const QDir& hookdir
+                   , QObject* parent
+                   )
       : QThread (parent)
       , _socket_descriptor (socket_descriptor)
       , _socket (NULL)
+      , _hookdir (hookdir)
     {
       QFileSystemWatcher* watcher (new QFileSystemWatcher (this));
       connect ( watcher, SIGNAL (fileChanged (const QString&))

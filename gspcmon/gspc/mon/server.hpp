@@ -10,6 +10,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QStringList>
+#include <QDir>
 
 namespace gspc
 {
@@ -19,7 +20,11 @@ namespace gspc
     {
       Q_OBJECT;
     public:
-      server (int port, const QString& hostlist, QObject* parent = NULL);
+      server ( int port
+             , const QString& hostlist
+             , const QDir& hookdir
+             , QObject* parent = NULL
+             );
       ~server ();
 
     protected:
@@ -27,13 +32,17 @@ namespace gspc
 
     private:
       QString _hostlist;
+      QDir _hookdir;
     };
 
     class thread : public QThread
     {
       Q_OBJECT;
     public:
-      thread (int socket_descriptor, const QString& hostlist, QObject* parent = NULL);
+      thread ( int socket_descriptor
+             , const QString& hostlist
+             , const QDir& hookdir
+             , QObject* parent = NULL);
       ~thread ();
 
     protected:
@@ -53,6 +62,7 @@ namespace gspc
 
       int _socket_descriptor;
       QTcpSocket* _socket;
+      QDir _hookdir;
 
       mutable QMutex _hosts_mutex;
       QMap<QString, QPair<QString, int /*ticks since last change*/> > _hosts;
