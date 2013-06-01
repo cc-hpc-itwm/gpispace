@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <signal.h>
 
+#include <iostream>
+
 #include <boost/foreach.hpp>
 
 #include <gspc/rif/manager.hpp>
