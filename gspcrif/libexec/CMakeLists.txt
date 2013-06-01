@@ -7,7 +7,7 @@ find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 find_package(GSPC_NET REQUIRED QUIET)
-include_directories("${GSPC_NET_INCLUDE_DIR}")
+include_directories(${GSPC_NET_INCLUDE_DIR})
 
 set(PLUGIN_DESTINATION_DIR "libexec/fhg/plugins")
 set(HEADER_DESTINATION_DIR "include/fhg/plugins")
