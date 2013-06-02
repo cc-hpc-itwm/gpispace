@@ -457,7 +457,7 @@ namespace gspc
                 {
                   _socket->write ("\"");
                   _socket->write (qPrintable (a));
-                  _socket->write ("\",");
+                  _socket->write ("\", ");
                 }
                 _socket->write ("],");
               }
