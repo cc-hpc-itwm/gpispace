@@ -1332,6 +1332,8 @@ namespace prefix
           return std::pair<QWidget*, boost::function<QString()> >
             (edit, boost::bind (&QLineEdit::text, edit));
         }
+      default:
+        abort ();
       }
     }
   }
