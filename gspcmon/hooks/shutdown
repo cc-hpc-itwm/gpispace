@@ -1,6 +1,10 @@
 #!/bin/bash
 
+echo >&2 "operation not implemented"
+exit 1
+
 for node
 do
     echo "$node 0 down $node is now offline"
 done
+exit 1
