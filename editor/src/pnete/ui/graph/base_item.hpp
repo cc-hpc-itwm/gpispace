@@ -13,12 +13,11 @@
 
 #include <we/type/property.hpp>
 
-#include <stack>
-
 #include <QGraphicsObject>
+#include <QLinkedList>
 #include <QPointF>
 #include <QRectF>
-#include <QLinkedList>
+#include <QStack>
 
 class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
@@ -94,7 +93,7 @@ namespace fhg
 
         protected:
           style::type _style;
-          std::stack<mode::type> _mode;
+          QStack<mode::type> _mode;
           QPointF _move_start;
 
           virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
