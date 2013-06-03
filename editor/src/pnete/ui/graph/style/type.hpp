@@ -163,6 +163,30 @@ namespace fhg
             }
 
             template<typename T>
+            void
+            push ( const key_type& key
+                 , const typename store::of<T>::type::predicate_type& pred
+                 )
+            {
+              for (mode::type i (mode::NORMAL); i < mode::MODE_NUM; ++i)
+              {
+                push<T> (key, i, pred);
+              }
+            }
+
+            template<typename VALUE>
+              void push ( const key_type& key
+                        , const VALUE& value
+                        )
+            {
+              for (mode::type i (mode::NORMAL); i < mode::MODE_NUM; ++i)
+              {
+                push<VALUE> (key, i, value);
+              }
+            }
+
+
+            template<typename T>
               T get ( const base_item* item
                     , const mode::type& mode
                     , const key_type& key

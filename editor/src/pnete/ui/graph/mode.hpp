@@ -21,6 +21,7 @@ namespace fhg
             , CONNECT
             , CONNECT_ALLOWED
             , CONNECT_FORBIDDEN
+            , MODE_NUM
             };
         }
       }
