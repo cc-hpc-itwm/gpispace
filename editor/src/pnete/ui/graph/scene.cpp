@@ -180,6 +180,8 @@ namespace fhg
             , "place_association_set"
             , "data::handle::port, boost::optional<std::string>"
             );
+
+          setSceneRect (QRectF (-10000, -10000, 10000, 10000));
         }
 
         QList<QAction*> scene_type::actions() const
