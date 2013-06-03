@@ -1,0 +1,19 @@
+#!/bin/bash
+
+transitions=("calc" "reduce" "mgmt")
+
+for node
+do
+    r=$(( RANDOM % 1000))
+
+    if [ $r -lt 5 ] ; then
+        echo "$node 0 down"
+    elif [ $r -lt 10 ] ; then
+        echo "$node 0 unavailable"
+    elif [ $r -lt 30 ] ; then
+        echo "$node 0 available"
+    else
+        t=$(( RANDOM % ${#transitions[@]} ))
+        echo "$node 0 inuse ${transitions[${t}]}"
+    fi
+done
