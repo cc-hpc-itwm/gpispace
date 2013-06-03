@@ -30,7 +30,7 @@ namespace fhg
           {
             if (fix->handle().is_tunnel())
             {
-              _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, Qt::DotLine);
+              _style.push<Qt::PenStyle> ("border_style", Qt::DotLine);
             }
           }
         }

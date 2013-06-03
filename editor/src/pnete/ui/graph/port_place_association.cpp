@@ -27,7 +27,7 @@ namespace fhg
             invert();
           }
 
-          _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, Qt::DotLine);
+          _style.push<Qt::PenStyle> ("border_style", Qt::DotLine);
 
           handle.connect_to_change_mgr
             ( this

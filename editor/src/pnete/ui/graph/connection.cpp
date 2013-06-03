@@ -35,7 +35,7 @@ namespace fhg
             : association (start, end)
             , _handle (handle)
         {
-          _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, pen_style);
+          _style.push<Qt::PenStyle> ("border_style", pen_style);
 
           handle.connect_to_change_mgr
             (this, "connection_direction_changed", "data::handle::connect");

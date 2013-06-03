@@ -87,7 +87,7 @@ namespace fhg
 
           update_implicity();
 
-          _style.push<Qt::PenStyle> ("border_style", mode::NORMAL, pen_style);
+          _style.push<Qt::PenStyle> ("border_style", pen_style);
         }
 
         const data::handle::place& place_item::handle() const
