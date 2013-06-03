@@ -248,6 +248,7 @@ namespace gspc
     int call_action_hook ( QString program
                          , QStringList nodes
                          , QMap<QString, hook_partial_result_t> &result
+                         , QString &error_reason
                          , QObject *parent = 0
                          )
     {
@@ -263,7 +264,7 @@ namespace gspc
       p->start (program, args);
       if (p->waitForStarted ())
       {
-        p->waitForReadyRead ();
+        p->waitForFinished ();
 
         while (p->bytesAvailable ())
         {
@@ -282,36 +283,55 @@ namespace gspc
 
           qDebug () << "new state for" << res.host << "is" << res.state;
         }
-        p->waitForFinished ();
 
-        qDebug () << program << "finished" << p->exitCode ();
+        p->setReadChannel (QProcess::StandardError);
+        while (p->bytesAvailable ())
+        {
+          // take last line
+          error_reason = QString (p->readLine ()).trimmed ();
+        }
+
+        rc = p->exitCode ();
+
+        if (0 == rc)
+        {
+          qDebug () << program << "finished";
+        }
+        else
+        {
+          qDebug () << program << "failed:" << rc;
+          if (error_reason.isEmpty ())
+          {
+            error_reason = "unknown reason";
+          }
+        }
       }
       else
       {
         switch (p->error ())
         {
         case QProcess::FailedToStart:
-          qDebug () << program << "failed to start";
+          error_reason = "Permission denied / No such file or directory";
           rc = 127;
           break;
         case QProcess::Crashed:
-          qDebug () << program << "crashed";
+          error_reason = "crashed";
           rc = 137;
           break;
         case QProcess::Timedout:
-          qDebug () << program << "timedout";
+          error_reason = "timedout";
           rc = 128;
           break;
         case QProcess::WriteError:
-          qDebug () << program << "could not write to stdin";
+          error_reason = "could not write to stream";
           rc = 141;
           break;
         case QProcess::ReadError:
-          qDebug () << program << "could not read output";
+          error_reason = "could not read from stream";
           rc = 141;
           break;
         case QProcess::UnknownError:
-          qDebug () << program << "failed for unknown reasons";
+          error_reason = "unknown reason";
           rc = 128;
           break;
         }
@@ -360,9 +380,11 @@ namespace gspc
       int& last_change (_hosts[*invoc._host].second);
 
       QMap<QString, hook_partial_result_t> results;
+      QString error_reason;
       int ec = call_action_hook ( _hooks [*invoc._action].first
                                 , QStringList () << *invoc._host
                                 , results
+                                , error_reason
                                 , this
                                 );
       if (0 == ec)
@@ -398,9 +420,10 @@ namespace gspc
         {
           _socket->write
             ( qPrintable ( QString
-                         ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"%3\"],]\n")
+                         ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"error %3: %4\"],]\n")
                          .arg (*invoc._host)
                          .arg (*invoc._action)
+                         .arg (pres.exit_code)
                          .arg (pres.message)
                          )
             );
@@ -408,15 +431,14 @@ namespace gspc
       }
       else
       {
-        QString reason = (ec == 127 ? "hook does not exist" : "hook failed to execute");
-
         _socket->write
           ( qPrintable ( QString
-                       ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Can't execute %2 on host %1 in state %3: %4\"],]\n")
+                       ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"'%2' on '%1' in state '%3' failed: %4: %5\"],]\n")
                        .arg (*invoc._host)
                        .arg (*invoc._action)
                        .arg (state)
-                       .arg (reason)
+                       .arg (ec)
+                       .arg (error_reason)
                        )
           );
 
