@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for node
+do
+    echo "$node 0 down $node is now offline"
+done

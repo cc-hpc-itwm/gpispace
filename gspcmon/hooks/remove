@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for node
+do
+    echo "$node 0 available $node is not in use anymore"
+done
