@@ -17,6 +17,33 @@ namespace fhg
   {
     namespace setting
     {
+      namespace
+      {
+        void maybe_set
+          (QSettings& settings, const QString& key, const QVariant& value)
+        {
+          if (!settings.value (key).isValid())
+          {
+            settings.setValue (key, value);
+          }
+        }
+
+        void maybe_set_default_settings()
+        {
+          QSettings settings;
+
+          settings.beginGroup ("gantt");
+
+          maybe_set (settings, "created", QColor (128, 128, 128));
+          maybe_set (settings, "started", QColor (255, 255, 0));
+          maybe_set (settings, "finished", QColor (0, 200, 0));
+          maybe_set (settings, "failed", QColor (255, 0, 0));
+          maybe_set (settings, "cancelled", QColor (165, 42, 42));
+
+          settings.endGroup();
+        }
+      }
+
       void init ()
       {
         QApplication::setApplicationName ("pnete");
@@ -27,6 +54,8 @@ namespace fhg
           );
         QApplication::setOrganizationDomain ("itwm.fhg.de");
         QApplication::setOrganizationName ("Fraunhofer ITWM");
+
+        maybe_set_default_settings();
       }
 
 #define CONST(_type,_name,_value)                       \
