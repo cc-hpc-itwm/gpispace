@@ -92,10 +92,13 @@ namespace gspc
       _hooks ["remove"].first = _hookdir.absoluteFilePath ("remove");
       _hooks ["remove"].second = "remove the node to the working set";
 
+      _hooks ["shutdown"].first = _hookdir.absoluteFilePath ("shutdown");
+      _hooks ["shutdown"].second = "take the node offline";
+
       _actions ["down"]        << "reboot";
-      _actions ["available"]   << "reboot" << "add";
+      _actions ["available"]   << "add" << "shutdown";
       _actions ["unavailable"] << "reboot";
-      _actions ["inuse"]       << "reboot" << "remove";
+      _actions ["inuse"]       << "remove";
     }
 
     thread::~thread () {}
