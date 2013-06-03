@@ -96,6 +96,9 @@ namespace gspc
       _hooks ["shutdown"].first = _hookdir.absoluteFilePath ("shutdown");
       _hooks ["shutdown"].second = "take the node offline";
 
+      _hooks ["status"].first = _hookdir.absoluteFilePath ("status");
+      _hooks ["status"].second = "query the status of a node";
+
       _actions ["down"]        << "reboot";
       _actions ["available"]   << "add" << "shutdown";
       _actions ["unavailable"] << "reboot";
@@ -121,24 +124,6 @@ namespace gspc
       delete timer;
     }
 
-    namespace
-    {
-      const size_t status_count (4);
-      const char* states[] = {"down", "available", "unavailable", "inuse"};
-      const double initial_state_probabilities[] = {
-        0.1, 0.6, 0.2, 0.1
-      };
-
-      QString random_initial_state ()
-      {
-        static boost::mt19937 gen;
-        static boost::random::discrete_distribution<> dist
-          (initial_state_probabilities);
-
-        return states [dist (gen)];
-      }
-    }
-
     void thread::read_hostlist (const QString& hostlist)
     {
       QFile file (hostlist);
@@ -150,8 +135,13 @@ namespace gspc
 
         while (!file.atEnd())
         {
+          host_state_t hs;
+          hs.state = "down";
+          hs.age = -1;
+          hs.details = "";
+
           _hosts.insert ( QString (file.readLine()).trimmed()
-                        , qMakePair (random_initial_state(), 0)
+                        , hs
                         );
         }
       }
@@ -272,16 +262,22 @@ namespace gspc
           std::stringstream sstr (line.toStdString ());
           hook_partial_result_t res;
 
-          std::string s;
-          sstr >> s; res.host = s.c_str ();
+          {
+            std::string s;
+            sstr >> s; res.host = s.c_str ();
+          }
           sstr >> res.exit_code;
-          sstr >> s; res.state = s.c_str ();
-          std::getline (sstr, s);
-          res.message = s.c_str ();
+          {
+            std::string s;
+            sstr >> s; res.state = s.c_str ();
+          }
+          {
+            std::string s;
+            std::getline (sstr, s);
+            res.message = s.c_str ();
+          }
 
           result [res.host] = res;
-
-          qDebug () << "new state for" << res.host << "is" << res.state;
         }
 
         p->setReadChannel (QProcess::StandardError);
@@ -376,8 +372,12 @@ namespace gspc
         return;
       }
 
-      QString& state (_hosts[*invoc._host].first);
-      int& last_change (_hosts[*invoc._host].second);
+      host_state_t & hs = _hosts [*invoc._host];
+
+      QString& state = hs.state;
+      int& age = hs.age;
+      QString & details = hs.details;
+      details = "";
 
       QMap<QString, hook_partial_result_t> results;
       QString error_reason;
@@ -392,7 +392,7 @@ namespace gspc
         hook_partial_result_t & pres = results [*invoc._host];
 
         state = pres.state;
-        last_change = 0;
+        age = 0;
 
         if (0 == pres.exit_code)
         {
@@ -576,10 +576,9 @@ namespace gspc
 
             {
               _socket->write ("possible_status: [");
-              for (size_t i (0); i < status_count; ++i)
+              QList<QString> states (_actions.keys());
+              foreach (const QString& s, states)
               {
-                QString s (states [i]);
-
                 _socket->write ("\"");
                 _socket->write (qPrintable (s));
                 _socket->write ("\":[");
@@ -622,71 +621,117 @@ namespace gspc
       }
     }
 
-    namespace
+    void thread::send_status_updates (QStringList const &hosts)
     {
-      bool chance (const float percentage)
+      const QMutexLocker lock (&_hosts_mutex);
+      foreach (const QString& host, hosts)
       {
-        return float (qrand()) / float (RAND_MAX) < percentage / 100.0;
+        const host_state_t & hs = _hosts [host];
+        send_status (host, hs.state, hs.details);
+      }
+    }
+
+    void thread::send_status ( QString const &host
+                             , QString const &state
+                             , QString const &details
+                             )
+    {
+      if (details.isEmpty ())
+      {
+        _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\"]]\n")
+                                    .arg (host)
+                                    .arg (state)
+                                    )
+                       );
+      }
+      else
+      {
+        _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\", details:\"%3\"]]\n")
+                                    .arg (host)
+                                    .arg (state)
+                                    .arg (details)
+                                    )
+                       );
       }
     }
 
     void thread::send_some_status_updates()
     {
-      const QMutexLocker lock (&_pending_status_updates_mutex);
-      while (!_pending_status_updates.empty() && chance (99.9))
+      qDebug () << "send_some updates";
+
+      QStringList to_query;
+      QStringList to_send;
+
       {
-        const QString host (_pending_status_updates.takeFirst());
+        const QMutexLocker lock (&_pending_status_updates_mutex);
+        while (!_pending_status_updates.empty ())
+        {
+          const QString host (_pending_status_updates.takeFirst ());
 
-        const QMutexLocker lock (&_hosts_mutex);
+          const QMutexLocker lock (&_hosts_mutex);
 
-        if (!_hosts.contains (host))
-        {
-          qDebug() << "requested state update for unknown host";
-          continue;
-        }
+          if (!_hosts.contains (host))
+          {
+            continue;
+          }
+          to_send << host;
 
-        QString& state (_hosts[host].first);
-        int& last_change (_hosts[host].second);
+          host_state_t & hs = _hosts[host];
 
-        if (state == "down" && last_change > 10 && chance (10.0 * (last_change - 10)))
-        {
-          state = "available";
-          last_change = 0;
-        }
-        else if (chance (0.1) && (state == "available" || state == "inuse"))
-        {
-          state = "unavailable";
-          last_change = 0;
-        }
-        else if (chance (0.05) && state != "down")
-        {
-          state = "down";
-          last_change = 0;
-        }
-        else
-        {
-          ++last_change;
-        }
-
-        if (state == "inuse")
-        {
-          static const char* transition[] = {"map", "reduce", "collect"};
-          _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\", details:\"%3\"]]\n")
-                                      .arg (host)
-                                      .arg (state)
-                                      .arg (transition[qrand()%3])
-                                      )
-                         );
-        }
-        else
-        {
-          _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\"]]\n")
-                                      .arg (host)
-                                      .arg (state)
-                                      )
-                         );
+          if (hs.age == -1 || hs.age > 10)
+          {
+            to_query << host;
+          }
+          else
+          {
+            ++hs.age;
+          }
         }
       }
+
+      if (not to_query.isEmpty ())
+      {
+        QMap<QString, hook_partial_result_t> results;
+        QString error_reason;
+        int ec = call_action_hook ( _hooks ["status"].first
+                                  , to_query
+                                  , results
+                                  , error_reason
+                                  , this
+                                  );
+
+        if (0 == ec)
+        {
+          const QMutexLocker lock (&_hosts_mutex);
+
+          QList<QString> updated (results.keys());
+          foreach (const QString& host, updated)
+          {
+            host_state_t & hs = _hosts [host];
+            hook_partial_result_t & res = results [host];
+
+            hs.state = res.state;
+            hs.details = res.message.trimmed ();
+            hs.age = 0;
+          }
+        }
+        else
+        {
+          const QMutexLocker lock (&_hosts_mutex);
+          foreach (const QString& host, to_query)
+          {
+            host_state_t & hs = _hosts[host];
+            hs.state = "down";
+            hs.details = "unknown";
+            hs.age = 0;
+          }
+        }
+
+      }
+
+      send_status_updates (to_send);
+
+      qDebug () << "send_some finished";
     }
   }
 }

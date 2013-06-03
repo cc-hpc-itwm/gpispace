@@ -56,17 +56,30 @@ namespace gspc
       void read_hostlist (const QString&);
 
     private:
+      struct host_state_t
+      {
+        QString state;
+        QString details;
+        int     age;
+      };
+
       void execute_action (fhg::util::parse::position&);
       void send_action_description (fhg::util::parse::position&);
       void send_layout_hint (fhg::util::parse::position&);
       QString description (QString const& action);
+
+      void send_status_updates (QStringList const &hosts);
+      void send_status ( QString const &host
+                       , QString const &state
+                       , QString const &detail
+                       );
 
       int _socket_descriptor;
       QTcpSocket* _socket;
       QDir _hookdir;
 
       mutable QMutex _hosts_mutex;
-      QMap<QString, QPair<QString, int /*ticks since last change*/> > _hosts;
+      QMap<QString, host_state_t> _hosts;
 
       // maps from short hook name to full-path + description
       QMap<QString, QPair<QString, QString> > _hooks;
