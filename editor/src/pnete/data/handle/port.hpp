@@ -38,6 +38,7 @@ namespace fhg
 
           void set_name (const QString&) const;
           void set_type (const QString&) const;
+          QString type() const;
 
           void remove_place_association() const;
 

@@ -37,6 +37,10 @@ namespace fhg
         {
           change_manager().set_type (*this, type);
         }
+        QString port::type() const
+        {
+          return QString::fromStdString (get().type());
+        }
 
         void port::remove_place_association() const
         {
@@ -93,7 +97,7 @@ namespace fhg
 
         bool port::is_connectable (const port& other) const
         {
-          if (get().type() != other.get().type())
+          if (type() != other.type())
           {
             return false;
           }
