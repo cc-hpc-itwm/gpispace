@@ -1223,7 +1223,10 @@ namespace prefix
           if (!(event->modifiers() & Qt::ControlModifier))
           {
             clear_selection();
-            add_to_selection (*_last_manual_selection);
+            if (_last_manual_selection)
+            {
+              add_to_selection (*_last_manual_selection);
+            }
           }
           if (_last_manual_selection)
           {
