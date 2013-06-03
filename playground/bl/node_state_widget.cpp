@@ -1078,7 +1078,7 @@ namespace prefix
   const state_description&
     legend::state (const boost::optional<QString>& name) const
   {
-    if (name)
+    if (name && _states.find (*name) != _states.end())
     {
       return *_states.find (*name);
     }
