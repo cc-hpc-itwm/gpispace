@@ -8,6 +8,7 @@
 #include <fhg/util/alphanum.hpp>
 
 #include <iostream>
+#include <sstream>
 
 #include <QDebug>
 #include <stdexcept>
@@ -229,6 +230,98 @@ namespace gspc
       };
     }
 
+    /*
+      hooks/add <node001> <node002> <node003>
+           node001 0 inuse node001 added
+           node002 1 inuse node001 already in use
+           node003 2 down  no such node
+    */
+
+    struct hook_partial_result_t
+    {
+      QString host;
+      int exit_code; // 0 = success, 1 = warning, >= 2 = failed
+      QString state;
+      QString message;
+    };
+
+    int call_action_hook ( QString program
+                         , QStringList nodes
+                         , QMap<QString, hook_partial_result_t> &result
+                         , QObject *parent = 0
+                         )
+    {
+      int rc = 0;
+
+      QStringList args;
+      foreach (const QString& host, nodes)
+      {
+        args << host;
+      }
+
+      QProcess *p = new QProcess (parent);
+      p->start (program, args);
+      if (p->waitForStarted ())
+      {
+        p->waitForReadyRead ();
+
+        while (p->bytesAvailable ())
+        {
+          QString line = QString (p->readLine ()).trimmed ();
+          std::stringstream sstr (line.toStdString ());
+          hook_partial_result_t res;
+
+          std::string s;
+          sstr >> s; res.host = s.c_str ();
+          sstr >> res.exit_code;
+          sstr >> s; res.state = s.c_str ();
+          std::getline (sstr, s);
+          res.message = s.c_str ();
+
+          result [res.host] = res;
+
+          qDebug () << "new state for" << res.host << "is" << res.state;
+        }
+        p->waitForFinished ();
+
+        qDebug () << program << "finished" << p->exitCode ();
+      }
+      else
+      {
+        switch (p->error ())
+        {
+        case QProcess::FailedToStart:
+          qDebug () << program << "failed to start";
+          rc = 127;
+          break;
+        case QProcess::Crashed:
+          qDebug () << program << "crashed";
+          rc = 137;
+          break;
+        case QProcess::Timedout:
+          qDebug () << program << "timedout";
+          rc = 128;
+          break;
+        case QProcess::WriteError:
+          qDebug () << program << "could not write to stdin";
+          rc = 141;
+          break;
+        case QProcess::ReadError:
+          qDebug () << program << "could not read output";
+          rc = 141;
+          break;
+        case QProcess::UnknownError:
+          qDebug () << program << "failed for unknown reasons";
+          rc = 128;
+          break;
+        }
+      }
+
+      delete p;
+
+      return rc;
+    }
+
     void thread::execute_action (fhg::util::parse::position& pos)
     {
       action_invocation invoc;
@@ -266,55 +359,68 @@ namespace gspc
       QString& state (_hosts[*invoc._host].first);
       int& last_change (_hosts[*invoc._host].second);
 
-      if (*invoc._action == "reboot" && (state == "unavailable" || state == "available"))
+      QMap<QString, hook_partial_result_t> results;
+      int ec = call_action_hook ( _hooks [*invoc._action].first
+                                , QStringList () << *invoc._host
+                                , results
+                                , this
+                                );
+      if (0 == ec)
       {
-        state = "down";
+        hook_partial_result_t & pres = results [*invoc._host];
+
+        state = pres.state;
         last_change = 0;
 
-        _socket->write
-          ( qPrintable ( QString
-                       ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Will reboot.\"],]\n")
-                       .arg (*invoc._host)
-                       .arg (*invoc._action)
-                       )
-          );
-      }
-      else if (*invoc._action == "add" && state == "available")
-      {
-        state = "inuse";
-        last_change = 0;
-
-        _socket->write
-          ( qPrintable ( QString
-                       ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Added to working set.\"]]\n")
-                       .arg (*invoc._host)
-                       .arg (*invoc._action)
-                       )
-          );
-      }
-      else if (*invoc._action == "remove" && state == "inuse")
-      {
-        state = "available";
-        last_change = 0;
-
-        _socket->write
-          ( qPrintable ( QString
-                       ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Removed from working set.\"]]\n")
-                       .arg (*invoc._host)
-                       .arg (*invoc._action)
-                       )
-          );
+        if (0 == pres.exit_code)
+        {
+          _socket->write
+            ( qPrintable ( QString
+                         ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"%3\"]]\n")
+                         .arg (pres.host)
+                         .arg (*invoc._action)
+                         .arg (pres.message)
+                         )
+            );
+        }
+        else if (1 == pres.exit_code)
+        {
+          _socket->write
+            ( qPrintable ( QString
+                         ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"%3\"]]\n")
+                         .arg (pres.host)
+                         .arg (*invoc._action)
+                         .arg (pres.message)
+                         )
+            );
+        }
+        else
+        {
+          _socket->write
+            ( qPrintable ( QString
+                         ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"%3\"],]\n")
+                         .arg (*invoc._host)
+                         .arg (*invoc._action)
+                         .arg (pres.message)
+                         )
+            );
+        }
       }
       else
       {
+        QString reason = (ec == 127 ? "hook does not exist" : "hook failed to execute");
+
         _socket->write
           ( qPrintable ( QString
-                       ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Can't execute %2 on host %1 in state %3.\"],]\n")
+                       ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Can't execute %2 on host %1 in state %3: %4\"],]\n")
                        .arg (*invoc._host)
                        .arg (*invoc._action)
                        .arg (state)
+                       .arg (reason)
                        )
           );
+
+        qDebug () << "new state for host" << *invoc._host << "is" << state;
       }
     }
 
