@@ -80,7 +80,7 @@ namespace fhg
         void connectable_item::mousePressEvent
           (QGraphicsSceneMouseEvent* event)
         {
-          if (event->modifiers() == Qt::ShiftModifier)
+          if (event->modifiers() == Qt::NoModifier)
           {
             //! \todo Instead of prohibiting connections, remove
             //! existing ones and create a new one.
