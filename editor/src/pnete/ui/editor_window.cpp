@@ -22,11 +22,13 @@
 
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/util/num.hpp>
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <sdpa/plugins/sdpactl.hpp>
 #include <sdpa/plugins/sdpac.hpp>
 
+#include <util/qt/file_line_edit.hpp>
 #include <util/qt/parent.hpp>
 
 #include <we/loader/loader.hpp>
@@ -53,10 +55,14 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCheckBox>
 #include <QCloseEvent>
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QFileDialog>
+#include <QFormLayout>
 #include <QGridLayout>
+#include <QGroupBox>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMenu>
@@ -858,7 +864,7 @@ namespace fhg
             {
               xml::parse::type::port_type& port (pid.get_ref());
 
-              const std::string name (trans.get().name() + "_" + port.name());
+              const std::string name (trans.get().name() + "__xxx__" + port.name());
 
               bool has_any_connection (false);
               foreach ( const xml::parse::type::connect_type& connect
@@ -1097,94 +1103,108 @@ namespace fhg
 
       namespace
       {
-        std::string prompt_for ( const QString& port_name
-                               , const boost::optional<std::string>& type
-                               , bool* ok
-                               )
+        int string_to_int (const QString& str)
         {
-          if (type == std::string ("file_type"))
+          const std::string stdstr (str.toStdString());
+          fhg::util::parse::position_string pos (stdstr);
+          return fhg::util::read_int (pos);
+        }
+
+        QString checkbox_to_string (const QCheckBox* box)
+        {
+          return box->isChecked() ? "true" : "false";
+        }
+        QString spinbox_to_string (const QSpinBox* box)
+        {
+          return QString ("%1").arg (box->value());
+        }
+        QString spinbox_to_memory_size_type (const QSpinBox* box)
+        {
+          return QString ("[size:=%1L]")
+            .arg ((1UL << 20) * static_cast<long> (box->value()));
+        }
+        QString file_line_edit_to_file_type (const util::qt::file_line_edit* edit)
+        {
+          return QString ("[name:=\"%1\",type:=\"raw\"]").arg (edit->text());
+        }
+        QString file_line_edit_to_function_type (const util::qt::file_line_edit* edit)
+        {
+          return QString ("[binary:=\"%1\"]").arg (edit->text());
+        }
+
+        std::pair<QWidget*, boost::function<QString()> > widget_for_item
+          (const std::string& type, const boost::optional<QString>& def)
+        {
+          if (type == "bool")
           {
-            const QString res
-              ( QFileDialog::getOpenFileName
-                ( NULL
-                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
-                )
+            QCheckBox* box (new QCheckBox);
+            box->setChecked ( fhg::util::read_bool
+                              (def.get_value_or ("false").toStdString())
+                            );
+            return std::pair<QWidget*, boost::function<QString()> >
+              (box, boost::bind (checkbox_to_string, box));
+          }
+          else if (type == "file_type")
+          {
+            util::qt::file_line_edit* edit
+              ( new util::qt::file_line_edit
+                (QFileDialog::AnyFile, def.get_value_or (""))
               );
-            *ok = !res.isNull();
-            return QString ("[name:=\"%1\",type:=\"raw\"]").arg (res).toStdString();
+            return std::pair<QWidget*, boost::function<QString()> >
+              (edit, boost::bind (file_line_edit_to_file_type, edit));
           }
-          else if (type == std::string ("function_type"))
+          else if (type == "function_type")
           {
-            const QString res
-              ( QFileDialog::getOpenFileName
-                ( NULL
-                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
-                )
+            util::qt::file_line_edit* edit
+              ( new util::qt::file_line_edit
+                (QFileDialog::AnyFile, def.get_value_or (""))
               );
-            *ok = !res.isNull();
-            return QString ("[binary:=\"%1\"]").arg (res).toStdString();
+            return std::pair<QWidget*, boost::function<QString()> >
+              (edit, boost::bind (file_line_edit_to_function_type, edit));
           }
-          else if (type == std::string ("memory_size_type"))
+          else if (type == "memory_size_type")
           {
-            return QString ("[size:=%1L]").arg
-              ( (1UL << 20) * static_cast<long>
-                ( QInputDialog::getInt
-                  ( NULL
-                  , QObject::tr ("value_for_input_token (in MiB)")
-                  , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
-                  , 0
-                  //! \note These horrible defaults are from Qt.
-                  , -2147483647
-                  , 2147483647
-                  , 1
-                  , ok
-                  )
-                )
-              ).toStdString();
+            QSpinBox* edit (new QSpinBox);
+            edit->setValue (string_to_int (def.get_value_or ("0")));
+            edit->setMinimum (0);
+            edit->setMaximum (INT_MAX);
+            edit->setSuffix (" MiB");
+            return std::pair<QWidget*, boost::function<QString()> >
+              (edit, boost::bind (spinbox_to_memory_size_type, edit));
           }
-          else if (type == std::string ("long"))
+          else if (type == "long")
           {
-            return QString ("%1").arg
-              ( QInputDialog::getInt
-                ( NULL
-                , QObject::tr ("value_for_input_token")
-                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
-                , 0
-                //! \note These horrible defaults are from Qt.
-                , -2147483647
-                , 2147483647
-                , 1
-                , ok
-                )
-              ).toStdString();
+            QSpinBox* edit (new QSpinBox);
+            edit->setValue (string_to_int (def.get_value_or ("0")));
+            edit->setMinimum (INT_MIN);
+            edit->setMaximum (INT_MAX);
+            return std::pair<QWidget*, boost::function<QString()> >
+              (edit, boost::bind (spinbox_to_string, edit));
           }
-          else if (type == std::string ("double"))
+          else if (type == "string")
           {
-            return QString ("%1").arg
-              ( QInputDialog::getDouble
-                ( NULL
-                , QObject::tr ("value_for_input_token")
-                , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
-                , 0
-                //! \note These horrible defaults are from Qt.
-                , -2147483647
-                , 2147483647
-                , 1
-                , ok
-                )
-              ).toStdString();
+            QLineEdit* edit (new QLineEdit (def.get_value_or ("")));
+            return std::pair<QWidget*, boost::function<QString()> >
+              (edit, boost::bind (&QLineEdit::text, edit));
           }
           else
           {
-            return QInputDialog::getText
-              ( NULL
-              , QObject::tr ("value_for_input_token")
-              , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
-              , QLineEdit::Normal
-              , "[]"
-              , ok
-              ).toStdString();
+            QLineEdit* edit (new QLineEdit (def.get_value_or ("[]")));
+            return std::pair<QWidget*, boost::function<QString()> >
+              (edit, boost::bind (&QLineEdit::text, edit));
           }
+        }
+
+        boost::optional<QString>
+          opt_std_to_qstring (const boost::optional<const std::string&>& in)
+        {
+          return in ? QString::fromStdString (*in) : boost::optional<QString>();
+        }
+
+        template<typename T> T sort (T t)
+        {
+          qSort (t);
+          return t;
         }
 
         void request_tokens_for_ports
@@ -1193,52 +1213,93 @@ namespace fhg
                       >* activity_and_fun
           )
         {
+          QMap<QString, boost::function<QString()> > value_getters;
+
+          QDialog* dialog (new QDialog);
+          dialog->setWindowTitle ("Please enter input values");
+          new QVBoxLayout (dialog);
+
+          QMap<boost::optional<QString>, QStringList> port_groups;
+
           BOOST_FOREACH
             ( const we::type::port_t& port
             , activity_and_fun->first.transition().ports_input()
             | boost::adaptors::map_values
             )
           {
-            if (QString::fromStdString (port.name()).startsWith ("REFLECT_"))
             {
-              continue;
-            }
-            bool retry (true);
-            while (retry)
-            {
-              const boost::optional<const xml::parse::id::ref::port&> xml_port
-                (activity_and_fun->second.get().get_port_in (port.name()));
+              const QString port_name (QString::fromStdString (port.name()));
 
-              bool ok;
-              const std::string value
-                ( prompt_for ( QString::fromStdString (port.name())
-                             , xml_port
-                             ? xml_port->get().type()
-                             : boost::optional<std::string> (boost::none)
-                             , &ok
-                             )
-                );
-              if (!ok)
+              const QStringList parts (port_name.split ("__xxx__"));
+              if (parts.size() == 2)
               {
-                const boost::optional<const xml::parse::id::ref::port&> xml_port
-                  (activity_and_fun->second.get().get_port_in (port.name()));
+                port_groups[parts[0]].append (parts[1]);
+              }
+              else
+              {
+                port_groups[boost::none].append (port_name);
+              }
+            }
 
-                bool ok;
-                const std::string value
-                  ( prompt_for ( QString::fromStdString (port.name())
-                               , xml_port
-                               ? xml_port->get().type()
-                               : boost::optional<std::string> (boost::none)
-                               , &ok
-                               )
-                  );
-                if (!ok)
+            foreach (const boost::optional<QString>& group, sort (port_groups.keys()))
+            {
+              QGroupBox* box (new QGroupBox (group.get_value_or ("Global")));
+
+              dialog->layout()->addWidget (box);
+
+              QFormLayout* box_layout (new QFormLayout (box));
+
+              BOOST_FOREACH (const QString& val, sort (port_groups[group]))
+              {
+                const QString port_name (group ? *group + "__xxx__" + val : val);
+
+                if (port_name.startsWith ("REFLECT_"))
                 {
-                  return;
+                  continue;
                 }
 
-                retry = put_token (activity_and_fun->first, port.name(), value);
+                const boost::optional<const xml::parse::id::ref::port&> xml_port
+                  (activity_and_fun->second.get().get_port_in (port_name.toStdString()));
+
+                const std::pair<QWidget*, boost::function<QString()> > ret
+                  ( widget_for_item ( xml_port->get().type()
+                                    , opt_std_to_qstring
+                                      ( xml_port->get().properties().get
+                                        ("fhg.pnete.port.default")
+                                      )
+                                    )
+                  );
+                box_layout->addRow (val, ret.first);
+                value_getters[port_name] = ret.second;
               }
+            }
+
+            QDialogButtonBox* buttons
+              ( new QDialogButtonBox ( QDialogButtonBox::Abort | QDialogButtonBox::Ok
+                                     , Qt::Horizontal
+                                     , dialog
+                                     )
+              );
+
+            dialog->connect (buttons, SIGNAL (accepted()), SLOT (accept()));
+            dialog->connect (buttons, SIGNAL (rejected()), SLOT (reject()));
+
+            dialog->layout()->addWidget (buttons);
+
+            if (!value_getters.empty() && !dialog->exec())
+            {
+              return;
+            }
+
+            QMap<QString, boost::function<QString()> >::const_iterator i
+              (value_getters.constBegin());
+            while (i != value_getters.constEnd())
+            {
+              put_token ( activity_and_fun->first
+                        , i.key().toStdString()
+                        , i.value()().toStdString()
+                        );
+              ++i;
             }
           }
         }
