@@ -83,6 +83,7 @@ set (editor_ui_sources
   ui/graph/style/association.cpp
   ui/graph/style/cap.cpp
   ui/graph/style/fallback.cpp
+  ui/graph/style/isc13.cpp
   ui/graph/style/predicate.cpp
   ui/graph/style/raster.cpp
   ui/graph/style/size.cpp
