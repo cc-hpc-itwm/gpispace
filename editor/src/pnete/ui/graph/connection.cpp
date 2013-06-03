@@ -1,6 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/style/isc13.hpp>
 
 #include <util/qt/cast.hpp>
 
@@ -25,6 +26,16 @@ namespace fhg
 
             return boost::none;
           }
+
+          boost::optional<QColor> color_if_type
+            (const base_item* item, const QColor& c, const QString& type)
+          {
+            return boost::make_optional
+              ( fhg::util::qt::throwing_qobject_cast<const connection_item*>
+                (item)->handle().resolved_port().type() == type
+              , c
+              );
+          }
         }
 
         connection_item::connection_item
@@ -36,6 +47,8 @@ namespace fhg
             , _handle (handle)
         {
           _style.push<Qt::PenStyle> ("border_style", pen_style);
+
+          style::isc13::add_colors_for_types (&_style, color_if_type);
 
           handle.connect_to_change_mgr
             (this, "connection_direction_changed", "data::handle::connect");

@@ -14,15 +14,18 @@
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/graph/connection.hpp>
 
+#include <pnete/ui/graph/style/cap.hpp>
+#include <pnete/ui/graph/style/isc13.hpp>
+#include <pnete/ui/graph/style/predicate.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/style/size.hpp>
-#include <pnete/ui/graph/style/cap.hpp>
-#include <pnete/ui/graph/style/predicate.hpp>
 
 #include <we/type/value/path/split.hpp>
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/require.hpp>
+
+#include <util/qt/cast.hpp>
 
 #include <xml/parse/type/port.hpp>
 
@@ -34,6 +37,19 @@ namespace fhg
     {
       namespace graph
       {
+        namespace
+        {
+          boost::optional<QColor> color_if_type
+            (const base_item* item, const QColor& c, const QString& type)
+          {
+            return boost::make_optional
+              ( fhg::util::qt::throwing_qobject_cast<const port_item*>
+                (item)->handle().type() == type
+              , c
+              );
+          }
+        }
+
         port_item::port_item ( const data::handle::port& handle
                              , transition_item* parent
                              )
@@ -66,6 +82,8 @@ namespace fhg
           //! \todo verbose name
 
           refresh_content();
+
+          style::isc13::add_colors_for_types (&_style, color_if_type);
         }
 
         const data::handle::port& port_item::handle() const
