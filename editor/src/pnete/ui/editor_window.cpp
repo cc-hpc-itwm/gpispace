@@ -1165,9 +1165,9 @@ namespace fhg
           else if (type == "memory_size_type")
           {
             QSpinBox* edit (new QSpinBox);
-            edit->setValue (string_to_int (def.get_value_or ("0")));
             edit->setMinimum (0);
             edit->setMaximum (INT_MAX);
+            edit->setValue (string_to_int (def.get_value_or ("0")));
             edit->setSuffix (" MiB");
             return std::pair<QWidget*, boost::function<QString()> >
               (edit, boost::bind (spinbox_to_memory_size_type, edit));
@@ -1175,9 +1175,9 @@ namespace fhg
           else if (type == "long")
           {
             QSpinBox* edit (new QSpinBox);
-            edit->setValue (string_to_int (def.get_value_or ("0")));
             edit->setMinimum (INT_MIN);
             edit->setMaximum (INT_MAX);
+            edit->setValue (string_to_int (def.get_value_or ("0")));
             return std::pair<QWidget*, boost::function<QString()> >
               (edit, boost::bind (spinbox_to_string, edit));
           }
