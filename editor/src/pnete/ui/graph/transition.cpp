@@ -205,7 +205,6 @@ namespace fhg
         {
           if (changed_handle == handle())
           {
-            repositionChildrenAndResize();
             update();
           }
         }
