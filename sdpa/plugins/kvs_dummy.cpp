@@ -8,7 +8,7 @@
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 
-typedef std::map<std::string, std::string> key_value_map_t;
+typedef kvs::KeyValueStore::key_value_map_type key_value_map_t;
 
 class KeyValueStorePlugin : FHG_PLUGIN
                           , public kvs::KeyValueStore
@@ -51,6 +51,33 @@ public:
     lock_type lock (m_mutex);
 
     m_store.erase (k);
+  }
+
+  key_value_map_type list () const
+  {
+    lock_type lock (m_mutex);
+    return m_store;
+  }
+
+  key_value_map_type list (key_type const &prefix) const
+  {
+    key_value_map_type values;
+    lock_type lock (m_mutex);
+
+    key_value_map_t::const_iterator entry = m_store.begin ();
+    const key_value_map_t::const_iterator end = m_store.end ();
+
+    while (entry != end)
+    {
+      if (entry->first.find (prefix) == 0)
+      {
+        values.insert (*entry);
+      }
+
+      ++entry;
+    }
+
+    return values;
   }
 
   int        inc(key_type const & k, int step)
