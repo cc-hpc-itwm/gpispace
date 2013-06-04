@@ -107,7 +107,7 @@ public:
     fhg::util::set_threadname (*m_worker, "[wfe]");
 
     gspc::net::handle
-      ("/service/module/unload"
+      ("/service/wfe/unload-modules"
       , boost::bind (&WFEImpl::handle_module_unload, this, _1, _2, _3)
       );
 

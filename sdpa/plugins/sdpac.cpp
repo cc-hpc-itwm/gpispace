@@ -246,7 +246,10 @@ public:
         gspc::net::client_ptr_t client = gspc::net::dial (url);
 
         gspc::net::frame rqst ("SEND");
-        gspc::net::header::set (rqst, "destination", "/service/module/unload");
+        gspc::net::header::set ( rqst
+                               , "destination"
+                               , "/service/wfe/unload-modules"
+                               );
 
         gspc::net::frame rply;
         client->request ( rqst
