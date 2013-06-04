@@ -28,6 +28,7 @@ set (scripts
   gspc-ctrl
   gspc-ctrl-unload-modules
   gspc-ctrl-current-job
+  gspc-ctrl-backlog
 )
 
 set (files

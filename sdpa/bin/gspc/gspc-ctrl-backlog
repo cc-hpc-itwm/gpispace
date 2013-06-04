@@ -1,0 +1,35 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="read the backlog"
+GSPC_API_COMMAND_LEVEL=2
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: backlog [-h|--help] [options]
+EOF
+}
+
+urls=()
+while true ; do
+    case "$1" in
+        -h|--help) usage ; exit ${GSPC_EX_OK} ;;
+        --url)
+            urls+=("$2")
+            shift; shift
+            ;;
+        --) shift; break ;;
+        *) break ;;
+    esac
+done
+
+for u in ${urls[@]}
+do
+    if [ ${#urls[@]} -gt 1 ]
+    then
+        echo "==> ${u} <=="
+    fi
+    gspcnet-req --no-headers -b '' -d /service/backlog "${u}"
+done
