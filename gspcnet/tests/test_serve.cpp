@@ -141,13 +141,18 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
     catch (system_error const &se)
     {
       if (se.code () == errc::make_error_code (errc::too_many_files_open))
-      {
         break;
-      }
-      else
-      {
-        throw;
-      }
+      if (se.code () == errc::make_error_code (errc::too_many_files_open_in_system))
+        break;
+      throw;
+    }
+    catch (std::runtime_error const &ex)
+    {
+      // what the hack???
+      const std::string what (ex.what ());
+      if (whhat == "epoll: Too many open files")
+        break;
+      throw;
     }
 
     clients.push_back (client);
