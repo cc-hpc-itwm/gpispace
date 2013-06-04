@@ -27,6 +27,7 @@ set (scripts
 
   gspc-ctrl
   gspc-ctrl-unload-modules
+  gspc-ctrl-current-job
 )
 
 set (files
