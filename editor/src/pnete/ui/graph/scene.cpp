@@ -318,6 +318,22 @@ namespace fhg
                 );
 
               fhg::util::qt::boost_connect<void()>
+                ( menu->addAction(tr ("transition_set_name"))
+                , SIGNAL (triggered())
+                , item_below_cursor
+                , boost::bind ( set_name_for_handle<data::handle::transition>
+                              , handle
+                              , tr ("transition_set_name_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("transition_set_name_prompt")
+                              , QString::fromStdString (handle.get().name())
+                              , event->widget()
+                              )
+                );
+
+              menu->addSeparator();
+
+              fhg::util::qt::boost_connect<void()>
                 ( menu->addAction (tr ("transition_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
