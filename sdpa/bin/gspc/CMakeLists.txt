@@ -24,6 +24,9 @@ set (scripts
   gspc-rif-bootstrap
   gspc-rif-shutdown
   gspc-rif-raw
+
+  gspc-ctrl
+  gspc-ctrl-unload-modules
 )
 
 set (files
