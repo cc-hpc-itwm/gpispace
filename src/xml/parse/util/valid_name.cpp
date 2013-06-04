@@ -44,13 +44,6 @@ namespace xml
                               , const boost::filesystem::path & path
                               )
     {
-      fhg::util::parse::position_string pos (name);
-
-      if (parse_name (pos) != name)
-      {
-        throw error::invalid_name (name, type, path);
-      }
-
       return name;
     }
   }
