@@ -810,7 +810,10 @@ void SchedulerImpl::feedWorkers()
         	}
         	catch(const NoJobScheduledException&)
         	{
-        		DMLOG (TRACE, "No job that fits with the worker "<<worker_id<<" was found!");
+                  // AP: TODO: see why this 'feedWorkers' is always called, even if no job is availble...
+                  // deactivated this log message, since it is quite useless and happens N-times / second
+
+                  // DMLOG (TRACE, "No job that fits with the worker "<<worker_id<<" was found!");
         	}
         	catch(const WorkerNotFoundException&)
         	{
