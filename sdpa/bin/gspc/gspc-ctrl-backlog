@@ -31,5 +31,5 @@ do
     then
         echo "==> ${u} <=="
     fi
-    gspcnet-req --no-headers -b '' -d /service/backlog "${u}"
+    gspcnet-req --no-headers -b '' -d /service/backlog "${u}" | fhglog-dump "${@}"
 done

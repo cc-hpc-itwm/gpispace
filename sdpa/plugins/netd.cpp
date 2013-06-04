@@ -4,6 +4,9 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
 #include <fhglog/minimal.hpp>
 
 #include <fhglog/format.hpp>
@@ -76,12 +79,14 @@ private:
     fhg::log::MemoryAppender::backlog_t backlog =
       fhg::log::global_memory_appender ("system")->backlog ();
 
-    const std::string fmt (fhg::log::default_format::LONG ());
+    typedef std::vector <fhg::log::LogEvent> event_list_t;
+    event_list_t events;
+    events.assign (backlog.rbegin (), backlog.rend ());
 
     std::ostringstream oss;
-    BOOST_FOREACH (fhg::log::LogEvent const &evt, backlog)
     {
-      oss << fhg::log::format (fmt, evt);
+      boost::archive::text_oarchive oa (oss);
+      oa & events;
     }
     rply.set_body (oss.str ());
 
