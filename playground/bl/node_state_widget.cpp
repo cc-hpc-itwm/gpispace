@@ -203,6 +203,9 @@ namespace prefix
             , SIGNAL (nodes_state (const QString&, const QString&))
             , SLOT (nodes_state (const QString&, const QString&)));
     connect ( _communication
+            , SIGNAL (nodes_state_clear (const QString&))
+            , SLOT (nodes_state_clear (const QString&)));
+    connect ( _communication
             , SIGNAL (states_actions_long_text (const QString&, const QString&))
             , SLOT (states_actions_long_text (const QString&, const QString&)));
     connect ( _communication
@@ -351,9 +354,6 @@ namespace prefix
 
     if (it != _nodes.end())
     {
-      _pending_updates.removeAll (hostname);
-      _nodes_to_update << hostname;
-
       const boost::optional<QString> old_state (it->state());
       it->state (state);
 
@@ -370,6 +370,26 @@ namespace prefix
                         );
         }
       }
+    }
+  }
+
+  void node_state_widget::nodes_state_clear (const QString& hostname)
+  {
+    const QList<node_type>::iterator it
+      ( std::find_if ( _nodes.begin()
+                     , _nodes.end()
+                     , boost::bind (&node_type::hostname, _1) == hostname
+                     )
+      );
+
+    if (it != _nodes.end())
+    {
+      _pending_updates.removeAll (hostname);
+      _nodes_to_update << hostname;
+
+      it->state (boost::none);
+      it->details (boost::none);
+      update (it - _nodes.begin());
     }
   }
 
@@ -731,7 +751,7 @@ namespace prefix
       break;
     }
   }
-  void communication::status_update
+  void communication::status_update_data
     (fhg::util::parse::position& pos, const QString& hostname)
   {
     pos.skip_spaces();
@@ -761,6 +781,14 @@ namespace prefix
 
       break;
     }
+  }
+
+  void communication::status_update (fhg::util::parse::position& pos)
+  {
+    const QString host (require::label (pos));
+    emit nodes_state_clear (host);
+    require::list
+      (pos, boost::bind (&communication::status_update_data, this, _1, host));
   }
 
   namespace
@@ -994,8 +1022,8 @@ namespace prefix
           pos.require ("tatus");
           require::token (pos, ":");
 
-          require::list_of_named_lists
-            (pos, boost::bind (&communication::status_update, this, _1, _2));
+          require::list
+            (pos, boost::bind (&communication::status_update, this, _1));
 
           break;
         }
