@@ -28,6 +28,7 @@ namespace fhg
         void appendChild (TransitionLibraryItem* child);
 
         bool is_folder() const;
+        bool disabled() const;
         const QFileInfo& fileinfo() const;
         QString path() const;
         QString name() const;
@@ -46,6 +47,7 @@ namespace fhg
 
       private:
         bool _is_folder;
+        bool _disabled;
         QFileInfo _fileinfo;
         bool _trusted;
         QString _name;

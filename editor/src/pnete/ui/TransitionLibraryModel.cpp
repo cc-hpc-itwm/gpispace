@@ -309,7 +309,11 @@ namespace fhg
       Qt::ItemFlags
       TransitionLibraryModel::flags(const QModelIndex& index) const
       {
-        if (!index.isValid())
+        if ( !index.isValid()
+           || (static_cast<TransitionLibraryItem*>(index.internalPointer()))
+               ->disabled()
+           )
+
           {
             return Qt::NoItemFlags;
           }

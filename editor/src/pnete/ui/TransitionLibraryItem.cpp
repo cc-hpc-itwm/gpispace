@@ -5,6 +5,8 @@
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/manager.hpp>
 
+#include <fhg/util/read_bool.hpp>
+
 #include <QtAlgorithms>
 
 namespace fhg
@@ -26,9 +28,20 @@ namespace fhg
         }
       }
 
+      bool is_disabled (const QString& filename)
+      {
+        const data::handle::function f
+          (data::manager::instance().load (filename));
+        return fhg::util::read_bool
+          ( f.get().properties().get ("fhg.pnete.library_disabled")
+          .get_value_or ("false")
+          );
+      }
+
       TransitionLibraryItem::TransitionLibraryItem (QObject* parent)
         : QObject(parent)
         , _is_folder (true)
+        , _disabled (true)
         , _fileinfo (QFileInfo())
         , _trusted (false)
         , _name()
@@ -43,6 +56,8 @@ namespace fhg
                                                    )
         : QObject(parent)
         , _is_folder (is_folder)
+        , _disabled
+          (_is_folder ? false : is_disabled (fileinfo.absoluteFilePath()))
         , _fileinfo (fileinfo)
         , _trusted (trusted)
         , _name ( _is_folder
@@ -86,6 +101,10 @@ namespace fhg
       bool TransitionLibraryItem::is_folder() const
       {
         return _is_folder;
+      }
+      bool TransitionLibraryItem::disabled() const
+      {
+        return _disabled;
       }
 
       const QFileInfo& TransitionLibraryItem::fileinfo() const
