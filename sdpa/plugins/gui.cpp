@@ -14,8 +14,6 @@
 #include "observer.hpp"
 #include "task_event.hpp"
 
-#include "kvs.hpp"
-
 typedef fhg::thread::channel<task_event_t> event_channel_t;
 
 class GuiObserverPlugin : FHG_PLUGIN
@@ -25,9 +23,6 @@ public:
   FHG_PLUGIN_START()
   {
     m_thread = 0;
-
-    m_kvs_prefix =
-      "job." + fhg_kernel ()->get_name () + ".current";
 
     m_url = fhg_kernel()->get("url", "");
 
@@ -48,8 +43,6 @@ public:
         MLOG(ERROR, "could not start appender to url: " << m_url << ": " << ex.what());
       }
     }
-
-    m_kvs = fhg_kernel ()->acquire<kvs::KeyValueStore>("kvs");
 
     m_thread =
       new boost::thread
@@ -130,22 +123,12 @@ private:
       try
       {
         m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t)));
-        // store task in kvs
-        store_task_info_to_kvs (t);
       }
       catch (std::exception const & ex)
       {
         MLOG(ERROR, "could not handle event: " << ex.what());
       }
     }
-  }
-
-  void store_task_info_to_kvs (task_event_t const & t)
-  {
-    m_kvs->put (m_kvs_prefix + "." + "id",     t.id);
-    m_kvs->put (m_kvs_prefix + "." + "name",   t.name);
-    m_kvs->put (m_kvs_prefix + "." + "state",  t.state);
-    m_kvs->put (m_kvs_prefix + "." + "tstamp", t.tstamp);
   }
 
   // void stop_to_observe(observe::Observable* o)
@@ -182,8 +165,7 @@ private:
 
   std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
-  std::string m_kvs_prefix;
-  kvs::KeyValueStore *m_kvs;
+
   event_channel_t m_events;
   boost::thread *m_thread;
 };
@@ -195,6 +177,6 @@ EXPORT_FHG_PLUGIN( gui
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "kvs"
+                 , ""
                  , ""
                  );
