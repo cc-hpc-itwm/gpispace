@@ -4,6 +4,8 @@
 
 #include "parse.hpp"
 
+#include <stdlib.h>
+
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/alphanum.hpp>
 
@@ -26,11 +28,13 @@ namespace gspc
 {
   namespace mon
   {
-    server::server ( int port
+    server::server ( const QString &workdir
+                   , int port
                    , const QString& hostlist
                    , const QDir& hookdir
                    , QObject* parent)
       : QTcpServer (parent)
+      , _workdir (workdir)
       , _hostlist (hostlist)
       , _hookdir (hookdir)
     {
@@ -39,9 +43,16 @@ namespace gspc
         throw std::runtime_error (qPrintable (errorString()));
       }
 
+      _workdir.makeAbsolute ();
       _hookdir.makeAbsolute ();
 
+      {
+        std::string s (_workdir.absolutePath ().toStdString ());
+        ::setenv ("GSPCMON_WORKDIR", s.c_str (), 1);
+      }
+
       qDebug() << "listening on port" << serverPort()
+               << "running with workdir" << _workdir.absolutePath ()
                << "using hostlist" << _hostlist
                << "and hooks from" << _hookdir.absolutePath ()
         ;

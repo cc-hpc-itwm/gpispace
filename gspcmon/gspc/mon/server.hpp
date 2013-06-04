@@ -20,7 +20,8 @@ namespace gspc
     {
       Q_OBJECT;
     public:
-      server ( int port
+      server ( const QString &workdir
+             , int port
              , const QString& hostlist
              , const QDir& hookdir
              , QObject* parent = NULL
@@ -31,6 +32,7 @@ namespace gspc
       virtual void incomingConnection (int);
 
     private:
+      QDir _workdir;
       QString _hostlist;
       QDir _hookdir;
     };
