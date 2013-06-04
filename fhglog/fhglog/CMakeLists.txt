@@ -10,6 +10,7 @@ set (hdrs
   error_handler.hpp
   fhglog.hpp
   FileAppender.hpp
+  MemoryAppender.hpp
   fileno.hpp
   Filter.hpp
   FilteringAppender.hpp
@@ -39,6 +40,7 @@ set (srcs
   color_map.cpp
   error_handler.cpp
   FileAppender.cpp
+  MemoryAppender.cpp
   fileno.cpp
   LogEvent.cpp
   Logger.cpp
