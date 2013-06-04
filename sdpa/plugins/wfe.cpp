@@ -167,12 +167,13 @@ public:
     try
     {
       task.activity = we::mgmt::type::activity_t (job_description);
+      task.name = task.activity.transition().name();
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
 
       emit(task_event_t( job_id
-                       , task.activity.transition().name()
+                       , task.name
                        , task_event_t::ENQUEUED
                        , job_description
                        , task.meta
@@ -213,7 +214,7 @@ public:
         error_message = task.error_message;
 
         emit(task_event_t( job_id
-                         , task.activity.transition().name()
+                         , task.name
                          , task_event_t::FINISHED
                          , task.result
                          , task.meta
@@ -228,7 +229,7 @@ public:
         error_message = task.error_message;
 
         emit(task_event_t( job_id
-                         , task.activity.transition().name()
+                         , task.name
                          , task_event_t::CANCELED
                          , task.result
                          , task.meta
@@ -243,7 +244,7 @@ public:
         error_message = task.error_message;
 
         emit(task_event_t( job_id
-                         , task.activity.transition().name()
+                         , task.name
                          , task_event_t::FAILED
                          , task.result
                          , task.meta
@@ -326,7 +327,7 @@ private:
       task->dequeue_time = boost::posix_time::microsec_clock::universal_time();
 
       emit(task_event_t( task->id
-                       , task->activity.transition().name()
+                       , task->name
                        , task_event_t::DEQUEUED
                        , task->activity.to_string()
                        , task->meta

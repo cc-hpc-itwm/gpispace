@@ -25,6 +25,7 @@ struct wfe_task_t
     };
 
   std::string id;
+  std::string name;
   int        state;
   int        errc;
   we::mgmt::type::activity_t activity;
