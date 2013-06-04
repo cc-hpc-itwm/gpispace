@@ -20,12 +20,14 @@ Options:
 
 Actions:
 
+    show                 lists all components
 $(gspc --no-alias list-commands --prefix=ctrl --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
 EOF
 }
 
 kvs_opts=()
 urls=()
+opts=()
 while true ; do
     case "$1" in
         -h|--help) usage ; exit ${GSPC_EX_OK} ;;
@@ -38,7 +40,7 @@ while true ; do
             shift ; shift
             ;;
         --url)
-            urls+=(--url "$2")
+            urls+=("$2")
             shift; shift
             ;;
         --) shift; break ;;
@@ -55,20 +57,35 @@ else
     shift
 fi
 
+if [ "$action" = "show" ]
+then
+    tmp=( $(gspc kvs "${kvs_opts[@]}" --get-regex gspc.net.url | awk '{print $3" "$1}' ) )
+    for ((i=0 ; i < ${#tmp[@]} ; i+=2))
+    do
+        url="${tmp[$i]}"
+        name=$(echo "${tmp[$((i+1))]}" | cut -d. -f 4)
+
+        echo "$name => $url"
+    done
+    exit ${GSPC_EX_OK}
+fi
+
 cmd=$(gspc_resolve_command "ctrl-${action}")
 
 if [ ! -x "${cmd}" ]
 then
     gspc_log_error ctrl "invalid action: ${action}"
+    exit ${GSPC_EX_USAGE}
 fi
 
 if [ ${#urls[@]} -eq 0 ]
 then
-    tmp_urls=( $(gspc kvs "${kvs_opts[@]}" --get-regex gspc.net.url | cut -d= -f 2) )
-    for u in ${tmp_urls[@]}
-    do
-        urls+=(--url "$u")
-    done
+    urls=( $(gspc kvs "${kvs_opts[@]}" --get-regex gspc.net.url | cut -d= -f 2) )
 fi
 
-"${cmd}" "${urls[@]}" "$@"
+for u in ${urls[@]}
+do
+    opts+=(--url "${u}")
+done
+
+"${cmd}" "${opts[@]}" "${@}"
