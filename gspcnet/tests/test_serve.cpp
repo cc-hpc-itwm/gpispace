@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
     {
       // what the hack???
       const std::string what (ex.what ());
-      if (whhat == "epoll: Too many open files")
+      if (what == "epoll: Too many open files")
         break;
       throw;
     }
