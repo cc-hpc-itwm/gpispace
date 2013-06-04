@@ -115,14 +115,15 @@ namespace fhg
         std::string next (const std::string& s)
         {
           unsigned long num (0);
+          unsigned long factor (1);
 
           std::string::const_iterator end (s.end());
           std::string::const_reverse_iterator pos (s.rbegin());
 
           while (pos != s.rend() && isdigit (*pos))
           {
-            num *= 10;
-            num += *pos - '0';
+            num += (*pos - '0') * factor;
+            factor *= 10;
             --end; ++pos;
           }
 
