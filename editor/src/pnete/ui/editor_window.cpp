@@ -61,6 +61,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QFuture>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QInputDialog>
@@ -71,6 +72,7 @@
 #include <QSettings>
 #include <QSpinBox>
 #include <QString>
+#include <QtConcurrentRun>
 #include <QToolBar>
 #include <QTreeView>
 #include <QUndoGroup>
@@ -801,6 +803,42 @@ namespace fhg
 
             return tns;
           }
+
+          boost::optional<std::runtime_error> invoke_make
+            (const boost::filesystem::path& temporary_path)
+          {
+            const boost::filesystem::path make_output
+              (temporary_path / "MAKEOUTPUT");
+
+            const boost::optional<std::string> HOME (get_env ("HOME"));
+
+            if (!HOME)
+            {
+              return std::runtime_error ("$HOME not set!?");
+            }
+
+            if ( system ( ( "make -C "
+                          + temporary_path.string()
+                          + " LIB_DESTDIR=" + *HOME + "/.sdpa/modules install > "
+                          + make_output.string()
+                          + " 2>&1 "
+                          ).c_str()
+                        )
+               )
+            {
+              //! \todo process:execute fixen und nutzen
+              std::ifstream f (make_output.string().c_str());
+
+              std::stringstream sf;
+              while (f.good() && !f.eof())
+              {
+                sf << (char)f.get();
+              }
+              return std::runtime_error (sf.str());
+            }
+
+            return boost::none;
+          }
         }
 
         std::pair<we::type::activity_t, xml::parse::id::ref::function>
@@ -960,34 +998,26 @@ namespace fhg
 
           xml::parse::generate_cpp (function, state);
 
-          const boost::filesystem::path make_output
-            (temporary_path / "MAKEOUTPUT");
-
-          const boost::optional<std::string> HOME (get_env ("HOME"));
-
-          if (!HOME)
           {
-            throw std::runtime_error ("$HOME not set!?");
-          }
+            QMessageBox box (QMessageBox::Information, "Compiling modules", "Please wait..", QMessageBox::NoButton);
+            box.setStandardButtons (0);
+            box.show();
 
-          if ( system ( ( "make -C "
-                        + temporary_path.string()
-                        + " LIB_DESTDIR=" + *HOME + "/.sdpa/modules install > "
-                        + make_output.string()
-                        + " 2>&1 "
-                        ).c_str()
-                      )
-             )
-          {
-            //! \todo process:execute fixen und nutzen
-            std::ifstream f (make_output.string().c_str());
+            const QFuture<boost::optional<std::runtime_error> > compilation
+              (QtConcurrent::run (invoke_make, temporary_path));
 
-            std::stringstream sf;
-            while (f.good() && !f.eof())
+            while (!compilation.isFinished())
             {
-              sf << (char)f.get();
+              qApp->processEvents();
             }
-            throw std::runtime_error (sf.str());
+
+            box.hide();
+            qApp->processEvents();
+
+            if (compilation.result())
+            {
+              throw *compilation.result();
+            }
           }
 
           we::type::activity_t activity
