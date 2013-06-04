@@ -9,11 +9,6 @@ function usage()
 {
     cat <<EOF
 usage: current-job [-h|--help] [options]
-
-Options:
-
-   --url                 only work on specific url(s), otherwise work on all
-                         that can be found
 EOF
 }
 
