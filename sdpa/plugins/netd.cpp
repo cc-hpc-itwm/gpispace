@@ -28,9 +28,8 @@ public:
     {
       try
       {
-        kvs->put ( "gspc.net."
+        kvs->put ( "gspc.net.url."
                  + fhg_kernel ()->get_name ()
-                 + ".url"
                  , m_listen_url
                  );
       }
