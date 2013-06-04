@@ -108,7 +108,7 @@ public:
 
     gspc::net::handle
       ("/service/wfe/unload-modules"
-      , boost::bind (&WFEImpl::handle_module_unload, this, _1, _2, _3)
+      , boost::bind (&WFEImpl::service_module_unload, this, _1, _2, _3)
       );
 
     FHG_PLUGIN_STARTED();
@@ -292,10 +292,10 @@ public:
     return 0;
   }
 private:
-  void handle_module_unload ( std::string const &dst
-                            , gspc::net::frame const &rqst
-                            , gspc::net::user_ptr user
-                            )
+  void service_module_unload ( std::string const &dst
+                             , gspc::net::frame const &rqst
+                             , gspc::net::user_ptr user
+                             )
   {
     MLOG (INFO, "unloading modules as requested by the user...");
 
