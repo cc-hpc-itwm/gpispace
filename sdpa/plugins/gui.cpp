@@ -112,13 +112,13 @@ private:
     {
       task_event_t t = m_events.get ();
 
-      MLOG ( TRACE
-           , "*** TASK EVENT:"
-           << " id := " << t.id
-           << " name := " << t.name
-           << " state := " << t.state
-           << " time := " << t.tstamp
-           );
+      DMLOG ( TRACE
+            , "*** TASK EVENT:"
+            << " id := " << t.id
+            << " name := " << t.name
+            << " state := " << t.state
+            << " time := " << t.tstamp
+            );
 
       try
       {
