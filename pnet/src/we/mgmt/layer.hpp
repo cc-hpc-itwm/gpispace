@@ -781,7 +781,7 @@ namespace we { namespace mgmt {
               descriptor_ptr child (new detail::descriptor(desc->extract(generate_internal_id())));
               child->inject_input ();
 
-              DLOG(INFO, "extractor: extracted from (" << desc->name() << ")-" << desc->id()
+              DLOG (TRACE, "extractor: extracted from (" << desc->name() << ")-" << desc->id()
                   << ": (" << child->name() << ")-" << child->id() << " with input " << child->show_input());
 
               switch (child->execute (&exec_policy))
@@ -792,7 +792,7 @@ namespace we { namespace mgmt {
                 break;
               case policy::execution_policy::INJECT:
                 child->finished();
-                DLOG(INFO, "extractor: finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
+                DLOG (TRACE, "extractor: finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
                 desc->inject (*child);
                 break;
               case policy::execution_policy::EXTERNAL:
@@ -800,7 +800,6 @@ namespace we { namespace mgmt {
                 execute_externally (child->id());
                 break;
               default:
-                LOG(FATAL, "extractor got strange classification for activity (" << child->name() << ")-" << child->id());
                 throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (*child));
               }
 
@@ -887,11 +886,11 @@ namespace we { namespace mgmt {
       void do_inject (descriptor_ptr desc)
       {
         desc->finished();
-        DLOG(INFO, "finished (" << desc->name() << ")-" << desc->id() << ": " << desc->show_output());
+        DLOG (TRACE, "finished (" << desc->name() << ")-" << desc->id() << ": " << desc->show_output());
 
         if (desc->has_parent())
         {
-          DLOG(INFO, "injecting (" << desc->name() << ")-" << desc->id()
+          DLOG (TRACE, "injecting (" << desc->name() << ")-" << desc->id()
               << " into (" << lookup(desc->parent())->name() << ")-" << desc->parent()
               << ": " << desc->show_output());
           lookup (desc->parent())->inject
