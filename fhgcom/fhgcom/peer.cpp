@@ -161,8 +161,6 @@ namespace fhg
 
     void peer_t::stop()
     {
-      DLOG(TRACE, "stopping peer " << name());
-
       lock_type lock(mutex_);
 
       stopping_ = true;
@@ -245,7 +243,6 @@ namespace fhg
 
       boost::system::error_code ec;
       send_finished.wait (ec);
-      DLOG(TRACE, "send finished with ec: " << ec);
       if (ec)
       {
         throw boost::system::system_error (ec);
@@ -275,8 +272,6 @@ namespace fhg
 
       if (connections_.find(addr) == connections_.end())
       {
-        DLOG(TRACE, "initiating connection to " << m->header.dst);
-
         // lookup location information
         std::string prefix ("p2p.peer");
         prefix += "." + boost::lexical_cast<std::string>(addr);
@@ -300,13 +295,6 @@ namespace fhg
         port_t p (peer_info.at(prefix + ".location.port"));
         std::string n (peer_info.at(prefix + ".name"));
         reverse_lookup_cache_[addr] = n;
-
-        DLOG( TRACE
-            , "corresponding connection data:"
-            << " name=" << n
-            << " host=" << std::string(h)
-            << " port=" << std::string(p)
-            );
 
         // store message in out queue
         //    connect_handler -> sends messages from out queue
@@ -536,7 +524,6 @@ namespace fhg
              );
 
         {
-          DLOG(TRACE, "setting socket option 'keep-alive' to 'true'");
           boost::asio::socket_base::keep_alive o(true);
           cd.connection->set_option (o);
         }
@@ -556,8 +543,6 @@ namespace fhg
       }
       else
       {
-        DLOG(WARN, "connection to " << a << " could not be established: " << ec);
-
         if (connections_.find (a) != connections_.end())
         {
           connection_data_t & cd = connections_.find (a)->second;
@@ -673,9 +658,6 @@ namespace fhg
          )
       {
         const std::string h(boost::asio::ip::host_name());
-        DMLOG( TRACE
-            , "endpoint is any address, changing registration host to: " << h
-            );
         values[prefix + "." + "location" + "." + "host"] = h;
       }
 
@@ -728,7 +710,6 @@ namespace fhg
       {
         assert (listen_);
 
-        DLOG(TRACE, "connection attempt from " << listen_->socket().remote_endpoint());
         // TODO: work here schedule timeout
         backlog_.insert (listen_);
 
@@ -761,7 +742,6 @@ namespace fhg
     {
       lock_type lock (mutex_);
 
-      DLOG(TRACE, "got system message");
       switch (m->header.type_of_msg)
       {
       case p2p::type_of_message_traits::HELLO_PACKET:
@@ -788,20 +768,11 @@ namespace fhg
             (m->buf(), m->header.length);
           reverse_lookup_cache_[m->header.src] = remote_name;
 
-          DLOG( DEBUG
-              , "connection between "
-              << my_addr_ << " (" << name_ << ")"
-              << " and "
-              << m->header.src << " (" << remote_name << ")"
-              << " successfully established"
-              );
-
           connection_data_t & cd = connections_[m->header.src];
           cd.name = remote_name;
           if (cd.connection)
           {
             // handle loopback connections correctly
-            DLOG(TRACE, "connection already exists, it seems that i have initiated it");
             cd.loopback = c;
           }
           else
@@ -821,8 +792,6 @@ namespace fhg
     void peer_t::handle_user_data   (connection_t::ptr_t c, const message_t *m)
     {
       assert (m);
-
-      DLOG(TRACE, "got user message from: " << m->header.src);
 
       lock_type lock (mutex_);
       {

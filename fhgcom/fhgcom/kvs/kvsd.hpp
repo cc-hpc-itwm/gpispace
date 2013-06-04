@@ -48,8 +48,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::put const & m)
           {
-            DLOG(TRACE, "put (" << m.entries().begin()->first << ") := " << m.entries().begin()->second);
-
             boost::posix_time::ptime expiry
               = ( m.expiry ()
 
@@ -66,7 +64,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::msg_get const & m)
           {
-            DLOG(TRACE, "get (" << m.key() << ")");
             try
             {
               fhg::com::kvs::message::list list;
@@ -83,7 +80,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::del const & m)
           {
-            DLOG(TRACE, "del (" << m.key() << ")");
             store_.del (m.key());
             return fhg::com::kvs::message::error ();
           }
@@ -91,7 +87,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::msg_inc const & m)
           {
-            DLOG(TRACE, "inc (" << m.key() << ", " << m.step() << ")");
             try
             {
               fhg::com::kvs::message::list list;
@@ -108,7 +103,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::msg_save const & m)
           {
-            DLOG(TRACE, "save (" << m.file() << ")");
             try
             {
               if (m.file().empty())
@@ -127,7 +121,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::clear const & m)
           {
-            DLOG(TRACE, "clear (" << m.regexp() << ")");
             try
             {
               store_.clear (m.regexp());
@@ -143,7 +136,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::msg_load const & m)
           {
-            DLOG(TRACE, "load (" << m.file() << ")");
             try
             {
               if (m.file().empty())
@@ -162,7 +154,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::req_list const & m)
           {
-            DLOG(TRACE, "list (" << m.regexp() << ")");
             fhg::com::kvs::message::list list;
             store_.entries (list.entries());
             return list;
@@ -171,7 +162,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::msg_term const & m)
           {
-            DLOG(TRACE, "term (" << m.code() << ", " << m.reason() << ")");
             if (15 == m.code())
             {
               if (m.uid () != getuid ())
@@ -192,7 +182,6 @@ namespace fhg
           fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::msg_ping const & m)
           {
-            DLOG(TRACE, "ping ()");
             return fhg::com::kvs::message::error ();
           }
 

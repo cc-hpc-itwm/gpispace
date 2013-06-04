@@ -31,7 +31,6 @@ namespace fhg
       try
       {
         stop();
-        DLOG(TRACE, "connection destroyed");
       }
       catch (std::exception const & ex)
       {
@@ -76,8 +75,6 @@ namespace fhg
     {
       assert (in_message_ != 0);
 
-      DLOG(TRACE, "waiting for header");
-
       boost::asio::async_read( socket_
                              , boost::asio::buffer (&in_message_->header, sizeof(message_t::header_t))
                              , strand_.wrap
@@ -98,7 +95,6 @@ namespace fhg
         assert (bytes_transferred == sizeof(message_t::header_t));
 
         // WORK HERE: convert for local endianess!
-        DLOG(TRACE, "received header: " << in_message_->header);
         LOG_IF( WARN
               , in_message_->header.length > (1<<22)
               , "incoming message is quite large (>4MB)!"
@@ -133,8 +129,6 @@ namespace fhg
       {
         message_t * m = in_message_;
         in_message_ = 0;
-
-        DLOG(TRACE, "received message " << *m);
 
         if (callback_handler_)
         {
@@ -202,8 +196,6 @@ namespace fhg
 
       const to_send_t & d (to_send_.front());
 
-      DLOG( TRACE, "initiating write of " << *d.message);
-
       try
       {
         boost::asio::async_write( socket_
@@ -228,7 +220,6 @@ namespace fhg
     {
       if (! ec)
       {
-        DLOG(TRACE, "write completed");
         to_send_t d (to_send_.front());
         to_send_.pop_front();
 

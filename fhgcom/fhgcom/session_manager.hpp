@@ -35,8 +35,6 @@ namespace fhg
             lock_type lock (m_mutex);
             sessions_.insert(session);
           }
-
-          DLOG(DEBUG, "added session between " << session->local_endpoint_str() << " and " << session->remote_endpoint_str());
         } catch (std::exception const & ex)
         {
           // TODO: fine grained exceptions
@@ -52,7 +50,6 @@ namespace fhg
           lock_type lock (m_mutex);
           sessions_.erase(session);
         }
-        DLOG(DEBUG, "removed session between " << session->local_endpoint_str() << " and " << session->remote_endpoint_str());
 
         try
         {
@@ -65,7 +62,6 @@ namespace fhg
 
       void handle_data (session_ptr session, const std::string & data)
       {
-        DLOG(TRACE, "received " << data.size() << " bytes: " << util::log_raw (data));
         on_data_hook (session, data);
       }
 

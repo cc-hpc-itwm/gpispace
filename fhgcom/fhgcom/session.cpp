@@ -35,8 +35,6 @@ void session::async_send (const std::string & data)
 
   if (!send_in_progress_)
   {
-    DLOG(TRACE, "initiating write of " << data.length() << " bytes " << util::log_raw (data));
-
     boost::asio::async_write( socket_
                             , boost::asio::buffer( to_send_.front().data()
                                                  , to_send_.front().length()
@@ -51,7 +49,6 @@ void session::async_send (const std::string & data)
 
 void session::read_header ()
 {
-  DLOG(DEBUG, "trying to receive header of length " << header_length);
   boost::asio::async_read ( socket_
                           , boost::asio::buffer (inbound_header_)
                           , boost::bind ( &session::handle_read_header
@@ -71,7 +68,6 @@ void session::handle_read_header ( const boost::system::error_code & error
 
   if (!error)
   {
-    DLOG(DEBUG, "received " << bytes_recv << " bytes of header");
     std::istringstream is (std::string (inbound_header_, header_length));
     std::size_t inbound_data_size = 0;
     if (! (is >> std::hex >> inbound_data_size))
@@ -83,13 +79,6 @@ void session::handle_read_header ( const boost::system::error_code & error
       // TODO: call handler
       return;
     }
-
-    DLOG(DEBUG, "going to receive " << inbound_data_size << " bytes");
-
-    DLOG_IF( WARN
-           , inbound_data_size > (1 << 27)
-           , "incoming message is quite large!"
-           );
 
     inbound_data_.resize (inbound_data_size);
 
@@ -122,8 +111,6 @@ void session::handle_read_data ( const boost::system::error_code & error
     {
       const std::string data(&inbound_data_[0], inbound_data_.size());
 
-      DLOG(TRACE, "received " << data.size() << " bytes " << util::log_raw (data));
-
       manager_.handle_data (shared_from_this(), data);
     }
     catch (std::exception const & ex)
@@ -151,8 +138,6 @@ void session::handle_write (const boost::system::error_code & e)
   if (! e)
   {
     unique_lock lock (m_mutex);
-
-    DLOG(TRACE, "write completed");
 
     if (to_send_.empty())
     {
