@@ -168,10 +168,13 @@ namespace fhg
                  , const typename store::of<T>::type::predicate_type& pred
                  )
             {
-              for (mode::type i (mode::NORMAL); i < mode::MODE_NUM; ++i)
-              {
-                push<T> (key, i, pred);
-              }
+              push<T> (key, mode::NORMAL, pred);
+              push<T> (key, mode::HIGHLIGHT, pred);
+              push<T> (key, mode::DRAG, pred);
+              push<T> (key, mode::MOVE, pred);
+              push<T> (key, mode::CONNECT, pred);
+              push<T> (key, mode::CONNECT_ALLOWED, pred);
+              push<T> (key, mode::CONNECT_FORBIDDEN, pred);
             }
 
             template<typename VALUE>
@@ -179,10 +182,13 @@ namespace fhg
                         , const VALUE& value
                         )
             {
-              for (mode::type i (mode::NORMAL); i < mode::MODE_NUM; ++i)
-              {
-                push<VALUE> (key, i, value);
-              }
+              push<VALUE> (key, mode::NORMAL, value);
+              push<VALUE> (key, mode::HIGHLIGHT, value);
+              push<VALUE> (key, mode::DRAG, value);
+              push<VALUE> (key, mode::MOVE, value);
+              push<VALUE> (key, mode::CONNECT, value);
+              push<VALUE> (key, mode::CONNECT_ALLOWED, value);
+              push<VALUE> (key, mode::CONNECT_FORBIDDEN, value);
             }
 
 
