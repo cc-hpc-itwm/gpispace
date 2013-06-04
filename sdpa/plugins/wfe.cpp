@@ -297,8 +297,25 @@ private:
                             , gspc::net::user_ptr user
                             )
   {
-    m_loader->unload_autoloaded ();
-    user->deliver (gspc::net::make::reply_frame (rqst));
+    MLOG (INFO, "unloading modules as requested by the user...");
+
+    gspc::net::frame rply;
+
+    try
+    {
+      m_loader->unload_autoloaded ();
+      rply = gspc::net::make::reply_frame (rqst);
+    }
+    catch (std::exception const &ex)
+    {
+      rply = gspc::net::make::error_frame
+        ( rqst
+        , gspc::net::E_SERVICE_FAILED
+        , ex.what ()
+        );
+    }
+
+    user->deliver (rply);
   }
 
   void execution_thread ()
