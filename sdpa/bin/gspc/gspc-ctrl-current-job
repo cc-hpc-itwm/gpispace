@@ -40,6 +40,10 @@ do
         "${u}")
     if [ -n "$current_job" ]
     then
-        echo "${u} -> $current_job"
+        if [ ${#urls[@]} -gt 1 ]
+        then
+            echo -n "${u} -> "
+        fi
+        echo "$current_job"
     fi
 done
