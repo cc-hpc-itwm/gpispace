@@ -61,7 +61,7 @@ class WFEImpl : FHG_PLUGIN
               , public observe::Observable
 {
   typedef boost::mutex mutex_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
+  typedef boost::lock_guard<mutex_type> lock_type;
 
   typedef fhg::thread::queue< wfe_task_t *
                             , std::list
@@ -75,6 +75,7 @@ public:
     assert (! m_worker);
     m_loader = we::loader::loader::create();
 
+    m_current_task = 0;
     m_auto_unload = fhg_kernel ()->get<fhg::util::bool_t> ("auto_unload", "false");
 
     {
@@ -109,6 +110,11 @@ public:
     gspc::net::handle
       ("/service/wfe/unload-modules"
       , boost::bind (&WFEImpl::service_module_unload, this, _1, _2, _3)
+      );
+
+    gspc::net::handle
+      ("/service/wfe/current-job"
+      , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
       );
 
     FHG_PLUGIN_STARTED();
@@ -319,12 +325,40 @@ private:
     user->deliver (rply);
   }
 
+  void service_current_job ( std::string const &dst
+                           , gspc::net::frame const &rqst
+                           , gspc::net::user_ptr user
+                           )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    {
+      lock_type lock (m_current_task_mutex);
+      if (m_current_task)
+      {
+        rply.set_body (m_current_task->name);
+      }
+    }
+
+    user->deliver (rply);
+  }
+
   void execution_thread ()
   {
     for (;;)
     {
+      {
+        lock_type lock (m_current_task_mutex);
+        m_current_task = 0;
+      }
+
       wfe_task_t *task = m_tasks.get();
       task->dequeue_time = boost::posix_time::microsec_clock::universal_time();
+
+      {
+        lock_type lock (m_current_task_mutex);
+        m_current_task = task;
+      }
 
       emit(task_event_t( task->id
                        , task->name
@@ -392,6 +426,10 @@ private:
   mutable mutex_type m_mutex;
   map_of_tasks_t m_task_map;
   task_list_t m_tasks;
+
+  mutable mutex_type m_current_task_mutex;
+  wfe_task_t *m_current_task;
+
   we::loader::loader::ptr_t m_loader;
   boost::shared_ptr<boost::thread> m_worker;
 
