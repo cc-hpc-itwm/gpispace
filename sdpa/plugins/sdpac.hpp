@@ -17,6 +17,7 @@ namespace sdpa
     virtual int cancel (std::string const &id) = 0;
     virtual int result (std::string const &id, std::string &out) = 0;
     virtual int remove (std::string const &id) = 0;
+    virtual int unload_modules () = 0;
   };
 }
 

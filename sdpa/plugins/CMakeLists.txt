@@ -109,6 +109,7 @@ fhg_add_plugin(sdpac sdpac.cpp
                  sdpa-util
                  sdpa
                  ${FhgCom_LIBRARY}
+                 ${GSPC_NET_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}

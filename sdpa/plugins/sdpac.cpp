@@ -1,5 +1,6 @@
 #include "sdpac.hpp"
 #include "net.hpp"
+#include "kvs.hpp"
 
 #include <errno.h>
 #include <unistd.h>
@@ -10,6 +11,8 @@
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
+
+#include <gspc/net.hpp>
 
 class SDPACImpl : FHG_PLUGIN
                 , public sdpa::Client
@@ -22,7 +25,13 @@ public:
     if (!m_peer)
     {
       MLOG(ERROR, "dependency \"net\" is not available or not of type net::Peer!");
-      FHG_PLUGIN_FAILED(EINVAL);
+      FHG_PLUGIN_FAILED (ELIBACC);
+    }
+    m_kvs = fhg_kernel ()->acquire<kvs::KeyValueStore>("kvs");
+    if (not m_kvs)
+    {
+      MLOG(ERROR, "dependency \"net\" is not available or not of type net::Peer!");
+      FHG_PLUGIN_FAILED (ELIBACC);
     }
 
     FHG_PLUGIN_STARTED();
@@ -222,6 +231,37 @@ public:
 
     return -EFAULT;
   }
+
+  int unload_modules ()
+  {
+    typedef kvs::KeyValueStore::key_value_map_type kv_map_t;
+    kv_map_t entries = m_kvs->list ("gspc.net.url.");
+
+    BOOST_FOREACH (kv_map_t::value_type const &kv, entries)
+    {
+      const std::string url = kv.second;
+
+      try
+      {
+        gspc::net::client_ptr_t client = gspc::net::dial (url);
+
+        gspc::net::frame rqst ("SEND");
+        gspc::net::header::set (rqst, "destination", "/service/module/unload");
+
+        gspc::net::frame rply;
+        client->request ( rqst
+                        , rply
+                        , boost::posix_time::milliseconds (2000)
+                        );
+      }
+      catch (std::exception const &)
+      {
+        // ignore
+      }
+    }
+
+    return 0;
+  }
 private:
   int request ( sdpa::events::SDPAEvent::Ptr const &req
               , sdpa::events::SDPAEvent::Ptr & rep
@@ -296,6 +336,7 @@ private:
   }
 
   net::Peer *m_peer;
+  kvs::KeyValueStore *m_kvs;
   std::string m_orchestrator;
 };
 
@@ -306,6 +347,6 @@ EXPORT_FHG_PLUGIN( sdpac
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "net"
+                 , "kvs,net"
                  , ""
                  );
