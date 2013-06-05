@@ -325,11 +325,7 @@ namespace gspc
 
         rc = p->exitCode ();
 
-        if (0 == rc)
-        {
-          qDebug () << program << "finished";
-        }
-        else
+        if (0 != rc)
         {
           qDebug () << program << "failed:" << rc;
           if (error_reason.isEmpty ())
@@ -535,8 +531,6 @@ namespace gspc
         const std::string message
           (QString (_socket->readLine()).trimmed().toStdString());
 
-        qDebug () << "got message: " << QString (message.c_str ());
-
         fhg::util::parse::position pos (message);
 
         try
@@ -690,8 +684,6 @@ namespace gspc
 
     void thread::send_some_status_updates()
     {
-      qDebug () << "send_some updates";
-
       QStringList to_query;
       QStringList to_send;
 
@@ -763,8 +755,6 @@ namespace gspc
       }
 
       send_status_updates (to_send);
-
-      qDebug () << "send_some finished";
     }
   }
 }
