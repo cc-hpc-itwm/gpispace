@@ -97,6 +97,7 @@ namespace gspc
                        , QString const &state
                        , QString const &detail
                        );
+      void update_status (QStringList const&hosts);
 
       int _socket_descriptor;
       QTcpSocket* _socket;

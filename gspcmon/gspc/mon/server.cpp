@@ -427,7 +427,7 @@ namespace gspc
         hook_partial_result_t & pres = results [*invoc._host];
 
         state = pres.state;
-        age = 0;
+        age = -1;
 
         if (0 == pres.exit_code)
         {
@@ -685,13 +685,51 @@ namespace gspc
       }
     }
 
+    void thread::update_status (QStringList const &hosts)
+    {
+      QMap<QString, hook_partial_result_t> results;
+      QString error_reason;
+      int ec = call_action_hook ( _hooks ["status"].first
+                                , hosts
+                                , results
+                                , error_reason
+                                , this
+                                );
+
+      if (0 == ec)
+      {
+        QList<QString> updated (results.keys());
+
+        const QMutexLocker lock (&_hosts_mutex);
+        foreach (const QString& host, updated)
+        {
+          host_state_t & hs = _hosts [host];
+          hook_partial_result_t & res = results [host];
+
+          hs.state = res.state;
+          hs.details = res.message.trimmed ();
+          hs.age = -1;
+        }
+      }
+      else
+      {
+        const QMutexLocker lock (&_hosts_mutex);
+        foreach (const QString& host, hosts)
+        {
+          host_state_t & hs = _hosts[host];
+          hs.state = "down";
+          hs.details = "unknown";
+          hs.age = -1;
+        }
+      }
+    }
+
     void thread::send_some_status_updates()
     {
-      QStringList to_query;
       QStringList to_send;
-
       {
         const QMutexLocker lock (&_pending_status_updates_mutex);
+
         while (!_pending_status_updates.empty ())
         {
           const QString host (_pending_status_updates.takeFirst ());
@@ -703,7 +741,16 @@ namespace gspc
             continue;
           }
           to_send << host;
+        }
+      }
 
+      QStringList to_query;
+      while (not to_send.isEmpty ())
+      {
+        const QString host (to_send.takeFirst ());
+
+        {
+          const QMutexLocker lock (&_hosts_mutex);
           host_state_t & hs = _hosts[host];
 
           if (hs.age == -1 || hs.age > 10)
@@ -713,51 +760,24 @@ namespace gspc
           else
           {
             ++hs.age;
+            continue;
           }
+        }
+
+        if (to_query.size () > 16)
+        {
+          update_status (to_query);
+          send_status_updates (to_query);
+          to_query.clear ();
         }
       }
 
       if (not to_query.isEmpty ())
       {
-        QMap<QString, hook_partial_result_t> results;
-        QString error_reason;
-        int ec = call_action_hook ( _hooks ["status"].first
-                                  , to_query
-                                  , results
-                                  , error_reason
-                                  , this
-                                  );
-
-        if (0 == ec)
-        {
-          const QMutexLocker lock (&_hosts_mutex);
-
-          QList<QString> updated (results.keys());
-          foreach (const QString& host, updated)
-          {
-            host_state_t & hs = _hosts [host];
-            hook_partial_result_t & res = results [host];
-
-            hs.state = res.state;
-            hs.details = res.message.trimmed ();
-            hs.age = 0;
-          }
-        }
-        else
-        {
-          const QMutexLocker lock (&_hosts_mutex);
-          foreach (const QString& host, to_query)
-          {
-            host_state_t & hs = _hosts[host];
-            hs.state = "down";
-            hs.details = "unknown";
-            hs.age = 0;
-          }
-        }
-
+        update_status (to_query);
+        send_status_updates (to_query);
+        to_query.clear ();
       }
-
-      send_status_updates (to_send);
     }
   }
 }
