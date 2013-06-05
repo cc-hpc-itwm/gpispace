@@ -123,7 +123,7 @@ namespace gspc
       add_state ("addable", "0x23AEB8").actions            << "add";
       add_state ("addable/reserved", "0x23AE88").actions   << "add";
 
-      add_state ("master", "0x155F22").actions << "remove";
+      add_state ("master", "0x155F22").actions << "stop";
       add_state ("inuse",  "0x155F22").actions << "remove";
     }
 
