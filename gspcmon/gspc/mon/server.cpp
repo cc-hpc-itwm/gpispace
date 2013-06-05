@@ -113,6 +113,9 @@ namespace gspc
       _hooks ["start"].first = _hookdir.absoluteFilePath ("start");
       _hooks ["start"].second = "start the RTM";
 
+      _hooks ["stop"].first = _hookdir.absoluteFilePath ("stop");
+      _hooks ["stop"].second = "stop the RTM";
+
       add_state ("down", "0xEF0A06").actions            << "reboot";
 
       add_state ("free", "0x23AEB8").actions          << "start";
