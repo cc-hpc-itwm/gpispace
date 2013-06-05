@@ -102,7 +102,7 @@ namespace gspc
       _hooks ["add"].second = "add the node to the working set";
 
       _hooks ["remove"].first = _hookdir.absoluteFilePath ("remove");
-      _hooks ["remove"].second = "remove the node to the working set";
+      _hooks ["remove"].second = "remove the node from the working set";
 
       _hooks ["shutdown"].first = _hookdir.absoluteFilePath ("shutdown");
       _hooks ["shutdown"].second = "take the node offline";
@@ -110,10 +110,21 @@ namespace gspc
       _hooks ["status"].first = _hookdir.absoluteFilePath ("status");
       _hooks ["status"].second = "query the status of a node";
 
-      add_state ("down", "0xEF0A06").actions        << "reboot";
-      add_state ("available", "0x23AEB8").actions   << "add" << "shutdown";
-      add_state ("unavailable", "0xFF5405").actions << "reboot";
-      add_state ("inuse", "0x155F22").actions       << "remove";
+      _hooks ["start"].first = _hookdir.absoluteFilePath ("start");
+      _hooks ["start"].second = "start the RTM";
+
+      add_state ("down", "0xEF0A06").actions            << "reboot";
+
+      add_state ("free", "0x23AEB8").actions          << "start";
+      add_state ("free/reserved", "0x23AE88").actions << "start";
+
+      add_state ("unavailable", "0xFF5405");
+
+      add_state ("addable", "0x23AEB8").actions            << "add";
+      add_state ("addable/reserved", "0x23AE88").actions   << "add";
+
+      add_state ("master", "0x155F22").actions << "remove";
+      add_state ("inuse",  "0x155F22").actions << "remove";
     }
 
     thread::state_info_t & thread::add_state ( QString const &name

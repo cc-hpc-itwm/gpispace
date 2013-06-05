@@ -1,19 +1,29 @@
 #!/bin/bash
 
 transitions=("calc" "reduce" "mgmt")
+free_states=("free" "free/reserved" "addable" "addable/reserved")
+
+master=
 
 for node
 do
     r=$(( RANDOM % 1000))
 
-    if [ $r -lt 5 ] ; then
+    if [ $r -lt 10 ] ; then
         echo "$node 0 down"
-    elif [ $r -lt 10 ] ; then
+    elif [ $r -lt 50 ] ; then
         echo "$node 0 unavailable"
-    elif [ $r -lt 30 ] ; then
-        echo "$node 0 available"
+    elif [ $r -lt 200 ] ; then
+        t=$(( RANDOM % ${#free_states[@]} ))
+        echo "$node 0 ${free_states[${t}]}"
     else
         t=$(( RANDOM % ${#transitions[@]} ))
-        echo "$node 0 inuse ${transitions[${t}]}"
+        if [ -z "$master" ]
+        then
+            master="$node"
+            echo "$node 0 master ${transitions[${t}]}"
+        else
+            echo "$node 0 inuse ${transitions[${t}]}"
+        fi
     fi
 done

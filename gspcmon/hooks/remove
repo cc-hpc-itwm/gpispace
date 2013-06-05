@@ -1,6 +1,9 @@
 #!/bin/bash
 
+free_states=("free" "free/reserved" "addable" "addable/reserved")
+
 for node
 do
-    echo "$node 0 available $node is not in use anymore"
+    t=$(( RANDOM % ${#free_states[@]} ))
+    echo "$node 0 ${free_states[${t}]} is not in use anymore"
 done

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ ! -d "$GSPCMON_WORKDIR" ]
+then
+    echo >&2 "workdir is invalid: $GSPCMON_WORKDIR"
+    exit 77
+fi
+
+for node
+do
+    echo "$node 0 inuse $node is now in use"
+done

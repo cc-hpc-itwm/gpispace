@@ -2,5 +2,5 @@
 
 for node
 do
-    echo "$node 0 available $node is now available"
+    echo "$node 0 free $node is now available"
 done
