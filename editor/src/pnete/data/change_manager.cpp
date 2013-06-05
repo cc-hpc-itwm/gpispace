@@ -120,17 +120,41 @@ namespace fhg
           std::string::const_iterator end (s.end());
           std::string::const_reverse_iterator pos (s.rbegin());
 
-          while (pos != s.rend() && isdigit (*pos))
+          if (*pos == ')')
           {
-            num += (*pos - '0') * factor;
-            factor *= 10;
-            --end; ++pos;
+            ++pos; --end;
+            while (pos != s.rend() && isdigit (*pos))
+            {
+              num += (*pos - '0') * factor;
+              factor *= 10;
+              --end; ++pos;
+            }
+            if (*pos != '(')
+            {
+              end = s.end();
+              num = 1;
+            }
+            else
+            {
+              --end; ++pos;
+              if (*pos != ' ')
+              {
+                end = s.end();
+                num = 1;
+              }
+              else
+              {
+                --end;
+              }
+            }
+          }
+          else
+          {
+            num = 1;
           }
 
           return std::string (s.begin(), end)
-            + ((end == s.end()) ? "_" : "")
-            + boost::lexical_cast<std::string> (num + 1)
-            ;
+            + " (" + boost::lexical_cast<std::string> (num + 1) + ")";
         }
 
         template<typename NET_TYPE> std::string unique_name_for_place
