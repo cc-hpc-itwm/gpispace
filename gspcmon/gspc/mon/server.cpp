@@ -427,7 +427,7 @@ namespace gspc
         hook_partial_result_t & pres = results [*invoc._host];
 
         state = pres.state;
-        age = -1;
+        age = 0;
 
         if (0 == pres.exit_code)
         {
@@ -708,7 +708,7 @@ namespace gspc
 
           hs.state = res.state;
           hs.details = res.message.trimmed ();
-          hs.age = -1;
+          hs.age = 0;
         }
       }
       else
@@ -719,7 +719,7 @@ namespace gspc
           host_state_t & hs = _hosts[host];
           hs.state = "down";
           hs.details = "unknown";
-          hs.age = -1;
+          hs.age = 0;
         }
       }
     }
@@ -745,6 +745,7 @@ namespace gspc
       }
 
       QStringList to_query;
+      QStringList only_send;
       while (not to_send.isEmpty ())
       {
         const QString host (to_send.takeFirst ());
@@ -760,16 +761,25 @@ namespace gspc
           else
           {
             ++hs.age;
-            continue;
+            only_send << host;
           }
         }
 
         if (to_query.size () > 16)
         {
+          send_status_updates (only_send);
+          only_send.clear ();
+
           update_status (to_query);
           send_status_updates (to_query);
           to_query.clear ();
         }
+      }
+
+      if (not only_send.isEmpty ())
+      {
+        send_status_updates (only_send);
+        only_send.clear ();
       }
 
       if (not to_query.isEmpty ())
