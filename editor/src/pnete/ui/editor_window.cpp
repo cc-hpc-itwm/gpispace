@@ -1361,6 +1361,8 @@ namespace fhg
 
         sdpa::Client* client (load_plugin<sdpa::Client> (kernel, "sdpac"));
 
+        client->unload_modules();
+
         std::string job_id;
         if (client->submit (activity_and_fun.first.to_string(), job_id) == 0)
         {
