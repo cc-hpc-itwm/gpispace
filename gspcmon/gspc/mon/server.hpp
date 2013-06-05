@@ -4,6 +4,7 @@
 #define GSPC_MON_SERVER_HPP
 
 #include <fhg/util/parse/position.hpp>
+#include <boost/optional.hpp>
 
 #include <QTcpSocket>
 #include <QTcpServer>
@@ -65,10 +66,31 @@ namespace gspc
         int     age;
       };
 
+      struct state_info_t
+      {
+        state_info_t ()
+          : name ()
+          , color ("0xFFFFFF")
+          , border (0)
+          , actions ()
+        {}
+
+        QString                  name;
+        QString                  color;
+        boost::optional<QString> label;
+        int                      border;
+        QStringList              actions;
+      };
+
       void execute_action (fhg::util::parse::position&);
       void send_action_description (fhg::util::parse::position&);
       void send_layout_hint (fhg::util::parse::position&);
       QString description (QString const& action);
+      state_info_t & add_state ( QString const &name
+                               , QString const &color
+                               , int border = 0
+                               );
+
 
       void send_status_updates (QStringList const &hosts);
       void send_status ( QString const &host
@@ -86,8 +108,8 @@ namespace gspc
       // maps from short hook name to full-path + description
       QMap<QString, QPair<QString, QString> > _hooks;
 
-      // maps actions to list of possible hooks
-      QMap<QString, QStringList> _actions;
+      // maps states to list of possible hooks
+      QMap<QString, state_info_t> _states;
 
       mutable QMutex _pending_status_updates_mutex;
       QStringList _pending_status_updates;

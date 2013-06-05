@@ -110,10 +110,24 @@ namespace gspc
       _hooks ["status"].first = _hookdir.absoluteFilePath ("status");
       _hooks ["status"].second = "query the status of a node";
 
-      _actions ["down"]        << "reboot";
-      _actions ["available"]   << "add" << "shutdown";
-      _actions ["unavailable"] << "reboot";
-      _actions ["inuse"]       << "remove";
+      add_state ("down", "0xEF0A06").actions        << "reboot";
+      add_state ("available", "0x23AEB8").actions   << "add" << "shutdown";
+      add_state ("unavailable", "0xFF5405").actions << "reboot";
+      add_state ("inuse", "0x155F22").actions       << "remove";
+    }
+
+    thread::state_info_t & thread::add_state ( QString const &name
+                                             , QString const &color
+                                             , int border
+                                             )
+    {
+      state_info_t s;
+      s.name = name;
+      s.color = color;
+      s.border = border;
+
+      _states [name] = s;
+      return _states [name];
     }
 
     thread::~thread () {}
@@ -478,17 +492,14 @@ namespace gspc
 
     void thread::send_layout_hint (fhg::util::parse::position& pos)
     {
-      const QString state (prefix::require::qstring (pos));
+      const state_info_t &state = _states [prefix::require::qstring (pos)];
+
       _socket->write
         ( qPrintable ( QString
-                     ("layout_hint: [\"%1\": [color: %2, border: 0,],]\n")
-                     .arg (state)
-                     .arg ( state == "down" ? 0xEF0A06
-                          : state == "available" ? 0x23AEB8
-                          : state == "unavailable" ? 0xFF5405
-                          : state == "inuse" ? 0x155F22
-                          : 0xFFFFFF
-                          )
+                     ("layout_hint: [\"%1\": [color: %2, border: %3,],]\n")
+                     .arg (state.name)
+                     .arg (state.color)
+                     .arg (state.border)
                      )
         );
     }
@@ -587,14 +598,14 @@ namespace gspc
 
             {
               _socket->write ("possible_status: [");
-              QList<QString> states (_actions.keys());
+              QList<QString> states (_states.keys());
               foreach (const QString& s, states)
               {
                 _socket->write ("\"");
                 _socket->write (qPrintable (s));
                 _socket->write ("\":[");
 
-                foreach (const QString& a, _actions [s])
+                foreach (const QString& a, _states [s].actions)
                 {
                   _socket->write ("\"");
                   _socket->write (qPrintable (a));
