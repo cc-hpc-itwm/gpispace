@@ -108,12 +108,15 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
   using namespace gspc::net::tests;
 
+  /*
   const size_t N_FD_PER_CLIENT = 5; // io_service + c_socket + s_socket
   const size_t N_FD_SERVER     = 5; // io_service + s_socket
   const size_t N_FD_BASE       = 3; // stdin, stdout, stderr
 
   static const size_t NUM_CLIENTS =
     (SetRLimits::max_open_files - (N_FD_SERVER + N_FD_BASE)) / N_FD_PER_CLIENT;
+  */
+  static const size_t NUM_CLIENTS = 256;
 
   gspc::net::server::queue_manager_t qmgr;
 
