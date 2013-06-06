@@ -29,6 +29,17 @@ namespace fhg
     {
       namespace graph
       {
+        namespace
+        {
+          QBrush grad (const QColor& a, const QColor& b)
+          {
+            QLinearGradient g (QPointF(0.0, 0.0), QPointF (20.0, 20.0));
+            g.setColorAt (0.0, a);
+            g.setColorAt (1.0, b);
+            return g;
+          }
+        }
+
         transition_item::transition_item
           ( const data::handle::transition& handle
           , base_item* parent
@@ -58,6 +69,12 @@ namespace fhg
 
           handle.connect_to_change_mgr
             (this, "port_added", "data::handle::port");
+
+          _style.push<QBrush> ( "background_brush"
+                              , grad ( QColor::fromHsvF (0.0, 0.0, 0.98)
+                                     , QColor::fromHsvF (0.0, 0.0, 0.93)
+                                     )
+                              );
         }
 
         const data::handle::transition& transition_item::handle() const
