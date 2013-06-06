@@ -1,9 +1,31 @@
 #!/bin/bash
 
-free_states=("free" "free/reserved")
+workdir=
+nodes=()
 
-for node
+for arg
 do
-    t=$(( RANDOM % ${#free_states[@]} ))
-    echo "$node 0 ${free_states[${t}]} is not in use anymore"
+    case "$arg" in
+        node=*)
+            nodes+=(${arg#*=})
+            ;;
+        workdir=*)
+            workdir=${arg#*=}
+            ;;
+        *)
+            echo >&2 "$(basename $0): invalid argument: $arg"
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "${workdir}" ]
+then
+    echo >&2 "already stopped"
+    exit 77
+fi
+
+for node in ${nodes[@]}
+do
+    echo "$node 0 free now free again"
 done

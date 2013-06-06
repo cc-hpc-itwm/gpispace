@@ -1,12 +1,34 @@
 #!/bin/bash
 
-if [ ! -d "$GSPCMON_WORKDIR" ]
+workdir=
+nodes=()
+
+for arg
+do
+    case "$arg" in
+        node=*)
+            nodes+=(${arg#*=})
+            ;;
+        workdir=*)
+            workdir=${arg#*=}
+            ;;
+        walltime=*)
+            walltime=${arg#*=}
+            ;;
+        *)
+            echo >&2 "$(basename $0): invalid argument: $arg"
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "${workdir}" ]
 then
-    echo >&2 "workdir is invalid: $GSPCMON_WORKDIR"
+    echo >&2 "workdir was not set"
     exit 77
 fi
 
-for node
+for node in ${nodes[@]}
 do
-    echo "$node 0 inuse $node is now in use"
+    echo "$node 0 inuse $node is now in use ($workdir)"
 done

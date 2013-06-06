@@ -21,8 +21,7 @@ namespace gspc
     {
       Q_OBJECT;
     public:
-      server ( const QString &workdir
-             , int port
+      server ( int port
              , const QString& hostlist
              , const QDir& hookdir
              , QObject* parent = NULL
@@ -33,7 +32,6 @@ namespace gspc
       virtual void incomingConnection (int);
 
     private:
-      QDir _workdir;
       QString _hostlist;
       QDir _hookdir;
     };
@@ -82,6 +80,55 @@ namespace gspc
         QStringList              actions;
       };
 
+      struct parameter_info_t
+      {
+        parameter_info_t ()
+          : name ()
+          , label ()
+          , type ()
+          , dflt (boost::none)
+        {}
+
+        parameter_info_t ( QString const &name
+                         , QString const &label
+                         , QString const &type
+                         , boost::optional<QString> const &dflt = boost::none
+                         )
+          : name (name)
+          , label (label)
+          , type (type)
+          , dflt (dflt)
+        {}
+
+        QString name;
+        QString label;
+        QString type;
+        boost::optional<QString> dflt;
+      };
+
+      struct action_info_t
+      {
+        action_info_t ()
+          : name ()
+          , path ()
+          , desc ()
+          , params ()
+        {}
+
+        QString name;
+        QString path;
+        QString desc;
+        QList<parameter_info_t> params;
+      };
+
+      struct action_result_t
+      {
+        QString host;
+        int exit_code; // 0 = success, 1 = warning, >= 2 = failed
+        QString state;
+        QString message;
+      };
+
       void execute_action (fhg::util::parse::position&);
       void send_action_description (fhg::util::parse::position&);
       void send_layout_hint (fhg::util::parse::position&);
@@ -91,6 +138,16 @@ namespace gspc
                                , int border = 0
                                );
 
+      action_info_t & add_action ( QString const &name
+                                 , QString const &desc
+                                 );
+
+      int call_action ( thread::action_info_t const &ai
+                      , QMap<QString, QString> const &params
+                      , QStringList const &nodes
+                      , QMap<QString, action_result_t> &result
+                      , QString &error_reason
+                      );
 
       void send_status_updates (QStringList const &hosts);
       void send_status ( QString const &host
@@ -106,10 +163,10 @@ namespace gspc
       mutable QMutex _hosts_mutex;
       QMap<QString, host_state_t> _hosts;
 
-      // maps from short hook name to full-path + description
-      QMap<QString, QPair<QString, QString> > _hooks;
+      QMap<QString, action_info_t> _actions;
+      // HACK: cache the workdir -> will be set when calling 'start'
+      QString _workdir;
 
-      // maps states to list of possible hooks
       QMap<QString, state_info_t> _states;
 
       mutable QMutex _pending_status_updates_mutex;

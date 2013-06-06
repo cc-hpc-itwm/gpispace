@@ -28,13 +28,11 @@ namespace gspc
 {
   namespace mon
   {
-    server::server ( const QString &workdir
-                   , int port
+    server::server ( int port
                    , const QString& hostlist
                    , const QDir& hookdir
                    , QObject* parent)
       : QTcpServer (parent)
-      , _workdir (workdir)
       , _hostlist (hostlist)
       , _hookdir (hookdir)
     {
@@ -43,16 +41,9 @@ namespace gspc
         throw std::runtime_error (qPrintable (errorString()));
       }
 
-      _workdir.makeAbsolute ();
       _hookdir.makeAbsolute ();
 
-      {
-        std::string s (_workdir.absolutePath ().toStdString ());
-        ::setenv ("GSPCMON_WORKDIR", s.c_str (), 1);
-      }
-
       qDebug() << "listening on port" << serverPort()
-               << "running with workdir" << _workdir.absolutePath ()
                << "using hostlist" << _hostlist
                << "and hooks from" << _hookdir.absolutePath ()
         ;
@@ -95,28 +86,25 @@ namespace gspc
       //!\todo scan _hookdir for executable  files, call "file --description" to
       // get the list of descriptions, maybe split path by "state-action"?
 
-      _hooks ["reboot"].first = _hookdir.absoluteFilePath ("reboot");
-      _hooks ["reboot"].second = "reboot the node";
+      add_action ("add", "add the node to the working set").params
+        << parameter_info_t ("walltime", "Walltime in hours", "integer", QString ("4"))
+        ;
 
-      _hooks ["add"].first = _hookdir.absoluteFilePath ("add");
-      _hooks ["add"].second = "add the node to the working set";
+      add_action ("remove", "remove the node from the working set");
 
-      _hooks ["remove"].first = _hookdir.absoluteFilePath ("remove");
-      _hooks ["remove"].second = "remove the node from the working set";
+      add_action ("status", "query the status of a node");
 
-      _hooks ["shutdown"].first = _hookdir.absoluteFilePath ("shutdown");
-      _hooks ["shutdown"].second = "take the node offline";
+      add_action ("start", "start the RTM").params
+        << parameter_info_t ("workdir", "Working directory", "directory")
+        << parameter_info_t ("jobdesc", "Job description", "filename")
+        << parameter_info_t ("nresult", "Maximum number of partial results", "string", QString ("factor 4.0"))
+        << parameter_info_t ("updates", "Update interval", "integer", QString ("10"))
+        << parameter_info_t ("walltime", "Walltime in hours", "integer", QString ("4"))
+        ;
 
-      _hooks ["status"].first = _hookdir.absoluteFilePath ("status");
-      _hooks ["status"].second = "query the status of a node";
+      add_action ("stop", "stop the RTM");
 
-      _hooks ["start"].first = _hookdir.absoluteFilePath ("start");
-      _hooks ["start"].second = "start the RTM";
-
-      _hooks ["stop"].first = _hookdir.absoluteFilePath ("stop");
-      _hooks ["stop"].second = "stop the RTM";
-
-      add_state ("down", 0x000000, 0xFFFFFF).actions            << "reboot";
+      add_state ("down", 0x000000, 0xFFFFFF);
 
       add_state ("free", 0x000080).actions          << "start";
       add_state ("free/reserved", 0xCCCC00).actions << "start";
@@ -128,6 +116,19 @@ namespace gspc
 
       add_state ("master", 0x00CC00).actions << "stop";
       add_state ("inuse",  0x008000).actions << "remove";
+    }
+
+    thread::action_info_t & thread::add_action ( QString const &name
+                                               , QString const &desc
+                                               )
+    {
+      action_info_t ai;
+      ai.name = name;
+      ai.path = _hookdir.absoluteFilePath (name);
+      ai.desc = desc;
+
+      _actions [name] = ai;
+      return _actions [name];
     }
 
     thread::state_info_t & thread::add_state ( QString const &name
@@ -274,23 +275,37 @@ namespace gspc
       QString message;
     };
 
-    int call_action_hook ( QString program
-                         , QStringList nodes
-                         , QMap<QString, hook_partial_result_t> &result
-                         , QString &error_reason
-                         , QObject *parent = 0
-                         )
+    int thread::call_action ( thread::action_info_t const &ai
+                            , QMap<QString, QString> const &params
+                            , QStringList const &nodes
+                            , QMap<QString, thread::action_result_t> &result
+                            , QString &error_reason
+                            )
     {
       int rc = 0;
 
       QStringList args;
-      foreach (const QString& host, nodes)
+      QMap<QString, QString>::const_iterator i (params.constBegin());
+      while (i != params.constEnd())
       {
-        args << host;
+        args << QString ("%1=%2").arg (i.key ()).arg (i.value ());
+        ++i;
       }
 
-      QProcess *p = new QProcess (parent);
-      p->start (program, args);
+      // hack: set workdir if not given
+      if (not params.contains ("workdir"))
+      {
+        args << QString ("workdir=%1").arg (_workdir);
+      }
+
+      // hack to work on nodes
+      foreach (const QString& node, nodes)
+      {
+        args << QString ("node=%1").arg (node);
+      }
+
+      QProcess *p = new QProcess (this);
+      p->start (ai.path, args);
       if (p->waitForStarted ())
       {
         p->waitForFinished ();
@@ -299,7 +314,7 @@ namespace gspc
         {
           QString line = QString (p->readLine ()).trimmed ();
           std::stringstream sstr (line.toStdString ());
-          hook_partial_result_t res;
+          action_result_t res;
 
           {
             std::string s;
@@ -330,10 +345,22 @@ namespace gspc
 
         if (0 != rc)
         {
-          qDebug () << program << "failed:" << rc;
+          qDebug () << ai.path << "failed:" << rc;
           if (error_reason.isEmpty ())
           {
             error_reason = "unknown reason";
+          }
+        }
+        else
+        {
+          // hack: cache the workdir when we see a 'start' action
+          if (ai.name == "start")
+          {
+            _workdir = params ["workdir"];
+          }
+          else if (ai.name == "stop")
+          {
+            _workdir = "";
           }
         }
       }
@@ -414,40 +441,40 @@ namespace gspc
       QString & details = hs.details;
       details = "";
 
-      QMap<QString, hook_partial_result_t> results;
+      QMap<QString, action_result_t> results;
       QString error_reason;
-      int ec = call_action_hook ( _hooks [*invoc._action].first
-                                , QStringList () << *invoc._host
-                                , results
-                                , error_reason
-                                , this
-                                );
+      int ec = call_action ( _actions [*invoc._action]
+                           , invoc._arguments
+                           , QStringList () << *invoc._host
+                           , results
+                           , error_reason
+                           );
       if (0 == ec)
       {
-        hook_partial_result_t & pres = results [*invoc._host];
+        action_result_t & res = results [*invoc._host];
 
-        state = pres.state;
+        state = res.state;
         age = 0;
 
-        if (0 == pres.exit_code)
+        if (0 == res.exit_code)
         {
           _socket->write
             ( qPrintable ( QString
                          ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"%3\"]]\n")
-                         .arg (pres.host)
+                         .arg (res.host)
                          .arg (*invoc._action)
-                         .arg (pres.message)
+                         .arg (res.message)
                          )
             );
         }
-        else if (1 == pres.exit_code)
+        else if (1 == res.exit_code)
         {
           _socket->write
             ( qPrintable ( QString
                          ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"%3\"]]\n")
-                         .arg (pres.host)
+                         .arg (res.host)
                          .arg (*invoc._action)
-                         .arg (pres.message)
+                         .arg (res.message)
                          )
             );
         }
@@ -458,8 +485,8 @@ namespace gspc
                          ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"error %3: %4\"],]\n")
                          .arg (*invoc._host)
                          .arg (*invoc._action)
-                         .arg (pres.exit_code)
-                         .arg (pres.message)
+                         .arg (res.exit_code)
+                         .arg (res.message)
                          )
             );
         }
@@ -483,21 +510,54 @@ namespace gspc
 
     QString thread::description (const QString& action)
     {
-      if (_hooks.contains (action))
-        return _hooks.value (action).second;
+      if (_actions.contains (action))
+        return _actions.value (action).desc;
       throw std::runtime_error ("unknown action: " + action.toStdString ());
     }
 
     void thread::send_action_description (fhg::util::parse::position& pos)
     {
       const QString action (prefix::require::qstring (pos));
+
+      action_info_t const &ai = _actions [action];
+
       _socket->write
-        ( qPrintable ( QString
-                     ("action_description: [\"%1\": [long_text: \"%2\",],]\n")
-                     .arg (action)
-                     .arg (description (action))
-                     )
-        );
+        (qPrintable (QString ("action_description: [\"%1\": ").arg (ai.name)));
+
+      _socket->write ("[");
+
+      _socket->write
+        (qPrintable (QString ("long_text: \"%1\", ").arg (ai.desc)));
+
+      _socket->write
+        (qPrintable (QString ("long_text: \"%1\", ").arg (ai.desc)));
+
+      _socket->write ("arguments: [");
+
+      foreach (const parameter_info_t& param, ai.params)
+      {
+        _socket->write
+          (qPrintable (QString ("\"%1\": [").arg (param.name)));
+
+        if (param.dflt)
+        {
+          _socket->write
+            (qPrintable (QString ("default: \"%1\", ").arg (*param.dflt)));
+        }
+
+        _socket->write
+          (qPrintable (QString ("type: %2, label: \"%3\", ")
+                      .arg (param.type)
+                      .arg (param.label)
+                      )
+          );
+
+        _socket->write ("], ");
+      }
+
+      _socket->write ("]");
+      _socket->write (",]");
+      _socket->write (",]\n");
     }
 
     void thread::send_layout_hint (fhg::util::parse::position& pos)
@@ -687,14 +747,14 @@ namespace gspc
 
     void thread::update_status (QStringList const &hosts)
     {
-      QMap<QString, hook_partial_result_t> results;
+      QMap<QString, action_result_t> results;
       QString error_reason;
-      int ec = call_action_hook ( _hooks ["status"].first
-                                , hosts
-                                , results
-                                , error_reason
-                                , this
-                                );
+      int ec = call_action ( _actions ["status"]
+                           , QMap<QString, QString> ()
+                           , hosts
+                           , results
+                           , error_reason
+                           );
 
       if (0 == ec)
       {
@@ -704,7 +764,7 @@ namespace gspc
         foreach (const QString& host, updated)
         {
           host_state_t & hs = _hosts [host];
-          hook_partial_result_t & res = results [host];
+          action_result_t & res = results [host];
 
           hs.state = res.state;
           hs.details = res.message.trimmed ();
