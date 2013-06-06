@@ -387,7 +387,6 @@ namespace prefix
       _pending_updates.removeAll (hostname);
       _nodes_to_update << hostname;
 
-      it->state (boost::none);
       it->details (boost::none);
       update (it - _nodes.begin());
     }
