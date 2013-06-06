@@ -18,13 +18,26 @@ namespace fhg
           {
             namespace
             {
+              QBrush grad (const QColor& a, const QColor& b)
+              {
+                QLinearGradient g (QPointF(0.0, 0.0), QPointF (20.0, 20.0));
+                g.setColorAt (0.0, a);
+                g.setColorAt (1.0, b);
+                return g;
+              }
+
               QMap<QString, QBrush> create_c_f_t (qreal factor)
               {
                 QMap<QString, QBrush> map;
 
-
-                map["velocity_type"] = QColor::fromHsvF (0.166667, 0.975799, qMin (1.0, 1.0 * factor));
-                map["data_type"] = QColor::fromHsvF (0.58, 1.0, qMin (1.0, 1.0 * factor));
+                map["velocity_type"] = grad
+                  ( QColor::fromHsvF (0.166, 0.97, qMin (1.0, 1.0 * factor))
+                  , QColor::fromHsvF (0.166, 0.8, qMin (1.0, 0.8 * factor))
+                  );
+                map["data_type"] = grad
+                  ( QColor::fromHsvF (0.58, 1.0, qMin (1.0, 1.0 * factor))
+                  , QColor::fromHsvF (0.60, 1.0, qMin (1.0, 0.8 * factor))
+                  );
 
                 return map;
               }
