@@ -1155,7 +1155,14 @@ namespace fhg
         }
         QString file_line_edit_to_file_type (const util::qt::file_line_edit* edit)
         {
-          return QString ("[name:=\"%1\",type:=\"raw\"]").arg (edit->text());
+          const QString name (edit->text());
+
+          return QString ("[name:=\"%1\",type:=\"%2\"]")
+            .arg (name)
+            .arg ( name.endsWith ("sgy") ? "segy"
+                 : name.endsWith ("segy") ? "segy"
+                 : "su"
+                 );
         }
         QString file_line_edit_to_function_type (const util::qt::file_line_edit* edit)
         {
