@@ -881,6 +881,7 @@ namespace fhg
           const xml::parse::id::ref::net net (*function.get().get_net());
 
           int slot_gen_count (0);
+          int slot_store_count (0);
 
           foreach ( const xml::parse::id::ref::transition& trans
                   , net.get().transitions().ids()
@@ -889,12 +890,23 @@ namespace fhg
             const xml::parse::id::ref::function fun
               (trans.get().resolved_function());
 
-            const std::string gens
-              ( fun.get().properties().get ("fhg.seislib.slot.num.generator")
-              .get_value_or ("0")
-              );
-            fhg::util::parse::position_string pos (gens);
-            slot_gen_count += fhg::util::read_int (pos);
+            {
+              const std::string gens
+                ( fun.get().properties().get ("fhg.seislib.slot.num.generator")
+                .get_value_or ("0")
+                );
+              fhg::util::parse::position_string pos (gens);
+              slot_gen_count += fhg::util::read_int (pos);
+            }
+
+            {
+              const std::string gens
+                ( fun.get().properties().get ("fhg.seislib.slot.num.store")
+                .get_value_or ("0")
+                );
+              fhg::util::parse::position_string pos (gens);
+              slot_store_count += fhg::util::read_int (pos);
+            }
 
             foreach ( const xml::parse::id::ref::port& pid
                     , fun.get().ports().ids()
@@ -1024,6 +1036,7 @@ namespace fhg
             (xml::parse::xml_to_we (function, state));
 
           put_token (activity, "REFLECT_seislib_slot_num_generator", (boost::format ("%1%") % slot_gen_count).str());
+          put_token (activity, "REFLECT_seislib_slot_num_store", (boost::format ("%1%") % slot_store_count).str());
 
           return std::make_pair (activity, function);
         }
