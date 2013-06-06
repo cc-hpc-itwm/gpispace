@@ -1637,13 +1637,37 @@ namespace fhg
                       , connections_to_delete
                       )
         {
-          remove_connection (handle::connect (c, transition.document()));
+          if (!transition.get().connections().has (c))
+          {
+            continue;
+          }
+          const handle::connect h (c, transition.document());
+          if (h.resolved_port().get().properties().get ("fhg.pnete.is_hard_hidden"))
+          {
+            remove_connection (h);
+          }
+          else
+          {
+            delete_place (h.resolved_place());
+          }
         }
         BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& c
                       , place_maps_to_delete
                       )
         {
-          remove_place_map (handle::place_map (c, transition.document()));
+          if (!transition.get().place_map().has (c))
+          {
+            continue;
+          }
+          const handle::place_map h (c, transition.document());
+          if (h.tunnel_port().get().properties().get ("fhg.pnete.is_hard_hidden"))
+          {
+            remove_place_map (h);
+          }
+          else
+          {
+            delete_place (h.resolved_real_place());
+          }
         }
 
         push ( new action::remove_transition ( ACTION_CTOR_ARGS (transition)
