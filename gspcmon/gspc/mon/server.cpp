@@ -116,22 +116,22 @@ namespace gspc
       _hooks ["stop"].first = _hookdir.absoluteFilePath ("stop");
       _hooks ["stop"].second = "stop the RTM";
 
-      add_state ("down", "0x000000", 0xFFFFFF).actions            << "reboot";
+      add_state ("down", 0x000000, 0xFFFFFF).actions            << "reboot";
 
-      add_state ("free", "0x000080").actions          << "start";
-      add_state ("free/reserved", "0xCCCC00").actions << "start";
+      add_state ("free", 0x000080).actions          << "start";
+      add_state ("free/reserved", 0xCCCC00).actions << "start";
 
-      add_state ("unavailable", "0x888888");
+      add_state ("unavailable", 0x888888);
 
-      add_state ("addable", "0x000080").actions            << "add";
-      add_state ("addable/reserved", "0xCCCC00").actions   << "add";
+      add_state ("addable", 0x000080).actions            << "add";
+      add_state ("addable/reserved", 0xCCCC00).actions   << "add";
 
-      add_state ("master", "0x00CC00").actions << "stop";
-      add_state ("inuse",  "0x008000").actions << "remove";
+      add_state ("master", 0x00CC00).actions << "stop";
+      add_state ("inuse",  0x008000).actions << "remove";
     }
 
     thread::state_info_t & thread::add_state ( QString const &name
-                                             , QString const &color
+                                             , int color
                                              , int border
                                              )
     {

@@ -70,15 +70,15 @@ namespace gspc
       {
         state_info_t ()
           : name ()
-          , color ("0xFFFFFF")
+          , color (0)
           , border (0)
           , actions ()
         {}
 
         QString                  name;
-        QString                  color;
+        int color;
+        int border;
         boost::optional<QString> label;
-        int                      border;
         QStringList              actions;
       };
 
@@ -87,7 +87,7 @@ namespace gspc
       void send_layout_hint (fhg::util::parse::position&);
       QString description (QString const& action);
       state_info_t & add_state ( QString const &name
-                               , QString const &color
+                               , int color
                                , int border = 0
                                );
 
