@@ -751,7 +751,7 @@ namespace gspc
 
         to_query << host;
 
-        if (to_query.size () > 16)
+        if (to_query.size () == 16)
         {
           update_status (to_query);
           send_status_updates (to_query);
