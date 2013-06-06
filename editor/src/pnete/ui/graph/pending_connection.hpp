@@ -25,6 +25,8 @@ namespace fhg
       {
         class pending_connection : public base_item
         {
+          Q_OBJECT;
+
         public:
           pending_connection ( const connectable_item* fixed_end
                              , const QPointF& open_end

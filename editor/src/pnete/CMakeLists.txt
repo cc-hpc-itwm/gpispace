@@ -102,6 +102,7 @@ set (editor_ui_tomoc
   ui/graph/base_item.hpp
   ui/graph/connectable_item.hpp
   ui/graph/connection.hpp
+  ui/graph/pending_connection.hpp
   ui/graph/place.hpp
   ui/graph/place_map.hpp
   ui/graph/popover_widget.hpp
