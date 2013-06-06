@@ -45,14 +45,6 @@ namespace fhg
         {
           setZValue (-1);
 
-          if (const port_item* fix = qobject_cast<const port_item*> (_fixed_end))
-          {
-            if (fix->handle().is_tunnel())
-            {
-              _style.push<Qt::PenStyle> ("border_style", Qt::DotLine);
-            }
-          }
-
           style::isc13::add_colors_for_types (&_style, color_if_type);
         }
 
