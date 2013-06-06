@@ -31,7 +31,7 @@ namespace fhg
                     )
               );
             painter->setBackgroundMode (Qt::OpaqueMode);
-            painter->setBrush (QBrush (item->style<QColor> ("background_color")));
+            painter->setBrush (item->style<QBrush> ("background_brush"));
             painter->drawPath (item->shape());
           }
 

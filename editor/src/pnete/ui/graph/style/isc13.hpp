@@ -26,9 +26,9 @@ namespace fhg
           {
             void add_colors_for_types ( style::type* style
                                       , const boost::function
-                                        < boost::optional<QColor>
+                                        < boost::optional<QBrush>
                                           ( const base_item*
-                                          , const QColor&
+                                          , const QBrush&
                                           , const QString&
                                           )>& fun
                                       );

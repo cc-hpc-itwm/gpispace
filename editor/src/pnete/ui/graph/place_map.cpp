@@ -21,8 +21,8 @@ namespace fhg
       {
         namespace
         {
-          boost::optional<QColor> color_if_type
-            (const base_item* item, const QColor& c, const QString& type)
+          boost::optional<QBrush> color_if_type
+            (const base_item* item, const QBrush& c, const QString& type)
           {
             return boost::make_optional
               ( fhg::util::qt::throwing_qobject_cast<const place_map*>

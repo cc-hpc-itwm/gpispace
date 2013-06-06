@@ -10,6 +10,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/variant.hpp>
 
+#include <QBrush>
 #include <QColor>
 
 namespace fhg
@@ -26,7 +27,7 @@ namespace fhg
           {
             namespace detail
             {
-              typedef boost::variant<qreal, QColor, Qt::PenStyle> return_type;
+              typedef boost::variant<qreal, QColor, Qt::PenStyle, QBrush> return_type;
 
               typedef boost::function<return_type (const mode::type&)> by_mode_type;
 
