@@ -7,6 +7,11 @@
 #include <pnete/ui/graph/style/association.hpp>
 #include <xml/parse/type/port.hpp>
 
+#include <pnete/ui/graph/style/isc13.hpp>
+
+#include <util/qt/cast.hpp>
+
+
 namespace fhg
 {
   namespace pnete
@@ -15,6 +20,20 @@ namespace fhg
     {
       namespace graph
       {
+        namespace
+        {
+          boost::optional<QBrush> color_if_type
+            (const base_item* item, const QBrush& c, const QString& type)
+          {
+            return boost::make_optional
+              ( fhg::util::qt::throwing_qobject_cast<const port_item*>
+              (fhg::util::qt::throwing_qobject_cast<const pending_connection*>
+                (item)->fixed_end())->handle().type() == type
+              , c
+              );
+          }
+        }
+
         pending_connection::pending_connection
           ( const connectable_item* fixed_end
           , const QPointF& open_end
@@ -33,6 +52,8 @@ namespace fhg
               _style.push<Qt::PenStyle> ("border_style", Qt::DotLine);
             }
           }
+
+          style::isc13::add_colors_for_types (&_style, color_if_type);
         }
 
         QPainterPath pending_connection::shape() const
