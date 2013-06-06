@@ -18,6 +18,7 @@
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/port_place_association.hpp>
 #include <pnete/ui/graph/style/raster.hpp>
+#include <pnete/ui/graph/style/size.hpp>
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/weaver/display.hpp>
 
@@ -679,16 +680,22 @@ namespace fhg
 
             stream >> paths;
 
+            QPointF insert_position (event->scenePos());
+            static const QPointF offset_per_transition
+              (size::raster() * 5, size::raster() * 5);
+
             foreach (const QString& path, paths)
             {
               net().add_transition
                 ( data::manager::instance().load (path).get().clone
                   (boost::none, net().id().id_mapper())
-                , event->scenePos()
+                , insert_position
                 );
 
-              event->acceptProposedAction();
+              insert_position += offset_per_transition;
             }
+
+            event->acceptProposedAction();
           }
         }
         //!@}
