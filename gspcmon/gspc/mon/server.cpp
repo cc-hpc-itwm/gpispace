@@ -745,41 +745,18 @@ namespace gspc
       }
 
       QStringList to_query;
-      QStringList only_send;
       while (not to_send.isEmpty ())
       {
         const QString host (to_send.takeFirst ());
 
-        {
-          const QMutexLocker lock (&_hosts_mutex);
-          host_state_t & hs = _hosts[host];
-
-          if (hs.age == -1 || hs.age > 10)
-          {
-            to_query << host;
-          }
-          else
-          {
-            ++hs.age;
-            only_send << host;
-          }
-        }
+        to_query << host;
 
         if (to_query.size () > 16)
         {
-          send_status_updates (only_send);
-          only_send.clear ();
-
           update_status (to_query);
           send_status_updates (to_query);
           to_query.clear ();
         }
-      }
-
-      if (not only_send.isEmpty ())
-      {
-        send_status_updates (only_send);
-        only_send.clear ();
       }
 
       if (not to_query.isEmpty ())
