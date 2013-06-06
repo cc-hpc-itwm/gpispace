@@ -171,8 +171,8 @@ namespace prefix
       , _communication (new communication (host, port, this))
   {
     timer
-      (this, 1000, boost::bind (&communication::request_hostlist, _communication));
-    timer (this, 200, SLOT (refresh_stati()));
+      (this, 10000, boost::bind (&communication::request_hostlist, _communication));
+    timer (this, 5000, SLOT (refresh_stati()));
 
     setSizeIncrement (per_step, per_step);
     QSizePolicy pol (QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
@@ -237,6 +237,9 @@ namespace prefix
             , SIGNAL (state_pixmap_changed (const QString&))
             , SLOT (update_nodes_with_state (const QString&))
             );
+
+    // request the hosts immediately
+    _communication->request_hostlist ();
   }
 
   QRect rect_for_node (const int node, const int per_row)
