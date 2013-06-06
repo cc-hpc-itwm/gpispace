@@ -36,7 +36,7 @@ namespace fhg
                   );
                 map["data_type"] = grad
                   ( QColor::fromHsvF (0.58, 1.0, qMin (1.0, 1.0 * factor))
-                  , QColor::fromHsvF (0.60, 1.0, qMin (1.0, 0.8 * factor))
+                  , QColor::fromHsvF (0.60, 1.0, qMin (1.0, 0.9 * factor))
                   );
 
                 return map;
@@ -52,7 +52,7 @@ namespace fhg
                                           )>& fun
                                       )
             {
-              static QMap<QString, QBrush> normal (create_c_f_t (0.8));
+              static QMap<QString, QBrush> normal (create_c_f_t (0.9));
               static QMap<QString, QBrush> highlight (create_c_f_t (1.0));
               static QMap<QString, QBrush> move (create_c_f_t (0.6));
 
