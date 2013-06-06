@@ -48,6 +48,28 @@ namespace fhg
           style::isc13::add_colors_for_types (&_style, color_if_type);
         }
 
+        namespace
+        {
+          we::type::PortDirection fake_dir (const data::handle::port& port)
+          {
+            if (port.is_tunnel())
+            {
+              const boost::optional<std::string> tunnel_direction
+                (port.get().properties().get ("fhg.pnete.tunnel.direction"));
+
+              return !tunnel_direction ? we::type::PORT_IN
+                : *tunnel_direction == "out" ? we::type::PORT_OUT
+                : *tunnel_direction == "in" ? we::type::PORT_IN
+                : throw std::runtime_error
+                  ("bad fhg.pnete.tunnel.direction (neither 'in' nor 'out')");
+            }
+            else
+            {
+              return port.get().direction();
+            }
+          }
+        }
+
         QPainterPath pending_connection::shape() const
         {
           QList<QPointF> points;
@@ -55,17 +77,18 @@ namespace fhg
           //! \todo automatic orthogonal lines
           if (const port_item* fix = qobject_cast<const port_item*> (_fixed_end))
           {
-            if (fix->handle().is_input())
+            const we::type::PortDirection dir (fake_dir (fix->handle()));
+            if (dir == we::type::PORT_IN)
             {
               points.push_back (_open_end);
               points.push_back (_fixed_end->scenePos());
             }
-            else if (fix->handle().is_output())
+            else if (dir == we::type::PORT_OUT)
             {
               points.push_back (_fixed_end->scenePos());
               points.push_back (_open_end);
             }
-            else if (fix->handle().is_tunnel())
+            else if (dir == we::type::PORT_TUNNEL)
             {
               points.push_back (_fixed_end->scenePos());
               points.push_back (_open_end);
