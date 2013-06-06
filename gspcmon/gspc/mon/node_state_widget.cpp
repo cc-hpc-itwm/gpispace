@@ -117,7 +117,7 @@ namespace prefix
   {
     new QListWidgetItem
       ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxInformation)
-      , QDateTime::currentDateTime().toString() + ": " + message
+      , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
       , this
       );
   }
@@ -126,7 +126,7 @@ namespace prefix
   {
     new QListWidgetItem
       ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxWarning)
-      , QDateTime::currentDateTime().toString() + ": " + message
+      , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
       , this
       );
   }
@@ -135,7 +135,7 @@ namespace prefix
   {
     new QListWidgetItem
       ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxCritical)
-      , QDateTime::currentDateTime().toString() + ": " + message
+      , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
       , this
       );
   }
