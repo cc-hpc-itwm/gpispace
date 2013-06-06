@@ -28,6 +28,7 @@
 #include <QStyle>
 #include <QToolTip>
 #include <QVBoxLayout>
+#include <QDateTime>
 
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
@@ -116,7 +117,7 @@ namespace prefix
   {
     new QListWidgetItem
       ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxInformation)
-      , message
+      , QDateTime::currentDateTime().toString() + ": " + message
       , this
       );
   }
@@ -125,7 +126,7 @@ namespace prefix
   {
     new QListWidgetItem
       ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxWarning)
-      , message
+      , QDateTime::currentDateTime().toString() + ": " + message
       , this
       );
   }
@@ -134,7 +135,7 @@ namespace prefix
   {
     new QListWidgetItem
       ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxCritical)
-      , message
+      , QDateTime::currentDateTime().toString() + ": " + message
       , this
       );
   }
