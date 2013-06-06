@@ -15,6 +15,8 @@
 #include <QVBoxLayout>
 #include <QCheckBox>
 
+#include <iostream>
+
 int main (int argc, char** argv)
 try
 {
