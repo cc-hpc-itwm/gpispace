@@ -454,7 +454,8 @@ namespace gspc
       {
         action_result_t & res = results [*invoc._host];
 
-        state = res.state;
+        if (res.state != "-")
+          state = res.state;
         age = 0;
 
         if (0 == res.exit_code)
@@ -767,7 +768,8 @@ namespace gspc
           host_state_t & hs = _hosts [host];
           action_result_t & res = results [host];
 
-          hs.state = res.state;
+          if (res.state != "-")
+            hs.state = res.state;
           hs.details = res.message.trimmed ();
           hs.age = 0;
         }
