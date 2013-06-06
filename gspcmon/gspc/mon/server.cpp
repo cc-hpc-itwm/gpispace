@@ -99,6 +99,7 @@ namespace gspc
         << parameter_info_t ("jobdesc", "Job description", "filename")
         << parameter_info_t ("nresult", "Maximum number of partial results", "string", QString ("factor 4.0"))
         << parameter_info_t ("updates", "Update interval", "integer", QString ("10"))
+        << parameter_info_t ("atonce", "Shots at once", "integer", QString ("4"))
         << parameter_info_t ("walltime", "Walltime in hours", "integer", QString ("4"))
         ;
 

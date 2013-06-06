@@ -5,6 +5,8 @@ nodes=()
 jobdesc=
 nresult=
 updates=
+atonce=
+walltime=
 
 for arg
 do
@@ -26,6 +28,9 @@ do
             ;;
         walltime=*)
             walltime="${arg#*=}"
+            ;;
+        atonce=*)
+            atonce="${arg#*=}"
             ;;
         *)
             echo >&2 "$(basename $0): invalid argument: $arg"
