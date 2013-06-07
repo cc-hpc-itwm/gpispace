@@ -9,6 +9,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fhg/util/thread/queue.hpp>
@@ -28,6 +29,24 @@
 
 //! \todo eliminate this include (that completes the type transition_t::data)
 #include <we/type/net.hpp>
+
+namespace
+{
+  static
+  boost::optional<std::string>
+  nice_name (we::mgmt::type::activity_t const &act)
+    try
+    {
+      const we::type::module_call_t mod_call
+        (boost::get<we::type::module_call_t> (act.transition().data()));
+
+      return mod_call.module() + ":" + mod_call.function();
+    }
+    catch (boost::bad_get const &)
+    {
+      return boost::none;
+    }
+}
 
 struct search_path_appender
 {
@@ -173,7 +192,8 @@ public:
     try
     {
       task.activity = we::mgmt::type::activity_t (job_description);
-      task.name = task.activity.transition().name();
+      task.name =
+        nice_name (task.activity).get_value_or (task.activity.transition().name());
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
