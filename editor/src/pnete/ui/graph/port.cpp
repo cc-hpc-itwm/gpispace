@@ -367,14 +367,13 @@ namespace fhg
 
           QPolygonF poly;
           const qreal y (size::port::height() / 2.0);
-          poly << QPointF ( lengthHalf - size::cap::length(),  y)
-               << QPointF (-lengthHalf                      ,  y)
-               << QPointF (-lengthHalf                      , -y)
-               << QPointF ( lengthHalf - size::cap::length(), -y)
-            ;
+          poly << QPointF ( lengthHalf, y)
+               << QPointF (-lengthHalf, y)
+               << QPointF (-lengthHalf, -y)
+               << QPointF ( lengthHalf, -y);
 
           add_cap_for_direction
-            (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));
+            (&poly, QPointF (lengthHalf, 0.0));
 
           poly = QTransform().rotate (angle (orientation())).map (poly);
 
@@ -385,45 +384,27 @@ namespace fhg
           return path;
         }
 
-        QRectF port_item::bounding_rect (bool cap, int cap_factor) const
+        namespace
         {
-          const qreal addition ( cap
-                               ? 0.0
-                               : size::cap::length() * cap_factor
-                               );
-          const qreal lengthHalf ((length() - addition) / 2.0);                                  // hardcoded constant
-
-          switch (orientation())
+          QRectF no_cap_rect
+            (const qreal& length, const port::orientation::type& orientation)
           {
-          case port::orientation::NORTH:
-            return QRectF ( -(size::port::height() / 2.0)
-                          , -lengthHalf + addition
-                          , size::port::height()
-                          , length() - addition
-                          );
+            const qreal lengthHalf (length / 2.0); // hardcoded constant
 
-          case port::orientation::SOUTH:
-            return QRectF ( -(size::port::height() / 2.0)
-                          , -lengthHalf
-                          , size::port::height()
-                          , length() - addition
-                          );
+            QPolygonF poly;
+            const qreal y (size::port::height() / 2.0);
+            poly << QPointF ( lengthHalf, y)
+                 << QPointF (-lengthHalf, y)
+                 << QPointF (-lengthHalf, -y)
+                 << QPointF ( lengthHalf, -y);
 
-          case port::orientation::EAST:
-            return QRectF ( -lengthHalf
-                          , -(size::port::height() / 2.0)
-                          , length() - addition
-                          , size::port::height()
-                          );
+            poly = QTransform().rotate (angle (orientation)).map (poly);
 
-          case port::orientation::WEST:
-            return QRectF ( -lengthHalf + addition
-                          , -(size::port::height() / 2.0)
-                          , length() - addition
-                          , size::port::height()
-                          );
-          default:
-            throw std::runtime_error("invalid port orientation");
+            QPainterPath path;
+            path.addPolygon (poly);
+            path.closeSubpath();
+
+            return path.boundingRect();
           }
         }
 
@@ -440,7 +421,7 @@ namespace fhg
                           );
           painter->setBackgroundMode (Qt::TransparentMode);
 
-          const QRectF area (bounding_rect (false, 1));
+          const QRectF area (no_cap_rect (length(), orientation()));
 
           if ( orientation() == port::orientation::NORTH
              || orientation() == port::orientation::SOUTH

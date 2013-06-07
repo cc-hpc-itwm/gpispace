@@ -55,7 +55,6 @@ namespace fhg
 
           virtual void add_cap_for_direction (QPolygonF*, const QPointF&) const;
 
-          QRectF bounding_rect(bool cap = true, int cap_factor = 0) const;
           virtual QPainterPath shape() const;
           virtual void
           paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
