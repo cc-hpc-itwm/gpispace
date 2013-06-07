@@ -509,19 +509,11 @@ namespace fhg
 
         void scene_type::create_connection (const data::handle::connect& handle)
         {
-          connectable_item* place
-            (item_with_handle<place_item> (handle.resolved_place()));
-
-          if (!place->associations().empty())
-          {
-            place = (*place->associations().begin())->start() == place
-              ? (*place->associations().begin())->end()
-              : (*place->associations().begin())->start();
-            delete *place->associations().begin();
-          }
-
           connectable_item* port
             (item_with_handle<port_item> (handle.resolved_port()));
+
+          connectable_item* place
+            (item_with_handle<place_item> (handle.resolved_place()));
 
           connectable_item* from (handle.is_in() ? place : port);
           connectable_item* to (handle.is_in() ? port : place);
