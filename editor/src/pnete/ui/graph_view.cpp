@@ -12,8 +12,10 @@
 #include <boost/lambda/bind.hpp>
 
 #include <QHBoxLayout>
+#include <QScrollBar>
 #include <QSlider>
 #include <QSpinBox>
+#include <QTimer>
 #include <QWheelEvent>
 #include <QWidgetAction>
 
@@ -129,6 +131,22 @@ namespace fhg
         addAction (sep);
 
         addActions (scene->actions());
+
+        setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+        setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOn);
+
+        scene->connect ( horizontalScrollBar()
+                       , SIGNAL (valueChanged (int))
+                       , SLOT (update_scene_rect())
+                       );
+        scene->connect ( verticalScrollBar()
+                       , SIGNAL (valueChanged (int))
+                       , SLOT (update_scene_rect())
+                       );
+
+        QTimer::singleShot (0, scene, SLOT (update_scene_rect()));
+
+        setResizeAnchor (QGraphicsView::AnchorUnderMouse);
       }
 
       QSize graph_view::sizeHint() const

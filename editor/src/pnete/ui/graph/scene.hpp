@@ -76,6 +76,8 @@ namespace fhg
             , const boost::optional<std::string>& place
             );
 
+          void update_scene_rect();
+
         protected:
           virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);

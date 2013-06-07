@@ -98,6 +98,8 @@ namespace fhg
             {
               child->setVisible (true);
             }
+
+          scene()->update_scene_rect();
         }
 
         void base_item::clear_style_cache ()

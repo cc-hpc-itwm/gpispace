@@ -40,9 +40,11 @@
 #include <QApplication>
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsView>
 #include <QInputDialog>
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QScrollBar>
 
 namespace fhg
 {
@@ -181,8 +183,6 @@ namespace fhg
             , "place_association_set"
             , "data::handle::port, boost::optional<std::string>"
             );
-
-          setSceneRect (QRectF (-10000, -10000, 10000, 10000));
         }
 
         QList<QAction*> scene_type::actions() const
@@ -905,6 +905,28 @@ namespace fhg
                       )
                     );
           }
+        }
+
+        void scene_type::update_scene_rect()
+        {
+          QRectF rect (itemsBoundingRect());
+
+          foreach (QGraphicsView* view, views())
+          {
+            const QPointF tl ( view->horizontalScrollBar()->value()
+                             , view->verticalScrollBar()->value()
+                             );
+
+            rect = rect.united
+              ( view->matrix().inverted().mapRect
+                (QRectF (tl, tl + view->viewport()->rect().bottomRight()))
+              );
+          }
+
+          static const qreal scroll_ahead (100.0);
+          rect.adjust (-scroll_ahead, -scroll_ahead, scroll_ahead, scroll_ahead);
+
+          setSceneRect (rect);
         }
       }
     }
