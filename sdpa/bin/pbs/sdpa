@@ -1003,6 +1003,11 @@ EOF
         log "E: SDPA_HOME is not defined!"
     fi
     mv "$tmp_file" "$state_dir/sdpa.env"
+
+    # HACK  (until all  the sdpa*  scripts are  gone):  initialize the
+    # GSPC_COOKIE once (as a  side-effect, this will generate a cookie
+    # and save it to ~/.gspc.cookie)
+    gspc rif --get-cookie >/dev/null
 }
 
 function cleanup ()
