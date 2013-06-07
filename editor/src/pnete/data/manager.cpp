@@ -87,6 +87,9 @@ namespace fhg
 
         fhg::util::xml::xmlstream s (fs);
 
+        data::handle::function (data->function(), data).set_name
+          (QString::fromStdString (file));
+
         ::xml::parse::type::dump::dump (s, data->function().get());
       }
     }
