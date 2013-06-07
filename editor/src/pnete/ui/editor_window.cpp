@@ -962,6 +962,7 @@ namespace fhg
                     , port.type()
                     , name
                     , fake_dir (port)
+                    , port.properties()
                     ).make_reference_id()
                   );
 
