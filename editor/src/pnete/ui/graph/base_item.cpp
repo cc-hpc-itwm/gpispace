@@ -86,18 +86,7 @@ namespace fhg
         }
         void base_item::set_just_pos_but_not_in_property (const QPointF& new_pos)
         {
-          //! \todo update more clever
-          foreach (base_item* child, childs())
-            {
-              child->setVisible (false);
-            }
-
           QGraphicsItem::setPos (new_pos);
-
-          foreach (base_item* child, childs())
-            {
-              child->setVisible (true);
-            }
 
           scene()->update_scene_rect();
         }
