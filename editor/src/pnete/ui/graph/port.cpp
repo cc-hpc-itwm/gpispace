@@ -534,12 +534,12 @@ namespace fhg
                 if (*pos == "x")
                 {
                   set_just_pos_but_not_in_property
-                    (read_qreal (value), this->pos().y());
+                    (QPointF (read_qreal (value), this->pos().y()));
                 }
                 else if (*pos == "y")
                 {
                   set_just_pos_but_not_in_property
-                    (this->pos().x(), read_qreal (value));
+                    (QPointF (this->pos().x(), read_qreal (value)));
                 }
               }
             }

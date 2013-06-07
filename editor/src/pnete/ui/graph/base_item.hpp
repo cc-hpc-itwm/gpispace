@@ -53,20 +53,16 @@ namespace fhg
           scene_type* scene() const;
 
           void set_just_pos_but_not_in_property (const QPointF&);
-          void set_just_pos_but_not_in_property (qreal, qreal);
 
           virtual void set_just_orientation_but_not_in_property
           (const port::orientation::type&) {}
 
           virtual void setPos (const QPointF&);
           virtual void setPos (const QPointF&, bool outer);
-          virtual void setPos (qreal, qreal);
 
           virtual void no_undo_setPos (const QPointF&);
-          virtual void no_undo_setPos (qreal, qreal);
 
           virtual void no_undo_no_raster_setPos (const QPointF&);
-          virtual void no_undo_no_raster_setPos (qreal, qreal);
 
           void clear_style_cache();
 

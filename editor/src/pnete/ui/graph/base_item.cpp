@@ -55,18 +55,10 @@ namespace fhg
 
           set_just_pos_but_not_in_property (snapped);
         }
-        void base_item::setPos (qreal x, qreal y)
-        {
-          setPos (QPointF (x, y));
-        }
 
         void base_item::no_undo_setPos (const QPointF& new_pos)
         {
           no_undo_no_raster_setPos (style::raster::snap (new_pos));
-        }
-        void base_item::no_undo_setPos (qreal x, qreal y)
-        {
-          no_undo_setPos (QPointF (x, y));
         }
 
         void base_item::no_undo_no_raster_setPos (const QPointF& new_pos)
@@ -75,15 +67,7 @@ namespace fhg
 
           set_just_pos_but_not_in_property (new_pos);
         }
-        void base_item::no_undo_no_raster_setPos (qreal x, qreal y)
-        {
-          no_undo_setPos (QPointF (x, y));
-        }
 
-        void base_item::set_just_pos_but_not_in_property (qreal x, qreal y)
-        {
-          set_just_pos_but_not_in_property (QPointF (x, y));
-        }
         void base_item::set_just_pos_but_not_in_property (const QPointF& new_pos)
         {
           QGraphicsItem::setPos (new_pos);
@@ -219,12 +203,12 @@ namespace fhg
                   if (*pos == "x")
                   {
                     set_just_pos_but_not_in_property
-                      (read_qreal (value), this->pos().y());
+                      (QPointF (read_qreal (value), this->pos().y()));
                   }
                   else if (*pos == "y")
                   {
                     set_just_pos_but_not_in_property
-                      (this->pos().x(), read_qreal (value));
+                      (QPointF (this->pos().x(), read_qreal (value)));
                   }
                 }
               }

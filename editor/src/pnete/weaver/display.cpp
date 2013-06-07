@@ -79,8 +79,10 @@ namespace fhg
           }
 
           item->set_just_pos_but_not_in_property
-            ( read_qreal (id.get().properties().get (var_name + ".x"))
-            , read_qreal (id.get().properties().get (var_name + ".y"))
+            ( QPointF
+              ( read_qreal (id.get().properties().get (var_name + ".x"))
+              , read_qreal (id.get().properties().get (var_name + ".y"))
+              )
             );
         }
 

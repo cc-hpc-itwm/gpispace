@@ -501,7 +501,8 @@ namespace fhg
 
           _pending_connection = new pending_connection (item, _mouse_position);
           addItem (_pending_connection);
-          _pending_connection->set_just_pos_but_not_in_property (0.0, 0.0);
+          _pending_connection->set_just_pos_but_not_in_property
+            (QPointF (0.0, 0.0));
 
           update (_pending_connection->boundingRect());
         }
