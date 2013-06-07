@@ -31,6 +31,8 @@ namespace fhg
         setFeatures ( QDockWidget::DockWidgetClosable
                     | QDockWidget::DockWidgetMovable
                     );
+
+        setAttribute (Qt::WA_DeleteOnClose);
       }
     }
   }

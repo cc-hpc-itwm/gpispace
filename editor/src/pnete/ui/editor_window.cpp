@@ -454,13 +454,6 @@ namespace fhg
           toolbars->addAction (toolbar->toggleViewAction());
         }
 
-        menu->addSeparator();
-
-        foreach (document_view* view, findChildren<document_view*>())
-        {
-          menu->addAction (view->toggleViewAction());
-        }
-
         return menu;
       }
 
