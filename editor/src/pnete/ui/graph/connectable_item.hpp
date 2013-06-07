@@ -38,6 +38,11 @@ namespace fhg
 
           virtual const std::string& we_type() const = 0;
 
+          virtual void setPos (const QPointF&);
+          virtual void setPos (const QPointF&, bool outer);
+          virtual void no_undo_setPos (const QPointF&);
+          virtual void no_undo_no_raster_setPos (const QPointF&);
+
           virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
           virtual QLinkedList<base_item*> childs() const;

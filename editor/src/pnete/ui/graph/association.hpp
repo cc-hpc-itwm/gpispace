@@ -43,6 +43,8 @@ namespace fhg
 
           void invert();
 
+          void trigger_geometry_change();
+
           virtual bool is_movable() const;
 
           virtual QPainterPath shape() const;

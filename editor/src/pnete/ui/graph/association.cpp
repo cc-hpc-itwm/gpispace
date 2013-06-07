@@ -74,6 +74,11 @@ namespace fhg
         {
           return false;
         }
+
+        void association::trigger_geometry_change()
+        {
+          prepareGeometryChange();
+        }
       }
     }
   }

@@ -76,6 +76,39 @@ namespace fhg
           return childs;
         }
 
+        void connectable_item::setPos (const QPointF& pos)
+        {
+          foreach (association* assoc, associations())
+          {
+            assoc->trigger_geometry_change();
+          }
+          base_item::setPos (pos);
+        }
+        void connectable_item::setPos (const QPointF& pos, bool outer)
+        {
+          foreach (association* assoc, associations())
+          {
+            assoc->trigger_geometry_change();
+          }
+          base_item::setPos (pos, outer);
+        }
+        void connectable_item::no_undo_setPos (const QPointF& pos)
+        {
+          foreach (association* assoc, associations())
+          {
+            assoc->trigger_geometry_change();
+          }
+          base_item::no_undo_setPos (pos);
+        }
+        void connectable_item::no_undo_no_raster_setPos (const QPointF& pos)
+        {
+          foreach (association* assoc, associations())
+          {
+            assoc->trigger_geometry_change();
+          }
+          base_item::no_undo_no_raster_setPos (pos);
+        }
+
         //! \todo This should be in the different connectable items instead.
         void connectable_item::mousePressEvent
           (QGraphicsSceneMouseEvent* event)
