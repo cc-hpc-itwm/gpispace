@@ -89,6 +89,7 @@ namespace gspc
       add_action ("add", "add the node to the working set").params
         << parameter_info_t ("walltime", "Walltime in hours", "integer", QString ("4"))
         ;
+      add_action ("restart", "restart missing workers");
 
       add_action ("remove", "remove the node from the working set");
 
@@ -106,6 +107,9 @@ namespace gspc
       add_action ("stop", "stop the RTM");
 
       add_state ("down", 0x000000, 0xFFFFFF);
+
+      add_state ("failed", 0xCC0000).actions        << "remove" << "restart";
+      add_state ("master/failed", 0xEE0000).actions << "stop"   << "restart";
 
       add_state ("free", 0x000080).actions          << "start";
       add_state ("free/reserved", 0xCCCC00).actions << "start";
@@ -395,6 +399,8 @@ namespace gspc
           break;
         }
       }
+
+      p->waitForFinished ();
 
       delete p;
 
