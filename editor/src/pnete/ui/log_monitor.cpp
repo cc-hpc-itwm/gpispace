@@ -412,7 +412,6 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
 
   QAction* save_log (new QAction (tr ("save_log"), this));
-  save_log->setShortcuts (QKeySequence::Save);
   connect (save_log, SIGNAL (triggered()), this, SLOT (save()));
   addAction (save_log);
 }
