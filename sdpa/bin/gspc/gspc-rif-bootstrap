@@ -175,6 +175,8 @@ if [ -z "$method" ] ; then
     method=$(select_best_bootstrap_method)
 fi
 
+gspc net init
+
 gspc_log_info rif "booting using $method on: ${nodes[@]}"
 
 bootstrap_${method} "${nodes[@]}"

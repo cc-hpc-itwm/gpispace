@@ -1007,7 +1007,7 @@ EOF
     # HACK  (until all  the sdpa*  scripts are  gone):  initialize the
     # GSPC_COOKIE once (as a  side-effect, this will generate a cookie
     # and save it to ~/.gspc.cookie)
-    gspc rif --get-cookie >/dev/null
+    gspc net init
 }
 
 function cleanup ()
