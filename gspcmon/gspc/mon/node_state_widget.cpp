@@ -1375,7 +1375,7 @@ namespace prefix
   }
 
   void node_state_widget::trigger_action
-    (const QString& host, const QString& action)
+    (const QStringList& hosts, const QString& action)
   {
     QMap<QString, boost::function<QString()> > value_getters;
 
@@ -1385,7 +1385,7 @@ namespace prefix
     {
       QDialog* dialog (new QDialog);
       dialog->setWindowTitle
-        (tr ("Parameters for %1 on %2").arg (action).arg (host));
+        (tr ("Parameters for %1").arg (action));
       new QVBoxLayout (dialog);
 
       QWidget* wid (new QWidget (dialog));
@@ -1423,7 +1423,10 @@ namespace prefix
       }
     }
 
-    _communication->request_action (host, action, value_getters);
+    foreach (QString const &host, hosts)
+    {
+      _communication->request_action (host, action, value_getters);
+    }
   }
 
   bool node_state_widget::event (QEvent* event)
@@ -1517,19 +1520,16 @@ namespace prefix
 
             if (action_name_intersection.contains (action_name))
             {
-              foreach (const QString& hostname, hostnames)
-              {
-                fhg::util::qt::boost_connect<void (void)>
-                  ( action
-                  , SIGNAL (triggered())
-                  , this
-                  , boost::bind ( &node_state_widget::trigger_action
-                                , this
-                                , hostname
-                                , action_name
-                                )
-                  );
-              }
+              fhg::util::qt::boost_connect<void (void)>
+                ( action
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &node_state_widget::trigger_action
+                              , this
+                              , hostnames
+                              , action_name
+                              )
+                );
             }
             else
             {
