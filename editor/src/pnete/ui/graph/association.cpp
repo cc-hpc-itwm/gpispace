@@ -29,7 +29,6 @@ namespace fhg
           end->add_association (this);
 
           setZValue (-1);                                                          // hardcoded constant
-          set_just_pos_but_not_in_property (0.0, 0.0);
         }
         association::~association()
         {

@@ -115,8 +115,8 @@ namespace fhg
           _transition = new ui::graph::transition_item
             (data::handle::transition (id, _root));
 
-          initialize_and_set_position (_transition, id);
           _scene->addItem (_transition);
+          initialize_and_set_position (_transition, id);
 
           from::many_port (this, trans.resolved_function().get().ports().ids());
           from::many_connection (this, trans.connections().ids());
@@ -191,8 +191,8 @@ namespace fhg
 
           ui::graph::base_item* item (new ui::graph::top_level_port_item (port));
 
-          initialize_and_set_position (item, id);
           _scene->addItem (item);
+          initialize_and_set_position (item, id);
 
           _scene->create_port_place_association (port);
         }
@@ -291,8 +291,8 @@ namespace fhg
                    )
         {
           ui::graph::place_item* item (new ui::graph::place_item (place));
-          initialize_and_set_position (item, place.id());
           scene->addItem (item);
+          initialize_and_set_position (item, place.id());
         }
 
         void top_level_port ( const data::handle::port& port
