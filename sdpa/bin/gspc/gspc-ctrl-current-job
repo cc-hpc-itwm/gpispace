@@ -31,6 +31,7 @@ then
     exit ${GSPC_EX_USAGE}
 fi
 
+failed=0
 for u in ${urls[@]}
 do
     current_job=$(gspcnet-req       \
@@ -38,6 +39,14 @@ do
         -b ""                       \
         --no-headers                \
         "${u}")
+    ec=$?
+
+    if [ $ec -ne 0 ]
+    then
+	failed=$((failed + 1))
+	continue
+    fi
+    
     if [ -n "$current_job" ]
     then
         if [ ${#urls[@]} -gt 1 ]
@@ -47,3 +56,5 @@ do
         echo "$current_job"
     fi
 done
+
+exit ${failed}
