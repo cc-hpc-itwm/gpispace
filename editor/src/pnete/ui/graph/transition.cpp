@@ -111,7 +111,17 @@ namespace fhg
                 return;
               }
             }
+          }
 
+          foreach (QGraphicsItem* child, childItems())
+          {
+            if (port_item* p = qgraphicsitem_cast<port_item*> (child))
+            {
+              foreach (association* assoc, p->associations())
+              {
+                assoc->trigger_geometry_change();
+              }
+            }
           }
         }
 
