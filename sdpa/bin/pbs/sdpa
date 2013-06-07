@@ -1003,7 +1003,6 @@ EOF
         log "E: SDPA_HOME is not defined!"
     fi
     mv "$tmp_file" "$state_dir/sdpa.env"
-    sync
 }
 
 function cleanup ()
