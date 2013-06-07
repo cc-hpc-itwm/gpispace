@@ -1355,6 +1355,8 @@ namespace prefix
       case action_argument_data::integer: // min max
         {
           QSpinBox* edit (new QSpinBox);
+          edit->setMinimum (INT_MIN);
+          edit->setMaximum (INT_MAX);
           edit->setValue (string_to_int (item._default.get_value_or ("0")));
           return std::pair<QWidget*, boost::function<QString()> >
             (edit, boost::bind (spinbox_to_string, edit));
