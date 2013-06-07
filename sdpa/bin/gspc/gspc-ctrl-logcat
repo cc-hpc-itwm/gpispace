@@ -8,7 +8,7 @@ GSPC_API_COMMAND_LEVEL=2
 function usage()
 {
     cat <<EOF
-usage: backlog [-h|--help] [options]
+usage: logcat [-h|--help] [options]
 EOF
 }
 
