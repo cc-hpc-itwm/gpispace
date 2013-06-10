@@ -20,6 +20,18 @@ set (scripts
   gspc-init
   gspc-kvs
   gspc-version
+
+  gspc-net
+
+  gspc-rif
+  gspc-rif-bootstrap
+  gspc-rif-shutdown
+  gspc-rif-raw
+
+  gspc-ctrl
+  gspc-ctrl-unload-modules
+  gspc-ctrl-current-job
+  gspc-ctrl-logcat
 )
 
 set (files

@@ -3,6 +3,7 @@
 
 #include <fhglog/fhglog.hpp>
 
+#include <deque>
 #include <vector>
 
 #include <fhgcom/basic_session.hpp>
@@ -11,8 +12,9 @@
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 
-// TODO: check if this conflicts with std::tr1::shared_ptr
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace fhg
 {
@@ -84,6 +86,9 @@ namespace fhg
 
       void handle_write (const boost::system::error_code &);
 
+      typedef boost::unique_lock<boost::mutex> unique_lock;
+      mutable boost::mutex m_mutex;
+
       boost::asio::ip::tcp::socket socket_;
 
       enum { header_length = 8 }; // 8 hex chars -> 4 bytes
@@ -91,8 +96,7 @@ namespace fhg
       char inbound_header_[header_length];
       std::vector<char> inbound_data_;
 
-      //      bool send_in_progress_;
-      std::list<std::string> to_send_;
+      std::deque<std::string> to_send_;
 
       manager_t & manager_;
 

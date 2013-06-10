@@ -215,8 +215,8 @@ namespace fhg
         }
 
         MLOG( TRACE
-            , p->name() << " plugin loaded "
-            << "(from: " << full_path_to_file << ")"
+            , "loaded plugin '" << p->name() << "'"
+            << " (from: '" << full_path_to_file << "')"
             );
 
         for ( plugin_map_t::iterator it (m_plugins.begin())

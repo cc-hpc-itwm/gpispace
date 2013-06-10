@@ -16,7 +16,9 @@
 #include <fhg/util/join.hpp>
 #include <sstream>
 #include <QAction>
-#include <pnete/ui/ui_PropertiesEditorForm.h>
+#include <pnete/ui_PropertiesEditorForm.h>
+#include <boost/optional.hpp>
+
 
 namespace prop = we::type::property;
 
@@ -149,7 +151,7 @@ public slots:
 		QModelIndexList listSelectedItems = m_treeView->selectionModel()->selectedIndexes();
 
 		if(listSelectedItems.empty())
-			QMessageBox::critical(NULL, tr("Properties editor"),tr("Please, select a property to delete first!"));
+			QMessageBox::critical(NULL, tr("Properties editor"), tr("Please, select a property to delete first!"));
 		else
 		{
 			QModelIndex currModelIdx = listSelectedItems.at(0);

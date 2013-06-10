@@ -1,0 +1,51 @@
+#!/bin/bash
+
+workdir=
+nodes=()
+jobdesc=
+nresult=
+updates=
+atonce=
+walltime=
+
+for arg
+do
+    case "$arg" in
+        node=*)
+            nodes+=("${arg#*=}")
+            ;;
+        workdir=*)
+            workdir="${arg#*=}"
+            ;;
+        jobdesc=*)
+            jobdesc="${arg#*=}"
+            ;;
+        nresult=*)
+            nresult="${arg#*=}"
+            ;;
+        updates=*)
+            updates="${arg#*=}"
+            ;;
+        walltime=*)
+            walltime="${arg#*=}"
+            ;;
+        atonce=*)
+            atonce="${arg#*=}"
+            ;;
+        *)
+            echo >&2 "$(basename $0): invalid argument: $arg"
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "${workdir}" ]
+then
+    echo >&2 "workdir was not set"
+    exit 77
+fi
+
+for node in ${nodes[@]}
+do
+    echo "$node 0 master started RTM in $workdir, walltime=$walltime"
+done

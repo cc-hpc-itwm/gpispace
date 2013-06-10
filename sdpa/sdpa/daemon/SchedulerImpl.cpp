@@ -28,6 +28,8 @@
 #include <cassert>
 #include <sdpa/capability.hpp>
 
+#include <sdpa/daemon/NotificationService.hpp>
+
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
@@ -169,8 +171,21 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 		std::string status = pJob->getStatus();
 		if( !pJob->completed() )
 		{
-		  pJob->Reschedule(); // put the job back into the pending state
-		  schedule_remote(job_id);
+			if(ptr_comm_handler_->gui_service())
+			{
+                  const sdpa::daemon::NotificationEvent evt
+                    ( worker_id
+                    , pJob->id().str()
+                    , "unknown"
+                    , NotificationEvent::STATE_FAILED
+                    , pJob->description()
+                    );
+
+                  ptr_comm_handler_->gui_service()->notify (evt);
+			}
+
+			pJob->Reschedule(); // put the job back into the pending state
+			schedule_remote(job_id);
 		}
     }
   }
@@ -369,6 +384,17 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
     {
     	SDPA_LOG_ERROR("Empty Workflow!!!!");
         // declare job as failed
+    	JobFailedEvent::Ptr pEvtJobFailed
+    	      (new JobFailedEvent( sdpa::daemon::WE
+    	                         , ptr_comm_handler_->name()
+    	                         , jobId
+    	                         , ""
+    	                         )
+    	      );
+
+    	pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
+    	pEvtJobFailed->error_message() = "The job has an empty workflow attached!";
+    	ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
     }
 
     ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
@@ -770,7 +796,6 @@ void SchedulerImpl::feedWorkers()
          continue;
 
     sdpa::worker_id_list_t workerList;
-    //ptr_worker_man_->getListWorkersNotFull(workerList);
     getListWorkersNotFull(workerList);
 
     if(!workerList.empty())
@@ -785,7 +810,10 @@ void SchedulerImpl::feedWorkers()
         	}
         	catch(const NoJobScheduledException&)
         	{
-        		DMLOG (TRACE, "No job that fits with the worker "<<worker_id<<" was found!");
+                  // AP: TODO: see why this 'feedWorkers' is always called, even if no job is availble...
+                  // deactivated this log message, since it is quite useless and happens N-times / second
+
+                  // DMLOG (TRACE, "No job that fits with the worker "<<worker_id<<" was found!");
         	}
         	catch(const WorkerNotFoundException&)
         	{

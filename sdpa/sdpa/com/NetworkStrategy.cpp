@@ -113,6 +113,7 @@ namespace sdpa
           DMLOG ( WARN
                 , "send failed:"
                 << " ec := " << ec
+                << " msg := " << ec.message ()
                 << " event := " << e->str()
                 << " to := " << sdpa_event->to ()
                 << " from := " << sdpa_event->from ()
@@ -157,8 +158,6 @@ namespace sdpa
         const fhg::com::p2p::address_t & addr = m_message.header.src;
         if (addr != m_peer->address())
         {
-          DLOG(WARN, "connection to " << m_peer->resolve (addr, "*unknown*") << " lost: " << ec);
-
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( m_peer->resolve(addr, "*unknown*")
                                                , m_peer->name()

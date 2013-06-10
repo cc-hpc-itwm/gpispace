@@ -6,9 +6,9 @@
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
 
-#include <QSplitter>
+#include <util/qt/no_undoredo_lineedit.fwd.hpp>
 
-class QLineEdit;
+#include <QSplitter>
 
 namespace fhg
 {
@@ -36,7 +36,7 @@ namespace fhg
         bool is_my_function (const data::handle::function&);
 
         data::handle::function _function;
-        QLineEdit* _name_edit;
+        util::qt::no_undoredo_lineedit* _name_edit;
       };
     }
   }

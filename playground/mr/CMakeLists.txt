@@ -58,3 +58,20 @@ fhg_add_test (we/test/exception.cpp
   PROJECT test_we
   LINK_LIBRARIES we we-dev fhg-util
 )
+
+add_executable (mk_cpp we/type/test/mk_cpp.cpp)
+target_link_libraries (mk_cpp we we-dev fhg-util ${Boost_LIBRARIES})
+
+add_custom_command (
+  OUTPUT sig.hpp sig.cpp
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig.hpp -I sig.cpp
+  DEPENDS mk_cpp
+)
+
+include_directories (${CMAKE_CURRENT_BINARY_DIR})
+add_library (sig ${CMAKE_CURRENT_BINARY_DIR}/sig.cpp)
+
+fhg_add_test (we/type/test/sig.cpp
+  PROJECT test_we
+  LINK_LIBRARIES sig we we-dev fhg-util
+)

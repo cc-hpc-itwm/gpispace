@@ -33,7 +33,6 @@ namespace fhg
 
           virtual ~kvsc()
           {
-            DLOG(TRACE, "kvsc destructor");
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
           }
 
@@ -76,7 +75,6 @@ namespace fhg
                     , fhg::com::kvs::message::put (e).set_expiry (expiry)
                     , m
                     );
-            DLOG(TRACE, "put(...) := " << m);
           }
 
           template <typename Val>
@@ -95,7 +93,6 @@ namespace fhg
                     , fhg::com::kvs::message::put (k, v).set_expiry (expiry)
                     , m
                     );
-            DLOG(TRACE, "put(" << k << ", " << v << ") := " << m);
           }
 
           fhg::com::kvs::message::list::map_type
@@ -108,7 +105,6 @@ namespace fhg
                     , fhg::com::kvs::message::msg_get(k)
                     , m
                     );
-            DLOG(TRACE, "get(" << k << ") := " << m);
             return boost::get<fhg::com::kvs::message::list>(m).entries();
           }
 
@@ -122,7 +118,6 @@ namespace fhg
                     , fhg::com::kvs::message::msg_inc(k, step)
                     , m
                     );
-            DLOG(TRACE, "inc(" << k << ", " << step << ") := " << m);
             return boost::lexical_cast<int>
               (boost::get<fhg::com::kvs::message::list>(m).entries().begin()->second);
           }
@@ -136,7 +131,6 @@ namespace fhg
                     , fhg::com::kvs::message::del( k )
                     , m
                     );
-            DLOG(TRACE, "del(" << k << ") := " << m);
           }
 
           void save () const
@@ -148,7 +142,6 @@ namespace fhg
                     , fhg::com::kvs::message::msg_save()
                     , m
                     );
-            DLOG(TRACE, "save() := " << m);
           }
 
           void load ()
@@ -160,7 +153,6 @@ namespace fhg
                     , fhg::com::kvs::message::msg_load()
                     , m
                     );
-            DLOG(TRACE, "load() := " << m);
           }
 
           fhg::com::kvs::message::list::map_type
@@ -173,7 +165,6 @@ namespace fhg
                     , fhg::com::kvs::message::req_list(regexp)
                     , m
                     );
-            DLOG(TRACE, "list(" << regexp << ") := " << m);
             return boost::get<fhg::com::kvs::message::list>(m).entries();
           }
 
@@ -186,7 +177,6 @@ namespace fhg
                     , fhg::com::kvs::message::clear()
                     , m
                     );
-            DLOG(TRACE, "clear( "<< regexp << ") := " << m);
           }
 
           void term (int code, std::string const & reason)
@@ -198,7 +188,6 @@ namespace fhg
                     , fhg::com::kvs::message::msg_term(code, reason)
                     , m
                     );
-            DLOG(TRACE, "term("<< code << ", " << reason << ") := " << m);
           }
 
           bool ping ()
@@ -212,7 +201,6 @@ namespace fhg
                       , fhg::com::kvs::message::msg_ping()
                       , m
                       );
-              DLOG(TRACE, "ping() := " << m);
               return true;
             }
             catch (std::exception const &)
@@ -237,7 +225,7 @@ namespace fhg
               ar & msg;
             }
             std::stringstream i_sstr( client.request ( o_sstr.str()
-                                                     , boost::posix_time::seconds(0)
+                                                     , boost::posix_time::pos_infin
                                                      )
                                     );
             {

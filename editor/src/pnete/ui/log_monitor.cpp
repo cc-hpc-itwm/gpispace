@@ -10,7 +10,6 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -313,7 +312,7 @@ namespace detail
 
 log_monitor::log_monitor (unsigned short port, QWidget* parent)
   : QWidget (parent)
-  , _drop_filtered (true)
+  , _drop_filtered (false)
   , _filter_level (2)
   , _log_table (new QTableView (this))
   , _log_model (new detail::log_table_model)
@@ -406,8 +405,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
   QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), this));
   follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
-                                       "automatically scroll the view, drop "
-                                       "events otherwise"
+                                       "automatically scroll the view"
                                      )
                                 );
   connect ( follow_logging_cb, SIGNAL (toggled (bool))

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+workdir=
+nodes=()
+
+for arg
+do
+    case "$arg" in
+        node=*)
+            nodes+=(${arg#*=})
+            ;;
+        workdir=*)
+            workdir=${arg#*=}
+            ;;
+        *)
+            echo >&2 "$(basename $0): invalid argument: $arg"
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "${workdir}" ]
+then
+    echo >&2 "workdir was not set"
+    exit 77
+fi
+
+for node in ${nodes[@]}
+do
+    echo "$node 0 free $node is now available again"
+done

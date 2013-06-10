@@ -8,7 +8,7 @@ GSPC_API_COMMAND_LEVEL=1
 function usage ()
 {
     cat >&2 <<EOF
-usage: rexec host command [args...]
+usage: rexec [-R|--method ssh] host command [args...]
 EOF
 }
 
@@ -35,26 +35,45 @@ function is_host_same_as_localhost ()
 
 ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
 
+method=ssh
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit ${GSPC_EX_OK} ;;
+        -R|--method)
+            method="$2"
+            shift; shift
+            ;;
+        --) shift; break ;;
+        *) break ;;
+    esac
+done
+
+if [ "$method" != "ssh" ]
+then
+    gspc_log_error rexec "invalid method: $method"
+    exit ${GSPC_EX_USAGE}
+fi
+
 node="${1}"; shift
 
 if [ -z "$node" ] ; then
     usage
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 if [ $# -eq 0 ] ; then
     usage
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 gspc_log_trace rexec "$node $@"
 
 if is_host_same_as_localhost "$node"
 then
-    /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
+    /usr/bin/env LD_LIBRARY_PATH="$LD_LIBRARY_PATH" PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
 else
     gspc_log_trace rexec ssh $ssh_opts $node /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
-    ssh $ssh_opts $node /usr/bin/env PATH="$PATH" GSPC_DIR="$GSPC_DIR" "$@"
+    ssh $ssh_opts $node /usr/bin/env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" GSPC_DIR="$GSPC_DIR" "$@"
     ec=$?
     if [ $ec -eq 255 ]
     then

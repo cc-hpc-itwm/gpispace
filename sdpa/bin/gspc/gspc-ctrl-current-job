@@ -1,0 +1,60 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="query for the current job"
+GSPC_API_COMMAND_LEVEL=2
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: current-job [-h|--help] [options]
+EOF
+}
+
+urls=()
+while true ; do
+    case "$1" in
+        -h|--help) usage ; exit ${GSPC_EX_OK} ;;
+        --url)
+            urls+=("$2")
+            shift; shift
+            ;;
+        --) shift; break ;;
+        *) break ;;
+    esac
+done
+
+if [ ${#urls[@]} -eq 0 ]
+then
+    usage
+    exit ${GSPC_EX_USAGE}
+fi
+
+failed=0
+for u in ${urls[@]}
+do
+    current_job=$(gspcnet-req       \
+        -d /service/wfe/current-job \
+        -b ""                       \
+        --no-headers                \
+        "${u}")
+    ec=$?
+
+    if [ $ec -ne 0 ]
+    then
+	failed=$((failed + 1))
+	continue
+    fi
+    
+    if [ -n "$current_job" ]
+    then
+        if [ ${#urls[@]} -gt 1 ]
+        then
+            echo -n "${u} -> "
+        fi
+        echo "$current_job"
+    fi
+done
+
+exit ${failed}

@@ -3,27 +3,40 @@
 #include "node_state_widget.hpp"
 
 #include "parse.hpp"
+#include "file_line_edit.hpp"
 
 #include <util/qt/boost_connect.hpp>
 
+#include <QApplication>
+#include <QCheckBox>
 #include <QDebug>
+#include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QListWidgetItem>
 #include <QMenu>
+#include <QMessageBox>
 #include <QPaintEvent>
 #include <QPainter>
-#include <QLabel>
 #include <QPen>
+#include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QSpinBox>
+#include <QSplitter>
+#include <QStyle>
 #include <QToolTip>
 #include <QVBoxLayout>
-#include <QMessageBox>
 
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
 
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/parse/error.hpp>
 
 #include <iostream>
+#include <sstream>
 
 namespace prefix
 {
@@ -60,18 +73,18 @@ namespace prefix
     }
   }
 
-  communication::communication (QObject* parent)
+  communication::communication (const QString& host, int port, QObject* parent)
     : QObject (parent)
-    , _connection (new async_tcp_communication)
+    , _connection (new async_tcp_communication (host, port, this))
     , _timer (NULL)
   {
     resume();
-    _connection->push ("possible_status_list");
+    _connection->push ("possible_status");
   }
 
   void communication::request_hostlist()
   {
-    _connection->push ("host_list");
+    _connection->push ("hosts");
   }
 
   void communication::pause()
@@ -95,21 +108,90 @@ namespace prefix
             );
   }
 
-  node_state_widget::node_state_widget (legend* legend_widget, QWidget* parent)
-    : QWidget (parent)
-    , _legend_widget (legend_widget)
-    , _communication (new communication (this))
+  log_widget::log_widget (QWidget* parent)
+    : QListWidget (parent)
+  { }
+
+  void log_widget::information (const QString& message)
+  {
+    new QListWidgetItem
+      ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxInformation)
+      , message
+      , this
+      );
+  }
+
+  void log_widget::warning (const QString& message)
+  {
+    new QListWidgetItem
+      ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxWarning)
+      , message
+      , this
+      );
+  }
+
+  void log_widget::critical (const QString& message)
+  {
+    new QListWidgetItem
+      ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxCritical)
+      , message
+      , this
+      );
+  }
+
+  void log_widget::follow (bool follow)
+  {
+    if (!follow)
+    {
+      return;
+    }
+
+    scrollToBottom();
+
+    QTimer* log_follower (new QTimer (this));
+
+    connect (log_follower, SIGNAL (timeout()), this, SLOT (scrollToBottom()));
+    connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (stop()));
+    connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (deleteLater()));
+
+    //! \todo Configurable refresh rate.
+    static const int refresh_rate (20 /*ms*/);
+    log_follower->start (refresh_rate);
+  }
+
+  node_state_widget::node_state_widget ( const QString& host
+                                       , int port
+                                       , legend* legend_widget
+                                       , log_widget* log
+                                       , QWidget* parent
+                                       )
+      : QWidget (parent)
+      , _legend_widget (legend_widget)
+      , _log (log)
+      , _communication (new communication (host, port, this))
   {
     timer
       (this, 1000, boost::bind (&communication::request_hostlist, _communication));
     timer (this, 200, SLOT (refresh_stati()));
 
-    // qStableSort (_nodes.begin(), _nodes.end(), boost::bind (&node_type::less_by_hostname, _1, _2));
-
     setSizeIncrement (per_step, per_step);
     QSizePolicy pol (QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     pol.setHeightForWidth (true);
     setSizePolicy (pol);
+
+    {
+      QAction* select_all_nodes (new QAction (this));
+      select_all_nodes->setShortcuts (QKeySequence::SelectAll);
+      connect (select_all_nodes, SIGNAL (triggered()), SLOT (select_all()));
+      addAction (select_all_nodes);
+    }
+
+    {
+      QAction* clear_selection (new QAction (this));
+      clear_selection->setShortcuts (QList<QKeySequence>() << Qt::Key_Escape);
+      connect (clear_selection, SIGNAL (triggered()), SLOT (clear_selection()));
+      addAction (clear_selection);
+    }
 
     connect ( _communication
             , SIGNAL (nodes (QStringList))
@@ -121,8 +203,14 @@ namespace prefix
             , SIGNAL (nodes_state (const QString&, const QString&))
             , SLOT (nodes_state (const QString&, const QString&)));
     connect ( _communication
+            , SIGNAL (nodes_state_clear (const QString&))
+            , SLOT (nodes_state_clear (const QString&)));
+    connect ( _communication
             , SIGNAL (states_actions_long_text (const QString&, const QString&))
             , SLOT (states_actions_long_text (const QString&, const QString&)));
+    connect ( _communication
+            , SIGNAL (states_actions_arguments (const QString&, const QList<action_argument_data>&))
+            , SLOT (states_actions_arguments (const QString&, const QList<action_argument_data>&)));
 
     connect ( _communication
             , SIGNAL (states_add (const QString&, const QStringList&))
@@ -140,6 +228,10 @@ namespace prefix
             , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
             , _legend_widget
             , SLOT (states_layout_hint_color (const QString&, const QColor&)));
+    connect ( _communication
+            , SIGNAL (action_result (const QString&, const QString&, const result_code&, const boost::optional<QString>&))
+            , SLOT (action_result (const QString&, const QString&, const result_code&, const boost::optional<QString>&))
+            );
 
     connect ( _legend_widget
             , SIGNAL (state_pixmap_changed (const QString&))
@@ -147,9 +239,9 @@ namespace prefix
             );
   }
 
-  QRectF rect_for_node (const int node, const int per_row)
+  QRect rect_for_node (const int node, const int per_row)
   {
-    return QRectF ( (node % per_row) * per_step + base_coord
+    return QRect ( (node % per_row) * per_step + base_coord
                  , (node / per_row) * per_step + base_coord
                  , node_size
                  , node_size
@@ -162,8 +254,7 @@ namespace prefix
 
     QToolTip::hideText();
 
-    QWidget::update
-      (rect_for_node (node, per_row).toRect().adjusted (-1, -1, 1, 1));
+    QWidget::update (rect_for_node (node, per_row).adjusted (-2, -2, 2, 2));
   }
 
   void node_state_widget::update()
@@ -210,6 +301,11 @@ namespace prefix
   {
     _long_action[action] = long_text;
   }
+  void node_state_widget::states_actions_arguments
+    (const QString& action, const QList<action_argument_data>& arguments)
+  {
+    _action_arguments[action] = arguments;
+  }
 
   void node_state_widget::update_nodes_with_state (const QString& s)
   {
@@ -233,10 +329,10 @@ namespace prefix
   void node_state_widget::nodes_details
     (const QString& hostname, const QString& details)
   {
-    const QVector<node_type>::iterator it
+    const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
-                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     , boost::bind (&node_type::hostname, _1) == hostname
                      )
       );
 
@@ -249,10 +345,40 @@ namespace prefix
   void node_state_widget::nodes_state
     (const QString& hostname, const QString& state)
   {
-    const QVector<node_type>::iterator it
+    const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
-                     , boost::bind (&node_type::hostname_is, _1, hostname)
+                     , boost::bind (&node_type::hostname, _1) == hostname
+                     )
+      );
+
+    if (it != _nodes.end())
+    {
+      const boost::optional<QString> old_state (it->state());
+      it->state (state);
+
+      if (old_state != state)
+      {
+        update (it - _nodes.begin());
+
+        if (it->watched())
+        {
+          _log->warning ( QString ("%3: State changed from %1 to %2.")
+                        .arg (old_state.get_value_or ("unknown"))
+                        .arg (state)
+                        .arg (hostname)
+                        );
+        }
+      }
+    }
+  }
+
+  void node_state_widget::nodes_state_clear (const QString& hostname)
+  {
+    const QList<node_type>::iterator it
+      ( std::find_if ( _nodes.begin()
+                     , _nodes.end()
+                     , boost::bind (&node_type::hostname, _1) == hostname
                      )
       );
 
@@ -261,13 +387,9 @@ namespace prefix
       _pending_updates.removeAll (hostname);
       _nodes_to_update << hostname;
 
-      const boost::optional<QString> old_state (it->state());
-      it->state (state);
-
-      if (old_state != state)
-      {
-        update (it - _nodes.begin());
-      }
+      it->state (boost::none);
+      it->details (boost::none);
+      update (it - _nodes.begin());
     }
   }
 
@@ -275,36 +397,43 @@ namespace prefix
   {
     const int old_height (heightForWidth (width()));
 
-    QMutableVectorIterator<node_type> i (_nodes);
+    QMutableListIterator<node_type> i (_nodes);
+    int index (0);
 
-    bool removed_at_least_one (false);
+    QStringList update_requests;
     while (i.hasNext())
     {
-      const QString& hostname (i.next().hostname());
-      int index (hostnames.indexOf (hostname));
-      if (index == -1)
+      node_type& node (i.next());
+      const QString& hostname (node.hostname());
+      if (!hostnames.contains (hostname))
       {
-        i.remove();
+        node.state (boost::none);
+
         _pending_updates.removeAll (hostname);
         _nodes_to_update.removeAll (hostname);
 
-        removed_at_least_one = true;
+        remove_from_selection (index);
       }
       else
       {
+        if (node.state() == boost::none)
+        {
+          update_requests << hostname;
+        }
         hostnames.removeOne (hostname);
       }
-    }
-
-    if (removed_at_least_one)
-    {
-      update();
+      ++index;
     }
 
     foreach (const QString& hostname, hostnames)
     {
       _nodes << node_type (hostname);
       update (_nodes.size() - 1);
+      update_requests << hostname;
+    }
+
+    foreach (const QString& hostname, update_requests)
+    {
       if ( !_pending_updates.contains (hostname)
         && !_nodes_to_update.contains (hostname)
          )
@@ -366,11 +495,37 @@ namespace prefix
   }
 
   void communication::request_action
-    (const QString& hostname, const QString& action)
+    ( const QString& hostname
+    , const QString& action
+    , const QMap<QString, boost::function<QString()> >& value_getters
+    )
   {
-    _connection->push ( QString ("action: [\"%1\": \"%2\"]")
+    std::stringstream ss;
+    if (!value_getters.isEmpty())
+    {
+      ss << ", arguments: [";
+
+      QMap<QString, boost::function<QString()> >::const_iterator i
+        (value_getters.constBegin());
+      while (i != value_getters.constEnd())
+      {
+        ss << "\""
+           << i.key().toStdString()
+           << "\" : \""
+           << i.value()()
+          .replace ("\\", "\\\\").replace ("\"", "\\\"")
+          .toStdString()
+           << "\",";
+        ++i;
+      }
+
+      ss << "]";
+    }
+
+    _connection->push ( QString ("action: [[host: \"%1\", action: \"%2\"%3]]")
                       .arg (hostname)
                       .arg (action)
+                      .arg (QString::fromStdString (ss.str()))
                       );
   }
 
@@ -392,18 +547,145 @@ namespace prefix
     request_action_description (actions);
   }
 
+  action_argument_data::action_argument_data (const QString& name)
+    : _name (name)
+  { }
+
+  void action_argument_data::append (fhg::util::parse::position& pos)
+  {
+    pos.skip_spaces();
+
+    if (pos.end() || (*pos != 'd' && *pos != 'l' && *pos != 't'))
+    {
+      throw fhg::util::parse::error::expected
+        ("default' or 'label' or 'type", pos);
+    }
+
+    switch (*pos)
+    {
+    case 'd':
+      ++pos;
+      pos.require ("efault");
+      require::token (pos, ":");
+
+      _default = require::qstring (pos);
+
+      break;
+
+    case 'l':
+      ++pos;
+      pos.require ("abel");
+      require::token (pos, ":");
+
+      _label = require::qstring (pos);
+
+      break;
+
+    case 't':
+      ++pos;
+      pos.require ("ype");
+      require::token (pos, ":");
+      pos.skip_spaces();
+
+      if ( pos.end() || ( *pos != 'b' && *pos != 'd'
+                        && *pos != 'f' && *pos != 'i' && *pos != 's'
+                        )
+         )
+      {
+        throw fhg::util::parse::error::expected
+          ("boolean' or 'directory' or 'filename' or 'integer' or 'string", pos);
+      }
+
+      switch (*pos)
+      {
+      case 'b':
+        ++pos;
+        pos.require ("oolean");
+
+        _type = boolean;
+
+        break;
+
+      case 'd':
+        ++pos;
+        pos.require ("irectory");
+
+        _type = directory;
+
+        break;
+
+      case 'f':
+        ++pos;
+        pos.require ("ilename");
+
+        _type = filename;
+
+        break;
+
+      case 'i':
+        ++pos;
+        pos.require ("nteger");
+
+        _type = integer;
+
+        break;
+
+      case 's':
+        ++pos;
+        pos.require ("tring");
+
+        _type = string;
+
+        break;
+      }
+
+      break;
+    }
+  }
+
+  namespace
+  {
+    void action_argument ( fhg::util::parse::position& pos
+                         , QList<action_argument_data>* data_list
+                         )
+    {
+      const QString name (require::qstring (pos));
+      require::token (pos, ":");
+
+      action_argument_data data (name);
+      require::list (pos, boost::bind (&action_argument_data::append, &data, _1));
+
+      data_list->append (data);
+    }
+  }
+
   void communication::action_description
     (fhg::util::parse::position& pos, const QString& action)
   {
     pos.skip_spaces();
 
-    if (pos.end() || (*pos != 'l'))
+    if (pos.end() || (*pos != 'l' && *pos != 'a'))
     {
-      throw fhg::util::parse::error::expected ("long_text", pos);
+      throw fhg::util::parse::error::expected ("long_text' or 'arguments", pos);
     }
 
     switch (*pos)
     {
+    case 'a':
+      ++pos;
+      pos.require ("rguments");
+      require::token (pos, ":");
+
+      {
+        QList<action_argument_data> data;
+        require::list (pos, boost::bind (action_argument, _1, &data));
+
+        emit states_actions_arguments (action, data);
+      }
+
+
+      break;
+
     case 'l':
       ++pos;
       pos.require ("ong_text");
@@ -469,7 +751,7 @@ namespace prefix
       break;
     }
   }
-  void communication::status_update
+  void communication::status_update_data
     (fhg::util::parse::position& pos, const QString& hostname)
   {
     pos.skip_spaces();
@@ -501,26 +783,23 @@ namespace prefix
     }
   }
 
+  void communication::status_update (fhg::util::parse::position& pos)
+  {
+    const QString host (require::label (pos));
+    emit nodes_state_clear (host);
+    require::list
+      (pos, boost::bind (&communication::status_update_data, this, _1, host));
+  }
+
   namespace
   {
     struct action_result_data
     {
-      enum result_code
-      {
-        okay,
-        fail,
-        warn,
-      };
-
-      action_result_data (const QString& host, const QString& action)
-        : _host (host)
-        , _action (action)
-        , _result (boost::none)
+      action_result_data()
+        : _result (boost::none)
         , _message (boost::none)
       { }
 
-      QString _host;
-      QString _action;
       boost::optional<result_code> _result;
       boost::optional<QString> _message;
 
@@ -589,40 +868,6 @@ namespace prefix
           break;
         }
       }
-
-      void show_in_messagebox() const
-      {
-        if (!_result)
-        {
-          throw std::runtime_error ("action result without result code");
-        }
-
-        const QString title ( QString ("\"%1\" on \"%2\"")
-                            .arg (_action)
-                            .arg (_host)
-                            );
-        QString message ( _message.get_value_or ( *_result == okay ? "okay"
-                                                : *_result == warn ? "warn"
-                                                : *_result == fail ? "fail"
-                                                : "UNKNOWN RESULT"
-                                                )
-                        );
-
-        switch (*_result)
-        {
-        case okay:
-          QMessageBox::information (NULL, title, message);
-          break;
-
-        case fail:
-          QMessageBox::critical (NULL, title, message);
-          break;
-
-        case warn:
-          QMessageBox::warning (NULL, title, message);
-          break;
-        }
-      }
     };
   }
 
@@ -635,10 +880,42 @@ namespace prefix
     require::token (pos, ")");
     require::token (pos, ":");
 
-    action_result_data result (host, action);
+    action_result_data result;
     require::list (pos, boost::bind (&action_result_data::append, &result, _1));
 
-    result.show_in_messagebox();
+    if (!result._result)
+    {
+      throw std::runtime_error ("action result without result code");
+    }
+
+    emit action_result (host, action, *result._result, result._message);
+  }
+
+  void node_state_widget::action_result ( const QString& host
+                                        , const QString& action
+                                        , const result_code& result
+                                        , const boost::optional<QString>& message
+                                        )
+  {
+    if (message)
+    {
+      const QString msg (QString ("%1: %2").arg (host).arg (*message));
+
+      switch (result)
+      {
+      case okay:
+        _log->information (msg);
+        break;
+
+      case fail:
+        _log->critical (msg);
+        break;
+
+      case warn:
+        _log->warning (msg);
+        break;
+      }
+    }
   }
 
   void communication::check_for_incoming_messages()
@@ -659,7 +936,8 @@ namespace prefix
              )
            )
         {
-          throw fhg::util::parse::error::expected ("packet", pos);
+          throw fhg::util::parse::error::expected
+            ("action_' or 'hosts' or 'layout_hint' or 'possible_status' or 'status", pos);
         }
 
         switch (*pos)
@@ -744,8 +1022,8 @@ namespace prefix
           pos.require ("tatus");
           require::token (pos, ":");
 
-          require::list_of_named_lists
-            (pos, boost::bind (&communication::status_update, this, _1, _2));
+          require::list
+            (pos, boost::bind (&communication::status_update, this, _1));
 
           break;
         }
@@ -801,8 +1079,11 @@ namespace prefix
     layout->addWidget (new QLabel (name, this), 0, 1);
   }
 
-  boost::optional<int> node_state_widget::node_at (int x, int y) const
+  boost::optional<int> node_state_widget::node_at (const QPoint& pos) const
   {
+    const int x (pos.x());
+    const int y (pos.y());
+
     if ( x < base_coord || y < base_coord
        || x > (base_coord + items_per_row (width()) * per_step)
        )
@@ -825,7 +1106,7 @@ namespace prefix
   const state_description&
     legend::state (const boost::optional<QString>& name) const
   {
-    if (name)
+    if (name && _states.find (*name) != _states.end())
     {
       return *_states.find (*name);
     }
@@ -846,6 +1127,10 @@ namespace prefix
   const node_type& node_state_widget::node (int index) const
   {
     return _nodes.at (index);
+  }
+  node_type& node_state_widget::node (int index)
+  {
+    return _nodes[index];
   }
   int node_state_widget::node_count() const
   {
@@ -881,15 +1166,259 @@ namespace prefix
       : ((event->rect().bottom() - base_coord + per_step - 1) / per_step - 1) + 2
       );
 
-    for ( int i (row_begin * per_row + column_begin)
-        ; i < node_count() && i < (row_end * per_row + column_end)
-        ; ++i
-        )
+    for (int row (row_begin); row < row_end; ++row)
     {
-      painter.drawPixmap ( rect_for_node (i, per_row).toRect()
-                         , state (node (i).state())._pixmap
-                         );
+      const int row_base (row * per_row);
+      for (int column (column_begin); column < column_end; ++column)
+      {
+        const int i (row_base + column);
+        if (i < node_count())
+        {
+          painter.drawPixmap ( rect_for_node (i, per_row)
+                             , state (node (i).state())._pixmap
+                             );
+
+          if (_selection.contains (i))
+          {
+            painter.setBrush (Qt::Dense3Pattern);
+            painter.drawRect (rect_for_node (i, per_row));
+          }
+
+          if (node (i).watched())
+          {
+            painter.setBrush (Qt::Dense6Pattern);
+            painter.drawRect (rect_for_node (i, per_row));
+          }
+        }
+        else
+        {
+          break;
+        }
+      }
     }
+  }
+
+  void node_state_widget::clear_selection()
+  {
+    foreach (const int index, _selection)
+    {
+      update (index);
+    }
+    _selection.clear();
+  }
+
+  void node_state_widget::add_to_selection (const int& node)
+  {
+    _selection.append (node);
+    update (node);
+  }
+
+  void node_state_widget::remove_from_selection (const int& node)
+  {
+    _selection.removeOne (node);
+    update (node);
+  }
+
+  void node_state_widget::mouseReleaseEvent (QMouseEvent* event)
+  {
+    if (event->button() == Qt::LeftButton && event->buttons() == Qt::NoButton)
+    {
+      const boost::optional<int> node (node_at (event->pos()));
+
+      if (node)
+      {
+        if (event->modifiers() == Qt::NoModifier)
+        {
+          clear_selection();
+          add_to_selection (*node);
+          _last_manual_selection = *node;
+        }
+        else if (event->modifiers() == Qt::ControlModifier)
+        {
+          if (_selection.contains (*node))
+          {
+            remove_from_selection (*node);
+            _last_manual_selection = boost::none;
+          }
+          else
+          {
+            add_to_selection (*node);
+            _last_manual_selection = *node;
+          }
+        }
+        else if (event->modifiers() & Qt::ShiftModifier)
+        {
+          if (!(event->modifiers() & Qt::ControlModifier))
+          {
+            clear_selection();
+            if (_last_manual_selection)
+            {
+              add_to_selection (*_last_manual_selection);
+            }
+          }
+          if (_last_manual_selection)
+          {
+            for ( int i (qMin (*_last_manual_selection, *node) + 1)
+                ; i < qMax (*_last_manual_selection, *node)
+                ; ++i
+                )
+            {
+              add_to_selection (i);
+            }
+          }
+          else
+          {
+            _last_manual_selection = *node;
+          }
+          add_to_selection (*node);
+        }
+        else
+        {
+          QWidget::mouseReleaseEvent (event);
+        }
+      }
+      else
+      {
+        if (event->modifiers() == Qt::NoModifier)
+        {
+          clear_selection();
+          _last_manual_selection = boost::none;
+        }
+        else
+        {
+          QWidget::mouseReleaseEvent (event);
+        }
+      }
+    }
+    else
+    {
+      QWidget::mouseReleaseEvent (event);
+    }
+  }
+
+  namespace
+  {
+    int string_to_int (const QString& str)
+    {
+      const std::string stdstr (str.toStdString());
+      fhg::util::parse::position pos (stdstr);
+      return fhg::util::read_int (pos);
+    }
+
+    QString checkbox_to_string (const QCheckBox* box)
+    {
+      return box->isChecked() ? "true" : "false";
+    }
+    QString spinbox_to_string (const QSpinBox* box)
+    {
+      return QString ("%1").arg (box->value());
+    }
+
+    std::pair<QWidget*, boost::function<QString()> > widget_for_item
+      (const action_argument_data& item)
+    {
+      switch (*item._type)
+      {
+      case action_argument_data::boolean:
+        {
+          QCheckBox* box (new QCheckBox);
+          box->setChecked ( fhg::util::read_bool
+                             (item._default.get_value_or ("false").toStdString())
+                          );
+          return std::pair<QWidget*, boost::function<QString()> >
+            (box, boost::bind (checkbox_to_string, box));
+        }
+
+      case action_argument_data::directory:
+        {
+          file_line_edit* edit
+            ( new file_line_edit
+               (QFileDialog::Directory, item._default.get_value_or (""))
+            );
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (&file_line_edit::text, edit));
+        }
+
+      case action_argument_data::filename:
+        {
+          file_line_edit* edit
+            ( new file_line_edit
+               (QFileDialog::AnyFile, item._default.get_value_or (""))
+            );
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (&file_line_edit::text, edit));
+        }
+
+      case action_argument_data::integer: // min max
+        {
+          QSpinBox* edit (new QSpinBox);
+          edit->setValue (string_to_int (item._default.get_value_or ("0")));
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (spinbox_to_string, edit));
+        }
+
+      case action_argument_data::string:
+        {
+          QLineEdit* edit (new QLineEdit (item._default.get_value_or ("")));
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (&QLineEdit::text, edit));
+        }
+      default:
+        abort ();
+      }
+    }
+  }
+
+  void node_state_widget::trigger_action
+    (const QString& host, const QString& action)
+  {
+    QMap<QString, boost::function<QString()> > value_getters;
+
+    if ( _action_arguments.contains (action)
+       && !_action_arguments[action].isEmpty()
+       )
+    {
+      QDialog* dialog (new QDialog);
+      dialog->setWindowTitle
+        (tr ("Parameters for %1 on %2").arg (action).arg (host));
+      new QVBoxLayout (dialog);
+
+      QWidget* wid (new QWidget (dialog));
+      QFormLayout* layout (new QFormLayout (wid));
+
+      foreach (const action_argument_data& item, _action_arguments[action])
+      {
+        if (!item._type)
+        {
+          throw std::runtime_error ("action argument without type");
+        }
+
+        const std::pair<QWidget*, boost::function<QString()> > ret
+          (widget_for_item (item));
+        layout->addRow (item._label.get_value_or (item._name), ret.first);
+        value_getters[item._name] = ret.second;
+      }
+
+      QDialogButtonBox* buttons
+        ( new QDialogButtonBox ( QDialogButtonBox::Abort | QDialogButtonBox::Ok
+                               , Qt::Horizontal
+                               , dialog
+                               )
+        );
+
+      dialog->connect (buttons, SIGNAL (accepted()), SLOT (accept()));
+      dialog->connect (buttons, SIGNAL (rejected()), SLOT (reject()));
+
+      dialog->layout()->addWidget (wid);
+      dialog->layout()->addWidget (buttons);
+
+      if (!dialog->exec())
+      {
+        return;
+      }
+    }
+
+    _communication->request_action (host, action, value_getters);
   }
 
   bool node_state_widget::event (QEvent* event)
@@ -900,7 +1429,7 @@ namespace prefix
       {
         QHelpEvent* help_event (static_cast<QHelpEvent*> (event));
 
-        const boost::optional<int> node_index (node_at (help_event->x(), help_event->y()));
+        const boost::optional<int> node_index (node_at (help_event->pos()));
         if (node_index)
         {
           QToolTip::showText
@@ -913,6 +1442,7 @@ namespace prefix
                  : ""
                  )
             );
+          event->accept();
           return true;
         }
 
@@ -926,37 +1456,163 @@ namespace prefix
         //! state of node changes.
         QContextMenuEvent* context_menu_event (static_cast<QContextMenuEvent*> (event));
 
-        const boost::optional<int> node_index (node_at (context_menu_event->x(), context_menu_event->y()));
+        const boost::optional<int> node_index (node_at (context_menu_event->pos()));
+
+        if (!node_index || !_selection.contains (*node_index))
+        {
+          clear_selection();
+        }
+
         if (node_index)
         {
-          QMenu context_menu;
-          const node_type& n (node (*node_index));
-          if (!state (n.state())._actions.empty())
+          _communication->pause();
+
+          QSet<int> nodes (QSet<int>::fromList (_selection));
+          const QString hostname_replacement ( nodes.size() <= 1
+                                             ? node (*node_index).hostname()
+                                             : nodes.size() == 2
+                                             ? QString ("%1 (and one other)")
+                                             .arg (node (*node_index).hostname())
+                                             : QString ("%1 (and %2 others)")
+                                             .arg (node (*node_index).hostname())
+                                             .arg (nodes.size() - 1)
+                                             );
+          nodes << *node_index;
+
+          QStringList hostnames;
+
+          QSet<QString> action_name_intersection
+            (QSet<QString>::fromList (state (node (*node_index).state())._actions));
+          QSet<QString> action_name_union;
+
+          foreach (const int index, nodes)
           {
-            foreach (const QString& action, state (n.state())._actions)
-            {
-              fhg::util::qt::boost_connect<void (void)>
-                ( context_menu.addAction
-                  ( QString ( _long_action.contains (action)
-                            ? _long_action[action]
-                            : action
-                            )
-                  .replace ("{hostname}", n.hostname())
-                  )
-                , SIGNAL (triggered())
-                , _communication
-                , boost::bind ( &communication::request_action
-                              , _communication
-                              , n.hostname()
-                              , action
-                              )
-                );
-            }
-            _communication->pause();
-            context_menu.exec (context_menu_event->globalPos());
-            _communication->resume();
-            return true;
+            const node_type& n (node (index));
+            hostnames << n.hostname();
+
+            const QSet<QString> actions
+              (QSet<QString>::fromList (state (n.state())._actions));
+
+            action_name_union.unite (actions);
+            action_name_intersection.intersect (actions);
           }
+
+          QMenu context_menu;
+
+          foreach (const QString& action_name, action_name_union)
+          {
+            QAction* action ( context_menu.addAction
+                              ( QString ( _long_action.contains (action_name)
+                                        ? _long_action[action_name]
+                                        : action_name
+                                        )
+                              .replace ("{hostname}", hostname_replacement)
+                              )
+                            );
+
+            if (action_name_intersection.contains (action_name))
+            {
+              foreach (const QString& hostname, hostnames)
+              {
+                fhg::util::qt::boost_connect<void (void)>
+                  ( action
+                  , SIGNAL (triggered())
+                  , this
+                  , boost::bind ( &node_state_widget::trigger_action
+                                , this
+                                , hostname
+                                , action_name
+                                )
+                  );
+              }
+            }
+            else
+            {
+              action->setEnabled (false);
+            }
+          }
+
+          if (!action_name_union.empty())
+          {
+            context_menu.addSeparator();
+          }
+
+          {
+            bool all (true);
+            bool none (true);
+
+            foreach (const int index, nodes)
+            {
+              all = all && node (index).watched();
+              none = none && !node (index).watched();
+            }
+
+            const QString text (tr ("Notify on state changes"));
+
+            if (all || none)
+            {
+              QAction* action (context_menu.addAction (text));
+              action->setCheckable (true);
+              action->setChecked (all);
+              foreach (const int index, nodes)
+              {
+                fhg::util::qt::boost_connect<void (bool)>
+                  ( action
+                  , SIGNAL (toggled (bool))
+                  , _communication
+                  , boost::bind (&node_type::watched, &(node (index)), !all)
+                  );
+
+                fhg::util::qt::boost_connect<void (void)>
+                  ( action
+                  , SIGNAL (triggered())
+                  , this
+                  , boost::bind (&node_state_widget::update, this, index)
+                  );
+              }
+            }
+            else
+            {
+              QMenu* menu (context_menu.addMenu (text));
+
+              QAction* watch_all (menu->addAction (tr ("All")));
+              QAction* unwatch_all (menu->addAction (tr ("None")));
+
+              foreach (const int index, nodes)
+              {
+                fhg::util::qt::boost_connect<void (void)>
+                  ( unwatch_all
+                  , SIGNAL (triggered())
+                  , _communication
+                  , boost::bind (&node_type::watched, &(node (index)), false)
+                  );
+                fhg::util::qt::boost_connect<void (void)>
+                  ( watch_all
+                  , SIGNAL (triggered())
+                  , _communication
+                  , boost::bind (&node_type::watched, &(node (index)), true)
+                  );
+
+                fhg::util::qt::boost_connect<void (void)>
+                  ( unwatch_all
+                  , SIGNAL (triggered())
+                  , this
+                  , boost::bind (&node_state_widget::update, this, index)
+                  );
+                fhg::util::qt::boost_connect<void (void)>
+                  ( watch_all
+                  , SIGNAL (triggered())
+                  , this
+                  , boost::bind (&node_state_widget::update, this, index)
+                  );
+              }
+            }
+          }
+
+          context_menu.exec (context_menu_event->globalPos());
+          _communication->resume();
+          event->accept();
+          return true;
         }
 
         event->ignore();
@@ -972,37 +1628,170 @@ namespace prefix
     const int per_row (items_per_row (width));
     return (node_count() + per_row - 1) / per_row * per_step;
   }
+
+  void node_state_widget::sort_by_name()
+  {
+    _communication->pause();
+
+    QList<QString> selected_hostnames;
+
+    foreach (const int& index, _selection)
+    {
+      selected_hostnames << node (index).hostname();
+    }
+
+    fhg::util::alphanum::less less;
+
+    qStableSort
+      ( _nodes.begin(), _nodes.end()
+      // , [](const QString& l, const QString& r) -> bool
+      // {
+      //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
+      // }
+      , boost::bind ( &fhg::util::alphanum::less::operator(), less
+                    , boost::bind ( &QString::toStdString
+                                  , boost::bind (&node_type::hostname, _1)
+                                  )
+                    , boost::bind ( &QString::toStdString
+                                  , boost::bind (&node_type::hostname, _2)
+                                  )
+                    )
+      );
+
+    _selection.clear();
+    _last_manual_selection = boost::none;
+
+    int i (0);
+    foreach (const node_type& node, _nodes)
+    {
+      if (selected_hostnames.contains (node.hostname()))
+      {
+        _selection << i;
+      }
+
+      ++i;
+    }
+
+    update();
+    _communication->resume();
+  }
+  void node_state_widget::sort_by_state()
+  {
+    _communication->pause();
+
+    QList<QString> selected_hostnames;
+
+    foreach (const int& index, _selection)
+    {
+      selected_hostnames << node (index).hostname();
+    }
+
+    qStableSort ( _nodes.begin(), _nodes.end()
+                , boost::bind (&node_type::state, _1)
+                < boost::bind (&node_type::state, _2)
+                );
+
+    _selection.clear();
+    _last_manual_selection = boost::none;
+
+    int i (0);
+    foreach (const node_type& node, _nodes)
+    {
+      if (selected_hostnames.contains (node.hostname()))
+      {
+        _selection << i;
+      }
+
+      ++i;
+    }
+
+    update();
+    _communication->resume();
+  }
+
+  void node_state_widget::select_all()
+  {
+    _selection.clear();
+
+    for (int i (_nodes.size() - 1); i >= 0; --i)
+    {
+      _selection << i;
+    }
+
+    update();
+  }
 }
 
 #include <QApplication>
 
 int main (int argc, char** argv)
+try
 {
   QApplication app (argc, argv);
 
-  QWidget window;
+  if (argc != 3)
+  {
+    std::cerr << "usage: " << argv[0] << " <host> <port>\n";
+    return -1;
+  }
 
-  QWidget* sidebar (new QWidget (&window));
+  const QString host (argv[1]);
+  const int port (QString (argv[2]).toInt());
+
+  QSplitter window (Qt::Vertical);
+
+  QWidget* main (new QWidget (&window));
+  prefix::log_widget* log (new prefix::log_widget (&window));
+
+  QWidget* sidebar (new QWidget (main));
   prefix::legend* legend_widget (new prefix::legend (sidebar));
-  QScrollArea* content (new QScrollArea (&window));
+
+  QScrollArea* content (new QScrollArea (main));
+
+  prefix::node_state_widget* node_widget
+    (new prefix::node_state_widget (host, port, legend_widget, log, content));
+
+  content->setWidget (node_widget);
+  content->setWidgetResizable (true);
 
   {
+    QGroupBox* sort_box (new QGroupBox (QObject::tr ("sort"), sidebar));
+
+    {
+      QPushButton* sort_by_state
+        (new QPushButton (QObject::tr ("by state"), sort_box));
+      QPushButton* sort_by_name
+        (new QPushButton (QObject::tr ("by name"), sort_box));
+
+      node_widget->connect
+        (sort_by_state, SIGNAL (clicked()), SLOT (sort_by_state()));
+      node_widget->connect
+        (sort_by_name, SIGNAL (clicked()), SLOT (sort_by_name()));
+
+      QVBoxLayout* layout (new QVBoxLayout (sort_box));
+      layout->addWidget (sort_by_state);
+      layout->addWidget (sort_by_name);
+    }
+
+    QPushButton* clear_log
+      (new QPushButton (QObject::tr ("clear log"), sidebar));
+    log->connect (clear_log, SIGNAL (clicked()), SLOT (clear()));
+
+    QCheckBox* follow_logging
+      (new QCheckBox (QObject::tr ("follow logging"), sidebar));
+    log->connect (follow_logging, SIGNAL (toggled (bool)), SLOT (follow (bool)));
+    follow_logging->setChecked (true);
+
     QVBoxLayout* layout (new QVBoxLayout (sidebar));
     layout->addWidget (legend_widget);
+    layout->addWidget (sort_box);
     layout->addStretch();
+    layout->addWidget (follow_logging);
+    layout->addWidget (clear_log);
   }
 
   {
-    QWidget* inner (new QWidget (content));
-    QVBoxLayout* layout (new QVBoxLayout (inner));
-    layout->addWidget (new prefix::node_state_widget (legend_widget));
-
-    content->setWidget (inner);
-    content->setWidgetResizable (true);
-  }
-
-  {
-    QHBoxLayout* layout (new QHBoxLayout (&window));
+    QHBoxLayout* layout (new QHBoxLayout (main));
     layout->addWidget (content);
     layout->addWidget (sidebar);
   }
@@ -1010,4 +1799,12 @@ int main (int argc, char** argv)
   window.show();
 
   return app.exec();
+}
+catch (const prefix::connection_error& err)
+{
+  std::cerr << "failed to connect: " << err.what() << "\n";
+}
+catch (const std::runtime_error& err)
+{
+  std::cerr << "error: " << err.what() << "\n";
 }

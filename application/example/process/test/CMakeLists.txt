@@ -40,3 +40,7 @@ add_test ("test_process_all"
 
 add_test ("test_process_redefine" test_process_redefine)
 add_test ("test_process_big" test_process_big 1048576)
+
+fhg_add_test (test_basics.cpp
+  LINK_LIBRARIES process ${FhgLog_LIBRARY} ${Boost_LIBRARIES} pthread
+)

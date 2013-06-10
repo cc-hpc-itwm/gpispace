@@ -1,0 +1,72 @@
+#!/bin/bash
+
+workdir=
+nodes=()
+
+for arg
+do
+    case "$arg" in
+        node=*)
+            nodes+=(${arg#*=})
+            ;;
+        workdir=*)
+            workdir=${arg#*=}
+            ;;
+        *)
+            echo >&2 "$(basename $0): invalid argument: $arg"
+            exit 1
+            ;;
+    esac
+done
+
+transitions=("calc" "reduce" "mgmt")
+
+if [ -z "$workdir" ]
+then
+    master=
+    free_states=("free" "free/reserved")
+else
+    n=$(( RANDOM % ${#nodes[@]} ))
+    master=${nodes[$n]}
+    free_states=("addable" "addable/reserved")
+fi
+
+for node in ${nodes[@]}
+do
+    t=$(( RANDOM % ${#transitions[@]} ))
+    trans=${transitions[${t}]}
+
+    if [ "$node" = "$master" ]
+    then
+        echo "$node 0 master $trans"
+        continue
+    fi
+
+    r=$(( RANDOM % 1000))
+
+    if [ $r -lt 10 ] ; then
+        echo "$node 0 down"
+    elif [ $r -lt 50 ] ; then
+        echo "$node 0 unavailable"
+    else
+        t=$(( RANDOM % ${#free_states[@]} ))
+        f="${free_states[${t}]}"
+
+        if [ -z "$master" ]
+        then
+            if [ $r -lt 500 ]
+            then
+                echo "$node 0 unavailable"
+            else
+                echo "$node 0 ${f}"
+            fi
+        else
+            if [ $r -lt 500 ]
+            then
+                echo "$node 0 $f"
+            else
+                echo "$node 0 inuse ${trans}"
+            fi
+        fi
+    fi
+done

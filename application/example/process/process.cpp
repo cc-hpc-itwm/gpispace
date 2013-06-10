@@ -15,8 +15,10 @@
 #include <stdexcept>
 
 #include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/filesystem.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/util/show.hpp>
@@ -192,10 +194,6 @@ namespace process
               DLOG (TRACE, "circ read " << r << " bytes, sum " << bytes_read);
 
               std::copy (buf, buf + r, std::back_inserter (circ_buf));
-
-              DLOG ( TRACE
-                   , "circ read: \"" << std::string (buf, buf + r) << "\""
-                   );
             }
         }
 
@@ -249,13 +247,16 @@ namespace process
       DLOG (TRACE, "done thread read");
     }
 
-    static void reader_from_file ( const std::string & filename
+    static void reader_from_file ( boost::barrier & barrier
+                                 , const std::string & filename
                                  , void * buf
                                  , const std::size_t max_size
                                  , std::size_t & bytes_read
                                  , const std::size_t & block_size
                                  )
     {
+      barrier.wait ();
+
       int fd (open (filename.c_str(), O_RDONLY));
 
       if (fd == -1)
@@ -316,12 +317,15 @@ namespace process
       DLOG (TRACE, "done thread write");
     }
 
-    static void writer_from_file ( const std::string & filename
+    static void writer_from_file ( boost::barrier & barrier
+                                 , const std::string & filename
                                  , const void * buf
                                  , std::size_t bytes_left
                                  , const std::size_t & block_size
                                  )
     {
+      barrier.wait ();
+
       int fd (open (filename.c_str(), O_WRONLY));
 
       if (fd == -1)
@@ -353,11 +357,25 @@ namespace process
           throw std::runtime_error ("neither TMPDIR nor P_tmpdir are set");
         }
 
-      std::ostringstream sstr;
+      bool file_already_exists = true;
+      std::string fname;
+      while (file_already_exists)
+      {
+        namespace fs = boost::filesystem;
 
-      sstr << dir << "/" << "process." << getpid() << "." << i++;
+        std::ostringstream sstr;
+        sstr << dir
+             << "/"
+             << "process." << getuid () << "." << getpid() << "." << i++;
+        fname = sstr.str ();
 
-      return sstr.str();
+        if (not fs::exists (fname))
+        {
+          file_already_exists = false;
+        }
+      }
+
+      return fname;
     }
 
     static void fifo (std::string & filename)
@@ -370,10 +388,11 @@ namespace process
 
           ec = mkfifo (filename.c_str(), S_IWUSR | S_IRUSR);
 
-          if (ec != 0 && errno != EEXIST)
-            {
-              detail::do_error ("mkfifo failed", filename);
-            }
+          if (ec != 0)
+          {
+            unlink (filename.c_str ());
+            detail::do_error ("mkfifo failed", filename);
+          }
         }
       while (ec != 0);
     }
@@ -404,7 +423,8 @@ namespace process
 
   namespace start
   {
-    static boost::thread * writer ( const void * buf
+    static boost::thread * writer ( boost::barrier & barrier
+                                  , const void * buf
                                   , std::string & filename
                                   , std::size_t bytes_left
                                   )
@@ -412,6 +432,7 @@ namespace process
       detail::fifo (filename);
 
       return new boost::thread ( thread::writer_from_file
+                               , boost::ref (barrier)
                                , filename
                                , buf
                                , bytes_left
@@ -419,7 +440,8 @@ namespace process
                                );
     }
 
-    static boost::thread * reader ( void * buf
+    static boost::thread * reader ( boost::barrier & barrier
+                                  , void * buf
                                   , std::string & filename
                                   , const std::size_t max_size
                                   , std::size_t & bytes_read
@@ -428,6 +450,7 @@ namespace process
       detail::fifo (filename);
 
       return new boost::thread ( thread::reader_from_file
+                               , boost::ref (barrier)
                                , filename
                                , buf
                                , max_size
@@ -512,6 +535,7 @@ namespace process
     boost::thread_group readers;
     tempfile_list_t tempfiles;
 
+    boost::barrier writer_barrier (1 + files_input.size ());
     for ( file_const_buffer_list::const_iterator file_input (files_input.begin())
         ; file_input != files_input.end()
         ; ++file_input
@@ -519,19 +543,32 @@ namespace process
       {
         std::string filename;
 
-        writers.add_thread (start::writer ( file_input->buf()
+        writers.add_thread (start::writer ( writer_barrier
+                                          , file_input->buf()
                                           , filename
                                           , file_input->size()
                                           )
                            );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        param_map[file_input->param()] = filename;
+        try
+        {
+          param_map[file_input->param()] = filename;
+        }
+        catch (...)
+        {
+          writers.interrupt_all ();
+          writers.join_all ();
+          throw;
+        }
       }
+
+    writer_barrier.wait ();
 
     ret.bytes_read_files_output.resize (files_output.size());
 
     std::size_t i (0);
 
+    boost::barrier reader_barrier (1 + files_output.size ());
     for ( file_buffer_list::const_iterator file_output (files_output.begin())
         ; file_output != files_output.end()
         ; ++file_output, ++i
@@ -539,7 +576,8 @@ namespace process
       {
         std::string filename;
 
-        readers.add_thread (start::reader ( file_output->buf()
+        readers.add_thread (start::reader ( reader_barrier
+                                          , file_output->buf()
                                           , filename
                                           , file_output->size()
                                           , ret.bytes_read_files_output[i]
@@ -547,8 +585,19 @@ namespace process
                            );
 
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        param_map[file_output->param()] = filename;
+        try
+        {
+          param_map[file_output->param()] = filename;
+        }
+        catch (...)
+        {
+          readers.interrupt_all ();
+          readers.join_all ();
+          throw;
+        }
       }
+
+    reader_barrier.wait ();
 
     DLOG (TRACE, "prepare commandline");
 
@@ -578,11 +627,23 @@ namespace process
         }
     }
 
+    ret.exit_code = 255;
+    ret.bytes_read_stdout = 0;
+    ret.bytes_read_stderr = 0;
+
     DMLOG (TRACE, "run command: " << fhg::util::show (av,av+cmdline.size()));
 
-    if ((pid = fork()) < 0)
+    sigset_t signals_to_block;
+    sigset_t signals_to_restore;
+    sigemptyset (&signals_to_block);
+    sigaddset (&signals_to_block, SIGPIPE);
+    sigprocmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
+
+    pid = fork();
+
+    if (pid < 0)
       {
-        ret.exit_code = -errno;
+        ret.exit_code = 254;
         LOG(ERROR, "fork failed: " << strerror(errno));
       }
     else if (pid == pid_t (0))
@@ -598,7 +659,12 @@ namespace process
             close (1);
             close (2);
 
-            _exit (-ec);
+            if (ec == EACCES)
+              _exit (126);
+            if (ec == ENOENT)
+              _exit (127);
+            else
+              _exit (254);
           }
       }
     else
@@ -641,6 +707,7 @@ namespace process
 
         waitpid (pid, &status, 0);
 
+        DMLOG (TRACE, "child returned: " << status);
 
         DLOG (TRACE, "join threads");
 
@@ -659,13 +726,11 @@ namespace process
 
         if (WIFEXITED (status))
           {
-            const int ec (WEXITSTATUS(status));
-            ret.exit_code = ec;
+            ret.exit_code = WEXITSTATUS (status);
           }
         else if (WIFSIGNALED (status))
           {
-            const int ec (WTERMSIG(status));
-            ret.exit_code = -ec;
+            ret.exit_code = 128 + WTERMSIG (status);
           }
         else
           {
@@ -673,7 +738,7 @@ namespace process
             LOG(ERROR, "strange child status: " << status);
           }
 
-        DMLOG (TRACE, "finished command: " << command);
+        DMLOG (TRACE, "finished command: " << command << ": " << ret.exit_code);
       }
 
     {
@@ -689,6 +754,8 @@ namespace process
 
       delete[] av;
     }
+
+    sigprocmask (SIG_UNBLOCK, &signals_to_restore, NULL);
 
     return ret;
   }

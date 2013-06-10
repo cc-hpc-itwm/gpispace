@@ -24,9 +24,31 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/utility.hpp>
 
+#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
+#include <we/mgmt/type/activity.hpp>
+
 #include <string>
 
 namespace sdpa { namespace daemon {
+
+namespace
+{
+  boost::optional<std::string> nice_name (const std::string& act)
+  try
+  {
+    const we::mgmt::type::activity_t activity (act);
+
+    const we::type::module_call_t mod_call
+      (boost::get<we::type::module_call_t> (activity.transition().data()));
+
+    return mod_call.module() + ":" + mod_call.function();
+  }
+  catch (boost::bad_get const &)
+  {
+    return boost::none;
+  }
+}
+
   class NotificationEvent
   {
   public:
@@ -50,13 +72,15 @@ namespace sdpa { namespace daemon {
                      , const std::string &activity_id
                      , const std::string &activity_name
                      , const state_t &activity_state
-                     , const std::string &activity_encoded = ""
+                     , const boost::optional<std::string>& activity_encoded = boost::none
                      )
       : m_component (source)
       , a_id_(activity_id)
-      , a_name_(activity_name)
+      , a_name_ ( activity_encoded
+                ? nice_name (*activity_encoded).get_value_or (activity_name)
+                : activity_name
+                )
       , a_state_(activity_state)
-      , a_activity_(activity_encoded)
     {}
 
     const std::string &component() const { return m_component; }
@@ -68,14 +92,11 @@ namespace sdpa { namespace daemon {
     std::string &activity_name()             { return a_name_; }
     const state_t &activity_state() const      { return a_state_; }
     state_t &activity_state()                  { return a_state_; }
-    const std::string &activity() const { return a_activity_; }
-    std::string &activity()             { return a_activity_; }
   private:
     std::string m_component;
     std::string a_id_;
     std::string a_name_;
     state_t     a_state_;
-    std::string a_activity_;
   };
 }}
 
@@ -91,7 +112,6 @@ namespace boost { namespace serialization {
     ar & e.activity_id();
     ar & e.activity_name();
     ar & e.activity_state();
-    ar & e.activity();
   }
 }}
 

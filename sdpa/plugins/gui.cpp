@@ -14,8 +14,6 @@
 #include "observer.hpp"
 #include "task_event.hpp"
 
-#include "kvs.hpp"
-
 typedef fhg::thread::channel<task_event_t> event_channel_t;
 
 class GuiObserverPlugin : FHG_PLUGIN
@@ -25,9 +23,6 @@ public:
   FHG_PLUGIN_START()
   {
     m_thread = 0;
-
-    m_kvs_prefix =
-      "job." + fhg_kernel ()->get_name () + ".current";
 
     m_url = fhg_kernel()->get("url", "");
 
@@ -48,8 +43,6 @@ public:
         MLOG(ERROR, "could not start appender to url: " << m_url << ": " << ex.what());
       }
     }
-
-    m_kvs = fhg_kernel ()->acquire<kvs::KeyValueStore>("kvs");
 
     m_thread =
       new boost::thread
@@ -119,33 +112,23 @@ private:
     {
       task_event_t t = m_events.get ();
 
-      MLOG ( TRACE
-           , "*** TASK EVENT:"
-           << " id := " << t.id
-           << " name := " << t.name
-           << " state := " << t.state
-           << " time := " << t.tstamp
-           );
+      DMLOG ( TRACE
+            , "*** TASK EVENT:"
+            << " id := " << t.id
+            << " name := " << t.name
+            << " state := " << t.state
+            << " time := " << t.tstamp
+            );
 
       try
       {
         m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t)));
-        // store task in kvs
-        store_task_info_to_kvs (t);
       }
       catch (std::exception const & ex)
       {
         MLOG(ERROR, "could not handle event: " << ex.what());
       }
     }
-  }
-
-  void store_task_info_to_kvs (task_event_t const & t)
-  {
-    m_kvs->put (m_kvs_prefix + "." + "id",     t.id);
-    m_kvs->put (m_kvs_prefix + "." + "name",   t.name);
-    m_kvs->put (m_kvs_prefix + "." + "state",  t.state);
-    m_kvs->put (m_kvs_prefix + "." + "tstamp", t.tstamp);
   }
 
   // void stop_to_observe(observe::Observable* o)
@@ -157,50 +140,32 @@ private:
 
   static inline std::string encode (const task_event_t & e)
   {
-    sdpa::daemon::NotificationEvent n_evt;
-    n_evt.activity_id() = e.id;
-    n_evt.activity_name() = e.name;
-    n_evt.activity() = e.activity;
-    if (e.meta.find("agent.name") != e.meta.end())
-    {
-      n_evt.component() = e.meta.find("agent.name")->second;
-    }
-    else
-    {
-      n_evt.component() = "unknown";
-    }
-    switch (e.state)
-    {
-    case task_event_t::ENQUEUED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_CREATED;
-      break;
-    case task_event_t::DEQUEUED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_STARTED;
-      break;
-    case task_event_t::FINISHED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_FINISHED;
-      break;
-    case task_event_t::FAILED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_FAILED;
-      break;
-    case task_event_t::CANCELED:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_CANCELLED;
-      break;
-    default:
-      n_evt.activity_state() = sdpa::daemon::NotificationEvent::STATE_IGNORE;
-      break;
-    }
-
     std::ostringstream sstr;
-    boost::archive::text_oarchive ar(sstr);
-    ar << n_evt;
+    boost::archive::text_oarchive ar (sstr);
+
+    const sdpa::daemon::NotificationEvent evt
+      ( e.meta.find("agent.name") != e.meta.end()
+      ? e.meta.find("agent.name")->second
+      : "unknown"
+      , e.id
+      , e.name
+      , e.state == task_event_t::ENQUEUED ? sdpa::daemon::NotificationEvent::STATE_CREATED
+      : e.state == task_event_t::DEQUEUED ? sdpa::daemon::NotificationEvent::STATE_STARTED
+      : e.state == task_event_t::FINISHED ? sdpa::daemon::NotificationEvent::STATE_FINISHED
+      : e.state == task_event_t::FAILED ? sdpa::daemon::NotificationEvent::STATE_FAILED
+      : e.state == task_event_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELLED
+      : sdpa::daemon::NotificationEvent::STATE_IGNORE
+      , e.activity
+      );
+
+    ar << evt;
+
     return sstr.str();
   }
 
   std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
-  std::string m_kvs_prefix;
-  kvs::KeyValueStore *m_kvs;
+
   event_channel_t m_events;
   boost::thread *m_thread;
 };
@@ -212,6 +177,6 @@ EXPORT_FHG_PLUGIN( gui
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "kvs"
+                 , ""
                  , ""
                  );

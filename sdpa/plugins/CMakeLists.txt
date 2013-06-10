@@ -64,6 +64,7 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
   EXPORTS WFE
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  pnet
+                 ${GSPC_NET_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
@@ -108,6 +109,7 @@ fhg_add_plugin(sdpac sdpac.cpp
                  sdpa-util
                  sdpa
                  ${FhgCom_LIBRARY}
+                 ${GSPC_NET_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
@@ -174,6 +176,19 @@ fhg_add_plugin(logc logc.cpp
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
   HEADERS logc.hpp
+  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
+  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
+  COMPONENT plugins
+)
+
+fhg_add_plugin(netd netd.cpp
+  EXPORTS NETD
+  LINK_LIBRARIES ${GSPC_NET_LIBRARY_SHARED}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_DATE_TIME_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADERS netd.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins

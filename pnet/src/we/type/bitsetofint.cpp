@@ -8,6 +8,7 @@
 #include <boost/functional/hash.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/bind.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -71,9 +72,21 @@ namespace bitsetofint
 
     return cnt;
   }
+
+  namespace
+  {
+    void print_element (std::ostream& s, const unsigned long& x)
+    {
+      s << x << std::endl;
+    }
+  }
   void type::list (std::ostream& s) const
   {
-    size_t x (0);
+    list (boost::bind (&print_element, boost::ref (s), _1));
+  }
+  void type::list (const boost::function<void (const unsigned long&)>& f) const
+  {
+    unsigned long x (0);
 
     BOOST_FOREACH (uint64_t block, _container)
     {
@@ -81,10 +94,27 @@ namespace bitsetofint
       {
         if (block & 0x1)
         {
-          s << x << std::endl;
+          f (x);
         }
       }
     }
+  }
+
+  namespace
+  {
+    void set_insert (std::set<unsigned long>& s, const unsigned long& x)
+    {
+      s.insert (x);
+    }
+  }
+
+  std::set<unsigned long> type::elements() const
+  {
+    std::set<unsigned long> s;
+
+    list (boost::bind (&set_insert, boost::ref (s), _1));
+
+    return s;
   }
 
   type operator| (const type& lhs, const type& rhs)

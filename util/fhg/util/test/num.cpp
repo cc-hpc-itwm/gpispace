@@ -289,6 +289,33 @@ BOOST_AUTO_TEST_CASE (_num)
   }
 }
 
+BOOST_AUTO_TEST_CASE (unexpected_digit)
+{
+#define CHECK(s,T,f)                                                    \
+  {                                                                     \
+    const std::string inp (s);                                          \
+    position p (inp);                                                   \
+                                                                        \
+    BOOST_CHECK_THROW ( fhg::util::read_ ## f (p)                       \
+                      , error::unexpected_digit<T>                      \
+                      );                                                \
+  }
+
+  CHECK ("4294967297", unsigned int, uint);
+  CHECK ("42949672960", unsigned int, uint);
+  CHECK ("0x100000000", unsigned int, uint);
+  CHECK ("0x80000000", int, int);
+  {
+    const std::string inp ("-0x80000000");
+    position p (inp);
+
+    BOOST_CHECK_EQUAL (fhg::util::read_int (p), -0x80000000);
+  }
+  CHECK ("-0x80000001", int, int);
+
+#undef CHECK
+}
+
 BOOST_AUTO_TEST_CASE (limits)
 {
   using fhg::util::num_type;
@@ -310,7 +337,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp ("9223372036854775808L");
     position pos (inp);
 
-    typedef error::value_to_big<unsigned long, long> error_type;
+    typedef error::value_too_big<unsigned long, long> error_type;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }
@@ -318,7 +345,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp ("-9223372036854775808L");
     position pos (inp);
 
-    typedef error::value_to_big<unsigned long, long> error_type;
+    typedef error::value_too_big<unsigned long, long> error_type;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }
@@ -331,7 +358,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp (oss.str());
     position pos (inp);
 
-    typedef error::value_to_big<double, float> error_type;
+    typedef error::value_too_big<double, float> error_type;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }

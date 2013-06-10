@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/signature/show.hpp>
+#include <we/type/signature/traverse.hpp>
 
 #include <fhg/util/print_container.hpp>
 
@@ -16,86 +17,54 @@ namespace pnet
     {
       namespace
       {
-        class show_field : public boost::static_visitor<std::ostream&>
+        class printer
         {
         public:
-          show_field (std::ostream&);
-          std::ostream& operator() (const std::pair< std::string
-                                                   , std::string
-                                                   >&
-                                   ) const;
-          std::ostream& operator() (const structured_type&) const;
+          printer (std::ostream& os)
+            : _os (os)
+          {}
+          void _struct (const std::pair<std::string, structure_type>& s) const
+          {
+            fhg::util::print_container<structure_type>
+              ( _os, s.first, " :: [", ",", "]", boost::ref (s.second)
+              , boost::bind (&printer::print, *this, _1)
+              );
+          }
+          void _field (const std::pair<std::string, std::string>& f) const
+          {
+            _os << f.first << " :: " << f.second;
+          }
+          void _field_struct
+            (const std::pair<std::string, structure_type>& s) const
+          {
+            traverse (*this, s);
+          }
         private:
           std::ostream& _os;
-        };
-        class show_struct : public boost::static_visitor<std::ostream&>
-        {
-        public:
-          show_struct (std::ostream&);
-          std::ostream& operator() (const std::pair< std::string
-                                                   , structure_type
-                                                   >&
-                                   ) const;
-        private:
-          std::ostream& _os;
-          void print (const field_type&) const;
+          void print (const field_type& f) const
+          {
+            traverse (*this, f);
+          }
         };
 
         class show_sig : public boost::static_visitor<std::ostream&>
         {
         public:
-          show_sig (std::ostream&);
-          std::ostream& operator() (const std::string&) const;
-          std::ostream& operator() (const structured_type&) const;
+          show_sig (std::ostream& os)
+            : _os (os)
+          {}
+          std::ostream& operator() (const std::string& tname) const
+          {
+            return _os << tname;
+          }
+          std::ostream& operator() (const structured_type& s) const
+          {
+            traverse (printer (_os), s);
+            return _os;
+          }
         private:
           std::ostream& _os;
         };
-
-        show_field::show_field (std::ostream& os)
-          : _os (os)
-        {}
-        std::ostream& show_field::operator() (const std::pair< std::string
-                                                             , std::string
-                                                             >& f
-                                             ) const
-        {
-          return _os << f.first << " :: " << f.second;
-        }
-        std::ostream& show_field::operator() (const structured_type& s) const
-        {
-          return boost::apply_visitor (show_struct (_os), s);
-        }
-
-        show_struct::show_struct (std::ostream& os)
-          : _os (os)
-        {}
-        std::ostream&
-        show_struct::operator() (const std::pair< std::string
-                                                , structure_type
-                                                >& s
-                                ) const
-        {
-          return fhg::util::print_container<structure_type>
-            ( _os, s.first, " :: [", ",", "]", boost::ref (s.second)
-            , boost::bind (&show_struct::print, *this, _1)
-            );
-        }
-        void show_struct::print (const field_type& f) const
-        {
-          boost::apply_visitor (show_field (_os), f);
-        }
-
-        show_sig::show_sig (std::ostream& os)
-          : _os (os)
-        {}
-        std::ostream& show_sig::operator() (const std::string& tname) const
-        {
-          return _os << tname;
-        }
-        std::ostream& show_sig::operator() (const structured_type& s) const
-        {
-          return boost::apply_visitor (show_struct (_os), s);
-        }
       }
 
       show::show (const signature_type& signature)

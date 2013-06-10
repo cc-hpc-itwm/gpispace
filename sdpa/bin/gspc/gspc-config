@@ -103,19 +103,19 @@ function get_config_value ()
     get_some_config_values "$1" "$2" 1
 }
 
-if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
+if [ $# -eq 0 ] ; then usage ; exit ${GSPC_EX_USAGE} ; fi
 
 action=""
 
 TEMP=`getopt -o hef: --long help,global,site,system,local,file:,get,get-regex,get-all,set,del,list,edit -n 'gspc' -- "$@"`
 
-if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
+if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit ${GSPC_EX_USAGE} ; fi
 
 eval set -- "$TEMP"
 
 while true ; do
     case "$1" in
-        -h|--help) usage; exit 0 ;;
+        -h|--help) usage; exit ${GSPC_EX_OK} ;;
         -f|--file)
             config_file="$2"
             files_to_get_from=(config_file)
@@ -141,7 +141,7 @@ while true ; do
                 config_file="${local_config_file}"
             else
                 gspc_log_debug config "cannot act on local config: GSPC_DIR not set"
-                exit 1
+                exit ${GSPC_EX_UNAVAILABLE}
             fi
             files_to_get_from=(config_file)
             shift
@@ -149,7 +149,7 @@ while true ; do
         --get)
             [ -z "$action" ] || {
                 gspc_log_error config "only one action allowed!"
-                exit 1
+                exit ${GSPC_EX_USAGE}
             }
             action="get"
             shift
@@ -157,7 +157,7 @@ while true ; do
         --get-regex)
             [ -z "$action" ] || {
                 gspc_log_error config "only one action allowed!"
-                exit 1
+                exit ${GSPC_EX_USAGE}
             }
             action="get-regex"
             shift
@@ -165,7 +165,7 @@ while true ; do
         --get-all)
             [ -z "$action" ] || {
                 gspc_log_error config "only one action allowed!"
-                exit 1
+                exit ${GSPC_EX_USAGE}
             }
             action="get-all"
             shift
@@ -173,7 +173,7 @@ while true ; do
         --set)
             [ -z "$action" ] || {
                 gspc_log_error config "only one action allowed!"
-                exit 1
+                exit ${GSPC_EX_USAGE}
             }
             action="set"
             shift
@@ -181,7 +181,7 @@ while true ; do
         --del)
             [ -z "$action" ] || {
                 gspc_log_error config "only one action allowed!"
-                exit 1
+                exit ${GSPC_EX_USAGE}
             }
             action="del"
             shift
@@ -189,7 +189,7 @@ while true ; do
         -e|--edit)
             [ -z "$action" ] || {
                 gspc_log_error config "only one action allowed!"
-                exit 1
+                exit ${GSPC_EX_USAGE}
             }
             action="edit"
             shift
@@ -197,27 +197,27 @@ while true ; do
         --list)
             [ -z "$action" ] || {
                 gspc_log_error config "only one action allowed!"
-                exit 1
+                exit ${GSPC_EX_USAGE}
             }
             action="get-regex"
             regex='.*'
             shift
             ;;
         --) shift; break ;;
-        *) gspc_log_error config "Internal error on argument: '$1'"; exit 1 ;;
+        *) gspc_log_error config "Internal error on argument: '$1'"; exit ${GSPC_EX_USAGE} ;;
     esac
 done
 
 if [ -z "$action" ] ; then
     usage
-    exit 1
+    exit ${GSPC_EX_USAGE}
 fi
 
 case "$action" in
     get)
         if [ $# -lt 1 ] ; then
             gspc_log_error config "get: invalid number of arguments"
-            exit 1
+            exit ${GSPC_EX_USAGE}
         fi
         get_config_value "$1" "$2"
         exit $?
@@ -226,7 +226,7 @@ case "$action" in
         if [ $# -lt 1 ] ; then
             if [ -z "$regex" ] ; then
                 gspc_log_error config "get-regex: invalid number of arguments"
-                exit 1
+                exit ${GSPC_EX_USAGE}
             fi
         else
             regex="$1"
@@ -245,7 +245,7 @@ case "$action" in
     get-all)
         if [ $# -lt 1 ] ; then
             gspc_log_error config "get-all: invalid number of arguments"
-            exit 1
+            exit ${GSPC_EX_USAGE}
         fi
         get_some_config_values "$1" "$2"
         exit $?
@@ -253,7 +253,7 @@ case "$action" in
     set)
         if [ $# -lt 2 ] ; then
             gspc_log_error config "set: invalid number of arguments"
-            exit 1
+            exit ${GSPC_EX_USAGE}
         fi
         if [ -z "$config_file" ] ; then
             config_file="$global_config_file"
@@ -263,7 +263,7 @@ case "$action" in
         if [ ! -d "${path_to_file}" ]
         then
             gspc_log_error config "not creating config: directory does not exist: '${path_to_file}'"
-            exit 1
+            exit ${GSPC_EX_CANTCREAT}
         fi
 
         gspc_log_trace config fhgcfg -f "$config_file" -a "$1" -v "$2"
@@ -272,7 +272,7 @@ case "$action" in
     del)
         if [ $# -lt 1 ] ; then
             gspc_log_error config "del: invalid number of arguments"
-            exit 1
+            exit ${GSPC_EX_USAGE}
         fi
         if [ -z "$config_file" ] ; then
             config_file="$global_config_file"
@@ -289,6 +289,6 @@ case "$action" in
         ;;
     *)
         gspc_log_error config "invalid action: '$action'"
-        exit 1
+        exit ${GSPC_EX_USAGE}
         ;;
 esac

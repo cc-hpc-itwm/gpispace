@@ -28,6 +28,9 @@ include_directories (${SEDA_INCLUDE_DIR})
 find_package(ZLIB REQUIRED QUIET)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 
+find_package(GSPC_NET REQUIRED QUIET)
+include_directories(${GSPC_NET_INCLUDE_DIR})
+
 if (USE_SMC_SC)
   include (FindSMC)
   if (SMC_FOUND)

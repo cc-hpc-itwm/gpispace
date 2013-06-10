@@ -5,6 +5,6 @@ fhg_add_test (test_network_strategy.cpp
                  ${SEDA_LIBRARY} ${FhgCom_LIBRARY} ${FhgLog_LIBRARY}
 )
 
-fhg_add_test (test_notification.cpp LINK_LIBRARIES ${FhgLog_LIBRARY})
+fhg_add_test (test_notification.cpp LINK_LIBRARIES pnet ${FhgLog_LIBRARY})
 
 fhg_add_test (test_job_states.cpp)

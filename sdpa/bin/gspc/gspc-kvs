@@ -22,7 +22,9 @@ Actions:
    --start               start the kvs if it does not run yet
    --stop                stop the kvs
    --get <key>           get values from the kvs
+   --get-regex <regex>   get keys matching the given regex
    --put <key> <value>   put values into the kvs
+   --del <key>           delete the given key
 EOF
 }
 
@@ -91,8 +93,14 @@ function gspc_require_kvs_config ()
     then
         kvs_cfg=( $(gspc --no-alias config --local --get-regex kvs | sort | awk '{print $3}') )
         if [ ${#kvs_cfg[@]} -ne 2 ] ; then
-            kvs_host="$(hostname -f)"
-            kvs_port="2439"
+	    if [ -z "${kvs_host}" ]
+	    then
+		kvs_host="$(hostname -f)"
+	    fi
+	    if [ -z "${kvs_port}" ]
+	    then
+		kvs_port="2439"
+	    fi
         else
             kvs_host=${kvs_cfg[0]}
             kvs_port=${kvs_cfg[1]}

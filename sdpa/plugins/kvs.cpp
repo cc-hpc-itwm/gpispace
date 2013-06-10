@@ -83,6 +83,16 @@ public:
     return fhg::com::kvs::inc(k, step);
   }
 
+  key_value_map_type list () const
+  {
+    return this->list ("");
+  }
+
+  key_value_map_type list (key_type const &prefix) const
+  {
+    return fhg::com::kvs::get_tree (prefix);
+  }
+
   bool       ping () const
   {
     try

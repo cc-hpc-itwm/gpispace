@@ -2,6 +2,7 @@
 #define KVS_PLUGIN_HPP 1
 
 #include <string>
+#include <map>
 #include <boost/lexical_cast.hpp>
 
 namespace kvs
@@ -11,6 +12,7 @@ namespace kvs
   public:
     typedef std::string key_type;
     typedef std::string value_type;
+    typedef std::map<key_type, value_type> key_value_map_type;
 
     virtual ~KeyValueStore() {}
 
@@ -18,6 +20,8 @@ namespace kvs
     virtual void       put(key_type const & k, value_type const &value) = 0;
     virtual void       del(key_type const & k) = 0;
     virtual int        inc(key_type const & k, int step = 1) = 0;
+    virtual key_value_map_type list () const = 0;
+    virtual key_value_map_type list (key_type const &prefix) const = 0;
 
     template <typename T>
     T get(key_type const & k, value_type const & dflt) const

@@ -9,6 +9,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fhg/util/thread/queue.hpp>
@@ -24,8 +25,28 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/capability.hpp>
 
+#include <gspc/net.hpp>
+
 //! \todo eliminate this include (that completes the type transition_t::data)
 #include <we/type/net.hpp>
+
+namespace
+{
+  static
+  boost::optional<std::string>
+  nice_name (we::mgmt::type::activity_t const &act)
+    try
+    {
+      const we::type::module_call_t mod_call
+        (boost::get<we::type::module_call_t> (act.transition().data()));
+
+      return mod_call.module() + ":" + mod_call.function();
+    }
+    catch (boost::bad_get const &)
+    {
+      return boost::none;
+    }
+}
 
 struct search_path_appender
 {
@@ -59,7 +80,7 @@ class WFEImpl : FHG_PLUGIN
               , public observe::Observable
 {
   typedef boost::mutex mutex_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
+  typedef boost::lock_guard<mutex_type> lock_type;
 
   typedef fhg::thread::queue< wfe_task_t *
                             , std::list
@@ -73,6 +94,7 @@ public:
     assert (! m_worker);
     m_loader = we::loader::loader::create();
 
+    m_current_task = 0;
     m_auto_unload = fhg_kernel ()->get<fhg::util::bool_t> ("auto_unload", "false");
 
     {
@@ -104,11 +126,24 @@ public:
     m_worker.reset(new boost::thread(&WFEImpl::execution_thread, this));
     fhg::util::set_threadname (*m_worker, "[wfe]");
 
+    gspc::net::handle
+      ("/service/wfe/unload-modules"
+      , boost::bind (&WFEImpl::service_module_unload, this, _1, _2, _3)
+      );
+
+    gspc::net::handle
+      ("/service/wfe/current-job"
+      , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
+      );
+
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
+    gspc::net::unhandle ("/service/wfe/unload-modules");
+    gspc::net::unhandle ("/service/wfe/current-job");
+    
     if (m_worker)
     {
       m_worker->interrupt();
@@ -160,12 +195,14 @@ public:
     try
     {
       task.activity = we::mgmt::type::activity_t (job_description);
+      task.name =
+        nice_name (task.activity).get_value_or (task.activity.transition().name());
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
 
       emit(task_event_t( job_id
-                       , task.activity.transition().name()
+                       , task.name
                        , task_event_t::ENQUEUED
                        , job_description
                        , task.meta
@@ -206,7 +243,7 @@ public:
         error_message = task.error_message;
 
         emit(task_event_t( job_id
-                         , task.activity.transition().name()
+                         , task.name
                          , task_event_t::FINISHED
                          , task.result
                          , task.meta
@@ -221,7 +258,7 @@ public:
         error_message = task.error_message;
 
         emit(task_event_t( job_id
-                         , task.activity.transition().name()
+                         , task.name
                          , task_event_t::CANCELED
                          , task.result
                          , task.meta
@@ -236,7 +273,7 @@ public:
         error_message = task.error_message;
 
         emit(task_event_t( job_id
-                         , task.activity.transition().name()
+                         , task.name
                          , task_event_t::FAILED
                          , task.result
                          , task.meta
@@ -285,15 +322,69 @@ public:
     return 0;
   }
 private:
+  void service_module_unload ( std::string const &dst
+                             , gspc::net::frame const &rqst
+                             , gspc::net::user_ptr user
+                             )
+  {
+    MLOG (INFO, "unloading modules as requested by the user...");
+
+    gspc::net::frame rply;
+
+    try
+    {
+      m_loader->unload_autoloaded ();
+      rply = gspc::net::make::reply_frame (rqst);
+    }
+    catch (std::exception const &ex)
+    {
+      rply = gspc::net::make::error_frame
+        ( rqst
+        , gspc::net::E_SERVICE_FAILED
+        , ex.what ()
+        );
+    }
+
+    user->deliver (rply);
+  }
+
+  void service_current_job ( std::string const &dst
+                           , gspc::net::frame const &rqst
+                           , gspc::net::user_ptr user
+                           )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    {
+      lock_type lock (m_current_task_mutex);
+      if (m_current_task)
+      {
+        rply.set_body (m_current_task->name);
+      }
+    }
+
+    user->deliver (rply);
+  }
+
   void execution_thread ()
   {
     for (;;)
     {
+      {
+        lock_type lock (m_current_task_mutex);
+        m_current_task = 0;
+      }
+
       wfe_task_t *task = m_tasks.get();
       task->dequeue_time = boost::posix_time::microsec_clock::universal_time();
 
+      {
+        lock_type lock (m_current_task_mutex);
+        m_current_task = task;
+      }
+
       emit(task_event_t( task->id
-                       , task->activity.transition().name()
+                       , task->name
                        , task_event_t::DEQUEUED
                        , task->activity.to_string()
                        , task->meta
@@ -358,6 +449,10 @@ private:
   mutable mutex_type m_mutex;
   map_of_tasks_t m_task_map;
   task_list_t m_tasks;
+
+  mutable mutex_type m_current_task_mutex;
+  wfe_task_t *m_current_task;
+
   we::loader::loader::ptr_t m_loader;
   boost::shared_ptr<boost::thread> m_worker;
 

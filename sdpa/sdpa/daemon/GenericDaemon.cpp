@@ -1281,7 +1281,6 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
   worker_id_t worker_id (evtRegWorker.from());
 
   DMLOG (TRACE, "****************Got new registration request from: " << worker_id << ", capacity = "<<evtRegWorker.capacity()<<", capabilities:" );
-  std::cout<<evtRegWorker.capabilities()<<std::endl;
 
   // delete inherited capabilities that are owned by the current agent
   sdpa::capabilities_set_t workerCpbSet;

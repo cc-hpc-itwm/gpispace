@@ -10,8 +10,7 @@ namespace pnet
     {
       namespace
       {
-        class visitor_signature
-          : public boost::static_visitor<signature_type>
+        class visitor_signature : public boost::static_visitor<signature_type>
         {
         public:
           signature_type operator() (const std::pair< std::string

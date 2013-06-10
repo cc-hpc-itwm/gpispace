@@ -11,6 +11,7 @@
 #include <fhglog/SynchronizedAppender.hpp>
 #include <fhglog/FileAppender.hpp>
 #include <fhglog/CompoundAppender.hpp>
+#include <fhglog/MemoryAppender.hpp>
 
 #if defined(FHGLOG_WITH_REMOTE_LOGGING)
 #   include <fhglog/remote/RemoteAppender.hpp>
@@ -128,6 +129,8 @@ namespace fhg
       }
 
       CompoundAppender::ptr_t compound_appender(new CompoundAppender("auto-config-appender"));
+
+      compound_appender->addAppender (global_memory_appender ("system"));
 
       if (STDERR() == to_console_)
       {

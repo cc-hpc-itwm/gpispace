@@ -1,0 +1,182 @@
+#!/bin/bash
+
+GSPC_API_COMMAND_SHORT_DESCRIPTION="bootstrap the RIF"
+GSPC_API_COMMAND_LEVEL=2
+
+. $(gspc --exec-path)/gspc-sh-setup
+
+function usage()
+{
+    cat <<EOF
+usage: rif-bootstrap [-h|--help] [options]
+
+Options:
+
+   --rif-port <port>     specify the rif-port to use
+
+   -F|--file file        use nodes from file
+   -N|--node node        use this node
+   -R|--method M         use given method (see below)
+
+   --fanout N            how many parallel tasks
+   --sync                synonym for --fanout 1
+
+Available Methods:
+
+   pbsdsh                If the environment supports PBS-dsh,
+                         then use it. This is the fastest and
+                         preferred method.
+
+   pdsh                  The parallel-sh, it uses ssh
+                         but parallelizes efficiently.
+
+   ssh                   The slowest method. It will be used in
+                         case none of the latter methods are
+                         available.
+EOF
+}
+
+rif_port=
+
+method=
+fanout=1
+tmpnodes=()
+only_pbs_nodes=false
+
+while true ; do
+    case "$1" in
+        -h|--help) usage; exit ${GSPC_EX_OK} ;;
+        --rif-port)
+            rif_port="$2"
+            shift; shift
+            ;;
+        -R|--method)
+            method="$2"
+            shift; shift
+            ;;
+        -F|--file)
+            f="$2"
+            for n in $(cat "$f" 2>/dev/null | grep -v '^#' | sed -e '/^$/d' | sort | uniq)
+            do
+                tmpnodes+=($n)
+            done
+            shift; shift
+            ;;
+        -N|--node)
+            n="$2"
+            tmpnodes+=($n)
+            shift; shift
+            ;;
+        --fanout)
+            fanout="$2"
+            shift; shift
+            ;;
+        --sync)
+            fanout=1
+            shift
+            ;;
+        --) shift; break ;;
+        *) break ;;
+    esac
+done
+
+if [ ${#tmpnodes[@]} -eq 0 ]
+then
+    tmpnodes+=( "${@}" )
+fi
+
+if [ ${#tmpnodes[@]} -eq 0 -a -n "${PBS_NODEFILE}" ]
+then
+    for n in $(cat "$PBS_NODEFILE" 2>/dev/null | grep -v '^#' | sed -e '/^$/d' | sort | uniq)
+    do
+        tmpnodes+=($n)
+    done
+    only_pbs_nodes=true
+fi
+
+nodes=()
+for n in $(echo "${tmpnodes[@]}" | tr ' ' '\n' | sort | uniq)
+do
+    nodes+=($n)
+done
+
+if [ ${#nodes[@]} -eq 0 ]
+then
+    gspc_log_error rif "at least one node is required"
+    exit ${GSPC_EX_USAGE}
+fi
+
+cmd=()
+cmd+=(/usr/bin/env)
+cmd+=(LD_LIBRARY_PATH="$(gspc --lib-path)")
+cmd+=("$(gspc --bin-path)/fhgkernel")
+cmd+=(-s plugin.netd.url="tcp://*:${rif_port}")
+cmd+=(-L "$(gspc --plugin-path)")
+cmd+=(--daemonize)
+cmd+=(rif)
+cmd+=(netd)
+
+function bootstrap_pbsdsh ()
+{
+    pbsdsh -u "${cmd[@]}"
+}
+
+function bootstrap_pdsh ()
+{
+    local hosts=""
+    hosts=$(echo "${@}" | tr ' ' ',')
+    pdsh -R ssh -w "${hosts}" "${cmd[@]}"
+}
+
+function bootstrap_ssh ()
+{
+    local count=0
+    for h
+    do
+        if [ $count -ge $fanout ]
+        then
+            wait
+            count=0
+        fi
+        gspc rexec -R ssh "$h" "${cmd[@]}"
+        count=$((count + 1))
+    done
+    if [ $count -gt 0 ]
+    then
+        wait
+        count=0
+    fi
+}
+
+function select_best_bootstrap_method()
+{
+    local bin
+
+    if $only_pbs_nodes && which pbsdsh >/dev/null 2>&1
+    then
+       if [ -n "${PBS_NODEFILE}" -a -n "${PBS_JOBCOOKIE}" -a -n "${PBS_MOMPORT}" ]
+       then
+           echo "pbsdsh"
+           return 0
+       fi
+    fi
+
+    for p in pdsh ssh
+    do
+        if which $p >/dev/null 2>&1
+        then
+            echo "$p"
+            return 0
+        fi
+    done
+}
+
+if [ -z "$method" ] ; then
+    method=$(select_best_bootstrap_method)
+fi
+
+gspc net init
+
+gspc_log_info rif "booting using $method on: ${nodes[@]}"
+
+bootstrap_${method} "${nodes[@]}"

@@ -40,23 +40,19 @@ namespace fhg
           function.connect_to_change_mgr
             (this, "port_added", "data::handle::port");
 
+          function.connect_to_change_mgr
+            ( this
+            , "name_set", "type_or_name_changed"
+            , "data::handle::port, QString"
+            );
+          function.connect_to_change_mgr
+            ( this
+            , "type_set", "type_or_name_changed"
+            , "data::handle::port, QString"
+            );
 
-          BOOST_FOREACH (const data::handle::port& handle, _ports)
-          {
-            handle.connect_to_change_mgr
-              ( this
-              , "name_set", "type_or_name_changed"
-              , "data::handle::port, QString"
-              );
-            handle.connect_to_change_mgr
-              ( this
-              , "type_set", "type_or_name_changed"
-              , "data::handle::port, QString"
-              );
-
-            handle.connect_to_change_mgr
-              (this, "port_deleted", "data::handle::port");
-          }
+          function.connect_to_change_mgr
+            (this, "port_deleted", "data::handle::port");
         }
 
         void ports_model::port_added (const data::handle::port& handle)

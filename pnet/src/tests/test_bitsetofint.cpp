@@ -6,6 +6,7 @@ typedef bitsetofint::type set_t;
 
 #include <iostream>
 #include <sstream>
+#include <set>
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -14,6 +15,8 @@ typedef bitsetofint::type set_t;
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 
+#include <boost/bind.hpp>
+
 #include "timer.hpp"
 
 using std::cout;
@@ -21,6 +24,14 @@ using std::cerr;
 using std::endl;
 
 #define REQUIRE(b) if (!(b)) { cerr << "FAILURE in line " << __LINE__ << endl; ++ec; }
+
+namespace
+{
+  void set_insert (std::set<std::size_t>& s, const std::size_t& x)
+  {
+    s.insert (x);
+  }
+}
 
 int
 main ()
@@ -573,6 +584,8 @@ main ()
     REQUIRE (res == exp);
   }
 
+  cout << "*** listing" << endl;
+
   {
     bitsetofint::type b;
 
@@ -611,6 +624,41 @@ main ()
     b.list (s);
 
     REQUIRE (s.str() == "0\n1\n13\n42\n");
+  }
+
+  {
+    bitsetofint::type b;
+    std::set<std::size_t> s;
+
+    b.list (boost::bind (&set_insert, boost::ref(s), _1));
+
+    REQUIRE (s.size() == 0);
+    REQUIRE (s == b.elements());
+  }
+
+  {
+    bitsetofint::type b (bitsetofint::type().ins (42));
+    std::set<std::size_t> s;
+
+    b.list (boost::bind (&set_insert, boost::ref(s), _1));
+
+    REQUIRE (s.size() == 1);
+    REQUIRE (s.count (42) == 1);
+    REQUIRE (s == b.elements());
+  }
+
+  {
+    bitsetofint::type b (bitsetofint::type().ins (0).ins (1).ins (13).ins (42));
+    std::set<std::size_t> s;
+
+    b.list (boost::bind (&set_insert, boost::ref(s), _1));
+
+    REQUIRE (s.size() == 4);
+    REQUIRE (s.count (0) == 1);
+    REQUIRE (s.count (1) == 1);
+    REQUIRE (s.count (13) == 1);
+    REQUIRE (s.count (42) == 1);
+    REQUIRE (s == b.elements());
   }
 
   return ec;

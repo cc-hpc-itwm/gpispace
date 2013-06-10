@@ -227,13 +227,6 @@ namespace fhg
            << data
         ;
 
-      DLOG( TRACE
-          , "initiating write of "
-          << util::basic_hex_converter<64>::convert( sstr.str().begin()
-                                                   , sstr.str().end()
-                                                   )
-          );
-
       // Start the asynchronous operation itself. The boost::lambda function
       // object is used as a callback and will update the ec variable when the
       // operation completes. The blocking_udp_client.cpp example shows how you
@@ -310,7 +303,6 @@ namespace fhg
         }
       }
 
-      DLOG(DEBUG, "going to receive " << data_size << " bytes");
       std::vector<char> data;
       data.resize(data_size);
 
@@ -334,10 +326,6 @@ namespace fhg
                                           );
       }
 
-      DLOG( TRACE
-          , "received "
-          << util::basic_hex_converter<64>::convert( data )
-          );
       return std::string (&data[0], data.size());
     }
 
