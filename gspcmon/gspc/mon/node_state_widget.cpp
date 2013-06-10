@@ -43,7 +43,7 @@ namespace prefix
 {
   namespace
   {
-    const qreal item_size (20.0);
+    const qreal item_size (30.0);
     const qreal pen_size (0.0);
     const qreal padding (0.0);
 
@@ -737,7 +737,7 @@ namespace prefix
           pos.require ("aracter");
           require::token (pos, ":");
 
-          emit states_layout_hint_character (state, pos.character());
+          emit states_layout_hint_character (state, require::character (pos));
 
           break;
 
@@ -926,6 +926,8 @@ namespace prefix
     const async_tcp_communication::messages_type messages (_connection->get());
     foreach (const QString& message, messages)
     {
+      qDebug() << "received:" << message;
+
       const std::string std_message (message.toStdString());
       fhg::util::parse::position pos (std_message);
 

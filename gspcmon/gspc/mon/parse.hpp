@@ -40,6 +40,15 @@ namespace prefix
       return QColor (fhg::util::read_uint (pos));
     }
 
+    char character (fhg::util::parse::position& pos)
+    {
+      pos.skip_spaces();
+      pos.require ("'");
+      const char ch (pos.character());
+      pos.require ("'");
+      return ch;
+    }
+
     void list ( fhg::util::parse::position& pos
               , const boost::function<void (fhg::util::parse::position&)>& f
               )
