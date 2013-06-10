@@ -784,6 +784,14 @@ namespace fhg
             }
           }
 
+          static int i (0);
+          if (i == 0)
+          {
+            ++i;
+            auto_layout();
+            --i;
+          }
+
           // BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
           // {
           //   //! \todo enable this, before repair connection::shape
