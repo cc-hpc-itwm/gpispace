@@ -718,22 +718,13 @@ namespace fhg
           graph.rankdir ("LR");
           graph.splines ("ortho");
 
-          foreach (QGraphicsItem* i, items())
+          foreach (transition_item* i, items_of_type<transition_item>())
           {
-            if ( (  i->type() == base_item::port_graph_type
-                 || i->type() == base_item::transition_graph_type
-                 || i->type() == base_item::place_graph_type
-                 || i->type() == base_item::top_level_port_graph_type
-                 )
-               && i->parentItem() == NULL
-               )
-            {
-              nodes.insert ( nodes_map_type::value_type
-                             ( qgraphicsitem_cast<base_item*> (i)
-                             , graph.add_node (i)
-                             )
-                           );
-            }
+            nodes.insert ( nodes_map_type::value_type
+                           ( qgraphicsitem_cast<base_item*> (i)
+                           , graph.add_node (i)
+                           )
+                         );
           }
 
           typedef boost::unordered_map < association*
@@ -745,6 +736,33 @@ namespace fhg
           {
             QGraphicsItem* start (c->start());
             QGraphicsItem* end (c->end());
+
+            start = start->parentItem() ? start->parentItem() : start;
+            end = end->parentItem() ? end->parentItem() : end;
+
+            if (place_item* place = qgraphicsitem_cast<place_item*> (start))
+            {
+              foreach (association* assoc, place->associations())
+              {
+                if (assoc != c)
+                {
+                  start = assoc->start() == start ? assoc->end() : assoc->start();
+                  break;
+                }
+              }
+            }
+
+            if (place_item* place = qgraphicsitem_cast<place_item*> (end))
+            {
+              foreach (association* assoc, place->associations())
+              {
+                if (assoc != c)
+                {
+                  end = assoc->start() == end ? assoc->end() : assoc->start();
+                  break;
+                }
+              }
+            }
 
             start = start->parentItem() ? start->parentItem() : start;
             end = end->parentItem() ? end->parentItem() : end;
