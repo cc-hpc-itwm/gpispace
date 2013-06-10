@@ -73,12 +73,14 @@ namespace gspc
           : name ()
           , color (0)
           , border (0)
+          , hidden (false)
           , actions ()
         {}
 
         QString                  name;
         int color;
         int border;
+        bool hidden;
         boost::optional<QString> label;
         QStringList              actions;
       };
@@ -140,6 +142,10 @@ namespace gspc
                                , int color
                                , int border = 0
                                );
+      state_info_t & add_hidden_state ( QString const &name
+                                        , int color
+                                        , int border = 0
+                                        );
 
       action_info_t & add_action ( QString const &name
                                  , QString const &desc

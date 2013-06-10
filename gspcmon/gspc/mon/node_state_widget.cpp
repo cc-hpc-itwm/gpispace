@@ -230,6 +230,10 @@ namespace prefix
             , _legend_widget
             , SLOT (states_layout_hint_color (const QString&, const QColor&)));
     connect ( _communication
+            , SIGNAL (states_layout_hint_hidden (const QString&, const bool&))
+            , _legend_widget
+            , SLOT (states_layout_hint_hidden (const QString&, const bool&)));
+    connect ( _communication
             , SIGNAL (action_result (const QString&, const QString&, const result_code&, const boost::optional<QString>&))
             , SLOT (action_result (const QString&, const QString&, const result_code&, const boost::optional<QString>&))
             );
@@ -300,6 +304,13 @@ namespace prefix
     emit state_pixmap_changed (state);
   }
 
+  void legend::states_layout_hint_hidden
+    (const QString& state, const bool& val)
+  {
+    _states[state]._hidden = val;
+    update (state);
+  }
+
   void node_state_widget::states_actions_long_text
     (const QString& action, const QString& long_text)
   {
@@ -325,9 +336,12 @@ namespace prefix
   void legend::update (const QString& s)
   {
     delete _state_legend[s];
-    _state_legend[s] = new legend_entry (s, state (s), this);
+    if (!state (s)._hidden)
+    {
+      _state_legend[s] = new legend_entry (s, state (s), this);
 
-    layout()->addWidget (_state_legend[s]);
+      layout()->addWidget (_state_legend[s]);
+    }
   }
 
   void node_state_widget::nodes_details
@@ -705,10 +719,10 @@ namespace prefix
   {
     pos.skip_spaces();
 
-    if (pos.end() || (*pos != 'b' && *pos != 'c'))
+    if (pos.end() || (*pos != 'b' && *pos != 'c' && *pos != 'h'))
     {
       throw fhg::util::parse::error::expected
-        ("border' or 'character' or 'color", pos);
+        ("border' or 'character' or 'color' or 'hidden", pos);
     }
 
     switch (*pos)
@@ -751,6 +765,15 @@ namespace prefix
           break;
         }
       }
+      break;
+
+    case 'h':
+      ++pos;
+      pos.require ("idden");
+      require::token (pos, ":");
+
+      emit states_layout_hint_hidden (state, require::boolean (pos));
+
       break;
     }
   }
@@ -926,8 +949,6 @@ namespace prefix
     const async_tcp_communication::messages_type messages (_connection->get());
     foreach (const QString& message, messages)
     {
-      qDebug() << "received:" << message;
-
       const std::string std_message (message.toStdString());
       fhg::util::parse::position pos (std_message);
 
@@ -1050,6 +1071,7 @@ namespace prefix
     , _character (character)
     , _brush (brush)
     , _pen (pen)
+    , _hidden (false)
   {
     reset();
   }

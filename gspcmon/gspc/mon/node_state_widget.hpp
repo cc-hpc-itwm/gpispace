@@ -60,6 +60,7 @@ namespace prefix
     boost::optional<char> _character;
     QColor _brush;
     QColor _pen;
+    bool _hidden;
 
     QPixmap _pixmap;
 
@@ -95,6 +96,7 @@ namespace prefix
     void states_layout_hint_border (const QString&, const QColor&);
     void states_layout_hint_character (const QString&, const char&);
     void states_layout_hint_color (const QString&, const QColor&);
+    void states_layout_hint_hidden (const QString&, const bool&);
 
   signals:
     void state_pixmap_changed (const QString&);
@@ -260,6 +262,7 @@ namespace prefix
     void states_layout_hint_border (const QString&, const QColor&);
     void states_layout_hint_character (const QString&, const char&);
     void states_layout_hint_color (const QString&, const QColor&);
+    void states_layout_hint_hidden (const QString&, const bool&);
 
   private slots:
     void check_for_incoming_messages();

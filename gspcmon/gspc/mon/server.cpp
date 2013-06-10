@@ -114,15 +114,15 @@ namespace gspc
       add_state ("down", 0x000000, 0xFFFFFF);
 
       add_state ("failed", 0xCC0000).actions        << "remove" << "restart";
-      add_state ("master/failed", 0xEE0000).actions << "stop"   << "restart";
+      add_hidden_state ("master/failed", 0xEE0000).actions << "stop"   << "restart";
 
       add_state ("free", 0x000080).actions          << "start";
       add_state ("free/reserved", 0xCCCC00).actions << "start";
 
       add_state ("unavailable", 0x888888);
 
-      add_state ("addable", 0x000080).actions            << "add";
-      add_state ("addable/reserved", 0xCCCC00).actions   << "add";
+      add_hidden_state ("addable", 0x000080).actions            << "add";
+      add_hidden_state ("addable/reserved", 0xCCCC00).actions   << "add";
 
       add_state ("master", 0x00CC00).actions << "stop";
       add_state ("inuse",  0x008000).actions << "remove";
@@ -147,6 +147,21 @@ namespace gspc
                                              )
     {
       state_info_t s;
+      s.name = name;
+      s.color = color;
+      s.border = border;
+
+      _states [name] = s;
+      return _states [name];
+    }
+
+    thread::state_info_t & thread::add_hidden_state ( QString const &name
+                                                      , int color
+                                                      , int border
+                                                      )
+    {
+      state_info_t s;
+      s.hidden = true;
       s.name = name;
       s.color = color;
       s.border = border;
@@ -600,10 +615,11 @@ namespace gspc
 
       write_to_socket
         ( qPrintable ( QString
-                     ("layout_hint: [\"%1\": [color: %2, border: %3,],]\n")
+                     ("layout_hint: [\"%1\": [color: %2, border: %3, hidden: %4,],]\n")
                      .arg (state.name)
                      .arg (state.color)
                      .arg (state.border)
+                     .arg (state.hidden ? "true" : "false")
                      )
         );
     }
