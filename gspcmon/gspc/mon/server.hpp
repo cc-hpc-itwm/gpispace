@@ -156,7 +156,10 @@ namespace gspc
                        );
       void update_status (QStringList const&hosts);
 
+      void write_to_socket (QString const &);
+
       int _socket_descriptor;
+      mutable QMutex _socket_mutex;
       QTcpSocket* _socket;
       QDir _hookdir;
 

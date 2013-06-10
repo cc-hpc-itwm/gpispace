@@ -401,6 +401,12 @@ namespace gspc
       return rc;
     }
 
+    void thread::write_to_socket (QString const &s)
+    {
+      const QMutexLocker lock (&_socket_mutex);
+      _socket->write (qPrintable (s));
+    }
+
     void thread::execute_action (fhg::util::parse::position& pos)
     {
       action_invocation invoc;
@@ -424,7 +430,7 @@ namespace gspc
 
       if (!_hosts.contains (*invoc._host))
       {
-        _socket->write
+        write_to_socket
           ( qPrintable ( QString
                        ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Unknown host.\"],]\n")
                        .arg (*invoc._host)
@@ -460,7 +466,7 @@ namespace gspc
 
         if (0 == res.exit_code)
         {
-          _socket->write
+          write_to_socket
             ( qPrintable ( QString
                          ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"%3\"]]\n")
                          .arg (res.host)
@@ -471,7 +477,7 @@ namespace gspc
         }
         else if (1 == res.exit_code)
         {
-          _socket->write
+          write_to_socket
             ( qPrintable ( QString
                          ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"%3\"]]\n")
                          .arg (res.host)
@@ -482,7 +488,7 @@ namespace gspc
         }
         else
         {
-          _socket->write
+          write_to_socket
             ( qPrintable ( QString
                          ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"error %3: %4\"],]\n")
                          .arg (*invoc._host)
@@ -495,7 +501,7 @@ namespace gspc
       }
       else
       {
-        _socket->write
+        write_to_socket
           ( qPrintable ( QString
                        ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"'%2' on '%1' in state '%3' failed: %4: %5\"],]\n")
                        .arg (*invoc._host)
@@ -522,6 +528,8 @@ namespace gspc
       const QString action (prefix::require::qstring (pos));
 
       action_info_t const &ai = _actions [action];
+
+      const QMutexLocker lock (&_socket_mutex);
 
       _socket->write
         (qPrintable (QString ("action_description: [\"%1\": ").arg (ai.name)));
@@ -566,7 +574,7 @@ namespace gspc
     {
       const state_info_t &state = _states [prefix::require::qstring (pos)];
 
-      _socket->write
+      write_to_socket
         ( qPrintable ( QString
                      ("layout_hint: [\"%1\": [color: %2, border: %3,],]\n")
                      .arg (state.name)
@@ -637,7 +645,7 @@ namespace gspc
             pos.require ("osts");
 
             {
-              _socket->write ("hosts: [");
+              write_to_socket ("hosts: [");
 
               const QMutexLocker lock (&_hosts_mutex);
 
@@ -646,9 +654,9 @@ namespace gspc
 
               foreach (const QString& host, hosts)
               {
-                _socket->write (qPrintable (QString (" \"%1\",").arg (host)));
+                write_to_socket (qPrintable (QString (" \"%1\",").arg (host)));
               }
-              _socket->write ("]\n");
+              write_to_socket ("]\n");
             }
 
             break;
@@ -667,23 +675,23 @@ namespace gspc
             pos.require ("ossible_status");
 
             {
-              _socket->write ("possible_status: [");
+              write_to_socket ("possible_status: [");
               QList<QString> states (_states.keys());
               foreach (const QString& s, states)
               {
-                _socket->write ("\"");
-                _socket->write (qPrintable (s));
-                _socket->write ("\":[");
+                write_to_socket ("\"");
+                write_to_socket (qPrintable (s));
+                write_to_socket ("\":[");
 
                 foreach (const QString& a, _states [s].actions)
                 {
-                  _socket->write ("\"");
-                  _socket->write (qPrintable (a));
-                  _socket->write ("\", ");
+                  write_to_socket ("\"");
+                  write_to_socket (qPrintable (a));
+                  write_to_socket ("\", ");
                 }
-                _socket->write ("],");
+                write_to_socket ("],");
               }
-              _socket->write ("]\n");
+              write_to_socket ("]\n");
             }
 
             break;
@@ -730,7 +738,7 @@ namespace gspc
     {
       if (details.isEmpty ())
       {
-        _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\"]]\n")
+        write_to_socket ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\"]]\n")
                                     .arg (host)
                                     .arg (state)
                                     )
@@ -738,7 +746,7 @@ namespace gspc
       }
       else
       {
-        _socket->write ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\", details:\"%3\"]]\n")
+        write_to_socket ( qPrintable ( QString ("status: [\"%1\": [state:\"%2\", details:\"%3\"]]\n")
                                     .arg (host)
                                     .arg (state)
                                     .arg (details)
