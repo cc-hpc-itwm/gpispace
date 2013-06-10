@@ -746,8 +746,8 @@ namespace fhg
             QGraphicsItem* start (c->start());
             QGraphicsItem* end (c->end());
 
-            start = start->parentItem() ? start->parentItem() : c->start();
-            end = end->parentItem() ? end->parentItem() : c->end();
+            start = start->parentItem() ? start->parentItem() : start;
+            end = end->parentItem() ? end->parentItem() : end;
 
             nodes_map_type::iterator start_node
               (nodes.find (qgraphicsitem_cast<base_item*> (start)));
