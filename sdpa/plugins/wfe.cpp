@@ -141,6 +141,9 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    gspc::net::unhandle ("/service/wfe/unload-modules");
+    gspc::net::unhandle ("/service/wfe/current-job");
+    
     if (m_worker)
     {
       m_worker->interrupt();
