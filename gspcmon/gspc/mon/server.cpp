@@ -20,6 +20,7 @@
 #include <QFileSystemWatcher>
 #include <QFile>
 #include <QProcess>
+#include <QBuffer>
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
@@ -92,7 +93,7 @@ namespace gspc
       // get the list of descriptions, maybe split path by "state-action"?
 
       add_action ("add", "add the node to the working set").params
-        << parameter_info_t ("walltime", "Walltime in hours", "integer", QString ("4"))
+        << parameter_info_t ("walltime", "Walltime in hours", "integer", QString ("1"))
         ;
       add_action ("restart", "restart missing workers");
 
@@ -106,7 +107,7 @@ namespace gspc
         << parameter_info_t ("nresult", "Maximum number of partial results", "string", QString ("factor 4.0"))
         << parameter_info_t ("updates", "Update interval", "integer", QString ("10"))
         << parameter_info_t ("atonce", "Shots at once", "integer", QString ("4"))
-        << parameter_info_t ("walltime", "Walltime in hours", "integer", QString ("4"))
+        << parameter_info_t ("walltime", "Walltime in hours", "integer", QString ("1"))
         ;
 
       add_action ("stop", "stop the RTM");
@@ -331,15 +332,22 @@ namespace gspc
 
       qDebug() << "executing" << ai.path << args;
 
-      QProcess *p = new QProcess (this);
-      p->start (ai.path, args);
-      if (p->waitForStarted ())
+      QProcess p (this);
+      p.start (ai.path, args);
+      if (p.waitForStarted ())
       {
-        p->waitForFinished ();
+        p.waitForFinished ();
 
-        while (p->bytesAvailable ())
+        QByteArray bytes;
+
+        bytes = p.readAllStandardOutput ();
+
+        QBuffer buf (&bytes);
+        buf.open(QIODevice::ReadOnly);
+
+        while (buf.canReadLine())
         {
-          QString line = QString (p->readLine ()).trimmed ();
+          QString line = QString (buf.readLine ()).trimmed ();
           std::stringstream sstr (line.toStdString ());
           action_result_t res;
 
@@ -361,14 +369,9 @@ namespace gspc
           result [res.host] = res;
         }
 
-        p->setReadChannel (QProcess::StandardError);
-        while (p->bytesAvailable ())
-        {
-          // take last line
-          error_reason = QString (p->readLine ()).trimmed ();
-        }
-
-        rc = p->exitCode ();
+        error_reason = QString (p.readAllStandardError().replace('\n', ' '));
+        
+        rc = p.exitCode ();
 
         if (0 != rc)
         {
@@ -380,7 +383,6 @@ namespace gspc
         }
         else
         {
-          qDebug() << ai.path << "success";
           // hack: cache the workdir when we see a 'start' action
           if (ai.name == "start")
           {
@@ -394,9 +396,9 @@ namespace gspc
       }
       else
       {
-        p->waitForFinished ();
+        p.waitForFinished ();
         
-        switch (p->error ())
+        switch (p.error ())
         {
         case QProcess::FailedToStart:
           error_reason = "Permission denied / No such file or directory";
@@ -424,8 +426,6 @@ namespace gspc
           break;
         }
       }
-
-      delete p;
 
       return rc;
     }
