@@ -12,5 +12,10 @@ namespace gspc
     {
       gspc::net::server::default_service_demux ().handle (service, handler);
     }
+
+    void unhandle (std::string const &service)
+    {
+      gspc::net::server::default_service_demux ().unhandle (service);
+    }
   }
 }

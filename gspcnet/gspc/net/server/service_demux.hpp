@@ -25,6 +25,7 @@ namespace gspc
         int handle ( std::string const &dst
                    , gspc::net::service::handler_t
                    );
+        int unhandle (std::string const &dst);
 
         int handle_request ( std::string const &dst
                            , frame const & rqst

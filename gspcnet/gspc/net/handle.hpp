@@ -13,6 +13,7 @@ namespace gspc
     void handle ( std::string const &service
                 , gspc::net::service::handler_t handler
                 );
+    void unhandle (std::string const &service);
   }
 }
 

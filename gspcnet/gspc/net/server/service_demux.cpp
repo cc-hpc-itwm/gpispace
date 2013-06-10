@@ -46,6 +46,23 @@ namespace gspc
         return 0;
       }
 
+      int service_demux_t::unhandle (std::string const & dst)
+      {
+        unique_lock lock (m_mutex);
+
+        std::string mangled_dst = dst;
+        trim_r (mangled_dst, SERVICE_SEPARATOR);
+        
+        handler_map_t::iterator it = m_handler_map.find (mangled_dst);
+        if (it != m_handler_map.end ())
+        {
+          m_handler_map.erase (it);
+          return 0;
+        }
+
+        return E_SERVICE_LOOKUP;
+      }
+
       template <typename Iterator>
       Iterator find_best_prefix_match ( std::string dst
                                       , Iterator begin
