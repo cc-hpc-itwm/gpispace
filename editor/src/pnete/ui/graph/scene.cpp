@@ -754,14 +754,7 @@ namespace fhg
 
             if (place_item* place = qgraphicsitem_cast<place_item*> (end))
             {
-              foreach (association* assoc, place->associations())
-              {
-                if (assoc != c)
-                {
-                  end = assoc->start() == end ? assoc->end() : assoc->start();
-                  break;
-                }
-              }
+              continue;
             }
 
             start = start->parentItem() ? start->parentItem() : start;
