@@ -340,21 +340,11 @@ cfg="$cfg -s plugin.gui.url=$gui"
 # config values (wfe plugin)
 cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
 
-plugins=$(fhgcfg -f "${config_file}" -g kernel.plugins)
-plugins="numa,$plugins"
-plugins="${plugins},netd"
-
-plugin_load_flags=()
-for p in $(echo $plugins | tr ',' ' '); do
-    if [ x"$gpi_enabled" == x"false" ] ; then
-        if echo $p | grep -q 'gpi' ; then
-            continue
-        fi
-    fi
-    plugin_load_flags+=("$p")
-done
-
-cmd="${bin} $cfg ${plugin_load_flags[@]}"
+plugins=(numa logc gui kvs progress netd wfe drts)
+if [ x"$gpi_enabled" == x"true" ] ; then
+    plugins+=(gpi gpi_compat)
+fi
+cmd="${bin} $cfg ${plugins[@]}"
 
 export FHGLOG_to_file="${logprefix}.log"
 log "Running $cmd on node $hostname" >/dev/null 2>&1
