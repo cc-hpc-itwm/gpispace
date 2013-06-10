@@ -9,10 +9,12 @@
 #include <boost/serialization/vector.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/function.hpp>
 
 #include <iosfwd>
 
 #include <stdint.h>
+#include <set>
 
 namespace bitsetofint
 {
@@ -28,6 +30,8 @@ namespace bitsetofint
     bool is_element (const unsigned long&) const;
     std::size_t count() const;
     void list (std::ostream&) const;
+    void list (const boost::function<void (const unsigned long&)>&) const;
+    std::set<unsigned long> elements() const;
 
     friend type operator| (const type&, const type&);
     friend type operator& (const type&, const type&);
