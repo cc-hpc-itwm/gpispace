@@ -12,15 +12,18 @@ int main (int argc, char** argv)
 {
   QApplication app (argc, argv);
 
-  if (argc != 4)
+  if (argc < 4)
   {
-    qDebug() << argv[0] << "port hostlist hookdir";
+    qDebug() << argv[0] << "port hostlist hookdir [workdir]";
     return EX_USAGE;
   }
 
   const int port (QString (argv[1]).toInt());
   const QString hostlist (argv[2]);
   const QString hookdir (argv[3]);
+  QString workdir;
+  if (argc > 4)
+    workdir = argv [4];
 
   if (!QFile::exists (hostlist))
   {
@@ -37,6 +40,7 @@ int main (int argc, char** argv)
   const gspc::mon::server s ( port
                             , hostlist
                             , hookdir
+                            , workdir
                             );
 
   return app.exec();

@@ -24,6 +24,7 @@ namespace gspc
       server ( int port
              , const QString& hostlist
              , const QDir& hookdir
+             , const QString &workdir
              , QObject* parent = NULL
              );
       ~server ();
@@ -34,6 +35,7 @@ namespace gspc
     private:
       QString _hostlist;
       QDir _hookdir;
+      QString _workdir;
     };
 
     class thread : public QThread
@@ -43,6 +45,7 @@ namespace gspc
       thread ( int socket_descriptor
              , const QString& hostlist
              , const QDir& hookdir
+             , const QString &workdir
              , QObject* parent = NULL);
       ~thread ();
 

@@ -31,10 +31,12 @@ namespace gspc
     server::server ( int port
                    , const QString& hostlist
                    , const QDir& hookdir
+                   , const QString &workdir
                    , QObject* parent)
       : QTcpServer (parent)
       , _hostlist (hostlist)
       , _hookdir (hookdir)
+      , _workdir(workdir)
     {
       if (!listen (QHostAddress::Any, port))
       {
@@ -57,6 +59,7 @@ namespace gspc
       gspc::mon::thread* t (new gspc::mon::thread ( socket_descriptor
                                                   , _hostlist
                                                   , _hookdir
+                                                  , _workdir
                                                   )
                            );
       t->moveToThread (t);
@@ -66,12 +69,14 @@ namespace gspc
     thread::thread ( int socket_descriptor
                    , const QString& hostlist
                    , const QDir& hookdir
+                   , const QString &workdir
                    , QObject* parent
                    )
       : QThread (parent)
       , _socket_descriptor (socket_descriptor)
       , _socket (NULL)
       , _hookdir (hookdir)
+      , _workdir (workdir)
     {
       QFileSystemWatcher* watcher (new QFileSystemWatcher (this));
       connect ( watcher, SIGNAL (fileChanged (const QString&))
@@ -309,6 +314,8 @@ namespace gspc
         args << QString ("node=%1").arg (node);
       }
 
+      qDebug() << "executing" << ai.path << args;
+
       QProcess *p = new QProcess (this);
       p->start (ai.path, args);
       if (p->waitForStarted ())
@@ -350,7 +357,7 @@ namespace gspc
 
         if (0 != rc)
         {
-          qDebug () << ai.path << "failed:" << rc;
+          qDebug () << ai.path << "failed:" << rc << ":" << error_reason;
           if (error_reason.isEmpty ())
           {
             error_reason = "unknown reason";
@@ -358,6 +365,7 @@ namespace gspc
         }
         else
         {
+          qDebug() << ai.path << "success";
           // hack: cache the workdir when we see a 'start' action
           if (ai.name == "start")
           {
@@ -371,6 +379,8 @@ namespace gspc
       }
       else
       {
+        p->waitForFinished ();
+        
         switch (p->error ())
         {
         case QProcess::FailedToStart:
@@ -400,8 +410,6 @@ namespace gspc
         }
       }
 
-      p->waitForFinished ();
-
       delete p;
 
       return rc;
@@ -411,6 +419,7 @@ namespace gspc
     {
       const QMutexLocker lock (&_socket_mutex);
       _socket->write (qPrintable (s));
+      _socket->flush ();
     }
 
     void thread::execute_action (fhg::util::parse::position& pos)
@@ -424,15 +433,7 @@ namespace gspc
         throw std::runtime_error ("action missing action name or host");
       }
 
-      qDebug() << "execute" << *invoc._action << "for" << *invoc._host << "with arguments:";
-      QMap<QString, QString>::const_iterator i (invoc._arguments.constBegin());
-      while (i != invoc._arguments.constEnd())
-      {
-        qDebug() << ">" << i.key() << "="<< i.value();
-        ++i;
-      }
-
-      const QMutexLocker lock (&_hosts_mutex);
+      //      const QMutexLocker lock (&_hosts_mutex);
 
       if (!_hosts.contains (*invoc._host))
       {
@@ -447,7 +448,12 @@ namespace gspc
         return;
       }
 
-      host_state_t & hs = _hosts [*invoc._host];
+      host_state_t hs;
+
+      {
+        const QMutexLocker lock (&_hosts_mutex);
+        hs = _hosts [*invoc._host];
+      }
 
       QString& state = hs.state;
       int& age = hs.age;
@@ -469,6 +475,18 @@ namespace gspc
         if (res.state != "-")
           state = res.state;
         age = 0;
+
+        {
+          const QMutexLocker lock (&_hosts_mutex);
+          _hosts [*invoc._host] = hs;
+        }
+
+        {
+          const QMutexLocker lock (&_pending_status_updates_mutex);
+          _pending_status_updates << *invoc._host;
+        }
+
+        send_some_status_updates ();
 
         if (0 == res.exit_code)
         {
@@ -651,18 +669,21 @@ namespace gspc
             pos.require ("osts");
 
             {
-              write_to_socket ("hosts: [");
-
-              const QMutexLocker lock (&_hosts_mutex);
-
-              QList<QString> hosts (_hosts.keys());
+              
+              QList<QString> hosts;
+              {
+                const QMutexLocker lock (&_hosts_mutex);
+                hosts = _hosts.keys ();
+              }
               qStableSort (hosts.begin(), hosts.end(), less());
 
+              const QMutexLocker lock (&_socket_mutex);
+              _socket->write ("hosts: [");
               foreach (const QString& host, hosts)
               {
-                write_to_socket (qPrintable (QString (" \"%1\",").arg (host)));
+                _socket->write (qPrintable (QString (" \"%1\",").arg (host)));
               }
-              write_to_socket ("]\n");
+              _socket->write ("]\n");
             }
 
             break;
@@ -776,9 +797,10 @@ namespace gspc
       {
         QList<QString> updated (results.keys());
 
-        const QMutexLocker lock (&_hosts_mutex);
         foreach (const QString& host, updated)
         {
+          const QMutexLocker lock (&_hosts_mutex);
+
           host_state_t & hs = _hosts [host];
           action_result_t & res = results [host];
 
@@ -790,9 +812,10 @@ namespace gspc
       }
       else
       {
-        const QMutexLocker lock (&_hosts_mutex);
         foreach (const QString& host, hosts)
         {
+          const QMutexLocker lock (&_hosts_mutex);
+          
           host_state_t & hs = _hosts[host];
           hs.state = "down";
           hs.details = "unknown";
@@ -803,7 +826,8 @@ namespace gspc
 
     void thread::send_some_status_updates()
     {
-      QStringList to_send;
+      QSet<QString> to_send;
+
       {
         const QMutexLocker lock (&_pending_status_updates_mutex);
 
@@ -811,20 +835,20 @@ namespace gspc
         {
           const QString host (_pending_status_updates.takeFirst ());
 
-          const QMutexLocker lock (&_hosts_mutex);
+          //          const QMutexLocker lock (&_hosts_mutex);
 
           if (!_hosts.contains (host))
           {
             continue;
           }
-          to_send << host;
+          to_send.insert (host);
         }
       }
 
       QStringList to_query;
       while (not to_send.isEmpty ())
       {
-        const QString host (to_send.takeFirst ());
+        const QString host (*to_send.begin()); to_send.erase(to_send.begin());
 
         to_query << host;
 
