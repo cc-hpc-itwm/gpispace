@@ -344,17 +344,17 @@ plugins=$(fhgcfg -f "${config_file}" -g kernel.plugins)
 plugins="numa,$plugins"
 plugins="${plugins},netd"
 
-plugin_load_flags=""
+plugin_load_flags=()
 for p in $(echo $plugins | tr ',' ' '); do
     if [ x"$gpi_enabled" == x"false" ] ; then
         if echo $p | grep -q 'gpi' ; then
             continue
         fi
     fi
-    plugin_load_flags="$plugin_load_flags $p"
+    plugin_load_flags+=("$p")
 done
 
-cmd="${bin} $cfg $plugin_load_flags"
+cmd="${bin} $cfg ${plugin_load_flags[@]}"
 
 export FHGLOG_to_file="${logprefix}.log"
 log "Running $cmd on node $hostname" >/dev/null 2>&1
