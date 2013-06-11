@@ -72,7 +72,10 @@ namespace fhg
         {
           QGraphicsItem::setPos (new_pos);
 
-          scene()->update_scene_rect();
+          if (scene())
+          {
+            scene()->update_scene_rect();
+          }
         }
 
         void base_item::clear_style_cache ()
