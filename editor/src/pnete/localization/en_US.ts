@@ -119,6 +119,87 @@
         <source>add_tunnel_port</source>
         <translation>Add tunnel port</translation>
     </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="443"/>
+        <location filename="../data/change_manager.cpp" line="452"/>
+        <source>set_transition_property_action</source>
+        <translation>setting transition property</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="543"/>
+        <source>add_connection_action</source>
+        <translation>adding connection</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="569"/>
+        <source>remove_connection_action</source>
+        <translation>removing connection</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="605"/>
+        <source>connection_is_read_action</source>
+        <translation>toggling only-read-connection</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="663"/>
+        <source>add_place_map_action</source>
+        <translation>adding virtual-place-mapping</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="689"/>
+        <source>remove_place_map_action</source>
+        <translation>removing virtual-place-mapping</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="745"/>
+        <source>add_transition_action</source>
+        <translation>adding transition</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="772"/>
+        <source>remove_transition_action</source>
+        <translation>removing transition</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="821"/>
+        <source>add_place_action</source>
+        <translation>adding place</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="847"/>
+        <source>remove_place_action</source>
+        <translation>removing place</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="886"/>
+        <source>place_set_virtual_action</source>
+        <translation>setting place to virtual</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="944"/>
+        <source>add_port_action</source>
+        <translation>adding port</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="969"/>
+        <source>remove_port_action</source>
+        <translation>removing port</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1008"/>
+        <source>set_place_association_action</source>
+        <translation>setting place-association</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1055"/>
+        <source>set_function_name_action</source>
+        <translation>setting function&apos;s name</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1109"/>
+        <source>set_expression_content_action</source>
+        <translation>setting expression&apos;s content</translation>
+    </message>
 </context>
 <context>
     <name>StructureEditorForm</name>
@@ -217,39 +298,143 @@
 <context>
     <name>fhg::pnete::data::change_manager_t</name>
     <message>
-        <location filename="../data/change_manager.cpp" line="1652"/>
+        <location filename="../data/change_manager.cpp" line="1881"/>
+        <location filename="../data/change_manager.cpp" line="1903"/>
+        <location filename="../data/change_manager.cpp" line="2234"/>
         <source>place_set_name_action</source>
-        <translation>Rename place</translation>
+        <translation>renaming place</translation>
     </message>
     <message>
-        <location filename="../data/change_manager.cpp" line="1681"/>
+        <location filename="../data/change_manager.cpp" line="1914"/>
+        <location filename="../data/change_manager.cpp" line="1934"/>
+        <location filename="../data/change_manager.cpp" line="2262"/>
         <source>place_set_type_action</source>
-        <translation>Set type of place</translation>
+        <translation>setting type of place</translation>
     </message>
     <message>
-        <location filename="../data/change_manager.cpp" line="1717"/>
+        <location filename="../data/change_manager.cpp" line="1954"/>
         <source>make_virtual_action</source>
-        <translation>Make place virtual</translation>
+        <translation>making place virtual</translation>
     </message>
     <message>
-        <location filename="../data/change_manager.cpp" line="1752"/>
+        <location filename="../data/change_manager.cpp" line="1989"/>
         <source>make_real_action</source>
-        <translation>Make place real</translation>
+        <translation>making place real</translation>
     </message>
     <message>
-        <location filename="../data/change_manager.cpp" line="1822"/>
+        <location filename="../data/change_manager.cpp" line="2010"/>
+        <source>set_place_property_action</source>
+        <translation>setting place property</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="2031"/>
+        <source>move_place_item_action</source>
+        <translation>moving place</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="2059"/>
         <source>add_port_action</source>
-        <translation>Add port</translation>
+        <translation>adding port</translation>
     </message>
     <message>
-        <location filename="../data/change_manager.cpp" line="1987"/>
+        <location filename="../data/change_manager.cpp" line="1894"/>
+        <location filename="../data/change_manager.cpp" line="2226"/>
+        <location filename="../data/change_manager.cpp" line="2243"/>
         <source>port_set_name_action</source>
-        <translation>Rename port</translation>
+        <translation>renaming port</translation>
     </message>
     <message>
-        <location filename="../data/change_manager.cpp" line="2011"/>
+        <location filename="../data/change_manager.cpp" line="1186"/>
+        <location filename="../data/change_manager.cpp" line="2282"/>
+        <source>set_place_association_action</source>
+        <translation>setting place association</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1206"/>
+        <source>add_place_map_action</source>
+        <translation>adding virtual-place-mapping</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1232"/>
+        <source>add_connection_action</source>
+        <translation>adding connection</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1290"/>
+        <source>add_connection_with_implicit_place_action</source>
+        <translation>connecting transitions</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1388"/>
+        <source>remove_connection_action</source>
+        <translation>removing connection</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1453"/>
+        <source>set_connect_property_action</source>
+        <translation>setting connection property</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1509"/>
+        <source>set_place_map_property_action</source>
+        <translation>setting place-mapping property</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1531"/>
+        <source>add_transition_action</source>
+        <translation>adding transition</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1625"/>
+        <source>remove_transition_and_connections_action</source>
+        <translation>removing transition and connections</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1683"/>
+        <source>transition_set_name_action</source>
+        <translation>setting transition&apos;s name</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1698"/>
+        <source>set_transition_property_action</source>
+        <translation>setting transition property</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1720"/>
+        <source>move_transition_item_action</source>
+        <translation>moving transition</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1802"/>
+        <source>remove_place_and_connections_action</source>
+        <translation>removing place and connections</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="1927"/>
+        <location filename="../data/change_manager.cpp" line="2254"/>
+        <location filename="../data/change_manager.cpp" line="2269"/>
         <source>port_set_type_action</source>
-        <translation>Set type of port</translation>
+        <translation>setting type of port</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="2141"/>
+        <source>remove_port_and_connections_action</source>
+        <translation>removing port and connections</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="2208"/>
+        <source>set_port_property_action</source>
+        <translation>setting port property</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="2310"/>
+        <source>move_port_item_action</source>
+        <translation>moving port</translation>
+    </message>
+    <message>
+        <location filename="../data/change_manager.cpp" line="2345"/>
+        <source>set_function_property_action</source>
+        <translation>setting function property</translation>
     </message>
 </context>
 <context>
