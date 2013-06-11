@@ -1530,7 +1530,7 @@ namespace fhg
         , const boost::optional<QPointF>& position
         )
       {
-        beginMacro ("add_transition_action");
+        beginMacro (tr ("add_transition_action"));
 
         const ::xml::parse::id::ref::transition transition
           ( ::xml::parse::type::transition_type
