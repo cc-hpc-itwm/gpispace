@@ -21,6 +21,7 @@
 #include <QFile>
 #include <QProcess>
 #include <QBuffer>
+#include <QtCore>
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
@@ -130,9 +131,9 @@ namespace gspc
       add_state ("inuse",  0x008000).actions << "remove";
     }
 
-    thread::action_info_t & thread::add_action ( QString const &name
-                                               , QString const &desc
-                                               )
+    action_info_t & thread::add_action ( QString const &name
+                                       , QString const &desc
+                                       )
     {
       action_info_t ai;
       ai.name = name;
@@ -143,10 +144,10 @@ namespace gspc
       return _actions [name];
     }
 
-    thread::state_info_t & thread::add_state ( QString const &name
-                                             , int color
-                                             , int border
-                                             )
+    state_info_t & thread::add_state ( QString const &name
+                                     , int color
+                                     , int border
+                                     )
     {
       state_info_t s;
       s.name = name;
@@ -157,10 +158,10 @@ namespace gspc
       return _states [name];
     }
 
-    thread::state_info_t & thread::add_hidden_state ( QString const &name
-                                                      , int color
-                                                      , int border
-                                                      )
+    state_info_t & thread::add_hidden_state ( QString const &name
+                                            , int color
+                                            , int border
+                                            )
     {
       state_info_t s;
       s.hidden = true;
@@ -182,7 +183,7 @@ namespace gspc
       connect (_socket, SIGNAL (readyRead()), this, SLOT (may_read()));
 
       QTimer* timer (new QTimer);
-      connect (timer, SIGNAL (timeout()), this, SLOT (send_some_status_updates()));
+      connect (timer, SIGNAL (timeout()), this, SLOT (send_some ()));
       timer->start (500);
 
       exec();
@@ -302,13 +303,13 @@ namespace gspc
       QString message;
     };
 
-    int thread::call_action ( thread::action_info_t const &ai
+    int thread::call_action ( action_info_t const &ai
                             , QMap<QString, QString> const &params
-                            , QStringList const &nodes
-                            , QMap<QString, thread::action_result_t> &result
-                            , QString &error_reason
+                            , QSet<QString> const &nodes
+                            , QMap<QString, action_result_t> &result
                             )
     {
+      QString error_reason;
       int rc = 0;
 
       QStringList args;
@@ -325,7 +326,6 @@ namespace gspc
         args << QString ("workdir=%1").arg (_workdir);
       }
 
-      // hack to work on nodes
       foreach (const QString& node, nodes)
       {
         args << QString ("node=%1").arg (node);
@@ -333,11 +333,12 @@ namespace gspc
 
       qDebug() << "executing" << ai.path << args;
 
-      QProcess p (this);
+      QProcess *p_ptr = new QProcess;
+      QProcess &p = *p_ptr;
       p.start (ai.path, args);
-      if (p.waitForStarted ())
+      if (p.waitForStarted (-1))
       {
-        p.waitForFinished ();
+        p.waitForFinished (-1);
 
         QByteArray bytes;
 
@@ -397,7 +398,8 @@ namespace gspc
       }
       else
       {
-        p.waitForFinished ();
+        QString error_reason;
+        int rc;
 
         switch (p.error ())
         {
@@ -428,14 +430,48 @@ namespace gspc
         }
       }
 
+      if (0 != rc)
+      {
+        foreach (const QString& node, nodes)
+        {
+          action_result_t res;
+          res.host = node;
+          res.exit_code = rc;
+          res.state = "-";
+          res.message = error_reason;
+          result [node] = res;
+        }
+      }
+
+      delete p_ptr;
+
       return rc;
+    }
+
+    static action_request_result_t s_run_request (thread *thrd, action_request_t const &req)
+    {
+      return thrd->run_request (req);
     }
 
     void thread::write_to_socket (QString const &s)
     {
       const QMutexLocker lock (&_socket_mutex);
       _socket->write (qPrintable (s));
-      _socket->flush ();
+      //      _socket->flush ();
+    }
+
+    action_request_result_t thread::run_request (action_request_t const &req)
+    {
+      action_request_result_t result;
+      result.action = req.action;
+
+      call_action ( _actions [req.action]
+                  , req.params
+                  , req.hosts
+                  , result.result
+                  );
+
+      return result;
     }
 
     void thread::execute_action (fhg::util::parse::position& pos)
@@ -449,110 +485,33 @@ namespace gspc
         throw std::runtime_error ("action missing action name or host");
       }
 
-      //      const QMutexLocker lock (&_hosts_mutex);
-
-      if (!_hosts.contains (*invoc._host))
-      {
-        write_to_socket
-          ( qPrintable ( QString
-                       ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Unknown host.\"],]\n")
-                       .arg (*invoc._host)
-                       .arg (*invoc._action)
-                       )
-          );
-
-        return;
-      }
-
-      host_state_t hs;
-
       {
         const QMutexLocker lock (&_hosts_mutex);
-        hs = _hosts [*invoc._host];
-      }
 
-      QString& state = hs.state;
-      int& age = hs.age;
-      QString & details = hs.details;
-      details = "";
-
-      QMap<QString, action_result_t> results;
-      QString error_reason;
-      int ec = call_action ( _actions [*invoc._action]
-                           , invoc._arguments
-                           , QStringList () << *invoc._host
-                           , results
-                           , error_reason
-                           );
-      if (0 == ec)
-      {
-        action_result_t & res = results [*invoc._host];
-
-        if (res.state != "-")
-          state = res.state;
-        age = 0;
-
-        {
-          const QMutexLocker lock (&_hosts_mutex);
-          _hosts [*invoc._host] = hs;
-        }
-
-        {
-          const QMutexLocker lock (&_pending_status_updates_mutex);
-          _pending_status_updates << *invoc._host;
-        }
-
-        send_some_status_updates ();
-
-        if (0 == res.exit_code)
+        if (!_hosts.contains (*invoc._host))
         {
           write_to_socket
             ( qPrintable ( QString
-                         ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"%3\"]]\n")
-                         .arg (res.host)
-                         .arg (*invoc._action)
-                         .arg (res.message)
-                         )
-            );
-        }
-        else if (1 == res.exit_code)
-        {
-          write_to_socket
-            ( qPrintable ( QString
-                         ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"%3\"]]\n")
-                         .arg (res.host)
-                         .arg (*invoc._action)
-                         .arg (res.message)
-                         )
-            );
-        }
-        else
-        {
-          write_to_socket
-            ( qPrintable ( QString
-                         ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"error %3: %4\"],]\n")
+                         ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Unknown host.\"],]\n")
                          .arg (*invoc._host)
                          .arg (*invoc._action)
-                         .arg (res.exit_code)
-                         .arg (res.message)
                          )
             );
+        return;
         }
       }
-      else
-      {
-        write_to_socket
-          ( qPrintable ( QString
-                       ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"'%2' on '%1' in state '%3' failed: %4: %5\"],]\n")
-                       .arg (*invoc._host)
-                       .arg (*invoc._action)
-                       .arg (state)
-                       .arg (ec)
-                       .arg (error_reason)
-                       )
-          );
 
-        qDebug () << "new state for host" << *invoc._host << "is" << state;
+      action_request_t req;
+      req.action = *invoc._action;
+      req.hosts << *invoc._host;
+      req.params = invoc._arguments;
+
+      QFuture<action_request_result_t> *f
+        = new QFuture<action_request_result_t>(QtConcurrent::run (s_run_request, this, req));
+
+      {
+        const QMutexLocker lock (&_action_results_mutex);
+        _action_results << f;
       }
     }
 
@@ -799,89 +758,185 @@ namespace gspc
       }
     }
 
-    void thread::update_status (QStringList const &hosts)
+    void thread::update_status (action_request_result_t const &res)
     {
-      QMap<QString, action_result_t> results;
-      QString error_reason;
-      int ec = call_action ( _actions ["status"]
-                           , QMap<QString, QString> ()
-                           , hosts
-                           , results
-                           , error_reason
-                           );
+      QList<QString> updated (res.result.keys());
 
-      if (0 == ec)
+      foreach (const QString& host, updated)
       {
-        QList<QString> updated (results.keys());
-
-        foreach (const QString& host, updated)
+        action_result_t const & r = res.result [host];
         {
           const QMutexLocker lock (&_hosts_mutex);
-
           host_state_t & hs = _hosts [host];
-          action_result_t & res = results [host];
 
-          if (res.state != "-")
-            hs.state = res.state;
-          hs.details = res.message.trimmed ();
+          if (r.state != "-")
+            hs.state = r.state;
+          hs.details = r.message.trimmed ();
           hs.age = 0;
         }
+        {
+          const QMutexLocker lock (&_ongoing_status_updates_mutex);
+          _ongoing_status_updates.remove (host);
+        }
       }
-      else
+
+      send_status_updates (updated);
+    }
+
+    void thread::handle_action_result (action_request_result_t const & res)
+    {
+      QList<QString> updated (res.result.keys());
+
+      foreach (const QString& host, updated)
       {
-        foreach (const QString& host, hosts)
+        host_state_t hs;
         {
           const QMutexLocker lock (&_hosts_mutex);
+          hs = _hosts [host];
+        }
 
-          host_state_t & hs = _hosts[host];
-          hs.state = "down";
-          hs.details = "unknown";
-          hs.age = 0;
+        action_result_t const & r = res.result [host];
+
+        if (r.state != "-")
+          hs.state = r.state;
+        hs.age = 0;
+
+        {
+          const QMutexLocker lock (&_hosts_mutex);
+          _hosts [host] = hs;
+        }
+
+        if (0 == r.exit_code)
+        {
+          write_to_socket
+            (qPrintable ( QString
+                        ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"%3\"]]\n")
+                        .arg (host)
+                        .arg (res.action)
+                        .arg (r.message)
+                        )
+            );
+        }
+        else if (1 == r.exit_code)
+        {
+          write_to_socket
+            (qPrintable ( QString
+                        ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"%3\"]]\n")
+                        .arg (host)
+                        .arg (res.action)
+                        .arg (r.message)
+                        )
+            );
+        }
+        else
+        {
+          write_to_socket
+            ( qPrintable ( QString
+                         ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"error %3: %4\"],]\n")
+                         .arg (host)
+                         .arg (res.action)
+                         .arg (r.exit_code)
+                         .arg (r.message)
+                         )
+            );
         }
       }
     }
 
-    void thread::send_some_status_updates()
+    void thread::send_action_request_result (action_request_result_t const & res)
     {
-      QSet<QString> to_send;
-
+      if (res.action == "status")
       {
-        const QMutexLocker lock (&_pending_status_updates_mutex);
+        update_status (res);
+      }
+      else
+      {
+        handle_action_result (res);
+      }
+    }
 
-        while (!_pending_status_updates.empty ())
+    void thread::send_some ()
+    {
+      {
+        const QMutexLocker lock (&_action_results_mutex);
+        QSet<QFuture<action_request_result_t>* >::iterator i (_action_results.begin ());
+        while (i != _action_results.end ())
         {
-          const QString host (_pending_status_updates.takeFirst ());
-
-          //          const QMutexLocker lock (&_hosts_mutex);
-
-          if (!_hosts.contains (host))
+          QFuture<action_request_result_t> *f = *i;
+          if (f->isFinished ())
           {
-            continue;
+            send_action_request_result (f->result ());
+            i = _action_results.erase (i);
+            delete f;
           }
-          to_send.insert (host);
+          else
+          {
+            ++i;
+          }
         }
       }
 
-      QStringList to_query;
-      while (not to_send.isEmpty ())
+      QSet<QString> to_query;
       {
-        const QString host (*to_send.begin()); to_send.erase(to_send.begin());
-
-        to_query << host;
-
-        if (to_query.size () == 16)
+        const QMutexLocker lock (&_pending_status_updates_mutex);
+        while (!_pending_status_updates.empty ())
         {
-          update_status (to_query);
-          send_status_updates (to_query);
-          to_query.clear ();
+          const QString host (_pending_status_updates.takeFirst ());
+          {
+            const QMutexLocker lock (&_hosts_mutex);
+            if (!_hosts.contains (host))
+              continue;
+          }
+
+          {
+            const QMutexLocker lock (&_ongoing_status_updates_mutex);
+            if (_ongoing_status_updates.contains (host))
+              continue;
+          }
+
+          to_query << host;
+
+          if (to_query.size () >= 16)
+          {
+            action_request_t req;
+            req.action = "status";
+            req.hosts = to_query;
+
+            {
+              const QMutexLocker lock (&_ongoing_status_updates_mutex);
+              _ongoing_status_updates.unite (to_query);
+            }
+
+            to_query.clear ();
+
+            QFuture<action_request_result_t> *f
+              = new QFuture<action_request_result_t>(QtConcurrent::run (s_run_request, this, req));
+
+            {
+              const QMutexLocker lock (&_action_results_mutex);
+              _action_results << f;
+            }
+          }
         }
       }
 
       if (not to_query.isEmpty ())
       {
-        update_status (to_query);
-        send_status_updates (to_query);
+        action_request_t req;
+        req.action = "status";
+        req.hosts = to_query;
+
+        {
+          const QMutexLocker lock (&_ongoing_status_updates_mutex);
+          _ongoing_status_updates.unite (to_query);
+        }
         to_query.clear ();
+
+        QFuture<action_request_result_t> *f
+          = new QFuture<action_request_result_t>(QtConcurrent::run (s_run_request, this, req));
+
+        const QMutexLocker lock (&_action_results_mutex);
+        _action_results << f;
       }
     }
   }

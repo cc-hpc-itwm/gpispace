@@ -12,11 +12,100 @@
 #include <QMutex>
 #include <QStringList>
 #include <QDir>
+#include <QFuture>
+#include <QSet>
 
 namespace gspc
 {
   namespace mon
   {
+    struct host_state_t
+    {
+      QString state;
+      QString details;
+      int     age;
+    };
+
+    struct state_info_t
+    {
+      state_info_t ()
+        : name ()
+        , color (0)
+        , border (0)
+        , hidden (false)
+        , actions ()
+      {}
+
+      QString                  name;
+      int color;
+      int border;
+      bool hidden;
+      boost::optional<QString> label;
+      QStringList              actions;
+    };
+
+    struct parameter_info_t
+    {
+      parameter_info_t ()
+        : name ()
+        , label ()
+        , type ()
+        , dflt (boost::none)
+      {}
+
+      parameter_info_t ( QString const &name
+                       , QString const &label
+                       , QString const &type
+                       , boost::optional<QString> const &dflt = boost::none
+                       )
+        : name (name)
+        , label (label)
+        , type (type)
+        , dflt (dflt)
+      {}
+
+      QString name;
+      QString label;
+      QString type;
+      boost::optional<QString> dflt;
+    };
+
+    struct action_info_t
+    {
+      action_info_t ()
+        : name ()
+        , path ()
+        , desc ()
+        , params ()
+      {}
+
+      QString name;
+      QString path;
+      QString desc;
+      QList<parameter_info_t> params;
+    };
+
+    struct action_result_t
+    {
+      QString host;
+      int exit_code; // 0 = success, 1 = warning, >= 2 = failed
+      QString state;
+      QString message;
+    };
+
+    struct action_request_t
+    {
+      QString action;
+      QSet<QString> hosts;
+      QMap<QString, QString> params;
+    };
+
+    struct action_request_result_t
+    {
+      QString action;
+      QMap<QString, action_result_t> result;
+    };
+
     class server : public QTcpServer
     {
       Q_OBJECT;
@@ -49,91 +138,18 @@ namespace gspc
              , QObject* parent = NULL);
       ~thread ();
 
+      action_request_result_t run_request (action_request_t const &req);
     protected:
       void run();
 
     private slots:
       void may_read();
 
-      void send_some_status_updates();
+      void send_some();
 
       void read_hostlist (const QString&);
 
     private:
-      struct host_state_t
-      {
-        QString state;
-        QString details;
-        int     age;
-      };
-
-      struct state_info_t
-      {
-        state_info_t ()
-          : name ()
-          , color (0)
-          , border (0)
-          , hidden (false)
-          , actions ()
-        {}
-
-        QString                  name;
-        int color;
-        int border;
-        bool hidden;
-        boost::optional<QString> label;
-        QStringList              actions;
-      };
-
-      struct parameter_info_t
-      {
-        parameter_info_t ()
-          : name ()
-          , label ()
-          , type ()
-          , dflt (boost::none)
-        {}
-
-        parameter_info_t ( QString const &name
-                         , QString const &label
-                         , QString const &type
-                         , boost::optional<QString> const &dflt = boost::none
-                         )
-          : name (name)
-          , label (label)
-          , type (type)
-          , dflt (dflt)
-        {}
-
-        QString name;
-        QString label;
-        QString type;
-        boost::optional<QString> dflt;
-      };
-
-      struct action_info_t
-      {
-        action_info_t ()
-          : name ()
-          , path ()
-          , desc ()
-          , params ()
-        {}
-
-        QString name;
-        QString path;
-        QString desc;
-        QList<parameter_info_t> params;
-      };
-
-      struct action_result_t
-      {
-        QString host;
-        int exit_code; // 0 = success, 1 = warning, >= 2 = failed
-        QString state;
-        QString message;
-      };
-
       void execute_action (fhg::util::parse::position&);
       void send_action_description (fhg::util::parse::position&);
       void send_layout_hint (fhg::util::parse::position&);
@@ -151,11 +167,10 @@ namespace gspc
                                  , QString const &desc
                                  );
 
-      int call_action ( thread::action_info_t const &ai
+      int call_action ( action_info_t const &ai
                       , QMap<QString, QString> const &params
-                      , QStringList const &nodes
+                      , QSet<QString> const &nodes
                       , QMap<QString, action_result_t> &result
-                      , QString &error_reason
                       );
 
       void send_status_updates (QStringList const &hosts);
@@ -163,7 +178,11 @@ namespace gspc
                        , QString const &state
                        , QString const &detail
                        );
-      void update_status (QStringList const&hosts);
+
+      void update_status (action_request_result_t const & res);
+      void handle_action_result (action_request_result_t const & res);
+
+      void send_action_request_result (action_request_result_t const &);
 
       void write_to_socket (QString const &);
 
@@ -183,6 +202,11 @@ namespace gspc
 
       mutable QMutex _pending_status_updates_mutex;
       QStringList _pending_status_updates;
+      mutable QMutex _ongoing_status_updates_mutex;
+      QSet<QString> _ongoing_status_updates;
+
+      mutable QMutex _action_results_mutex;
+      QSet<QFuture<action_request_result_t>* > _action_results;
     };
   }
 }
