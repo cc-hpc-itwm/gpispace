@@ -120,6 +120,7 @@ namespace gspc
       add_state ("free", 0x000080).actions          << "start";
       add_state ("free/reserved", 0xCCCC00).actions << "start";
 
+      add_state ("queued", 0x913051).actions << "remove";
       add_state ("unavailable", 0x888888);
 
       add_hidden_state ("addable", 0x000080).actions            << "add";
