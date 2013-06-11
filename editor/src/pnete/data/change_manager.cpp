@@ -1134,7 +1134,7 @@ namespace fhg
 
         if (function_of_net_of_place == function_of_port)
         {
-          beginMacro ("set_place_association_action");
+          beginMacro (tr ("set_place_association_action"));
 
           if (place.is_implicit() && !no_make_explicit)
           {
@@ -1154,7 +1154,7 @@ namespace fhg
           {
             if (port.is_tunnel())
             {
-              beginMacro ("add_place_map_action");
+              beginMacro (tr ("add_place_map_action"));
 
               if (place.is_implicit() && !no_make_explicit)
               {
@@ -1180,7 +1180,7 @@ namespace fhg
             }
             else
             {
-              beginMacro ("add_connection_action");
+              beginMacro (tr ("add_connection_action"));
 
               if (place.is_implicit() && !no_make_explicit)
               {
@@ -1227,7 +1227,7 @@ namespace fhg
           throw std::runtime_error ("different types for connected ports");
         }
 
-        beginMacro ("add_connection_with_implicit_place_action");
+        beginMacro (tr ("add_connection_with_implicit_place_action"));
 
         const ::xml::parse::id::ref::place place
           ( ::xml::parse::type::place_type
@@ -1256,7 +1256,7 @@ namespace fhg
 
       void change_manager_t::remove_connection (const handle::connect& connect)
       {
-        beginMacro ("remove_connection_action");
+        beginMacro (tr ("remove_connection_action"));
 
         if (connect.get().resolved_place())
         {
@@ -1417,7 +1417,7 @@ namespace fhg
       void change_manager_t::delete_transition
         (const handle::transition& transition)
       {
-        beginMacro ("remove_transition_and_connections_action");
+        beginMacro (tr ("remove_transition_and_connections_action"));
 
         //! \note remove_connection will modify transition's
         //! connections, thus copy out of there first, then modify.
@@ -1570,7 +1570,7 @@ namespace fhg
 
       void change_manager_t::delete_place (const handle::place& place)
       {
-        beginMacro ("remove_place_and_connections_action");
+        beginMacro (tr ("remove_place_and_connections_action"));
 
         if (place.get().has_parent())
         {
@@ -1901,7 +1901,7 @@ namespace fhg
 
       void change_manager_t::delete_port (const handle::port& port)
       {
-        beginMacro ("remove_port_and_connections_action");
+        beginMacro (tr ("remove_port_and_connections_action"));
 
         if (port.get().place)
         {
@@ -2032,7 +2032,7 @@ namespace fhg
         , const boost::optional<std::string>& place
         )
       {
-        beginMacro ("set_place_association_action");
+        beginMacro (tr ("set_place_association_action"));
 
         if (port.get().place && !place)
         {
