@@ -610,7 +610,7 @@ namespace prefix
          )
       {
         throw fhg::util::parse::error::expected
-          ("boolean' or 'directory' or 'filename' or 'integer' or 'string", pos);
+          ("boolean' or 'directory' or 'duration' or 'filename' or 'integer' or 'string", pos);
       }
 
       switch (*pos)
@@ -625,9 +625,29 @@ namespace prefix
 
       case 'd':
         ++pos;
-        pos.require ("irectory");
+        if (pos.end() || (*pos != 'i' && *pos != 'u'))
+        {
+          throw fhg::util::parse::error::expected ("irectory' or 'uration", pos);
+        }
 
-        _type = directory;
+        switch (*pos)
+        {
+        case 'i':
+          ++pos;
+          pos.require ("rectory");
+
+          _type = directory;
+
+          break;
+
+        case 'u':
+          ++pos;
+          pos.require ("ration");
+
+          _type = duration;
+
+          break;
+        }
 
         break;
 
@@ -1364,6 +1384,17 @@ namespace prefix
             );
           return std::pair<QWidget*, boost::function<QString()> >
             (edit, boost::bind (&file_line_edit::text, edit));
+        }
+
+      case action_argument_data::duration:
+        {
+          QSpinBox* edit (new QSpinBox);
+          edit->setMinimum (1);
+          edit->setMaximum (INT_MAX);
+          edit->setSuffix ("h");
+          edit->setValue (string_to_int (item._default.get_value_or ("1")));
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (spinbox_to_string, edit));
         }
 
       case action_argument_data::filename:
