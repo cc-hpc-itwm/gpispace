@@ -370,7 +370,7 @@ namespace gspc
         }
 
         error_reason = QString (p.readAllStandardError().replace('\n', ' '));
-        
+
         rc = p.exitCode ();
 
         if (0 != rc)
@@ -397,7 +397,7 @@ namespace gspc
       else
       {
         p.waitForFinished ();
-        
+
         switch (p.error ())
         {
         case QProcess::FailedToStart:
@@ -685,7 +685,7 @@ namespace gspc
             pos.require ("osts");
 
             {
-              
+
               QList<QString> hosts;
               {
                 const QMutexLocker lock (&_hosts_mutex);
@@ -831,7 +831,7 @@ namespace gspc
         foreach (const QString& host, hosts)
         {
           const QMutexLocker lock (&_hosts_mutex);
-          
+
           host_state_t & hs = _hosts[host];
           hs.state = "down";
           hs.details = "unknown";
