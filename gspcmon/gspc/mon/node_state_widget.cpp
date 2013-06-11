@@ -1391,7 +1391,7 @@ namespace prefix
           QSpinBox* edit (new QSpinBox);
           edit->setMinimum (1);
           edit->setMaximum (INT_MAX);
-          edit->setSuffix ("h");
+          edit->setSuffix (" h");
           edit->setValue (string_to_int (item._default.get_value_or ("1")));
           return std::pair<QWidget*, boost::function<QString()> >
             (edit, boost::bind (spinbox_to_string, edit));
