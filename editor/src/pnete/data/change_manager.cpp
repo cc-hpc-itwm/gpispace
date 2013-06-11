@@ -202,7 +202,7 @@ namespace fhg
             , internal_type* document
 
 #define ACTION_INIT(NAME)                           \
-                QUndoCommand (QObject::tr (NAME))   \
+                QUndoCommand (NAME)                 \
               , _change_manager (change_manager)    \
               , _document (document)
 
@@ -260,7 +260,7 @@ namespace fhg
 
         public:
           meta_set_property
-            ( const char* name
+            ( const QString& name
             , ACTION_ARG_LIST
             , const handle_type& handle
             , const ::we::type::property::key_type& key
@@ -319,7 +319,7 @@ namespace fhg
         {
         public:
           meta_set_type
-            ( const char* name
+            ( const QString& name
             , ACTION_ARG_LIST
             , const HANDLE_TYPE& handle
             , const QString& type
@@ -365,7 +365,7 @@ namespace fhg
         {
         public:
           meta_set_name
-            ( const char* action_name
+            ( const QString& action_name
             , ACTION_ARG_LIST
             , const HANDLE_TYPE& handle
             , const QString& name
@@ -402,7 +402,7 @@ namespace fhg
 
         public:
           meta_move_item
-            ( const char* name
+            ( const QString& name
             , int id
             , ACTION_ARG_LIST
             , const handle_type& handle
@@ -414,7 +414,7 @@ namespace fhg
               , _handle (handle)
               , _outer (outer)
               , _set_x_action ( new action::meta_set_property<handle_type>
-                                ( "set_transition_property_action"
+                                ( QObject::tr ("set_transition_property_action")
                                 , ACTION_CTOR_ARGS, handle
                                 , !_outer
                                 ? "fhg.pnete.position.x"
@@ -423,7 +423,7 @@ namespace fhg
                                 )
                               )
               , _set_y_action ( new action::meta_set_property<handle_type>
-                                ( "set_transition_property_action"
+                                ( QObject::tr ("set_transition_property_action")
                                 , ACTION_CTOR_ARGS, handle
                                 , !_outer
                                 ? "fhg.pnete.position.y"
@@ -514,7 +514,7 @@ namespace fhg
             , const ::xml::parse::id::ref::transition& transition
             , const ::xml::parse::id::ref::connect& connect
             )
-              : ACTION_INIT ("add_connection_action")
+              : ACTION_INIT (QObject::tr ("add_connection_action"))
               , _transition (transition)
               , _connect (connect)
           { }
@@ -540,7 +540,7 @@ namespace fhg
         public:
           remove_connection
             (ACTION_ARG_LIST, const ::xml::parse::id::ref::connect& connect)
-              : ACTION_INIT ("remove_connection_action")
+              : ACTION_INIT (QObject::tr ("remove_connection_action"))
               , _connect (connect)
               , _transition (_connect.get().parent()->make_reference_id())
           { }
@@ -576,7 +576,7 @@ namespace fhg
         public:
           connection_is_read
             (ACTION_ARG_LIST, const handle::connect& connect, bool read)
-              : ACTION_INIT ("connection_is_read_action")
+              : ACTION_INIT (QObject::tr ("connection_is_read_action"))
               , _connect (connect)
               , _old_value (connect.is_read())
               , _new_value (read)
@@ -634,7 +634,7 @@ namespace fhg
             , const ::xml::parse::id::ref::transition& transition
             , const ::xml::parse::id::ref::place_map& place_map
             )
-              : ACTION_INIT ("add_place_map_action")
+              : ACTION_INIT (QObject::tr ("add_place_map_action"))
               , _transition (transition)
               , _place_map (place_map)
           { }
@@ -660,7 +660,7 @@ namespace fhg
         public:
           remove_place_map
             (ACTION_ARG_LIST, const ::xml::parse::id::ref::place_map& place_map)
-              : ACTION_INIT ("remove_place_map_action")
+              : ACTION_INIT (QObject::tr ("remove_place_map_action"))
               , _place_map (place_map)
               , _transition (_place_map.get().parent()->make_reference_id())
           { }
@@ -716,7 +716,7 @@ namespace fhg
             , const ::xml::parse::id::ref::net& net
             , const ::xml::parse::id::ref::transition& transition
             )
-              : ACTION_INIT ("add_transition_action")
+              : ACTION_INIT (QObject::tr ("add_transition_action"))
               , _transition (transition)
               , _net (net)
           { }
@@ -743,7 +743,7 @@ namespace fhg
           remove_transition ( ACTION_ARG_LIST
                             , const ::xml::parse::id::ref::transition& transition
                             )
-            : ACTION_INIT ("remove_transition_action")
+            : ACTION_INIT (QObject::tr ("remove_transition_action"))
             , _transition (transition)
             , _net (_transition.get().parent()->make_reference_id())
           { }
@@ -792,7 +792,7 @@ namespace fhg
                     , const ::xml::parse::id::ref::net& net
                     , const ::xml::parse::id::ref::place& place
                     )
-            : ACTION_INIT ("add_place_action")
+            : ACTION_INIT (QObject::tr ("add_place_action"))
             , _place (place)
             , _net (net)
           { }
@@ -818,7 +818,7 @@ namespace fhg
         public:
           remove_place
             (ACTION_ARG_LIST, const ::xml::parse::id::ref::place& place)
-              : ACTION_INIT ("remove_place_action")
+              : ACTION_INIT (QObject::tr ("remove_place_action"))
               , _place (place)
               , _net (_place.get().parent()->make_reference_id())
           { }
@@ -857,7 +857,7 @@ namespace fhg
                             , const ::xml::parse::id::ref::place& place
                             , bool new_value
                             )
-            : ACTION_INIT ("place_set_virtual_action")
+            : ACTION_INIT (QObject::tr ("place_set_virtual_action"))
             , _place (place)
             , _old_value (_place.get().is_virtual())
             , _new_value (new_value)
@@ -915,7 +915,7 @@ namespace fhg
                    , const ::xml::parse::id::ref::function& function
                    , const ::xml::parse::id::ref::port& port
                    )
-            : ACTION_INIT ("add_port_action")
+            : ACTION_INIT (QObject::tr ("add_port_action"))
             , _port (port)
             , _function (function)
           { }
@@ -940,7 +940,7 @@ namespace fhg
         {
         public:
           remove_port (ACTION_ARG_LIST, const ::xml::parse::id::ref::port& port)
-            : ACTION_INIT ("remove_port_action")
+            : ACTION_INIT (QObject::tr ("remove_port_action"))
             , _port (port)
             , _function (_port.get().parent()->make_reference_id())
           { }
@@ -979,7 +979,7 @@ namespace fhg
             , const handle::port& port
             , const boost::optional<std::string>& place
             )
-              : ACTION_INIT ("set_place_association_action")
+              : ACTION_INIT (QObject::tr ("set_place_association_action"))
               , _port (port)
               , _old_place (port.get().place)
               , _new_place (place)
@@ -1026,7 +1026,7 @@ namespace fhg
             , const handle::function& function
             , const QString& name
             )
-              : ACTION_INIT ("set_function_name_action")
+              : ACTION_INIT (QObject::tr ("set_function_name_action"))
               , _function (function)
               , _old_name (function.get().name())
               , _new_name
@@ -1080,7 +1080,7 @@ namespace fhg
             , const handle::expression& expression
             , const QString& new_content
             )
-              : ACTION_INIT ("set_expression_content_action")
+              : ACTION_INIT (QObject::tr ("set_expression_content_action"))
               , _expression (expression)
               , _old_content (expression.get().expression())
               , _new_content (new_content.toStdString())
@@ -1299,7 +1299,7 @@ namespace fhg
         )
       {
         push ( new action::meta_set_property<handle::connect>
-               ( "set_connect_property_action"
+               ( tr ("set_connect_property_action")
                , ACTION_CTOR_ARGS (connect), connect, key, val
                )
              );
@@ -1329,7 +1329,7 @@ namespace fhg
         )
       {
         push ( new action::meta_set_property<handle::place_map>
-               ( "set_place_map_property_action"
+               ( tr ("set_place_map_property_action")
                , ACTION_CTOR_ARGS (place_map), place_map, key, val
                )
              );
@@ -1451,7 +1451,7 @@ namespace fhg
         (const data::handle::transition& transition, const QString& name)
       {
         push ( new action::meta_set_name<handle::transition>
-               ( "transition_set_name_action"
+               ( tr ("transition_set_name_action")
                , ACTION_CTOR_ARGS (transition)
                , transition
                , name
@@ -1466,7 +1466,7 @@ namespace fhg
         )
       {
         push ( new action::meta_set_property<handle::transition>
-               ( "set_transition_property_action"
+               ( tr ("set_transition_property_action")
                , ACTION_CTOR_ARGS (transition), transition, key, val
                )
              );
@@ -1488,7 +1488,7 @@ namespace fhg
                                        )
       {
         push ( new action::meta_move_item<handle::transition>
-               ( "move_transition_item_action", ids::move_transition_item
+               ( tr ("move_transition_item_action"), ids::move_transition_item
                , ACTION_CTOR_ARGS (transition), transition, position, outer
                )
              );
@@ -1662,14 +1662,18 @@ namespace fhg
             );
 
           push ( new action::meta_set_name<handle::port>
-                 ("port_set_name_action", ACTION_CTOR_ARGS (port), port, name)
+                 ( tr ("port_set_name_action")
+                 , ACTION_CTOR_ARGS (port), port, name
+                 )
                );
 
           set_place_association (port, name.toStdString());
         }
 
         push ( new action::meta_set_name<handle::place>
-               ("place_set_name_action", ACTION_CTOR_ARGS (place), place, name)
+               ( tr ("place_set_name_action")
+               , ACTION_CTOR_ARGS (place), place, name
+               )
              );
 
         endMacro();
@@ -1691,12 +1695,16 @@ namespace fhg
             );
 
           push ( new action::meta_set_type<handle::port>
-                 ("port_set_type_action", ACTION_CTOR_ARGS (port), port, type)
+                 ( tr ("port_set_type_action")
+                 , ACTION_CTOR_ARGS (port), port, type
+                 )
                );
         }
 
         push ( new action::meta_set_type<handle::place>
-               ("place_set_type_action", ACTION_CTOR_ARGS (place), place, type)
+               ( tr ("place_set_type_action")
+               , ACTION_CTOR_ARGS (place), place, type
+               )
              );
 
         endMacro();
@@ -1770,7 +1778,7 @@ namespace fhg
         )
       {
         push ( new action::meta_set_property<handle::place>
-               ( "set_place_property_action"
+               ( tr ("set_place_property_action")
                , ACTION_CTOR_ARGS (place), place, key, val
                )
              );
@@ -1791,7 +1799,7 @@ namespace fhg
                                        )
       {
         push ( new action::meta_move_item<handle::place>
-               ( "move_place_item_action", ids::move_place_item
+               ( tr ("move_place_item_action"), ids::move_place_item
                , ACTION_CTOR_ARGS (place), place, position, outer
                )
              );
@@ -1968,7 +1976,9 @@ namespace fhg
         )
       {
         push ( new action::meta_set_property<handle::port>
-               ("set_port_property_action", ACTION_CTOR_ARGS (port), port, key, val)
+               ( tr ("set_port_property_action")
+               , ACTION_CTOR_ARGS (port), port, key, val
+               )
              );
       }
 
@@ -1992,14 +2002,18 @@ namespace fhg
             (*port.get().resolved_place(), port.document());
 
           push ( new action::meta_set_name<handle::place>
-                 ("place_set_name_action", ACTION_CTOR_ARGS (place), place, name)
+                 ( tr ("place_set_name_action")
+                 , ACTION_CTOR_ARGS (place), place, name
+                 )
                );
 
           set_place_association (port, name.toStdString());
         }
 
         push ( new action::meta_set_name<handle::port>
-               ("port_set_name_action", ACTION_CTOR_ARGS (port), port, name)
+               ( tr ("port_set_name_action")
+               , ACTION_CTOR_ARGS (port), port, name
+               )
              );
 
         endMacro();
@@ -2016,12 +2030,16 @@ namespace fhg
             (*port.get().resolved_place(), port.document());
 
           push ( new action::meta_set_type<handle::place>
-                 ("place_set_type_action", ACTION_CTOR_ARGS (place), place, type)
+                 ( tr ("place_set_type_action")
+                 , ACTION_CTOR_ARGS (place), place, type
+                 )
                );
         }
 
         push ( new action::meta_set_type<handle::port>
-               ("port_set_type_action", ACTION_CTOR_ARGS (port), port, type)
+               ( tr ("port_set_type_action")
+               , ACTION_CTOR_ARGS (port), port, type
+               )
              );
 
         endMacro();
@@ -2060,7 +2078,7 @@ namespace fhg
                                        )
       {
         push ( new action::meta_move_item<handle::port>
-               ( "move_port_item_action", ids::move_port_item
+               ( tr ("move_port_item_action"), ids::move_port_item
                , ACTION_CTOR_ARGS (port), port, position, outer
                )
              );
@@ -2095,7 +2113,7 @@ namespace fhg
         )
       {
         push ( new action::meta_set_property<handle::function>
-               ( "set_function_property_action"
+               ( tr ("set_function_property_action")
                , ACTION_CTOR_ARGS (function), function, key, val
                )
              );
