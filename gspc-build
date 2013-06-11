@@ -116,9 +116,9 @@ extra=(-DINSTALL_AS_BUNDLE=ON -DENABLE_APPLICATION=ON -DENABLE_UFBMIGD=ON)
 
 if $execute_tests
 then
-    extra=(-DBUILD_TESTING=ON)
+    extra+=(-DBUILD_TESTING=ON)
 else
-    extra=(-DBUILD_TESTING=OFF)
+    extra+=(-DBUILD_TESTING=OFF)
 fi
 
 "${srcdir}/configure" -p "${instdir}" -- "${extra[@]}" || { echo >&2 "FAILED: could not CONFIGURE"; exit 11; }
