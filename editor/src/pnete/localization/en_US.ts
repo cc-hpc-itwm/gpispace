@@ -85,21 +85,6 @@
         <translation>&lt;&lt;unnamed workflow&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/editor_window.cpp" line="908"/>
-        <location filename="../ui/editor_window.cpp" line="920"/>
-        <location filename="../ui/editor_window.cpp" line="936"/>
-        <location filename="../ui/editor_window.cpp" line="951"/>
-        <source>enter_value_for_input_port_%1</source>
-        <translation>Select file for input %1</translation>
-    </message>
-    <message>
-        <location filename="../ui/editor_window.cpp" line="919"/>
-        <location filename="../ui/editor_window.cpp" line="935"/>
-        <location filename="../ui/editor_window.cpp" line="950"/>
-        <source>value_for_input_token</source>
-        <translation>Value for input</translation>
-    </message>
-    <message>
         <location filename="../ui/execution_monitor.cpp" line="273"/>
         <source>%1 on %2 (id = %3)</source>
         <translation type="unfinished"></translation>
