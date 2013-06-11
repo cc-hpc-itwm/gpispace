@@ -1407,7 +1407,7 @@ namespace prefix
             (edit, boost::bind (&file_line_edit::text, edit));
         }
 
-      case action_argument_data::integer: // min max
+      case action_argument_data::integer:
         {
           QSpinBox* edit (new QSpinBox);
           edit->setMinimum (INT_MIN);
