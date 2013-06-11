@@ -172,7 +172,7 @@ namespace prefix
       , _communication (new communication (host, port, this))
   {
     timer
-      (this, 10000, boost::bind (&communication::request_hostlist, _communication));
+      (this, 30000, boost::bind (&communication::request_hostlist, _communication));
     timer (this, 5000, SLOT (refresh_stati()));
 
     setSizeIncrement (per_step, per_step);
