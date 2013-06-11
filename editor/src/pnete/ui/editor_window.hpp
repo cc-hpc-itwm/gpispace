@@ -8,6 +8,8 @@
 #include <pnete/data/handle/function.fwd.hpp>
 #include <pnete/ui/document_view.fwd.hpp>
 
+#include <xml/parse/id/types.hpp>
+
 #include <QMainWindow>
 #include <QObject>
 #include <QStack>
@@ -40,18 +42,19 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        remote_job_waiting (sdpa::Client*, const std::string&);
+        remote_job_waiting (sdpa::Client*, const std::string&, const xml::parse::id::ref::function&);
 
       protected:
         virtual void run();
 
       signals:
-        void remote_job_finished (sdpa::Client*, const QString&);
+        void remote_job_finished (sdpa::Client*, const QString&, const xml::parse::id::ref::function&);
         void remote_job_failed (sdpa::Client*, const QString&);
 
       private:
         sdpa::Client* _client;
         std::string _job_id;
+        xml::parse::id::ref::function _function;
       };
 
       class editor_window : public QMainWindow
@@ -89,7 +92,7 @@ namespace fhg
         void open_remote_logging();
         void open_remote_execution();
 
-        void remote_job_finished (sdpa::Client*, const QString&);
+        void remote_job_finished (sdpa::Client*, const QString&, const xml::parse::id::ref::function&);
         void remote_job_failed (sdpa::Client*, const QString&);
 
         void show_transition_library();

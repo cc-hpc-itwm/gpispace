@@ -1035,111 +1035,19 @@ namespace fhg
           return std::make_pair (activity, function);
         }
 
-        void show_results_of_activity
-          (const we::type::activity_t& activity)
+        template<typename T> QString token_to_string (const T& token)
         {
-          BOOST_FOREACH ( const we::type::activity_t::token_on_port_t& top
-                        , activity.output()
-                        )
-          {
-            std::stringstream tmp;
-            tmp << "on " << activity.transition().ports_output().at (top.second).name()
-                << ": " << pnet::type::value::show (top.first);
-            QMessageBox msgBox;
-            msgBox.setText (QString::fromStdString (tmp.str()));
-            msgBox.exec();
-          }
+          std::stringstream ss;
+          ss << pnet::type::value::show (token);
+          return QString::fromStdString (ss.str());
         }
 
-        void execute_activity_locally
-          ( we::type::activity_t activity
-          , const boost::filesystem::path& temporary_path
-          )
+        template<typename T> T sort (T t)
         {
-          we::loader::loader loader;
-          loader.append_search_path (temporary_path / "pnetc" / "op");
-
-          eval_context context (loader);
-
-          //! \todo Somehow redirect stdout to buffer
-          activity.execute (&context);
-
-          show_results_of_activity (activity);
+          qSort (t);
+          return t;
         }
 
-        template<typename T>
-          T* load_plugin (fhg::core::kernel_t& kernel, const std::string& name)
-        {
-          if (!kernel.is_plugin_loaded (name))
-          {
-            kernel.load_plugin (name);
-          }
-
-          if (!kernel.is_plugin_loaded (name))
-          {
-            throw std::runtime_error (name + " failed loading");
-          }
-
-          T* plugin (kernel.lookup_plugin_as<T> (name));
-          if (!plugin)
-          {
-            throw std::runtime_error (name + " did not provide correct interface");
-          }
-
-          return plugin;
-        }
-      }
-
-      remote_job_waiting::remote_job_waiting
-        (sdpa::Client* client, const std::string& job_id)
-          : _client (client)
-          , _job_id (job_id)
-      { }
-
-      void remote_job_waiting::run()
-      {
-        std::string status_message;
-        int error_code (-1);
-        int status (-1);
-        while ( (status = _client->status (_job_id, error_code, status_message)) > sdpa::status::CANCELED
-              && error_code == 0
-              )
-        {
-          msleep (10);
-        }
-
-        if (error_code)
-        {
-          emit remote_job_failed (_client, QString::fromStdString (_job_id));
-        }
-        else
-        {
-          emit remote_job_finished (_client, QString::fromStdString (_job_id));
-        }
-      }
-
-      void editor_window::remote_job_failed
-        (sdpa::Client* client, const QString& job_id)
-      {
-        QMessageBox msgBox;
-        msgBox.setText (job_id + " failed.");
-        msgBox.exec();
-      }
-
-      void editor_window::remote_job_finished
-        (sdpa::Client* client, const QString& job_id_)
-      {
-        const std::string job_id (job_id_.toStdString());
-        std::string output_string;
-        client->result (job_id, output_string);
-        client->remove (job_id);
-
-        const we::type::activity_t output (output_string);
-        show_results_of_activity (output);
-      }
-
-      namespace
-      {
         int string_to_int (const QString& str)
         {
           const std::string stdstr (str.toStdString());
@@ -1245,12 +1153,191 @@ namespace fhg
           return in ? QString::fromStdString (*in) : boost::optional<QString>();
         }
 
-        template<typename T> T sort (T t)
+        boost::function<void (QWidget*)> add_fun
+          (QFormLayout* form, const QString& port_name, bool more_than_one)
         {
-          qSort (t);
-          return t;
+          if (more_than_one)
+          {
+            QVBoxLayout* lay (new QVBoxLayout);
+            form->addRow (port_name, lay);
+            return boost::bind (&QBoxLayout::addWidget, lay, _1, 0, QFlags<Qt::AlignmentFlag>());
+          }
+          else
+          {
+            return boost::bind
+              ( static_cast<void (QFormLayout::*) (const QString&, QWidget*)>
+                (&QFormLayout::addRow)
+              , form, port_name, _1
+              );
+          }
         }
 
+        void show_results_of_activity
+          (const std::pair<we::type::activity_t, xml::parse::id::ref::function>& activity_and_fun)
+        {
+          QDialog* dialog (new QDialog);
+          dialog->setWindowTitle ("Executing workflow finished");
+          new QVBoxLayout (dialog);
+
+          QMap<boost::optional<QString>, QMap<QString, QStringList> > port_groups;
+
+          BOOST_FOREACH ( const we::type::activity_t::token_on_port_t& top
+                        , activity_and_fun.first.output()
+                        )
+          {
+            const QString token (token_to_string (top.first));
+            const QString port_name
+              ( QString::fromStdString
+                (activity_and_fun.first.transition().ports_output().at (top.second).name())
+              );
+
+            const QStringList parts (port_name.split ("__xxx__"));
+            if (parts.size() == 2)
+            {
+              port_groups[parts[0]][parts[1]].append (token);
+            }
+            else
+            {
+              port_groups[boost::none][port_name].append (token);
+            }
+          }
+
+          foreach (const boost::optional<QString>& group, sort (port_groups.keys()))
+          {
+            QGroupBox* box (new QGroupBox (group.get_value_or ("Global")));
+
+            dialog->layout()->addWidget (box);
+
+            QFormLayout* box_layout (new QFormLayout (box));
+
+            foreach (const QString& port, sort (port_groups[group].keys()))
+            {
+              const QString port_name (group ? *group + "__xxx__" + port : port);
+
+              const boost::optional<const xml::parse::id::ref::port&> xml_port
+                (activity_and_fun.second.get().get_port_out (port_name.toStdString()));
+
+              const boost::function<void (QWidget*)> add
+                ( add_fun ( box_layout
+                          , port_name
+                          , port_groups[group][port].size() > 1
+                          )
+                );
+
+              BOOST_FOREACH (const QString& token, port_groups[group][port])
+              {
+                QWidget* wid
+                  (widget_for_item (xml_port->get().type(), token).first);
+                add (wid);
+                wid->setEnabled (false);
+              }
+            }
+          }
+
+          QDialogButtonBox* buttons
+            ( new QDialogButtonBox ( QDialogButtonBox::Ok
+                                   , Qt::Horizontal
+                                   , dialog
+                                   )
+            );
+
+          dialog->connect (buttons, SIGNAL (accepted()), SLOT (accept()));
+
+          dialog->layout()->addWidget (buttons);
+
+          dialog->exec();
+        }
+
+        void execute_activity_locally
+          ( std::pair<we::type::activity_t, xml::parse::id::ref::function> activity_and_fun
+          , const boost::filesystem::path& temporary_path
+          )
+        {
+          we::loader::loader loader;
+          loader.append_search_path (temporary_path / "pnetc" / "op");
+
+          eval_context context (loader);
+
+          //! \todo Somehow redirect stdout to buffer
+          activity_and_fun.first.execute (&context);
+
+          show_results_of_activity (activity_and_fun);
+        }
+
+        template<typename T>
+          T* load_plugin (fhg::core::kernel_t& kernel, const std::string& name)
+        {
+          if (!kernel.is_plugin_loaded (name))
+          {
+            kernel.load_plugin (name);
+          }
+
+          if (!kernel.is_plugin_loaded (name))
+          {
+            throw std::runtime_error (name + " failed loading");
+          }
+
+          T* plugin (kernel.lookup_plugin_as<T> (name));
+          if (!plugin)
+          {
+            throw std::runtime_error (name + " did not provide correct interface");
+          }
+
+          return plugin;
+        }
+      }
+
+      remote_job_waiting::remote_job_waiting
+        (sdpa::Client* client, const std::string& job_id, const xml::parse::id::ref::function& fun)
+          : _client (client)
+          , _job_id (job_id)
+          , _function (fun)
+      { }
+
+      void remote_job_waiting::run()
+      {
+        std::string status_message;
+        int error_code (-1);
+        int status (-1);
+        while ( (status = _client->status (_job_id, error_code, status_message)) > sdpa::status::CANCELED
+              && error_code == 0
+              )
+        {
+          msleep (10);
+        }
+
+        if (error_code)
+        {
+          emit remote_job_failed (_client, QString::fromStdString (_job_id));
+        }
+        else
+        {
+          emit remote_job_finished (_client, QString::fromStdString (_job_id), _function);
+        }
+      }
+
+      void editor_window::remote_job_failed
+        (sdpa::Client* client, const QString& job_id)
+      {
+        QMessageBox msgBox;
+        msgBox.setText (job_id + " failed.");
+        msgBox.exec();
+      }
+
+      void editor_window::remote_job_finished
+        (sdpa::Client* client, const QString& job_id_, const xml::parse::id::ref::function& function)
+      {
+        const std::string job_id (job_id_.toStdString());
+        std::string output_string;
+        client->result (job_id, output_string);
+        client->remove (job_id);
+
+        const we::type::activity_t output (output_string);
+        show_results_of_activity (std::make_pair (output, function));
+      }
+
+      namespace
+      {
         void request_tokens_for_ports
           ( std::pair < we::type::activity_t
                       , xml::parse::id::ref::function
@@ -1380,16 +1467,17 @@ namespace fhg
         std::string job_id;
         if (client->submit (activity_and_fun.first.to_string(), job_id) == 0)
         {
-          remote_job_waiting* waiter (new remote_job_waiting (client, job_id));
+          remote_job_waiting* waiter
+            (new remote_job_waiting (client, job_id, activity_and_fun.second));
           connect ( waiter
                   , SIGNAL (remote_job_failed (sdpa::Client*,QString))
                   , this
                   , SLOT (remote_job_failed (sdpa::Client*,QString))
                   );
           connect ( waiter
-                  , SIGNAL (remote_job_finished (sdpa::Client*,QString))
+                  , SIGNAL (remote_job_finished (sdpa::Client*,QString,xml::parse::id::ref::function))
                   , this
-                  , SLOT (remote_job_finished (sdpa::Client*,QString))
+                  , SLOT (remote_job_finished (sdpa::Client*,QString,xml::parse::id::ref::function))
                   );
           connect (waiter, SIGNAL (finished()), waiter, SLOT (deleteLater()));
 
@@ -1420,7 +1508,7 @@ namespace fhg
 
         request_tokens_for_ports (&activity_and_fun);
 
-        execute_activity_locally (activity_and_fun.first, temporary_path);
+        execute_activity_locally (activity_and_fun, temporary_path);
       }
       catch (const std::runtime_error& e)
       {
@@ -1435,8 +1523,8 @@ namespace fhg
       {
         const fhg::util::temporary_path temporary_path;
 
-        we::type::activity_t activity
-          (prepare_activity (_accessed_widgets, temporary_path).first);
+        std::pair<we::type::activity_t, xml::parse::id::ref::function>
+          activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
         const QString input_filename
           (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));
@@ -1459,10 +1547,10 @@ namespace fhg
           const std::string value
             (input_line.substr (input_line.find ('=') + 1));
 
-          put_token (activity, port_name, value);
+          put_token (activity_and_fun.first, port_name, value);
         }
 
-        execute_activity_locally (activity, temporary_path);
+        execute_activity_locally (activity_and_fun, temporary_path);
       }
       catch (const std::runtime_error& e)
       {
