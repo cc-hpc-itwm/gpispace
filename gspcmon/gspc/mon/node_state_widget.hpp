@@ -211,6 +211,7 @@ namespace prefix
     {
       boolean,
       directory,
+      duration,
       filename,
       integer,
       string,
