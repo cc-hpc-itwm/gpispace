@@ -31,8 +31,8 @@ int main (int argc, char *argv[])
   setting::path_list_type paths_untrusted_new;
   bool show_splash (setting::splash::show());
   std::string template_filename (setting::template_filename::show().toStdString());
-  int port_exec (47096);
-  int port_log (47095);
+  int port_exec;
+  int port_log;
 
   desc.add_options()
     ( "help,h", "this message")
@@ -57,11 +57,11 @@ int main (int argc, char *argv[])
     , "show splash screen"
     )
     ( "port-log"
-    , po::value<int>(&port_log)->default_value (port_log)
+    , po::value<int>(&port_log)
     , "logger port"
     )
     ( "port-exec"
-    , po::value<int>(&port_exec)->default_value (port_exec)
+    , po::value<int>(&port_exec)
     , "execution monitor port"
     )
     ;
@@ -95,7 +95,16 @@ int main (int argc, char *argv[])
   try
   {
     fhg::pnete::PetriNetEditor pente (argc, argv);
-    pente.startup (port_exec, port_log);
+    pente.startup();
+
+    if (vm.count ("port-log"))
+    {
+      pente.logging (port_log);
+    }
+    if (vm.count ("port-exec"))
+    {
+      pente.exec_monitor (port_exec);
+    }
 
     return pente.exec ();
   }
@@ -125,7 +134,7 @@ namespace fhg
       , _editor_windows ()
     {}
 
-    void PetriNetEditor::startup (int exec, int log)
+    void PetriNetEditor::startup()
     {
       showSplashScreen ();
 
@@ -141,7 +150,15 @@ namespace fhg
 
       editor_window->slot_new_net();
       editor_window->show_transition_library();
-      editor_window->show_log_and_execution_monitor (exec, log);
+    }
+
+    void PetriNetEditor::logging (int port)
+    {
+      _editor_windows.back()->show_log_monitor (port);
+    }
+    void PetriNetEditor::exec_monitor (int port)
+    {
+      _editor_windows.back()->show_execution_monitor (port);
     }
 
     PetriNetEditor::~PetriNetEditor ()

@@ -23,7 +23,9 @@ namespace fhg
       PetriNetEditor (int& argc, char *argv[]);
       virtual ~PetriNetEditor ();
 
-      void startup (int exec, int logs);
+      void startup();
+      void logging (int port);
+      void exec_monitor (int port);
 
     private:
       QSplashScreen _splash;
