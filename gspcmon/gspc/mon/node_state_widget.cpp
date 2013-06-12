@@ -170,6 +170,7 @@ namespace prefix
       , _legend_widget (legend_widget)
       , _log (log)
       , _communication (new communication (host, port, this))
+      , _host (host)
   {
     timer
       (this, 30000, boost::bind (&communication::request_hostlist, _communication));
@@ -463,6 +464,11 @@ namespace prefix
     {
       updateGeometry();
     }
+
+    setWindowTitle ( tr ("Cluster Monitor: %1; watching %2 nodes")
+                   .arg (_host)
+                   .arg (_nodes.size())
+                   );
   }
 
   void node_state_widget::refresh_stati()

@@ -371,6 +371,8 @@ namespace prefix
     int node_count() const;
 
     communication* _communication;
+
+    QString _host;
   };
 }
 
