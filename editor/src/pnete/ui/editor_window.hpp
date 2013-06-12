@@ -85,8 +85,6 @@ namespace fhg
         void focus_changed (QWidget*, QWidget*);
         void update_window_menu();
 
-        void execute_locally_inputs_via_prompt();
-        void execute_locally_inputs_from_file();
         void execute_remote_inputs_via_prompt();
 
         void open_remote_logging();
@@ -112,8 +110,6 @@ namespace fhg
         QMenu* _document_specific_action_menu;
         QToolBar* _document_specific_action_toolbar;
         QAction* _action_save_current_file;
-        QAction* _action_execute_current_file_locally_via_prompt;
-        QAction* _action_execute_current_file_locally_from_file;
         QAction* _action_execute_current_file_remote_via_prompt;
 
         QStack<document_view*> _accessed_widgets;

@@ -99,8 +99,6 @@ namespace fhg
         , _document_specific_action_menu (NULL)
         , _document_specific_action_toolbar (NULL)
         , _action_save_current_file (NULL)
-        , _action_execute_current_file_locally_via_prompt (NULL)
-        , _action_execute_current_file_locally_from_file (NULL)
         , _action_execute_current_file_remote_via_prompt (NULL)
       {
         setWindowTitle (tr ("editor_window_title"));
@@ -321,8 +319,6 @@ namespace fhg
         }
 
         _action_save_current_file->setEnabled (true);
-        _action_execute_current_file_locally_via_prompt->setEnabled (true);
-        _action_execute_current_file_locally_from_file->setEnabled (true);
         _action_execute_current_file_remote_via_prompt->setEnabled (true);
       }
 
@@ -362,8 +358,6 @@ namespace fhg
           else
           {
             _action_save_current_file->setEnabled (false);
-            _action_execute_current_file_locally_via_prompt->setEnabled (false);
-            _action_execute_current_file_locally_from_file->setEnabled (false);
             _action_execute_current_file_remote_via_prompt->setEnabled (false);
           }
         }
@@ -547,29 +541,14 @@ namespace fhg
         addToolBar (Qt::TopToolBarArea, runtime_toolbar);
         runtime_toolbar->setFloatable (false);
 
-        _action_execute_current_file_locally_via_prompt = runtime_menu->addAction
-          ( QIcon (":/icons/execute.png")
-          , tr ("execute_locally_input_prompt")
-          , this
-          , SLOT (execute_locally_inputs_via_prompt())
-          );
-        _action_execute_current_file_locally_from_file = runtime_menu->addAction
-          ( tr ("execute_locally_input_file")
-          , this
-          , SLOT (execute_locally_inputs_from_file())
-          );
         _action_execute_current_file_remote_via_prompt = runtime_menu->addAction
           ( QIcon (":/icons/execute_remote.png")
           , tr ("execute_remote_input_prompt")
           , this
           , SLOT (execute_remote_inputs_via_prompt())
           );
-        _action_execute_current_file_locally_via_prompt->setEnabled (false);
-        _action_execute_current_file_locally_from_file->setEnabled (false);
         _action_execute_current_file_remote_via_prompt->setEnabled (false);
 
-        runtime_toolbar->addAction
-          (_action_execute_current_file_locally_via_prompt);
         runtime_toolbar->addAction
           (_action_execute_current_file_remote_via_prompt);
 
@@ -1247,22 +1226,6 @@ namespace fhg
           dialog->exec();
         }
 
-        void execute_activity_locally
-          ( std::pair<we::type::activity_t, xml::parse::id::ref::function> activity_and_fun
-          , const boost::filesystem::path& temporary_path
-          )
-        {
-          we::loader::loader loader;
-          loader.append_search_path (temporary_path / "pnetc" / "op");
-
-          eval_context context (loader);
-
-          //! \todo Somehow redirect stdout to buffer
-          activity_and_fun.first.execute (&context);
-
-          show_results_of_activity (activity_and_fun);
-        }
-
         template<typename T>
           T* load_plugin (fhg::core::kernel_t& kernel, const std::string& name)
         {
@@ -1496,69 +1459,6 @@ namespace fhg
         msgBox.setIcon (QMessageBox::Critical);
         msgBox.exec();
       }
-
-      void editor_window::execute_locally_inputs_via_prompt()
-      try
-      {
-        const fhg::util::temporary_path temporary_path;
-
-        std::pair<we::type::activity_t, xml::parse::id::ref::function>
-          activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
-
-        request_tokens_for_ports (&activity_and_fun);
-
-        execute_activity_locally (activity_and_fun, temporary_path);
-      }
-      catch (const std::runtime_error& e)
-      {
-        QMessageBox msgBox;
-        msgBox.setText (e.what());
-        msgBox.setIcon (QMessageBox::Critical);
-        msgBox.exec();
-      }
-
-      void editor_window::execute_locally_inputs_from_file()
-      try
-      {
-        const fhg::util::temporary_path temporary_path;
-
-        std::pair<we::type::activity_t, xml::parse::id::ref::function>
-          activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
-
-        const QString input_filename
-          (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));
-        if (input_filename.isEmpty())
-        {
-          return;
-        }
-
-        std::ifstream input_file (input_filename.toStdString().c_str());
-        if (!input_file)
-        {
-          throw std::runtime_error ("bad input file: opening failed");
-        }
-
-        std::string input_line;
-        while (input_file && getline (input_file, input_line))
-        {
-          const std::string port_name
-            (input_line.substr (0, input_line.find ('=')));
-          const std::string value
-            (input_line.substr (input_line.find ('=') + 1));
-
-          put_token (activity_and_fun.first, port_name, value);
-        }
-
-        execute_activity_locally (activity_and_fun, temporary_path);
-      }
-      catch (const std::runtime_error& e)
-      {
-        QMessageBox msgBox;
-        msgBox.setText (e.what());
-        msgBox.setIcon (QMessageBox::Critical);
-        msgBox.exec();
-      }
-
 
       void editor_window::readSettings()
       {
