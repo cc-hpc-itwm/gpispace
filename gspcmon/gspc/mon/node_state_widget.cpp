@@ -1503,13 +1503,14 @@ namespace prefix
         {
           QToolTip::showText
             ( help_event->globalPos()
-            , QString ("%1: %2%3")
+            , QString ("%1: %2%3 [last update: %4]")
             .arg (node (*node_index).hostname())
             .arg (node (*node_index).state().get_value_or ("unknown state"))
             .arg ( node (*node_index).details()
                  ? QString (*node (*node_index).details()).prepend (" (").append (")")
                  : ""
                  )
+            .arg (node (*node_index).state_update_time().toString())
             );
           event->accept();
           return true;

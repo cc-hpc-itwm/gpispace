@@ -10,6 +10,7 @@
 #include <QMap>
 #include <QList>
 
+#include <QDateTime>
 #include <QDebug>
 #include <QMutex>
 #include <QMutexLocker>
@@ -40,7 +41,13 @@ namespace prefix
     void watched (const bool& watched_) { _watched = watched_; }
 
     const boost::optional<QString>& state() const { return _state; }
-    void state (const boost::optional<QString>& state_) { _state = state_; }
+    void state (const boost::optional<QString>& state_)
+    {
+      _state = state_;
+      _state_update_time = QDateTime::currentDateTime();
+    }
+
+    const QDateTime& state_update_time() const { return _state_update_time; }
 
     const boost::optional<QString>& details() const { return _details; }
     void details (const boost::optional<QString>& details_) { _details = details_; }
@@ -49,6 +56,7 @@ namespace prefix
 
   private:
     boost::optional<QString> _state;
+    QDateTime _state_update_time;
     QString _hostname;
     boost::optional<QString> _details;
     bool _watched;
