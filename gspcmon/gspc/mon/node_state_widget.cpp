@@ -174,7 +174,7 @@ namespace prefix
   {
     timer
       (this, 30000, boost::bind (&communication::request_hostlist, _communication));
-    timer (this, 5000, SLOT (refresh_stati()));
+    timer (this, 1000, SLOT (refresh_stati()));
 
     setSizeIncrement (per_step, per_step);
     QSizePolicy pol (QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
