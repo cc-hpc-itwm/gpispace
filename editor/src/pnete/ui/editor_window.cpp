@@ -1313,6 +1313,8 @@ namespace fhg
         {
           emit remote_job_finished (_client, QString::fromStdString (_job_id), _function);
         }
+
+        _client->unload_modules();
       }
 
       void editor_window::remote_job_failed
@@ -1460,8 +1462,6 @@ namespace fhg
         kernel.add_search_path (*SDPA_HOME + "/libexec/fhg/plugins/");
 
         sdpa::Client* client (load_plugin<sdpa::Client> (kernel, "sdpac"));
-
-        client->unload_modules();
 
         std::string job_id;
         if (client->submit (activity_and_fun.first.to_string(), job_id) == 0)
