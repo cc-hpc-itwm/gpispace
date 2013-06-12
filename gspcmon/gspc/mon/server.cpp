@@ -117,7 +117,7 @@ namespace gspc
         << parameter_info_t ("atonce", "Shots at once", "integer")
         ;
 
-      add_action ("query", "query current progress / parameters");
+      add_action ("query", "query current job-status");
 
       add_action ("stop", "stop the RTM");
 
