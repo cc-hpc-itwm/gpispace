@@ -113,22 +113,22 @@ namespace gspc
 
       add_action ("stop", "stop the RTM");
 
-      add_state ("down", 0x000000, 0xFFFFFF);
+      add_state ("down", 0x141414);
 
       add_state ("failed", 0xCC0000).actions        << "remove" << "restart";
-      add_hidden_state ("master/failed", 0xEE0000).actions << "stop"   << "restart";
+      add_hidden_state ("master/failed", 0xFF0000).actions << "stop"   << "restart";
 
-      add_state ("free", 0x000080).actions          << "start";
-      add_state ("free/reserved", 0xCCCC00).actions << "start";
+      add_state ("free", 0x264673).actions          << "start";
+      add_state ("free/reserved", 0xD2DF26).actions << "start";
 
-      add_state ("queued", 0x913051).actions << "remove";
-      add_state ("unavailable", 0x888888);
+      add_state ("queued", 0x004747).actions << "remove";
+      add_state ("unavailable", 0x757575);
 
-      add_hidden_state ("addable", 0x000080).actions            << "add";
-      add_hidden_state ("addable/reserved", 0xCCCC00).actions   << "add";
+      add_hidden_state ("addable", 0x264673).actions            << "add";
+      add_hidden_state ("addable/reserved", 0xD2DF26).actions   << "add";
 
-      add_state ("master", 0x00CC00).actions << "stop";
-      add_state ("inuse",  0x008000).actions << "remove";
+      add_state ("master", 0x177D12).actions << "stop";
+      add_state ("inuse",  0x1B590D).actions << "remove";
     }
 
     action_info_t & thread::add_action ( QString const &name
