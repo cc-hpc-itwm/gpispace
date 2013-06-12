@@ -111,12 +111,25 @@ namespace gspc
         << parameter_info_t ("walltime", "Walltime in hours", "duration", QString ("4"))
         ;
 
+      add_action ("config", "change runtime parameters").params
+        << parameter_info_t ("nresult", "Maximum number of partial results", "string")
+        << parameter_info_t ("updates", "Update interval", "integer")
+        << parameter_info_t ("atonce", "Shots at once", "integer")
+        ;
+
+      add_action ("query", "query current progress / parameters");
+
       add_action ("stop", "stop the RTM");
 
       add_state ("down", 0x141414);
 
       add_state ("failed", 0xCC0000).actions        << "remove" << "restart";
-      add_hidden_state ("master/failed", 0xFF0000).actions << "stop"   << "restart";
+      add_hidden_state ("master/failed", 0xFF0000).actions
+        << "query"
+        << "config"
+        << "restart"
+        << "stop"
+        ;
 
       add_state ("free", 0x264673).actions          << "start";
       add_state ("free/reserved", 0xD2DF26).actions << "start";
@@ -127,7 +140,11 @@ namespace gspc
       add_hidden_state ("addable", 0x264673).actions            << "add";
       add_hidden_state ("addable/reserved", 0xD2DF26).actions   << "add";
 
-      add_state ("master", 0x177D12).actions << "stop";
+      add_state ("master", 0x177D12).actions
+        << "query"
+        << "config"
+        << "stop"
+        ;
       add_state ("inuse",  0x1B590D).actions << "remove";
     }
 
