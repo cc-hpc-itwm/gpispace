@@ -170,6 +170,7 @@ namespace prefix
       , _legend_widget (legend_widget)
       , _log (log)
       , _communication (new communication (host, port, this))
+      , _host (host)
   {
     timer
       (this, 30000, boost::bind (&communication::request_hostlist, _communication));
@@ -463,6 +464,11 @@ namespace prefix
     {
       updateGeometry();
     }
+
+    setWindowTitle ( tr ("Cluster Monitor: %1; watching %2 nodes")
+                   .arg (_host)
+                   .arg (_nodes.size())
+                   );
   }
 
   void node_state_widget::refresh_stati()
@@ -1497,13 +1503,14 @@ namespace prefix
         {
           QToolTip::showText
             ( help_event->globalPos()
-            , QString ("%1: %2%3")
+            , QString ("%1: %2%3 [last update: %4]")
             .arg (node (*node_index).hostname())
             .arg (node (*node_index).state().get_value_or ("unknown state"))
             .arg ( node (*node_index).details()
                  ? QString (*node (*node_index).details()).prepend (" (").append (")")
                  : ""
                  )
+            .arg (node (*node_index).state_update_time().toString())
             );
           event->accept();
           return true;
