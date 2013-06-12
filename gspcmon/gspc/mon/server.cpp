@@ -791,10 +791,6 @@ namespace gspc
           hs.details = r.message.trimmed ();
           hs.age = 0;
         }
-        {
-          const QMutexLocker lock (&_ongoing_status_updates_mutex);
-          _ongoing_status_updates.remove (host);
-        }
       }
 
       send_status_updates (updated);
@@ -857,6 +853,11 @@ namespace gspc
                          )
             );
         }
+
+        {
+          const QMutexLocker lock (&_pending_status_updates_mutex);
+          _pending_status_updates << host;
+        }
       }
     }
 
@@ -905,12 +906,6 @@ namespace gspc
               continue;
           }
 
-          {
-            const QMutexLocker lock (&_ongoing_status_updates_mutex);
-            if (_ongoing_status_updates.contains (host))
-              continue;
-          }
-
           to_query << host;
 
           if (to_query.size () >= 8)
@@ -918,11 +913,6 @@ namespace gspc
             action_request_t req;
             req.action = "status";
             req.hosts = to_query;
-
-            {
-              const QMutexLocker lock (&_ongoing_status_updates_mutex);
-              _ongoing_status_updates.unite (to_query);
-            }
 
             to_query.clear ();
 
@@ -943,10 +933,6 @@ namespace gspc
         req.action = "status";
         req.hosts = to_query;
 
-        {
-          const QMutexLocker lock (&_ongoing_status_updates_mutex);
-          _ongoing_status_updates.unite (to_query);
-        }
         to_query.clear ();
 
         QFuture<action_request_result_t> *f

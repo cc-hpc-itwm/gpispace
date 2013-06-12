@@ -202,8 +202,6 @@ namespace gspc
 
       mutable QMutex _pending_status_updates_mutex;
       QStringList _pending_status_updates;
-      mutable QMutex _ongoing_status_updates_mutex;
-      QSet<QString> _ongoing_status_updates;
 
       mutable QMutex _action_results_mutex;
       QSet<QFuture<action_request_result_t>* > _action_results;
