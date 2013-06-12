@@ -10,7 +10,7 @@ GSPC_API_COMMAND_LEVEL=1
 #      gspc_log_debug config "foo"
 #      unset GSPC_LOG_FROM_CONFIG
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {

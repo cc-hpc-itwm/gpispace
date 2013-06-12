@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="run an interactive GPI-Space shell"
 GSPC_API_COMMAND_LEVEL=-1
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 if [ -z "$PS2" ] ; then
     PS2="gspc> "

@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="print help for GPI-Space commands"
 GSPC_API_COMMAND_LEVEL=0
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {
@@ -30,7 +30,7 @@ Environment information:
 
 Commonly used commands:
 
-$(gspc --no-alias list-commands --prefix= --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
+$(gspc_call list-commands --prefix= --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
 EOF
 }
 

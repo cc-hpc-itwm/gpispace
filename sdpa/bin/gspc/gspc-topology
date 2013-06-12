@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="manage the GPI-Space topology"
 GSPC_API_COMMAND_LEVEL=1
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {
@@ -17,7 +17,7 @@ Options:
 
 Actions:
 
-$(gspc --no-alias list-commands --prefix=topology --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
+$(gspc_call list-commands --prefix=topology --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
 EOF
 }
 

@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="manage the processes"
 GSPC_API_COMMAND_LEVEL=1
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {
@@ -21,7 +21,7 @@ Options:
 Actions:
 
     show                 lists all components
-$(gspc --no-alias list-commands --prefix=ctrl --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
+$(gspc_call list-commands --prefix=ctrl --indent=4 --level=$((GSPC_API_COMMAND_LEVEL+1)))
 EOF
 }
 
@@ -59,7 +59,7 @@ fi
 
 if [ "$action" = "show" ]
 then
-    tmp=( $(gspc kvs "${kvs_opts[@]}" --get-regex gspc.net.url | awk '{print $3" "$1}' ) )
+    tmp=( $(gspc_call kvs "${kvs_opts[@]}" --get-regex gspc.net.url | awk '{print $3" "$1}' ) )
     for ((i=0 ; i < ${#tmp[@]} ; i+=2))
     do
         url="${tmp[$i]}"
@@ -80,7 +80,7 @@ fi
 
 if [ ${#urls[@]} -eq 0 ]
 then
-    urls=( $(gspc kvs "${kvs_opts[@]}" --get-regex gspc.net.url | cut -d= -f 2) )
+    urls=( $(gspc_call kvs "${kvs_opts[@]}" --get-regex gspc.net.url | cut -d= -f 2) )
 fi
 
 for u in ${urls[@]}

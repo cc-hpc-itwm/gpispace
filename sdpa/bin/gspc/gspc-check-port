@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 GSPC_API_COMMAND_SHORT_DESCRIPTION="checks whether a given port is open"
 GSPC_API_COMMAND_LEVEL=-1

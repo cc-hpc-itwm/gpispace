@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="list the current GPI-Space topology"
 GSPC_API_COMMAND_LEVEL=2
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {
@@ -62,7 +62,7 @@ function get_component_info ()
     local components_to_get_info_for=( "${@}" )
 
     # format: location.host <host> location.port <port> name <name>
-    all_components=( $(gspc kvs --host="${kvs_host}" --port="${kvs_port}" --get-regex 'p2p.peer' | tr -d '=') )
+    all_components=( $(gspc_call kvs --host="${kvs_host}" --port="${kvs_port}" --get-regex 'p2p.peer' | tr -d '=') )
     ec=$?
     if [ $ec -eq 4 ] ; then
         gspc_log_error topology "Could not contact KVS!"
