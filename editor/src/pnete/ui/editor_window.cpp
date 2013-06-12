@@ -1283,6 +1283,7 @@ namespace fhg
       void editor_window::remote_job_failed
         (sdpa::Client* client, const QString& job_id)
       {
+        _action_execute_current_file_remote_via_prompt->setEnabled (true);
         QMessageBox msgBox;
         msgBox.setText (job_id + " failed.");
         msgBox.exec();
@@ -1291,6 +1292,7 @@ namespace fhg
       void editor_window::remote_job_finished
         (sdpa::Client* client, const QString& job_id_, const xml::parse::id::ref::function& function)
       {
+        _action_execute_current_file_remote_via_prompt->setEnabled (true);
         const std::string job_id (job_id_.toStdString());
         std::string output_string;
         client->result (job_id, output_string);
@@ -1429,6 +1431,7 @@ namespace fhg
         std::string job_id;
         if (client->submit (activity_and_fun.first.to_string(), job_id) == 0)
         {
+          _action_execute_current_file_remote_via_prompt->setEnabled (false);
           remote_job_waiting* waiter
             (new remote_job_waiting (client, job_id, activity_and_fun.second));
           connect ( waiter
