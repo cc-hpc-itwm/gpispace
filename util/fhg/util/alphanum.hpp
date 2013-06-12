@@ -96,10 +96,10 @@ namespace fhg
             else
             {
               char *end;
-              const unsigned long l_int (strtoul (l, &end, 0));
+              const unsigned long l_int (strtoul (l, &end, 10));
               l = end;
 
-              const unsigned long r_int (strtoul (r, &end, 0));
+              const unsigned long r_int (strtoul (r, &end, 10));
               r = end;
 
               const long diff (l_int - r_int);
