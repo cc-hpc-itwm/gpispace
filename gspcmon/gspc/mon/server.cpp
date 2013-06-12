@@ -896,7 +896,7 @@ namespace gspc
 
           to_query << host;
 
-          if (to_query.size () >= 16)
+          if (to_query.size () >= 8)
           {
             action_request_t req;
             req.action = "status";
