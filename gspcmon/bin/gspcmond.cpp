@@ -13,7 +13,7 @@ int main (int argc, char** argv)
 {
   QApplication app (argc, argv);
 
-  QThreadPool::globalInstance ()->setMaxThreadCount (8);
+  QThreadPool::globalInstance ()->setMaxThreadCount (32);
 
   if (argc < 4)
   {
