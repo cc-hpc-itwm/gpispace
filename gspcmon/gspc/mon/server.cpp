@@ -116,6 +116,8 @@ namespace gspc
         << parameter_info_t ("updates", "Update interval", "integer")
         << parameter_info_t ("atonce", "Shots at once", "integer")
         ;
+      add_action ("killworker", "Simulate a worker failure")
+        ;
 
       add_action ("query", "query current job-status");
 
@@ -144,8 +146,9 @@ namespace gspc
         << "query"
         << "config"
         << "stop"
+        << "killworker"
         ;
-      add_state ("inuse",  0x1B590D).actions << "remove";
+      add_state ("inuse",  0x1B590D).actions << "remove" << "killworker";
     }
 
     action_info_t & thread::add_action ( QString const &name
