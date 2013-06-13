@@ -14,6 +14,7 @@
 #include <QDir>
 #include <QFuture>
 #include <QSet>
+#include <QMultiMap>
 
 namespace gspc
 {
@@ -103,7 +104,7 @@ namespace gspc
     struct action_request_result_t
     {
       QString action;
-      QMap<QString, action_result_t> result;
+      QMultiMap<QString, action_result_t> result;
     };
 
     class server : public QTcpServer
@@ -170,8 +171,10 @@ namespace gspc
       int call_action ( action_info_t const &ai
                       , QMap<QString, QString> const &params
                       , QSet<QString> const &nodes
-                      , QMap<QString, action_result_t> &result
+                      , QMultiMap<QString, action_result_t> &result
                       );
+
+      void query_status (QSet<QString> const &hosts);
 
       void send_status_updates (QStringList const &hosts);
       void send_status ( QString const &host
@@ -205,6 +208,10 @@ namespace gspc
 
       mutable QMutex _action_results_mutex;
       QSet<QFuture<action_request_result_t>* > _action_results;
+
+      mutable QMutex _status_request_mutex;
+      QList<action_request_t> _status_requests;
+      size_t _in_progress_status_requests;
     };
   }
 }
