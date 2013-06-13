@@ -1197,7 +1197,7 @@ namespace fhg
 
               const boost::function<void (QWidget*)> add
                 ( add_fun ( box_layout
-                          , port_name
+                          , port
                           , port_groups[group][port].size() > 1
                           )
                 );
