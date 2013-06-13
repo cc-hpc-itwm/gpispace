@@ -9,8 +9,6 @@
 #include <gspc/net/server/url_maker.hpp>
 #include <gspc/net/frame_builder.hpp>
 
-#include <gspc/net/common/safe_run_io_service.hpp>
-
 namespace gspc
 {
   namespace net
@@ -53,7 +51,7 @@ namespace gspc
         for (size_t i = 0 ; i < m_thread_pool_size ; ++i)
         {
           thread_ptr_t thrd
-            (new boost::thread (boost::bind ( &safe_run_io_service
+            (new boost::thread (boost::bind ( &boost::asio::io_service::run
                                             , &m_io_service
                                             )
                                )
