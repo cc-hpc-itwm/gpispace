@@ -48,7 +48,7 @@ namespace fhg
         virtual void run();
 
       signals:
-        void remote_job_finished (sdpa::Client*, const QString&, const xml::parse::id::ref::function&);
+        void remote_job_finished (sdpa::Client*, const QString&, xml::parse::id::ref::function*);
         void remote_job_failed (sdpa::Client*, const QString&);
 
       private:
@@ -90,7 +90,7 @@ namespace fhg
         void open_remote_logging();
         void open_remote_execution();
 
-        void remote_job_finished (sdpa::Client*, const QString&, const xml::parse::id::ref::function&);
+        void remote_job_finished (sdpa::Client*, const QString&, xml::parse::id::ref::function*);
         void remote_job_failed (sdpa::Client*, const QString&);
 
         void show_transition_library();

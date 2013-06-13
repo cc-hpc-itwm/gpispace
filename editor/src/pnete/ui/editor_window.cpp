@@ -1274,7 +1274,7 @@ namespace fhg
         }
         else
         {
-          emit remote_job_finished (_client, QString::fromStdString (_job_id), _function);
+          emit remote_job_finished (_client, QString::fromStdString (_job_id), new xml::parse::id::ref::function (_function));
         }
 
         _client->unload_modules();
@@ -1290,7 +1290,7 @@ namespace fhg
       }
 
       void editor_window::remote_job_finished
-        (sdpa::Client* client, const QString& job_id_, const xml::parse::id::ref::function& function)
+        (sdpa::Client* client, const QString& job_id_, xml::parse::id::ref::function* function)
       {
         _action_execute_current_file_remote_via_prompt->setEnabled (true);
         const std::string job_id (job_id_.toStdString());
@@ -1299,7 +1299,8 @@ namespace fhg
         client->remove (job_id);
 
         const we::type::activity_t output (output_string);
-        show_results_of_activity (std::make_pair (output, function));
+        show_results_of_activity (std::make_pair (output, *function));
+        delete function;
       }
 
       namespace
@@ -1440,9 +1441,9 @@ namespace fhg
                   , SLOT (remote_job_failed (sdpa::Client*,QString))
                   );
           connect ( waiter
-                  , SIGNAL (remote_job_finished (sdpa::Client*,QString,xml::parse::id::ref::function))
+                  , SIGNAL (remote_job_finished (sdpa::Client*,QString,xml::parse::id::ref::function*))
                   , this
-                  , SLOT (remote_job_finished (sdpa::Client*,QString,xml::parse::id::ref::function))
+                  , SLOT (remote_job_finished (sdpa::Client*,QString,xml::parse::id::ref::function*))
                   );
           connect (waiter, SIGNAL (finished()), waiter, SLOT (deleteLater()));
 
