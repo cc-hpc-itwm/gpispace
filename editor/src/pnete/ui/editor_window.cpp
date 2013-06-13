@@ -36,6 +36,8 @@
 #include <we/context.hpp>
 #include <we/type/activity.hpp>
 
+#include <we/expr/parse/parser.hpp>
+#include <we/type/value/peek.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
@@ -1061,6 +1063,27 @@ namespace fhg
         {
           return QString ("[binary:=\"%1\"]").arg (edit->text());
         }
+        QString maybe_file_type_token_name_or_string (const QString& t)
+        {
+          if (t.indexOf (":=") != -1)
+          {
+            return QString::fromStdString
+              ( boost::get<std::string>
+                ( *pnet::type::value::peek
+                  ("name", expr::parse::parser (t.toStdString()).eval_all())
+                )
+              );
+          }
+          return t;
+        }
+        QString maybe_string_token_or_string (const QString& t)
+        {
+          if (t.startsWith ("\"") && t.endsWith ("\""))
+          {
+            return t.mid (1, t.length() - 2);
+          }
+          return t;
+        }
 
         std::pair<QWidget*, boost::function<QString()> > widget_for_item
           (const std::string& type, const boost::optional<QString>& def)
@@ -1078,7 +1101,7 @@ namespace fhg
           {
             util::qt::file_line_edit* edit
               ( new util::qt::file_line_edit
-                (QFileDialog::AnyFile, def.get_value_or (""))
+              (QFileDialog::AnyFile, maybe_file_type_token_name_or_string (def.get_value_or ("")))
               );
             return std::pair<QWidget*, boost::function<QString()> >
               (edit, boost::bind (file_line_edit_to_file_type, edit));
@@ -1113,7 +1136,7 @@ namespace fhg
           }
           else if (type == "string")
           {
-            QLineEdit* edit (new QLineEdit (def.get_value_or ("")));
+            QLineEdit* edit (new QLineEdit (maybe_string_token_or_string (def.get_value_or (""))));
             return std::pair<QWidget*, boost::function<QString()> >
               (edit, boost::bind (&QLineEdit::text, edit));
           }
