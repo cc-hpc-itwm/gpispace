@@ -197,11 +197,14 @@ namespace xml
 
           BOOST_FOREACH (const std::string& arg, m.port_arg())
             {
-              if (!first)
-                {
-                  s << ", ";
-                  first = false;
-                }
+              if (first)
+              {
+                first = false;
+              }
+              else
+              {
+                s << ", ";
+              }
 
               s << arg;
             }
