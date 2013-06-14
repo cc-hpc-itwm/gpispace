@@ -773,6 +773,8 @@ namespace fhg
 
             tns.insert ("file_type");
             tns.insert ("function_type");
+            tns.insert ("long");
+            tns.insert ("double");
 
             return tns;
           }
