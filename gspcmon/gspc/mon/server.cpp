@@ -27,6 +27,9 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
 
+static const size_t STATUS_REQUEST_BUNCH_SIZE = 4;
+static const size_t MAX_PARALLEL_STATUS_REQUESTS = 10;
+
 namespace gspc
 {
   namespace mon
@@ -910,7 +913,7 @@ namespace gspc
         }
 
         const QMutexLocker pending_lock (&_pending_status_updates_mutex);
-        while (_in_progress_status_requests < 4 && not _status_requests.isEmpty ())
+        while (_in_progress_status_requests < MAX_PARALLEL_STATUS_REQUESTS && not _status_requests.isEmpty ())
         {
           action_request_t req = _status_requests.takeFirst ();
           QFuture<action_request_result_t> *f
@@ -936,7 +939,7 @@ namespace gspc
 
           to_query << host;
 
-          if (to_query.size () >= 4)
+          if (to_query.size () >= STATUS_REQUEST_BUNCH_SIZE)
           {
             pending_lock.unlock ();
             query_status (to_query); to_query.clear ();
@@ -959,7 +962,7 @@ namespace gspc
 
       {
         QMutexLocker lock (&_pending_status_updates_mutex);
-        if (_in_progress_status_requests >= 4)
+        if (_in_progress_status_requests >= MAX_PARALLEL_STATUS_REQUESTS)
         {
           _status_requests << req;
         }
