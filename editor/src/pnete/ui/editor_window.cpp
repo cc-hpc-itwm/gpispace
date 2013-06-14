@@ -1330,7 +1330,7 @@ namespace fhg
 
       namespace
       {
-        void request_tokens_for_ports
+        bool request_tokens_for_ports
           ( std::pair < we::type::activity_t
                       , xml::parse::id::ref::function
                       >* activity_and_fun
@@ -1411,7 +1411,7 @@ namespace fhg
 
             if (!value_getters.empty() && !dialog->exec())
             {
-              return;
+              return false;
             }
 
             QMap<QString, boost::function<QString()> >::const_iterator i
@@ -1425,6 +1425,8 @@ namespace fhg
               ++i;
             }
           }
+
+          return true;
         }
       }
 
@@ -1436,7 +1438,10 @@ namespace fhg
         std::pair<we::type::activity_t, xml::parse::id::ref::function>
           activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        request_tokens_for_ports (&activity_and_fun);
+        if (!request_tokens_for_ports (&activity_and_fun))
+        {
+          return;
+        }
 
         //! \todo Add search path into config (temporarily)!
         // loader.append_search_path (temporary_path / "pnetc" / "op");
