@@ -776,12 +776,23 @@ namespace fhg
 
           graph.layout ("dot");
 
+          QPointF center;
+          int counter (0);
+
           BOOST_FOREACH (nodes_map_type::value_type& it, nodes)
           {
             if (it.first->type() != base_item::place_graph_type)
             {
               it.first->setPos (style::raster::snap (it.second.position()));
+              ++counter;
+              center += it.first->pos();
             }
+          }
+
+          center /= counter;
+          foreach (QGraphicsView* view, views())
+          {
+            view->centerOn (center);
           }
 
           static int i (0);
