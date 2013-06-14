@@ -458,7 +458,7 @@ namespace fhg
         const int port ( QInputDialog::getInt ( this
                                               , tr ("port_for_remote_logging")
                                               , tr ("port")
-                                              , 2438
+                                              , 47095
                                               , 1024
                                               , 65535
                                               , 1
@@ -482,7 +482,7 @@ namespace fhg
         const int port ( QInputDialog::getInt ( this
                                               , tr ("port_for_remote_execution")
                                               , tr ("port")
-                                              , 2439
+                                              , 47096
                                               , 1024
                                               , 65535
                                               , 1
