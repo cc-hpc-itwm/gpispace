@@ -785,7 +785,7 @@ namespace fhg
           }
 
           static int i (0);
-          if (i == 0)
+          if (i < 2)
           {
             ++i;
             auto_layout();
