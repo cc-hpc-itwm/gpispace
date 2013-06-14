@@ -771,8 +771,8 @@ namespace fhg
           {
             boost::unordered_set<std::string> tns;
 
-            tns.insert ("file_type");
-            tns.insert ("function_type");
+            tns.insert ("File");
+            tns.insert ("Binary");
             tns.insert ("long");
             tns.insert ("double");
 
@@ -1103,7 +1103,7 @@ namespace fhg
             return std::pair<QWidget*, boost::function<QString()> >
               (box, boost::bind (checkbox_to_string, box));
           }
-          else if (type == "file_type")
+          else if (type == "File")
           {
             util::qt::file_line_edit* edit
               ( new util::qt::file_line_edit
@@ -1112,7 +1112,7 @@ namespace fhg
             return std::pair<QWidget*, boost::function<QString()> >
               (edit, boost::bind (file_line_edit_to_file_type, edit));
           }
-          else if (type == "function_type")
+          else if (type == "Binary")
           {
             util::qt::file_line_edit* edit
               ( new util::qt::file_line_edit

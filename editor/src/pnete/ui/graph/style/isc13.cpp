@@ -30,11 +30,11 @@ namespace fhg
               {
                 QMap<QString, QBrush> map;
 
-                map["velocity_type"] = grad
+                map["File"] = grad
                   ( QColor::fromHsvF (0.166, 0.97, qMin (1.0, 1.0 * factor))
                   , QColor::fromHsvF (0.166, 0.8, qMin (1.0, 0.8 * factor))
                   );
-                map["data_type"] = grad
+                map["Data"] = grad
                   ( QColor::fromHsvF (0.58, 1.0, qMin (1.0, 1.0 * factor))
                   , QColor::fromHsvF (0.60, 1.0, qMin (1.0, 0.9 * factor))
                   );
