@@ -45,6 +45,7 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QTimer>
 
 namespace fhg
 {
@@ -789,12 +790,6 @@ namespace fhg
             }
           }
 
-          center /= counter;
-          foreach (QGraphicsView* view, views())
-          {
-            view->centerOn (center);
-          }
-
           static int i (0);
           if (i < 2)
           {
@@ -802,12 +797,26 @@ namespace fhg
             auto_layout();
             --i;
           }
+          else
+          {
+            QTimer::singleShot (0, this, SLOT (center_all_views()));
+          }
 
           // BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
           // {
           //   //! \todo enable this, before repair connection::shape
           //   //                edge.first->fixed_points (edge.second.points());
           // }
+        }
+
+        void scene_type::center_all_views()
+        {
+          const QPointF center (itemsBoundingRect().center());
+          foreach (QGraphicsView* view, views())
+          {
+            view->centerOn (center);
+            view->update();
+          }
         }
 
         template<typename item_type, typename handle_type>

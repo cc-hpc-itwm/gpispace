@@ -62,6 +62,7 @@ namespace fhg
 
         public slots:
           void auto_layout();
+          void center_all_views();
 
           void connection_added ( const data::handle::connect&
                                 , const data::handle::place&
