@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="start GPI-Space components"
 GSPC_API_COMMAND_LEVEL=2
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {
@@ -106,7 +106,7 @@ gspc_log_trace topology "checking if '$name' already exists..."
 
 if gspc topology status -q "^$name$" ; then
     gspc_log_error topology "'$name' is still running"
-    gspc_log_info topology "<host> <port> <pid>:" $(gspc topology list --no-header "^$name$")
+    gspc_log_info topology "<host> <port> <pid>:" $(gspc_call topology list --no-header "^$name$")
     exit 1
 fi
 

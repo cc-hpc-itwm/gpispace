@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="manage the Key-Value-Store"
 GSPC_API_COMMAND_LEVEL=1
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {
@@ -91,7 +91,7 @@ function gspc_require_kvs_config ()
 {
     if [ -z "$kvs_host" -o -z "$kvs_port" ]
     then
-        kvs_cfg=( $(gspc --no-alias config --local --get-regex kvs | sort | awk '{print $3}') )
+        kvs_cfg=( $(gspc_call config --local --get-regex kvs | sort | awk '{print $3}') )
         if [ ${#kvs_cfg[@]} -ne 2 ] ; then
 	    if [ -z "${kvs_host}" ]
 	    then

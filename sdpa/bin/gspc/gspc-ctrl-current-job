@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="query for the current job"
 GSPC_API_COMMAND_LEVEL=2
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {
@@ -46,7 +46,7 @@ do
 	failed=$((failed + 1))
 	continue
     fi
-    
+
     if [ -n "$current_job" ]
     then
         if [ ${#urls[@]} -gt 1 ]

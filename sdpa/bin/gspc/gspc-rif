@@ -3,10 +3,10 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="manage the remote interface"
 GSPC_API_COMMAND_LEVEL=1
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 RIF_DEFAULT_PORT=5000
-rif_port="$(gspc config --get rif.port)"
+rif_port="$(gspc_call config --get rif.port)"
 if [ -z "$rif_port" ] ; then
     rif_port="${RIF_DEFAULT_PORT}"
 fi

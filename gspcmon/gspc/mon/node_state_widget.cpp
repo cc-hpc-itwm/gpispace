@@ -170,10 +170,11 @@ namespace prefix
       , _legend_widget (legend_widget)
       , _log (log)
       , _communication (new communication (host, port, this))
+      , _host (host)
   {
     timer
-      (this, 10000, boost::bind (&communication::request_hostlist, _communication));
-    timer (this, 5000, SLOT (refresh_stati()));
+      (this, 30000, boost::bind (&communication::request_hostlist, _communication));
+    timer (this, 1000, SLOT (refresh_stati()));
 
     setSizeIncrement (per_step, per_step);
     QSizePolicy pol (QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
@@ -463,6 +464,11 @@ namespace prefix
     {
       updateGeometry();
     }
+
+    setWindowTitle ( tr ("Cluster Monitor: %1; watching %2 nodes")
+                   .arg (_host)
+                   .arg (_nodes.size())
+                   );
   }
 
   void node_state_widget::refresh_stati()
@@ -610,7 +616,7 @@ namespace prefix
          )
       {
         throw fhg::util::parse::error::expected
-          ("boolean' or 'directory' or 'filename' or 'integer' or 'string", pos);
+          ("boolean' or 'directory' or 'duration' or 'filename' or 'integer' or 'string", pos);
       }
 
       switch (*pos)
@@ -625,9 +631,29 @@ namespace prefix
 
       case 'd':
         ++pos;
-        pos.require ("irectory");
+        if (pos.end() || (*pos != 'i' && *pos != 'u'))
+        {
+          throw fhg::util::parse::error::expected ("irectory' or 'uration", pos);
+        }
 
-        _type = directory;
+        switch (*pos)
+        {
+        case 'i':
+          ++pos;
+          pos.require ("rectory");
+
+          _type = directory;
+
+          break;
+
+        case 'u':
+          ++pos;
+          pos.require ("ration");
+
+          _type = duration;
+
+          break;
+        }
 
         break;
 
@@ -1366,6 +1392,17 @@ namespace prefix
             (edit, boost::bind (&file_line_edit::text, edit));
         }
 
+      case action_argument_data::duration:
+        {
+          QSpinBox* edit (new QSpinBox);
+          edit->setMinimum (1);
+          edit->setMaximum (INT_MAX);
+          edit->setSuffix (" h");
+          edit->setValue (string_to_int (item._default.get_value_or ("1")));
+          return std::pair<QWidget*, boost::function<QString()> >
+            (edit, boost::bind (spinbox_to_string, edit));
+        }
+
       case action_argument_data::filename:
         {
           file_line_edit* edit
@@ -1376,7 +1413,7 @@ namespace prefix
             (edit, boost::bind (&file_line_edit::text, edit));
         }
 
-      case action_argument_data::integer: // min max
+      case action_argument_data::integer:
         {
           QSpinBox* edit (new QSpinBox);
           edit->setMinimum (INT_MIN);
@@ -1466,13 +1503,14 @@ namespace prefix
         {
           QToolTip::showText
             ( help_event->globalPos()
-            , QString ("%1: %2%3")
+            , QString ("%1: %2%3 [last update: %4]")
             .arg (node (*node_index).hostname())
             .arg (node (*node_index).state().get_value_or ("unknown state"))
             .arg ( node (*node_index).details()
                  ? QString (*node (*node_index).details()).prepend (" (").append (")")
                  : ""
                  )
+            .arg (node (*node_index).state_update_time().toString())
             );
           event->accept();
           return true;

@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="shutdown the RIF"
 GSPC_API_COMMAND_LEVEL=2
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {

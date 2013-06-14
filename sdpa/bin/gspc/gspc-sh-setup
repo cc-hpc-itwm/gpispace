@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-#  this file is supposed to be sourced:
+#  this file is supposed to be sourced via either:
 #
 #    . $(gspc --exec-path)/gspc-sh-setup
-#
+#    . "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 ################################################################################
 #                                                                              #
@@ -81,7 +81,7 @@ function gspc_is_color_enabled ()
     if [ -n "$GSPC_LOG_FROM_CONFIG" ] ; then
         mode=auto
     else
-        mode=$(gspc --no-alias config --get color."${which}")
+        mode=$("${GSPC_EXEC_PATH}/gspc-config" --get color."${which}")
     fi
 
     case "$mode" in
@@ -181,7 +181,7 @@ function gspc_abspath ()
 function gspc_call_editor ()
 {
     local editor=()
-    editor=( $(gspc --no-alias config --get core.editor) )
+    editor=($("${GSPC_EXEC_PATH}/gspc-config" --get core.editor))
     if [ $? -ne 0 -o -z "${editor}" ] ; then
         editor=("${EDITOR:=/usr/bin/vi}")
     fi
@@ -244,5 +244,16 @@ function gspc_atomic ()
 function gspc_resolve_command ()
 {
     local cmd_name="${1}"; shift
-    echo "$(gspc --exec-path)/gspc-${cmd_name}"
+    if [ -n "${GSPC_EXEC_PATH}" ]
+    then
+        echo "${GSPC_EXEC_PATH}/gspc-${cmd_name}"
+    else
+        return 1
+    fi
+}
+
+function gspc_call ()
+{
+    local cmd_name="${1}"; shift
+    "${GSPC_EXEC_PATH}/gspc-${cmd_name}" "${@}"
 }

@@ -14,6 +14,7 @@ set (gspcnet_src
 
   net/parse/parser.cpp
 
+  net/common/safe_run_io_service.cpp
   net/common/tcp_connection.cpp
   net/common/unix_connection.cpp
 

@@ -9,6 +9,8 @@ bin_path="${prefix_path}/bin"
 lib_path="${prefix_path}/lib"
 plugin_path="${prefix_path}/libexec/fhg/plugins"
 
+export GSPC_EXEC_PATH="${exec_path}"
+
 verbose=0
 resolve_alias=true
 

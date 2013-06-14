@@ -3,7 +3,7 @@
 GSPC_API_COMMAND_SHORT_DESCRIPTION="examine the current status of a GPI-Space topology"
 GSPC_API_COMMAND_LEVEL=2
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {
@@ -52,7 +52,7 @@ function action_status ()
     local to_check=("$@")
     local component_info=()
 
-    component_info=($(gspc topology --kvs-host "$kvs_host" --kvs-port "$kvs_port" list --no-header "${to_check[@]}"))
+    component_info=($(gspc_call topology --kvs-host "$kvs_host" --kvs-port "$kvs_port" list --no-header "${to_check[@]}"))
     ec=$?
     if [ $ec -ne 0 ] ; then
         return $ec

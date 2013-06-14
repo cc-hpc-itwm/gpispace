@@ -6,7 +6,7 @@ GSPC_API_COMMAND_LEVEL=-1
 # levels: -1 - do not show in help output
 #         >0 - show in help output of level L
 
-. $(gspc --exec-path)/gspc-sh-setup
+. "${GSPC_EXEC_PATH}/gspc-sh-setup" || { echo >&2 "must be run by 'gspc'" ; exit 64; }
 
 function usage()
 {

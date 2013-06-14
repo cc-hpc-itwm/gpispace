@@ -7,10 +7,13 @@
 #include <QString>
 #include <QFile>
 #include <QDir>
+#include <QThreadPool>
 
 int main (int argc, char** argv)
 {
   QApplication app (argc, argv);
+
+  QThreadPool::globalInstance ()->setMaxThreadCount (16);
 
   if (argc < 4)
   {
