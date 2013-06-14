@@ -27,8 +27,8 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
 
-static const size_t STATUS_REQUEST_BUNCH_SIZE = 4;
-static const size_t MAX_PARALLEL_STATUS_REQUESTS = 10;
+static const size_t STATUS_REQUEST_BUNCH_SIZE = 6;
+static const size_t MAX_PARALLEL_STATUS_REQUESTS = 6;
 
 namespace gspc
 {
