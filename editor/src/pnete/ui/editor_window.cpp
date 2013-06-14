@@ -985,27 +985,30 @@ namespace fhg
 
           xml::parse::post_processing_passes (function, &state);
 
-          xml::parse::generate_cpp (function, state);
-
+          if (0)
           {
-            QMessageBox box (QMessageBox::Information, "Compiling modules", "Please wait..", QMessageBox::NoButton);
-            box.setStandardButtons (0);
-            box.show();
+            xml::parse::generate_cpp (function, state);
 
-            const QFuture<boost::optional<std::runtime_error> > compilation
-              (QtConcurrent::run (invoke_make, temporary_path));
-
-            while (!compilation.isFinished())
             {
+              QMessageBox box (QMessageBox::Information, "Compiling modules", "Please wait..", QMessageBox::NoButton);
+              box.setStandardButtons (0);
+              box.show();
+
+              const QFuture<boost::optional<std::runtime_error> > compilation
+                (QtConcurrent::run (invoke_make, temporary_path));
+
+              while (!compilation.isFinished())
+              {
+                qApp->processEvents();
+              }
+
+              box.hide();
               qApp->processEvents();
-            }
 
-            box.hide();
-            qApp->processEvents();
-
-            if (compilation.result())
-            {
-              throw *compilation.result();
+              if (compilation.result())
+              {
+                throw *compilation.result();
+              }
             }
           }
 
