@@ -828,6 +828,7 @@ namespace fhg
 
           xml::parse::state::type state;
           state.path_to_cpp() = temporary_path.string();
+          state.force_overwrite_file() = true;
           boost::optional<std::string> SDPA_HOME (get_env ("SDPA_HOME"));
           if (SDPA_HOME)
           {
