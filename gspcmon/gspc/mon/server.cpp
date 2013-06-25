@@ -939,7 +939,7 @@ namespace gspc
 
           to_query << host;
 
-          if (to_query.size () >= STATUS_REQUEST_BUNCH_SIZE)
+          if (static_cast<size_t>(to_query.size()) >= STATUS_REQUEST_BUNCH_SIZE)
           {
             pending_lock.unlock ();
             query_status (to_query); to_query.clear ();
