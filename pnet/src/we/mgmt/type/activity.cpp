@@ -597,6 +597,10 @@ namespace we
       {
         return a.id() == b.id();
       }
+      std::ostream& operator<< (std::ostream& os, const activity_t& a)
+      {
+        return os << a.to_string();
+      }
     }
   }
 }
