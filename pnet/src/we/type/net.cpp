@@ -177,6 +177,19 @@ namespace petri_net
     return _tmap;
   }
 
+  void net::modify_transitions
+    ( const boost::function<void ( const transition_id_type&
+                                 , we::type::transition_t&
+                                 )>& f
+    )
+  {
+    typedef std::pair<const transition_id_type, we::type::transition_t> it_type;
+    BOOST_FOREACH (it_type& it, _tmap)
+    {
+      f (it.first, it.second);
+    }
+  }
+
   //! \todo Implement more efficient if necessary
   const boost::unordered_set<connection_t> net::connections() const
   {
