@@ -48,28 +48,6 @@ namespace xml
                   )
       { }
 
-      missing_node::missing_node ( const rapidxml::node_type& want
-                                 , const boost::filesystem::path& path
-                                 )
-        : generic ( boost::format ( "expected node of type %1%: in %2%"
-                                  )
-                  % util::show_node_type (want)
-                  % path
-                  )
-      { }
-
-      missing_node::missing_node ( const rapidxml::node_type& want1
-                                 , const rapidxml::node_type& want2
-                                 , const boost::filesystem::path& path
-                                 )
-        : generic ( boost::format ( "expected node of type %1%: or %2% in %3%"
-                                  )
-                  % util::show_node_type (want1)
-                  % util::show_node_type (want2)
-                  % path
-                  )
-      { }
-
       port_type_mismatch::port_type_mismatch
         ( const id::ref::port& port
         , const id::ref::port& other_port

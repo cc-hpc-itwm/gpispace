@@ -76,21 +76,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class missing_node : public generic
-      {
-      public:
-        missing_node ( const rapidxml::node_type&
-                     , const boost::filesystem::path&
-                     );
-
-        missing_node ( const rapidxml::node_type&
-                     , const rapidxml::node_type&
-                     , const boost::filesystem::path&
-                     );
-      };
-
-      // ******************************************************************* //
-
      class missing_attr : public generic
       {
       private:
