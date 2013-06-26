@@ -61,110 +61,32 @@ namespace xml
 
       class wrong_node : public generic
       {
-      private:
-        std::string nice ( const rapidxml::node_type & want
-                         , const rapidxml::node_type & got
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "expected node of type "
-            << util::show_node_type (want)
-            << ": got node of type "
-            << util::show_node_type (got)
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
-        std::string nice ( const rapidxml::node_type & want1
-                         , const rapidxml::node_type & want2
-                         , const rapidxml::node_type & got
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "expected node of type "
-            << util::show_node_type (want1)
-            << " or "
-            << util::show_node_type (want2)
-            << ": got node of type "
-            << util::show_node_type (got)
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        wrong_node ( const rapidxml::node_type & want
-                   , const rapidxml::node_type & got
-                   , const boost::filesystem::path & path
-                   )
-          : generic ( "wrong node", nice (want, got, path))
-        {}
+        wrong_node ( const rapidxml::node_type&
+                   , const rapidxml::node_type& got
+                   , const boost::filesystem::path&
+                   );
 
-        wrong_node ( const rapidxml::node_type & want1
-                   , const rapidxml::node_type & want2
-                   , const rapidxml::node_type & got
-                   , const boost::filesystem::path & path
-                     )
-          : generic ("wrong node", nice (want1, want2, got, path))
-        {}
+        wrong_node ( const rapidxml::node_type&
+                   , const rapidxml::node_type&
+                   , const rapidxml::node_type& got
+                   , const boost::filesystem::path&
+                   );
       };
 
       // ******************************************************************* //
 
       class missing_node : public generic
       {
-      private:
-        std::string nice ( const rapidxml::node_type & want
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "expected node of type "
-            << util::show_node_type (want)
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
-        std::string nice ( const rapidxml::node_type & want1
-                         , const rapidxml::node_type & want2
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "expected node of type "
-            << util::show_node_type (want1)
-            << " or "
-            << util::show_node_type (want2)
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        missing_node ( const rapidxml::node_type & want
-                     , const boost::filesystem::path & path
-                     )
-          : generic ( "missing node", nice (want, path))
-        {}
+        missing_node ( const rapidxml::node_type&
+                     , const boost::filesystem::path&
+                     );
 
-        missing_node ( const rapidxml::node_type & want1
-                     , const rapidxml::node_type & want2
-                     , const boost::filesystem::path & path
-                     )
-          : generic ("missing node", nice (want1, want2, path))
-        {}
+        missing_node ( const rapidxml::node_type&
+                     , const rapidxml::node_type&
+                     , const boost::filesystem::path&
+                     );
       };
 
       // ******************************************************************* //
