@@ -48,6 +48,17 @@ namespace xml
                   )
       { }
 
+      missing_attr::missing_attr ( const std::string& pre
+                                 , const std::string& attr
+                                 , const util::position_type& position
+                                 )
+        : generic ( boost::format ("%1%: missing attribute %2% in %3")
+                  % pre
+                  % attr
+                  % position
+                  )
+      { }
+
       port_type_mismatch::port_type_mismatch
         ( const id::ref::port& port
         , const id::ref::port& other_port

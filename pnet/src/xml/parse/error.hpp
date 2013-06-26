@@ -78,31 +78,12 @@ namespace xml
       // ******************************************************************* //
 
      class missing_attr : public generic
-      {
-      private:
-        std::string nice ( const std::string & pre
-                         , const std::string & attr
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << pre
-            << ": missing attribute "
-            << attr
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
-      public:
-        missing_attr ( const std::string & pre
-                     , const std::string & attr
-                     , const boost::filesystem::path & path
-                     )
-          : generic (nice (pre, attr, path))
-        {}
+     {
+     public:
+       missing_attr ( const std::string& pre
+                    , const std::string& attr
+                    , const util::position_type&
+                    );
       };
 
       // ******************************************************************* //
