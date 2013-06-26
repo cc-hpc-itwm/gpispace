@@ -96,7 +96,7 @@ namespace xml
 
         skip (node, rapidxml::node_declaration);
 
-        const std::string name (name_element (node, state.file_in_progress()));
+        const std::string name (name_element (node, state));
 
         if (!node)
         {
@@ -281,8 +281,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -340,8 +339,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -400,8 +398,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -498,8 +495,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -566,8 +562,7 @@ namespace xml
             }
             else if (child_name == "condition")
             {
-              transition.get_ref().add_conditions
-                (parse_cdata (child, state.file_in_progress()));
+              transition.get_ref().add_conditions (parse_cdata (child, state));
             }
             else if (child_name == "require")
             {
@@ -622,8 +617,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -671,8 +665,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -687,8 +680,7 @@ namespace xml
               const boost::optional<std::string>
                 value (optional (child, "value"));
 
-              const std::list<std::string> cdata
-                (parse_cdata (child, state.file_in_progress()));
+              const std::list<std::string> cdata (parse_cdata (child, state));
 
               state.prop_path().push_back (key);
 
@@ -821,8 +813,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -869,8 +860,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -919,8 +909,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -972,8 +961,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -1171,8 +1159,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -1218,11 +1205,7 @@ namespace xml
             else if (child_name == "code")
             {
               pod_of_code = state.position (child);
-              code = fhg::util::join ( parse_cdata ( child
-                                                   , state.file_in_progress()
-                                                   )
-                                     , "\n"
-                                     );
+              code = fhg::util::join (parse_cdata (child, state), "\n");
             }
             else
             {
@@ -1266,8 +1249,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -1327,8 +1309,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -1389,8 +1370,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -1531,8 +1511,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {
@@ -1585,8 +1564,7 @@ namespace xml
             }
             else if (child_name == "expression")
             {
-              function.get_ref().add_expression
-                (parse_cdata (child, state.file_in_progress()));
+              function.get_ref().add_expression (parse_cdata (child, state));
             }
             else if (child_name == "module")
             {
@@ -1598,8 +1576,7 @@ namespace xml
             }
             else if (child_name == "condition")
             {
-              function.get_ref().add_conditions
-                (parse_cdata (child, state.file_in_progress()));
+              function.get_ref().add_conditions (parse_cdata (child, state));
             }
             else if (child_name == "properties")
             {
@@ -1679,8 +1656,7 @@ namespace xml
             ; child = child ? child->next_sibling() : child
             )
         {
-          const std::string child_name
-            (name_element (child, state.file_in_progress()));
+          const std::string child_name (name_element (child, state));
 
           if (child)
           {

@@ -4,8 +4,7 @@
 #define _XML_PARSE_UTIL_EXPECT_HPP
 
 #include <xml/parse/rapidxml/types.hpp>
-
-#include <boost/filesystem.hpp>
+#include <xml/parse/state.fwd.hpp>
 
 namespace xml
 {
@@ -13,12 +12,12 @@ namespace xml
   {
     void expect_none_or ( xml_node_type*& node
                         , const rapidxml::node_type
-                        , const boost::filesystem::path&
+                        , const state::type&
                         );
     void expect_none_or ( xml_node_type*& node
                         , const rapidxml::node_type
                         , const rapidxml::node_type
-                        , const boost::filesystem::path&
+                        , const state::type&
                         );
   }
 }

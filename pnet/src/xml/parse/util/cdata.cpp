@@ -3,16 +3,15 @@
 #include <xml/parse/util/cdata.hpp>
 
 #include <xml/parse/error.hpp>
-
+#include <xml/parse/state.hpp>
 #include <xml/parse/util/expect.hpp>
-#include <xml/parse/util/skip.hpp>
 
 namespace xml
 {
   namespace parse
   {
     std::list<std::string> parse_cdata ( const xml_node_type* node
-                                       , const boost::filesystem::path& path
+                                       , const state::type& state
                                        )
     {
       std::list<std::string> v;
@@ -22,7 +21,7 @@ namespace xml
           ; child = child ? child->next_sibling() : child
           )
       {
-        expect_none_or (child, rapidxml::node_data, rapidxml::node_cdata, path);
+        expect_none_or (child, rapidxml::node_data, rapidxml::node_cdata, state);
 
         if (child)
         {

@@ -2,19 +2,18 @@
 
 #include <xml/parse/util/name_element.hpp>
 
-#include <xml/parse/error.hpp>
+#include <xml/parse/state.hpp>
 #include <xml/parse/util/expect.hpp>
-#include <xml/parse/util/skip.hpp>
 
 namespace xml
 {
   namespace parse
   {
     std::string name_element ( xml_node_type*& node
-                             , const boost::filesystem::path& path
+                             , const state::type& state
                              )
     {
-      expect_none_or (node, rapidxml::node_element, path);
+      expect_none_or (node, rapidxml::node_element, state);
 
       if (!node)
       {
