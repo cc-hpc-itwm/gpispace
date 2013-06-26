@@ -90,24 +90,8 @@ namespace xml
 
       class no_elements_given : public generic
       {
-      private:
-        std::string nice (const boost::filesystem::path & path) const
-        {
-          std::ostringstream s;
-
-          s << "no elements given at all"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        no_elements_given ( const std::string & pre
-                          , const boost::filesystem::path & path
-                          )
-          : generic (nice (path), pre)
-        {}
+        no_elements_given (const std::string&, const boost::filesystem::path&);
       };
 
       // ******************************************************************* //

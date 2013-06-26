@@ -59,6 +59,15 @@ namespace xml
                   )
       { }
 
+      no_elements_given::no_elements_given ( const std::string& pre
+                                           , const boost::filesystem::path& path
+                                           )
+        : generic ( boost::format ("%1%: no elements given at all in %2%")
+                  % pre
+                  % path
+                  )
+      { }
+
       port_type_mismatch::port_type_mismatch
         ( const id::ref::port& port
         , const id::ref::port& other_port
