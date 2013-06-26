@@ -803,25 +803,13 @@ namespace xml
 
       class unknown_template : public generic
       {
-      private:
-        std::string nice ( const std::string & templ
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "unknown template " << templ
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        unknown_template ( const std::string & templ
-                         , const boost::filesystem::path & path
-                         )
-          : generic (nice (templ, path))
-        {}
+        unknown_template (const id::ref::specialize&, const id::ref::net&);
+        virtual ~unknown_template() throw() {}
+
+      private:
+        const id::ref::specialize _specialize;
+        const id::ref::net _net;
       };
 
       // ******************************************************************* //

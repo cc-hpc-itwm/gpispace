@@ -3,6 +3,7 @@
 #include <xml/parse/error.hpp>
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
@@ -154,6 +155,20 @@ namespace xml
                   )
         , _function_name (fun)
         , _transition (trans)
+      {}
+
+      unknown_template::unknown_template ( const id::ref::specialize& spec
+                                         , const id::ref::net& net
+                                         )
+        : generic ( boost::format ( "unknown template %1% in specialize at %2%"
+                                    " in net at %3%"
+                                  )
+                  % spec.get().use
+                  % spec.get().position_of_definition()
+                  % net.get().position_of_definition()
+                  )
+        , _specialize (spec)
+        , _net (net)
       {}
 
       connect_to_nonexistent_place::connect_to_nonexistent_place
