@@ -19,7 +19,7 @@ namespace xml
 
       if (node && node->type() != t)
       {
-        throw error::wrong_node (t, node->type(), state.file_in_progress());
+        throw error::wrong_node (t, node->type(), state.position (node));
       }
     }
     void expect_none_or ( xml_node_type*& node
@@ -32,7 +32,7 @@ namespace xml
 
       if (node && node->type() != t1 && node->type() != t2)
       {
-        throw error::wrong_node (t1, t2, node->type(), state.file_in_progress());
+        throw error::wrong_node (t1, t2, node->type(), state.position (node));
       }
     }
   }

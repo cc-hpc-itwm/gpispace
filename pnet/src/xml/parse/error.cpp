@@ -22,21 +22,21 @@ namespace xml
     {
       wrong_node::wrong_node ( const rapidxml::node_type& want
                              , const rapidxml::node_type& got
-                             , const boost::filesystem::path& path
+                             , const util::position_type& position
                              )
         : generic ( boost::format ( "expected node of type %1%: got node of"
                                     " type %2% in %3%"
                                   )
                   % util::show_node_type (want)
                   % util::show_node_type (got)
-                  % path
+                  % position
                   )
       { }
 
       wrong_node::wrong_node ( const rapidxml::node_type& want1
                              , const rapidxml::node_type& want2
                              , const rapidxml::node_type& got
-                             , const boost::filesystem::path& path
+                             , const util::position_type& position
                              )
         : generic ( boost::format ( "expected node of type %1%: or %2% got"
                                     " node of type %3% in %4%"
@@ -44,7 +44,7 @@ namespace xml
                   % util::show_node_type (want1)
                   % util::show_node_type (want2)
                   % util::show_node_type (got)
-                  % path
+                  % position
                   )
       { }
 

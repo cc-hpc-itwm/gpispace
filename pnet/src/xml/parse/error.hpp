@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/util/position.hpp>
 
 #include <we/type/literal.hpp>
 #include <we/type/signature.hpp>
@@ -64,13 +65,13 @@ namespace xml
       public:
         wrong_node ( const rapidxml::node_type&
                    , const rapidxml::node_type& got
-                   , const boost::filesystem::path&
+                   , const util::position_type&
                    );
 
         wrong_node ( const rapidxml::node_type&
                    , const rapidxml::node_type&
                    , const rapidxml::node_type& got
-                   , const boost::filesystem::path&
+                   , const util::position_type&
                    );
       };
 
