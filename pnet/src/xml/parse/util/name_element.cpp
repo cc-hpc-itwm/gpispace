@@ -14,16 +14,12 @@ namespace xml
                              , const boost::filesystem::path& path
                              )
     {
-      skip (node, rapidxml::node_comment);
+      expect_none_or (node, rapidxml::node_element, path);
 
-      try
-        {
-          expect (node, rapidxml::node_element, path);
-        }
-      catch (const error::missing_node &)
-        {
-          return "<missing_node>";
-        }
+      if (!node)
+      {
+        return "<missing_node>";
+      }
 
       return std::string (node->name(), node->name_size());
     }

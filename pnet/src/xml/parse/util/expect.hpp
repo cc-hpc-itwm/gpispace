@@ -11,15 +11,15 @@ namespace xml
 {
   namespace parse
   {
-    void expect ( xml_node_type*&
-                , const rapidxml::node_type
-                , const boost::filesystem::path&
-                );
-    void expect ( xml_node_type*& node
-                , const rapidxml::node_type
-                , const rapidxml::node_type
-                , const boost::filesystem::path&
-                );
+    void expect_none_or ( xml_node_type*& node
+                        , const rapidxml::node_type
+                        , const boost::filesystem::path&
+                        );
+    void expect_none_or ( xml_node_type*& node
+                        , const rapidxml::node_type
+                        , const rapidxml::node_type
+                        , const boost::filesystem::path&
+                        );
   }
 }
 

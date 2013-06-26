@@ -14,8 +14,6 @@ namespace xml
 {
   namespace parse
   {
-    void cdata (xml_node_type*&, const boost::filesystem::path&);
-
     std::list<std::string> parse_cdata ( const xml_node_type*
                                        , const boost::filesystem::path&
                                        );
