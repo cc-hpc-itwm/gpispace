@@ -115,7 +115,7 @@ namespace xml
 
         if (sib)
         {
-          throw error::more_than_one_definition (pre, state.file_in_progress());
+          throw error::more_than_one_definition (pre, state.position (sib));
         }
 
         return parse (node, state);

@@ -68,6 +68,14 @@ namespace xml
                   )
       { }
 
+      more_than_one_definition::more_than_one_definition
+        (const std::string& pre, const util::position_type& position)
+          : generic ( boost::format ("%1%: more than one definition in %2%")
+                    % pre
+                    % position
+                    )
+      { }
+
       port_type_mismatch::port_type_mismatch
         ( const id::ref::port& port
         , const id::ref::port& other_port

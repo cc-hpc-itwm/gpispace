@@ -98,24 +98,9 @@ namespace xml
 
       class more_than_one_definition : public generic
       {
-      private:
-        std::string nice (const boost::filesystem::path & path) const
-        {
-          std::ostringstream s;
-
-          s << "more than one definition"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        more_than_one_definition ( const std::string & pre
-                                 , const boost::filesystem::path & path
-                                 )
-          : generic (nice (path), pre)
-        {}
+        more_than_one_definition
+          (const std::string&, const util::position_type&);
       };
 
       // ******************************************************************* //
