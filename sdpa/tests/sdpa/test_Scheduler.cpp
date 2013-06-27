@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
 
 	LOG(INFO, "Schedule Job1 ...");
-	ptrScheduler->find_matching_workers(jobId1);
+	ptrScheduler->schedule_with_constraints(jobId1);
 
 	// at this point the job jobId1 should be assigned to one of the workers
 	// matching the requirements of jobId1, i.e. either worker_A or worker_B
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 	pAgent->jobManager()->addJobRequirements(jobId2, req_list_2);
 
 	LOG(INFO, "Schedule Job2 ...");
-	ptrScheduler->find_matching_workers(jobId2);
+	ptrScheduler->schedule_with_constraints(jobId2);
 	// at this point the job jobId2 should be assigned to one of the workers
 	// that are matching the requirements of jobId2 and have no job assigned yet
 	try {
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
 
 	LOG(INFO, "Schedule the job "<<jobId1);
-	if(!ptrScheduler-> find_matching_workers(jobId1) )
+	if(!ptrScheduler-> schedule_with_constraints(jobId1) )
 	{
 		LOG(INFO, "No matching worker found. Put the job "<<jobId1<<" into the common queue!");
 		// do so as when no preferences were set, just ignore them right now
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(tesLoadBalancing)
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->find_matching_workers(jobId);
+		ptrScheduler->schedule_with_constraints(jobId);
 	}
 
 	sdpa::worker_id_list_t workerList;
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->find_matching_workers(jobId);
+		ptrScheduler->schedule_with_constraints(jobId);
 	}
 
 	sdpa::worker_id_list_t workerList;
@@ -635,7 +635,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->find_matching_workers(jobId);
+		ptrScheduler->schedule_with_constraints(jobId);
 	}
 
 	sdpa::worker_id_list_t workerList;
@@ -796,7 +796,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->find_matching_workers(jobId);
+		ptrScheduler->schedule_with_constraints(jobId);
 	}
 
 	sdpa::worker_id_list_t workerList;
