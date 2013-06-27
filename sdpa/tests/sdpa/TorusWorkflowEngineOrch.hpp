@@ -215,7 +215,7 @@ class TorusWorkflowEngineOrch : public IWorkflowEngine {
           std::ostringstream oss;
           oss<<"rank"<<agentRank;
           requirement_t req(oss.str(), true);
-          requirement_list_t reqList;
+          job_requirements_t reqList;
           reqList.push_back(req);
 
           pIAgent_->submit(yellowToken.activityId(), yellowToken.encode(), reqList);

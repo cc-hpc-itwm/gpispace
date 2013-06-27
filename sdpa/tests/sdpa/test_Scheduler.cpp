@@ -81,8 +81,8 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 
 	ptrScheduler->print();
 
-   LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
-   seda::StageRegistry::instance().remove(ptrOrch->name());
+	LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
+	seda::StageRegistry::instance().remove(ptrOrch->name());
 }
 
 BOOST_AUTO_TEST_CASE(testWorkStealing)
@@ -111,13 +111,13 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 	const sdpa::job_id_t jobId1("Job1");
 	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
 	pAgent->jobManager()->addJob(jobId1, pJob1);
-	requirement_list_t req_list_1;
+	job_requirements_t req_list_1;
 	requirement_t req_1("C", true);
-	req_list_1.push_back(req_1);
+	req_list_1.add(req_1);
 	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
 
 	LOG(INFO, "Schedule Job1 ...");
-	ptrScheduler->schedule_with_constraints(jobId1);
+	ptrScheduler->find_matching_workers(jobId1);
 
 	// at this point the job jobId1 should be assigned to one of the workers
 	// matching the requirements of jobId1, i.e. either worker_A or worker_B
@@ -136,13 +136,13 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 	const sdpa::job_id_t jobId2("Job2");
 	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
 	pAgent->jobManager()->addJob(jobId2, pJob2);
-	requirement_list_t req_list_2;
+	job_requirements_t req_list_2;
 	requirement_t req_2("C", true);
-	req_list_2.push_back(req_2);
+	req_list_2.add(req_2);
 	pAgent->jobManager()->addJobRequirements(jobId2, req_list_2);
 
 	LOG(INFO, "Schedule Job2 ...");
-	ptrScheduler->schedule_with_constraints(jobId2);
+	ptrScheduler->find_matching_workers(jobId2);
 	// at this point the job jobId2 should be assigned to one of the workers
 	// that are matching the requirements of jobId2 and have no job assigned yet
 	try {
@@ -235,13 +235,13 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 	const sdpa::job_id_t jobId1("Job1");
 	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
 	pAgent->jobManager()->addJob(jobId1, pJob1);
-	requirement_list_t req_list_1;
+	job_requirements_t req_list_1;
 	requirement_t req_1("C", true);
-	req_list_1.push_back(req_1);
+	req_list_1.add(req_1);
 	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
 
 	LOG(INFO, "Schedule the job "<<jobId1);
-	if(!ptrScheduler-> schedule_with_constraints(jobId1) )
+	if(!ptrScheduler-> find_matching_workers(jobId1) )
 	{
 		LOG(INFO, "No matching worker found. Put the job "<<jobId1<<" into the common queue!");
 		// do so as when no preferences were set, just ignore them right now
@@ -332,14 +332,16 @@ BOOST_AUTO_TEST_CASE(tesLoadBalancing)
 		osstr.str("");
 		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
 		pAgent->jobManager()->addJob(jobId, pJob);
-		requirement_list_t req_list_1(1,requirement_t("C", true));
-		pAgent->jobManager()->addJobRequirements(jobId, req_list_1);
+
+		job_requirements_t job_reqs;
+		job_reqs.add(requirement_t("C", true));
+		pAgent->jobManager()->addJobRequirements(jobId, job_reqs);
 	}
 
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->schedule_with_constraints(jobId);
+		ptrScheduler->find_matching_workers(jobId);
 	}
 
 	sdpa::worker_id_list_t workerList;
@@ -467,14 +469,15 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 		osstr.str("");
 		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
 		pAgent->jobManager()->addJob(jobId, pJob);
-		requirement_list_t req_list_1(1,requirement_t("C", true));
-		pAgent->jobManager()->addJobRequirements(jobId, req_list_1);
+		job_requirements_t job_reqs;
+		job_reqs.add(requirement_t("C", true));
+		pAgent->jobManager()->addJobRequirements(jobId, job_reqs);
 	}
 
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->schedule_with_constraints(jobId);
+		ptrScheduler->find_matching_workers(jobId);
 	}
 
 	sdpa::worker_id_list_t workerList;
@@ -623,14 +626,16 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 		osstr.str("");
 		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
 		pAgent->jobManager()->addJob(jobId, pJob);
-		requirement_list_t req_list_1(1,requirement_t("C", true));
-		pAgent->jobManager()->addJobRequirements(jobId, req_list_1);
+
+		job_requirements_t job_reqs;
+		job_reqs.add(requirement_t("C", true));
+		pAgent->jobManager()->addJobRequirements(jobId, job_reqs);
 	}
 
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->schedule_with_constraints(jobId);
+		ptrScheduler->find_matching_workers(jobId);
 	}
 
 	sdpa::worker_id_list_t workerList;
@@ -783,14 +788,15 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 		osstr.str("");
 		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
 		pAgent->jobManager()->addJob(jobId, pJob);
-		requirement_list_t req_list_1(1,requirement_t("C", true));
-		pAgent->jobManager()->addJobRequirements(jobId, req_list_1);
+		job_requirements_t job_reqs;
+		job_reqs.add(requirement_t("C", true));
+		pAgent->jobManager()->addJobRequirements(jobId, job_reqs);
 	}
 
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->schedule_with_constraints(jobId);
+		ptrScheduler->find_matching_workers(jobId);
 	}
 
 	sdpa::worker_id_list_t workerList;
