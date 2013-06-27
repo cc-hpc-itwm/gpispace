@@ -534,9 +534,9 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 
     try
     {
-      const requirement_list_t job_req_list = ptr_comm_handler_->getJobRequirements(jobId);
+      const job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
       // no preferences specified
-      if( job_req_list.empty() )
+      if( job_reqs.req_list.empty() )
       {
         // schedule to the first worker that requests a job
         DLOG(TRACE, "The requirements list for the job "<<jobId<<" is empty. Schedule it anywhere!");
@@ -547,8 +547,8 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
       {
         std::string required_capabilities_as_string ("n/a");
         {
-          requirement_list_t::const_iterator begin (job_req_list.begin ());
-          const requirement_list_t::const_iterator end (job_req_list.end ());
+          job_requirements_t::const_iterator begin (job_reqs.req_list.begin ());
+          const job_requirements_t::const_iterator end (job_reqs.req_list.end ());
 
           ostringstream ossReq;
           bool first = true;
@@ -568,7 +568,7 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 
           // get the best macthing worker, its matching degree
           // and the sorted list of preferred workers (sorted according to their matching degs)
-          Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(jobId, job_req_list, matching_degree, listPreferredWorkers);
+          Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(jobId, job_reqs, matching_degree, listPreferredWorkers);
 
           // if the degree is 0 -> the job can be scheduled anywhere
           if( matching_degree == 0 )
@@ -1084,9 +1084,9 @@ const sdpa::job_id_t SchedulerImpl::assignNewJob(const Worker::ptr_t ptrWorker, 
 			  jobId = ptr_worker_man_->common_queue_.pop();
 
 			  try {
-				  const requirement_list_t job_req_list = ptr_comm_handler_->getJobRequirements(jobId);
+				  const job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
 				  // LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
-				  if( matchRequirements( ptrWorker, job_req_list, false ) != -1 ) // matching found
+				  if( matchRequirements( ptrWorker, job_reqs, false ) != -1 ) // matching found
 				  {
 					  ptrWorker->submit(jobId);
 					  ptr_worker_man_->deteleJobPreferences(jobId);

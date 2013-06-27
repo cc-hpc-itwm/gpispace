@@ -131,7 +131,7 @@ std::string JobManager::print() const
   return os.str();
 }
 
-const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements)
+const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements)
 {
   lock_type lock(mtx_);
   if( job_requirements_.empty() )
@@ -145,7 +145,7 @@ const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
   return it_req->second;;
 }
 
-void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const requirement_list_t& job_req_list) throw (JobNotFoundException)
+void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list) throw (JobNotFoundException)
 {
   lock_type lock(mtx_);
   job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));

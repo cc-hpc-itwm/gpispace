@@ -1053,7 +1053,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GS about activity status transitions.
  */
-void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc, const requirement_list_t& job_req_list )
+void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc, const job_requirements_t& job_req_list )
 {
   // create new job with the job description = workflow (serialize it first)
   // set the parent_id to ?
@@ -1224,7 +1224,7 @@ void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
   jobManager()->deleteJob(jobId);
 }
 
-const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
+const job_requirements_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
   return jobManager()->getJobRequirements(jobId);
 }
