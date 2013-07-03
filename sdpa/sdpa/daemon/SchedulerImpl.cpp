@@ -513,129 +513,124 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
   ptr_worker_man_->dispatchJob(jobId);
 }
 
-/*
- * Scheduling with constraints
- */
 bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 {
-  DLOG(TRACE, "Called schedule_with_contraints ...");
+	DLOG(TRACE, "Called schedule_with_contraints ...");
 
-  if(!ptr_comm_handler_)
-  {
-    SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
-    stop();
-    return false;
-  }
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
+		stop();
+		return false;
+	}
 
-  if( ptr_worker_man_ )
-  {
-    // if no preferences are explicitly set for this job
-    DLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
+	if( ptr_worker_man_ )
+	{
+		// if no preferences are explicitly set for this job
+		DLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<" ... ");
 
-    try
-    {
-      const job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
-      // no preferences specified
-      if( job_reqs.req_list.empty() )
-      {
-        // schedule to the first worker that requests a job
-        DLOG(TRACE, "The requirements list for the job "<<jobId<<" is empty. Schedule it anywhere!");
-        schedule_anywhere(jobId);
-        return true;
-      }
-      else // there are requirements specified for that job
-      {
-        std::string required_capabilities_as_string ("n/a");
-        {
-          job_requirements_t::const_iterator begin (job_reqs.req_list.begin ());
-          const job_requirements_t::const_iterator end (job_reqs.req_list.end ());
+		try
+		{
+			const job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
+			// no preferences specified
+			if( job_reqs.req_list.empty() )
+			{
+				// schedule to the first worker that requests a job
+				DLOG(TRACE, "The requirements list for the job "<<jobId<<" is empty. Schedule it anywhere!");
+				schedule_anywhere(jobId);
+				return true;
+			}
+			else // there are requirements specified for that job
+			{
+				std::string required_capabilities_as_string ("n/a");
+				{
+					job_requirements_t::const_iterator begin (job_reqs.req_list.begin ());
+					const job_requirements_t::const_iterator end (job_reqs.req_list.end ());
 
-          ostringstream ossReq;
-          bool first = true;
-          while (begin != end)
-          {
-        	  first?first = false:ossReq << ", ";
-        	  ossReq << begin++->value();
-          }
-          required_capabilities_as_string = ossReq.str ();
-        }
+					ostringstream ossReq;
+					bool first = true;
+					while (begin != end)
+					{
+						first?first = false:ossReq << ", ";
+						ossReq << begin++->value();
+					}
+					required_capabilities_as_string = ossReq.str ();
+				}
 
-        try
-        {
-          // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-          int matching_degree (-1);
-          sdpa::job_pref_list_t listPreferredWorkers;
+				try
+				{
+					// first round: get the list of all workers for which the mandatory requirements are matching the capabilities
+					sdpa::job_pref_list_t listPreferredWorkers = ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs);
 
-          // get the best macthing worker, its matching degree
-          // and the sorted list of preferred workers (sorted according to their matching degs)
-          Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(jobId, job_reqs, matching_degree, listPreferredWorkers);
+					worker_id_t workerId(listPreferredWorkers.front().first);
+					int best_match_deg(listPreferredWorkers.front().second);
 
-          // if the degree is 0 -> the job can be scheduled anywhere
-          if( matching_degree == 0 )
-          {
-            DLOG(TRACE, "No worker matches the optional requirements of the job "<<jobId<<". The matching degree is 0. Schedule it anywhere!");
-            schedule_anywhere(jobId);
-            return true;
-          }
+					// if the degree is 0 -> the job can be scheduled anywhere
+					if( best_match_deg == 0 )
+					{
+						DLOG(TRACE, "No worker matches the optional requirements of the job "<<jobId<<". The matching degree is 0. Schedule it anywhere!");
+						schedule_anywhere(jobId);
+						return true;
+					}
 
-          LOG(  TRACE
-                , "The best worker matching the requirements: "
-                << required_capabilities_as_string
-                <<" for the job  " << jobId
-                <<" is " << ptrBestWorker->name()
-                <<" degree " << matching_degree
-          );
+					DLOG( TRACE
+							, "The best worker matching the requirements: "
+							<< required_capabilities_as_string
+							<<" for the job " << jobId
+							<<" is " << workerId
+							<<" degree " << best_match_deg;
+					);
 
-          ostringstream ossPrefs;
-          for( job_pref_list_t::iterator it=listPreferredWorkers.begin(); it!=listPreferredWorkers.end(); it++ )
-          {
-            ossPrefs<<"("<<it->first<<","<<it->second<<")"<<",";
-          }
+					ostringstream ossPrefs;
+					for( job_pref_list_t::iterator it=listPreferredWorkers.begin(); it!=listPreferredWorkers.end(); it++ )
+					{
+						ossPrefs<<"("<<it->first<<","<<it->second<<")"<<",";
+					}
 
-          LOG( TRACE, "The workers preferred by the job "<<jobId<<" are: "<<ossPrefs.str());
+					DLOG( INFO, "The workers preferred by the job "<<jobId<<" are: "<<ossPrefs.str());
 
-          // schedule the job to that one
-          DMLOG(TRACE, "Schedule the job "<<jobId<<" on the worker "<<ptrBestWorker->name());
-          return schedule_to(jobId, ptrBestWorker);
-        }
-        catch(const NoWorkerFoundException& ex1)
-        {
-          LOG ( ERROR
-              , "No worker meets the requirements: "
-              << required_capabilities_as_string
-              );
-          ptr_comm_handler_->activityFailed( ""
-                                            , jobId
-                                            // TODO: this should contain the job desc
-                                            , ""
-                                            , fhg::error::CAPABILITY_MISMATCH
-                                            , "capability combination missing: " + required_capabilities_as_string
-                                           );
+					// schedule the job to that one
+					DMLOG(TRACE, "Schedule the job "<<jobId<<" on the worker "<<workerId);
+					return schedule_to(jobId, workerId);
+				}
+				catch(const NoWorkerFoundException& ex1)
+				{
+					LOG ( ERROR
+							, "No worker meets the requirements: "
+							<< required_capabilities_as_string
+					);
+					ptr_comm_handler_->activityFailed( ""
+							, jobId
+							// TODO: this should contain the job desc
+							, ""
+							, fhg::error::CAPABILITY_MISMATCH
+							, "capability combination missing: " + required_capabilities_as_string
+					);
 
-          return false;
-        }
-      }
-    }
-    catch(const NoJobRequirements& )
-    {
-      // schedule to the first worker that requests a job
-      schedule_anywhere(jobId);
-      return true;
-    }
-  }
-  else
-  {
-    ptr_comm_handler_->activityFailed ( ""
-                                        , jobId
-                                        // TODO: this should contain the job desc
-                                        , ""
-                                        , fhg::error::WORKER_UNAVAILABLE
-                                        , "No worker available"
-                                      );
-    return false;
-  }
+					return false;
+				}
+			}
+		}
+		catch(const NoJobRequirements& )
+		{
+			// schedule to the first worker that requests a job
+			schedule_anywhere(jobId);
+			return true;
+		}
+	}
+	else
+	{
+		ptr_comm_handler_->activityFailed ( ""
+				, jobId
+				// TODO: this should contain the job desc
+				, ""
+				, fhg::error::WORKER_UNAVAILABLE
+				, "No worker available"
+		);
+		return false;
+	}
 
-  return false;
+	return false;
 }
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
