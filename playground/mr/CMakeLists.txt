@@ -10,57 +10,57 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 include_directories (${UTIL_INCLUDE_DIR})
 
-add_library (we
-  we/exception.cpp
-  we/field.cpp
-  we/require_type.cpp
-  we/signature_of.cpp
-  we/type/signature/complete.cpp
-  we/type/signature/cpp.cpp
-  we/type/signature/dump.cpp
-  we/type/signature/is_literal.cpp
-  we/type/signature/name.cpp
-  we/type/signature/show.cpp
-  we/type/signature/signature.cpp
-  we/type/value/name.cpp
-  we/type/value/name_of.cpp
-  we/type/value/of_type.cpp
-  we/type/value/path/append.cpp
-  we/type/value/path/join.cpp
-  we/type/value/path/split.cpp
-  we/type/value/peek.cpp
-  we/type/value/poke.cpp
-  we/type/value/read.cpp
-  we/type/value/show.cpp
+add_library (we2
+  we2/exception.cpp
+  we2/field.cpp
+  we2/require_type.cpp
+  we2/signature_of.cpp
+  we2/type/signature/complete.cpp
+  we2/type/signature/cpp.cpp
+  we2/type/signature/dump.cpp
+  we2/type/signature/is_literal.cpp
+  we2/type/signature/name.cpp
+  we2/type/signature/show.cpp
+  we2/type/signature/signature.cpp
+  we2/type/value/name.cpp
+  we2/type/value/name_of.cpp
+  we2/type/value/of_type.cpp
+  we2/type/value/path/append.cpp
+  we2/type/value/path/join.cpp
+  we2/type/value/path/split.cpp
+  we2/type/value/peek.cpp
+  we2/type/value/poke.cpp
+  we2/type/value/read.cpp
+  we2/type/value/show.cpp
 )
 
-fhg_add_test (we/type/test/value.cpp
+fhg_add_test (we2/type/test/value.cpp
   PROJECT test_we_type
-  LINK_LIBRARIES we we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev fhg-util
 )
 
-fhg_add_test (we/type/test/signature.cpp
+fhg_add_test (we2/type/test/signature.cpp
   PROJECT test_we_type
-  LINK_LIBRARIES we we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev fhg-util
 )
 
-fhg_add_test (we/test/require_type.cpp
+fhg_add_test (we2/test/require_type.cpp
   PROJECT test_we
-  LINK_LIBRARIES we we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev fhg-util
 )
 
-fhg_add_test (we/test/signature_of.cpp
+fhg_add_test (we2/test/signature_of.cpp
   PROJECT test_we
-  LINK_LIBRARIES we we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev fhg-util
 )
 
-fhg_add_test (we/test/exception.cpp
+fhg_add_test (we2/test/exception.cpp
   PROJECT test_we
-  LINK_LIBRARIES we we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev fhg-util
 )
 
-add_executable (mk_cpp we/type/test/mk_cpp.cpp)
-target_link_libraries (mk_cpp we we-dev fhg-util ${Boost_LIBRARIES})
+add_executable (mk_cpp we2/type/test/mk_cpp.cpp)
+target_link_libraries (mk_cpp we2 we-dev fhg-util ${Boost_LIBRARIES})
 
 add_custom_command (
   OUTPUT sig.hpp sig.cpp
@@ -71,7 +71,7 @@ add_custom_command (
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 add_library (sig ${CMAKE_CURRENT_BINARY_DIR}/sig.cpp)
 
-fhg_add_test (we/type/test/sig.cpp
+fhg_add_test (we2/type/test/sig.cpp
   PROJECT test_we
-  LINK_LIBRARIES sig we we-dev fhg-util
+  LINK_LIBRARIES sig we2 we-dev fhg-util
 )
