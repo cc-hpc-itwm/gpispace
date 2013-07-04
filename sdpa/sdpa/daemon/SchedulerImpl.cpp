@@ -588,16 +588,6 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 	// if no preferences are explicitly set for this job
 	DLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<" ... ");
 
-	try
-	{
-		job_requirements_t job_reqs(ptr_comm_handler_->getJobRequirements(jobId));
-	}
-	catch(const NoJobRequirements& )
-	{
-		// schedule to the first worker that requests a job
-		return false;
-	}
-
 	sdpa::list_match_workers_t listMatchingWorkers = find_matching_workers(jobId);
 
 	if(listMatchingWorkers.empty())
@@ -609,128 +599,6 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 	DMLOG(TRACE, "Schedule the job "<<jobId<<" to the worker "<<workerId);
 	return schedule_to(jobId, workerId);
 }
-
-/*
-bool SchedulerImpl::schedule_with_constraints_ok_obs( const sdpa::job_id_t& jobId )
-{
-	DLOG(TRACE, "Called schedule_with_contraints ...");
-
-	if(!ptr_comm_handler_)
-	{
-		SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
-		stop();
-		return false;
-	}
-
-	if( ptr_worker_man_ )
-	{
-		// if no preferences are explicitly set for this job
-		DLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<" ... ");
-
-		try
-		{
-			const job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
-			// no preferences specified
-			if( job_reqs.req_list.empty() )
-			{
-				// schedule to the first worker that requests a job
-				DLOG(TRACE, "The requirements list for the job "<<jobId<<" is empty. Schedule it anywhere!");
-				schedule_anywhere(jobId);
-				return true;
-			}
-			else // there are requirements specified for that job
-			{
-				std::string required_capabilities_as_string ("n/a");
-				{
-					job_requirements_t::const_iterator begin (job_reqs.req_list.begin ());
-					const job_requirements_t::const_iterator end (job_reqs.req_list.end ());
-
-					ostringstream ossReq;
-					bool first = true;
-					while (begin != end)
-					{
-						first?first = false:ossReq << ", ";
-						ossReq << begin++->value();
-					}
-					required_capabilities_as_string = ossReq.str ();
-				}
-
-				try
-				{
-					// first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-					sdpa::list_match_workers_t listMatchingWorkers = ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs);
-
-					worker_id_t workerId(listMatchingWorkers.front().first);
-					int best_match_deg(listMatchingWorkers.front().second);
-
-					// if the degree is 0 -> the job can be scheduled anywhere
-					if( best_match_deg == 0 )
-					{
-						DLOG(TRACE, "No worker matches the optional requirements of the job "<<jobId<<". The matching degree is 0. Schedule it anywhere!");
-						schedule_anywhere(jobId);
-						return true;
-					}
-
-					DLOG( TRACE
-							, "The best worker matching the requirements: "
-							<< required_capabilities_as_string
-							<<" for the job " << jobId
-							<<" is " << workerId
-							<<" degree " << best_match_deg;
-					);
-
-					ostringstream ossMatchWorkers;
-					for( list_match_workers_t::iterator it=listMatchingWorkers.begin(); it!=listMatchingWorkers.end(); it++ )
-					{
-						ossMatchWorkers<<"("<<it->first<<","<<it->second<<")"<<",";
-					}
-
-					DLOG( INFO, "The workers matching the requirements of the job "<<jobId<<" are: "<<ossMatchWorkers.str());
-
-					// schedule the job to that one
-					DMLOG(TRACE, "Schedule the job "<<jobId<<" on the worker "<<workerId);
-					return schedule_to(jobId, workerId);
-				}
-				catch(const NoWorkerFoundException& ex1)
-				{
-					LOG ( ERROR
-							, "No worker meets the requirements: "
-							<< required_capabilities_as_string
-					);
-					ptr_comm_handler_->activityFailed( ""
-							, jobId
-							// TODO: this should contain the job desc
-							, ""
-							, fhg::error::CAPABILITY_MISMATCH
-							, "capability combination missing: " + required_capabilities_as_string
-					);
-
-					return false;
-				}
-			}
-		}
-		catch(const NoJobRequirements& )
-		{
-			// schedule to the first worker that requests a job
-			schedule_anywhere(jobId);
-			return true;
-		}
-	}
-	else
-	{
-		ptr_comm_handler_->activityFailed ( ""
-				, jobId
-				// TODO: this should contain the job desc
-				, ""
-				, fhg::error::WORKER_UNAVAILABLE
-				, "No worker available"
-		);
-		return false;
-	}
-
-	return false;
-}
-*/
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
@@ -1163,7 +1031,6 @@ const sdpa::job_id_t SchedulerImpl::assignNewJob(const Worker::ptr_t ptrWorker, 
 								<<" and " << ptrWorker->nbAllocatedJobs()
 								<<" jobs allocated!");
 
-		ptr_worker_man_->deteleJobPreferences(jobId);
 		return jobId;
 	}
 	catch(const NoJobScheduledException& ex)
@@ -1183,7 +1050,6 @@ const sdpa::job_id_t SchedulerImpl::assignNewJob(const Worker::ptr_t ptrWorker, 
 				  if( matchRequirements( ptrWorker, job_reqs, false ) != -1 ) // matching found
 				  {
 					  ptrWorker->submit(jobId);
-					  ptr_worker_man_->deteleJobPreferences(jobId);
 					  return jobId;
 				  }
 				  else // put it back into the common queue
@@ -1194,7 +1060,6 @@ const sdpa::job_id_t SchedulerImpl::assignNewJob(const Worker::ptr_t ptrWorker, 
 				  // LOG(INFO, "The job "<<jobId<<" has no requirements. Hence, it can be scheduled on the worker "<<worker_id);
 				  // you should change the status of the job jobId
 				  ptrWorker->submit(jobId);
-				  ptr_worker_man_->deteleJobPreferences(jobId);
 				  return jobId;
 			  }
 		  }
@@ -1208,7 +1073,6 @@ const sdpa::job_id_t SchedulerImpl::assignNewJob(const Worker::ptr_t ptrWorker, 
 				// SDPA_LOG_INFO("Try to steal work from another worker ...");
 				const job_id_t jobId = ptr_worker_man_->stealWork(ptrWorker);
 				ptrWorker->submit(jobId);
-				ptr_worker_man_->deteleJobPreferences(jobId);
 				return jobId;
 			}
 			catch( const NoJobScheduledException& ex)
