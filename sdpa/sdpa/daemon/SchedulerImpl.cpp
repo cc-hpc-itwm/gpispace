@@ -561,32 +561,9 @@ sdpa::list_match_workers_t SchedulerImpl::find_matching_workers( const sdpa::job
 	return listMatchingWorkers;
 }
 
-bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
+/*bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 {
 	DLOG(TRACE, "Called schedule_with_contraints ...");
-
-	if( !ptr_comm_handler_ )
-	{
-		SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
-		stop();
-		return false;
-	}
-
-	if(!ptr_worker_man_ )
-	{
-		ptr_comm_handler_->activityFailed ( ""
-				, jobId
-				// TODO: this should contain the job desc
-				, ""
-				, fhg::error::WORKER_UNAVAILABLE
-				, "No worker available"
-		);
-
-		return false;
-	}
-
-	// if no preferences are explicitly set for this job
-	DLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<" ... ");
 
 	sdpa::list_match_workers_t listMatchingWorkers = find_matching_workers(jobId);
 
@@ -599,6 +576,7 @@ bool SchedulerImpl::schedule_with_constraints( const sdpa::job_id_t& jobId )
 	DMLOG(TRACE, "Schedule the job "<<jobId<<" to the worker "<<workerId);
 	return schedule_to(jobId, workerId);
 }
+*/
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
@@ -606,13 +584,21 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 	{
 		DLOG(TRACE, "No worker found! Put the job "<<jobId.str()<<" into the common queue");
 		// do so as when no preferences were set, just ignore them right now
-		//ptr_worker_man_->dispatchJob(jobId);
-		//return;
-		 lock_type lock(mtx_);
-		 cond_workers_registered.wait(lock);
+		lock_type lock(mtx_);
+		cond_workers_registered.wait(lock);
 	}
 
-	if(!schedule_with_constraints(jobId))
+	sdpa::list_match_workers_t listMatchingWorkers = find_matching_workers(jobId);
+
+	if(!listMatchingWorkers.empty())
+	{
+		worker_id_t workerId(listMatchingWorkers.front().first);
+
+		// schedule the job to that one
+		DMLOG(TRACE, "Schedule the job "<<jobId<<" to the worker "<<workerId);
+		schedule_to(jobId, workerId);
+	}
+	else
 	{
 		DLOG(TRACE, "No worker matching the requirements of the job "<<jobId.str()<<" was found!");
 		// do so as when no preferences were set, just ignore them right now
@@ -624,8 +610,8 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
-  DLOG(TRACE, "Schedule the job " << jobId.str());
-  jobs_to_be_scheduled.push(jobId);
+	DLOG(TRACE, "Schedule the job " << jobId.str());
+	jobs_to_be_scheduled.push(jobId);
 }
 
 const Worker::ptr_t& SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
