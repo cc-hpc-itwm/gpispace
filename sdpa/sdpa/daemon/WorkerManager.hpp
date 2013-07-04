@@ -83,7 +83,6 @@ namespace sdpa { namespace daemon {
     void cancelWorkerJobs(sdpa::daemon::Scheduler*);
     void forceOldWorkerJobsTermination();
     virtual Worker::worker_id_t getWorkerId(unsigned int r);
-    void deteleJobPreferences(const sdpa::job_id_t& jobId);
 
     bool has_job(const sdpa::job_id_t& job_id);
 
@@ -130,7 +129,6 @@ protected:
     Worker::JobQueue common_queue_;
 
     mutable mutex_type mtx_;
-    mapJob2PrefWorkersList_t m_mapJob2PrefWorkersList;
   };
 
   template <typename TPtrWorker, typename TReqSet>
