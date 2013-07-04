@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 	{
 		LOG(INFO, "No matching worker found. Put the job "<<jobId1<<" into the common queue!");
 		// do so as when no preferences were set, just ignore them right now
-		ptrScheduler->schedule_anywhere(jobId1);
+		ptrScheduler->dispatch(jobId1);
 	}
 
 	// at this point the job jobId1 should be assigned to one of the workers
