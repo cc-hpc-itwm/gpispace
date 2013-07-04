@@ -268,15 +268,6 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::ptr_t& pThiefWorker)
   throw NoJobScheduledException(pThiefWorker->name());
 }
 
-
-void WorkerManager::deteleJobPreferences(const sdpa::job_id_t& jobId)
-{
-  mapJob2PrefWorkersList_t::iterator it(m_mapJob2PrefWorkersList.find(jobId));
-  if( it != m_mapJob2PrefWorkersList.end() )
-    m_mapJob2PrefWorkersList.erase(it);
-}
-
-
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
@@ -533,16 +524,7 @@ sdpa::list_match_workers_t WorkerManager::getListMatchingWorkers( const sdpa::jo
   if(maxMatchingDeg != -1)
   {
     assert (bestMatchingWorkerId != worker_id_t());
-    //matching_degree = maxMatchingDeg;
     listJobPrefs.sort(compare_degrees);
-
-    // should update the map structure that associates to jobId listPreferredWorkers
-    // this list should be used later for work stealing, eventually.
-    deteleJobPreferences(jobId);
-    if(!listJobPrefs.empty())
-      m_mapJob2PrefWorkersList.insert( mapJob2PrefWorkersList_t::value_type(jobId, listJobPrefs) );
-
-    //return worker_map_[bestMatchingWorkerId];
     return listJobPrefs;
   }
   else
