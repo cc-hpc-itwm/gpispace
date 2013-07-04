@@ -48,7 +48,7 @@ namespace sdpa {
 	    virtual void schedule_remote(const sdpa::job_id_t&);
 	    void delete_job(const sdpa::job_id_t&);
 
-	    bool schedule_with_constraints( const sdpa::job_id_t& );
+	    //bool schedule_with_constraints( const sdpa::job_id_t& );
 	    bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
 	    bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
 	    void dispatch( const sdpa::job_id_t& jobId );
