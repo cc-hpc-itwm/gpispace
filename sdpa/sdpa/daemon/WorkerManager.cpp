@@ -454,7 +454,7 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
   }
 }
 
-bool compare_degrees( sdpa::job_pref_list_t::value_type left, sdpa::job_pref_list_t::value_type right )
+bool compare_degrees( sdpa::list_match_workers_t::value_type left, sdpa::list_match_workers_t::value_type right )
 {
   if( left.second > right.second )
     return true;
@@ -475,13 +475,13 @@ size_t numberOfMandReqs( const job_requirements_t& listJobReq )
 
 // add here a
 // add here a
-sdpa::job_pref_list_t WorkerManager::getListMatchingWorkers( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq ) throw (NoWorkerFoundException)
+sdpa::list_match_workers_t WorkerManager::getListMatchingWorkers( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq ) throw (NoWorkerFoundException)
 {
   lock_type lock(mtx_);
   if( worker_map_.empty() )
     throw NoWorkerFoundException();
 
-  sdpa::job_pref_list_t listJobPrefs;
+  sdpa::list_match_workers_t listJobPrefs;
 
   sdpa::util::time_type last_schedule_time = sdpa::util::now();
   size_t least_load = numeric_limits<int>::max();
@@ -505,7 +505,7 @@ sdpa::job_pref_list_t WorkerManager::getListMatchingWorkers( const sdpa::job_id_
     if (matchingDeg == -1 )
       continue;
     else
-      listJobPrefs.push_back(sdpa::job_pref_list_t::value_type(pair.first, matchingDeg));
+      listJobPrefs.push_back(sdpa::list_match_workers_t::value_type(pair.first, matchingDeg));
 
     if( matchingDeg < maxMatchingDeg)
       continue;

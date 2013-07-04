@@ -40,7 +40,7 @@ namespace sdpa { namespace daemon {
     typedef boost::condition_variable_any condition_type;
 
     typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
-    typedef boost::unordered_map<sdpa::job_id_t, sdpa::job_pref_list_t> mapJob2PrefWorkersList_t;
+    typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
     WorkerManager();
     virtual ~WorkerManager();
@@ -67,7 +67,7 @@ namespace sdpa { namespace daemon {
 
     worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
 
-    sdpa::job_pref_list_t getListMatchingWorkers( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq ) throw (NoWorkerFoundException);
+    sdpa::list_match_workers_t getListMatchingWorkers( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq ) throw (NoWorkerFoundException);
 
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
