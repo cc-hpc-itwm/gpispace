@@ -31,7 +31,7 @@ namespace sdpa {
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
 	typedef std::list<worker_job_pair_t> cancellation_list_t;
 
-	typedef std::list<std::pair<sdpa::worker_id_t, int> > job_pref_list_t;
+	typedef std::list<std::pair<sdpa::worker_id_t, int> > list_match_workers_t;
 
 	typedef std::map<sdpa::worker_id_t, int> map_degs_t;
 
