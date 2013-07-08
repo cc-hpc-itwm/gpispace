@@ -32,6 +32,8 @@ add_library (we2
   we2/type/value/poke.cpp
   we2/type/value/read.cpp
   we2/type/value/show.cpp
+
+  we2/type/compat.cpp
 )
 
 fhg_add_test (we2/type/test/value.cpp
@@ -41,6 +43,11 @@ fhg_add_test (we2/type/test/value.cpp
 
 fhg_add_test (we2/type/test/signature.cpp
   PROJECT test_we_type
+  LINK_LIBRARIES we2 we-dev fhg-util
+)
+
+fhg_add_test (we2/type/test/compat.cpp
+  PROJECT test_we_compat
   LINK_LIBRARIES we2 we-dev fhg-util
 )
 
