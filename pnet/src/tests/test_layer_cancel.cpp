@@ -95,7 +95,7 @@ int main ()
       , we::type::module_call_t ("m", "f")
       );
     we::mgmt::type::activity_t act (mod_call);
-    layer.submit (generate_id(), act.to_string());
+    layer.submit (generate_id(), act);
 
     sleep (1);
     layer.print_statistics (std::cerr);
@@ -107,7 +107,7 @@ int main ()
       , we::type::expression_t ("${out} := 3L")
       );
     we::mgmt::type::activity_t act (expr);
-    layer.submit (generate_id(), act.to_string());
+    layer.submit (generate_id(), act);
 
     sleep (1);
     layer.print_statistics (std::cerr);

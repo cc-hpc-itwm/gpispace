@@ -93,7 +93,7 @@ namespace test {
       {
         id_type new_id (daemon.gen_id());
         daemon.add_mapping (id, new_id);
-        daemon.layer().submit (new_id,  act.to_string());
+        daemon.layer().submit (new_id,  act);
         return 0;
       }
 
