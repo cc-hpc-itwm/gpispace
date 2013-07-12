@@ -7,6 +7,9 @@
 
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/get.hpp>
+#include <we/expr/eval/context.hpp>
 
 #include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/context.fwd.hpp>
@@ -50,6 +53,40 @@ namespace we
         activity_t& operator= (const activity_t&);
 
         std::string to_string() const;
+
+        template<typename T>
+          boost::optional<T> get_schedule_data (const std::string& key) const
+        {
+          we::type::property::path_type path;
+          path.push_back ("fhg");
+          path.push_back ("drts");
+          path.push_back ("schedule");
+          path.push_back (key);
+
+          boost::optional<const we::type::property::value_type&> expr
+            (_transition.prop().get_maybe_val (path));
+
+          if (!expr)
+          {
+            return boost::none;
+          }
+
+          we::type::expression_t e (*expr);
+
+          expr::eval::context context;
+
+          for ( input_t::const_iterator top (input().begin())
+              ; top != input().end()
+              ; ++top
+              )
+          {
+            context.bind_ref ( _transition.name_of_port (top->second)
+                             , top->first
+                             );
+          }
+
+          return value::get<T> (e.ast().eval_all (context));
+        }
 
         void set_id (const petri_net::activity_id_type&);
         const petri_net::activity_id_type& id() const;
