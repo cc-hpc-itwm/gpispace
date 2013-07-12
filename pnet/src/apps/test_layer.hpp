@@ -34,6 +34,7 @@
 
 #include <we/loader/module_call.hpp>
 #include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -241,6 +242,7 @@ namespace test {
     void submit( const id_type & id
                , const std::string & desc
                , requirement_list_t req_list = requirement_list_t()
+               , const we::type::schedule_data& = we::type::schedule_data()
                )
     {
       job_type job (id, desc);

@@ -48,6 +48,7 @@
 
 #include <we/type/id.hpp>
 #include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
 #include <we/mgmt/type/activity.hpp>
 
 #include <boost/foreach.hpp>
@@ -336,6 +337,7 @@ namespace we { namespace mgmt {
       boost::function<void ( external_id_type const &
                            , encoded_type const &
                            , const std::list<we::type::requirement_t>&
+                           , const we::type::schedule_data&
                            )> ext_submit;
       boost::function<bool ( external_id_type const &
                            , reason_type const &
@@ -448,7 +450,7 @@ namespace we { namespace mgmt {
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
       {
-        ext_submit = (boost::bind (& E::submit, exec_layer, _1, _2, _3));
+        ext_submit = (boost::bind (& E::submit, exec_layer, _1, _2, _3, _4));
         ext_cancel = (boost::bind (& E::cancel, exec_layer, _1, _2));
         ext_finished = (boost::bind (& E::finished, exec_layer, _1, _2));
         ext_failed = (boost::bind (& E::failed, exec_layer, _1, _2, _3, _4));
@@ -683,9 +685,15 @@ namespace we { namespace mgmt {
 
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
 
+        we::type::schedule_data schedule_data
+          ( ext_act.get_schedule_data<long> ("num_worker")
+          , ext_act.get_schedule_data<long> ("vmem")
+          );
+
         ext_submit ( ext_id
                    , ext_act.to_string()
                    , ext_act.transition().requirements()
+                   , schedule_data
                    );
       }
 
