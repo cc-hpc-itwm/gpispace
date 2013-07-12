@@ -5,6 +5,7 @@
 #include <boost/foreach.hpp>
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace pnet
 {
@@ -12,9 +13,107 @@ namespace pnet
   {
     namespace compat
     {
-      ::value::type COMPAT (const value::value_type&)
+      namespace
       {
-        return ::value::type (0L);
+        class we22we : public boost::static_visitor< ::value::type>
+        {
+        public:
+          ::value::type operator() (const we::type::literal::control& c) const
+          {
+            return c;
+          }
+          ::value::type operator() (const bool& b) const
+          {
+            return b;
+          }
+          ::value::type operator() (const int&) const
+          {
+            throw std::runtime_error ("compat: <int>");
+          }
+          ::value::type operator() (const long& l) const
+          {
+            return l;
+          }
+          ::value::type operator() (const unsigned int&) const
+          {
+            throw std::runtime_error ("compat: <unsigned int>");
+          }
+          ::value::type operator() (const unsigned long&) const
+          {
+            throw std::runtime_error ("compat: <unsigned long>");
+          }
+          ::value::type operator() (const float&) const
+          {
+            throw std::runtime_error ("compat: <float>");
+          }
+          ::value::type operator() (const double& d) const
+          {
+            return d;
+          }
+          ::value::type operator() (const char& c) const
+          {
+            return c;
+          }
+          ::value::type operator() (const std::string& s) const
+          {
+            return s;
+          }
+          ::value::type operator() (const bitsetofint::type& bs) const
+          {
+            return bs;
+          }
+          ::value::type operator() (const bytearray::type& ba) const
+          {
+            return ba;
+          }
+          ::value::type operator() (const std::list<value::value_type>& l) const
+          {
+            ::literal::stack_type s;
+            BOOST_FOREACH (const value::value_type& v, l)
+            {
+              s.push_back (boost::get<long> (v));
+            }
+            return s;
+          }
+          ::value::type operator() (const std::set<value::value_type>& s2) const
+          {
+            ::literal::set_type s;
+            BOOST_FOREACH (const value::value_type& v, s2)
+            {
+              s.insert (boost::get<long> (v));
+            }
+            return s;
+          }
+          ::value::type operator() (const std::map< value::value_type
+                                                  , value::value_type
+                                                  >& m2) const
+          {
+            ::literal::map_type m;
+            typedef std::map<value::value_type, value::value_type> map_type;
+            BOOST_FOREACH (const map_type::value_type& kv, m2)
+            {
+              m.insert (std::make_pair ( boost::get<long> (kv.first)
+                                       , boost::get<long> (kv.second)
+                                       )
+                       );
+            }
+            return m;
+          }
+          ::value::type operator() (const value::structured_type& m) const
+          {
+            ::value::structured_t s;
+            BOOST_FOREACH (const value::structured_type::value_type& kv, m)
+            {
+              s[kv.first] = boost::apply_visitor (*this, kv.second);
+            }
+            return s;
+          }
+        };
+      }
+
+      ::value::type COMPAT (const value::value_type& v)
+      {
+        return boost::apply_visitor (we22we(), v);
       }
 
       namespace
