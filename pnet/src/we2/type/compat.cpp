@@ -53,7 +53,10 @@ namespace pnet
           value::value_type operator() (const ::literal::stack_type& s) const
           {
             std::list<value::value_type> l;
-            std::copy (s.begin(), s.end(), l.end());
+            BOOST_FOREACH (const long& x, s)
+            {
+              l.push_back (value::value_type (x));
+            }
             return l;
           }
           value::value_type operator() (const ::literal::map_type& m) const
