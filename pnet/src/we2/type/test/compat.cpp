@@ -7,15 +7,19 @@
 
 #define CHECK(x,x2)                                                     \
   {                                                                     \
-    ::value::type v = x;                                                \
+    using pnet::type::compat::COMPAT;                                   \
                                                                         \
-    BOOST_CHECK (  pnet::type::value::value_type (x2)                   \
-                == pnet::type::compat::COMPAT (v)                       \
-                );                                                      \
+    ::value::type v = x;                                                \
+    pnet::type::value::value_type v2 = x2;                              \
+                                                                        \
+    BOOST_CHECK (v2 == COMPAT (v));                                     \
+    BOOST_CHECK (v == COMPAT (v2));                                     \
+    BOOST_CHECK (v == COMPAT (COMPAT (v)));                             \
+    BOOST_CHECK (v2 == COMPAT (COMPAT (v2)));                           \
   }
 #define CHECK1(x) CHECK(x,x)
 
-BOOST_AUTO_TEST_CASE (we2we2)
+BOOST_AUTO_TEST_CASE (working)
 {
   CHECK1 (we::type::literal::control());
   CHECK1 (true);
