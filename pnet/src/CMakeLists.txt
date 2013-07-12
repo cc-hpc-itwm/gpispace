@@ -56,6 +56,7 @@ set (we_srcs
   we/type/place.cpp
   we/type/port.cpp
   we/type/property.cpp
+  we/type/schedule_data.cpp
   we/util/cross.cpp
 
   ${we_dev_srcs}
