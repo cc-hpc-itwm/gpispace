@@ -181,5 +181,4 @@ set (CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
 set (CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
 INCLUDE (CPack)
 
-add_subdirectory (playground/mr)
 add_subdirectory (playground/bl)
