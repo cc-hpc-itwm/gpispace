@@ -12,18 +12,18 @@ namespace we
     {}
 
     schedule_data::schedule_data
-      ( const boost::optional<std::size_t>& num_worker
-      , const boost::optional<std::size_t>& vmem
+      ( const boost::optional<long>& num_worker
+      , const boost::optional<long>& vmem
       )
         : _num_worker (num_worker)
         , _vmem (vmem)
     {}
 
-    const boost::optional<std::size_t>& schedule_data::num_worker() const
+    const boost::optional<long>& schedule_data::num_worker() const
     {
       return _num_worker;
     }
-    const boost::optional<std::size_t>& schedule_data::vmem() const
+    const boost::optional<long>& schedule_data::vmem() const
     {
       return _vmem;
     }

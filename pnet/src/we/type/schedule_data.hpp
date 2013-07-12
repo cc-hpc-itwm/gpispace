@@ -13,16 +13,16 @@ namespace we
     {
     public:
       schedule_data();
-      schedule_data ( const boost::optional<std::size_t>& num_worker
-                    , const boost::optional<std::size_t>& vmem
+      schedule_data ( const boost::optional<long>& num_worker
+                    , const boost::optional<long>& vmem
                     );
 
-      const boost::optional<std::size_t>& num_worker() const;
-      const boost::optional<std::size_t>& vmem() const;
+      const boost::optional<long>& num_worker() const;
+      const boost::optional<long>& vmem() const;
 
     private:
-      const boost::optional<std::size_t> _num_worker;
-      const boost::optional<std::size_t> _vmem;
+      const boost::optional<long> _num_worker;
+      const boost::optional<long> _vmem;
     };
   }
 }
