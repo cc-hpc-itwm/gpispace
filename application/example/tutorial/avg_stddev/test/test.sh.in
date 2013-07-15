@@ -41,7 +41,7 @@ measured "build-wrapper" ${make_src} lib                    || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=10 ${make_src} run            || die $EX_ERR_RUN
 
 grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
-cat "${OUT}" | grep '=>' > "${CMP}"                         || die $EX_ERR_OTHER
+cat "${OUT}" | grep '=>' | sort > "${CMP}"                  || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
 
 measured "install" ${make_src} install                      || die $EX_ERR_RUN
