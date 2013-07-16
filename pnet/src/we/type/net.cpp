@@ -360,11 +360,6 @@ namespace petri_net
     return tid;
   }
 
-  void net::put_value (const place_id_type& pid, const value::type& token)
-  {
-    put_value (pid, pnet::type::compat::COMPAT (token));
-  }
-
   void net::put_token ( const place_id_type& pid
                       , const pnet::type::value::value_type& token
                       )
