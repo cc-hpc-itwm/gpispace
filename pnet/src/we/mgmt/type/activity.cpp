@@ -11,6 +11,8 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <we2/type/compat.hpp>
+
 #include <fhg/util/show.hpp>
 
 #include <fhg/util/stat.hpp>
@@ -285,9 +287,11 @@ namespace we
                         const petri_net::port_id_type port_id (port_it->first);
                         const petri_net::place_id_type pid (port_it->second.associated_place());
 
-                        BOOST_FOREACH (const value::type& token, net.get_token (pid))
+                        BOOST_FOREACH ( const pnet::type::value::value_type& token
+                                      , net.get_token (pid)
+                                      )
                           {
-                            _activity.add_output (activity_t::output_t::value_type (token, port_id));
+                            _activity.add_output (activity_t::output_t::value_type (pnet::type::compat::COMPAT (token), port_id));
                           }
 
                         net.delete_all_token (pid);

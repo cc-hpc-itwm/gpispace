@@ -13,6 +13,8 @@
 #include <we/type/value.hpp>
 #include <we/type/place.hpp>
 
+#include <we2/type/value.hpp>
+
 #include <we/type/transition.hpp>
 
 #include <we/util/cross.fwd.hpp>
@@ -94,8 +96,11 @@ namespace petri_net
 
     void put_token (const place_id_type&, const value::type&);
     void put_value (const place_id_type&, const value::type&);
+    void put_token (const place_id_type&, const pnet::type::value::value_type&);
+    void put_value (const place_id_type&, const pnet::type::value::value_type&);
 
-    const std::list<value::type>& get_token (const place_id_type&) const;
+    const std::list<pnet::type::value::value_type>&
+      get_token (const place_id_type&) const;
 
     void delete_all_token (const place_id_type&);
     bool can_fire() const;
@@ -117,7 +122,7 @@ namespace petri_net
     adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
 
     boost::unordered_map< place_id_type
-                        , std::list<value::type>
+                        , std::list<pnet::type::value::value_type>
                         > _token_by_place_id;
 
     friend class boost::serialization::access;
@@ -167,7 +172,7 @@ namespace petri_net
     void update_enabled_put_token
       ( const transition_id_type&
       , const place_id_type&
-      , const std::list<value::type>::iterator&
+      , const std::list<pnet::type::value::value_type>::iterator&
       );
 
     void disable (const transition_id_type&);

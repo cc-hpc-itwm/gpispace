@@ -10,6 +10,8 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
+#include <we2/type/compat.hpp>
+
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/utility.hpp>
@@ -18,12 +20,12 @@ namespace we
 {
   namespace util
   {
-    iterators_type::iterators_type (std::list<value::type>& tokens)
+    iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
       : _begin (tokens.begin())
       , _end (tokens.end())
       , _pos_and_distance (tokens.begin(), 0)
     {}
-    iterators_type::iterators_type (const std::list<value::type>::iterator& token)
+    iterators_type::iterators_type (const std::list<pnet::type::value::value_type>::iterator& token)
       : _begin (token)
       , _end (boost::next (token))
       , _pos_and_distance (token, 0)
@@ -99,9 +101,13 @@ namespace we
 
       BOOST_FOREACH (const pits_type& pits, _m)
       {
-        context.bind_ref ( transition.name_of_place (pits.first)
-                         , *pits.second.pos_and_distance().first
-                         );
+        // context.bind_ref ( transition.name_of_place (pits.first)
+        //                  , *pits.second.pos_and_distance().first
+        //                  );
+        context.bind
+          ( transition.name_of_place (pits.first)
+          , pnet::type::compat::COMPAT (*pits.second.pos_and_distance().first)
+          );
       }
 
       return transition.condition().parser().eval_all_bool (context);
@@ -122,13 +128,13 @@ namespace we
       }
     }
     void cross_type::push ( const petri_net::place_id_type& place_id
-                          , std::list<value::type>& tokens
+                          , std::list<pnet::type::value::value_type>& tokens
                           )
     {
       _m.insert (std::make_pair (place_id, iterators_type (tokens)));
     }
     void cross_type::push ( const petri_net::place_id_type& place_id
-                          , const std::list<value::type>::iterator& token
+                          , const std::list<pnet::type::value::value_type>::iterator& token
                           )
     {
       _m.insert (std::make_pair (place_id, iterators_type (token)));

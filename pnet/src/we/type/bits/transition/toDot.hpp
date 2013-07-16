@@ -7,6 +7,8 @@
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 
+#include <we2/type/compat.hpp>
+
 #include <we/expr/parse/parser.hpp>
 #include <sstream>
 
@@ -441,11 +443,11 @@ namespace we { namespace type {
 
               if (opts.show_token)
                 {
-                  BOOST_FOREACH ( const value::type& t
+                  BOOST_FOREACH ( const pnet::type::value::value_type& t
                                 , net.get_token (place_id)
                                 )
                   {
-                    token << endl << quote (fhg::util::show (t));
+                    token << endl << quote (fhg::util::show (pnet::type::compat::COMPAT (t)));
                   }
                 }
 
