@@ -16,6 +16,8 @@
 
 #include <we/expr/eval/context.hpp>
 
+#include <we2/type/compat.hpp>
+
 #include <fhg/util/remove_prefix.hpp>
 
 namespace xml
@@ -907,14 +909,16 @@ namespace xml
           {
             we_net.put_value
               ( pid
-              , boost::apply_visitor
-                ( construct_value ( place.name()
-                                  , net.position_of_definition().path()
-                                  , ""
-                                  , state
-                                  )
-                , place.signature_or_throw().desc()
-                , token
+              , pnet::type::compat::COMPAT
+                ( boost::apply_visitor
+                  ( construct_value ( place.name()
+                                    , net.position_of_definition().path()
+                                    , ""
+                                    , state
+                                    )
+                  , place.signature_or_throw().desc()
+                  , token
+                  )
                 )
               );
           }

@@ -97,15 +97,15 @@ int main (int, char **)
   net.add_connection (connection_t (PT_READ, tid, pid_vid));
   net.add_connection (connection_t (TP, tid, pid_pair));
 
-  net.put_value (pid_vid, value::type(0L));
+  net.put_value (pid_vid, 0L);
 
   {
-    value::structured_t m;
+    pnet::type::value::structured_type m;
 
-    m["bid"] = 0L;
-    m["seen"] = bitsetofint::type(0);
+    m.push_back (std::make_pair (std::string ("bid"), 0L));
+    m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
 
-    net.put_value (pid_store, value::type (m));
+    net.put_value (pid_store, m);
   }
   // ************************************ //
 

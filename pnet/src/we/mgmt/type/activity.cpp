@@ -172,7 +172,7 @@ namespace we
                   {
                     parent.put_value
                       ( _child.transition().inner_to_outer (top.second)
-                      , top.first
+                      , pnet::type::compat::COMPAT (top.first)
                       );
                   }
                 catch (const we::type::exception::not_connected<petri_net::port_id_type>&)
@@ -231,7 +231,7 @@ namespace we
                   {
                     net.put_value
                       ( _transition.get_port (port_id).associated_place()
-                      , inp.first
+                      , pnet::type::compat::COMPAT (inp.first)
                       );
                   }
               }

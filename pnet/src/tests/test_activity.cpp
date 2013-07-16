@@ -5,7 +5,7 @@
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
-#include <we/type/value.hpp>
+#include <we2/type/value.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
@@ -115,20 +115,23 @@ int main (int, char **)
   net.add_connection (connection_t (PT_READ, tid, pid_vid));
   net.add_connection (connection_t (TP, tid, pid_pair));
 
-  net.put_value (pid_vid, value::type(0L));
-  net.put_value (pid_vid, value::type(1L));
+  net.put_value (pid_vid, 0L);
+  net.put_value (pid_vid, 1L);
 
   {
-    value::structured_t m;
+    pnet::type::value::structured_type m;
 
-    m["seen"] = bitsetofint::type(0);
+    m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
+    m.push_back (std::make_pair (std::string ("bid"), 0L));
 
-    m["bid"] = 0L;
-    net.put_value (pid_store, value::type (m));
+    net.put_value (pid_store, m);
 
-    m["bid"] = 1L;
-    net.put_value (pid_store, value::type (m));
+    m.pop_back();
+    m.push_back (std::make_pair (std::string ("bid"), 1L));
+
+    net.put_value (pid_store, m);
   }
+
   // ************************************ //
 
   transition_t tnet ("tnet", net);
