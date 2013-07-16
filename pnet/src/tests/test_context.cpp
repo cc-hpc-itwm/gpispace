@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (basic)
   {
     const double z_x_new (1.0);
 
-    c.bind (key_z_x, z_x_new);
+    c.bind ("z", "x", z_x_new);
 
     BOOST_REQUIRE_EQUAL (c.value (key_z_x), value::type (z_x_new));
   }

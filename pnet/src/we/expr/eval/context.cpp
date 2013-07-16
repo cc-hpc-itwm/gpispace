@@ -16,25 +16,6 @@ namespace expr
 {
   namespace eval
   {
-    void context::bind ( const std::list<std::string>& key_vec
-                       , const value::type& value
-                       )
-    {
-      if (key_vec.empty())
-      {
-        throw std::runtime_error ("context::bind []");
-      }
-
-      std::list<std::string>::const_iterator pos (key_vec.begin());
-      const std::string& key (*pos); ++pos;
-
-      value::put ( pos
-                 , key_vec.end()
-                 , value::mk_structured_or_keep (_container[key])
-                 , value
-                 );
-    }
-
     void context::bind (const std::string& key, const value::type& value)
     {
       _container[key] = value;
