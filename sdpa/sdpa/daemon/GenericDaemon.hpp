@@ -276,7 +276,7 @@ namespace sdpa {
       // jobs
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
-      std::string gen_id() { return sdpa::events::id_generator::instance().next(); }
+      std::string gen_id() { return sdpa::JobId ().str (); }
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
     public:

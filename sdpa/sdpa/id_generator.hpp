@@ -1,5 +1,5 @@
 /*
- * =====================================================================================
+ * =============================================================================
  *
  *       Filename:  id_generator.hpp
  *
@@ -13,11 +13,11 @@
  *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
  *        Company:  Fraunhofer ITWM
  *
- * =====================================================================================
+ * =============================================================================
  */
 
-#ifndef SDPA_EVENTS_ID_GENERATOR_HPP
-#define SDPA_EVENTS_ID_GENERATOR_HPP 1
+#ifndef SDPA_ID_GENERATOR_HPP
+#define SDPA_ID_GENERATOR_HPP 1
 
 #include <sys/types.h> // pid_t
 #include <unistd.h> // gethostname, getpid
@@ -26,7 +26,19 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 
-namespace sdpa { namespace events {
+namespace sdpa {
+  namespace detail
+  {
+    struct dflt_tag
+    {
+      static const char *name ()
+      {
+        return "id";
+      }
+    };
+  }
+
+  template <class Tag>
   class id_generator
   {
   private:
@@ -34,9 +46,10 @@ namespace sdpa { namespace events {
     typedef boost::lock_guard<mutex_type> lock_type;
 
   public:
+
 	static id_generator& instance()
 	{
-	  static id_generator gen;
+	  static id_generator<Tag> gen;
 	  return gen;
 	}
 
@@ -62,7 +75,7 @@ namespace sdpa { namespace events {
       gethostname (hbuf, sizeof(hbuf)-1);
 
       std::ostringstream sstr;
-      sstr << hbuf << "." << time (0) << "." << getpid ();
+      sstr << hbuf << "." << Tag::name () << "." << time (0) << "." << getpid();
 
       m_id_prefix = sstr.str ();
     }
@@ -71,6 +84,8 @@ namespace sdpa { namespace events {
     size_t      m_count;
     std::string m_id_prefix;
   };
-}}
+
+  typedef id_generator<detail::dflt_tag> dflt_id_generator;
+}
 
 #endif
