@@ -40,6 +40,8 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
+#include <we2/type/value/show.hpp>
+
 #include <boost/foreach.hpp>
 
 #include <list>
@@ -289,7 +291,7 @@ namespace test {
                       )
         {
           std::cout << act.transition().name_of_port (top.second)
-                    << " => " << top.first << std::endl;
+                    << " => " << pnet::type::value::show (top.first) << std::endl;
         }
       }
       return true;

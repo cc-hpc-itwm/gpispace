@@ -7,12 +7,14 @@
 
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
-#include <we/type/value.hpp>
 #include <we/type/value/get.hpp>
 #include <we/expr/eval/context.hpp>
 
 #include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/context.fwd.hpp>
+
+#include <we2/type/value.hpp>
+#include <we2/type/compat.hpp>
 
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
@@ -33,7 +35,9 @@ namespace we
       class activity_t
       {
       public:
-        typedef std::pair<value::type, petri_net::port_id_type> token_on_port_t;
+        typedef std::pair< pnet::type::value::value_type
+                         , petri_net::port_id_type
+                         > token_on_port_t;
         typedef std::vector<token_on_port_t> token_on_port_list_t;
         typedef token_on_port_list_t input_t;
         typedef token_on_port_list_t output_t;
@@ -80,9 +84,12 @@ namespace we
               ; ++top
               )
           {
-            context.bind_ref ( _transition.name_of_port (top->second)
-                             , top->first
-                             );
+            // context.bind_ref ( _transition.name_of_port (top->second)
+            //                  , top->first
+            //                  );
+            context.bind ( _transition.name_of_port (top->second)
+                         , pnet::type::compat::COMPAT (top->first)
+                         );
           }
 
           return value::get<T> (e.ast().eval_all (context));

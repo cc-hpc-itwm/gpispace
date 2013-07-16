@@ -10,6 +10,8 @@
 #include <we/type/port.hpp>
 #include <we/type/value/require_type.hpp>
 
+#include <we2/type/compat.hpp>
+
 #include <boost/foreach.hpp>
 
 namespace module
@@ -24,13 +26,18 @@ namespace module
 
     context_t context;
 
-    typedef std::pair<value::type, petri_net::port_id_type> tp_type;
+    typedef std::pair< pnet::type::value::value_type
+                     , petri_net::port_id_type
+                     > tp_type;
 
     BOOST_FOREACH (const tp_type& tp, act.input())
     {
-      context.bind_ref ( act.transition().name_of_port (tp.second)
-                       , tp.first
-                       );
+      // context.bind_ref ( act.transition().name_of_port (tp.second)
+      //                  , tp.first
+      //                  );
+      context.bind ( act.transition().name_of_port (tp.second)
+                   , pnet::type::compat::COMPAT (tp.first)
+                   );
     }
 
     we::loader::output_t mod_output;
@@ -50,10 +57,12 @@ namespace module
 
         act.add_output
           ( output_t::value_type
-            ( value::require_type ( port.name()
-                                  , port.signature()
-                                  , kv.second
-                                  )
+            ( pnet::type::compat::COMPAT
+              ( value::require_type ( port.name()
+                                    , port.signature()
+                                    , kv.second
+                                    )
+              )
             , port_id
             )
           );

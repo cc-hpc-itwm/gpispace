@@ -790,7 +790,7 @@ namespace we { namespace mgmt {
               child->inject_input ();
 
               DLOG (TRACE, "extractor: extracted from (" << desc->name() << ")-" << desc->id()
-                  << ": (" << child->name() << ")-" << child->id() << " with input " << child->show_input());
+                  << ": (" << child->name() << ")-" << child->id());
 
               switch (child->execute (&exec_policy))
               {
@@ -800,7 +800,7 @@ namespace we { namespace mgmt {
                 break;
               case policy::execution_policy::INJECT:
                 child->finished();
-                DLOG (TRACE, "extractor: finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
+                DLOG (TRACE, "extractor: finished (" << child->name() << ")-" << child->id());
                 desc->inject (*child);
                 break;
               case policy::execution_policy::EXTERNAL:

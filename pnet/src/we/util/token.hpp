@@ -7,6 +7,9 @@
 #include <we/type/id.hpp>
 #include <we/type/value/require_type.hpp>
 
+#include <we2/type/value.hpp>
+#include <we2/type/compat.hpp>
+
 #include <we/mgmt/type/activity.hpp>
 
 namespace we
@@ -16,7 +19,7 @@ namespace we
     namespace token
     {
       typedef ::value::type type;
-      typedef std::list<type> list_t;
+      typedef std::list<pnet::type::value::value_type> list_t;
       typedef std::map<std::string, list_t> marking_t;
 
       mgmt::type::activity_t & put ( mgmt::type::activity_t & act
@@ -39,10 +42,12 @@ namespace we
         // }
 
         act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( value::require_type ( port
-                                              , port_signature
-                                              , value
-                                              )
+                        ( pnet::type::compat::COMPAT
+                          ( value::require_type ( port
+                                                , port_signature
+                                                , value
+                                                )
+                          )
                         , pid
                         )
                       );

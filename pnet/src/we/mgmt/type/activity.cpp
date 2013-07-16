@@ -12,6 +12,7 @@
 #include <we/mgmt/type/activity.hpp>
 
 #include <we2/type/compat.hpp>
+#include <we2/type/value/show.hpp>
 
 #include <fhg/util/show.hpp>
 
@@ -172,7 +173,7 @@ namespace we
                   {
                     parent.put_value
                       ( _child.transition().inner_to_outer (top.second)
-                      , pnet::type::compat::COMPAT (top.first)
+                      , top.first
                       );
                   }
                 catch (const we::type::exception::not_connected<petri_net::port_id_type>&)
@@ -182,7 +183,7 @@ namespace we
                               << " port="
                               << _child.transition().name_of_port (top.second)
                               << "(" << top.second << ")"
-                              << " token=" << fhg::util::show (top.first)
+                              << " token=" << pnet::type::value::show (top.first)
                               << std::endl;
                   }
               }
@@ -231,7 +232,7 @@ namespace we
                   {
                     net.put_value
                       ( _transition.get_port (port_id).associated_place()
-                      , pnet::type::compat::COMPAT (inp.first)
+                      , inp.first
                       );
                   }
               }
@@ -291,7 +292,8 @@ namespace we
                                       , net.get_token (pid)
                                       )
                           {
-                            _activity.add_output (activity_t::output_t::value_type (pnet::type::compat::COMPAT (token), port_id));
+                            _activity.add_output
+                              (activity_t::output_t::value_type (token, port_id));
                           }
 
                         net.delete_all_token (pid);
@@ -423,9 +425,13 @@ namespace we
                 ; ++top
                 )
               {
-                context.bind_ref
+                // context.bind_ref
+                //   ( _activity.transition().name_of_port (top->second)
+                //   , top->first
+                //   );
+                context.bind
                   ( _activity.transition().name_of_port (top->second)
-                  , top->first
+                  , pnet::type::compat::COMPAT (top->first)
                   );
               }
 
@@ -446,10 +452,12 @@ namespace we
                   {
                     _activity.add_output
                       ( type::activity_t::output_t::value_type
-                        ( value::require_type ( port_it->second.name()
-                                              , port_it->second.signature()
-                                              , context.value (port_it->second.name())
-                                              )
+                        ( pnet::type::compat::COMPAT
+                          ( value::require_type ( port_it->second.name()
+                                                , port_it->second.signature()
+                                                , context.value (port_it->second.name())
+                                                )
+                          )
                         , port_it->first
                         )
                       );
@@ -589,7 +597,8 @@ namespace we
               }
 
             os << transition().name_of_port (top.second)
-               << "=(" << top.first << ", " << top.second << ")";
+               << "=(" << pnet::type::compat::COMPAT (top.first)
+               << ", " << top.second << ")";
           }
 
         os << "]";

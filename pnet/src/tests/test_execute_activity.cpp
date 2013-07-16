@@ -12,6 +12,8 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
+#include <we2/type/compat.hpp>
+
 #include <we/expr/eval/context.hpp>
 
 #include <we/type/module_call.fwd.hpp>
@@ -85,10 +87,12 @@ namespace module
         ; ++top
         )
     {
-      const value::type& token (top->first);
+      const pnet::type::value::value_type& token (top->first);
       const petri_net::port_id_type& port_id (top->second);
 
-      context.bind (act.transition().name_of_port (port_id), token);
+      context.bind ( act.transition().name_of_port (port_id)
+                   , pnet::type::compat::COMPAT (token)
+                   );
     }
 
     typedef std::vector <std::pair<value::type, std::string> > mod_output_t;
@@ -108,10 +112,12 @@ namespace module
 
       act.add_output
         ( output_t::value_type
-          ( value::require_type ( port.name()
-                                , port.signature()
-                                , ton->first
-                                )
+          ( pnet::type::compat::COMPAT
+            ( value::require_type ( port.name()
+                                  , port.signature()
+                                  , ton->first
+                                  )
+            )
           , port_id
           )
         );

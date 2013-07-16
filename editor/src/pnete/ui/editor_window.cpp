@@ -35,6 +35,8 @@
 #include <we/type/value/read.hpp>
 #include <we/util/token.hpp>
 
+#include <we2/type/value/show.hpp>
+
 #include <xml/parse/parser.hpp>
 
 #include <fstream>
@@ -774,7 +776,7 @@ namespace fhg
           {
             std::stringstream tmp;
             tmp << "on " << activity.transition().get_port (top.second).name()
-                << ": " << top.first;
+                << ": " << pnet::type::value::show (top.first);
             QMessageBox msgBox;
             msgBox.setText (QString::fromStdString (tmp.str()));
             msgBox.exec();

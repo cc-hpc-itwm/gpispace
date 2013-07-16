@@ -26,6 +26,8 @@
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
 
+#include <we2/type/compat.hpp>
+
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
@@ -843,7 +845,7 @@ private:
       we::util::token::list_t output (we::util::token::get (result, "config"));
       if (output.empty())
         throw std::runtime_error("empty list");
-      config = pnetc::type::config::from_value(output.front());
+      config = pnetc::type::config::from_value(pnet::type::compat::COMPAT (output.front()));
       MLOG(INFO, "got config: " << config);
     }
     catch (std::exception const & ex)
