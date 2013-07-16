@@ -290,6 +290,7 @@ set (xml_sources
 add_library (pnet ${we_srcs} ${xml_sources})
 target_link_libraries (pnet
   fhg-util
+  we2
 )
 
 add_library (we-dev SHARED ${we_dev_srcs})
