@@ -19,6 +19,7 @@
 #include <fhg/util/bool_io.hpp>
 #include <fhg/util/threadname.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/join.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <fhglog/minimal.hpp>
@@ -136,6 +137,16 @@ public:
       , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
       );
 
+    gspc::net::handle
+      ("/service/wfe/search-path/set"
+      , boost::bind (&WFEImpl::service_set_search_path, this, _1, _2, _3)
+      );
+
+    gspc::net::handle
+      ("/service/wfe/search-path/get"
+      , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
+      );
+
     FHG_PLUGIN_STARTED();
   }
 
@@ -143,6 +154,8 @@ public:
   {
     gspc::net::unhandle ("/service/wfe/unload-modules");
     gspc::net::unhandle ("/service/wfe/current-job");
+    gspc::net::unhandle ("/service/wfe/search-path/get");
+    gspc::net::unhandle ("/service/wfe/search-path/set");
 
     if (m_worker)
     {
@@ -361,6 +374,46 @@ private:
       {
         rply.set_body (m_current_task->name);
       }
+    }
+
+    user->deliver (rply);
+  }
+
+  void service_get_search_path ( std::string const &dst
+                               , gspc::net::frame const &rqst
+                               , gspc::net::user_ptr user
+                               )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    {
+      lock_type lock (m_mutex);
+
+      rply.set_body
+        (fhg::util::join ( m_loader->search_path ().begin ()
+                         , m_loader->search_path ().end ()
+                         , ":"
+                         )
+        );
+    }
+
+    user->deliver (rply);
+  }
+
+  void service_set_search_path ( std::string const &dst
+                               , gspc::net::frame const &rqst
+                               , gspc::net::user_ptr user
+                               )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    {
+      std::string search_path (rqst.get_body_as_string ());
+
+      search_path_appender appender(*m_loader);
+      lock_type lock (m_mutex);
+      m_loader->clear_search_path ();
+      fhg::util::split(search_path, ":", appender);
     }
 
     user->deliver (rply);

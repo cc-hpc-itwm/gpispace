@@ -10,6 +10,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
                  sdpa-util
                  sdpa
                  ${FhgCom_LIBRARY}
+                 ${GSPC_NET_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}

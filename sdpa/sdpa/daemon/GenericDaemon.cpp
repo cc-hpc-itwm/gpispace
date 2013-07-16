@@ -30,7 +30,7 @@
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
 #include <sdpa/com/NetworkStrategy.hpp>
-#include <sdpa/events/id_generator.hpp>
+#include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
@@ -39,6 +39,17 @@
 #include <boost/foreach.hpp>
 #include <sstream>
 #include <algorithm>
+
+namespace
+{
+  struct agent_id_tag
+  {
+    static const char *name ()
+    {
+      return "agent";
+    }
+  };
+}
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -61,7 +72,7 @@ GenericDaemon::GenericDaemon( const std::string name,
 
     m_nRank(rank),
     m_nCap(cap),
-    m_strAgentUID(id_generator::instance().next()),
+    m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_nExternalJobs(0),
     m_ullPollingInterval(100000),
     m_bRequestsAllowed(false),
