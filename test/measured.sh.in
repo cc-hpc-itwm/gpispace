@@ -6,23 +6,25 @@ measured()
 {
   local name=$1; shift
 
-  local time_start=($(date +'%s %N'))
+  local time_start=($(date +'%s %-N'))
   eval $@; local ec=$?
-  local time_end=($(date +'%s %N'))
-
-  time_end[1]=$(echo "${time_end[1]}" | sed 's/^0*//')
-  time_start[1]=$(echo "${time_start[1]}" | sed 's/^0*//')
+  local time_end=($(date +'%s %-N'))
 
   local msec_start=$((${time_start[1]} / 1000000))
   local msec_end=$((${time_end[1]} / 1000000))
 
-  local secs=$((${time_end[0]} - ${time_start[0]}))
-  local msec=$((1000 * secs + msec_end - msec_start))
+  local elapsed_secs=$((${time_end[0]} - ${time_start[0]}))
+  local elapsed=$((1000 * elapsed_secs + msec_end - msec_start))
 
-  print_measurement                                            \
-    $name                                                      \
-    "numeric/float"                                            \
-    $(echo "scale=4; $msec/1000" | bc | sed 's/0*$//;s/^\./0./')
+  local sec=$((elapsed / 1000))
+  local msec=$((elapsed - 1000 * sec))
+
+  while [ $msec -gt 100 ]
+  do
+      msec=$(((msec + 5) / 10))
+  done
+
+  print_measurement $name "numeric/float" "$sec.$msec"
 
   return $ec
 }
