@@ -262,25 +262,25 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
     (alloc ((bunch_store_per_node - 1) * Job.BunchMemSize, "handle_bunch", memsizeGPI));
 
   // machine
-  output.bind ("config", "threads.N", static_cast<long>(NThreads));
+  output.bind ("config.threads.N", static_cast<long>(NThreads));
 
   // system
-  output.bind ("config", "handle.job", static_cast<long>(handle_Job));
+  output.bind ("config.handle.job", static_cast<long>(handle_Job));
 
   // problem, derived
-  output.bind ("config", "offsets", offsets);
-  output.bind ("config", "per.offset.volumes", per_offset_volumes);
-  output.bind ("config", "per.offset.bunches", per_offset_bunches);
+  output.bind ("config.offsets", offsets);
+  output.bind ("config.per.offset.volumes", per_offset_volumes);
+  output.bind ("config.per.offset.bunches", per_offset_bunches);
 
-  output.bind ("config", "loadTT.parallel"
+  output.bind ("config.loadTT.parallel"
       , static_cast<long>(fvmGetNodeCount()) * 2
       //      , std::max (1L, static_cast<long>(fvmGetNodeCount())/2L)
       );
-  output.bind ("config", "handle.TT", static_cast<long>(handle_TT));
+  output.bind ("config.handle.TT", static_cast<long>(handle_TT));
 
   // tuning
-  output.bind ("config", "size.store.bunch", size_store_bunch);
-  output.bind ("config", "per.volume.copies", copies);
+  output.bind ("config.size.store.bunch", size_store_bunch);
+  output.bind ("config.per.volume.copies", copies);
 
   LOG_IF ( WARN
          , copies > 8
@@ -292,17 +292,16 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   // tuning: volumes_per_node could be higher
   const long size_store_volume (volumes_per_node * node_count);
 
-  output.bind ("config", "size.store.volume", size_store_volume);
+  output.bind ("config.size.store.volume", size_store_volume);
 
   // tuning, derived?
-  output.bind ("config"
-              , "assign.most"
+  output.bind ("config.assign.most"
               , divru (size_store_bunch, offsets_at_once) / 2
               );
 
   // tuning induced
-  output.bind ("config", "handle.bunch", static_cast<long>(handle_bunch));
-  output.bind ("config", "handle.volume", static_cast<long>(handle_volume));
+  output.bind ("config.handle.bunch", static_cast<long>(handle_bunch));
+  output.bind ("config.handle.volume", static_cast<long>(handle_volume));
 
   // WORK HERE: overcome this by using virtual offsetclasses
   if ( get<long> (output, "config", "size.store.volume")

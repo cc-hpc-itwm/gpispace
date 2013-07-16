@@ -100,19 +100,14 @@ static void run ( void *
   // *********************************************************************** //
   // put a literal via a path on a port
 
-  output.bind ("b", "end.x", stretch * a_end_x);
+  output.bind ("b.end.x", stretch * a_end_x);
 
-  // also by a value::path
-  {
-    value::path_type path; path.push_back ("end"); path.push_back ("y");
-
-    output.bind ("b", path, stretch * get<double> (input, "a", "end.y"));
-  }
+  output.bind ("b.end.y", stretch * get<double> (input, "a", "end.y"));
 
   // *********************************************************************** //
   // put a complete subtoken via a path on a port
 
-  output.bind ("b", "start", b_start);
+  output.bind ("b.start", b_start);
 
   // *********************************************************************** //
   // put a complete value on a port (here grab it from the already
@@ -120,8 +115,8 @@ static void run ( void *
 
   value::type b (get<value::type> (output, "b"));
 
-  output.bind ("c", "start", get<value::type> (b, "end"));
-  output.bind ("c", "end", get<value::type> (b, "start"));
+  output.bind ("c.start", get<value::type> (b, "end"));
+  output.bind ("c.end", get<value::type> (b, "start"));
 
 }
 

@@ -52,14 +52,14 @@ static void init ( void * state
   // set default params
   value::type param;
 
-  output.bind ("config", "param.tpow.tpow", -1.0);
-  output.bind ("config", "param.clip.c", -1.0);
-  output.bind ("config", "param.trap.t", -1.0);
-  output.bind ("config", "param.bandpass.frequ1", -1.0);
-  output.bind ("config", "param.bandpass.frequ2", -1.0);
-  output.bind ("config", "param.bandpass.frequ3", -1.0);
-  output.bind ("config", "param.bandpass.frequ4", -1.0);
-  output.bind ("config", "exec.su", std::string(""));
+  output.bind ("config.param.tpow.tpow", -1.0);
+  output.bind ("config.param.clip.c", -1.0);
+  output.bind ("config.param.trap.t", -1.0);
+  output.bind ("config.param.bandpass.frequ1", -1.0);
+  output.bind ("config.param.bandpass.frequ2", -1.0);
+  output.bind ("config.param.bandpass.frequ3", -1.0);
+  output.bind ("config.param.bandpass.frequ4", -1.0);
+  output.bind ("config.exec.su", std::string(""));
 
   while (!file.eof())
     {
@@ -77,7 +77,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              output.bind ("config", s, v);
+              output.bind ("config." + s, v);
             }
 	  else if (fhg::util::starts_with ("param", s))
 	    {
@@ -86,7 +86,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              output.bind ("config", s, v);
+              output.bind ("config." + s, v);
 	    }
           else if (fhg::util::starts_with ("exec", s))
             {
@@ -109,7 +109,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << coll.substr(0,coll.size()-1));
 
-              output.bind ("config", s, coll.substr(0,coll.size()-1));
+              output.bind ("config." + s, coll.substr(0,coll.size()-1));
             }
           else
             {
@@ -118,7 +118,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              output.bind ("config", s, v);
+              output.bind ("config." + s, v);
             }
         }
     }
@@ -155,8 +155,8 @@ static void init ( void * state
 
         determine_size (inp, t, num, size);
 
-        output.bind ("config", "trace_detect.number", num);
-        output.bind ("config", "trace_detect.size_in_bytes", size);
+        output.bind ("config.trace_detect.number", num);
+        output.bind ("config.trace_detect.size_in_bytes", size);
       }
 
     try
@@ -165,12 +165,12 @@ static void init ( void * state
 	const long & memsize (get<long> (output, "config", "tune.memsize"));
 	const long trace_per_bunch ((memsize/slots_per_node) / size);
 
-	output.bind ("config", "tune.trace_per_bunch", trace_per_bunch);
+	output.bind ("config.tune.trace_per_bunch", trace_per_bunch);
       }
     catch (...)
       {
 	// do nothing, slots_per_node is not set
-	output.bind ("config", "tune.slots_per_node", 1L);
+	output.bind ("config.tune.slots_per_node", 1L);
       }
   }
 
@@ -239,16 +239,16 @@ static void init ( void * state
 
   close (outp_des);
 
-  output.bind ("config", "data.size", trace_size_in_bytes * trace_num);
+  output.bind ("config.data.size", trace_size_in_bytes * trace_num);
 
-  output.bind ("config", "bunchbuffer.size", sizeofBunchBuffer);
-  output.bind ("config", "num.store", (num_slot_per_node - 1) * node_count);
-  output.bind ("config", "num.part", num_part);
-  output.bind ("config", "num.write_credit", node_count);
-  output.bind ("config", "num.load_credit", node_count);
+  output.bind ("config.bunchbuffer.size", sizeofBunchBuffer);
+  output.bind ("config.num.store", (num_slot_per_node - 1) * node_count);
+  output.bind ("config.num.part", num_part);
+  output.bind ("config.num.write_credit", node_count);
+  output.bind ("config.num.load_credit", node_count);
 
-  output.bind ("config", "handle.data", static_cast<long>(handle_data));
-  output.bind ("config", "handle.scratch", static_cast<long>(handle_scratch));
+  output.bind ("config.handle.data", static_cast<long>(handle_data));
+  output.bind ("config.handle.scratch", static_cast<long>(handle_scratch));
 
   MLOG (INFO, "init: got config " << get<value::type>(output, "config"));
 }
@@ -316,8 +316,8 @@ static void load ( void * state
                              )
            );
 
-  output.bind ("part_loaded", "id.part", part);
-  output.bind ("part_loaded", "id.store", store);
+  output.bind ("part_loaded.id.part", part);
+  output.bind ("part_loaded.id.store", store);
 }
 
 // ************************************************************************* //

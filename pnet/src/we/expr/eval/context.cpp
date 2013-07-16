@@ -12,31 +12,34 @@
 
 #include <iostream>
 
+#include <fhg/util/split.hpp>
+
 namespace expr
 {
   namespace eval
   {
-    void context::bind (const std::string& key, const value::type& value)
+    void context::bind (const std::string& path, const value::type& value)
     {
-      _container[key] = value;
+      bind ( fhg::util::split< std::string
+                             , std::list<std::string>
+                             > (path, '.')
+           , value
+           );
     }
+    void context::bind ( const std::list<std::string>& key_vec
+                       , const value::type& value
+                       )
+    {
+      if (key_vec.empty())
+      {
+        throw std::runtime_error ("context::bind []");
+      }
 
-    void context::bind ( const std::string& key
-                       , const std::list<std::string>& path
-                       , const value::type& value
-                       )
-    {
-      value::put ( path
-                 , value::mk_structured_or_keep (_container[key])
-                 , value
-                 );
-    }
-    void context::bind ( const std::string& key
-                       , const std::string& path
-                       , const value::type& value
-                       )
-    {
-      value::put ( path
+      std::list<std::string>::const_iterator key_pos (key_vec.begin());
+      const std::string& key (*key_pos); ++key_pos;
+
+      value::put ( key_pos
+                 , key_vec.end()
                  , value::mk_structured_or_keep (_container[key])
                  , value
                  );

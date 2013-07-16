@@ -34,12 +34,7 @@ namespace expr
       typedef container_type::const_iterator const_iterator;
 
       void bind (const std::string&, const value::type&);
-      void bind ( const std::string&, const std::list<std::string>&
-                , const value::type&
-                );
-      void bind ( const std::string&, const std::string&
-                , const value::type&
-                );
+      void bind (const std::list<std::string>&, const value::type& value);
 
       void bind_and_discard_ref ( const std::list<std::string>&
                                 , const value::type&
