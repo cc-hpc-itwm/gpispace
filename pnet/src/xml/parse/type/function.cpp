@@ -1851,7 +1851,7 @@ namespace xml
 
               s << "_pnetc_output.bind ("
                 << "\"" << (*port_return).name << "\""
-                << ", "
+                << ", value::type("
                 ;
 
               if (!literal::cpp::known ((*port_return).type))
@@ -1906,7 +1906,7 @@ namespace xml
 
           if (port_return)
             {
-              s << ")";
+              s << "))";
 
               if (!literal::cpp::known ((*port_return).type))
                 {
@@ -1931,8 +1931,8 @@ namespace xml
               s << "      "
                 << "  _pnetc_output.bind ("
                 << "\"" << port->name << "\""
-                << ", " << mk_value (*port)
-                << ")"
+                << ", value::type(" << mk_value (*port)
+                << "))"
                 << ";"
                 << std::endl
                 ;
@@ -1953,8 +1953,8 @@ namespace xml
               s << "      "
                 << "  _pnetc_output.bind ("
                 << "\"" << port->name << "\""
-                << ", " << mk_value (*port)
-                << ")"
+                << ", value::type(" << mk_value (*port)
+                << "))"
                 << ";"
                 << std::endl
                 ;
