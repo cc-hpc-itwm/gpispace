@@ -597,7 +597,7 @@ namespace we
               }
 
             os << transition().name_of_port (top.second)
-               << "=(" << pnet::type::compat::COMPAT (top.first)
+               << "=(" << pnet::type::value::show (top.first)
                << ", " << top.second << ")";
           }
 
