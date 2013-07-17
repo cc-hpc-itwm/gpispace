@@ -209,6 +209,11 @@ install (FILES
   COMPONENT sdk
 )
 install (FILES
+  we2/type/value.hpp
+  DESTINATION include/we2/type
+  COMPONENT sdk
+)
+install (FILES
   we/type/literal/control.hpp
   we/type/literal/show.hpp
   DESTINATION include/we/type/literal
