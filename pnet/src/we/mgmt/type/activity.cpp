@@ -3,7 +3,6 @@
 #include <we/type/net.hpp>
 
 #include <we/type/transition.hpp>
-#include <we/type/value/require_type.hpp>
 
 #include <we/expr/eval/context.hpp>
 
@@ -13,6 +12,7 @@
 
 #include <we2/type/compat.hpp>
 #include <we2/type/value/show.hpp>
+#include <we2/require_type.hpp>
 
 #include <fhg/util/show.hpp>
 
@@ -448,11 +448,10 @@ namespace we
                   {
                     _activity.add_output
                       ( type::activity_t::output_t::value_type
-                        ( pnet::type::compat::COMPAT
-                          ( value::require_type ( port_it->second.name()
-                                                , port_it->second.signature()
-                                                , context.value (port_it->second.name())
-                                                )
+                        ( pnet::require_type
+                          ( pnet::type::compat::COMPAT (context.value (port_it->second.name()))
+                          , pnet::type::compat::COMPAT (port_it->second.signature())
+                          , port_it->second.name()
                           )
                         , port_it->first
                         )

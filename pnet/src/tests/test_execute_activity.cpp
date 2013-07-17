@@ -8,11 +8,11 @@
 #include <we/type/place.hpp>
 #include <we/type/value.hpp>
 #include <we/type/port.hpp>
-#include <we/type/value/require_type.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
 #include <we2/type/compat.hpp>
+#include <we2/require_type.hpp>
 
 #include <we/expr/eval/context.hpp>
 
@@ -112,11 +112,10 @@ namespace module
 
       act.add_output
         ( output_t::value_type
-          ( pnet::type::compat::COMPAT
-            ( value::require_type ( port.name()
-                                  , port.signature()
-                                  , ton->first
-                                  )
+          ( pnet::require_type
+            ( pnet::type::compat::COMPAT (ton->first)
+            , pnet::type::compat::COMPAT (port.signature())
+            , port.name()
             )
           , port_id
           )

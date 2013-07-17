@@ -5,8 +5,8 @@
 
 #include <we/type/value.hpp>
 #include <we/type/id.hpp>
-#include <we/type/value/require_type.hpp>
 
+#include <we2/require_type.hpp>
 #include <we2/type/value.hpp>
 #include <we2/type/compat.hpp>
 
@@ -42,11 +42,10 @@ namespace we
         // }
 
         act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( pnet::type::compat::COMPAT
-                          ( value::require_type ( port
-                                                , port_signature
-                                                , value
-                                                )
+                        ( pnet::require_type
+                          ( pnet::type::compat::COMPAT (value)
+                          , pnet::type::compat::COMPAT (port_signature)
+                          , port
                           )
                         , pid
                         )

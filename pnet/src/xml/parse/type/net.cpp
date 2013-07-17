@@ -12,11 +12,10 @@
 #include <we/type/place.hpp>
 #include <we/type/error.hpp>
 
-#include <we/type/value/require_type.hpp>
-
 #include <we/expr/eval/context.hpp>
 
 #include <we2/type/compat.hpp>
+#include <we2/require_type.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
 
@@ -737,7 +736,12 @@ namespace xml
               const value::type v (parser.eval_all (context));
               const signature::type sig (signature);
 
-              return value::require_type (field_name, sig, v);
+              return pnet::type::compat::COMPAT
+                ( pnet::require_type ( pnet::type::compat::COMPAT (v)
+                                     , pnet::type::compat::COMPAT (sig)
+                                     , field_name
+                                     )
+                );
             }
             catch (const expr::exception::eval::divide_by_zero & e)
             {

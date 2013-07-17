@@ -2,10 +2,10 @@
 
 #include <we/type/net.hpp>
 #include <we/type/condition.hpp>
-#include <we/type/value/require_type.hpp>
 #include <we/util/cross.hpp>
 
 #include <we2/type/compat.hpp>
+#include <we2/require_type.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -382,12 +382,11 @@ namespace petri_net
   {
     const place::type& place (get_place (pid));
 
-    put_token (pid, pnet::type::compat::COMPAT
-                    ( value::require_type ( place.name()
-                                          , place.signature()
-                                          , pnet::type::compat::COMPAT (value)
-                                          )
-                    )
+    put_token (pid, pnet::require_type
+                      ( value
+                      , pnet::type::compat::COMPAT (place.signature())
+                      , place.name()
+                      )
               );
   }
 

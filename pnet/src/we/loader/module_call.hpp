@@ -8,9 +8,9 @@
 #include <we/type/module_call.hpp>
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
-#include <we/type/value/require_type.hpp>
 
 #include <we2/type/compat.hpp>
+#include <we2/require_type.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -54,11 +54,10 @@ namespace module
 
         act.add_output
           ( output_t::value_type
-            ( pnet::type::compat::COMPAT
-              ( value::require_type ( port.name()
-                                    , port.signature()
-                                    , kv.second
-                                    )
+            ( pnet::require_type
+              ( pnet::type::compat::COMPAT (kv.second)
+              , pnet::type::compat::COMPAT (port.signature())
+              , port.name()
               )
             , port_id
             )
