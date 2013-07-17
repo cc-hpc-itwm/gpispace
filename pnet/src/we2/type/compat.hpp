@@ -5,6 +5,8 @@
 
 #include <we/type/value.hpp>
 #include <we2/type/value.hpp>
+#include <we/type/signature.hpp>
+#include <we2/type/signature.hpp>
 
 namespace pnet
 {
@@ -14,6 +16,7 @@ namespace pnet
     {
       ::value::type COMPAT (const value::value_type&);
       value::value_type COMPAT (const ::value::type&);
+      signature::signature_type COMPAT (const ::signature::type&);
     }
   }
 }
