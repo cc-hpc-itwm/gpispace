@@ -84,12 +84,9 @@ namespace we
               ; ++top
               )
           {
-            // context.bind_ref ( _transition.name_of_port (top->second)
-            //                  , top->first
-            //                  );
-            context.bind ( _transition.name_of_port (top->second)
-                         , pnet::type::compat::COMPAT (top->first)
-                         );
+            context.bind_ref ( _transition.name_of_port (top->second)
+                             , top->first
+                             );
           }
 
           return value::get<T> (e.ast().eval_all (context));

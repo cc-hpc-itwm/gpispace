@@ -91,7 +91,7 @@ namespace module
       const petri_net::port_id_type& port_id (top->second);
 
       context.bind ( act.transition().name_of_port (port_id)
-                   , pnet::type::compat::COMPAT (token)
+                   , token
                    );
     }
 

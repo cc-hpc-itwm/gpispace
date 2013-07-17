@@ -10,8 +10,6 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
-#include <we2/type/compat.hpp>
-
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/utility.hpp>
@@ -101,13 +99,9 @@ namespace we
 
       BOOST_FOREACH (const pits_type& pits, _m)
       {
-        // context.bind_ref ( transition.name_of_place (pits.first)
-        //                  , *pits.second.pos_and_distance().first
-        //                  );
-        context.bind
-          ( transition.name_of_place (pits.first)
-          , pnet::type::compat::COMPAT (*pits.second.pos_and_distance().first)
-          );
+        context.bind_ref ( transition.name_of_place (pits.first)
+                         , *pits.second.pos_and_distance().first
+                         );
       }
 
       return transition.condition().parser().eval_all_bool (context);

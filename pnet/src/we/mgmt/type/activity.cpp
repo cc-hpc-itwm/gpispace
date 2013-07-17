@@ -425,13 +425,9 @@ namespace we
                 ; ++top
                 )
               {
-                // context.bind_ref
-                //   ( _activity.transition().name_of_port (top->second)
-                //   , top->first
-                //   );
-                context.bind
+                context.bind_ref
                   ( _activity.transition().name_of_port (top->second)
-                  , pnet::type::compat::COMPAT (top->first)
+                  , top->first
                   );
               }
 
