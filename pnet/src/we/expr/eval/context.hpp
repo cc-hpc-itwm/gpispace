@@ -4,6 +4,7 @@
 #define _EXPR_EVAL_CONTEXT_HPP
 
 #include <we/type/value.hpp>
+#include <we2/type/value.hpp>
 
 #include <boost/unordered_map.hpp>
 
@@ -32,6 +33,9 @@ namespace expr
 
     public:
       typedef container_type::const_iterator const_iterator;
+
+      void bind (const std::string&, const pnet::type::value::value_type&);
+      void bind_ref (const std::string&, const pnet::type::value::value_type&);
 
       void bind (const std::string&, const value::type&);
       void bind (const std::list<std::string>&, const value::type& value);

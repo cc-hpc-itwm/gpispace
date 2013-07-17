@@ -8,6 +8,8 @@
 #include <we/type/value/mk_structured.hpp>
 #include <we/type/value/missing_binding.hpp>
 
+#include <we2/type/compat.hpp>
+
 #include <boost/foreach.hpp>
 
 #include <iostream>
@@ -18,6 +20,19 @@ namespace expr
 {
   namespace eval
   {
+    void context::bind ( const std::string& path
+                       , const pnet::type::value::value_type& value
+                       )
+    {
+      bind (path, pnet::type::compat::COMPAT (value));
+    }
+    void context::bind_ref ( const std::string& path
+                           , const pnet::type::value::value_type& value
+                           )
+    {
+      bind (path, pnet::type::compat::COMPAT (value));
+    }
+
     void context::bind (const std::string& path, const value::type& value)
     {
       bind ( fhg::util::split< std::string
