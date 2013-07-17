@@ -145,7 +145,6 @@ set (we_srcs
   we/type/value/field.cpp
   we/type/value/read.cpp
   we/type/value/show.cpp
-  we/type/value/require_type.cpp
   we/type/value/mk_structured.cpp
   we/type/value/put.cpp
   we/type/value/function.cpp
