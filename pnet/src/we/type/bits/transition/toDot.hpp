@@ -7,7 +7,7 @@
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 
-#include <we2/type/compat.hpp>
+#include <we2/type/value/show.hpp>
 
 #include <we/expr/parse/parser.hpp>
 #include <sstream>
@@ -447,7 +447,7 @@ namespace we { namespace type {
                                 , net.get_token (place_id)
                                 )
                   {
-                    token << endl << quote (fhg::util::show (pnet::type::compat::COMPAT (t)));
+                    token << endl << pnet::type::value::show (t);
                   }
                 }
 
@@ -523,7 +523,7 @@ namespace we { namespace type {
                                     , place.signature()
                                     , opts
                                     )
-                   + token.str()
+                   + quote (token.str())
                    + virt.str()
                    + real.str()
                    )
