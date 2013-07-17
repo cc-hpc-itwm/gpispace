@@ -126,7 +126,7 @@ static void initialize ( void *
 
   MLOG (INFO, "initialize: config " << config);
 
-  output.bind ("config", config);
+  output.bind ("config", value::type (config));
 }
 
 // ************************************************************************* //
@@ -199,7 +199,7 @@ static void run ( void *
 
   usleep (sleeptime);
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type (we::type::literal::control()));
 }
 
 // ************************************************************************* //
@@ -224,7 +224,7 @@ static void finalize ( void *
       fvmGlobalFree (scratch);
     }
 
-  output.bind ("trigger", we::type::literal::control());
+  output.bind ("trigger", value::type (we::type::literal::control()));
 }
 
 // ************************************************************************* //

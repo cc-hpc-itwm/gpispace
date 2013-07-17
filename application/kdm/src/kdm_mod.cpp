@@ -186,21 +186,21 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   LOG (DEBUG, "handle_TT " << handle_TT);
 
-  output.bind ("config.handle_Job", static_cast<long>(handle_Job));
-  output.bind ("config.scratch_Job", static_cast<long>(scratch_Job));
-  output.bind ("config.handle_TT", static_cast<long>(handle_TT));
-  output.bind ("config.NThreads", static_cast<long>(NThreads));
+  output.bind ("config.handle_Job", value::type (static_cast<long>(handle_Job)));
+  output.bind ("config.scratch_Job", value::type (static_cast<long>(scratch_Job)));
+  output.bind ("config.handle_TT", value::type (static_cast<long>(handle_TT)));
+  output.bind ("config.NThreads", value::type (static_cast<long>(NThreads)));
 
-  output.bind ("config.OFFSETS", static_cast<long>(Job.n_offset));
-  output.bind ("config.SUBVOLUMES_PER_OFFSET", static_cast<long>(Job.NSubVols));
-  output.bind ("config.BUNCHES_PER_OFFSET", static_cast<long>(Nbid_in_pid (1, 1, Job)));
-  output.bind ("config.PARALLEL_LOADTT", static_cast<long>(fvmGetNodeCount()));
+  output.bind ("config.OFFSETS", value::type (static_cast<long>(Job.n_offset)));
+  output.bind ("config.SUBVOLUMES_PER_OFFSET", value::type (static_cast<long>(Job.NSubVols)));
+  output.bind ("config.BUNCHES_PER_OFFSET", value::type (static_cast<long>(Nbid_in_pid (1, 1, Job))));
+  output.bind ("config.PARALLEL_LOADTT", value::type (static_cast<long>(fvmGetNodeCount())));
 
-  output.bind ("config.VOLUME_CREDITS", 4 * static_cast<long>(fvmGetNodeCount()));
+  output.bind ("config.VOLUME_CREDITS", value::type (4 * static_cast<long>(fvmGetNodeCount())));
 
-  output.bind ("config.filter.clip", static_cast<double>(Job.clip));
-  output.bind ("config.filter.trap", static_cast<double>(Job.trap));
-  output.bind ("config.filter.tpow", static_cast<double>(Job.tpow));
+  output.bind ("config.filter.clip", value::type (static_cast<double>(Job.clip)));
+  output.bind ("config.filter.trap", value::type (static_cast<double>(Job.trap)));
+  output.bind ("config.filter.tpow", value::type (static_cast<double>(Job.tpow)));
 
   LOG (DEBUG, "initialize: config = " << get<value::type>(output, "config"));
 }
@@ -497,7 +497,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
   kdm_loadTT (config, TT);
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type (we::type::literal::control()));
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -505,7 +505,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   const value::type & config (get<value::type> (input, "config"));
   const value::type & bunch (get<value::type> (input, "bunch"));
   kdm_load (config, bunch);
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", value::type (bunch));
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -515,7 +515,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
   kdm_process (config, bunch);
 
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", value::type (bunch));
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -525,7 +525,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
   kdm_write (config, volume);
 
-  output.bind ("volume", volume);
+  output.bind ("volume", value::type (volume));
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -534,7 +534,7 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
   kdm_finalize (config);
 
-  output.bind ("trigger", we::type::literal::control());
+  output.bind ("trigger", value::type (we::type::literal::control()));
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -544,7 +544,7 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
   kdm_init_volume (config, volume);
 
-  output.bind ("volume", volume);
+  output.bind ("volume", value::type (volume));
 }
 
 static void debug (void *, const we::loader::input_t & input, we::loader::output_t & output)

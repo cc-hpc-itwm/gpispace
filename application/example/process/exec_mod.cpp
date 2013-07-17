@@ -34,7 +34,7 @@ static void exec_wrapper ( void *
   long ec = process::execute (command, 0, 0, 0, 0);
 
   MLOG (INFO, "process returned with: " << ec);
-  output.bind ("ec", ec);
+  output.bind ("ec", value::type (ec));
 }
 
 // ************************************************************************* //

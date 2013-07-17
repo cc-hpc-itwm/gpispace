@@ -14,6 +14,8 @@
 
 #include <map>
 
+#include <we/type/value.hpp>
+
 using we::loader::get;
 
 typedef std::map<unsigned int, unsigned long> call_cnt_map_t ;
@@ -31,7 +33,7 @@ static void fun ( void *
 
   ++call_cnt_map[x];
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type (we::type::literal::control()));
 }
 
 static unsigned long call_cnt_A = 0;
@@ -46,7 +48,7 @@ static void A ( void *
 
   ++call_cnt_A;
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type (we::type::literal::control()));
 }
 
 static unsigned long call_cnt_B = 0;
@@ -61,7 +63,7 @@ static void B ( void *
 
   ++call_cnt_B;
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type (we::type::literal::control()));
 }
 
 static unsigned long call_cnt_C = 0;
@@ -76,7 +78,7 @@ static void C ( void *
 
   ++call_cnt_C;
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type (we::type::literal::control()));
 }
 
 static unsigned long call_cnt_D = 0;
@@ -91,7 +93,7 @@ static void D ( void *
 
   ++call_cnt_D;
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type(we::type::literal::control()));
 }
 
 static void finalize ( void *
@@ -112,7 +114,7 @@ static void finalize ( void *
   MLOG (INFO, "call_cnt_C = " << call_cnt_C);
   MLOG (INFO, "call_cnt_D = " << call_cnt_D);
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type (we::type::literal::control()));
 }
 
 WE_MOD_INITIALIZE_START (concurrent);

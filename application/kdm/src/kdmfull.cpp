@@ -262,25 +262,25 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
     (alloc ((bunch_store_per_node - 1) * Job.BunchMemSize, "handle_bunch", memsizeGPI));
 
   // machine
-  output.bind ("config.threads.N", static_cast<long>(NThreads));
+  output.bind ("config.threads.N", value::type (static_cast<long>(NThreads)));
 
   // system
-  output.bind ("config.handle.job", static_cast<long>(handle_Job));
+  output.bind ("config.handle.job", value::type (static_cast<long>(handle_Job)));
 
   // problem, derived
-  output.bind ("config.offsets", offsets);
-  output.bind ("config.per.offset.volumes", per_offset_volumes);
-  output.bind ("config.per.offset.bunches", per_offset_bunches);
+  output.bind ("config.offsets", value::type (offsets));
+  output.bind ("config.per.offset.volumes", value::type (per_offset_volumes));
+  output.bind ("config.per.offset.bunches", value::type (per_offset_bunches));
 
   output.bind ("config.loadTT.parallel"
-      , static_cast<long>(fvmGetNodeCount()) * 2
+              , value::type (static_cast<long>(fvmGetNodeCount()) * 2)
       //      , std::max (1L, static_cast<long>(fvmGetNodeCount())/2L)
       );
-  output.bind ("config.handle.TT", static_cast<long>(handle_TT));
+  output.bind ("config.handle.TT", value::type (static_cast<long>(handle_TT)));
 
   // tuning
-  output.bind ("config.size.store.bunch", size_store_bunch);
-  output.bind ("config.per.volume.copies", copies);
+  output.bind ("config.size.store.bunch", value::type (size_store_bunch));
+  output.bind ("config.per.volume.copies", value::type (copies));
 
   LOG_IF ( WARN
          , copies > 8
@@ -292,16 +292,16 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   // tuning: volumes_per_node could be higher
   const long size_store_volume (volumes_per_node * node_count);
 
-  output.bind ("config.size.store.volume", size_store_volume);
+  output.bind ("config.size.store.volume", value::type (size_store_volume));
 
   // tuning, derived?
   output.bind ("config.assign.most"
-              , divru (size_store_bunch, offsets_at_once) / 2
+              , value::type (divru (size_store_bunch, offsets_at_once) / 2)
               );
 
   // tuning induced
-  output.bind ("config.handle.bunch", static_cast<long>(handle_bunch));
-  output.bind ("config.handle.volume", static_cast<long>(handle_volume));
+  output.bind ("config.handle.bunch", value::type (static_cast<long>(handle_bunch)));
+  output.bind ("config.handle.volume", value::type (static_cast<long>(handle_volume)));
 
   // WORK HERE: overcome this by using virtual offsetclasses
   if ( get<long> (output, "config", "size.store.volume")
@@ -371,7 +371,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
   TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, id, parallel, handle_TT);
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", value::type (we::type::literal::control()));
 }
 
 // ************************************************************************* //
@@ -406,7 +406,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
                               )
            );
 
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", value::type (bunch));
 }
 
 // ************************************************************************* //
@@ -464,7 +464,7 @@ static void initialize_volume (void *, const we::loader::input_t & input, we::lo
                              )
            );
 
-  output.bind ("volume", volume);
+  output.bind ("volume", value::type (volume));
 }
 
 // ************************************************************************* //
@@ -554,7 +554,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
                              )
            );
 
-  output.bind ("volume", volume);
+  output.bind ("volume", value::type (volume));
 }
 
 // ************************************************************************* //
@@ -641,7 +641,7 @@ static void reduce (void *, const we::loader::input_t & input, we::loader::outpu
                              )
            );
 
-  output.bind ("pair", pair);
+  output.bind ("pair", value::type (pair));
 }
 
 // ************************************************************************* //
@@ -705,7 +705,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
     , Job.MigFileMode
     );
 
-  output.bind ("volume", volume);
+  output.bind ("volume", value::type (volume));
 }
 
 // ************************************************************************* //
@@ -721,7 +721,7 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
   fvmGlobalFree (get<long> (config, "handle.bunch"));
   fvmGlobalFree (get<long> (config, "handle.TT"));
 
-  output.bind ("trigger", we::type::literal::control());
+  output.bind ("trigger", value::type (we::type::literal::control()));
 }
 
 // ************************************************************************* //

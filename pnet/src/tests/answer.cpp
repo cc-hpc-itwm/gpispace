@@ -15,7 +15,7 @@ static void answer ( void * state
                    , we::loader::output_t & output
                    )
 {
-  output.bind ("out", 42L);
+  output.bind ("out", value::type (42L));
 }
 
 WE_MOD_INITIALIZE_START (answer);
