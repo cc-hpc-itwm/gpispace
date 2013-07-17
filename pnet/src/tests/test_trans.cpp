@@ -46,8 +46,8 @@ int main (int, char **)
 
   signature::structured_t sig_store;
 
-  sig_store["bid"] = "long";
-  sig_store["seen"] = "bitset";
+  sig_store.insert ("bid", "long");
+  sig_store.insert ("seen", "bitset");
 
   petri_net::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
 
@@ -65,8 +65,8 @@ int main (int, char **)
 
   signature::structured_t sig_pair;
 
-  sig_pair["bid"] = "long";
-  sig_pair["vid"] = "long";
+  sig_pair.insert ("bid", "long");
+  sig_pair.insert ("vid", "long");
 
   petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 

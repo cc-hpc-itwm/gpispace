@@ -50,11 +50,14 @@ namespace signature
       ar & BOOST_SERIALIZATION_NVP(map);
     }
   public:
-    desc_t & operator [] (const std::string& field_name)
+    void insert (const std::string& n, const desc_t& d)
     {
-      return map[field_name];
+      map.insert (std::make_pair (n,d));
     }
-
+    desc_t& field (const std::string& n)
+    {
+      return map[n];
+    }
     const desc_t & field (const std::string & field_name) const
     {
       const_iterator pos (map.find (field_name));
@@ -278,7 +281,7 @@ namespace signature
 
       void operator () (structured_t & map) const
       {
-        map[field] = type;
+        map.insert (field, type);
       }
 
       void operator () (std::string &) const
@@ -304,7 +307,7 @@ namespace signature
 
       desc_t & operator () (structured_t & map) const
       {
-        return map[field];
+        return map.field (field);
       }
 
       desc_t & operator () (std::string &) const
@@ -338,7 +341,7 @@ namespace signature
                                      );
           }
 
-        map[field] = structured_t();
+        map.insert (field, structured_t());
       }
 
       void operator () (std::string &) const
@@ -370,10 +373,10 @@ namespace signature
       {
         if (!map.has_field (field))
         {
-          map[field] = structured_t();
+          map.insert (field, structured_t());
         }
 
-        return map[field];
+        return map.field (field);
       }
 
       desc_t & operator () (std::string &) const
@@ -411,7 +414,7 @@ namespace signature
                                      );
           }
 
-        map[field] = val;
+        map.insert (field, val);
       }
 
       void operator () (std::string &) const

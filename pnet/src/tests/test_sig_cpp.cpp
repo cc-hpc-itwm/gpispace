@@ -8,23 +8,23 @@ int
 main ()
 {
   signature::structured_t point;
-  point["x"] = literal::DOUBLE();
-  point["y"] = literal::DOUBLE();
+  point.insert ("x", literal::DOUBLE());
+  point.insert ("y", literal::DOUBLE());
 
   signature::structured_t line;
-  line["start"] = point;
-  line["end"] = point;
-  line["descr"] = literal::STRING();
+  line.insert ("start", point);
+  line.insert ("end", point);
+  line.insert ("descr", literal::STRING());
 
   signature::structured_t cross;
-  cross["h"] = line;
-  cross["v"] = line;
-  cross["_control"] = literal::CONTROL();
-  cross["_bool"] = literal::BOOL();
-  cross["_long"] = literal::LONG();
-  cross["_char"] = literal::CHAR();
-  cross["_double"] = literal::DOUBLE();
-  cross["bitset"] = literal::BITSET();
+  cross.insert ("h", line);
+  cross.insert ("v", line);
+  cross.insert ("_control", literal::CONTROL());
+  cross.insert ("_bool", literal::BOOL());
+  cross.insert ("_long", literal::LONG());
+  cross.insert ("_char", literal::CHAR());
+  cross.insert ("_double", literal::DOUBLE());
+  cross.insert ("bitset", literal::BITSET());
 
   signature::type sig (cross, "cross");
 
