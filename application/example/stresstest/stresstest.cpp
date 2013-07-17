@@ -199,7 +199,7 @@ static void run ( void *
 
   usleep (sleeptime);
 
-  output.bind ("done", value::type (we::type::literal::control()));
+  output.bind ("done", pnet::type::value::value_type (we::type::literal::control()));
 }
 
 // ************************************************************************* //
@@ -224,7 +224,7 @@ static void finalize ( void *
       fvmGlobalFree (scratch);
     }
 
-  output.bind ("trigger", value::type (we::type::literal::control()));
+  output.bind ("trigger", pnet::type::value::value_type (we::type::literal::control()));
 }
 
 // ************************************************************************* //

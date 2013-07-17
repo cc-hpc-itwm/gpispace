@@ -15,7 +15,7 @@ static void answer ( void * state
                    , we::loader::output_t & output
                    )
 {
-  output.bind ("out", value::type (42L));
+  output.bind ("out", pnet::type::value::value_type (42L));
 }
 
 WE_MOD_INITIALIZE_START (answer);
