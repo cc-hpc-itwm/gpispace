@@ -135,4 +135,19 @@ namespace pnet
 
     return value;
   }
+
+  const type::value::value_type& require_type
+    ( const type::value::value_type& value
+    , const type::signature::signature_type& signature
+    , const std::string& field
+    )
+  {
+    std::list<std::string> path;
+
+    path.push_back (field);
+
+    require_type (path, value, signature);
+
+    return value;
+  }
 }
