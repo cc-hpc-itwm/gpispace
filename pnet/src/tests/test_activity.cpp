@@ -121,13 +121,17 @@ int main (int, char **)
   {
     pnet::type::value::structured_type m;
 
-    m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
     m.push_back (std::make_pair (std::string ("bid"), 0L));
+    m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
 
     net.put_value (pid_store, m);
+  }
 
-    m.pop_back();
+  {
+    pnet::type::value::structured_type m;
+
     m.push_back (std::make_pair (std::string ("bid"), 1L));
+    m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
 
     net.put_value (pid_store, m);
   }
