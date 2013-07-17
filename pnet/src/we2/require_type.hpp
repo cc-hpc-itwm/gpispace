@@ -8,9 +8,10 @@
 
 namespace pnet
 {
-  void require_type ( const type::value::value_type&
-                    , const type::signature::signature_type&
-                    );
+  const type::value::value_type& require_type
+    ( const type::value::value_type&
+    , const type::signature::signature_type&
+    );
 }
 
 #endif

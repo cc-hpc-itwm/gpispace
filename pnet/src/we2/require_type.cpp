@@ -124,12 +124,15 @@ namespace pnet
     }
   }
 
-  void require_type ( const type::value::value_type& value
-                    , const type::signature::signature_type& signature
-                    )
+  const type::value::value_type& require_type
+    ( const type::value::value_type& value
+    , const type::signature::signature_type& signature
+    )
   {
     std::list<std::string> path;
 
     require_type (path, value, signature);
+
+    return value;
   }
 }
