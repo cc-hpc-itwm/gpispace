@@ -136,6 +136,11 @@ endif()
 
 set (BUILDING_FROM_MAIN 1)
 
+include (FindThreads)
+if (CMAKE_USE_PTHREADS_INIT)
+  link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
+endif()
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (fhgcom)
