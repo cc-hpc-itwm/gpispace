@@ -118,12 +118,12 @@ set (monitor_ui_tomoc
 
 
 if (ENABLE_PNET_EDITOR)
-  qt4_wrap_cpp (base_wrapped_cpps ${base_tomoc})
-  qt4_wrap_cpp (base_ui_wrapped_cpps ${base_ui_tomoc})
-  qt4_wrap_cpp (editor_ui_wrapped_cpps ${editor_ui_tomoc})
+  qt4_wrap_cpp (base_wrapped_cpps ${base_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
+  qt4_wrap_cpp (base_ui_wrapped_cpps ${base_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
+  qt4_wrap_cpp (editor_ui_wrapped_cpps ${editor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
   qt4_wrap_ui (editor_ui_wrapped_uis ${editor_ui_uis})
   qt4_add_resources (editor_ui_resource_cpps ${editor_ui_resources})
-  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc})
+  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
   add_executable (pnete
     pnete.cpp setting.cpp ${base_sources} ${base_wrapped_cpps}
@@ -147,7 +147,7 @@ if (ENABLE_PNET_EDITOR)
 endif()
 
 if (ENABLE_SDPA_GUI)
-  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc})
+  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
   add_executable ( sdpa-gui
     monitor.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})

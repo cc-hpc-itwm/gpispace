@@ -66,9 +66,9 @@ namespace sdpa { namespace daemon {
     const sdpa::job_id_t stealWork(const Worker::ptr_t& ) throw (NoJobScheduledException);
 
     worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
-    Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
+    Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
     /*Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
-													const requirement_list_t& listJobReq,
+													const job_requirements_t& listJobReq,
 													const worker_id_list_t& workerList,
 													int& matching_degree,
 													sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException) */
@@ -143,7 +143,7 @@ protected:
     int matchingDeg = 0;
 
     // for all job requirements
-    for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
+    for( typename TReqSet::const_iterator it = job_req_set.req_list.begin(); it != job_req_set.req_list.end(); it++ )
     {
       //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
       if( pWorker->hasCapability(it->value(), bOwn ) )

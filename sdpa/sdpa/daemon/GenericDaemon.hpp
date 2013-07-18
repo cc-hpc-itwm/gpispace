@@ -67,9 +67,9 @@
 
 #include <boost/utility.hpp>
 
-inline const requirement_list_t& empty_req_list()
+inline const job_requirements_t& empty_req_list()
 {
-  static requirement_list_t e_req_list;
+  static job_requirements_t e_req_list;
   return e_req_list;
 }
 
@@ -123,7 +123,11 @@ namespace sdpa {
       bool isTop() { return false; }
 
       // WE interface
-      virtual void submit(const id_type & id, const encoded_type&, const requirement_list_t& = empty_req_list() );
+      virtual void submit( const id_type & id
+                         , const encoded_type&
+                         , const job_requirements_t& = empty_req_list()
+                         , const we::type::schedule_data& = we::type::schedule_data()
+                         );
       virtual bool cancel(const id_type & id, const reason_type& reason);
       virtual bool finished(const id_type & id, const result_type& result);
       virtual bool failed( const id_type& wfId, const result_type& res, int errc, std::string const& reason);
@@ -272,8 +276,8 @@ namespace sdpa {
       // jobs
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
-      std::string gen_id() { return sdpa::events::id_generator::instance().next(); }
-      const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
+      std::string gen_id() { return sdpa::JobId ().str (); }
+      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
     public:
       // scheduler

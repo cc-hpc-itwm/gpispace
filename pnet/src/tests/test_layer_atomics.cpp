@@ -3,6 +3,7 @@
 
 #include <we/mgmt/layer.hpp>
 #include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
 
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
@@ -38,7 +39,11 @@ struct daemon_t
     : layer (this, &generate_id)
   {}
 
-  void submit (const id_type & id, const std::string &enc, requirement_list_t req_list = requirement_list_t())
+  void submit ( const id_type & id
+              , const std::string &enc
+              , requirement_list_t req_list = requirement_list_t()
+              , const we::type::schedule_data& = we::type::schedule_data()
+              )
   {
     layer.print_statistics (std::cerr);
     layer.finished (id, enc);
@@ -82,7 +87,7 @@ int main ()
       , we::type::module_call_t ("m", "f")
       );
     we::mgmt::type::activity_t act (mod_call);
-    layer.submit (generate_id(), act.to_string());
+    layer.submit (generate_id(), act);
 
     sleep (1);
     layer.print_statistics (std::cerr);
@@ -93,7 +98,7 @@ int main ()
                           , we::type::expression_t ("${out} := 3L")
                           );
     we::mgmt::type::activity_t act (expr);
-    layer.submit (generate_id(), act.to_string());
+    layer.submit (generate_id(), act);
 
     sleep (1);
     layer.print_statistics (std::cerr);

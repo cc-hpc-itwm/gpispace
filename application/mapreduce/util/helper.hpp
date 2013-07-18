@@ -25,6 +25,8 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/find_iterator.hpp>
 #include <util/types.hpp>
 #include <algorithm>
 #include <boost/regex.hpp>
@@ -75,7 +77,7 @@ namespace mapreduce
   		  return oss.str();
 	  }
 
-  	  std::string key(const std::string& item)
+  	  /*std::string key(const std::string& item)
   	  {
   		  size_t split_pos = item.find_last_of(PAIRSEP);
   		  if(split_pos==std::string::npos)
@@ -120,6 +122,47 @@ namespace mapreduce
   	  {
   		  return pair.first+PAIRSEP+pair.second;
   	  }
+  	  */
+
+  	  std::string key(const std::string& item)
+	  {
+  		  const char* pch = strrchr ( item.data(), PAIRSEP );
+  		  size_t size = pch-item.data();
+  		  std::string key(item.data(), size);
+		  return key;
+	  }
+
+	  std::string val(const std::string& item)
+	  {
+		 const char* pch = strrchr ( item.data(), PAIRSEP );
+		 return pch+1;
+	  }
+
+	  key_val_pair_t str2kvpair(const std::string& item)
+	  {
+		  std::string str_key = key(item);
+		  if(str_key.empty())
+		  {
+			  MLOG(FATAL, "Empty key!!!!!");
+			  throw std::runtime_error(std::string("Invalid key-value pair: ") + item);
+		  }
+
+		  std::string str_val = val(item);
+
+		  while( boost::algorithm::starts_with(str_val, "[") && boost::algorithm::ends_with(str_val, "]") )
+		  {
+			  std::string val = str_val.substr(1, str_val.size()-2);
+			  str_val = val;
+		  }
+
+		  return key_val_pair_t(str_key, str_val);
+	  }
+
+	  std::string kvpair2str(const key_val_pair_t& pair)
+	  {
+		  return pair.first+PAIRSEP+pair.second;
+	  }
+
 
   	  /*
 	  std::string key(const std::string& item)
@@ -210,28 +253,33 @@ namespace mapreduce
   		  return lhs.first.compare(rhs.first)<0;
   	  }
 
-  	  bool string_comp( const std::string &left, const std::string &right )
+  	  bool comp_( const std::string &left, const std::string &right )
 	  {
-		 for( std::string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
+  		  std::string::const_iterator lit, rit;
+  		  for( lit = left.begin(), rit = right.begin(); lit != left.end() && *lit!=PAIRSEP && rit != right.end() && *rit != PAIRSEP ; ++lit, ++rit )
 			 if( *lit < *rit )
 				 return true;
 			 else if( *lit > *rit  )
 				 return false;
 
-		 if( left.size() < right.size() )
+  		  if(rit !=right.end() && *rit != PAIRSEP)
 			 return true;
 
-		 return false;
+  		  if( left.size() < right.size() )
+			 return true;
+
+  		  return false;
 	  }
 
   	  bool my_comp(const std::string& lhs, const std::string& rhs)
 	  {
-		  return key(lhs).compare(key(rhs))<0;
-  		  //return string_comp(key(lhs), key(rhs));
+		  //return key(lhs).compare(key(rhs))<0;
+  		  return comp_(lhs, rhs);
 	  }
 
   	  void my_sort(std::vector<std::string>::iterator iter_beg, std::vector<std::string>::iterator iter_end )
   	  {
+  		  // one should think here to apply a parallel merge sort, if the vector is too large
   		  std::sort(iter_beg, iter_end, my_comp);
   	  }
 
@@ -335,7 +383,7 @@ namespace mapreduce
 		 return sstr.str();
 	 }
 
-	 std::vector<std::string> get_list_items(char* local_buff)
+	 std::vector<std::string> get_list_items_tok(char* local_buff)
      {
 		 std::string str_buff(local_buff);
 		 boost::char_separator<char> sep(INTERNAL_DELIMITERS);
@@ -346,15 +394,14 @@ namespace mapreduce
 		 return v;
      }
 
-	 std::vector<std::string> get_list_items(char* local_buff, char* delims)
+	 std::vector<std::string> get_list_items_split(char* local_buff)
 	 {
-		 std::string str_buff(local_buff);
-		 boost::char_separator<char> sep(delims);
-		 boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
 		 std::vector<std::string> v;
-		 v.assign(tok.begin(),tok.end());
+		 std::string str_buff(local_buff);
+	     boost::trim_if(str_buff, boost::is_any_of(INTERNAL_DELIMITERS));
+	     boost::split(v, str_buff, boost::is_any_of(INTERNAL_DELIMITERS), boost::token_compress_on );
 
-		 return v;
+	     return v;
 	 }
 
 	 std::vector<std::string> get_list_items_strtok(char* local_buff)
@@ -371,8 +418,25 @@ namespace mapreduce
 		 return v;
 	 }
 
-    std::string list2str(std::list<std::string>& list_values )
-	{
+	 std::vector<std::string> get_list_items(char* local_buff)
+	 {
+		 return get_list_items_strtok(local_buff);
+		 //return get_list_items_split(local_buff);
+	 }
+
+	 std::vector<std::string> get_list_items(char* local_buff, char* delims)
+	 {
+		 std::string str_buff(local_buff);
+		 boost::char_separator<char> sep(delims);
+		 boost::tokenizer<boost::char_separator<char> > tok(str_buff, sep);
+		 std::vector<std::string> v;
+		 v.assign(tok.begin(),tok.end());
+
+		 return v;
+	 }
+
+	 std::string list2str(std::list<std::string>& list_values )
+	 {
 		std::ostringstream oss;
 		oss<<"[";
 
@@ -466,9 +530,10 @@ namespace mapreduce
 		ofs<<str_pair<<std::endl;
 	}
 
-	void write_arr_to_buff( const std::vector<std::string>& arr_items, char* ptr_shmem, size_t& last_pos, const size_t max_size )
+    template <typename T>
+	void write_arr_to_buff( const T& arr_items, char* ptr_shmem, size_t& last_pos, const size_t max_size )
 	{
-		for(std::vector<std::string>::const_iterator it=arr_items.begin(); it != arr_items.end(); it++ )
+		for(typename T::const_iterator it = arr_items.begin(); it != arr_items.end(); it++ )
 			last_pos = ::mapreduce::util::write_to_buff( *it, ptr_shmem, last_pos, max_size );
 	}
 

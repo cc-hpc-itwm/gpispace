@@ -229,7 +229,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
       std::ostringstream oss;
       oss<<"rank"<<rankRight;
       requirement_t req(oss.str(), true);
-      requirement_list_t reqList;
+      job_requirements_t reqList;
       reqList.push_back(req);
 
       pIAgent_->submit(pBlueToken->activityId(), pBlueToken->encode(), reqList);
@@ -262,7 +262,7 @@ class TorusWorkflowEngineAgent : public IWorkflowEngine {
       std::ostringstream oss;
       oss<<"rank"<<rankBottom;
       requirement_t req(oss.str(), true);
-      requirement_list_t reqList;
+      job_requirements_t reqList;
       reqList.push_back(req);
 
       pIAgent_->submit(pRedToken->activityId(), pRedToken->encode(), reqList);

@@ -86,6 +86,11 @@ namespace petri_net
     transition_id_type modify_transition ( const transition_id_type&
                                          , const we::type::transition_t&
                                          );
+    void modify_transitions
+      ( const boost::function<void ( const transition_id_type&
+                                   , we::type::transition_t&
+                                   )>&
+      );
 
     void put_token (const place_id_type&, const value::type&);
     void put_value (const place_id_type&, const value::type&);

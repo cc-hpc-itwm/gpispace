@@ -17,6 +17,7 @@ CXXLIBPATHS += $(BOOST_ROOT)/lib
 LIBS += boost_program_options
 LIBS += boost_thread
 LIBS += boost_system
+LIBS += pthread
 
 OBJ = $(DIR_BUILD)/gen.o
 BIN = $(DIR_BUILD)/gen.bin

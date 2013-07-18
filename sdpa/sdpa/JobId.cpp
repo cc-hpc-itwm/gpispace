@@ -1,9 +1,20 @@
 #include "JobId.hpp"
-#include  <sdpa/events/id_generator.hpp>
+#include  <sdpa/id_generator.hpp>
 
 using namespace sdpa;
 
-JobId::JobId() : id_(sdpa::events::id_generator::instance().next())
+namespace
+{
+  struct job_id_tag
+  {
+    static const char *name ()
+    {
+      return "job";
+    }
+  };
+}
+
+JobId::JobId() : id_(sdpa::id_generator<job_id_tag>::instance().next())
 {
 }
 

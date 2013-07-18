@@ -32,6 +32,8 @@
 #include <boost/shared_ptr.hpp>
 #include <sdpa/types.hpp>
 
+#include <gspc/net.hpp>
+
 class DRTSImpl : FHG_PLUGIN
                , public drts::DRTS
                , public sdpa::events::EventHandler
@@ -58,7 +60,8 @@ class DRTSImpl : FHG_PLUGIN
                             , std::list
                             > job_queue_t;
 
-  typedef std::map<std::string, fhg::plugin::Capability*> map_of_capabilities_t;
+  typedef std::pair<sdpa::Capability, fhg::plugin::Capability*> capability_info_t;
+  typedef std::map<std::string, capability_info_t> map_of_capabilities_t;
 public:
   FHG_PLUGIN_START()
   {
@@ -130,7 +133,17 @@ public:
         {
           DMLOG(TRACE, "adding virtual capability: " << cap);
           m_virtual_capabilities.insert
-            (std::make_pair(cap, new fhg::plugin::Capability(cap, "virtual")));
+            (std::make_pair ( cap
+                            , std::make_pair ( sdpa::Capability (cap
+                                                                , "virtual"
+                                                               , m_my_name
+                                                                )
+                                             , new fhg::plugin::Capability( cap
+                                                                          , "virtual"
+                                                                          )
+                                             )
+                            )
+            );
         }
       }
     }
@@ -149,7 +162,15 @@ public:
           );
 
       lock_type cap_lock(m_capabilities_mutex);
-      m_capabilities.insert (std::make_pair(cap->capability_name(), cap));
+      m_capabilities.insert
+        (std::make_pair ( cap->capability_name()
+                        , std::make_pair (sdpa::Capability ( cap->capability_name ()
+                                                           , cap->capability_type ()
+                                                           )
+                                         , cap
+                                         )
+                        )
+        );
     }
 
     assert (! m_event_thread);
@@ -234,11 +255,30 @@ public:
 
     start_connect ();
 
+    gspc::net::handle
+      ("/service/drts/capability/add"
+      , boost::bind (&DRTSImpl::service_capability_add, this, _1, _2, _3)
+      );
+
+    gspc::net::handle
+      ("/service/drts/capability/del"
+      , boost::bind (&DRTSImpl::service_capability_del, this, _1, _2, _3)
+      );
+
+    gspc::net::handle
+      ("/service/drts/capability/get"
+      , boost::bind (&DRTSImpl::service_capability_get, this, _1, _2, _3)
+      );
+
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
+    gspc::net::unhandle ("/service/drts/capability/add");
+    gspc::net::unhandle ("/service/drts/capability/del");
+    gspc::net::unhandle ("/service/drts/capability/get");
+
     m_shutting_down = true;
 
     if (m_request_thread)
@@ -290,7 +330,7 @@ public:
     {
       while (not m_virtual_capabilities.empty())
       {
-        delete m_virtual_capabilities.begin()->second;
+        delete m_virtual_capabilities.begin()->second.second;
         m_virtual_capabilities.erase(m_virtual_capabilities.begin());
       }
     }
@@ -310,7 +350,15 @@ public:
           );
 
       lock_type cap_lock(m_capabilities_mutex);
-      m_capabilities.insert (std::make_pair(cap->capability_name(), cap));
+      m_capabilities.insert
+        (std::make_pair ( cap->capability_name()
+                        , std::make_pair (sdpa::Capability ( cap->capability_name ()
+                                                           , cap->capability_type ()
+                                                           )
+                                         , cap
+                                         )
+                        )
+        );
 
       for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
           ; master_it != m_masters.end()
@@ -319,16 +367,12 @@ public:
       {
         if (master_it->second->is_connected())
         {
-                sdpa::capability_t sdpa_cap( cap->capability_name()
-                                           , cap->capability_type()
-                                           , m_my_name
-                                           );
-                send_event
-                  (new sdpa::events::CapabilitiesGainedEvent( m_my_name
-                                                            , master_it->first
-                                                            , sdpa_cap
-                                                            )
-                  );
+          send_event
+            (new sdpa::events::CapabilitiesGainedEvent( m_my_name
+                                                      , master_it->first
+                                                      , m_capabilities[cap->capability_name ()].first
+                                                      )
+            );
         }
       }
     }
@@ -358,10 +402,7 @@ public:
         send_event
           (new sdpa::events::CapabilitiesLostEvent( m_my_name
                                                   , master_it->first
-                                                  , sdpa::Capability( cap->first
-                                                                    , "no-type"
-                                                                    , m_my_name
-                                                                    )
+                                                  , cap->second.first
                                                   )
           );
       }
@@ -919,7 +960,7 @@ private:
           std::string error_message;
           int ec = m_wfe->execute ( job->id()
                                   , job->description()
-                                  , m_capabilities
+                                  , std::map<std::string, fhg::plugin::Capability*>()
                                   , result
                                   , error_message
                                   , meta_data
@@ -993,6 +1034,114 @@ private:
     }
   }
 
+  void service_capability_add ( std::string const &dst
+                              , gspc::net::frame const &rqst
+                              , gspc::net::user_ptr user
+                              )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    std::string virtual_capabilities (rqst.get_body_as_string ());
+    std::list<std::string> capability_list;
+    fhg::util::split( virtual_capabilities
+                    , ","
+                    , std::back_inserter(capability_list)
+                    );
+
+    BOOST_FOREACH (std::string const & cap, capability_list)
+    {
+      if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
+      {
+        DMLOG(TRACE, "adding virtual capability: " << cap);
+        m_virtual_capabilities.insert
+          (std::make_pair ( cap
+                          , std::make_pair ( sdpa::Capability (cap
+                                                              , "virtual"
+                                                              , m_my_name
+                                                              )
+                                           , new fhg::plugin::Capability( cap
+                                                                        , "virtual"
+                                                                        )
+                                           )
+                          )
+          );
+      }
+    }
+
+    user->deliver (rply);
+  }
+
+  void service_capability_del ( std::string const &dst
+                              , gspc::net::frame const &rqst
+                              , gspc::net::user_ptr user
+                              )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    std::string virtual_capabilities (rqst.get_body_as_string ());
+    std::list<std::string> capability_list;
+    fhg::util::split( virtual_capabilities
+                    , ","
+                    , std::back_inserter(capability_list)
+                    );
+
+    BOOST_FOREACH (std::string const & cap, capability_list)
+    {
+      typedef map_of_capabilities_t::iterator cap_it_t;
+      cap_it_t cap_it = m_virtual_capabilities.find (cap);
+      if (cap_it != m_virtual_capabilities.end ())
+      {
+        for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
+            ; master_it != m_masters.end()
+            ; ++master_it
+            )
+        {
+          if (not master_it->second->is_connected())
+            continue;
+
+          send_event
+            (new sdpa::events::CapabilitiesLostEvent( m_my_name
+                                                    , master_it->first
+                                                    , cap_it->second.first
+                                                    )
+          );
+        }
+
+        delete cap_it->second.second;
+        m_virtual_capabilities.erase (cap);
+      }
+    }
+
+    user->deliver (rply);
+  }
+
+  void service_capability_get ( std::string const &dst
+                              , gspc::net::frame const &rqst
+                              , gspc::net::user_ptr user
+                              )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    typedef map_of_capabilities_t::const_iterator const_cap_it_t;
+    for ( const_cap_it_t cap_it (m_capabilities.begin())
+        ; cap_it != m_capabilities.end()
+        ; ++cap_it
+        )
+    {
+      rply.add_body (cap_it->first + "\n");
+    }
+
+    for ( const_cap_it_t cap_it(m_virtual_capabilities.begin())
+        ; cap_it != m_virtual_capabilities.end()
+        ; ++cap_it
+        )
+    {
+      rply.add_body (cap_it->first + "\n");
+    }
+
+    user->deliver (rply);
+  }
+
   void notify_capabilities_to_master (master_ptr const &master)
   {
     sdpa::capabilities_set_t caps;
@@ -1004,7 +1153,7 @@ private:
         ; ++cap_it
         )
     {
-      caps.insert (sdpa::Capability(cap_it->first, "no-type", m_my_name));
+      caps.insert (cap_it->second.first);
     }
 
     for ( const_cap_it_t cap_it(m_virtual_capabilities.begin())
@@ -1012,7 +1161,7 @@ private:
         ; ++cap_it
         )
     {
-      caps.insert (sdpa::Capability(cap_it->first, "virtual", m_my_name));
+      caps.insert (cap_it->second.first);
     }
 
     if (! caps.empty())

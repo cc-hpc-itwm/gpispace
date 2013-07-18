@@ -5,20 +5,31 @@
 #include <set>
 #include <iostream>
 #include <boost/foreach.hpp>
-#include <sdpa/events/id_generator.hpp>
+#include <sdpa/id_generator.hpp>
 
 namespace sdpa
 {
+namespace
+{
+  struct cap_id_tag
+  {
+    static const char *name ()
+    {
+      return "cap";
+    }
+  };
+}
 
 	// type, name
 	class Capability
 	{
+
 	    public:
 			explicit
 			Capability(	const std::string& name = "",
 						const std::string& type = "",
 						const std::string& owner = "",
-						const std::string& uuid = sdpa::events::id_generator::instance().next(),
+                                  const std::string& uuid = sdpa::id_generator<cap_id_tag>::instance().next(),
 						size_t depth= 0)
 			: name_(name)
 			, type_(type)
@@ -75,7 +86,7 @@ namespace sdpa
 			void setUuid(const std::string& uuid) { uuid_ = uuid; }
 			void assignUuid()
 			{
-				uuid_ = sdpa::events::id_generator::instance().next();
+                          uuid_ = sdpa::id_generator<cap_id_tag>::instance().next();
 			}
 
 			template <class Archive>

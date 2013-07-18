@@ -10,8 +10,8 @@ include_directories (${UTIL_INCLUDE_DIR})
 
 include_directories (${CMAKE_SOURCE_DIR}/editor/src ${Boost_INCLUDE_DIR})
 
-qt4_wrap_cpp (wrapped_cpps_client node_state_widget.hpp file_line_edit.hpp)
-qt4_wrap_cpp (wrapped_cpps_server dummy_server.hpp)
+qt4_wrap_cpp (wrapped_cpps_client node_state_widget.hpp file_line_edit.hpp OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
+qt4_wrap_cpp (wrapped_cpps_server dummy_server.hpp OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
 add_executable (node_state_widget node_state_widget.cpp ${wrapped_cpps_client} file_line_edit.cpp)
 add_executable (dummy_server dummy_server.cpp ${wrapped_cpps_server})
