@@ -45,22 +45,7 @@ namespace gspc
         m_acceptor.listen ();
 
         start_accept();
-        /*
-        assert (m_thread_pool.empty ());
 
-        m_io_service.reset ();
-
-        for (size_t i = 0 ; i < m_thread_pool_size ; ++i)
-        {
-          thread_ptr_t thrd
-            (new boost::thread (boost::bind ( &boost::asio::io_service::run
-                                            , &m_io_service
-                                            )
-                               )
-            );
-          m_thread_pool.push_back (thrd);
-        }
-        */
         return 0;
       }
 
