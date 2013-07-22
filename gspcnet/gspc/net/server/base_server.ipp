@@ -52,19 +52,15 @@ namespace gspc
       template <class Proto>
       int base_server<Proto>::stop ()
       {
-        if (m_new_connection)
-          m_new_connection->stop ();
+        m_acceptor.cancel ();
         m_acceptor.close ();
 
-        /*
-        m_io_service.stop ();
-
-        BOOST_FOREACH (thread_ptr_t thrd, m_thread_pool)
+        if (m_new_connection)
         {
-          thrd->join ();
+          m_new_connection->stop ();
+          m_new_connection.reset ();
         }
-        m_thread_pool.clear ();
-        */
+
         return 0;
       }
 
