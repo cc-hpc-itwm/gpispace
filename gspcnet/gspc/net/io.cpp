@@ -79,9 +79,14 @@ namespace gspc
       }
     }
 
+    static size_t s_get_thread_count ()
+    {
+      return 4;
+    }
+
     void initialize ()
     {
-      initialize (4);
+      initialize (s_get_thread_count ());
     }
 
     void initialize (const size_t nthread)
