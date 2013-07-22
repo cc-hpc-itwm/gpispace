@@ -50,9 +50,9 @@ namespace gspc
 
         void stop ()
         {
-          if (not m_threads.empty ())
+          if (m_work)
           {
-            m_io_service.stop ();
+            m_work.reset ();
 
             BOOST_FOREACH (thread_ptr_t thrd, m_threads)
             {
