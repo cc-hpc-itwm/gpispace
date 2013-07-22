@@ -106,13 +106,17 @@ namespace gspc
       void
       base_server<Proto>::handle_accept (boost::system::error_code const &ec)
       {
-        if (not ec)
+        if (ec)
+        {
+          // shutting down
+        }
+        else
         {
           m_new_connection->set_queue_length (m_queue_length);
           m_new_connection->start ();
-        }
 
-        start_accept ();
+          start_accept ();
+        }
       }
 
       template <class Proto>
