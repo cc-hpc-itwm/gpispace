@@ -3,13 +3,15 @@
 all: libs bins
 
 libs:
-	gcc -o lib/liba.so -shared -fpic -I lib/ lib/a.c
-	gcc -o libb.so -Wl,-rpath,'$$ORIGIN/:$$ORIGIN/lib/' -shared -fpic -I lib/ -L lib/ b.c -la
+	mkdir -p lib libexec/plugins
+	gcc -o lib/liba.so -shared -fpic -I lib/ a.c
+	gcc -o libexec/plugins/libb.so -Wl,-rpath,'$$ORIGIN/:$$ORIGIN/lib/:$$ORIGIN/../lib/:$$ORIGIN/../../lib/' -shared -fpic -L lib/ b.c -la
 
 bins:
-	gcc -rdynamic -o dlopen dlopen.c -ldl
+	mkdir -p bin
+	gcc -rdynamic -o bin/dlopen dlopen.c -ldl
 
 clean:
-	rm -f dlopen
-	rm -f libb.so
-	rm -f lib/liba.so
+	rm -rf bin
+	rm -rf lib
+	rm -rf libexec
