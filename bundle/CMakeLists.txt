@@ -40,9 +40,7 @@ install(CODE "
                           -L \"\${CMAKE_INSTALL_PREFIX}/lib\"
                           -x libibverbs.*
                           -x libxcb.*
-                          -x libstdc++.*
                           -x libSM.*
-                          -x libgcc_s.so
                           -x libc.so.*
                           -x librt.*
                           -x libfont.*
