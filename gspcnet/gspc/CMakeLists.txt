@@ -45,4 +45,4 @@ set_target_properties (gspcnet.shared
 )
 
 install (TARGETS gspcnet ARCHIVE DESTINATION lib COMPONENT libraries)
-install (TARGETS gspcnet.shared LIBRARY DESTINATION lib COMPONENT libraries)
+install (TARGETS gspcnet.shared LIBRARY DESTINATION lib COMPONENT runtime-libraries)
