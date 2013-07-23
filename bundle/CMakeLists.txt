@@ -37,7 +37,7 @@ install(CODE "
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
                           -f
-                          -L \"${CMAKE_INSTALL_PREFIX}/lib\"
+                          -L \"\${CMAKE_INSTALL_PREFIX}/lib\"
                           -x libibverbs.*
                           -x libxcb.*
                           -x libstdc++.*
