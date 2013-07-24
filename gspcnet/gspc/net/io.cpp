@@ -38,13 +38,25 @@ namespace gspc
             for (size_t i = 0 ; i < nthread ; ++i)
             {
               thread_ptr_t thrd
-                (new boost::thread (boost::bind ( &boost::asio::io_service::run
-                                                , &m_io_service
+                (new boost::thread (boost::bind ( &global_io::run
+                                                , this
                                                 )
                                    )
                 );
               m_threads.push_back (thrd);
             }
+          }
+        }
+
+        void run ()
+        {
+          try
+          {
+            m_io_service.run ();
+          }
+          catch (std::exception const &ex)
+          {
+            // handle error somehow
           }
         }
 
