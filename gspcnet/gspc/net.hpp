@@ -13,6 +13,7 @@
 #include <gspc/net/server.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 
+#include <gspc/net/io.hpp>
 #include <gspc/net/dial.hpp>
 #include <gspc/net/client.hpp>
 
