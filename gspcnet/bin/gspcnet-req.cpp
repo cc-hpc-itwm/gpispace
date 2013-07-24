@@ -132,6 +132,8 @@ int main (int argc, char *argv[])
 
   show_headers = not vm.count ("no-headers");
 
+  gspc::net::initialize ();
+
   reply_frame_handler_t reply_handler;
 
   try
@@ -247,6 +249,9 @@ int main (int argc, char *argv[])
 
     return EX_UNAVAILABLE;
   }
+
+  client->stop ();
+  gspc::net::shutdown ();
 
   if (rc)
     return EX_UNAVAILABLE;

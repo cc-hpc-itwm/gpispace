@@ -172,6 +172,8 @@ int main (int argc, char *argv[])
   if (interval < 200 && getuid () != 0)
     interval = 200;
 
+  gspc::net::initialize ();
+
   reply_frame_handler_t reply_handler;
 
   try
@@ -226,6 +228,9 @@ int main (int argc, char *argv[])
   }
 
   reply_handler.dump_stats_to (std::cerr);
+
+  client->stop ();
+  gspc::net::shutdown ();
 
   return reply_handler.had_error ? 1 : 0;
 }

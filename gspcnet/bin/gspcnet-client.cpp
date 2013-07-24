@@ -56,6 +56,8 @@ int main (int argc, char *argv[])
     return 1;
   }
 
+  gspc::net::initialize ();
+
   url = argv [1];
 
   print_frame_handler_t print_handler;
@@ -132,4 +134,7 @@ int main (int argc, char *argv[])
     parser.reset ();
     frame = gspc::net::frame ();
   }
+
+  gspc::net::shutdown ();
+  return 0;
 }
