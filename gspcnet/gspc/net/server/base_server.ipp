@@ -67,7 +67,8 @@ namespace gspc
       template <class Proto>
       std::string base_server<Proto>::url () const
       {
-        return url_maker<Proto>::make (m_acceptor.local_endpoint ());
+        boost::system::error_code ec;
+        return url_maker<Proto>::make (m_acceptor.local_endpoint (ec));
       }
 
       template <class Proto>
