@@ -13,6 +13,8 @@ BOOST_AUTO_TEST_CASE (test_initialize_shutdown)
     gspc::net::server_ptr_t server =
       gspc::net::serve ("tcp://localhost:*", qmgr);
     BOOST_REQUIRE (server);
+
+    server->stop ();
   }
 
   gspc::net::shutdown ();
