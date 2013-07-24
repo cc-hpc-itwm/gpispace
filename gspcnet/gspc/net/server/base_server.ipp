@@ -59,7 +59,6 @@ namespace gspc
         if (m_new_connection)
         {
           m_new_connection->stop ();
-          m_new_connection.reset ();
         }
 
         return 0;
