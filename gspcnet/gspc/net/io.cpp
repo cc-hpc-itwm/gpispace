@@ -31,7 +31,7 @@ namespace gspc
 
         void start (size_t nthread)
         {
-          if (m_threads.empty ())
+          if (not m_work)
           {
             m_work.reset (new boost::asio::io_service::work (m_io_service));
 
@@ -59,6 +59,7 @@ namespace gspc
               thrd->join ();
             }
             m_threads.clear ();
+            m_io_service.reset ();
           }
         }
 
