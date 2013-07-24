@@ -51,14 +51,19 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::start ()
       {
-        if (not m_connection)
-        {
-          m_connection.reset (new connection_type (m_io_service, *this));
-          m_connection->socket ().connect (m_endpoint);
-          m_connection->start ();
-        }
+        boost::system::error_code ec;
+        m_connection.reset (new connection_type (m_io_service, *this));
+        m_connection->socket ().connect (m_endpoint, ec);
 
-        return 0;
+        if (not ec)
+        {
+          m_connection->start ();
+          return 0;
+        }
+        else
+        {
+          return -ECONNREFUSED;
+        }
       }
 
       template <class Proto>
@@ -67,7 +72,6 @@ namespace gspc
         if (m_connection)
         {
           m_connection->stop ();
-          m_connection.reset ();
         }
 
         return 0;
