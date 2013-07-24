@@ -172,6 +172,9 @@ int main (int argc, char *argv[])
   if (interval < 200 && getuid () != 0)
     interval = 200;
 
+  if (0 == interval)
+    interval = 1;
+
   gspc::net::initialize ();
 
   reply_frame_handler_t reply_handler;
