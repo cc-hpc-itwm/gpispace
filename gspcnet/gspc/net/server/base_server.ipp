@@ -96,7 +96,7 @@ namespace gspc
         m_acceptor.async_accept ( m_new_connection->socket ()
                                 , m_strand.wrap (boost::bind
                                                 ( &base_server<Proto>::handle_accept
-                                                , this
+                                                , this->shared_from_this ()
                                                 , boost::asio::placeholders::error
                                                 ))
                                 );

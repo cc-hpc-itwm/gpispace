@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
@@ -23,6 +24,7 @@ namespace gspc
       template <class Protocol>
       class base_server : public gspc::net::server_t
                         , public gspc::net::frame_handler_t
+                        , public boost::enable_shared_from_this<base_server<Protocol> >
                         , private boost::noncopyable
       {
       public:
