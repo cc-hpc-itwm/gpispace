@@ -341,7 +341,7 @@ namespace gspc
         frame f_sub = make::subscribe_frame ( header::destination (dst)
                                             , header::id (id)
                                             );
-      return send_sync (f_sub, m_timeout);
+        return send_sync (f_sub, m_timeout);
       }
 
       template <class Proto>
