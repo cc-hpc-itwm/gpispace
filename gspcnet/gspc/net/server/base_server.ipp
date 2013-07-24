@@ -52,8 +52,9 @@ namespace gspc
       template <class Proto>
       int base_server<Proto>::stop ()
       {
-        m_acceptor.cancel ();
-        m_acceptor.close ();
+        boost::system::error_code ec;
+        m_acceptor.cancel (ec);
+        m_acceptor.close (ec);
 
         if (m_new_connection)
         {
