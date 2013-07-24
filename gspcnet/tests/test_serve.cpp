@@ -32,8 +32,6 @@ struct SetRLimits
 
   SetRLimits ()
   {
-    gspc::net::initialize ();
-
     struct rlimit lim;
     lim.rlim_cur = lim.rlim_max = 60000;
 
@@ -56,7 +54,6 @@ struct SetRLimits
 
   ~SetRLimits ()
   {
-    gspc::net::shutdown ();
   }
 };
 size_t SetRLimits::max_open_files = 0;
@@ -65,6 +62,8 @@ BOOST_GLOBAL_FIXTURE (SetRLimits);
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
 {
+  gspc::net::initialize ();
+
   static const size_t NUM_ITERATIONS = 1000;
 
   gspc::net::server::queue_manager_t qmgr;
@@ -76,10 +75,14 @@ BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
     BOOST_REQUIRE (server);
     server->stop ();
   }
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
 {
+  gspc::net::initialize ();
+
   static const size_t NUM_ITERATIONS = 1000;
 
   gspc::net::server::queue_manager_t qmgr;
@@ -91,13 +94,19 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
     BOOST_REQUIRE (server);
 
     BOOST_CHECK (fs::exists ("socket.foo"));
+
+    server->stop ();
   }
 
   fs::remove ("socket.foo");
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 {
+  gspc::net::initialize ();
+
   gspc::net::server::queue_manager_t qmgr;
 
   gspc::net::server_ptr_t server =
@@ -110,25 +119,30 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
   BOOST_REQUIRE (client);
 
   client->stop ();
+  server->stop ();
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
+  gspc::net::initialize ();
+
   using namespace gspc::net::tests;
 
-  /*
-  const size_t N_FD_PER_CLIENT = 5; // io_service + c_socket + s_socket
-  const size_t N_FD_SERVER     = 5; // io_service + s_socket
-  const size_t N_FD_BASE       = 3; // stdin, stdout, stderr
+  const size_t N_FD_PER_CLIENT = 2; // c_socket + s_socket
+  const size_t N_FD_SERVER     = 1; // s_socket
+  const size_t N_FD_BASE       = 3 + 3; // stdin, stdout, stderr, io_service
 
   static const size_t NUM_CLIENTS =
     (SetRLimits::max_open_files - (N_FD_SERVER + N_FD_BASE)) / N_FD_PER_CLIENT;
-  */
-  static const size_t NUM_CLIENTS = 256;
+
+  //  static const size_t NUM_CLIENTS = 256;
 
   gspc::net::server::queue_manager_t qmgr;
 
   gspc::net::server_ptr_t server =
+    //    gspc::net::serve ("tcp://localhost:*", qmgr);
     gspc::net::serve ("unix://socket.foo", qmgr);
   BOOST_REQUIRE (server);
 
@@ -144,26 +158,17 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 
     gspc::net::client_ptr_t client;
 
-    try
+    boost::system::error_code ec;
+    client = gspc::net::dial (server->url () + "?timeout=1000", ec);
+
+    if (ec)
     {
-      client = gspc::net::dial (server->url ());
+      std::cerr << "could not connect: " << ec.message () << std::endl;
+      break;
+    }
+    else
+    {
       BOOST_REQUIRE (client);
-    }
-    catch (system_error const &se)
-    {
-      if (se.code () == errc::make_error_code (errc::too_many_files_open))
-        break;
-      if (se.code () == errc::make_error_code (errc::too_many_files_open_in_system))
-        break;
-      throw;
-    }
-    catch (std::runtime_error const &ex)
-    {
-      // what the hack???
-      const std::string what (ex.what ());
-      if (what == "epoll: Too many open files")
-        break;
-      throw;
     }
 
     clients.push_back (client);
@@ -172,23 +177,30 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
     client->send ("/test/send", "hello world");
   }
 
-  BOOST_REQUIRE (clients_created > 0);
-  BOOST_REQUIRE_EQUAL (clients.size (), clients_created);
-
   while (subscriber.frames.size () != clients_created)
   {
     usleep (100);
   }
 
+  BOOST_REQUIRE (clients_created > 0);
+  BOOST_REQUIRE_EQUAL (clients.size (), clients_created);
   BOOST_REQUIRE_EQUAL (subscriber.frames.size (), clients_created);
 
   std::cerr << "simulated " << clients_created
             << " clients in one process"
             << std::endl;
+
+  clients.clear ();
+
+  server->stop ();
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
 {
+  gspc::net::initialize ();
+
   gspc::net::server::queue_manager_t qmgr;
 
   gspc::net::server_ptr_t server =
@@ -198,17 +210,26 @@ BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
   BOOST_CHECK_THROW ( gspc::net::serve (server->url (), qmgr)
                     , boost::system::system_error
                     );
+  server->stop ();
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connection_refused)
 {
+  gspc::net::initialize ();
+
   BOOST_CHECK_THROW ( gspc::net::dial ("unix://this.socket.does.not.exist")
                     , boost::system::system_error
                     );
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 {
+  gspc::net::initialize ();
+
   static const std::size_t NUM_MSGS_TO_SEND = 10000;
   using namespace gspc::net::tests;
 
@@ -240,10 +261,14 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 
   server->stop ();
   client->stop ();
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 {
+  gspc::net::initialize ();
+
   using namespace gspc::net::tests;
 
   int rc;
@@ -265,10 +290,17 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
                          , boost::posix_time::pos_infin
                          );
   BOOST_REQUIRE_EQUAL (rc, gspc::net::E_UNAUTHORIZED);
+
+  server->stop ();
+  client->stop ();
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 {
+  gspc::net::initialize ();
+
   static const std::size_t NUM_MSGS_TO_SEND = 10000;
   using namespace gspc::net::tests;
 
@@ -297,10 +329,15 @@ BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 
 
   client->stop ();
+  server->stop ();
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_request_success)
 {
+  gspc::net::initialize ();
+
   static const std::size_t NUM_MSGS_TO_SEND = 10000;
   using namespace gspc::net::tests;
 
@@ -329,10 +366,15 @@ BOOST_AUTO_TEST_CASE (test_request_success)
   }
 
   client->stop ();
+  server->stop ();
+
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_request_no_such_service)
 {
+  gspc::net::initialize ();
+
   using namespace gspc::net::tests;
 
   gspc::net::server::queue_manager_t qmgr;
@@ -358,4 +400,7 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
   BOOST_REQUIRE_EQUAL (*rply.get_header ("message"), "no such service");
 
   client->stop ();
+  server->stop ();
+
+  gspc::net::shutdown ();
 }
