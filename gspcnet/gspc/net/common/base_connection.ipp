@@ -76,6 +76,8 @@ namespace gspc
         }
 
         boost::system::error_code ec;
+        m_socket.cancel (ec);
+        m_socket.shutdown (Proto::socket::shutdown_both, ec);
         m_socket.close (ec);
       }
 
