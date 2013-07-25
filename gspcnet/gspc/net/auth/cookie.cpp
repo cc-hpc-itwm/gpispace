@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include <string.h>             // memset
 #include <unistd.h>             // getuid
 #include <stdlib.h>             // getenv
 #include <sys/types.h>          // uid_t
@@ -45,6 +46,9 @@ namespace gspc
         struct stat stat_buf;
         char buf [4096];
         char cookie [4096];
+
+        memset (&buf[0], 0, sizeof(buf));
+        memset (&cookie[0], 0, sizeof(cookie));
 
         out = dflt;
 

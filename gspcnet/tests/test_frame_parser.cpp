@@ -5,7 +5,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include <gspc/net.hpp>
+#include <gspc/net/frame.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/frame_io.hpp>
 

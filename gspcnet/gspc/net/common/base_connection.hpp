@@ -41,6 +41,7 @@ namespace gspc
         socket_type & socket ();
 
         void start ();
+        void stop ();
 
         int deliver (frame const &);
 
@@ -55,6 +56,7 @@ namespace gspc
                          );
         void handle_write (const boost::system::error_code &);
 
+        mutable boost::mutex     m_shutting_down_mutex;
         mutable boost::mutex     m_frame_list_mutex;
 
         frame_handler_t &m_frame_handler;
@@ -68,6 +70,7 @@ namespace gspc
         frame         m_frame;
         buffer_list_t m_buffer_list;
 
+        bool   m_shutting_down;
         size_t m_max_queue_length;
       };
     }

@@ -6,6 +6,7 @@
 #include <list>
 #include <string>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
@@ -82,7 +83,8 @@ namespace gspc
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
 
         typedef std::list<user_ptr>        user_list_t;
-        typedef std::list<subscription_t*> subscription_list_t;
+        typedef boost::shared_ptr<subscription_t> subscription_ptr;
+        typedef std::list<subscription_ptr> subscription_list_t;
 
         typedef std::map<std::string, subscription_list_t> subscription_map_t;
         typedef std::map<user_ptr, subscription_list_t>    user_subscription_map_t;

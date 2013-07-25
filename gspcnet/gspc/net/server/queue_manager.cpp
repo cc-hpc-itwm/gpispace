@@ -48,7 +48,7 @@ namespace gspc
 
         for (; user_it != user_it_end ; ++user_it)
         {
-          BOOST_FOREACH (subscription_t *sub, user_it->second)
+          BOOST_FOREACH (subscription_ptr sub, user_it->second)
           {
             // remove subscription
             subscription_map_t::iterator sub_map_it =
@@ -61,7 +61,6 @@ namespace gspc
             {
               m_subscriptions.erase (sub_map_it);
             }
-            delete sub;
           }
         }
       }
@@ -207,7 +206,7 @@ namespace gspc
           frame frame_to_deliver (f);
           frame_to_deliver.del_header ("reply-to");
 
-          BOOST_FOREACH (subscription_t * sub, sub_it->second)
+          BOOST_FOREACH (subscription_ptr sub, sub_it->second)
           {
             frame_set_header ( frame_to_deliver
                              , "subscription"
@@ -281,7 +280,7 @@ namespace gspc
         if (user_it == m_user_subscriptions.end ())
           return 0;
 
-        BOOST_FOREACH (subscription_t *sub, user_it->second)
+        BOOST_FOREACH (subscription_ptr sub, user_it->second)
         {
           // remove subscription
           subscription_map_t::iterator sub_map_it =
@@ -294,7 +293,6 @@ namespace gspc
           {
             m_subscriptions.erase (sub_map_it);
           }
-          delete sub;
         }
 
         m_user_subscriptions.erase (user);
@@ -333,7 +331,7 @@ namespace gspc
           frame frame_to_deliver (f);
           frame_to_deliver.set_command ("MESSAGE");
 
-          BOOST_FOREACH (subscription_t * sub, sub_it->second)
+          BOOST_FOREACH (subscription_ptr sub, sub_it->second)
           {
             frame_set_header ( frame_to_deliver
                              , "subscription"
@@ -366,7 +364,7 @@ namespace gspc
             m_user_subscriptions.find (user);
           if (user_it != m_user_subscriptions.end ())
           {
-            BOOST_FOREACH (subscription_t *sub, user_it->second)
+            BOOST_FOREACH (subscription_ptr sub, user_it->second)
             {
               if (sub->id == id)
                 return 0;
@@ -374,8 +372,8 @@ namespace gspc
           }
         }
 
-        subscription_t *sub = new subscription_t;
-        if (0 == sub)
+        subscription_ptr sub (new subscription_t);
+        if (not sub)
         {
           rc = -ENOMEM;
         }
@@ -406,9 +404,9 @@ namespace gspc
         if (user_it == m_user_subscriptions.end ())
           return 0;
 
-        subscription_t *sub_to_remove = 0;
+        subscription_ptr sub_to_remove;
 
-        BOOST_FOREACH (subscription_t *sub, user_it->second)
+        BOOST_FOREACH (subscription_ptr sub, user_it->second)
         {
           if (sub->id == id)
           {
@@ -418,7 +416,7 @@ namespace gspc
           }
         }
 
-        if (0 == sub_to_remove)
+        if (not sub_to_remove)
           return 0;
 
         if (user_it->second.empty ())
@@ -432,15 +430,12 @@ namespace gspc
 
         if (sub_map_it == m_subscriptions.end ())
         {
-          delete sub_to_remove;
           return 0;
         }
 
         sub_map_it->second.remove (sub_to_remove);
         if (sub_map_it->second.empty ())
           m_subscriptions.erase (sub_map_it);
-
-        delete sub_to_remove;
 
         s_maybe_send_receipt (user, f);
 

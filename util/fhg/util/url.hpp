@@ -100,25 +100,36 @@ namespace fhg
 
         url.type (p.first);
 
-        p = split (p.second, "?");
-        url.path (p.first);
-        std::string args = p.second;
-
-        while (args.size ())
+        if (p.second.find ("?") != std::string::npos)
         {
-          p = split (args, "&");
+          p = split (p.second, "?");
+          url.path (p.first);
+          std::string args = p.second;
 
-          args = p.second;
-
-          if (p.first.empty ())
-            continue;
-          p = split (p.first, "=");
-          if (p.first.empty ())
+          while (args.size ())
           {
-            throw std::invalid_argument ("empty parameter in url: " + input);
-          }
+            p = split (args, "&");
 
-          url.set (p.first, p.second);
+            args = p.second;
+
+            if (p.first.empty ())
+              continue;
+            p = split (p.first, "=");
+            if (p.first.empty ())
+            {
+              throw std::invalid_argument ("empty parameter in url: " + input);
+            }
+
+            url.set (p.first, p.second);
+          }
+        }
+        else if (p.second.find ("&") == std::string::npos)
+        {
+          url.path (p.second);
+        }
+        else
+        {
+          throw std::invalid_argument ("malformed url: & not allowed in path");
         }
 
         return url;
