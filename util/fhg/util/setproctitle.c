@@ -22,6 +22,6 @@ int setproctitle (const char *title, int argc, char *argv [])
     }
     new_argv [argc] = 0;
 
-    return execv (argv [0], new_argv);
+    return execvp (argv [0], new_argv);
   }
 }
