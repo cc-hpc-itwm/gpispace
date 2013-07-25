@@ -318,7 +318,10 @@ int main(int ac, char **av)
   if (vm.count ("settitle"))
   {
     std::string title = "[" + kernel_name + "]";
-    setproctitle (title.c_str (), ac, av);
+    if (0 != setproctitle (title.c_str (), ac, av))
+    {
+      std::cerr << "failed to set title to: " << title << ": " << strerror (errno) << std::endl;
+    }
   }
 
   if (vm.count("daemonize"))
