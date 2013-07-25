@@ -79,14 +79,10 @@ namespace gspc
 
       template <class Proto>
       int base_server<Proto>::handle_error ( user_ptr user
-                                           , boost::system::error_code const &ec
+                                           , boost::system::error_code const &
                                            )
       {
-        if (ec)
-        {
-          return m_qmgr.disconnect (user, gspc::net::make::disconnect_frame ());
-        }
-        return 0;
+        return m_qmgr.disconnect (user);
       }
 
       template <class Proto>
