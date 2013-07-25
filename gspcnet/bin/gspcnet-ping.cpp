@@ -223,9 +223,11 @@ int main (int argc, char *argv[])
   {
     boost::posix_time::time_duration deadline_time =
       boost::posix_time::milliseconds
-      (std::max ( 2*reply_handler.rtt_max.total_milliseconds ()
-                , deadline
-                )
+      ( deadline == -1
+      ? std::max ( 200L
+                 , 2*reply_handler.rtt_max.total_microseconds () / 1000
+                 )
+      : deadline
       );
     boost::this_thread::sleep (deadline_time);
   }
