@@ -20,6 +20,7 @@ make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 
 cleanup()
 {
+  sdpa stop
   rm -rf "${CMP}" "${DAT}" "${HOSTFILE}"
   eval ${make_src} clean
   eval ${make_gen} clean
@@ -47,6 +48,8 @@ diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
 measured "install" ${make_src} install                      || die $EX_ERR_RUN
 
 hostname > "${HOSTFILE}"                                    || die $EX_ERR_ENV
+
+sdpa stop
 
 SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa boot                   \
                                 -M -f "${HOSTFILE}" work:4  || die $EX_ERR_BOOT
