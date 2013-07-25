@@ -193,7 +193,17 @@ int main (int argc, char *argv[])
   }
 
   std::string payload;
-  payload.resize (packetsize);
+  try
+  {
+    payload.resize (packetsize);
+  }
+  catch (std::exception const &ex)
+  {
+    std::cerr << "could not allocate memory: " << packetsize
+              << ": " << ex.what () << std::endl;
+    return 1;
+  }
+
   std::fill (payload.begin (), payload.end (), '0');
 
   std::cout << "PING " << url << " " << payload.size () << " bytes of data." << std::endl;
