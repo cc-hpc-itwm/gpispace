@@ -25,7 +25,7 @@
 #include <boost/preprocessor/iteration.hpp>
 #include <boost/preprocessor/control.hpp>
 
-#if !BOOST_PP_IS_ITERATING
+#if !defined BOOST_PP_IS_ITERATING || !BOOST_PP_IS_ITERATING
 #ifndef QTBOOSTINTEGRATION_MAX_ARGUMENTS
 #define QTBOOSTINTEGRATION_MAX_ARGUMENTS 5
 #endif
