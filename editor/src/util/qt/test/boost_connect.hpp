@@ -1,6 +1,16 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <QObject>
+#include <QMetaType>
+
+struct custom_type
+{
+  int dummy;
+  custom_type (int d) : dummy (d) { }
+  custom_type() : dummy (-1) { }
+};
+
+Q_DECLARE_METATYPE (custom_type);
 
 class boost_connect_fixture : public QObject
 {
@@ -24,6 +34,7 @@ signals:
   void signal2 (int);
   void signal3 (const QByteArray&);
   void signal4 (unsigned int, unsigned int);
+  void signal5 (const custom_type&);
 
 protected:
   bool _called;
