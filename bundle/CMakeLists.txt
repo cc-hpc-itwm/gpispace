@@ -42,6 +42,10 @@ install(CODE "
                           -x libxcb.*
                           -x libSM.*
                           -x libc.so.*
+                          -x libstdc++.so.*
+                          -x libgcc_s.so.*
+                          -x libz.so.*
+                          -x libm.so.*
                           -x librt.*
                           -x libfont.*
                           -x libfreetype.*
