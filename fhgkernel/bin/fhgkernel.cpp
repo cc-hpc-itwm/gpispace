@@ -266,6 +266,7 @@ int main(int ac, char **av)
   std::string state_path;
   std::string pidfile;
   std::string kernel_name ("fhgkernel");
+  std::string title (kernel_name);
   bool daemonize (false);
   fhg::core::kernel_t::search_path_t search_path;
 
@@ -273,7 +274,7 @@ int main(int ac, char **av)
     ("help,h", "this message")
     ("verbose,v", "be verbose")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
-    ("settitle,T", "set the program title according to name")
+    ("title,T", po::value<std::string>(&title), "set the program title according to name")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
     ("state,S", po::value<std::string>(&state_path), "state directory to use")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
@@ -315,12 +316,29 @@ int main(int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  if (vm.count ("settitle"))
+  if (vm.count ("title"))
   {
-    std::string title = "[" + kernel_name + "]";
-    if (0 != setproctitle (title.c_str (), ac, av))
+    // create a copy of argv, but filter -T
+    char ** new_argv = (char **)malloc ( (ac+1) * sizeof (char*));
+    int i = 0;
+    int j = 0;
+    for (i = 0, j = 0 ; i < ac ; ++i)
     {
-      std::cerr << "failed to set title to: " << title << ": " << strerror (errno) << std::endl;
+      if (strcmp (av [i], "-T") == 0)
+      {
+        ++i; // also skip parameter to -T
+      }
+      else
+      {
+        new_argv [j] = strdup (av [i]);
+        ++j;
+      }
+    }
+    new_argv [j] = 0;
+
+    if (0 != setproctitle (title.c_str (), j, new_argv))
+    {
+      std::cerr << "failed to set title to: '" << title << "': " << strerror (errno) << std::endl;
     }
   }
 
