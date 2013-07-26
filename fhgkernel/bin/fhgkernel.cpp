@@ -340,6 +340,8 @@ int main(int ac, char **av)
     {
       std::cerr << "failed to set title to: '" << title << "': " << strerror (errno) << std::endl;
     }
+
+    free (new_argv);
   }
 
   if (vm.count("daemonize"))
