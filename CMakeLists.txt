@@ -11,6 +11,7 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2012 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "SDPA Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
+OPTION (WITH_MANPAGES "Build manpages" YES)
 OPTION (ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION (DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION (ENABLE_APPLICATION "Build with application" YES)
