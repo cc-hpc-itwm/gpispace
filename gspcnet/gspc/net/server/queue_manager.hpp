@@ -36,6 +36,7 @@ namespace gspc
         int handle_frame (user_ptr, frame const &);
         int handle_error (user_ptr, boost::system::error_code const&);
         int deliver (frame const &f);
+        size_t id () const { return (size_t)(-1); }
 
         /**
            Handle a CONNECT message

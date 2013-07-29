@@ -8,7 +8,11 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
+#include <fhg/util/thread/atomic.hpp>
 
 #include <gspc/net/server.hpp>
 #include <gspc/net/frame_handler.hpp>
@@ -47,8 +51,13 @@ namespace gspc
 
         void set_queue_length (size_t);
       private:
+        typedef boost::shared_mutex            mutex_type;
+        typedef boost::shared_lock<mutex_type> shared_lock;
+        typedef boost::unique_lock<mutex_type> unique_lock;
+
         typedef base_connection<protocol_type> connection;
         typedef boost::shared_ptr<connection>  connection_ptr;
+        typedef std::map<int, connection_ptr>  connection_map_t;
 
         void start_accept ();
         void handle_accept (boost::system::error_code const &);
@@ -60,6 +69,10 @@ namespace gspc
         endpoint_type           m_endpoint;
         acceptor_type           m_acceptor;
         connection_ptr          m_new_connection;
+
+        mutable mutex_type      m_active_connections_mtx;
+        connection_map_t        m_active_connections;
+        fhg::thread::atomic<size_t> m_active_connections_id;
 
         size_t m_queue_length;
       };

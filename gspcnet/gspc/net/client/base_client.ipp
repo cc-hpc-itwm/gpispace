@@ -52,7 +52,7 @@ namespace gspc
       int base_client<Proto>::start ()
       {
         boost::system::error_code ec;
-        m_connection.reset (new connection_type (m_io_service, *this));
+        m_connection.reset (new connection_type (0, m_io_service, *this));
         m_connection->socket ().connect (m_endpoint, ec);
 
         if (not ec)

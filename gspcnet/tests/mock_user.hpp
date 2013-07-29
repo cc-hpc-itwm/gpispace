@@ -20,6 +20,12 @@ namespace gspc
         class user : public gspc::net::user_t
         {
         public:
+          user ()
+          {
+            static size_t id_counter = 0;
+            m_id = id_counter++;
+          }
+
           typedef std::list<frame> frame_list_t;
 
           virtual ~user () {}
@@ -31,10 +37,16 @@ namespace gspc
             return 0;
           }
 
+          virtual size_t id () const
+          {
+            return m_id;
+          }
+
           frame_list_t frames;
 
         private:
           boost::mutex m_mutex;
+          size_t m_id;
         };
       }
     }

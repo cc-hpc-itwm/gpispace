@@ -16,7 +16,8 @@ namespace gspc
     namespace server
     {
       template <class Proto>
-      base_connection<Proto>::base_connection ( boost::asio::io_service &service
+      base_connection<Proto>::base_connection ( size_t id
+                                              , boost::asio::io_service &service
                                               , frame_handler_t & frame_handler
                                               )
         : m_frame_list_mutex ()
@@ -29,12 +30,14 @@ namespace gspc
         , m_buffer_list ()
         , m_shutting_down (false)
         , m_max_queue_length (0)
+        , m_id (id)
       {}
 
       template <class Proto>
       base_connection<Proto>::~base_connection ()
       {
-        stop ();
+        if (m_socket.is_open ())
+          stop ();
       }
 
       template <class Proto>
@@ -71,7 +74,7 @@ namespace gspc
       void base_connection<Proto>::stop ()
       {
         {
-          unique_lock lock (m_shutting_down_mutex);
+          //  unique_lock lock (m_shutting_down_mutex);
           m_shutting_down = true;
         }
 
@@ -79,6 +82,12 @@ namespace gspc
         m_socket.cancel (ec);
         m_socket.shutdown (Proto::socket::shutdown_both, ec);
         m_socket.close (ec);
+      }
+
+      template <class Proto>
+      size_t base_connection<Proto>::id () const
+      {
+        return m_id;
       }
 
       template <class Proto>

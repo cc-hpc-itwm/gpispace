@@ -26,6 +26,8 @@ namespace gspc
         , m_endpoint (endpoint)
         , m_acceptor (m_io_service)
         , m_new_connection ()
+        , m_active_connections ()
+        , m_active_connections_id (0)
         , m_queue_length (0)
       {
       }
@@ -33,7 +35,8 @@ namespace gspc
       template <class Proto>
       base_server<Proto>::~base_server ()
       {
-        stop ();
+        if (m_acceptor.is_open ())
+          stop ();
       }
 
       template <class Proto>
@@ -61,6 +64,15 @@ namespace gspc
           m_new_connection->stop ();
         }
 
+        {
+          unique_lock lock (m_active_connections_mtx);
+          while (not m_active_connections.empty ())
+          {
+            m_active_connections.begin ()->second->stop ();
+            m_active_connections.erase (m_active_connections.begin ());
+          }
+        }
+
         return 0;
       }
 
@@ -82,13 +94,22 @@ namespace gspc
                                            , boost::system::error_code const &
                                            )
       {
+        {
+          unique_lock lock (m_active_connections_mtx);
+          m_active_connections.erase (user->id ());
+        }
+
         return m_qmgr.disconnect (user);
       }
 
       template <class Proto>
       void base_server<Proto>::start_accept ()
       {
-        m_new_connection.reset (new connection (m_io_service, *this));
+        m_new_connection.reset (new connection ( m_active_connections_id++
+                                               , m_io_service
+                                               , *this
+                                               )
+                               );
 
         m_acceptor.async_accept ( m_new_connection->socket ()
                                 , m_strand.wrap (boost::bind
@@ -109,6 +130,11 @@ namespace gspc
         }
         else
         {
+          {
+            unique_lock lock (m_active_connections_mtx);
+            m_active_connections.insert
+              (std::make_pair (m_new_connection->id (), m_new_connection));
+          }
           m_new_connection->set_queue_length (m_queue_length);
           m_new_connection->start ();
 
