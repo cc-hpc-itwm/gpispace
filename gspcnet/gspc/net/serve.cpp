@@ -34,13 +34,6 @@ namespace gspc
                     , ec
                     )
         );
-      server->set_thread_pool_size
-        (get_option ( opts
-                    , "threads"
-                    , 1u
-                    , ec
-                    )
-        );
     }
 
     static

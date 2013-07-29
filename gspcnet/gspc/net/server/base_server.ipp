@@ -122,12 +122,6 @@ namespace gspc
       {
         m_queue_length = len;
       }
-
-      template <class Proto>
-      void
-      base_server<Proto>::set_thread_pool_size (size_t n)
-      {
-      }
     }
   }
 }
