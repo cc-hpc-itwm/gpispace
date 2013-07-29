@@ -43,7 +43,7 @@ macro(FHG_ADD_MANPAGE)
       add_custom_target ("${MANP_OUTPUT}.manpage" ALL
         DEPENDS "${MANP_OUTPUT}")
 
-      install (FILES ${CMAKE_CURRENT_BINARY_DIR}/"${MANP_OUTPUT}" DESTINATION "${MANP_DESTINATION}")
+      install (FILES "${CMAKE_CURRENT_BINARY_DIR}/${MANP_OUTPUT}" DESTINATION "${MANP_DESTINATION}" COMPONENT "${MANP_COMPONENT}")
     endforeach()
   else()
     message (WARNING "Cannot create manpage ${MANP_OUTPUT}, xmlto was not found.")
