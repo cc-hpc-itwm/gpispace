@@ -28,6 +28,10 @@ macro(FHG_ADD_MANPAGE)
         set (MANP_DESTINATION "share/man/man${_manp_cat}")
       endif()
 
+      if (NOT MANP_COMPONENT)
+        set (MANP_COMPONENT "sdk")
+      endif()
+
       if (MANP_VERBOSE)
         message(STATUS "adding category ${_manp_cat} manpage ${MANP_OUTPUT} from source ${MANP_SOURCE}")
       endif()
