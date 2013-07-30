@@ -56,6 +56,7 @@ set (hdrs
 set (srcs
   backtracing_exception.cpp
   setproctitle.c
+  program_info.c
   threadname.cpp
   remove_prefix.cpp
   read_bool.cpp
