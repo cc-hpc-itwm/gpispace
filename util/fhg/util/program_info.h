@@ -7,7 +7,11 @@
 extern "C" {
 #endif
 
-  /** Discovers the full path to the binary of the current program. */
+  /** Discovers the full path to the binary of the current program.
+
+      It will write a zero-terminated string into the buffer given by 'path'. It
+      will return -1 and set 'errno' if something went wrong.
+   */
   int fhg_get_executable_path (char *path, size_t len);
 
 #ifdef __cplusplus
