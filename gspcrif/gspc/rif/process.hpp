@@ -28,6 +28,12 @@ namespace gspc
                 , env_t const &
                 );
 
+      explicit
+      process_t ( proc_t id
+                , boost::filesystem::path const &filename
+                , argv_t const &
+                );
+
       ~process_t ();
 
       int fork_and_exec ();

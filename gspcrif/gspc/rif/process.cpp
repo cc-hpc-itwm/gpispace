@@ -1,6 +1,7 @@
 #include "process.hpp"
 
 #include <errno.h>
+#include <unistd.h>             // char **environ
 #include <stdlib.h>             // malloc
 #include <stdio.h>              // snprintf
 #include <fcntl.h>
@@ -12,6 +13,8 @@
 
 #include <stdexcept>
 #include <boost/format.hpp>
+
+#include <fhg/util/split.hpp>
 
 #include "util.hpp"
 #include "buffer.hpp"
@@ -82,6 +85,36 @@ namespace gspc
       {
         m_pipes.push_back (pipe_t ());
         m_buffers.push_back (new buffer_t (2097152));
+      }
+    }
+
+    process_t::process_t ( proc_t id
+                         , boost::filesystem::path const &filename
+                         , argv_t const &argv
+                         )
+      : m_proc_id (id)
+      , m_filename (fs::absolute (filename))
+      , m_argv (argv)
+      , m_env ()
+      , m_pid (-1)
+      , m_status ()
+    {
+      for (size_t i = 0 ; i < 3 ; ++i)
+      {
+        m_pipes.push_back (pipe_t ());
+        m_buffers.push_back (new buffer_t (2097152));
+      }
+
+      // initialize environment from my own
+      char **env_entry = environ;
+      while (*env_entry)
+      {
+        std::pair<std::string, std::string> kv =
+          fhg::util::split (*env_entry, "=");
+
+        m_env [kv.first] = kv.second;
+
+        ++env_entry;
       }
     }
 
