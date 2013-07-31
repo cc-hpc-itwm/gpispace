@@ -5,6 +5,8 @@
 #include <stdio.h>              // snprintf
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <sys/wait.h>           // waitpid
 #include <signal.h>             // kill
 
@@ -199,6 +201,11 @@ namespace gspc
       return m_pid;
     }
 
+    const struct rusage *process_t::rusage () const
+    {
+      return &m_rusage;
+    }
+
     proc_t process_t::id () const
     {
       shared_lock lock (m_mutex);
@@ -269,7 +276,7 @@ namespace gspc
     int process_t::waitpid_and_notify (int flags)
     {
       int s;
-      pid_t err = ::waitpid (m_pid, &s, flags);
+      pid_t err = ::wait4 (m_pid, &s, flags, &m_rusage);
       if (err < 0)
       {
         return -errno;
