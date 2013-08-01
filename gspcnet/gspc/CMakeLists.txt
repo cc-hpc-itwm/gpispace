@@ -40,6 +40,8 @@ set (gspcnet_src
 
 add_library (gspcnet        STATIC ${gspcnet_src})
 add_library (gspcnet.shared SHARED ${gspcnet_src})
+target_link_libraries (gspcnet ${UTIL_LIBRARIES})
+target_link_libraries (gspcnet.shared ${UTIL_LIBRARIES})
 set_target_properties (gspcnet.shared
   PROPERTIES OUTPUT_NAME gspcnet
              VERSION 0.1
