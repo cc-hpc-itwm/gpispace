@@ -10,6 +10,8 @@ string (TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 include (SDPAFindBoost)
 find_package(Threads REQUIRED QUIET)
 find_package(UTIL REQUIRED QUIET)
+find_package(GSPC_RIF REQUIRED QUIET)
+include_directories (${GSPC_RIF_INCLUDE_DIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(SYSTEM ${Boost_INCLUDE_DIR})
