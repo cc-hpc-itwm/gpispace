@@ -51,6 +51,7 @@ set (hdrs
   remove_prefix.hpp
 
   stat.hpp
+  get_home_dir.hpp
 )
 
 set (srcs
@@ -75,6 +76,7 @@ set (srcs
   cpp/struct.cpp
 
   xml.cpp
+  get_home_dir.cpp
 )
 
 add_library (fhg-util ${srcs})
