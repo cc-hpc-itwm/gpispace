@@ -306,9 +306,9 @@ namespace we { namespace type {
         return internal_;
       }
 
-      void set_internal(bool internal)
+      void set_internal(bool x)
       {
-        internal_ = internal;
+        internal_ = x;
       }
 
       const data_type & data (void) const
