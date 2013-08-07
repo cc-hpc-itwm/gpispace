@@ -862,7 +862,7 @@ namespace we { namespace type {
 
       friend class boost::serialization::access;
       template <typename Archive>
-      void save(Archive & ar, const unsigned int version) const
+      void save(Archive & ar, const unsigned int) const
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
