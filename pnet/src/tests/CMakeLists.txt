@@ -33,6 +33,7 @@ foreach (test ${tests})
   fhg_add_test (${test}
     PROJECT we
     LINK_LIBRARIES pnet
+                   we2
                    ${FhgLog_LIBRARY}
                    ${UTIL_LIBRARIES}
                    ${Boost_UNIT_TEST_LIBRARIES}
