@@ -44,7 +44,7 @@ namespace expr
       value::type _tokval;
       std::list<std::string> _ref;
 
-      void skip_comment (const unsigned int);
+      void skip_comment (const std::size_t);
     };
   }
 }

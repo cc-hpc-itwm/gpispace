@@ -316,7 +316,6 @@ namespace expr
                       case action::reduce:
                         reduce (token.pos()());
                         goto ACTION;
-                        break;
                       case action::shift:
                         op_stack.push (token.token());
                         break;

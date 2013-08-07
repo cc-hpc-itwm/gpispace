@@ -362,11 +362,11 @@ namespace we
         flags::set_ ## _name (_flags, value);                   \
       }
 
-      FLAG (suspended);
-      FLAG (cancelling);
-      FLAG (cancelled);
-      FLAG (failed);
-      FLAG (finished);
+      FLAG (suspended)
+      FLAG (cancelling)
+      FLAG (cancelled)
+      FLAG (failed)
+      FLAG (finished)
 #undef FLAG
 
       const we::type::transition_t& activity_t::transition() const

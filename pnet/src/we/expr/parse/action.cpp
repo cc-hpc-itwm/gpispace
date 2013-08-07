@@ -7,8 +7,6 @@
 #include <we/expr/token/prop.hpp>
 #include <we/expr/exception.hpp>
 
-#include <fhg/util/show.hpp>
-
 #include <iostream>
 
 namespace expr
@@ -28,7 +26,6 @@ namespace expr
           case error2: return s << "error: missing operator";
           case error3: return s << "error: unbalanced parenthesis";
           case error4: return s << "error: invalid function argument";
-          default: throw exception::strange ("action " + fhg::util::show(action));
           }
       }
 

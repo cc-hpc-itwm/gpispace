@@ -306,9 +306,9 @@ namespace we { namespace type {
         return internal_;
       }
 
-      void set_internal(bool internal)
+      void set_internal(bool x)
       {
-        internal_ = internal;
+        internal_ = x;
       }
 
       const data_type & data (void) const
@@ -529,7 +529,6 @@ namespace we { namespace type {
           case PORT_IN: this->add_input_port (name, sig, prop); break;
           case PORT_OUT: this->add_output_port (name, sig, prop); break;
           case PORT_TUNNEL: this->add_tunnel (name, sig, prop); break;
-          default: throw std::runtime_error ("STRANGE: unknown port direction");
           }
       }
 
@@ -546,7 +545,6 @@ namespace we { namespace type {
           case PORT_IN: this->add_input_port (name, sig, pid, prop); break;
           case PORT_OUT: this->add_output_port (name, sig, pid, prop); break;
           case PORT_TUNNEL: this->add_tunnel (name, sig, pid, prop); break;
-          default: throw std::runtime_error ("STRANGE: unknown port direction");
           }
       }
 
@@ -864,7 +862,7 @@ namespace we { namespace type {
 
       friend class boost::serialization::access;
       template <typename Archive>
-      void save(Archive & ar, const unsigned int version) const
+      void save(Archive & ar, const unsigned int) const
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
@@ -953,6 +951,6 @@ namespace we { namespace type {
   }
 }
 
-BOOST_CLASS_VERSION(we::type::transition_t, 1);
+BOOST_CLASS_VERSION(we::type::transition_t, 1)
 
 #endif

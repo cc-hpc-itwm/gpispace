@@ -417,7 +417,7 @@ namespace expr
       }
     }
 
-    void tokenizer::skip_comment (const unsigned int open)
+    void tokenizer::skip_comment (const std::size_t open)
     {
       while (!_pos.end())
         switch (*_pos)

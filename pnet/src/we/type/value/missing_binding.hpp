@@ -14,7 +14,7 @@ namespace value
     public:
       explicit missing_binding (const std::string& key)
         : std::runtime_error ("missing binding for: ${" + key + "}")
-      {};
+      {}
     };
   }
 }

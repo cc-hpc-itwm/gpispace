@@ -34,7 +34,7 @@ namespace value
       class bad_get : public std::runtime_error
       {
       public:
-        bad_get (const value::structured_t& o)
+        bad_get (const value::structured_t&)
           : std::runtime_error
             ( ( boost::format ("bad get: expexted literal, got %1%") % 1
               ).str()
