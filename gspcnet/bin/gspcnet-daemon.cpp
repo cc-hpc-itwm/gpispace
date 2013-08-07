@@ -1,6 +1,9 @@
 #include <iostream>
 
 #include <vector>
+
+#include <boost/foreach.hpp>
+
 #include <gspc/net.hpp>
 #include <gspc/net/service/echo.hpp>
 
@@ -11,6 +14,8 @@ int main (int argc, char *argv[])
     std::cerr << "usage: gspcnetd url..." << std::endl;
     return 1;
   }
+
+  gspc::net::initialize ();
 
   gspc::net::handle ("/service/echo", gspc::net::service::echo ());
 
@@ -45,4 +50,13 @@ int main (int argc, char *argv[])
   }
 
   pause ();
+
+  BOOST_FOREACH (gspc::net::server_ptr_t s, servers)
+  {
+    s->stop ();
+  }
+
+  gspc::net::shutdown ();
+
+  return 0;
 }

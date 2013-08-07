@@ -35,6 +35,11 @@ namespace gspc
         service_demux_t (service_demux_t const &);
         service_demux_t & operator= (service_demux_t const &);
 
+        void do_service_help ( std::string const &dst
+                             , gspc::net::frame const &rqst
+                             , gspc::net::user_ptr user
+                             );
+
         typedef boost::shared_lock<boost::shared_mutex> shared_lock;
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
 

@@ -433,7 +433,7 @@ namespace xml
           if (not id_tmpl)
           {
             throw error::unknown_template
-              (specialize.use, position_of_definition().path());
+              (specialize.make_reference_id(), make_reference_id());
           }
 
           //! \todo generate a new function, with a state.next_id and

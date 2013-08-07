@@ -652,7 +652,10 @@ namespace xml
 
           if (pos == pid_of_place.end())
           {
-            THROW_STRANGE ("missing place " << name << " in pid_of_place");
+            std::ostringstream s;
+            s << __FILE__ << " [" << __LINE__ << "]: "
+              << "missing place " << name << " in pid_of_place";
+            throw error::strange (s.str());
           }
 
           return pos->second;

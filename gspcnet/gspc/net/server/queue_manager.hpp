@@ -6,6 +6,7 @@
 #include <list>
 #include <string>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
@@ -35,6 +36,7 @@ namespace gspc
         int handle_frame (user_ptr, frame const &);
         int handle_error (user_ptr, boost::system::error_code const&);
         int deliver (frame const &f);
+        size_t id () const { return (size_t)(-1); }
 
         /**
            Handle a CONNECT message
@@ -82,7 +84,8 @@ namespace gspc
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
 
         typedef std::list<user_ptr>        user_list_t;
-        typedef std::list<subscription_t*> subscription_list_t;
+        typedef boost::shared_ptr<subscription_t> subscription_ptr;
+        typedef std::list<subscription_ptr> subscription_list_t;
 
         typedef std::map<std::string, subscription_list_t> subscription_map_t;
         typedef std::map<user_ptr, subscription_list_t>    user_subscription_map_t;

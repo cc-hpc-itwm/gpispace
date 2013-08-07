@@ -1,5 +1,7 @@
 #include <errno.h>
 
+#include <boost/bind.hpp>
+
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/error.hpp>
@@ -31,7 +33,14 @@ namespace gspc
       }
 
       service_demux_t::service_demux_t ()
-      {}
+      {
+        this->handle ( "/service/help"
+                     , boost::bind ( &service_demux_t::do_service_help
+                                   , this
+                                   , _1, _2, _3
+                                   )
+                     );
+      }
 
       int service_demux_t::handle ( std::string const & dst
                                   , gspc::net::service::handler_t h
@@ -52,7 +61,7 @@ namespace gspc
 
         std::string mangled_dst = dst;
         trim_r (mangled_dst, SERVICE_SEPARATOR);
-        
+
         handler_map_t::iterator it = m_handler_map.find (mangled_dst);
         if (it != m_handler_map.end ())
         {
@@ -102,6 +111,7 @@ namespace gspc
                                           )
       {
         shared_lock lock (m_mutex);
+
         handler_map_t::iterator it =
           find_best_prefix_match ( dst
                                  , m_handler_map.begin ()
@@ -136,6 +146,26 @@ namespace gspc
         }
 
         return 0;
+      }
+
+      void service_demux_t::do_service_help ( std::string const &dst
+                                            , frame const &rqst
+                                            , user_ptr user
+                                            )
+      {
+        frame rply = make::reply_frame (rqst);
+
+        handler_map_t::const_iterator it = m_handler_map.begin ();
+        const handler_map_t::const_iterator end = m_handler_map.end ();
+
+        while (it != end)
+        {
+          rply.add_body (it->first);
+          rply.add_body ("\n");
+          ++it;
+        }
+
+        user->deliver (rply);
       }
     }
   }

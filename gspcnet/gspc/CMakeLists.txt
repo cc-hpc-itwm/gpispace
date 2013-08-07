@@ -1,4 +1,5 @@
 set (gspcnet_src
+  net/io.cpp
   net/util.cpp
   net/error.cpp
   net/limits.cpp
@@ -45,4 +46,4 @@ set_target_properties (gspcnet.shared
 )
 
 install (TARGETS gspcnet ARCHIVE DESTINATION lib COMPONENT libraries)
-install (TARGETS gspcnet.shared LIBRARY DESTINATION lib COMPONENT libraries)
+install (TARGETS gspcnet.shared LIBRARY DESTINATION lib COMPONENT runtime-libraries)

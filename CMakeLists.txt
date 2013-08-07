@@ -11,6 +11,7 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2012 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "SDPA Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
+OPTION (WITH_MANPAGES "Build manpages" YES)
 OPTION (ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION (DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION (ENABLE_APPLICATION "Build with application" YES)
@@ -136,6 +137,19 @@ endif()
 
 set (BUILDING_FROM_MAIN 1)
 
+include (FindThreads)
+if (CMAKE_USE_PTHREADS_INIT)
+  link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
+endif()
+
+# RPATH configuration
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../../../lib/")
+
+set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (fhgcom)
@@ -149,6 +163,7 @@ add_subdirectory (util)
 add_subdirectory (fhgkernel)
 add_subdirectory (gspcnet)
 add_subdirectory (gspcrif)
+add_subdirectory (gspcctl)
 add_subdirectory (gspcmon)
 add_subdirectory (sdpa)
 if (ENABLE_GPI_SPACE)

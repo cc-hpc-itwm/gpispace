@@ -23,6 +23,10 @@ class DaemonImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
+    size_t nthreads = fhg_kernel ()->get ("nthreads", 4L);
+
+    gspc::net::initialize (nthreads);
+
     gspc::net::handle ("/service/echo", gspc::net::service::echo ());
 
     gspc::net::handle
@@ -65,6 +69,8 @@ public:
     {
       m_server->stop ();
     }
+
+    gspc::net::shutdown ();
 
     FHG_PLUGIN_STOPPED();
   }
