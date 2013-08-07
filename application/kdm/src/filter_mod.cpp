@@ -11,6 +11,8 @@
 #include "TraceBunch.hpp"
 #include "TraceData.hpp"
 
+#include <we2/type/compat.hpp>
+
 // ************************************************************************* //
 
 // generic wrapper, no need to modify this
@@ -59,7 +61,7 @@ static void generic_filter ( void *
 
   filter (Bunch);
 
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
 }
 
 static void
@@ -88,7 +90,7 @@ generic_filter_with_float ( void *
 
   filter (Bunch, f);
 
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
 }
 
 // ************************************************************************* //
@@ -302,7 +304,7 @@ bandpass ( void *
 
   bandpass_impl (Bunch, Job.frequ1, Job.frequ2, Job.frequ3, Job.frequ4);
 
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
 }
 
 // ************************************************************************* //

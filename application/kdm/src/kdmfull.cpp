@@ -20,6 +20,8 @@
 #include "ttvmmemhandler.h"
 #include "sinc_mod.hpp"
 
+#include <we2/type/compat.hpp>
+
 using we::loader::get;
 
 // ************************************************************************* //
@@ -406,7 +408,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
                               )
            );
 
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
 }
 
 // ************************************************************************* //
@@ -464,7 +466,7 @@ static void initialize_volume (void *, const we::loader::input_t & input, we::lo
                              )
            );
 
-  output.bind ("volume", volume);
+  output.bind ("volume", pnet::type::compat::COMPAT (volume));
 }
 
 // ************************************************************************* //
@@ -554,7 +556,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
                              )
            );
 
-  output.bind ("volume", volume);
+  output.bind ("volume", pnet::type::compat::COMPAT (volume));
 }
 
 // ************************************************************************* //
@@ -641,7 +643,7 @@ static void reduce (void *, const we::loader::input_t & input, we::loader::outpu
                              )
            );
 
-  output.bind ("pair", pair);
+  output.bind ("pair", pnet::type::compat::COMPAT (pair));
 }
 
 // ************************************************************************* //
@@ -705,7 +707,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
     , Job.MigFileMode
     );
 
-  output.bind ("volume", volume);
+  output.bind ("volume", pnet::type::compat::COMPAT (volume));
 }
 
 // ************************************************************************* //

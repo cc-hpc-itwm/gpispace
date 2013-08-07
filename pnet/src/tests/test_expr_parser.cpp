@@ -6,6 +6,8 @@
 #include <we/type/value/show.hpp>
 #include <we/type/value/missing_binding.hpp>
 
+#include <we2/type/value.hpp>
+
 #include "timer.hpp"
 
 #include <iostream>
@@ -151,7 +153,7 @@ int main (int ac, char **)
 
         context_t context;
 
-        context.bind("b",value::type (max));
+        context.bind("b", pnet::type::value::value_type (max));
 
         parser_t parser (input);
 
@@ -160,7 +162,7 @@ int main (int ac, char **)
             long i (0);
 
             do
-              context.bind ("a",value::type (i++));
+              context.bind ("a", pnet::type::value::value_type (i++));
             while (parser.eval_front_bool (context));
           }
       }
@@ -170,14 +172,14 @@ int main (int ac, char **)
 
         context_t context;
 
-        context.bind("b",value::type (max));
+        context.bind("b", pnet::type::value::value_type (max));
 
         for (int r (0); r < round; ++r)
           {
             long i (0);
 
             do
-              context.bind ("a",value::type (i++));
+              context.bind ("a", pnet::type::value::value_type (i++));
             while (parser_t (input, context).get_front_bool ());
           }
       }
@@ -205,7 +207,7 @@ int main (int ac, char **)
     cout << "INPUT:" << endl << input << endl;
 
     context_t context;
-    context.bind("x",value::type (0L));
+    context.bind("x", pnet::type::value::value_type (0L));
     parser_t parser (input);
 
     cout << "PARSED:" << endl << parser;

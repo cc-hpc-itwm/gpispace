@@ -16,6 +16,8 @@
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <we2/type/compat.hpp>
+
 using we::loader::get;
 
 // ************************************************************************* //
@@ -82,7 +84,7 @@ generic_filter ( void * state
                              )
            );
 
-  output.bind ("out", part_in_store);
+  output.bind ("out", pnet::type::compat::COMPAT (part_in_store));
 }
 
 // ************************************************************************* //
@@ -487,7 +489,7 @@ static void execW ( void * state
                              )
            );
 
-  output.bind ("out", part_in_store);
+  output.bind ("out", pnet::type::compat::COMPAT (part_in_store));
 }
 
 // ************************************************************************* //

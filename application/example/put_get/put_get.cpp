@@ -6,6 +6,8 @@
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
 
+#include <we2/type/compat.hpp>
+
 using we::loader::get;
 
 static void run ( void *
@@ -107,7 +109,7 @@ static void run ( void *
   // *********************************************************************** //
   // put a complete subtoken via a path on a port
 
-  output.bind ("b.start", value::type (b_start));
+  output.bind ("b.start", pnet::type::compat::COMPAT (value::type (b_start)));
 
   // *********************************************************************** //
   // put a complete value on a port (here grab it from the already
@@ -115,8 +117,8 @@ static void run ( void *
 
   value::type b (get<value::type> (output, "b"));
 
-  output.bind ("c.start", get<value::type> (b, "end"));
-  output.bind ("c.end", get<value::type> (b, "start"));
+  output.bind ("c.start", pnet::type::compat::COMPAT (get<value::type> (b, "end")));
+  output.bind ("c.end", pnet::type::compat::COMPAT (get<value::type> (b, "start")));
 
 }
 

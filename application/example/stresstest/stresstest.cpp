@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <unistd.h>
 
+#include <we2/type/compat.hpp>
+
 // ************************************************************************* //
 
 #include <boost/random.hpp>
@@ -126,7 +128,7 @@ static void initialize ( void *
 
   MLOG (INFO, "initialize: config " << config);
 
-  output.bind ("config", value::type (config));
+  output.bind ("config", pnet::type::compat::COMPAT (value::type (config)));
 }
 
 // ************************************************************************* //

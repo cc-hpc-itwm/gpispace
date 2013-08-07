@@ -20,6 +20,8 @@
 
 #include "sinc_mod.hpp"
 
+#include <we2/type/compat.hpp>
+
 using we::loader::get;
 
 // ************************************************************************* //
@@ -505,7 +507,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   const value::type & config (get<value::type> (input, "config"));
   const value::type & bunch (get<value::type> (input, "bunch"));
   kdm_load (config, bunch);
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -515,7 +517,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
   kdm_process (config, bunch);
 
-  output.bind ("bunch", bunch);
+  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -525,7 +527,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
   kdm_write (config, volume);
 
-  output.bind ("volume", volume);
+  output.bind ("volume", pnet::type::compat::COMPAT (volume));
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -544,14 +546,14 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
   kdm_init_volume (config, volume);
 
-  output.bind ("volume", volume);
+  output.bind ("volume", pnet::type::compat::COMPAT (volume));
 }
 
 static void debug (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   LOG (INFO, "DEBUG: volume " << get<value::type>(input, "volume"));
 
-  output.bind ("volume", get<value::type>(input, "volume"));
+  output.bind ("volume", pnet::type::compat::COMPAT (get<value::type>(input, "volume")));
 }
 
 // ************************************************************************* //
