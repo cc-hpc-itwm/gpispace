@@ -29,9 +29,9 @@ namespace fhg
         {
           switch (c)
           {
-          case 'a'...'f': return 10 + (c - 'a');
-          case 'A'...'F': return 10 + (c - 'A');
-          default: return c - '0';
+          case 'a'...'f': return I (10 + (c - 'a'));
+          case 'A'...'F': return I (10 + (c - 'A'));
+          default: return I (c - '0');
           }
         }
         static inline I base()
@@ -49,7 +49,7 @@ namespace fhg
         }
         static inline I val (const char & c)
         {
-          return c - '0';
+          return I (c - '0');
         }
         static const I base()
         {
@@ -204,18 +204,18 @@ namespace fhg
           ++pos;
 
           const bool negative (read_sign (pos));
-          const long ex (read_ulong (pos));
+          const unsigned long ex (read_ulong (pos));
 
           if (negative)
           {
-            for (long i (0); i < ex; ++i)
+            for (unsigned long i (0); i < ex; ++i)
             {
               x /= 10;
             }
           }
           else
           {
-            for (long i (0); i < ex; ++i)
+            for (unsigned long i (0); i < ex; ++i)
             {
               x *= 10;
             }
