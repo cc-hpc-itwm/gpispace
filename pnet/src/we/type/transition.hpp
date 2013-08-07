@@ -951,6 +951,6 @@ namespace we { namespace type {
   }
 }
 
-BOOST_CLASS_VERSION(we::type::transition_t, 1);
+BOOST_CLASS_VERSION(we::type::transition_t, 1)
 
 #endif

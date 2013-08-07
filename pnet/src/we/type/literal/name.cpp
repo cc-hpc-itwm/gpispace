@@ -12,17 +12,17 @@ namespace literal
     return x;                             \
   }                                       \
 
-  CONST (CONTROL, "control");
-  CONST (BOOL, "bool");
-  CONST (LONG, "long");
-  CONST (DOUBLE, "double");
-  CONST (CHAR, "char");
-  CONST (STRING, "string");
-  CONST (BITSET,"bitset");
-  CONST (STACK, "stack");
-  CONST (MAP, "map");
-  CONST (SET, "set");
-  CONST (BYTEARRAY, "bytearray");
+  CONST (CONTROL, "control")
+  CONST (BOOL, "bool")
+  CONST (LONG, "long")
+  CONST (DOUBLE, "double")
+  CONST (CHAR, "char")
+  CONST (STRING, "string")
+  CONST (BITSET,"bitset")
+  CONST (STACK, "stack")
+  CONST (MAP, "map")
+  CONST (SET, "set")
+  CONST (BYTEARRAY, "bytearray")
 
 #undef CONST
 }
