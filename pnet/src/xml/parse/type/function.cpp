@@ -1849,7 +1849,7 @@ namespace xml
             {
               first_put = false;
 
-              s << "_pnetc_output.bind ("
+              s << "_pnetc_output.BIND_OLD ("
                 << "\"" << (*port_return).name << "\""
                 << ", value::type("
                 ;
@@ -1929,7 +1929,7 @@ namespace xml
                 }
 
               s << "      "
-                << "  _pnetc_output.bind ("
+                << "  _pnetc_output.BIND_OLD ("
                 << "\"" << port->name << "\""
                 << ", value::type(" << mk_value (*port)
                 << "))"
@@ -1951,7 +1951,7 @@ namespace xml
                 }
 
               s << "      "
-                << "  _pnetc_output.bind ("
+                << "  _pnetc_output.BIND_OLD ("
                 << "\"" << port->name << "\""
                 << ", value::type(" << mk_value (*port)
                 << "))"

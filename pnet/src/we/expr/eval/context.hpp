@@ -34,11 +34,10 @@ namespace expr
     public:
       typedef container_type::const_iterator const_iterator;
 
+      void BIND_OLD (const std::string&, const value::type&);
+
       void bind (const std::string&, const pnet::type::value::value_type&);
       void bind_ref (const std::string&, const pnet::type::value::value_type&);
-
-      void bind (const std::string&, const value::type&);
-      void bind_ref (const std::string&, const value::type&);
 
       void bind_and_discard_ref ( const std::list<std::string>&
                                 , const value::type&
@@ -50,9 +49,6 @@ namespace expr
       const boost::unordered_map<std::string,value::type>& values() const;
 
       friend std::ostream& operator<< (std::ostream&, const context&);
-
-    private:
-      void bind (const std::list<std::string>&, const value::type& value);
     };
 
     std::ostream& operator<< (std::ostream&, const context&);
