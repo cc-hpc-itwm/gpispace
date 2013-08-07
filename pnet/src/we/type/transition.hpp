@@ -529,7 +529,6 @@ namespace we { namespace type {
           case PORT_IN: this->add_input_port (name, sig, prop); break;
           case PORT_OUT: this->add_output_port (name, sig, prop); break;
           case PORT_TUNNEL: this->add_tunnel (name, sig, prop); break;
-          default: throw std::runtime_error ("STRANGE: unknown port direction");
           }
       }
 
@@ -546,7 +545,6 @@ namespace we { namespace type {
           case PORT_IN: this->add_input_port (name, sig, pid, prop); break;
           case PORT_OUT: this->add_output_port (name, sig, pid, prop); break;
           case PORT_TUNNEL: this->add_tunnel (name, sig, pid, prop); break;
-          default: throw std::runtime_error ("STRANGE: unknown port direction");
           }
       }
 

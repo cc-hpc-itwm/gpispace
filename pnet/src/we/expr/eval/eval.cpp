@@ -132,7 +132,6 @@ namespace expr
                       ("map_assign (" + fhg::util::show (c0));
                   }
               }
-              break;
             default:
               throw expr::exception::strange ("unknown ternary token");
             }

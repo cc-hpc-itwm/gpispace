@@ -2,8 +2,6 @@
 
 #include <we/expr/token/type.hpp>
 
-#include <we/expr/exception.hpp>
-
 #include <iostream>
 
 namespace expr
@@ -83,7 +81,6 @@ namespace expr
         case ref: return s << "<ref>";
         case eof: return s << "<eof>";
         case define: return s << " := ";
-        default: throw  exception::strange ("<< (unknown token)");
         }
     }
   }
