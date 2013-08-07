@@ -174,12 +174,21 @@ namespace fhg
       }
 
       template<typename F>
+        struct initial_fak
+      {
+        static F value;
+      };
+
+      template<> double initial_fak<double>::value = 0.1;
+      template<> float initial_fak<float>::value = 0.1f;
+
+      template<typename F>
         F read_fraction (const unsigned long ipart, parse::position& pos)
       {
         F x (ipart);
 
         F frac (0.0);
-        F fak (0.1);
+        F fak (initial_fak<F>::value);
 
         while (!pos.end() && isdigit (*pos))
         {
