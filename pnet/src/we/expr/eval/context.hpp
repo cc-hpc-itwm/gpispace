@@ -38,13 +38,11 @@ namespace expr
       void bind_ref (const std::string&, const pnet::type::value::value_type&);
 
       void bind (const std::string&, const value::type&);
-      void bind (const std::list<std::string>&, const value::type& value);
+      void bind_ref (const std::string&, const value::type&);
 
       void bind_and_discard_ref ( const std::list<std::string>&
                                 , const value::type&
                                 );
-
-      void bind_ref (const std::string&, const value::type&);
 
       const value::type& value (const std::string&) const;
       const value::type& value (const std::list<std::string>&) const;
@@ -52,6 +50,9 @@ namespace expr
       const boost::unordered_map<std::string,value::type>& values() const;
 
       friend std::ostream& operator<< (std::ostream&, const context&);
+
+    private:
+      void bind (const std::list<std::string>&, const value::type& value);
     };
 
     std::ostream& operator<< (std::ostream&, const context&);
