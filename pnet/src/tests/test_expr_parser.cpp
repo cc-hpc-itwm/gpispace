@@ -153,7 +153,7 @@ int main (int ac, char **)
 
         context_t context;
 
-        context.bind("b", pnet::type::value::value_type (max));
+        context.bind("b", max);
 
         parser_t parser (input);
 
@@ -162,7 +162,7 @@ int main (int ac, char **)
             long i (0);
 
             do
-              context.bind ("a", pnet::type::value::value_type (i++));
+              context.bind ("a", i++);
             while (parser.eval_front_bool (context));
           }
       }
@@ -172,14 +172,14 @@ int main (int ac, char **)
 
         context_t context;
 
-        context.bind("b", pnet::type::value::value_type (max));
+        context.bind("b", max);
 
         for (int r (0); r < round; ++r)
           {
             long i (0);
 
             do
-              context.bind ("a", pnet::type::value::value_type (i++));
+              context.bind ("a", i++);
             while (parser_t (input, context).get_front_bool ());
           }
       }
@@ -207,7 +207,7 @@ int main (int ac, char **)
     cout << "INPUT:" << endl << input << endl;
 
     context_t context;
-    context.bind("x", pnet::type::value::value_type (0L));
+    context.bind("x", 0L);
     parser_t parser (input);
 
     cout << "PARSED:" << endl << parser;
