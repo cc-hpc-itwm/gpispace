@@ -24,12 +24,7 @@ namespace expr
                                   , value::type
                                   > container_type;
 
-      typedef boost::unordered_map< std::string
-                                  , value::type const*
-                                  > ref_container_type;
-
       container_type _container;
-      ref_container_type _ref_container;
 
       typedef boost::unordered_map< std::string
                                   , pnet::type::value::value_type
@@ -46,7 +41,7 @@ namespace expr
       void bind_ref (const std::string&, const pnet::type::value::value_type&);
 
       void bind_and_discard_ref ( const std::list<std::string>&
-                                , const value::type&
+                                , const pnet::type::value::value_type&
                                 );
 
       const value::type& value (const std::string&) const;

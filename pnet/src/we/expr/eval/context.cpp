@@ -107,51 +107,20 @@ namespace expr
     }
 
     void context::bind_and_discard_ref ( const std::list<std::string>& key_vec
-                                       , const value::type& value
+                                       , const pnet::type::value::value_type& value
                                        )
     {
-      if (key_vec.empty())
-      {
-        throw std::runtime_error ("context::bind []");
-      }
-
-      std::list<std::string>::const_iterator key_pos (key_vec.begin());
-      const std::string& key (*key_pos); ++key_pos;
-
-      value::type& store (value::mk_structured_or_keep (_container[key]));
-
-      const ref_container_type::const_iterator ref_pos
-        (_ref_container.find (key));
-
-      if (ref_pos != _ref_container.end())
-      {
-        store = *ref_pos->second;
-        _ref_container.erase (ref_pos);
-      }
-
-      value::put (key_pos, key_vec.end(), store, value);
-
-      do_bind2 (_container2, key_vec, pnet::type::compat::COMPAT (value));
+      do_bind (_container, key_vec, pnet::type::compat::COMPAT (value));
+      do_bind2 (_container2, key_vec, value);
     }
 
     const value::type& context::value (const std::string& key) const
     {
+      const container_type::const_iterator pos (_container.find (key));
+
+      if (pos != _container.end())
       {
-        const container_type::const_iterator pos (_container.find (key));
-
-        if (pos != _container.end())
-        {
-          return pos->second;
-        }
-      }
-
-      {
-        ref_container_type::const_iterator pos (_ref_container.find (key));
-
-        if (pos != _ref_container.end())
-        {
-          return *pos->second;
-        }
+        return pos->second;
       }
 
       throw value::exception::missing_binding (key);
@@ -181,22 +150,11 @@ namespace expr
       std::list<std::string>::const_iterator key_pos (key_vec.begin());
       const std::string& key (*key_pos); ++key_pos;
 
+      const container_type::const_iterator pos (_container.find (key));
+
+      if (pos != _container.end())
       {
-        const container_type::const_iterator pos (_container.find (key));
-
-        if (pos != _container.end())
-        {
-          return value::find (key_pos, key_vec.end(), pos->second);
-        }
-      }
-
-      {
-        ref_container_type::const_iterator pos (_ref_container.find (key));
-
-        if (pos != _ref_container.end())
-        {
-          return value::find (key_pos, key_vec.end(), *pos->second);
-        }
+        return value::find (key_pos, key_vec.end(), pos->second);
       }
 
       throw value::exception::missing_binding (key);
@@ -240,15 +198,10 @@ namespace expr
     std::ostream& operator<< (std::ostream& s, const context& cntx)
     {
       typedef std::pair<std::string, value::type> kv_type;
-      typedef std::pair<std::string, value::type const*> kp_type;
 
       BOOST_FOREACH (const kv_type& kv, cntx._container)
       {
         s << kv.first << " := " << kv.second << std::endl;
-      }
-      BOOST_FOREACH (const kp_type& kp, cntx._ref_container)
-      {
-        s << kp.first << " -> " << *kp.second << std::endl;
       }
 
       return s;

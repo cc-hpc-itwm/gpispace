@@ -11,6 +11,8 @@
 #include <we/type/value/get.hpp>
 #include <we/type/value/function.hpp>
 
+#include <we2/type/compat.hpp>
+
 namespace expr
 {
   namespace eval
@@ -49,7 +51,9 @@ namespace expr
               value::type c1 (boost::apply_visitor (*this, b.r));
 
               c.bind_and_discard_ref
-                (boost::get<const std::list<std::string>&>(b.l), c1);
+                ( boost::get<const std::list<std::string>&>(b.l)
+                , pnet::type::compat::COMPAT (c1)
+                );
 
               return c1;
             }
