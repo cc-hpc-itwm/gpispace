@@ -43,6 +43,7 @@ add_library (we2
   we2/type/value/show.cpp
 
   we2/type/compat.cpp
+  we2/type/compat.sig.cpp
 )
 
 fhg_add_test (we2/type/test/value.cpp

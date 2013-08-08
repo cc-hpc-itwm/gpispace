@@ -10,6 +10,7 @@
 #include <we/type/port.hpp>
 
 #include <we2/type/compat.hpp>
+#include <we2/type/compat.sig.hpp>
 #include <we2/require_type.hpp>
 
 #include <boost/foreach.hpp>

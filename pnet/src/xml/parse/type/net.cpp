@@ -15,6 +15,7 @@
 #include <we/expr/eval/context.hpp>
 
 #include <we2/type/compat.hpp>
+#include <we2/type/compat.sig.hpp>
 #include <we2/require_type.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
