@@ -44,8 +44,8 @@ namespace expr
                                 , const pnet::type::value::value_type&
                                 );
 
-      const value::type& value (const std::string&) const;
-      const value::type& value (const std::list<std::string>&) const;
+      value::type value (const std::string&) const;
+      value::type value (const std::list<std::string>&) const;
 
       const pnet::type::value::value_type& value2 (const std::string&) const;
       const pnet::type::value::value_type& value2 (const std::list<std::string>&) const;

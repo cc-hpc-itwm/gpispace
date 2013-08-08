@@ -45,7 +45,7 @@ namespace we
 
     // getting something means to get a literal value...
     template <typename T>
-    inline typename value::cpp::get<T const &>::result_type
+      inline typename value::cpp::get<T>::result_type
     get (const input_t & i, const std::string & key)
     {
       return value::get<T> (i.value (key));
@@ -53,7 +53,7 @@ namespace we
 
     // ...but not when stated explicitely be a value::type
     template<>
-    inline const value::type &
+      inline value::type
     get<value::type> (const input_t & i, const std::string & key)
     {
       return i.value (key);

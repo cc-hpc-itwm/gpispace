@@ -114,16 +114,13 @@ namespace expr
       do_bind2 (_container2, key_vec, value);
     }
 
-    const value::type& context::value (const std::string& key) const
+    value::type context::value (const std::string& key) const
     {
-      const container_type::const_iterator pos (_container.find (key));
-
-      if (pos != _container.end())
-      {
-        return pos->second;
-      }
-
-      throw value::exception::missing_binding (key);
+      return pnet::type::compat::COMPAT (value2 (key));
+    }
+    value::type context::value (const std::list<std::string>& key_vec) const
+    {
+      return pnet::type::compat::COMPAT (value2 (key_vec));
     }
 
     const pnet::type::value::value_type&
@@ -134,27 +131,6 @@ namespace expr
       if (pos != _container2.end())
       {
         return pos->second;
-      }
-
-      throw value::exception::missing_binding (key);
-    }
-
-    const value::type&
-    context::value (const std::list<std::string>& key_vec) const
-    {
-      if (key_vec.empty())
-      {
-        throw std::runtime_error ("context::value []");
-      }
-
-      std::list<std::string>::const_iterator key_pos (key_vec.begin());
-      const std::string& key (*key_pos); ++key_pos;
-
-      const container_type::const_iterator pos (_container.find (key));
-
-      if (pos != _container.end())
-      {
-        return value::find (key_pos, key_vec.end(), pos->second);
       }
 
       throw value::exception::missing_binding (key);
