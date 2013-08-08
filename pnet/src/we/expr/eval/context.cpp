@@ -165,10 +165,10 @@ namespace expr
       throw value::exception::missing_binding (key);
     }
 
-    const boost::unordered_map<std::string,value::type>&
+    const boost::unordered_map<std::string,pnet::type::value::value_type>&
     context::values() const
     {
-      return _container;
+      return _container2;
     }
 
     std::ostream& operator<< (std::ostream& s, const context& cntx)

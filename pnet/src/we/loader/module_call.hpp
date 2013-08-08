@@ -9,7 +9,6 @@
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 
-#include <we2/type/compat.hpp>
 #include <we2/type/compat.sig.hpp>
 #include <we2/require_type.hpp>
 
@@ -42,7 +41,7 @@ namespace module
 
     loader[module_call.module()] (module_call.function(), context, mod_output);
 
-    typedef std::pair<std::string, value::type> kv_type;
+    typedef std::pair<std::string, pnet::type::value::value_type> kv_type;
 
     BOOST_FOREACH (const kv_type& kv, mod_output.values())
     {
@@ -56,7 +55,7 @@ namespace module
         act.add_output
           ( output_t::value_type
             ( pnet::require_type
-              ( pnet::type::compat::COMPAT (kv.second)
+              ( kv.second
               , pnet::type::compat::COMPAT (port.signature())
               , port.name()
               )

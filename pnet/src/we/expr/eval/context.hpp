@@ -52,7 +52,9 @@ namespace expr
 
       friend std::ostream& operator<< (std::ostream&, const context&);
 
-      const boost::unordered_map<std::string,value::type>& values() const;
+      const boost::unordered_map< std::string
+                                , pnet::type::value::value_type
+                                >& values() const;
     };
 
     std::ostream& operator<< (std::ostream&, const context&);
