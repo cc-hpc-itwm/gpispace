@@ -148,6 +148,7 @@
         <out name="trigger" type="control"/>
         <module name="stresstest" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[
           const fvmAllocHandle_t& handle (config.handle);
           const fvmAllocHandle_t& scratch (config.scratch);
@@ -161,6 +162,8 @@
           {
             fvmGlobalFree (scratch);
           }
+
+          MLOG (INFO, "finalized");
           ]]></code>
         </module>
       </defun>

@@ -34,7 +34,7 @@
         <in name="i" type="long"/>
         <in name="config" type="config"/>
         <out name="done" type="control"/>
-        <module name="stresstest" function="done run (config)">
+        <module name="stresstest" function="done run (config, id, i)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="stdexcept"/>
@@ -43,6 +43,8 @@
           <cinclude href="limits"/>
           <cinclude href="sstream"/>
           <code><![CDATA[
+            MLOG (INFO, "run (" << id << ", " << i << ")");
+
             const fvmAllocHandle_t & handle (config.handle);
             const fvmAllocHandle_t & scratch  (config.scratch);
             const size_t size (config.num_long * sizeof (long));
@@ -74,7 +76,7 @@
 
               boost::mt19937 engine (config.seed);
 
-              for (unsigned long i (0); i < config.num_long; ++i, ++a)
+              for (unsigned long k (0); k < config.num_long; ++k, ++a)
               {
                 const long v (rand(engine));
 
@@ -83,7 +85,7 @@
                   std::ostringstream s;
 
                   s << "BUMMER! wrong value read"
-                    << " expected in slot " << i << " the value " << v
+                    << " expected in slot " << k << " the value " << v
                     << " but got the value " << *a
                     ;
 
