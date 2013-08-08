@@ -213,6 +213,15 @@ install (FILES
   DESTINATION include/we2/type
   COMPONENT sdk
 )
+
+# BEGIN compat
+install (FILES
+  we2/type/compat.hpp
+  DESTINATION include/we2/type
+  COMPONENT sdk
+)
+# END compat
+
 install (FILES
   we/type/literal/control.hpp
   we/type/literal/show.hpp
