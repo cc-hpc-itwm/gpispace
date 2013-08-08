@@ -244,15 +244,19 @@ namespace fhg
           : is_configured (false)
           , timeout (boost::posix_time::seconds (120))
           , max_connection_attempts (3)
+          , m_auto_reconnect (true)
         {}
 
         void init ( std::string const & p_host = ""
                   , std::string const & p_port = ""
                   , const boost::posix_time::time_duration p_timeout = boost::posix_time::seconds (120)
                   , const std::size_t p_max_connection_attempts = 3
+                  , bool auto_reconnect = true
                   )
         {
           bool modified (false);
+
+          m_auto_reconnect = auto_reconnect;
 
           if (p_host.empty() || p_port.empty())
           {
@@ -305,7 +309,7 @@ namespace fhg
           if (! is_configured)
             init();
           client->start ( host , port
-                        , true // autoconnect
+                        , m_auto_reconnect // autoconnect
                         , timeout
                         , max_connection_attempts
                         );
@@ -323,6 +327,7 @@ namespace fhg
         bool is_started;
         boost::posix_time::time_duration timeout;
         std::size_t max_connection_attempts;
+        bool        m_auto_reconnect;
 
         std::string host;
         std::string port;
