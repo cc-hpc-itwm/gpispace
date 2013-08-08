@@ -21,20 +21,12 @@ namespace expr
     {
     private:
       typedef boost::unordered_map< std::string
-                                  , value::type
+                                  , pnet::type::value::value_type
                                   > container_type;
 
       container_type _container;
 
-      typedef boost::unordered_map< std::string
-                                  , pnet::type::value::value_type
-                                  > container2_type;
-
-      container2_type _container2;
-
     public:
-      typedef container_type::const_iterator const_iterator;
-
       void BIND_OLD (const std::string&, const value::type&);
 
       void bind (const std::string&, const pnet::type::value::value_type&);
