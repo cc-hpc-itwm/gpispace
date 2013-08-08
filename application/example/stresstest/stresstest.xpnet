@@ -204,7 +204,6 @@
 
     <transition name="cleanup">
       <defun>
-        <in name="wait" type="long"/>
         <in name="M" type="long"/>
         <in name="config" type="config"/>
         <in name="trigger" type="control"/>
@@ -213,7 +212,6 @@
           ${done} := []
         </expression>
       </defun>
-      <connect-in port="wait" place="wait"/>
       <connect-in port="M" place="M"/>
       <connect-in port="config" place="config"/>
       <connect-in port="trigger" place="finalized"/>
