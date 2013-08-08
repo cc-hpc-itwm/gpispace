@@ -65,7 +65,7 @@ fhg_add_test (test_sig_cpp_result.cpp ${cross_hpp}
 
 fhg_add_test (test_loader.cpp
   PROJECT we
-  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
+  LINK_LIBRARIES pnet we-dev ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
   DEPENDS question answer
 )
 
