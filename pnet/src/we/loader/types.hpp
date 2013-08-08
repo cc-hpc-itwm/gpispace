@@ -27,6 +27,8 @@
 #include <vector>
 #include <list>
 
+#include <we2/type/compat.hpp>
+
 namespace we
 {
   namespace loader
@@ -45,18 +47,18 @@ namespace we
 
     // getting something means to get a literal value...
     template <typename T>
-      inline typename value::cpp::get<T>::result_type
-    get (const input_t & i, const std::string & key)
+      inline T
+      get (const input_t & i, const std::string & key)
     {
-      return value::get<T> (i.value (key));
+      return boost::get<T> (i.value2 (key));
     }
 
     // ...but not when stated explicitely be a value::type
     template<>
       inline value::type
-    get<value::type> (const input_t & i, const std::string & key)
+      get<value::type> (const input_t & i, const std::string & key)
     {
-      return i.value (key);
+      return pnet::type::compat::COMPAT (i.value2 (key));
     }
   }
 }
