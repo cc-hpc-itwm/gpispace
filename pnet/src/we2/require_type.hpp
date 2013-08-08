@@ -17,6 +17,14 @@ namespace pnet
     , const type::signature::signature_type&
     , const std::string& field
     );
+
+  //! \note does not require the same order of fields in the value as in
+  //! the signature
+  const type::value::value_type& require_type_relaxed
+    ( const type::value::value_type&
+    , const type::signature::signature_type&
+    , const std::string& field
+    );
 }
 
 #endif
