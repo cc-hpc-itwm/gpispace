@@ -43,7 +43,7 @@ namespace we
         // }
 
         act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( pnet::require_type
+                        ( pnet::require_type_relaxed
                           ( pnet::type::compat::COMPAT (value)
                           , pnet::type::compat::COMPAT (port_signature)
                           , port

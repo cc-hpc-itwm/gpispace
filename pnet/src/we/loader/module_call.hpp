@@ -54,7 +54,7 @@ namespace module
 
         act.add_output
           ( output_t::value_type
-            ( pnet::require_type
+            ( pnet::require_type_relaxed
               ( kv.second
               , pnet::type::compat::COMPAT (port.signature())
               , port.name()

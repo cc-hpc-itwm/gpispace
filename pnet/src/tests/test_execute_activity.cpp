@@ -113,7 +113,7 @@ namespace module
 
       act.add_output
         ( output_t::value_type
-          ( pnet::require_type
+          ( pnet::require_type_relaxed
             ( pnet::type::compat::COMPAT (ton->first)
             , pnet::type::compat::COMPAT (port.signature())
             , port.name()
