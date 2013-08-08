@@ -41,34 +41,13 @@ namespace dummy
 
 namespace module
 {
-  template <typename T>
-  class visitor_get_value_of_literal : public boost::static_visitor<T>
-  {
-  public:
-    T operator () (const literal::type & literal) const
-    {
-      return boost::get<T> (literal);
-    }
-
-    T operator () (const value::structured_t & o) const
-    {
-      throw std::runtime_error ("bad_get: expected literal, got: " + fhg::util::show (o));
-    }
-  };
-
-  template <typename T, typename V>
-  T get_value_of_literal (const V & v)
-  {
-    return boost::apply_visitor (visitor_get_value_of_literal<T>(), v);
-  }
-
   template <typename ModuleCall, typename Context, typename OutputList>
   void eval (const ModuleCall & mf, const Context & ctxt, OutputList & output)
   {
     if ( mf.module() == "dummy" && mf.function() == "dummy" )
     {
       const long result
-        (dummy::dummy (get_value_of_literal<long> (ctxt.value("input"))));
+        (dummy::dummy (boost::get<long> (ctxt.value2 ("input"))));
       output.push_back (std::make_pair (result, "output"));
     }
   }
