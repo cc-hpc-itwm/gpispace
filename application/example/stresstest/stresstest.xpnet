@@ -180,7 +180,7 @@
       <connect-out port="out" place="pending"/>
     </transition>
 
-    <transition name="inner">
+    <transition name="inner" inline="false">
       <include-function href="stress.xpnet"/>
       <connect-read port="N" place="M"/>
       <connect-read port="config" place="config"/>
