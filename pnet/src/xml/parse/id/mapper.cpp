@@ -152,14 +152,70 @@ namespace xml
       void mapper::add_reference (const ref::NAME& ref)                 \
       {                                                                 \
         ++_maps->MEMBER_NAME ## _references[ref._id];                   \
-      }                                                                 \
+      }
+
+#include <xml/parse/id/helper.lst>
+#undef ITEM
+
+#undef BODY
+#undef BODY_OPTIONAL
+
+
+      namespace
+      {
+        bool actually_erase (true);
+
+#define ITEM(NAME,MEMBER_NAME,__IGNORE,__IGNORE2)                       \
+                                                                        \
+        std::stack<NAME> MEMBER_NAME ## _to_delete;
+
+#include <xml/parse/id/helper.lst>
+
+#undef ITEM
+      }
+
+      void mapper::erase_until_all_empty()
+      {
+        bool some_deletion;
+
+        do
+        {
+          some_deletion = false;
+
+#define ITEM(NAME,MEMBER_NAME,__IGNORE,__IGNORE2)                       \
+                                                                        \
+          while (!MEMBER_NAME ## _to_delete.empty())                    \
+          {                                                             \
+            const NAME id (MEMBER_NAME ## _to_delete.top());            \
+            MEMBER_NAME ## _to_delete.pop();                            \
+                                                                        \
+            _maps->MEMBER_NAME.erase (id);                              \
+            _maps->MEMBER_NAME ## _references.erase (id);               \
+                                                                        \
+            some_deletion = true;                                       \
+          }
+
+#include <xml/parse/id/helper.lst>
+
+#undef ITEM
+
+        }
+        while (some_deletion);
+      }
+
+#define ITEM(NAME,MEMBER_NAME,TYPE,__IGNORE)                            \
                                                                         \
       void mapper::remove_reference (const ref::NAME& ref)              \
       {                                                                 \
         if (!(--_maps->MEMBER_NAME ## _references[ref._id]))            \
         {                                                               \
-          _maps->MEMBER_NAME.erase (ref._id);                           \
-          _maps->MEMBER_NAME ## _references.erase (ref._id);            \
+          MEMBER_NAME ## _to_delete.push (ref._id);                     \
+          if (actually_erase)                                           \
+          {                                                             \
+            actually_erase = false;                                     \
+            erase_until_all_empty();                                           \
+            actually_erase = true;                                      \
+          }                                                             \
         }                                                               \
       }
 
