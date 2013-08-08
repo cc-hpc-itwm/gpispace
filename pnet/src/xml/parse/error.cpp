@@ -52,7 +52,7 @@ namespace xml
                                  , const std::string& attr
                                  , const util::position_type& position
                                  )
-        : generic ( boost::format ("%1%: missing attribute %2% in %3")
+        : generic ( boost::format ("%1%: missing attribute %2% in %3%")
                   % pre
                   % attr
                   % position
