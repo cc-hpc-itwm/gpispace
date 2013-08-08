@@ -1,8 +1,11 @@
 #include <we/loader/macros.hpp>
-#include <putget.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
+
+#include <we2/type/value/show.hpp>
+#include <we2/type/value/peek.hpp>
 
 #include <iostream>
 #include <string>
@@ -20,9 +23,14 @@
 
 #include "sinc_mod.hpp"
 
-#include <we2/type/compat.hpp>
-
-using we::loader::get;
+namespace
+{
+  template<typename R>
+    R peek (const std::string& key, const pnet::type::value::value_type& x)
+  {
+    return boost::get<R> (*pnet::type::value::peek (key, x));
+  }
+}
 
 // ************************************************************************* //
 
@@ -45,7 +53,8 @@ static unsigned long sizeofJob (void)
 
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const std::string & filename (get<std::string> (input, "config_file"));
+  const std::string& filename
+    (boost::get<const std::string&> (input.value2 ("config_file")));
   const int NThreads (4);
 
   MigrationJob Job;
@@ -204,15 +213,19 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   output.bind ("config.filter.trap", static_cast<double>(Job.trap));
   output.bind ("config.filter.tpow", static_cast<double>(Job.tpow));
 
-  LOG (DEBUG, "initialize: config = " << get<value::type>(output, "config"));
+  LOG (DEBUG, "initialize: config = "
+           << pnet::type::value::show (output.value2 ("config"))
+      );
 }
 
 // ************************************************************************* //
 
-static void get_Job (const value::type & config, MigrationJob & Job)
+static void get_Job ( const pnet::type::value::value_type& config
+                    , MigrationJob & Job
+                    )
 {
-  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
-  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
+  const fvmAllocHandle_t handle_Job (peek<long> ("handle_Job", config));
+  const fvmAllocHandle_t scratch_Job (peek<long> ("scratch_Job", config));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -227,11 +240,13 @@ static void get_Job (const value::type & config, MigrationJob & Job)
 
 // ************************************************************************* //
 
-static void kdm_loadTT (const value::type & config, const long & TT)
+static void kdm_loadTT ( const pnet::type::value::value_type& config
+                       , const long & TT
+                       )
 {
-  LOG (INFO, "loadTT: got config " << config);
+  LOG (INFO, "loadTT: got config " << pnet::type::value::show (config));
 
-  const long & Parallel_loadTT (get<long> (config, "PARALLEL_LOADTT"));
+  const long& Parallel_loadTT (peek<const long&> ("PARALLEL_LOADTT", config));
 
   LOG (INFO, "loadTT: got TT " << TT << " out of " << Parallel_loadTT);
 
@@ -270,8 +285,8 @@ static void kdm_loadTT (const value::type & config, const long & TT)
   GVol.Init(X0, point3D<int>(Nx,Ny,Nz), dx);
 
   // Load the entire travel time table data into memory
-  const int & NThreads (get<long> (config, "NThreads"));
-  const fvmAllocHandle_t & handle_TT (get<long> (config, "handle_TT"));
+  const int NThreads (peek<long> ("NThreads", config));
+  const fvmAllocHandle_t handle_TT (peek<long> ("handle_TT", config));
 
   TTVMMemHandler TTVMMem;
 
@@ -280,31 +295,29 @@ static void kdm_loadTT (const value::type & config, const long & TT)
 
 // ************************************************************************* //
 
-static void kdm_finalize (const value::type & config)
+static void kdm_finalize (const pnet::type::value::value_type& config)
 {
-  LOG (INFO, "finalize: got config " << config);
+  LOG (INFO, "finalize: got config " << pnet::type::value::show (config));
 
-  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
-  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
-  const fvmAllocHandle_t & handle_TT  (get<long> (config, "handle_TT"));
-
-  fvmGlobalFree (handle_Job);
-  fvmGlobalFree (scratch_Job);
-  fvmGlobalFree (handle_TT);
+  fvmGlobalFree (peek<long> ("handle_Job", config));
+  fvmGlobalFree (peek<long> ("scratch_Job", config));
+  fvmGlobalFree (peek<long> ("handle_TT", config));
 }
 
 // ************************************************************************* //
 
-static void kdm_load (const value::type & config, const value::type & bunch)
+static void kdm_load ( const pnet::type::value::value_type& config
+                     , const pnet::type::value::value_type& bunch
+                     )
 {
-  LOG (INFO, "load: got bunch " << bunch);
+  LOG (INFO, "load: got bunch " << pnet::type::value::show (bunch));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const long oid (1 + get<long> (bunch, "volume.offset"));
-  const long bid (1 + get<long> (bunch, "id"));
+  const long oid (1 + peek<long> ("volume.offset", bunch));
+  const long bid (1 + peek<long> ("id", bunch));
 
   char * pBunchData (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -317,9 +330,11 @@ static void kdm_load (const value::type & config, const value::type & bunch)
 
 // ************************************************************************* //
 
-static void kdm_write (const value::type & config, const value::type & volume)
+static void kdm_write ( const pnet::type::value::value_type& config
+                      , const pnet::type::value::value_type& volume
+                      )
 {
-  LOG (INFO, "write: got volume " << volume);
+  LOG (INFO, "write: got volume " << pnet::type::value::show (volume));
 
   MigrationJob Job;
 
@@ -343,8 +358,8 @@ static void kdm_write (const value::type & config, const value::type & volume)
   grid3D G(X0,Nx,dx);
 
   // create the subvolume
-  const long vid (1 + get<long> (volume, "id"));
-  const long oid (1 + get<long> (volume, "offset"));
+  const long vid (1 + peek<long> ("id", volume));
+  const long oid (1 + peek<long> ("offset", volume));
 
   MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
 
@@ -362,16 +377,16 @@ static void kdm_write (const value::type & config, const value::type & volume)
     , Job.MigFileMode
     );
 
-  LOG (INFO, "write: volume written " << volume);
+  LOG (INFO, "write: volume written " << pnet::type::value::show (volume));
 }
 
 // ************************************************************************* //
 
-static void kdm_init_volume ( const value::type & config
-                            , const value::type & volume
+static void kdm_init_volume ( const pnet::type::value::value_type& config
+                            , const pnet::type::value::value_type& volume
                             )
 {
-  LOG (INFO, "init_volume: got volume " << volume);
+  LOG (INFO, "init_volume: got volume " << pnet::type::value::show (volume));
 
   MigrationJob Job;
 
@@ -421,7 +436,7 @@ static void kdm_init_volume ( const value::type & config
   MigVol3D MigVol(X0,Nx,dx);
 
   // create the subvolume
-  const long vid (1 + get<long> (volume, "id"));
+  const long vid (1 + peek<long> ("id", volume));
 
   MigSubVol3D MigSubVol(MigVol, vid, Job.NSubVols);
 
@@ -435,11 +450,11 @@ static void kdm_init_volume ( const value::type & config
 
 // ************************************************************************* //
 
-static void kdm_process ( const value::type & config
-                        , const value::type & bunch
+static void kdm_process ( const pnet::type::value::value_type & config
+                        , const pnet::type::value::value_type & bunch
                         )
 {
-  LOG (INFO, "process: got bunch " << bunch);
+  LOG (INFO, "process: got bunch " << pnet::type::value::show (bunch));
 
   MigrationJob Job;
 
@@ -460,7 +475,7 @@ static void kdm_process ( const value::type & config
   MigVol3D MigVol(X0,Nx,dx);
 
   // create the subvolume
-  const long vid (1 + get<long> (bunch, "volume.id"));
+  const long vid (1 + peek<long> ("volume.id", bunch));
 
   MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
 
@@ -470,23 +485,23 @@ static void kdm_process ( const value::type & config
   MigSubVol.setMemPtr((float *)pVMMemSubVol,Job.SubVolMemSize);
 
   // Reconstruct the tracebunch out of memory
-  const long oid (1 + get<long> (bunch, "volume.offset"));
-  const long bid (1 + get<long> (bunch, "id"));
+  const long oid (1 + peek<long> ("volume.offset", bunch));
+  const long bid (1 + peek<long> ("id", bunch));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
   TraceBunch Bunch(migbuf,oid,1,bid,Job);
 
   // migrate the bunch to the subvolume
-  const long & NThreads (get<long> (config, "NThreads"));
+  const long & NThreads (peek<const long &> ("NThreads", config));
 
   char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
 
-  const fvmAllocHandle_t & handle_TT (get<long> (config, "handle_TT"));
+  const fvmAllocHandle_t handle_TT (peek<long> ("handle_TT", config));
 
   MigBunch2SubVol(Job,Bunch,MigSubVol,NThreads, _VMem, handle_TT);
 
-  LOG (INFO, "process: bunch done " << bunch);
+  LOG (INFO, "process: bunch done " << pnet::type::value::show (bunch));
 }
 
 // ************************************************************************* //
@@ -494,66 +509,62 @@ static void kdm_process ( const value::type & config
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const long & TT (get<long> (input, "id"));
-
-  kdm_loadTT (config, TT);
+  kdm_loadTT (input.value2 ("config"), boost::get<long> (input.value2 ("id")));
 
   output.bind ("done", we::type::literal::control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
-  kdm_load (config, bunch);
-  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
+  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
+
+  kdm_load (input.value2 ("config"), bunch);
+
+  output.bind ("bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
 
-  kdm_process (config, bunch);
+  kdm_process (input.value2 ("config"), bunch);
 
-  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
+  output.bind ("bunch", bunch);
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & volume (get<value::type> (input, "volume"));
+  const pnet::type::value::value_type& config (input.value2 ("config"));
+  const pnet::type::value::value_type& volume (input.value2 ("volume"));
 
   kdm_write (config, volume);
 
-  output.bind ("volume", pnet::type::compat::COMPAT (volume));
+  output.bind ("volume", volume);
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-
-  kdm_finalize (config);
+  kdm_finalize (input.value2 ("config"));
 
   output.bind ("trigger", we::type::literal::control());
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & volume (get<value::type> (input, "volume"));
+  const pnet::type::value::value_type& volume (input.value2 ("volume"));
 
-  kdm_init_volume (config, volume);
+  kdm_init_volume (input.value2 ("config"), volume);
 
-  output.bind ("volume", pnet::type::compat::COMPAT (volume));
+  output.bind ("volume", volume);
 }
 
 static void debug (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  LOG (INFO, "DEBUG: volume " << get<value::type>(input, "volume"));
+  const pnet::type::value::value_type& volume (input.value2 ("volume"));
 
-  output.bind ("volume", pnet::type::compat::COMPAT (get<value::type>(input, "volume")));
+  LOG (INFO, "DEBUG: volume " << pnet::type::value::show (volume));
+
+  output.bind ("volume", volume);
 }
 
 // ************************************************************************* //
