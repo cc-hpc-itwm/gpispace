@@ -8,15 +8,12 @@
 #include <we2/type/value.hpp>
 #include <we2/type/value/read.hpp>
 
-#include <we2/type/compat.hpp>
-
 BOOST_AUTO_TEST_CASE (basic)
 {
   typedef expr::eval::context context_t;
   typedef pnet::type::value::value_type value_type;
 
   using pnet::type::value::read;
-  using pnet::type::compat::COMPAT;
 
   context_t c;
 
@@ -46,15 +43,15 @@ BOOST_AUTO_TEST_CASE (basic)
   c.bind ("y", y);
   c.bind ("z", z);
 
-  BOOST_REQUIRE (COMPAT (c.value ("x")) == x);
-  BOOST_REQUIRE (COMPAT (c.value ("y")) == y);
-  BOOST_REQUIRE (COMPAT (c.value ("z")) == z);
-  BOOST_REQUIRE (COMPAT (c.value (key_z_x)) == z_x);
-  BOOST_REQUIRE (COMPAT (c.value (key_z_y)) == z_y);
+  BOOST_REQUIRE (c.value2 ("x") == x);
+  BOOST_REQUIRE (c.value2 ("y") == y);
+  BOOST_REQUIRE (c.value2 ("z") == z);
+  BOOST_REQUIRE (c.value2 (key_z_x) == z_x);
+  BOOST_REQUIRE (c.value2 (key_z_y) == z_y);
 
   try
   {
-    c.value (key_z_a);
+    c.value2 (key_z_a);
     BOOST_FAIL ("should throw");
   }
   catch (const std::runtime_error&)
@@ -63,7 +60,7 @@ BOOST_AUTO_TEST_CASE (basic)
   }
   try
   {
-    c.value (key_a_b);
+    c.value2 (key_a_b);
     BOOST_FAIL ("should throw");
   }
   catch (const std::runtime_error&)
@@ -76,7 +73,7 @@ BOOST_AUTO_TEST_CASE (basic)
 
     c.bind ("z.x", pnet::type::value::value_type (z_x_new));
 
-    BOOST_REQUIRE (COMPAT (c.value (key_z_x)) == value_type (z_x_new));
+    BOOST_REQUIRE (c.value2 (key_z_x) == value_type (z_x_new));
   }
 
   {
@@ -84,15 +81,15 @@ BOOST_AUTO_TEST_CASE (basic)
 
     c.bind ("z", pnet::type::value::value_type (z_new));
 
-    BOOST_REQUIRE (COMPAT (c.value ("z")) == value_type (z_new));
+    BOOST_REQUIRE (c.value2 ("z") == value_type (z_new));
   }
 
-  BOOST_REQUIRE (COMPAT (c.value ("x")) == x);
-  BOOST_REQUIRE (COMPAT (c.value ("y")) == y);
+  BOOST_REQUIRE (c.value2 ("x") == x);
+  BOOST_REQUIRE (c.value2 ("y") == y);
 
   try
   {
-    c.value (key_z_a);
+    c.value2 (key_z_a);
     BOOST_FAIL ("should throw");
   }
   catch (const std::runtime_error&)
@@ -101,7 +98,7 @@ BOOST_AUTO_TEST_CASE (basic)
   }
   try
   {
-    c.value (key_a_b);
+    c.value2 (key_a_b);
     BOOST_FAIL ("should throw");
   }
   catch (const std::runtime_error&)
@@ -116,7 +113,6 @@ BOOST_AUTO_TEST_CASE (reference)
   typedef pnet::type::value::value_type value_type;
 
   using pnet::type::value::read;
-  using pnet::type::compat::COMPAT;
 
   context_t c;
 
@@ -132,9 +128,9 @@ BOOST_AUTO_TEST_CASE (reference)
   c.bind_ref (key_b, value_b);
   c.bind_ref (key_c, value_c);
 
-  BOOST_REQUIRE (COMPAT (c.value (key_a)) == value_a);
-  BOOST_REQUIRE (COMPAT (c.value (key_b)) == value_b);
-  BOOST_REQUIRE (COMPAT (c.value (key_c)) == value_c);
+  BOOST_REQUIRE (c.value2 (key_a) == value_a);
+  BOOST_REQUIRE (c.value2 (key_b) == value_b);
+  BOOST_REQUIRE (c.value2 (key_c) == value_c);
 
   std::list<std::string> key_c_x;
   key_c_x.push_back ("c");
@@ -148,7 +144,7 @@ BOOST_AUTO_TEST_CASE (reference)
   key_c_y_b.push_back ("y");
   key_c_y_b.push_back ("b");
 
-  BOOST_REQUIRE (COMPAT (c.value (key_c_x)) == value_type (1L));
-  BOOST_REQUIRE (COMPAT (c.value (key_c_y_a)) == value_type (2L));
-  BOOST_REQUIRE (COMPAT (c.value (key_c_y_b)) == value_type (3L));
+  BOOST_REQUIRE (c.value2 (key_c_x) == value_type (1L));
+  BOOST_REQUIRE (c.value2 (key_c_y_a) == value_type (2L));
+  BOOST_REQUIRE (c.value2 (key_c_y_b) == value_type (3L));
 }
