@@ -6,9 +6,7 @@
 #include <we/loader/types.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/put.hpp>
 #include <we/type/value/get.hpp>
-#include <we/type/value/mk_structured.hpp>
 
 namespace we
 {
@@ -22,19 +20,6 @@ namespace we
                  )
     {
       return value::get<T> (path, i.value (key));
-    }
-
-    // get from an earlier extracted value::type
-    template <typename T>
-    const T& get (const value::type & v)
-    {
-      return value::get<T>(v);
-    }
-
-    template <typename T>
-    const T& get (const value::type& v, const value::path_type& path_in_value)
-    {
-      return value::get<T>(path_in_value, v);
     }
 
     template <typename T>
