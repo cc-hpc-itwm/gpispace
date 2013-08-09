@@ -1,5 +1,5 @@
 #include <we/loader/macros.hpp>
-#include <putget.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
@@ -16,9 +16,17 @@
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <we2/type/compat.hpp>
+#include <we2/type/value/peek.hpp>
+#include <we2/type/value/show.hpp>
 
-using we::loader::get;
+namespace
+{
+  template<typename R>
+    R peek (const pnet::type::value::value_type& x, const std::string& key)
+  {
+    return boost::get<R> (*pnet::type::value::peek (key, x));
+  }
+}
 
 // ************************************************************************* //
 
@@ -41,19 +49,19 @@ generic_filter ( void * state
 	       , boost::function <void (void *, const long &)> filter_impl
 	       )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & part_in_store (get<value::type> (input, "in"));
-  const long & part (get<long> (part_in_store, "id.part"));
-  const long & store (get<long> (part_in_store, "id.store"));
+  const pnet::type::value::value_type& config (input.value2 ("config"));
+  const pnet::type::value::value_type& part_in_store (input.value2 ("in"));
+  const long & part (peek<const long&> (part_in_store, "id.part"));
+  const long & store (peek<const long&> (part_in_store, "id.store"));
 
-  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << config);
+  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << pnet::type::value::show (config));
 
   // communicate from GPI space to fvmGetShmemPtr()
 
-  const fvmAllocHandle_t & handle_data (get<long> (config, "handle.data"));
-  const fvmAllocHandle_t & handle_scratch (get<long> (config, "handle.scratch"));
-  const long & sizeofBunchBuffer (get<long> (config, "bunchbuffer.size"));
-  const long & data_size (get<long> (config, "data.size"));
+  const fvmAllocHandle_t handle_data (peek<long> (config, "handle.data"));
+  const fvmAllocHandle_t handle_scratch (peek<long> (config, "handle.scratch"));
+  const long& sizeofBunchBuffer (peek<const long&> (config, "bunchbuffer.size"));
+  const long& data_size (peek<const long&> (config, "data.size"));
   const long size (std::min ( sizeofBunchBuffer
                             , data_size - part * sizeofBunchBuffer
                             )
@@ -69,7 +77,7 @@ generic_filter ( void * state
 
   // call filter_impl
 
-  const long & trace_size_in_bytes (get<long> (config, "trace_detect.size_in_bytes"));
+  const long& trace_size_in_bytes (peek<const long&> (config, "trace_detect.size_in_bytes"));
   const long num (size / trace_size_in_bytes);
 
   filter_impl (fvmGetShmemPtr(), num);
@@ -84,7 +92,7 @@ generic_filter ( void * state
                              )
            );
 
-  output.bind ("out", pnet::type::compat::COMPAT (part_in_store));
+  output.bind ("out", part_in_store);
 }
 
 // ************************************************************************* //
@@ -154,7 +162,7 @@ static void clip ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  const float & c (get<double> (input, "config", "param.clip.c"));
+  const float c (peek<double> (input.value2 ("config"), "param.clip.c"));
 
   generic_filter (state, input, output, boost::bind (clip_impl, _1, _2, c));
 }
@@ -194,7 +202,7 @@ static void trap ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  const float & t (get<long> (input, "config", "param.trap.t"));
+  const float t (peek<long> (input.value2 ("config"), "param.trap.t"));
 
   generic_filter (state, input, output, boost::bind (trap_impl, _1, _2, t));
 }
@@ -283,10 +291,10 @@ static void bandpass ( void * state
 		     , we::loader::output_t & output
 		     )
 {
-  const float & frequ1 (get<long> (input, "config", "param.bandpass.frequ1"));
-  const float & frequ2 (get<long> (input, "config", "param.bandpass.frequ2"));
-  const float & frequ3 (get<long> (input, "config", "param.bandpass.frequ3"));
-  const float & frequ4 (get<long> (input, "config", "param.bandpass.frequ4"));
+  const float frequ1 (peek<long> (input.value2 ("config"), "param.bandpass.frequ1"));
+  const float frequ2 (peek<long> (input.value2 ("config"), "param.bandpass.frequ2"));
+  const float frequ3 (peek<long> (input.value2 ("config"), "param.bandpass.frequ3"));
+  const float frequ4 (peek<long> (input.value2 ("config"), "param.bandpass.frequ4"));
 
   generic_filter (state, input, output
 		 , boost::bind ( bandpass_impl
@@ -415,7 +423,7 @@ static void tpow ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  const float & t (get<double> (input, "config", "param.tpow.tpow"));
+  const float t (peek<double> (input.value2 ("config"), "param.tpow.tpow"));
 
   generic_filter (state, input, output, boost::bind (tpow_impl, _1, _2, t));
 }
@@ -427,19 +435,19 @@ static void execW ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-    const value::type & config (get<value::type> (input, "config"));
-  const value::type & part_in_store (get<value::type> (input, "in"));
-  const long & part (get<long> (part_in_store, "id.part"));
-  const long & store (get<long> (part_in_store, "id.store"));
+  const pnet::type::value::value_type& config (input.value2 ("config"));
+  const pnet::type::value::value_type& part_in_store (input.value2 ("in"));
+  const long& part (peek<const long&> (part_in_store, "id.part"));
+  const long& store (peek<const long&> (part_in_store, "id.store"));
 
-  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << config);
+  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << pnet::type::value::show (config));
 
   // communicate from GPI space to fvmGetShmemPtr()
 
-  const fvmAllocHandle_t & handle_data (get<long> (config, "handle.data"));
-  const fvmAllocHandle_t & handle_scratch (get<long> (config, "handle.scratch"));
-  const long & sizeofBunchBuffer (get<long> (config, "bunchbuffer.size"));
-  const long & data_size (get<long> (config, "data.size"));
+  const fvmAllocHandle_t handle_data (peek<long> (config, "handle.data"));
+  const fvmAllocHandle_t handle_scratch (peek<long> (config, "handle.scratch"));
+  const long& sizeofBunchBuffer (peek<const long&> (config, "bunchbuffer.size"));
+  const long& data_size (peek<const long&> (config, "data.size"));
   const long size (std::min ( sizeofBunchBuffer
                             , data_size - part * sizeofBunchBuffer
                             )
@@ -460,7 +468,7 @@ static void execW ( void * state
 
   // call exec
 
-  const std::string & cmd (get<std::string> (config, "exec.su"));
+  const std::string& cmd (peek<const std::string&> (config, "exec.su"));
 
   MLOG (INFO, "call exec for '" << cmd << "' with size " << size);
 
@@ -489,7 +497,7 @@ static void execW ( void * state
                              )
            );
 
-  output.bind ("out", pnet::type::compat::COMPAT (part_in_store));
+  output.bind ("out", part_in_store);
 }
 
 // ************************************************************************* //
