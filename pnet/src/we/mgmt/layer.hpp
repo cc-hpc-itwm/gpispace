@@ -190,7 +190,6 @@ namespace we { namespace mgmt {
               DLOG( TRACE
                   , "finished"
                   << " (" << desc->name() << ")-" << id
-                  << ": " << desc->show_output()
                   );
             }
           }
@@ -894,13 +893,13 @@ namespace we { namespace mgmt {
       void do_inject (descriptor_ptr desc)
       {
         desc->finished();
-        DLOG (TRACE, "finished (" << desc->name() << ")-" << desc->id() << ": " << desc->show_output());
+        DLOG (TRACE, "finished (" << desc->name() << ")-" << desc->id());
 
         if (desc->has_parent())
         {
           DLOG (TRACE, "injecting (" << desc->name() << ")-" << desc->id()
               << " into (" << lookup(desc->parent())->name() << ")-" << desc->parent()
-              << ": " << desc->show_output());
+               );
           lookup (desc->parent())->inject
             ( *desc
             , boost::bind ( &layer::post_activity_notification
