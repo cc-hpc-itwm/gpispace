@@ -102,7 +102,7 @@ namespace expr
       bool eval_front_bool (eval::context & context) const;
 
       // get the already evaluated value, throws if entry is not an value
-      const value::type & get_front () const;
+      value::type get_front () const;
       bool get_front_bool () const;
 
       // evaluate the whole stack in order, return the last value

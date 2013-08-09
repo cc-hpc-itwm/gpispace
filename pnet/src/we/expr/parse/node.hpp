@@ -6,7 +6,7 @@
 #include <we/expr/token/type.hpp>
 #include <we/expr/token/tokenizer.hpp>
 
-#include <we/type/value.hpp>
+#include <we2/type/value.hpp>
 
 #include <boost/variant.hpp>
 
@@ -20,7 +20,7 @@ namespace expr
       struct binary_t;
       struct ternary_t;
 
-      typedef boost::variant < value::type
+      typedef boost::variant < pnet::type::value::value_type
                              , std::list<std::string>
                              , boost::recursive_wrapper<unary_t>
                              , boost::recursive_wrapper<binary_t>
@@ -28,7 +28,7 @@ namespace expr
                              > type;
 
       std::ostream & operator << (std::ostream &, const type&);
-      const value::type& get (const type&);
+      const pnet::type::value::value_type& get (const type&);
       bool is_value (const type&);
       bool is_ref (const type&);
       void rename (type&, const std::string& from, const std::string& to);

@@ -14,6 +14,8 @@
 #include <boost/variant.hpp>
 #include <boost/utility.hpp>
 
+#include <we2/type/compat.hpp>
+
 namespace expr
 {
   namespace token
@@ -25,7 +27,7 @@ namespace expr
       , _ref()
     {}
 
-    const value::type& tokenizer::value() const
+    const pnet::type::value::value_type& tokenizer::value() const
     {
       return _tokval;
     }
@@ -283,7 +285,7 @@ namespace expr
 
           if (_first)
           {
-            _tokenizer.set_value (value::read (_tokenizer.pos()));
+            _tokenizer.set_value (pnet::type::compat::COMPAT (value::read (_tokenizer.pos())));
           }
           else
           {
@@ -306,7 +308,7 @@ namespace expr
     {
       _token = t;
     }
-    void tokenizer::set_value (const value::type& v)
+    void tokenizer::set_value (const pnet::type::value::value_type& v)
     {
       set_token (val);
       _tokval = v;

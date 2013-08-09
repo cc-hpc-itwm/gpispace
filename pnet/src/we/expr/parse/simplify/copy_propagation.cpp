@@ -71,7 +71,7 @@ namespace expr
             : _propagation_map (propagation_map)
           { }
 
-          node::type operator() (const value::type& v) const
+          node::type operator() (const pnet::type::value::value_type& v) const
           {
             return v;
           }

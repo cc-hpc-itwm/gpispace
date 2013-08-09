@@ -66,7 +66,7 @@ namespace expr
 
     value::type parser::eval_front (eval::context & context) const
     {
-      return eval::eval (context, front());
+      return pnet::type::compat::COMPAT (eval::eval (context, front()));
     }
 
     bool parser::eval_front_bool (eval::context & context) const
@@ -75,9 +75,9 @@ namespace expr
     }
 
     // get the already evaluated value, throws if entry is not an value
-    const value::type & parser::get_front () const
+    value::type parser::get_front () const
     {
-      return node::get (front());
+      return pnet::type::compat::COMPAT (node::get (front()));
     }
 
     bool parser::get_front_bool () const
@@ -92,7 +92,7 @@ namespace expr
 
       for (nd_const_it_t it (begin()); it != end(); ++it)
         {
-          v = eval::eval (context, *it);
+          v = pnet::type::compat::COMPAT (eval::eval (context, *it));
         }
 
       return v;
@@ -143,7 +143,10 @@ namespace expr
       if (constant_folding() && node::is_value (c))
         {
           tmp_stack.push_back
-            (value::function::unary (token, boost::get<value::type> (c)));
+            (value::function::unary ( token
+                                    , node::get (c)
+                                    )
+            );
         }
       else
         {
@@ -176,8 +179,8 @@ namespace expr
         {
           tmp_stack.push_back ( value::function::binary
                                 ( token
-                                , boost::get<value::type> (l)
-                                , boost::get<value::type> (r)
+                                , node::get (l)
+                                , node::get (r)
                                 )
                               );
         }

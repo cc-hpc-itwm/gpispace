@@ -26,7 +26,7 @@ namespace expr
         public:
           visitor_get_names (name_set_t & names) : _names (names) {}
 
-          void operator () (const value::type &) const
+          void operator () (const pnet::type::value::value_type &) const
           {}
 
           void operator () (const std::list<std::string>& key) const
