@@ -37,7 +37,7 @@ macro(FHG_ADD_MANPAGE)
       endif()
 
       add_custom_command (OUTPUT "${MANP_OUTPUT}"
-        COMMAND ${XMLTO_EXECUTABLE} man "${CMAKE_CURRENT_SOURCE_DIR}/${MANP_SOURCE}" 2>/dev/null
+        COMMAND ${XMLTO_EXECUTABLE} -o "${CMAKE_CURRENT_BINARY_DIR}" man "${CMAKE_CURRENT_SOURCE_DIR}/${MANP_SOURCE}" >/dev/null 2>&1
         DEPENDS "${MANP_SOURCE}")
 
       add_custom_target ("${MANP_OUTPUT}.manpage" ALL
