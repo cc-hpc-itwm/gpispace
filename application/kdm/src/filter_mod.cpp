@@ -1,5 +1,5 @@
 #include <we/loader/macros.hpp>
-#include <putget.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
@@ -11,7 +11,16 @@
 #include "TraceBunch.hpp"
 #include "TraceData.hpp"
 
-#include <we2/type/compat.hpp>
+#include <we2/type/value/peek.hpp>
+
+namespace
+{
+  template<typename R>
+    R peek (const pnet::type::value::value_type& x, const std::string& key)
+  {
+    return boost::get<R> (*pnet::type::value::peek (key, x));
+  }
+}
 
 // ************************************************************************* //
 
@@ -21,12 +30,12 @@ static unsigned long sizeofJob (void)
   return sizeof(MigrationJob);
 }
 
-using we::loader::get;
-
-static void get_Job (const value::type & config, MigrationJob & Job)
+static void get_Job ( const pnet::type::value::value_type& config
+                    , MigrationJob & Job
+                    )
 {
-  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
-  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
+  const fvmAllocHandle_t handle_Job (peek<long> (config, "handle_Job"));
+  const fvmAllocHandle_t scratch_Job (peek<long> (config, "scratch_Job"));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -45,15 +54,15 @@ static void generic_filter ( void *
 			   , void (*filter) (TraceBunch &)
 			   )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& config (input.value2 ("config"));
+  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const long oid (1 + get<long> (bunch, "volume.offset"));
-  const long bid (1 + get<long> (bunch, "id"));
+  const long oid (1 + peek<long> (bunch, "volume.offset"));
+  const long bid (1 + peek<long> (bunch, "id"));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -61,7 +70,7 @@ static void generic_filter ( void *
 
   filter (Bunch);
 
-  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
+  output.bind ("bunch", bunch);
 }
 
 static void
@@ -72,25 +81,25 @@ generic_filter_with_float ( void *
 			  , const std::string & field
 			  )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& config (input.value2 ("config"));
+  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const long oid (1 + get<long> (bunch, "volume.offset"));
-  const long bid (1 + get<long> (bunch, "id"));
+  const long oid (1 + peek<long> (bunch, "volume.offset"));
+  const long bid (1 + peek<long> (bunch, "id"));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
   TraceBunch Bunch(migbuf,oid,1,bid,Job);
 
-  const float f (get<double> (input, "config", field));
+  const float f (peek<double> (input.value2 ("config"), field));
 
   filter (Bunch, f);
 
-  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
+  output.bind ("bunch", bunch);
 }
 
 // ************************************************************************* //
@@ -288,15 +297,15 @@ bandpass ( void *
 	 , we::loader::output_t & output
 	 )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& config (input.value2 ("config"));
+  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const long oid (1 + get<long> (bunch, "volume.offset"));
-  const long bid (1 + get<long> (bunch, "id"));
+  const long oid (1 + peek<long> (bunch, "volume.offset"));
+  const long bid (1 + peek<long> (bunch, "id"));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -304,7 +313,7 @@ bandpass ( void *
 
   bandpass_impl (Bunch, Job.frequ1, Job.frequ2, Job.frequ3, Job.frequ4);
 
-  output.bind ("bunch", pnet::type::compat::COMPAT (bunch));
+  output.bind ("bunch", bunch);
 }
 
 // ************************************************************************* //
