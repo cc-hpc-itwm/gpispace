@@ -21,7 +21,7 @@ namespace expr
   {
     namespace
     {
-      void do_bind2 ( boost::unordered_map< std::string
+      void do_bind ( boost::unordered_map< std::string
                                           , pnet::type::value::value_type
                                           >& container
                     , const std::list<std::string>& key_vec
@@ -42,14 +42,14 @@ namespace expr
                                 , value
                                 );
       }
-      void do_bind2 ( boost::unordered_map< std::string
+      void do_bind ( boost::unordered_map< std::string
                                           , pnet::type::value::value_type
                                           >& container
                     , const std::string& path
                     , const pnet::type::value::value_type& value
                     )
       {
-        do_bind2 ( container
+        do_bind ( container
                  , fhg::util::split< std::string
                                    , std::list<std::string>
                                    > (path, '.')
@@ -62,25 +62,20 @@ namespace expr
                        , const pnet::type::value::value_type& value
                        )
     {
-      do_bind2 (_container, path, value);
+      do_bind (_container, path, value);
     }
     void context::bind_ref ( const std::string& path
                            , const pnet::type::value::value_type& value
                            )
     {
-      do_bind2 (_container, path, value);
-    }
-
-    void context::BIND_OLD (const std::string& path, const value::type& value)
-    {
-      do_bind2 (_container, path, pnet::type::compat::COMPAT (value));
+      do_bind (_container, path, value);
     }
 
     void context::bind_and_discard_ref ( const std::list<std::string>& key_vec
                                        , const pnet::type::value::value_type& value
                                        )
     {
-      do_bind2 (_container, key_vec, value);
+      do_bind (_container, key_vec, value);
     }
 
     const pnet::type::value::value_type&

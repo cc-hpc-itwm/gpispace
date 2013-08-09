@@ -3,7 +3,6 @@
 #ifndef _EXPR_EVAL_CONTEXT_HPP
 #define _EXPR_EVAL_CONTEXT_HPP
 
-#include <we/type/value.hpp>
 #include <we2/type/value.hpp>
 
 #include <boost/unordered_map.hpp>
@@ -27,8 +26,6 @@ namespace expr
       container_type _container;
 
     public:
-      void BIND_OLD (const std::string&, const value::type&);
-
       void bind (const std::string&, const pnet::type::value::value_type&);
       void bind_ref (const std::string&, const pnet::type::value::value_type&);
 
