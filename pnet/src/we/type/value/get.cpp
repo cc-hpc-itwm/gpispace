@@ -35,6 +35,22 @@ namespace value
       {}
     }
 
+    class get_field : public boost::static_visitor<const type&>
+    {
+    public:
+      get_field (const path_type&);
+      get_field (const std::string&);
+
+      const type& operator() (const structured_t&);
+      const type& operator() (const literal::type&);
+
+    private:
+      path_type _path;
+      path_type::const_iterator _pos;
+
+      std::string name() const;
+    };
+
     get_field::get_field (const path_type& path)
       : _path (path)
       , _pos (_path.begin())
