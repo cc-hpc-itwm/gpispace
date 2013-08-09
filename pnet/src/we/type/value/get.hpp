@@ -95,29 +95,6 @@ namespace value
   {
     return boost::apply_visitor (visitor::get_ref<T&>(), v);
   }
-
-  const type& get_field (const std::string&, const type&);
-  const type& get_field (const path_type&, const type&);
-
-  // to get something means to get a literal value...
-  template<typename T>
-  const T& get (const std::string& field, const type& v)
-  {
-    return get<T, type> (get_field (field, v));
-  }
-
-  template<typename T>
-  const T& get (const path_type& path, const type& v)
-  {
-    return get<T, type> (get_field (path, v));
-  }
-
-  // ...but not when stated explicitely to be a value::type
-  template<>
-  const type& get<type> (const std::string&, const type&);
-
-  template<>
-  const type& get<type> (const path_type&, const type&);
 }
 
 #endif
