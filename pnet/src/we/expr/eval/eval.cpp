@@ -8,7 +8,6 @@
 #include <we/expr/exception.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/get.hpp>
 #include <we/type/value/function.hpp>
 
 #include <we2/type/value/show.hpp>
