@@ -143,11 +143,8 @@ set (we_srcs
   we/type/literal/show.cpp
   we/type/literal/require_type.cpp
   we/type/literal/cpp.cpp
-  we/type/value/field.cpp
   we/type/value/read.cpp
   we/type/value/show.cpp
-  we/type/value/mk_structured.cpp
-  we/type/value/put.cpp
   we/type/value/function.cpp
   we/type/value/get.cpp
   we/expr/eval/refnode.cpp
