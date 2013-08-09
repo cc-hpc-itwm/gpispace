@@ -1,8 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/expr/token/type.hpp>
+#include <stdlib.h> // abort
 
-#include <we/expr/exception.hpp>
+#include <we/expr/token/type.hpp>
 
 #include <iostream>
 
@@ -83,7 +83,7 @@ namespace expr
         case ref: return s << "<ref>";
         case eof: return s << "<eof>";
         case define: return s << " := ";
-        default: throw  exception::strange ("<< (unknown token)");
+        default: abort();
         }
     }
   }

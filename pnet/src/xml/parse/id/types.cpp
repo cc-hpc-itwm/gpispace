@@ -89,6 +89,7 @@ namespace xml
         }                                                               \
         NAME& NAME::operator= (const NAME& other)                       \
         {                                                               \
+          _mapper->remove_reference (*this);                            \
           _id = other._id;                                              \
           _mapper = other._mapper;                                      \
           _mapper->add_reference (*this);                               \

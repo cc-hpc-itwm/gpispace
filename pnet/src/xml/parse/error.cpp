@@ -3,6 +3,7 @@
 #include <xml/parse/error.hpp>
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
@@ -19,6 +20,62 @@ namespace xml
   {
     namespace error
     {
+      wrong_node::wrong_node ( const rapidxml::node_type& want
+                             , const rapidxml::node_type& got
+                             , const util::position_type& position
+                             )
+        : generic ( boost::format ( "expected node of type %1%: got node of"
+                                    " type %2% in %3%"
+                                  )
+                  % util::show_node_type (want)
+                  % util::show_node_type (got)
+                  % position
+                  )
+      { }
+
+      wrong_node::wrong_node ( const rapidxml::node_type& want1
+                             , const rapidxml::node_type& want2
+                             , const rapidxml::node_type& got
+                             , const util::position_type& position
+                             )
+        : generic ( boost::format ( "expected node of type %1%: or %2% got"
+                                    " node of type %3% in %4%"
+                                  )
+                  % util::show_node_type (want1)
+                  % util::show_node_type (want2)
+                  % util::show_node_type (got)
+                  % position
+                  )
+      { }
+
+      missing_attr::missing_attr ( const std::string& pre
+                                 , const std::string& attr
+                                 , const util::position_type& position
+                                 )
+        : generic ( boost::format ("%1%: missing attribute %2% in %3%")
+                  % pre
+                  % attr
+                  % position
+                  )
+      { }
+
+      no_elements_given::no_elements_given ( const std::string& pre
+                                           , const boost::filesystem::path& path
+                                           )
+        : generic ( boost::format ("%1%: no elements given at all in %2%")
+                  % pre
+                  % path
+                  )
+      { }
+
+      more_than_one_definition::more_than_one_definition
+        (const std::string& pre, const util::position_type& position)
+          : generic ( boost::format ("%1%: more than one definition in %2%")
+                    % pre
+                    % position
+                    )
+      { }
+
       port_type_mismatch::port_type_mismatch
         ( const id::ref::port& port
         , const id::ref::port& other_port
@@ -154,6 +211,20 @@ namespace xml
                   )
         , _function_name (fun)
         , _transition (trans)
+      {}
+
+      unknown_template::unknown_template ( const id::ref::specialize& spec
+                                         , const id::ref::net& net
+                                         )
+        : generic ( boost::format ( "unknown template %1% in specialize at %2%"
+                                    " in net at %3%"
+                                  )
+                  % spec.get().use
+                  % spec.get().position_of_definition()
+                  % net.get().position_of_definition()
+                  )
+        , _specialize (spec)
+        , _net (net)
       {}
 
       connect_to_nonexistent_place::connect_to_nonexistent_place

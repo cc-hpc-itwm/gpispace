@@ -178,7 +178,7 @@ namespace signature
       std::ostream & s;
 
     public:
-      show (std::ostream & _s) : s(_s) {};
+      show (std::ostream & _s) : s(_s) {}
 
       std::ostream & operator () (const std::string & t) const
       {
