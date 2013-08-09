@@ -53,7 +53,7 @@ namespace literal
           : _token (token)
         {}
 
-        literal::type operator() (literal::map_type& m) const
+        literal::type operator() (literal::map_type  m) const
         {
           switch (_token)
           {
@@ -65,7 +65,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (literal::set_type& s) const
+        literal::type operator() (literal::set_type  s) const
         {
           switch (_token)
           {
@@ -79,7 +79,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (literal::stack_type& s) const
+        literal::type operator() (literal::stack_type  s) const
         {
           switch (_token)
           {
@@ -93,7 +93,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (bool& x) const
+        literal::type operator() (bool  x) const
         {
           switch (_token)
           {
@@ -106,7 +106,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (long& x) const
+        literal::type operator() (long  x) const
         {
           switch (_token)
           {
@@ -128,7 +128,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (double& x) const
+        literal::type operator() (double  x) const
         {
           static bool round_half_up (true);
 
@@ -154,7 +154,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (char& x) const
+        literal::type operator() (char  x) const
         {
           switch (_token)
           {
@@ -165,7 +165,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (std::string& x) const
+        literal::type operator() (std::string  x) const
         {
           switch (_token)
           {
@@ -177,7 +177,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (bitsetofint::type& b) const
+        literal::type operator() (bitsetofint::type  b) const
         {
           switch (_token)
           {
@@ -207,8 +207,8 @@ namespace literal
           : _token (token)
         {}
 
-        literal::type operator() ( literal::set_type& l
-                                 , literal::set_type& r
+        literal::type operator() ( literal::set_type  l
+                                 , literal::set_type  r
                                  ) const
         {
           switch (_token)
@@ -230,7 +230,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (literal::set_type& s, long& k) const
+        literal::type operator() (literal::set_type  s, long  k) const
         {
           switch (_token)
           {
@@ -245,7 +245,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (bool& l, bool& r) const
+        literal::type operator() (bool  l, bool  r) const
         {
           switch (_token)
           {
@@ -267,7 +267,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (long& l, long& r) const
+        literal::type operator() (long  l, long  r) const
         {
           switch (_token)
           {
@@ -312,7 +312,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (double& l, double& r) const
+        literal::type operator() (double  l, double  r) const
         {
           switch (_token)
           {
@@ -342,7 +342,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (std::string& l, std::string& r) const
+        literal::type operator() (std::string  l, std::string  r) const
         {
           switch (_token)
           {
@@ -363,7 +363,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (std::string& l, long& r) const
+        literal::type operator() (std::string  l, long  r) const
         {
           switch (_token)
           {
@@ -376,7 +376,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (literal::stack_type& s, long& l) const
+        literal::type operator() (literal::stack_type  s, long  l) const
         {
           switch (_token)
           {
@@ -389,8 +389,8 @@ namespace literal
           }
         }
 
-        literal::type operator() ( literal::stack_type& r
-                                 , literal::stack_type& l
+        literal::type operator() ( literal::stack_type  r
+                                 , literal::stack_type  l
                                  ) const
         {
           switch (_token)
@@ -409,7 +409,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (bitsetofint::type& set, long& l) const
+        literal::type operator() (bitsetofint::type  set, long  l) const
         {
           switch (_token)
           {
@@ -424,7 +424,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (literal::map_type& m, long& k) const
+        literal::type operator() (literal::map_type  m, long  k) const
         {
           switch (_token)
           {
@@ -439,7 +439,7 @@ namespace literal
           }
         }
 
-        literal::type operator() (char& l, char& r) const
+        literal::type operator() (char  l, char  r) const
         {
           switch (_token)
           {
@@ -460,8 +460,8 @@ namespace literal
           }
         }
 
-        literal::type operator() ( bitsetofint::type& l
-                                 , bitsetofint::type& r
+        literal::type operator() ( bitsetofint::type  l
+                                 , bitsetofint::type  r
                                  ) const
         {
           switch (_token)
@@ -478,8 +478,8 @@ namespace literal
           }
         }
 
-        literal::type operator() ( bytearray::type& l
-                                 , bytearray::type& r
+        literal::type operator() ( bytearray::type  l
+                                 , bytearray::type  r
                                  ) const
         {
           switch (_token)
@@ -494,7 +494,7 @@ namespace literal
         }
 
         template<typename T,typename U>
-        literal::type operator() (T& t, U& u) const
+        literal::type operator() (T  t, U  u) const
         {
           throw expr::exception::eval::type_error
             ( fhg::util::show (_token) +
@@ -509,14 +509,14 @@ namespace literal
       return boost::apply_visitor (visitor_is_true(), v);
     }
 
-    literal::type unary (const expr::token::type& token, literal::type& x)
+    literal::type unary (const expr::token::type& token, literal::type  x)
     {
       return boost::apply_visitor (visitor_unary (token), x);
     }
 
     literal::type binary ( const expr::token::type& token
-                         , literal::type& x
-                         , literal::type& y
+                         , literal::type  x
+                         , literal::type  y
                          )
     {
       return boost::apply_visitor (visitor_binary (token), x, y);

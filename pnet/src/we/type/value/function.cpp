@@ -25,12 +25,12 @@ namespace value
           : _token (token)
         {}
 
-        type operator() (literal::type& x) const
+        type operator() (literal::type  x) const
         {
           return literal::function::unary (_token, x);
         }
 
-        type operator() (structured_t&) const
+        type operator() (structured_t ) const
         {
           throw expr::exception::eval::type_error
             (boost::format ("%1% for a structured value") % _token);
@@ -47,12 +47,12 @@ namespace value
           : _token (token)
         {}
 
-        type operator() (literal::type& x, literal::type& y) const
+        type operator() (literal::type  x, literal::type  y) const
         {
           return literal::function::binary (_token, x, y);
         }
 
-        type operator() (structured_t& x, structured_t& y) const
+        type operator() (structured_t  x, structured_t  y) const
         {
           switch (_token)
           {
@@ -64,7 +64,7 @@ namespace value
         }
 
         template<typename A, typename B>
-        type operator () (A&, B&) const
+        type operator () (A , B ) const
         {
           throw expr::exception::eval::type_error
             ( boost::format ("%1% for a literal and a structured value")
@@ -81,7 +81,7 @@ namespace value
           return literal::function::is_true (x);
         }
 
-        bool operator() (const structured_t &) const
+        bool operator() (const structured_t&) const
         {
           throw expr::exception::eval::type_error
             ("is_true for a structured value");
@@ -89,14 +89,14 @@ namespace value
       };
     }
 
-    value::type unary (const expr::token::type& t, value::type& v)
+    value::type unary (const expr::token::type& t, value::type  v)
     {
       return boost::apply_visitor (visitor_unary (t), v);
     }
 
     value::type binary ( const expr::token::type& t
-                       , value::type& l
-                       , value::type& r
+                       , value::type  l
+                       , value::type  r
                        )
     {
       return boost::apply_visitor (visitor_binary (t), l, r);

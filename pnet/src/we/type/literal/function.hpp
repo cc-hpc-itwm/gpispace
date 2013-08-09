@@ -13,10 +13,10 @@ namespace literal
   {
     bool is_true (const literal::type&);
 
-    literal::type unary (const expr::token::type&, literal::type&);
+    literal::type unary (const expr::token::type&, literal::type );
     literal::type binary ( const expr::token::type&
-                         , literal::type&
-                         , literal::type&
+                         , literal::type
+                         , literal::type
                          );
   }
 }
