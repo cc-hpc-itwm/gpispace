@@ -25,6 +25,16 @@ namespace pnet
         };
         std::ostream& operator<< (std::ostream&, const header&);
 
+        class header_signature
+        {
+        public:
+          header_signature (const signature_type&);
+          std::ostream& operator() (std::ostream&) const;
+        private:
+          const signature_type& _signature;
+        };
+        std::ostream& operator<< (std::ostream&, const header_signature&);
+
         class impl
         {
         public:

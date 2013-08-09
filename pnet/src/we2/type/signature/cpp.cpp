@@ -204,6 +204,41 @@ namespace pnet
 
         namespace
         {
+          class print_header_signature
+            : public boost::static_visitor<std::ostream&>
+          {
+          public:
+            print_header_signature (std::ostream& os)
+              : _os (os)
+            {}
+            std::ostream& operator() (const std::string& s) const
+            {
+              return _os << "// s";
+            }
+            std::ostream& operator() (const structured_type& s) const
+            {
+              return _os << header (s);
+            }
+          private:
+            std::ostream& _os;
+          };
+        }
+
+        header_signature::header_signature (const signature_type& signature)
+          : _signature (signature)
+        {}
+        std::ostream& header_signature::operator() (std::ostream& os) const
+        {
+          return boost::apply_visitor (print_header_signature (os), _signature);
+        }
+        std::ostream& operator<< (std::ostream& os, const header_signature& h)
+        {
+          return h (os);
+        }
+
+
+        namespace
+        {
           class impl_ctor_default
           {
           public:
