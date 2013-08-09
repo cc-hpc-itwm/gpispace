@@ -17,20 +17,6 @@ namespace value
   {
     namespace exception
     {
-      class missing_field : public std::runtime_error
-      {
-      public:
-        missing_field (const std::string&);
-      };
-
-      class cannot_get_field_from_literal : public std::runtime_error
-      {
-      public:
-        cannot_get_field_from_literal ( const std::string&
-                                      , const literal::type&
-                                      );
-      };
-
       class bad_get : public std::runtime_error
       {
       public:
