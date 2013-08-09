@@ -1,5 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#include <stdlib.h> // abort
+
 #include <we/expr/token/type.hpp>
 
 #include <iostream>
@@ -81,6 +83,7 @@ namespace expr
         case ref: return s << "<ref>";
         case eof: return s << "<eof>";
         case define: return s << " := ";
+        default: abort();
         }
     }
   }
