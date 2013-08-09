@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE (test_invalid_type)
   try
   {
     url_t url ("://foo");
-    BOOST_REQUIRE (! "invalid (empty) type specified");
+    BOOST_ERROR ("invalid (empty) type specified");
   }
   catch (std::invalid_argument const &)
   {
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE (test_empty_param)
   try
   {
     url_t url ("file://bar?=baz");
-    BOOST_REQUIRE (! "invalid (empty) param specified");
+    BOOST_ERROR ("invalid (empty) param specified");
   }
   catch (std::invalid_argument const &)
   {
