@@ -97,6 +97,18 @@ namespace expr
 
       return v;
     }
+    pnet::type::value::value_type
+      parser::eval_all2 (eval::context & context) const
+    {
+      pnet::type::value::value_type v;
+
+      for (nd_const_it_t it (begin()); it != end(); ++it)
+        {
+          v = eval::eval (context, *it);
+        }
+
+      return v;
+    }
 
     bool parser::eval_all_bool (eval::context & context) const
     {

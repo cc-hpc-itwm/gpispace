@@ -107,6 +107,7 @@ namespace expr
 
       // evaluate the whole stack in order, return the last value
       value::type eval_all (eval::context & context) const;
+      pnet::type::value::value_type eval_all2 (eval::context& context) const;
       bool eval_all_bool (eval::context & context) const;
 
       value::type eval_all() const;
