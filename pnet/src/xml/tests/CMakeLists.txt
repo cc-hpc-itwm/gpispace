@@ -13,21 +13,21 @@ configure_file (parser_fixture.hpp.in parser_fixture.hpp @ONLY)
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 
 fhg_add_test (parse_duplicate_connect.cpp
-  LINK_LIBRARIES pnet
+  LINK_LIBRARIES pnet we2
   DESCRIPTION "pnetc shall throw if there are mutiple connections with the same port, place and direction"
 )
 
 fhg_add_test (parse_compile_and_compare.cpp
-  LINK_LIBRARIES pnet
+  LINK_LIBRARIES pnet we2
   DESCRIPTION "pnetc shall produce the same output as given in the reference files"
 )
 
 fhg_add_test (util_position.cpp
-  LINK_LIBRARIES pnet
+  LINK_LIBRARIES pnet we2
   DESCRIPTION "test xml_util_position"
 )
 
 fhg_add_test (diagnostics.cpp
-  LINK_LIBRARIES pnet
+  LINK_LIBRARIES pnet we2
   DESCRIPTION "check parser diagnostics"
 )

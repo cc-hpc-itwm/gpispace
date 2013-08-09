@@ -135,6 +135,8 @@ if (ENABLE_PNET_EDITOR)
                           "${LIB_PREFIX}graphviz-wrapper"
                           "fhg_util_qt"
                           pnet
+                          fhg-util
+                          we2
                           ${FhgLog_LIBRARY}
                           ${UTIL_LIBRARIES}
                           ${Boost_LIBRARIES}

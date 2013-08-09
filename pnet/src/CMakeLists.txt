@@ -241,6 +241,7 @@ install (FILES
 add_executable(pnetc xml/parse/pnetc.cpp)
 target_link_libraries(pnetc fhg-revision)
 target_link_libraries(pnetc pnet)
+target_link_libraries(pnetc we2)
 target_link_libraries(pnetc ${Boost_LIBRARIES})
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
@@ -249,6 +250,7 @@ if (ENABLE_STATIC_BINARIES)
   add_executable(pnetc.static xml/parse/pnetc.cpp)
   target_link_libraries(pnetc.static fhg-revision)
   target_link_libraries(pnetc.static pnet)
+  target_link_libraries(pnetc.static we2)
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
 
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
