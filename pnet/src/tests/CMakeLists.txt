@@ -26,7 +26,6 @@ set(tests
     test_try_gen.cpp
     test_gen.cpp
     test_context.cpp
-    test_literal_show.cpp
    )
 
 foreach (test ${tests})
