@@ -150,7 +150,6 @@ set (we_srcs
   we/type/value/put.cpp
   we/type/value/function.cpp
   we/type/value/get.cpp
-  we/type/value/find.cpp
   we/expr/eval/refnode.cpp
   we/type/transition.cpp
 )
