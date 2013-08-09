@@ -86,8 +86,8 @@ static fvmAllocHandle_t alloc ( const long & size
 
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const std::string& filename (boost::get<const std::string&> (input.value2 ("config_file")));
-  long memsizeGPI (boost::get<long> (input.value2 ("memsizeGPI")));
+  const std::string& filename (boost::get<const std::string&> (input.value ("config_file")));
+  long memsizeGPI (boost::get<long> (input.value ("memsizeGPI")));
 
   MLOG (INFO, "initialize: filename " << filename);
   MLOG (INFO, "initialize: memsizeGPI " << memsizeGPI);
@@ -315,9 +315,9 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   output.bind ("config.handle.volume", static_cast<long>(handle_volume));
 
   // WORK HERE: overcome this by using virtual offsetclasses
-  if ( peek<long> (output.value2 ("config"), "size.store.volume")
-     < ( peek<long> (output.value2 ("config"), "per.offset.volumes")
-       * peek<long> (output.value2 ("config"), "per.volume.copies")
+  if ( peek<long> (output.value ("config"), "size.store.volume")
+     < ( peek<long> (output.value ("config"), "per.offset.volumes")
+       * peek<long> (output.value ("config"), "per.volume.copies")
        )
      )
     {
@@ -327,15 +327,15 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
         ("need at least as many volume stores as volumes per offset");
     }
 
-  MLOG (INFO, "initialize: config " << pnet::type::value::show (output.value2 ("config")));
+  MLOG (INFO, "initialize: config " << pnet::type::value::show (output.value ("config")));
 }
 
 // ************************************************************************* //
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const long& id (boost::get<const long&> (input.value2 ("id")));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const long& id (boost::get<const long&> (input.value ("id")));
   const long& parallel (peek<const long&> (config, "loadTT.parallel"));
 
   MLOG (INFO, "loadTT: id " << id << " out of " << parallel);
@@ -389,8 +389,8 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
   MLOG (INFO, "load: bunch " << pnet::type::value::show (bunch));
 
@@ -424,8 +424,8 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
 
 static void initialize_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
   MLOG (INFO, "init_volume: volume " << pnet::type::value::show (volume)
        << " config := " << pnet::type::value::show (config));
@@ -483,8 +483,8 @@ static void initialize_volume (void *, const we::loader::input_t & input, we::lo
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
   MLOG (INFO, "process: volume " << pnet::type::value::show (volume));
 
@@ -573,8 +573,8 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
 static void reduce (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2("config"));
-  const pnet::type::value::value_type& pair (input.value2 ("pair"));
+  const pnet::type::value::value_type& config (input.value("config"));
+  const pnet::type::value::value_type& pair (input.value ("pair"));
   const pnet::type::value::value_type& volume (*pnet::type::value::peek ("vol", pair));
   const pnet::type::value::value_type& sum (*pnet::type::value::peek ("sum.volume", pair));
 
@@ -660,8 +660,8 @@ static void reduce (void *, const we::loader::input_t & input, we::loader::outpu
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
   MLOG (INFO, "write: volume " << pnet::type::value::show (volume));
 
@@ -724,7 +724,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
+  const pnet::type::value::value_type& config (input.value ("config"));
 
   MLOG (INFO, "finalize: config " << pnet::type::value::show (config));
 

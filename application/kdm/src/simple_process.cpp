@@ -45,7 +45,7 @@ static void init ( void * state
                  , we::loader::output_t & output
                  )
 {
-  const std::string& filename (boost::get<const std::string&> (input.value2 ("desc")));
+  const std::string& filename (boost::get<const std::string&> (input.value ("desc")));
 
   MLOG (INFO, "init: got filename " << filename);
 
@@ -130,14 +130,14 @@ static void init ( void * state
     }
 
   // determine size, overwrite values given in config file
-  if (peek<std::string> (output.value2("config"), "input.type") != "text")
+  if (peek<std::string> (output.value("config"), "input.type") != "text")
   {
     long num (0);
     long size (0);
 
     try
       {
-        num = peek<long> (output.value2 ("config"), "trace_detect.number");
+        num = peek<long> (output.value ("config"), "trace_detect.number");
       }
     catch (...)
       {
@@ -146,18 +146,18 @@ static void init ( void * state
 
     try
       {
-        size = peek<long> (output.value2("config"), "trace_detect.size_in_bytes");
+        size = peek<long> (output.value("config"), "trace_detect.size_in_bytes");
       }
     catch (...)
       {
         // do nothing, the value is not given
       }
 
-    const std::string & t (peek<const std::string&> (output.value2 ("config"), "input.type"));
+    const std::string & t (peek<const std::string&> (output.value ("config"), "input.type"));
 
     if (t != "text")
       {
-        const std::string& inp (peek<const std::string&> (output.value2 ("config"), "input.file"));
+        const std::string& inp (peek<const std::string&> (output.value ("config"), "input.file"));
 
         determine_size (inp, t, num, size);
 
@@ -167,8 +167,8 @@ static void init ( void * state
 
     try
       {
-        const long & slots_per_node (peek<const long&> (output.value2 ("config"), "tune.slots_per_node"));
-        const long & memsize (peek<const long&> (output.value2 ("config"), "tune.memsize"));
+        const long & slots_per_node (peek<const long&> (output.value ("config"), "tune.slots_per_node"));
+        const long & memsize (peek<const long&> (output.value ("config"), "tune.memsize"));
 	const long trace_per_bunch ((memsize/slots_per_node) / size);
 
 	output.bind ("config.tune.trace_per_bunch", trace_per_bunch);
@@ -180,19 +180,19 @@ static void init ( void * state
       }
   }
 
-  const long& trace_per_bunch (peek<const long&> (output.value2 ("config"), "tune.trace_per_bunch"));
+  const long& trace_per_bunch (peek<const long&> (output.value ("config"), "tune.trace_per_bunch"));
 
   if (trace_per_bunch <= 0)
     {
       throw std::runtime_error ("BUMMER! trace_per_bunch <= 0");
     }
 
-  const long& trace_num (peek<const long&> (output.value2("config"), "trace_detect.number"));
-  const long& trace_size_in_bytes (peek<const long&> (output.value2("config"), "trace_detect.size_in_bytes"));
-  const long & memsize (peek<const long&> (output.value2("config"), "tune.memsize"));
+  const long& trace_num (peek<const long&> (output.value("config"), "trace_detect.number"));
+  const long& trace_size_in_bytes (peek<const long&> (output.value("config"), "trace_detect.size_in_bytes"));
+  const long & memsize (peek<const long&> (output.value("config"), "tune.memsize"));
 
-  const std::string& inputfile (peek<const std::string&> (output.value2("config"), "input.file"));
-  const std::string& outputfile (peek<const std::string&> (output.value2("config"), "output.file"));
+  const std::string& inputfile (peek<const std::string&> (output.value("config"), "input.file"));
+  const std::string& outputfile (peek<const std::string&> (output.value("config"), "output.file"));
 
   const long sizeofBunchBuffer (trace_per_bunch * trace_size_in_bytes);
 
@@ -228,9 +228,9 @@ static void init ( void * state
       num_part += 1;
     }
 
-  if ( peek<std::string> (output.value2("config"), "output.type")
+  if ( peek<std::string> (output.value("config"), "output.type")
        !=
-       peek<std::string> (output.value2("config"), "input.type")
+       peek<std::string> (output.value("config"), "input.type")
      )
   {
     throw std::runtime_error ("Sorry, input type != output type not implemented yet!");
@@ -256,7 +256,7 @@ static void init ( void * state
   output.bind ("config.handle.data", static_cast<long>(handle_data));
   output.bind ("config.handle.scratch", static_cast<long>(handle_scratch));
 
-  MLOG (INFO, "init: got config " << pnet::type::value::show (output.value2 ("config")));
+  MLOG (INFO, "init: got config " << pnet::type::value::show (output.value ("config")));
 }
 
 // ************************************************************************* //
@@ -266,7 +266,7 @@ static void finalize ( void * state
                      , we::loader::output_t & output
                      )
 {
-  const pnet::type::value::value_type& config (input.value2("config"));
+  const pnet::type::value::value_type& config (input.value("config"));
 
   MLOG (INFO, "finalize: config " << pnet::type::value::show (config));
 
@@ -286,9 +286,9 @@ static void load ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  const long & part (boost::get<const long&> (input.value2 ("part")));
-  const long & store (boost::get<const long&> (input.value2 ("store")));
-  const pnet::type::value::value_type & config (input.value2 ("config"));
+  const long & part (boost::get<const long&> (input.value ("part")));
+  const long & store (boost::get<const long&> (input.value ("store")));
+  const pnet::type::value::value_type & config (input.value ("config"));
 
   MLOG (INFO, "load: part " << part << ", store " << store << ", config " << pnet::type::value::show (config));
 
@@ -333,9 +333,9 @@ static void write ( void * state
                   , we::loader::output_t & output
                   )
 {
-  const pnet::type::value::value_type& config (input.value2( "config"));
-  const long & part (peek<const long&> (input.value2("part_in_store"), "id.part"));
-  const long & store (peek<const long&> (input.value2("part_in_store"), "id.store"));
+  const pnet::type::value::value_type& config (input.value( "config"));
+  const long & part (peek<const long&> (input.value("part_in_store"), "id.part"));
+  const long & store (peek<const long&> (input.value("part_in_store"), "id.store"));
 
   MLOG (INFO, "write: part " << part << ", store " << store << ", config " << pnet::type::value::show (config));
 

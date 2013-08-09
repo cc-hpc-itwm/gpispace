@@ -34,7 +34,7 @@ namespace expr
 
         value::type operator() (const std::list<std::string>& key) const
         {
-          return pnet::type::compat::COMPAT (c.value2 (key));
+          return pnet::type::compat::COMPAT (c.value (key));
         }
 
         value::type operator () (const expr::parse::node::unary_t& u) const

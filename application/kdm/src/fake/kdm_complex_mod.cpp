@@ -25,7 +25,7 @@ namespace
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const std::string& filename
-    (boost::get<const std::string&> (input.value2 ("file_config")));
+    (boost::get<const std::string&> (input.value ("file_config")));
 
   MLOG (INFO, "initialize: filename " << filename);
 
@@ -48,20 +48,20 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
         }
     }
 
-  if ( peek<long> (output.value2 ("config"), "size.store.volume")
-     < peek<long> (output.value2 ("config"), "per_offset.volumes")
+  if ( peek<long> (output.value ("config"), "size.store.volume")
+     < peek<long> (output.value ("config"), "per_offset.volumes")
      )
     {
       throw std::runtime_error
         ("need at least as many volume stores as volumes per offset");
     }
 
-  MLOG (INFO, "initialize: config " << pnet::type::value::show (output.value2 ("config")));
+  MLOG (INFO, "initialize: config " << pnet::type::value::show (output.value ("config")));
 }
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const long& id (boost::get<const long&> (input.value2 ("id")));
+  const long& id (boost::get<const long&> (input.value ("id")));
 
   MLOG (INFO, "loadTT: id " << id);
 
@@ -70,7 +70,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
   MLOG (INFO, "load: bunch " << pnet::type::value::show (bunch));
 
@@ -79,7 +79,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
   literal::stack_type stack_bunch_id
     (peek<literal::stack_type> (volume, "assigned.bunch.id"));
   literal::stack_type stack_store_id
@@ -115,7 +115,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
   MLOG (INFO, "write: volume " << pnet::type::value::show (volume));
 
@@ -124,7 +124,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
+  const pnet::type::value::value_type& config (input.value ("config"));
 
   MLOG (INFO, "finalize: config " << pnet::type::value::show (config));
 
@@ -133,7 +133,7 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
   MLOG (INFO, "init_volume: volume " << pnet::type::value::show (volume));
 

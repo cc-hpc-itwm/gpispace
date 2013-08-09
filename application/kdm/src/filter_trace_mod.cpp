@@ -49,8 +49,8 @@ generic_filter ( void * state
 	       , boost::function <void (void *, const long &)> filter_impl
 	       )
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& part_in_store (input.value2 ("in"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& part_in_store (input.value ("in"));
   const long & part (peek<const long&> (part_in_store, "id.part"));
   const long & store (peek<const long&> (part_in_store, "id.store"));
 
@@ -162,7 +162,7 @@ static void clip ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  const float c (peek<double> (input.value2 ("config"), "param.clip.c"));
+  const float c (peek<double> (input.value ("config"), "param.clip.c"));
 
   generic_filter (state, input, output, boost::bind (clip_impl, _1, _2, c));
 }
@@ -202,7 +202,7 @@ static void trap ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  const float t (peek<long> (input.value2 ("config"), "param.trap.t"));
+  const float t (peek<long> (input.value ("config"), "param.trap.t"));
 
   generic_filter (state, input, output, boost::bind (trap_impl, _1, _2, t));
 }
@@ -291,10 +291,10 @@ static void bandpass ( void * state
 		     , we::loader::output_t & output
 		     )
 {
-  const float frequ1 (peek<long> (input.value2 ("config"), "param.bandpass.frequ1"));
-  const float frequ2 (peek<long> (input.value2 ("config"), "param.bandpass.frequ2"));
-  const float frequ3 (peek<long> (input.value2 ("config"), "param.bandpass.frequ3"));
-  const float frequ4 (peek<long> (input.value2 ("config"), "param.bandpass.frequ4"));
+  const float frequ1 (peek<long> (input.value ("config"), "param.bandpass.frequ1"));
+  const float frequ2 (peek<long> (input.value ("config"), "param.bandpass.frequ2"));
+  const float frequ3 (peek<long> (input.value ("config"), "param.bandpass.frequ3"));
+  const float frequ4 (peek<long> (input.value ("config"), "param.bandpass.frequ4"));
 
   generic_filter (state, input, output
 		 , boost::bind ( bandpass_impl
@@ -423,7 +423,7 @@ static void tpow ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  const float t (peek<double> (input.value2 ("config"), "param.tpow.tpow"));
+  const float t (peek<double> (input.value ("config"), "param.tpow.tpow"));
 
   generic_filter (state, input, output, boost::bind (tpow_impl, _1, _2, t));
 }
@@ -435,8 +435,8 @@ static void execW ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& part_in_store (input.value2 ("in"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& part_in_store (input.value ("in"));
   const long& part (peek<const long&> (part_in_store, "id.part"));
   const long& store (peek<const long&> (part_in_store, "id.store"));
 

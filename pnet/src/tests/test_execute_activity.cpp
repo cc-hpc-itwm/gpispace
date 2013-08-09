@@ -47,7 +47,7 @@ namespace module
     if ( mf.module() == "dummy" && mf.function() == "dummy" )
     {
       const long result
-        (dummy::dummy (boost::get<long> (ctxt.value2 ("input"))));
+        (dummy::dummy (boost::get<long> (ctxt.value ("input"))));
       output.push_back (std::make_pair (result, "output"));
     }
   }

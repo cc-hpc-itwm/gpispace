@@ -50,7 +50,7 @@ namespace we
       inline T
       get (const input_t & i, const std::string & key)
     {
-      return boost::get<T> (i.value2 (key));
+      return boost::get<T> (i.value (key));
     }
 
     // ...but not when stated explicitely be a value::type
@@ -58,7 +58,7 @@ namespace we
       inline value::type
       get<value::type> (const input_t & i, const std::string & key)
     {
-      return pnet::type::compat::COMPAT (i.value2 (key));
+      return pnet::type::compat::COMPAT (i.value (key));
     }
   }
 }

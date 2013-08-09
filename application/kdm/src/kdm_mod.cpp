@@ -54,7 +54,7 @@ static unsigned long sizeofJob (void)
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const std::string& filename
-    (boost::get<const std::string&> (input.value2 ("config_file")));
+    (boost::get<const std::string&> (input.value ("config_file")));
   const int NThreads (4);
 
   MigrationJob Job;
@@ -214,7 +214,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   output.bind ("config.filter.tpow", static_cast<double>(Job.tpow));
 
   LOG (DEBUG, "initialize: config = "
-           << pnet::type::value::show (output.value2 ("config"))
+           << pnet::type::value::show (output.value ("config"))
       );
 }
 
@@ -509,33 +509,33 @@ static void kdm_process ( const pnet::type::value::value_type & config
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  kdm_loadTT (input.value2 ("config"), boost::get<long> (input.value2 ("id")));
+  kdm_loadTT (input.value ("config"), boost::get<long> (input.value ("id")));
 
   output.bind ("done", we::type::literal::control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
-  kdm_load (input.value2 ("config"), bunch);
+  kdm_load (input.value ("config"), bunch);
 
   output.bind ("bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
-  kdm_process (input.value2 ("config"), bunch);
+  kdm_process (input.value ("config"), bunch);
 
   output.bind ("bunch", bunch);
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
   kdm_write (config, volume);
 
@@ -544,23 +544,23 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  kdm_finalize (input.value2 ("config"));
+  kdm_finalize (input.value ("config"));
 
   output.bind ("trigger", we::type::literal::control());
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
-  kdm_init_volume (input.value2 ("config"), volume);
+  kdm_init_volume (input.value ("config"), volume);
 
   output.bind ("volume", volume);
 }
 
 static void debug (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const pnet::type::value::value_type& volume (input.value2 ("volume"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
   LOG (INFO, "DEBUG: volume " << pnet::type::value::show (volume));
 

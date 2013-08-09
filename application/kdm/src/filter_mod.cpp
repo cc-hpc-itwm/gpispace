@@ -54,8 +54,8 @@ static void generic_filter ( void *
 			   , void (*filter) (TraceBunch &)
 			   )
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
   MigrationJob Job;
 
@@ -81,8 +81,8 @@ generic_filter_with_float ( void *
 			  , const std::string & field
 			  )
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
   MigrationJob Job;
 
@@ -95,7 +95,7 @@ generic_filter_with_float ( void *
 
   TraceBunch Bunch(migbuf,oid,1,bid,Job);
 
-  const float f (peek<double> (input.value2 ("config"), field));
+  const float f (peek<double> (input.value ("config"), field));
 
   filter (Bunch, f);
 
@@ -297,8 +297,8 @@ bandpass ( void *
 	 , we::loader::output_t & output
 	 )
 {
-  const pnet::type::value::value_type& config (input.value2 ("config"));
-  const pnet::type::value::value_type& bunch (input.value2 ("bunch"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
   MigrationJob Job;
 

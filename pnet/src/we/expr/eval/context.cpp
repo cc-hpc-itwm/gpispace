@@ -83,17 +83,8 @@ namespace expr
       do_bind2 (_container, key_vec, value);
     }
 
-    value::type context::value (const std::string& key) const
-    {
-      return pnet::type::compat::COMPAT (value2 (key));
-    }
-    value::type context::value (const std::list<std::string>& key_vec) const
-    {
-      return pnet::type::compat::COMPAT (value2 (key_vec));
-    }
-
     const pnet::type::value::value_type&
-      context::value2 (const std::string& key) const
+      context::value (const std::string& key) const
     {
       const container_type::const_iterator pos (_container.find (key));
 
@@ -106,7 +97,7 @@ namespace expr
     }
 
     const pnet::type::value::value_type&
-      context::value2 (const std::list<std::string>& key_vec) const
+      context::value (const std::list<std::string>& key_vec) const
     {
       if (key_vec.empty())
       {
