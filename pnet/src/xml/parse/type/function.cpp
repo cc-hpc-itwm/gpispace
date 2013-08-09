@@ -1059,6 +1059,7 @@ namespace xml
               ;
 
             cpp_util::include (stream, "we/loader/macros.hpp");
+            cpp_util::include (stream, "we2/type/compat.hpp");
 
             const fun_infos_type & funs (mod->second);
 
@@ -1849,9 +1850,9 @@ namespace xml
             {
               first_put = false;
 
-              s << "_pnetc_output.BIND_OLD ("
+              s << "_pnetc_output.bind ("
                 << "\"" << (*port_return).name << "\""
-                << ", value::type("
+                << ", pnet::type::compat::COMPAT(value::type("
                 ;
 
               if (!literal::cpp::known ((*port_return).type))
@@ -1906,7 +1907,7 @@ namespace xml
 
           if (port_return)
             {
-              s << "))";
+              s << ")))";
 
               if (!literal::cpp::known ((*port_return).type))
                 {
@@ -1929,10 +1930,10 @@ namespace xml
                 }
 
               s << "      "
-                << "  _pnetc_output.BIND_OLD ("
+                << "  _pnetc_output.bind ("
                 << "\"" << port->name << "\""
-                << ", value::type(" << mk_value (*port)
-                << "))"
+                << ", pnet::type::compat::COMPAT(value::type(" << mk_value (*port)
+                << ")))"
                 << ";"
                 << std::endl
                 ;
@@ -1951,10 +1952,10 @@ namespace xml
                 }
 
               s << "      "
-                << "  _pnetc_output.BIND_OLD ("
+                << "  _pnetc_output.bind ("
                 << "\"" << port->name << "\""
-                << ", value::type(" << mk_value (*port)
-                << "))"
+                << ", pnet::type::compat::COMPAT(value::type(" << mk_value (*port)
+                << ")))"
                 << ";"
                 << std::endl
                 ;
