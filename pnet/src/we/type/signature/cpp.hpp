@@ -20,6 +20,9 @@ namespace cpp_util = fhg::util::cpp;
 #include <boost/unordered_set.hpp>
 #include <boost/optional.hpp>
 
+#include <we2/type/signature/cpp.hpp>
+#include <we2/type/compat.sig.hpp>
+
 namespace signature
 {
   namespace cpp
@@ -652,6 +655,12 @@ namespace signature
       os << "      "; cpp_show<Stream> (os, s, n, 3);
 
       os << "    } // namespace " << n                           << std::endl;
+
+      os << "// NEW TYPE" << std::endl;
+      os << pnet::type::signature::cpp::header_signature
+             (pnet::type::compat::COMPAT (s, n))
+         << std::endl;
+
       os << "  } // namespace type"                              << std::endl;
       os << "} // namespace pnetc"                               << std::endl;
       os                                                         << std::endl;
