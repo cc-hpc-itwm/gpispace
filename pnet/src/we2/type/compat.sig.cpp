@@ -47,8 +47,8 @@ namespace pnet
           : public boost::static_visitor<signature::signature_type>
         {
         public:
-          sig2sig2 (const ::signature::type& sig)
-            : _sig (sig)
+          sig2sig2 (const boost::optional<std::string>& nice)
+            : _nice (nice)
           {}
 
           signature::signature_type operator() (const std::string& t) const
@@ -71,19 +71,21 @@ namespace pnet
                            );
             }
 
-            return signature::structured_type (std::make_pair ( _sig.nice()
-                                                              , s2
-                                                              )
-                                              );
+            return signature::structured_type
+              (std::make_pair (_nice ? *_nice : "COMPAT", s2));
           }
+
         private:
-          const ::signature::type& _sig;
+          const boost::optional<std::string> _nice;
         };
       }
 
-      signature::signature_type COMPAT (const ::signature::type& x)
+      signature::signature_type COMPAT
+        ( const ::signature::type& x
+        , const boost::optional<std::string>& nice
+        )
       {
-        return boost::apply_visitor (sig2sig2 (x), x.desc());
+        return boost::apply_visitor (sig2sig2 (nice), x.desc());
       }
     }
   }

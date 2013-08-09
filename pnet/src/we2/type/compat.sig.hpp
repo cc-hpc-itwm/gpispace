@@ -6,13 +6,20 @@
 #include <we/type/signature.hpp>
 #include <we2/type/signature.hpp>
 
+#include <boost/optional.hpp>
+
+#include <string>
+
 namespace pnet
 {
   namespace type
   {
     namespace compat
     {
-      signature::signature_type COMPAT (const ::signature::type&);
+      signature::signature_type COMPAT
+        ( const ::signature::type&
+        , const boost::optional<std::string>& = boost::none
+        );
     }
   }
 }
