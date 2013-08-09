@@ -7,7 +7,6 @@
 
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
-#include <we/type/value/get.hpp>
 #include <we/expr/eval/context.hpp>
 
 #include <we/mgmt/type/flags.hpp>
@@ -89,7 +88,7 @@ namespace we
                              );
           }
 
-          return value::get<T> (e.ast().eval_all (context));
+          return boost::get<T> (e.ast().eval_all2 (context));
         }
 
         void set_id (const petri_net::activity_id_type&);
