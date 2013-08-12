@@ -98,6 +98,11 @@ set (we_dev_srcs
   we/type/bitsetofint.cpp
   we/type/bytearray.cpp
   we/type/literal/control.cpp
+  we2/exception.cpp
+  we2/field.cpp
+  we2/signature_of.cpp
+  we2/type/compat.cpp
+  we2/type/value/poke.cpp
 )
 
 set (we_srcs
@@ -319,6 +324,7 @@ add_library (we-dev SHARED ${we_dev_srcs})
 set_target_properties(we-dev
   PROPERTIES VERSION 1
 )
+target_link_libraries(we-dev fhg-util we2)
 
 install (TARGETS we-dev
   LIBRARY DESTINATION lib

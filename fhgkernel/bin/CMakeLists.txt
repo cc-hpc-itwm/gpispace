@@ -2,7 +2,7 @@ add_executable(fhgmodinfo fhg-modinfo.cpp)
 target_link_libraries(fhgmodinfo fhg-plugin)
 
 add_executable(fhgkernel fhgkernel.cpp)
-target_link_libraries(fhgkernel fhg-plugin ${UTIL_LIBRARIES})
+target_link_libraries(fhgkernel fhg-plugin we-dev fhg-util ${UTIL_LIBRARIES})
 
 install (TARGETS fhgmodinfo fhgkernel
   RUNTIME
