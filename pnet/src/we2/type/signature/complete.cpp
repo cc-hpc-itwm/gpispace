@@ -39,7 +39,7 @@ namespace pnet
           tn[value::MAP()] = "std::map<pnet::type::value::value_type,pnet::type::value::value_type>";
 
           //\! Remove when old value type has been removed
-          tn["stack"] = "std::deque<long>";
+          tn["stack"] = "std::list<pnet::type::value::value_type>";
 
           return tn;
         }

@@ -3,10 +3,12 @@
 #ifndef _FHG_UTIL_CPP_INCLUDE
 #define _FHG_UTIL_CPP_INCLUDE 1
 
-#include <iostream>
-#include <string>
+#include <fhg/util/ostream_modifier.hpp>
 
-#include <fhg/util/cpp/types.hpp>
+#include <boost/filesystem.hpp>
+
+#include <iosfwd>
+#include <string>
 
 namespace fhg
 {
@@ -14,28 +16,15 @@ namespace fhg
   {
     namespace cpp
     {
-      template<typename Stream>
-      Stream& include (Stream& s, const std::string& what)
+      class include : public ostream::modifier
       {
-        if (what.size() > 0)
-          {
-            s << "#include <" << what << ">" << std::endl;
-          }
-
-        return s;
-      }
-
-      template<typename Stream>
-      Stream& include (Stream& s, const char* what)
-      {
-        return include (s, std::string (what));
-      }
-
-      template<typename Stream>
-      Stream& include (Stream& s, const path_type& file)
-      {
-        return include (s, file.string());
-      }
+      public:
+        include (const std::string&);
+        include (const boost::filesystem::path&);
+        std::ostream& operator() (std::ostream&) const;
+      private:
+        const std::string& _fname;
+      };
     }
   }
 }

@@ -72,6 +72,7 @@ set (srcs
   num/show.cpp
   indenter.cpp
   cpp/block.cpp
+  cpp/include.cpp
   cpp/namespace.cpp
   cpp/struct.cpp
 

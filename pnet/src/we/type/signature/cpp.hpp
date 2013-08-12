@@ -326,9 +326,9 @@ namespace signature
               if (seen.find (t) == seen.end())
                 {
                   const boost::filesystem::path file
-                    (cpp_util::path::type() / cpp_util::make::hpp (t));
+                    (cpp_util::path::type() / (t + ".hpp"));
 
-                  cpp_util::include (os, file);
+                  os << cpp_util::include (file);
 
                   seen.insert (t);
                 }
@@ -615,19 +615,17 @@ namespace signature
       , const boost::filesystem::path & defpath
       )
     {
-      cpp_util::header_gen_full (os);
       cpp_util::include_guard_begin (os, "PNETC_TYPE_" + n);
 
-      cpp_util::include (os, "we/type/value.hpp");
-      cpp_util::include (os, "we/type/value/cpp/get.hpp");
+      os << cpp_util::include (std::string ("we/type/value.hpp"));
+      os << cpp_util::include (std::string ("we/type/value/cpp/get.hpp"));
 
-      // for serialization
-      cpp_util::include (os, "boost/serialization/nvp.hpp");
+      os << cpp_util::include (std::string ("boost/serialization/nvp.hpp"));
 
       // for operator <<
-      cpp_util::include (os, "we/type/literal.hpp");
-      cpp_util::include (os, "we/type/literal/show.hpp");
-      cpp_util::include (os, "iostream");
+      os << cpp_util::include (std::string ("we/type/literal.hpp"));
+      os << cpp_util::include (std::string ("we/type/literal/show.hpp"));
+      os << cpp_util::include (std::string ("iostream"));
 
       os << std::endl;
 
@@ -672,7 +670,8 @@ namespace signature
       , const boost::filesystem::path & defpath
       )
     {
-      cpp_util::include (os, n + ".hpp");
+      os << cpp_util::include
+        (cpp_util::path::type().string() + "/" + n + ".hpp");
 
       os << "// defined in " << defpath << std::endl;
 

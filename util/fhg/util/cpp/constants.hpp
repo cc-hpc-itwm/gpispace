@@ -3,7 +3,7 @@
 #ifndef _FHG_UTIL_CPP_CONSTANTS
 #define _FHG_UTIL_CPP_CONSTANTS 1
 
-#include <fhg/util/cpp/types.hpp>
+#include <boost/filesystem.hpp>
 
 #include <string>
 
@@ -23,10 +23,10 @@ namespace fhg
 
       namespace path
       {
-        CONSTANT (path_type, pnetc   , "pnetc")
-        CONSTANT (path_type, type    , pnetc() / "type")
-        CONSTANT (path_type, op      , pnetc() / "op")
-        CONSTANT (path_type, install , "$(LIB_DESTDIR)")
+        CONSTANT (boost::filesystem::path, pnetc   , "pnetc")
+        CONSTANT (boost::filesystem::path, type    , pnetc() / "type")
+        CONSTANT (boost::filesystem::path, op      , pnetc() / "op")
+        CONSTANT (boost::filesystem::path, install , "$(LIB_DESTDIR)")
       }
 
       namespace access
@@ -75,42 +75,13 @@ namespace fhg
         CONSTANT (std::string, so, "so")
         CONSTANT (std::string, o, "o")
         CONSTANT (std::string, d, "d")
-
-        inline std::string extend (const std::string & x, const std::string & e)
-        {
-          return x + "." + e;
-        }
       }
 
       namespace make
       {
-        inline std::string hpp (const std::string & name)
-        {
-          return extension::extend (name, extension::hpp());
-        }
-
-        inline std::string cpp (const std::string & name)
-        {
-          return extension::extend (name, extension::cpp());
-        }
-
-        inline std::string cpp ( const std::string & mod
-                               , const std::string & fun
-                               )
-        {
-          const path_type path (path::op() / mod / fun);
-
-          return extension::extend (path.string(), extension::cpp());
-        }
-
-        inline std::string tmpl (const std::string & name)
-        {
-          return extension::extend (name, extension::tmpl());
-        }
-
         inline std::string mod_so_name (const std::string& mod)
         {
-          return extension::extend ("lib" + mod, extension::so());
+          return "lib" + mod + "." + extension::so();
         }
 
         inline std::string mod_so (const std::string & mod)
@@ -121,50 +92,6 @@ namespace fhg
         inline std::string mod_so_install (const std::string& mod)
         {
           return (path::install() / mod_so_name (mod)).string();
-        }
-
-        inline std::string obj (const std::string & mod)
-        {
-          const path_type path (path::op() / mod);
-
-          return extension::extend (path.string(), extension::o());
-        }
-
-        inline std::string obj ( const std::string & mod
-                               , const std::string & fun
-                               )
-        {
-          const path_type path (path::op() / mod / fun);
-
-          return extension::extend (path.string(), extension::o());
-        }
-
-        inline std::string dep (const std::string & mod)
-        {
-          const path_type path (path::op() / mod);
-
-          return extension::extend (path.string(), extension::d());
-        }
-
-        inline std::string dep ( const std::string & mod
-                               , const std::string & fun
-                               )
-        {
-          const path_type path (path::op() / mod / fun);
-
-          return extension::extend (path.string(), extension::d());
-        }
-
-        inline std::string stem (const std::string & mod)
-        {
-          return (path::op() / mod).string();
-        }
-
-        inline std::string stem ( const std::string & mod
-                                , const std::string & fun
-                                )
-        {
-          return (path::op() / mod / fun).string();
         }
       }
 
