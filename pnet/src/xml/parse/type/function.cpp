@@ -1098,6 +1098,7 @@ namespace xml
 
       void mk_makefile ( const state::type & state
                        , const fun_info_map & m
+                       , const boost::unordered_set<std::string>& structnames
                        )
       {
         namespace cpp_util = ::fhg::util::cpp;
@@ -2253,10 +2254,15 @@ namespace xml
 
       namespace
       {
-        void to_cpp (const structs_type& structs, const state::type& state)
+        void to_cpp ( const structs_type& structs
+                    , const state::type& state
+                    , boost::unordered_set<std::string>& structnames
+                    )
         {
           BOOST_FOREACH (const structure_type& structure, structs)
           {
+            structnames.insert (structure.name());
+
             const boost::filesystem::path prefix (state.path_to_cpp());
 
             {
@@ -2297,12 +2303,12 @@ namespace xml
 
         class visitor_to_cpp : public boost::static_visitor<void>
         {
-        private:
-          const state::type & state;
-
         public:
-          visitor_to_cpp (const state::type & _state)
+          visitor_to_cpp ( const state::type & _state
+                         , boost::unordered_set<std::string>& structnames
+                         )
             : state (_state)
+            , _structnames (structnames)
           {}
 
           void operator() (const id::ref::net& id) const
@@ -2311,13 +2317,13 @@ namespace xml
 
             if (n.contains_a_module_call)
             {
-              to_cpp (n.structs, state);
+              to_cpp (n.structs, state, _structnames);
 
               BOOST_FOREACH ( const id::ref::function& id_function
                             , n.functions().ids()
                             )
               {
-                struct_to_cpp (state, id_function);
+                struct_to_cpp (state, id_function, _structnames);
               }
 
               BOOST_FOREACH ( const transition_type& transition
@@ -2331,26 +2337,33 @@ namespace xml
 
           void operator() (const id::ref::function& f) const
           {
-            struct_to_cpp (state, f);
+            struct_to_cpp (state, f, _structnames);
           }
 
           void operator() (const id::ref::use&) const { }
           void operator() (const id::ref::module&) const { }
           void operator() (const id::ref::expression&) const { }
+
+        private:
+          const state::type & state;
+          boost::unordered_set<std::string>& _structnames;
         };
       }
 
       void struct_to_cpp ( const state::type& state
                          , const id::ref::function& function_id
+                         , boost::unordered_set<std::string>& structnames
                          )
       {
         const function_type& function (function_id.get());
 
         if (function.contains_a_module_call)
         {
-          to_cpp (function.structs, state);
+          to_cpp (function.structs, state, structnames);
 
-          boost::apply_visitor (visitor_to_cpp (state), function.content());
+          boost::apply_visitor ( visitor_to_cpp (state, structnames)
+                               , function.content()
+                               );
         }
       }
 

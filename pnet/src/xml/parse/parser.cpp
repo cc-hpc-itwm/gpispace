@@ -1641,9 +1641,12 @@ namespace xml
       type::find_module_calls (state, function, m);
 
       type::mk_wrapper (state, m);
-      type::mk_makefile (state, m);
 
-      type::struct_to_cpp (state, function);
+      boost::unordered_set<std::string> structnames;
+
+      type::struct_to_cpp (state, function, structnames);
+
+      type::mk_makefile (state, m, structnames);
     }
 
     void dump_xml ( const id::ref::function& function

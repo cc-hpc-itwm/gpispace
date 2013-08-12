@@ -21,6 +21,9 @@
 #include <we/type/port.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/unordered_set.hpp>
+
+#include <string>
 
 namespace xml
 {
@@ -288,6 +291,7 @@ namespace xml
 
       void mk_makefile ( const state::type & state
                        , const fun_info_map & m
+                       , const boost::unordered_set<std::string>& structnames
                        );
 
       bool find_module_calls ( const state::type & state
@@ -297,7 +301,10 @@ namespace xml
 
       // ***************************************************************** //
 
-      void struct_to_cpp (const state::type &, const id::ref::function &);
+      void struct_to_cpp ( const state::type &
+                         , const id::ref::function &
+                         , boost::unordered_set<std::string>&
+                         );
 
       // ******************************************************************* //
 
