@@ -74,10 +74,6 @@ namespace pnet
       {
         return boost::apply_visitor (show_sig (os), _signature);
       }
-      std::ostream& operator<< (std::ostream& os, const show& s)
-      {
-        return s (os);
-      }
     }
   }
 }

@@ -5,6 +5,8 @@
 
 #include <we2/type/value.hpp>
 
+#include <fhg/util/ostream_modifier.hpp>
+
 #include <iosfwd>
 
 namespace pnet
@@ -13,7 +15,7 @@ namespace pnet
   {
     namespace value
     {
-      class show
+      class show : public fhg::util::ostream::modifier
       {
       public:
         show (const value_type&);
@@ -21,7 +23,6 @@ namespace pnet
       private:
         const value_type& _value;
       };
-      std::ostream& operator<< (std::ostream&, const show&);
     }
   }
 }

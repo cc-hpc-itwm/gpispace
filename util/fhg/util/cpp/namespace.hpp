@@ -4,6 +4,7 @@
 #define FHG_UTIL_CPP_NAMESPACE_HPP
 
 #include <fhg/util/indenter.hpp>
+#include <fhg/util/ostream_modifier.hpp>
 
 #include <boost/optional.hpp>
 
@@ -18,7 +19,7 @@ namespace fhg
     {
       namespace ns
       {
-        class open
+        class open : public ostream::modifier
         {
         public:
           open ( fhg::util::indenter&
@@ -30,9 +31,8 @@ namespace fhg
           fhg::util::indenter& _indent;
           const boost::optional<std::string> _tag;
         };
-        std::ostream& operator<< (std::ostream&, const open&);
 
-        class close
+        class close : public ostream::modifier
         {
         public:
           close (fhg::util::indenter&);
@@ -41,7 +41,6 @@ namespace fhg
         private:
           fhg::util::indenter& _indent;
         };
-        std::ostream& operator<< (std::ostream&, const close&);
       }
     }
   }

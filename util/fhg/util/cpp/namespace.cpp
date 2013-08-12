@@ -3,8 +3,6 @@
 #include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/block.hpp>
 
-#include <iostream>
-
 namespace fhg
 {
   namespace util
@@ -28,10 +26,6 @@ namespace fhg
           }
           return os << block::open (_indent);
         }
-        std::ostream& operator<< (std::ostream& os, const open& b)
-        {
-          return b (os);
-        }
 
         close::close (fhg::util::indenter& indent)
           : _indent (indent)
@@ -39,10 +33,6 @@ namespace fhg
         std::ostream& close::operator() (std::ostream& os) const
         {
           return os << block::close (_indent);
-        }
-        std::ostream& operator<< (std::ostream& os, const close& b)
-        {
-          return b (os);
         }
       }
     }

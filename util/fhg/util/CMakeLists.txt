@@ -61,6 +61,8 @@ set (srcs
   read_bool.cpp
   stat.cpp
 
+  ostream_modifier.cpp
+
   thread/poll.cpp
 
   parse/position.cpp

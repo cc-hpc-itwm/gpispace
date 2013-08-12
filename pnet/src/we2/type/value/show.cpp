@@ -132,10 +132,6 @@ namespace pnet
         os.flags (ff);
         return os;
       }
-      std::ostream& operator<< (std::ostream& os, const show& s)
-      {
-        return s (os);
-      }
     }
   }
 }

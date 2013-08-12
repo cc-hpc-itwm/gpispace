@@ -5,6 +5,8 @@
 
 #include <we2/type/signature.hpp>
 
+#include <fhg/util/ostream_modifier.hpp>
+
 #include <iosfwd>
 
 namespace pnet
@@ -13,7 +15,7 @@ namespace pnet
   {
     namespace signature
     {
-      class show
+      class show : public fhg::util::ostream::modifier
       {
       public:
         show (const signature_type&);
@@ -21,7 +23,6 @@ namespace pnet
       private:
         const signature_type& _signature;
       };
-      std::ostream& operator<< (std::ostream&, const show&);
     }
   }
 }
