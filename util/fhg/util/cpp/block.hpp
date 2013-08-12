@@ -21,8 +21,9 @@ namespace fhg
         class open
         {
         public:
-          open (fhg::util::indenter&);
-          open (fhg::util::indenter&, const std::string&);
+          open ( fhg::util::indenter&
+               , const boost::optional<std::string>& = boost::none
+               );
           std::ostream& operator() (std::ostream&) const;
 
         private:

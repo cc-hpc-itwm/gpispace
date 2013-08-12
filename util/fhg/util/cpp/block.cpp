@@ -12,12 +12,8 @@ namespace fhg
     {
       namespace block
       {
-        open::open (fhg::util::indenter& indent)
-          : _indent (indent)
-          , _tag (boost::none)
-        {}
         open::open ( fhg::util::indenter& indent
-                   , const std::string& tag
+                   , const boost::optional<std::string>& tag
                    )
           : _indent (indent)
           , _tag (tag)
