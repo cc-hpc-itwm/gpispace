@@ -311,14 +311,12 @@ namespace signature
       private:
         Stream& os;
         seen_type & seen;
-        const boost::filesystem::path & incpath;
 
       public:
         cpp_includes ( Stream& _os
                      , seen_type & _seen
-                     , const boost::filesystem::path& _incpath
                      )
-          : os (_os), seen (_seen), incpath (_incpath)
+          : os (_os), seen (_seen)
         {}
 
         void operator () (const std::string & t) const
@@ -328,7 +326,7 @@ namespace signature
               if (seen.find (t) == seen.end())
                 {
                   const boost::filesystem::path file
-                    (incpath / cpp_util::make::hpp (t));
+                    (cpp_util::path::type() / cpp_util::make::hpp (t));
 
                   cpp_util::include (os, file);
 
@@ -344,7 +342,7 @@ namespace signature
               ; ++field
               )
             {
-              boost::apply_visitor ( cpp_includes (os, seen, incpath)
+              boost::apply_visitor ( cpp_includes (os, seen)
                                    , field->second
                                    );
             }
@@ -615,7 +613,6 @@ namespace signature
       , const type & s
       , const std::string & n
       , const boost::filesystem::path & defpath
-      , const boost::filesystem::path & incpath = cpp_util::path::type()
       )
     {
       cpp_util::header_gen_full (os);
@@ -636,7 +633,7 @@ namespace signature
 
       visitor::seen_type seen;
 
-      boost::apply_visitor ( visitor::cpp_includes<Stream> (os, seen, incpath)
+      boost::apply_visitor ( visitor::cpp_includes<Stream> (os, seen)
                            , s.desc()
                            );
 
@@ -677,7 +674,6 @@ namespace signature
       , const type & s
       , const std::string & n
       , const boost::filesystem::path & defpath
-      , const boost::filesystem::path & incpath = cpp_util::path::type()
       )
     {
       pnet::type::signature::cpp::namespaces_type namespaces;
