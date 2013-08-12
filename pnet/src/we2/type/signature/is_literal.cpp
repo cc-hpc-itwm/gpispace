@@ -34,6 +34,8 @@ namespace pnet
           ln.insert (value::SET());
           ln.insert (value::MAP());
 
+          ln.insert ("stack");
+
           return ln;
         }
       }
