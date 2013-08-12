@@ -2258,21 +2258,40 @@ namespace xml
           BOOST_FOREACH (const structure_type& structure, structs)
           {
             const boost::filesystem::path prefix (state.path_to_cpp());
-            const boost::filesystem::path file
-              ( prefix
-              / ::fhg::util::cpp::path::type()
-              / ::fhg::util::cpp::make::hpp (structure.name())
-              );
 
-            util::check_no_change_fstream stream (state, file);
+            {
+              const boost::filesystem::path file
+                ( prefix
+                / ::fhg::util::cpp::path::type()
+                / ::fhg::util::cpp::make::hpp (structure.name())
+                );
 
-            signature::cpp::cpp_header
-              ( stream
-              , structure.signature()
-              , structure.name()
-              , structure.position_of_definition().path()
-              , ::fhg::util::cpp::path::type()
-              );
+              util::check_no_change_fstream stream (state, file);
+
+              signature::cpp::cpp_header
+                ( stream
+                , structure.signature()
+                , structure.name()
+                , structure.position_of_definition().path()
+                );
+            }
+
+            {
+              const boost::filesystem::path file
+                ( prefix
+                / ::fhg::util::cpp::path::type()
+                / ::fhg::util::cpp::make::cpp (structure.name())
+                );
+
+              util::check_no_change_fstream stream (state, file);
+
+              signature::cpp::cpp_implementation
+                ( stream
+                , structure.signature()
+                , structure.name()
+                , structure.position_of_definition().path()
+                );
+            }
           }
         }
 

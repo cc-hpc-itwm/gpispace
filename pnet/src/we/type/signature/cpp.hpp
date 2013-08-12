@@ -610,12 +610,13 @@ namespace signature
     // ********************************************************************* //
 
     template<typename Stream>
-    void cpp_header ( Stream& os
-                    , const type & s
-                    , const std::string & n
-                    , const boost::filesystem::path & defpath
-                    , const boost::filesystem::path & incpath
-                    )
+      void cpp_header
+      ( Stream& os
+      , const type & s
+      , const std::string & n
+      , const boost::filesystem::path & defpath
+      , const boost::filesystem::path & incpath = cpp_util::path::type()
+      )
     {
       cpp_util::header_gen_full (os);
       cpp_util::include_guard_begin (os, "PNETC_TYPE_" + n);
@@ -655,17 +656,41 @@ namespace signature
       os << "      "; cpp_show<Stream> (os, s, n, 3);
 
       os << "    } // namespace " << n                           << std::endl;
-
-      os << "// NEW TYPE" << std::endl;
-      os << pnet::type::signature::cpp::header_signature
-             (pnet::type::compat::COMPAT (s, n))
-         << std::endl;
-
       os << "  } // namespace type"                              << std::endl;
       os << "} // namespace pnetc"                               << std::endl;
       os                                                         << std::endl;
 
+      pnet::type::signature::cpp::namespaces_type namespaces;
+      namespaces.push_back ("pnetc");
+      namespaces.push_back ("type");
+
+      os << pnet::type::signature::cpp::header_signature
+        (pnet::type::compat::COMPAT (s, n), namespaces)
+         << std::endl;
+
       cpp_util::include_guard_end (os, "PNETC_TYPE_" + n);
+    }
+
+    template<typename Stream>
+      void cpp_implementation
+      ( Stream& os
+      , const type & s
+      , const std::string & n
+      , const boost::filesystem::path & defpath
+      , const boost::filesystem::path & incpath = cpp_util::path::type()
+      )
+    {
+      pnet::type::signature::cpp::namespaces_type namespaces;
+      namespaces.push_back ("pnetc");
+      namespaces.push_back ("type");
+
+      cpp_util::include (os, n + ".hpp");
+
+      os << "// defined in " << defpath << std::endl;
+
+      os << pnet::type::signature::cpp::impl_signature
+        (pnet::type::compat::COMPAT (s, n), namespaces)
+         << std::endl;
     }
   }
 }
