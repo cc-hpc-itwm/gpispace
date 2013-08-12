@@ -3,6 +3,8 @@
 #include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/block.hpp>
 
+#include <iostream>
+
 namespace fhg
 {
   namespace util
