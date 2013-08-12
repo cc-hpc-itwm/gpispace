@@ -297,7 +297,7 @@ namespace pnet
 
               if (is_literal (f.second))
               {
-                _os << "_as<" << complete (f.second) << ">";
+                _os << "_as< " << complete (f.second) << " >";
               }
 
               _os << " ("
