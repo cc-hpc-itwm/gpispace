@@ -183,8 +183,11 @@ namespace pnet
           };
         }
 
-        header::header (const structured_type& structured)
+        header::header ( const structured_type& structured
+                       , const namespaces_type& namespaces
+                       )
           : _structured (structured)
+          , _namespaces (namespaces)
         {}
         std::ostream& header::operator() (std::ostream& os) const
         {
@@ -193,7 +196,17 @@ namespace pnet
           os << "#include <we2/type/value.hpp>" << std::endl;
           os << "#include <boost/serialization/nvp.hpp>" << std::endl;
 
+          BOOST_FOREACH (const std::string& n, _namespaces)
+          {
+            os << fhg::util::cpp::ns::open (indent, n);
+          }
+
           traverse (print_header (os, indent), _structured);
+
+          for (std::size_t i (0); i < _namespaces.size(); ++i)
+          {
+            os << fhg::util::cpp::ns::close (indent);
+          }
 
           return os;
         }
@@ -208,28 +221,37 @@ namespace pnet
             : public boost::static_visitor<std::ostream&>
           {
           public:
-            print_header_signature (std::ostream& os)
+            print_header_signature ( std::ostream& os
+                                   , const namespaces_type& namespaces
+                                   )
               : _os (os)
+              , _namespaces (namespaces)
             {}
             std::ostream& operator() (const std::string& s) const
             {
-              return _os << "// s";
+              return _os << "//" << s;
             }
             std::ostream& operator() (const structured_type& s) const
             {
-              return _os << header (s);
+              return _os << header (s, _namespaces);
             }
           private:
             std::ostream& _os;
+            const namespaces_type& _namespaces;
           };
         }
 
-        header_signature::header_signature (const signature_type& signature)
+        header_signature::header_signature ( const signature_type& signature
+                                           , const namespaces_type& namespaces
+                                           )
           : _signature (signature)
+          , _namespaces (namespaces)
         {}
         std::ostream& header_signature::operator() (std::ostream& os) const
         {
-          return boost::apply_visitor (print_header_signature (os), _signature);
+          return boost::apply_visitor ( print_header_signature (os, _namespaces)
+                                      , _signature
+                                      );
         }
         std::ostream& operator<< (std::ostream& os, const header_signature& h)
         {
@@ -415,8 +437,11 @@ namespace pnet
           };
         }
 
-        impl::impl (const structured_type& structured)
+        impl::impl ( const structured_type& structured
+                   , const namespaces_type& namespaces
+                   )
           : _structured (structured)
+          , _namespaces (namespaces)
         {}
         std::ostream& impl::operator() (std::ostream& os) const
         {
@@ -426,11 +451,64 @@ namespace pnet
           os << "#include <we2/field.hpp>" << std::endl;
           os << "#include <we2/signature_of.hpp>" << std::endl;
 
+          BOOST_FOREACH (const std::string& n, _namespaces)
+          {
+            os << fhg::util::cpp::ns::open (indent, n);
+          }
+
           traverse (print_impl (os, indent), _structured);
+
+          for (std::size_t i (0); i < _namespaces.size(); ++i)
+          {
+            os << fhg::util::cpp::ns::close (indent);
+          }
 
           return os;
         }
         std::ostream& operator<< (std::ostream& os, const impl& h)
+        {
+          return h (os);
+        }
+
+        namespace
+        {
+          class print_impl_signature
+            : public boost::static_visitor<std::ostream&>
+          {
+          public:
+            print_impl_signature ( std::ostream& os
+                                 , const namespaces_type& namespaces
+                                 )
+              : _os (os)
+              , _namespaces (namespaces)
+            {}
+            std::ostream& operator() (const std::string& s) const
+            {
+              return _os << "//" << s;
+            }
+            std::ostream& operator() (const structured_type& s) const
+            {
+              return _os << impl (s, _namespaces);
+            }
+          private:
+            std::ostream& _os;
+            const namespaces_type& _namespaces;
+          };
+        }
+
+        impl_signature::impl_signature ( const signature_type& signature
+                                       , const namespaces_type& namespaces
+                                       )
+          : _signature (signature)
+          , _namespaces (namespaces)
+        {}
+        std::ostream& impl_signature::operator() (std::ostream& os) const
+        {
+          return boost::apply_visitor ( print_impl_signature (os, _namespaces)
+                                      , _signature
+                                      );
+        }
+        std::ostream& operator<< (std::ostream& os, const impl_signature& h)
         {
           return h (os);
         }
