@@ -205,7 +205,20 @@ install (FILES
 )
 install (FILES
   we2/type/value.hpp
+  we2/type/signature.hpp
   DESTINATION include/we2/type
+  COMPONENT sdk
+)
+install (FILES
+  we2/type/value/poke.hpp
+  DESTINATION include/we2/type/value
+  COMPONENT sdk
+)
+install (FILES
+  we2/field.hpp
+  we2/signature_of.hpp
+  we2/exception.hpp
+  DESTINATION include/we2/
   COMPONENT sdk
 )
 
