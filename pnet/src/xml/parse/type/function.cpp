@@ -1216,6 +1216,35 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
+        BOOST_FOREACH (const std::string& tname, structnames)
+        {
+          const std::string obj (path_type + tname + ".o");
+          const std::string obj_cpp (path_type + tname + ".cpp");
+          const std::string dep (path_type + tname + ".d");
+
+          stream << "####"                                         << std::endl;
+          stream << "#### struct " << tname                        << std::endl;
+          stream << "####"                                         << std::endl;
+
+          stream << "TYPE_OBJS += " << obj << std::endl;
+
+          stream << obj << ": " << obj_cpp << " "
+                 << file_global_cxxflags                         << std::endl;
+          stream << "\t$(CXX) $(CXXFLAGS) -c $< -o $@"           << std::endl;
+          stream << dep << ": " << obj_cpp
+                 << " "
+                 << file_global_cxxflags                         << std::endl;
+          stream << "\t$(CXX) $(CXXFLAGS)"
+                 << " -MM -MP -MT '" << dep << "' -MT '"
+                 << obj
+                 << "' $< -MF $@"                                << std::endl;
+          stream << "ifneq \"$(wildcard " << dep << ")\" \"\""   << std::endl;
+          stream << "  include " << dep                          << std::endl;
+          stream << "endif"                                      << std::endl;
+          stream << "DEPENDS += " << dep                         << std::endl;
+          stream                                                 << std::endl;
+        }
+
         for ( fun_info_map::const_iterator mod (m.begin())
             ; mod != m.end()
             ; ++mod
