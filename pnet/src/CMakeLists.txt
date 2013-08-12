@@ -45,39 +45,40 @@ add_library (we2
   we2/type/compat.cpp
   we2/type/compat.sig.cpp
 )
+target_link_libraries (we2 fhg-util)
 
 fhg_add_test (we2/type/test/value.cpp
   PROJECT test_we_type
-  LINK_LIBRARIES we2 we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev
 )
 
 fhg_add_test (we2/type/test/signature.cpp
   PROJECT test_we_type
-  LINK_LIBRARIES we2 we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev
 )
 
 fhg_add_test (we2/type/test/compat.cpp
   PROJECT test_we_compat
-  LINK_LIBRARIES we2 we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev
 )
 
 fhg_add_test (we2/test/require_type.cpp
   PROJECT test_we
-  LINK_LIBRARIES we2 we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev
 )
 
 fhg_add_test (we2/test/signature_of.cpp
   PROJECT test_we
-  LINK_LIBRARIES we2 we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev
 )
 
 fhg_add_test (we2/test/exception.cpp
   PROJECT test_we
-  LINK_LIBRARIES we2 we-dev fhg-util
+  LINK_LIBRARIES we2 we-dev
 )
 
 add_executable (mk_cpp we2/type/test/mk_cpp.cpp)
-target_link_libraries (mk_cpp we2 we-dev fhg-util ${Boost_LIBRARIES})
+target_link_libraries (mk_cpp we2 we-dev ${Boost_LIBRARIES})
 
 add_custom_command (
   OUTPUT sig.hpp sig.cpp
@@ -90,7 +91,7 @@ add_library (sig ${CMAKE_CURRENT_BINARY_DIR}/sig.cpp)
 
 fhg_add_test (we2/type/test/sig.cpp
   PROJECT test_we
-  LINK_LIBRARIES sig we2 we-dev fhg-util
+  LINK_LIBRARIES sig we2 we-dev
 )
 
 set (we_dev_srcs
@@ -312,10 +313,7 @@ set (xml_sources
 )
 
 add_library (pnet ${we_srcs} ${xml_sources})
-target_link_libraries (pnet
-  fhg-util
-  we2
-)
+target_link_libraries (pnet we2)
 
 add_library (we-dev SHARED ${we_dev_srcs})
 set_target_properties(we-dev
