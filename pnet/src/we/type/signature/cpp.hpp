@@ -657,12 +657,8 @@ namespace signature
       os << "} // namespace pnetc"                               << std::endl;
       os                                                         << std::endl;
 
-      pnet::type::signature::cpp::namespaces_type namespaces;
-      namespaces.push_back ("pnetc");
-      namespaces.push_back ("type");
-
       os << pnet::type::signature::cpp::header_signature
-        (pnet::type::compat::COMPAT (s, n), namespaces)
+        (pnet::type::compat::COMPAT (s, n))
          << std::endl;
 
       cpp_util::include_guard_end (os, "PNETC_TYPE_" + n);
@@ -676,16 +672,12 @@ namespace signature
       , const boost::filesystem::path & defpath
       )
     {
-      pnet::type::signature::cpp::namespaces_type namespaces;
-      namespaces.push_back ("pnetc");
-      namespaces.push_back ("type");
-
       cpp_util::include (os, n + ".hpp");
 
       os << "// defined in " << defpath << std::endl;
 
       os << pnet::type::signature::cpp::impl_signature
-        (pnet::type::compat::COMPAT (s, n), namespaces)
+        (pnet::type::compat::COMPAT (s, n))
          << std::endl;
     }
   }

@@ -14,6 +14,10 @@ BOOST_AUTO_TEST_CASE (sig_value)
   using pnet::type::value::value_type;
   using pnet::type::value::poke;
 
+  namespace line2D = pnetc::type::line2D;
+  namespace point2D = pnetc::type::point2D;
+  namespace line2D = pnetc::type::line2D;
+
   value_type vq;
   poke ("x", vq, 1.0f);
 
