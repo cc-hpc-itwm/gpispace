@@ -29,6 +29,7 @@ add_library (we2
   we2/type/signature/dump.cpp
   we2/type/signature/is_literal.cpp
   we2/type/signature/name.cpp
+  we2/type/signature/names.cpp
   we2/type/signature/show.cpp
   we2/type/signature/signature.cpp
   we2/type/value/name.cpp

@@ -8,9 +8,12 @@
 #include <we2/type/signature/cpp.hpp>
 #include <we2/type/signature/dump.hpp>
 #include <we2/type/signature/name.hpp>
+#include <we2/type/signature/names.hpp>
 #include <we2/type/signature/signature.hpp>
 
 #include <sstream>
+
+#include <boost/foreach.hpp>
 
 BOOST_AUTO_TEST_CASE (signature_show)
 {
@@ -51,10 +54,18 @@ BOOST_AUTO_TEST_CASE (signature_show)
   ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
   ps.push_back (structured_type (std::make_pair ("q", f)));
 
-  CHECK ( "line2D :: [p :: point2D, q :: [x :: float, y :: float]]"
-        , structured_type (std::make_pair ("line2D", ps))
-        );
+  signature_type line2D (structured_type (std::make_pair ("line2D", ps)));
+
+
+  CHECK ("line2D :: [p :: point2D, q :: [x :: float, y :: float]]", line2D);
+
 #undef CHECK
+
+  boost::unordered_set<std::string> n (pnet::type::signature::names (line2D));
+
+  BOOST_REQUIRE_EQUAL (n.size(), 2);
+  BOOST_REQUIRE_EQUAL (n.count("point2D"), 1);
+  BOOST_REQUIRE_EQUAL (n.count("float"), 1);
 }
 
 BOOST_AUTO_TEST_CASE (signature_dump)
