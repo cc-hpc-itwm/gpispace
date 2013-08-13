@@ -45,6 +45,28 @@ namespace we
                       );
         return act;
       }
+      mgmt::type::activity_t & put2 ( mgmt::type::activity_t & act
+                                    , std::string const & port
+                                    , pnet::type::value::value_type const & value
+                                    )
+      {
+        const ::petri_net::port_id_type pid
+          (act.transition().input_port_by_name (port));
+
+        const ::signature::type port_signature
+          (act.transition().get_port (pid).signature());
+
+        act.add_input ( mgmt::type::activity_t::input_t::value_type
+                        ( pnet::require_type_relaxed
+                          ( value
+                          , pnet::type::compat::COMPAT (port_signature)
+                          , port
+                          )
+                        , pid
+                        )
+                      );
+        return act;
+      }
 
       /*
 
