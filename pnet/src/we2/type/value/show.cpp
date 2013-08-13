@@ -6,6 +6,8 @@
 
 #include <boost/bind.hpp>
 
+#include <iostream>
+
 namespace pnet
 {
   namespace type
@@ -131,6 +133,10 @@ namespace pnet
         boost::apply_visitor (visitor_show (os), _value);
         os.flags (ff);
         return os;
+      }
+      std::ostream& operator<< (std::ostream& os, const show& s)
+      {
+        return s (os);
       }
     }
   }
