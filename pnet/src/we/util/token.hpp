@@ -34,14 +34,6 @@ namespace we
         const ::signature::type port_signature
           (act.transition().get_port (pid).signature());
 
-        //! \todo Check for matching types:
-        // if ( port_signature
-        //    != boost::apply_visitor (literal::visitor::type_name(), value)
-        //    )
-        // {
-        //   throw "port's signature and value's signature need to match";
-        // }
-
         act.add_input ( mgmt::type::activity_t::input_t::value_type
                         ( pnet::require_type_relaxed
                           ( pnet::type::compat::COMPAT (value)
