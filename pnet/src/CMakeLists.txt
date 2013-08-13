@@ -245,11 +245,6 @@ install (FILES
   COMPONENT sdk
 )
 install (FILES
-  we/type/value/cpp/get.hpp
-  DESTINATION include/we/type/value/cpp
-  COMPONENT sdk
-)
-install (FILES
   we/type/value/missing_binding.hpp
   DESTINATION include/we/type/value
   COMPONENT sdk
