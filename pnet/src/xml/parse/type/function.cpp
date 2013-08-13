@@ -24,6 +24,7 @@
 #include <fhg/util/cpp/include.hpp>
 #include <fhg/util/cpp/include_guard.hpp>
 #include <fhg/util/indenter.hpp>
+#include <fhg/util/ostream_modifier.hpp>
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -1644,40 +1645,51 @@ namespace xml
             ;
         }
 
-        std::string mk_get ( const port_with_type & port
-                           , const std::string & amper = ""
-                           )
+        class mk_get : public fhg::util::ostream::modifier
         {
-          namespace cpp_util = ::fhg::util::cpp;
+        public:
+          mk_get ( fhg::util::indenter& indent
+                 , const port_with_type& port
+                 , const std::string& modif = ""
+                 , const std::string& amper = ""
+                 )
+            : _indent (indent)
+            , _port (port)
+            , _modif (modif)
+            , _amper (amper)
+          {}
+          std::ostream& operator() (std::ostream& os) const
+          {
+            os << _indent << _modif;
 
-          std::ostringstream os;
-
-          os << mk_type (port.type) << " ";
-
-          if (literal::cpp::known (port.type))
+            if (literal::cpp::known (_port.type))
             {
-              os << amper << port.name << " ("
-                 << "::we::loader::get< " << literal::cpp::translate (port.type) << " >"
-                 << "(_pnetc_input, \"" << port.name << "\")"
-                 << ")"
-                ;
+              os << literal::cpp::translate (_port.type)
+                 << " " << _amper << _port.name << " ("
+                 << "boost::get< " << _modif << literal::cpp::translate (_port.type) << _amper << " >"
+                 << "(_pnetc_input.value (\"" << _port.name << "\")));";
             }
-          else
+            else
             {
-              os << port.name << " ("
-                 << "::pnetc::type::" << port.type << "::from_value"
+              os << "::pnetc::type::" << _port.type << "::" << _port.type << " " << _port.name << " ("
+                 << "::pnetc::type::" << _port.type << "::from_value"
                  << "("
                  << "::we::loader::get< ::value::type >"
-                 << "(_pnetc_input, \"" << port.name << "\")"
+                 << "(_pnetc_input, \"" << _port.name << "\")"
                  << ")"
-                 << ")"
+                 << ");"
                 ;
             }
 
-          os << ";";
+            return os;
+          }
 
-          return os.str();
-        }
+        private:
+          fhg::util::indenter& _indent;
+          const port_with_type& _port;
+          const std::string _modif;
+          const std::string _amper;
+        };
 
         std::string mk_value (const port_with_type & port)
         {
@@ -1771,12 +1783,12 @@ namespace xml
 
           BOOST_FOREACH (const port_with_type& port, ports_const)
           {
-            s << indent << "const " << mk_get (port, "& ");
+            s << mk_get (indent, port, "const ", "& ");
           }
 
           BOOST_FOREACH (const port_with_type& port, ports_mutable)
           {
-            s << indent << mk_get (port);
+            s << mk_get (indent, port);
           }
 
           BOOST_FOREACH (const port_with_type& port, ports_out)
