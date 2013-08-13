@@ -4,7 +4,6 @@
 
 #include <we/type/value/missing_binding.hpp>
 
-#include <we2/type/compat.hpp>
 #include <we2/type/value/poke.hpp>
 #include <we2/type/value/peek.hpp>
 #include <we2/type/value/show.hpp>
