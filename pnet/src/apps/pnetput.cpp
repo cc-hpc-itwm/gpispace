@@ -4,6 +4,9 @@
 #include <we/util/token.hpp>
 #include <we/expr/parse/parser.hpp>
 
+#include <we2/type/value.hpp>
+#include <we2/type/value/show.hpp>
+
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 #include <we/mgmt/type/activity.hpp>
@@ -95,7 +98,9 @@ try
     : we::mgmt::type::activity_t (boost::filesystem::path (input))
     );
 
-  typedef boost::unordered_map<std::string,value::type> port_values_type;
+  typedef boost::unordered_map< std::string
+                              , pnet::type::value::value_type
+                              > port_values_type;
 
   port_values_type port_values;
 
@@ -111,7 +116,8 @@ try
       const std::string value
         ( inp->substr (inp->find('=')+1) );
 
-      const value::type val (expr::parse::parser (value).eval_all());
+      const pnet::type::value::value_type val
+        (expr::parse::parser (value).eval_all2());
 
       if (not we::type::content::is_subnet (act.transition()))
         {
@@ -120,16 +126,18 @@ try
 
           if (pos != port_values.end())
             {
-              std::cerr << "WARNING! On port " << port_name
-                        << " the put of value " << val
-                        << " overwrites the put of value " << pos->second
-                        << std::endl;
+              std::cerr
+                << "WARNING! On port " << port_name
+                << " the put of value " << pnet::type::value::show (val)
+                << " overwrites the put of value "
+                << pnet::type::value::show (pos->second)
+                << std::endl;
             }
 
           port_values[port_name] = val;
         }
 
-      we::util::token::put (act, port_name, val);
+      we::util::token::put2 (act, port_name, val);
     }
     catch (std::exception const & ex)
     {
