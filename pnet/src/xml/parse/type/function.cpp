@@ -17,11 +17,12 @@
 #include <xml/parse/type/dumps.hpp>
 
 #include <fhg/util/boost/variant.hpp>
-#include <fhg/util/cpp.hpp>
 #include <fhg/util/first_then.hpp>
 
 #include <fhg/util/cpp/block.hpp>
 #include <fhg/util/cpp/namespace.hpp>
+#include <fhg/util/cpp/include.hpp>
+#include <fhg/util/cpp/include_guard.hpp>
 #include <fhg/util/indenter.hpp>
 
 #include <we/type/module_call.fwd.hpp>
@@ -1640,7 +1641,7 @@ namespace xml
 
           return literal::cpp::known (type)
             ? literal::cpp::translate (type)
-            : cpp_util::access::make ("", "pnetc", "type", type, type)
+            : ("::pnetc::type::" + type + "::" + type)
             ;
         }
 
@@ -1665,9 +1666,9 @@ namespace xml
           else
             {
               os << port.name << " ("
-                 << cpp_util::access::make ("", "pnetc", "type", port.type, "from_value")
+                 << "::pnetc::type::" << port.type << "::from_value"
                  << "("
-                 << "::we::loader::get< " << cpp_util::access::value_type() << " >"
+                 << "::we::loader::get< ::value::type >"
                  << "(_pnetc_input, \"" << port.name << "\")"
                  << ")"
                  << ")"
@@ -1691,12 +1692,7 @@ namespace xml
             }
           else
             {
-              os << cpp_util::access::make ( ""
-                                           , "pnetc"
-                                           , "type"
-                                           , port.type
-                                           , "to_value"
-                                           )
+              os << "::pnetc::type::" << port.type << "::to_value"
                  << " (" << port.name << ")"
                 ;
             }
@@ -1798,23 +1794,13 @@ namespace xml
 
             if (!literal::cpp::known ((*port_return).type))
             {
-              s << cpp_util::access::make ( ""
-                                          , "pnetc"
-                                          , "type"
-                                          , (*port_return).type
-                                          , "to_value"
-                                          )
+              s << "::pnetc::type::" << (*port_return).type << "::to_value"
                 << " ("
                 ;
             }
           }
 
-          s << indent << cpp_util::access::make ( ""
-                                                , "pnetc"
-                                                , "op"
-                                                , mod.name()
-                                                , mod.function()
-                                                 )
+          s << indent << "::pnetc::op::" << mod.name() << "::" << mod.function()
             << " ("
             ;
 
@@ -2051,8 +2037,8 @@ namespace xml
 
               util::check_no_change_fstream stream (state, file);
 
-              cpp_util::include_guard_begin
-                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function());
+              stream << cpp_util::include_guard::open
+                ("PNETC_OP_" + mod.name() + "_" + mod.function());
 
               mod_includes (stream, types);
 
@@ -2074,8 +2060,7 @@ namespace xml
 
               stream << std::endl;
 
-              cpp_util::include_guard_end
-                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function());
+              stream << cpp_util::include_guard::close();
             }
 
             {

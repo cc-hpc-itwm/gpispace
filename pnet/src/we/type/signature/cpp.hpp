@@ -9,7 +9,8 @@
 
 #include <fhg/util/show.hpp>
 
-#include <fhg/util/cpp.hpp>
+#include <fhg/util/cpp/include.hpp>
+#include <fhg/util/cpp/include_guard.hpp>
 
 namespace cpp_util = fhg::util::cpp;
 
@@ -99,17 +100,13 @@ namespace signature
 
           if (literal::cpp::known (t))
             {
-              this->s << cpp_util::access::make ("", "value", "get")
-                      << "< "
+              this->s << "::value::get< "
                       << literal::cpp::translate (t)
                       << " >";
             }
           else
             {
-              this->s << cpp_util::access::make ( cpp_util::access::type()
-                                                , t
-                                                , "from_value"
-                                                );
+              this->s << "::pnetc::type::" << t << "::from_value";
             }
 
           this->s << " (v_" << (this->l-1) << ");" << std::endl;
@@ -128,9 +125,9 @@ namespace signature
 
               this->level (this->l+2);
               this->s
-                << "const " << cpp_util::access::value_type()
+                << "const ::value::type"
                 << " & v_" << this->l << " "
-                << "(" << cpp_util::access::make ("", "value", "get_level")
+                << "(::value::get_level"
                 <<  "(\"" << field->first << "\"" << ", v_" << (this->l-1) << ")"
                 << ");"
                 << std::endl;
@@ -248,9 +245,7 @@ namespace signature
             }
           else
             {
-              this->s << cpp_util::access::make ( cpp_util::access::type()
-                                          , t, "to_value"
-                                          )
+              this->s << "::pnetc::type::" << t << "::to_value"
                 << "(x." << fieldname << ")"
                 ;
             }
@@ -264,7 +259,7 @@ namespace signature
         {
           this->level (this->l); this->s << "{" << std::endl;
 
-          this->level (this->l+1); this->s << cpp_util::access::make ("","value","structured_t")
+          this->level (this->l+1); this->s << "::value::structured_t"
                          << " v_" << this->l << ";"
                          << std::endl
                          ;
@@ -382,7 +377,7 @@ namespace signature
             }
           else
             {
-              this->s << cpp_util::access::make (cpp_util::access::type(), t, t);
+              this->s << "::pnetc::type::" << t << "::" << t;
             }
 
           return this->s;
@@ -447,7 +442,7 @@ namespace signature
       os << std::endl;
 
       level (os, l); os << "inline " << n << " from_value (const "
-                        << cpp_util::access::value_type()
+                        << "::value::type"
                         << "& v_" << (l-1) << ")"
                         << std::endl;
       level (os, l); os << "{" << std::endl;
@@ -461,7 +456,7 @@ namespace signature
       level (os, l); os << "} // from_value " << std::endl;
       os << std::endl;
 
-      level (os, l); os << "inline " << cpp_util::access::value_type()
+      level (os, l); os << "inline ::value::type"
                         << " to_value (const " << n << " & x)"
                         << std::endl;
 
@@ -511,8 +506,8 @@ namespace signature
 
           if (literal::cpp::known (t))
             {
-              this->s << cpp_util::access::make ("","literal","show")
-                << "(" << cpp_util::access::make ("", "literal", "type")
+              this->s << "::literal::show"
+                << "(" << "::literal::type"
                 << "(x" << fhg::util::show (field_global) << ")"
                 << ")" << std::endl;
                 ;
@@ -613,7 +608,7 @@ namespace signature
       , const boost::filesystem::path & defpath
       )
     {
-      cpp_util::include_guard_begin (os, "PNETC_TYPE_" + n);
+      os << cpp_util::include_guard::open ("PNETC_TYPE_" + n);
 
       os << cpp_util::include (std::string ("we/type/value.hpp"));
       os << cpp_util::include (std::string ("we/type/value/cpp/get.hpp"));
@@ -657,7 +652,7 @@ namespace signature
         (pnet::type::compat::COMPAT (s, n))
          << std::endl;
 
-      cpp_util::include_guard_end (os, "PNETC_TYPE_" + n);
+      os << cpp_util::include_guard::close();
     }
 
     template<typename Stream>

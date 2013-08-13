@@ -25,7 +25,6 @@ set (hdrs
   warnings.hpp
 
   filesystem.hpp
-  cpp.hpp
 
   ini-parser.hpp
   ini-parser.tcc
@@ -73,6 +72,7 @@ set (srcs
   indenter.cpp
   cpp/block.cpp
   cpp/include.cpp
+  cpp/include_guard.cpp
   cpp/namespace.cpp
   cpp/struct.cpp
 
