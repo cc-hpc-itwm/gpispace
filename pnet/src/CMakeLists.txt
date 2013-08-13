@@ -147,7 +147,6 @@ set (we_srcs
   we/type/literal/name.cpp
   we/type/literal/function.cpp
   we/type/literal/show.cpp
-  we/type/literal/require_type.cpp
   we/type/literal/cpp.cpp
   we/type/value/read.cpp
   we/type/value/function.cpp
