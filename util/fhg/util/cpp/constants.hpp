@@ -21,14 +21,6 @@ namespace fhg
           return ret;                            \
         }
 
-      namespace path
-      {
-        CONSTANT (boost::filesystem::path, pnetc   , "pnetc")
-        CONSTANT (boost::filesystem::path, type    , pnetc() / "type")
-        CONSTANT (boost::filesystem::path, op      , pnetc() / "op")
-        CONSTANT (boost::filesystem::path, install , "$(LIB_DESTDIR)")
-      }
-
       namespace access
       {
         inline std::string make (const std::string & x, const std::string & y)
@@ -67,31 +59,16 @@ namespace fhg
         CONSTANT (std::string, value_type, make ("", "value", "type"))
       }
 
-      namespace extension
-      {
-        CONSTANT (std::string, hpp, "hpp")
-        CONSTANT (std::string, cpp, "cpp")
-        CONSTANT (std::string, tmpl, "cpp_tmpl")
-        CONSTANT (std::string, so, "so")
-        CONSTANT (std::string, o, "o")
-        CONSTANT (std::string, d, "d")
-      }
-
       namespace make
       {
-        inline std::string mod_so_name (const std::string& mod)
-        {
-          return "lib" + mod + "." + extension::so();
-        }
-
         inline std::string mod_so (const std::string & mod)
         {
-          return (path::op() / mod_so_name (mod)).string();
+          return "pnetc/op/lib" + mod + ".so";
         }
 
         inline std::string mod_so_install (const std::string& mod)
         {
-          return (path::install() / mod_so_name (mod)).string();
+          return "$(LIB_DESTDIR)/lib" + mod + ".so";
         }
       }
 
