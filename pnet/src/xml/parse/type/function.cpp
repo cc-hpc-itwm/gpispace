@@ -31,12 +31,19 @@
 #include <we/type/net.fwd.hpp>
 
 #include <we/type/literal/cpp.hpp>
-#include <we/type/signature/cpp.hpp>
+
+#include <we2/type/signature/cpp.hpp>
+#include <we2/type/signature/names.hpp>
+#include <we2/type/signature/is_literal.hpp>
+#include <we2/type/compat.sig.hpp>
 
 #include <we/type/id.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptors.hpp>
+
+#include <iostream>
+#include <string>
 
 namespace xml
 {
@@ -2185,12 +2192,31 @@ namespace xml
 
               util::check_no_change_fstream stream (state, file);
 
-              signature::cpp::cpp_header
-                ( stream
-                , structure.signature()
-                , structure.name()
-                , structure.position_of_definition().path()
+              const pnet::type::signature::signature_type sig
+                (pnet::type::compat::COMPAT ( structure.signature()
+                                            , structure.name()
+                                            )
                 );
+
+              stream << fhg::util::cpp::include_guard::open
+                ("PNETC_TYPE_" + structure.name());
+
+              const boost::unordered_set<std::string> names
+                (pnet::type::signature::names (sig));
+
+              BOOST_FOREACH (const std::string& tname, names)
+              {
+                if (!pnet::type::signature::is_literal (tname))
+                {
+                  stream <<
+                    fhg::util::cpp::include ("pnetc/type/" + tname + ".hpp");
+                }
+              }
+
+              stream << pnet::type::signature::cpp::header_signature (sig)
+                     << std::endl;
+
+              stream << fhg::util::cpp::include_guard::close();
             }
 
             {
@@ -2202,12 +2228,21 @@ namespace xml
 
               util::check_no_change_fstream stream (state, file);
 
-              signature::cpp::cpp_implementation
-                ( stream
-                , structure.signature()
-                , structure.name()
-                , structure.position_of_definition().path()
+              const pnet::type::signature::signature_type sig
+                (pnet::type::compat::COMPAT ( structure.signature()
+                                            , structure.name()
+                                            )
                 );
+
+              stream << "// defined in " << structure.position_of_definition()
+                     << std::endl;
+
+              stream << fhg::util::cpp::include ( "pnetc/type/"
+                                                + structure.name() + ".hpp"
+                                                );
+
+              stream << pnet::type::signature::cpp::impl_signature (sig)
+                     << std::endl;
             }
           }
         }
