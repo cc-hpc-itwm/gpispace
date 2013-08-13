@@ -18,8 +18,6 @@
 
 #include "process.hpp"
 
-using we::loader::get;
-
 // ************************************************************************* //
 
 static void exec_wrapper ( void *
@@ -27,7 +25,7 @@ static void exec_wrapper ( void *
 			 , we::loader::output_t & output
 			 )
 {
-  const std::string & command (get<std::string> (input, "command"));
+  const std::string& command (boost::get<std::string> (input.value ("command")));
 
   MLOG (INFO, "exec:  = \"" << command << "\"");
 
