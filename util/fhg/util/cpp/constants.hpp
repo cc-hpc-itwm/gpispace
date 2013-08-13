@@ -55,21 +55,8 @@ namespace fhg
           return make (a, b, c, make (d, e));
         }
 
-        CONSTANT (std::string, type, make ("", "pnetc", "type"))
-        CONSTANT (std::string, value_type, make ("", "value", "type"))
-      }
-
-      namespace make
-      {
-        inline std::string mod_so (const std::string & mod)
-        {
-          return "pnetc/op/lib" + mod + ".so";
-        }
-
-        inline std::string mod_so_install (const std::string& mod)
-        {
-          return "$(LIB_DESTDIR)/lib" + mod + ".so";
-        }
+        CONSTANT (std::string, type, "::pnetc::type")
+        CONSTANT (std::string, value_type, "::value::type")
       }
 
 #undef CONSTANT
