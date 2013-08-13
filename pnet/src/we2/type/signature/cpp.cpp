@@ -135,6 +135,7 @@ namespace pnet
               _os << std::endl;
 
               to_value();
+              show();
 
               _os << ns::close (_indent);
             }
@@ -180,6 +181,11 @@ namespace pnet
             {
               _os << _indent
                   << "pnet::type::value::value_type value (const type&);";
+            }
+            void show() const
+            {
+              _os << _indent
+                  << "std::ostream& operator<< (std::ostream&, const type&);";
             }
           };
         }
@@ -370,6 +376,7 @@ namespace pnet
               ctor_default (s);
               ctor_value (s);
               from_value (s);
+              show();
 
               _os << ns::close (_indent);
             }
@@ -419,6 +426,19 @@ namespace pnet
 
               _os << _indent << "return v;"
                   << block::close (_indent);
+            }
+
+            void show() const
+            {
+              namespace block = fhg::util::cpp::block;
+
+              _os << _indent
+                  << "std::ostream& operator<< (std::ostream& os, const type& x)"
+                  << block::open (_indent)
+                  << _indent
+                  << "return os << pnet::type::value::show (value (x));"
+                  << block::close (_indent)
+                ;
             }
           };
         }
