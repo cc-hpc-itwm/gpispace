@@ -18,8 +18,10 @@
 
 #include <fhg/util/boost/variant.hpp>
 #include <fhg/util/cpp.hpp>
+#include <fhg/util/first_then.hpp>
 
 #include <fhg/util/cpp/block.hpp>
+#include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/indenter.hpp>
 
 #include <we/type/module_call.fwd.hpp>
@@ -1634,28 +1636,6 @@ namespace xml
             }
         }
 
-        template<typename Stream>
-        void namespace_open (Stream& s, const module_type& mod)
-        {
-          s << std::endl
-            << "namespace pnetc" << std::endl
-            << "{" << std::endl
-            << "  namespace op" << std::endl
-            << "  {" << std::endl
-            << "    namespace " << mod.name() << std::endl
-            << "    {" << std::endl
-            ;
-        }
-
-        template<typename Stream>
-        void namespace_close (Stream& s, const module_type & mod)
-        {
-          s << "    } // namespace " << mod.name() << std::endl
-            << "  } // namespace op" << std::endl
-            << "} // namespace pnetc" << std::endl
-            ;
-        }
-
         std::string mk_type (const std::string & type)
         {
           namespace cpp_util = ::fhg::util::cpp;
@@ -1696,7 +1676,7 @@ namespace xml
                 ;
             }
 
-          os << ";" << std::endl;
+          os << ";";
 
           return os.str();
         }
@@ -1729,6 +1709,7 @@ namespace xml
         template<typename Stream>
         void
         mod_signature ( Stream& s
+                      , fhg::util::indenter& indent
                       , const boost::optional<port_with_type> & port_return
                       , const ports_with_type_type & ports_const
                       , const ports_with_type_type & ports_mutable
@@ -1736,65 +1717,33 @@ namespace xml
                       , const module_type & mod
                       )
         {
-          std::ostringstream pre;
+          using fhg::util::deeper;
 
-          pre << "      "
-              << (port_return ? mk_type ((*port_return).type) : "void")
-              << " "
-              << mod.function()
-              << " "
-            ;
+          s << indent
+            << (port_return ? mk_type ((*port_return).type) : "void")
+            << " " << mod.function() << deeper (indent) << "(";
 
-          s << pre.str() << "(";
+          fhg::util::first_then<std::string> sep (" ", ", ");
 
-          const std::string spre (pre.str());
+          BOOST_FOREACH (const port_with_type& port, ports_const)
+          {
+            s << sep << "const " << mk_type (port.type) << "& " << port.name
+              << deeper (indent);
+          }
 
-          std::string white;
+          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          {
+            s << sep << mk_type (port.type) << "& " << port.name
+              << deeper (indent);
+          }
 
-          for ( std::string::const_iterator pos (spre.begin())
-              ; pos != spre.end()
-              ; ++pos
-              )
-            {
-              white.push_back (' ');
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_out)
+          {
+            s << sep << mk_type (port.type) << "& " << port.name
+              << deeper (indent);
+          }
 
-          bool first (true);
-
-          for ( ports_with_type_type::const_iterator port (ports_const.begin())
-              ; port != ports_const.end()
-              ; ++port, first = false
-              )
-            {
-              s << (first ? " " : (white + ", "))
-                << "const " << mk_type (port->type) << " & " << port->name
-                << std::endl
-                ;
-            }
-
-          for ( ports_with_type_type::const_iterator port (ports_mutable.begin())
-              ; port != ports_mutable.end()
-              ; ++port, first = false
-              )
-            {
-              s << (first ? " " : (white + ", "))
-                << mk_type (port->type) << " & " << port->name
-                << std::endl
-                ;
-            }
-
-          for ( ports_with_type_type::const_iterator port (ports_out.begin())
-              ; port != ports_out.end()
-              ; ++port, first = false
-              )
-            {
-              s << (first ? " " : (white + ", "))
-                << mk_type (port->type) << " & " << port->name
-                << std::endl
-                ;
-            }
-
-          s << white << ")";
+          s << ")";
         }
 
         template<typename Stream>
@@ -1808,174 +1757,126 @@ namespace xml
                     , const boost::optional<port_with_type> & port_return
                     )
         {
-          namespace cpp_util = ::fhg::util::cpp;
+          namespace block = fhg::util::cpp::block;
+          namespace ns = fhg::util::cpp::ns;
+          namespace cpp = fhg::util::cpp;
+          using fhg::util::deeper;
 
-          s << cpp_util::include
-            (cpp_util::path::op() / mod.name() / file_hpp);
+          fhg::util::indenter indent;
 
-          namespace_open (s, mod);
+          s << cpp::include (cpp::path::op() / mod.name() / file_hpp);
+          s << ns::open (indent, "pnetc");
+          s << ns::open (indent, "op");
+          s << ns::open (indent, mod.name());
 
-          s << "      "
-            << "static void " << mod.function()
-            << " (void *, const ::we::loader::input_t & _pnetc_input, ::we::loader::output_t & _pnetc_output)"
-            << std::endl
-            << "      "
-            << "{" << std::endl;
+          s << indent << "static void " << mod.function();
+          s << deeper (indent) << "( void *";
+          s << deeper (indent) << ", const ::we::loader::input_t& _pnetc_input";
+          s << deeper (indent) << ", ::we::loader::output_t& _pnetc_output";
+          s << deeper (indent) << ")";
+          s << block::open (indent);
 
-          for ( ports_with_type_type::const_iterator port (ports_const.begin())
-              ; port != ports_const.end()
-              ; ++port
-              )
-            {
-              s << "      "
-                << "  const " << mk_get (*port, "& ");
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_const)
+          {
+            s << indent << "const " << mk_get (port, "& ");
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_mutable.begin())
-              ; port != ports_mutable.end()
-              ; ++port
-              )
-            {
-              s << "      "
-                << "  " << mk_get (*port);
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          {
+            s << indent << mk_get (port);
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_out.begin())
-              ; port != ports_out.end()
-              ; ++port
-              )
-            {
-              s << "      "
-                << "  " << mk_type (port->type) << " " << port->name << ";"
-                << std::endl;
-            }
-
-          s << std::endl;
-
-          s << "      "
-            << "  ";
-
-          bool first_put (true);
+          BOOST_FOREACH (const port_with_type& port, ports_out)
+          {
+            s << indent << mk_type (port.type) << " " << port.name << ";";
+          }
 
           if (port_return)
+          {
+            s << indent << "_pnetc_output.bind ("
+              << "\"" << (*port_return).name << "\""
+              << ", pnet::type::compat::COMPAT(value::type("
+              ;
+
+            if (!literal::cpp::known ((*port_return).type))
             {
-              first_put = false;
-
-              s << "_pnetc_output.bind ("
-                << "\"" << (*port_return).name << "\""
-                << ", pnet::type::compat::COMPAT(value::type("
+              s << cpp_util::access::make ( ""
+                                          , "pnetc"
+                                          , "type"
+                                          , (*port_return).type
+                                          , "to_value"
+                                          )
+                << " ("
                 ;
-
-              if (!literal::cpp::known ((*port_return).type))
-                {
-                  s << cpp_util::access::make ( ""
-                                              , "pnetc"
-                                              , "type"
-                                              , (*port_return).type
-                                              , "to_value"
-                                              )
-                    << " ("
-                    ;
-                }
             }
+          }
 
-          s << cpp_util::access::make ( ""
-                                      , "pnetc"
-                                      , "op"
-                                      , mod.name()
-                                      , mod.function()
-                                      )
+          s << indent << cpp_util::access::make ( ""
+                                                , "pnetc"
+                                                , "op"
+                                                , mod.name()
+                                                , mod.function()
+                                                 )
             << " ("
             ;
 
-          bool first_param (true);
+          fhg::util::first_then<std::string> sep ("", ", ");
 
-          for ( ports_with_type_type::const_iterator port (ports_const.begin())
-              ; port != ports_const.end()
-              ; ++port, first_param = false
-              )
-            {
-              s << (first_param ? "" : ", ") << port->name;
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_const)
+          {
+            s << sep << port.name;
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_mutable.begin())
-              ; port != ports_mutable.end()
-              ; ++port, first_param = false
-              )
-            {
-              s << (first_param ? "" : ", ") << port->name;
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          {
+            s << sep << port.name;
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_out.begin())
-              ; port != ports_out.end()
-              ; ++port, first_param = false
-              )
-            {
-              s << (first_param ? "" : ", ") << port->name;
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_out)
+          {
+            s << sep << port.name;
+          }
 
           s << ")";
 
           if (port_return)
+          {
+            s << ")))";
+
+            if (!literal::cpp::known ((*port_return).type))
             {
-              s << ")))";
-
-              if (!literal::cpp::known ((*port_return).type))
-                {
-                  s << ")";
-                }
+              s << ")";
             }
+          }
 
-          s << ";" << std::endl;
+          s << ";";
 
-          for ( ports_with_type_type::const_iterator port (ports_mutable.begin())
-              ; port != ports_mutable.end()
-              ; ++port
-              )
-            {
-              if (first_put)
-                {
-                  s << std::endl;
+          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          {
+            s << indent
+              << "_pnetc_output.bind ("
+              << "\"" << port.name << "\""
+              << ", pnet::type::compat::COMPAT(value::type(" << mk_value (port)
+              << ")))"
+              << ";"
+              ;
+          }
 
-                  first_put = false;
-                }
+          BOOST_FOREACH (const port_with_type& port, ports_out)
+          {
+            s << indent
+              << "_pnetc_output.bind ("
+              << "\"" << port.name << "\""
+              << ", pnet::type::compat::COMPAT(value::type(" << mk_value (port)
+              << ")))"
+              << ";"
+              ;
+          }
 
-              s << "      "
-                << "  _pnetc_output.bind ("
-                << "\"" << port->name << "\""
-                << ", pnet::type::compat::COMPAT(value::type(" << mk_value (*port)
-                << ")))"
-                << ";"
-                << std::endl
-                ;
-            }
-
-          for ( ports_with_type_type::const_iterator port (ports_out.begin())
-              ; port != ports_out.end()
-              ; ++port
-              )
-            {
-              if (first_put)
-                {
-                  s << std::endl;
-
-                  first_put = false;
-                }
-
-              s << "      "
-                << "  _pnetc_output.bind ("
-                << "\"" << port->name << "\""
-                << ", pnet::type::compat::COMPAT(value::type(" << mk_value (*port)
-                << ")))"
-                << ";"
-                << std::endl
-                ;
-            }
-
-          s << "      "
-            << "} // " << mod.function() << std::endl;
-
-          namespace_close (s, mod);
+          s << block::close (indent)
+            << ns::close (indent)
+            << ns::close (indent)
+            << ns::close (indent);
         }
       }
       namespace
@@ -2144,6 +2045,10 @@ namespace xml
             }
 
             {
+              namespace ns = fhg::util::cpp::ns;
+
+              fhg::util::indenter indent;
+
               const path_t file (path / file_hpp);
 
               util::check_no_change_fstream stream (state, file);
@@ -2153,16 +2058,21 @@ namespace xml
 
               mod_includes (stream, types);
 
-              namespace_open (stream, mod);
+              stream << ns::open (indent, "pnetc");
+              stream << ns::open (indent, "op");
+              stream << ns::open (indent, mod.name());
 
               mod_signature ( stream
+                            , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
                             );
 
-              stream << ";" << std::endl;
+              stream << ";";
 
-              namespace_close (stream, mod);
+              stream << ns::close (indent)
+                     << ns::close (indent)
+                     << ns::close (indent);
 
               stream << std::endl;
 
@@ -2171,6 +2081,11 @@ namespace xml
             }
 
             {
+              namespace ns = fhg::util::cpp::ns;
+              namespace block = fhg::util::cpp::block;
+
+              fhg::util::indenter indent;
+
               const path_t file (path / file_cpp);
 
               util::check_no_change_fstream stream (state, file);
@@ -2188,14 +2103,17 @@ namespace xml
                 stream << cpp_util::include (std::string ("stdexcept"));
               }
 
-              namespace_open (stream, mod);
+              stream << ns::open (indent, "pnetc");
+              stream << ns::open (indent, "op");
+              stream << ns::open (indent, mod.name());
 
               mod_signature ( stream
+                            , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
                             );
 
-              stream << std::endl << "      {" << std::endl;
+              stream << block::open (indent);
 
               if (not mod.code())
               {
@@ -2212,15 +2130,16 @@ namespace xml
                     ("STRANGE: There is code without a position of definition");
                 }
 
-                stream << "// defined at "
+                stream << indent << "// defined at "
                        << *mod.position_of_definition_of_code()
                        << std::endl;
                 stream << *mod.code();
               }
 
-              stream << std::endl << "      }" << std::endl;
-
-              namespace_close (stream, mod);
+              stream << block::close (indent)
+                     << ns::close (indent)
+                     << ns::close (indent)
+                     << ns::close (indent);
             }
 
             return true;
