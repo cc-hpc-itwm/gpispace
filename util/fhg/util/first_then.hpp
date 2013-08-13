@@ -5,6 +5,8 @@
 
 #include <fhg/util/ostream_modifier.hpp>
 
+#include <boost/function.hpp>
+
 #include <iostream>
 
 namespace fhg
@@ -16,18 +18,26 @@ namespace fhg
     {
     public:
       first_then (const T& f, const T& t)
-        : _first (f)
-        , _then (t)
+        : _value (f)
+        , _modify (boost::bind (&first_then::set, this, t))
       {}
       std::ostream& operator() (std::ostream& os) const
       {
-        os << _first;
-        _first = _then;
+        os << _value;
+        _modify();
         return os;
       }
+
     private:
-      mutable T _first;
-      const T _then;
+      mutable T _value;
+      mutable boost::function<void ()> _modify;
+
+      void set (const T& value) const
+      {
+        _value = value;
+        _modify = &first_then::nop;
+      }
+      static void nop() {}
     };
   }
 }
