@@ -7,7 +7,6 @@
 
 #include <we/type/id.hpp>
 #include <we/type/value.hpp>
-#include <we/type/signature.hpp>
 
 #include <we/type/value/missing_binding.hpp>
 

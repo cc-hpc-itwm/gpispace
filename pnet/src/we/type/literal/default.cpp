@@ -4,7 +4,6 @@
 
 #include <boost/unordered_map.hpp>
 
-#include <we/type/signature.hpp>
 #include <we/type/literal/control.hpp>
 #include <we/type/bitsetofint.hpp>
 #include <we/type/bytearray.hpp>

@@ -10,7 +10,6 @@
 
 #include <we/mgmt/type/activity.hpp>
 
-#include <we2/type/compat.hpp>
 #include <we2/type/compat.sig.hpp>
 #include <we2/type/value/show.hpp>
 #include <we2/require_type.hpp>

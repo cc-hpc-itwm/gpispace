@@ -13,7 +13,6 @@
 #include <we/mgmt/context.fwd.hpp>
 
 #include <we2/type/value.hpp>
-#include <we2/type/compat.hpp>
 
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
