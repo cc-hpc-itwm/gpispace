@@ -112,6 +112,7 @@ namespace expr
       bool eval_all_bool (eval::context & context) const;
 
       value::type eval_all() const;
+      pnet::type::value::value_type eval_all2() const;
       bool eval_all_bool() const;
 
       void rename (const std::string& from, const std::string& to);

@@ -127,6 +127,12 @@ namespace expr
 
       return eval_all (c);
     }
+    pnet::type::value::value_type parser::eval_all2() const
+    {
+      eval::context c;
+
+      return eval_all2 (c);
+    }
 
     bool parser::eval_all_bool() const
     {
