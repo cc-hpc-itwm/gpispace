@@ -68,6 +68,10 @@ namespace expr
     {
       return pnet::type::compat::COMPAT (eval::eval (context, front()));
     }
+    pnet::type::value::value_type parser::eval_front2 (eval::context & context) const
+    {
+      return eval::eval (context, front());
+    }
 
     bool parser::eval_front_bool (eval::context & context) const
     {

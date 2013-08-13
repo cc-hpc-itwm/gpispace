@@ -99,6 +99,7 @@ namespace expr
 
       // eval the first entry in the stack
       value::type eval_front (eval::context & context) const;
+      pnet::type::value::value_type eval_front2 (eval::context & context) const;
       bool eval_front_bool (eval::context & context) const;
 
       // get the already evaluated value, throws if entry is not an value
