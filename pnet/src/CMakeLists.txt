@@ -102,7 +102,6 @@ set (we_dev_srcs
   we2/exception.cpp
   we2/field.cpp
   we2/signature_of.cpp
-  we2/type/compat.cpp
   we2/type/value/poke.cpp
 )
 
@@ -228,14 +227,6 @@ install (FILES
   DESTINATION include/we2/
   COMPONENT sdk
 )
-
-# BEGIN compat
-install (FILES
-  we2/type/compat.hpp
-  DESTINATION include/we2/type
-  COMPONENT sdk
-)
-# END compat
 
 install (FILES
   we/type/literal/control.hpp

@@ -1068,7 +1068,6 @@ namespace xml
             );
 
           stream << fhg::util::cpp::include ("we/loader/macros.hpp");
-          stream << fhg::util::cpp::include ("we2/type/compat.hpp");
 
           BOOST_FOREACH (const fun_info_type& fun, funs)
           {
