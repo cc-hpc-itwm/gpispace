@@ -5,7 +5,6 @@
 #define _WE_TYPE_SIGNATURE_HPP
 
 #include <we/type/literal/name.hpp>
-#include <we/type/value/show.hpp>
 #include <fhg/util/show.hpp>
 
 #include <boost/variant.hpp>
