@@ -11,7 +11,6 @@
 #include <fhg/util/cpp/block.hpp>
 #include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/struct.hpp>
-#include <fhg/util/cpp/constants.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -194,22 +193,13 @@ namespace pnet
           os << "#include <we2/type/value.hpp>" << std::endl;
           os << "#include <boost/serialization/nvp.hpp>" << std::endl;
 
-          unsigned int k (0);
-
-          BOOST_FOREACH ( const boost::filesystem::path& p
-                        , fhg::util::cpp::path::type()
-                        )
-          {
-            os << fhg::util::cpp::ns::open (indent, p.string());
-            ++k;
-          }
+          os << fhg::util::cpp::ns::open (indent, "pnetc");
+          os << fhg::util::cpp::ns::open (indent, "type");
 
           traverse (print_header (os, indent), _structured);
 
-          while (k --> 0)
-          {
-            os << fhg::util::cpp::ns::close (indent);
-          }
+          os << fhg::util::cpp::ns::close (indent);
+          os << fhg::util::cpp::ns::close (indent);
 
           return os;
         }
@@ -442,22 +432,13 @@ namespace pnet
           os << "#include <we2/field.hpp>" << std::endl;
           os << "#include <we2/signature_of.hpp>" << std::endl;
 
-          unsigned int k (0);
-
-          BOOST_FOREACH ( const boost::filesystem::path& p
-                        , fhg::util::cpp::path::type()
-                        )
-          {
-            os << fhg::util::cpp::ns::open (indent, p.string());
-            ++k;
-          }
+          os << fhg::util::cpp::ns::open (indent, "pnetc");
+          os << fhg::util::cpp::ns::open (indent, "type");
 
           traverse (print_impl (os, indent), _structured);
 
-          while (k --> 0)
-          {
-            os << fhg::util::cpp::ns::close (indent);
-          }
+          os << fhg::util::cpp::ns::close (indent);
+          os << fhg::util::cpp::ns::close (indent);
 
           return os;
         }
