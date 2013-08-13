@@ -609,43 +609,11 @@ namespace signature
     {
       os << cpp_util::include_guard::open ("PNETC_TYPE_" + n);
 
-      os << cpp_util::include ("we/type/value.hpp");
-      os << cpp_util::include ("we/type/value/cpp/get.hpp");
-
-      os << cpp_util::include ("boost/serialization/nvp.hpp");
-
-      // for operator <<
-      os << cpp_util::include ("we/type/literal.hpp");
-      os << cpp_util::include ("we/type/literal/show.hpp");
-      os << cpp_util::include ("iostream");
-
-      os << std::endl;
-
       visitor::seen_type seen;
 
       boost::apply_visitor ( visitor::cpp_includes<Stream> (os, seen)
                            , s.desc()
                            );
-
-      os << "namespace pnetc"                                    << std::endl;
-      os << "{"                                                  << std::endl;
-      os << "  namespace type"                                   << std::endl;
-      os << "  {"                                                << std::endl;
-      os                                                         << std::endl;
-      os << "    // defined in " << defpath                      << std::endl;
-      os << "    namespace " << n                                << std::endl;
-      os << "    {"                                              << std::endl;
-
-      os << "      "; cpp_struct<Stream> (os, s, n, 3);
-
-      os                                                         << std::endl;
-
-      os << "      "; cpp_show<Stream> (os, s, n, 3);
-
-      os << "    } // namespace " << n                           << std::endl;
-      os << "  } // namespace type"                              << std::endl;
-      os << "} // namespace pnetc"                               << std::endl;
-      os                                                         << std::endl;
 
       os << pnet::type::signature::cpp::header_signature
         (pnet::type::compat::COMPAT (s, n))
