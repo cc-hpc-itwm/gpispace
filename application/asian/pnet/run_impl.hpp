@@ -9,7 +9,7 @@
 
 namespace asian
 {
-  static void fun ( ::pnetc::type::sums::sums & sums
+  static void fun ( ::pnetc::type::sums::type& sums
                   , const int tid
                   )
   {
@@ -58,12 +58,12 @@ namespace asian
     }
   }
 
-  inline ::pnetc::type::sums::sums
-  run ( const ::pnetc::type::param::param & param )
+  inline ::pnetc::type::sums::type
+  run ( const ::pnetc::type::param::type& param )
   {
     const int nThread (param.nThreads);
 
-    ::pnetc::type::sums::sums *sums = new ::pnetc::type::sums::sums[nThread];
+    ::pnetc::type::sums::type *sums = new ::pnetc::type::sums::type[nThread];
 
     boost::thread_group threads;
 
@@ -104,7 +104,7 @@ namespace asian
 
     sums[0].param = param;
 
-    ::pnetc::type::sums::sums ret (sums[0]);
+    ::pnetc::type::sums::type ret (sums[0]);
     delete [] sums;
     return ret;
   }

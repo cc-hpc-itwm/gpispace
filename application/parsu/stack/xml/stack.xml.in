@@ -488,12 +488,12 @@
           <cinclude href="comm.hpp"/>
           <cinclude href="process/process.hpp"/>
           <code><![CDATA[
-            ::pnetc::type::stack_loaded_package::stack_loaded_package & left
+            ::pnetc::type::stack_loaded_package::type& left
               ( (p.x.package.left.trace == p.y.package.right.trace)
               ? p.y
               : p.x
               );
-            ::pnetc::type::stack_loaded_package::stack_loaded_package & right
+            ::pnetc::type::stack_loaded_package::type& right
               ( (p.x.package.left.trace == p.y.package.right.trace)
               ? p.x
               : p.y
@@ -689,7 +689,7 @@
           <cinclude href="comm.hpp"/>
           <ld flag="-ldo_write"/>
           <code><![CDATA[
-            const ::pnetc::type::stack_loaded_package::stack_loaded_package & p
+            const ::pnetc::type::stack_loaded_package::type& p
               (package_to_be_written.loaded_package);
 
             LOG (INFO, "WRITE " << ::print::loaded_package (p)

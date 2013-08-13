@@ -634,7 +634,7 @@
           <cinclude href="comm.hpp"/>
           <ld flag="-ldo_write"/>
           <code><![CDATA[
-            const ::pnetc::type::tracebytrace_loaded_package::tracebytrace_loaded_package & p
+            const ::pnetc::type::tracebytrace_loaded_package::type & p
               (package_to_be_written.loaded_package);
 
             LOG ( INFO, "WRITE " << ::print::loaded_package (p)

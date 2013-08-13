@@ -50,12 +50,12 @@
         <out name="n_write_slots" type="long"/>
         <out name="n_chunks" type="long"/>
 
-        <module name="create_config" function="config create_config (	input_file, 
+        <module name="create_config" function="config create_config (	input_file,
         																output_file, chunk_size,
-                                               							input_n_read_slots, 
+                                               							input_n_read_slots,
                                                							input_n_write_slots,
-                                               							n_chunks, 
-                                               							n_read_slots, 
+                                               							n_chunks,
+                                               							n_read_slots,
                                                							n_write_slots)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
@@ -92,7 +92,7 @@
           else
           	MLOG(WARN, "No output file specified, therefore the result will not be stored!");
 
-          ::pnetc::type::config::config config;
+          ::pnetc::type::config::type config;
           printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
           if(input_file_size<=0)
           {
@@ -268,7 +268,7 @@
 
           LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully into the virtual memory");
 
-          pnetc::type::chunk_read_info::chunk_read_info c_r_info;
+          pnetc::type::chunk_read_info::type c_r_info;
 
           c_r_info.read_slot_id = chunk_and_slot.slot;
           c_r_info.chunk_id = chunk_and_slot.chunk;
@@ -301,7 +301,7 @@
           <code><![CDATA[
           LOG (INFO, "Transform the chunk "<<chunk_read_info.chunk_id<<" now ...");
 
-          pnetc::type::chunk_write_info::chunk_write_info c_w_info;
+          pnetc::type::chunk_write_info::type c_w_info;
 
           waitComm ( fvmGetGlobalData
           ( static_cast<fvmAllocHandle_t> (config.read_area)
@@ -364,14 +364,14 @@
           <cinclude href="errno.h"/>
           <cinclude href="string.h"/>
           <code><![CDATA[
-       
+
 		  if(!config.output_file.empty())
 		  {
 			  // write the data into file at the position
           	  // chunk_id*config.chunk_size
-          	
+
 			  MLOG (INFO, "write the chunk " << chunk_write_info.chunk_id << " now ...");
-			  
+
 			  // get data from vm::write_area
 	          waitComm( fvmGetGlobalData
 	          ( static_cast<fvmAllocHandle_t> (config.write_area)
@@ -381,9 +381,9 @@
 	          	, 0
 	          )
 	          );
-	
+
 	          char* ptrChunk = static_cast<char *> (fvmGetShmemPtr());
-	          
+
 	          int fd = open (config.output_file.c_str (), O_RDWR);
 	          if (fd == -1)
 	          {
@@ -404,7 +404,7 @@
 		  {
 			MLOG (INFO, "No output file was specified, therefore the result will not be stored");
 	      }
-		  
+
           write_slot_id = chunk_write_info.write_slot_id;
           return we::type::literal::control();
           ]]></code>

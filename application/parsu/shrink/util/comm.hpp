@@ -15,8 +15,8 @@
 namespace comm
 {
   inline void put
-  ( const ::pnetc::type::shrink_config::shrink_config config
-  , const ::pnetc::type::shrink_loaded_package::shrink_loaded_package package
+  ( const ::pnetc::type::shrink_config::type config
+  , const ::pnetc::type::shrink_loaded_package::type package
   , const long shmem_offset = 0
   )
   {
@@ -39,8 +39,8 @@ namespace comm
   }
 
   inline void get
-  ( const ::pnetc::type::shrink_config::shrink_config config
-  , const ::pnetc::type::shrink_loaded_package::shrink_loaded_package package
+  ( const ::pnetc::type::shrink_config::type config
+  , const ::pnetc::type::shrink_loaded_package::type package
   , const long shmem_offset = 0
   )
   {

@@ -15,8 +15,8 @@
 namespace comm
 {
   inline void put
-  ( const ::pnetc::type::op2_config::op2_config config
-  , const ::pnetc::type::op2_loaded_package::op2_loaded_package package
+  ( const ::pnetc::type::op2_config::type config
+  , const ::pnetc::type::op2_loaded_package::type package
   , const long shmem_offset = 0
   )
   {
@@ -39,8 +39,8 @@ namespace comm
   }
 
   inline void get
-  ( const ::pnetc::type::op2_config::op2_config config
-  , const ::pnetc::type::op2_loaded_package::op2_loaded_package package
+  ( const ::pnetc::type::op2_config::type config
+  , const ::pnetc::type::op2_loaded_package::type package
   , const long shmem_offset = 0
   )
   {

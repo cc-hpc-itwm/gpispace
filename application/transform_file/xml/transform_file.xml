@@ -73,7 +73,7 @@
 
 					// truncate output file
 
-					::pnetc::type::config::config config;
+					::pnetc::type::config::type config;
 					printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
 					if(input_file_size<=0)
 					{
@@ -239,7 +239,7 @@
 
               		LOG ( INFO, "The chunk "<<chunk_id<<" was successfully into the virtual memory");
 
-              		pnetc::type::chunk_read_info::chunk_read_info c_r_info;
+              		pnetc::type::chunk_read_info::type c_r_info;
 
 					c_r_info.read_slot_id = read_slot_id;
               		c_r_info.chunk_id = chunk_id;
@@ -272,7 +272,7 @@
           		<code><![CDATA[
             		LOG (INFO, "Transform the chunk now ...");
 
-					pnetc::type::chunk_write_info::chunk_write_info c_w_info;
+					pnetc::type::chunk_write_info::type c_w_info;
 
             		waitComm ( fvmGetGlobalData
 						( static_cast<fvmAllocHandle_t> (config.read_area)

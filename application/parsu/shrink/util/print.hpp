@@ -11,7 +11,7 @@
 
 namespace print
 {
-  inline std::string package (const ::pnetc::type::shrink_package::shrink_package & p)
+  inline std::string package (const ::pnetc::type::shrink_package::type& p)
   {
     std::ostringstream os;
 
@@ -26,7 +26,7 @@ namespace print
   }
 
   inline std::string loaded_package
-  (const ::pnetc::type::shrink_loaded_package::shrink_loaded_package & p)
+  (const ::pnetc::type::shrink_loaded_package::type& p)
   {
     std::ostringstream os;
 
@@ -38,7 +38,7 @@ namespace print
   }
 
   inline std::string package_to_be_written
-  (const ::pnetc::type::shrink_package_to_be_written::shrink_package_to_be_written & p)
+    (const ::pnetc::type::shrink_package_to_be_written::type& p)
   {
     std::ostringstream os;
 

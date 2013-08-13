@@ -22,7 +22,7 @@
           <code><![CDATA[
             LOG (INFO, "init: " << description);
 
-            ::pnetc::type::config::config config;
+            ::pnetc::type::config::type config;
 
             config.size.mem.gpi = 0L;
             config.size.mem.shmem = 0L;

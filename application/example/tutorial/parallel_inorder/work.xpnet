@@ -1,4 +1,4 @@
-<template name="work_n_of_m">
+#<template name="work_n_of_m">
   <template-parameter type="T"/>
   <defun>
 
@@ -26,7 +26,7 @@
             <code><![CDATA[
             srand (v.id);
 
-            ::pnetc::type::with_length::with_length wl;
+            ::pnetc::type::with_length::type wl;
 
             wl.v  = v;
             wl.length = rand () % 20;

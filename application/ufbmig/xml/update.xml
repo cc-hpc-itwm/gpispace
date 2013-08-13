@@ -90,7 +90,7 @@
           <code><![CDATA[
             LOG (INFO, "UPDATE " << interval_tagged);
 
-            ::pnetc::type::interval::interval & interval (interval_tagged.interval);
+            ::pnetc::type::interval::type & interval (interval_tagged.interval);
 
             waitComm ( fvmGetGlobalData
                        ( static_cast<fvmAllocHandle_t> (config.handle.data.update)

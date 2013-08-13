@@ -32,7 +32,7 @@
           <code><![CDATA[
             LOG (INFO, "INIT num of packages for offset class " << offset.id);
 
-            ::pnetc::type::state_gen_package::state_gen_package state;
+            ::pnetc::type::state_gen_package::type state;
 
             // could be anything, smaller or larger then the number of nodes
             const long theM (2L);

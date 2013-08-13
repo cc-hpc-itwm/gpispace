@@ -142,9 +142,9 @@ namespace mapreduce
          				 	 long map_slot_size,
          				 	 bool first_char_is_delim,
          				 	 bool last_char_is_delim,
-         				 	 std::deque<long>& arr_part_ids,
-         				 	 std::deque<long>& arr_part_offset,
-         				 	 std::deque<long>& arr_part_used,
+                         std::list<pnet::type::value::value_type>& arr_part_ids,
+                         std::list<pnet::type::value::value_type>& arr_part_offset,
+                         std::list<pnet::type::value::value_type>& arr_part_used,
          				 	 int& counter,
          				 	 size_t& last_pos,
          				 	 char* ptr_shmem)

@@ -1641,7 +1641,7 @@ namespace xml
 
           return literal::cpp::known (type)
             ? literal::cpp::translate (type)
-            : ("::pnetc::type::" + type + "::" + type)
+            : ("::pnetc::type::" + type + "::type")
             ;
         }
 
@@ -1664,21 +1664,16 @@ namespace xml
 
             if (literal::cpp::known (_port.type))
             {
-              os << literal::cpp::translate (_port.type)
-                 << " " << _amper << _port.name << " ("
-                 << "boost::get< " << _modif << literal::cpp::translate (_port.type) << _amper << " >"
-                 << "(_pnetc_input.value (\"" << _port.name << "\")));";
+              const std::string tname (literal::cpp::translate (_port.type));
+
+              os << tname << " " << _amper << _port.name << " ("
+                 << "boost::get< " << _modif << tname << _amper << " >"
+                 << " (_pnetc_input.value (\"" << _port.name << "\")));";
             }
             else
             {
-              os << "::pnetc::type::" << _port.type << "::" << _port.type << " " << _port.name << " ("
-                 << "::pnetc::type::" << _port.type << "::from_value"
-                 << "("
-                 << "::we::loader::get< ::value::type >"
-                 << "(_pnetc_input, \"" << _port.name << "\")"
-                 << ")"
-                 << ");"
-                ;
+              os << "::pnetc::type::" << _port.type <<  "::type " << _port.name
+                 << " (_pnetc_input.value (\"" << _port.name << "\"));";
             }
 
             return os;
@@ -1703,7 +1698,7 @@ namespace xml
             }
           else
             {
-              os << "::pnetc::type::" << port.type << "::to_value"
+              os << "::pnetc::type::" << port.type << "::value"
                  << " (" << port.name << ")"
                 ;
             }
@@ -1800,12 +1795,12 @@ namespace xml
           {
             s << indent << "_pnetc_output.bind ("
               << "\"" << (*port_return).name << "\""
-              << ", pnet::type::compat::COMPAT(value::type("
+              << ", "
               ;
 
             if (!literal::cpp::known ((*port_return).type))
             {
-              s << "::pnetc::type::" << (*port_return).type << "::to_value"
+              s << "::pnetc::type::" << (*port_return).type << "::value"
                 << " ("
                 ;
             }
@@ -1836,7 +1831,7 @@ namespace xml
 
           if (port_return)
           {
-            s << ")))";
+            s << ")";
 
             if (!literal::cpp::known ((*port_return).type))
             {
@@ -1851,8 +1846,8 @@ namespace xml
             s << indent
               << "_pnetc_output.bind ("
               << "\"" << port.name << "\""
-              << ", pnet::type::compat::COMPAT(value::type(" << mk_value (port)
-              << ")))"
+              << ", " << mk_value (port)
+              << ")"
               << ";"
               ;
           }
@@ -1862,8 +1857,8 @@ namespace xml
             s << indent
               << "_pnetc_output.bind ("
               << "\"" << port.name << "\""
-              << ", pnet::type::compat::COMPAT(value::type(" << mk_value (port)
-              << ")))"
+              << ", " << mk_value (port)
+              << ")"
               << ";"
               ;
           }

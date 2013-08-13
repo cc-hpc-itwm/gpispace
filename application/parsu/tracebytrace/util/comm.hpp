@@ -15,8 +15,8 @@
 namespace comm
 {
   inline void put
-  ( const ::pnetc::type::tracebytrace_config::tracebytrace_config config
-  , const ::pnetc::type::tracebytrace_loaded_package::tracebytrace_loaded_package package
+  ( const ::pnetc::type::tracebytrace_config::type config
+  , const ::pnetc::type::tracebytrace_loaded_package::type package
   , const long shmem_offset = 0
   )
   {
@@ -37,8 +37,8 @@ namespace comm
   }
 
   inline void get
-  ( const ::pnetc::type::tracebytrace_config::tracebytrace_config config
-  , const ::pnetc::type::tracebytrace_loaded_package::tracebytrace_loaded_package package
+  ( const ::pnetc::type::tracebytrace_config::type config
+  , const ::pnetc::type::tracebytrace_loaded_package::type package
   , const long shmem_offset = 0
   )
   {

@@ -57,7 +57,7 @@
 
             char x (update_descr[0]);
 
-            ::pnetc::type::intervals::intervals intervals;
+            ::pnetc::type::intervals::type intervals;
 
             intervals.interval = interval;
             intervals.sizes.push_front (1L);
@@ -78,12 +78,12 @@
                   }
                 else
                   {
-                    intervals.sizes.front() += 1L;
-                    intervals.useds.front() += 1L;
+                    intervals.sizes.front() = boost::get<long>(intervals.sizes.front()) + 1L;
+                    intervals.useds.front() = boost::get<long>(intervals.useds.front()) + 1L;
                   }
               }
 
-            intervals.sizes.front() += interval.size - interval.used;
+            intervals.sizes.front() = boost::get<long>(intervals.sizes.front()) + interval.size - interval.used;
 
             {
               std::ostringstream oss;
