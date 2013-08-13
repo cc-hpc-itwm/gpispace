@@ -4,7 +4,6 @@
 #include <we/type/condition.hpp>
 #include <we/util/cross.hpp>
 
-#include <we2/type/compat.hpp>
 #include <we2/type/compat.sig.hpp>
 #include <we2/require_type.hpp>
 
