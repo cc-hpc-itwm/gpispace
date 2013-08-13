@@ -20,7 +20,6 @@ namespace fhg
       {
       public:
         include (const std::string&);
-        include (const boost::filesystem::path&);
         std::ostream& operator() (std::ostream&) const;
       private:
         const std::string& _fname;

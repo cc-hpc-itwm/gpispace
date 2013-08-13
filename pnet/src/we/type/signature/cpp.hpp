@@ -320,8 +320,7 @@ namespace signature
             {
               if (seen.find (t) == seen.end())
                 {
-                  os << cpp_util::include
-                    (std::string ("pnetc/type/" + t + ".hpp"));
+                  os << cpp_util::include ("pnetc/type/" + t + ".hpp");
 
                   seen.insert (t);
                 }
@@ -610,15 +609,15 @@ namespace signature
     {
       os << cpp_util::include_guard::open ("PNETC_TYPE_" + n);
 
-      os << cpp_util::include (std::string ("we/type/value.hpp"));
-      os << cpp_util::include (std::string ("we/type/value/cpp/get.hpp"));
+      os << cpp_util::include ("we/type/value.hpp");
+      os << cpp_util::include ("we/type/value/cpp/get.hpp");
 
-      os << cpp_util::include (std::string ("boost/serialization/nvp.hpp"));
+      os << cpp_util::include ("boost/serialization/nvp.hpp");
 
       // for operator <<
-      os << cpp_util::include (std::string ("we/type/literal.hpp"));
-      os << cpp_util::include (std::string ("we/type/literal/show.hpp"));
-      os << cpp_util::include (std::string ("iostream"));
+      os << cpp_util::include ("we/type/literal.hpp");
+      os << cpp_util::include ("we/type/literal/show.hpp");
+      os << cpp_util::include ("iostream");
 
       os << std::endl;
 
@@ -665,7 +664,7 @@ namespace signature
     {
       os << "// defined in " << defpath << std::endl;
 
-      os << cpp_util::include (std::string ("pnetc/type/" + n + ".hpp"));
+      os << cpp_util::include ("pnetc/type/" + n + ".hpp");
 
       os << pnet::type::signature::cpp::impl_signature
         (pnet::type::compat::COMPAT (s, n))

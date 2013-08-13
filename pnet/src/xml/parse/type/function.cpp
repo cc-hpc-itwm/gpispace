@@ -1059,8 +1059,8 @@ namespace xml
             , state.path_to_cpp() + "/pnetc/op/" + modname + ".cpp"
             );
 
-          stream << fhg::util::cpp::include (std::string ("we/loader/macros.hpp"));
-          stream << fhg::util::cpp::include (std::string ("we2/type/compat.hpp"));
+          stream << fhg::util::cpp::include ("we/loader/macros.hpp");
+          stream << fhg::util::cpp::include ("we2/type/compat.hpp");
 
           BOOST_FOREACH (const fun_info_type& fun, funs)
           {
@@ -1625,8 +1625,7 @@ namespace xml
             {
               if (!literal::cpp::known (*type))
                 {
-                  s << cpp_util::include
-                    (std::string ("pnetc/type/" + *type + ".hpp"));
+                  s << cpp_util::include ("pnetc/type/" + *type + ".hpp");
                 }
               else
                 {
@@ -1758,7 +1757,7 @@ namespace xml
 
           fhg::util::indenter indent;
 
-          s << cpp::include (std::string ("pnetc/op/" + mod.name() + "/" + file_hpp.string()));
+          s << cpp::include ("pnetc/op/" + mod.name() + "/" + file_hpp.string());
           s << ns::open (indent, "pnetc");
           s << ns::open (indent, "op");
           s << ns::open (indent, mod.name());
@@ -2074,7 +2073,7 @@ namespace xml
               util::check_no_change_fstream stream (state, file);
 
               stream << cpp_util::include
-                (std::string ("pnetc/op/" + mod.name() + "/" + file_hpp));
+                ("pnetc/op/" + mod.name() + "/" + file_hpp);
 
               BOOST_FOREACH (const std::string& inc, mod.cincludes())
               {
@@ -2083,7 +2082,7 @@ namespace xml
 
               if (not mod.code())
               {
-                stream << cpp_util::include (std::string ("stdexcept"));
+                stream << cpp_util::include ("stdexcept");
               }
 
               stream << ns::open (indent, "pnetc");
