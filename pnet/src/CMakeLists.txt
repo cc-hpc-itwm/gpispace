@@ -217,6 +217,7 @@ install (FILES
 )
 install (FILES
   we2/type/value/poke.hpp
+  we2/type/value/show.hpp
   DESTINATION include/we2/type/value
   COMPONENT sdk
 )
