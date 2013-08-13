@@ -18,8 +18,6 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 
-#include <we/type/value/show.hpp>
-
 namespace xml
 {
   namespace parse
@@ -463,38 +461,6 @@ namespace xml
                            , const boost::filesystem::path & path
                            )
           : generic (nice (name, path))
-        {}
-      };
-
-      // ******************************************************************* //
-
-      class overwrite_context : public generic
-      {
-      private:
-        std::string nice ( const std::string & key
-                         , const std::string & val
-                         , const value::type & old_val
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "old value " << old_val
-            << " of property " << key
-            << " overwritten by " << val
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
-      public:
-        overwrite_context ( const std::string & key
-                          , const std::string & val
-                          , const value::type & old_val
-                          , const boost::filesystem::path & path
-                          )
-          : generic (nice (key, val, old_val, path))
         {}
       };
 
