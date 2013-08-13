@@ -151,7 +151,6 @@ set (we_srcs
   we/type/literal/require_type.cpp
   we/type/literal/cpp.cpp
   we/type/value/read.cpp
-  we/type/value/show.cpp
   we/type/value/function.cpp
   we/expr/eval/refnode.cpp
   we/type/transition.cpp
