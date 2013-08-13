@@ -11,6 +11,7 @@
 #include <fhg/util/cpp/block.hpp>
 #include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/struct.hpp>
+#include <fhg/util/cpp/include.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -190,8 +191,9 @@ namespace pnet
         {
           fhg::util::indenter indent;
 
-          os << "#include <we2/type/value.hpp>" << std::endl;
-          os << "#include <boost/serialization/nvp.hpp>" << std::endl;
+          os << fhg::util::cpp::include ("we2/type/value.hpp");
+          os << fhg::util::cpp::include ("boost/serialization/nvp.hpp");
+          os << fhg::util::cpp::include ("iosfwd");
 
           os << fhg::util::cpp::ns::open (indent, "pnetc");
           os << fhg::util::cpp::ns::open (indent, "type");
@@ -428,9 +430,11 @@ namespace pnet
         {
           fhg::util::indenter indent;
 
-          os << "#include <we2/type/value/poke.hpp>" << std::endl;
-          os << "#include <we2/field.hpp>" << std::endl;
-          os << "#include <we2/signature_of.hpp>" << std::endl;
+          os << fhg::util::cpp::include ("we2/field.hpp");
+          os << fhg::util::cpp::include ("we2/signature_of.hpp");
+          os << fhg::util::cpp::include ("we2/type/value/poke.hpp");
+          os << fhg::util::cpp::include ("we2/type/value/show.hpp");
+          os << fhg::util::cpp::include ("iostream");
 
           os << fhg::util::cpp::ns::open (indent, "pnetc");
           os << fhg::util::cpp::ns::open (indent, "type");
