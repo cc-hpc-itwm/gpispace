@@ -325,10 +325,8 @@ namespace signature
             {
               if (seen.find (t) == seen.end())
                 {
-                  const boost::filesystem::path file
-                    (cpp_util::path::type() / (t + ".hpp"));
-
-                  os << cpp_util::include (file);
+                  os << cpp_util::include
+                    (std::string ("pnetc/type/" + t + ".hpp"));
 
                   seen.insert (t);
                 }
@@ -670,10 +668,9 @@ namespace signature
       , const boost::filesystem::path & defpath
       )
     {
-      os << cpp_util::include
-        (cpp_util::path::type().string() + "/" + n + ".hpp");
-
       os << "// defined in " << defpath << std::endl;
+
+      os << cpp_util::include (std::string ("pnetc/type/" + n + ".hpp"));
 
       os << pnet::type::signature::cpp::impl_signature
         (pnet::type::compat::COMPAT (s, n))

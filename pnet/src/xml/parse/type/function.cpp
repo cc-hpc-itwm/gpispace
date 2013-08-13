@@ -1627,7 +1627,7 @@ namespace xml
               if (!literal::cpp::known (*type))
                 {
                   s << cpp_util::include
-                    (cpp_util::path::type() / (*type + ".hpp"));
+                    (std::string ("pnetc/type/" + *type + ".hpp"));
                 }
               else
                 {
@@ -1764,7 +1764,7 @@ namespace xml
 
           fhg::util::indenter indent;
 
-          s << cpp::include (cpp::path::op() / mod.name() / file_hpp);
+          s << cpp::include (std::string ("pnetc/op/" + mod.name() + "/" + file_hpp.string()));
           s << ns::open (indent, "pnetc");
           s << ns::open (indent, "op");
           s << ns::open (indent, mod.name());
@@ -2016,7 +2016,7 @@ namespace xml
             }
 
             const path_t prefix (state.path_to_cpp());
-            const path_t path (prefix / cpp_util::path::op() / mod.name());
+            const path_t path (state.path_to_cpp() + "/pnetc/op/" + mod.name());
             const std::string file_hpp (mod.function() + ".hpp");
             const std::string file_cpp
               (mod.function() + (mod.code() ? ".cpp" : ".cpp_tmpl"));
@@ -2091,7 +2091,7 @@ namespace xml
               util::check_no_change_fstream stream (state, file);
 
               stream << cpp_util::include
-                (cpp_util::path::op() / mod.name() / file_hpp);
+                (std::string ("pnetc/op/" + mod.name() + "/" + file_hpp));
 
               BOOST_FOREACH (const std::string& inc, mod.cincludes())
               {
@@ -2190,7 +2190,7 @@ namespace xml
             {
               const boost::filesystem::path file
                 ( prefix
-                / ::fhg::util::cpp::path::type()
+                / "pnetc/type"
                 / (structure.name() + ".hpp")
                 );
 
@@ -2207,7 +2207,7 @@ namespace xml
             {
               const boost::filesystem::path file
                 ( prefix
-                / ::fhg::util::cpp::path::type()
+                / "pnetc/type"
                 / (structure.name() + ".cpp")
                 );
 
