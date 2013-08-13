@@ -22,8 +22,6 @@ set(tests
     test_signal.cpp
     test_trans.cpp
     test_unordered_map.cpp
-    test_try_gen.cpp
-    test_gen.cpp
     test_context.cpp
    )
 
