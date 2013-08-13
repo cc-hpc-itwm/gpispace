@@ -19,6 +19,11 @@ namespace fhg
           : _indent (indent)
           , _tag (tag)
         {}
+
+        open::open (fhg::util::indenter& indent, const std::string& tag)
+          : _indent (indent)
+          , _tag (tag)
+        {}
         std::ostream& open::operator() (std::ostream& os) const
         {
           os << _indent << "namespace";
