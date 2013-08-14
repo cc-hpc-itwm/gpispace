@@ -3,7 +3,6 @@
 
 #include <list>
 
-#include <we/type/value.hpp>
 #include <we/type/id.hpp>
 
 #include <we2/require_type.hpp>
@@ -19,32 +18,9 @@ namespace we
   {
     namespace token
     {
-      typedef ::value::type type;
       typedef std::list<pnet::type::value::value_type> list_t;
       typedef std::map<std::string, list_t> marking_t;
 
-      mgmt::type::activity_t & put ( mgmt::type::activity_t & act
-                                   , std::string const & port
-                                   , type const & value
-                                   )
-      {
-        const ::petri_net::port_id_type pid
-          (act.transition().input_port_by_name (port));
-
-        const ::signature::type port_signature
-          (act.transition().get_port (pid).signature());
-
-        act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( pnet::require_type_relaxed
-                          ( pnet::type::compat::COMPAT (value)
-                          , pnet::type::compat::COMPAT (port_signature)
-                          , port
-                          )
-                        , pid
-                        )
-                      );
-        return act;
-      }
       mgmt::type::activity_t & put2 ( mgmt::type::activity_t & act
                                     , std::string const & port
                                     , pnet::type::value::value_type const & value
