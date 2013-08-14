@@ -141,7 +141,6 @@ set (we_srcs
 
   ${we_dev_srcs}
 
-  we/type/literal/read.cpp
   we/type/literal/valid_name.cpp
   we/type/literal/default.cpp
   we/type/literal/name.cpp
