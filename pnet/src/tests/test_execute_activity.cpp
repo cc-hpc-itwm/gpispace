@@ -6,12 +6,11 @@
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
-#include <we/type/value.hpp>
 #include <we/type/port.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
-#include <we2/type/compat.hpp>
+#include <we2/type/value.hpp>
 #include <we2/type/compat.sig.hpp>
 #include <we2/require_type.hpp>
 
@@ -75,7 +74,10 @@ namespace module
                    );
     }
 
-    typedef std::vector <std::pair<value::type, std::string> > mod_output_t;
+    typedef std::vector <std::pair< pnet::type::value::value_type
+                                  , std::string
+                                  >
+                        > mod_output_t;
 
     mod_output_t mod_output;
     module::eval ( module_call, context, mod_output );
@@ -93,7 +95,7 @@ namespace module
       act.add_output
         ( output_t::value_type
           ( pnet::require_type_relaxed
-            ( pnet::type::compat::COMPAT (ton->first)
+            ( ton->first
             , pnet::type::compat::COMPAT (port.signature())
             , port.name()
             )
