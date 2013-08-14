@@ -8,7 +8,6 @@
 #include <we/expr/token/prop.hpp>
 
 #include <we2/type/value/function.hpp>
-#include <we2/type/compat.hpp>
 
 #include <we/expr/eval/context.hpp>
 #include <we/expr/eval/refnode.hpp>
@@ -65,10 +64,6 @@ namespace expr
       std::copy (other.begin(), other.end(), std::back_inserter(nd_stack));
     }
 
-    value::type parser::eval_front (eval::context & context) const
-    {
-      return pnet::type::compat::COMPAT (eval::eval (context, front()));
-    }
     pnet::type::value::value_type parser::eval_front2 (eval::context & context) const
     {
       return eval::eval (context, front());
@@ -80,10 +75,6 @@ namespace expr
     }
 
     // get the already evaluated value, throws if entry is not an value
-    value::type parser::get_front () const
-    {
-      return pnet::type::compat::COMPAT (node::get (front()));
-    }
     pnet::type::value::value_type parser::get_front2() const
     {
       return node::get (front());
@@ -95,17 +86,6 @@ namespace expr
     }
 
     // evaluate the whole stack in order, return the last value
-    value::type parser::eval_all (eval::context & context) const
-    {
-      value::type v;
-
-      for (nd_const_it_t it (begin()); it != end(); ++it)
-        {
-          v = pnet::type::compat::COMPAT (eval::eval (context, *it));
-        }
-
-      return v;
-    }
     pnet::type::value::value_type
       parser::eval_all2 (eval::context & context) const
     {
@@ -126,12 +106,6 @@ namespace expr
       return pnet::type::value::is_true(v);
     }
 
-    value::type parser::eval_all() const
-    {
-      eval::context c;
-
-      return eval_all (c);
-    }
     pnet::type::value::value_type parser::eval_all2() const
     {
       eval::context c;

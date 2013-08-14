@@ -8,8 +8,6 @@
 #include <we/expr/exception.hpp>
 #include <we/expr/token/type.hpp>
 
-#include <we/type/value.hpp>
-
 #include <boost/function.hpp>
 
 #include <string>
@@ -98,21 +96,17 @@ namespace expr
       void add (const parser & other);
 
       // eval the first entry in the stack
-      value::type eval_front (eval::context & context) const;
       pnet::type::value::value_type eval_front2 (eval::context & context) const;
       bool eval_front_bool (eval::context & context) const;
 
       // get the already evaluated value, throws if entry is not an value
-      value::type get_front () const;
       pnet::type::value::value_type get_front2 () const;
       bool get_front_bool () const;
 
       // evaluate the whole stack in order, return the last value
-      value::type eval_all (eval::context & context) const;
       pnet::type::value::value_type eval_all2 (eval::context& context) const;
       bool eval_all_bool (eval::context & context) const;
 
-      value::type eval_all() const;
       pnet::type::value::value_type eval_all2() const;
       bool eval_all_bool() const;
 
