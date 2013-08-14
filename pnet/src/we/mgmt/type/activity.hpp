@@ -13,9 +13,11 @@
 #include <we/mgmt/context.fwd.hpp>
 
 #include <we2/type/value.hpp>
+#include <we2/type/value/serialize.hpp>
 
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
