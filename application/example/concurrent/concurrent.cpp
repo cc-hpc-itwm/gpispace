@@ -14,8 +14,6 @@
 
 #include <map>
 
-#include <we/type/value.hpp>
-
 typedef std::map<unsigned int, unsigned long> call_cnt_map_t ;
 static call_cnt_map_t call_cnt_map;
 
@@ -31,7 +29,7 @@ static void fun ( void *
 
   ++call_cnt_map[x];
 
-  output.bind ("done", pnet::type::value::value_type (we::type::literal::control()));
+  output.bind ("done", we::type::literal::control());
 }
 
 static unsigned long call_cnt_A = 0;
