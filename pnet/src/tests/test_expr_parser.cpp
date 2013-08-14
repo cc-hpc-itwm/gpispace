@@ -217,7 +217,7 @@ int main (int ac, char **)
 
     while (i-->0)
       {
-        parser.eval_all (context);
+        parser.eval_all2 (context);
         cout << context << endl;
       }
   }
