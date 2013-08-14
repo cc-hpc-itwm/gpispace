@@ -10,7 +10,6 @@
 #include <xml/parse/type/struct.hpp>
 
 #include <we/type/property.hpp>
-#include <we/type/value.hpp>
 
 #include <fhg/util/join.hpp>
 
