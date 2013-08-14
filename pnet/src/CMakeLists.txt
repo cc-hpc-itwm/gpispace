@@ -148,7 +148,6 @@ set (we_srcs
   we/type/literal/function.cpp
   we/type/literal/show.cpp
   we/type/literal/cpp.cpp
-  we/type/value/read.cpp
   we/type/value/function.cpp
   we/expr/eval/refnode.cpp
   we/type/transition.cpp
