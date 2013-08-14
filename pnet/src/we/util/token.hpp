@@ -21,10 +21,10 @@ namespace we
       typedef std::list<pnet::type::value::value_type> list_t;
       typedef std::map<std::string, list_t> marking_t;
 
-      mgmt::type::activity_t & put2 ( mgmt::type::activity_t & act
-                                    , std::string const & port
-                                    , pnet::type::value::value_type const & value
-                                    )
+      mgmt::type::activity_t & put ( mgmt::type::activity_t & act
+                                   , std::string const & port
+                                   , pnet::type::value::value_type const & value
+                                   )
       {
         const ::petri_net::port_id_type pid
           (act.transition().input_port_by_name (port));

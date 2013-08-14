@@ -744,7 +744,7 @@ namespace fhg
           {
             try
             {
-              we::util::token::put2 ( activity
+              we::util::token::put ( activity
                                     , port_name
                                     , pnet::type::value::read (value)
                                     );

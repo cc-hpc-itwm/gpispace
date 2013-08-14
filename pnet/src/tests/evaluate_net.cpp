@@ -41,7 +41,7 @@ namespace
 
     void put_token (const std::string& port, const pnet::type::value::value_type& value)
     {
-      we::util::token::put2 (activity, port, value);
+      we::util::token::put (activity, port, value);
     }
 
     //! \todo Get token and compare value.

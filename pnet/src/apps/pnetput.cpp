@@ -137,7 +137,7 @@ try
           port_values[port_name] = val;
         }
 
-      we::util::token::put2 (act, port_name, val);
+      we::util::token::put (act, port_name, val);
     }
     catch (std::exception const & ex)
     {
