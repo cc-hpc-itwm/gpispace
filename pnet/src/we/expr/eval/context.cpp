@@ -2,7 +2,7 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we/type/value/missing_binding.hpp>
+#include <we2/exception.hpp>
 
 #include <we2/type/value/poke.hpp>
 #include <we2/type/value/peek.hpp>
@@ -87,7 +87,7 @@ namespace expr
         return pos->second;
       }
 
-      throw value::exception::missing_binding (key);
+      throw pnet::exception::missing_binding (key);
     }
 
     const pnet::type::value::value_type&
@@ -116,7 +116,7 @@ namespace expr
         }
       }
 
-      throw value::exception::missing_binding (key);
+      throw pnet::exception::missing_binding (key);
     }
 
     const boost::unordered_map<std::string,pnet::type::value::value_type>&

@@ -66,6 +66,15 @@ namespace pnet
       MEMBER (path, std::list<std::string>);
     };
 
+    class missing_binding : public std::runtime_error
+    {
+    public:
+      missing_binding (const std::string&);
+      ~missing_binding() throw() {}
+
+      MEMBER (key, std::string);
+    };
+
 #undef MEMBER
   }
 }

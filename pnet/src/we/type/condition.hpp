@@ -8,7 +8,7 @@
 #include <we/type/id.hpp>
 #include <we/type/value.hpp>
 
-#include <we/type/value/missing_binding.hpp>
+#include <we2/exception.hpp>
 
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -83,7 +83,7 @@ namespace condition
         {
           return false;
         }
-      catch (const value::exception::missing_binding&)
+      catch (const pnet::exception::missing_binding&)
         {
           return false;
         }

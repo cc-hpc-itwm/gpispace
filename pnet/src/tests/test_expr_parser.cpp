@@ -3,7 +3,7 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
-#include <we/type/value/missing_binding.hpp>
+#include <we2/exception.hpp>
 
 #include <we2/type/value.hpp>
 #include <we2/type/value/show.hpp>
@@ -101,7 +101,7 @@ int main (int ac, char **)
                              << pnet::type::value::show (parser.eval_front2 (context))
                              << endl;
                       }
-                    catch (const value::exception::missing_binding & e)
+                    catch (const pnet::exception::missing_binding & e)
                       {
                         cout << e.what() << endl;
                       }

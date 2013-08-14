@@ -63,5 +63,10 @@ namespace pnet
       , _value (value)
       , _path (path)
     {}
+    missing_binding::missing_binding (const std::string& key)
+      : std::runtime_error
+        ((boost::format ("missing binding for: ${%1%}") % key).str())
+      , _key (key)
+    {}
   }
 }

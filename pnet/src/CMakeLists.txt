@@ -231,11 +231,6 @@ install (FILES
   DESTINATION include/we/type/literal
   COMPONENT sdk
 )
-install (FILES
-  we/type/value/missing_binding.hpp
-  DESTINATION include/we/type/value
-  COMPONENT sdk
-)
 
 add_executable(pnetc xml/parse/pnetc.cpp)
 target_link_libraries(pnetc fhg-revision)
