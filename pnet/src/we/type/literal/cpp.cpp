@@ -59,12 +59,6 @@ namespace literal
       };
     }
 
-    const std::string& translate (const std::string& t)
-    {
-      static info i;
-
-      return i.translate (t);
-    }
     const std::string& include (const std::string& t)
     {
       static info i;

@@ -35,6 +35,7 @@
 #include <we2/type/signature/cpp.hpp>
 #include <we2/type/signature/names.hpp>
 #include <we2/type/signature/is_literal.hpp>
+#include <we2/type/signature/complete.hpp>
 #include <we2/type/compat.sig.hpp>
 
 #include <we/type/id.hpp>
@@ -1641,15 +1642,28 @@ namespace xml
             }
         }
 
-        std::string mk_type (const std::string & type)
+        class mk_type : public fhg::util::ostream::modifier
         {
-          namespace cpp_util = ::fhg::util::cpp;
+        public:
+          mk_type (const std::string& type)
+            : _type (type)
+          {}
+          std::ostream& operator() (std::ostream& os) const
+          {
+            if (pnet::type::signature::is_literal (_type))
+            {
+              os << pnet::type::signature::complete (_type);
+            }
+            else
+            {
+              os << "::pnetc::type::" << _type << "::type";
+            }
 
-          return pnet::type::signature::is_literal (type)
-            ? literal::cpp::translate (type)
-            : ("::pnetc::type::" + type + "::type")
-            ;
-        }
+            return os;
+          }
+        private:
+          const std::string& _type;
+        };
 
         class mk_get : public fhg::util::ostream::modifier
         {
@@ -1670,10 +1684,10 @@ namespace xml
 
             if (pnet::type::signature::is_literal (_port.type))
             {
-              const std::string tname (literal::cpp::translate (_port.type));
+              using pnet::type::signature::complete;
 
-              os << tname << " " << _amper << _port.name << " ("
-                 << "boost::get< " << _modif << tname << _amper << " >"
+              os << complete (_port.type) << " " << _amper << _port.name << " ("
+                 << "boost::get< " << _modif << complete (_port.type) << _amper << " >"
                  << " (_pnetc_input.value (\"" << _port.name << "\")));";
             }
             else
@@ -1725,9 +1739,18 @@ namespace xml
         {
           using fhg::util::deeper;
 
-          s << indent
-            << (port_return ? mk_type ((*port_return).type) : "void")
-            << " " << mod.function() << deeper (indent) << "(";
+          s << indent;
+
+          if (port_return)
+          {
+            s << mk_type ((*port_return).type);
+          }
+          else
+          {
+            s << "void";
+          }
+
+          s << " " << mod.function() << deeper (indent) << "(";
 
           fhg::util::first_then<std::string> sep (" ", ", ");
 

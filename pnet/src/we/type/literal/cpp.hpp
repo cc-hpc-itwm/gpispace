@@ -9,7 +9,6 @@ namespace literal
 {
   namespace cpp
   {
-    const std::string& translate (const std::string&);
     const std::string& include (const std::string&);
 
     bool reserved (const std::string&);
