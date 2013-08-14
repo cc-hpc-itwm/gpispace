@@ -119,7 +119,7 @@
         <in name="wait" type="long"/>
         <out name="wait" type="long"/>
         <expression>
-          ${wait} := ${wait} - 1 + stack_size (${intervals.sizes})
+          ${wait} := ${wait} - 1L + stack_size (${intervals.sizes})
         </expression>
       </defun>
       <connect-in port="intervals" place="update_wait"/>

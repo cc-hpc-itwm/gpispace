@@ -1561,10 +1561,10 @@
         </module>
       </defun>
       <condition>
-        ${partition_info.part_id}:eq:${config.num.part}-1
+        ${partition_info.part_id}:eq:${config.num.part}-1L
       </condition>
       <condition>
-        ${reduce_info.part_id}:eq:${config.num.part}-1
+        ${reduce_info.part_id}:eq:${config.num.part}-1L
       </condition>
       <connect-in port="partition_info" place="partition_info"/>
       <connect-in port="reduce_info" place="reduce_info"/>

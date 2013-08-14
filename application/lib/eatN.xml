@@ -35,7 +35,7 @@
           <out name="wait" type="long"/>
           <in name="x" type="T"/>
           <in name="credit_check_break" type="control"/>
-          <expression>${wait} := ${wait} - 1</expression>
+          <expression>${wait} := ${wait} - 1L</expression>
         </defun>
         <connect-in port="wait" place="N"/>
         <connect-out port="wait" place="check_break"/>
@@ -52,7 +52,7 @@
             ${credit_check_break} := []
           </expression>
           <condition>
-            ${wait} :le: 0
+            ${wait} :le: 0L
           </condition>
         </defun>
         <connect-in port="wait" place="check_break"/>
@@ -68,7 +68,7 @@
             ${credit_check_break} := []
           </expression>
           <condition>
-            ${wait} :gt: 0
+            ${wait} :gt: 0L
           </condition>
         </defun>
         <connect-in port="wait" place="check_break"/>

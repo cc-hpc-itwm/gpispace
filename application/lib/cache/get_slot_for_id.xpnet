@@ -19,17 +19,17 @@
           ${cache.by_slot.num_users}
             := map_assign ( ${cache.by_slot.num_users}
                           , ${slot}
-                          , 1 + map_get_assignment ( ${cache.by_slot.num_users}
-                                                   , ${slot}
-                                                   )
+                          , 1L + map_get_assignment ( ${cache.by_slot.num_users}
+                                                    , ${slot}
+                                                    )
                           );
 
           ${cache.slots.available}
             := set_erase (${cache.slots.available}, ${slot});
 
-          ${cache.stat.hit} := ${cache.stat.hit} + 1;
+          ${cache.stat.hit} := ${cache.stat.hit} + 1L;
 
-          ${cache.num.user} := ${cache.num.user} + 1;
+          ${cache.num.user} := ${cache.num.user} + 1L;
         </expression>
         <condition>
           map_is_assigned (${cache.by_id.slot}, ${id})
@@ -56,11 +56,11 @@
             := map_assign (${cache.by_slot.id}, ${slot}, ${id});
 
           ${cache.by_slot.num_users}
-            := map_assign (${cache.by_slot.num_users}, ${slot}, 1);
+            := map_assign (${cache.by_slot.num_users}, ${slot}, 1L);
 
-          ${cache.stat.miss.empty} := ${cache.stat.miss.empty} + 1;
+          ${cache.stat.miss.empty} := ${cache.stat.miss.empty} + 1L;
 
-          ${cache.num.user} := ${cache.num.user} + 1;
+          ${cache.num.user} := ${cache.num.user} + 1L;
         </expression>
         <condition>
           (!map_is_assigned (${cache.by_id.slot}, ${id}))
@@ -96,11 +96,11 @@
             := map_assign (${cache.by_slot.id}, ${slot}, ${id});
 
           ${cache.by_slot.num_users}
-            := map_assign (${cache.by_slot.num_users}, ${slot}, 1);
+            := map_assign (${cache.by_slot.num_users}, ${slot}, 1L);
 
-          ${cache.stat.miss.available} := ${cache.stat.miss.available} + 1;
+          ${cache.stat.miss.available} := ${cache.stat.miss.available} + 1L;
 
-          ${cache.num.user} := ${cache.num.user} + 1;
+          ${cache.num.user} := ${cache.num.user} + 1L;
         </expression>
         <condition>
           (!map_is_assigned (${cache.by_id.slot}, ${id}))

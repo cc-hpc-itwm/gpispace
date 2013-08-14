@@ -62,7 +62,7 @@
             ${with_offset.wl} := ${ready};
             ${with_offset.offset} := ${offset};
             ${offset} := ${offset} + ${ready.length};
-            ${id} := ${id} + 1;
+            ${id} := ${id} + 1L;
           </expression>
           <condition>
             ${ready.v.id} :eq: ${id}

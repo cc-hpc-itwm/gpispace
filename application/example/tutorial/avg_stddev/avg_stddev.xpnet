@@ -42,11 +42,11 @@
         <out name="offset" type="long"/>
         <out name="configuration" type="configuration"/>
         <expression>
-          ${num_chunks} := (${size_file} + ${size_chunk} - 1) div ${size_chunk};
+          ${num_chunks} := (${size_file} + ${size_chunk} - 1L) div ${size_chunk};
           ${accu.sum} := 0.0;
           ${accu.sqsum} := 0.0;
-          ${accu.count} := 0;
-          ${offset} := 0;
+          ${accu.count} := 0L;
+          ${offset} := 0L;
           ${configuration.name_file} := ${name_file};
           ${configuration.size_file} := ${size_file};
           ${configuration.size_chunk} := ${size_chunk};
@@ -126,7 +126,7 @@
 
             sum.sum = 0.0;
             sum.sqsum = 0.0;
-            sum.count = 0;
+            sum.count = 0L;
 
             typedef reader<double> reader_type;
             typedef reader_type::queue_type queue_type;
@@ -210,14 +210,14 @@
           ${accu.sum} := ${accu.sum} + ${s.sum};
           ${accu.sqsum} := ${accu.sqsum} + ${s.sqsum};
           ${accu.count} := ${accu.count} + ${s.count};
-          ${num_chunks} := ${num_chunks} - 1;
+          ${num_chunks} := ${num_chunks} - 1L;
         </expression>
       </defun>
       <connect-inout port="accu" place="accu"/>
       <connect-in port="s" place="partial_sum"/>
       <connect-inout port="num_chunks" place="num_chunks"/>
       <condition>
-        ${num_chunks} :gt: 0
+        ${num_chunks} :gt: 0L
       </condition>
     </transition>
 
@@ -233,7 +233,7 @@
       <connect-in port="configuration" place="configuration"/>
       <connect-out port="accu" place="sums"/>
       <condition>
-        ${num_chunks} :le: 0
+        ${num_chunks} :le: 0L
       </condition>
     </transition>
 

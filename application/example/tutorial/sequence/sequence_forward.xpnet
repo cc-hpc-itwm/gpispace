@@ -19,7 +19,7 @@
         <in name="n" type="long"/>
         <out name="state" type="state"/>
         <expression>
-          ${state.i} := 0;
+          ${state.i} := 0L;
           ${state.max} := ${n};
         </expression>
       </defun>
@@ -38,7 +38,7 @@
         <out name="i" type="long"/>
         <expression>
           ${i} := ${state.i};
-          ${state.i} := ${state.i} + 1;
+          ${state.i} := ${state.i} + 1L;
         </expression>
       </defun>
       <condition>

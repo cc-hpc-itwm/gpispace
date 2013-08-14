@@ -25,11 +25,11 @@
           ${cache.slots.filled}          := {::};
           ${cache.slots.started_to_fill} := {::};
 
-          ${cache.stat.hit}              := 0;
-          ${cache.stat.miss.empty}       := 0;
-          ${cache.stat.miss.available}   := 0;
+          ${cache.stat.hit}              := 0L;
+          ${cache.stat.miss.empty}       := 0L;
+          ${cache.stat.miss.available}   := 0L;
 
-          ${cache.num.user}              := 0;
+          ${cache.num.user}              := 0L;
         </expression>
       </defun>
       <connect-in port="x" place="num_slots"/>
@@ -53,7 +53,7 @@
           ${cache.slots.empty} := set_insert ( ${cache.slots.empty}
                                              , ${id}
                                              );
-          ${n} := ${n} - 1
+          ${n} := ${n} - 1L
         </expression>
       </defun>
       <connect-inout port="cache" place="cache_accu"/>
@@ -66,7 +66,7 @@
         <in name="n" type="long"/>
         <expression/>
         <condition>
-          ${n} :le: 0
+          ${n} :le: 0L
         </condition>
       </defun>
       <connect-in port="cache" place="cache_accu"/>

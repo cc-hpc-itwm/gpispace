@@ -17,8 +17,8 @@ NOT_STARTS_WITH += wait
 
 WE_EXEC_WORKER = 5
 
-PUT_PORT += n=$(WE_EXEC_WORKER)
-PUT_PORT += c=$(WE_EXEC_WORKER)
+PUT_PORT += n=$(WE_EXEC_WORKER)L
+PUT_PORT += c=$(WE_EXEC_WORKER)L
 PUT_PORT += config=[description:=\"test\"]
 
 ###############################################################################
@@ -28,4 +28,3 @@ ifndef SDPA_HOME
 endif
 
 include $(SDPA_HOME)/share/sdpa/make/common.mk
-

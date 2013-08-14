@@ -10,7 +10,7 @@
         <out name="i" type="long"/>
         <expression>
           ${i} := ${n};
-          ${n} := ${n} + 1;
+          ${n} := ${n} + 1L;
         </expression>
       </defun>
       <connect-inout port="n" place="n"/>

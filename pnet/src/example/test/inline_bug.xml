@@ -22,14 +22,14 @@
 
         <place name="o1" type="control"/>
         <place name="o2" type="control"/>
-        <place name="no1" type="long"><token><value>0</value></token></place>
-        <place name="no2" type="long"><token><value>0</value></token></place>
+        <place name="no1" type="long"><token><value>0L</value></token></place>
+        <place name="no2" type="long"><token><value>0L</value></token></place>
         <transition name="count_o1">
             <defun>
                 <in name="t" type="control"/>
                 <inout name="c" type="long"/>
                 <expression>
-                    ${c} := ${c} + 1;
+                    ${c} := ${c} + 1L;
                 </expression>
             </defun>
             <connect-in port="t" place="o1"/>
@@ -40,7 +40,7 @@
                 <in name="t" type="control"/>
                 <inout name="c" type="long"/>
                 <expression>
-                    ${c} := ${c} + 1;
+                    ${c} := ${c} + 1L;
                 </expression>
             </defun>
             <connect-in port="t" place="o2"/>

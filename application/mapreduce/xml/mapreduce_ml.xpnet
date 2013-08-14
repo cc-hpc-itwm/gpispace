@@ -118,13 +118,13 @@
        <in name="n_part_merge" type="long"/>
 	    <out name="new_n_part_merge" type="long"/>
 	    <expression>
-	    	${new_n_part_merge}:=${n_part_merge}-1;
-		</expression>			    
+	    	${new_n_part_merge}:=${n_part_merge}-1L;
+		</expression>
      </defun>
       <connect-in port="n_part_merge" place="n_part_merge"/>
       <connect-out port="new_n_part_merge" place="new_n_part_merge"/>
     </transition>
-    
+
 	<place name="n_part_cnt" type="long"/>
     <place name="n_part_gen" type="long"/>
     <transition name="dup_n_part_merge" inline="true">

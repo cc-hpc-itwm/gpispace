@@ -20,10 +20,10 @@
        <out name="done" type="control"/>
        <out name="wait" type="long"/>
        <expression>
-         ${wait} := ${wait} - 1;
+         ${wait} := ${wait} - 1L;
          ${done} := []
        </expression>
-       <condition>${wait} :gt: 0</condition>
+       <condition>${wait} :gt: 0L</condition>
       </defun>
       <connect-in   place="wait"  port="wait" />
       <connect-out  place="wait"  port="wait" />
@@ -39,7 +39,7 @@
        <expression>
          ${trigger} := []
        </expression>
-       <condition>${wait} :eq: 0</condition>
+       <condition>${wait} :eq: 0L</condition>
       </defun>
       <connect-in place="wait"  port="wait" />
       <connect-in port="trigger" place="credit"/>

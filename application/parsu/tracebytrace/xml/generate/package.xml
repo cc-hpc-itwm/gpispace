@@ -25,7 +25,7 @@
           ${state.inc} := ${config.num.trace.per_slot};
           ${state.id} := 0L;
           ${state.size} := ${config.size.trace.input};
-          ${num} := 1 + (${state.max} - 1) div ${state.inc}
+          ${num} := 1L + (${state.max} - 1L) div ${state.inc}
         </expression>
       </defun>
       <connect-in port="config" place="config"/>

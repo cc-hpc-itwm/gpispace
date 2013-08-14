@@ -21,11 +21,11 @@
       <field name="communicate" type="bool"/>
     </struct>
 
-    <place name="sleeptime" type="long"><token><value>0</value></token></place>
-    <place name="N" type="long"><token><value>5</value></token></place>
-    <place name="M" type="long"><token><value>5</value></token></place>
-    <place name="num_long" type="long"><token><value>(192*2^20) div 8</value></token></place>
-    <place name="seed" type="long"><token><value>3141</value></token></place>
+    <place name="sleeptime" type="long"><token><value>0L</value></token></place>
+    <place name="N" type="long"><token><value>5L</value></token></place>
+    <place name="M" type="long"><token><value>5L</value></token></place>
+    <place name="num_long" type="long"><token><value>(192L*2L^20L) div 8L</value></token></place>
+    <place name="seed" type="long"><token><value>3141L</value></token></place>
     <place name="verify_all_mem" type="bool"><token><value>true</value></token></place>
     <place name="verify" type="bool"><token><value>true</value></token></place>
     <place name="communicate" type="bool"><token><value>true</value></token></place>

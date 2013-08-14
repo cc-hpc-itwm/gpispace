@@ -23,8 +23,8 @@
         <out name="accu" type="sums"/>
         <expression>
           ${state.param} := ${param};
-          ${state.its} := 0;
-          ${wait.wait} := (${param.iterations_per_run} + ${param.n} - 1)
+          ${state.its} := 0L;
+          ${wait.wait} := (${param.iterations_per_run} + ${param.n} - 1L)
                        div ${param.iterations_per_run};
           ${accu.sum1} := 0.0;
           ${accu.sum2} := 0.0;
@@ -92,13 +92,13 @@
         <in name="accu" type="sums"/>
         <out name="accu" type="sums"/>
         <expression>
-          ${wait.wait} := ${wait.wait} - 1;
+          ${wait.wait} := ${wait.wait} - 1L;
           ${accu.sum1} := ${accu.sum1} + ${sums.sum1};
           ${accu.sum2} := ${accu.sum2} + ${sums.sum2};
         </expression>
       </defun>
       <condition>
-        ${wait.wait} :gt: 0
+        ${wait.wait} :gt: 0L
       </condition>
       <connect-out port="wait" place="wait"/>
       <connect-in port="accu" place="accu"/>
@@ -116,7 +116,7 @@
         <expression/>
       </defun>
       <condition>
-        ${wait.wait} :le: 0
+        ${wait.wait} :le: 0L
       </condition>
       <connect-in port="state" place="state"/>
       <connect-in port="wait" place="wait"/>

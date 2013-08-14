@@ -75,15 +75,15 @@
 
 <place name="place_pixel" type="pixel">
 <token>
-  <field name="color"><value>0xeeeeee</value></field>
+  <field name="color"><value>0xeeeeeeL</value></field>
   <field name="point">
-    <field name="x"><value>23</value></field>
+    <field name="x"><value>23L</value></field>
     <field name="y"/>
     <field name="jitter"/>
   </field>
 </token>
 <token>
-  <field name="color"><value>0xeeeeee</value></field>
+  <field name="color"><value>0xeeeeeeL</value></field>
   <field name="point">
     <field name="z"><value>23.4</value></field>
     <field name="jitter"/>

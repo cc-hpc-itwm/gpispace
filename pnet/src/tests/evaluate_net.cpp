@@ -150,7 +150,7 @@ BOOST_FIXTURE_TEST_CASE (sequence, fixture)
   {
     load_activity_from_file ("sequence_input.pnet");
 
-    put_token_from_string ("n", "1");
+    put_token_from_string ("n", "1L");
 
     execute();
 
@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE (sequence, fixture)
   {
     load_activity_from_file ("sequence_input.pnet");
 
-    put_token_from_string ("n", "10");
+    put_token_from_string ("n", "10L");
 
     execute();
 

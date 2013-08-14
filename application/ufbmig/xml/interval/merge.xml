@@ -244,7 +244,7 @@
         <in name="num" type="long"/>
         <expression/>
         <condition>
-          ${num} :eq: 0
+          ${num} :eq: 0L
         </condition>
       </defun>
       <connect-in port="trigger" place="trigger_return"/>

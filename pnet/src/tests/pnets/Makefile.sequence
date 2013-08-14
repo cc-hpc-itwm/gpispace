@@ -25,4 +25,4 @@ sequence_input.pnet: $(NET)
 	cp $< $@
 
 sequence_output_%.pnet: $(NET)
-	PUT_PORT=n=$* WE_EXEC_OUTPUT=$@ $(MAKE) -f $(MAKEFILE) -B run
+	PUT_PORT=n=$*L WE_EXEC_OUTPUT=$@ $(MAKE) -f $(MAKEFILE) -B run

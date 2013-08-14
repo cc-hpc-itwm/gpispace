@@ -16,11 +16,11 @@
           <in name="object" type="T"/>
           <inout name="num" type="long"/>
           <expression>
-            ${num} := ${num} - 1
+            ${num} := ${num} - 1L
           </expression>
         </defun>
         <condition>
-          ${num} :gt: 0
+          ${num} :gt: 0L
         </condition>
         <connect-in port="object" place="object"/>
         <connect-inout port="num" place="num"/>
@@ -35,7 +35,7 @@
           </expression>
         </defun>
         <condition>
-          ${num} :le: 0
+          ${num} :le: 0L
         </condition>
         <connect-in port="num" place="num"/>
         <connect-out port="done" place="done"/>

@@ -169,7 +169,7 @@
           ${bunch.store} := ${store};
           ${bunch.volumes.seen.id} := {};
 
-          ${state.bunch.id} := ${state.bunch.id} + 1;
+          ${state.bunch.id} := ${state.bunch.id} + 1L;
 
           ${credit_step_bunch} := []
         </expression>
@@ -205,7 +205,7 @@
           ${bunch.store} := ${store};
           ${bunch.volumes.seen.id} := {};
 
-          ${state.bunch.id} := ${state.bunch.id} + 1;
+          ${state.bunch.id} := ${state.bunch.id} + 1L;
 
           ${credit_step_bunch} := []
         </expression>
@@ -269,7 +269,7 @@
           ${bunch.store} := ${store};
           ${bunch.volumes.seen.id} := {};
 
-          ${state.bunch.id} := ${state.bunch.id} + 1
+          ${state.bunch.id} := ${state.bunch.id} + 1L
         </expression>
         <condition>
           "step_bunch" != ""
@@ -321,7 +321,7 @@
         <in name="state" type="state"/>
         <out name="state" type="state"/>
         <expression>
-          ${state.offset.id} := ${state.offset.id} + 1
+          ${state.offset.id} := ${state.offset.id} + 1L
         </expression>
         <condition>${state.volume.id} :ge: ${state.volume.max}</condition>
       </defun>
@@ -364,7 +364,7 @@
         <out name="state" type="state"/>
         <out name="credit_state_copy_check_break" type="control"/>
         <expression>
-          ${state.volume.id} := ${state.volume.id} + 1;
+          ${state.volume.id} := ${state.volume.id} + 1L;
           ${credit_state_copy_check_break} := []
         </expression>
         <condition>
@@ -432,7 +432,7 @@
           ${state_assign.bunch_store_to_assign.max}
             := long (ceil ((${store.id} + 1L) * ${b} / ${v}));
 
-          ${state.copy.id} := ${state.copy.id} + 1
+          ${state.copy.id} := ${state.copy.id} + 1L
         </expression>
       </defun>
       <connect-in port="state" place="state_copy"/>
@@ -504,7 +504,7 @@
                                  );
 
           ${state.bunch_store_to_assign.id}
-            := ${state.bunch_store_to_assign.id} + 1;
+            := ${state.bunch_store_to_assign.id} + 1L;
         </expression>
       </defun>
       <connect-in port="state" place="state_assign"/>

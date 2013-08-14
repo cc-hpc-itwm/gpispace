@@ -17,7 +17,7 @@
         <in name="trigger" type="control"/>
         <in name="deposit" type="long"/>
         <expression>
-          ${counter} := ${counter}-1
+          ${counter} := ${counter}-1L
         </expression>
         <condition>
           ${counter}:gt:0L

@@ -35,11 +35,11 @@
         <inout name="wait" type="long"/>
         <in name="o" type="long"/>
         <expression>
-          ${wait} := ${wait} - 1
+          ${wait} := ${wait} - 1L
         </expression>
       </defun>
       <condition>
-        ${wait} :gt: 0
+        ${wait} :gt: 0L
       </condition>
       <connect-inout port="wait" place="wait"/>
       <connect-in port="o" place="o"/>
@@ -54,7 +54,7 @@
         </expression>
       </defun>
       <condition>
-        ${wait} :eq: 0
+        ${wait} :eq: 0L
       </condition>
       <connect-in port="wait" place="wait"/>
       <connect-out port="done" place="done"/>
