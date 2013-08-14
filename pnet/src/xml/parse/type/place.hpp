@@ -14,7 +14,6 @@
 
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
-#include <we/type/value.hpp>
 
 #include <string>
 #include <list>
