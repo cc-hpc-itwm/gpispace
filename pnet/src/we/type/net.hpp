@@ -10,7 +10,6 @@
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
-#include <we/type/value.hpp>
 #include <we/type/place.hpp>
 
 #include <we2/type/value.hpp>
