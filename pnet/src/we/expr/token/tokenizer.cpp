@@ -6,15 +6,13 @@
 
 #include <we/expr/exception.hpp>
 
-#include <we/type/value/read.hpp>
-
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/variant.hpp>
 #include <boost/utility.hpp>
 
-#include <we2/type/compat.hpp>
+#include <we2/type/value/read.hpp>
 
 namespace expr
 {
@@ -285,7 +283,7 @@ namespace expr
 
           if (_first)
           {
-            _tokenizer.set_value (pnet::type::compat::COMPAT (value::read (_tokenizer.pos())));
+            _tokenizer.set_value (pnet::type::value::read (_tokenizer.pos()));
           }
           else
           {

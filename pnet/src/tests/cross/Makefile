@@ -5,7 +5,7 @@ endif
 
 ###############################################################################
 
-PUT_PORT += n=10
+PUT_PORT += n=10L
 
 NOT_STARTS_WITH += generate
 NOT_ENDS_WITH += scatter

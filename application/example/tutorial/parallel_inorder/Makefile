@@ -19,7 +19,7 @@ WE_EXEC_WORKER = 5
 
 PUT_PORT += n=$(WE_EXEC_WORKER)L
 PUT_PORT += c=$(WE_EXEC_WORKER)L
-PUT_PORT += config=[description:=\"test\"]
+PUT_PORT += config=Struct[description:=\"test\"]
 
 ###############################################################################
 

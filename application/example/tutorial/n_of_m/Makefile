@@ -17,7 +17,7 @@ NOT_STARTS_WITH += wait
 
 PUT_PORT += n=12L
 PUT_PORT += c=4L
-PUT_PORT += config=[description:=\"test\"]
+PUT_PORT += config=Struct[description:=\"test\"]
 
 ###############################################################################
 

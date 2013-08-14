@@ -8,8 +8,8 @@
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/net.hpp>
-#include <we/type/value.hpp>
-#include <we/type/value/read.hpp>
+#include <we2/type/value.hpp>
+#include <we2/type/value/read.hpp>
 #include <we/util/token.hpp>
 
 #include <fstream>
@@ -36,12 +36,12 @@ namespace
     void put_token_from_string
       (const std::string& port, const std::string& value)
     {
-      put_token (port, ::value::read (value));
+      put_token (port, pnet::type::value::read (value));
     }
 
-    void put_token (const std::string& port, const value::type& value)
+    void put_token (const std::string& port, const pnet::type::value::value_type& value)
     {
-      we::util::token::put (activity, port, value);
+      we::util::token::put2 (activity, port, value);
     }
 
     //! \todo Get token and compare value.

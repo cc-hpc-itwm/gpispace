@@ -1,6 +1,6 @@
 # Start SDPA
 #
-#     #proc   GPI-mem    SHM-mem    init     finalize      
+#     #proc   GPI-mem    SHM-mem    init     finalize
 # sdpa boot -m 32*2**30 -s 2*2**30 INI:1x1,0 FIN:1x1,0 LOAD:2,1024*2**20 MAP:1 MAP+RED:10 RED:1
 #
 
@@ -28,18 +28,18 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 PUT_PORT += input_file_1=\"/scratch/rotaru/data/words.1000\"
 PUT_PORT += input_file_2=\"/scratch/rotaru/data/words.1000\"
 PUT_PORT += output_file=\"/scratch/rotaru/data/out_2x1000.txt\"
-PUT_PORT += read_chunk_size=130108864 #130108864 #260108864
-PUT_PORT += map_chunk_size=180943004 #190943004 #190943004 #360943004
+PUT_PORT += read_chunk_size=130108864L #130108864 #260108864
+PUT_PORT += map_chunk_size=180943004L #190943004 #190943004 #360943004
 #PUT_PORT += map_chunk_size=360943004 #35582912
-PUT_PORT += partition_slot_size=2097152 #63554432 #2097152
+PUT_PORT += partition_slot_size=2097152L #63554432 #2097152
 #PUT_PORT += partition_slot_size=2097152
 #PUT_PORT += reduce_slot_size=61777216
-PUT_PORT += reduce_slot_size=150008864
-PUT_PORT += n_part=28
-PUT_PORT += input_n_read_slots=100
-PUT_PORT += input_n_map_slots=100
-PUT_PORT += input_n_slots_per_part=6
-PUT_PORT += input_n_slots_per_red=6
+PUT_PORT += reduce_slot_size=150008864L
+PUT_PORT += n_part=28L
+PUT_PORT += input_n_read_slots=100L
+PUT_PORT += input_n_map_slots=100L
+PUT_PORT += input_n_slots_per_part=6L
+PUT_PORT += input_n_slots_per_red=6L
 -include example.mk
 
 ###############################################################################

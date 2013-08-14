@@ -15,15 +15,15 @@
         <expression>
           ${z} := ${y} := ${x};
 
-          ${cache.by_id.slot}            := {||};
+          ${cache.by_id.slot}            := Map [];
 
-          ${cache.by_slot.id}            := {||};
-          ${cache.by_slot.num_users}     := {||};
+          ${cache.by_slot.id}            := Map [];
+          ${cache.by_slot.num_users}     := Map [];
 
-          ${cache.slots.empty}           := {::};
-          ${cache.slots.available}       := {::};
-          ${cache.slots.filled}          := {::};
-          ${cache.slots.started_to_fill} := {::};
+          ${cache.slots.empty}           := Set {};
+          ${cache.slots.available}       := Set {};
+          ${cache.slots.filled}          := Set {};
+          ${cache.slots.started_to_fill} := Set {};
 
           ${cache.stat.hit}              := 0L;
           ${cache.stat.miss.empty}       := 0L;
