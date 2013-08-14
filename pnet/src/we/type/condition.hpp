@@ -6,7 +6,6 @@
 #include <we/expr/parse/parser.hpp>
 
 #include <we/type/id.hpp>
-#include <we/type/value.hpp>
 
 #include <we2/exception.hpp>
 
@@ -42,10 +41,6 @@ namespace condition
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     friend std::ostream& operator<< (std::ostream&, const type&);
-
-    typedef boost::unordered_map< petri_net::place_id_type
-                                , std::list<value::type>
-                                > tokens_by_place_id_t;
 
   public:
     type ( const std::string& exp)
