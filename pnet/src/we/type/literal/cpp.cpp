@@ -56,11 +56,6 @@ namespace literal
         {
           return _inc.at (t);
         }
-
-        bool known (const std::string& t) const
-        {
-          return _trans.find (t) != _trans.end();
-        }
       };
     }
 
@@ -75,13 +70,6 @@ namespace literal
       static info i;
 
       return i.include (t);
-    }
-
-    bool known (const std::string& t)
-    {
-      static info n;
-
-      return n.known (t);
     }
 
     namespace

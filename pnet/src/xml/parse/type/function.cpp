@@ -1630,7 +1630,7 @@ namespace xml
               ; ++type
               )
             {
-              if (!literal::cpp::known (*type))
+              if (!pnet::type::signature::is_literal (*type))
                 {
                   s << cpp_util::include ("pnetc/type/" + *type + ".hpp");
                 }
@@ -1645,7 +1645,7 @@ namespace xml
         {
           namespace cpp_util = ::fhg::util::cpp;
 
-          return literal::cpp::known (type)
+          return pnet::type::signature::is_literal (type)
             ? literal::cpp::translate (type)
             : ("::pnetc::type::" + type + "::type")
             ;
@@ -1668,7 +1668,7 @@ namespace xml
           {
             os << _indent << _modif;
 
-            if (literal::cpp::known (_port.type))
+            if (pnet::type::signature::is_literal (_port.type))
             {
               const std::string tname (literal::cpp::translate (_port.type));
 
@@ -1698,7 +1698,7 @@ namespace xml
 
           std::ostringstream os;
 
-          if (literal::cpp::known (port.type))
+          if (pnet::type::signature::is_literal (port.type))
             {
               os << port.name;
             }
@@ -1804,7 +1804,7 @@ namespace xml
               << ", "
               ;
 
-            if (!literal::cpp::known ((*port_return).type))
+            if (!pnet::type::signature::is_literal ((*port_return).type))
             {
               s << "::pnetc::type::" << (*port_return).type << "::value"
                 << " ("
@@ -1839,7 +1839,7 @@ namespace xml
           {
             s << ")";
 
-            if (!literal::cpp::known ((*port_return).type))
+            if (!pnet::type::signature::is_literal ((*port_return).type))
             {
               s << ")";
             }
