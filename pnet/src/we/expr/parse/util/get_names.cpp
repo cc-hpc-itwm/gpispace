@@ -2,8 +2,6 @@
 
 #include <we/expr/parse/util/get_names.hpp>
 
-#include <we/type/value.hpp>
-
 #include <boost/variant.hpp>
 
 #include <iostream>
