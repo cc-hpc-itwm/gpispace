@@ -22,7 +22,6 @@
 #include <we/type/expression.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/place.hpp>
-#include <we/type/value.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
 
