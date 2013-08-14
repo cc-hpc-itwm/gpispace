@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE (basic)
 
   value_type x (read ("0L"));
   value_type y (read ("[]"));
-  value_type z (read ("struct [x:=0.0,y:=\"a_string\"]"));
+  value_type z (read ("Struct [x:=0.0,y:=\"a_string\"]"));
   value_type z_x (read ("0.0"));
   value_type z_y (read ("\"a_string\""));
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE (reference)
 
   const value_type value_a (0.0);
   const value_type value_b = std::string("a_string");
-  const value_type value_c (read ("struct [x:=1L,y:=struct [a:=2L,b:=3L]]"));
+  const value_type value_c (read ("Struct [x:=1L,y:=Struct [a:=2L,b:=3L]]"));
 
   c.bind_ref (key_a, value_a);
   c.bind_ref (key_b, value_b);

@@ -85,38 +85,38 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
   test_show_and_read_showed (bytearray::type(), "y()");
   {
     std::list<value_type> l;
-    test_show_and_read_showed (l, "list ()");
+    test_show_and_read_showed (l, "List ()");
     l.push_back (value_type (int (3)));
-    test_show_and_read_showed (l, "list (3)");
+    test_show_and_read_showed (l, "List (3)");
     l.push_back (value_type (long (3)));
-    test_show_and_read_showed (l, "list (3, 3L)");
+    test_show_and_read_showed (l, "List (3, 3L)");
   }
   {
     std::set<value_type> s;
-    test_show_and_read_showed (s, "set {}");
+    test_show_and_read_showed (s, "Set {}");
     s.insert (std::string ("foo"));
     s.insert (3.141);
     s.insert (3.141);
     s.insert (3.141f);
-    test_show_and_read_showed (s, "set {3.14100f, 3.14100, \"foo\"}");
+    test_show_and_read_showed (s, "Set {3.14100f, 3.14100, \"foo\"}");
   }
   {
     std::map<value_type, value_type> m;
-    test_show_and_read_showed (m, "map []");
+    test_show_and_read_showed (m, "Map []");
     m[std::string ("foo")] = 314U;
     m[14] = 14;
     m[std::map<value_type,value_type>()] = 14;
     test_show_and_read_showed
-      (m, "map [14 -> 14, \"foo\" -> 314U, map [] -> 14]");
+      (m, "Map [14 -> 14, \"foo\" -> 314U, Map [] -> 14]");
   }
   {
     structured_type m;
-    test_show_and_read_showed (m, "struct []");
+    test_show_and_read_showed (m, "Struct []");
     m.push_back (std::make_pair ("foo", 314U));
     m.push_back (std::make_pair ("bar", 14UL));
     m.push_back (std::make_pair ("baz", std::list<value_type>()));
     test_show_and_read_showed
-      (m, "struct [foo := 314U, bar := 14UL, baz := list ()]");
+      (m, "Struct [foo := 314U, bar := 14UL, baz := List ()]");
   }
 }
 
@@ -162,29 +162,29 @@ BOOST_AUTO_TEST_CASE (_read)
   {
     std::map<value_type, value_type> m;
 
-    BOOST_CHECK (value_type (m) == read ("map []"));
+    BOOST_CHECK (value_type (m) == read ("Map []"));
 
     m[value_type ('a')] = value_type (std::string ("foo"));
     m[value_type (std::string ("foo"))] = value_type ('a');
 
-    BOOST_CHECK (value_type (m) == read ("map ['a'->\"foo\",\"foo\"->'a']"));
+    BOOST_CHECK (value_type (m) == read ("Map ['a'->\"foo\",\"foo\"->'a']"));
   }
 
   {
     structured_type m;
 
-    BOOST_CHECK (value_type (m) == read ("struct []"));
+    BOOST_CHECK (value_type (m) == read ("Struct []"));
 
     m.push_back (std::make_pair ("a", value_type ('a')));
     m.push_back (std::make_pair ("foo", value_type ('b')));
 
-    BOOST_CHECK (value_type (m) == read ("struct [a:='a',foo:='b']"));
+    BOOST_CHECK (value_type (m) == read ("Struct [a:='a',foo:='b']"));
   }
 
   {
     std::list<value_type> l;
     std::map<value_type, value_type> m;
-    std::string input ("list( ) map[]");
+    std::string input ("List( ) Map[]");
     fhg::util::parse::position pos (input);
 
     BOOST_CHECK (value_type (l) == read (pos));

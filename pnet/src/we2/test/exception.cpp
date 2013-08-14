@@ -44,7 +44,7 @@ BOOST_FIXTURE_TEST_CASE (type_mismatch, fix)
   BOOST_CHECK (e.signature() == signature());
   BOOST_CHECK (e.value() == value());
   BOOST_CHECK (e.path() == path());
-  BOOST_CHECK (e.what() == std::string ("type error: type mismatch for field 'p.p': expected type 'struct :: [e :: unsigned long, c :: char]', value 'struct [e := 42UL, c := 'c']' has type 'struct :: [e :: unsigned long, c :: char]'"));
+  BOOST_CHECK (e.what() == std::string ("type error: type mismatch for field 'p.p': expected type 'struct :: [e :: unsigned long, c :: char]', value 'Struct [e := 42UL, c := 'c']' has type 'struct :: [e :: unsigned long, c :: char]'"));
 }
 
 BOOST_FIXTURE_TEST_CASE (missing_field, fix)
@@ -62,5 +62,5 @@ BOOST_FIXTURE_TEST_CASE (unknown_field, fix)
 
   BOOST_CHECK (e.value() == value());
   BOOST_CHECK (e.path() == path());
-  BOOST_CHECK (e.what() == std::string ("type error: unknown field 'p.p' with value 'struct [e := 42UL, c := 'c']' of type 'struct :: [e :: unsigned long, c :: char]'"));
+  BOOST_CHECK (e.what() == std::string ("type error: unknown field 'p.p' with value 'Struct [e := 42UL, c := 'c']' of type 'struct :: [e :: unsigned long, c :: char]'"));
 }

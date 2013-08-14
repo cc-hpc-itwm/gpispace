@@ -131,7 +131,7 @@ namespace pnet
             return ba;
           }
 
-        case 'm':
+        case 'M':
           {
             ++pos;
             pos.require ("ap");
@@ -145,7 +145,7 @@ namespace pnet
             return m;
           }
 
-        case 's':
+        case 'S':
           ++pos;
           if (pos.end())
           {
@@ -184,7 +184,7 @@ namespace pnet
           }
           break;
 
-        case 'l':
+        case 'L':
           {
             ++pos;
             pos.require ("ist");
