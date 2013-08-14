@@ -339,7 +339,7 @@ namespace fhg
         WSIG(tv, place::token, ::xml::parse::type::place_type::token_type, token)
         {
           push (append ("token"));
-          boost::apply_visitor (from::visitor::token<tv> (this), token);
+          set_text (token);
           pop ();
         }
         WSIG(tv, place::properties, ::we::type::property::type, prop)

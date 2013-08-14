@@ -6,6 +6,8 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
+#include <we2/type/value/show.hpp>
+
 #include <fhg/util/xml.hpp>
 
 namespace xml
@@ -183,11 +185,13 @@ namespace xml
           ::we::type::property::dump::dump (s, p.properties());
 
           BOOST_FOREACH (const place_type::token_type& token, p.tokens)
-            {
-              boost::apply_visitor ( signature::visitor::dump_token ("", s)
-                                   , token
-                                   );
-            }
+          {
+            s.open ("token");
+            s.open ("value");
+            s.content (pnet::type::value::show (token));
+            s.close();
+            s.close();
+          }
 
           s.close();
         }

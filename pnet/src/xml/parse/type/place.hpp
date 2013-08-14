@@ -35,7 +35,7 @@ namespace xml
       public:
         typedef std::string unique_key_type;
 
-        typedef signature::desc_t token_type;
+        typedef std::string token_type;
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)

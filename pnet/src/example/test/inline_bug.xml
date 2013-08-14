@@ -8,11 +8,10 @@
                 <out name="output_2" type="control" place="output_2"/>
                 <net>
                     <place name="output_1" type="control">
-                        <token><value/></token>
+                        <token><value>[]</value></token>
                     </place>
                     <place name="output_2" type="control">
-                        <token><value/></token>
-                        <token><value/></token>
+                        <token><value>[]</value><value>[]</value></token>
                     </place>
                 </net>
             </defun>

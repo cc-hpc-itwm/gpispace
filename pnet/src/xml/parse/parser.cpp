@@ -754,55 +754,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      void token_field_type ( const xml_node_type* node
-                            , state::type& state
-                            , signature::desc_t& tok
-                            )
-      {
-        const std::string name
-          (required ("token_field_type", node, "name", state));
-
-        for ( xml_node_type* child (node->first_node())
-            ; child
-            ; child = child ? child->next_sibling() : child
-            )
-        {
-          const std::string child_name (name_element (child, state));
-
-          if (child)
-          {
-            if (child_name == "value")
-            {
-              signature::create_literal_field
-                ( tok
-                , name
-                , std::string (child->value(), child->value_size())
-                , "token"
-                );
-            }
-            else if (child_name == "field")
-            {
-              token_field_type
-                ( child
-                , state
-                , signature::get_or_create_structured_field (tok, name, "token")
-                );
-            }
-            else
-            {
-              state.warn
-                ( warning::unexpected_element ( child_name
-                                              , "token_field_type"
-                                              , state.file_in_progress()
-                                              )
-                );
-            }
-          }
-        }
-      }
-
-      // ******************************************************************* //
-
       type::structs_type structs_type ( const xml_node_type* node
                                       , state::type& state
                                       )
@@ -1155,11 +1106,11 @@ namespace xml
 
       // ******************************************************************* //
 
-      type::place_type::token_type
-        parse_token (const xml_node_type* node, state::type& state)
+      void parse_token ( const xml_node_type* node
+                       , state::type& state
+                       , type::place_type& place
+                       )
       {
-        type::place_type::token_type token ((signature::structured_t()));
-
         for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
@@ -1171,11 +1122,10 @@ namespace xml
           {
             if (child_name == "value")
             {
-              return std::string (child->value(), child->value_size());
-            }
-            else if (child_name == "field")
-            {
-              token_field_type (child, state, token);
+              place.push_token (std::string ( child->value()
+                                            , child->value_size()
+                                            )
+                               );
             }
             else
             {
@@ -1188,8 +1138,6 @@ namespace xml
             }
           }
         }
-
-        return token;
       }
 
       // ******************************************************************* //
@@ -1230,7 +1178,7 @@ namespace xml
           {
             if (child_name == "token")
             {
-              place.get_ref().push_token (parse_token (child, state));
+              parse_token (child, state, place.get_ref());
             }
             else if (child_name == "properties")
             {
