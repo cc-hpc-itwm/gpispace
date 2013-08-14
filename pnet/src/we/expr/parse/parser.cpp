@@ -7,7 +7,8 @@
 
 #include <we/expr/token/prop.hpp>
 
-#include <we/type/value/function.hpp>
+#include <we2/type/value/function.hpp>
+#include <we2/type/compat.hpp>
 
 #include <we/expr/eval/context.hpp>
 #include <we/expr/eval/refnode.hpp>
@@ -75,7 +76,7 @@ namespace expr
 
     bool parser::eval_front_bool (eval::context & context) const
     {
-      return value::function::is_true(eval_front (context));
+      return pnet::type::value::is_true(eval_front2 (context));
     }
 
     // get the already evaluated value, throws if entry is not an value
@@ -83,10 +84,14 @@ namespace expr
     {
       return pnet::type::compat::COMPAT (node::get (front()));
     }
+    pnet::type::value::value_type parser::get_front2() const
+    {
+      return node::get (front());
+    }
 
     bool parser::get_front_bool () const
     {
-      return value::function::is_true(get_front ());
+      return pnet::type::value::is_true(get_front2());
     }
 
     // evaluate the whole stack in order, return the last value
@@ -116,9 +121,9 @@ namespace expr
 
     bool parser::eval_all_bool (eval::context & context) const
     {
-      const value::type v (eval_all (context));
+      const pnet::type::value::value_type v (eval_all2 (context));
 
-      return value::function::is_true(v);
+      return pnet::type::value::is_true(v);
     }
 
     value::type parser::eval_all() const
@@ -164,11 +169,7 @@ namespace expr
 
       if (constant_folding() && node::is_value (c))
         {
-          tmp_stack.push_back
-            (value::function::unary ( token
-                                    , node::get (c)
-                                    )
-            );
+          tmp_stack.push_back (pnet::type::value::unary (token, node::get (c)));
         }
       else
         {
@@ -199,7 +200,7 @@ namespace expr
 
       if (constant_folding() && node::is_value(l) && node::is_value(r))
         {
-          tmp_stack.push_back ( value::function::binary
+          tmp_stack.push_back ( pnet::type::value::binary
                                 ( token
                                 , node::get (l)
                                 , node::get (r)

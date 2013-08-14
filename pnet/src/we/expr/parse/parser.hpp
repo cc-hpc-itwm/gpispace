@@ -104,6 +104,7 @@ namespace expr
 
       // get the already evaluated value, throws if entry is not an value
       value::type get_front () const;
+      pnet::type::value::value_type get_front2 () const;
       bool get_front_bool () const;
 
       // evaluate the whole stack in order, return the last value

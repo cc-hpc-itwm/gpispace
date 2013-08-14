@@ -63,6 +63,37 @@ namespace pnet
       , _value (value)
       , _path (path)
     {}
+    eval::eval ( const expr::token::type& token
+               , const type::value::value_type& x
+               )
+      : type_error
+        ( ( boost::format ("eval %1% (%2%)")
+          % token
+          % type::value::show (x)
+          ).str()
+        )
+      , _token (token)
+      , _values()
+    {
+      _values.push_back (x);
+    }
+    eval::eval ( const expr::token::type& token
+               , const type::value::value_type& l
+               , const type::value::value_type& r
+               )
+      : type_error
+        ( ( boost::format ("eval %1% (%2%, %3%)")
+          % expr::token::show (token)
+          % type::value::show (l)
+          % type::value::show (r)
+          ).str()
+        )
+      , _token (token)
+      , _values()
+    {
+      _values.push_back (l);
+      _values.push_back (r);
+    }
     missing_binding::missing_binding (const std::string& key)
       : std::runtime_error
         ((boost::format ("missing binding for: ${%1%}") % key).str())

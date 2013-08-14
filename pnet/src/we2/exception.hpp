@@ -6,8 +6,11 @@
 #include <we2/type/value.hpp>
 #include <we2/type/signature.hpp>
 
+#include <we/expr/token/type.hpp>
+
 #include <boost/format.hpp>
 
+#include <list>
 #include <stdexcept>
 
 namespace pnet
@@ -18,7 +21,7 @@ namespace pnet
     public:                                             \
       const _type& _name() const { return _ ## _name; } \
     private:                                            \
-     const _type _ ## _name
+      _type _ ## _name
 
     class type_error : public std::runtime_error
     {
@@ -64,6 +67,20 @@ namespace pnet
 
       MEMBER (value, type::value::value_type);
       MEMBER (path, std::list<std::string>);
+    };
+
+    class eval : public type_error
+    {
+    public:
+      eval (const expr::token::type&, const type::value::value_type&);
+      eval ( const expr::token::type&
+           , const type::value::value_type&
+           , const type::value::value_type&
+           );
+      ~eval() throw() {}
+
+      MEMBER (token, expr::token::type);
+      MEMBER (values, std::list<type::value::value_type>);
     };
 
     class missing_binding : public std::runtime_error

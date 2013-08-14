@@ -193,7 +193,7 @@ int main (int ac, char **)
     std::ostringstream ss;
 
     ss << "${x} := ${x} + 1L;" << endl;
-    ss << "${y} := ${x} / 4L;" << endl;
+    ss << "${y} := double (${x}) / double (4L);" << endl;
     ss << "${ceil} := ceil(${y});" << endl;
     ss << "${floor} := floor${y} /* note the omision of parens */;" << endl;
     ss << "${round_half_up} := floor(${y} + 0.5/*comment, /* NESTED */*/);" << endl;

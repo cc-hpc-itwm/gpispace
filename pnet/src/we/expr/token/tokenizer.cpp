@@ -137,8 +137,12 @@ namespace expr
         SET_TOKEN ("==", eq);
         SET_TOKEN ("^", _powint);
         SET_TOKEN ("div", divint);
-        SET_TOKEN ("double", _todouble);
+        SET_TOKEN ("int", _toint);
         SET_TOKEN ("long", _tolong);
+        SET_TOKEN ("uint", _touint);
+        SET_TOKEN ("ulong", _toulong);
+        SET_TOKEN ("float", _tofloat);
+        SET_TOKEN ("double", _todouble);
         SET_TOKEN ("max", max);
         SET_TOKEN ("min", min);
         SET_TOKEN ("mod", modint);

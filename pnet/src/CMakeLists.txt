@@ -32,6 +32,7 @@ add_library (we2
   we2/type/signature/names.cpp
   we2/type/signature/show.cpp
   we2/type/signature/signature.cpp
+  we2/type/value/function.cpp
   we2/type/value/name.cpp
   we2/type/value/name_of.cpp
   we2/type/value/of_type.cpp
@@ -99,6 +100,7 @@ set (we_dev_srcs
   we/type/bitsetofint.cpp
   we/type/bytearray.cpp
   we/type/literal/control.cpp
+  we/expr/token/type.cpp
   we2/exception.cpp
   we2/field.cpp
   we2/signature_of.cpp
@@ -144,10 +146,7 @@ set (we_srcs
   we/type/literal/valid_name.cpp
   we/type/literal/default.cpp
   we/type/literal/name.cpp
-  we/type/literal/function.cpp
-  we/type/literal/show.cpp
   we/type/literal/cpp.cpp
-  we/type/value/function.cpp
   we/expr/eval/refnode.cpp
   we/type/transition.cpp
 )
@@ -190,6 +189,11 @@ install (FILES
   COMPONENT sdk
 )
 install (FILES
+  we/expr/token/type.hpp
+  DESTINATION include/we/expr/token
+  COMPONENT sdk
+)
+install (FILES
   we/loader/IModule.hpp
   we/loader/api-guard.hpp
   we/loader/macros.hpp
@@ -227,7 +231,6 @@ install (FILES
 
 install (FILES
   we/type/literal/control.hpp
-  we/type/literal/show.hpp
   DESTINATION include/we/type/literal
   COMPONENT sdk
 )

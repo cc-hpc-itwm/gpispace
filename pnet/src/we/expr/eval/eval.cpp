@@ -8,9 +8,9 @@
 #include <we/expr/exception.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/function.hpp>
 
 #include <we2/type/value/show.hpp>
+#include <we2/type/value/function.hpp>
 
 #include <boost/format.hpp>
 
@@ -42,7 +42,7 @@ namespace expr
         {
           pnet::type::value::value_type c0 (boost::apply_visitor (*this, u.child));
 
-          return value::function::unary (u.token, c0);
+          return pnet::type::value::unary (u.token, c0);
         }
 
         pnet::type::value::value_type operator () (const expr::parse::node::binary_t& b) const
@@ -62,11 +62,11 @@ namespace expr
             {
               pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
 
-              if (!value::function::is_true (c0))
+              if (!pnet::type::value::is_true (c0))
                 {
                   pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
 
-                  return value::function::binary (b.token, c0, c1);
+                  return pnet::type::value::binary (b.token, c0, c1);
                 }
               else
                 {
@@ -77,11 +77,11 @@ namespace expr
             {
               pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
 
-              if (value::function::is_true (c0))
+              if (pnet::type::value::is_true (c0))
                 {
                   pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
 
-                  return value::function::binary (b.token, c0, c1);
+                  return pnet::type::value::binary (b.token, c0, c1);
                 }
               else
                 {
@@ -97,14 +97,14 @@ namespace expr
                   pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
                   pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
 
-                  return value::function::binary (b.token, c0, c1);
+                  return pnet::type::value::binary (b.token, c0, c1);
                 }
               else
                 {
                   pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
                   pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
 
-                  return value::function::binary (b.token, c0, c1);
+                  return pnet::type::value::binary (b.token, c0, c1);
                 }
             }
 
