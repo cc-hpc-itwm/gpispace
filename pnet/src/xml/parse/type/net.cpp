@@ -734,14 +734,15 @@ namespace xml
             {
               expr::eval::context context;
 
-              const value::type v (parser.eval_all (context));
+              const pnet::type::value::value_type v (parser.eval_all2 (context));
               const signature::type sig (signature);
 
               return pnet::type::compat::COMPAT
-                ( pnet::require_type ( pnet::type::compat::COMPAT (v)
-                                     , pnet::type::compat::COMPAT (sig)
-                                     , field_name
-                                     )
+                ( pnet::require_type_relaxed
+                  ( v
+                  , pnet::type::compat::COMPAT (sig)
+                  , field_name
+                  )
                 );
             }
             catch (const expr::exception::eval::divide_by_zero & e)
