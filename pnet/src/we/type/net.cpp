@@ -4,7 +4,6 @@
 #include <we/type/condition.hpp>
 #include <we/util/cross.hpp>
 
-#include <we2/type/compat.sig.hpp>
 #include <we2/require_type.hpp>
 
 #include <boost/foreach.hpp>
@@ -384,7 +383,7 @@ namespace petri_net
 
     put_token (pid, pnet::require_type_relaxed
                       ( value
-                      , pnet::type::compat::COMPAT (place.signature())
+                      , place.signature()
                       , place.name()
                       )
               );

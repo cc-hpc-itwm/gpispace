@@ -10,7 +10,6 @@
 
 #include <we/mgmt/type/activity.hpp>
 
-#include <we2/type/compat.sig.hpp>
 #include <we2/type/value/show.hpp>
 #include <we2/require_type.hpp>
 
@@ -450,7 +449,7 @@ namespace we
                       ( type::activity_t::output_t::value_type
                         ( pnet::require_type_relaxed
                           ( context.value (port_it->second.name())
-                          , pnet::type::compat::COMPAT (port_it->second.signature())
+                          , port_it->second.signature()
                           , port_it->second.name()
                           )
                         , port_it->first

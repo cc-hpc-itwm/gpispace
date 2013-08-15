@@ -12,6 +12,8 @@
 #include <we2/type/value/show.hpp>
 #include <we2/type/signature/show.hpp>
 
+#include <we2/type/compat.sig.hpp>
+
 #include <algorithm>
 #include <list>
 
@@ -345,7 +347,7 @@ namespace pnet
 
   const type::value::value_type& require_type_relaxed
     ( const type::value::value_type& value
-    , const type::signature::signature_type& signature
+    , const ::signature::type& signature
     , const std::string& field
     )
   {
@@ -353,7 +355,10 @@ namespace pnet
 
     path.push_back (field);
 
-    require_type_relaxed (path, value, signature);
+    require_type_relaxed ( path
+                         , value
+                         , pnet::type::compat::COMPAT (signature)
+                         );
 
     return value;
   }

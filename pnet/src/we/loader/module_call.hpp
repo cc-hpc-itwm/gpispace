@@ -9,7 +9,6 @@
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 
-#include <we2/type/compat.sig.hpp>
 #include <we2/require_type.hpp>
 
 #include <boost/foreach.hpp>
@@ -56,7 +55,7 @@ namespace module
           ( output_t::value_type
             ( pnet::require_type_relaxed
               ( kv.second
-              , pnet::type::compat::COMPAT (port.signature())
+              , port.signature()
               , port.name()
               )
             , port_id

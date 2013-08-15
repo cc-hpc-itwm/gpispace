@@ -15,8 +15,6 @@
 
 #include <we2/require_type.hpp>
 
-#include <we2/type/compat.sig.hpp>
-
 #include <fhg/util/remove_prefix.hpp>
 
 namespace xml
@@ -747,7 +745,7 @@ namespace xml
               ( pid
               , pnet::require_type_relaxed
                 ( util::generic_we_parse (token, "parse token").eval_all2()
-                , pnet::type::compat::COMPAT (place.signature_or_throw())
+                , place.signature_or_throw()
                 , ""
                 )
               );

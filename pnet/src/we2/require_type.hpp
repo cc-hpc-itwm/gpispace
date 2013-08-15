@@ -6,6 +6,8 @@
 #include <we2/type/value.hpp>
 #include <we2/type/signature.hpp>
 
+#include <we/type/signature.hpp>
+
 namespace pnet
 {
   const type::value::value_type& require_type
@@ -22,7 +24,7 @@ namespace pnet
   //! the signature
   const type::value::value_type& require_type_relaxed
     ( const type::value::value_type&
-    , const type::signature::signature_type&
+    , const ::signature::type&
     , const std::string& field
     );
 }

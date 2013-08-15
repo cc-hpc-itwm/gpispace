@@ -7,7 +7,6 @@
 
 #include <we2/require_type.hpp>
 #include <we2/type/value.hpp>
-#include <we2/type/compat.sig.hpp>
 
 #include <we/mgmt/type/activity.hpp>
 
@@ -34,7 +33,7 @@ namespace we
         act.add_input ( mgmt::type::activity_t::input_t::value_type
                         ( pnet::require_type_relaxed
                           ( value
-                          , pnet::type::compat::COMPAT (port_signature)
+                          , port_signature
                           , port
                           )
                         , pid

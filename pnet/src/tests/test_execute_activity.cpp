@@ -11,7 +11,6 @@
 #include <we/mgmt/context.hpp>
 
 #include <we2/type/value.hpp>
-#include <we2/type/compat.sig.hpp>
 #include <we2/require_type.hpp>
 
 #include <we/expr/eval/context.hpp>
@@ -96,7 +95,7 @@ namespace module
         ( output_t::value_type
           ( pnet::require_type_relaxed
             ( ton->first
-            , pnet::type::compat::COMPAT (port.signature())
+            , port.signature()
             , port.name()
             )
           , port_id
