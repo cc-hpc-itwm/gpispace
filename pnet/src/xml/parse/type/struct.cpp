@@ -18,6 +18,24 @@ namespace xml
 {
   namespace parse
   {
+    namespace
+    {
+      class get_literal_type_name
+        : public boost::static_visitor<std::string>
+      {
+      public:
+        std::string operator () (const std::string& t) const
+        {
+          return t;
+        }
+        std::string operator () (const signature::structured_t&) const
+        {
+          throw error::strange
+            ("try to get a literal typename from a structured type");
+        }
+      };
+    }
+
     namespace type
     {
       structure_type::structure_type
@@ -109,10 +127,67 @@ namespace xml
         pnet::type::signature::specialize (_sig2, m);
       }
 
+      namespace
+      {
+        class visitor_resolve : public boost::static_visitor<bool>
+        {
+        public:
+          visitor_resolve
+            ( const boost::unordered_map<std::string, structure_type>& m
+            , const type::structure_type& s
+            )
+            : _struct (s)
+            , sig_set (m)
+          {}
+
+          bool operator () (std::string& t) const
+          {
+            return pnet::type::signature::is_literal (t);
+          }
+          bool operator () (signature::structured_t& map) const
+          {
+            for ( signature::structured_t::map_t::iterator pos (map.begin())
+                ; pos != map.end()
+                ; ++pos
+                )
+            {
+              const bool resolved (boost::apply_visitor (*this, pos->second));
+
+              if (!resolved)
+              {
+                const std::string child_name
+                  (boost::apply_visitor ( get_literal_type_name()
+                                        , pos->second
+                                        )
+                  );
+
+                boost::unordered_map<std::string, structure_type>::const_iterator
+                  res (sig_set.find (child_name));
+
+                if (res == sig_set.end())
+                {
+                  throw error::cannot_resolve (pos->first, child_name, _struct);
+                }
+
+                pos->second = res->second.signature();
+
+                boost::apply_visitor (*this, pos->second);
+              }
+            }
+
+            return true;
+          }
+
+        private:
+          const structure_type _struct;
+          const boost::unordered_map<std::string, structure_type>& sig_set;
+        };
+      }
+
       void structure_type::resolve
         (const boost::unordered_map<std::string, structure_type>& m)
       {
-        boost::apply_visitor (structure_type_util::resolve (m, *this), _sig);
+        boost::apply_visitor (visitor_resolve (m, *this), _sig);
       }
 
       id::ref::structure structure_type::clone
@@ -231,18 +306,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      std::string get_literal_type_name::operator () (const std::string & t) const
-      {
-        return t;
-      }
-      std::string get_literal_type_name::operator () (const signature::structured_t &) const
-      {
-        throw error::strange
-          ("try to get a literal typename from a structured type");
-      }
-
-      // ******************************************************************* //
-
       namespace
       {
         class resolve_with_fun_visitor : public boost::static_visitor<bool>
@@ -269,7 +332,7 @@ namespace xml
               {
                 const std::string child_name
                   ( boost::apply_visitor
-                    (parse::structure_type_util::get_literal_type_name(), sub.second)
+                    (get_literal_type_name(), sub.second)
                   );
 
                 const boost::optional<signature::type> res
@@ -315,50 +378,6 @@ namespace xml
                           )
       {
         return stru.name() == name;
-      }
-
-      resolve::resolve ( const set_type & _sig_set
-                       , const type::structure_type& strct
-                       )
-        : _struct (strct)
-        , sig_set (_sig_set)
-      {}
-
-      bool resolve::operator () (std::string & t) const
-      {
-        return pnet::type::signature::is_literal (t);
-      }
-
-      bool resolve::operator () (signature::structured_t & map) const
-      {
-        for ( signature::structured_t::map_t::iterator pos (map.begin())
-            ; pos != map.end()
-            ; ++pos
-            )
-        {
-          const bool resolved (boost::apply_visitor (*this, pos->second));
-
-          if (!resolved)
-          {
-            const std::string child_name
-              (boost::apply_visitor ( get_literal_type_name()
-                                    , pos->second
-                                    )
-              );
-
-            set_type::const_iterator res (sig_set.find (child_name));
-
-            if (res == sig_set.end())
-            {
-              throw error::cannot_resolve (pos->first, child_name, _struct);
-            }
-
-            pos->second = res->second.signature();
-
-            boost::apply_visitor (*this, pos->second);
-          }
-        }
-        return true;
       }
     }
   }

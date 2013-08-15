@@ -43,7 +43,6 @@ namespace xml
                        );
 
         const signature::desc_t& signature() const;
-
         const std::string& name() const;
 
         void specialize (const boost::unordered_map<std::string, std::string>&);
@@ -94,14 +93,6 @@ namespace xml
                     , const state::type & state
                     );
 
-      class get_literal_type_name
-        : public boost::static_visitor<std::string>
-      {
-      public:
-        std::string operator () (const std::string & t) const;
-        std::string operator () (const signature::structured_t &) const;
-      };
-
       typedef boost::function < boost::optional<signature::type>
                                 (const std::string&)
                               > resolving_function_type;
@@ -109,19 +100,6 @@ namespace xml
         (const type::structure_type&, resolving_function_type);
 
       bool struct_by_name (const std::string&, const type::structure_type&);
-
-      class resolve : public boost::static_visitor<bool>
-      {
-      private:
-        const type::structure_type _struct;
-        const set_type & sig_set;
-
-      public:
-        resolve (const set_type&, const type::structure_type&);
-
-        bool operator () (std::string & t) const;
-        bool operator () (signature::structured_t & map) const;
-      };
     }
   }
 }
