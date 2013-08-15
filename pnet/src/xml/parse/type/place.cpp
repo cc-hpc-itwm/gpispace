@@ -8,6 +8,7 @@
 
 #include <we2/type/value/show.hpp>
 #include <we2/type/signature/is_literal.hpp>
+#include <we2/type/signature/show.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -100,6 +101,33 @@ namespace xml
       signature::type place_type::signature_or_throw() const
       {
         const boost::optional<signature::type> s (signature());
+
+        if (not s)
+        {
+          throw error::place_type_unknown (make_reference_id());
+        }
+
+        return *s;
+      }
+
+      boost::optional<pnet::type::signature::signature_type>
+        place_type::signature2() const
+      {
+        if (pnet::type::signature::is_literal (type()))
+        {
+          return pnet::type::signature::signature_type (type());
+        }
+
+        if (not parent())
+        {
+          return boost::none;
+        }
+
+        return parent()->signature2 (type());
+      }
+      pnet::type::signature::signature_type place_type::signature2_or_throw() const
+      {
+        const boost::optional<pnet::type::signature::signature_type> s (signature2());
 
         if (not s)
         {

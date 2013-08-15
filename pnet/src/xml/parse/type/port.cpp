@@ -98,6 +98,37 @@ namespace xml
         return *s;
       }
 
+      boost::optional<pnet::type::signature::signature_type> port_type::signature2() const
+      {
+        if (pnet::type::signature::is_literal (type()))
+        {
+          return pnet::type::signature::signature_type (type());
+        }
+
+        if (not parent())
+        {
+          return boost::none;
+        }
+
+        return parent()->signature2 (type());
+      }
+      pnet::type::signature::signature_type port_type::signature2_or_throw() const
+      {
+        const boost::optional<pnet::type::signature::signature_type> s (signature2());
+
+        if (not s)
+        {
+          throw error::port_with_unknown_type ( direction()
+                                              , name()
+                                              , type()
+                                              //! \todo own LOCATION
+                                              , parent()->position_of_definition().path()
+                                              );
+        }
+
+        return *s;
+      }
+
       void port_type::specialize ( const type::type_map_type & map_in
                                  , const state::type &
                                  )

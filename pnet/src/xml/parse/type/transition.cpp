@@ -567,6 +567,15 @@ namespace xml
         }
         return boost::none;
       }
+      boost::optional<pnet::type::signature::signature_type>
+      transition_type::signature2 (const std::string& type) const
+      {
+        if (has_parent())
+        {
+          return parent()->signature2 (type);
+        }
+        return boost::none;
+      }
 
       // ******************************************************************* //
 

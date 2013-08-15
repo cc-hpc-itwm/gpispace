@@ -43,6 +43,7 @@ namespace xml
                        );
 
         const signature::desc_t& signature() const;
+        const pnet::type::signature::structured_type& signature2() const;
         const std::string& name() const;
 
         void specialize (const boost::unordered_map<std::string, std::string>&);

@@ -14,6 +14,7 @@
 #include <we/expr/eval/context.hpp>
 
 #include <we2/require_type.hpp>
+#include <we2/type/signature/resolve.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
 
@@ -393,6 +394,35 @@ namespace xml
         return boost::none;
       }
 
+      boost::optional<pnet::type::signature::signature_type>
+      net_type::signature2 (const std::string& type) const
+      {
+        const structs_type::const_iterator pos
+          ( std::find_if ( structs.begin()
+                         , structs.end()
+                         , boost::bind ( parse::structure_type_util::struct_by_name
+                                       , type
+                                       , _1
+                                       )
+                         )
+          );
+
+        if (pos != structs.end())
+        {
+          return pnet::type::signature::resolve
+            ( pos->signature2()
+            , boost::bind (&net_type::signature2, *this, _1)
+            );
+        }
+
+        if (has_parent())
+        {
+          return parent()->signature2 (type);
+        }
+
+        return boost::none;
+      }
+
       // ***************************************************************** //
 
       void net_type::type_map_apply ( const type::type_map_type & outer_map
@@ -745,9 +775,9 @@ namespace xml
           {
             we_net.put_value
               ( pid
-              , pnet::require_type_relaxed
+              , pnet::require_type
                 ( util::generic_we_parse (token, "parse token").eval_all2()
-                , place.signature_or_throw()
+                , place.signature2_or_throw()
                 , ""
                 )
               );

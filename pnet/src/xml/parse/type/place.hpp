@@ -14,6 +14,7 @@
 
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
+#include <we2/type/signature.hpp>
 
 #include <string>
 #include <list>
@@ -63,6 +64,9 @@ namespace xml
 
         boost::optional<signature::type> signature() const;
         signature::type signature_or_throw() const;
+
+        boost::optional<pnet::type::signature::signature_type> signature2() const;
+        pnet::type::signature::signature_type signature2_or_throw() const;
 
       private:
         friend struct net_type;

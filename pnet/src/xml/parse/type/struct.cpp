@@ -8,6 +8,7 @@
 
 #include <we2/type/signature/is_literal.hpp>
 #include <we2/type/signature/specialize.hpp>
+#include <we2/type/signature/resolve.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -57,6 +58,10 @@ namespace xml
       const signature::desc_t& structure_type::signature() const
       {
         return _sig;
+      }
+      const pnet::type::signature::structured_type& structure_type::signature2() const
+      {
+        return _sig2;
       }
 
       namespace
@@ -144,12 +149,51 @@ namespace xml
 
           return boost::none;
         }
+        boost::optional<pnet::type::signature::signature_type> get_assignment2
+          ( const boost::unordered_map<std::string, structure_type>& m
+          , const std::string& key
+          )
+        {
+          boost::unordered_map<std::string, structure_type>::const_iterator
+            pos (m.find (key));
+
+          if (pos != m.end())
+          {
+            return pnet::type::signature::signature_type (pos->second.signature2());
+          }
+
+          return boost::none;
+        }
+
+        class get_struct
+          : public boost::static_visitor<pnet::type::signature::structured_type>
+        {
+        public:
+          pnet::type::signature::structured_type operator()
+            (const std::string& s) const
+          {
+            throw std::runtime_error ("expected struct, got " + s);
+          }
+          pnet::type::signature::structured_type operator()
+            (const pnet::type::signature::structured_type& s) const
+          {
+            return s;
+          }
+        };
       }
 
       void structure_type::resolve
         (const boost::unordered_map<std::string, structure_type>& m)
       {
         _sig = resolve_with_fun (boost::bind (get_assignment, m, _1));
+
+        pnet::type::signature::signature_type sig2n
+          (pnet::type::signature::resolve (_sig2
+                                          , boost::bind (get_assignment2, m, _1)
+                                          )
+          );
+
+        _sig2 = boost::apply_visitor (get_struct(), sig2n);
       }
 
       namespace

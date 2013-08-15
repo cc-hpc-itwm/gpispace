@@ -17,6 +17,7 @@
 
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
+#include <we2/type/signature.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
@@ -64,6 +65,9 @@ namespace xml
 
         boost::optional<signature::type> signature() const;
         signature::type signature_or_throw() const;
+
+        boost::optional<pnet::type::signature::signature_type> signature2() const;
+        pnet::type::signature::signature_type signature2_or_throw() const;
 
         const we::type::PortDirection& direction() const;
         const we::type::PortDirection& direction (const we::type::PortDirection&);
