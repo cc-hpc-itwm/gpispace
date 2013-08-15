@@ -23,14 +23,12 @@ namespace xml
         ( ID_CONS_PARAM(structure)
         , PARENT_CONS_PARAM(function)
         , const util::position_type& pod
-        , const std::string& name
         , const signature::desc_t& sig
         , const pnet::type::signature::structured_type& sig2
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _name (name)
         , _sig (sig)
         , _sig2 (sig2)
       {
@@ -50,13 +48,53 @@ namespace xml
         return _sig = sig;
       }
 
+      namespace
+      {
+        class visitor_get_name
+          : public boost::static_visitor<const std::string&>
+        {
+        public:
+          const std::string&
+            operator() (const std::pair< std::string
+                                       , pnet::type::signature::structure_type
+                                       >& s
+                       ) const
+          {
+            return s.first;
+          }
+        };
+      }
       const std::string& structure_type::name() const
       {
-        return _name;
+        return boost::apply_visitor (visitor_get_name(), _sig2);
       }
+
+      namespace
+      {
+        class visitor_set_name
+          : public boost::static_visitor<const std::string&>
+        {
+        public:
+          visitor_set_name (const std::string& name)
+            : _name (name)
+          {}
+          const std::string&
+            operator() (std::pair< std::string
+                                 , pnet::type::signature::structure_type
+                                 >& s
+                       ) const
+          {
+            return s.first = _name;
+          }
+
+        private:
+          const std::string _name;
+        };
+      }
+
       const std::string& structure_type::name (const std::string& name)
       {
-        return _name = name;
+        return boost::apply_visitor (visitor_set_name (name), _sig2);
       }
 
       id::ref::structure structure_type::clone
@@ -71,7 +109,6 @@ namespace xml
           , new_mapper
           , parent
           , _position_of_definition
-          , _name
           , _sig
           , _sig2
           ).make_reference_id();

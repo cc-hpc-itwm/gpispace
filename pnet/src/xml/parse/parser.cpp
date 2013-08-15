@@ -1604,9 +1604,6 @@ namespace xml
           , state.id_mapper()
           , boost::none
           , state.position (node)
-          , validate_field_name ( required ("struct_type", node, "name", state)
-                                , state.file_in_progress()
-                                )
           , sig
           , _2_structured_type (node, state)
           );
