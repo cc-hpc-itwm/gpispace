@@ -12,7 +12,6 @@
 
 #include <fhg/util/xml.fwd.hpp>
 
-#include <we/type/literal/valid_name.hpp>
 #include <we/type/signature.hpp>
 
 #include <list>
