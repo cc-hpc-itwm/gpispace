@@ -380,8 +380,7 @@ namespace xml
         if (pos != structs.end())
         {
           return signature::type
-            ( parse::structure_type_util::resolve_with_fun
-              (*pos, boost::bind (&net_type::signature, *this, _1))
+            ( pos->resolve_with_fun (boost::bind (&net_type::signature, *this, _1))
             , pos->name()
             );
         }

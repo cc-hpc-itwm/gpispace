@@ -48,6 +48,9 @@ namespace xml
         void specialize (const boost::unordered_map<std::string, std::string>&);
         void resolve (const boost::unordered_map<std::string, structure_type>&);
 
+        signature::desc_t resolve_with_fun
+          (const boost::function<boost::optional<signature::type> (const std::string&)>&) const;
+
         id::ref::structure clone
           ( const boost::optional<parent_id_type>& parent = boost::none
           , const boost::optional<id::mapper*>& mapper = boost::none
@@ -92,12 +95,6 @@ namespace xml
                     , const set_type & below
                     , const state::type & state
                     );
-
-      typedef boost::function < boost::optional<signature::type>
-                                (const std::string&)
-                              > resolving_function_type;
-      signature::desc_t resolve_with_fun
-        (const type::structure_type&, resolving_function_type);
 
       bool struct_by_name (const std::string&, const type::structure_type&);
     }

@@ -149,8 +149,69 @@ namespace xml
       void structure_type::resolve
         (const boost::unordered_map<std::string, structure_type>& m)
       {
-        _sig = structure_type_util::resolve_with_fun
-          (*this, boost::bind (get_assignment, m, _1));
+        _sig = resolve_with_fun (boost::bind (get_assignment, m, _1));
+      }
+
+      namespace
+      {
+        class resolve_with_fun_visitor : public boost::static_visitor<bool>
+        {
+        public:
+          resolve_with_fun_visitor
+            ( const boost::function<boost::optional<signature::type> (const std::string&)>& f
+            , const structure_type& s
+            )
+              : _s (s)
+              , _f (f)
+          {}
+
+          bool operator() (std::string& t) const
+          {
+            return pnet::type::signature::is_literal (t);
+          }
+
+          bool operator() (signature::structured_t& map) const
+          {
+            BOOST_FOREACH (signature::structured_t::map_t::value_type& sub, map)
+            {
+              if (!boost::apply_visitor (*this, sub.second))
+              {
+                const std::string child_name
+                  ( boost::apply_visitor
+                    (get_literal_type_name(), sub.second)
+                  );
+
+                const boost::optional<signature::type> res
+                  (_f (child_name));
+
+                if (!res)
+                {
+                  throw error::cannot_resolve (sub.first, child_name, _s);
+                }
+
+                sub.second = res->desc();
+
+                boost::apply_visitor (*this, sub.second);
+              }
+            }
+
+            return true;
+          }
+
+        private:
+          const structure_type _s;
+          const boost::function<boost::optional<signature::type> (const std::string&)>& _f;
+        };
+      }
+
+      signature::desc_t structure_type::resolve_with_fun
+        (const boost::function<boost::optional<signature::type> (const std::string&)>& f) const
+      {
+        signature::desc_t sig (_sig);
+
+        boost::apply_visitor (resolve_with_fun_visitor (f, *this), sig);
+
+        return sig;
       }
 
       id::ref::structure structure_type::clone
@@ -265,75 +326,6 @@ namespace xml
                     )
       {
         return join (above, below, forbidden_type(), state);
-      }
-
-      // ******************************************************************* //
-
-      namespace
-      {
-        class resolve_with_fun_visitor : public boost::static_visitor<bool>
-        {
-        public:
-          resolve_with_fun_visitor
-            ( const resolving_function_type& resolving_function
-            , const type::structure_type& strct
-            )
-              : _struct (strct)
-              , _resolving_function (resolving_function)
-          {}
-
-          bool operator() (std::string& t) const
-          {
-            return pnet::type::signature::is_literal (t);
-          }
-
-          bool operator() (signature::structured_t& map) const
-          {
-            BOOST_FOREACH (signature::structured_t::map_t::value_type& sub, map)
-            {
-              if (!boost::apply_visitor (*this, sub.second))
-              {
-                const std::string child_name
-                  ( boost::apply_visitor
-                    (get_literal_type_name(), sub.second)
-                  );
-
-                const boost::optional<signature::type> res
-                  (_resolving_function (child_name));
-
-                if (!res)
-                {
-                  throw error::cannot_resolve (sub.first, child_name, _struct);
-                }
-
-                sub.second = res->desc();
-
-                boost::apply_visitor (*this, sub.second);
-              }
-            }
-
-            return true;
-          }
-
-        private:
-          const type::structure_type _struct;
-          const resolving_function_type& _resolving_function;
-        };
-      }
-
-      signature::desc_t resolve_with_fun
-        ( const type::structure_type& unresolved_struct
-        , resolving_function_type resolving_function
-        )
-      {
-        signature::desc_t sig (unresolved_struct.signature());
-        boost::apply_visitor
-          ( resolve_with_fun_visitor ( resolving_function
-                                     , unresolved_struct
-                                     )
-          , sig
-          );
-        return sig;
       }
 
       bool struct_by_name ( const std::string& name
