@@ -7,7 +7,6 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/util/weparse.hpp>
 
-#include <we/type/literal/default.hpp>
 #include <we/type/net.fwd.hpp>
 #include <we/type/place.hpp>
 #include <we/type/error.hpp>

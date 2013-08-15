@@ -138,7 +138,6 @@ set (we_srcs
   ${we_dev_srcs}
 
   we/type/literal/valid_name.cpp
-  we/type/literal/default.cpp
   we/type/literal/name.cpp
   we/type/literal/cpp.cpp
   we/expr/eval/refnode.cpp
