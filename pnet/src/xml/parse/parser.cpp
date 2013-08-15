@@ -1535,7 +1535,11 @@ namespace xml
       type::structure_type
         struct_type (const xml_node_type* node, state::type& state)
       {
-        type::structure_type s
+        signature::desc_t sig ((signature::structured_t()));
+
+        gen_struct_type (node, state, sig);
+
+        return type::structure_type
           ( id::structure (state.id_mapper()->next_id())
           , state.id_mapper()
           , boost::none
@@ -1543,12 +1547,8 @@ namespace xml
           , validate_field_name ( required ("struct_type", node, "name", state)
                                 , state.file_in_progress()
                                 )
-          , signature::structured_t()
+          , sig
           );
-
-        gen_struct_type (node, state, s.signature());
-
-        return s;
       }
     }
 
