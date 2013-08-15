@@ -14,26 +14,12 @@ namespace literal
       struct info
       {
       private:
-        boost::unordered_map<std::string, std::string> _trans;
         boost::unordered_map<std::string, std::string> _inc;
 
       public:
         info ()
-          : _trans()
-          , _inc()
+          : _inc()
         {
-          _trans[literal::CONTROL()]   = "we::type::literal::control";
-          _trans[literal::BOOL()]      = "bool";
-          _trans[literal::LONG()]      = "long";
-          _trans[literal::DOUBLE()]    = "double";
-          _trans[literal::CHAR()]      = "char";
-          _trans[literal::STRING()]    = "std::string";
-          _trans[literal::BITSET()]    = "bitsetofint::type";
-          _trans[literal::STACK()]     = "std::deque<long>";
-          _trans[literal::MAP()]       = "std::map<long, long>";
-          _trans[literal::SET()]       = "std::set<long>";
-          _trans[literal::BYTEARRAY()] = "bytearray::type";
-
           _inc[literal::CONTROL()]   = "we/type/literal/control.hpp";
           _inc[literal::BOOL()]      = "";
           _inc[literal::LONG()]      = "";
@@ -45,11 +31,6 @@ namespace literal
           _inc[literal::MAP()]       = "map";
           _inc[literal::SET()]       = "set";
           _inc[literal::BYTEARRAY()] = "we/type/bytearray.hpp";
-        }
-
-        const std::string& translate (const std::string& t) const
-        {
-          return _trans.at (t);
         }
 
         const std::string& include (const std::string& t) const
