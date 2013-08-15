@@ -30,13 +30,13 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-#include <we/type/literal/cpp.hpp>
-
 #include <we2/type/signature/cpp.hpp>
 #include <we2/type/signature/names.hpp>
 #include <we2/type/signature/is_literal.hpp>
 #include <we2/type/signature/complete.hpp>
 #include <we2/type/compat.sig.hpp>
+
+#include <we2/type/value/name.hpp>
 
 #include <we/type/id.hpp>
 
@@ -1621,26 +1621,49 @@ namespace xml
 
         typedef std::list<port_with_type> ports_with_type_type;
 
-        template<typename Stream>
-        void mod_includes (Stream& s, const types_type& types)
+        namespace
         {
-          namespace cpp_util = ::fhg::util::cpp;
-
-          for ( types_type::const_iterator type (types.begin())
-              ; type != types.end()
-              ; ++type
-              )
+          class include : public fhg::util::ostream::modifier
+          {
+          public:
+            include (const std::string& tname)
+              : _tname (tname)
+              , _inc()
             {
-              if (!pnet::type::signature::is_literal (*type))
-                {
-                  s << cpp_util::include ("pnetc/type/" + *type + ".hpp");
-                }
-              else
-                {
-                  s << cpp_util::include (literal::cpp::include (*type));
-                }
+              _inc[pnet::type::value::CONTROL()] = "we/type/literal/control.hpp";
+              _inc[pnet::type::value::STRING()] = "string";
+              _inc[pnet::type::value::BITSET()] = "we/type/bitsetofint.hpp";
+              _inc[pnet::type::value::BYTEARRAY()] = "we/type/bytearray.hpp";
+              _inc[pnet::type::value::LIST()] = "list";
+              _inc[pnet::type::value::SET()] = "set";
+              _inc[pnet::type::value::MAP()] = "map";
             }
-        }
+
+            std::ostream& operator() (std::ostream& os) const
+            {
+              if (!pnet::type::signature::is_literal (_tname))
+              {
+                os << fhg::util::cpp::include ("pnetc/type/" + _tname + ".hpp");
+              }
+              else
+              {
+                boost::unordered_map<std::string, std::string>::const_iterator
+                  pos (_inc.find (_tname));
+
+                if (pos != _inc.end())
+                {
+                  os << fhg::util::cpp::include (pos->second);
+                }
+              }
+
+              return os;
+            }
+
+          private:
+            const std::string _tname;
+            boost::unordered_map<std::string, std::string> _inc;
+          };
+        };
 
         class mk_type : public fhg::util::ostream::modifier
         {
@@ -2075,7 +2098,10 @@ namespace xml
               stream << cpp_util::include_guard::open
                 ("PNETC_OP_" + mod.name() + "_" + mod.function());
 
-              mod_includes (stream, types);
+              BOOST_FOREACH (const std::string& tname, types)
+              {
+                stream << include (tname);
+              }
 
               stream << ns::open (indent, "pnetc");
               stream << ns::open (indent, "op");
