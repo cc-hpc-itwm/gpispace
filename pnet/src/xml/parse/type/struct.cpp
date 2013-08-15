@@ -7,6 +7,7 @@
 #include <xml/parse/state.hpp>
 
 #include <we2/type/signature/is_literal.hpp>
+#include <we2/type/signature/specialize.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -106,25 +107,6 @@ namespace xml
 
             return map;
           }
-
-        };
-
-        class visitor_set_name : public boost::static_visitor<>
-        {
-        public:
-          visitor_set_name (const std::string& name)
-            : _name (name)
-          {}
-          void operator() (std::pair< std::string
-                                    , pnet::type::signature::structure_type
-                                    >& s
-                          ) const
-          {
-            s.first = _name;
-          }
-
-        private:
-          const std::string _name;
         };
       }
 
@@ -132,14 +114,7 @@ namespace xml
         (const boost::unordered_map<std::string, std::string>& m)
       {
         _sig = boost::apply_visitor (visitor_specialize (m), _sig);
-
-        boost::unordered_map<std::string, std::string>::const_iterator
-          pos (m.find (name()));
-
-        if (pos != m.end())
-        {
-          boost::apply_visitor (visitor_set_name (pos->second), _sig2);
-        }
+        pnet::type::signature::specialize (_sig2, m);
       }
 
       id::ref::structure structure_type::clone
