@@ -46,37 +46,5 @@ namespace literal
 
       return i.include (t);
     }
-
-    namespace
-    {
-      struct names_reserved
-      {
-      public:
-        names_reserved ()
-          : _s()
-        {
-          _s.insert ("control");
-          _s.insert ("bool");
-          _s.insert ("long");
-          _s.insert ("double");
-          _s.insert ("char");
-        }
-
-        bool reserved (const std::string& x) const
-        {
-          return _s.find (x) != _s.end();
-        }
-
-      private:
-        boost::unordered_set<std::string> _s;
-      };
-    }
-
-    bool reserved (const std::string& x)
-    {
-      static names_reserved n;
-
-      return n.reserved (x);
-    }
   }
 }
