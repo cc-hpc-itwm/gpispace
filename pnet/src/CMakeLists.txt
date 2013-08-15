@@ -32,6 +32,7 @@ add_library (we2
   we2/type/signature/names.cpp
   we2/type/signature/show.cpp
   we2/type/signature/signature.cpp
+  we2/type/signature/specialize.cpp
   we2/type/value/function.cpp
   we2/type/value/name.cpp
   we2/type/value/name_of.cpp
