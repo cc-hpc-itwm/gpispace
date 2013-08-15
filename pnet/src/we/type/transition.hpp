@@ -23,7 +23,7 @@
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
 #include <we/type/condition.hpp>
-#include <we/type/signature.hpp>
+#include <we2/type/signature.hpp>
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
 #include <we/type/requirement.hpp>
@@ -518,7 +518,7 @@ namespace we { namespace type {
       }
 
       void add_port ( const std::string & name
-                    , signature::type const & sig
+                    , pnet::type::signature::signature_type const & sig
                     , const we::type::PortDirection& direction
                     , const we::type::property::type & prop
                       = we::type::property::type()
@@ -533,7 +533,7 @@ namespace we { namespace type {
       }
 
       void add_port ( const std::string & name
-                    , signature::type const & sig
+                    , pnet::type::signature::signature_type const & sig
                     , const we::type::PortDirection& direction
                     , const petri_net::place_id_type& pid
                     , const we::type::property::type & prop
@@ -549,7 +549,7 @@ namespace we { namespace type {
       }
 
       void add_input_port ( const std::string & port_name
-                          , const signature::type & signature
+                          , const pnet::type::signature::signature_type & signature
                           , const we::type::property::type & prop
                           )
       {
@@ -567,7 +567,7 @@ namespace we { namespace type {
       }
 
       void add_input_port ( const std::string & port_name
-                          , const signature::type & signature
+                          , const pnet::type::signature::signature_type & signature
                           , const petri_net::place_id_type& associated_place
                           , const we::type::property::type & prop
                           )
@@ -587,7 +587,7 @@ namespace we { namespace type {
       }
 
       void add_output_port ( const std::string & port_name
-                           , const signature::type & signature
+                           , const pnet::type::signature::signature_type & signature
                            , const we::type::property::type & prop
                            )
       {
@@ -605,7 +605,7 @@ namespace we { namespace type {
       }
 
       void add_tunnel ( const std::string & port_name
-                      , const signature::type & signature
+                      , const pnet::type::signature::signature_type & signature
                       , const petri_net::place_id_type& associated_place
                       , const we::type::property::type & prop
                       )
@@ -625,7 +625,7 @@ namespace we { namespace type {
       }
 
       void add_tunnel ( const std::string & port_name
-                      , const signature::type & signature
+                      , const pnet::type::signature::signature_type & signature
                       , const we::type::property::type & prop
                       )
       {
@@ -643,7 +643,7 @@ namespace we { namespace type {
       }
 
       void add_output_port ( const std::string & port_name
-                           , const signature::type & signature
+                           , const pnet::type::signature::signature_type & signature
                            , const petri_net::place_id_type& associated_place
                            , const we::type::property::type & prop
                            )

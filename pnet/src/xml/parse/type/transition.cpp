@@ -811,12 +811,12 @@ namespace xml
               if (port.direction() == we::type::PORT_IN)
               {
                 trans_in.add_port ( port.name()
-                                  , port.signature_or_throw()
+                                  , port.signature2_or_throw()
                                   , we::type::PORT_IN
                                   , port.properties()
                                   );
                 trans_in.add_port ( port.name()
-                                  , port.signature_or_throw()
+                                  , port.signature2_or_throw()
                                   , we::type::PORT_OUT
                                   , port.properties()
                                   );
@@ -904,12 +904,12 @@ namespace xml
               if (port.direction() == we::type::PORT_OUT)
               {
                 trans_out.add_port ( port.name()
-                                   , port.signature_or_throw()
+                                   , port.signature2_or_throw()
                                    , we::type::PORT_IN
                                    , port.properties()
                                    );
                 trans_out.add_port ( port.name()
-                                   , port.signature_or_throw()
+                                   , port.signature2_or_throw()
                                    , we::type::PORT_OUT
                                    , port.properties()
                                    );

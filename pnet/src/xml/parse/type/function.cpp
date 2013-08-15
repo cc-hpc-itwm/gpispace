@@ -35,7 +35,6 @@
 #include <we2/type/signature/is_literal.hpp>
 #include <we2/type/signature/complete.hpp>
 #include <we2/type/signature/resolve.hpp>
-#include <we2/type/compat.sig.hpp>
 
 #include <we2/type/value/name.hpp>
 
@@ -713,7 +712,7 @@ namespace xml
           BOOST_FOREACH (const port_type& port, ports.values())
             {
               trans.add_port ( port.name()
-                             , port.signature_or_throw()
+                             , port.signature2_or_throw()
                              , port.direction()
                              , port.properties()
                              );
@@ -740,7 +739,7 @@ namespace xml
               if (not port.place)
                 {
                   trans.add_port ( port.name()
-                                 , port.signature_or_throw()
+                                 , port.signature2_or_throw()
                                  , port.direction()
                                  , port.properties()
                                  );
@@ -752,7 +751,7 @@ namespace xml
                   // connect to
 
                   trans.add_port ( port.name()
-                                 , port.signature_or_throw()
+                                 , port.signature2_or_throw()
                                  , port.direction()
                                  , get_pid (pid_of_place, *port.place)
                                  , port.properties()
@@ -2281,10 +2280,7 @@ namespace xml
               util::check_no_change_fstream stream (state, file);
 
               const pnet::type::signature::signature_type sig
-                (pnet::type::compat::COMPAT ( structure.signature()
-                                            , structure.name()
-                                            )
-                );
+                (structure.signature2());
 
               stream << fhg::util::cpp::include_guard::open
                 ("PNETC_TYPE_" + structure.name());
@@ -2317,10 +2313,7 @@ namespace xml
               util::check_no_change_fstream stream (state, file);
 
               const pnet::type::signature::signature_type sig
-                (pnet::type::compat::COMPAT ( structure.signature()
-                                            , structure.name()
-                                            )
-                );
+                (structure.signature2());
 
               stream << "// defined in " << structure.position_of_definition()
                      << std::endl;

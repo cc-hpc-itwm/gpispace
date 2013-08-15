@@ -447,7 +447,7 @@ namespace we
                   {
                     _activity.add_output
                       ( type::activity_t::output_t::value_type
-                        ( pnet::require_type_relaxed
+                        ( pnet::require_type
                           ( context.value (port_it->second.name())
                           , port_it->second.signature()
                           , port_it->second.name()

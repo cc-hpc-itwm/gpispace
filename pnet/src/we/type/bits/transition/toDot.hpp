@@ -8,6 +8,7 @@
 #include <we/type/net.hpp>
 
 #include <we2/type/value/show.hpp>
+#include <we2/type/signature/show.hpp>
 
 #include <we/expr/parse/parser.hpp>
 #include <sstream>
@@ -259,7 +260,7 @@ namespace we { namespace type {
 
       template<typename Opts>
       inline std::string with_signature ( const std::string & name
-                                        , const signature::type & sig
+                                        , const pnet::type::signature::signature_type & sig
                                         , const Opts & opts
                                         )
       {
@@ -270,7 +271,7 @@ namespace we { namespace type {
         if (opts.show_signature)
           {
             s << endl
-              << lines (',', opts.full ? fhg::util::show (sig.desc()) : sig.nice())
+              << pnet::type::signature::show (sig)
               ;
           }
 

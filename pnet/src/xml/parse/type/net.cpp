@@ -722,11 +722,11 @@ namespace xml
 
             const place::type place_real (we_net.get_place (pid->second));
 
-            if (!(place_real.signature() == place.signature_or_throw()))
+            if (!(place_real.signature() == place.signature2_or_throw()))
             {
               throw error::port_tunneled_type_error
                 ( place.name()
-                , place.signature_or_throw()
+                , place.signature2_or_throw()
                 , place_real.name()
                 , place_real.signature()
                 , state.file_in_progress()
@@ -745,7 +745,7 @@ namespace xml
             const petri_net::place_id_type pid
               ( we_net.add_place ( place::type
                                    ( place.name()
-                                   , place.signature_or_throw()
+                                   , place.signature2_or_throw()
                                    , prop
                                    )
                                  )
