@@ -119,66 +119,6 @@ namespace xml
         }
       }
 
-      namespace
-      {
-        class specialize_visitor
-          : public boost::static_visitor<signature::desc_t>
-        {
-        private:
-          const type::type_map_type& map_in;
-
-        public:
-          specialize_visitor (const type::type_map_type& _map_in)
-            : map_in (_map_in)
-          {}
-
-          signature::desc_t operator() (std::string& t) const
-          {
-            const type::type_map_type::const_iterator mapped (map_in.find (t));
-
-            return (mapped != map_in.end()) ? mapped->second : t;
-          }
-
-          signature::desc_t operator() (signature::structured_t& map) const
-          {
-            for ( signature::structured_t::map_t::iterator pos (map.begin())
-                ; pos != map.end()
-                ; ++pos
-                )
-            {
-              const type::type_map_type::const_iterator mapped
-                (map_in.find (pos->first));
-
-              pos->second = (mapped != map_in.end())
-                          ? mapped->second
-                          : boost::apply_visitor (*this, pos->second);
-            }
-
-            return map;
-          }
-
-        };
-      }
-
-      void specialize_structs ( const type_map_type& map
-                              , structs_type& structs
-                              , const state::type& state
-                              )
-      {
-        BOOST_FOREACH (structure_type& s, structs)
-        {
-          s.signature
-            (boost::apply_visitor(specialize_visitor (map), s.signature()));
-
-          type_map_type::const_iterator pos (map.find (s.name()));
-
-          if (pos != map.end())
-          {
-            s.name (pos->second);
-          }
-        }
-      }
-
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s

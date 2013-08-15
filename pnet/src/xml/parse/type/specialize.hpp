@@ -72,11 +72,6 @@ namespace xml
                          , const state::type & state
                          );
 
-      void specialize_structs ( const type_map_type & map
-                              , structs_type & structs
-                              , const state::type & state
-                              );
-
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s

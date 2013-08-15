@@ -937,7 +937,10 @@ namespace xml
           port.specialize (map, state);
         }
 
-        specialize_structs (map, structs, state);
+        BOOST_FOREACH (structure_type& s, structs)
+        {
+          s.specialize (map);
+        }
 
         namespace st = xml::parse::structure_type;
 
