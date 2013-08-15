@@ -45,8 +45,6 @@ add_library (we2
   we2/type/value/poke.cpp
   we2/type/value/read.cpp
   we2/type/value/show.cpp
-
-  we2/type/compat.sig.cpp
 )
 target_link_libraries (we2 fhg-util)
 
