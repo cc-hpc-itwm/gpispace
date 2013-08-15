@@ -4,8 +4,9 @@
 #ifndef _WE_TYPE_SIGNATURE_HPP
 #define _WE_TYPE_SIGNATURE_HPP
 
-#include <we/type/literal/name.hpp>
 #include <fhg/util/show.hpp>
+
+#include <we2/type/value/name.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
@@ -231,7 +232,7 @@ namespace signature
       ar & BOOST_SERIALIZATION_NVP(nice_);
     }
   public:
-    type () : desc_(literal::CONTROL()), nice_ (mk_nice()) {}
+    type () : desc_(pnet::type::value::CONTROL()), nice_ (mk_nice()) {}
 
     template <typename T>
     type (const T & t) : desc_ (t), nice_ (mk_nice()) {}
