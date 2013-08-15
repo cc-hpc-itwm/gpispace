@@ -7,6 +7,7 @@
 #include <xml/parse/type/net.hpp>
 
 #include <we2/type/value/show.hpp>
+#include <we2/type/signature/is_literal.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -84,7 +85,7 @@ namespace xml
 
       boost::optional<signature::type> place_type::signature() const
       {
-        if (literal::valid_name (type()))
+        if (pnet::type::signature::is_literal (type()))
         {
           return signature::type (type());
         }

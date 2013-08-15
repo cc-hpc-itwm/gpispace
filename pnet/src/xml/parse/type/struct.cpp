@@ -6,6 +6,8 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
 
+#include <we2/type/signature/is_literal.hpp>
+
 #include <fhg/util/xml.hpp>
 
 #include <boost/unordered_map.hpp>
@@ -197,7 +199,7 @@ namespace xml
 
           bool operator() (std::string& t) const
           {
-            return literal::valid_name (t);
+            return pnet::type::signature::is_literal (t);
           }
 
           bool operator() (signature::structured_t& map) const
@@ -265,7 +267,7 @@ namespace xml
 
       bool resolve::operator () (std::string & t) const
       {
-        return literal::valid_name (t);
+        return pnet::type::signature::is_literal (t);
       }
 
       bool resolve::operator () (signature::structured_t & map) const
