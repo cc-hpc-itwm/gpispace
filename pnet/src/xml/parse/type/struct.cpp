@@ -129,65 +129,28 @@ namespace xml
 
       namespace
       {
-        class visitor_resolve : public boost::static_visitor<bool>
+        boost::optional<signature::type> get_assignment
+          ( const boost::unordered_map<std::string, structure_type>& m
+          , const std::string& key
+          )
         {
-        public:
-          visitor_resolve
-            ( const boost::unordered_map<std::string, structure_type>& m
-            , const type::structure_type& s
-            )
-            : _struct (s)
-            , sig_set (m)
-          {}
+          boost::unordered_map<std::string, structure_type>::const_iterator
+            pos (m.find (key));
 
-          bool operator () (std::string& t) const
+          if (pos != m.end())
           {
-            return pnet::type::signature::is_literal (t);
-          }
-          bool operator () (signature::structured_t& map) const
-          {
-            for ( signature::structured_t::map_t::iterator pos (map.begin())
-                ; pos != map.end()
-                ; ++pos
-                )
-            {
-              const bool resolved (boost::apply_visitor (*this, pos->second));
-
-              if (!resolved)
-              {
-                const std::string child_name
-                  (boost::apply_visitor ( get_literal_type_name()
-                                        , pos->second
-                                        )
-                  );
-
-                boost::unordered_map<std::string, structure_type>::const_iterator
-                  res (sig_set.find (child_name));
-
-                if (res == sig_set.end())
-                {
-                  throw error::cannot_resolve (pos->first, child_name, _struct);
-                }
-
-                pos->second = res->second.signature();
-
-                boost::apply_visitor (*this, pos->second);
-              }
-            }
-
-            return true;
+            return signature::type (pos->second.signature());
           }
 
-        private:
-          const structure_type _struct;
-          const boost::unordered_map<std::string, structure_type>& sig_set;
-        };
+          return boost::none;
+        }
       }
 
       void structure_type::resolve
         (const boost::unordered_map<std::string, structure_type>& m)
       {
-        boost::apply_visitor (visitor_resolve (m, *this), _sig);
+        _sig = structure_type_util::resolve_with_fun
+          (*this, boost::bind (get_assignment, m, _1));
       }
 
       id::ref::structure structure_type::clone
