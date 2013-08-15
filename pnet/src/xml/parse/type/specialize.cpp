@@ -110,9 +110,7 @@ namespace xml
           }
           else
           {
-            boost::apply_visitor ( st::resolve (known_structs, s)
-                                 , s.signature()
-                                 );
+            s.resolve (known_structs);
 
             parent_structs.push_back (s);
           }

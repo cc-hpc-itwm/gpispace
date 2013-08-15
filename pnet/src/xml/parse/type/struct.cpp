@@ -117,6 +117,12 @@ namespace xml
         pnet::type::signature::specialize (_sig2, m);
       }
 
+      void structure_type::resolve
+        (const boost::unordered_map<std::string, structure_type>& m)
+      {
+        boost::apply_visitor (structure_type_util::resolve (m, *this), _sig);
+      }
+
       id::ref::structure structure_type::clone
         ( const boost::optional<parent_id_type>& parent
         , const boost::optional<id::mapper*>& mapper
