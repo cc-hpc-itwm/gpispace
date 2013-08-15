@@ -9,7 +9,6 @@
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/util/position.hpp>
 
-#include <we/type/literal.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>

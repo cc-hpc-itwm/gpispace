@@ -518,7 +518,6 @@
           <cinclude href="boost/algorithm/string/split.hpp"/>
           <cinclude href="boost/algorithm/string/iter_find.hpp"/>
           <cinclude href="boost/algorithm/string/classification.hpp"/>
-          <cinclude href="we/type/literal.hpp"/>
           <cinclude href="sstream"/>
           <cinclude href="fstream"/>
           <cinclude href="ctype.h"/>

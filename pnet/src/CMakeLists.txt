@@ -194,7 +194,6 @@ install (FILES
 install (FILES
   we/type/bitsetofint.hpp
   we/type/bytearray.hpp
-  we/type/literal.hpp
   DESTINATION include/we/type
   COMPONENT sdk
 )

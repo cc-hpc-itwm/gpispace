@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/type/literal.hpp>
 #include <we/util/token.hpp>
 #include <we/expr/parse/parser.hpp>
 
