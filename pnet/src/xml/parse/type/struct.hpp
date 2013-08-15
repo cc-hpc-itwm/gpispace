@@ -43,8 +43,6 @@ namespace xml
                        );
 
         const signature::desc_t& signature() const;
-        signature::desc_t& signature();
-        const signature::desc_t& signature (const signature::desc_t& sig);
 
         const std::string& name() const;
 

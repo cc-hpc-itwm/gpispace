@@ -40,14 +40,6 @@ namespace xml
       {
         return _sig;
       }
-      signature::desc_t& structure_type::signature()
-      {
-        return _sig;
-      }
-      const signature::desc_t& structure_type::signature (const signature::desc_t& sig)
-      {
-        return _sig = sig;
-      }
 
       namespace
       {
