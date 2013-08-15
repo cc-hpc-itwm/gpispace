@@ -73,7 +73,7 @@ namespace xml
       }
     }
 
-    namespace structure_type
+    namespace structure_type_util
     {
       typedef boost::unordered_map< std::string
                                   , type::structure_type

@@ -121,18 +121,18 @@ namespace xml
         // ***************************************************************** //
 
         void resolve ( const state::type & state
-                     , const xml::parse::structure_type::forbidden_type & forbidden
+                     , const xml::parse::structure_type_util::forbidden_type & forbidden
                      );
-        void resolve ( const xml::parse::structure_type::set_type & global
+        void resolve ( const xml::parse::structure_type_util::set_type & global
                      , const state::type & state
-                     , const xml::parse::structure_type::forbidden_type & forbidden
+                     , const xml::parse::structure_type_util::forbidden_type & forbidden
                      );
 
         // ***************************************************************** //
 
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
-                        , const xml::parse::structure_type::set_type & known_structs
+                        , const xml::parse::structure_type_util::set_type & known_structs
                         , state::type & state
                         );
 

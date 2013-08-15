@@ -65,7 +65,7 @@ namespace xml
         type_get_type type_get;
       };
 
-      void split_structs ( const parse::structure_type::set_type & global
+      void split_structs ( const parse::structure_type_util::set_type & global
                          , structs_type & child_structs
                          , structs_type & parent_structs
                          , const type_get_type & type_get

@@ -521,10 +521,10 @@ namespace xml
 
       // ***************************************************************** //
 
-      xml::parse::structure_type::forbidden_type
+      xml::parse::structure_type_util::forbidden_type
         function_type::forbidden_below (void) const
       {
-        xml::parse::structure_type::forbidden_type forbidden;
+        xml::parse::structure_type_util::forbidden_type forbidden;
 
         BOOST_FOREACH (const port_type& port, ports().values())
         {
@@ -542,7 +542,7 @@ namespace xml
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
                          , structs.end()
-                         , boost::bind ( parse::structure_type::struct_by_name
+                         , boost::bind ( parse::structure_type_util::struct_by_name
                                        , type
                                        , _1
                                        )
@@ -552,7 +552,7 @@ namespace xml
         if (pos != structs.end())
         {
           return signature::type
-            ( parse::structure_type::resolve_with_fun
+            ( parse::structure_type_util::resolve_with_fun
               (*pos, boost::bind (&function_type::signature, *this, _1))
             , pos->name()
             );
@@ -875,7 +875,7 @@ namespace xml
       {
         const type_map_type type_map_empty;
         const type_get_type type_get_empty;
-        const xml::parse::structure_type::set_type known_empty;
+        const xml::parse::structure_type_util::set_type known_empty;
 
         specialize ( type_map_empty
                    , type_get_empty
@@ -891,7 +891,7 @@ namespace xml
         private:
           const type::type_map_type & map;
           const type::type_get_type & get;
-          const xml::parse::structure_type::set_type & known_structs;
+          const xml::parse::structure_type_util::set_type & known_structs;
           state::type & state;
           function_type & fun;
 
@@ -899,7 +899,7 @@ namespace xml
           function_specialize
             ( const type::type_map_type & _map
             , const type::type_get_type & _get
-            , const xml::parse::structure_type::set_type & _known_structs
+            , const xml::parse::structure_type_util::set_type & _known_structs
             , state::type & _state
             , function_type & _fun
             )
@@ -928,7 +928,7 @@ namespace xml
 
       void function_type::specialize ( const type_map_type & map
                                      , const type_get_type & get
-                                     , const xml::parse::structure_type::set_type & known_structs
+                                     , const xml::parse::structure_type_util::set_type & known_structs
                                      , state::type & state
                                      )
       {
@@ -942,7 +942,7 @@ namespace xml
           s.specialize (map);
         }
 
-        namespace st = xml::parse::structure_type;
+        namespace st = xml::parse::structure_type_util;
 
         boost::apply_visitor
           ( function_specialize

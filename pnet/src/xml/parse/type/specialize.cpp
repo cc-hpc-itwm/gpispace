@@ -75,14 +75,14 @@ namespace xml
           ).make_reference_id();
       }
 
-      void split_structs ( const xml::parse::structure_type::set_type & global
+      void split_structs ( const xml::parse::structure_type_util::set_type & global
                          , structs_type & child_structs
                          , structs_type & parent_structs
                          , const type_get_type & type_get
                          , const state::type & state
                          )
       {
-        namespace st = xml::parse::structure_type;
+        namespace st = xml::parse::structure_type_util;
 
         const st::set_type known_structs
           ( st::join ( global

@@ -370,7 +370,7 @@ namespace xml
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
                          , structs.end()
-                         , boost::bind ( parse::structure_type::struct_by_name
+                         , boost::bind ( parse::structure_type_util::struct_by_name
                                        , type
                                        , _1
                                        )
@@ -380,7 +380,7 @@ namespace xml
         if (pos != structs.end())
         {
           return signature::type
-            ( parse::structure_type::resolve_with_fun
+            ( parse::structure_type_util::resolve_with_fun
               (*pos, boost::bind (&net_type::signature, *this, _1))
             , pos->name()
             );
@@ -417,11 +417,11 @@ namespace xml
 
       void net_type::specialize ( const type::type_map_type & map
                                 , const type::type_get_type & get
-                                , const xml::parse::structure_type::set_type & known_structs
+                                , const xml::parse::structure_type_util::set_type & known_structs
                                 , state::type & state
                                 )
       {
-        namespace st = xml::parse::structure_type;
+        namespace st = xml::parse::structure_type_util;
 
         BOOST_FOREACH (specialize_type& specialize, specializes().values())
         {

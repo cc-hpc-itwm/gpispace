@@ -157,7 +157,7 @@ namespace xml
       }
     }
 
-    namespace structure_type
+    namespace structure_type_util
     {
       set_type make (const type::structs_type & structs)
       {
@@ -271,7 +271,7 @@ namespace xml
               {
                 const std::string child_name
                   ( boost::apply_visitor
-                    (parse::structure_type::get_literal_type_name(), sub.second)
+                    (parse::structure_type_util::get_literal_type_name(), sub.second)
                   );
 
                 const boost::optional<signature::type> res

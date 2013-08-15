@@ -181,7 +181,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        xml::parse::structure_type::forbidden_type forbidden_below (void) const;
+        xml::parse::structure_type_util::forbidden_type forbidden_below (void) const;
 
         // ***************************************************************** //
 
@@ -212,7 +212,7 @@ namespace xml
 
         void specialize ( const type_map_type & map
                         , const type_get_type & get
-                        , const xml::parse::structure_type::set_type & known_structs
+                        , const xml::parse::structure_type_util::set_type & known_structs
                         , state::type & state
                         );
 
