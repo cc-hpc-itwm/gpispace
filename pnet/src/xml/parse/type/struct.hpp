@@ -13,6 +13,7 @@
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/signature.hpp>
+#include <we2/type/signature.hpp>
 
 #include <list>
 #include <string>
@@ -39,6 +40,7 @@ namespace xml
                        , const util::position_type&
                        , const std::string& name
                        , const signature::desc_t& sig
+                       , const pnet::type::signature::structured_type& sig2
                        );
 
         const signature::desc_t& signature() const;
@@ -56,6 +58,7 @@ namespace xml
       private:
         std::string _name;
         signature::desc_t _sig;
+        pnet::type::signature::structured_type _sig2;
       };
 
       bool operator == (const structure_type & a, const structure_type & b);

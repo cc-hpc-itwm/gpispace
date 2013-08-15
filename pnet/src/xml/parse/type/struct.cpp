@@ -19,17 +19,20 @@ namespace xml
   {
     namespace type
     {
-      structure_type::structure_type ( ID_CONS_PARAM(structure)
-                                     , PARENT_CONS_PARAM(function)
-                                     , const util::position_type& pod
-                                     , const std::string& name
-                                     , const signature::desc_t& sig
-                                     )
+      structure_type::structure_type
+        ( ID_CONS_PARAM(structure)
+        , PARENT_CONS_PARAM(function)
+        , const util::position_type& pod
+        , const std::string& name
+        , const signature::desc_t& sig
+        , const pnet::type::signature::structured_type& sig2
+        )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
         , _sig (sig)
+        , _sig2 (sig2)
       {
         _id_mapper->put (_id, *this);
       }
@@ -70,6 +73,7 @@ namespace xml
           , _position_of_definition
           , _name
           , _sig
+          , _sig2
           ).make_reference_id();
       }
 

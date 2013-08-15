@@ -37,6 +37,9 @@
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
 
+#include <we2/type/signature.hpp>
+#include <we2/type/signature/show.hpp>
+
 #include <istream>
 
 #include <boost/bind.hpp>
@@ -1532,6 +1535,63 @@ namespace xml
           );
       }
 
+
+      pnet::type::signature::structure_type
+        _2_structure_type (const xml_node_type*, state::type&);
+
+      pnet::type::signature::structured_type
+        _2_structured_type (const xml_node_type* node, state::type& state)
+      {
+        return std::make_pair
+          ( validate_field_name
+            ( required ("structured_type", node, "name", state)
+            , state.file_in_progress()
+            )
+          , _2_structure_type (node, state)
+          );
+      }
+
+      pnet::type::signature::structure_type
+        _2_structure_type (const xml_node_type* node, state::type& state)
+      {
+        pnet::type::signature::structure_type s;
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name (name_element (child, state));
+
+          if (child)
+          {
+            if (child_name == "field")
+            {
+              s.push_back ( std::make_pair
+                            ( required ("struct_field", child, "name", state)
+                            , required ("struct_field", child, "type", state)
+                            )
+                          );
+            }
+            else if (child_name == "struct")
+            {
+              s.push_back (_2_structured_type (child, state));
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "_2_structure_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        return s;
+      }
+
       type::structure_type
         struct_type (const xml_node_type* node, state::type& state)
       {
@@ -1548,6 +1608,7 @@ namespace xml
                                 , state.file_in_progress()
                                 )
           , sig
+          , _2_structured_type (node, state)
           );
       }
     }
