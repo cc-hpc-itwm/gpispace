@@ -13,12 +13,7 @@ namespace fhg
       {}
       std::ostream& include::operator() (std::ostream& os) const
       {
-        if (_fname.size())
-        {
-          os << "#include <" << _fname << ">" << std::endl;
-        }
-
-        return os;
+        return os << "#include <" << _fname << ">" << std::endl;
       }
     }
   }
