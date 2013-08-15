@@ -121,60 +121,6 @@ namespace signature
       }
     };
 
-    class dump_token : public boost::static_visitor<void>
-    {
-    private:
-      const std::string & name;
-      xml_util::xmlstream & s;
-
-      void open () const
-      {
-        if (name.size() > 0)
-          {
-            s.open ("field");
-            s.attr ("name", name);
-          }
-        else
-          {
-            s.open ("token");
-          }
-      }
-
-    public:
-      dump_token (const std::string & _name, xml_util::xmlstream & _s)
-        : name (_name)
-        , s (_s)
-      {}
-
-      void operator () (const std::string & t) const
-      {
-        open();
-
-        s.open ("value");
-        s.content (t);
-        s.close ();
-
-        s.close();
-      }
-
-      void operator () (const structured_t & map) const
-      {
-        open();
-
-        for ( structured_t::const_iterator field (map.begin())
-            ; field != map.end()
-            ; ++field
-            )
-          {
-            boost::apply_visitor ( dump_token (field->first, s)
-                                 , field->second
-                                 );
-          }
-
-        s.close();
-      }
-    };
-
     class show : public boost::static_visitor<std::ostream &>
     {
     private:
