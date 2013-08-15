@@ -76,12 +76,8 @@ namespace xml
 
     namespace structure_type_util
     {
-      typedef boost::unordered_map< std::string
-                                  , type::structure_type
-                                  > set_type;
-      typedef boost::unordered_map< std::string
-                                  , std::string
-                                  > forbidden_type;
+      typedef boost::unordered_map<std::string, type::structure_type> set_type;
+      typedef boost::unordered_map<std::string, std::string> forbidden_type;
 
       set_type make (const type::structs_type & structs);
 
