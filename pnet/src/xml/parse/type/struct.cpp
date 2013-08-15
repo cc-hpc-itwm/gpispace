@@ -71,34 +71,6 @@ namespace xml
 
       namespace
       {
-        class visitor_set_name
-          : public boost::static_visitor<const std::string&>
-        {
-        public:
-          visitor_set_name (const std::string& name)
-            : _name (name)
-          {}
-          const std::string&
-            operator() (std::pair< std::string
-                                 , pnet::type::signature::structure_type
-                                 >& s
-                       ) const
-          {
-            return s.first = _name;
-          }
-
-        private:
-          const std::string _name;
-        };
-      }
-
-      const std::string& structure_type::name (const std::string& name)
-      {
-        return boost::apply_visitor (visitor_set_name (name), _sig2);
-      }
-
-      namespace
-      {
         class visitor_specialize
           : public boost::static_visitor<signature::desc_t>
         {
@@ -136,6 +108,24 @@ namespace xml
           }
 
         };
+
+        class visitor_set_name : public boost::static_visitor<>
+        {
+        public:
+          visitor_set_name (const std::string& name)
+            : _name (name)
+          {}
+          void operator() (std::pair< std::string
+                                    , pnet::type::signature::structure_type
+                                    >& s
+                          ) const
+          {
+            s.first = _name;
+          }
+
+        private:
+          const std::string _name;
+        };
       }
 
       void structure_type::specialize
@@ -146,9 +136,9 @@ namespace xml
         boost::unordered_map<std::string, std::string>::const_iterator
           pos (m.find (name()));
 
-        if (pos  != m.end())
+        if (pos != m.end())
         {
-          name (pos->second);
+          boost::apply_visitor (visitor_set_name (pos->second), _sig2);
         }
       }
 

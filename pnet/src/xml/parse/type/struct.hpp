@@ -47,7 +47,6 @@ namespace xml
         const signature::desc_t& signature (const signature::desc_t& sig);
 
         const std::string& name() const;
-        const std::string& name (const std::string& name);
 
         void specialize (const boost::unordered_map<std::string, std::string>&);
 
