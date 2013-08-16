@@ -119,12 +119,6 @@ namespace expr
       throw pnet::exception::missing_binding (key);
     }
 
-    const boost::unordered_map<std::string,pnet::type::value::value_type>&
-    context::values() const
-    {
-      return _container;
-    }
-
     std::ostream& operator<< (std::ostream& s, const context& cntx)
     {
       typedef std::pair<std::string, pnet::type::value::value_type> kv_type;

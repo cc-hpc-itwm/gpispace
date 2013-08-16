@@ -37,10 +37,6 @@ namespace expr
       const pnet::type::value::value_type& value (const std::list<std::string>&) const;
 
       friend std::ostream& operator<< (std::ostream&, const context&);
-
-      const boost::unordered_map< std::string
-                                , pnet::type::value::value_type
-                                >& values() const;
     };
 
     std::ostream& operator<< (std::ostream&, const context&);
