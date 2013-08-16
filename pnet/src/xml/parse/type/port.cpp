@@ -185,7 +185,7 @@ namespace xml
                 throw error::port_connected_place_nonexistent (_port, _path);
               }
 
-              if (place->get().signature() != _port.get().signature())
+              if (place->get().signature2() != _port.get().signature2())
               {
                 throw error::port_connected_type_error (_port, *place, _path);
               }

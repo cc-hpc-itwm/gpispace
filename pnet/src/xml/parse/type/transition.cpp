@@ -507,7 +507,7 @@ namespace xml
             (make_reference_id(), connect.make_reference_id());
         }
 
-        if (id_place->get().signature() != id_port->get().signature())
+        if (id_place->get().signature2() != id_port->get().signature2())
         {
           throw error::connect_type_error ( make_reference_id()
                                           , connect.make_reference_id()
@@ -700,7 +700,7 @@ namespace xml
               (fun.get_port_out (port_in.name()));
 
             if (  id_port_out
-               && id_port_out->get().signature() != port_in.signature()
+               && id_port_out->get().signature2() != port_in.signature2()
                )
             {
               state.warn
