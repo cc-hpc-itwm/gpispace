@@ -18,7 +18,7 @@
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 
-#include <we/type/signature.hpp>
+#include <we2/type/signature.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
@@ -297,65 +297,79 @@ namespace fhg
 
         namespace visitor
         {
+          template<typename State> class structure_structured;
+
           template<typename State>
-          class token : public boost::static_visitor<void>
+          class structure_field : public boost::static_visitor<void>
           {
+          public:
+            explicit structure_field (State * state)
+              : _state (state)
+            {}
+
+            void operator() (const std::pair<std::string, std::string>& f) const
+            {
+              WEAVE(structure::open) (f.first);
+              WEAVE(structure::type) (f.second);
+              WEAVE(structure::close) ();
+            }
+            void operator()
+              (const pnet::type::signature::structured_type& s) const
+            {
+              boost::apply_visitor (structure_structured<State> (_state), s);
+            }
+
           private:
             State * _state;
+          };
 
+          template<typename State>
+          class structure_structured : public boost::static_visitor<void>
+          {
           public:
-            explicit token (State * state) : _state (state) {}
+            explicit structure_structured (State * state)
+              : _state (state)
+            {}
 
-            void operator () (const ::std::string & t) const
+            void operator()
+              (const std::pair< std::string
+                              , pnet::type::signature::structure_type
+                              >& s
+              ) const
             {
-              WEAVE(token::literal::open) (t);
-              WEAVE(token::literal::name) (t);
-              WEAVE(token::literal::close)();
+              WEAVE(structure::open) (s.first);
+              BOOST_FOREACH (const pnet::type::signature::field_type& f, s.second)
+              {
+                boost::apply_visitor (structure_field<State> (_state), f);
+              }
+              WEAVE(structure::close) ();
             }
 
-            void operator () (const ::signature::structured_t & m) const
-            {
-              WEAVE(token::structured::open) (m);
-
-              for ( ::signature::structured_t::const_iterator field (m.begin())
-                  ; field != m.end()
-                  ; ++field
-                  )
-                {
-                  WEAVE(token::structured::field) (*field);
-                }
-
-              WEAVE(token::structured::close)();
-            }
+          private:
+            State * _state;
           };
 
           template<typename State>
           class structure : public boost::static_visitor<void>
           {
-          private:
-            State * _state;
-
           public:
-            explicit structure (State * state) : _state (state) {}
+            explicit structure (State * state)
+              : _state (state)
+            {}
 
-            void operator () (const ::std::string & t) const
+            void operator() (const ::std::string& t) const
             {
               WEAVE(structure::type) (t);
             }
 
-            void operator () (const ::signature::structured_t & m) const
+            void operator()
+              (const pnet::type::signature::structured_type& s) const
             {
-              for ( ::signature::structured_t::const_iterator
-                      field (m.begin()), end (m.end())
-                  ; field != end
-                  ; ++field
-                  )
-                {
-                  WEAVE(structure::open) (field->first);
-                  boost::apply_visitor (*this, field->second);
-                  WEAVE(structure::close) ();
-                }
+              boost::apply_visitor (structure_structured<State> (_state), s);
             }
+
+          private:
+            State * _state;
           };
 
           template<typename State>
@@ -404,7 +418,9 @@ namespace fhg
         FUN(structure, ::xml::parse::type::structure_type, s)
         {
           WEAVE(structure::open) (s.name());
-          boost::apply_visitor(visitor::structure<State>(_state),s.signature());
+          boost::apply_visitor( visitor::structure<State>(_state)
+                              , s.signature2()
+                              );
           WEAVE(structure::close) ();
         }
 

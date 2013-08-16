@@ -575,21 +575,6 @@ namespace fhg
           append_maybe ("code", code);
         }
 
-        WSIG(tv, token::literal::name, ::std::string, token)
-        {
-          append (token);
-        }
-
-        WSIG(tv, token::structured::field, ::signature::structured_t::const_iterator::value_type, field)
-        {
-          push (append (field.first));
-
-          boost::apply_visitor
-            (from::visitor::token<tv> (this), field.second);
-
-          pop ();
-        }
-
         WSIG(tv, net::open, ::xml::parse::id::ref::net, net)
         {
           push (append ("net"));
