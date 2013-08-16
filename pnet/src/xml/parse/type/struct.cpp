@@ -199,7 +199,7 @@ namespace xml
 
       bool operator == (const structure_type & a, const structure_type & b)
       {
-        return (a.name() == b.name()) && (a.signature() == b.signature());
+        return (a.name() == b.name()) && (a.signature2() == b.signature2());
       }
 
       bool operator != (const structure_type & a, const structure_type & b)
