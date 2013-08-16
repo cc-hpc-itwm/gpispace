@@ -34,6 +34,8 @@ add_library (we-dev SHARED
   we/type/value/peek.cpp
   we/type/value/poke.cpp
   we/type/value/show.cpp
+
+  we/loader/Module.cpp
 )
 
 set_target_properties(we-dev
@@ -109,6 +111,8 @@ add_library (pnet
   we/type/value/read.cpp
   we/type/value/show.cpp
   we/util/cross.cpp
+
+  we/loader/Module.cpp
 
   xml/parse/error.cpp
   xml/parse/id/generic.cpp
