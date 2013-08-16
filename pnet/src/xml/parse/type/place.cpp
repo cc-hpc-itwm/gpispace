@@ -178,7 +178,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (xml_util::xmlstream & s, const place_type & p)
+        void dump (fhg::util::xml::xmlstream & s, const place_type & p)
         {
           s.open ("place");
           s.attr ("name", p.name());
