@@ -5,7 +5,6 @@
 
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
-#include <we/type/signature.hpp>
 #include <we2/type/signature.hpp>
 #include <we2/type/signature/serialize.hpp>
 
