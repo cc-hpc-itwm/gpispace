@@ -25,17 +25,17 @@ namespace module
                      , we::type::port_t
                      > port_by_id_type;
 
-    expr::eval::context context;
-    expr::eval::context mod_output;
+    expr::eval::context in;
+    expr::eval::context out;
 
     BOOST_FOREACH (const token_on_port_type& token_on_port, act.input())
     {
-      context.bind_ref ( act.transition().name_of_port (token_on_port.second)
-                       , token_on_port.first
-                       );
+      in.bind_ref ( act.transition().name_of_port (token_on_port.second)
+                  , token_on_port.first
+                  );
     }
 
-    loader[module_call.module()] (module_call.function(), context, mod_output);
+    loader[module_call.module()].call (module_call.function(), in, out);
 
     BOOST_FOREACH ( const port_by_id_type& port_by_id
                   , act.transition().ports()
@@ -47,7 +47,7 @@ namespace module
       if (port.is_output())
       {
         act.add_output ( token_on_port_type
-                         (pnet::require_type ( mod_output.value (port.name())
+                         (pnet::require_type ( out.value (port.name())
                                              , port.signature()
                                              , port.name()
                                              )

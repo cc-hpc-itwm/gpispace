@@ -15,13 +15,12 @@ int main (int ac, char **argv)
     loader.append_search_path (argv[i]);
   }
 
-  expr::eval::context inp;
   expr::eval::context out;
 
-  loader["answer"] ("answer", inp, out);
+  loader["answer"].call ("answer", expr::eval::context(), out);
 
-  loader["question"] ("question", inp, out);
-  loader["answer"] ("answer", inp, out);
+  loader["question"].call ("question", expr::eval::context(), out);
+  loader["answer"].call ("answer", expr::eval::context(), out);
 
   return EXIT_SUCCESS;
 }

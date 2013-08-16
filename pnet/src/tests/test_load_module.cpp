@@ -32,10 +32,9 @@ int main (int ac, char **av)
 
     try
     {
-      expr::eval::context inp;
       expr::eval::context out;
 
-      loader[mod_name] ("selftest", inp, out);
+      loader[mod_name].call ("selftest", expr::eval::context(), out);
     }
     catch (const std::exception &ex)
     {
