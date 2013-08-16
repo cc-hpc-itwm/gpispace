@@ -35,10 +35,8 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
-#include <we/type/signature.hpp>
 
 #include <we2/type/signature.hpp>
-#include <we2/type/signature/show.hpp>
 
 #include <istream>
 
@@ -136,12 +134,6 @@ namespace xml
       we::type::property::type
         property_maps_type (const xml_node_type*, state::type&);
 
-      void gen_struct_type ( const xml_node_type*, state::type&
-                           , signature::desc_t&
-                           );
-      void substruct_type ( const xml_node_type*, state::type&
-                          , signature::desc_t&
-                          );
       type::structure_type struct_type (const xml_node_type*, state::type&);
       type::structs_type structs_type (const xml_node_type*, state::type&);
 
@@ -1454,105 +1446,23 @@ namespace xml
 
       // ******************************************************************* //
 
-      void struct_field_type ( const xml_node_type* node
-                             , state::type& state
-                             , signature::desc_t& sig
-                             )
-      {
-        const std::string name
-          ( validate_field_name
-            ( required ("struct_field_type", node, "name", state)
-            , state.file_in_progress()
-            )
-          );
-
-        const std::string type
-          (required ("struct_field_type", node, "type", state));
-
-        if (boost::apply_visitor (signature::visitor::has_field (name), sig))
-        {
-          throw error::struct_field_redefined (name, state.file_in_progress());
-        }
-
-        boost::apply_visitor (signature::visitor::add_field (name, type), sig);
-      }
-
-      void gen_struct_type ( const xml_node_type* node
-                           , state::type& state
-                           , signature::desc_t& sig
-                           )
-      {
-        for ( xml_node_type* child (node->first_node())
-            ; child
-            ; child = child ? child->next_sibling() : child
-            )
-        {
-          const std::string child_name (name_element (child, state));
-
-          if (child)
-          {
-            if (child_name == "field")
-            {
-              struct_field_type (child, state, sig);
-            }
-            else if (child_name == "struct")
-            {
-              substruct_type (child, state, sig);
-            }
-            else
-            {
-              state.warn
-                ( warning::unexpected_element ( child_name
-                                              , "gen_struct_type"
-                                              , state.file_in_progress()
-                                              )
-                );
-            }
-          }
-        }
-      }
-
-      void substruct_type ( const xml_node_type* node
-                          , state::type& state
-                          , signature::desc_t& sig
-                          )
-      {
-        const std::string name
-          ( validate_field_name
-            ( required ("substruct_type", node, "name", state)
-            , state.file_in_progress()
-            )
-          );
-
-        boost::apply_visitor ( signature::visitor::create_structured_field (name)
-                             , sig
-                             );
-
-        gen_struct_type
-          ( node
-          , state
-          , boost::apply_visitor (signature::visitor::get_field (name), sig)
-          );
-      }
-
-
       pnet::type::signature::structure_type
-        _2_structure_type (const xml_node_type*, state::type&);
+        structure_type (const xml_node_type*, state::type&);
 
       pnet::type::signature::structured_type
-        _2_structured_type (const xml_node_type* node, state::type& state)
+        structured_type (const xml_node_type* node, state::type& state)
       {
         return std::make_pair
           ( validate_field_name
             ( required ("structured_type", node, "name", state)
             , state.file_in_progress()
             )
-          , _2_structure_type (node, state)
+          , structure_type (node, state)
           );
       }
 
       pnet::type::signature::structure_type
-        _2_structure_type (const xml_node_type* node, state::type& state)
+        structure_type (const xml_node_type* node, state::type& state)
       {
         pnet::type::signature::structure_type s;
 
@@ -1575,13 +1485,13 @@ namespace xml
             }
             else if (child_name == "struct")
             {
-              s.push_back (_2_structured_type (child, state));
+              s.push_back (structured_type (child, state));
             }
             else
             {
               state.warn
                 ( warning::unexpected_element ( child_name
-                                              , "_2_structure_type"
+                                              , "structure_type"
                                               , state.file_in_progress()
                                               )
                 );
@@ -1600,7 +1510,7 @@ namespace xml
           , state.id_mapper()
           , boost::none
           , state.position (node)
-          , _2_structured_type (node, state)
+          , structured_type (node, state)
           );
       }
     }
