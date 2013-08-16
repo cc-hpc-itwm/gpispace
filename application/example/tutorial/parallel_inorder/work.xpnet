@@ -1,4 +1,4 @@
-#<template name="work_n_of_m">
+<template name="work_n_of_m">
   <template-parameter type="T"/>
   <defun>
 
@@ -75,8 +75,8 @@
       </transition>
 
       <place name="with_offset" type="with_offset"/>
-      <place name="offset" type="long"><token><value>0</value></token></place>
-      <place name="id" type="long"><token><value>0</value></token></place>
+      <place name="offset" type="long"><token><value>0L</value></token></place>
+      <place name="id" type="long"><token><value>0L</value></token></place>
 
       <transition name="write">
         <defun>
