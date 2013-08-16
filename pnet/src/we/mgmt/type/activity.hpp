@@ -89,7 +89,7 @@ namespace we
                              );
           }
 
-          return boost::get<T> (e.ast().eval_all2 (context));
+          return boost::get<T> (e.ast().eval_all (context));
         }
 
         void set_id (const petri_net::activity_id_type&);

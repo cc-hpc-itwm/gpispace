@@ -747,7 +747,7 @@ namespace xml
             we_net.put_value
               ( pid
               , pnet::require_type
-                ( util::generic_we_parse (token, "parse token").eval_all2()
+                ( util::generic_we_parse (token, "parse token").eval_all()
                 , place.signature2_or_throw()
                 , ""
                 )

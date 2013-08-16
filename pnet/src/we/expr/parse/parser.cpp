@@ -64,30 +64,30 @@ namespace expr
       std::copy (other.begin(), other.end(), std::back_inserter(nd_stack));
     }
 
-    pnet::type::value::value_type parser::eval_front2 (eval::context & context) const
+    pnet::type::value::value_type parser::eval_front (eval::context & context) const
     {
       return eval::eval (context, front());
     }
 
     bool parser::eval_front_bool (eval::context & context) const
     {
-      return pnet::type::value::is_true(eval_front2 (context));
+      return pnet::type::value::is_true(eval_front (context));
     }
 
     // get the already evaluated value, throws if entry is not an value
-    pnet::type::value::value_type parser::get_front2() const
+    pnet::type::value::value_type parser::get_front() const
     {
       return node::get (front());
     }
 
     bool parser::get_front_bool () const
     {
-      return pnet::type::value::is_true(get_front2());
+      return pnet::type::value::is_true(get_front());
     }
 
     // evaluate the whole stack in order, return the last value
     pnet::type::value::value_type
-      parser::eval_all2 (eval::context & context) const
+      parser::eval_all (eval::context & context) const
     {
       pnet::type::value::value_type v;
 
@@ -101,16 +101,16 @@ namespace expr
 
     bool parser::eval_all_bool (eval::context & context) const
     {
-      const pnet::type::value::value_type v (eval_all2 (context));
+      const pnet::type::value::value_type v (eval_all (context));
 
       return pnet::type::value::is_true(v);
     }
 
-    pnet::type::value::value_type parser::eval_all2() const
+    pnet::type::value::value_type parser::eval_all() const
     {
       eval::context c;
 
-      return eval_all2 (c);
+      return eval_all (c);
     }
 
     bool parser::eval_all_bool() const

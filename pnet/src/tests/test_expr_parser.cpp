@@ -98,7 +98,7 @@ int main (int ac, char **)
                     try
                       {
                         cout << "evals to: "
-                             << pnet::type::value::show (parser.eval_front2 (context))
+                             << pnet::type::value::show (parser.eval_front (context))
                              << endl;
                       }
                     catch (const pnet::exception::missing_binding & e)
@@ -217,7 +217,7 @@ int main (int ac, char **)
 
     while (i-->0)
       {
-        parser.eval_all2 (context);
+        parser.eval_all (context);
         cout << context << endl;
       }
   }

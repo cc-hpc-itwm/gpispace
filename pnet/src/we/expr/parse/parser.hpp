@@ -96,18 +96,18 @@ namespace expr
       void add (const parser & other);
 
       // eval the first entry in the stack
-      pnet::type::value::value_type eval_front2 (eval::context & context) const;
+      pnet::type::value::value_type eval_front (eval::context & context) const;
       bool eval_front_bool (eval::context & context) const;
 
       // get the already evaluated value, throws if entry is not an value
-      pnet::type::value::value_type get_front2 () const;
+      pnet::type::value::value_type get_front () const;
       bool get_front_bool () const;
 
       // evaluate the whole stack in order, return the last value
-      pnet::type::value::value_type eval_all2 (eval::context& context) const;
+      pnet::type::value::value_type eval_all (eval::context& context) const;
       bool eval_all_bool (eval::context & context) const;
 
-      pnet::type::value::value_type eval_all2() const;
+      pnet::type::value::value_type eval_all() const;
       bool eval_all_bool() const;
 
       void rename (const std::string& from, const std::string& to);

@@ -432,7 +432,7 @@ namespace we
 
             FHG_UTIL_STAT_START ("expr-eval " + expr.expression());
 
-            expr.ast ().eval_all2 (context);
+            expr.ast ().eval_all (context);
 
             FHG_UTIL_STAT_STOP ("expr-eval " + expr.expression());
             FHG_UTIL_STAT_START ("expr-put " + expr.expression());

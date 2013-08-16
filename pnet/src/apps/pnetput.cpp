@@ -116,7 +116,7 @@ try
         ( inp->substr (inp->find('=')+1) );
 
       const pnet::type::value::value_type val
-        (expr::parse::parser (value).eval_all2());
+        (expr::parse::parser (value).eval_all());
 
       if (not we::type::content::is_subnet (act.transition()))
         {
