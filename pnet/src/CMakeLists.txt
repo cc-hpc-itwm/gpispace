@@ -17,7 +17,7 @@ include_directories (${FhgLog_INCLUDE_DIR})
 find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
-set (we_dev_srcs
+add_library (we-dev SHARED
   we/exception.cpp
   we/expr/token/type.cpp
   we/field.cpp
@@ -36,7 +36,6 @@ set (we_dev_srcs
   we/type/value/show.cpp
 )
 
-add_library (we-dev SHARED ${we_dev_srcs})
 set_target_properties(we-dev
   PROPERTIES VERSION 1
 )
@@ -47,7 +46,7 @@ install (TARGETS we-dev
   COMPONENT runtime
 )
 
-set (we_srcs
+add_library (pnet
   we/container/priostore.cpp
   we/exception.cpp
   we/expr/eval/context.cpp
@@ -110,9 +109,7 @@ set (we_srcs
   we/type/value/read.cpp
   we/type/value/show.cpp
   we/util/cross.cpp
-)
 
-set (xml_sources
   xml/parse/error.cpp
   xml/parse/id/generic.cpp
   xml/parse/id/mapper.cpp
@@ -152,7 +149,6 @@ set (xml_sources
   xml/parse/warning.cpp
 )
 
-add_library (pnet ${we_srcs} ${xml_sources})
 target_link_libraries (pnet fhg-util)
 
 install (FILES
