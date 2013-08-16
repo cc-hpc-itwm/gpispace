@@ -11,7 +11,6 @@ namespace we
   {
     class IModule;
 
-    typedef void (*InitializeFunction)(IModule*, unsigned int);
     typedef void (*FinalizeFunction)(IModule*);
     typedef void (*WrapperFunction)(void*, const expr::eval::context&, expr::eval::context&);
 

@@ -103,36 +103,32 @@ namespace we
           ("initialization of module " + name() + " from " + path() + " failed: handle is 0", name(), path());
       }
 
-      InitializeFunction initialize (NULL);
+      struct
       {
-        struct
+        union
         {
-          union
-          {
-            void * symbol;
-            InitializeFunction function;
-          };
-        } func_ptr;
+          void * symbol;
+          void (*function)(IModule*, unsigned int);
+        };
+      } func_ptr;
 
-        func_ptr.symbol = dlsym(handle_, "we_mod_initialize");
-        initialize = func_ptr.function;
-      }
+      func_ptr.symbol = dlsym (handle_, "we_mod_initialize");
 
-      if (initialize != NULL)
+      if (func_ptr.function != NULL)
       {
         try
         {
           const unsigned int LOADER_VERSION (1U);
 
-          initialize (this, LOADER_VERSION);
+          func_ptr.function (this, LOADER_VERSION);
         }
         catch (const std::exception &ex)
         {
-          throw ModuleInitFailed("error during mod-init function: " + std::string(ex.what()), name(), path());
+          throw ModuleInitFailed ("error during mod-init function: " + std::string(ex.what()), name(), path());
         }
         catch (...)
         {
-          throw ModuleInitFailed("unknown error during mod-init function", name(), path());
+          throw ModuleInitFailed ("unknown error during mod-init function", name(), path());
         }
       }
     }
