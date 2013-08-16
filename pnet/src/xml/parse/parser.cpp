@@ -1595,16 +1595,11 @@ namespace xml
       type::structure_type
         struct_type (const xml_node_type* node, state::type& state)
       {
-        signature::desc_t sig ((signature::structured_t()));
-
-        gen_struct_type (node, state, sig);
-
         return type::structure_type
           ( id::structure (state.id_mapper()->next_id())
           , state.id_mapper()
           , boost::none
           , state.position (node)
-          , sig
           , _2_structured_type (node, state)
           );
       }

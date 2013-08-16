@@ -38,11 +38,9 @@ namespace xml
         structure_type ( ID_CONS_PARAM(structure)
                        , PARENT_CONS_PARAM(function)
                        , const util::position_type&
-                       , const signature::desc_t& sig
                        , const pnet::type::signature::structured_type& sig2
                        );
 
-        const signature::desc_t& signature() const;
         const pnet::type::signature::structured_type& signature2() const;
         const std::string& name() const;
 
@@ -55,7 +53,6 @@ namespace xml
           ) const;
 
       private:
-        signature::desc_t _sig;
         pnet::type::signature::structured_type _sig2;
       };
 

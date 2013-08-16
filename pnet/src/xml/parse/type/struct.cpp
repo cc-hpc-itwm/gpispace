@@ -44,22 +44,16 @@ namespace xml
         ( ID_CONS_PARAM(structure)
         , PARENT_CONS_PARAM(function)
         , const util::position_type& pod
-        , const signature::desc_t& sig
         , const pnet::type::signature::structured_type& sig2
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _sig (sig)
         , _sig2 (sig2)
       {
         _id_mapper->put (_id, *this);
       }
 
-      const signature::desc_t& structure_type::signature() const
-      {
-        return _sig;
-      }
       const pnet::type::signature::structured_type& structure_type::signature2() const
       {
         return _sig2;
@@ -129,7 +123,6 @@ namespace xml
       void structure_type::specialize
         (const boost::unordered_map<std::string, std::string>& m)
       {
-        _sig = boost::apply_visitor (visitor_specialize (m), _sig);
         pnet::type::signature::specialize (_sig2, m);
       }
 
@@ -192,7 +185,6 @@ namespace xml
           , new_mapper
           , parent
           , _position_of_definition
-          , _sig
           , _sig2
           ).make_reference_id();
       }
