@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  IModule.hpp
- *
- *    Description:  the module interface
- *
- *        Version:  1.0
- *        Created:  11/15/2009 04:48:38 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef WE_LOADER_IMODULE_HPP
 #define WE_LOADER_IMODULE_HPP 1
