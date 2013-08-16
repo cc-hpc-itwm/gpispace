@@ -26,19 +26,19 @@ namespace xml
         ( ID_CONS_PARAM(structure)
         , PARENT_CONS_PARAM(function)
         , const util::position_type& pod
-        , const pnet::type::signature::structured_type& sig2
+        , const pnet::type::signature::structured_type& sig
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
-        , _sig2 (sig2)
+        , _sig (sig)
       {
         _id_mapper->put (_id, *this);
       }
 
       const pnet::type::signature::structured_type& structure_type::signature() const
       {
-        return _sig2;
+        return _sig;
       }
 
       namespace
@@ -59,18 +59,18 @@ namespace xml
       }
       const std::string& structure_type::name() const
       {
-        return boost::apply_visitor (visitor_get_name(), _sig2);
+        return boost::apply_visitor (visitor_get_name(), _sig);
       }
 
       void structure_type::specialize
         (const boost::unordered_map<std::string, std::string>& m)
       {
-        pnet::type::signature::specialize (_sig2, m);
+        pnet::type::signature::specialize (_sig, m);
       }
 
       namespace
       {
-        boost::optional<pnet::type::signature::signature_type> get_assignment2
+        boost::optional<pnet::type::signature::signature_type> get_assignment
           ( const boost::unordered_map<std::string, structure_type>& m
           , const std::string& key
           )
@@ -106,13 +106,13 @@ namespace xml
       void structure_type::resolve
         (const boost::unordered_map<std::string, structure_type>& m)
       {
-        pnet::type::signature::signature_type sig2n
-          (pnet::type::signature::resolve (_sig2
-                                          , boost::bind (get_assignment2, m, _1)
+        pnet::type::signature::signature_type sign
+          (pnet::type::signature::resolve (_sig
+                                          , boost::bind (get_assignment, m, _1)
                                           )
           );
 
-        _sig2 = boost::apply_visitor (get_struct(), sig2n);
+        _sig = boost::apply_visitor (get_struct(), sign);
       }
 
       id::ref::structure structure_type::clone
@@ -127,7 +127,7 @@ namespace xml
           , new_mapper
           , parent
           , _position_of_definition
-          , _sig2
+          , _sig
           ).make_reference_id();
       }
 

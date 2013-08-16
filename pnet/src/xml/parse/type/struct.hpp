@@ -37,7 +37,7 @@ namespace xml
         structure_type ( ID_CONS_PARAM(structure)
                        , PARENT_CONS_PARAM(function)
                        , const util::position_type&
-                       , const pnet::type::signature::structured_type& sig2
+                       , const pnet::type::signature::structured_type& sig
                        );
 
         const pnet::type::signature::structured_type& signature() const;
@@ -52,7 +52,7 @@ namespace xml
           ) const;
 
       private:
-        pnet::type::signature::structured_type _sig2;
+        pnet::type::signature::structured_type _sig;
       };
 
       bool operator == (const structure_type & a, const structure_type & b);
