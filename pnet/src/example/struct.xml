@@ -17,7 +17,7 @@
 </place>
 -->
 <place name="place_long" type="long">
-<token><value>42 * 23</value></token>
+<token><value>42L * 23L</value></token>
 </place>
 <place name="place_double" type="double">
 <token><value>47.11e-23</value></token>

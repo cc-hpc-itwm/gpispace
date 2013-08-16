@@ -98,10 +98,10 @@
     </place>
 
     <place name="shmem_per_node" type="long">
-      <token><value>@SHMEM_PER_NODE@</value></token>
+      <token><value>@SHMEM_PER_NODE@L</value></token>
     </place>
     <place name="gpi_mem_per_node" type="long">
-      <token><value>@GPI_MEM_PER_NODE@</value></token>
+      <token><value>@GPI_MEM_PER_NODE@L</value></token>
     </place>
     <place name="file_input" type="string">
       <token><value>"@FILE_INPUT@"</value></token>

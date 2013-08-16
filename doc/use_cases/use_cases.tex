@@ -90,7 +90,7 @@
   \glqq normalen\grqq\ Petri-Netzen eingebaut haben. Unser
   Austauschformat und bereits vorhandene Programme werden kurz
   beleuchtet.
-  
+
   Zum Editor stellen wir ausgehend vom Stand der Dinge insgesamt drei
   Anwendungsszenarien vor, die sich jeweils immer weiter von den
   Details der Plattform entfernen.
@@ -610,7 +610,7 @@ einige Kommentare:
 \item Es gibt verschiedene M\"oglichkeiten, andere Dateien zu
   includieren. Daf"ur gibt es nicht ein einziges \element{include},
   sondern jeweils angepasste wie \element{include-function},
-  \element{include-structs} usw. 
+  \element{include-structs} usw.
 
 \item An verschiedenen Stellen ist es erlaubt, Properties an die
   Elemente anzuh"angen. Properties sind dabei einfach rekursive
@@ -644,22 +644,6 @@ einige Kommentare:
 \end{verbatim}
   So definierte Typen werden vom Compiler "ubersetzt und von der
   Workflow-Engine komplett verstanden und in der Typpr"ufung verarbeitet.
-
-\item Token k"onnen strukturiert erzeugt werden
-\begin{verbatim}
-<place name="lines" type="line">
-  <token>
-    <field name="start"/>
-    <field name="end">
-      <field name="x"><value>4</value></field>
-      <field name="y"><value>4</value></field>
-    </field>
-  </token>
-</place>
-\end{verbatim}
-  Hier wird der Startpunkt von Default-Konstruktor erzeugt und der
-  Endpunkt auf $(4,4)$ gesetzt. Der Kompiler kann bei der Benutzung
-  des Default-Konstruktors warnen, ebenso bei unbekannten Felder usw.
 
 \item Wie bereits gesehen werden Pl"atze in \element{place></place}
   eingeschlossen. Sie haben einen Namen, einen Typ und eventuell eine

@@ -89,7 +89,7 @@
       <connect-read port="c" place="c"/>
     </transition>
     <place name="y" type="set"/>
-    <place name="c" type="long"><token><value>0</value></token></place>
+    <place name="c" type="long"><token><value>0L</value></token></place>
     <transition name="done">
       <defun>
         <in name="s" type="set"/>
