@@ -42,31 +42,23 @@ namespace module
 
     typedef std::pair<std::string, pnet::type::value::value_type> kv_type;
 
-    BOOST_FOREACH (const kv_type& kv, mod_output.values())
+    BOOST_FOREACH ( const we::type::transition_t::port_map_t::value_type& ip
+                  , act.transition().ports()
+                  )
     {
-      try
+      const petri_net::port_id_type& port_id (ip.first);
+      const we::type::port_t& port (ip.second);
+
+      if (port.is_output())
       {
-        const petri_net::port_id_type& port_id
-          (act.transition().output_port_by_name (kv.first));
-
-        const port_t& port (act.transition().get_port (port_id));
-
-        act.add_output
-          ( output_t::value_type
-            ( pnet::require_type
-              ( kv.second
-              , port.signature()
-              , port.name()
-              )
-            , port_id
-            )
-          );
-      }
-      catch (const std::exception & e)
-      {
-        std::cout << "During collect output: " << e.what() << std::endl;
-
-        throw;
+        act.add_output ( output_t::value_type
+                         (pnet::require_type ( mod_output.value (port.name())
+                                             , port.signature()
+                                             , port.name()
+                                             )
+                         , port_id
+                         )
+                       );
       }
     }
   }
