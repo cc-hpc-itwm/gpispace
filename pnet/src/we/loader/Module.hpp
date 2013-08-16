@@ -116,25 +116,16 @@ namespace we
         }
       }
 
-      void add_function ( const std::string &function
-                        , WrapperFunction f
-                        )
-      {
-        return add_function(function, f, param_names_list_t());
-      }
-
       void add_function( const std::string &function
                        , WrapperFunction f
-                       , const param_names_list_t &parameters
                        )
       {
         std::pair<call_table_t::iterator, bool> insertPosition
-          = call_table_.insert( std::make_pair( function
-                                              , std::make_pair (f
-                                                               , parameters
-                                                               )
-                                              )
-                              );
+          = call_table_.insert
+          ( std::make_pair ( function
+                           , std::make_pair (f, param_names_list_t())
+                           )
+          );
         if (! insertPosition.second) {
           throw DuplicateFunction(name(), function);
         }

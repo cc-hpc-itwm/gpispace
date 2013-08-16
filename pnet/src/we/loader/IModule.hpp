@@ -8,24 +8,17 @@
 #include <we/loader/types.hpp>
 #include <we/loader/api-guard.hpp>
 
-namespace we {
-  namespace loader {
+namespace we
+{
+  namespace loader
+  {
     class IModule
     {
     public:
       virtual ~IModule() throw () {}
 
       virtual void name (const std::string &name) = 0;
-
-      virtual void add_function( const std::string &function
-                               , WrapperFunction f
-                               ) = 0;
-
-      virtual void add_function( const std::string &function
-                               , WrapperFunction f
-                               , const param_names_list_t &parameters
-                               ) = 0;
-
+      virtual void add_function (const std::string&, WrapperFunction) = 0;
       virtual void* state (void*) = 0;
       virtual void* state (void) = 0;
     };
