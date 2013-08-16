@@ -131,16 +131,6 @@ namespace xml
           ).make_reference_id();
       }
 
-      bool operator == (const structure_type & a, const structure_type & b)
-      {
-        return (a.name() == b.name()) && (a.signature() == b.signature());
-      }
-
-      bool operator != (const structure_type & a, const structure_type & b)
-      {
-        return !(a == b);
-      }
-
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
@@ -189,10 +179,12 @@ namespace xml
             ; ++pos
             )
           {
-            const type::structure_type& strct (pos->second);
+            const xml::parse::type::structure_type& strct (pos->second);
             const set_type::const_iterator old (set.find (strct.name()));
 
-            if (old != set.end() && strct != old->second)
+            if (  old != set.end()
+               && !(strct.signature() == old->second.signature())
+               )
               {
                 const forbidden_type::const_iterator forbidden_it
                   (forbidden.find (strct.name()));

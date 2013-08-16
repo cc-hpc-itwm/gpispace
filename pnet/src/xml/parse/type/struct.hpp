@@ -55,9 +55,6 @@ namespace xml
         pnet::type::signature::structured_type _sig;
       };
 
-      bool operator == (const structure_type & a, const structure_type & b);
-      bool operator != (const structure_type & a, const structure_type & b);
-
       typedef std::list<structure_type> structs_type;
 
       namespace dump
