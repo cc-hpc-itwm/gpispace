@@ -19,8 +19,8 @@
         <in name="n" type="long"/>
         <out name="state" type="state"/>
         <expression>
-          ${state.i} := 0L;
           ${state.max} := ${n};
+          ${state.i} := 0L;
         </expression>
       </defun>
       <connect-in port="n" place="n"/>
