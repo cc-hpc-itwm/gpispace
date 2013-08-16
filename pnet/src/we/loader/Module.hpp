@@ -131,37 +131,6 @@ namespace we
         }
       }
 
-      void writeTo(std::ostream &os) const
-      {
-        os << "{mod, " << name() << ", ";
-        os << state() << ", ";
-        os << "[";
-        {
-          call_table_t::const_iterator fun(call_table_.begin());
-          while (fun != call_table_.end())
-          {
-            os << fun->first; // function name
-            os << "(";
-
-            param_names_list_t::const_iterator exp_inp(fun->second.second.begin());
-            while (exp_inp != fun->second.second.end())
-            {
-              os << *exp_inp;
-              ++exp_inp;
-              if (exp_inp != fun->second.second.end()) os << ", ";
-            }
-
-            os << ")";
-
-            fun++;
-            if (fun != call_table_.end()) os << ", ";
-          }
-        }
-
-        os << "]";
-        os << "}";
-      }
-
       void init (loader *) throw (ModuleException)
       {
         if (! handle_)
@@ -284,12 +253,6 @@ namespace we
       call_table_t call_table_;
       void *state_;
     };
-
-    inline std::ostream &operator<<(std::ostream &os, const Module &mod)
-    {
-      mod.writeTo(os);
-      return os;
-    }
   }
 }
 

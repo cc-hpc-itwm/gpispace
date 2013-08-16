@@ -56,7 +56,6 @@ namespace we {
 
       void prepend_search_path (const boost::filesystem::path & p);
 
-      void writeTo(std::ostream &os) const;
       size_t unload_autoloaded ();
 
       int selftest ();
@@ -76,14 +75,6 @@ namespace we {
       search_path_t search_path_;
       mutable boost::recursive_mutex mtx_;
     };
-
-    inline std::ostream &operator<< ( std::ostream &os
-                                    , const loader &l
-                                    )
-    {
-      l.writeTo(os);
-      return os;
-    }
   }
 }
 

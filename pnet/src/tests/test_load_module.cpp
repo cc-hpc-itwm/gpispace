@@ -44,8 +44,6 @@ int main (int ac, char **av)
     }
   }
 
-  std::cerr << loader << std::endl;
-
   if (failed.size())
   {
     std::cerr << "The following modules could not be loaded/tested:" << std::endl;

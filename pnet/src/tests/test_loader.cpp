@@ -15,18 +15,13 @@ int main (int ac, char **argv)
     loader.append_search_path (argv[i]);
   }
 
-  std::cerr << loader << std::endl;
-
   expr::eval::context inp;
   expr::eval::context out;
 
   loader["answer"] ("answer", inp, out);
 
-  std::cerr << loader << std::endl;
-
   loader["question"] ("question", inp, out);
   loader["answer"] ("answer", inp, out);
-  std::cerr << loader << std::endl;
 
   return EXIT_SUCCESS;
 }

@@ -115,38 +115,6 @@ namespace we {
       search_path_.push_front (p);
     }
 
-    void loader::writeTo(std::ostream &os) const
-    {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-
-      os << "{loader, ";
-      os << "{path, ";
-      for (search_path_t::const_iterator p (search_path_.begin()); p != search_path_.end(); ++p)
-      {
-        if (p != search_path_.begin())
-          os << ":";
-        os << "\"" << *p << "\"";
-      }
-      os << "}";
-      os << ", ";
-      os << "{modules, ";
-
-      os << "[";
-      module_table_t::const_iterator m(module_table_.begin());
-      while (m != module_table_.end())
-      {
-        os << (*(m->second));
-        ++m;
-
-        if (m != module_table_.end())
-          os << ", ";
-      }
-
-      os << "]";
-      os << "}";
-      os << "}";
-    }
-
     size_t loader::unload_autoloaded ()
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
