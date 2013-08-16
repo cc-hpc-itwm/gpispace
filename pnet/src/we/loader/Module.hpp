@@ -92,16 +92,16 @@ namespace we
       }
 
       void operator () ( const std::string &function
-                       , const input_t &input
-                       , output_t &output
+                       , const expr::eval::context &input
+                       , expr::eval::context &output
                        )
       {
         return call (function, input, output);
       }
 
       void call( const std::string &function
-               , const input_t &input
-               , output_t &output
+               , const expr::eval::context &input
+               , expr::eval::context &output
                )
       {
         call_table_t::const_iterator fun = call_table_.find(function);

@@ -21,8 +21,8 @@
 // ************************************************************************* //
 
 static void exec_wrapper ( void *
-			 , const we::loader::input_t & input
-			 , we::loader::output_t & output
+			 , const expr::eval::context & input
+			 , expr::eval::context & output
 			 )
 {
   const std::string& command (boost::get<std::string> (input.value ("command")));
@@ -38,8 +38,8 @@ static void exec_wrapper ( void *
 // ************************************************************************* //
 
 static void selftest ( void *
-		     , const we::loader::input_t &
-		     , we::loader::output_t &
+		     , const expr::eval::context &
+		     , expr::eval::context &
 		     )
 {
   const std::size_t num_bytes = 274176000;

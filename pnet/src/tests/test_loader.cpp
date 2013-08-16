@@ -17,8 +17,8 @@ int main (int ac, char **argv)
 
   std::cerr << loader << std::endl;
 
-  we::loader::input_t inp;
-  we::loader::output_t out;
+  expr::eval::context inp;
+  expr::eval::context out;
 
   loader["answer"] ("answer", inp, out);
 
@@ -30,4 +30,3 @@ int main (int ac, char **argv)
 
   return EXIT_SUCCESS;
 }
-

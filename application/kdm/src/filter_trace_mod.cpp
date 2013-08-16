@@ -44,8 +44,8 @@ namespace
 
 static void
 generic_filter ( void * state
-	       , const we::loader::input_t & input
-	       , we::loader::output_t & output
+	       , const expr::eval::context & input
+	       , expr::eval::context & output
 	       , boost::function <void (void *, const long &)> filter_impl
 	       )
 {
@@ -114,8 +114,8 @@ static void unblank_impl (void * ptr, const long & num)
 }
 
 static void unblank ( void * state
-                    , const we::loader::input_t & input
-                    , we::loader::output_t & output
+                    , const expr::eval::context & input
+                    , expr::eval::context & output
                     )
 {
   generic_filter (state, input, output, unblank_impl);
@@ -158,8 +158,8 @@ static void clip_impl (void * ptr, const long & num
 }
 
 static void clip ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   const float c (peek<double> (input.value ("config"), "param.clip.c"));
@@ -198,8 +198,8 @@ static void trap_impl (void * ptr, const long & num
 }
 
 static void trap ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   const float t (peek<long> (input.value ("config"), "param.trap.t"));
@@ -287,8 +287,8 @@ static void bandpass_impl ( void * ptr, const long & num
 }
 
 static void bandpass ( void * state
-		     , const we::loader::input_t & input
-		     , we::loader::output_t & output
+		     , const expr::eval::context & input
+		     , expr::eval::context & output
 		     )
 {
   const float frequ1 (peek<long> (input.value ("config"), "param.bandpass.frequ1"));
@@ -370,8 +370,8 @@ static void frac_impl (void * ptr, const long & num)
 }
 
 static void frac ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter (state, input, output, frac_impl);
@@ -419,8 +419,8 @@ static void tpow_impl (void * ptr, const long & num,
 }
 
 static void tpow ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   const float t (peek<double> (input.value ("config"), "param.tpow.tpow"));
@@ -431,8 +431,8 @@ static void tpow ( void * state
 // ************************************************************************* //
 
 static void execW ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   const pnet::type::value::value_type& config (input.value ("config"));

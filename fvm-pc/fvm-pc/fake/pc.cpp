@@ -433,7 +433,7 @@ int fvmGetNodeCount()
   return 1;
 }
 
-static void selftest (void *, const we::loader::input_t &, we::loader::output_t & out)
+static void selftest (void *, const expr::eval::context &, expr::eval::context & out)
 {
   std::cerr << "running self test" << std::endl;
   out.bind ("result", pnet::type::value::value_type (0L));

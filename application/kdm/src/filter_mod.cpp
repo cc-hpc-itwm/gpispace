@@ -49,8 +49,8 @@ static void get_Job ( const pnet::type::value::value_type& config
 }
 
 static void generic_filter ( void *
-			   , const we::loader::input_t & input
-			   , we::loader::output_t & output
+			   , const expr::eval::context & input
+			   , expr::eval::context & output
 			   , void (*filter) (TraceBunch &)
 			   )
 {
@@ -75,8 +75,8 @@ static void generic_filter ( void *
 
 static void
 generic_filter_with_float ( void *
-			  , const we::loader::input_t & input
-			  , we::loader::output_t & output
+			  , const expr::eval::context & input
+			  , expr::eval::context & output
 			  , void (*filter) (TraceBunch &, const float &)
 			  , const std::string & field
 			  )
@@ -130,8 +130,8 @@ static void shrink_impl (TraceBunch & Bunch)
 
 // the wrapper, uses the generic wrapper
 static void shrink ( void * state
-		   , const we::loader::input_t & input
-		   , we::loader::output_t & output
+		   , const expr::eval::context & input
+		   , expr::eval::context & output
 		   )
 {
   generic_filter (state, input, output, shrink_impl);
@@ -169,8 +169,8 @@ static void clip_impl (TraceBunch & Bunch, const float & c)
 }
 
 static void clip ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter_with_float (state, input, output, clip_impl, "filter.clip");
@@ -203,8 +203,8 @@ static void trap_impl (TraceBunch & Bunch, const float & t)
 }
 
 static void trap ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter_with_float (state, input, output, trap_impl, "filter.trap");
@@ -293,8 +293,8 @@ static void bandpass_impl ( TraceBunch & Bunch
 
 static void
 bandpass ( void *
-	 , const we::loader::input_t & input
-	 , we::loader::output_t & output
+	 , const expr::eval::context & input
+	 , expr::eval::context & output
 	 )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
@@ -377,8 +377,8 @@ static void frac_impl (TraceBunch & Bunch)
 }
 
 static void frac ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter (state, input, output, frac_impl);
@@ -428,8 +428,8 @@ static void tpow_impl (TraceBunch & Bunch,
 }
 
 static void tpow ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter_with_float (state, input, output, tpow_impl, "filter.tpow");

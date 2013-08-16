@@ -32,8 +32,8 @@ int main (int ac, char **av)
 
     try
     {
-      we::loader::input_t inp;
-      we::loader::output_t out;
+      expr::eval::context inp;
+      expr::eval::context out;
 
       loader[mod_name] ("selftest", inp, out);
     }

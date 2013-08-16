@@ -184,8 +184,8 @@ namespace we {
       {
         try
         {
-          we::loader::input_t inp;
-          we::loader::output_t out;
+          expr::eval::context inp;
+          expr::eval::context out;
           (*(m->second))("selftest", inp, out);
         }
         catch (FunctionNotFound const &)

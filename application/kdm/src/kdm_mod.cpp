@@ -51,7 +51,7 @@ static unsigned long sizeofJob (void)
 
 // ************************************************************************* //
 
-static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void initialize (void *, const expr::eval::context & input, expr::eval::context & output)
 {
   const std::string& filename
     (boost::get<const std::string&> (input.value ("config_file")));
@@ -507,14 +507,14 @@ static void kdm_process ( const pnet::type::value::value_type & config
 // ************************************************************************* //
 // wrapper functions
 
-static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void loadTT (void *, const expr::eval::context & input, expr::eval::context & output)
 {
   kdm_loadTT (input.value ("config"), boost::get<long> (input.value ("id")));
 
   output.bind ("done", we::type::literal::control());
 }
 
-static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void load (void *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
@@ -523,7 +523,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   output.bind ("bunch", bunch);
 }
 
-static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void process (void *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
@@ -532,7 +532,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   output.bind ("bunch", bunch);
 }
 
-static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void write (void *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -542,14 +542,14 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
   output.bind ("volume", volume);
 }
 
-static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void finalize (void *, const expr::eval::context & input, expr::eval::context & output)
 {
   kdm_finalize (input.value ("config"));
 
   output.bind ("trigger", we::type::literal::control());
 }
 
-static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void init_volume (void *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& volume (input.value ("volume"));
 
@@ -558,7 +558,7 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
   output.bind ("volume", volume);
 }
 
-static void debug (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void debug (void *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& volume (input.value ("volume"));
 

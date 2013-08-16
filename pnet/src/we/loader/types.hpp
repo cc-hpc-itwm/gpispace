@@ -11,12 +11,9 @@ namespace we
   {
     class IModule;
 
-    typedef expr::eval::context input_t;
-    typedef expr::eval::context output_t;
-
     typedef void (*InitializeFunction)(IModule*, unsigned int);
     typedef void (*FinalizeFunction)(IModule*);
-    typedef void (*WrapperFunction)(void*, const input_t&, output_t&);
+    typedef void (*WrapperFunction)(void*, const expr::eval::context&, expr::eval::context&);
 
     typedef std::list<std::string> param_names_list_t;
     typedef std::pair< WrapperFunction

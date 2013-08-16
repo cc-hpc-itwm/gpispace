@@ -41,8 +41,8 @@ namespace
 // ************************************************************************* //
 
 static void init ( void * state
-                 , const we::loader::input_t & input
-                 , we::loader::output_t & output
+                 , const expr::eval::context & input
+                 , expr::eval::context & output
                  )
 {
   const std::string& filename (boost::get<const std::string&> (input.value ("desc")));
@@ -262,8 +262,8 @@ static void init ( void * state
 // ************************************************************************* //
 
 static void finalize ( void * state
-                     , const we::loader::input_t & input
-                     , we::loader::output_t & output
+                     , const expr::eval::context & input
+                     , expr::eval::context & output
                      )
 {
   const pnet::type::value::value_type& config (input.value("config"));
@@ -282,8 +282,8 @@ static void finalize ( void * state
 // ************************************************************************* //
 
 static void load ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   const long & part (boost::get<const long&> (input.value ("part")));
@@ -329,8 +329,8 @@ static void load ( void * state
 // ************************************************************************* //
 
 static void write ( void * state
-                  , const we::loader::input_t & input
-                  , we::loader::output_t & output
+                  , const expr::eval::context & input
+                  , expr::eval::context & output
                   )
 {
   const pnet::type::value::value_type& config (input.value( "config"));

@@ -1825,8 +1825,8 @@ namespace xml
 
           s << indent << "static void " << mod.function();
           s << deeper (indent) << "( void *";
-          s << deeper (indent) << ", const ::we::loader::input_t& _pnetc_input";
-          s << deeper (indent) << ", ::we::loader::output_t& _pnetc_output";
+          s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
+          s << deeper (indent) << ", expr::eval::context& _pnetc_output";
           s << deeper (indent) << ")";
           s << block::open (indent);
 
