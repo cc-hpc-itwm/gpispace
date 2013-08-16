@@ -83,15 +83,6 @@ namespace xml
         return boost::none;
       }
 
-      boost::optional<signature::type>
-      tmpl_type::signature (const std::string& type) const
-      {
-        if (has_parent())
-        {
-          return parent()->signature (type);
-        }
-        return boost::none;
-      }
       boost::optional<pnet::type::signature::signature_type>
       tmpl_type::signature2 (const std::string& type) const
       {

@@ -49,9 +49,6 @@ namespace xml
         void specialize (const boost::unordered_map<std::string, std::string>&);
         void resolve (const boost::unordered_map<std::string, structure_type>&);
 
-        signature::desc_t resolve_with_fun
-          (const boost::function<boost::optional<signature::type> (const std::string&)>&) const;
-
         id::ref::structure clone
           ( const boost::optional<parent_id_type>& parent = boost::none
           , const boost::optional<id::mapper*>& mapper = boost::none

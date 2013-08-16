@@ -84,32 +84,6 @@ namespace xml
         return _type = type_;
       }
 
-      boost::optional<signature::type> place_type::signature() const
-      {
-        if (pnet::type::signature::is_literal (type()))
-        {
-          return signature::type (type());
-        }
-
-        if (not parent())
-        {
-          return boost::none;
-        }
-
-        return parent()->signature (type());
-      }
-      signature::type place_type::signature_or_throw() const
-      {
-        const boost::optional<signature::type> s (signature());
-
-        if (not s)
-        {
-          throw error::place_type_unknown (make_reference_id());
-        }
-
-        return *s;
-      }
-
       boost::optional<pnet::type::signature::signature_type>
         place_type::signature2() const
       {

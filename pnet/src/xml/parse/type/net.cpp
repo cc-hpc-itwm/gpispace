@@ -365,35 +365,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<signature::type>
-      net_type::signature (const std::string& type) const
-      {
-        const structs_type::const_iterator pos
-          ( std::find_if ( structs.begin()
-                         , structs.end()
-                         , boost::bind ( parse::structure_type_util::struct_by_name
-                                       , type
-                                       , _1
-                                       )
-                         )
-          );
-
-        if (pos != structs.end())
-        {
-          return signature::type
-            ( pos->resolve_with_fun (boost::bind (&net_type::signature, *this, _1))
-            , pos->name()
-            );
-        }
-
-        if (has_parent())
-        {
-          return parent()->signature (type);
-        }
-
-        return boost::none;
-      }
-
       boost::optional<pnet::type::signature::signature_type>
       net_type::signature2 (const std::string& type) const
       {

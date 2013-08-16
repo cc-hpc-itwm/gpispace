@@ -67,37 +67,6 @@ namespace xml
         return _type = type_;
       }
 
-      boost::optional<signature::type> port_type::signature() const
-      {
-        if (pnet::type::signature::is_literal (type()))
-        {
-          return signature::type (type());
-        }
-
-        if (not parent())
-        {
-          return boost::none;
-        }
-
-        return parent()->signature (type());
-      }
-      signature::type port_type::signature_or_throw() const
-      {
-        const boost::optional<signature::type> s (signature());
-
-        if (not s)
-        {
-          throw error::port_with_unknown_type ( direction()
-                                              , name()
-                                              , type()
-                                              //! \todo own LOCATION
-                                              , parent()->position_of_definition().path()
-                                              );
-        }
-
-        return *s;
-      }
-
       boost::optional<pnet::type::signature::signature_type> port_type::signature2() const
       {
         if (pnet::type::signature::is_literal (type()))

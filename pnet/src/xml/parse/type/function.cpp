@@ -536,43 +536,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<signature::type>
-      function_type::signature (const std::string& type) const
-      {
-        const structs_type::const_iterator pos
-          ( std::find_if ( structs.begin()
-                         , structs.end()
-                         , boost::bind ( parse::structure_type_util::struct_by_name
-                                       , type
-                                       , _1
-                                       )
-                         )
-          );
-
-        if (pos != structs.end())
-        {
-          return signature::type
-            ( pos->resolve_with_fun (boost::bind (&function_type::signature, *this, _1))
-            , pos->name()
-            );
-        }
-
-        if (parent_transition())
-        {
-          return parent_transition()->get().signature (type);
-        }
-        else if (parent_tmpl())
-        {
-          return parent_tmpl()->get().signature (type);
-        }
-        else if (parent_net())
-        {
-          return parent_net()->get().signature (type);
-        }
-
-        return boost::none;
-      }
-
       boost::optional<pnet::type::signature::signature_type>
       function_type::signature2 (const std::string& type) const
       {
