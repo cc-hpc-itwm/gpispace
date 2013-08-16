@@ -169,7 +169,6 @@ install (FILES
   we/loader/IModule.hpp
   we/loader/api-guard.hpp
   we/loader/macros.hpp
-  we/loader/types.hpp
   DESTINATION include/we/loader
   COMPONENT sdk
 )

@@ -3,15 +3,25 @@
 #ifndef WE_LOADER_IMODULE_HPP
 #define WE_LOADER_IMODULE_HPP 1
 
-#include <string>
-
-#include <we/loader/types.hpp>
+#include <we/expr/eval/context.hpp>
 #include <we/loader/api-guard.hpp>
+
+#include <list>
+#include <string>
 
 namespace we
 {
   namespace loader
   {
+    typedef void (*WrapperFunction)( void*
+                                   , const expr::eval::context&
+                                   , expr::eval::context&
+                                   );
+    typedef std::list<std::string> param_names_list_t;
+    typedef std::pair< WrapperFunction
+                     , param_names_list_t
+                     > parameterized_function_t;
+
     class IModule
     {
     public:

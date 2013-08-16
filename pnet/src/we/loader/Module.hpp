@@ -1,7 +1,6 @@
 #ifndef WE_LOADER_MODULE_HPP
 #define WE_LOADER_MODULE_HPP 1
 
-#include <we/loader/types.hpp>
 #include <we/loader/IModule.hpp>
 #include <we/loader/exceptions.hpp>
 

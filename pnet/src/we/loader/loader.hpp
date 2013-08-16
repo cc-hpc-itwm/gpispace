@@ -12,7 +12,6 @@
 #include <boost/filesystem.hpp>
 
 #include <we/loader/exceptions.hpp>
-#include <we/loader/types.hpp>
 #include <we/loader/Module.hpp>
 
 namespace we {
