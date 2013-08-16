@@ -21,6 +21,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <we2/type/signature.hpp>
 #include <we/type/port.hpp>
+#include <we/serialize/unordered_map.hpp>
 
 int main (int, char **)
 {
