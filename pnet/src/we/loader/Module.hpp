@@ -19,8 +19,6 @@ namespace we
 
     class Module : public IModule {
     public:
-      typedef void* handle_t;
-
       typedef boost::unordered_map<std::string, parameterized_function_t> call_table_t;
     public:
       Module( const std::string & a_name
@@ -234,7 +232,7 @@ namespace we
 
       std::string name_;
       std::string path_;
-      handle_t handle_;
+      void* handle_;
       call_table_t call_table_;
       void *state_;
     };
