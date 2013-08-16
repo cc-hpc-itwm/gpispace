@@ -22,6 +22,8 @@ namespace pnet
         const structured_type& _structured;
       };
       std::ostream& operator<< (std::ostream&, const dump&);
+
+      void dump_to (fhg::util::xml::xmlstream&, const structured_type&);
     }
   }
 }

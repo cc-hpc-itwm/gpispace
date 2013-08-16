@@ -64,6 +64,13 @@ namespace pnet
       {
         return d (os);
       }
+
+      void dump_to ( fhg::util::xml::xmlstream& s
+                   , const structured_type& structured
+                   )
+      {
+        traverse (printer (s), structured);
+      }
     }
   }
 }
