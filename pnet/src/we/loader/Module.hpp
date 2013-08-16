@@ -17,16 +17,6 @@ namespace we
   {
     class loader;
 
-    /**
-       @brief
-       This class describes a loaded module, it keeps a mapping of function names
-       to actual functions.
-
-       All functions follow the same interface: func(const TokenList&,
-       TokenList&). The const TokenList reference represents input tokens and
-       cannot be modified, the latter list represents an output list and the
-       function is able to modify it.
-    */
     class Module : public IModule {
     public:
       typedef void* handle_t;
@@ -111,7 +101,6 @@ namespace we
         }
         else
         {
-          // hopefully safe to call now
           (*(fun->second.first))(state(), input, output);
         }
       }
@@ -186,7 +175,6 @@ namespace we
                                 );
         }
 
-        // clear any errors
         dlerror();
 
         try
@@ -205,7 +193,6 @@ namespace we
         if (! handle_)
           return;
 
-        // clear any errors
         dlerror();
 
         FinalizeFunction finalize (NULL);
@@ -242,8 +229,6 @@ namespace we
       }
 
     private:
-      // currently we do not want copy operations, thus, define them, but don't
-      // implement them
       Module(const Module&);
       Module &operator=(const Module &);
 
