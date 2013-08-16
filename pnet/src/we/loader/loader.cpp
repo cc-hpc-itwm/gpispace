@@ -210,7 +210,7 @@ namespace we {
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       namespace fs = boost::filesystem;
-      const fs::path file_name = module_traits<Module>::file_name (module);
+      const fs::path file_name ("lib" + module + ".so");
       for (search_path_t::const_iterator dir (search_path_.begin()); dir != search_path_.end(); ++dir)
       {
         if (search_directory_for_file (*dir, file_name, path_found))

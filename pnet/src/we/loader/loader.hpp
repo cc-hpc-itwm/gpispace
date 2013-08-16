@@ -14,7 +14,6 @@
 #include <we/loader/exceptions.hpp>
 #include <we/loader/types.hpp>
 #include <we/loader/Module.hpp>
-#include <we/loader/module_traits.hpp>
 
 namespace we {
   namespace loader {
