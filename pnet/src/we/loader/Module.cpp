@@ -168,26 +168,22 @@ namespace we
 
       dlerror();
 
-      FinalizeFunction finalize (NULL);
+      struct
       {
-        struct
+        union
         {
-          union
-          {
-            void * symbol;
-            FinalizeFunction function;
-          };
-        } func_ptr;
+          void * symbol;
+          void (*function) (IModule*);
+        };
+      } func_ptr;
 
-        func_ptr.symbol = dlsym(handle_, "we_mod_finalize");
-        finalize = func_ptr.function;
-      }
+      func_ptr.symbol = dlsym (handle_, "we_mod_finalize");
 
-      if (finalize != NULL)
+      if (func_ptr.function != NULL)
       {
         try
         {
-          finalize( this );
+          func_ptr.function (this);
         }
         catch (...)
         {

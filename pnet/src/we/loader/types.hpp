@@ -11,7 +11,6 @@ namespace we
   {
     class IModule;
 
-    typedef void (*FinalizeFunction)(IModule*);
     typedef void (*WrapperFunction)(void*, const expr::eval::context&, expr::eval::context&);
 
     typedef std::list<std::string> param_names_list_t;
