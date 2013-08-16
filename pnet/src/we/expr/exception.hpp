@@ -11,12 +11,6 @@ namespace expr
 {
   namespace exception
   {
-    class strange : public std::runtime_error
-    {
-    public:
-      explicit strange (const std::string&);
-    };
-
     namespace parse
     {
       class exception : public std::runtime_error

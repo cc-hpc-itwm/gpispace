@@ -1,10 +1,11 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <stdlib.h> // abort
-
 #include <we/expr/token/type.hpp>
 
+#include <boost/format.hpp>
+
 #include <iostream>
+#include <stdexcept>
 
 namespace expr
 {
@@ -90,7 +91,11 @@ namespace expr
         case ref: return os << "<ref>";
         case eof: return os << "<eof>";
         case define: return os << " := ";
-        default: abort();
+        default: throw std::runtime_error
+            (( boost::format ("token::show (%1%)")
+             % static_cast<int> (_token)
+             ).str()
+            );
         }
     }
     std::ostream& operator<< (std::ostream& os, const show& s)

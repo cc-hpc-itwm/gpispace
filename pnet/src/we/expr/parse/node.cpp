@@ -8,9 +8,10 @@
 
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/show.hpp>
-
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
+
+#include <stdexcept>
 
 namespace expr
 {
@@ -104,8 +105,11 @@ namespace expr
                   << ")"
                   ;
                 break;
-              default:
-                throw exception::strange ("unknown ternary token");
+              default: throw std::runtime_error
+                  (( boost::format ("show_parse_node_ternary (%1%)")
+                   % expr::token::show (t.token)
+                   ).str()
+                  );
               }
           }
         };

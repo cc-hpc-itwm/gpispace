@@ -12,6 +12,8 @@
 
 #include <boost/format.hpp>
 
+#include <stdexcept>
+
 namespace expr
 {
   namespace eval
@@ -140,8 +142,11 @@ namespace expr
                       );
                   }
               }
-            default:
-              throw expr::exception::strange ("unknown ternary token");
+            default: throw std::runtime_error
+                (( boost::format ("eval-ternary (%1%)")
+                 % expr::token::show (t.token)
+                 ).str()
+                );
             }
         }
       };
