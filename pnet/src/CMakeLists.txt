@@ -249,31 +249,31 @@ endif (ENABLE_STATIC_BINARIES)
 
 fhg_add_test (we/type/test/value.cpp
   PROJECT test_we_type
-  LINK_LIBRARIES pnet we-dev
+  LINK_LIBRARIES pnet
 )
 
 fhg_add_test (we/type/test/signature.cpp
   PROJECT test_we_type
-  LINK_LIBRARIES pnet we-dev
+  LINK_LIBRARIES pnet
 )
 
 fhg_add_test (we/test/require_type.cpp
   PROJECT test_we
-  LINK_LIBRARIES pnet we-dev
+  LINK_LIBRARIES pnet
 )
 
 fhg_add_test (we/test/signature_of.cpp
   PROJECT test_we
-  LINK_LIBRARIES pnet we-dev
+  LINK_LIBRARIES pnet
 )
 
 fhg_add_test (we/test/exception.cpp
   PROJECT test_we
-  LINK_LIBRARIES pnet we-dev
+  LINK_LIBRARIES pnet
 )
 
 add_executable (mk_cpp we/type/test/mk_cpp.cpp)
-target_link_libraries (mk_cpp pnet we-dev ${Boost_LIBRARIES})
+target_link_libraries (mk_cpp pnet ${Boost_LIBRARIES})
 
 add_custom_command (
   OUTPUT sig.hpp sig.cpp
@@ -286,7 +286,7 @@ add_library (sig ${CMAKE_CURRENT_BINARY_DIR}/sig.cpp)
 
 fhg_add_test (we/type/test/sig.cpp
   PROJECT test_we
-  LINK_LIBRARIES sig pnet we-dev
+  LINK_LIBRARIES sig pnet
 )
 
 if (BUILD_TESTING)

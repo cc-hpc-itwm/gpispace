@@ -47,7 +47,7 @@ fhg_add_test (evaluate_net.cpp
 
 fhg_add_test (test_loader.cpp
   PROJECT we
-  LINK_LIBRARIES pnet we-dev ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
+  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
   DEPENDS question answer
 )
 
