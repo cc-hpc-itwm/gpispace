@@ -11,7 +11,7 @@
 #include "TraceBunch.hpp"
 #include "TraceData.hpp"
 
-#include <we2/type/value/peek.hpp>
+#include <we/type/value/peek.hpp>
 
 namespace
 {

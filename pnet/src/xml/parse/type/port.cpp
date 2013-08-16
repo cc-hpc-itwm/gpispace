@@ -8,7 +8,7 @@
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 
-#include <we2/type/signature/is_literal.hpp>
+#include <we/type/signature/is_literal.hpp>
 
 namespace xml
 {

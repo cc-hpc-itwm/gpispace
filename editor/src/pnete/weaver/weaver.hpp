@@ -18,7 +18,7 @@
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 
-#include <we2/type/signature.hpp>
+#include <we/type/signature.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>

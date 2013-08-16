@@ -3,7 +3,7 @@
 #ifndef _EXPR_EVAL_CONTEXT_HPP
 #define _EXPR_EVAL_CONTEXT_HPP
 
-#include <we2/type/value.hpp>
+#include <we/type/value.hpp>
 
 #include <boost/unordered_map.hpp>
 

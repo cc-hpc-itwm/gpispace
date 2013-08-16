@@ -4,8 +4,8 @@
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
 
-#include <we2/type/value/peek.hpp>
-#include <we2/type/value/show.hpp>
+#include <we/type/value/peek.hpp>
+#include <we/type/value/show.hpp>
 
 #include <iostream>
 #include <string>

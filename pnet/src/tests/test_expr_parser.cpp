@@ -3,10 +3,10 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
-#include <we2/exception.hpp>
+#include <we/exception.hpp>
 
-#include <we2/type/value.hpp>
-#include <we2/type/value/show.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/show.hpp>
 
 #include "timer.hpp"
 

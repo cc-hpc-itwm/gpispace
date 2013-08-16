@@ -3,8 +3,8 @@
 #include <we/util/token.hpp>
 #include <we/expr/parse/parser.hpp>
 
-#include <we2/type/value.hpp>
-#include <we2/type/value/show.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/show.hpp>
 
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>

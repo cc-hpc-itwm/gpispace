@@ -10,8 +10,8 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
-#include <we2/type/value.hpp>
-#include <we2/require_type.hpp>
+#include <we/type/value.hpp>
+#include <we/require_type.hpp>
 
 #include <we/expr/eval/context.hpp>
 

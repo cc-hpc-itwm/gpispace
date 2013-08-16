@@ -5,8 +5,8 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we2/type/value.hpp>
-#include <we2/type/value/read.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/read.hpp>
 
 BOOST_AUTO_TEST_CASE (basic)
 {

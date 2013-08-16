@@ -12,7 +12,7 @@
 #include <boost/variant.hpp>
 #include <boost/utility.hpp>
 
-#include <we2/type/value/read.hpp>
+#include <we/type/value/read.hpp>
 
 namespace expr
 {

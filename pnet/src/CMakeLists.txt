@@ -17,94 +17,42 @@ include_directories (${FhgLog_INCLUDE_DIR})
 find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
-add_subdirectory (apps)
-
-add_library (we2
-  we2/exception.cpp
-  we2/field.cpp
-  we2/require_type.cpp
-  we2/signature_of.cpp
-  we2/type/signature/complete.cpp
-  we2/type/signature/cpp.cpp
-  we2/type/signature/dump.cpp
-  we2/type/signature/is_literal.cpp
-  we2/type/signature/name.cpp
-  we2/type/signature/names.cpp
-  we2/type/signature/resolve.cpp
-  we2/type/signature/show.cpp
-  we2/type/signature/signature.cpp
-  we2/type/signature/specialize.cpp
-  we2/type/value/function.cpp
-  we2/type/value/name.cpp
-  we2/type/value/name_of.cpp
-  we2/type/value/of_type.cpp
-  we2/type/value/path/append.cpp
-  we2/type/value/path/join.cpp
-  we2/type/value/path/split.cpp
-  we2/type/value/peek.cpp
-  we2/type/value/poke.cpp
-  we2/type/value/read.cpp
-  we2/type/value/show.cpp
-)
-target_link_libraries (we2 fhg-util)
-
-fhg_add_test (we2/type/test/value.cpp
-  PROJECT test_we_type
-  LINK_LIBRARIES we2 we-dev
-)
-
-fhg_add_test (we2/type/test/signature.cpp
-  PROJECT test_we_type
-  LINK_LIBRARIES we2 we-dev
-)
-
-fhg_add_test (we2/test/require_type.cpp
-  PROJECT test_we
-  LINK_LIBRARIES we2 we-dev
-)
-
-fhg_add_test (we2/test/signature_of.cpp
-  PROJECT test_we
-  LINK_LIBRARIES we2 we-dev
-)
-
-fhg_add_test (we2/test/exception.cpp
-  PROJECT test_we
-  LINK_LIBRARIES we2 we-dev
-)
-
-add_executable (mk_cpp we2/type/test/mk_cpp.cpp)
-target_link_libraries (mk_cpp we2 we-dev ${Boost_LIBRARIES})
-
-add_custom_command (
-  OUTPUT sig.hpp sig.cpp
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig.hpp -I sig.cpp
-  DEPENDS mk_cpp
-)
-
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
-add_library (sig ${CMAKE_CURRENT_BINARY_DIR}/sig.cpp)
-
-fhg_add_test (we2/type/test/sig.cpp
-  PROJECT test_we
-  LINK_LIBRARIES sig we2 we-dev
-)
-
 set (we_dev_srcs
+  we/exception.cpp
+  we/expr/token/type.cpp
+  we/field.cpp
+  we/signature_of.cpp
   we/type/bitsetofint.cpp
   we/type/bytearray.cpp
   we/type/literal/control.cpp
-  we/expr/token/type.cpp
-  we2/exception.cpp
-  we2/field.cpp
-  we2/signature_of.cpp
-  we2/type/value/poke.cpp
+  we/type/signature/show.cpp
+  we/type/value/name.cpp
+  we/type/value/name_of.cpp
+  we/type/value/path/append.cpp
+  we/type/value/path/join.cpp
+  we/type/value/path/split.cpp
+  we/type/value/peek.cpp
+  we/type/value/poke.cpp
+  we/type/value/show.cpp
+)
+
+add_library (we-dev SHARED ${we_dev_srcs})
+set_target_properties(we-dev
+  PROPERTIES VERSION 1
+)
+target_link_libraries(we-dev fhg-util)
+
+install (TARGETS we-dev
+  LIBRARY DESTINATION lib
+  COMPONENT runtime
 )
 
 set (we_srcs
   we/container/priostore.cpp
+  we/exception.cpp
   we/expr/eval/context.cpp
   we/expr/eval/eval.cpp
+  we/expr/eval/refnode.cpp
   we/expr/exception.cpp
   we/expr/parse/action.cpp
   we/expr/parse/node.cpp
@@ -121,127 +69,48 @@ set (we_srcs
   we/expr/token/prop.cpp
   we/expr/token/tokenizer.cpp
   we/expr/token/type.cpp
+  we/field.cpp
   we/loader/loader.cpp
   we/mgmt/bits/descriptor.cpp
   we/mgmt/type/activity.cpp
   we/mgmt/type/flags.cpp
+  we/require_type.cpp
+  we/signature_of.cpp
+  we/type/bitsetofint.cpp
+  we/type/bytearray.cpp
   we/type/connection.cpp
   we/type/expression.cpp
   we/type/id.cpp
+  we/type/literal/control.cpp
   we/type/net.cpp
   we/type/place.cpp
   we/type/port.cpp
   we/type/property.cpp
   we/type/schedule_data.cpp
-  we/util/cross.cpp
-
-  ${we_dev_srcs}
-
-  we/expr/eval/refnode.cpp
+  we/type/signature/complete.cpp
+  we/type/signature/cpp.cpp
+  we/type/signature/dump.cpp
+  we/type/signature/is_literal.cpp
+  we/type/signature/name.cpp
+  we/type/signature/names.cpp
+  we/type/signature/resolve.cpp
+  we/type/signature/show.cpp
+  we/type/signature/signature.cpp
+  we/type/signature/specialize.cpp
   we/type/transition.cpp
+  we/type/value/function.cpp
+  we/type/value/name.cpp
+  we/type/value/name_of.cpp
+  we/type/value/of_type.cpp
+  we/type/value/path/append.cpp
+  we/type/value/path/join.cpp
+  we/type/value/path/split.cpp
+  we/type/value/peek.cpp
+  we/type/value/poke.cpp
+  we/type/value/read.cpp
+  we/type/value/show.cpp
+  we/util/cross.cpp
 )
-
-set (wfhd_srcs
-  we/util/wfhd.c
-)
-set (wfhd_hdrs
-  we/util/wfhd.h
-)
-
-add_library (wfhd SHARED ${wfhd_srcs})
-set_target_properties (wfhd PROPERTIES VERSION 1)
-install (TARGETS wfhd
-  LIBRARY DESTINATION lib
-  COMPONENT runtime
-  )
-install (FILES ${wfhd_hdrs}
-  DESTINATION include/we/util
-  COMPONENT runtime-headers
-)
-
-add_executable (generate_parser_action_table we/expr/parse/table.cpp)
-target_link_libraries (generate_parser_action_table pnet)
-
-add_subdirectory (we/container/test)
-add_subdirectory (we/util/test)
-
-if (BUILD_TESTING)
-  add_executable (test_we_type_bytearray we/type/test/test_bytearray.cpp)
-  target_link_libraries(test_we_type_bytearray pnet)
-  target_link_libraries(test_we_type_bytearray ${Boost_UNIT_TEST_LIBRARIES})
-  target_link_libraries(test_we_type_bytearray ${Boost_LIBRARIES})
-  add_test ("test_we_type_bytearray" test_we_type_bytearray)
-endif (BUILD_TESTING)
-
-install (FILES
-  we/expr/eval/context.hpp
-  DESTINATION include/we/expr/eval
-  COMPONENT sdk
-)
-install (FILES
-  we/expr/token/type.hpp
-  DESTINATION include/we/expr/token
-  COMPONENT sdk
-)
-install (FILES
-  we/loader/IModule.hpp
-  we/loader/api-guard.hpp
-  we/loader/macros.hpp
-  we/loader/types.hpp
-  DESTINATION include/we/loader
-  COMPONENT sdk
-)
-install (FILES
-  we/type/bitsetofint.hpp
-  we/type/bytearray.hpp
-  DESTINATION include/we/type
-  COMPONENT sdk
-)
-install (FILES
-  we2/type/value.hpp
-  we2/type/signature.hpp
-  DESTINATION include/we2/type
-  COMPONENT sdk
-)
-install (FILES
-  we2/type/value/poke.hpp
-  we2/type/value/show.hpp
-  DESTINATION include/we2/type/value
-  COMPONENT sdk
-)
-install (FILES
-  we2/field.hpp
-  we2/signature_of.hpp
-  we2/exception.hpp
-  DESTINATION include/we2/
-  COMPONENT sdk
-)
-
-install (FILES
-  we/type/literal/control.hpp
-  DESTINATION include/we/type/literal
-  COMPONENT sdk
-)
-
-add_executable(pnetc xml/parse/pnetc.cpp)
-target_link_libraries(pnetc fhg-revision)
-target_link_libraries(pnetc pnet)
-target_link_libraries(pnetc we2)
-target_link_libraries(pnetc ${Boost_LIBRARIES})
-
-install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
-
-if (ENABLE_STATIC_BINARIES)
-  add_executable(pnetc.static xml/parse/pnetc.cpp)
-  target_link_libraries(pnetc.static fhg-revision)
-  target_link_libraries(pnetc.static pnet)
-  target_link_libraries(pnetc.static we2)
-  target_link_libraries(pnetc.static ${Boost_LIBRARIES})
-
-  set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
-
-  install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
-endif (ENABLE_STATIC_BINARIES)
 
 set (xml_sources
   xml/parse/error.cpp
@@ -284,20 +153,147 @@ set (xml_sources
 )
 
 add_library (pnet ${we_srcs} ${xml_sources})
-target_link_libraries (pnet we2)
+target_link_libraries (pnet fhg-util)
 
-add_library (we-dev SHARED ${we_dev_srcs})
-set_target_properties(we-dev
-  PROPERTIES VERSION 1
+install (FILES
+  we/expr/eval/context.hpp
+  DESTINATION include/we/expr/eval
+  COMPONENT sdk
 )
-target_link_libraries(we-dev fhg-util we2)
+install (FILES
+  we/expr/token/type.hpp
+  DESTINATION include/we/expr/token
+  COMPONENT sdk
+)
+install (FILES
+  we/loader/IModule.hpp
+  we/loader/api-guard.hpp
+  we/loader/macros.hpp
+  we/loader/types.hpp
+  DESTINATION include/we/loader
+  COMPONENT sdk
+)
+install (FILES
+  we/type/bitsetofint.hpp
+  we/type/bytearray.hpp
+  we/type/value.hpp
+  we/type/signature.hpp
+  DESTINATION include/we/type
+  COMPONENT sdk
+)
+install (FILES
+  we/type/value/poke.hpp
+  we/type/value/show.hpp
+  DESTINATION include/we/type/value
+  COMPONENT sdk
+)
+install (FILES
+  we/field.hpp
+  we/signature_of.hpp
+  we/exception.hpp
+  DESTINATION include/we/
+  COMPONENT sdk
+)
+install (FILES
+  we/type/literal/control.hpp
+  DESTINATION include/we/type/literal
+  COMPONENT sdk
+)
 
-install (TARGETS we-dev
+set (wfhd_srcs
+  we/util/wfhd.c
+)
+set (wfhd_hdrs
+  we/util/wfhd.h
+)
+
+add_library (wfhd SHARED ${wfhd_srcs})
+set_target_properties (wfhd PROPERTIES VERSION 1)
+install (TARGETS wfhd
   LIBRARY DESTINATION lib
   COMPONENT runtime
+  )
+install (FILES ${wfhd_hdrs}
+  DESTINATION include/we/util
+  COMPONENT runtime-headers
+)
+
+add_executable (generate_parser_action_table we/expr/parse/table.cpp)
+target_link_libraries (generate_parser_action_table pnet)
+
+if (BUILD_TESTING)
+  add_executable (test_we_type_bytearray we/type/test/test_bytearray.cpp)
+  target_link_libraries(test_we_type_bytearray pnet)
+  target_link_libraries(test_we_type_bytearray ${Boost_UNIT_TEST_LIBRARIES})
+  target_link_libraries(test_we_type_bytearray ${Boost_LIBRARIES})
+  add_test ("test_we_type_bytearray" test_we_type_bytearray)
+endif (BUILD_TESTING)
+
+add_executable(pnetc xml/parse/pnetc.cpp)
+target_link_libraries(pnetc fhg-revision)
+target_link_libraries(pnetc pnet)
+target_link_libraries(pnetc ${Boost_LIBRARIES})
+
+install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
+
+if (ENABLE_STATIC_BINARIES)
+  add_executable(pnetc.static xml/parse/pnetc.cpp)
+  target_link_libraries(pnetc.static fhg-revision)
+  target_link_libraries(pnetc.static pnet)
+  target_link_libraries(pnetc.static ${Boost_LIBRARIES})
+
+  set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
+
+  install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
+endif (ENABLE_STATIC_BINARIES)
+
+fhg_add_test (we/type/test/value.cpp
+  PROJECT test_we_type
+  LINK_LIBRARIES pnet we-dev
+)
+
+fhg_add_test (we/type/test/signature.cpp
+  PROJECT test_we_type
+  LINK_LIBRARIES pnet we-dev
+)
+
+fhg_add_test (we/test/require_type.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet we-dev
+)
+
+fhg_add_test (we/test/signature_of.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet we-dev
+)
+
+fhg_add_test (we/test/exception.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet we-dev
+)
+
+add_executable (mk_cpp we/type/test/mk_cpp.cpp)
+target_link_libraries (mk_cpp pnet we-dev ${Boost_LIBRARIES})
+
+add_custom_command (
+  OUTPUT sig.hpp sig.cpp
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig.hpp -I sig.cpp
+  DEPENDS mk_cpp
+)
+
+include_directories (${CMAKE_CURRENT_BINARY_DIR})
+add_library (sig ${CMAKE_CURRENT_BINARY_DIR}/sig.cpp)
+
+fhg_add_test (we/type/test/sig.cpp
+  PROJECT test_we
+  LINK_LIBRARIES sig pnet we-dev
 )
 
 if (BUILD_TESTING)
   add_subdirectory (tests)
   add_subdirectory (xml/tests)
+  add_subdirectory (we/container/test)
+  add_subdirectory (we/util/test)
 endif()
+
+add_subdirectory (apps)

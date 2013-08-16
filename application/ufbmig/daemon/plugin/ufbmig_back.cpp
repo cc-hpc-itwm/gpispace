@@ -26,7 +26,7 @@
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
 
-#include <we2/type/value.hpp>
+#include <we/type/value.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>

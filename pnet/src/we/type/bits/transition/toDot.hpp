@@ -7,8 +7,8 @@
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 
-#include <we2/type/value/show.hpp>
-#include <we2/type/signature/show.hpp>
+#include <we/type/value/show.hpp>
+#include <we/type/signature/show.hpp>
 
 #include <we/expr/parse/parser.hpp>
 #include <sstream>

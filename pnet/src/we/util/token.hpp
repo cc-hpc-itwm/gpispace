@@ -5,8 +5,8 @@
 
 #include <we/type/id.hpp>
 
-#include <we2/require_type.hpp>
-#include <we2/type/value.hpp>
+#include <we/require_type.hpp>
+#include <we/type/value.hpp>
 
 #include <we/mgmt/type/activity.hpp>
 

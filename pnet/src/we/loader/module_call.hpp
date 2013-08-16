@@ -9,7 +9,7 @@
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 
-#include <we2/require_type.hpp>
+#include <we/require_type.hpp>
 
 #include <boost/foreach.hpp>
 

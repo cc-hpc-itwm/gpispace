@@ -8,8 +8,8 @@
 #include <string>
 #include <fstream>
 
-#include <we2/type/value/shpw.hpp>
-#include <we2/type/value/peek.hpp>
+#include <we/type/value/shpw.hpp>
+#include <we/type/value/peek.hpp>
 
 namespace
 {

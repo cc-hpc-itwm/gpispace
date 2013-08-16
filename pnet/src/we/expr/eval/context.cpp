@@ -2,11 +2,11 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we2/exception.hpp>
+#include <we/exception.hpp>
 
-#include <we2/type/value/poke.hpp>
-#include <we2/type/value/peek.hpp>
-#include <we2/type/value/show.hpp>
+#include <we/type/value/poke.hpp>
+#include <we/type/value/peek.hpp>
+#include <we/type/value/show.hpp>
 
 #include <boost/foreach.hpp>
 

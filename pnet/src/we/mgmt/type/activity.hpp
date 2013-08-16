@@ -12,8 +12,8 @@
 #include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/context.fwd.hpp>
 
-#include <we2/type/value.hpp>
-#include <we2/type/value/serialize.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/serialize.hpp>
 
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>

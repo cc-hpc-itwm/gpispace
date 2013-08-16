@@ -6,7 +6,7 @@
 #include <we/expr/token/type.hpp>
 #include <we/expr/token/tokenizer.hpp>
 
-#include <we2/type/value.hpp>
+#include <we/type/value.hpp>
 
 #include <boost/variant.hpp>
 

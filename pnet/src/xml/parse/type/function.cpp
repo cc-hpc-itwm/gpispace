@@ -30,13 +30,13 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-#include <we2/type/signature/cpp.hpp>
-#include <we2/type/signature/names.hpp>
-#include <we2/type/signature/is_literal.hpp>
-#include <we2/type/signature/complete.hpp>
-#include <we2/type/signature/resolve.hpp>
+#include <we/type/signature/cpp.hpp>
+#include <we/type/signature/names.hpp>
+#include <we/type/signature/is_literal.hpp>
+#include <we/type/signature/complete.hpp>
+#include <we/type/signature/resolve.hpp>
 
-#include <we2/type/value/name.hpp>
+#include <we/type/value/name.hpp>
 
 #include <we/type/id.hpp>
 

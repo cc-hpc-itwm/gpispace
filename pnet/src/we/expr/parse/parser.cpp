@@ -7,7 +7,7 @@
 
 #include <we/expr/token/prop.hpp>
 
-#include <we2/type/value/function.hpp>
+#include <we/type/value/function.hpp>
 
 #include <we/expr/eval/context.hpp>
 #include <we/expr/eval/refnode.hpp>

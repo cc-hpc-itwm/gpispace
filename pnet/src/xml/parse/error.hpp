@@ -12,8 +12,8 @@
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
 
-#include <we2/type/signature.hpp>
-#include <we2/type/signature/show.hpp>
+#include <we/type/signature.hpp>
+#include <we/type/signature/show.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/backtracing_exception.hpp>

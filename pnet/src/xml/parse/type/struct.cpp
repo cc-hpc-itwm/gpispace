@@ -6,10 +6,10 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
 
-#include <we2/type/signature/is_literal.hpp>
-#include <we2/type/signature/specialize.hpp>
-#include <we2/type/signature/resolve.hpp>
-#include <we2/type/signature/dump.hpp>
+#include <we/type/signature/is_literal.hpp>
+#include <we/type/signature/specialize.hpp>
+#include <we/type/signature/resolve.hpp>
+#include <we/type/signature/dump.hpp>
 
 #include <fhg/util/xml.hpp>
 

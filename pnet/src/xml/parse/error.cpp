@@ -12,7 +12,7 @@
 
 #include <we/type/net.hpp>
 
-#include <we2/type/signature/show.hpp>
+#include <we/type/signature/show.hpp>
 
 #include <boost/format.hpp>
 

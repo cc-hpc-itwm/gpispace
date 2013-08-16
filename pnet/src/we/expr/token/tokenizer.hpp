@@ -5,7 +5,7 @@
 
 #include <we/expr/token/type.hpp>
 
-#include <we2/type/value.hpp>
+#include <we/type/value.hpp>
 
 #include <fhg/util/parse/position.hpp>
 

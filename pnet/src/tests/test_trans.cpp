@@ -26,7 +26,7 @@
 #include <we/type/id.hpp>
 
 #include <we/type/net.hpp>
-#include <we2/type/signature.hpp>
+#include <we/type/signature.hpp>
 
 using petri_net::connection_t;
 using petri_net::edge::PT;

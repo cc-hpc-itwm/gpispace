@@ -3,7 +3,7 @@
 #ifndef _WE_UTIL_CROSS_FWD_HPP
 #define _WE_UTIL_CROSS_FWD_HPP
 
-#include <we2/type/value.hpp>
+#include <we/type/value.hpp>
 
 #include <cstddef>
 

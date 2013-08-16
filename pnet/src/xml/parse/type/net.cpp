@@ -13,8 +13,8 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we2/require_type.hpp>
-#include <we2/type/signature/resolve.hpp>
+#include <we/require_type.hpp>
+#include <we/type/signature/resolve.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
 

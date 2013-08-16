@@ -7,7 +7,7 @@
 
 #include <we/type/id.hpp>
 
-#include <we2/exception.hpp>
+#include <we/exception.hpp>
 
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>

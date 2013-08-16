@@ -6,7 +6,7 @@
 
 #include <we/expr/exception.hpp>
 
-#include <we2/type/value/show.hpp>
+#include <we/type/value/show.hpp>
 
 #include <fhg/util/show.hpp>
 

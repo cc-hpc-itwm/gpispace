@@ -5,8 +5,8 @@
 
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
-#include <we2/type/signature.hpp>
-#include <we2/type/signature/serialize.hpp>
+#include <we/type/signature.hpp>
+#include <we/type/signature/serialize.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/serialization/nvp.hpp>

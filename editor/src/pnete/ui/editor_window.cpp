@@ -34,8 +34,8 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/util/token.hpp>
 
-#include <we2/type/value/read.hpp>
-#include <we2/type/value/show.hpp>
+#include <we/type/value/read.hpp>
+#include <we/type/value/show.hpp>
 
 #include <xml/parse/parser.hpp>
 

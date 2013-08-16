@@ -12,7 +12,7 @@
 
 #include <fhg/util/xml.fwd.hpp>
 
-#include <we2/type/signature.hpp>
+#include <we/type/signature.hpp>
 
 #include <list>
 #include <string>

@@ -23,7 +23,7 @@
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
 #include <we/type/condition.hpp>
-#include <we2/type/signature.hpp>
+#include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
 #include <we/type/requirement.hpp>

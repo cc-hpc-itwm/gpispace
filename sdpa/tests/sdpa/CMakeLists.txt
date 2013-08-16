@@ -228,7 +228,6 @@ foreach (test ${tests})
                      ${FhgLog_LIBRARY}
                      pnet
                      fhg-util
-                     we2
                      ${Boost_UNIT_TEST_LIBRARIES}
                      ${Boost_LIBRARIES}
                      ${CMAKE_DL_LIBS}

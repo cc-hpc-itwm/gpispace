@@ -4,7 +4,7 @@
 #include <we/type/condition.hpp>
 #include <we/util/cross.hpp>
 
-#include <we2/require_type.hpp>
+#include <we/require_type.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>

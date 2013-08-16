@@ -6,9 +6,9 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
-#include <we2/type/value/show.hpp>
-#include <we2/type/signature/is_literal.hpp>
-#include <we2/type/signature/show.hpp>
+#include <we/type/value/show.hpp>
+#include <we/type/signature/is_literal.hpp>
+#include <we/type/signature/show.hpp>
 
 #include <fhg/util/xml.hpp>
 

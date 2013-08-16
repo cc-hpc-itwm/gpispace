@@ -19,7 +19,7 @@
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <we2/type/signature.hpp>
+#include <we/type/signature.hpp>
 #include <we/type/port.hpp>
 #include <we/serialize/unordered_map.hpp>
 

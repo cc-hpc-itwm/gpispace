@@ -10,8 +10,8 @@
 
 #include <we/mgmt/type/activity.hpp>
 
-#include <we2/type/value/show.hpp>
-#include <we2/require_type.hpp>
+#include <we/type/value/show.hpp>
+#include <we/require_type.hpp>
 
 #include <fhg/util/show.hpp>
 

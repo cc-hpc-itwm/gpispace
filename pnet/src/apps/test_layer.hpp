@@ -40,7 +40,7 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-#include <we2/type/value/show.hpp>
+#include <we/type/value/show.hpp>
 
 #include <boost/foreach.hpp>
 

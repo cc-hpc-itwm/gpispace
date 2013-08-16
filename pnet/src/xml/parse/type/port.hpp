@@ -17,7 +17,7 @@
 
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
-#include <we2/type/signature.hpp>
+#include <we/type/signature.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>

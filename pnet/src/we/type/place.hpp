@@ -3,7 +3,7 @@
 #ifndef _WE_TYPE_PLACE_HPP
 #define _WE_TYPE_PLACE_HPP
 
-#include <we2/type/signature.hpp>
+#include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 
 #include <boost/serialization/nvp.hpp>
