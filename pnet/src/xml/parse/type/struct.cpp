@@ -9,6 +9,7 @@
 #include <we2/type/signature/is_literal.hpp>
 #include <we2/type/signature/specialize.hpp>
 #include <we2/type/signature/resolve.hpp>
+#include <we2/type/signature/dump.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -212,9 +213,7 @@ namespace xml
                   , const structure_type & st
                   )
         {
-          boost::apply_visitor ( signature::visitor::dump (st.name(), s)
-                               , st.signature()
-                               );
+          pnet::type::signature::dump_to (s, st.signature2());
         }
       }
     }
