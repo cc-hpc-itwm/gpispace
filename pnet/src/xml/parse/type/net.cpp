@@ -366,7 +366,7 @@ namespace xml
       // ***************************************************************** //
 
       boost::optional<pnet::type::signature::signature_type>
-      net_type::signature2 (const std::string& type) const
+      net_type::signature (const std::string& type) const
       {
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
@@ -381,14 +381,14 @@ namespace xml
         if (pos != structs.end())
         {
           return pnet::type::signature::resolve
-            ( pos->signature2()
-            , boost::bind (&net_type::signature2, *this, _1)
+            ( pos->signature()
+            , boost::bind (&net_type::signature, *this, _1)
             );
         }
 
         if (has_parent())
         {
-          return parent()->signature2 (type);
+          return parent()->signature (type);
         }
 
         return boost::none;
@@ -693,11 +693,11 @@ namespace xml
 
             const place::type place_real (we_net.get_place (pid->second));
 
-            if (!(place_real.signature() == place.signature2_or_throw()))
+            if (!(place_real.signature() == place.signature_or_throw()))
             {
               throw error::port_tunneled_type_error
                 ( place.name()
-                , place.signature2_or_throw()
+                , place.signature_or_throw()
                 , place_real.name()
                 , place_real.signature()
                 , state.file_in_progress()
@@ -716,7 +716,7 @@ namespace xml
             const petri_net::place_id_type pid
               ( we_net.add_place ( place::type
                                    ( place.name()
-                                   , place.signature2_or_throw()
+                                   , place.signature_or_throw()
                                    , prop
                                    )
                                  )
@@ -748,7 +748,7 @@ namespace xml
               ( pid
               , pnet::require_type
                 ( util::generic_we_parse (token, "parse token").eval_all()
-                , place.signature2_or_throw()
+                , place.signature_or_throw()
                 , ""
                 )
               );

@@ -36,7 +36,7 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      const pnet::type::signature::structured_type& structure_type::signature2() const
+      const pnet::type::signature::structured_type& structure_type::signature() const
       {
         return _sig2;
       }
@@ -80,7 +80,7 @@ namespace xml
 
           if (pos != m.end())
           {
-            return pnet::type::signature::signature_type (pos->second.signature2());
+            return pnet::type::signature::signature_type (pos->second.signature());
           }
 
           return boost::none;
@@ -133,7 +133,7 @@ namespace xml
 
       bool operator == (const structure_type & a, const structure_type & b)
       {
-        return (a.name() == b.name()) && (a.signature2() == b.signature2());
+        return (a.name() == b.name()) && (a.signature() == b.signature());
       }
 
       bool operator != (const structure_type & a, const structure_type & b)
@@ -147,7 +147,7 @@ namespace xml
                   , const structure_type & st
                   )
         {
-          pnet::type::signature::dump_to (s, st.signature2());
+          pnet::type::signature::dump_to (s, st.signature());
         }
       }
     }

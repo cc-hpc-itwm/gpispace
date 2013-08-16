@@ -419,7 +419,7 @@ namespace fhg
         {
           WEAVE(structure::open) (s.name());
           boost::apply_visitor( visitor::structure<State>(_state)
-                              , s.signature2()
+                              , s.signature()
                               );
           WEAVE(structure::close) ();
         }

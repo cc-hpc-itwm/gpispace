@@ -67,7 +67,7 @@ namespace xml
         return _type = type_;
       }
 
-      boost::optional<pnet::type::signature::signature_type> port_type::signature2() const
+      boost::optional<pnet::type::signature::signature_type> port_type::signature() const
       {
         if (pnet::type::signature::is_literal (type()))
         {
@@ -79,11 +79,11 @@ namespace xml
           return boost::none;
         }
 
-        return parent()->signature2 (type());
+        return parent()->signature (type());
       }
-      pnet::type::signature::signature_type port_type::signature2_or_throw() const
+      pnet::type::signature::signature_type port_type::signature_or_throw() const
       {
-        const boost::optional<pnet::type::signature::signature_type> s (signature2());
+        const boost::optional<pnet::type::signature::signature_type> s (signature());
 
         if (not s)
         {
@@ -154,7 +154,7 @@ namespace xml
                 throw error::port_connected_place_nonexistent (_port, _path);
               }
 
-              if (place->get().signature2() != _port.get().signature2())
+              if (place->get().signature() != _port.get().signature())
               {
                 throw error::port_connected_type_error (_port, *place, _path);
               }

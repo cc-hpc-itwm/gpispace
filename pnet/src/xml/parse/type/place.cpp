@@ -85,7 +85,7 @@ namespace xml
       }
 
       boost::optional<pnet::type::signature::signature_type>
-        place_type::signature2() const
+        place_type::signature() const
       {
         if (pnet::type::signature::is_literal (type()))
         {
@@ -97,11 +97,11 @@ namespace xml
           return boost::none;
         }
 
-        return parent()->signature2 (type());
+        return parent()->signature (type());
       }
-      pnet::type::signature::signature_type place_type::signature2_or_throw() const
+      pnet::type::signature::signature_type place_type::signature_or_throw() const
       {
-        const boost::optional<pnet::type::signature::signature_type> s (signature2());
+        const boost::optional<pnet::type::signature::signature_type> s (signature());
 
         if (not s)
         {

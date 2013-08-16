@@ -63,8 +63,8 @@ namespace xml
         const std::string& type() const;
         const std::string& type (const std::string&);
 
-        boost::optional<pnet::type::signature::signature_type> signature2() const;
-        pnet::type::signature::signature_type signature2_or_throw() const;
+        boost::optional<pnet::type::signature::signature_type> signature() const;
+        pnet::type::signature::signature_type signature_or_throw() const;
 
         const we::type::PortDirection& direction() const;
         const we::type::PortDirection& direction (const we::type::PortDirection&);

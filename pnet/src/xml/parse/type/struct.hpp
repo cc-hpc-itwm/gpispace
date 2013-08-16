@@ -40,7 +40,7 @@ namespace xml
                        , const pnet::type::signature::structured_type& sig2
                        );
 
-        const pnet::type::signature::structured_type& signature2() const;
+        const pnet::type::signature::structured_type& signature() const;
         const std::string& name() const;
 
         void specialize (const boost::unordered_map<std::string, std::string>&);

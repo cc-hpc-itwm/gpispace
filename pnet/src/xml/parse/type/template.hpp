@@ -54,7 +54,7 @@ namespace xml
         boost::optional<const id::ref::function&>
         get_function (const std::string&) const;
 
-        boost::optional<pnet::type::signature::signature_type> signature2 (const std::string&) const;
+        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
 
         const unique_key_type& unique_key() const;
 

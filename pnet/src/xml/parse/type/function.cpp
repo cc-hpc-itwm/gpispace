@@ -360,7 +360,7 @@ namespace xml
                          )
             );
 
-          if (id_other && id.get().signature2() != id_other->get().signature2())
+          if (id_other && id.get().signature() != id_other->get().signature())
           {
             throw error::port_type_mismatch (id, *id_other);
           }
@@ -537,7 +537,7 @@ namespace xml
       // ***************************************************************** //
 
       boost::optional<pnet::type::signature::signature_type>
-      function_type::signature2 (const std::string& type) const
+      function_type::signature (const std::string& type) const
       {
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
@@ -552,22 +552,22 @@ namespace xml
         if (pos != structs.end())
         {
           return pnet::type::signature::resolve
-            ( pos->signature2()
-            , boost::bind (&function_type::signature2, *this, _1)
+            ( pos->signature()
+            , boost::bind (&function_type::signature, *this, _1)
             );
         }
 
         if (parent_transition())
         {
-          return parent_transition()->get().signature2 (type);
+          return parent_transition()->get().signature (type);
         }
         else if (parent_tmpl())
         {
-          return parent_tmpl()->get().signature2 (type);
+          return parent_tmpl()->get().signature (type);
         }
         else if (parent_net())
         {
-          return parent_net()->get().signature2 (type);
+          return parent_net()->get().signature (type);
         }
 
         return boost::none;
@@ -675,7 +675,7 @@ namespace xml
           BOOST_FOREACH (const port_type& port, ports.values())
             {
               trans.add_port ( port.name()
-                             , port.signature2_or_throw()
+                             , port.signature_or_throw()
                              , port.direction()
                              , port.properties()
                              );
@@ -702,7 +702,7 @@ namespace xml
               if (not port.place)
                 {
                   trans.add_port ( port.name()
-                                 , port.signature2_or_throw()
+                                 , port.signature_or_throw()
                                  , port.direction()
                                  , port.properties()
                                  );
@@ -714,7 +714,7 @@ namespace xml
                   // connect to
 
                   trans.add_port ( port.name()
-                                 , port.signature2_or_throw()
+                                 , port.signature_or_throw()
                                  , port.direction()
                                  , get_pid (pid_of_place, *port.place)
                                  , port.properties()
@@ -2243,7 +2243,7 @@ namespace xml
               util::check_no_change_fstream stream (state, file);
 
               const pnet::type::signature::signature_type sig
-                (structure.signature2());
+                (structure.signature());
 
               stream << fhg::util::cpp::include_guard::open
                 ("PNETC_TYPE_" + structure.name());
@@ -2276,7 +2276,7 @@ namespace xml
               util::check_no_change_fstream stream (state, file);
 
               const pnet::type::signature::signature_type sig
-                (structure.signature2());
+                (structure.signature());
 
               stream << "// defined in " << structure.position_of_definition()
                      << std::endl;

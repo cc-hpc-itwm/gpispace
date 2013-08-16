@@ -1222,7 +1222,7 @@ namespace fhg
       {
         //! \todo Check for ports being in that or in transitions of that net?
 
-        if (port_a.get().signature2() != port_b.get().signature2())
+        if (port_a.get().signature() != port_b.get().signature())
         {
           throw std::runtime_error ("different types for connected ports");
         }

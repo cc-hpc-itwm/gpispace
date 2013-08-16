@@ -507,7 +507,7 @@ namespace xml
             (make_reference_id(), connect.make_reference_id());
         }
 
-        if (id_place->get().signature2() != id_port->get().signature2())
+        if (id_place->get().signature() != id_port->get().signature())
         {
           throw error::connect_type_error ( make_reference_id()
                                           , connect.make_reference_id()
@@ -559,11 +559,11 @@ namespace xml
       // ******************************************************************* //
 
       boost::optional<pnet::type::signature::signature_type>
-      transition_type::signature2 (const std::string& type) const
+      transition_type::signature (const std::string& type) const
       {
         if (has_parent())
         {
-          return parent()->signature2 (type);
+          return parent()->signature (type);
         }
         return boost::none;
       }
@@ -691,7 +691,7 @@ namespace xml
               (fun.get_port_out (port_in.name()));
 
             if (  id_port_out
-               && id_port_out->get().signature2() != port_in.signature2()
+               && id_port_out->get().signature() != port_in.signature()
                )
             {
               state.warn
@@ -802,12 +802,12 @@ namespace xml
               if (port.direction() == we::type::PORT_IN)
               {
                 trans_in.add_port ( port.name()
-                                  , port.signature2_or_throw()
+                                  , port.signature_or_throw()
                                   , we::type::PORT_IN
                                   , port.properties()
                                   );
                 trans_in.add_port ( port.name()
-                                  , port.signature2_or_throw()
+                                  , port.signature_or_throw()
                                   , we::type::PORT_OUT
                                   , port.properties()
                                   );
@@ -895,12 +895,12 @@ namespace xml
               if (port.direction() == we::type::PORT_OUT)
               {
                 trans_out.add_port ( port.name()
-                                   , port.signature2_or_throw()
+                                   , port.signature_or_throw()
                                    , we::type::PORT_IN
                                    , port.properties()
                                    );
                 trans_out.add_port ( port.name()
-                                   , port.signature2_or_throw()
+                                   , port.signature_or_throw()
                                    , we::type::PORT_OUT
                                    , port.properties()
                                    );

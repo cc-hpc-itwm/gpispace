@@ -117,7 +117,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<pnet::type::signature::signature_type> signature2 (const std::string&) const;
+        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
 
         // ***************************************************************** //
 
