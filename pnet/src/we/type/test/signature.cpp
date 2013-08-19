@@ -9,11 +9,17 @@
 #include <we/type/signature/dump.hpp>
 #include <we/type/signature/name.hpp>
 #include <we/type/signature/names.hpp>
+#include <we/type/signature/resolve.hpp>
 #include <we/type/signature/signature.hpp>
+
+#include <we/exception.hpp>
 
 #include <sstream>
 
 #include <boost/foreach.hpp>
+#include <boost/unordered_map.hpp>
+
+#include <iostream>
 
 BOOST_AUTO_TEST_CASE (signature_show)
 {
@@ -401,4 +407,89 @@ BOOST_AUTO_TEST_CASE (name_signature)
 
   BOOST_CHECK_EQUAL (std::string ("s"), name (fs));
   BOOST_CHECK (signature_type (ss) == signature (fs));
+}
+
+namespace
+{
+  using pnet::type::signature::signature_type;
+
+  class resolver
+  {
+  public:
+    resolver (const boost::unordered_map<std::string, signature_type>& m)
+      : _m (m)
+    {}
+    boost::optional<signature_type> operator() (const std::string& key) const
+    {
+      boost::unordered_map<std::string, signature_type>::const_iterator
+        pos (_m.find (key));
+
+      if (pos == _m.end())
+      {
+        return boost::none;
+      }
+
+      return pos->second;
+    }
+  private:
+    const boost::unordered_map<std::string, signature_type>& _m;
+  };
+}
+
+BOOST_AUTO_TEST_CASE (resolve)
+{
+  using pnet::type::signature::signature_type;
+  using pnet::type::signature::structured_type;
+  using pnet::type::signature::structure_type;
+  using pnet::type::signature::field_type;
+  using pnet::type::signature::resolver_type;
+  using pnet::type::signature::resolve;
+
+  structure_type point_fields;
+  point_fields.push_back (std::make_pair ( std::string ("x")
+                                         , std::string ("double")
+                                         )
+                         );
+  point_fields.push_back (std::make_pair ( std::string ("y")
+                                         , std::string ("double")
+                                         )
+                         );
+  const structured_type point (std::make_pair ("point", point_fields));
+  structure_type circle_fields;
+  circle_fields.push_back (std::make_pair ( std::string ("center")
+                                          , std::string ("point")
+                                          )
+                          );
+  circle_fields.push_back (std::make_pair ( std::string ("radius")
+                                          , std::string ("double")
+                                          )
+                          );
+  const structured_type circle (std::make_pair ("circle", circle_fields));
+
+  structure_type circle_resolved_fields;
+  circle_resolved_fields.push_back
+    (structured_type (std::make_pair ( std::string ("center")
+                                     , point_fields
+                                     )
+                     )
+    );
+  circle_resolved_fields.push_back (std::make_pair ( std::string ("radius")
+                                                   , std::string ("double")
+                                                   )
+                                   );
+  const structured_type circle_resolved
+    (std::make_pair ("circle", circle_resolved_fields));
+
+
+  boost::unordered_map<std::string, signature_type> resolver_map;
+
+  BOOST_CHECK_THROW ( resolve (circle, resolver (resolver_map))
+                    , pnet::exception::could_not_resolve
+                    );
+
+  resolver_map.insert (std::make_pair (std::string ("point"), point));
+
+  BOOST_REQUIRE (  signature_type (circle_resolved)
+                == resolve (circle,resolver (resolver_map))
+                );
 }
