@@ -99,5 +99,17 @@ namespace pnet
         ((boost::format ("missing binding for: ${%1%}") % key).str())
       , _key (key)
     {}
+    could_not_resolve::could_not_resolve ( const std::string& type
+                                         , const std::list<std::string>& path
+                                         )
+      : std::runtime_error
+        ((boost::format ("could not resolve type '%1%' for field '%2%'")
+         % type::value::path::join (path)
+         % type
+         ).str()
+        )
+      , _type (type)
+      , _path (path)
+    {}
   }
 }

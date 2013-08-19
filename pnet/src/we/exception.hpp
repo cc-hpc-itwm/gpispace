@@ -92,6 +92,16 @@ namespace pnet
       MEMBER (key, std::string);
     };
 
+    class could_not_resolve : public std::runtime_error
+    {
+    public:
+      could_not_resolve (const std::string&, const std::list<std::string>&);
+      ~could_not_resolve() throw() {}
+
+      MEMBER (type, std::string);
+      MEMBER (path, std::list<std::string>);
+    };
+
 #undef MEMBER
   }
 }
