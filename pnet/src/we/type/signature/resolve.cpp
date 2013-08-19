@@ -38,6 +38,22 @@ namespace pnet
           const resolver_type& _resolver;
         };
 
+        class with_name : public boost::static_visitor<field_type>
+        {
+        public:
+          with_name (const std::string& name)
+            : _name (name)
+          {}
+          field_type operator()
+            (const std::pair<std::string, structure_type>& s) const
+          {
+            return structured_type (std::make_pair (_name, s.second));
+          }
+
+        private:
+          const std::string& _name;
+        };
+
         class mk_field : public boost::static_visitor<field_type>
         {
         public:
@@ -50,7 +66,7 @@ namespace pnet
           }
           field_type operator() (const structured_type& s) const
           {
-            return s;
+            return boost::apply_visitor (with_name (_name), s);
           }
         private:
           const std::string& _name;
