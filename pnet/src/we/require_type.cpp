@@ -150,9 +150,7 @@ namespace pnet
   {
     std::list<std::string> path;
 
-    path.push_back (field);
-
-    require_type (path, value, signature);
+    require_type (append (path, field), value, signature);
 
     return value;
   }
