@@ -122,7 +122,7 @@
                     << ".." << range_file.end << ")"
                 );
 
-            ::pnetc::type::sums::type sum;
+            ::pnetc::type::sums::sums sum;
 
             sum.sum = 0.0;
             sum.sqsum = 0.0;

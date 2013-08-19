@@ -57,7 +57,7 @@
 
             char x (update_descr[0]);
 
-            ::pnetc::type::intervals::type intervals;
+            ::pnetc::type::intervals::intervals intervals;
 
             intervals.interval = interval;
             intervals.sizes.push_front (1L);

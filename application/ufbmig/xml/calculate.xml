@@ -46,9 +46,9 @@
 
             char * update_descr = static_cast<char *> (fvmGetShmemPtr());
 
-            ::pnetc::type::interval::type & interval
+            ::pnetc::type::interval::interval & interval
              (ready_package.interval);
-            ::pnetc::type::package::type & package
+            ::pnetc::type::package::package & package
              (ready_package.assigned_package.package);
 
             const long ptr0 (package.work.ptr);

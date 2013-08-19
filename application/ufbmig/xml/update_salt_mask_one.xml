@@ -25,7 +25,7 @@
           MLOG (INFO, "reading config from file " << filename);
 
           namespace vmem = ::ufbmig::util::memory::global;
-          ::pnetc::type::config::type config;
+          ::pnetc::type::config::config config;
           ::ufbmig::util::serialize::read (filename, config);
 
           {

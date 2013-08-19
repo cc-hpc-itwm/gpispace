@@ -45,7 +45,7 @@
           <code><![CDATA[
             LOG (INFO, "INIT " << description);
 
-            ::pnetc::type::config::type config;
+            ::pnetc::type::config::config config;
 
             config.num.store = fvmGetNodeCount();
             config.num.offset = 4L;
@@ -136,8 +136,8 @@
         <module name="ufbmig_oldschool" function="work (config, assigned_package)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[
-            const ::pnetc::type::package::type & package (assigned_package.package);
-            const ::pnetc::type::store::type & store (assigned_package.store);
+            const ::pnetc::type::package::package & package (assigned_package.package);
+            const ::pnetc::type::store::store & store (assigned_package.store);
 
             LOG ( INFO
                 , "WORK on package " << package.id << " out of " << package.M

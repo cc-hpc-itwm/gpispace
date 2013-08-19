@@ -21,11 +21,11 @@ BOOST_AUTO_TEST_CASE (sig_value)
   value_type vq;
   poke ("x", vq, 1.0f);
 
-  BOOST_CHECK_THROW (line2D::q::type q (vq), pnet::exception::missing_field);
+  BOOST_CHECK_THROW (line2D::q::q q (vq), pnet::exception::missing_field);
 
   poke ("y", vq, 2.0);
 
-  BOOST_CHECK_THROW (line2D::q::type q (vq), pnet::exception::type_mismatch);
+  BOOST_CHECK_THROW (line2D::q::q q (vq), pnet::exception::type_mismatch);
 
   poke ("y", vq, 2.0f);
 
@@ -36,9 +36,9 @@ BOOST_AUTO_TEST_CASE (sig_value)
   poke ("p", vl, vp);
   poke ("q", vl, vq);
 
-  line2D::q::type q (vq);
-  point2D::type p (vp);
-  line2D::type l (vl);
+  line2D::q::q q (vq);
+  point2D::point2D p (vp);
+  line2D::line2D l (vl);
 
   BOOST_CHECK (vq == line2D::q::value (q));
   BOOST_CHECK (vp == point2D::value (p));

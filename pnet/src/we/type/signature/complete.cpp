@@ -52,7 +52,7 @@ namespace pnet
 
           if (pos == tn.end())
           {
-            return (tname + "::type");
+            return (tname + "::" + tname);
           }
 
           return pos->second;

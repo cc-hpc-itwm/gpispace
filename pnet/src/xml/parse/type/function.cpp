@@ -1681,7 +1681,7 @@ namespace xml
             }
             else
             {
-              os << "::pnetc::type::" << _type << "::type";
+              os << "::pnetc::type::" << _type << "::" << _type << "";
             }
 
             return os;
@@ -1717,7 +1717,7 @@ namespace xml
             }
             else
             {
-              os << "::pnetc::type::" << _port.type <<  "::type " << _port.name
+              os << "::pnetc::type::" << _port.type <<  "::" << _port.type <<  " " << _port.name
                  << " (_pnetc_input.value (\"" << _port.name << "\"));";
             }
 

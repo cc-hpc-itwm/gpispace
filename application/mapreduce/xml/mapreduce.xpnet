@@ -137,7 +137,7 @@
 	          	long input_file_size = ftell(pf);
 	          	fclose(pf);
 
-	          	::pnetc::type::config::type config;
+	          	::pnetc::type::config::config config;
 	          	printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
 	          	if(input_file_size<=0)
 	          	{
@@ -478,7 +478,7 @@
 
             // LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully put into the virtual memory");
 
-            pnetc::type::read_chunk_info::type c_r_info;
+            pnetc::type::read_chunk_info::read_chunk_info c_r_info;
 
 	        c_r_info.read_slot_id = chunk_and_slot.slot;
 	        c_r_info.chunk_id = chunk_and_slot.chunk;

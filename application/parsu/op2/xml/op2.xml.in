@@ -485,7 +485,7 @@
           <cinclude href="comm.hpp"/>
           <ld flag="-ldo_write"/>
           <code><![CDATA[
-            const ::pnetc::type::op2_loaded_package::type& p
+            const ::pnetc::type::op2_loaded_package::op2_loaded_package& p
               (package_to_be_written.loaded_package);
 
             LOG (INFO, "WRITE " << ::print::loaded_package (p)

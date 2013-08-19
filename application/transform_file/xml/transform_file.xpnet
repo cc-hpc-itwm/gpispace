@@ -92,7 +92,7 @@
           else
           	MLOG(WARN, "No output file specified, therefore the result will not be stored!");
 
-          ::pnetc::type::config::type config;
+          ::pnetc::type::config::config config;
           printf ("Size of %s is: %ld bytes.\n", input_file.c_str(),input_file_size);
           if(input_file_size<=0)
           {
@@ -268,7 +268,7 @@
 
           LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully into the virtual memory");
 
-          pnetc::type::chunk_read_info::type c_r_info;
+          pnetc::type::chunk_read_info::chunk_read_info c_r_info;
 
           c_r_info.read_slot_id = chunk_and_slot.slot;
           c_r_info.chunk_id = chunk_and_slot.chunk;
@@ -301,7 +301,7 @@
           <code><![CDATA[
           LOG (INFO, "Transform the chunk "<<chunk_read_info.chunk_id<<" now ...");
 
-          pnetc::type::chunk_write_info::type c_w_info;
+          pnetc::type::chunk_write_info::chunk_write_info c_w_info;
 
           waitComm ( fvmGetGlobalData
           ( static_cast<fvmAllocHandle_t> (config.read_area)

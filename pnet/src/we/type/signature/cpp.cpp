@@ -117,25 +117,19 @@ namespace pnet
 
               traverse_fields (*this, s);
 
-              _os << structure::open (_indent, "type");
+              _os << structure::open (_indent, s.first);
 
               traverse (print_field_decl (_os, _indent), s);
 
-              _os << std::endl;
-
-              ctor_default();
-              ctor_value();
-
-              _os << std::endl;
+              ctor_default (s.first);
+              ctor_value (s.first);
 
               template_serialize (s);
 
               _os << structure::close (_indent);
 
-              _os << std::endl;
-
-              to_value();
-              show();
+              to_value (s.first);
+              show (s.first);
 
               _os << ns::close (_indent);
             }
@@ -148,14 +142,15 @@ namespace pnet
             }
 
           private:
-            void ctor_default() const
+            void ctor_default (const std::string& name) const
             {
-              _os << _indent << "type();";
+              _os << _indent << name << "();";
             }
-            void ctor_value() const
+            void ctor_value (const std::string& name) const
             {
               _os << _indent
-                  << "explicit type (const pnet::type::value::value_type&);";
+                  << "explicit " << name
+                  << " (const pnet::type::value::value_type&);";
             }
             void template_serialize
               (const std::pair<std::string, structure_type>& s) const
@@ -177,15 +172,15 @@ namespace pnet
 
               _os << block::close (_indent);
             }
-            void to_value() const
+            void to_value (const std::string& name) const
             {
               _os << _indent
-                  << "pnet::type::value::value_type value (const type&);";
+                  << "pnet::type::value::value_type value (const " << name << "&);";
             }
-            void show() const
+            void show (const std::string& name) const
             {
               _os << _indent
-                  << "std::ostream& operator<< (std::ostream&, const type&);";
+                  << "std::ostream& operator<< (std::ostream&, const " << name << "&);";
             }
           };
         }
@@ -317,7 +312,7 @@ namespace pnet
                   << "pnet::path (\"" << s.first << "\")"
                   << ", v"
                   << ", pnet::signature_of ("
-                  << s.first << "::value (" << s.first << "::type())"
+                  << s.first << "::value (" << s.first << "::" << s.first << "())"
                   << ")"
                   << ")"
                   << ")";
@@ -376,7 +371,7 @@ namespace pnet
               ctor_default (s);
               ctor_value (s);
               from_value (s);
-              show();
+              show (s.first);
 
               _os << ns::close (_indent);
             }
@@ -392,7 +387,7 @@ namespace pnet
             {
               bool first (true);
 
-              _os << _indent << "type::type()";
+              _os << _indent << s.first << "::" << s.first << "()";
 
               traverse (print_ctor_default (_os, _indent, first), s);
 
@@ -405,7 +400,8 @@ namespace pnet
               bool first (true);
 
               _os << _indent
-                  << "type::type (const pnet::type::value::value_type& v)";
+                  << s.first << "::" << s.first
+                  << " (const pnet::type::value::value_type& v)";
 
               traverse (print_ctor_value (_os, _indent, first), s);
 
@@ -418,7 +414,7 @@ namespace pnet
               namespace block = fhg::util::cpp::block;
 
               _os << _indent
-                  << "pnet::type::value::value_type value (const type& x)"
+                  << "pnet::type::value::value_type value (const " << s.first << "& x)"
                   << block::open (_indent)
                   << _indent << "pnet::type::value::value_type v;";
 
@@ -428,12 +424,12 @@ namespace pnet
                   << block::close (_indent);
             }
 
-            void show() const
+            void show (const std::string& name) const
             {
               namespace block = fhg::util::cpp::block;
 
               _os << _indent
-                  << "std::ostream& operator<< (std::ostream& os, const type& x)"
+                  << "std::ostream& operator<< (std::ostream& os, const " << name << "& x)"
                   << block::open (_indent)
                   << _indent
                   << "return os << pnet::type::value::show (value (x));"

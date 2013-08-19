@@ -845,7 +845,7 @@ private:
       we::util::token::list_t output (we::util::token::get (result, "config"));
       if (output.empty())
         throw std::runtime_error("empty list");
-      config = pnetc::type::config::type (output.front());
+      config = pnetc::type::config::config (output.front());
       MLOG(INFO, "got config: " << config);
     }
     catch (std::exception const & ex)
@@ -1217,7 +1217,7 @@ private:
   std::string m_wf_path_finalize;
 
   // workflow configs
-  pnetc::type::config::type config;
+  pnetc::type::config::config config;
   std::string m_file_with_config;
   std::string m_file_with_mask;
 };

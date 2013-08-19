@@ -231,7 +231,7 @@
 
                   os << "[key for seed " << seed << " points " << points << "]";
 
-                  ::pnetc::type::job::type job;
+                  ::pnetc::type::job::job job;
 
                   job.seed = seed;
                   job.points = points;
@@ -326,7 +326,7 @@
                                           , boost::uniform_real<double>
                                           > rand (gen, dist);
 
-                  ::pnetc::type::ratio::type r;
+                  ::pnetc::type::ratio::ratio r;
 
                   r.in = 0;
 
