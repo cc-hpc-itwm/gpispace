@@ -71,7 +71,7 @@ namespace pnet
         if (s_pos != s_end)
         {
           throw exception::missing_field
-            (s, append (_path, type::signature::name (*s_pos)));
+            (s, _value, append (_path, type::signature::name (*s_pos)));
         }
       }
 

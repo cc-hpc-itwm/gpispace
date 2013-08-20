@@ -38,15 +38,18 @@ namespace pnet
     {}
     missing_field::missing_field
     ( const type::signature::signature_type& signature
+    , const type::value::value_type& value
     , const std::list<std::string>& path
     )
       : type_error
-        ( ( boost::format ("missing field '%2%' of type '%1%'")
+        ( ( boost::format ("missing field '%2%' of type '%1%' in value '%3%'")
           % type::signature::show (signature)
           % type::value::path::join (path)
+          % type::value::show (value)
           ).str()
         )
       , _signature (signature)
+      , _value (value)
       , _path (path)
     {}
     unknown_field::unknown_field

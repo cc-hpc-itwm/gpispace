@@ -294,7 +294,7 @@ namespace pnet
               }
 
               _os << " ("
-                  << "pnet::path (\"" << f.first << "\")"
+                  << "\"" << f.first << "\""
                   << ", v"
                   << ", std::string(\"" << f.second << "\")"
                   << ")"
@@ -309,7 +309,7 @@ namespace pnet
                   <<  " ("
                   << "pnet::field"
                   << " ("
-                  << "pnet::path (\"" << s.first << "\")"
+                  << "\"" << s.first << "\""
                   << ", v"
                   << ", pnet::signature_of ("
                   << s.first << "::value (" << s.first << "::" << s.first << "())"

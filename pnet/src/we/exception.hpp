@@ -49,11 +49,13 @@ namespace pnet
     {
     public:
       missing_field ( const type::signature::signature_type&
+                    , const type::value::value_type&
                     , const std::list<std::string>&
                     );
       ~missing_field() throw() {}
 
       MEMBER (signature, type::signature::signature_type);
+      MEMBER (value, type::value::value_type);
       MEMBER (path, std::list<std::string>);
     };
 

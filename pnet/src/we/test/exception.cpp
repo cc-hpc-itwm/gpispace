@@ -49,11 +49,11 @@ BOOST_FIXTURE_TEST_CASE (type_mismatch, fix)
 
 BOOST_FIXTURE_TEST_CASE (missing_field, fix)
 {
-  const pnet::exception::missing_field e (signature(), path());
+  const pnet::exception::missing_field e (signature(), value(), path());
 
   BOOST_CHECK (e.signature() == signature());
   BOOST_CHECK (e.path() == path());
-  BOOST_CHECK (e.what() == std::string ("type error: missing field 'p.p' of type 'struct :: [e :: unsigned long, c :: char]'"));
+  BOOST_CHECK (e.what() == std::string ("type error: missing field 'p.p' of type 'struct :: [e :: unsigned long, c :: char]' in value 'Struct [e := 42UL, c := 'c']'"));
 }
 
 BOOST_FIXTURE_TEST_CASE (unknown_field, fix)
