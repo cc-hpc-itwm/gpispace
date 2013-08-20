@@ -187,6 +187,11 @@ install (FILES
   COMPONENT sdk
 )
 install (FILES
+  we/type/value/path/append.hpp
+  DESTINATION include/we/type/value/path
+  COMPONENT sdk
+)
+install (FILES
   we/field.hpp
   we/signature_of.hpp
   we/exception.hpp
