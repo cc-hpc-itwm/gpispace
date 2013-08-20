@@ -19,8 +19,6 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <iostream>
-
 BOOST_AUTO_TEST_CASE (signature_show)
 {
 #define CHECK(_expected,_sig...)                \
