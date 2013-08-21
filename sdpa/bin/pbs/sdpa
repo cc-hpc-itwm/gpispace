@@ -1937,7 +1937,7 @@ function submit ()
                 log "I: job finished"
                 ;;
             *fail*)
-                log "E: job faiiled"
+                log "E: job failed"
                 ;;
             *cancel*)
                 log "E: job cancelled"
