@@ -270,7 +270,11 @@ namespace expr
         case token::_sqrt:
         case token::_log:
         case token::_len:
+        case token::_toint:
         case token::_tolong:
+        case token::_touint:
+        case token::_toulong:
+        case token::_tofloat:
         case token::_todouble:
         case token::abs: unary (op_stack.top(), k); break;
         case token::rpr: op_stack.pop(); break;
