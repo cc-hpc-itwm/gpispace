@@ -6,9 +6,6 @@
 #include <algorithm>
 #include <vector>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/vector.hpp>
-
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 
@@ -67,13 +64,6 @@ namespace bytearray
 
   private:
     std::vector<char> _v;
-
-    friend class boost::serialization::access;
-    template<typename Archive>
-    void serialize (Archive& ar, const unsigned int)
-    {
-      ar & BOOST_SERIALIZATION_NVP(_v);
-    }
   };
 
   template<typename T, typename Archive = boost::archive::binary_oarchive>

@@ -5,9 +5,6 @@
 
 #include <vector>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/vector.hpp>
-
 #include <boost/optional.hpp>
 #include <boost/function.hpp>
 
@@ -46,13 +43,6 @@ namespace bitsetofint
 
   private:
     std::vector<uint64_t> _container;
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int)
-    {
-      ar & BOOST_SERIALIZATION_NVP (_container);
-    }
   };
 
   type operator| (const type&, const type&);
