@@ -8,6 +8,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <cmath>
+
 namespace pnet
 {
   namespace type
