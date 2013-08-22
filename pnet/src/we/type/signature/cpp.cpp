@@ -124,8 +124,6 @@ namespace pnet
               ctor_default (s.first);
               ctor_value (s.first);
 
-              template_serialize (s);
-
               _os << structure::close (_indent);
 
               to_value (s.first);
@@ -152,26 +150,6 @@ namespace pnet
                   << "explicit " << name
                   << " (const pnet::type::value::value_type&);";
             }
-            void template_serialize
-              (const std::pair<std::string, structure_type>& s) const
-            {
-              namespace block = fhg::util::cpp::block;
-
-              _os << _indent << "template<typename Archive>"
-                  << _indent
-                  << "void serialize (Archive& ar, const unsigned int)"
-                  << block::open (_indent);
-
-              BOOST_FOREACH (const field_type& f, s.second)
-              {
-                _os << _indent
-                    << "ar & BOOST_SERIALIZATION_NVP ("
-                    << signature::name (f)
-                    << ");";
-              }
-
-              _os << block::close (_indent);
-            }
             void to_value (const std::string& name) const
             {
               _os << _indent
@@ -193,7 +171,6 @@ namespace pnet
           fhg::util::indenter indent;
 
           os << fhg::util::cpp::include ("we/type/value.hpp");
-          os << fhg::util::cpp::include ("boost/serialization/nvp.hpp");
           os << fhg::util::cpp::include ("iosfwd");
 
           os << fhg::util::cpp::ns::open (indent, "pnetc");
