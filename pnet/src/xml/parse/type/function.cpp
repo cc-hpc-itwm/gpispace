@@ -1163,9 +1163,6 @@ namespace xml
         stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
-        stream << "LDFLAGS += -L$(BOOST_ROOT)/lib"                 << std::endl;
-        stream << "LDFLAGS += -lboost_serialization"               << std::endl;
-        stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
         stream << "  CP = $(shell which cp 2>/dev/null)"           << std::endl;
         stream << "endif"                                          << std::endl;
