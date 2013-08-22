@@ -8,8 +8,6 @@
 
 #include <we/expr/token/type.hpp>
 
-#include <boost/format.hpp>
-
 #include <list>
 #include <stdexcept>
 
@@ -27,7 +25,6 @@ namespace pnet
     {
     public:
       type_error (const std::string&);
-      type_error (const boost::format&);
       ~type_error() throw() {}
     };
 

@@ -7,15 +7,14 @@
 #include <we/type/value/show.hpp>
 #include <we/signature_of.hpp>
 
+#include <boost/format.hpp>
+
 namespace pnet
 {
   namespace exception
   {
     type_error::type_error (const std::string& msg)
       : std::runtime_error ((boost::format ("type error: %1%") % msg).str())
-    {}
-    type_error::type_error (const boost::format& f)
-      : std::runtime_error ((boost::format ("type error: %1%") % f).str())
     {}
     type_mismatch::type_mismatch
     ( const type::signature::signature_type& signature
