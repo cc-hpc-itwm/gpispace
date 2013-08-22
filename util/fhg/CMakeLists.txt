@@ -101,3 +101,9 @@ install (FILES ${CMAKE_CURRENT_BINARY_DIR}/version.hpp
   DESTINATION include/fhg
   COMPONENT runtime-headers
 )
+
+install (FILES
+  util/parse/position.hpp
+  DESTINATION include/fhg/util/parse
+  COMPONENT sdk
+)

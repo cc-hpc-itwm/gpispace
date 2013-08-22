@@ -183,6 +183,7 @@ install (FILES
 install (FILES
   we/type/value/poke.hpp
   we/type/value/show.hpp
+  we/type/value/read.hpp
   DESTINATION include/we/type/value
   COMPONENT sdk
 )
