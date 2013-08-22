@@ -1,5 +1,6 @@
 #include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
+#include <iostream>
 
 #include "answer.hpp"
 
