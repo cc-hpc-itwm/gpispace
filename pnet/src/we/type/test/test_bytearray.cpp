@@ -72,109 +72,6 @@ BOOST_AUTO_TEST_CASE (ba_convert)
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/vector.hpp>
 
-template<typename Iarch, typename Oarch>
-void check_char ()
-{
-  std::ostringstream oss;
-
-  {
-    char buf[10];
-
-    for (int i (0); i < 10; ++i)
-      {
-        buf[i] = i;
-      }
-
-    const bytearray::type x (buf, 10);
-
-    Oarch oa (oss, boost::archive::no_header);
-
-    oa << BOOST_SERIALIZATION_NVP(x);
-  }
-
-  {
-    std::istringstream iss (oss.str());
-
-    Iarch ia (iss, boost::archive::no_header);
-
-    bytearray::type x;
-
-    ia >> BOOST_SERIALIZATION_NVP(x);
-
-    char buf[10];
-
-    std::fill (buf, buf + 10, -1);
-
-    BOOST_CHECK (x.copy (buf, 10) == 10);
-
-    for (int i (0); i < 10; ++i)
-      {
-        BOOST_CHECK (buf[i] == i);
-      }
-  }
-}
-BOOST_AUTO_TEST_CASE (ba_serialize_char_text)
-{
-  check_char<boost::archive::text_iarchive, boost::archive::text_oarchive> ();
-}
-BOOST_AUTO_TEST_CASE (ba_serialize_char_xml)
-{
-  check_char<boost::archive::xml_iarchive, boost::archive::xml_oarchive> ();
-}
-BOOST_AUTO_TEST_CASE (ba_serialize_char_binary)
-{
-  check_char< boost::archive::binary_iarchive
-            , boost::archive::binary_oarchive
-            > ();
-}
-
-template<typename Iarch, typename Oarch>
-void check_uint64_t ()
-{
-  std::ostringstream oss;
-
-  {
-    uint64_t v (1UL << 63);
-
-    const bytearray::type x (&v);
-
-    Oarch oa (oss, boost::archive::no_header);
-
-    oa << BOOST_SERIALIZATION_NVP(x);
-  }
-
-  {
-    std::istringstream iss (oss.str());
-
-    Iarch ia (iss, boost::archive::no_header);
-
-    bytearray::type x;
-
-    ia >> BOOST_SERIALIZATION_NVP(x);
-
-    uint64_t v (0);
-
-    BOOST_CHECK (x.copy (&v) == sizeof (uint64_t));
-    BOOST_CHECK (v == (1UL << 63));
-  }
-}
-BOOST_AUTO_TEST_CASE (ba_serialize_uint64_t_text)
-{
-  check_uint64_t<boost::archive::text_iarchive, boost::archive::text_oarchive> ();
-}
-BOOST_AUTO_TEST_CASE (ba_serialize_uint64_t_xml)
-{
-  check_uint64_t<boost::archive::xml_iarchive, boost::archive::xml_oarchive> ();
-}
-BOOST_AUTO_TEST_CASE (ba_serialize_uint64_t_binary)
-{
-  check_uint64_t< boost::archive::binary_iarchive
-                , boost::archive::binary_oarchive
-                > ();
-}
-
-/* ************************************************************************* */
-
 struct p
 {
   double _x;
@@ -235,35 +132,17 @@ BOOST_AUTO_TEST_CASE (ba_list_of_something)
 
   std::ostringstream oss;
 
+  const bytearray::encoder<vec_t> encoder (v);
+  const bytearray::type ba_encoded (encoder.bytearray());
+
+  const bytearray::decoder<vec_t> decoder (ba_encoded);
+  const vec_t & w (decoder.value());
+
+  BOOST_CHECK (v.size() == w.size());
+
+  for (std::size_t i (0); i < v.size(); ++i)
   {
-    const bytearray::encoder<vec_t> encoder (v);
-    const bytearray::type & ba (encoder.bytearray());
-
-    boost::archive::text_oarchive oa (oss, boost::archive::no_header);
-
-    oa << ba;
-  }
-
-  {
-    std::istringstream iss (oss.str());
-
-    boost::archive::text_iarchive ia (iss, boost::archive::no_header);
-
-    bytearray::type x;
-
-    ia >> x;
-
-    bytearray::type y (x);
-
-    const bytearray::decoder<vec_t> decoder (y);
-    const vec_t & w (decoder.value());
-
-    BOOST_CHECK (v.size() == w.size());
-
-    for (std::size_t i (0); i < v.size(); ++i)
-      {
-        BOOST_CHECK (v[i] == w[i]);
-      }
+    BOOST_CHECK (v[i] == w[i]);
   }
 }
 
