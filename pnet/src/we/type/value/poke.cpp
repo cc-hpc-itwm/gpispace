@@ -5,6 +5,8 @@
 
 #include <boost/utility.hpp>
 
+#include <functional>
+
 namespace pnet
 {
   namespace type
@@ -13,6 +15,22 @@ namespace pnet
     {
       namespace
       {
+        struct first_is : public std::unary_function<const std::string&, bool>
+        {
+          first_is (const std::string& what)
+            : _what (what)
+          {}
+
+          template<typename T>
+          bool operator() (const T& x)
+          {
+            return x.first == _what;
+          }
+
+        private:
+          const std::string _what;
+        };
+
         class visitor_poke : public boost::static_visitor<value_type&>
         {
         public:
@@ -49,21 +67,14 @@ namespace pnet
 
           value_type& deeper (structured_type& m) const
           {
-            structured_type::iterator pos (m.begin());
+            structured_type::iterator pos
+              (std::find_if (m.begin(), m.end(), first_is (*_key)));
 
-            while (pos != m.end())
+            if (pos == m.end())
             {
-              if (pos->first == *_key)
-              {
-                pos = m.erase (pos);
-
-                break;
-              }
-
-              ++pos;
+              pos = m.insert (m.end(), std::make_pair (*_key, value_type()));
             }
 
-            pos = m.insert (pos, std::make_pair (*_key, value_type()));
             value_type& v (pos->second);
 
             return boost::apply_visitor
