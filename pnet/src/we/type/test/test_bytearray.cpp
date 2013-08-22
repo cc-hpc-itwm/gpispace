@@ -116,36 +116,6 @@ struct q
   }
 };
 
-BOOST_AUTO_TEST_CASE (ba_list_of_something)
-{
-  typedef std::vector<q> vec_t;
-
-  vec_t v;
-
-  q q1 (p (3.1, 1), "one");
-  q q2 (p (2.7, 2), "two");
-  q q3 (p (9.0, 3), "three");
-
-  v.push_back (q1);
-  v.push_back (q2);
-  v.push_back (q3);
-
-  std::ostringstream oss;
-
-  const bytearray::encoder<vec_t> encoder (v);
-  const bytearray::type ba_encoded (encoder.bytearray());
-
-  const bytearray::decoder<vec_t> decoder (ba_encoded);
-  const vec_t & w (decoder.value());
-
-  BOOST_CHECK (v.size() == w.size());
-
-  for (std::size_t i (0); i < v.size(); ++i)
-  {
-    BOOST_CHECK (v[i] == w[i]);
-  }
-}
-
 BOOST_AUTO_TEST_CASE (ba_assign_from_ba)
 {
   char buf[10];
