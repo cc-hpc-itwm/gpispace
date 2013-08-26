@@ -20,8 +20,10 @@ namespace fs = boost::filesystem;
 
 static void long_usage (int lvl);
 static void short_usage ();
-static fs::path root_path ();
-static std::string resolve (fs::path const &p, std::string const &n);
+static int resolve ( std::string const &search_path
+                   , std::string const &tool
+                   , std::vector<std::string> & argv
+                   );
 
 int main (int argc, char *argv [], char *envp [])
 {
@@ -30,13 +32,7 @@ int main (int argc, char *argv [], char *envp [])
   int help = 0;
   bool resolve_alias = true;
 
-  const fs::path root (root_path ());
-  const fs::path etc_path    (root / "etc");
-  const fs::path bin_path    (root / "bin");
-  const fs::path lib_path    (root / "lib");
-  const fs::path inc_path    (root / "include");
-  const fs::path exec_path   (root / "libexec" / "gspc" / "scripts");
-  const fs::path plugin_path (root / "libexec" / "fhg" / "plugins");
+  std::string exec_path = gspc::ctl::exec_path ();
 
   i = 1;
   while (i < argc)
@@ -110,44 +106,58 @@ int main (int argc, char *argv [], char *envp [])
     else if (arg == "--prefix-path")
     {
       ++i;
-      std::cout << root.string () << std::endl;
+      std::cout << gspc::ctl::root_path () << std::endl;
       return EX_OK;
     }
     else if (arg ==  "--etc-path")
     {
       ++i;
-      std::cout << etc_path.string () << std::endl;
+      std::cout << gspc::ctl::etc_path () << std::endl;
       return EX_OK;
     }
     else if (arg == "--bin-path")
     {
       ++i;
-      std::cout << bin_path.string () << std::endl;
+      std::cout << gspc::ctl::bin_path () << std::endl;
       return EX_OK;
     }
     else if (arg == "--lib-path")
     {
       ++i;
-      std::cout << lib_path.string () << std::endl;
+      std::cout << gspc::ctl::lib_path () << std::endl;
       return EX_OK;
     }
     else if (arg == "--inc-path")
     {
       ++i;
-      std::cout << inc_path.string () << std::endl;
+      std::cout << gspc::ctl::inc_path () << std::endl;
       return EX_OK;
     }
     else if (arg == "--plugin-path")
     {
       ++i;
-      std::cout << plugin_path.string () << std::endl;
+      std::cout << gspc::ctl::plugin_path () << std::endl;
       return EX_OK;
     }
     else if (arg == "--exec-path")
     {
       ++i;
-      std::cout << exec_path.string () << std::endl;
+      std::cout << exec_path << std::endl;
       return EX_OK;
+    }
+    else if (arg.find ("--exec-path=") == 0)
+    {
+      ++i;
+      std::string par = arg.substr (12);
+      if (not par.empty ())
+      {
+        exec_path = par;
+      }
+      else
+      {
+        std::cerr << "gspc: missing parameter to: '--exec-path='" << std::endl;
+        return EX_USAGE;
+      }
     }
     else
     {
@@ -157,25 +167,31 @@ int main (int argc, char *argv [], char *envp [])
     }
   }
 
-  setenv ("GSPC_HOME", root.string ().c_str (), 1);
-  setenv ("GSPC_EXEC_PATH", exec_path.string ().c_str (), 1);
+  setenv ("GSPC_HOME", gspc::ctl::root_path ().c_str (), 1);
+  setenv ("GSPC_EXEC_PATH", exec_path.c_str (), 1);
   setenv ( "GSPC_VERBOSE"
          , boost::lexical_cast<std::string>(verbose).c_str ()
          , 1
          );
 
-  std::string subtool;
+  std::vector<std::string> tool_argv;
+  int rc = 0;
 
   if (i < argc)
   {
-    subtool = resolve (exec_path, argv [i]);
+    rc = resolve (exec_path, argv [i], tool_argv);
+    if (rc < 0)
+    {
+      std::cerr << "gspc: " << argv [i] << ": " << strerror (errno) << std::endl;
+      return EX_USAGE;
+    }
   }
 
   if (help)
   {
-    if (not subtool.empty ())
+    if (not tool_argv.empty ())
     {
-      std::string cmd = subtool + " " + "--help";
+      std::string cmd = tool_argv [0] + " " + "--help";
       system (cmd.c_str ());
       return EX_OK;
     }
@@ -192,35 +208,30 @@ int main (int argc, char *argv [], char *envp [])
     return EX_USAGE;
   }
 
-  /*
-  ++i;
-  std::string cmd = subtool;
-
-  while (i < argc)
+  for (int j = i + 1; j < argc ; ++j)
   {
-    cmd += " \"";
-    cmd += argv [i];
-    cmd += "\"";
-    ++i;
+    tool_argv.push_back (argv [j]);
   }
-  */
 
-  std::string err, out, inp;
-
-  int rc = gspc::ctl::eval ( subtool, argv + i + 1, argc - (i + 1)
-                           , out
-                           , err
-                           , inp
-                           );
-  if (rc == 127)
+  if (tool_argv [0] == "config")
   {
-    std::cerr << "gspc: no such command: " << argv [i] << std::endl;
-    rc = EX_USAGE;
+    rc = gspc::ctl::config_cmd (tool_argv);
   }
   else
   {
-    std::cout << out;
-    std::cerr << err;
+    std::string err, out, inp;
+
+    rc = gspc::ctl::eval (tool_argv, out, err, inp);
+    if (rc == 127)
+    {
+      std::cerr << "gspc: no such command: " << argv [i] << std::endl;
+      rc = EX_USAGE;
+    }
+    else
+    {
+      std::cout << out;
+      std::cerr << err;
+    }
   }
 
   return rc;
@@ -233,49 +244,51 @@ void short_usage ()
 
 void long_usage (int lvl)
 {
-  std::cerr << "usage: gspc [options] [--] [command [args...]]"     << std::endl
-            << ""                                                   << std::endl
-            << "   -h|--help      print this help"                  << std::endl
-            << "   -v|--verbose   be more verbose"                  << std::endl
-            << "   --version      print long version information"   << std::endl
-            << "   --dumpversion  print short version information"  << std::endl
-            << "   --revision     print revision  information"      << std::endl
-            << ""                                                   << std::endl
-            << "   --prefix-path  print the installation root"      << std::endl
-            << "   --etc-path     print the etc path"               << std::endl
-            << "   --bin-path     print the bin path"               << std::endl
-            << "   --lib-path     print the lib path"               << std::endl
-            << "   --inc-path     print the include path"           << std::endl
-            << "   --plugin-path  print the plugin path"            << std::endl
-            << "   --exec-path    print the path to gspc tools"     << std::endl
+  std::cerr
+    << "usage: gspc [options] [--] [command [args...]]"             << std::endl
+    << ""                                                           << std::endl
+    << "   -h|--help              print this help"                  << std::endl
+    << "   -v|--verbose           be more verbose"                  << std::endl
+    << "   --version              print long version information"   << std::endl
+    << "   --dumpversion          print short version information"  << std::endl
+    << "   --revision             print revision  information"      << std::endl
+    << ""                                                           << std::endl
+    << "   --prefix-path          print the installation root"      << std::endl
+    << "   --etc-path             print the etc path"               << std::endl
+    << "   --bin-path             print the bin path"               << std::endl
+    << "   --lib-path             print the lib path"               << std::endl
+    << "   --inc-path             print the include path"           << std::endl
+    << "   --plugin-path          print the plugin path"            << std::endl
+    << "   --exec-path[=path]     print/set the path to gspc tools" << std::endl
     ;
 }
 
-fs::path root_path ()
+int resolve ( std::string const &path
+            , std::string const &name
+            , std::vector<std::string> & argv
+            )
 {
-  if (getenv ("GSPC_HOME") != 0)
+  // resolve alias here
+  std::string unaliased_command = name;
+
+  if (unaliased_command == "config")
   {
-    return getenv ("GSPC_HOME");
+    argv.push_back ("config");
+    return 1;
   }
   else
   {
-    char buf [4096];
-    int rc;
+    fs::path tool = fs::path (path) / ("gspc-" + unaliased_command);
 
-    rc = fhg_get_executable_path (buf, sizeof (buf));
-    if (rc < 0)
+    if (fs::exists (tool))
     {
-      std::cerr << "gspc: could not get root path: "
-                << "[" << rc << "]: " << strerror (errno)
-                << std::endl;
-      exit (EX_SOFTWARE);
+      argv.push_back (tool.string ());
+      return 0;
     }
-
-    return fs::path (buf).parent_path ().parent_path ();
+    else
+    {
+      errno = ENOENT;
+      return -1;
+    }
   }
-}
-
-std::string resolve (fs::path const &path, std::string const &name)
-{
-  return (path / ("gspc-" + name)).string ();
 }
