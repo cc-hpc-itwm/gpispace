@@ -1,5 +1,6 @@
 set (gspcctl_src
   ctl/eval.cpp
+  ctl/config.cpp
   ctl/system.cpp
 )
 
