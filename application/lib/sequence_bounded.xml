@@ -69,7 +69,7 @@
         <out name="state" type="state"/>
         <out name="id" type="long"/>
         <expression>
-          ${id} := ${state.id}; ${state.id} := ${state.id} + 1
+          ${id} := ${state.id}; ${state.id} := ${state.id} + 1L
         </expression>
       </defun>
       <connect-in place="state" port="state"/>

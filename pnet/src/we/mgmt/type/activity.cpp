@@ -3,13 +3,15 @@
 #include <we/type/net.hpp>
 
 #include <we/type/transition.hpp>
-#include <we/type/value/require_type.hpp>
 
 #include <we/expr/eval/context.hpp>
 
 #include <we/mgmt/context.hpp>
 
 #include <we/mgmt/type/activity.hpp>
+
+#include <we/type/value/show.hpp>
+#include <we/require_type.hpp>
 
 #include <fhg/util/show.hpp>
 
@@ -180,7 +182,7 @@ namespace we
                               << " port="
                               << _child.transition().name_of_port (top.second)
                               << "(" << top.second << ")"
-                              << " token=" << fhg::util::show (top.first)
+                              << " token=" << pnet::type::value::show (top.first)
                               << std::endl;
                   }
               }
@@ -285,9 +287,12 @@ namespace we
                         const petri_net::port_id_type port_id (port_it->first);
                         const petri_net::place_id_type pid (port_it->second.associated_place());
 
-                        BOOST_FOREACH (const value::type& token, net.get_token (pid))
+                        BOOST_FOREACH ( const pnet::type::value::value_type& token
+                                      , net.get_token (pid)
+                                      )
                           {
-                            _activity.add_output (activity_t::output_t::value_type (token, port_id));
+                            _activity.add_output
+                              (activity_t::output_t::value_type (token, port_id));
                           }
 
                         net.delete_all_token (pid);
@@ -442,10 +447,11 @@ namespace we
                   {
                     _activity.add_output
                       ( type::activity_t::output_t::value_type
-                        ( value::require_type ( port_it->second.name()
-                                              , port_it->second.signature()
-                                              , context.value (port_it->second.name())
-                                              )
+                        ( pnet::require_type
+                          ( context.value (port_it->second.name())
+                          , port_it->second.signature()
+                          , port_it->second.name()
+                          )
                         , port_it->first
                         )
                       );
@@ -585,7 +591,8 @@ namespace we
               }
 
             os << transition().name_of_port (top.second)
-               << "=(" << top.first << ", " << top.second << ")";
+               << "=(" << pnet::type::value::show (top.first)
+               << ", " << top.second << ")";
           }
 
         os << "]";

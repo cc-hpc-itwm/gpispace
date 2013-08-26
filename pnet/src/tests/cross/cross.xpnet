@@ -50,13 +50,13 @@
         </expression>
       </defun>
       <condition>
-        ${x} :eq: ${v1} + 1
+        ${x} :eq: ${v1} + 1L
       </condition>
       <condition>
-        ${x} :eq: ${v2} + 1
+        ${x} :eq: ${v2} + 1L
       </condition>
       <condition>
-        ${x} :eq: ${v3} + 1
+        ${x} :eq: ${v3} + 1L
       </condition>
       <connect-in port="v1" place="v1"/>
       <connect-in port="v2" place="v2"/>

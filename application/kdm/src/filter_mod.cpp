@@ -1,5 +1,5 @@
 #include <we/loader/macros.hpp>
-#include <we/loader/putget.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
@@ -11,6 +11,17 @@
 #include "TraceBunch.hpp"
 #include "TraceData.hpp"
 
+#include <we/type/value/peek.hpp>
+
+namespace
+{
+  template<typename R>
+    R peek (const pnet::type::value::value_type& x, const std::string& key)
+  {
+    return boost::get<R> (*pnet::type::value::peek (key, x));
+  }
+}
+
 // ************************************************************************* //
 
 // generic wrapper, no need to modify this
@@ -19,12 +30,12 @@ static unsigned long sizeofJob (void)
   return sizeof(MigrationJob);
 }
 
-using we::loader::get;
-
-static void get_Job (const value::type & config, MigrationJob & Job)
+static void get_Job ( const pnet::type::value::value_type& config
+                    , MigrationJob & Job
+                    )
 {
-  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
-  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
+  const fvmAllocHandle_t handle_Job (peek<long> (config, "handle_Job"));
+  const fvmAllocHandle_t scratch_Job (peek<long> (config, "scratch_Job"));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -38,20 +49,20 @@ static void get_Job (const value::type & config, MigrationJob & Job)
 }
 
 static void generic_filter ( void *
-			   , const we::loader::input_t & input
-			   , we::loader::output_t & output
+			   , const expr::eval::context & input
+			   , expr::eval::context & output
 			   , void (*filter) (TraceBunch &)
 			   )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const long oid (1 + get<long> (bunch, "volume.offset"));
-  const long bid (1 + get<long> (bunch, "id"));
+  const long oid (1 + peek<long> (bunch, "volume.offset"));
+  const long bid (1 + peek<long> (bunch, "id"));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -64,27 +75,27 @@ static void generic_filter ( void *
 
 static void
 generic_filter_with_float ( void *
-			  , const we::loader::input_t & input
-			  , we::loader::output_t & output
+			  , const expr::eval::context & input
+			  , expr::eval::context & output
 			  , void (*filter) (TraceBunch &, const float &)
 			  , const std::string & field
 			  )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const long oid (1 + get<long> (bunch, "volume.offset"));
-  const long bid (1 + get<long> (bunch, "id"));
+  const long oid (1 + peek<long> (bunch, "volume.offset"));
+  const long bid (1 + peek<long> (bunch, "id"));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
   TraceBunch Bunch(migbuf,oid,1,bid,Job);
 
-  const float f (get<double> (input, "config", field));
+  const float f (peek<double> (input.value ("config"), field));
 
   filter (Bunch, f);
 
@@ -119,8 +130,8 @@ static void shrink_impl (TraceBunch & Bunch)
 
 // the wrapper, uses the generic wrapper
 static void shrink ( void * state
-		   , const we::loader::input_t & input
-		   , we::loader::output_t & output
+		   , const expr::eval::context & input
+		   , expr::eval::context & output
 		   )
 {
   generic_filter (state, input, output, shrink_impl);
@@ -158,8 +169,8 @@ static void clip_impl (TraceBunch & Bunch, const float & c)
 }
 
 static void clip ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter_with_float (state, input, output, clip_impl, "filter.clip");
@@ -192,8 +203,8 @@ static void trap_impl (TraceBunch & Bunch, const float & t)
 }
 
 static void trap ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter_with_float (state, input, output, trap_impl, "filter.trap");
@@ -282,19 +293,19 @@ static void bandpass_impl ( TraceBunch & Bunch
 
 static void
 bandpass ( void *
-	 , const we::loader::input_t & input
-	 , we::loader::output_t & output
+	 , const expr::eval::context & input
+	 , expr::eval::context & output
 	 )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const long oid (1 + get<long> (bunch, "volume.offset"));
-  const long bid (1 + get<long> (bunch, "id"));
+  const long oid (1 + peek<long> (bunch, "volume.offset"));
+  const long bid (1 + peek<long> (bunch, "id"));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -366,8 +377,8 @@ static void frac_impl (TraceBunch & Bunch)
 }
 
 static void frac ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter (state, input, output, frac_impl);
@@ -417,8 +428,8 @@ static void tpow_impl (TraceBunch & Bunch,
 }
 
 static void tpow ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter_with_float (state, input, output, tpow_impl, "filter.tpow");

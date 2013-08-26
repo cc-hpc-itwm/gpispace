@@ -9,7 +9,7 @@
 
 namespace asian
 {
-  static void fun ( ::pnetc::type::sums::sums & sums
+  static void fun ( ::pnetc::type::sums::sums& sums
                   , const int tid
                   )
   {
@@ -59,7 +59,7 @@ namespace asian
   }
 
   inline ::pnetc::type::sums::sums
-  run ( const ::pnetc::type::param::param & param )
+  run ( const ::pnetc::type::param::param& param )
   {
     const int nThread (param.nThreads);
 

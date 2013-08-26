@@ -2,9 +2,9 @@
 
 #include <we/expr/token/prec.hpp>
 
-#include <we/expr/exception.hpp>
+#include <boost/format.hpp>
 
-#include <fhg/util/show.hpp>
+#include <stdexcept>
 
 namespace expr
 {
@@ -34,7 +34,8 @@ namespace expr
         case token::_powint: return 24;
         case token::neg: return 25;
         case token::define: return -98;
-        default: throw exception::strange ("prec " + fhg::util::show(token));
+        default: throw std::runtime_error
+            ((boost::format ("prec (%1%)") % expr::token::show (token)).str());
         }
     }
   }

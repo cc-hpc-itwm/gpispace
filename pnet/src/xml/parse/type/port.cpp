@@ -8,6 +8,8 @@
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 
+#include <we/type/signature/is_literal.hpp>
+
 namespace xml
 {
   namespace parse
@@ -65,11 +67,11 @@ namespace xml
         return _type = type_;
       }
 
-      boost::optional<signature::type> port_type::signature() const
+      boost::optional<pnet::type::signature::signature_type> port_type::signature() const
       {
-        if (literal::valid_name (type()))
+        if (pnet::type::signature::is_literal (type()))
         {
-          return signature::type (type());
+          return pnet::type::signature::signature_type (type());
         }
 
         if (not parent())
@@ -79,9 +81,9 @@ namespace xml
 
         return parent()->signature (type());
       }
-      signature::type port_type::signature_or_throw() const
+      pnet::type::signature::signature_type port_type::signature_or_throw() const
       {
-        const boost::optional<signature::type> s (signature());
+        const boost::optional<pnet::type::signature::signature_type> s (signature());
 
         if (not s)
         {

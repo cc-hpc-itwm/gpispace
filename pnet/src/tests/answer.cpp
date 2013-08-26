@@ -11,11 +11,11 @@ int get_answer ()
 }
 
 static void answer ( void * state
-                   , const we::loader::input_t & input
-                   , we::loader::output_t & output
+                   , const expr::eval::context& input
+                   , expr::eval::context& output
                    )
 {
-  output.bind ("out", 42L);
+  output.bind ("out", pnet::type::value::value_type (42L));
 }
 
 WE_MOD_INITIALIZE_START (answer);

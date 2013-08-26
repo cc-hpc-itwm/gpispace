@@ -64,31 +64,32 @@ namespace expr
       std::copy (other.begin(), other.end(), std::back_inserter(nd_stack));
     }
 
-    value::type parser::eval_front (eval::context & context) const
+    pnet::type::value::value_type parser::eval_front (eval::context & context) const
     {
       return eval::eval (context, front());
     }
 
     bool parser::eval_front_bool (eval::context & context) const
     {
-      return value::function::is_true(eval_front (context));
+      return pnet::type::value::is_true(eval_front (context));
     }
 
     // get the already evaluated value, throws if entry is not an value
-    const value::type & parser::get_front () const
+    pnet::type::value::value_type parser::get_front() const
     {
       return node::get (front());
     }
 
     bool parser::get_front_bool () const
     {
-      return value::function::is_true(get_front ());
+      return pnet::type::value::is_true(get_front());
     }
 
     // evaluate the whole stack in order, return the last value
-    value::type parser::eval_all (eval::context & context) const
+    pnet::type::value::value_type
+      parser::eval_all (eval::context & context) const
     {
-      value::type v;
+      pnet::type::value::value_type v;
 
       for (nd_const_it_t it (begin()); it != end(); ++it)
         {
@@ -100,12 +101,12 @@ namespace expr
 
     bool parser::eval_all_bool (eval::context & context) const
     {
-      const value::type v (eval_all (context));
+      const pnet::type::value::value_type v (eval_all (context));
 
-      return value::function::is_true(v);
+      return pnet::type::value::is_true(v);
     }
 
-    value::type parser::eval_all() const
+    pnet::type::value::value_type parser::eval_all() const
     {
       eval::context c;
 
@@ -142,8 +143,7 @@ namespace expr
 
       if (constant_folding() && node::is_value (c))
         {
-          tmp_stack.push_back
-            (value::function::unary (token, boost::get<value::type> (c)));
+          tmp_stack.push_back (pnet::type::value::unary (token, node::get (c)));
         }
       else
         {
@@ -174,10 +174,10 @@ namespace expr
 
       if (constant_folding() && node::is_value(l) && node::is_value(r))
         {
-          tmp_stack.push_back ( value::function::binary
+          tmp_stack.push_back ( pnet::type::value::binary
                                 ( token
-                                , boost::get<value::type> (l)
-                                , boost::get<value::type> (r)
+                                , node::get (l)
+                                , node::get (r)
                                 )
                               );
         }
@@ -270,7 +270,11 @@ namespace expr
         case token::_sqrt:
         case token::_log:
         case token::_len:
+        case token::_toint:
         case token::_tolong:
+        case token::_touint:
+        case token::_toulong:
+        case token::_tofloat:
         case token::_todouble:
         case token::abs: unary (op_stack.top(), k); break;
         case token::rpr: op_stack.pop(); break;

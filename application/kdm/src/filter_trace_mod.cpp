@@ -1,5 +1,5 @@
 #include <we/loader/macros.hpp>
-#include <we/loader/putget.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
@@ -16,7 +16,17 @@
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 
-using we::loader::get;
+#include <we/type/value/peek.hpp>
+#include <we/type/value/show.hpp>
+
+namespace
+{
+  template<typename R>
+    R peek (const pnet::type::value::value_type& x, const std::string& key)
+  {
+    return boost::get<R> (*pnet::type::value::peek (key, x));
+  }
+}
 
 // ************************************************************************* //
 
@@ -34,24 +44,24 @@ using we::loader::get;
 
 static void
 generic_filter ( void * state
-	       , const we::loader::input_t & input
-	       , we::loader::output_t & output
+	       , const expr::eval::context & input
+	       , expr::eval::context & output
 	       , boost::function <void (void *, const long &)> filter_impl
 	       )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & part_in_store (get<value::type> (input, "in"));
-  const long & part (get<long> (part_in_store, "id.part"));
-  const long & store (get<long> (part_in_store, "id.store"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& part_in_store (input.value ("in"));
+  const long & part (peek<const long&> (part_in_store, "id.part"));
+  const long & store (peek<const long&> (part_in_store, "id.store"));
 
-  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << config);
+  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << pnet::type::value::show (config));
 
   // communicate from GPI space to fvmGetShmemPtr()
 
-  const fvmAllocHandle_t & handle_data (get<long> (config, "handle.data"));
-  const fvmAllocHandle_t & handle_scratch (get<long> (config, "handle.scratch"));
-  const long & sizeofBunchBuffer (get<long> (config, "bunchbuffer.size"));
-  const long & data_size (get<long> (config, "data.size"));
+  const fvmAllocHandle_t handle_data (peek<long> (config, "handle.data"));
+  const fvmAllocHandle_t handle_scratch (peek<long> (config, "handle.scratch"));
+  const long& sizeofBunchBuffer (peek<const long&> (config, "bunchbuffer.size"));
+  const long& data_size (peek<const long&> (config, "data.size"));
   const long size (std::min ( sizeofBunchBuffer
                             , data_size - part * sizeofBunchBuffer
                             )
@@ -67,7 +77,7 @@ generic_filter ( void * state
 
   // call filter_impl
 
-  const long & trace_size_in_bytes (get<long> (config, "trace_detect.size_in_bytes"));
+  const long& trace_size_in_bytes (peek<const long&> (config, "trace_detect.size_in_bytes"));
   const long num (size / trace_size_in_bytes);
 
   filter_impl (fvmGetShmemPtr(), num);
@@ -104,8 +114,8 @@ static void unblank_impl (void * ptr, const long & num)
 }
 
 static void unblank ( void * state
-                    , const we::loader::input_t & input
-                    , we::loader::output_t & output
+                    , const expr::eval::context & input
+                    , expr::eval::context & output
                     )
 {
   generic_filter (state, input, output, unblank_impl);
@@ -148,11 +158,11 @@ static void clip_impl (void * ptr, const long & num
 }
 
 static void clip ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
-  const float & c (get<double> (input, "config", "param.clip.c"));
+  const float c (peek<double> (input.value ("config"), "param.clip.c"));
 
   generic_filter (state, input, output, boost::bind (clip_impl, _1, _2, c));
 }
@@ -188,11 +198,11 @@ static void trap_impl (void * ptr, const long & num
 }
 
 static void trap ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
-  const float & t (get<long> (input, "config", "param.trap.t"));
+  const float t (peek<long> (input.value ("config"), "param.trap.t"));
 
   generic_filter (state, input, output, boost::bind (trap_impl, _1, _2, t));
 }
@@ -277,14 +287,14 @@ static void bandpass_impl ( void * ptr, const long & num
 }
 
 static void bandpass ( void * state
-		     , const we::loader::input_t & input
-		     , we::loader::output_t & output
+		     , const expr::eval::context & input
+		     , expr::eval::context & output
 		     )
 {
-  const float & frequ1 (get<long> (input, "config", "param.bandpass.frequ1"));
-  const float & frequ2 (get<long> (input, "config", "param.bandpass.frequ2"));
-  const float & frequ3 (get<long> (input, "config", "param.bandpass.frequ3"));
-  const float & frequ4 (get<long> (input, "config", "param.bandpass.frequ4"));
+  const float frequ1 (peek<long> (input.value ("config"), "param.bandpass.frequ1"));
+  const float frequ2 (peek<long> (input.value ("config"), "param.bandpass.frequ2"));
+  const float frequ3 (peek<long> (input.value ("config"), "param.bandpass.frequ3"));
+  const float frequ4 (peek<long> (input.value ("config"), "param.bandpass.frequ4"));
 
   generic_filter (state, input, output
 		 , boost::bind ( bandpass_impl
@@ -360,8 +370,8 @@ static void frac_impl (void * ptr, const long & num)
 }
 
 static void frac ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
   generic_filter (state, input, output, frac_impl);
@@ -409,11 +419,11 @@ static void tpow_impl (void * ptr, const long & num,
 }
 
 static void tpow ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
-  const float & t (get<double> (input, "config", "param.tpow.tpow"));
+  const float t (peek<double> (input.value ("config"), "param.tpow.tpow"));
 
   generic_filter (state, input, output, boost::bind (tpow_impl, _1, _2, t));
 }
@@ -421,23 +431,23 @@ static void tpow ( void * state
 // ************************************************************************* //
 
 static void execW ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
-    const value::type & config (get<value::type> (input, "config"));
-  const value::type & part_in_store (get<value::type> (input, "in"));
-  const long & part (get<long> (part_in_store, "id.part"));
-  const long & store (get<long> (part_in_store, "id.store"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& part_in_store (input.value ("in"));
+  const long& part (peek<const long&> (part_in_store, "id.part"));
+  const long& store (peek<const long&> (part_in_store, "id.store"));
 
-  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << config);
+  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << pnet::type::value::show (config));
 
   // communicate from GPI space to fvmGetShmemPtr()
 
-  const fvmAllocHandle_t & handle_data (get<long> (config, "handle.data"));
-  const fvmAllocHandle_t & handle_scratch (get<long> (config, "handle.scratch"));
-  const long & sizeofBunchBuffer (get<long> (config, "bunchbuffer.size"));
-  const long & data_size (get<long> (config, "data.size"));
+  const fvmAllocHandle_t handle_data (peek<long> (config, "handle.data"));
+  const fvmAllocHandle_t handle_scratch (peek<long> (config, "handle.scratch"));
+  const long& sizeofBunchBuffer (peek<const long&> (config, "bunchbuffer.size"));
+  const long& data_size (peek<const long&> (config, "data.size"));
   const long size (std::min ( sizeofBunchBuffer
                             , data_size - part * sizeofBunchBuffer
                             )
@@ -458,7 +468,7 @@ static void execW ( void * state
 
   // call exec
 
-  const std::string & cmd (get<std::string> (config, "exec.su"));
+  const std::string& cmd (peek<const std::string&> (config, "exec.su"));
 
   MLOG (INFO, "call exec for '" << cmd << "' with size " << size);
 

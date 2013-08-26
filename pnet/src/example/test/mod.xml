@@ -3,5 +3,5 @@
 <in name="trigger" type="control"/>
 <out name="trigger" type="control"/>
 <module name="system" function="reboot"/>
-<condition>${a} &gt; 20</condition>
+<condition>${a} &gt; 20L</condition>
 </defun>

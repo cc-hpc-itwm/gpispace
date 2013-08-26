@@ -129,7 +129,7 @@
           ${loaded_package} := ${done_package.assigned_package};
           ${interval} := ${done_package.interval};
           ${trigger} := [];
-          ${wait} := ${wait} + 1;
+          ${wait} := ${wait} + 1L;
         </expression>
       </defun>
       <condition>

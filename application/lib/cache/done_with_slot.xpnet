@@ -32,12 +32,12 @@
         <out name="num_user" type="long"/>
         <expression>
           ${num_user}
-            := map_get_assignment (${cache.by_slot.num_users}, ${slot}) - 1;
+            := map_get_assignment (${cache.by_slot.num_users}, ${slot}) - 1L;
 
           ${cache.by_slot.num_users}
             := map_assign (${cache.by_slot.num_users}, ${slot}, ${num_user});
 
-          ${cache.num.user} := ${cache.num.user} - 1;
+          ${cache.num.user} := ${cache.num.user} - 1L;
         </expression>
       </defun>
       <connect-in port="slot" place="slot_to_check"/>
@@ -57,7 +57,7 @@
           ${next} := [];
         </expression>
         <condition>
-          ${num_user} :gt: 0
+          ${num_user} :gt: 0L
         </condition>
       </defun>
       <connect-in port="cache" place="cache_got_assignment"/>
@@ -79,7 +79,7 @@
           ${next} := [];
         </expression>
         <condition>
-          ${num_user} :le: 0
+          ${num_user} :le: 0L
         </condition>
       </defun>
       <connect-in port="cache" place="cache_got_assignment"/>

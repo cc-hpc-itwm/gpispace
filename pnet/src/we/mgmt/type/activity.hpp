@@ -7,15 +7,18 @@
 
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
-#include <we/type/value.hpp>
-#include <we/type/value/get.hpp>
 #include <we/expr/eval/context.hpp>
 
 #include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/context.fwd.hpp>
 
+#include <we/type/value.hpp>
+#include <we/type/value/read.hpp>
+#include <we/type/value/show.hpp>
+
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
@@ -33,7 +36,9 @@ namespace we
       class activity_t
       {
       public:
-        typedef std::pair<value::type, petri_net::port_id_type> token_on_port_t;
+        typedef std::pair< pnet::type::value::value_type
+                         , petri_net::port_id_type
+                         > token_on_port_t;
         typedef std::vector<token_on_port_t> token_on_port_list_t;
         typedef token_on_port_list_t input_t;
         typedef token_on_port_list_t output_t;
@@ -85,7 +90,7 @@ namespace we
                              );
           }
 
-          return value::get<T> (e.ast().eval_all (context));
+          return boost::get<T> (e.ast().eval_all (context));
         }
 
         void set_id (const petri_net::activity_id_type&);
@@ -134,19 +139,66 @@ namespace we
         void lock();
         void unlock();
 
+        template<class Archive>
+          void save (Archive& ar, const token_on_port_list_t& l) const
+        {
+          const std::size_t size (l.size());
+          ar & size;
+          BOOST_FOREACH (const token_on_port_t& top, l)
+          {
+            std::ostringstream oss;
+            oss << pnet::type::value::show (top.first);
+            const std::string rep (oss.str());
+            ar & rep;
+            ar & top.second;
+          }
+        }
+        template<class Archive>
+          void load (Archive& ar, token_on_port_list_t& l) const
+        {
+          std::size_t size;
+          ar & size;
+          while (size --> 0)
+          {
+            std::string rep;
+            ar & rep;
+            petri_net::port_id_type port_id;
+            ar & port_id;
+            l.push_back (std::make_pair ( pnet::type::value::read (rep)
+                                        , port_id
+                                        )
+                        );
+          }
+        }
+
         friend class boost::serialization::access;
         template<class Archive>
-        void serialize (Archive& ar, const unsigned int)
+          void save (Archive& ar, const unsigned int) const
         {
           unique_lock_t lock (_mutex);
 
           ar & BOOST_SERIALIZATION_NVP(_id);
           ar & BOOST_SERIALIZATION_NVP(_flags);
           ar & BOOST_SERIALIZATION_NVP(_transition);
-          ar & BOOST_SERIALIZATION_NVP(_pending_input);
-          ar & BOOST_SERIALIZATION_NVP(_input);
-          ar & BOOST_SERIALIZATION_NVP(_output);
+
+          save (ar, _pending_input);
+          save (ar, _input);
+          save (ar, _output);
         }
+        template<class Archive>
+        void load (Archive& ar, const unsigned int)
+        {
+          unique_lock_t lock (_mutex);
+
+          ar & BOOST_SERIALIZATION_NVP(_id);
+          ar & BOOST_SERIALIZATION_NVP(_flags);
+          ar & BOOST_SERIALIZATION_NVP(_transition);
+
+          load (ar, _pending_input);
+          load (ar, _input);
+          load (ar, _output);
+        }
+        BOOST_SERIALIZATION_SPLIT_MEMBER()
 
       private:
         petri_net::activity_id_type _id;

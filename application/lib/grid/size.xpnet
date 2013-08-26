@@ -4,8 +4,8 @@
   <expression>
     ${delta_x} := ${grid.ur.x} - ${grid.ll.x};
     ${delta_y} := ${grid.ur.y} - ${grid.ll.y};
-    ${sizex} := 1 + long (floor (${delta_x} / ${grid.s.x}));
-    ${sizey} := 1 + long (floor (${delta_y} / ${grid.s.y}));
+    ${sizex} := 1L + long (floor (${delta_x} / ${grid.s.x}));
+    ${sizey} := 1L + long (floor (${delta_y} / ${grid.s.y}));
     ${size} := ${sizex} * ${sizey};
   </expression>
 </defun>

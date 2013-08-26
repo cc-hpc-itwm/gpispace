@@ -6,6 +6,10 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
+#include <we/type/value/show.hpp>
+#include <we/type/signature/is_literal.hpp>
+#include <we/type/signature/show.hpp>
+
 #include <fhg/util/xml.hpp>
 
 namespace xml
@@ -80,11 +84,12 @@ namespace xml
         return _type = type_;
       }
 
-      boost::optional<signature::type> place_type::signature() const
+      boost::optional<pnet::type::signature::signature_type>
+        place_type::signature() const
       {
-        if (literal::valid_name (type()))
+        if (pnet::type::signature::is_literal (type()))
         {
-          return signature::type (type());
+          return pnet::type::signature::signature_type (type());
         }
 
         if (not parent())
@@ -94,9 +99,9 @@ namespace xml
 
         return parent()->signature (type());
       }
-      signature::type place_type::signature_or_throw() const
+      pnet::type::signature::signature_type place_type::signature_or_throw() const
       {
-        const boost::optional<signature::type> s (signature());
+        const boost::optional<pnet::type::signature::signature_type> s (signature());
 
         if (not s)
         {
@@ -173,7 +178,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (xml_util::xmlstream & s, const place_type & p)
+        void dump (fhg::util::xml::xmlstream & s, const place_type & p)
         {
           s.open ("place");
           s.attr ("name", p.name());
@@ -183,11 +188,13 @@ namespace xml
           ::we::type::property::dump::dump (s, p.properties());
 
           BOOST_FOREACH (const place_type::token_type& token, p.tokens)
-            {
-              boost::apply_visitor ( signature::visitor::dump_token ("", s)
-                                   , token
-                                   );
-            }
+          {
+            s.open ("token");
+            s.open ("value");
+            s.content (pnet::type::value::show (token));
+            s.close();
+            s.close();
+          }
 
           s.close();
         }

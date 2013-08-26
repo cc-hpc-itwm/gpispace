@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_VALUE_READ_HPP
-#define _WE_TYPE_VALUE_READ_HPP 1
+#ifndef PNET_SRC_WE_TYPE_VALUE_READ_HPP
+#define PNET_SRC_WE_TYPE_VALUE_READ_HPP
 
 #include <we/type/value.hpp>
 
@@ -9,10 +9,16 @@
 
 #include <string>
 
-namespace value
+namespace pnet
 {
-  type read (fhg::util::parse::position&);
-  type read (const std::string&);
+  namespace type
+  {
+    namespace value
+    {
+      value_type read (fhg::util::parse::position&);
+      value_type read (const std::string&);
+    }
+  }
 }
 
 #endif

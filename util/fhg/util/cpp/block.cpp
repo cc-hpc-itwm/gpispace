@@ -12,12 +12,8 @@ namespace fhg
     {
       namespace block
       {
-        open::open (fhg::util::indenter& indent)
-          : _indent (indent)
-          , _tag (boost::none)
-        {}
         open::open ( fhg::util::indenter& indent
-                   , const std::string& tag
+                   , const boost::optional<std::string>& tag
                    )
           : _indent (indent)
           , _tag (tag)
@@ -29,10 +25,6 @@ namespace fhg
             : os << _indent++ << "{"
             ;
         }
-        std::ostream& operator<< (std::ostream& os, const open& b)
-        {
-          return b (os);
-        }
 
         close::close (fhg::util::indenter& indent)
           : _indent (indent)
@@ -40,10 +32,6 @@ namespace fhg
         std::ostream& close::operator() (std::ostream& os) const
         {
           return os << --_indent << "}";
-        }
-        std::ostream& operator<< (std::ostream& os, const close& b)
-        {
-          return b (os);
         }
       }
     }

@@ -35,6 +35,7 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
+
 #include <we/type/signature.hpp>
 
 #include <istream>
@@ -133,12 +134,6 @@ namespace xml
       we::type::property::type
         property_maps_type (const xml_node_type*, state::type&);
 
-      void gen_struct_type ( const xml_node_type*, state::type&
-                           , signature::desc_t&
-                           );
-      void substruct_type ( const xml_node_type*, state::type&
-                          , signature::desc_t&
-                          );
       type::structure_type struct_type (const xml_node_type*, state::type&);
       type::structs_type structs_type (const xml_node_type*, state::type&);
 
@@ -754,55 +749,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      void token_field_type ( const xml_node_type* node
-                            , state::type& state
-                            , signature::desc_t& tok
-                            )
-      {
-        const std::string name
-          (required ("token_field_type", node, "name", state));
-
-        for ( xml_node_type* child (node->first_node())
-            ; child
-            ; child = child ? child->next_sibling() : child
-            )
-        {
-          const std::string child_name (name_element (child, state));
-
-          if (child)
-          {
-            if (child_name == "value")
-            {
-              signature::create_literal_field
-                ( tok
-                , name
-                , std::string (child->value(), child->value_size())
-                , "token"
-                );
-            }
-            else if (child_name == "field")
-            {
-              token_field_type
-                ( child
-                , state
-                , signature::get_or_create_structured_field (tok, name, "token")
-                );
-            }
-            else
-            {
-              state.warn
-                ( warning::unexpected_element ( child_name
-                                              , "token_field_type"
-                                              , state.file_in_progress()
-                                              )
-                );
-            }
-          }
-        }
-      }
-
-      // ******************************************************************* //
-
       type::structs_type structs_type ( const xml_node_type* node
                                       , state::type& state
                                       )
@@ -1155,11 +1101,11 @@ namespace xml
 
       // ******************************************************************* //
 
-      type::place_type::token_type
-        parse_token (const xml_node_type* node, state::type& state)
+      void parse_token ( const xml_node_type* node
+                       , state::type& state
+                       , type::place_type& place
+                       )
       {
-        type::place_type::token_type token ((signature::structured_t()));
-
         for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
@@ -1171,11 +1117,10 @@ namespace xml
           {
             if (child_name == "value")
             {
-              return std::string (child->value(), child->value_size());
-            }
-            else if (child_name == "field")
-            {
-              token_field_type (child, state, token);
+              place.push_token (std::string ( child->value()
+                                            , child->value_size()
+                                            )
+                               );
             }
             else
             {
@@ -1188,8 +1133,6 @@ namespace xml
             }
           }
         }
-
-        return token;
       }
 
       // ******************************************************************* //
@@ -1230,7 +1173,7 @@ namespace xml
           {
             if (child_name == "token")
             {
-              place.get_ref().push_token (parse_token (child, state));
+              parse_token (child, state, place.get_ref());
             }
             else if (child_name == "properties")
             {
@@ -1503,34 +1446,26 @@ namespace xml
 
       // ******************************************************************* //
 
-      void struct_field_type ( const xml_node_type* node
-                             , state::type& state
-                             , signature::desc_t& sig
-                             )
+      pnet::type::signature::structure_type
+        structure_type (const xml_node_type*, state::type&);
+
+      pnet::type::signature::structured_type
+        structured_type (const xml_node_type* node, state::type& state)
       {
-        const std::string name
+        return std::make_pair
           ( validate_field_name
-            ( required ("struct_field_type", node, "name", state)
+            ( required ("structured_type", node, "name", state)
             , state.file_in_progress()
             )
+          , structure_type (node, state)
           );
-
-        const std::string type
-          (required ("struct_field_type", node, "type", state));
-
-        if (boost::apply_visitor (signature::visitor::has_field (name), sig))
-        {
-          throw error::struct_field_redefined (name, state.file_in_progress());
-        }
-
-        boost::apply_visitor (signature::visitor::add_field (name, type), sig);
       }
 
-      void gen_struct_type ( const xml_node_type* node
-                           , state::type& state
-                           , signature::desc_t& sig
-                           )
+      pnet::type::signature::structure_type
+        structure_type (const xml_node_type* node, state::type& state)
       {
+        pnet::type::signature::structure_type s;
+
         for ( xml_node_type* child (node->first_node())
             ; child
             ; child = child ? child->next_sibling() : child
@@ -1542,65 +1477,41 @@ namespace xml
           {
             if (child_name == "field")
             {
-              struct_field_type (child, state, sig);
+              s.push_back ( std::make_pair
+                            ( required ("struct_field", child, "name", state)
+                            , required ("struct_field", child, "type", state)
+                            )
+                          );
             }
             else if (child_name == "struct")
             {
-              substruct_type (child, state, sig);
+              s.push_back (structured_type (child, state));
             }
             else
             {
               state.warn
                 ( warning::unexpected_element ( child_name
-                                              , "gen_struct_type"
+                                              , "structure_type"
                                               , state.file_in_progress()
                                               )
                 );
             }
           }
         }
-      }
 
-      void substruct_type ( const xml_node_type* node
-                          , state::type& state
-                          , signature::desc_t& sig
-                          )
-      {
-        const std::string name
-          ( validate_field_name
-            ( required ("substruct_type", node, "name", state)
-            , state.file_in_progress()
-            )
-          );
-
-        boost::apply_visitor ( signature::visitor::create_structured_field (name)
-                             , sig
-                             );
-
-        gen_struct_type
-          ( node
-          , state
-          , boost::apply_visitor (signature::visitor::get_field (name), sig)
-          );
+        return s;
       }
 
       type::structure_type
         struct_type (const xml_node_type* node, state::type& state)
       {
-        type::structure_type s
+        return type::structure_type
           ( id::structure (state.id_mapper()->next_id())
           , state.id_mapper()
           , boost::none
           , state.position (node)
-          , validate_field_name ( required ("struct_type", node, "name", state)
-                                , state.file_in_progress()
-                                )
-          , signature::structured_t()
+          , structured_type (node, state)
           );
-
-        gen_struct_type (node, state, s.signature());
-
-        return s;
       }
     }
 
@@ -1641,9 +1552,12 @@ namespace xml
       type::find_module_calls (state, function, m);
 
       type::mk_wrapper (state, m);
-      type::mk_makefile (state, m);
 
-      type::struct_to_cpp (state, function);
+      boost::unordered_set<std::string> structnames;
+
+      type::struct_to_cpp (state, function, structnames);
+
+      type::mk_makefile (state, m, structnames);
     }
 
     void dump_xml ( const id::ref::function& function

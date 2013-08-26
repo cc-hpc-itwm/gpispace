@@ -11,6 +11,7 @@
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lambda/lambda.hpp>
 

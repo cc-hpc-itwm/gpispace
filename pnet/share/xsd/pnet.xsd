@@ -92,19 +92,8 @@
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
   </xsd:complexType>
 
-  <xsd:complexType name="token_field_type">
-    <xsd:choice minOccurs="0">
-      <xsd:element maxOccurs="1" name="value" type="xsd:string"/>
-      <xsd:element maxOccurs="unbounded" name="field" type="token_field_type"/>
-    </xsd:choice>
-    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
-  </xsd:complexType>
-
   <xsd:complexType name="token_type">
-    <xsd:choice minOccurs="0">
-      <xsd:element maxOccurs="1" name="value" type="xsd:string"/>
-      <xsd:element maxOccurs="unbounded" name="field" type="token_field_type"/>
-    </xsd:choice>
+    <xsd:element minOccurs="1" maxOccurs="unbounded" name="value" type="xsd:string"/>
   </xsd:complexType>
 
   <xsd:complexType name="mod_type">

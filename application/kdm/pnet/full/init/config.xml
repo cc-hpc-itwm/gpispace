@@ -39,7 +39,7 @@
         <out name="left" type="long"/>
         <out name="assoc" type="map"/>
         <expression>
-          ${assoc} := {||};
+          ${assoc} := Map [];
           ${left} := ${config.offsets}
                    * ${config.per.offset.volumes}
                    * ${config.per.volume.copies};

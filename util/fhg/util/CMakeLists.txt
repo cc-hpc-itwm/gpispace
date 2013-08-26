@@ -25,7 +25,6 @@ set (hdrs
   warnings.hpp
 
   filesystem.hpp
-  cpp.hpp
 
   ini-parser.hpp
   ini-parser.tcc
@@ -63,6 +62,8 @@ set (srcs
   read_bool.cpp
   stat.cpp
 
+  ostream_modifier.cpp
+
   thread/poll.cpp
 
   parse/position.cpp
@@ -72,6 +73,8 @@ set (srcs
   num/show.cpp
   indenter.cpp
   cpp/block.cpp
+  cpp/include.cpp
+  cpp/include_guard.cpp
   cpp/namespace.cpp
   cpp/struct.cpp
 
@@ -101,7 +104,6 @@ install (TARGETS fhg-util-shared
 add_subdirectory (boost)
 add_subdirectory(thread)
 add_subdirectory(filesystem)
-add_subdirectory(cpp)
 if (BUILD_TESTING)
   add_subdirectory(test)
 endif ()

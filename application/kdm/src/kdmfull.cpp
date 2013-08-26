@@ -1,9 +1,11 @@
 #include <we/loader/macros.hpp>
-#include <we/loader/putget.hpp>
 
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
+
+#include <we/type/value/peek.hpp>
+#include <we/type/value/show.hpp>
 
 #include <iostream>
 #include <string>
@@ -20,7 +22,14 @@
 #include "ttvmmemhandler.h"
 #include "sinc_mod.hpp"
 
-using we::loader::get;
+namespace
+{
+  template<typename R>
+    R peek (const pnet::type::value::value_type& x, const std::string& key)
+  {
+    return boost::get<R> (*pnet::type::value::peek (key, x));
+  }
+}
 
 // ************************************************************************* //
 
@@ -35,9 +44,11 @@ static unsigned long sizeofJob (void)
   return sizeof(MigrationJob);
 }
 
-static void get_Job (const value::type & config, MigrationJob & Job)
+static void get_Job ( const pnet::type::value::value_type& config
+                    , MigrationJob & Job
+                    )
 {
-  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle.job"));
+  const fvmAllocHandle_t handle_Job (peek<long> (config, "handle.job"));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -73,10 +84,10 @@ static fvmAllocHandle_t alloc ( const long & size
 
 // ************************************************************************* //
 
-static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void initialize (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const std::string & filename (get<std::string> (input, "config_file"));
-  long memsizeGPI (get<long> (input, "memsizeGPI"));
+  const std::string& filename (boost::get<const std::string&> (input.value ("config_file")));
+  long memsizeGPI (boost::get<long> (input.value ("memsizeGPI")));
 
   MLOG (INFO, "initialize: filename " << filename);
   MLOG (INFO, "initialize: memsizeGPI " << memsizeGPI);
@@ -262,25 +273,25 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
     (alloc ((bunch_store_per_node - 1) * Job.BunchMemSize, "handle_bunch", memsizeGPI));
 
   // machine
-  output.bind ("config", "threads.N", static_cast<long>(NThreads));
+  output.bind ("config.threads.N", static_cast<long>(NThreads));
 
   // system
-  output.bind ("config", "handle.job", static_cast<long>(handle_Job));
+  output.bind ("config.handle.job", static_cast<long>(handle_Job));
 
   // problem, derived
-  output.bind ("config", "offsets", offsets);
-  output.bind ("config", "per.offset.volumes", per_offset_volumes);
-  output.bind ("config", "per.offset.bunches", per_offset_bunches);
+  output.bind ("config.offsets", offsets);
+  output.bind ("config.per.offset.volumes", per_offset_volumes);
+  output.bind ("config.per.offset.bunches", per_offset_bunches);
 
-  output.bind ("config", "loadTT.parallel"
-      , static_cast<long>(fvmGetNodeCount()) * 2
+  output.bind ("config.loadTT.parallel"
+              , static_cast<long>(fvmGetNodeCount()) * 2
       //      , std::max (1L, static_cast<long>(fvmGetNodeCount())/2L)
       );
-  output.bind ("config", "handle.TT", static_cast<long>(handle_TT));
+  output.bind ("config.handle.TT", static_cast<long>(handle_TT));
 
   // tuning
-  output.bind ("config", "size.store.bunch", size_store_bunch);
-  output.bind ("config", "per.volume.copies", copies);
+  output.bind ("config.size.store.bunch", size_store_bunch);
+  output.bind ("config.per.volume.copies", copies);
 
   LOG_IF ( WARN
          , copies > 8
@@ -292,22 +303,21 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   // tuning: volumes_per_node could be higher
   const long size_store_volume (volumes_per_node * node_count);
 
-  output.bind ("config", "size.store.volume", size_store_volume);
+  output.bind ("config.size.store.volume", size_store_volume);
 
   // tuning, derived?
-  output.bind ("config"
-              , "assign.most"
+  output.bind ("config.assign.most"
               , divru (size_store_bunch, offsets_at_once) / 2
               );
 
   // tuning induced
-  output.bind ("config", "handle.bunch", static_cast<long>(handle_bunch));
-  output.bind ("config", "handle.volume", static_cast<long>(handle_volume));
+  output.bind ("config.handle.bunch", static_cast<long>(handle_bunch));
+  output.bind ("config.handle.volume", static_cast<long>(handle_volume));
 
   // WORK HERE: overcome this by using virtual offsetclasses
-  if ( get<long> (output, "config", "size.store.volume")
-     < ( get<long> (output, "config", "per.offset.volumes")
-       * get<long> (output, "config", "per.volume.copies")
+  if ( peek<long> (output.value ("config"), "size.store.volume")
+     < ( peek<long> (output.value ("config"), "per.offset.volumes")
+       * peek<long> (output.value ("config"), "per.volume.copies")
        )
      )
     {
@@ -317,16 +327,16 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
         ("need at least as many volume stores as volumes per offset");
     }
 
-  MLOG (INFO, "initialize: config " << get<value::type>(output, "config"));
+  MLOG (INFO, "initialize: config " << pnet::type::value::show (output.value ("config")));
 }
 
 // ************************************************************************* //
 
-static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void loadTT (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const long & id (get<long> (input, "id"));
-  const long & parallel (get<long> (config, "loadTT.parallel"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const long& id (boost::get<const long&> (input.value ("id")));
+  const long& parallel (peek<const long&> (config, "loadTT.parallel"));
 
   MLOG (INFO, "loadTT: id " << id << " out of " << parallel);
 
@@ -365,8 +375,8 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
   GVol.Init(X0, point3D<int>(Nx,Ny,Nz), dx);
 
   // Load the entire travel time table data into memory
-  const int & NThreads (get<long> (config, "threads.N"));
-  const fvmAllocHandle_t & handle_TT (get<long> (config, "handle.TT"));
+  const int NThreads (peek<long> (config, "threads.N"));
+  const fvmAllocHandle_t handle_TT (peek<long> (config, "handle.TT"));
 
   TTVMMemHandler TTVMMem;
 
@@ -377,27 +387,27 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
 // ************************************************************************* //
 
-static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void load (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
-  MLOG (INFO, "load: bunch " << bunch);
+  MLOG (INFO, "load: bunch " << pnet::type::value::show (bunch));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const long & oid (get<long> (bunch, "bunch.offset.id"));
-  const long & bid (get<long> (bunch, "bunch.id"));
+  const long& oid (peek<const long&> (bunch, "bunch.offset.id"));
+  const long& bid (peek<const long&> (bunch, "bunch.id"));
 
   TraceBunch Bunch((char *)fvmGetShmemPtr(),oid+1,1,bid+1,Job);
 
   Bunch.LoadFromDisk_CO_MT(Job);
 
-  const fvmAllocHandle_t handle_bunch (get<long> (config, "handle.bunch"));
+  const fvmAllocHandle_t handle_bunch (peek<long> (config, "handle.bunch"));
 
-  const long & sid (get<long> (bunch, "store.id"));
+  const long& sid (peek<const long &> (bunch, "store.id"));
 
   waitComm ( fvmPutGlobalData ( handle_bunch
                               , sid * Job.BunchMemSize
@@ -412,12 +422,13 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
 
 // ************************************************************************* //
 
-static void initialize_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void initialize_volume (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & volume (get<value::type> (input, "volume"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
-  MLOG (INFO, "init_volume: volume " << volume << " config := " << config);
+  MLOG (INFO, "init_volume: volume " << pnet::type::value::show (volume)
+       << " config := " << pnet::type::value::show (config));
 
   MigrationJob Job;
 
@@ -442,7 +453,7 @@ static void initialize_volume (void *, const we::loader::input_t & input, we::lo
   MigVol3D MigVol(X0,Nx,dx);
 
   // create the subvolume
-  const long & vid (get<long> (volume, "volume.id"));
+  const long& vid (peek<const long &> (volume, "volume.id"));
 
   MigSubVol3D MigSubVol(MigVol, vid+1, Job.NSubVols);
 
@@ -453,9 +464,9 @@ static void initialize_volume (void *, const we::loader::input_t & input, we::lo
   // now, initialize the subvol
   MigSubVol.clear();
 
-  const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
+  const fvmAllocHandle_t handle_volume (peek<long> (config, "handle.volume"));
 
-  const long & sid (get<long> (volume, "store.id"));
+  const long& sid (peek<const long&> (volume, "store.id"));
 
   waitComm (fvmPutGlobalData ( handle_volume
                              , sid * Job.SubVolMemSize
@@ -470,19 +481,19 @@ static void initialize_volume (void *, const we::loader::input_t & input, we::lo
 
 // ************************************************************************* //
 
-static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void process (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & volume (get<value::type> (input, "volume"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
-  MLOG (INFO, "process: volume " << volume);
+  MLOG (INFO, "process: volume " << pnet::type::value::show (volume));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
   // load and reconstruct the volume
-  const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
+  const fvmAllocHandle_t handle_volume (peek<long>(config, "handle.volume"));
 
   char * pVMMemSubVol (((char *)fvmGetShmemPtr()));
 
@@ -498,13 +509,13 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   MigVol3D MigVol(X0,Nx,dx);
 
   // create the subvolume
-  const long & vid (get<long>(volume, "volume.volume.id"));
+  const long& vid (peek<const long&>(volume, "volume.volume.id"));
 
   MigSubVol3D MigSubVol(MigVol,vid+1,Job.NSubVols);
 
   MigSubVol.setMemPtr((float *)pVMMemSubVol,Job.SubVolMemSize);
 
-  const long & volume_sid (get<long>(volume, "volume.store.id"));
+  const long& volume_sid (peek<const long&>(volume, "volume.store.id"));
 
   waitComm (fvmGetGlobalData ( handle_volume
                              , volume_sid * Job.SubVolMemSize
@@ -514,11 +525,11 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
                              )
            );
 
-  const fvmAllocHandle_t & handle_bunch (get<long> (config, "handle.bunch"));
+  const fvmAllocHandle_t handle_bunch (peek<long> (config, "handle.bunch"));
 
-      const long & bid (get<long> (volume, "assigned.bunch.id"));
-      const long & sid (get<long> (volume, "assigned.store.id"));
-      const long & oid (get<long> (volume, "volume.volume.offset.id"));
+      const long& bid (peek<const long&> (volume, "assigned.bunch.id"));
+      const long& sid (peek<const long&> (volume, "assigned.store.id"));
+      const long& oid (peek<const long&> (volume, "volume.volume.offset.id"));
 
       MLOG ( INFO
            , "process: match volume " << oid << "." << vid
@@ -539,11 +550,11 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
       TraceBunch Bunch(migbuf,oid+1,1,bid+1,Job);
 
       // migrate the bunch to the subvolume
-      const long & NThreads (get<long> (config, "threads.N"));
+      const long & NThreads (peek<const long&> (config, "threads.N"));
 
       char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
 
-      const fvmAllocHandle_t & handle_TT (get<long> (config, "handle.TT"));
+      const fvmAllocHandle_t handle_TT (peek<long> (config, "handle.TT"));
 
       MigBunch2SubVol(Job,Bunch,MigSubVol,NThreads, _VMem, handle_TT);
 
@@ -560,21 +571,21 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
 // ************************************************************************* //
 
-static void reduce (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void reduce (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & pair (get<value::type> (input, "pair"));
-  const value::type & volume (get<value::type> (pair, "vol"));
-  const value::type & sum (get<value::type> (pair, "sum.volume"));
+  const pnet::type::value::value_type& config (input.value("config"));
+  const pnet::type::value::value_type& pair (input.value ("pair"));
+  const pnet::type::value::value_type& volume (*pnet::type::value::peek ("vol", pair));
+  const pnet::type::value::value_type& sum (*pnet::type::value::peek ("sum.volume", pair));
 
-  MLOG (INFO, "reduce: volume " << volume);
-  MLOG (INFO, "reduce: sum " << sum);
+  MLOG (INFO, "reduce: volume " << pnet::type::value::show (volume));
+  MLOG (INFO, "reduce: sum " << pnet::type::value::show (sum));
 
-  const long & vid (get<long>(volume, "volume.id"));
-  const long & sid (get<long>(sum, "volume.id"));
-  const long & volume_sid (get<long>(volume, "store.id"));
-  const long & sum_sid (get<long>(sum, "store.id"));
-  const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
+  const long & vid (peek<const long&>(volume, "volume.id"));
+  const long & sid (peek<const long&>(sum, "volume.id"));
+  const long & volume_sid (peek<const long&>(volume, "store.id"));
+  const long & sum_sid (peek<const long&>(sum, "store.id"));
+  const fvmAllocHandle_t handle_volume (peek<long>(config, "handle.volume"));
 
   MigrationJob Job;
 
@@ -647,19 +658,19 @@ static void reduce (void *, const we::loader::input_t & input, we::loader::outpu
 
 // ************************************************************************* //
 
-static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void write (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & volume (get<value::type> (input, "volume"));
+  const pnet::type::value::value_type& config (input.value ("config"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
-  MLOG (INFO, "write: volume " << volume);
+  MLOG (INFO, "write: volume " << pnet::type::value::show (volume));
 
   MigrationJob Job;
 
   get_Job (config, Job);
 
-  const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
-  const long & sid (get<long>(volume, "store.id"));
+  const fvmAllocHandle_t handle_volume (peek<long>(config, "handle.volume"));
+  const long& sid (peek<const long&>(volume, "store.id"));
 
   waitComm ( fvmGetGlobalData ( handle_volume
                               , sid * Job.SubVolMemSize
@@ -687,8 +698,8 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
   grid3D G(X0,Nx,dx);
 
   // create the subvolume
-  const long & vid (get<long>(volume, "volume.id"));
-  const long & oid (get<long> (volume, "volume.offset.id"));
+  const long & vid (peek<const long&>(volume, "volume.id"));
+  const long & oid (peek<const long&> (volume, "volume.offset.id"));
 
   MigSubVol3D MigSubVol(MigVol,vid+1,Job.NSubVols);
 
@@ -711,16 +722,16 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
 // ************************************************************************* //
 
-static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void finalize (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
+  const pnet::type::value::value_type& config (input.value ("config"));
 
-  MLOG (INFO, "finalize: config " << config);
+  MLOG (INFO, "finalize: config " << pnet::type::value::show (config));
 
-  fvmGlobalFree (get<long> (config, "handle.job"));
-  fvmGlobalFree (get<long> (config, "handle.volume"));
-  fvmGlobalFree (get<long> (config, "handle.bunch"));
-  fvmGlobalFree (get<long> (config, "handle.TT"));
+  fvmGlobalFree (peek<long> (config, "handle.job"));
+  fvmGlobalFree (peek<long> (config, "handle.volume"));
+  fvmGlobalFree (peek<long> (config, "handle.bunch"));
+  fvmGlobalFree (peek<long> (config, "handle.TT"));
 
   output.bind ("trigger", we::type::literal::control());
 }

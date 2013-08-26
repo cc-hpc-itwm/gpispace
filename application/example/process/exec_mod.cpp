@@ -18,30 +18,28 @@
 
 #include "process.hpp"
 
-using we::loader::get;
-
 // ************************************************************************* //
 
 static void exec_wrapper ( void *
-			 , const we::loader::input_t & input
-			 , we::loader::output_t & output
+			 , const expr::eval::context & input
+			 , expr::eval::context & output
 			 )
 {
-  const std::string & command (get<std::string> (input, "command"));
+  const std::string& command (boost::get<std::string> (input.value ("command")));
 
   MLOG (INFO, "exec:  = \"" << command << "\"");
 
   long ec = process::execute (command, 0, 0, 0, 0);
 
   MLOG (INFO, "process returned with: " << ec);
-  output.bind ("ec", ec);
+  output.bind ("ec", pnet::type::value::value_type (ec));
 }
 
 // ************************************************************************* //
 
 static void selftest ( void *
-		     , const we::loader::input_t &
-		     , we::loader::output_t &
+		     , const expr::eval::context &
+		     , expr::eval::context &
 		     )
 {
   const std::size_t num_bytes = 274176000;

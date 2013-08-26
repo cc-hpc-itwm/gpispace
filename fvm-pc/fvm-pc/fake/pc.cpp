@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 
 #include <mmgr/dtmmgr.h>
 #include <we/loader/macros.hpp>
@@ -433,10 +434,10 @@ int fvmGetNodeCount()
   return 1;
 }
 
-static void selftest (void *, const we::loader::input_t &, we::loader::output_t & out)
+static void selftest (void *, const expr::eval::context &, expr::eval::context & out)
 {
   std::cerr << "running self test" << std::endl;
-  out.bind ("result", 0L);
+  out.bind ("result", pnet::type::value::value_type (0L));
 }
 
 static inline long getenvlong (const char * name, const long dflt)

@@ -2,8 +2,8 @@
   <in name="i" type="control" place="i"/>
   <out name="o" type="control" place="o"/>
   <net>
-    <place name="c" type="control"><token><value/></token></place>
-    <place name="credit" type="control"><token><value/></token></place>
+    <place name="c" type="control"><token><value>[]</value></token></place>
+    <place name="credit" type="control"><token><value>[]</value></token></place>
     <place name="i" type="control"/>
     <place name="o" type="control"/>
     <transition name="t">

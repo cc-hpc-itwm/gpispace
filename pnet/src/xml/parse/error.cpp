@@ -12,6 +12,8 @@
 
 #include <we/type/net.hpp>
 
+#include <we/type/signature/show.hpp>
+
 #include <boost/format.hpp>
 
 namespace xml
@@ -273,11 +275,11 @@ namespace xml
                    % connection.get().direction()
                    % place.get().name()
                    % place.get().type()
-                   % place.get().signature()
+                   % pnet::type::signature::show (place.get().signature_or_throw())
                    % place.get().position_of_definition()
                    % port.get().name()
                    % port.get().type()
-                   % port.get().signature()
+                   % pnet::type::signature::show (port.get().signature_or_throw())
                    % port.get().position_of_definition()
                    % transition.get().name()
                    % connection.get().position_of_definition()

@@ -81,40 +81,6 @@ namespace we
         : FunctionException("duplicate function detected: " + a_module+"."+a_function, a_module, a_function) {}
       virtual ~DuplicateFunction() throw() {}
     };
-
-    class MissingFunctionArgument : public FunctionException {
-    public:
-      MissingFunctionArgument(const std::string &a_module
-                             , const std::string &a_function
-                             , const std::string &expected_arguments)
-        : FunctionException("missing argument(s): " + expected_arguments, a_module, a_function)
-        , arguments_(expected_arguments)
-      { }
-
-      virtual ~MissingFunctionArgument() throw() {}
-
-      const std::string &arguments() const { return arguments_; }
-    private:
-      std::string arguments_;
-    };
-
-    class BadFunctionArgument : public FunctionException {
-    public:
-      BadFunctionArgument(const std::string &a_module, const std::string &a_function,
-                         const std::string &a_expected, const std::string &a_actual,
-                         const std::string &a_value="")
-        : FunctionException("bad function argument", a_module, a_function),
-          expected_(a_expected), actual_(a_actual), value_(a_value) {}
-      virtual ~BadFunctionArgument() throw() {}
-
-      const std::string &expected() const { return expected_; }
-      const std::string &actual() const { return actual_; }
-      const std::string &value() const { return value_; }
-    private:
-      std::string expected_;
-      std::string actual_;
-      std::string value_;
-    };
   }
 }
 

@@ -6,6 +6,7 @@
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
+#include <we/type/signature/serialize.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -39,7 +40,7 @@ namespace we
 
       port_t ( const std::string & name
              , PortDirection direction
-             , const signature::type& signature
+             , const pnet::type::signature::signature_type& signature
              , const we::type::property::type prop
              = we::type::property::type()
              )
@@ -52,7 +53,7 @@ namespace we
 
       port_t ( const std::string & name
              , PortDirection direction
-             , const signature::type& signature
+             , const pnet::type::signature::signature_type& signature
              , const petri_net::place_id_type& place_id
              , const we::type::property::type prop
              = we::type::property::type()
@@ -68,7 +69,7 @@ namespace we
       const std::string & name() const { return _name; }
 
       PortDirection direction() const { return _direction; }
-      const signature::type& signature() const { return _signature; }
+      const pnet::type::signature::signature_type& signature() const { return _signature; }
       const petri_net::place_id_type& associated_place() const { return _associated_place; }
       petri_net::place_id_type& associated_place() { return _associated_place; }
       const we::type::property::type & property() const { return _properties; }
@@ -81,7 +82,7 @@ namespace we
     private:
       std::string _name;
       PortDirection _direction;
-      signature::type _signature;
+      pnet::type::signature::signature_type _signature;
       petri_net::place_id_type _associated_place;
       we::type::property::type _properties;
 

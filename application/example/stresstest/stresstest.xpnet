@@ -21,11 +21,11 @@
       <field name="communicate" type="bool"/>
     </struct>
 
-    <place name="sleeptime" type="long"><token><value>0</value></token></place>
-    <place name="N" type="long"><token><value>5</value></token></place>
-    <place name="M" type="long"><token><value>5</value></token></place>
-    <place name="num_long" type="long"><token><value>(192*2^20) div 8</value></token></place>
-    <place name="seed" type="long"><token><value>3141</value></token></place>
+    <place name="sleeptime" type="long"><token><value>0L</value></token></place>
+    <place name="N" type="long"><token><value>5L</value></token></place>
+    <place name="M" type="long"><token><value>5L</value></token></place>
+    <place name="num_long" type="long"><token><value>(192L*2L^20L) div 8L</value></token></place>
+    <place name="seed" type="long"><token><value>3141L</value></token></place>
     <place name="verify_all_mem" type="bool"><token><value>true</value></token></place>
     <place name="verify" type="bool"><token><value>true</value></token></place>
     <place name="communicate" type="bool"><token><value>true</value></token></place>
@@ -61,7 +61,76 @@
         <in name="verify" type="bool"/>
         <in name="communicate" type="bool"/>
         <out name="config" type="config"/>
-        <module name="stresstest" function="initialize"/>
+        <module name="stresstest" function="initialize ( num_long
+                                                       , seed
+                                                       , verify
+                                                       , verify_all_mem
+                                                       , sleeptime
+                                                       , config
+                                                       , communicate
+                                                       )">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="boost/random.hpp"/>
+          <cinclude href="limits"/>
+          <cinclude href="stdexcept"/>
+          <code><![CDATA[
+            const size_t size (num_long * sizeof (long));
+
+            if (size % fvmGetNodeCount() != 0)
+            {
+              throw std::runtime_error ("BUMMER: size % fvmGetNodeCount() != 0");
+            }
+
+            if (size > fvmGetShmemSize())
+            {
+              throw std::runtime_error ("BUMMER: size > fvmGetShmemSize()");
+            }
+
+            const fvmAllocHandle_t handle (fvmGlobalAlloc (size / fvmGetNodeCount()));
+            const fvmAllocHandle_t scratch (fvmGlobalAlloc (size));
+
+            if (size > 0 && !handle)
+            {
+              throw std::runtime_error ("BUMMER: alloc (handle) returned 0");
+            }
+
+            if (size > 0 && !scratch)
+            {
+              throw std::runtime_error ("BUMMER: alloc (scratch) returned 0");
+            }
+
+            if (verify)
+            {
+              MLOG (INFO, "generating " << num_long << " values with seed " << seed);
+              long *a (static_cast<long*>(fvmGetShmemPtr()));
+
+              boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+                                            , std::numeric_limits<long>::max()
+                                            );
+
+              boost::mt19937 engine (seed);
+
+              for (unsigned long i (0); i < num_long; ++i, ++a)
+              {
+                *a = rand (engine);
+              }
+
+              waitComm (fvmPutGlobalData (handle, 0, size, 0, scratch));
+            }
+
+            config.handle = static_cast<long>(handle);
+            config.scratch = static_cast<long>(scratch);
+            config.sleeptime = sleeptime;
+            config.num_long = num_long;
+            config.seed = seed;
+            config.verify_all_mem = verify_all_mem;
+            config.verify = verify;
+            config.communicate = communicate;
+
+            MLOG (INFO, "initialize: config " << config);
+          ]]></code>
+        </module>
       </defun>
       <connect-in port="sleeptime" place="sleeptime"/>
       <connect-in port="seed" place="seed"/>
@@ -77,7 +146,26 @@
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="stresstest" function="finalize"/>
+        <module name="stresstest" function="finalize (trigger, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+          const fvmAllocHandle_t& handle (config.handle);
+          const fvmAllocHandle_t& scratch (config.scratch);
+
+          if (handle)
+          {
+            fvmGlobalFree (handle);
+          }
+
+          if (scratch)
+          {
+            fvmGlobalFree (scratch);
+          }
+
+          MLOG (INFO, "finalized");
+          ]]></code>
+        </module>
       </defun>
       <connect-in port="trigger" place="all_done"/>
       <connect-read port="config" place="config"/>
@@ -92,7 +180,7 @@
       <connect-out port="out" place="pending"/>
     </transition>
 
-    <transition name="inner">
+    <transition name="inner" inline="false">
       <include-function href="stress.xpnet"/>
       <connect-read port="N" place="M"/>
       <connect-read port="config" place="config"/>
@@ -116,7 +204,6 @@
 
     <transition name="cleanup">
       <defun>
-        <in name="wait" type="long"/>
         <in name="M" type="long"/>
         <in name="config" type="config"/>
         <in name="trigger" type="control"/>
@@ -125,7 +212,6 @@
           ${done} := []
         </expression>
       </defun>
-      <connect-in port="wait" place="wait"/>
       <connect-in port="M" place="M"/>
       <connect-in port="config" place="config"/>
       <connect-in port="trigger" place="finalized"/>

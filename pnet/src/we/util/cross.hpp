@@ -20,15 +20,15 @@ namespace we
     class iterators_type
     {
     public:
-      iterators_type (std::list<value::type>&);
-      iterators_type (const std::list<value::type>::iterator&);
+      iterators_type (std::list<pnet::type::value::value_type>&);
+      iterators_type (const std::list<pnet::type::value::value_type>::iterator&);
       bool end() const;
       const pos_and_distance_type& pos_and_distance() const;
       void operator++();
       void rewind();
     private:
-      std::list<value::type>::iterator _begin;
-      std::list<value::type>::iterator _end;
+      std::list<pnet::type::value::value_type>::iterator _begin;
+      std::list<pnet::type::value::value_type>::iterator _end;
       pos_and_distance_type _pos_and_distance;
     };
 
@@ -43,10 +43,10 @@ namespace we
                                          >&
                     ) const;
       void push ( const petri_net::place_id_type&
-                , std::list<value::type>&
+                , std::list<pnet::type::value::value_type>&
                 );
       void push ( const petri_net::place_id_type&
-                , const std::list<value::type>::iterator&
+                , const std::list<pnet::type::value::value_type>::iterator&
                 );
     private:
       boost::unordered_map<petri_net::place_id_type, iterators_type> _m;

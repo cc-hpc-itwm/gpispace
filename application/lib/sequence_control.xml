@@ -39,7 +39,7 @@
         <out name="state" type="state"/>
         <out name="id" type="control"/>
         <expression>
-          ${id} := []; ${state.id} := ${state.id} + 1
+          ${id} := []; ${state.id} := ${state.id} + 1L
         </expression>
         <condition>${state.id} :lt: ${state.max}</condition>
       </defun>

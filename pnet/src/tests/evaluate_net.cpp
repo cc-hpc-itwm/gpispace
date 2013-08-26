@@ -36,10 +36,10 @@ namespace
     void put_token_from_string
       (const std::string& port, const std::string& value)
     {
-      put_token (port, ::value::read (value));
+      put_token (port, pnet::type::value::read (value));
     }
 
-    void put_token (const std::string& port, const value::type& value)
+    void put_token (const std::string& port, const pnet::type::value::value_type& value)
     {
       we::util::token::put (activity, port, value);
     }
@@ -150,7 +150,7 @@ BOOST_FIXTURE_TEST_CASE (sequence, fixture)
   {
     load_activity_from_file ("sequence_input.pnet");
 
-    put_token_from_string ("n", "1");
+    put_token_from_string ("n", "1L");
 
     execute();
 
@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE (sequence, fixture)
   {
     load_activity_from_file ("sequence_input.pnet");
 
-    put_token_from_string ("n", "10");
+    put_token_from_string ("n", "10L");
 
     execute();
 

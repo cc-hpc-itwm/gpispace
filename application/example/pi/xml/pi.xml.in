@@ -29,42 +29,42 @@
     <place name="num_packet" type="long">
       <token>
         <value>
-          @NUM_PACKET@
+          @NUM_PACKET@L
         </value>
       </token>
     </place>
     <place name="points_per_packet" type="long">
       <token>
         <value>
-          @POINTS_PER_PACKET@
+          @POINTS_PER_PACKET@L
         </value>
       </token>
     </place>
     <place name="credit_generate" type="long">
       <token>
         <value>
-          @CREDIT_GENERATE@
+          @CREDIT_GENERATE@L
         </value>
       </token>
     </place>
     <place name="credit_run" type="long">
       <token>
         <value>
-          @CREDIT_RUN@
+          @CREDIT_RUN@L
         </value>
       </token>
     </place>
     <place name="credit_get_key" type="long">
       <token>
         <value>
-          @CREDIT_GET_KEY@
+          @CREDIT_GET_KEY@L
         </value>
       </token>
     </place>
     <place name="start_seed" type="long">
       <token>
         <value>
-          @SEED@
+          @SEED@L
         </value>
       </token>
     </place>

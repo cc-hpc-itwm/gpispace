@@ -7,14 +7,14 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/util/weparse.hpp>
 
-#include <we/type/literal/default.hpp>
 #include <we/type/net.fwd.hpp>
 #include <we/type/place.hpp>
 #include <we/type/error.hpp>
 
-#include <we/type/value/require_type.hpp>
-
 #include <we/expr/eval/context.hpp>
+
+#include <we/require_type.hpp>
+#include <we/type/signature/resolve.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
 
@@ -365,13 +365,13 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<signature::type>
+      boost::optional<pnet::type::signature::signature_type>
       net_type::signature (const std::string& type) const
       {
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
                          , structs.end()
-                         , boost::bind ( parse::structure_type::struct_by_name
+                         , boost::bind ( parse::structure_type_util::struct_by_name
                                        , type
                                        , _1
                                        )
@@ -380,10 +380,9 @@ namespace xml
 
         if (pos != structs.end())
         {
-          return signature::type
-            ( parse::structure_type::resolve_with_fun
-              (*pos, boost::bind (&net_type::signature, *this, _1))
-            , pos->name()
+          return pnet::type::signature::resolve
+            ( pos->signature()
+            , boost::bind (&net_type::signature, *this, _1)
             );
         }
 
@@ -418,11 +417,11 @@ namespace xml
 
       void net_type::specialize ( const type::type_map_type & map
                                 , const type::type_get_type & get
-                                , const xml::parse::structure_type::set_type & known_structs
+                                , const xml::parse::structure_type_util::set_type & known_structs
                                 , state::type & state
                                 )
       {
-        namespace st = xml::parse::structure_type;
+        namespace st = xml::parse::structure_type_util;
 
         BOOST_FOREACH (specialize_type& specialize, specializes().values())
         {
@@ -509,7 +508,10 @@ namespace xml
           place.specialize (map, state);
         }
 
-        specialize_structs (map, structs, state);
+        BOOST_FOREACH (structure_type& s, structs)
+        {
+          s.specialize (map);
+        }
       }
 
       // ***************************************************************** //
@@ -661,169 +663,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      namespace
-      {
-        class default_construct_value : public boost::static_visitor<value::type>
-        {
-        public:
-          value::type
-          operator () (const std::string & type_name) const
-          {
-            return literal::of_type (type_name);
-          }
-
-          value::type
-          operator () (const signature::structured_t & signature) const
-          {
-            value::structured_t val;
-
-            for ( signature::structured_t::const_iterator sig (signature.begin())
-                ; sig != signature.end()
-                ; ++sig
-                )
-            {
-              const std::string field (sig->first);
-              const signature::desc_t desc (sig->second);
-
-              val[field] = boost::apply_visitor (*this, desc);
-            }
-
-            return val;
-          }
-        };
-
-        class construct_value : public boost::static_visitor<value::type>
-        {
-        private:
-          const std::string & place_name;
-          const boost::filesystem::path & path;
-          const std::string field_name;
-          const state::type & state;
-
-        public:
-          construct_value ( const std::string & _place_name
-                          , const boost::filesystem::path & _path
-                          , const std::string & _field_name
-                          , const state::type & _state
-                          )
-            : place_name (_place_name)
-            , path (_path)
-            , field_name (_field_name)
-            , state (_state)
-          {}
-
-          value::type operator () ( const std::string & signature
-                                  , const std::string & value
-                                  ) const
-          {
-            std::ostringstream s;
-
-            s << "when parsing the value "
-              << " of field " << field_name
-              << " of place " << place_name
-              << " of type " << signature
-              << " in " << path
-              ;
-
-            const expr::parse::parser parser
-              (util::generic_we_parse (value, s.str()));
-
-            try
-            {
-              expr::eval::context context;
-
-              const value::type v (parser.eval_all (context));
-              const signature::type sig (signature);
-
-              return value::require_type (field_name, sig, v);
-            }
-            catch (const expr::exception::eval::divide_by_zero & e)
-            {
-              throw error::parse_lift (place_name, field_name, path, e.what());
-            }
-            catch (const expr::exception::eval::type_error & e)
-            {
-              throw error::parse_lift (place_name, field_name, path, e.what());
-            }
-            catch (const ::type::error & e)
-            {
-              throw error::parse_lift (place_name, field_name, path, e.what());
-            }
-          }
-
-          value::type operator () ( const signature::structured_t & signature
-                                  , const signature::structured_t & value
-                                  ) const
-          {
-            value::structured_t val;
-
-            for ( signature::structured_t::const_iterator sig (signature.begin())
-                ; sig != signature.end()
-                ; ++sig
-                )
-            {
-              const std::string field (sig->first);
-              const signature::desc_t desc (sig->second);
-              const std::string field_deeper
-                ((field_name == "") ? field : (field_name + "." + field));
-
-              if (value.has_field (field))
-              {
-                val[field] = boost::apply_visitor
-                  ( construct_value (place_name, path, field_deeper, state)
-                  , desc
-                  , value.field(field)
-                  );
-              }
-              else
-              {
-                state.warn (warning::default_construction ( place_name
-                                                          , field_deeper
-                                                          , path
-                                                          )
-                           );
-
-                val[field] = boost::apply_visitor
-                  (default_construct_value(), desc);
-              }
-            }
-
-            if (state.Wunused_field())
-            {
-              for ( signature::structured_t::const_iterator pos (value.begin())
-                  ; pos != value.end()
-                  ; ++pos
-                  )
-              {
-                const std::string field (pos->first);
-                const std::string field_deeper
-                  ((field_name == "") ? field : (field_name + "." + field));
-
-                if (!signature.has_field (field))
-                {
-                  state.warn (warning::unused_field ( place_name
-                                                    , field_deeper
-                                                    , path
-                                                    )
-                             );
-                }
-              }
-            }
-
-            return val;
-          }
-
-          template<typename SIG, typename VAL>
-          value::type operator () ( const SIG & signature
-                                  , const VAL & value
-                                  ) const
-          {
-            throw error::parse_type_mismatch
-              (place_name, field_name, signature, value, path);
-          }
-        };
-      }
-
       boost::unordered_map<std::string, petri_net::place_id_type>
       net_synthesize ( petri_net::net& we_net
                      , const place_map_map_type & place_map_map
@@ -907,14 +746,10 @@ namespace xml
           {
             we_net.put_value
               ( pid
-              , boost::apply_visitor
-                ( construct_value ( place.name()
-                                  , net.position_of_definition().path()
-                                  , ""
-                                  , state
-                                  )
-                , place.signature_or_throw().desc()
-                , token
+              , pnet::require_type
+                ( util::generic_we_parse (token, "parse token").eval_all()
+                , place.signature_or_throw()
+                , ""
                 )
               );
           }

@@ -35,18 +35,7 @@ namespace fhg
     }
     std::ostream& indenter::operator() (std::ostream& os) const
     {
-      os << std::endl;
-
-      for (unsigned int i (0); i < _depth; ++i)
-      {
-        os << "  ";
-      }
-      return os;
-    }
-
-    std::ostream& operator<< (std::ostream& os, const indenter& indent)
-    {
-      return indent (os);
+      return os << std::endl << std::string (_depth << 1u, ' ');
     }
 
     deeper::deeper (indenter& indenter)
@@ -59,11 +48,6 @@ namespace fhg
     std::ostream& deeper::operator() (std::ostream& os) const
     {
       return _indenter (os);
-    }
-
-    std::ostream& operator<< (std::ostream& os, const deeper& d)
-    {
-      return d (os);
     }
   }
 }

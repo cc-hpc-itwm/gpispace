@@ -23,11 +23,11 @@
       <out name="l" type="long"/>
       <expression>
         ${s.f3} := ${d} div 8;
-        ${tmp} := ${s.f3} + 2;
+        ${tmp} := ${s.f3} + 2L;
         ${s.f1} := ${tmp} * ${l};
-        ${s.f2} := ${s.f1} + 3 * ${l};
+        ${s.f2} := ${s.f1} + 3L * ${l};
         ${t} := ${s};
-        ${t.f3} := 0;
+        ${t.f3} := 0L;
       </expression>
     </defun>
     <connect-in port="l" place="in_A_1"/>

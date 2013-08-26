@@ -117,7 +117,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<signature::type> signature (const std::string&) const;
+        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
 
         // ***************************************************************** //
 
@@ -127,7 +127,7 @@ namespace xml
 
         void specialize ( const type::type_map_type & map
                         , const type::type_get_type & get
-                        , const xml::parse::structure_type::set_type & known_structs
+                        , const xml::parse::structure_type_util::set_type & known_structs
                         , state::type & state
                         );
 

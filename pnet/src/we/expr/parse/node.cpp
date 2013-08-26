@@ -8,9 +8,10 @@
 
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/show.hpp>
-
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
+
+#include <stdexcept>
 
 namespace expr
 {
@@ -65,9 +66,9 @@ namespace expr
         public:
           visitor_show (std::ostream & _s) : s (_s) {}
 
-          void operator () (const value::type & v) const
+          void operator () (const pnet::type::value::value_type & v) const
           {
-            s << v;
+            s << pnet::type::value::show (v);
           }
 
           void operator () (const std::list<std::string>& key) const
@@ -104,8 +105,11 @@ namespace expr
                   << ")"
                   ;
                 break;
-              default:
-                throw exception::strange ("unknown ternary token");
+              default: throw std::runtime_error
+                  (( boost::format ("show_parse_node_ternary (%1%)")
+                   % expr::token::show (t.token)
+                   ).str()
+                  );
               }
           }
         };
@@ -121,22 +125,22 @@ namespace expr
       namespace
       {
         class visitor_get_value
-          : public boost::static_visitor<const value::type &>
+          : public boost::static_visitor<const pnet::type::value::value_type &>
         {
         public:
-          const value::type & operator () (const value::type & v) const
+          const pnet::type::value::value_type & operator () (const pnet::type::value::value_type & v) const
           {
             return v;
           }
           template<typename T>
-          const value::type & operator () (const T &) const
+          const pnet::type::value::value_type & operator () (const T &) const
           {
             throw exception::eval::type_error ("get: node is not an value");
           }
         };
       }
 
-      const value::type& get (const type & node)
+      const pnet::type::value::value_type& get (const type & node)
       {
         return boost::apply_visitor (visitor_get_value(), node);
       }
@@ -146,7 +150,7 @@ namespace expr
         class visitor_is_value : public boost::static_visitor<bool>
         {
         public:
-          bool operator () (const value::type &) const { return true; }
+          bool operator () (const pnet::type::value::value_type &) const { return true; }
           bool operator () (const std::list<std::string>&) const { return false; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
@@ -164,7 +168,7 @@ namespace expr
         class visitor_is_ref : public boost::static_visitor<bool>
         {
         public:
-          bool operator () (const value::type &) const { return false; }
+          bool operator () (const pnet::type::value::value_type &) const { return false; }
           bool operator () (const std::list<std::string>&) const { return true; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
@@ -186,7 +190,7 @@ namespace expr
             : from (_from), to (_to)
           {}
 
-          void operator () (value::type &) const
+          void operator () (pnet::type::value::value_type &) const
           {
             return;
           }

@@ -115,38 +115,6 @@ namespace we {
       search_path_.push_front (p);
     }
 
-    void loader::writeTo(std::ostream &os) const
-    {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-
-      os << "{loader, ";
-      os << "{path, ";
-      for (search_path_t::const_iterator p (search_path_.begin()); p != search_path_.end(); ++p)
-      {
-        if (p != search_path_.begin())
-          os << ":";
-        os << "\"" << *p << "\"";
-      }
-      os << "}";
-      os << ", ";
-      os << "{modules, ";
-
-      os << "[";
-      module_table_t::const_iterator m(module_table_.begin());
-      while (m != module_table_.end())
-      {
-        os << (*(m->second));
-        ++m;
-
-        if (m != module_table_.end())
-          os << ", ";
-      }
-
-      os << "]";
-      os << "}";
-      os << "}";
-    }
-
     size_t loader::unload_autoloaded ()
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
@@ -184,9 +152,8 @@ namespace we {
       {
         try
         {
-          we::loader::input_t inp;
-          we::loader::output_t out;
-          (*(m->second))("selftest", inp, out);
+          expr::eval::context out;
+          (*(m->second)).call ("selftest", expr::eval::context(), out);
         }
         catch (FunctionNotFound const &)
         {
@@ -243,7 +210,7 @@ namespace we {
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       namespace fs = boost::filesystem;
-      const fs::path file_name = module_traits<Module>::file_name (module);
+      const fs::path file_name ("lib" + module + ".so");
       for (search_path_t::const_iterator dir (search_path_.begin()); dir != search_path_.end(); ++dir)
       {
         if (search_directory_for_file (*dir, file_name, path_found))

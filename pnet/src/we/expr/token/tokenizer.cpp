@@ -6,13 +6,13 @@
 
 #include <we/expr/exception.hpp>
 
-#include <we/type/value/read.hpp>
-
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/variant.hpp>
 #include <boost/utility.hpp>
+
+#include <we/type/value/read.hpp>
 
 namespace expr
 {
@@ -25,7 +25,7 @@ namespace expr
       , _ref()
     {}
 
-    const value::type& tokenizer::value() const
+    const pnet::type::value::value_type& tokenizer::value() const
     {
       return _tokval;
     }
@@ -137,8 +137,12 @@ namespace expr
         SET_TOKEN ("==", eq);
         SET_TOKEN ("^", _powint);
         SET_TOKEN ("div", divint);
-        SET_TOKEN ("double", _todouble);
+        SET_TOKEN ("int", _toint);
         SET_TOKEN ("long", _tolong);
+        SET_TOKEN ("uint", _touint);
+        SET_TOKEN ("ulong", _toulong);
+        SET_TOKEN ("float", _tofloat);
+        SET_TOKEN ("double", _todouble);
         SET_TOKEN ("max", max);
         SET_TOKEN ("min", min);
         SET_TOKEN ("mod", modint);
@@ -283,7 +287,7 @@ namespace expr
 
           if (_first)
           {
-            _tokenizer.set_value (value::read (_tokenizer.pos()));
+            _tokenizer.set_value (pnet::type::value::read (_tokenizer.pos()));
           }
           else
           {
@@ -306,7 +310,7 @@ namespace expr
     {
       _token = t;
     }
-    void tokenizer::set_value (const value::type& v)
+    void tokenizer::set_value (const pnet::type::value::value_type& v)
     {
       set_token (val);
       _tokval = v;

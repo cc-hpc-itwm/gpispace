@@ -31,10 +31,10 @@ ifndef NUM_BUFFER
 endif
 
 PUT_PORT += name_file=\"$(DATFILE)\"
-PUT_PORT += size_file=$(SIZE_FILE)
-PUT_PORT += size_chunk=$(SIZE_CHUNK)
-PUT_PORT += size_buffer=$(SIZE_BUFFER)
-PUT_PORT += num_buffer=$(NUM_BUFFER)
+PUT_PORT += size_file=$(SIZE_FILE)L
+PUT_PORT += size_chunk=$(SIZE_CHUNK)L
+PUT_PORT += size_buffer=$(SIZE_BUFFER)L
+PUT_PORT += num_buffer=$(NUM_BUFFER)L
 
 ###############################################################################
 

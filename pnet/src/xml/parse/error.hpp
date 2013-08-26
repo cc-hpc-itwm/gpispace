@@ -9,10 +9,11 @@
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/util/position.hpp>
 
-#include <we/type/literal.hpp>
-#include <we/type/signature.hpp>
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
+
+#include <we/type/signature.hpp>
+#include <we/type/signature/show.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/backtracing_exception.hpp>
@@ -240,69 +241,6 @@ namespace xml
 
       private:
         const id::ref::place _place;
-      };
-
-      // ******************************************************************* //
-
-      class parse_type_mismatch : public generic
-      {
-      private:
-        std::string nice  ( const std::string & place
-                          , const std::string & field
-                          , const std::string & sig
-                          , const signature::structured_t & val
-                          , const boost::filesystem::path & path
-                          ) const
-        {
-          std::ostringstream s;
-
-          s << "type mismatch when try to read a value for place " << place
-            << " from " << path
-            << " when reading field " << field
-            << " expecting literal of type " << sig
-            << " got structured value " << val
-            ;
-
-          return s.str();
-        }
-
-        std::string nice  ( const std::string & place
-                          , const std::string & field
-                          , const signature::structured_t & sig
-                          , const std::string & val
-                          , const boost::filesystem::path & path
-                          ) const
-        {
-          std::ostringstream s;
-
-          s << "type mismatch when try to read a value for place " << place
-            << " from " << path
-            << " when reading field " << field
-            << " expecting structured type " << sig
-            << " got literal value " << val
-            ;
-
-          return s.str();
-        }
-
-      public:
-        parse_type_mismatch ( const std::string & place
-                            , const std::string & field
-                            , const std::string & sig
-                            , const signature::structured_t & val
-                            , const boost::filesystem::path & path
-                            )
-          : generic (nice (place, field, sig, val, path))
-        {}
-
-        parse_type_mismatch ( const std::string & place
-                            , const std::string & field
-                            , const signature::structured_t & sig
-                            , const std::string & val
-                            , const boost::filesystem::path & path
-                            )
-          : generic (nice (place, field, sig, val, path))
-        {}
       };
 
       // ******************************************************************* //
@@ -599,9 +537,9 @@ namespace xml
       {
       public:
         port_tunneled_type_error ( const std::string& name_virtual
-                                 , const signature::type& sig_virtual
+                                 , const pnet::type::signature::signature_type& sig_virtual
                                  , const std::string& name_real
-                                 , const signature::type& sig_real
+                                 , const pnet::type::signature::signature_type& sig_real
                                  , const boost::filesystem::path& path
                                  )
           : generic
@@ -609,9 +547,11 @@ namespace xml
               ( "type error: virtual place %1% of type %2%"
               " identified with real place %3% of type %4% in %5%"
               )
-              % name_virtual % sig_virtual
-              % name_real % sig_real
-              % path
+            % name_virtual
+            % pnet::type::signature::show (sig_virtual)
+            % name_real
+            % pnet::type::signature::show (sig_real)
+            % path
             )
         {}
       };

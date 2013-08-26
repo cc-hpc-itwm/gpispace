@@ -1,70 +1,46 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_VALUE_HPP
-#define _WE_TYPE_VALUE_HPP
+#ifndef PNET_SRC_WE_TYPE_VALUE_HPP
+#define PNET_SRC_WE_TYPE_VALUE_HPP
 
-#include <we/type/literal.hpp>
-
-#include <string>
-#include <map>
-#include <list>
+#include <we/type/literal/control.hpp>
+#include <we/type/bitsetofint.hpp>
+#include <we/type/bytearray.hpp>
 
 #include <boost/variant.hpp>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
+#include <list>
+#include <map>
+#include <set>
+#include <string>
 
-namespace value
+namespace pnet
 {
-  typedef std::list<std::string> path_type;
-
-  struct structured_t;
-
-  typedef boost::variant< literal::type
-                        , boost::recursive_wrapper<structured_t>
-                        > type;
-
-  typedef std::map<std::string, type> map_type;
-  typedef std::pair<std::string, type> key_node_type;
-
-  struct structured_t
+  namespace type
   {
-  private:
-    map_type _map;
-
-    friend class boost::serialization::access;
-    template<typename Archive>
-    void serialize (Archive & ar, const unsigned int)
+    namespace value
     {
-      ar & BOOST_SERIALIZATION_NVP(_map);
+      typedef boost::make_recursive_variant
+              < we::type::literal::control
+              , bool
+              , int
+              , long
+              , unsigned int
+              , unsigned long
+              , float
+              , double
+              , char
+              , std::string
+              , bitsetofint::type
+              , bytearray::type
+              , std::list<boost::recursive_variant_>
+              , std::set<boost::recursive_variant_>
+              , std::map<boost::recursive_variant_, boost::recursive_variant_>
+              , std::list<std::pair<std::string, boost::recursive_variant_> >
+              >::type value_type;
+
+      typedef std::list<std::pair<std::string, value_type> > structured_type;
     }
-
-  public:
-    type & operator [] (const std::string & field_name)
-    {
-      return _map[field_name];
-    }
-
-    const map_type& map() const { return _map; }
-  };
-
-  inline bool operator== (const structured_t& x, const structured_t& y)
-  {
-    map_type::const_iterator pos_x (x.map().begin());
-    map_type::const_iterator pos_y (y.map().begin());
-    const map_type::const_iterator end_x (x.map().end());
-
-    bool all_eq (x.map().size() == y.map().size());
-
-    while (all_eq && pos_x != end_x)
-    {
-      all_eq = pos_x->first == pos_y->first && pos_x->second == pos_y->second;
-
-      ++pos_x;
-      ++pos_y;
-    }
-
-    return all_eq;
   }
 }
 

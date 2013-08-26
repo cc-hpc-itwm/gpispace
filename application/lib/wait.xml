@@ -15,9 +15,9 @@
           <in name="wait" type="long"/>
           <out name="wait" type="long"/>
           <expression>
-            ${wait} := ${wait} - 1;
+            ${wait} := ${wait} - 1L;
           </expression>
-          <condition>${wait} :gt: 0</condition>
+          <condition>${wait} :gt: 0L</condition>
         </defun>
         <connect-in place="trigger" port="object"/>
         <connect-in place="wait" port="wait"/>
@@ -31,7 +31,7 @@
           <expression>
             ${trigger} := []
           </expression>
-          <condition>${wait} :eq: 0</condition>
+          <condition>${wait} :eq: 0L</condition>
         </defun>
         <connect-in place="wait" port="wait"/>
         <connect-out place="done" port="trigger"/>

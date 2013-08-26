@@ -1,12 +1,13 @@
 #include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
+#include <iostream>
 
 #include "answer.hpp"
 
-static void question (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void question (void *, const expr::eval::context & input, expr::eval::context& output)
 {
   std::cerr << "input := " << input << std::endl;
-  output. bind ("out", (long)get_answer());
+  output. bind ("out", pnet::type::value::value_type ((long)get_answer()));
   std::cerr << "answer := " << get_answer() << std::endl;
 }
 

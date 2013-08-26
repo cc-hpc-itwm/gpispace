@@ -29,20 +29,11 @@ int main (int argc, char** argv)
 
       for (int b (expr::token::_token_begin); b != expr::token::_token_end; ++b)
         {
-          try
-            {
-              std::cout << std::setw(w)
-                        << expr::parse::action::action ( (expr::token::type)a
-                                                       , (expr::token::type)b
-                                                       )
-                ;
-            }
-          catch (const expr::exception::strange& e)
-            {
-              std::cout << std::setw(w) << "bump";
-            }
-
-          std::cout << ",";
+          std::cout << std::setw(w)
+                    << expr::parse::action::action ( (expr::token::type)a
+                                                   , (expr::token::type)b
+                                                   )
+                    << ",";
         }
 
       std::cout << "}" << std::endl;
