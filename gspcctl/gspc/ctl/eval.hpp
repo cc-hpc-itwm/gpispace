@@ -3,15 +3,14 @@
 
 #include <boost/filesystem.hpp>
 
+#include <vector>
 #include <string>
 
 namespace gspc
 {
   namespace ctl
   {
-    int eval ( boost::filesystem::path const & cmd
-             , char *argv[]
-             , size_t argc
+    int eval ( std::vector<std::string> const & argv
              , std::string & out
              , std::string & err
              , const std::string & inp = ""

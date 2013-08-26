@@ -11,23 +11,14 @@ namespace gspc
   {
     namespace fs = boost::filesystem;
 
-    int eval ( fs::path const & cmd
-             , char *av[]
-             , size_t ac
+    int eval ( gspc::rif::argv_t const &argv
              , std::string & out
              , std::string & err
              , const std::string & inp
              )
     {
-      gspc::rif::argv_t argv;
       gspc::rif::env_t env;
       int rc;
-
-      argv.push_back (cmd.string ());
-      for (size_t i = 0 ; i < ac ; ++i)
-      {
-        argv.push_back (av [i]);
-      }
 
       gspc::rif::process_t proc (0, argv.front (), argv);
 
