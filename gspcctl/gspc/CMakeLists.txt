@@ -1,5 +1,6 @@
 set (gspcctl_src
   ctl/eval.cpp
+  ctl/system.cpp
 )
 
 add_library (gspcctl        STATIC ${gspcctl_src})
