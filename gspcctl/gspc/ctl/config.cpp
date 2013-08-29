@@ -1,12 +1,15 @@
 #include "config.hpp"
 #include "system.hpp"
 
-#include <sysexits.h>
-
 #include <fstream>
 
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/regex.hpp>
+#include <boost/bind.hpp>
+
+#include <fhg/util/join.hpp>
 
 #include <json_spirit_reader_template.h>
 #include <json_spirit_writer_template.h>
@@ -15,17 +18,6 @@ namespace gspc
 {
   namespace ctl
   {
-    namespace error
-    {
-      enum config_errors
-        {
-          config_no_section
-        , config_no_name
-        , config_no_such_key
-        , config_invalid_key
-        };
-    }
-
     namespace detail
     {
       class config_category : public boost::system::error_category
@@ -48,6 +40,8 @@ namespace gspc
             return "key not found";
           case error::config_invalid_key:
             return "invalid key";
+          case error::config_invalid:
+            return "invalid config";
           default:
             return "gspc.config error";
           }
@@ -195,10 +189,11 @@ namespace gspc
       return 0;
     }
 
-    static void s_flatten ( json_spirit::Value const &val
-                          , std::vector<std::pair<std::string, std::string> >& l
-                          , std::string const &key = ""
-                          )
+    template <typename Visitor>
+    static void s_depth_first_traverse ( json_spirit::Value const &val
+                                       , std::vector<std::string> trace
+                                       , Visitor v
+                                       )
     {
       if (val.is_null ())
         return;
@@ -211,9 +206,11 @@ namespace gspc
 
         while (it != end)
         {
-          std::string child =
-            key.empty () ? it->name_ : (key + "." + it->name_);
-          s_flatten (it->value_, l, child);
+          std::vector<std::string> new_trace (trace);
+          new_trace.push_back (it->name_);
+
+          s_depth_first_traverse (it->value_, new_trace, v);
+
           ++it;
         }
       }
@@ -225,18 +222,71 @@ namespace gspc
 
         while (it != end)
         {
-          s_flatten (*it, l, key);
+          s_depth_first_traverse (*it, trace, v);
           ++it;
         }
       }
+      else if (val.type () == json_spirit::str_type)
+      {
+        v (trace, val.get_str ());
+      }
+      else if (val.type () == json_spirit::bool_type)
+      {
+        v (trace, boost::lexical_cast<std::string>(val.get_bool ()));
+      }
+      else if (val.type () == json_spirit::int_type)
+      {
+        v (trace, boost::lexical_cast<std::string>(val.get_int ()));
+      }
+      else if (val.type () == json_spirit::real_type)
+      {
+        v (trace, boost::lexical_cast<std::string>(val.get_real ()));
+      }
       else
       {
-        l.push_back (std::make_pair (key, val.get_str ()));
+        throw std::runtime_error
+          ("s_depth_first_traverse: internal error: unknown json type");
       }
+    }
+
+    template <typename V>
+    static void s_config_traverse (json_spirit::Value const &val, V v)
+    {
+      std::vector<std::string> trace;
+      return s_depth_first_traverse (val, trace, v);
+    }
+
+    static std::string s_flatten_visitor ( std::vector<std::pair<std::string, std::string> >& l
+                                         , std::vector<std::string> const &trace
+                                         , std::string const & value
+                                         )
+    {
+      const std::string key
+        (fhg::util::join (trace.begin (), trace.end (), "."));
+
+      l.push_back (std::make_pair (key, value));
+
+      return value;
+    }
+
+    static void s_flatten ( json_spirit::Value const &val
+                          , std::vector<std::pair<std::string, std::string> >& l
+                          )
+    {
+      s_config_traverse (val, boost::bind (s_flatten_visitor, boost::ref (l), _1, _2));
+    }
+
+    std::vector<std::pair<std::string, std::string> >
+    config_list (config_t const &cfg)
+    {
+      std::vector<std::pair<std::string, std::string> > list;
+      s_config_traverse (cfg, boost::bind (s_flatten_visitor, boost::ref (list), _1, _2));
+      return list;
     }
 
     std::vector<std::string> config_get_all ( config_t const &cfg
                                             , std::string const &key
+                                            , std::string const &value_regex
                                             )
     {
       std::vector<std::string> result;
@@ -244,267 +294,134 @@ namespace gspc
       typedef std::vector<std::pair<std::string, std::string> > flat_list_t;
       flat_list_t flat_list;
       s_flatten (cfg, flat_list);
+
+      const boost::regex regex (value_regex);
+
       for (flat_list_t::const_iterator it = flat_list.begin () ; it != flat_list.end () ; ++it)
       {
         if (it->first == key)
-          result.push_back (it->second);
+        {
+          if ( value_regex.empty ()
+             || boost::regex_search (it->second, regex)
+             )
+            result.push_back (it->second);
+        }
       }
 
       return result;
     }
 
-    std::string config_get_str (config_t const &cfg, std::string const &key)
+    void config_add ( config_t &cfg
+                    , std::string const &key, std::string const& val
+                    )
     {
-      std::vector<std::string> v = config_get_all (cfg, key);
-      if (v.empty ())
+      std::vector<std::string> path;
+      int rc = s_split_key (key, path);
+      if (rc)
       {
-        throw make_error_code (error::config_no_such_key);
+        throw error::make_error_code ((error::config_errors)rc);
       }
-      else
+
+      if (cfg.type () != json_spirit::obj_type)
+        throw error::make_error_code (error::config_invalid);
+
+      json_spirit::Object * cur = &cfg.get_obj ();
+      while (path.size () > 1)
       {
-        return v.back ();
-      }
-    }
+        const std::string name = path.front (); path.erase (path.begin ());
 
-    int config_cmd ( std::vector<std::string> const & argv
-                   , std::istream &inp
-                   , std::ostream &out
-                   , std::ostream &err
-                   )
-    {
-      enum config_mode_t
-      {
-        MGET
-      , MGETALL
-      , MUNSET
-      , MUNSETALL
-      , MSET
-      , MADD
-      , MEDIT
-      , MLIST
-      , MNONE
-      };
-
-      std::string file (gspc::ctl::user_config_file ());
-      config_mode_t mode = MNONE;
-
-      size_t i = 1;
-      while (i < argv.size ())
-      {
-        const std::string arg = argv [i];
-
-        if (arg == "--help" || arg == "-h")
+        json_spirit::Object::iterator it = cur->begin ();
+        const json_spirit::Object::iterator end = cur->end ();
+        while (it != end)
         {
-          ++i;
-          err << "usage: config [<file-option>] [type] command..."  << std::endl
-              <<                                                       std::endl
-              << "   file-options"                                  << std::endl
-              << "       --user : selects the users global config"  << std::endl
-              << "       --system : selects the system config"      << std::endl
-              << "       --site : selects the site config"          << std::endl
-              << "       -f | --file file : use this file"          << std::endl
-              <<                                                       std::endl
-            /*
-              << "   types"                                         << std::endl
-              << "       --int : value is an integer"               << std::endl
-              << "       --bool : value is a boolean"               << std::endl
-              << "       --string : value is a string"              << std::endl
-              <<                                                       std::endl
-            */
-              << "   available commands"                            << std::endl
-              << "       --add name value"                          << std::endl
-              << "       --get name [regex]"                        << std::endl
-              << "       --get-all name [regex]"                    << std::endl
-              << "       --unset name [regex]"                      << std::endl
-              << "       --list"                                    << std::endl
-              << "       -e | --edit"                               << std::endl
-            ;
-
-          return 0;
-        }
-        else if (arg == "--user")
-        {
-          file = gspc::ctl::user_config_file ();
-          ++i;
-        }
-        else if (arg == "--system")
-        {
-          file = gspc::ctl::system_config_file ();
-          ++i;
-        }
-        else if (arg == "--site")
-        {
-          file = gspc::ctl::site_config_file ();
-          ++i;
-        }
-        else if (arg == "-f" || arg == "--file")
-        {
-          ++i;
-
-          if (i < argv.size ())
-          {
-            file = argv [i];
-          }
-          else
-          {
-            err << "config: missing argument to '--file'" << std::endl;
-            return EX_USAGE;
-          }
-        }
-        else if (arg == "-e" || arg == "--edit")
-        {
-          mode = MEDIT;
-          ++i;
-        }
-        else if (arg == "--get")
-        {
-          mode = MGET;
-          ++i;
-          break;
-        }
-        else if (arg == "--get-all")
-        {
-          mode = MGETALL;
-          ++i;
-        }
-        else if (arg == "--set")
-        {
-          mode = MSET;
-          ++i;
-
-          if ((i + 1) < argv.size ())
+          if (it->name_ == name)
           {
             break;
           }
-          else
-          {
-            err << "config: missing argument(s) to '--set'" << std::endl;
-            return EX_USAGE;
-          }
+          ++it;
         }
-        else if (arg == "--add")
+        if (it == end)
         {
-          mode = MADD;
-          ++i;
-
-          if ((i + 1) < argv.size ())
-          {
-            break;
-          }
-          else
-          {
-            err << "config: missing argument(s) to '--add'" << std::endl;
-            return EX_USAGE;
-          }
-        }
-        else if (arg == "--unset")
-        {
-          mode = MUNSET;
-          ++i;
-
-          if (i < argv.size ())
-          {
-            break;
-          }
-          else
-          {
-            err << "config: missing argument to '--unset'" << std::endl;
-            return EX_USAGE;
-          }
-        }
-        else if (arg == "--unset-all")
-        {
-          mode = MUNSETALL;
-          ++i;
-        }
-        else if (arg == "--list")
-        {
-          mode = MLIST;
-          ++i;
+          cur->push_back (json_spirit::Pair (name, json_spirit::Object ()));
+          cur = &cur->back ().value_.get_obj ();
         }
         else
         {
-          break;
+          cur = &it->value_.get_obj ();
         }
       }
 
-      if (mode == MNONE)
+      if (path.size () > 1)
       {
-        mode = MGET;
+        throw error::make_error_code (error::config_invalid);
       }
 
-      switch (mode)
+      cur->push_back
+        (json_spirit::Pair (path.front (), json_spirit::Value (val)));
+    }
+
+    static void config_unset ( json_spirit::Object &obj
+                             , std::vector<std::string> path
+                             , const boost::regex & regex
+                             )
+    {
+      if (path.empty ())
+        return;
+
+      const std::string name = path.front (); path.erase (path.begin ());
+
+      json_spirit::Object::iterator it = obj.begin ();
+      const json_spirit::Object::iterator end = obj.end ();
+
+      while (it != end)
       {
-      case MGET:
+        if (it->name_ == name)
         {
-          if (i == argv.size ())
+          if (path.empty ()) // delete leaf
           {
-            err << "usage: config [<file-option>] [type] command..."
-                << std::endl;
-            return EX_USAGE;
-          }
-
-          config_t cfg = config_read (file);
-          std::vector<std::string> matches = config_get_all (cfg, argv [i]);
-          if (matches.empty ())
-          {
-            return EXIT_FAILURE;
-          }
-          else
-          {
-            std::cout << matches.back () << std::endl;
-          }
-          break;
-        }
-      case MGETALL:
-        {
-          if (i == argv.size ())
-          {
-            err << "usage: config [<file-option>] [type] command..."
-                << std::endl;
-            return EX_USAGE;
-          }
-
-          config_t cfg = config_read (file);
-          std::vector<std::string> matches = config_get_all (cfg, argv [i]);
-          if (matches.empty ())
-          {
-            return EXIT_FAILURE;
-          }
-          else
-          {
-            BOOST_FOREACH (std::string const &m, matches)
+            if (boost::regex_search (it->value_.get_str (), regex))
             {
-              std::cout << m << std::endl;
+              it = obj.erase (it);
+            }
+            else
+            {
+              ++it;
             }
           }
-          break;
-        }
-      case MEDIT:
-        {
-          char buf [4096];
-          snprintf (buf, sizeof(buf), "editor %s", file.c_str ());
-          return system (buf);
-        }
-        break;
-      case MLIST:
-        {
-          config_t cfg = config_read (file);
-          typedef std::vector<std::pair<std::string, std::string> > flat_list_t;
-          flat_list_t flat_list;
-          s_flatten (cfg, flat_list);
-          for (flat_list_t::const_iterator it = flat_list.begin () ; it != flat_list.end () ; ++it)
+          else
           {
-            out << it->first << "=" << it->second << std::endl;
+            config_unset (it->value_.get_obj (), path, regex);
+            if (it->value_.get_obj ().empty ())
+            {
+              it = obj.erase (it);
+            }
+            else
+            {
+              ++it;
+            }
           }
         }
-        return 0;
-      default:
-        err << "mode " << mode << " not yet implemented" << std::endl;
-        return EX_SOFTWARE;
+        else
+        {
+          ++it;
+        }
       }
+    }
 
-      return 0;
+    void config_unset ( config_t &cfg
+                      , std::string const &key
+                      , std::string const &value_regex
+                      )
+    {
+      std::vector<std::string> path;
+      int rc = s_split_key (key, path);
+      if (rc)
+      {
+        throw error::make_error_code ((error::config_errors)rc);
+      }
+      const boost::regex regex (value_regex);
+
+      config_unset (cfg.get_obj (), path, regex);
     }
   }
 }

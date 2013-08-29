@@ -4,6 +4,7 @@ target_link_libraries (gspc
   ${UTIL_LIBRARIES}
   ${GSPC_RIF_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_REGEX_LIBRARY}
   ${Boost_THREAD_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
 )

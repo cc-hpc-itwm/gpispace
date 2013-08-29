@@ -16,6 +16,8 @@
 #include <gspc/rif.hpp>
 #include <gspc/ctl.hpp>
 
+#include <gspc/ctl/config_cmd.hpp>
+
 namespace fs = boost::filesystem;
 
 static void long_usage (int lvl);
@@ -215,7 +217,7 @@ int main (int argc, char *argv [], char *envp [])
 
   if (tool_argv [0] == "config")
   {
-    rc = gspc::ctl::config_cmd (tool_argv);
+    rc = gspc::ctl::cmd::config_cmd (tool_argv);
   }
   else
   {
