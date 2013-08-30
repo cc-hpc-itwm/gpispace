@@ -30,6 +30,7 @@ namespace gspc
     config_t config_read ();
     config_t config_read (std::istream &is);
     config_t config_read (std::string const & file);
+    config_t config_read_safe (std::string const & file);
 
     config_t config_read_site ();
     config_t config_read_system ();
@@ -49,9 +50,10 @@ namespace gspc
                                             );
     std::vector<std::pair<std::string, std::string> > config_list (config_t const &);
 
-    void config_set ( config_t &
-                    , std::string const &key, std::string const& val
-                    );
+    void config_replace ( config_t &
+                        , std::string const &key, std::string const& val
+                        , std::string const &value_regex=""
+                        );
     void config_add ( config_t &
                     , std::string const &key, std::string const& val
                     );

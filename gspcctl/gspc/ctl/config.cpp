@@ -6,6 +6,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 #include <boost/regex.hpp>
 #include <boost/bind.hpp>
 
@@ -88,7 +89,27 @@ namespace gspc
   {
     config_t config_read ()
     {
-      return config_read_user ();
+      json_spirit::Object cfg = json_spirit::Object ();
+
+      std::list<json_spirit::Object> objs;
+      objs.push_back (config_read_system ().get_obj ());
+      objs.push_back (config_read_site ().get_obj ());
+      objs.push_back (config_read_user ().get_obj ());
+
+      while (not objs.empty ())
+      {
+        json_spirit::Object obj = objs.front (); objs.pop_front ();
+        json_spirit::Object::const_iterator it = obj.begin ();
+        const json_spirit::Object::const_iterator end = obj.end ();
+
+        while (it != end)
+        {
+          cfg.push_back (*it);
+          ++it;
+        }
+      }
+
+      return cfg;
     }
 
     config_t config_read_site ()
@@ -148,6 +169,19 @@ namespace gspc
       catch (std::runtime_error const &e)
       {
         throw std::runtime_error (std::string (e.what ()) + ": " + file);
+      }
+    }
+
+    config_t config_read_safe (std::string const &file)
+    {
+      std::ifstream is (file.c_str ());
+      try
+      {
+        return config_read (is);
+      }
+      catch (std::runtime_error const &e)
+      {
+        return json_spirit::Object ();
       }
     }
 
@@ -319,11 +353,13 @@ namespace gspc
       int rc = s_split_key (key, path);
       if (rc)
       {
-        throw error::make_error_code ((error::config_errors)rc);
+        throw boost::system::system_error
+          (error::make_error_code ((error::config_errors)rc));
       }
 
       if (cfg.type () != json_spirit::obj_type)
-        throw error::make_error_code (error::config_invalid);
+        throw boost::system::system_error
+          (error::make_error_code (error::config_invalid));
 
       json_spirit::Object * cur = &cfg.get_obj ();
       while (path.size () > 1)
@@ -353,7 +389,8 @@ namespace gspc
 
       if (path.size () > 1)
       {
-        throw error::make_error_code (error::config_invalid);
+        throw boost::system::system_error
+          (error::make_error_code (error::config_invalid));
       }
 
       cur->push_back
@@ -417,11 +454,64 @@ namespace gspc
       int rc = s_split_key (key, path);
       if (rc)
       {
-        throw error::make_error_code ((error::config_errors)rc);
+        throw boost::system::system_error
+          (error::make_error_code ((error::config_errors)rc));
       }
       const boost::regex regex (value_regex);
 
       config_unset (cfg.get_obj (), path, regex);
+    }
+
+    static void config_replace ( json_spirit::Object &obj
+                               , std::vector<std::string> path
+                               , std::string const &val
+                               , const boost::regex & regex
+                               )
+    {
+      if (path.empty ())
+        return;
+
+      const std::string name = path.front (); path.erase (path.begin ());
+
+      json_spirit::Object::iterator it = obj.begin ();
+      const json_spirit::Object::iterator end = obj.end ();
+
+      while (it != end)
+      {
+        if (it->name_ == name)
+        {
+          if (path.empty ()) // replace leaf
+          {
+            if (boost::regex_search (it->value_.get_str (), regex))
+            {
+              it->value_ = val;
+            }
+          }
+          else
+          {
+            config_replace (it->value_.get_obj (), path, val, regex);
+          }
+        }
+
+        ++it;
+      }
+    }
+
+    void config_replace ( config_t &cfg
+                        , std::string const &key, std::string const& val
+                        , std::string const &value_regex
+                        )
+    {
+      std::vector<std::string> path;
+      int rc = s_split_key (key, path);
+      if (rc)
+      {
+        throw boost::system::system_error
+          (error::make_error_code ((error::config_errors)rc));
+      }
+      const boost::regex regex (value_regex);
+
+      config_replace (cfg.get_obj (), path, val, regex);
     }
   }
 }

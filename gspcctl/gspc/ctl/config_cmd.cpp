@@ -28,10 +28,11 @@ namespace gspc
         , MADD
         , MEDIT
         , MLIST
+        , MREPLACE
         , MNONE
         };
 
-        std::string file (gspc::ctl::user_config_file ());
+        std::string file;
         config_mode_t mode = MNONE;
 
         size_t i = 1;
@@ -62,6 +63,7 @@ namespace gspc
                 << "       --get name [regex]"                        << std::endl
                 << "       --get-all name [regex]"                    << std::endl
                 << "       --unset name [regex]"                      << std::endl
+                << "       --replace name value [value-regex]"        << std::endl
                 << "       --list"                                    << std::endl
                 << "       -e | --edit"                               << std::endl
               ;
@@ -168,6 +170,21 @@ namespace gspc
             mode = MLIST;
             ++i;
           }
+          else if (arg == "--replace")
+          {
+            mode = MREPLACE;
+            ++i;
+
+            if ((i+1) < argv.size ())
+            {
+              break;
+            }
+            else
+            {
+              err << "config: missing argument to '--replace'" << std::endl;
+              return EX_USAGE;
+            }
+          }
           else
           {
             break;
@@ -190,7 +207,8 @@ namespace gspc
               return EX_USAGE;
             }
 
-            config_t cfg = config_read (file);
+            config_t cfg =
+              file.empty () ? config_read () : config_read_safe (file);
             std::vector<std::string> matches =
               config_get_all ( cfg
                              , argv [i]
@@ -215,7 +233,8 @@ namespace gspc
               return EX_USAGE;
             }
 
-            config_t cfg = config_read (file);
+            config_t cfg =
+              file.empty () ? config_read () : config_read_safe (file);
             std::vector<std::string> matches =
               config_get_all ( cfg
                              , argv [i]
@@ -243,9 +262,10 @@ namespace gspc
           break;
         case MLIST:
           {
-            config_t cfg = config_read (file);
+            config_t cfg =
+              file.empty () ? config_read () : config_read_safe (file);
             typedef std::vector<std::pair<std::string, std::string> > flat_list_t;
-            flat_list_t flat_list = config_list (config_read (file));
+            flat_list_t flat_list = config_list (cfg);
             for (flat_list_t::const_iterator it = flat_list.begin () ; it != flat_list.end () ; ++it)
             {
               out << it->first << "=" << it->second << std::endl;
@@ -261,17 +281,20 @@ namespace gspc
               return EX_USAGE;
             }
 
-            config_t cfg;
+            if (file.empty ())
+              file = user_config_file ();
+
+            config_t cfg = config_read_safe (file);
             try
             {
-              cfg = config_read (file);
+              config_add (cfg, argv [i], argv [i+1]);
+              config_write (cfg, file);
             }
-            catch (...)
+            catch (std::exception const &ex)
             {
-              cfg = json_spirit::Object ();
+              std::cerr << "add: failed: " << ex.what () << std::endl;
+              return EXIT_FAILURE;
             }
-            config_add (cfg, argv [i], argv [i+1]);
-            config_write (cfg, file);
           }
           return 0;
         case MUNSET:
@@ -283,19 +306,35 @@ namespace gspc
               return EX_USAGE;
             }
 
-            config_t cfg;
-            try
-            {
-              cfg = config_read (file);
-            }
-            catch (...)
-            {
-              cfg = json_spirit::Object ();
-            }
+            if (file.empty ())
+              file = user_config_file ();
+
+            config_t cfg = config_read_safe (file);
             config_unset ( cfg
                          , argv [i]
                          , ((i+1) < argv.size ()) ? argv [i+1] : ""
                          );
+            config_write (cfg, file);
+          }
+          return 0;
+        case MREPLACE:
+          {
+            if ((argv.size () - i) < 2)
+            {
+              err << "usage: config [<file-option>] --replace key value [value-regex]"
+                  << std::endl;
+              return EX_USAGE;
+            }
+
+            if (file.empty ())
+              file = user_config_file ();
+
+            config_t cfg = config_read_safe (file);
+            config_replace ( cfg
+                           , argv [i]
+                           , argv [i+1]
+                           , ((i+2) < argv.size ()) ? argv [i+2] : ""
+                           );
             config_write (cfg, file);
           }
           return 0;
