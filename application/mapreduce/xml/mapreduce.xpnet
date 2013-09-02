@@ -643,7 +643,7 @@
     </transition>
       
    <place name="partition_result" type="partition_result"/>
-    <transition name="copy_into_partition_slot" inline="true">
+    <transition name="shuffle" inline="true">
       <require key="GPI" />
       <require key="RED" /> 
     	<defun>
@@ -651,7 +651,7 @@
         <in name="partition_info" type="partition_info"/>
         <in name="config" type="config"/>
         <out name="partition_result" type="partition_result"/>
-        <module name="store_into_partition_slot" function="copy_map_slice_into_partition(part_slice_info, partition_info, config, partition_result)">
+        <module name="store_into_partition_slot" function="shuffle(part_slice_info, partition_info, config, partition_result)">
            <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="sstream"/>
