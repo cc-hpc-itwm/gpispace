@@ -3,6 +3,9 @@ set (gspcctl_src
   ctl/config.cpp
   ctl/config_cmd.cpp
   ctl/system.cpp
+
+  ctl/log.cpp
+  ctl/log_cmd.cpp
 )
 
 add_library (gspcctl        STATIC ${gspcctl_src})

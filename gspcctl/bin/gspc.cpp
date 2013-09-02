@@ -17,6 +17,7 @@
 #include <gspc/ctl.hpp>
 
 #include <gspc/ctl/config_cmd.hpp>
+#include <gspc/ctl/log_cmd.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -219,6 +220,10 @@ int main (int argc, char *argv [], char *envp [])
   {
     rc = gspc::ctl::cmd::config_cmd (tool_argv);
   }
+  else if (tool_argv [0] == "log")
+  {
+    rc = gspc::ctl::cmd::log_cmd (tool_argv);
+  }
   else
   {
     std::string err, out, inp;
@@ -276,6 +281,11 @@ int resolve ( std::string const &path
   if (unaliased_command == "config")
   {
     argv.push_back ("config");
+    return 1;
+  }
+  else if (unaliased_command == "log")
+  {
+    argv.push_back ("log");
     return 1;
   }
   else
