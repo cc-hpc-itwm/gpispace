@@ -698,62 +698,61 @@ void SchedulerImpl::feedWorkers()
     // check if there are jobs that can already be scheduled on
     // these workers
 
-    size_t sizeQ = ptr_worker_man_->common_queue_.size();
-    size_t counter=0;
-
-	if( !ptr_worker_man_->common_queue_.empty() && !listAvailWorkers.empty() )
+    JobQueue nonmatching_jobs_queue;
+	while( !ptr_worker_man_->common_queue_.empty() && !listAvailWorkers.empty() )
 	{
-	  while(counter++<sizeQ)
-	  {
-		  sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.pop());
-		  job_requirements_t job_reqs;
+		sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.pop());
+		job_requirements_t job_reqs;
 
-		  try {
-			  job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
-			  // LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
-		  }
-		  catch( const NoJobRequirements& ex ) // no requirements are specified
-		  {
-			  // we have an empty list of requirements then!
-		  }
+		try {
+			job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
+			// LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
+		}
+		catch( const NoJobRequirements& ex ) // no requirements are specified
+		{
+			// we have an empty list of requirements then!
+		}
 
-		  sdpa::list_match_workers_t listMatchingWorkers( ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs) );
+		sdpa::list_match_workers_t listMatchingWorkers( ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs) );
 
-		  // To do:
-		  // here the pattern should be more sophisticated with the co-allocation
-		  // for each job one should build an allocation list (and for each id in this
-		  // list the corresponding worker should be reserved and above use getListWorkersNotReserved
-		  // if the allocation list has the size specified by the filed n_workers_req in job_requirements
-		  // then serve the job to the worke in the head of the list
+		// To do:
+		// here the pattern should be more sophisticated with the co-allocation
+		// for each job one should build an allocation list (and for each id in this
+		// list the corresponding worker should be reserved and above use getListWorkersNotReserved
+		// if the allocation list has the size specified by the filed n_workers_req in job_requirements
+		// then serve the job to the worker whose id is the head of the list
 
-		  // attention should be paid when the job finishes, to free all the workers apperaing into the allocation list
-		  // in case of re-scheduling, the WHOLE allocation list should be re-set !!!!
+		// attention should be paid when the job finishes, to free all the workers appearing into the allocation list
+		// in case of re-scheduling, the WHOLE allocation list should be re-set !!!!
 
-		  bool bMatchingFound(false);
-		  sdpa::worker_id_t found_worker_id;
-		  for( sdpa::list_match_workers_t::iterator it = listMatchingWorkers.begin(); it!=listMatchingWorkers.end() && !bMatchingFound && !listAvailWorkers.empty(); it++ )
-		  {
-			  sdpa::worker_id_list_t::iterator iter = find(listAvailWorkers.begin(), listAvailWorkers.end(), it->first);
+		bool bMatchingFound(false);
+		sdpa::worker_id_t found_worker_id;
+		for( sdpa::list_match_workers_t::iterator it = listMatchingWorkers.begin(); it!=listMatchingWorkers.end() && !bMatchingFound && !listAvailWorkers.empty(); it++ )
+		{
+			sdpa::worker_id_list_t::iterator iter = find(listAvailWorkers.begin(), listAvailWorkers.end(), it->first);
 
-			  if(iter!=listAvailWorkers.end())
-			  {
+			if(iter!=listAvailWorkers.end())
+			{
 				bMatchingFound=true;
 				found_worker_id=it->first;
 				listAvailWorkers.erase(iter);
-			  }
-		  }
+				// add it to the allocation list of the job
+				// allocation_list[jobId].push_back(found_worker_id);
+			}
+		}
 
-		  if( bMatchingFound ) // matching found
-		  {
-			  const Worker::ptr_t pWorker = findWorker(found_worker_id);
-			  pWorker->submit(jobId);
-			  ptr_comm_handler_->serveJob(found_worker_id, jobId);
-		  }
-		  else // put it back into the common queue
-			  ptr_worker_man_->common_queue_.push(jobId);
-
-	  }
+		if( bMatchingFound ) // matching found
+		{
+			const Worker::ptr_t pWorker = findWorker(found_worker_id);
+			pWorker->submit(jobId);
+			ptr_comm_handler_->serveJob(found_worker_id, jobId);
+		}
+		else // put it back into the common queue
+			nonmatching_jobs_queue.push(jobId);
 	}
+
+	while(!nonmatching_jobs_queue.empty())
+		ptr_worker_man_->common_queue_.push_front(nonmatching_jobs_queue.pop_back());
   }
 }
 
@@ -1083,6 +1082,9 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
     lock_type lock(mtx_);
 
     ///jobs_to_be_scheduled.erase( job_id );
+    // check if there is an allocation list for this job
+    // (assert that the head of this list id worker_id!!!!!!)
+    // free all the workers in this list, i.e. mark them as not reserved
     ptr_worker_man_->deleteWorkerJob(worker_id, job_id);
     cond_feed_workers.notify_one();
   }
