@@ -144,6 +144,13 @@ namespace sdpa { namespace daemon {
       not_empty_.notify_one();
     }
 
+    inline void push_front(value_type item)
+    {
+    	lock_type lock(mtx_);
+    	container_.push_front(item);
+    	not_empty_.notify_one();
+    }
+
     inline size_type size() const
     {
       lock_type lock(mtx_);
