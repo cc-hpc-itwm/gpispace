@@ -21,7 +21,6 @@
 #include <fhglog/fhglog.hpp>
 
 #include "LogServer.hpp"
-#include <boost/archive/text_iarchive.hpp>
 
 using namespace fhg::log::remote;
 using boost::asio::ip::udp;
@@ -60,21 +59,23 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
       return;
     }
 
-    LogEvent evt;
-
-    std::stringstream sstr(msg);
-    boost::archive::text_iarchive ia(sstr);
-    ia & evt;
-
+    try
     {
-      // FIXME: think about a better way to introduce some kind of "trace"
-        // the following is only meaningful for a flat hierarchy of logservers
-      std::ostringstream ostr;
-      ostr << evt.logged_via() << "@" << sender_endpoint_;
-      evt.logged_via(ostr.str());
-    }
+      LogEvent evt;
+      std::stringstream sstr (msg);
+      evt.decode (sstr);
 
-    appender_->append (evt);
+      {
+        std::ostringstream ostr;
+        ostr << sender_endpoint_;
+        evt.trace (ostr.str());
+      }
+      appender_->append (evt);
+    }
+    catch (std::exception const &ex)
+    {
+      LOG (WARN, "error during log-event decode: " << ex.what ());
+    }
   }
   else
   {

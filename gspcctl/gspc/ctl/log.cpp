@@ -64,7 +64,7 @@ namespace gspc
                    , line
                    , message
                    );
-      evt.logged_via (tag);
+      evt.tag (tag);
 
       switch (cat)
       {

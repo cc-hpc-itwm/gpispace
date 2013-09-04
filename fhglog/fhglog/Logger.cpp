@@ -150,7 +150,7 @@ void Logger::log(const LogEvent &event)
   if (! isLevelEnabled(event.severity()))
     return;
   event.finish();
-  event.logged_via(name());
+  event.trace(name());
 
   bool logged (false);
   for (appender_list_t::const_iterator it(appenders_.begin());
@@ -177,7 +177,7 @@ void Logger::log(const LogEvent &event)
     if (! logged)
     {
       std::cerr << "logger " << name() << " got unhandled FATAL message: "
-                << event.file() << ":" << event.line() << " - " << event.message()
+                << event.path() << ":" << event.line() << " - " << event.message()
                 << std::endl;
     }
     fhg::log::error_handler();
@@ -249,4 +249,3 @@ void Logger::removeAppender(const std::string &appender_name)
     }
   }
 }
-

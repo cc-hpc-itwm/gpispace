@@ -4,9 +4,6 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
-#include <boost/serialization/vector.hpp>
-#include <boost/archive/text_oarchive.hpp>
-
 #include <fhglog/minimal.hpp>
 
 #include <fhglog/format.hpp>
@@ -90,9 +87,9 @@ private:
     events.assign (backlog.rbegin (), backlog.rend ());
 
     std::ostringstream oss;
+    BOOST_FOREACH (fhg::log::LogEvent const &evt, events)
     {
-      boost::archive::text_oarchive oa (oss);
-      oa & events;
+      oss << evt;
     }
     rply.set_body (oss.str ());
 

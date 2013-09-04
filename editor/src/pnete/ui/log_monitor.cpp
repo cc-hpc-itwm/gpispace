@@ -1,12 +1,11 @@
 #include <pnete/ui/log_monitor.hpp>
 
+#include <fhglog/util.hpp>
 #include <util/qt/boost_connect.hpp>
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/mgmt/type/activity.hpp>
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
@@ -119,8 +118,8 @@ namespace detail
   formatted_log_event::formatted_log_event (const fhg::log::LogEvent& evt)
     //! \todo get time from outside?
     : time (QTime::currentTime().toString())
-    , source (QString ("%1@%2").arg (evt.pid()).arg (evt.logged_on().c_str()))
-    , location (QString ("%1:%2").arg (evt.file().c_str()).arg (evt.line()))
+    , source (QString ("%1@%2").arg (evt.pid()).arg (evt.host ().c_str()))
+    , location (QString ("%1:%2").arg (fhg::log::get_filename_from_path (evt.path()).c_str()).arg (evt.line()))
     , message (evt.message().c_str())
     , event (evt)
   { }
@@ -489,9 +488,12 @@ void log_monitor::save ()
   try
   {
     std::ofstream ofs (fname.toStdString ().c_str ());
-    boost::archive::text_oarchive oa (ofs);
     std::vector<fhg::log::LogEvent> data (_log_model->data());
-    oa & data;
+
+    foreach (const fhg::log::LogEvent &evt, data)
+    {
+      ofs << evt << std::endl;
+    }
     _last_saved_filename = fname;
   }
   catch (std::exception const & ex)
