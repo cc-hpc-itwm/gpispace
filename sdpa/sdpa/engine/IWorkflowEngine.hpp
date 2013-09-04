@@ -19,16 +19,16 @@ struct job_requirements_t
 {
 	typedef requirements_list_t::const_iterator const_iterator;
 
-	job_requirements_t() :  n_workers(1) {};
+	job_requirements_t() :  n_workers_req(1) {};
 	job_requirements_t(const requirements_list_t& r_list, int m=1) :
-		req_list(r_list), n_workers(m)
+		req_list(r_list), n_workers_req(m)
 	{
 	}
 
 	void add(const requirement_t& req) {req_list.push_back(req); }
 
 	requirements_list_t req_list;
-	int n_workers;
+	int n_workers_req;
 };
 
 typedef we::mgmt::basic_layer IWorkflowEngine;

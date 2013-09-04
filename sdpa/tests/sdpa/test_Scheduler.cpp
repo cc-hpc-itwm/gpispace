@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 	seda::StageRegistry::instance().remove(ptrOrch->name());
 }
 
-BOOST_AUTO_TEST_CASE(testWorkStealing)
+/*BOOST_AUTO_TEST_CASE(testWorkStealing)
 {
 	string addrAg = "127.0.0.1";
 	sdpa::master_info_list_t arrAgentMasterInfo;
@@ -222,6 +222,7 @@ BOOST_AUTO_TEST_CASE(testWorkStealing)
 
    seda::StageRegistry::instance().remove(pAgent->name());
 }
+*/
 
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
