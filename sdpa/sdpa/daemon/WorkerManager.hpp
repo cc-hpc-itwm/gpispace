@@ -148,7 +148,7 @@ protected:
       else // if the worker doesn't have the capability
         if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
         {
-          // At least one mandatory requiremenet is not fulfilled
+          // At least one mandatory requirement is not fulfilled
           return -1;
         }
     }
