@@ -538,28 +538,6 @@ void SchedulerImpl::allocateWorkers(const sdpa::job_id_t& jobId, const job_requi
 	*/
 }
 
-sdpa::list_match_workers_t SchedulerImpl::find_matching_workers( const sdpa::job_id_t& jobId, const job_requirements_t& job_reqs )
-{
-	// if no preferences are explicitly set for this job
-	DLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<" ... ");
-	sdpa::list_match_workers_t listMatchingWorkers;
-
-	// printJobRequirements();
-
-	try
-	{
-		// first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-		listMatchingWorkers = ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs);
-		printMatchingWorkers(jobId, listMatchingWorkers);
-	}
-	catch(const NoWorkerFoundException& ex1)
-	{
-		DLOG( INFO, "No worker matching the requirements of the job "<<jobId<<" was found!");
-	}
-
-	return listMatchingWorkers;
-}
-
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
 	if( !numberOfWorkers() )
@@ -570,42 +548,12 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 		cond_workers_registered.wait(lock);
 	}
 
-	job_requirements_t job_reqs;
-	try
-	{
-		job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
-	}
-	catch(const NoJobRequirements& )
-	{
-		// schedule to the first worker that requests a job
-		DLOG(TRACE, "The requirements list for the job "<<jobId<<" is empty. Schedule it anywhere!");
-		dispatch(jobId);
-		cond_feed_workers.notify_one();
-		return;
-	}
-
-	sdpa::list_match_workers_t listMatchingWorkers = find_matching_workers(jobId, job_reqs);
-
-	if(!listMatchingWorkers.empty())
-	{
-		worker_id_t workerId(listMatchingWorkers.front().first);
-
-		// schedule the job to that one
-		DMLOG(TRACE, "Schedule the job "<<jobId<<" to the worker "<<workerId);
-
-		//allocateWorkers(jobId, job_reqs, listMatchingWorkers);
-		schedule_to(jobId, workerId);
-	}
-	else
-	{
-		DLOG(TRACE, "No worker matching the requirements of the job "<<jobId.str()<<" was found!");
-		// do so as when no preferences were set, just ignore them right now
-		dispatch(jobId);
-	 }
+	DLOG(TRACE, "No worker matching the requirements of the job "<<jobId.str()<<" was found!");
+	// do so as when no preferences were set, just ignore them right now
+	dispatch(jobId);
 
 	cond_feed_workers.notify_one();
 }
-
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
@@ -732,51 +680,6 @@ void SchedulerImpl::getListWorkersNotFull(sdpa::worker_id_list_t& workerList)
 	ptr_worker_man_->getListWorkersNotFull(workerList);
 }
 
-/*void SchedulerImpl::feedWorkers()
-{
-  while(!bStopRequested)
-  {
-    lock_type lock(mtx_);
-    cond_feed_workers.timed_wait(lock, m_timeout);
-
-    if( ptr_comm_handler_->jobManager()->getNumberOfJobs() == 0 )
-         continue;
-
-    sdpa::worker_id_list_t workerList;
-    getListWorkersNotFull(workerList);
-
-    if(!workerList.empty())
-    {
-      BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
-      {
-        if(ptr_comm_handler_)
-        {
-        	try {
-        		sdpa::job_id_t jobId = assignNewJob(worker_id, "");
-        		ptr_comm_handler_->serveJob(worker_id, jobId);
-        	}
-        	catch(const NoJobScheduledException&)
-        	{
-                  // AP: TODO: see why this 'feedWorkers' is always called, even if no job is availble...
-                  // deactivated this log message, since it is quite useless and happens N-times / second
-
-                  // DMLOG (TRACE, "No job that fits with the worker "<<worker_id<<" was found!");
-        	}
-        	catch(const WorkerNotFoundException&)
-        	{
-        		DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
-        	}
-        }
-        else
-        {
-          SDPA_LOG_WARN("Invalid communication handler");
-        }
-      }
-    }
-  }
-}
-*/
-
 void SchedulerImpl::feedWorkers()
 {
   while(!bStopRequested)
@@ -787,37 +690,60 @@ void SchedulerImpl::feedWorkers()
     if( ptr_comm_handler_->jobManager()->getNumberOfJobs() == 0 )
          continue;
 
-    sdpa::worker_id_list_t workerList;
-    getListWorkersNotFull(workerList);
+    sdpa::worker_id_list_t listAvailWorkers;
 
-    if(!workerList.empty())
-    {
-      BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
-      {
-        if(ptr_comm_handler_)
-        {
-        	try {
-        		sdpa::job_id_t jobId = assignNewJob(worker_id, "");
-        		ptr_comm_handler_->serveJob(worker_id, jobId);
-        	}
-        	catch(const NoJobScheduledException&)
-        	{
-                  // AP: TODO: see why this 'feedWorkers' is always called, even if no job is availble...
-                  // deactivated this log message, since it is quite useless and happens N-times / second
+    // replace this with the list of workers not reserved
+    getListWorkersNotFull(listAvailWorkers);
 
-                  // DMLOG (TRACE, "No job that fits with the worker "<<worker_id<<" was found!");
-        	}
-        	catch(const WorkerNotFoundException&)
-        	{
-        		DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
-        	}
-        }
-        else
-        {
-          SDPA_LOG_WARN("Invalid communication handler");
-        }
-      }
-    }
+    // check if there are jobs that can already be scheduled on
+    // these workers
+
+    size_t sizeQ = ptr_worker_man_->common_queue_.size();
+    size_t counter=0;
+
+	if( !ptr_worker_man_->common_queue_.empty() && !listAvailWorkers.empty() )
+	{
+	  while(counter++<sizeQ)
+	  {
+		  sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.pop());
+		  job_requirements_t job_reqs;
+
+		  try {
+			  job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
+			  // LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
+		  }
+		  catch( const NoJobRequirements& ex ) // no requirements are specified
+		  {
+			  // we have an empty list of requirements then!
+		  }
+
+		  sdpa::list_match_workers_t listMatchingWorkers( ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs) );
+
+		  bool bMatchingFound(false);
+		  sdpa::worker_id_t found_worker_id;
+		  for( sdpa::list_match_workers_t::iterator it = listMatchingWorkers.begin(); it!=listMatchingWorkers.end() && !bMatchingFound && !listAvailWorkers.empty(); it++ )
+		  {
+			  sdpa::worker_id_list_t::iterator iter = find(listAvailWorkers.begin(), listAvailWorkers.end(), it->first);
+
+			  if(iter!=listAvailWorkers.end())
+			  {
+				bMatchingFound=true;
+				found_worker_id=it->first;
+				listAvailWorkers.erase(iter);
+			  }
+		  }
+
+		  if( bMatchingFound ) // matching found
+		  {
+			  const Worker::ptr_t pWorker = findWorker(found_worker_id);
+			  pWorker->submit(jobId);
+			  ptr_comm_handler_->serveJob(found_worker_id, jobId);
+		  }
+		  else // put it back into the common queue
+			  ptr_worker_man_->common_queue_.push(jobId);
+
+	  }
+	}
   }
 }
 
