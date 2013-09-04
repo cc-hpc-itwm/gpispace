@@ -476,7 +476,7 @@ sdpa::list_match_workers_t WorkerManager::getListMatchingWorkers( const sdpa::jo
 
   sdpa::util::time_type last_schedule_time = sdpa::util::now();
   size_t least_load = numeric_limits<int>::max();
-  size_t nMaxMandReq =  numeric_limits<int>::max();
+  size_t nMaxMandReq = numeric_limits<int>::max();
 
   // the worker id of the worker that fulfills most of the requirements
   // a matching degree 0 means that either at least a mandatory requirement
