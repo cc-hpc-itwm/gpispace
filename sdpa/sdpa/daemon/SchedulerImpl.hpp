@@ -53,9 +53,10 @@ namespace sdpa {
 	    bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
 	    void dispatch( const sdpa::job_id_t& jobId );
 
-	    sdpa::list_match_workers_t find_matching_workers( const sdpa::job_id_t& jobId );
+	    void allocateWorkers(const sdpa::job_id_t&, const job_requirements_t&, const sdpa::list_match_workers_t&);
+	    sdpa::list_match_workers_t find_matching_workers( const sdpa::job_id_t&, const job_requirements_t& );
 
-	    void reschedule(const sdpa::job_id_t &job);
+	    void reschedule( const sdpa::job_id_t& job );
 	    void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
 	    void reschedule( const Worker::worker_id_t& worker_id );
 	    void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
