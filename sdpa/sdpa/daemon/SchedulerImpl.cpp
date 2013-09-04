@@ -719,6 +719,16 @@ void SchedulerImpl::feedWorkers()
 
 		  sdpa::list_match_workers_t listMatchingWorkers( ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs) );
 
+		  // To do:
+		  // here the pattern should be more sophisticated with the co-allocation
+		  // for each job one should build an allocation list (and for each id in this
+		  // list the corresponding worker should be reserved and above use getListWorkersNotReserved
+		  // if the allocation list has the size specified by the filed n_workers_req in job_requirements
+		  // then serve the job to the worke in the head of the list
+
+		  // attention should be paid when the job finishes, to free all the workers apperaing into the allocation list
+		  // in case of re-scheduling, the WHOLE allocation list should be re-set !!!!
+
 		  bool bMatchingFound(false);
 		  sdpa::worker_id_t found_worker_id;
 		  for( sdpa::list_match_workers_t::iterator it = listMatchingWorkers.begin(); it!=listMatchingWorkers.end() && !bMatchingFound && !listAvailWorkers.empty(); it++ )
