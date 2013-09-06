@@ -23,7 +23,8 @@ Worker::Worker(	const worker_id_t& name,
     last_time_served_(0),
     last_schedule_time_(0),
     timedout_(false),
-    disconnected_(false)
+    disconnected_(false),
+    reserved_(false)
 {
 
 }

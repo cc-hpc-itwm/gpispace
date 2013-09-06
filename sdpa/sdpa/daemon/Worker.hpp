@@ -192,6 +192,9 @@ namespace sdpa { namespace daemon {
 
     void print();
 
+    bool isReserved() {  lock_type lock(mtx_); return reserved_; }
+    void reserve() { lock_type lock(mtx_); reserved_ = true; }
+    void free() { lock_type lock(mtx_); reserved_ = false; }
 
   private:
     SDPA_DECLARE_LOGGER();
@@ -212,6 +215,7 @@ namespace sdpa { namespace daemon {
 
     bool timedout_;
     bool disconnected_;
+    bool reserved_;
 
     mutable mutex_type mtx_;
   };
