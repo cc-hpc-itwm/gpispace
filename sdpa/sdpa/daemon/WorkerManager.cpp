@@ -394,6 +394,20 @@ void WorkerManager::getListWorkersNotFull(sdpa::worker_id_list_t& workerList)
   sort(workerList.begin(), workerList.end(), comparator);
 }
 
+void WorkerManager::getListWorkersNotReserved(sdpa::worker_id_list_t& workerList)
+{
+  lock_type lock(mtx_);
+  for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+  {
+    Worker::ptr_t ptrWorker = iter->second;
+    if( !ptrWorker->isReserved() )
+    	workerList.push_back(ptrWorker->name());
+  }
+
+  CComparator comparator(this);
+  sort(workerList.begin(), workerList.end(), comparator);
+}
+
 bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbSet)
 {
   lock_type lock(mtx_);
