@@ -44,3 +44,8 @@ fhg_add_test(test_counter.cpp
 fhg_add_test(test_url.cpp
   DESCRIPTION "Tests the url parser"
 )
+
+fhg_add_test(test_hex.cpp
+  LINK_LIBRARIES fhg-util
+  DESCRIPTION "Tests the hex coder"
+)
