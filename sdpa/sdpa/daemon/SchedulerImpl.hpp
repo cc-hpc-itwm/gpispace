@@ -93,6 +93,8 @@ namespace sdpa {
 	    virtual const sdpa::job_id_t assignNewJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
 	    virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
+	    sdpa::worker_id_t allocateNewWorker(const sdpa::job_id_t&, sdpa::worker_id_list_t&, int&);
+
 	    virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
 	    virtual void execute(const sdpa::job_id_t& jobId); //just for testing
