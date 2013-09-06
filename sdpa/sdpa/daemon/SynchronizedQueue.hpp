@@ -76,6 +76,15 @@ namespace sdpa { namespace daemon {
     SynchronizedQueue() : stopped_(false) {}
     ~SynchronizedQueue() { }
 
+    inline value_type front()
+    {
+    	lock_type lock(mtx_);
+    	if (container_.empty()) throw QueueEmpty();
+
+    	value_type item = container_.front();
+    	return item;
+    }
+
     inline value_type pop()
     {
       lock_type lock(mtx_);
