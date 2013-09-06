@@ -94,6 +94,7 @@ namespace sdpa {
 	    virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
 	    sdpa::worker_id_t allocateNewWorker(const sdpa::job_id_t&, sdpa::worker_id_list_t&, int&);
+	    void releaseAllocatedWorkers(const sdpa::job_id_t& jobId);
 
 	    virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 

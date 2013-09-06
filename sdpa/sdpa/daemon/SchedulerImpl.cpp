@@ -1066,6 +1066,17 @@ void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
 }
 
+void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
+{
+	BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
+	{
+		Worker::ptr_t ptrWorker = findWorker(workerId);
+		ptrWorker->free();
+	}
+
+	allocation_table.erase(jobId);
+}
+
 void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId ) throw (JobNotDeletedException, WorkerNotFoundException)
 {
   try {
@@ -1078,13 +1089,7 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
     ptr_worker_man_->deleteWorkerJob(worker_id, jobId);
 
     // free the allocated resources for this job
-    BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
-    {
-    	Worker::ptr_t ptrWorker = findWorker(workerId);
-    	ptrWorker->free();
-    }
-
-    allocation_table.erase(jobId);
+    releaseAllocatedWorkers(jobId);
 
     cond_feed_workers.notify_one();
   }
