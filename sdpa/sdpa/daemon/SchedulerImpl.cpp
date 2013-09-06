@@ -750,223 +750,6 @@ const sdpa::job_id_t SchedulerImpl::assignNewJob(const Worker::worker_id_t& work
 	return matchingJobId;
 }
 
-/*
-void SchedulerImpl::feedWorkers()
-{
-  while(!bStopRequested)
-  {
-    lock_type lock(mtx_);
-    cond_feed_workers.timed_wait(lock, m_timeout);
-
-    if( ptr_comm_handler_->jobManager()->getNumberOfJobs() == 0 )
-         continue;
-
-    sdpa::worker_id_list_t listAvailWorkers;
-
-    // replace this with the list of workers not reserved
-    getListWorkersNotFull(listAvailWorkers);
-    //getListWorkersNotReserved(listAvailWorkers);
-
-    // check if there are jobs that can already be scheduled on
-    // these workers
-
-	sdpa::worker_id_t found_worker_id;
-    JobQueue nonmatching_jobs_queue;
-
-    // try to assign to each worker a suitable job
-	BOOST_FOREACH( const sdpa::worker_id_t& workerId, listAvailWorkers )
-	{
-		// iterate over all jobs and see if there is one that prefers
-		while(!ptr_worker_man_->common_queue_.empty() )
-		{
-			sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.pop());
-
-			job_requirements_t job_reqs;
-
-			try {
-				job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
-				// LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
-			}
-			catch( const NoJobRequirements& ex ) // no requirements are specified
-			{
-				// we have an empty list of requirements then!
-			}
-
-			sdpa::list_match_workers_t listMatchingWorkers( ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs) );
-
-			// To do:
-			// here the pattern should be more sophisticated with the co-allocation
-			// for each job one should build an allocation list (and for each id in this
-			// list the corresponding worker should be reserved and above use getListWorkersNotReserved
-			// if the allocation list has the size specified by the filed n_workers_req in job_requirements
-			// then serve the job to the worker whose id is the head of the list
-
-			// attention should be paid when the job finishes, to free all the workers appearing into the allocation list
-			// in case of re-scheduling, the WHOLE allocation list should be re-set !!!!
-
-			// you should find the job that prefers it most!
-			sdpa::list_match_workers_t::iterator it = listMatchingWorkers.begin();
-			while( it!=listMatchingWorkers.end() )
-				if(it->first == workerId)
-					break;
-				else
-					it++;
-
-			if( it !=listMatchingWorkers.end() ) // matching found
-			{
-				const Worker::ptr_t pWorker = findWorker(workerId);
-				// reserve the worker
-				// pWorker->reserve();
-				{
-					// serve the job if the necessary resources were acquired
-					ptr_comm_handler_->serveJob(workerId, jobId);
-
-					// mark the job as submitted
-					pWorker->submit(jobId);
-				}
-
-				break;
-			}
-			else // put it back into the common queue
-				nonmatching_jobs_queue.push(jobId);
-		}
-
-		while(!nonmatching_jobs_queue.empty())
-				ptr_worker_man_->common_queue_.push_front(nonmatching_jobs_queue.pop_back());
-	}
-  }
-}*/
-
-/*void SchedulerImpl::feedWorkersOK()
-{
-  while(!bStopRequested)
-  {
-    lock_type lock(mtx_);
-    cond_feed_workers.timed_wait(lock, m_timeout);
-
-    if( ptr_comm_handler_->jobManager()->getNumberOfJobs() == 0 )
-         continue;
-
-    sdpa::worker_id_list_t listAvailWorkers;
-
-    // replace this with the list of workers not reserved
-    //getListWorkersNotFull(listAvailWorkers);
-    getListWorkersNotReserved(listAvailWorkers);
-
-    // check if there are jobs that can already be scheduled on
-    // these workers
-
-	sdpa::worker_id_t found_worker_id;
-    JobQueue nonmatching_jobs_queue;
-
-    // try to assign to each worker a suitable job
-	//BOOST_FOREACH( const sdpa::worker_id_t& workerId, listAvailWorkers )
-
-    // iterate over all jobs and see if there is one that prefers
-	while(!ptr_worker_man_->common_queue_.empty() && !listAvailWorkers.empty())
-	{
-		//sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.pop());
-		sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.front());
-
-		job_requirements_t job_reqs;
-
-		try {
-			job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
-			// LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
-		}
-		catch( const NoJobRequirements& ex ) // no requirements are specified
-		{
-			// we have an empty list of requirements then!
-		}
-
-		sdpa::list_match_workers_t listMatchingWorkers( ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs) );
-
-		bool bMatchingFound(false);
-		sdpa::worker_id_t matchingWorkerId;
-		// Pick-up the best matching worker
-		sdpa::list_match_workers_t::iterator itPref = listMatchingWorkers.begin();
-		while( itPref!=listMatchingWorkers.end() && !bMatchingFound )
-		{
-			sdpa::worker_id_list_t::iterator itFind = find(listAvailWorkers.begin(), listAvailWorkers.end(),  itPref->first);
-			if(itFind!=listAvailWorkers.end())
-			{
-				matchingWorkerId = itPref->first;
-				bMatchingFound = true;
-				listAvailWorkers.erase(itFind);
-			}
-			else
-				itPref++;
-		}
-
-		if( bMatchingFound ) // matching found
-		{
-			const Worker::ptr_t pWorker = findWorker(matchingWorkerId);
-			// reserve the worker
-			// pWorker->reserve();
-			{
-				// reserve the worker first
-				pWorker->reserve();
-
-				// add the worker to the list of allocated workers to the job
-
-				// if all the resources were acquired, mark the job as submitted
-				// serve the job if the necessary resources were acquired
-				{
-					ptr_worker_man_->common_queue_.pop();
-					ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
-					pWorker->submit(jobId);
-				}
-			}
-		}
-		else // put it back into the common queue
-		{
-			ptr_worker_man_->common_queue_.pop();
-			nonmatching_jobs_queue.push(jobId);
-		}
-	}
-
-	while(!nonmatching_jobs_queue.empty())
-		ptr_worker_man_->common_queue_.push_front(nonmatching_jobs_queue.pop_back());
-  }
-}
-*/
-
-/*
-void SchedulerImpl::feedWorkers()
-{
-  while(!bStopRequested)
-  {
-    lock_type lock(mtx_);
-    cond_feed_workers.timed_wait(lock, m_timeout);
-
-    if( ptr_comm_handler_->jobManager()->getNumberOfJobs() == 0 )
-         continue;
-
-    sdpa::worker_id_list_t listAvailWorkers;
-
-    // replace this with the list of workers not reserved
-    getListWorkersNotFull(listAvailWorkers);
-    //getListWorkersNotReserved(listAvailWorkers);
-
-    // check if there are jobs that can already be scheduled on
-    // these workers
-
-    // try to assign to each worker a suitable job
-	BOOST_FOREACH( const sdpa::worker_id_t& workerId, listAvailWorkers )
-	{
-		sdpa::job_id_t matchingJobId = assignNewJob(workerId, "");
-
-		if(matchingJobId!="")
-		{
-			// reserve the worker
-			// pWorker->reserve();
-			// serve the job if the necessary resources were acquired
-			ptr_comm_handler_->serveJob(workerId, matchingJobId);
-		}
-	}
-  }
-}
-*/
 
 void SchedulerImpl::feedWorkers()
 {
@@ -987,11 +770,7 @@ void SchedulerImpl::feedWorkers()
     // check if there are jobs that can already be scheduled on
     // these workers
 
-	sdpa::worker_id_t found_worker_id;
     JobQueue nonmatching_jobs_queue;
-
-    // try to assign to each worker a suitable job
-	//BOOST_FOREACH( const sdpa::worker_id_t& workerId, listAvailWorkers )
 
     // iterate over all jobs and see if there is one that prefers
 	while(!ptr_worker_man_->common_queue_.empty() && !listAvailWorkers.empty())
@@ -1012,24 +791,22 @@ void SchedulerImpl::feedWorkers()
 
 		sdpa::list_match_workers_t listMatchingWorkers( ptr_worker_man_->getListMatchingWorkers(jobId, job_reqs) );
 
-		bool bMatchingFound(false);
 		sdpa::worker_id_t matchingWorkerId;
 		// Pick-up the best matching worker
 		sdpa::list_match_workers_t::iterator itPref = listMatchingWorkers.begin();
-		while( itPref!=listMatchingWorkers.end() && !bMatchingFound )
+		while( itPref!=listMatchingWorkers.end() && matchingWorkerId.empty() )
 		{
 			sdpa::worker_id_list_t::iterator itFind = find(listAvailWorkers.begin(), listAvailWorkers.end(),  itPref->first);
 			if(itFind!=listAvailWorkers.end())
 			{
 				matchingWorkerId = itPref->first;
-				bMatchingFound = true;
 				listAvailWorkers.erase(itFind);
 			}
 			else
 				itPref++;
 		}
 
-		if( bMatchingFound ) // matching found
+		if( !matchingWorkerId.empty() ) // matching found
 		{
 			const Worker::ptr_t pWorker = findWorker(matchingWorkerId);
 
@@ -1041,7 +818,7 @@ void SchedulerImpl::feedWorkers()
 
 			// attention: what to do if job_reqs.n_workers_req > total number of registered workers?
 			// if all the required resources were acquired, mark the job as submitted
-			if(allocation_table[jobId].size() == job_reqs.n_workers_req)
+			if(allocation_table[jobId].size() == (size_t)job_reqs.n_workers_req)
 			{
 				ptr_worker_man_->common_queue_.pop();
 				ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
