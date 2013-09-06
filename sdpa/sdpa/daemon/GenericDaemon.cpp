@@ -647,7 +647,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
   //take a job from the workers' queue? and serve it
 
   //To do: replace this with schedule
-  Worker::worker_id_t worker_id = e.from();
+  /*Worker::worker_id_t worker_id = e.from();
   try {
 	  sdpa::job_id_t jobId = scheduler()->assignNewJob(worker_id,  e.last_job_id());
 	  serveJob( worker_id, jobId );
@@ -663,7 +663,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
      // the worker should register first, before posting a job request
      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
      sendEventToSlave(pErrorEvt);
-  }
+  }*/
 }
 
 bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
