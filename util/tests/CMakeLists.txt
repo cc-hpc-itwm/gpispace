@@ -49,3 +49,8 @@ fhg_add_test(test_hex.cpp
   LINK_LIBRARIES fhg-util
   DESCRIPTION "Tests the hex coder"
 )
+
+fhg_add_test(test_read_show.cpp
+  LINK_LIBRARIES fhg-util
+  DESCRIPTION "Tests the read/show functions"
+)

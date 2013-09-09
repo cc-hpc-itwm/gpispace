@@ -5,19 +5,33 @@
 
 #include <string>
 #include <sstream>
+#include <ios>
 
 namespace fhg
 {
   namespace util
   {
     template<typename T>
-    inline std::string show (const T & x)
+    inline
+    std::string show ( const T & x
+                     , std::ios_base::fmtflags flags=std::ios_base::fmtflags ()
+                     )
     {
-      std::ostringstream s; s << x; return s.str();
+      std::ostringstream s;
+      s.setf (flags);
+      s << x;
+      if (s.fail ())
+      {
+        throw std::runtime_error
+          (std::string ("fhg::util::show: could not show ") + typeid(T).name ());
+      }
+      return s.str();
     }
 
     template<>
-    inline std::string show<std::string> (const std::string & x)
+    inline std::string show<std::string> ( const std::string & x
+                                         , std::ios_base::fmtflags flags
+                                         )
     {
       return x;
     }
