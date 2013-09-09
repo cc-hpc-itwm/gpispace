@@ -52,6 +52,7 @@ set (hdrs
   stat.hpp
   get_home_dir.hpp
   hex.hpp
+  read_file.hpp
 )
 
 set (srcs
@@ -82,6 +83,7 @@ set (srcs
   xml.cpp
   get_home_dir.cpp
   hex.cpp
+  read_file.cpp
 )
 
 add_library (fhg-util ${srcs})
