@@ -6,6 +6,8 @@
 #include <string>
 #include <sstream>
 #include <ios>
+#include <stdexcept>
+#include <typeinfo>
 
 namespace fhg
 {
