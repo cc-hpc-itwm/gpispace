@@ -103,7 +103,7 @@ namespace sdpa {
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
-        private:
+
         void createScheduler(bool bUseReqModel)
         {
           DLOG(TRACE, "creating agent scheduler...");
@@ -111,6 +111,7 @@ namespace sdpa {
           ptr_scheduler_ = ptrSched;
         }
 
+      private:
         std::string url_;
 
         NotificationService m_guiService;
