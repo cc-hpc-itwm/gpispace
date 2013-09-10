@@ -38,10 +38,10 @@ int main (int ac, char *argv[])
 {
   if (ac < 3)
   {
-    std::cerr << "usage: create-license <path-to-binary> <valid-until>" << std::endl
+    std::cerr << "usage: create-license <path-to-binary> <expiry>" << std::endl
               << std::endl
               << "   path-to-binary: the binary that performs the license check" << std::endl
-              << "   valid-until: time in unix seconds" << std::endl
+              << "   expiry: in days" << std::endl
       ;
     return EXIT_FAILURE;
   }
@@ -49,7 +49,7 @@ int main (int ac, char *argv[])
   license_t lic;
   memset (&lic, 0, sizeof(lic));
 
-  lic.valid_until = fhg::util::read<int> (argv [2]);
+  lic.valid_until = time (NULL) + 86400*fhg::util::read<int> (argv [2]);
 
   {
     std::string hash =
