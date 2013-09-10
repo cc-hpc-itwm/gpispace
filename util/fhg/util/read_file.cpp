@@ -14,16 +14,21 @@ namespace fhg
       std::size_t fsize = pbuf->pubseekoff (0, ifs.end, ifs.in);
       pbuf->pubseekpos (0, ifs.in);
 
-      char *buf = new char[fsize];
-      pbuf->sgetn (buf, fsize);
+      if (fsize != (std::size_t)(-1))
+      {
+        char *buf = new char[fsize];
+        pbuf->sgetn (buf, fsize);
 
-      ifs.close ();
+        std::string s (buf, fsize);
 
-      std::string s (buf, fsize);
+        delete [] buf;
 
-      delete [] buf;
-
-      return s;
+        return s;
+      }
+      else
+      {
+        return "";
+      }
     }
   }
 }
