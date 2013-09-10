@@ -26,6 +26,7 @@ OPTION (ENABLE_PNET_EDITOR "Build the pnet editor" YES)
 OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
 OPTION (DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 OPTION (ENABLE_STATISTICS "enable statistics" NO)
+OPTION (ENABLE_LICENSE_CHECK "enalbe license check" ON)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
@@ -106,6 +107,10 @@ include (CompilerFlags)
 
 if (NOT DEBUG_FHGLOG)
   add_definitions("-DNDEBUG_FHGLOG")
+endif()
+
+if (NOT ENABLE_LICENSE_CHECK)
+  add_definitions("-DFHG_DISABLE_LICENSE_CHECK")
 endif()
 
 if (NOT FHG_ASSERT_MODE)
