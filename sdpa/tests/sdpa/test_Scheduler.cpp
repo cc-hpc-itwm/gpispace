@@ -35,14 +35,13 @@
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 
 using namespace std;
-using namespace sdpa::tests;
 using namespace sdpa::daemon;
 
 const int NWORKERS = 12;
 const int NJOBS    = 4;
 const int MAX_CAP  = 100;
 
-const std::string WORKER_CPBS[] = {"CALC", "REDUCE", "MGMT"};
+const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
 typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;
 
@@ -58,33 +57,129 @@ struct MyFixture
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
-BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
+BOOST_AUTO_TEST_CASE(testCoAllocation)
 {
-	string addrOrch = "127.0.0.1";
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
+	LOG(INFO, "Test the co-allocation ...");
 
+	string addrAg = "127.0.0.1";
+	string strBackupOrch;
 	ostringstream oss;
-	sdpa::daemon::Scheduler::ptr_t ptrScheduler(new SchedulerImpl(ptrOrch.get(), false));
 
-	// add a number of workers
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	pAgent-> createScheduler(false);
+
+    if(!pAgent->scheduler())
+    	LOG(FATAL, "The scheduler was not properly initialized");
+
+	// add a couple of workers
 	for( int k=0; k<NWORKERS; k++ )
 	{
 		oss.str("");
-		oss<<"Worker_"<<WORKER_CPBS[k/4]<<"_"<<k%4;
+		oss<<k;
 
-		sdpa::capabilities_set_t cpbSet;
 		sdpa::worker_id_t workerId(oss.str());
-		sdpa::capability_t cpb(WORKER_CPBS[k/4], "virtual", workerId);
+		std::string cpbName(WORKER_CPBS[k%3]);
+		sdpa::capability_t cpb(cpbName, "virtual", workerId);
+		sdpa::capabilities_set_t cpbSet;
 		cpbSet.insert(cpb);
-		ptrScheduler->addWorker(workerId, 1, cpbSet);
+		pAgent->scheduler()->addWorker(workerId, 1, cpbSet);
 	}
 
-	ptrScheduler->print();
+	// create a number of jobs
+	const sdpa::job_id_t jobId0("Job0");
+	sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0"));
+	pAgent->jobManager()->addJob(jobId0, pJob0);
 
-	LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
-	seda::StageRegistry::instance().remove(ptrOrch->name());
+	const sdpa::job_id_t jobId1("Job1");
+	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+	pAgent->jobManager()->addJob(jobId1, pJob1);
+
+	const sdpa::job_id_t jobId2("Job2");
+	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
+	pAgent->jobManager()->addJob(jobId2, pJob2);
+
+	job_requirements_t req_list_0;
+	requirement_t req_0(WORKER_CPBS[0], true);
+	req_list_0.add(req_0);
+	req_list_0.n_workers_req = 4;
+	pAgent->jobManager()->addJobRequirements(jobId0, req_list_0);
+	pAgent->scheduler()->schedule_remote(jobId0);
+
+	job_requirements_t req_list_1;
+	requirement_t req_1(WORKER_CPBS[1], true);
+	req_list_1.add(req_1);
+	req_list_1.n_workers_req = 4;
+	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
+	pAgent->scheduler()->schedule_remote(jobId1);
+
+	job_requirements_t req_list_2;
+	requirement_t req_2(WORKER_CPBS[2], true);
+	req_list_2.add(req_2);
+	req_list_2.n_workers_req = 4;
+	pAgent->jobManager()->addJobRequirements(jobId2, req_list_2);
+	pAgent->scheduler()->schedule_remote(jobId2);
+
+	pAgent->scheduler()->assignWorkersToJobs();
+
+	ostringstream ossrw;int k=-1;
+	sdpa::worker_id_list_t listJobAssignedWorkers = pAgent->scheduler()->getListReservedWorkers(jobId0);
+	BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
+	{
+		k = boost::lexical_cast<int>(wid);
+		BOOST_CHECK( k==0 || k==3 || k==6 || k==9);
+		ossrw<<wid<<" ";
+	}
+	//LOG(INFO, "The job jobId0 has been allocated the workers "<<ossrw.str());
+
+	ossrw.str(""); listJobAssignedWorkers.clear();
+	listJobAssignedWorkers = pAgent->scheduler()->getListReservedWorkers(jobId1);
+	BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
+	{
+		k = boost::lexical_cast<int>(wid);
+		BOOST_CHECK( k==1 || k==4 || k==7 || k==10);
+		ossrw<<wid<<" ";
+	}
+	//LOG(INFO, "The job jobId1 has been allocated the workers "<<ossrw.str());
+
+	ossrw.str(""); listJobAssignedWorkers.clear();
+	listJobAssignedWorkers = pAgent->scheduler()->getListReservedWorkers(jobId2);
+	BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
+	{
+		k = boost::lexical_cast<int>(wid);
+		BOOST_CHECK( k==2 || k==5 || k==8 || k==11);
+		ossrw<<wid<<" ";
+	}
+	//LOG(INFO, "The job jobId2 has been allocated the workers "<<ossrw.str());
+
+	// try now to schedule a job requiring 2 resources of type "A"
+	const sdpa::job_id_t jobId4("Job4");
+	sdpa::daemon::Job::ptr_t pJob4(new JobFSM(jobId4, "description 4"));
+	pAgent->jobManager()->addJob(jobId4, pJob4);
+
+	req_list_0.n_workers_req = 2;
+    pAgent->jobManager()->addJobRequirements(jobId4, req_list_0);
+	pAgent->scheduler()->schedule_remote(jobId4);
+
+	pAgent->scheduler()->assignWorkersToJobs();
+	sdpa::worker_id_list_t listFreeWorkers(pAgent->scheduler()->getListReservedWorkers(jobId4));
+	BOOST_CHECK(listFreeWorkers.empty());
+
+	// Now report that jobId0 has finished and try to assign again resources to the job 4
+	pAgent->scheduler()->releaseAllocatedWorkers(jobId0);
+	listFreeWorkers.clear();
+	pAgent->scheduler()->assignWorkersToJobs();
+	listFreeWorkers = pAgent->scheduler()->getListReservedWorkers(jobId4);
+	BOOST_CHECK(!listFreeWorkers.empty());
+
+	int w0 = boost::lexical_cast<int>(listFreeWorkers[0]);
+	BOOST_CHECK(w0==0 || w0 == 3  || w0 == 6|| w0 == 9);
+
+	int w1 = boost::lexical_cast<int>(listFreeWorkers[1]);
+	BOOST_CHECK(w1==0 || w1 == 3  || w1 == 6|| w1 == 9);
+	//reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
 }
-
 
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
@@ -202,7 +297,7 @@ BOOST_AUTO_TEST_CASE(tesLoadBalancing)
 	}
 
 	sdpa::worker_id_list_t workerList;
-	ptrScheduler->getListWorkersNotFull(workerList);
+	ptrScheduler->getListNotFullWorkers(workerList);
 
     // first round: try serve all the workers a job
 	mapJob2Worker_t mapJob2Worker;
@@ -260,7 +355,7 @@ BOOST_AUTO_TEST_CASE(tesLoadBalancing)
 	BOOST_CHECK(bInvariant);
 
 	// second round: serve the rest of the remaining jobs
-	ptrScheduler->getListWorkersNotFull(workerList);
+	ptrScheduler->getListNotFullWorkers(workerList);
 	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
 	{
 		try {
@@ -338,7 +433,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 	}
 
 	sdpa::worker_id_list_t workerList;
-	ptrScheduler->getListWorkersNotFull(workerList);
+	ptrScheduler->getListNotFullWorkers(workerList);
 
     // first round: try serve all the workers a job
 	mapJob2Worker_t mapJob2Worker;
@@ -411,7 +506,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
 	// second round: serve the rest of the remaining jobs
 	LOG(INFO, "Schedule the rest of the jobs and ...");
-	ptrScheduler->getListWorkersNotFull(workerList);
+	ptrScheduler->getListNotFullWorkers(workerList);
 	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
 	{
 		try {
@@ -496,7 +591,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 	}
 
 	sdpa::worker_id_list_t workerList;
-	ptrScheduler->getListWorkersNotFull(workerList);
+	ptrScheduler->getListNotFullWorkers(workerList);
 
     // first round: try serve all the workers a job
 	mapJob2Worker_t mapJob2Worker;
@@ -578,7 +673,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
 	// second round: serve the rest of the remaining jobs
 	LOG(INFO, "Schedule the rest of the jobs and ...");
-	ptrScheduler->getListWorkersNotFull(workerList);
+	ptrScheduler->getListNotFullWorkers(workerList);
 	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
 	{
 		try {
@@ -657,7 +752,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 	}
 
 	sdpa::worker_id_list_t workerList;
-	ptrScheduler->getListWorkersNotFull(workerList);
+	ptrScheduler->getListNotFullWorkers(workerList);
 
     // first round: try serve all the workers a job
 	mapJob2Worker_t mapJob2Worker;
@@ -743,7 +838,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
 	// second round: serve the rest of the remaining jobs
 	LOG(INFO, "Schedule the rest of the jobs and ...");
-	ptrScheduler->getListWorkersNotFull(workerList);
+	ptrScheduler->getListNotFullWorkers(workerList);
 	BOOST_FOREACH(const sdpa::worker_id_t& workerId, workerList)
 	{
 		try {
