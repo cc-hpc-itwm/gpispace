@@ -17,6 +17,7 @@ set (core_srcs
   core/plugin_kernel_mediator.cpp
   core/file_storage.cpp
   core/null_storage.cpp
+  core/license.cpp
 )
 
 add_library(fhg-plugin-core ${core_srcs})
@@ -37,7 +38,7 @@ set (fhg-plugin-static-libs fhg-plugin-core)
 
 add_subdirectory(builtin)
 list(APPEND fhg-plugin-static-libs fhg-builtin-plugins)
-list(APPEND fhg-plugin-static-libs ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
+list(APPEND fhg-plugin-static-libs ${FhgLog_LIBRARY} ${Boost_LIBRARIES} ${NACL_LIBRARY})
 
 include (libutils)
 merge_static_libs(fhg-plugin fhg-plugin "${fhg-plugin-static-libs}")
