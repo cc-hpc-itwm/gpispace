@@ -29,7 +29,6 @@
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 
-namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
   class WorkerManager  {
@@ -77,7 +76,7 @@ namespace sdpa { namespace daemon {
 
     size_t numberOfWorkers() { return worker_map_.size(); }
     void getWorkerList(sdpa::worker_id_list_t& workerList);
-    void getListWorkersNotFull(sdpa::worker_id_list_t& workerList);
+    void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
     void getListWorkersNotReserved(sdpa::worker_id_list_t& workerList);
 
     void balanceWorkers();
@@ -86,10 +85,6 @@ namespace sdpa { namespace daemon {
     virtual Worker::worker_id_t getWorkerId(unsigned int r);
 
     bool has_job(const sdpa::job_id_t& job_id);
-
-    //only for testing purposes!
-    friend class sdpa::tests::DaemonFSMTest_SMC;
-    friend class sdpa::tests::DaemonFSMTest_BSC;
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)

@@ -380,7 +380,7 @@ private:
   sdpa::daemon::WorkerManager* m_ptrWorkerMan;
 };
 
-void WorkerManager::getListWorkersNotFull(sdpa::worker_id_list_t& workerList)
+void WorkerManager::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
 {
   lock_type lock(mtx_);
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
