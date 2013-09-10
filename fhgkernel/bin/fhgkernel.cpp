@@ -18,12 +18,17 @@
 
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/setproctitle.h>
+#include <fhg/util/get_home_dir.hpp>
+#include <fhg/util/program_info.h>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
+
+#include <fhg/plugin/core/license.hpp>
 
 // the following code was borrowed and slightly adapted from:
 //
@@ -315,6 +320,82 @@ int main(int ac, char **av)
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
   }
+
+#ifndef FHG_DISABLE_LICENSE_CHECK
+  {
+    std::string gspc_home;
+    {
+      namespace fs = boost::filesystem;
+
+      char buf [4096];
+      int rc;
+
+      rc = fhg_get_executable_path (buf, sizeof (buf));
+      if (rc < 0)
+      {
+        std::cerr << "could not discover my own path" << std::endl;
+        return EXIT_FAILURE;
+      }
+
+      gspc_home = fs::path (buf).parent_path ().parent_path ().string ();
+    }
+    std::string curdir;
+    {
+      char buf [4096];
+      getcwd (buf, sizeof(buf));
+      curdir = buf;
+    }
+
+    std::vector<std::string> files;
+    files.push_back ("/etc/gspc/gspc.lic");
+    files.push_back (gspc_home + "/etc/gspc.lic");
+    files.push_back (fhg::util::get_home_dir () + "/.gspc.lic");
+    files.push_back (curdir + "/gspc.lic");
+
+    int rc = -1;
+    BOOST_FOREACH (std::string const &licfile, files)
+    {
+      if (boost::filesystem::exists (licfile))
+      {
+        rc = fhg::plugin::check_license_file (licfile);
+        if (rc == fhg::plugin::LICENSE_VALID)
+        {
+          break;
+        }
+        else
+        {
+          switch (rc)
+          {
+          case fhg::plugin::LICENSE_EXPIRED:
+            std::cerr << "license '" << licfile << "' expired" << std::endl;
+            break;
+          case fhg::plugin::LICENSE_CORRUPT:
+            std::cerr << "license '" << licfile << "' corrupt" << std::endl;
+            break;
+          case fhg::plugin::LICENSE_VERSION_MISMATCH:
+            std::cerr << "license '" << licfile << "' outdated" << std::endl;
+            break;
+          case fhg::plugin::LICENSE_NOT_VERIFYABLE:
+            std::cerr << "license '" << licfile << "' not verifyable" << std::endl;
+            break;
+          default:
+            std::cerr << "license '" << licfile << "' invalid" << std::endl;
+            break;
+          }
+        }
+      }
+    }
+
+    if (rc != fhg::plugin::LICENSE_VALID)
+    {
+      if (rc == -1)
+      {
+        std::cerr << "no license found" << std::endl;
+      }
+      return EXIT_FAILURE;
+    }
+  }
+#endif
 
   if (vm.count ("title"))
   {
