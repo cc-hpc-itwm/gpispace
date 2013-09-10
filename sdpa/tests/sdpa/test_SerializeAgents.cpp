@@ -39,7 +39,6 @@ BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 const int MAX_CAP = 100;
 
-using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;

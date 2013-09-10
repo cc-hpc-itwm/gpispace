@@ -11,7 +11,6 @@
 #include "kvs_setup_fixture.hpp"
 
 namespace bfs=boost::filesystem;
-using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;

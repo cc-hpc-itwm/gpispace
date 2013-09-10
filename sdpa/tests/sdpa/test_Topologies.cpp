@@ -35,7 +35,6 @@ const int BUNCH_SIZE = 1;
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace sdpa::tests;
 
 #define NO_GUI ""
 
