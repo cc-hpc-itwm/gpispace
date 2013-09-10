@@ -333,7 +333,7 @@ int main(int ac, char **av)
       rc = fhg_get_executable_path (buf, sizeof (buf));
       if (rc < 0)
       {
-        std::cerr << "could not discover my own path" << std::endl;
+        LOG (ERROR, "could not discover my own path");
         return EXIT_FAILURE;
       }
 
@@ -367,19 +367,19 @@ int main(int ac, char **av)
           switch (rc)
           {
           case fhg::plugin::LICENSE_EXPIRED:
-            std::cerr << "license '" << licfile << "' expired" << std::endl;
+            LOG (ERROR, "license '" << licfile << "' has expired");
             break;
           case fhg::plugin::LICENSE_CORRUPT:
-            std::cerr << "license '" << licfile << "' corrupt" << std::endl;
+            LOG (ERROR, "license '" << licfile << "' is corrupt");
             break;
           case fhg::plugin::LICENSE_VERSION_MISMATCH:
-            std::cerr << "license '" << licfile << "' outdated" << std::endl;
+            LOG (ERROR, "license '" << licfile << "' has a different version");
             break;
           case fhg::plugin::LICENSE_NOT_VERIFYABLE:
-            std::cerr << "license '" << licfile << "' not verifyable" << std::endl;
+            LOG (ERROR, "license '" << licfile << "' is not verifyable");
             break;
           default:
-            std::cerr << "license '" << licfile << "' invalid" << std::endl;
+            LOG (ERROR, "license '" << licfile << "' is invalid");
             break;
           }
         }
