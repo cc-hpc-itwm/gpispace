@@ -109,10 +109,6 @@ if (NOT DEBUG_FHGLOG)
   add_definitions("-DNDEBUG_FHGLOG")
 endif()
 
-if (NOT ENABLE_LICENSE_CHECK)
-  add_definitions("-DFHG_DISABLE_LICENSE_CHECK")
-endif()
-
 if (NOT FHG_ASSERT_MODE)
   if (${CMAKE_BUILD_TYPE} MATCHES "Release")
     set (FHG_ASSERT_MODE "0")
