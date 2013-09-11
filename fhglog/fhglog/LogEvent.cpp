@@ -1,3 +1,5 @@
+#define BOOST_SPIRIT_THREADSAFE
+
 #include "LogEvent.hpp"
 #include <sys/time.h>
 #include <sstream>
