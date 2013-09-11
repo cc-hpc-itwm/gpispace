@@ -191,12 +191,6 @@ then
     echo >&2 "WARNING: license file '$license' is not readable!"
 fi
 
-opt_cluster_head=$(hostname)
-get_user_input "Head node of the cluster [$opt_cluster_head]:" opt_cluster_head
-
-opt_enable_gpi=false
-get_user_input "Enable GPI [$opt_enable_gpi]:" opt_enable_gpi
-
 info "installing..."
 
 ARCHIVE=$(awk '/^__TAR_ARCHIVE_STARTS_HERE__/ {print NR + 1; exit 0; }' "$0")
@@ -206,23 +200,25 @@ olddir="$(pwd)"
 
 mv "${tmpdir}/${GSPC_DIRECTORY_NAME}" "${dst}"
 
-# query user information here and create
-#   ${dst}/etc/sdpa/defaults
-
-cat > "${dst}/etc/sdpa/defaults" <<EOF
-DEFAULT_CLUSTER_HEAD="${opt_cluster_head}"
-DEFAULT_GPI_ENABLED="${opt_enable_gpi}"
-EOF
-
-debug "set cluster head node to := '${opt_cluster_head}'"
-debug "set gpi enabled to := '${opt_enable_gpi}'"
-
 if [ -r "${license}" ]
 then
     mkdir -p "${dst}/etc/gspc"
     cp "${license}" "${dst}/etc/gspc/gspc.lic"
     info "installed license as ${dst}/etc/gspc/gspc.lic"
 fi
+
+info "executing hooks..."
+for hook in "${tmpdir}/hooks"/*
+do
+    case "${hook}" in
+        *.sh)
+            source "${hook}"
+            ;;
+        *)
+            VERBOSE=${verbose} "$hook" "${dst}"
+            ;;
+    esac
+done
 
 if $execute_selftest
 then

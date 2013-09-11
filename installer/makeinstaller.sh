@@ -11,6 +11,8 @@ options:
     -v|--verbose : be more verbose
     -V|--version : set the version of the created package
     -d|--destdir : place output file into this directory
+
+    -H|--hook    : add a hook
 EOF
 }
 
@@ -29,6 +31,7 @@ abspath()
 version=
 destdir="$(pwd)"
 verbose=0
+hooks=()
 
 while [ $# -gt 0 ]
 do
@@ -60,6 +63,22 @@ do
                 exit 1
             fi
             destdir="$1"
+            shift
+            ;;
+        -H|--hook)
+            shift
+            if [ -z "$1" ]
+            then
+                echo >&2 "make: missing argument to --hook"
+                exit 1
+            fi
+            h=$(abspath "$1")
+            if [ ! -x "$h" ]
+            then
+                echo >&2 "make: hook is not executable: '$1'"
+                exit 1
+            fi
+            hooks+=("$h")
             shift
             ;;
         *)
@@ -98,8 +117,8 @@ then
     exit 1
 fi
 
-name="sdpa-$version"
-exe_name="${name}.sh"
+pkg_name="sdpa-$version"
+exe_name="${pkg_name}.sh"
 
 mydir=$(cd $(dirname "$0") && pwd)
 
@@ -122,16 +141,28 @@ trap cleanup EXIT TERM
 
 cd "${tmpdir}"
 
+mkdir -p "hooks"
+
+cnt=0
+for h in "${hooks[@]}"
+do
+    base=$(basename "$h")
+    hook="$(printf %02d $cnt)-${base}"
+    cp "${h}" "hooks/${hook}"
+    chmod +x "hooks/${hook}"
+    cnt=$((cnt+1))
+done
+
 echo "creating '${exe_name}'"
 
-tarflags=()
+tarflags=(-P)
 if [ $verbose -gt 0 ]
 then
     tarflags+=(-v)
 fi
 
-sed -e "s,@GSPC_DIRECTORY_NAME@,${name},g" "${installer_in}" > installer.sh
-(cat installer.sh ; tar cjf - ${tarflags[@]} --transform "s,$dir_name,$name," -C $(dirname "${dir}") "${dir_name}") > "${exe_name}"
+sed -e "s,@GSPC_DIRECTORY_NAME@,${pkg_name},g" "${installer_in}" > installer.sh
+(cat installer.sh ; tar cjf - ${tarflags[@]} --transform "s,.*/$dir_name,$pkg_name," "${dir}" hooks) > "${exe_name}"
 chmod +x "${exe_name}"
 
 mv "${exe_name}" "${destdir}/"
