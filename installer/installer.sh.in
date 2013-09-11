@@ -1,0 +1,244 @@
+#!/bin/bash
+#
+# Self-extracting installer
+#
+
+GSPC_DIRECTORY_NAME="@GSPC_DIRECTORY_NAME@"
+
+ec=0
+tmpdir=
+keep_tmp=false
+force=false
+destdir=
+license=
+verbose=0
+execute_selftest=true
+
+usage ()
+{
+    cat <<EOF
+usage: $(basename "$0") [options] -- [options for setup]
+
+  -h|--help         : print this help
+  -v|--verbose      : be more verbose
+  -k|--keep         : keep temporary directory
+  -f|--force        : remove the previous installation
+  -X|--no-selftest  : do not run the selftest
+
+  -d|--destdir dir  : where to install to (required)
+  -l|--license file : path to the license file
+
+  -t|--tempdir dir  : use this directory as the base temporary directory
+EOF
+}
+
+abspath()
+{
+    case "$1" in
+        /*)
+            echo "$1"
+            ;;
+        *)
+            echo "$(pwd)/$1"
+            ;;
+    esac
+}
+
+__log ()
+{
+    echo >&2 "$@"
+}
+
+debug ()
+{
+    if [ $verbose -gt 0 ]
+    then
+        __log "$@"
+    fi
+}
+
+info ()
+{
+    __log "$@"
+}
+
+function get_user_input ()
+{
+    local prompt="$1"; shift
+    local var="$1"; shift
+    local doc="$1"; shift
+    if [ -n "$doc" ] ; then
+        cat <<EOF
+$doc
+EOF
+    fi
+
+    read -e -p "  $prompt " new_val
+    if [ -n "$new_val" ] ; then
+        new_val=$(eval echo "$new_val")
+        eval "$var=$new_val"
+    fi
+}
+
+while :
+do
+    case "$1" in
+        -h|--help)
+            shift
+            usage
+            exit 0
+            ;;
+        -k|--keep)
+            shift
+            keep_tmp=true
+            ;;
+        -t|--tempdir)
+            shift
+            if [ ! -d "$1" ]
+            then
+                echo "install: invalid/missing argument to --tempdir: $1"
+                exit 1
+            fi
+            export TMPDIR="${1}"
+            shift
+            ;;
+        -d|--destdir)
+            shift
+            if [ -z "$1" ]
+            then
+                echo >&2 "install: missing argument to -d"
+                exit 1
+            fi
+            destdir="$1"
+            shift
+            ;;
+        -l|--license)
+            shift
+            if [ ! -r "${1}" ]
+            then
+                echo >&2 "install: missing argument to --license"
+                exit 1
+            fi
+            license=$(abspath "${1}")
+            shift
+            ;;
+        -f|--force)
+            shift
+            force=true
+            ;;
+        -v|--verbose)
+            shift
+            verbose=$((verbose+1))
+            ;;
+        -X|--no-selftest)
+            shift
+            execute_selftest=false
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+if [ -z "$destdir" ]
+then
+    usage
+    exit 1
+fi
+destdir=$(abspath "${destdir}")
+
+if [ ! -d "${destdir}" ]
+then
+    mkdir -p "${destdir}"
+fi
+dst="${destdir}/$GSPC_DIRECTORY_NAME"
+
+if $force
+then
+    rm -rf "${dst}"
+fi
+
+if [ -e "${dst}" ]
+then
+    echo >&2 "install: '${dst}' does already exist"
+    exit 1
+fi
+
+# uses TMPDIR as a prefix if set, otherwise /tmp
+tmpdir=$(mktemp -d gspc-installer.XXXXXXXXXX)
+
+cleanup ()
+{
+    if ! $keep_tmp
+    then
+        test -d "${tmpdir}" && rm -rf "${tmpdir}"
+    fi
+}
+trap 'cleanup' EXIT TERM
+
+# query user information
+if [ -z "$license" ]
+then
+    get_user_input "Path to the license file:" license
+fi
+
+if [ ! -r "$license" ]
+then
+    echo >&2 "WARNING: license file '$license' is not readable!"
+fi
+
+opt_cluster_head=$(hostname)
+get_user_input "Head node of the cluster [$opt_cluster_head]:" opt_cluster_head
+
+opt_enable_gpi=false
+get_user_input "Enable GPI [$opt_enable_gpi]:" opt_enable_gpi
+
+info "installing..."
+
+ARCHIVE=$(awk '/^__TAR_ARCHIVE_STARTS_HERE__/ {print NR + 1; exit 0; }' "$0")
+tail -n+"$ARCHIVE" "$0" | tar xjf - -C "${tmpdir}"
+
+olddir="$(pwd)"
+
+mv "${tmpdir}/${GSPC_DIRECTORY_NAME}" "${dst}"
+
+# query user information here and create
+#   ${dst}/etc/sdpa/defaults
+
+cat > "${dst}/etc/sdpa/defaults" <<EOF
+DEFAULT_CLUSTER_HEAD="${opt_cluster_head}"
+DEFAULT_GPI_ENABLED="${opt_enable_gpi}"
+EOF
+
+debug "set cluster head node to := '${opt_cluster_head}'"
+debug "set gpi enabled to := '${opt_enable_gpi}'"
+
+if [ -r "${license}" ]
+then
+    mkdir -p "${dst}/etc/gspc"
+    cp "${license}" "${dst}/etc/gspc/gspc.lic"
+    info "installed license as ${dst}/etc/gspc/gspc.lic"
+fi
+
+if $execute_selftest
+then
+    "${dst}/bin/sdpa" selftest
+fi
+
+cat <<EOF
+# $("${dst}/bin/gspc" --version) installed to "${dst}"
+
+# To run the contained self-test:
+"${dst}/bin/sdpa" selftest
+
+# To load it into your environment, start a bash and type:
+source "${dst}/etc/sdpa/sdpa.env"
+EOF
+
+exit
+
+__TAR_ARCHIVE_STARTS_HERE__
