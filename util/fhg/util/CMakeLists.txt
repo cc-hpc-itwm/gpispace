@@ -95,7 +95,7 @@ set_target_properties(fhg-util-shared
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
-  COMPONENT headers)
+  COMPONENT runtime-headers)
 install (TARGETS fhg-util
   ARCHIVE DESTINATION lib
   COMPONENT runtime
