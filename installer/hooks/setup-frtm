@@ -14,4 +14,9 @@ sed -i \
     -e "s,^RESERVED_NODES=.*$,RESERVED_NODES=\"\"," \
     "${dst}/libexec/sdpa/apps/frtm/hooks/setup.sh"
 
+mkdir -p "${dst}/etc/sdpa/env.d"
+cat > "${dst}/etc/sdpa/env.d/50-FRTM.sh" <<EOF
+export PATH="${dst}/libexec/sdpa/apps/frtm/script:\$PATH"
+EOF
+
 echo >&2 "FRTM configured"
