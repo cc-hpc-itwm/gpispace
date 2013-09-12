@@ -31,6 +31,4 @@ struct job_requirements_t
 	int n_workers;
 };
 
-typedef we::mgmt::basic_layer IWorkflowEngine;
-
 #endif //IWORKFLOWENGINE_HPP

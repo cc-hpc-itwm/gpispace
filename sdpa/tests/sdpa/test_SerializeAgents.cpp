@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 
 	std::string filename = "testDummyWorkflowEngineSerialization.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
-	IWorkflowEngine* pWfEng = new DummyWorkflowEngine();
+	we::mgmt::basic_layer* pWfEng = new DummyWorkflowEngine();
 
 	const int NWFS = 10;
 	encoded_type wf_desc("workflow description ");
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 	// restore state to one equivalent to the original
 	try
 	{
-		IWorkflowEngine* pRestoredWfEng;
+		we::mgmt::basic_layer* pRestoredWfEng;
 		// open the archive
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);

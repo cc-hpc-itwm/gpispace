@@ -23,7 +23,7 @@
 
 using boost::numeric::ublas::matrix;
 
-class TorusWorkflowEngineAgent : public IWorkflowEngine {
+class TorusWorkflowEngineAgent : public we::mgmt::basic_layer {
   private:
     SDPA_DECLARE_LOGGER();
 

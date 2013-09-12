@@ -232,7 +232,7 @@ namespace sdpa {
       virtual void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 
       // workflow engine
-      virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
+      virtual we::mgmt::basic_layer* workflowEngine() const { return ptr_workflow_engine_; }
       virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
 
       template <typename T>
@@ -329,7 +329,7 @@ namespace sdpa {
     protected:
       JobManager::ptr_t ptr_job_man_;
       Scheduler::ptr_t ptr_scheduler_;
-      IWorkflowEngine* ptr_workflow_engine_;
+      we::mgmt::basic_layer* ptr_workflow_engine_;
 
     private:
 
