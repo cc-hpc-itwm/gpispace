@@ -396,7 +396,19 @@
 	          else
 	          {
 		          lseek (fd, chunk_write_info.chunk_id*config.chunk_size, SEEK_SET);
-		          write (fd, ptrChunk, chunk_write_info.size);
+                          int ec (write (fd, ptrChunk, chunk_write_info.size));
+
+                          if (ec < 0)
+                          {
+                            throw std::runtime_error
+                              (std::string ("error when writing: ") + strerror (ec));
+                          }
+                          if (ec != chunk_write_info.size)
+                          {
+                            throw std::runtime_error
+                              ("error when writing: not everything written");
+                          }
+
 		          close (fd);
 	          }
 		  }
