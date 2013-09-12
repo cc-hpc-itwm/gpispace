@@ -1,20 +1,4 @@
-/*
- * =============================================================================
- *
- *       Filename:  layer.hpp
- *
- *    Description:  workflow engine management layer
- *
- *        Version:  1.0
- *        Created:  02/25/2010 12:51:21 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =============================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef WE_MGMT_LAYER_HPP
 #define WE_MGMT_LAYER_HPP 1
@@ -106,24 +90,8 @@ namespace we { namespace mgmt {
        *          post-conditions: the net is registered is with id "id"
        *
        */
-      void submit(const external_id_type & id, const encoded_type & bytes)
-      {
-        DLOG(TRACE, "submit (" << id << ", ...)");
-
-        return submit (id, we::mgmt::type::activity_t (bytes));
-      }
-
-      void submit( const external_id_type& id
-                 , const we::mgmt::type::activity_t& act
-                 )
-      {
-        descriptor_ptr desc
-          (new detail::descriptor (generate_internal_id(), act));
-        desc->came_from_external_as (id);
-        desc->inject_input ();
-
-        submit (desc);
-      }
+      void submit (const external_id_type&, const encoded_type&);
+      void submit (const external_id_type&, const we::mgmt::type::activity_t&);
 
       /**
        * Inform the management layer to cancel a previously submitted net
@@ -142,22 +110,7 @@ namespace we { namespace mgmt {
        *                  CANCELLING
        *                - all children of the network will be terminated
        */
-      bool cancel(const external_id_type & id, const reason_type & reason)
-      {
-        MLOG (WARN, "cancel ( " << id << " ) := " << reason);
-
-        fhg::util::remove_unused_variable_warning(reason);
-
-        try
-        {
-          post_cancel_activity_notification (map_to_internal(id));
-        }
-        catch (std::exception const &)
-        {
-          return false;
-        }
-        return true;
-      }
+      bool cancel (const external_id_type&, const reason_type&);
 
       /**
        * Inform the management  layer that an execution finished  with the given
@@ -176,32 +129,7 @@ namespace we { namespace mgmt {
        *
        *               - the node belonging to this is activity is removed
        **/
-      bool finished(const external_id_type & id, const result_type & result)
-      {
-        try
-        {
-          internal_id_type int_id (map_to_internal (id));
-          {
-            lock_t lock(mutex_);
-            descriptor_ptr desc (lookup (int_id));
-            {
-              desc->output (we::mgmt::type::activity_t (result).output());
-
-              DLOG( TRACE
-                  , "finished"
-                  << " (" << desc->name() << ")-" << id
-                  );
-            }
-          }
-
-          post_finished_notification (int_id);
-        }
-        catch (const std::exception &)
-        {
-          return false;
-        }
-        return true;
-      }
+      bool finished (const external_id_type&, const result_type&);
 
       /**
        * Inform the  management layer  that an execution  failed with  the given
@@ -220,45 +148,11 @@ namespace we { namespace mgmt {
        *
        *                - the node belonging to this activity is removed
        **/
-      bool failed ( const external_id_type & id
-                  , const result_type & result
+      bool failed ( const external_id_type&
+                  , const result_type&
                   , const int error_code
-                  , const std::string & error_message
-                  )
-      {
-        fhg::util::remove_unused_variable_warning(result);
-
-        try
-        {
-          descriptor_ptr d = lookup(map_to_internal(id));
-
-          d->set_error_code(error_code);
-          d->set_error_message (d->name () + ": " + error_message);
-          d->set_result(result);
-
-          MLOG (TRACE, "failed ( " << id << " ) := " << error_message);
-
-          // TODO:
-          //    lookup activity
-          //    mark as failed
-          //    store result + reason
-
-          //    let the "parent" fail as well
-          //        -> mark the parent's *outcome* as "failed"
-          //        -> store the reasons, i.e. a list of childfailures
-          //        -> cancel all children
-          //        -> wait until all children are done
-          //        -> inform parent and so on
-          post_failed_notification (d->id ());
-          return true;
-        }
-        catch (const std::exception &ex)
-        {
-          MLOG (ERROR, "could not mark activity as failed: " << ex.what ());
-          throw;
-          //          return false;
-        }
-      }
+                  , const std::string&
+                  );
 
       /**
        * Inform the management layer that an execution has been cancelled
@@ -273,21 +167,7 @@ namespace we { namespace mgmt {
        *          post-conditions:
        *                  - the node belonging to this activity is removed
        **/
-      bool cancelled(const external_id_type & id)
-      {
-        DLOG(TRACE, "cancelled (" << id << ")");
-
-        try
-        {
-          post_cancelled_notification (map_to_internal(id));
-          return true;
-        }
-        catch (const std::exception &)
-        {
-          DMLOG (WARN, "tried to notify cancelled for unknown activity " << id);
-          return false;
-        }
-      }
+      bool cancelled (const external_id_type&);
 
       // END: EXTERNAL API
 
