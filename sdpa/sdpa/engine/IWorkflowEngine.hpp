@@ -32,6 +32,5 @@ struct job_requirements_t
 };
 
 typedef we::mgmt::basic_layer IWorkflowEngine;
-typedef we::mgmt::layer RealWorkflowEngine;
 
 #endif //IWORKFLOWENGINE_HPP
