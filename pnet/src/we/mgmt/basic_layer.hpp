@@ -20,7 +20,6 @@
 #define WE_MGMT_BASIC_LAYER_HPP 1
 
 #include <string>
-#include <boost/unordered_map.hpp>
 #include <boost/serialization/access.hpp>
 
 namespace we
