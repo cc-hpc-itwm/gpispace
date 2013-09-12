@@ -1024,19 +1024,12 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     }
     case ErrorEvent::SDPA_EPERM:
     {
-      DMLOG (WARN, "Got error from "<<error.from()<<". Reason: "<<error.reason());
-      if( error.job_id() != sdpa::job_id_t::invalid_job_id() )
-      {
-        // check if there were any jobs submitted and not acknowledged to that worker
-        // if this is the case, move the submitted jobs back into the pending queue
-        // don't forget to update the state machine
-        sdpa::job_id_t jobId(error.job_id());
-        sdpa::worker_id_t worker_id(error.from());
-        DMLOG (TRACE, "The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-assign it now!");
+    	sdpa::job_id_t jobId(error.job_id());
+    	sdpa::worker_id_t worker_id(error.from());
+    	DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Reschedule it now!");
 
-        scheduler()->reassign(worker_id, jobId);
-      }
-       break;
+    	scheduler()->reschedule(worker_id, jobId);
+    	break;
     }
     default:
     {
