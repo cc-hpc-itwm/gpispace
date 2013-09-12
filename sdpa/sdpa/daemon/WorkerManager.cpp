@@ -480,7 +480,7 @@ size_t numberOfMandReqs( const job_requirements_t& listJobReq )
 
 // add here a
 // add here a
-sdpa::list_match_workers_t WorkerManager::getListMatchingWorkers( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq ) throw (NoWorkerFoundException)
+sdpa::list_match_workers_t WorkerManager::getListMatchingWorkers( const job_requirements_t& listJobReq ) throw (NoWorkerFoundException)
 {
   lock_type lock(mtx_);
   if( worker_map_.empty() )

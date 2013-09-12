@@ -66,7 +66,7 @@ namespace sdpa { namespace daemon {
 
     worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
 
-    sdpa::list_match_workers_t getListMatchingWorkers( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq ) throw (NoWorkerFoundException);
+    sdpa::list_match_workers_t getListMatchingWorkers( const job_requirements_t& listJobReq ) throw (NoWorkerFoundException);
 
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
