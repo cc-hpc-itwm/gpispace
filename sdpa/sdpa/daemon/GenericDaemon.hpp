@@ -55,6 +55,8 @@
 
 #include <sdpa/types.hpp>
 
+#include <we/type/schedule_data.hpp>
+
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/list.hpp>
