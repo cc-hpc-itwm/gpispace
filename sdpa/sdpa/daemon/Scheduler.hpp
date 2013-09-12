@@ -38,9 +38,7 @@ namespace daemon {
 	 virtual const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException) = 0;
 	 virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException) = 0;
 
-	 virtual const sdpa::job_id_t assignNewJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException) =0;
 	 virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException) = 0;
-
 	 virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException) = 0;
 
 	 virtual void addWorker( const Worker::worker_id_t& workerId,
@@ -81,12 +79,11 @@ namespace daemon {
      virtual void reschedule(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job) = 0;
 	 virtual void reschedule(const Worker::worker_id_t& ) = 0;
 	 virtual void reschedule(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue ) = 0;
-	 virtual void reassign(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id ) = 0;
 
 	 virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
 	 virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
-	 virtual void assignWorkersToJobs() = 0;
-	 virtual sdpa::worker_id_list_t getListReservedWorkers(const sdpa::job_id_t&) = 0;
+	 virtual void assignJobsToWorkers() = 0;
+	 virtual sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t&) = 0;
 	 virtual void releaseAllocatedWorkers(const sdpa::job_id_t& jobId) = 0;
 
 	 virtual void start(IAgent*) = 0;
