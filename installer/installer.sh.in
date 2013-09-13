@@ -9,7 +9,7 @@ ec=0
 tmpdir=
 keep_tmp=false
 force=false
-destdir=
+destdir=/opt/sdpa
 license=
 verbose=0
 execute_selftest=true
@@ -25,10 +25,10 @@ usage: $(basename "$0") [options] -- [options for setup]
   -f|--force        : remove the previous installation
   -X|--no-selftest  : do not run the selftest
 
-  -d|--destdir dir  : where to install to (required)
+  -d|--destdir dir  : where to install to (=$destdir)
   -l|--license file : path to the license file
 
-  -t|--tempdir dir  : use this directory as the base temporary directory
+  -t|--tempdir dir  : use this directory as the base temporary directory (=$TMPDIR)
 EOF
 }
 
