@@ -236,7 +236,8 @@ done
 
 if $execute_selftest
 then
-    "${dst}/bin/sdpa" selftest
+    export SDPA_PERFORM_UNATTENDED_SETUP=1
+    "${dst}/bin/sdpa" selftest </dev/null
 fi
 
 cat <<EOF
