@@ -9,7 +9,7 @@
 
 BOOST_AUTO_TEST_CASE (iterators_cons_list_empty)
 {
-  std::list<value::type> l;
+  std::list<pnet::type::value::value_type> l;
 
   we::util::iterators_type i (l);
 
@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE (iterators_cons_list_empty)
 
 BOOST_AUTO_TEST_CASE (iterators_cons_iterator_empty)
 {
-  std::list<value::type> l;
+  std::list<pnet::type::value::value_type> l;
 
   we::util::iterators_type i (l.begin());
 
@@ -31,9 +31,9 @@ BOOST_AUTO_TEST_CASE (iterators_cons_iterator_empty)
 
 BOOST_AUTO_TEST_CASE (iterators_cons_list)
 {
-  std::list<value::type> l;
+  std::list<pnet::type::value::value_type> l;
 
-  l.push_back (value::type (0L));
+  l.push_back (pnet::type::value::value_type (0L));
 
   we::util::iterators_type i (l);
 
@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE (iterators_cons_list)
 
 BOOST_AUTO_TEST_CASE (iterators_cons_iterator)
 {
-  std::list<value::type> l;
+  std::list<pnet::type::value::value_type> l;
 
-  l.push_back (value::type (0L));
+  l.push_back (pnet::type::value::value_type (0L));
 
   we::util::iterators_type i (l.begin());
 
@@ -57,9 +57,9 @@ BOOST_AUTO_TEST_CASE (iterators_cons_iterator)
 
 BOOST_AUTO_TEST_CASE (iterators_operator_plus)
 {
-  std::list<value::type> l;
+  std::list<pnet::type::value::value_type> l;
 
-  l.push_back (value::type (0L));
+  l.push_back (pnet::type::value::value_type (0L));
 
   we::util::iterators_type i (l);
 
@@ -72,9 +72,9 @@ BOOST_AUTO_TEST_CASE (iterators_operator_plus)
 
 BOOST_AUTO_TEST_CASE (iterators_rewind)
 {
-  std::list<value::type> l;
+  std::list<pnet::type::value::value_type> l;
 
-  l.push_back (value::type (0L));
+  l.push_back (pnet::type::value::value_type (0L));
 
   we::util::iterators_type i (l);
 

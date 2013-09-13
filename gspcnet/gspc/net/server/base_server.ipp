@@ -16,48 +16,38 @@ namespace gspc
     namespace server
     {
       template <class Proto>
-      base_server<Proto>::base_server ( endpoint_type const &endpoint
+      base_server<Proto>::base_server ( boost::asio::io_service &io
+                                      , endpoint_type const &endpoint
                                       , queue_manager_t & qmgr
                                       )
         : m_qmgr (qmgr)
-        , m_io_service ()
+        , m_io_service (io)
+        , m_strand (m_io_service)
+        , m_endpoint (endpoint)
         , m_acceptor (m_io_service)
         , m_new_connection ()
-        , m_thread_pool_size (4u)
-        , m_thread_pool ()
+        , m_active_connections ()
+        , m_active_connections_id (0)
         , m_queue_length (0)
       {
-        m_acceptor.open (endpoint.protocol());
-        m_acceptor.set_option (typename acceptor_type::reuse_address(true));
-        m_acceptor.bind (endpoint);
-        m_acceptor.listen ();
-
-        start_accept();
       }
 
       template <class Proto>
       base_server<Proto>::~base_server ()
       {
-        stop ();
+        if (m_acceptor.is_open ())
+          stop ();
       }
 
       template <class Proto>
       int base_server<Proto>::start ()
       {
-        assert (m_thread_pool.empty ());
+        m_acceptor.open (m_endpoint.protocol());
+        m_acceptor.set_option (typename acceptor_type::reuse_address(true));
+        m_acceptor.bind (m_endpoint);
+        m_acceptor.listen ();
 
-        m_io_service.reset ();
-
-        for (size_t i = 0 ; i < m_thread_pool_size ; ++i)
-        {
-          thread_ptr_t thrd
-            (new boost::thread (boost::bind ( &boost::asio::io_service::run
-                                            , &m_io_service
-                                            )
-                               )
-            );
-          m_thread_pool.push_back (thrd);
-        }
+        start_accept();
 
         return 0;
       }
@@ -65,13 +55,23 @@ namespace gspc
       template <class Proto>
       int base_server<Proto>::stop ()
       {
-        m_io_service.stop ();
+        boost::system::error_code ec;
+        m_acceptor.cancel (ec);
+        m_acceptor.close (ec);
 
-        BOOST_FOREACH (thread_ptr_t thrd, m_thread_pool)
+        if (m_new_connection)
         {
-          thrd->join ();
+          m_new_connection->stop ();
         }
-        m_thread_pool.clear ();
+
+        {
+          unique_lock lock (m_active_connections_mtx);
+          while (not m_active_connections.empty ())
+          {
+            m_active_connections.begin ()->second->stop ();
+            m_active_connections.erase (m_active_connections.begin ());
+          }
+        }
 
         return 0;
       }
@@ -79,7 +79,8 @@ namespace gspc
       template <class Proto>
       std::string base_server<Proto>::url () const
       {
-        return url_maker<Proto>::make (m_acceptor.local_endpoint ());
+        boost::system::error_code ec;
+        return url_maker<Proto>::make (m_acceptor.local_endpoint (ec));
       }
 
       template <class Proto>
@@ -90,26 +91,32 @@ namespace gspc
 
       template <class Proto>
       int base_server<Proto>::handle_error ( user_ptr user
-                                           , boost::system::error_code const &ec
+                                           , boost::system::error_code const &
                                            )
       {
-        if (ec)
         {
-          return m_qmgr.disconnect (user, gspc::net::make::disconnect_frame ());
+          unique_lock lock (m_active_connections_mtx);
+          m_active_connections.erase (user->id ());
         }
-        return 0;
+
+        return m_qmgr.disconnect (user);
       }
 
       template <class Proto>
       void base_server<Proto>::start_accept ()
       {
-        m_new_connection.reset (new connection (m_io_service, *this));
+        m_new_connection.reset (new connection ( m_active_connections_id++
+                                               , m_io_service
+                                               , *this
+                                               )
+                               );
 
         m_acceptor.async_accept ( m_new_connection->socket ()
-                                , boost::bind ( &base_server<Proto>::handle_accept
-                                              , this
-                                              , boost::asio::placeholders::error
-                                              )
+                                , m_strand.wrap (boost::bind
+                                                ( &base_server<Proto>::handle_accept
+                                                , this->shared_from_this ()
+                                                , boost::asio::placeholders::error
+                                                ))
                                 );
       }
 
@@ -117,13 +124,22 @@ namespace gspc
       void
       base_server<Proto>::handle_accept (boost::system::error_code const &ec)
       {
-        if (not ec)
+        if (ec)
         {
+          // shutting down
+        }
+        else
+        {
+          {
+            unique_lock lock (m_active_connections_mtx);
+            m_active_connections.insert
+              (std::make_pair (m_new_connection->id (), m_new_connection));
+          }
           m_new_connection->set_queue_length (m_queue_length);
           m_new_connection->start ();
-        }
 
-        start_accept ();
+          start_accept ();
+        }
       }
 
       template <class Proto>
@@ -131,13 +147,6 @@ namespace gspc
       base_server<Proto>::set_queue_length (size_t len)
       {
         m_queue_length = len;
-      }
-
-      template <class Proto>
-      void
-      base_server<Proto>::set_thread_pool_size (size_t n)
-      {
-        m_thread_pool_size = n;
       }
     }
   }

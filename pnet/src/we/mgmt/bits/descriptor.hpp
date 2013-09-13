@@ -89,9 +89,6 @@ namespace we
         bool is_alive() const;
         bool enabled() const;
 
-        std::string show_input() const;
-        std::string show_output() const;
-
         void apply_to_children (fun_t) const;
 
       private:

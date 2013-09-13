@@ -17,7 +17,7 @@ namespace place
     return _name = name_;
   }
 
-  const signature::type& type::signature() const
+  const pnet::type::signature::signature_type& type::signature() const
   {
     return _signature;
   }
@@ -32,12 +32,12 @@ namespace place
   }
 
   type::type ()
-    : _name ("<<place>>")
-    , _signature ("<<signature>>")
+    : _name()
+    , _signature()
   {}
 
   type::type ( const std::string& name
-	     , const signature::type& signature
+	     , const pnet::type::signature::signature_type& signature
 	     , const we::type::property::type& prop
 	     )
     : _name (name)

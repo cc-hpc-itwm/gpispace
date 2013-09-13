@@ -500,7 +500,7 @@
         <out name="volume" type="volume_in_progress"/>
         <out name="credit_unassign" type="control"/>
         <expression>
-          ${bunch.wait} := ${bunch.wait} - 1;
+          ${bunch.wait} := ${bunch.wait} - 1L;
 
           ${volume.assigned.bunch.id} := -1L;
           ${volume.assigned.store.id} := -1L;
@@ -532,7 +532,7 @@
         <out name="volume" type="volume_in_progress"/>
         <out name="credit_unassign" type="control"/>
         <expression>
-          ${bunch.wait} := ${bunch.wait} - 1;
+          ${bunch.wait} := ${bunch.wait} - 1L;
 
           ${volume.assigned.bunch.id} := -1L;
           ${volume.assigned.store.id} := -1L;
@@ -596,7 +596,7 @@
           ${credit_check_bunch_done} := []
         </expression>
         <condition>
-          ${bunch.wait} :le: 0
+          ${bunch.wait} :le: 0L
         </condition>
       </defun>
       <connect-in port="bunch" place="check_bunch_done"/>
@@ -614,7 +614,7 @@
           ${credit_check_bunch_done} := []
         </expression>
         <condition>
-          ${bunch.wait} :gt: 0
+          ${bunch.wait} :gt: 0L
         </condition>
       </defun>
       <connect-in port="bunch" place="check_bunch_done"/>
@@ -636,7 +636,7 @@
           ${credit_check_volume_done} := []
         </expression>
         <condition>
-          ${pair.state.bunches.left} :le: 0
+          ${pair.state.bunches.left} :le: 0L
         </condition>
       </defun>
       <connect-in port="pair" place="check_volume_done"/>
@@ -657,7 +657,7 @@
           ${credit_check_volume_done} := []
         </expression>
         <condition>
-          ${pair.state.bunches.left} :gt: 0
+          ${pair.state.bunches.left} :gt: 0L
         </condition>
       </defun>
       <connect-in port="pair" place="check_volume_done"/>
@@ -675,7 +675,7 @@
         <out name="sum" type="volume_in_reduction"/>
         <expression>
           ${sum.volume} := ${volume.volume};
-          ${sum.left} := ${state.copies} - 1;
+          ${sum.left} := ${state.copies} - 1L;
         </expression>
         <condition>
           ${state.volume} :eq: ${volume.volume.volume}

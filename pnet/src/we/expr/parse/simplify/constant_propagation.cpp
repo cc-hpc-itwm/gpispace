@@ -18,7 +18,7 @@ namespace expr
       namespace
       {
         typedef boost::unordered_map < key_type
-                                     , value::type
+                                     , pnet::type::value::value_type
                                      > propagation_map_type;
 
         void remove_parents_and_children_left
@@ -54,7 +54,7 @@ namespace expr
             : _propagation_map (propagation_map)
           { }
 
-          node::type operator() (const value::type& v) const
+          node::type operator() (const pnet::type::value::value_type& v) const
           {
             return v;
           }
@@ -86,7 +86,7 @@ namespace expr
               key_type lhs (boost::get<key_type> (b.l));
               remove_parents_and_children_left (lhs, _propagation_map);
               //! \todo also propagate constant trees or fold them?
-              if (const value::type* rhs = boost::get<value::type> (&b.r))
+              if (const pnet::type::value::value_type* rhs = boost::get<pnet::type::value::value_type> (&b.r))
               {
                 _propagation_map[lhs] = *rhs;
               }

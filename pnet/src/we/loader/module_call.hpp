@@ -1,68 +1,59 @@
 #ifndef SDPA_DAEMON_NRE_MODULE_CALL_HPP
 #define SDPA_DAEMON_NRE_MODULE_CALL_HPP 1
 
+#include <we/expr/eval/context.hpp>
 #include <we/loader/loader.hpp>
-#include <we/loader/types.hpp>
-
 #include <we/mgmt/type/activity.hpp>
-#include <we/type/module_call.hpp>
+#include <we/require_type.hpp>
 #include <we/type/id.hpp>
+#include <we/type/module_call.hpp>
 #include <we/type/port.hpp>
-#include <we/type/value/require_type.hpp>
 
 #include <boost/foreach.hpp>
 
 namespace module
 {
-  static void call (we::loader::loader & loader, we::mgmt::type::activity_t & act, const we::type::module_call_t & module_call)
+  static void call ( we::loader::loader& loader
+                   , we::mgmt::type::activity_t& act
+                   , const we::type::module_call_t& module_call
+                   )
   {
-    // construct context
-    typedef we::loader::input_t context_t;
-    typedef we::mgmt::type::activity_t::output_t output_t;
-    typedef we::type::port_t port_t;
-    typedef we::type::transition_t::const_iterator port_iterator;
+    typedef std::pair< pnet::type::value::value_type
+                     , petri_net::port_id_type
+                     > token_on_port_type;
+    typedef std::pair< petri_net::port_id_type
+                     , we::type::port_t
+                     > port_by_id_type;
 
-    context_t context;
+    expr::eval::context in;
+    expr::eval::context out;
 
-    typedef std::pair<value::type, petri_net::port_id_type> tp_type;
-
-    BOOST_FOREACH (const tp_type& tp, act.input())
+    BOOST_FOREACH (const token_on_port_type& token_on_port, act.input())
     {
-      context.bind_ref ( act.transition().name_of_port (tp.second)
-                       , tp.first
-                       );
+      in.bind_ref ( act.transition().name_of_port (token_on_port.second)
+                  , token_on_port.first
+                  );
     }
 
-    we::loader::output_t mod_output;
+    loader[module_call.module()].call (module_call.function(), in, out);
 
-    loader[module_call.module()] (module_call.function(), context, mod_output);
-
-    typedef std::pair<std::string, value::type> kv_type;
-
-    BOOST_FOREACH (const kv_type& kv, mod_output.values())
+    BOOST_FOREACH ( const port_by_id_type& port_by_id
+                  , act.transition().ports()
+                  )
     {
-      try
+      const petri_net::port_id_type& port_id (port_by_id.first);
+      const we::type::port_t& port (port_by_id.second);
+
+      if (port.is_output())
       {
-        const petri_net::port_id_type& port_id
-          (act.transition().output_port_by_name (kv.first));
-
-        const port_t& port (act.transition().get_port (port_id));
-
-        act.add_output
-          ( output_t::value_type
-            ( value::require_type ( port.name()
-                                  , port.signature()
-                                  , kv.second
-                                  )
-            , port_id
-            )
-          );
-      }
-      catch (const std::exception & e)
-      {
-        std::cout << "During collect output: " << e.what() << std::endl;
-
-        throw;
+        act.add_output ( token_on_port_type
+                         (pnet::require_type ( out.value (port.name())
+                                             , port.signature()
+                                             , port.name()
+                                             )
+                         , port_id
+                         )
+                       );
       }
     }
   }

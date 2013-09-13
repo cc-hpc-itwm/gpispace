@@ -15,8 +15,6 @@ namespace xml
     namespace structure_type
     {
       class get_literal_type_name;
-
-      class resolve;
     }
   }
 }

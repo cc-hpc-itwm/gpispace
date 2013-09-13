@@ -28,8 +28,8 @@
           <in name="n" type="long"/>
           <out name="state" type="state"/>
           <expression>
-            ${state.i} := 0;
             ${state.max} := ${n};
+            ${state.i} := 0L;
           </expression>
         </defun>
         <connect-in port="n" place="n"/>
@@ -49,7 +49,7 @@
           <expression>
             ${i.id} := ${state.i};
             ${i.credit} := ${credit};
-            ${state.i} := ${state.i} + 1;
+            ${state.i} := ${state.i} + 1L;
           </expression>
         </defun>
         <condition>

@@ -11,7 +11,7 @@ namespace we
 {
   namespace util
   {
-    typedef std::pair< std::list<value::type>::iterator
+    typedef std::pair< std::list<pnet::type::value::value_type>::iterator
                      , std::size_t
                      > pos_and_distance_type;
 

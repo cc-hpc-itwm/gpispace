@@ -23,6 +23,9 @@ if(CMAKE_USE_PTHREADS_INIT)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif()
 
+find_package(UTIL REQUIRED QUIET)
+include_directories(${UTIL_INCLUDE_DIR})
+
 include(CheckIncludeFiles)
 CHECK_INCLUDE_FILES(syslog.h HAVE_SYSLOG_H)
 

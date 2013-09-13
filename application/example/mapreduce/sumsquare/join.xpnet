@@ -36,7 +36,7 @@
           ${state.sum} := ${state.sum} + ${o};
           ${state.wait} := ${state.wait} - 1L;
         </expression>
-        <condition>${state.wait} :gt: 0</condition>
+        <condition>${state.wait} :gt: 0L</condition>
       </defun>
       <connect-in port="state" place="state"/>
       <connect-out port="state" place="state"/>
@@ -50,7 +50,7 @@
         <expression>
           ${O} := ${state.sum}
         </expression>
-        <condition>${state.wait} :eq: 0</condition>
+        <condition>${state.wait} :eq: 0L</condition>
       </defun>
       <connect-in port="state" place="state"/>
       <connect-out port="O" place="O"/>

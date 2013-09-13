@@ -25,10 +25,22 @@
 #include <boost/preprocessor/iteration.hpp>
 #include <boost/preprocessor/control.hpp>
 
-#if !BOOST_PP_IS_ITERATING
+#if !defined BOOST_PP_IS_ITERATING || !BOOST_PP_IS_ITERATING
 #ifndef QTBOOSTINTEGRATION_MAX_ARGUMENTS
 #define QTBOOSTINTEGRATION_MAX_ARGUMENTS 5
 #endif
+
+namespace
+{
+  template<typename T> struct remove_const_reference
+  {
+    typedef T type;
+  };
+  template<typename T> struct remove_const_reference<const T&>
+  {
+    typedef T type;
+  };
+}
 
 #define BOOST_PP_ITERATION_LIMITS (0, QTBOOSTINTEGRATION_MAX_ARGUMENTS)
 #define BOOST_PP_FILENAME_1 "util/qt/boost_connect_specializes.hpp"
@@ -71,7 +83,7 @@ namespace fhg
 #else
             return QByteArray ("fake(")
 #define QTBI_STORE_METATYPE(z, N, arg)                                          \
-              .append (QMetaType::typeName (qMetaTypeId<BOOST_PP_CAT(T, N)>())) \
+              .append (QMetaType::typeName (qMetaTypeId<typename remove_const_reference<BOOST_PP_CAT(T, N)>::type>())) \
               .append (N != QTBI_ITERATION - 1 ? "," : ")")
 
             BOOST_PP_REPEAT(QTBI_ITERATION, QTBI_STORE_METATYPE, ~);
@@ -86,7 +98,7 @@ namespace fhg
             Q_UNUSED(args);
 #endif
 
-#define QTBI_PARAM(z, N, arg) *reinterpret_cast<BOOST_PP_CAT(T, N) *>(args[N+1])
+#define QTBI_PARAM(z, N, arg) *reinterpret_cast<typename remove_const_reference<BOOST_PP_CAT(T, N)>::type *> (args[N+1])
             m_function(BOOST_PP_ENUM(QTBI_ITERATION, QTBI_PARAM, ~));
 #undef QTBI_PARAM
           }

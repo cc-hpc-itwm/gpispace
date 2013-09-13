@@ -116,6 +116,27 @@ void boost_connect_fixture::function (int val)
   _ival = val;
 }
 
+namespace
+{
+  void set (const custom_type& val, int* tar)
+  {
+    *tar = val.dummy;
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE (custom_arg_type, boost_connect_fixture)
+{
+  BOOST_REQUIRE ( fhg::util::qt::boost_connect<void (const custom_type&)>
+                  ( this, SIGNAL (signal5 (custom_type))
+                  , this, bind (set, _1, &_ival)
+                  )
+                );
+
+  emit signal5 (custom_type (2));
+
+  BOOST_REQUIRE_EQUAL (_ival, 2);
+}
+
 BOOST_FIXTURE_TEST_CASE (member_function, boost_connect_fixture)
 {
   BOOST_REQUIRE

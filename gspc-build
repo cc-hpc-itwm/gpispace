@@ -123,7 +123,7 @@ fi
 
 "${srcdir}/configure" -p "${instdir}" -- "${extra[@]}" || { echo >&2 "FAILED: could not CONFIGURE"; exit 11; }
 
-make -j "${jobs}" || { echo >&2 "FAILED: could not BUILD" ; exit 12; }
+make -j "${jobs}" -k || { echo >&2 "FAILED: could not BUILD" ; exit 12; }
 if [ -d "${instdir}" ] ; then
   rm -rf "${instdir}"
 fi

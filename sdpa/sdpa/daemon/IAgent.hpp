@@ -54,7 +54,7 @@ namespace sdpa {
     virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const = 0;
     virtual void deleteJob(const sdpa::job_id_t& ) = 0;
 
-    virtual const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
+    virtual const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
 
     virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
     virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;

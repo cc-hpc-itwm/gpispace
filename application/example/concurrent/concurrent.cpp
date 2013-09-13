@@ -14,18 +14,16 @@
 
 #include <map>
 
-using we::loader::get;
-
 typedef std::map<unsigned int, unsigned long> call_cnt_map_t ;
 static call_cnt_map_t call_cnt_map;
 
 static void fun ( void *
-                , const we::loader::input_t & input
-                , we::loader::output_t & output
+                , const expr::eval::context& input
+                , expr::eval::context& output
                 )
 {
-  const long & x (get<long>(input, "x"));
-  const long & id (get<long>(input, "id"));
+  const long& x (boost::get<const long&>(input.value ("x")));
+  const long& id (boost::get<const long&>(input.value ("id")));
 
   MLOG (DEBUG, "fun : " << id);
 
@@ -36,67 +34,67 @@ static void fun ( void *
 
 static unsigned long call_cnt_A = 0;
 static void A ( void *
-              , const we::loader::input_t & input
-              , we::loader::output_t & output
+              , const expr::eval::context& input
+              , expr::eval::context& output
               )
 {
-  const long & id (get<long>(input, "id"));
+  const long& id (boost::get<const long&>(input.value ("id")));
 
   MLOG (DEBUG, "A : " << id);
 
   ++call_cnt_A;
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", pnet::type::value::value_type (we::type::literal::control()));
 }
 
 static unsigned long call_cnt_B = 0;
 static void B ( void *
-              , const we::loader::input_t & input
-              , we::loader::output_t & output
+              , const expr::eval::context & input
+              , expr::eval::context & output
               )
 {
-  const long & id (get<long>(input, "id"));
+  const long& id (boost::get<const long&>(input.value("id")));
 
   MLOG (DEBUG, "B : " << id);
 
   ++call_cnt_B;
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", pnet::type::value::value_type (we::type::literal::control()));
 }
 
 static unsigned long call_cnt_C = 0;
 static void C ( void *
-              , const we::loader::input_t & input
-              , we::loader::output_t & output
+              , const expr::eval::context & input
+              , expr::eval::context & output
               )
 {
-  const long & id (get<long>(input, "id"));
+  const long& id (boost::get<const long&>(input.value ("id")));
 
   MLOG (DEBUG, "C : " << id);
 
   ++call_cnt_C;
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", pnet::type::value::value_type (we::type::literal::control()));
 }
 
 static unsigned long call_cnt_D = 0;
 static void D ( void *
-              , const we::loader::input_t & input
-              , we::loader::output_t & output
+              , const expr::eval::context & input
+              , expr::eval::context & output
               )
 {
-  const long & id (get<long>(input, "id"));
+  const long& id (boost::get<const long&>(input.value ("id")));
 
   MLOG (DEBUG, "D : " << id);
 
   ++call_cnt_D;
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", pnet::type::value::value_type(we::type::literal::control()));
 }
 
 static void finalize ( void *
-                     , const we::loader::input_t &
-                     , we::loader::output_t & output
+                     , const expr::eval::context &
+                     , expr::eval::context & output
                      )
 {
   for ( call_cnt_map_t::const_iterator cnt (call_cnt_map.begin())
@@ -112,7 +110,7 @@ static void finalize ( void *
   MLOG (INFO, "call_cnt_C = " << call_cnt_C);
   MLOG (INFO, "call_cnt_D = " << call_cnt_D);
 
-  output.bind ("done", we::type::literal::control());
+  output.bind ("done", pnet::type::value::value_type (we::type::literal::control()));
 }
 
 WE_MOD_INITIALIZE_START (concurrent);

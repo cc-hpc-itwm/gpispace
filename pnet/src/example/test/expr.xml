@@ -5,17 +5,17 @@
 <out name="c" type="long"/>
 <out name="d" type="long"/>
 <expression>${b} := ${a}
-<![CDATA[${c} := ${a} + 1]]>
-${d} := 2*${a}
+<![CDATA[${c} := ${a} + 1L]]>
+${d} := 2L*${a}
 </expression>
 <expression>
 ${another} := ${expression}
 </expression>
     <condition><![CDATA[${a} < 10]]>
                <!-- huhu -->
-               ${a} &gt; 20
+               ${a} &gt; 20L
                <![CDATA[${a}]]>
     </condition>
-    <condition>${a} &gt; 20</condition>
+    <condition>${a} &gt; 20L</condition>
 
 </defun>

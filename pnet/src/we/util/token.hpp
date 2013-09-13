@@ -3,9 +3,10 @@
 
 #include <list>
 
-#include <we/type/value.hpp>
 #include <we/type/id.hpp>
-#include <we/type/value/require_type.hpp>
+
+#include <we/require_type.hpp>
+#include <we/type/value.hpp>
 
 #include <we/mgmt/type/activity.hpp>
 
@@ -15,34 +16,26 @@ namespace we
   {
     namespace token
     {
-      typedef ::value::type type;
-      typedef std::list<type> list_t;
+      typedef std::list<pnet::type::value::value_type> list_t;
       typedef std::map<std::string, list_t> marking_t;
 
       mgmt::type::activity_t & put ( mgmt::type::activity_t & act
                                    , std::string const & port
-                                   , type const & value
+                                   , pnet::type::value::value_type const & value
                                    )
       {
         const ::petri_net::port_id_type pid
           (act.transition().input_port_by_name (port));
 
-        const ::signature::type port_signature
+        const pnet::type::signature::signature_type port_signature
           (act.transition().get_port (pid).signature());
 
-        //! \todo Check for matching types:
-        // if ( port_signature
-        //    != boost::apply_visitor (literal::visitor::type_name(), value)
-        //    )
-        // {
-        //   throw "port's signature and value's signature need to match";
-        // }
-
         act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( value::require_type ( port
-                                              , port_signature
-                                              , value
-                                              )
+                        ( pnet::require_type
+                          ( value
+                          , port_signature
+                          , port
+                          )
                         , pid
                         )
                       );

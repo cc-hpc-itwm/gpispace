@@ -7,7 +7,7 @@
 #include <string>
 #include <fstream>
 
-static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
+static void selftest (void *, const expr::eval::context & , expr::eval::context & output)
 {
   std::cerr << "rank := " << fvmGetRank() << std::endl;
   output.bind ("result", 0L);

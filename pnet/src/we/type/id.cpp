@@ -18,10 +18,11 @@ namespace petri_net
     return v;                                                           \
   }
 
-  INVALID (place_id);
-  INVALID (activity_id);
+  INVALID (place_id)
+  INVALID (activity_id)
+  INVALID (transition_id)
 
-  INVALID (priority);
+  INVALID (priority)
 
 #undef INVALID
 
@@ -36,6 +37,6 @@ namespace petri_net
     return v++;                                         \
   }
 
-  GENERATE (activity_id);
+  GENERATE (activity_id)
 #undef GENERATE
 }

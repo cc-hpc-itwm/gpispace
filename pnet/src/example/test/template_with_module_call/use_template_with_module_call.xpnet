@@ -26,7 +26,7 @@
       <connect-out port="y" place="s2"/>
     </transition>
 
-    <place name="l1" type="long"><token><value>23</value></token></place>
+    <place name="l1" type="long"><token><value>23L</value></token></place>
     <place name="l2" type="long"/>
 
     <transition name="use_long" inline="true">

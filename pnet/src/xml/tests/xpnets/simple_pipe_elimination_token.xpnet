@@ -5,7 +5,7 @@
     <place name="in" type="control"/>
     <place name="out" type="control"/>
     <place name="i" type="long"/>
-    <place name="k" type="long"><token><value>0</value></token></place>
+    <place name="k" type="long"><token><value>0L</value></token></place>
     <transition name="t" inline="true">
       <defun>
         <in name="in" type="control" place="in"/>

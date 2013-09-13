@@ -1937,7 +1937,7 @@ function submit ()
                 log "I: job finished"
                 ;;
             *fail*)
-                log "E: job faiiled"
+                log "E: job failed"
                 ;;
             *cancel*)
                 log "E: job cancelled"
@@ -2170,15 +2170,16 @@ case "$1" in
         "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -F "$config_file" "$@"
         ;;
     selftest)
+        shift
+        tmpnodes=$(mktemp)
+        echo "$(hostname)" > "${tmpnodes}"
+        export PBS_NODEFILE="${tmpnodes}"
         "$0" -s "$state_dir" -c "$config_file" init || {
             echo >&2 "sdpa: could not initialize!"
+            rm -f "${tmpnodes}"
             exit 1
         }
-        if ! on_master_node ; then
-            log "E: not on master node"
-            exit 1
-        fi
-        shift
+        rm -f "${tmpnodes}"
         "${SDPA_SCRIPT_DIR}/sdpa-selftest" "${@}"
         ;;
     '')

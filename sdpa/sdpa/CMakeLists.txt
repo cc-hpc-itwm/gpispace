@@ -12,6 +12,7 @@ set (hdrs
   SDPAException.hpp
   types.hpp
   job_states.hpp
+  id_generator.hpp
 )
 
 set (srcs

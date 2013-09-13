@@ -7,19 +7,21 @@
 
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
-#include <we/type/value/show.hpp>
 
 BOOST_AUTO_TEST_CASE (basic)
 {
   typedef expr::eval::context context_t;
+  typedef pnet::type::value::value_type value_type;
+
+  using pnet::type::value::read;
 
   context_t c;
 
-  value::type x (value::read ("0L"));
-  value::type y (value::read ("[]"));
-  value::type z (value::read ("[x:=0.0,y:=\"a_string\"]"));
-  value::type z_x (value::read ("0.0"));
-  value::type z_y (value::read ("\"a_string\""));
+  value_type x (read ("0L"));
+  value_type y (read ("[]"));
+  value_type z (read ("Struct [x:=0.0,y:=\"a_string\"]"));
+  value_type z_x (read ("0.0"));
+  value_type z_y (read ("\"a_string\""));
 
   std::list<std::string> key_z_x;
   key_z_x.push_back ("z");
@@ -41,11 +43,11 @@ BOOST_AUTO_TEST_CASE (basic)
   c.bind ("y", y);
   c.bind ("z", z);
 
-  BOOST_REQUIRE_EQUAL (c.value ("x"), x);
-  BOOST_REQUIRE_EQUAL (c.value ("y"), y);
-  BOOST_REQUIRE_EQUAL (c.value ("z"), z);
-  BOOST_REQUIRE_EQUAL (c.value (key_z_x), z_x);
-  BOOST_REQUIRE_EQUAL (c.value (key_z_y), z_y);
+  BOOST_REQUIRE (c.value ("x") == x);
+  BOOST_REQUIRE (c.value ("y") == y);
+  BOOST_REQUIRE (c.value ("z") == z);
+  BOOST_REQUIRE (c.value (key_z_x) == z_x);
+  BOOST_REQUIRE (c.value (key_z_y) == z_y);
 
   try
   {
@@ -69,21 +71,21 @@ BOOST_AUTO_TEST_CASE (basic)
   {
     const double z_x_new (1.0);
 
-    c.bind (key_z_x, z_x_new);
+    c.bind ("z.x", pnet::type::value::value_type (z_x_new));
 
-    BOOST_REQUIRE_EQUAL (c.value (key_z_x), value::type (z_x_new));
+    BOOST_REQUIRE (c.value (key_z_x) == value_type (z_x_new));
   }
 
   {
     const std::string z_new ("z");
 
-    c.bind ("z", z_new);
+    c.bind ("z", pnet::type::value::value_type (z_new));
 
-    BOOST_REQUIRE_EQUAL (c.value ("z"), value::type (z_new));
+    BOOST_REQUIRE (c.value ("z") == value_type (z_new));
   }
 
-  BOOST_REQUIRE_EQUAL (c.value ("x"), x);
-  BOOST_REQUIRE_EQUAL (c.value ("y"), y);
+  BOOST_REQUIRE (c.value ("x") == x);
+  BOOST_REQUIRE (c.value ("y") == y);
 
   try
   {
@@ -108,6 +110,9 @@ BOOST_AUTO_TEST_CASE (basic)
 BOOST_AUTO_TEST_CASE (reference)
 {
   typedef expr::eval::context context_t;
+  typedef pnet::type::value::value_type value_type;
+
+  using pnet::type::value::read;
 
   context_t c;
 
@@ -115,17 +120,17 @@ BOOST_AUTO_TEST_CASE (reference)
   const std::string key_b ("b");
   const std::string key_c ("c");
 
-  const value::type value_a (0.0);
-  const value::type value_b = std::string("a_string");
-  const value::type value_c (value::read ("[x:=1,y:=[a:=2,b:=3]]"));
+  const value_type value_a (0.0);
+  const value_type value_b = std::string("a_string");
+  const value_type value_c (read ("Struct [x:=1L,y:=Struct [a:=2L,b:=3L]]"));
 
   c.bind_ref (key_a, value_a);
   c.bind_ref (key_b, value_b);
   c.bind_ref (key_c, value_c);
 
-  BOOST_REQUIRE_EQUAL (c.value (key_a), value_a);
-  BOOST_REQUIRE_EQUAL (c.value (key_b), value_b);
-  BOOST_REQUIRE_EQUAL (c.value (key_c), value_c);
+  BOOST_REQUIRE (c.value (key_a) == value_a);
+  BOOST_REQUIRE (c.value (key_b) == value_b);
+  BOOST_REQUIRE (c.value (key_c) == value_c);
 
   std::list<std::string> key_c_x;
   key_c_x.push_back ("c");
@@ -139,7 +144,7 @@ BOOST_AUTO_TEST_CASE (reference)
   key_c_y_b.push_back ("y");
   key_c_y_b.push_back ("b");
 
-  BOOST_REQUIRE_EQUAL (c.value (key_c_x), value::type (1L));
-  BOOST_REQUIRE_EQUAL (c.value (key_c_y_a), value::type (2L));
-  BOOST_REQUIRE_EQUAL (c.value (key_c_y_b), value::type (3L));
+  BOOST_REQUIRE (c.value (key_c_x) == value_type (1L));
+  BOOST_REQUIRE (c.value (key_c_y_a) == value_type (2L));
+  BOOST_REQUIRE (c.value (key_c_y_b) == value_type (3L));
 }

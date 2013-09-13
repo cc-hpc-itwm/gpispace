@@ -18,12 +18,12 @@ namespace we
 {
   namespace util
   {
-    iterators_type::iterators_type (std::list<value::type>& tokens)
+    iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
       : _begin (tokens.begin())
       , _end (tokens.end())
       , _pos_and_distance (tokens.begin(), 0)
     {}
-    iterators_type::iterators_type (const std::list<value::type>::iterator& token)
+    iterators_type::iterators_type (const std::list<pnet::type::value::value_type>::iterator& token)
       : _begin (token)
       , _end (boost::next (token))
       , _pos_and_distance (token, 0)
@@ -122,13 +122,13 @@ namespace we
       }
     }
     void cross_type::push ( const petri_net::place_id_type& place_id
-                          , std::list<value::type>& tokens
+                          , std::list<pnet::type::value::value_type>& tokens
                           )
     {
       _m.insert (std::make_pair (place_id, iterators_type (tokens)));
     }
     void cross_type::push ( const petri_net::place_id_type& place_id
-                          , const std::list<value::type>::iterator& token
+                          , const std::list<pnet::type::value::value_type>::iterator& token
                           )
     {
       _m.insert (std::make_pair (place_id, iterators_type (token)));

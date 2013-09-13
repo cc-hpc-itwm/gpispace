@@ -10,7 +10,7 @@ namespace expr
 {
   namespace eval
   {
-    value::type eval (context&, const expr::parse::node::type&);
+    pnet::type::value::value_type eval (context&, const expr::parse::node::type&);
   }
 }
 

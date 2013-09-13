@@ -18,12 +18,12 @@
         <inout name="n" type="long"/>
         <out name="i" type="long"/>
         <expression>
-          ${n} := ${n} - 1;
+          ${n} := ${n} - 1L;
           ${i} := ${n};
         </expression>
       </defun>
       <condition>
-        ${n} :gt: 0
+        ${n} :gt: 0L
       </condition>
       <connect-inout port="n" place="n"/>
       <connect-out port="i" place="i"/>
@@ -35,7 +35,7 @@
         <expression/>
       </defun>
       <condition>
-        ${n} :le: 0
+        ${n} :le: 0L
       </condition>
       <connect-in port="n" place="n"/>
     </transition>

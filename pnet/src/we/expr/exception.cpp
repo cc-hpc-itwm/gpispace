@@ -8,10 +8,6 @@ namespace expr
 {
   namespace exception
   {
-    strange::strange (const std::string& what)
-      : std::runtime_error ("STRANGE! " + what)
-    {}
-
     namespace parse
     {
       exception::exception (const std::string& msg, const std::size_t k)

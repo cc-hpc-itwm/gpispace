@@ -2,8 +2,9 @@
 
 #include <we/type/net.hpp>
 #include <we/type/condition.hpp>
-#include <we/type/value/require_type.hpp>
 #include <we/util/cross.hpp>
+
+#include <we/require_type.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -177,6 +178,19 @@ namespace petri_net
     return _tmap;
   }
 
+  void net::modify_transitions
+    ( const boost::function<void ( const transition_id_type&
+                                 , we::type::transition_t&
+                                 )>& f
+    )
+  {
+    typedef std::pair<const transition_id_type, we::type::transition_t> it_type;
+    BOOST_FOREACH (it_type& it, _tmap)
+    {
+      f (it.first, it.second);
+    }
+  }
+
   //! \todo Implement more efficient if necessary
   const boost::unordered_set<connection_t> net::connections() const
   {
@@ -345,10 +359,12 @@ namespace petri_net
     return tid;
   }
 
-  void net::put_token (const place_id_type& pid, const value::type& token)
+  void net::put_token ( const place_id_type& pid
+                      , const pnet::type::value::value_type& token
+                      )
   {
-    std::list<value::type>& tokens (_token_by_place_id[pid]);
-    const std::list<value::type>::iterator
+    std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
+    const std::list<pnet::type::value::value_type>::iterator
       tokenpos (tokens.insert (tokens.end(), token));
 
     BOOST_FOREACH ( const transition_id_type& tid
@@ -359,32 +375,35 @@ namespace petri_net
     }
   }
 
-  void net::put_value (const place_id_type& pid, const value::type& value)
+  void net::put_value ( const place_id_type& pid
+                      , const pnet::type::value::value_type& value
+                      )
   {
     const place::type& place (get_place (pid));
 
-    put_token (pid, value::require_type ( place.name()
-                                        , place.signature()
-                                        , value
-                                        )
+    put_token (pid, pnet::require_type
+                      ( value
+                      , place.signature()
+                      , place.name()
+                      )
               );
   }
 
   namespace
   {
-    const std::list<value::type>& no_tokens()
+    const std::list<pnet::type::value::value_type>& no_tokens()
     {
-      static const std::list<value::type> x;
+      static const std::list<pnet::type::value::value_type> x;
 
       return x;
     }
   }
 
-  const std::list<value::type>&
+  const std::list<pnet::type::value::value_type>&
   net::get_token (const place_id_type& pid) const
   {
     typedef boost::unordered_map< place_id_type
-                                , std::list<value::type>
+                                , std::list<pnet::type::value::value_type>
                                 > token_by_place_id_t;
 
     token_by_place_id_t::const_iterator pos (_token_by_place_id.find (pid));
@@ -452,7 +471,8 @@ namespace petri_net
                   , in_to_transition (tid) | boost::adaptors::map_keys
                   )
     {
-      std::list<value::type>& tokens (_token_by_place_id[place_id]);
+      std::list<pnet::type::value::value_type>&
+        tokens (_token_by_place_id[place_id]);
 
       if (tokens.empty())
       {
@@ -470,7 +490,7 @@ namespace petri_net
   void net::update_enabled_put_token
     ( const transition_id_type& tid
     , const place_id_type& pid
-    , const std::list<value::type>::iterator& token
+    , const std::list<pnet::type::value::value_type>::iterator& token
     )
   {
     if (_enabled.elem (tid))
@@ -490,7 +510,8 @@ namespace petri_net
       }
       else
       {
-        std::list<value::type>& tokens (_token_by_place_id[place_id]);
+        std::list<pnet::type::value::value_type>&
+          tokens (_token_by_place_id[place_id]);
 
         if (tokens.empty())
         {
@@ -528,9 +549,13 @@ namespace petri_net
     {
       const place_id_type& pid (pt.first);
       const we::util::pos_and_distance_type& pos_and_distance (pt.second);
-      const std::list<value::type>::iterator& token (pos_and_distance.first);
+      const std::list<pnet::type::value::value_type>::iterator&
+        token (pos_and_distance.first);
 
-      act.add_input (std::make_pair (*token, transition.outer_to_inner (pid)));
+      act.add_input (std::make_pair ( *token
+                                    , transition.outer_to_inner (pid)
+                                    )
+                    );
 
       if (!is_read_connection (tid, pid))
       {

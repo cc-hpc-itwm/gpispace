@@ -99,7 +99,7 @@
           ${package.M} := ${state.max};
           ${package.reducetreesize} := 1L;
 
-          ${state.id} := ${state.id} + 1;
+          ${state.id} := ${state.id} + 1L;
 
           ${assigned_package.package} := ${package};
           ${assigned_package.store} := ${store};

@@ -19,22 +19,22 @@ namespace place
     const std::string& name() const;
     const std::string& name (const std::string&);
 
-    const signature::type& signature() const;
+    const pnet::type::signature::signature_type& signature() const;
     const we::type::property::type& property() const;
     we::type::property::type& property();
 
     //! \todo eliminate the need for the default constructor
     type ();
     type ( const std::string& name
-         , const signature::type& signature
+         , const pnet::type::signature::signature_type& signature
          , const we::type::property::type& prop = we::type::property::type ()
 	 );
 
   private:
-    //! \todo maybe one should factor out the (name, sig, prop)-pattern 
+    //! \todo maybe one should factor out the (name, sig, prop)-pattern
     // into a base class
     std::string _name;
-    signature::type _signature;
+    pnet::type::signature::signature_type _signature;
     we::type::property::type _prop;
 
     friend class boost::serialization::access;

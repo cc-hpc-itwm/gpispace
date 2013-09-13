@@ -20,38 +20,21 @@ namespace expr
     {
     private:
       typedef boost::unordered_map< std::string
-                                  , value::type
+                                  , pnet::type::value::value_type
                                   > container_type;
 
-      typedef boost::unordered_map< std::string
-                                  , value::type const*
-                                  > ref_container_type;
-
       container_type _container;
-      ref_container_type _ref_container;
 
     public:
-      typedef container_type::const_iterator const_iterator;
-
-      void bind (const std::list<std::string>&, const value::type&);
-      void bind (const std::string&, const value::type&);
-      void bind ( const std::string&, const std::list<std::string>&
-                , const value::type&
-                );
-      void bind ( const std::string&, const std::string&
-                , const value::type&
-                );
+      void bind (const std::string&, const pnet::type::value::value_type&);
+      void bind_ref (const std::string&, const pnet::type::value::value_type&);
 
       void bind_and_discard_ref ( const std::list<std::string>&
-                                , const value::type&
+                                , const pnet::type::value::value_type&
                                 );
 
-      void bind_ref (const std::string&, const value::type&);
-
-      const value::type& value (const std::string&) const;
-      const value::type& value (const std::list<std::string>&) const;
-
-      const boost::unordered_map<std::string,value::type>& values() const;
+      const pnet::type::value::value_type& value (const std::string&) const;
+      const pnet::type::value::value_type& value (const std::list<std::string>&) const;
 
       friend std::ostream& operator<< (std::ostream&, const context&);
     };

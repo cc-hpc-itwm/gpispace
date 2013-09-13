@@ -11,6 +11,7 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2012 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "SDPA Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
+OPTION (WITH_MANPAGES "Build manpages" YES)
 OPTION (ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION (DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION (ENABLE_APPLICATION "Build with application" YES)
@@ -25,6 +26,7 @@ OPTION (ENABLE_PNET_EDITOR "Build the pnet editor" YES)
 OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
 OPTION (DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 OPTION (ENABLE_STATISTICS "enable statistics" NO)
+OPTION (ENABLE_LICENSE_CHECK "enalbe license check" OFF)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
@@ -136,6 +138,21 @@ endif()
 
 set (BUILDING_FROM_MAIN 1)
 
+include (FindThreads)
+if (CMAKE_USE_PTHREADS_INIT)
+  link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
+endif()
+
+# RPATH configuration
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../../../lib/")
+
+set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
+
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/json_spirit)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (fhgcom)
@@ -149,6 +166,7 @@ add_subdirectory (util)
 add_subdirectory (fhgkernel)
 add_subdirectory (gspcnet)
 add_subdirectory (gspcrif)
+add_subdirectory (gspcctl)
 add_subdirectory (gspcmon)
 add_subdirectory (sdpa)
 if (ENABLE_GPI_SPACE)
@@ -181,5 +199,5 @@ set (CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
 set (CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
 INCLUDE (CPack)
 
-add_subdirectory (playground/mr)
+add_subdirectory (playground/ap)
 add_subdirectory (playground/bl)

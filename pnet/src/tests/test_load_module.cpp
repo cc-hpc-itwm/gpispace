@@ -32,10 +32,9 @@ int main (int ac, char **av)
 
     try
     {
-      we::loader::input_t inp;
-      we::loader::output_t out;
+      expr::eval::context out;
 
-      loader[mod_name] ("selftest", inp, out);
+      loader[mod_name].call ("selftest", expr::eval::context(), out);
     }
     catch (const std::exception &ex)
     {
@@ -43,8 +42,6 @@ int main (int ac, char **av)
       failed.push_back (av[i]);
     }
   }
-
-  std::cerr << loader << std::endl;
 
   if (failed.size())
   {

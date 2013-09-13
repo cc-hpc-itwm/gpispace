@@ -2,6 +2,7 @@
 #define FHG_LOG_FORMAT_FLAG_HPP 1
 
 #include <fhglog/LogEvent.hpp>
+#include <fhglog/util.hpp>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <cstring>
@@ -63,7 +64,7 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << e.file();
+            return os << get_filename_from_path (e.path ());
           }
         };
         struct PATH
@@ -99,7 +100,7 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << e.module();
+            return os << get_module_name_from_path (e.path ());
           }
         };
         struct LINE
@@ -189,6 +190,31 @@ namespace fhg
             return os << e.pid();
           }
         };
+        struct TAGS
+        {
+          static const char value            = '#';
+          //        static const char *description = "the logger via which this event came";
+          static std::ostream & format( const LogEvent &e
+                                      , std::ostream &os
+                                      , const char
+                                      )
+          {
+            LogEvent::tags_type::const_iterator it = e.tags ().begin ();
+            LogEvent::tags_type::const_iterator end = e.tags ().end ();
+            if (it != end)
+            {
+              os << "#" << *it;
+              ++it;
+            }
+            while (it != end)
+            {
+              os << "," << "#" << *it;
+              ++it;
+            }
+
+            return os;
+          }
+        };
         struct LOGGER
         {
           static const char value            = 'l';
@@ -198,7 +224,20 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << e.logged_via();
+            std::vector<std::string>::const_iterator it = e.trace ().begin ();
+            std::vector<std::string>::const_iterator end = e.trace ().end ();
+            if (it != end)
+            {
+              os << *it;
+              ++it;
+            }
+            while (it != end)
+            {
+              os << "->" << *it;
+              ++it;
+            }
+
+            return os;
           }
         };
         struct ENDL
@@ -257,6 +296,7 @@ namespace fhg
       DECLARE_FLAG(TSTAMP);
       DECLARE_FLAG(TID);
       DECLARE_FLAG(PID);
+      DECLARE_FLAG(TAGS);
       DECLARE_FLAG(LOGGER);
       DECLARE_FLAG(ENDL);
 

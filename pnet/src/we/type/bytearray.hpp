@@ -6,12 +6,6 @@
 #include <algorithm>
 #include <vector>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/vector.hpp>
-
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-
 #include <iosfwd>
 #include <sstream>
 
@@ -67,65 +61,6 @@ namespace bytearray
 
   private:
     std::vector<char> _v;
-
-    friend class boost::serialization::access;
-    template<typename Archive>
-    void serialize (Archive& ar, const unsigned int)
-    {
-      ar & BOOST_SERIALIZATION_NVP(_v);
-    }
-  };
-
-  template<typename T, typename Archive = boost::archive::binary_oarchive>
-  class encoder
-  {
-  public:
-    const type& bytearray() const
-    {
-      return _encoded;
-    }
-
-    explicit encoder (const T& x)
-      : _encoded()
-    {
-      std::ostringstream oss;
-
-      Archive oa (oss, boost::archive::no_header);
-
-      oa << x;
-
-      _encoded = type (oss.str().c_str(), oss.str().size());
-    }
-
-  private:
-    type _encoded;
-  };
-
-  template<typename T, typename Archive = boost::archive::binary_iarchive>
-  class decoder
-  {
-  public:
-    const T& value() const
-    {
-      return _x;
-    }
-    T& value()
-    {
-      return _x;
-    }
-
-    explicit decoder (const type& ba)
-      : _x()
-    {
-      std::istringstream iss (ba.to_string());
-
-      Archive ia (iss, boost::archive::no_header);
-
-      ia >> _x;
-    }
-
-  private:
-    T _x;
   };
 }
 

@@ -49,6 +49,7 @@ namespace fhg
             HDL(TSTAMP);
             HDL(TID);
             HDL(PID);
+            HDL(TAGS);
             HDL(LOGGER);
             HDL(ENDL);
           default:

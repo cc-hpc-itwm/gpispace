@@ -21,10 +21,11 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/port.hpp>
+#include <we/serialize/unordered_map.hpp>
 
 int main (int, char **)
 {
-  we::type::port_t p1("Max", we::type::PORT_IN, signature::type());
+  we::type::port_t p1("Max", we::type::PORT_IN, pnet::type::signature::signature_type());
   we::type::port_t p2;
 
   {

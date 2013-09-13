@@ -61,11 +61,21 @@ int main (int, char **)
   // ************************************ //
   pnet_t net;
 
-  petri_net::place_id_type pid_vid (net.add_place (place::type ("vid","long")));
+  petri_net::place_id_type pid_vid (net.add_place (place::type ("vid",std::string("long"))));
 
-  signature::structured_t sig_store;
-  sig_store["bid"] = "long";
-  sig_store["seen"] = "bitset";
+  pnet::type::signature::structure_type sig_store_fields;
+
+  sig_store_fields.push_back (std::make_pair ( std::string ("bid")
+                                             , std::string ("long")
+                                             )
+                             );
+  sig_store_fields.push_back (std::make_pair ( std::string ("seen")
+                                             , std::string ("bitset")
+                                             )
+                             );
+
+  pnet::type::signature::structured_type sig_store
+    (std::make_pair (std::string ("store"), sig_store_fields));
 
   petri_net::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
 
@@ -81,15 +91,24 @@ int main (int, char **)
       , true
     );
 
-  signature::structured_t sig_pair;
+  pnet::type::signature::structure_type sig_pair_fields;
 
-  sig_pair["bid"] = "long";
-  sig_pair["vid"] = "long";
+  sig_pair_fields.push_back (std::make_pair ( std::string ("bid")
+                                            , std::string ("long")
+                                            )
+                            );
+  sig_pair_fields.push_back (std::make_pair ( std::string ("vid")
+                                            , std::string ("long")
+                                            )
+                            );
+
+  pnet::type::signature::structured_type sig_pair
+    (std::make_pair (std::string ("pair"), sig_pair_fields));
 
   petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 
   trans_inner.add_port
-    ("vid","long",we::type::PORT_IN);
+    ("vid",std::string("long"),we::type::PORT_IN);
   trans_inner.add_port
     ("store",sig_store,we::type::PORT_OUT);
   trans_inner.add_port
@@ -115,25 +134,32 @@ int main (int, char **)
   net.add_connection (connection_t (PT_READ, tid, pid_vid));
   net.add_connection (connection_t (TP, tid, pid_pair));
 
-  net.put_value (pid_vid, literal::type(0L));
-  net.put_value (pid_vid, literal::type(1L));
+  net.put_value (pid_vid, 0L);
+  net.put_value (pid_vid, 1L);
 
   {
-    value::structured_t m;
+    pnet::type::value::structured_type m;
 
-    m["seen"] = bitsetofint::type(0);
+    m.push_back (std::make_pair (std::string ("bid"), 0L));
+    m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
 
-    m["bid"] = 0L;
-    net.put_value (pid_store, m);
-
-    m["bid"] = 1L;
     net.put_value (pid_store, m);
   }
+
+  {
+    pnet::type::value::structured_type m;
+
+    m.push_back (std::make_pair (std::string ("bid"), 1L));
+    m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
+
+    net.put_value (pid_store, m);
+  }
+
   // ************************************ //
 
   transition_t tnet ("tnet", net);
   tnet.add_port
-    ("vid", "long", we::type::PORT_IN, pid_vid);
+    ("vid", std::string("long"), we::type::PORT_IN, pid_vid);
   tnet.add_port
     ("store", sig_store, we::type::PORT_IN, pid_store);
   tnet.add_port

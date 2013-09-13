@@ -50,13 +50,7 @@ struct_type =
   (element field { struct_field_type }
    | element struct { struct_type })*,
   attribute name { xsd:NCName }
-token_field_type =
-  (element value { xsd:string }
-   | element field { token_field_type }+)?,
-  attribute name { xsd:NCName }
-token_type =
-  (element value { xsd:string }
-   | element field { token_field_type }+)?
+token_type = element value { xsd:string }+
 mod_type =
   (element cinclude { cinclude_type }
    | element ld { flag_type }

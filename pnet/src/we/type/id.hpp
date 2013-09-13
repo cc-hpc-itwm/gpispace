@@ -122,6 +122,7 @@ namespace petri_net
 
   INVALID (place_id);
   INVALID (activity_id);
+  INVALID (transition_id);
 
   INVALID (priority);
 

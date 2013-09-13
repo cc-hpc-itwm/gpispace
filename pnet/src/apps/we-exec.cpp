@@ -206,7 +206,7 @@ try
 
   daemon_type::id_type id = daemon.gen_id();
   jobs.push_back(id);
-  mgmt_layer.submit(id, act.to_string());
+  mgmt_layer.submit(id, act);
 
 #if 0
   size_t max_wait (5);

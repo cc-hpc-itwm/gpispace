@@ -67,7 +67,7 @@
         </expression>
       </defun>
       <condition>
-        ${n} :gt: 0
+        ${n} :gt: 0L
       </condition>
       <connect-in port="n" place="ms"/>
       <connect-out port="n" place="ms"/>
@@ -84,12 +84,12 @@
       <connect-in port="s" place="y"/>
       <connect-out port="s" place="x"/>
       <condition>
-        ${c} :eq: 0
+        ${c} :eq: 0L
       </condition>
       <connect-read port="c" place="c"/>
     </transition>
     <place name="y" type="set"/>
-    <place name="c" type="long"><token><value>0</value></token></place>
+    <place name="c" type="long"><token><value>0L</value></token></place>
     <transition name="done">
       <defun>
         <in name="s" type="set"/>
@@ -115,7 +115,7 @@
           ]]></code>
         </module>
       </defun>
-      <condition>${ms}:eq:0</condition>
+      <condition>${ms}:eq:0L</condition>
       <connect-in port="s" place="x"/>
       <connect-in port="t" place="t"/>
       <connect-in port="ms" place="ms"/>

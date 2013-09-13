@@ -14,7 +14,7 @@
        	<inout name="counter" type="long"/>
         <in name="trigger" type="control"/>
         <expression>
-          ${counter} := ${counter}-1
+          ${counter} := ${counter}-1L
         </expression>
         <condition>
           ${counter}:gt:0L

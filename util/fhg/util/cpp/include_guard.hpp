@@ -3,7 +3,9 @@
 #ifndef _FHG_UTIL_CPP_INCLUDE_GUARD
 #define _FHG_UTIL_CPP_INCLUDE_GUARD 1
 
-#include <iostream>
+#include <fhg/util/ostream_modifier.hpp>
+
+#include <iosfwd>
 #include <string>
 
 namespace fhg
@@ -12,20 +14,22 @@ namespace fhg
   {
     namespace cpp
     {
-      template<typename Stream>
-      Stream& include_guard_begin (Stream& s, const std::string& what)
+      namespace include_guard
       {
-        s << "#ifndef _" << what         << std::endl;
-        s << "#define _" << what << " 1" << std::endl;
-        s                                << std::endl;
+        class open : public ostream::modifier
+        {
+        public:
+          open (const std::string&);
+          std::ostream& operator() (std::ostream&) const;
+        private:
+          const std::string _name;
+        };
 
-        return s;
-      }
-
-      template<typename Stream>
-      Stream& include_guard_end (Stream& s, const std::string & what)
-      {
-        return s << "#endif // _" << what << std::endl;
+        class close : public ostream::modifier
+        {
+        public:
+          std::ostream& operator() (std::ostream&) const;
+        };
       }
     }
   }

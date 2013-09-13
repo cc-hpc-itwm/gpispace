@@ -10,8 +10,11 @@
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
-#include <we/type/value.hpp>
 #include <we/type/place.hpp>
+
+#include <we/type/value.hpp>
+#include <we/type/value/show.hpp>
+#include <we/type/value/read.hpp>
 
 #include <we/type/transition.hpp>
 
@@ -25,6 +28,7 @@
 #include <boost/unordered_map.hpp>
 
 #include <list>
+#include <sstream>
 
 namespace petri_net
 {
@@ -86,11 +90,17 @@ namespace petri_net
     transition_id_type modify_transition ( const transition_id_type&
                                          , const we::type::transition_t&
                                          );
+    void modify_transitions
+      ( const boost::function<void ( const transition_id_type&
+                                   , we::type::transition_t&
+                                   )>&
+      );
 
-    void put_token (const place_id_type&, const value::type&);
-    void put_value (const place_id_type&, const value::type&);
+    void put_token (const place_id_type&, const pnet::type::value::value_type&);
+    void put_value (const place_id_type&, const pnet::type::value::value_type&);
 
-    const std::list<value::type>& get_token (const place_id_type&) const;
+    const std::list<pnet::type::value::value_type>&
+      get_token (const place_id_type&) const;
 
     void delete_all_token (const place_id_type&);
     bool can_fire() const;
@@ -111,9 +121,11 @@ namespace petri_net
     adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
     adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
 
-    boost::unordered_map< place_id_type
-                        , std::list<value::type>
-                        > _token_by_place_id;
+    typedef boost::unordered_map< place_id_type
+                                , std::list<pnet::type::value::value_type>
+                                > token_by_place_id_type;
+
+    token_by_place_id_type _token_by_place_id;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -125,7 +137,27 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP (_tmap);
       ar & BOOST_SERIALIZATION_NVP (_adj_pt);
       ar & BOOST_SERIALIZATION_NVP (_adj_tp);
-      ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
+      {
+        const std::size_t s (_token_by_place_id.size());
+        ar & s;
+      }
+      BOOST_FOREACH ( const token_by_place_id_type::value_type& pl
+                    , _token_by_place_id
+                    )
+      {
+        ar & pl.first;
+        {
+          const std::size_t s (pl.second.size());
+          ar & s;
+        }
+        BOOST_FOREACH (const pnet::type::value::value_type& x, pl.second)
+        {
+          std::ostringstream oss;
+          oss << pnet::type::value::show (x);
+          const std::string token_rep (oss.str());
+          ar & token_rep;
+        }
+      }
     }
     template<typename Archive>
     void load (Archive& ar, const unsigned int)
@@ -136,7 +168,28 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP (_tmap);
       ar & BOOST_SERIALIZATION_NVP (_adj_pt);
       ar & BOOST_SERIALIZATION_NVP (_adj_tp);
-      ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
+      std::size_t token_by_place_id_size;
+      ar & token_by_place_id_size;
+      while (token_by_place_id_size --> 0)
+      {
+        place_id_type place_id;
+        ar & place_id;
+        token_by_place_id_type::iterator pos
+          ( _token_by_place_id.insert
+            (std::make_pair ( place_id
+                            , std::list<pnet::type::value::value_type>()
+                            )
+            ).first
+          );
+        std::size_t num_tokens;
+        ar & num_tokens;
+        while (num_tokens --> 0)
+        {
+          std::string token_rep;
+          ar & token_rep;
+          pos->second.push_back (pnet::type::value::read (token_rep));
+        }
+      }
 
       BOOST_FOREACH ( const transition_id_type& tid
                     , _tmap | boost::adaptors::map_keys
@@ -162,7 +215,7 @@ namespace petri_net
     void update_enabled_put_token
       ( const transition_id_type&
       , const place_id_type&
-      , const std::list<value::type>::iterator&
+      , const std::list<pnet::type::value::value_type>::iterator&
       );
 
     void disable (const transition_id_type&);

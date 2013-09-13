@@ -221,4 +221,17 @@ BOOST_AUTO_TEST_CASE (test_environment)
   BOOST_REQUIRE_EQUAL (buf, "foo=bar\n");
 }
 
+BOOST_AUTO_TEST_CASE (test_environment_default)
+{
+  gspc::rif::argv_t argv;
+  gspc::rif::env_t env;
+
+  setenv ("GSPC_RIF_TEST_ENV", "foobar42", 1);
+
+  argv.push_back ("/usr/bin/env");
+  gspc::rif::process_t proc (0, argv.front (), argv);
+
+  BOOST_REQUIRE (proc.env ().find ("GSPC_RIF_TEST_ENV") != proc.env ().end ());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

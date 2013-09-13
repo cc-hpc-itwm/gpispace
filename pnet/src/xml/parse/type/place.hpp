@@ -14,7 +14,6 @@
 
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
-#include <we/type/value.hpp>
 
 #include <string>
 #include <list>
@@ -36,7 +35,7 @@ namespace xml
       public:
         typedef std::string unique_key_type;
 
-        typedef signature::desc_t token_type;
+        typedef std::string token_type;
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
@@ -62,8 +61,8 @@ namespace xml
         const std::string& type() const;
         const std::string& type (const std::string&);
 
-        boost::optional<signature::type> signature() const;
-        signature::type signature_or_throw() const;
+        boost::optional<pnet::type::signature::signature_type> signature() const;
+        pnet::type::signature::signature_type signature_or_throw() const;
 
       private:
         friend struct net_type;

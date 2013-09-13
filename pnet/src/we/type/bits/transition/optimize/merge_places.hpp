@@ -116,14 +116,14 @@ namespace we { namespace type {
         const std::string name_A (net.get_place (pid_A).name());
         const std::string name_B (net.get_place (pid_B).name());
 
-        std::list<value::type> tokens (net.get_token (pid_B));
+        std::list<pnet::type::value::value_type> tokens (net.get_token (pid_B));
 
         net.delete_place (pid_B);
 
-        BOOST_FOREACH (const value::type& token, tokens)
-          {
-            net.put_token (pid_A, token);
-          }
+        BOOST_FOREACH (const pnet::type::value::value_type& token, tokens)
+        {
+          net.put_token (pid_A, token);
+        }
 
         const bool okay_A (!rewrite::has_magic_prefix (name_A));
         const bool okay_B (!rewrite::has_magic_prefix (name_B));

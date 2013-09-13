@@ -41,7 +41,7 @@ namespace sdpa {
 	    typedef sdpa::shared_ptr<JobManager> ptr_t;
 	    typedef boost::recursive_mutex mutex_type;
 	    typedef boost::unique_lock<mutex_type> lock_type;
-	    typedef boost::unordered_map<sdpa::job_id_t, requirement_list_t> requirements_map_t;
+	    typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t> requirements_map_t;
 	    typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
 	    typedef job_map_t::iterator iterator;
 
@@ -52,8 +52,8 @@ namespace sdpa {
 	    void addJob(const sdpa::job_id_t&, const Job::ptr_t& ) throw(JobNotAddedException) ;
 	    void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 
-	    void addJobRequirements( const sdpa::job_id_t&, const requirement_list_t& ) throw (JobNotFoundException);
-	    const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
+	    void addJobRequirements( const sdpa::job_id_t&, const job_requirements_t& ) throw (JobNotFoundException);
+	    const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
 
 	    size_t countMasterJobs() const;
 	    size_t getNumberOfJobs() const;

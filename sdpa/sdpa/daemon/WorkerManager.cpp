@@ -462,10 +462,10 @@ bool compare_degrees( sdpa::job_pref_list_t::value_type left, sdpa::job_pref_lis
     return false;
 }
 
-size_t numberOfMandReqs( const requirement_list_t& listJobReq )
+size_t numberOfMandReqs( const job_requirements_t& listJobReq )
 {
 	size_t count = 0;
-	BOOST_FOREACH(const requirement_t& req, listJobReq)
+	BOOST_FOREACH(const requirement_t& req, listJobReq.req_list)
 	{
 		count+=(int)req.is_mandatory();
 	}
@@ -474,7 +474,7 @@ size_t numberOfMandReqs( const requirement_list_t& listJobReq )
 }
 
 // add here a
-Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)
+Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq, int& matching_degree, sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)
 {
   lock_type lock(mtx_);
   if( worker_map_.empty() )
@@ -548,7 +548,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
 }
 
 /*
-Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId, const requirement_list_t& listJobReq, int& matching_degree, sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)
+Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq, int& matching_degree, sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)
 {
 	worker_id_list_t workerList;
 	getWorkerList(workerList);
@@ -557,7 +557,7 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
 }
 
 Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
-													const requirement_list_t& listJobReq,
+													const job_requirements_t& listJobReq,
 													const worker_id_list_t& workerList,
 													int& matching_degree,
 													sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)

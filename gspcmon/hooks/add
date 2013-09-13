@@ -1,6 +1,7 @@
 #!/bin/bash
 
 workdir=
+sockets=
 nodes=()
 
 for arg
@@ -14,6 +15,9 @@ do
             ;;
         walltime=*)
             walltime=${arg#*=}
+            ;;
+        sockets=*)
+            sockets=${arg#*=}
             ;;
         *)
             echo >&2 "$(basename $0): invalid argument: $arg"

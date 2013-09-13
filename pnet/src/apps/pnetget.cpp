@@ -8,6 +8,8 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/id.hpp>
 
+#include <we/type/value/show.hpp>
+
 #include <iostream>
 #include <fstream>
 
@@ -70,7 +72,7 @@ struct output_token
   output_token const & operator++(int) const { return *this; }
   output_token const & operator=(const we::mgmt::type::activity_t::token_on_port_t & subject) const
   {
-    out << subject.first << delim;
+    out << pnet::type::value::show (subject.first) << delim;
     return *this;
   }
 
@@ -88,7 +90,7 @@ struct output_port_and_token
   output_port_and_token const & operator++(int) const { return *this; }
   output_port_and_token const & operator=(const we::mgmt::type::activity_t::token_on_port_t & subject) const
   {
-    out << "on " << subject.second << ": " << subject.first << delim;
+    out << "on " << subject.second << ": " << pnet::type::value::show (subject.first) << delim;
     return *this;
   }
 

@@ -29,9 +29,9 @@ namespace fhg
         {
           switch (c)
           {
-          case 'a'...'f': return 10 + (c - 'a');
-          case 'A'...'F': return 10 + (c - 'A');
-          default: return c - '0';
+          case 'a'...'f': return I (10 + (c - 'a'));
+          case 'A'...'F': return I (10 + (c - 'A'));
+          default: return I (c - '0');
           }
         }
         static inline I base()
@@ -49,7 +49,7 @@ namespace fhg
         }
         static inline I val (const char & c)
         {
-          return c - '0';
+          return I (c - '0');
         }
         static const I base()
         {
@@ -174,12 +174,21 @@ namespace fhg
       }
 
       template<typename F>
+        struct initial_fak
+      {
+        static F value;
+      };
+
+      template<> double initial_fak<double>::value = 0.1;
+      template<> float initial_fak<float>::value = 0.1f;
+
+      template<typename F>
         F read_fraction (const unsigned long ipart, parse::position& pos)
       {
         F x (ipart);
 
         F frac (0.0);
-        F fak (0.1);
+        F fak (initial_fak<F>::value);
 
         while (!pos.end() && isdigit (*pos))
         {
@@ -195,18 +204,18 @@ namespace fhg
           ++pos;
 
           const bool negative (read_sign (pos));
-          const long ex (read_ulong (pos));
+          const unsigned long ex (read_ulong (pos));
 
           if (negative)
           {
-            for (long i (0); i < ex; ++i)
+            for (unsigned long i (0); i < ex; ++i)
             {
               x /= 10;
             }
           }
           else
           {
-            for (long i (0); i < ex; ++i)
+            for (unsigned long i (0); i < ex; ++i)
             {
               x *= 10;
             }
@@ -337,43 +346,4 @@ namespace fhg
 #undef SIGNED
 
   }
-}
-
-namespace
-{
-  class visitor_show : public boost::static_visitor<std::ostream&>
-  {
-  public:
-    visitor_show (std::ostream& os)
-      : _os (os)
-    {}
-
-    std::ostream& operator() (const int& x) const
-    {
-      return _os << x;
-    }
-    std::ostream& operator() (const long& x) const
-    {
-      return _os << x << "L";
-    }
-    std::ostream& operator() (const unsigned int& x) const
-    {
-      return _os << x << "U";
-    }
-    std::ostream& operator() (const unsigned long& x) const
-    {
-      return _os << x << "UL";
-    }
-    std::ostream& operator() (const float& x) const
-    {
-      return _os << x << "f";
-    }
-    std::ostream& operator() (const double& x) const
-    {
-      return _os << x;
-    }
-
-  private:
-    std::ostream& _os;
-  };
 }

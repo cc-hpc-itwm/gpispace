@@ -78,6 +78,8 @@ namespace xml
                                                                       \
         friend struct ref::NAME;
 
+        void erase_until_all_empty();
+
 #include <xml/parse/id/helper.lst>
 #undef ITEM
 

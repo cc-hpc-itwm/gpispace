@@ -7,11 +7,13 @@
 #include <sstream>
 
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/util/position.hpp>
 
-#include <we/type/literal.hpp>
-#include <we/type/signature.hpp>
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
+
+#include <we/type/signature.hpp>
+#include <we/type/signature/show.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/backtracing_exception.hpp>
@@ -61,188 +63,45 @@ namespace xml
 
       class wrong_node : public generic
       {
-      private:
-        std::string nice ( const rapidxml::node_type & want
-                         , const rapidxml::node_type & got
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "expected node of type "
-            << util::show_node_type (want)
-            << ": got node of type "
-            << util::show_node_type (got)
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
-        std::string nice ( const rapidxml::node_type & want1
-                         , const rapidxml::node_type & want2
-                         , const rapidxml::node_type & got
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "expected node of type "
-            << util::show_node_type (want1)
-            << " or "
-            << util::show_node_type (want2)
-            << ": got node of type "
-            << util::show_node_type (got)
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        wrong_node ( const rapidxml::node_type & want
-                   , const rapidxml::node_type & got
-                   , const boost::filesystem::path & path
-                   )
-          : generic ( "wrong node", nice (want, got, path))
-        {}
+        wrong_node ( const rapidxml::node_type&
+                   , const rapidxml::node_type& got
+                   , const util::position_type&
+                   );
 
-        wrong_node ( const rapidxml::node_type & want1
-                   , const rapidxml::node_type & want2
-                   , const rapidxml::node_type & got
-                   , const boost::filesystem::path & path
-                     )
-          : generic ("wrong node", nice (want1, want2, got, path))
-        {}
-      };
-
-      // ******************************************************************* //
-
-      class missing_node : public generic
-      {
-      private:
-        std::string nice ( const rapidxml::node_type & want
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "expected node of type "
-            << util::show_node_type (want)
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
-        std::string nice ( const rapidxml::node_type & want1
-                         , const rapidxml::node_type & want2
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "expected node of type "
-            << util::show_node_type (want1)
-            << " or "
-            << util::show_node_type (want2)
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
-      public:
-        missing_node ( const rapidxml::node_type & want
-                     , const boost::filesystem::path & path
-                     )
-          : generic ( "missing node", nice (want, path))
-        {}
-
-        missing_node ( const rapidxml::node_type & want1
-                     , const rapidxml::node_type & want2
-                     , const boost::filesystem::path & path
-                     )
-          : generic ("missing node", nice (want1, want2, path))
-        {}
+        wrong_node ( const rapidxml::node_type&
+                   , const rapidxml::node_type&
+                   , const rapidxml::node_type& got
+                   , const util::position_type&
+                   );
       };
 
       // ******************************************************************* //
 
      class missing_attr : public generic
-      {
-      private:
-        std::string nice ( const std::string & pre
-                         , const std::string & attr
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << pre
-            << ": missing attribute "
-            << attr
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
-      public:
-        missing_attr ( const std::string & pre
-                     , const std::string & attr
-                     , const boost::filesystem::path & path
-                     )
-          : generic (nice (pre, attr, path))
-        {}
+     {
+     public:
+       missing_attr ( const std::string& pre
+                    , const std::string& attr
+                    , const util::position_type&
+                    );
       };
 
       // ******************************************************************* //
 
       class no_elements_given : public generic
       {
-      private:
-        std::string nice (const boost::filesystem::path & path) const
-        {
-          std::ostringstream s;
-
-          s << "no elements given at all"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        no_elements_given ( const std::string & pre
-                          , const boost::filesystem::path & path
-                          )
-          : generic (nice (path), pre)
-        {}
+        no_elements_given (const std::string&, const boost::filesystem::path&);
       };
 
       // ******************************************************************* //
 
       class more_than_one_definition : public generic
       {
-      private:
-        std::string nice (const boost::filesystem::path & path) const
-        {
-          std::ostringstream s;
-
-          s << "more than one definition"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
-
       public:
-        more_than_one_definition ( const std::string & pre
-                                 , const boost::filesystem::path & path
-                                 )
-          : generic (nice (path), pre)
-        {}
+        more_than_one_definition
+          (const std::string&, const util::position_type&);
       };
 
       // ******************************************************************* //
@@ -382,69 +241,6 @@ namespace xml
 
       private:
         const id::ref::place _place;
-      };
-
-      // ******************************************************************* //
-
-      class parse_type_mismatch : public generic
-      {
-      private:
-        std::string nice  ( const std::string & place
-                          , const std::string & field
-                          , const std::string & sig
-                          , const signature::structured_t & val
-                          , const boost::filesystem::path & path
-                          ) const
-        {
-          std::ostringstream s;
-
-          s << "type mismatch when try to read a value for place " << place
-            << " from " << path
-            << " when reading field " << field
-            << " expecting literal of type " << sig
-            << " got structured value " << val
-            ;
-
-          return s.str();
-        }
-
-        std::string nice  ( const std::string & place
-                          , const std::string & field
-                          , const signature::structured_t & sig
-                          , const std::string & val
-                          , const boost::filesystem::path & path
-                          ) const
-        {
-          std::ostringstream s;
-
-          s << "type mismatch when try to read a value for place " << place
-            << " from " << path
-            << " when reading field " << field
-            << " expecting structured type " << sig
-            << " got literal value " << val
-            ;
-
-          return s.str();
-        }
-
-      public:
-        parse_type_mismatch ( const std::string & place
-                            , const std::string & field
-                            , const std::string & sig
-                            , const signature::structured_t & val
-                            , const boost::filesystem::path & path
-                            )
-          : generic (nice (place, field, sig, val, path))
-        {}
-
-        parse_type_mismatch ( const std::string & place
-                            , const std::string & field
-                            , const signature::structured_t & sig
-                            , const std::string & val
-                            , const boost::filesystem::path & path
-                            )
-          : generic (nice (place, field, sig, val, path))
-        {}
       };
 
       // ******************************************************************* //
@@ -741,9 +537,9 @@ namespace xml
       {
       public:
         port_tunneled_type_error ( const std::string& name_virtual
-                                 , const signature::type& sig_virtual
+                                 , const pnet::type::signature::signature_type& sig_virtual
                                  , const std::string& name_real
-                                 , const signature::type& sig_real
+                                 , const pnet::type::signature::signature_type& sig_real
                                  , const boost::filesystem::path& path
                                  )
           : generic
@@ -751,9 +547,11 @@ namespace xml
               ( "type error: virtual place %1% of type %2%"
               " identified with real place %3% of type %4% in %5%"
               )
-              % name_virtual % sig_virtual
-              % name_real % sig_real
-              % path
+            % name_virtual
+            % pnet::type::signature::show (sig_virtual)
+            % name_real
+            % pnet::type::signature::show (sig_real)
+            % path
             )
         {}
       };
@@ -803,25 +601,13 @@ namespace xml
 
       class unknown_template : public generic
       {
-      private:
-        std::string nice ( const std::string & templ
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "unknown template " << templ
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
-        unknown_template ( const std::string & templ
-                         , const boost::filesystem::path & path
-                         )
-          : generic (nice (templ, path))
-        {}
+        unknown_template (const id::ref::specialize&, const id::ref::net&);
+        virtual ~unknown_template() throw() {}
+
+      private:
+        const id::ref::specialize _specialize;
+        const id::ref::net _net;
       };
 
       // ******************************************************************* //
@@ -1215,8 +1001,6 @@ namespace xml
           : generic ("this is STRANGE and should not happen", msg)
         {}
       };
-
-#define THROW_STRANGE(msg) do { std::ostringstream s; s << __FILE__ << " [" << __LINE__ << "]: " << msg; throw error::strange (s.str()); } while (0)
     }
   }
 }

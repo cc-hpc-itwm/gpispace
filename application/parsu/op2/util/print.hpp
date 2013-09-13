@@ -11,7 +11,7 @@
 
 namespace print
 {
-  inline std::string package (const ::pnetc::type::op2_package::op2_package & p)
+  inline std::string package (const ::pnetc::type::op2_package::op2_package& p)
   {
     std::ostringstream os;
 
@@ -29,7 +29,7 @@ namespace print
   }
 
   inline std::string loaded_package
-  (const ::pnetc::type::op2_loaded_package::op2_loaded_package & p)
+    (const ::pnetc::type::op2_loaded_package::op2_loaded_package & p)
   {
     std::ostringstream os;
 
@@ -41,7 +41,7 @@ namespace print
   }
 
   inline std::string package_to_be_written
-  (const ::pnetc::type::op2_package_to_be_written::op2_package_to_be_written & p)
+  (const ::pnetc::type::op2_package_to_be_written::op2_package_to_be_written& p)
   {
     std::ostringstream os;
 

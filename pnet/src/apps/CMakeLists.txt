@@ -7,6 +7,7 @@ set (simple_targets
      pnetput
      pnet2dot
      pneti
+     pnetsc
      pnetlt
     )
 
@@ -16,6 +17,7 @@ foreach (target ${simple_targets})
 
   target_link_libraries(${target} fhg-revision)
   target_link_libraries(${target} pnet)
+  target_link_libraries(${target} we-dev)
   target_link_libraries(${target} ${UTIL_LIBRARIES})
   target_link_libraries(${target} ${FhgLog_LIBRARY})
   target_link_libraries(${target} ${Boost_LIBRARIES})

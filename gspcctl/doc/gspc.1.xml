@@ -1,0 +1,74 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<refentry>
+  <refentryinfo>
+    <date>2013-07-26</date>
+    <author>
+      <authorblurb><para>The GPI-Space Team</para></authorblurb>
+    </author>
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>gspc</refentrytitle>
+    <manvolnum>1</manvolnum>
+    <refmiscinfo class="source">gspc</refmiscinfo>
+    <refmiscinfo class="manual">gspc</refmiscinfo>
+  </refmeta>
+  <refnamediv>
+    <refname><application>gspc</application></refname>
+    <refpurpose>GPI-Space command line toolset</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <refsynopsisdivinfo>
+      <date>2013-07-26</date>
+    </refsynopsisdivinfo>
+    <para>
+      <command>gspc</command> [options]
+    </para>
+  </refsynopsisdiv>
+  <refsect1>
+    <refsect1info>
+      <date>2013-07-26</date>
+    </refsect1info>
+    <title>DESCRIPTION</title>
+    <para>
+      <command>gspc</command> is the command line toolset for GPI-Space.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term>-h</term>
+        <listitem>
+          <para>
+            Show the usage.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--exec-path</term>
+        <listitem>
+          <para>
+            Print the path of executable binaries.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--gspc-dir <replaceable class="parameter">dir</replaceable></term>
+        <listitem>
+          <para>
+            Sets the GSPC working directory to <replaceable class="parameter">dir</replaceable>.
+
+<!-- The special keyword <emphasis>workarea</emphasis>. -->
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>LINKS</title>
+    <para>
+      <ulink url="http://www.itwm.fraunhofer.de/abteilungen/hpc/sdpa.html">http://www.itwm.fraunhofer.de/abteilungen/hpc/sdpa.html</ulink>
+    </para>
+  </refsect1>
+</refentry>

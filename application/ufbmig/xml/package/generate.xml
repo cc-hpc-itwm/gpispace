@@ -77,7 +77,7 @@
           ${package.work.done} := false;
           ${package.work.ptr} := 0L;
 
-          ${state.id} := ${state.id} + 1;
+          ${state.id} := ${state.id} + 1L;
 
           ${assigned_package.package} := ${package};
           ${assigned_package.store} := ${store};

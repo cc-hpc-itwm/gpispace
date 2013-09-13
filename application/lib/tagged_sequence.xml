@@ -51,7 +51,7 @@
           <out name="pair" type="PAIR"/>
           <expression>
             ${pair} := ${state.pair};
-            ${state.pair.id} := ${state.pair.id} + 1
+            ${state.pair.id} := ${state.pair.id} + 1L
           </expression>
         </defun>
         <connect-in port="state" place="state"/>

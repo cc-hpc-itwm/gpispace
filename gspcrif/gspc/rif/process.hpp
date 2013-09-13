@@ -12,6 +12,8 @@
 #include <gspc/rif/pipe.hpp>
 #include <gspc/rif/buffer_fwd.hpp>
 
+#include <sys/resource.h>
+
 namespace gspc
 {
   namespace rif
@@ -24,6 +26,12 @@ namespace gspc
                 , boost::filesystem::path const &filename
                 , argv_t const &
                 , env_t const &
+                );
+
+      explicit
+      process_t ( proc_t id
+                , boost::filesystem::path const &filename
+                , argv_t const &
                 );
 
       ~process_t ();
@@ -56,6 +64,8 @@ namespace gspc
       int waitpid ();
       int try_waitpid ();
 
+      const struct rusage *rusage () const;
+
       pipe_t & stdin ();
       pipe_t & stdout ();
       pipe_t & stderr ();
@@ -82,6 +92,7 @@ namespace gspc
 
       pid_t  m_pid;
       boost::optional<int>    m_status;
+      struct rusage           m_rusage;
 
       std::vector<pipe_t>    m_pipes;
       std::vector<buffer_t*> m_buffers;

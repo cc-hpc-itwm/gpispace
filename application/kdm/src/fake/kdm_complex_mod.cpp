@@ -1,5 +1,5 @@
 #include <we/loader/macros.hpp>
-#include <we/loader/putget.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
@@ -8,13 +8,24 @@
 #include <string>
 #include <fstream>
 
-using we::loader::get;
+#include <we/type/value/shpw.hpp>
+#include <we/type/value/peek.hpp>
+
+namespace
+{
+  template<typename R>
+    R peek (const pnet::type::value::value_type& x, const std::string& key)
+  {
+    return boost::get<R> (*pnet::type::value::peek (key, x));
+  }
+}
 
 // ************************************************************************* //
 
-static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void initialize (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const std::string & filename (get<std::string> (input, "file_config"));
+  const std::string& filename
+    (boost::get<const std::string&> (input.value ("file_config")));
 
   MLOG (INFO, "initialize: filename " << filename);
 
@@ -37,42 +48,42 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
         }
     }
 
-  if ( get<long> (output, "config", "size.store.volume")
-     < get<long> (output, "config", "per_offset.volumes")
+  if ( peek<long> (output.value ("config"), "size.store.volume")
+     < peek<long> (output.value ("config"), "per_offset.volumes")
      )
     {
       throw std::runtime_error
         ("need at least as many volume stores as volumes per offset");
     }
 
-  MLOG (INFO, "initialize: config " << get<value::type>(output, "config"));
+  MLOG (INFO, "initialize: config " << pnet::type::value::show (output.value ("config")));
 }
 
-static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void loadTT (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const long & id (get<long> (input, "id"));
+  const long& id (boost::get<const long&> (input.value ("id")));
 
   MLOG (INFO, "loadTT: id " << id);
 
   output.bind ("done", we::type::literal::control());
 }
 
-static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void load (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
-  MLOG (INFO, "load: bunch " << bunch);
+  MLOG (INFO, "load: bunch " << pnet::type::value::show (bunch));
 
   output.bind ("bunch", bunch);
 }
 
-static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void process (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & volume (get<value::type> (input, "volume"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
   literal::stack_type stack_bunch_id
-    (get<literal::stack_type> (volume, "assigned.bunch.id"));
+    (peek<literal::stack_type> (volume, "assigned.bunch.id"));
   literal::stack_type stack_store_id
-    (get<literal::stack_type> (volume, "assigned.bunch.store.id"));
+    (peek<literal::stack_type> (volume, "assigned.bunch.store.id"));
 
   MLOG (INFO, "process: size " << stack_bunch_id.size());
 
@@ -85,8 +96,8 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
       const long & bid (stack_bunch_id.back());
       const long & store (stack_store_id.back());
-      const long & vid (get<long> (volume, "id"));
-      const long & oid (get<long> (volume, "offset.id"));
+      const long & vid (peek<long> (volume, "id"));
+      const long & oid (peek<long> (volume, "offset.id"));
 
       MLOG ( INFO
            , "process: match volume " << oid << "." << vid
@@ -97,34 +108,34 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
       stack_store_id.pop_back();
     }
 
-  MLOG (INFO, "process: volume " << volume);
+  MLOG (INFO, "process: volume " << pnet::type::value::show (volume));
 
   output.bind ("volume", volume);
 }
 
-static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void write (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & volume (get<value::type> (input, "volume"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
-  MLOG (INFO, "write: volume " << volume);
+  MLOG (INFO, "write: volume " << pnet::type::value::show (volume));
 
   output.bind ("volume", volume);
 }
 
-static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void finalize (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
+  const pnet::type::value::value_type& config (input.value ("config"));
 
-  MLOG (INFO, "finalize: config " << config);
+  MLOG (INFO, "finalize: config " << pnet::type::value::show (config));
 
   output.bind ("trigger", we::type::literal::control());
 }
 
-static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
+static void init_volume (void *, const expr::eval::context & input, expr::eval::context & output)
 {
-  const value::type & volume (get<value::type> (input, "volume"));
+  const pnet::type::value::value_type& volume (input.value ("volume"));
 
-  MLOG (INFO, "init_volume: volume " << volume);
+  MLOG (INFO, "init_volume: volume " << pnet::type::value::show (volume));
 
   output.bind ("volume", volume);
 }

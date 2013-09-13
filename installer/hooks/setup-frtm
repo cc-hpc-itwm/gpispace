@@ -1,0 +1,22 @@
+#!/bin/bash
+
+dst="$1"
+
+if [ ! -r "${dst}/libexec/sdpa/apps/frtm/hooks/setup.sh" ]
+then
+    echo >&2 "FRTM was not included"
+    exit 0
+fi
+
+sed -i \
+    -e "s,^RTM_HOME=.*$,RTM_HOME=\"${dst}/libexec/sdpa/apps/frtm\","  \
+    -e "s,^SDPA_HOME=.*$,SDPA_HOME=\"${dst}\"," \
+    -e "s,^RESERVED_NODES=.*$,RESERVED_NODES=\"\"," \
+    "${dst}/libexec/sdpa/apps/frtm/hooks/setup.sh"
+
+mkdir -p "${dst}/etc/sdpa/env.d"
+cat > "${dst}/etc/sdpa/env.d/50-FRTM.sh" <<EOF
+prepend_path PATH "${dst}/libexec/sdpa/apps/frtm/script"
+EOF
+
+echo >&2 "FRTM configured"

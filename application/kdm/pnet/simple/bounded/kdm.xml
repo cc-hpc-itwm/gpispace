@@ -309,7 +309,7 @@
         <in name="wait" type="volume_wait"/>
         <in name="volume" type="VOLUME"/>
         <out name="wait" type="volume_wait"/>
-        <expression>${wait.wait} := ${wait.wait} - 1</expression>
+        <expression>${wait.wait} := ${wait.wait} - 1L</expression>
         <condition>${wait.offset} == ${volume.offset}</condition>
       </defun>
       <connect-in port="wait" place="volume_wait"/>
@@ -322,7 +322,7 @@
         <in name="wait" type="volume_wait"/>
         <out name="credit" type="control"/>
         <expression>${credit} := []</expression>
-        <condition>${wait.wait} == 0</condition>
+        <condition>${wait.wait} :eq: 0L</condition>
       </defun>
       <connect-in port="wait" place="volume_wait"/>
       <connect-out port="credit" place="credit_offset"/>

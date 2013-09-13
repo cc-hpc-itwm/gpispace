@@ -100,6 +100,7 @@ namespace gspc
 
       add_action ("add", "add the node to the working set").params
         << parameter_info_t ("walltime", "Walltime in hours", "duration", QString ("4"))
+        << parameter_info_t ("sockets", "number of numa sockets", "integer", QString ("1"))
         ;
       add_action ("restart", "restart missing workers");
 
@@ -114,6 +115,7 @@ namespace gspc
         << parameter_info_t ("updates", "Update interval", "integer", QString ("10"))
         << parameter_info_t ("atonce", "Shots at once", "integer", QString ("4"))
         << parameter_info_t ("walltime", "Walltime in hours", "duration", QString ("4"))
+        << parameter_info_t ("sockets", "number of numa sockets", "integer", QString ("1"))
         ;
 
       add_action ("config", "change runtime parameters").params
@@ -939,7 +941,7 @@ namespace gspc
 
           to_query << host;
 
-          if (to_query.size () >= STATUS_REQUEST_BUNCH_SIZE)
+          if (static_cast<size_t>(to_query.size()) >= STATUS_REQUEST_BUNCH_SIZE)
           {
             pending_lock.unlock ();
             query_status (to_query); to_query.clear ();
