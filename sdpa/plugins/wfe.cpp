@@ -160,8 +160,17 @@ public:
     if (m_worker)
     {
       m_worker->interrupt();
-      m_worker->join();
-      m_worker.reset();
+      boost::posix_time::time_duration timeout =
+        boost::posix_time::seconds (15);
+      if (not m_worker->timed_join (timeout))
+      {
+        LOG (WARN, "could not interrupt user-code, aborting");
+        _exit (66);
+      }
+      else
+      {
+        m_worker.reset();
+      }
     }
 
     {
