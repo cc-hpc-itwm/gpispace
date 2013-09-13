@@ -17,7 +17,7 @@ execute_selftest=true
 usage ()
 {
     cat <<EOF
-usage: $(basename "$0") [options] -- [options for setup]
+usage: $(basename "$0") [options]
 
   -h|--help         : print this help
   -v|--verbose      : be more verbose
