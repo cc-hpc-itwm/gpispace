@@ -130,7 +130,12 @@ then
 fi
 
 oldpwd="$(pwd)"
-tmpdir=$(mktemp -d)
+tmpdir=$(mktemp -d 2>&1)
+if [ $? -ne 0 ]
+then
+    echo >&2 "make: could not create temporary directory: $tmpdir"
+    exit 2
+fi
 
 cleanup()
 {
