@@ -191,7 +191,7 @@ trap 'cleanup' EXIT TERM
 # query user information
 if [ -z "$license" ]
 then
-    get_user_input "Path to the license file:" license
+    get_user_input "Path to the license file: " license
 fi
 
 if [ ! -r "$license" ]

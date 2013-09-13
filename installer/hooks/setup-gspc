@@ -6,7 +6,7 @@
 dst="$1"
 
 opt_cluster_head=$(hostname)
-read -e -p "Head node of the cluster [$opt_cluster_head]:" val
+read -e -p "Head node of the cluster [$opt_cluster_head]: " val
 if [ -n "$val" ]
 then
     opt_cluster_head="${val}"
@@ -14,7 +14,7 @@ fi
 unset val
 
 opt_enable_gpi=false
-read -e -p "Enable GPI [$opt_enable_gpi]:" val
+read -e -p "Enable GPI [$opt_enable_gpi]: " val
 if [ -n "$val" ]
 then
     opt_enable_gpi="${val}"
