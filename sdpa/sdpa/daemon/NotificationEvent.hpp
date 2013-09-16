@@ -86,14 +86,9 @@ namespace sdpa
       }
 
       const std::string &component() const { return m_component; }
-      std::string &component() { return m_component; }
-
       const std::string &activity_id() const   { return a_id_; }
-      std::string &activity_id()               { return a_id_; }
       const std::string &activity_name() const { return a_name_; }
-      std::string &activity_name()             { return a_name_; }
       const state_t &activity_state() const      { return a_state_; }
-      state_t &activity_state()                  { return a_state_; }
 
     private:
       std::string m_component;
