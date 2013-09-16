@@ -106,21 +106,21 @@ BOOST_AUTO_TEST_CASE(testCoAllocation)
 	job_requirements_t req_list_0;
 	requirement_t req_0(WORKER_CPBS[0], true);
 	req_list_0.add(req_0);
-	req_list_0.n_workers_req = 4;
+	req_list_0.setNumberOfInstances(4);
 	pAgent->jobManager()->addJobRequirements(jobId0, req_list_0);
 	pAgent->scheduler()->schedule_remote(jobId0);
 
 	job_requirements_t req_list_1;
 	requirement_t req_1(WORKER_CPBS[1], true);
 	req_list_1.add(req_1);
-	req_list_1.n_workers_req = 4;
+	req_list_1.setNumberOfInstances(4);
 	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
 	pAgent->scheduler()->schedule_remote(jobId1);
 
 	job_requirements_t req_list_2;
 	requirement_t req_2(WORKER_CPBS[2], true);
 	req_list_2.add(req_2);
-	req_list_2.n_workers_req = 4;
+	req_list_2.setNumberOfInstances(4);
 	pAgent->jobManager()->addJobRequirements(jobId2, req_list_2);
 	pAgent->scheduler()->schedule_remote(jobId2);
 
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(testCoAllocation)
 	sdpa::daemon::Job::ptr_t pJob4(new JobFSM(jobId4, "description 4"));
 	pAgent->jobManager()->addJob(jobId4, pJob4);
 
-	req_list_0.n_workers_req = 2;
+	req_list_0.setNumberOfInstances(2);
     pAgent->jobManager()->addJobRequirements(jobId4, req_list_0);
 	pAgent->scheduler()->schedule_remote(jobId4);
 
@@ -183,6 +183,7 @@ BOOST_AUTO_TEST_CASE(testCoAllocation)
 	BOOST_CHECK(w1==0 || w1 == 3  || w1 == 6|| w1 == 9);
 	//reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
 }
+
 
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
@@ -212,7 +213,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 	req_list_1.add(req_1);
 	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
 
-	LOG(INFO, "Schedule the job "<<jobId1);
+	LOG(DEBUG, "Schedule the job "<<jobId1);
 	ptrScheduler->schedule_remote(jobId1);
 
 	ptrScheduler->assignJobsToWorkers();
@@ -221,22 +222,22 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 	BOOST_CHECK(listAssgnWks.empty());
 
 	if(listAssgnWks == sdpa::worker_id_list_t(1,worker_A))
-		LOG(INFO, "The job Job1 was scheduled on worker_A, which is incorrect, because worker_A doesn't have yet the capability \"C\"");
+		LOG(DEBUG, "The job Job1 was scheduled on worker_A, which is incorrect, because worker_A doesn't have yet the capability \"C\"");
 	else
-		LOG(INFO, "The job Job1 wasn't scheduled on worker_A, which is correct, as it hasn't yet acquired the capability \"C\"");
+		LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, which is correct, as it hasn't yet acquired the capability \"C\"");
 
 	sdpa::capability_t cpb1("C", "virtual", worker_A);
 	cpbSetA.insert(cpb1);
 	ptrScheduler->addCapabilities(worker_A, cpbSetA);
 
-	LOG(INFO, "Check if worker_A really acquired the capability \"C\"");
+	LOG(DEBUG, "Check if worker_A really acquired the capability \"C\"");
 
 	sdpa::capabilities_set_t cpbset;
 	ptrScheduler->getWorkerCapabilities(worker_A, cpbset);
 
-	LOG(INFO, "The worker_A has now the following capabilities: ["<<cpbset<<"]");
+	LOG(DEBUG, "The worker_A has now the following capabilities: ["<<cpbset<<"]");
 
-	LOG(INFO, "Try to assign again jobs to the workers ...");
+	LOG(DEBUG, "Try to assign again jobs to the workers ...");
 	ptrScheduler->assignJobsToWorkers();
 
 	listAssgnWks = pAgent->scheduler()->getListAllocatedWorkers(jobId1);
@@ -245,9 +246,9 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 	bool bOutcome = (listAssgnWks == sdpa::worker_id_list_t(1,worker_A));
 	BOOST_CHECK(bOutcome);
 	if(listAssgnWks == sdpa::worker_id_list_t(1,worker_A))
-		LOG(INFO, "The job Job1 was scheduled on worker_A, which is correct, as the worker_A has now gained the capability \"C\"");
+		LOG(DEBUG, "The job Job1 was scheduled on worker_A, which is correct, as the worker_A has now gained the capability \"C\"");
 	else
-		LOG(INFO, "The job Job1 wasn't scheduled on worker_A, despite the fact is is the only one having the required  capability, which is incorrect");
+		LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, despite the fact is is the only one having the required  capability, which is incorrect");
 }
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
@@ -575,26 +576,27 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
 	sdpa::worker_id_t lastWorkerId("worker_9");
 	sdpa::job_id_t jobId = ptrScheduler->getAssignedJob(lastWorkerId);
-	LOG(INFO, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
+	LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
 
 	// and now simply delete the last worker !!!!
 	ptrScheduler->delWorker(lastWorkerId);
     sdpa::worker_id_list_t listW = ptrScheduler->getListAllocatedWorkers(jobId);
 	BOOST_CHECK(listW.empty());
-	LOG(INFO, "The worker "<<lastWorkerId<<" was deleted!");
+	LOG(DEBUG, "The worker "<<lastWorkerId<<" was deleted!");
 
 	std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
 	sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
 	// add now, add again the last worker
 	ptrScheduler->addWorker(lastWorkerId, 1, cpbSet);
 
-	LOG(INFO, "The worker "<<lastWorkerId<<" was re-added!");
+	LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
 	// assign jobs to the workers
 	ptrScheduler->assignJobsToWorkers();
 	sdpa::job_id_t oldJobId(jobId);
 	jobId = ptrScheduler->getAssignedJob(lastWorkerId);
 	BOOST_CHECK(jobId==oldJobId);
-	LOG(INFO, "The worker "<<lastWorkerId<<" was re-assigned the job "<<jobId);
+	if(jobId==oldJobId)
+		LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-assigned the job "<<jobId);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
