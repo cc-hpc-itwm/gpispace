@@ -25,9 +25,8 @@ struct activity
                              ) const
   {
     const NotificationEvent event ( _worker
+                                  , (boost::format ("%1%") % _id).str()
                                   , (boost::format ("activity-%1%") % _id).str()
-                                  //! \todo Use proper activity.
-                                  , "todo: use proper activity"
                                   , _state
                                   );
     service_a->update (event);
