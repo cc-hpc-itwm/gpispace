@@ -151,7 +151,7 @@ private:
       : e.state == task_event_t::FINISHED ? sdpa::daemon::NotificationEvent::STATE_FINISHED
       : e.state == task_event_t::FAILED ? sdpa::daemon::NotificationEvent::STATE_FAILED
       : e.state == task_event_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELLED
-      : sdpa::daemon::NotificationEvent::STATE_IGNORE
+      : throw std::runtime_error ("gui: encode: invalid task_event::state")
       , e.activity
       ).encoded();
   }

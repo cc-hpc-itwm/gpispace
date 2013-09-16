@@ -244,11 +244,7 @@ namespace
       CHOICE (CANCELLED, "cancelled");
 
 #undef CHOICE
-    case event::STATE_IGNORE:
-      ;
     }
-
-    throw std::runtime_error ("invalid state");
   }
 }
 
@@ -390,11 +386,6 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
 
   const sdpa::daemon::NotificationEvent::state_t task_state
     (notification.activity_state());
-
-  if (task_state == sdpa::daemon::NotificationEvent::STATE_IGNORE)
-  {
-    return;
-  }
 
   const std::string& component (notification.component());
 

@@ -38,19 +38,14 @@ namespace
   public:
     enum state_t
     {
-      STATE_IGNORE = -1
-    , STATE_CREATED
+      STATE_CREATED
     , STATE_STARTED
     , STATE_FINISHED
     , STATE_FAILED
     , STATE_CANCELLED
-    , STATE_MIN = STATE_IGNORE
+    , STATE_MIN = STATE_CREATED
     , STATE_MAX = STATE_CANCELLED
     };
-
-    NotificationEvent()
-      : a_state_(STATE_IGNORE)
-    {}
 
     NotificationEvent( const std::string &source
                      , const std::string &activity_id
@@ -102,21 +97,6 @@ namespace
     std::string a_name_;
     state_t     a_state_;
   };
-}}
-
-BOOST_CLASS_TRACKING ( sdpa::daemon::NotificationEvent
-                     , boost::serialization::track_never
-                     )
-
-namespace boost { namespace serialization {
-  template <class Archive>
-  void serialize(Archive &ar, sdpa::daemon::NotificationEvent &e, const unsigned int)
-  {
-    ar & e.component();
-    ar & e.activity_id();
-    ar & e.activity_name();
-    ar & e.activity_state();
-  }
 }}
 
 #endif
