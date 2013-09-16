@@ -467,10 +467,11 @@ bool compare_degrees( sdpa::list_match_workers_t::value_type left, sdpa::list_ma
     return false;
 }
 
-size_t numberOfMandReqs( const job_requirements_t& listJobReq )
+size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 {
 	size_t count = 0;
-	BOOST_FOREACH(const requirement_t& req, listJobReq.req_list)
+	requirements_list_t listR = listJobReq.getReqList();
+	BOOST_FOREACH(const requirement_t& req, listR)
 	{
 		count+=(int)req.is_mandatory();
 	}
@@ -517,7 +518,7 @@ sdpa::list_match_workers_t WorkerManager::getListMatchingWorkers( const job_requ
 
     if (matchingDeg == maxMatchingDeg)
     {
-    	if(numberOfMandReqs(listJobReq)<nMaxMandReq)
+    	if(numberOfMandatoryReqs(listJobReq)<nMaxMandReq)
     		continue;
 
     	if (pWorker->nbAllocatedJobs() > least_load)
@@ -529,7 +530,7 @@ sdpa::list_match_workers_t WorkerManager::getListMatchingWorkers( const job_requ
 
     DLOG(TRACE, "worker " << pair.first << " (" << matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
     maxMatchingDeg = matchingDeg;
-    nMaxMandReq = numberOfMandReqs(listJobReq);
+    nMaxMandReq = numberOfMandatoryReqs(listJobReq);
     bestMatchingWorkerId = pair.first;
     last_schedule_time = pWorker->lastScheduleTime();
     least_load = pWorker->nbAllocatedJobs();
