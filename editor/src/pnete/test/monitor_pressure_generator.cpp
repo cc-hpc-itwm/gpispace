@@ -17,7 +17,7 @@ struct activity
   activity (const std::string& worker)
     : _id (++id_counter)
     , _worker (worker)
-    , _state (NotificationService::event_t::STATE_CREATED)
+    , _state (NotificationEvent::STATE_CREATED)
   { }
 
   void send_out_notification ( NotificationService* service_a
@@ -38,21 +38,21 @@ struct activity
   {
     switch (_state)
     {
-    case NotificationService::event_t::STATE_CREATED:
-      _state = NotificationService::event_t::STATE_STARTED;
+    case NotificationEvent::STATE_CREATED:
+      _state = NotificationEvent::STATE_STARTED;
       break;
 
-    case NotificationService::event_t::STATE_STARTED:
+    case NotificationEvent::STATE_STARTED:
       switch (lrand48() % 3)
       {
       case 0:
-        _state = NotificationService::event_t::STATE_FINISHED;
+        _state = NotificationEvent::STATE_FINISHED;
         break;
       case 1:
-        _state = NotificationService::event_t::STATE_FAILED;
+        _state = NotificationEvent::STATE_FAILED;
         break;
       case 2:
-        _state = NotificationService::event_t::STATE_CANCELLED;
+        _state = NotificationEvent::STATE_CANCELLED;
         break;
       }
       break;
