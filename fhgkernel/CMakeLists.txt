@@ -40,8 +40,10 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package(HWLOC REQUIRED QUIET)
 include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
 
-find_package (NACL QUIET REQUIRED)
-include_directories (${NACL_INCLUDE_DIR})
+if (ENABLE_LICENSE_CHECK)
+  find_package (NACL QUIET REQUIRED)
+  include_directories (${NACL_INCLUDE_DIR})
+endif()
 
 # Reflect the package structure
 add_subdirectory(fhg)
