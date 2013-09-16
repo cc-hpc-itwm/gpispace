@@ -19,16 +19,21 @@ struct job_requirements_t
 {
 	typedef requirements_list_t::const_iterator const_iterator;
 
-	job_requirements_t() :  n_workers_req(1) {};
+	job_requirements_t() :  m_nInstances_(1) {};
 	job_requirements_t(const requirements_list_t& r_list, int m=1) :
-		req_list(r_list), n_workers_req(m)
+		m_requirementsList(r_list), m_nInstances_(m)
 	{
 	}
 
-	void add(const requirement_t& req) {req_list.push_back(req); }
+	void add(const requirement_t& req) {m_requirementsList.push_back(req); }
 
-	requirements_list_t req_list;
-	int n_workers_req;
+	size_t nInstances() { return m_nInstances_; }
+	void setNumberOfInstances(size_t n) { m_nInstances_ = n; }
+
+	const requirements_list_t& getReqList() const { return m_requirementsList; }
+private:
+	requirements_list_t m_requirementsList;
+	size_t m_nInstances_;
 };
 
 typedef we::mgmt::basic_layer IWorkflowEngine;
