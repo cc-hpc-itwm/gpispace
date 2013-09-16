@@ -704,15 +704,14 @@ void SchedulerImpl::assignJobsToWorkers()
 	 {
 		sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.front());
 
-		int nReqWorkers;
-		//sdpa::worker_id_t matchingWorkerId = findSuitableWorker(jobId, listAvailWorkers, nReqWorkers);
+		int nReqWorkers(1); // default number of required workers is 1
 		sdpa::worker_id_t matchingWorkerId;
 
 		try {
 			job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
 			// LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
 
-			nReqWorkers = job_reqs.n_workers_req;
+			nReqWorkers = job_reqs.nInstances();
 			matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
 		}
 		catch( const NoJobRequirements& ex ) // no requirements are specified
@@ -720,7 +719,6 @@ void SchedulerImpl::assignJobsToWorkers()
 			// we have an empty list of requirements then!
 			matchingWorkerId = listAvailWorkers[0];
 			listAvailWorkers.erase(listAvailWorkers.begin());
-			nReqWorkers = 1;
 		}
 
 		if( !matchingWorkerId.empty() ) // matching found
@@ -729,7 +727,7 @@ void SchedulerImpl::assignJobsToWorkers()
 
 			// attention: what to do if job_reqs.n_workers_req > total number of registered workers?
 			// if all the required resources were acquired, mark the job as submitted
-			if(allocation_table[jobId].size() == (size_t)nReqWorkers)
+			if( allocation_table[jobId].size() == (size_t)nReqWorkers )
 			{
 				ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
 				ptr_worker_man_->common_queue_.pop();
