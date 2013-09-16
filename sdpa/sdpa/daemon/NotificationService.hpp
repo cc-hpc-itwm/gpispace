@@ -77,10 +77,7 @@ namespace sdpa { namespace daemon {
   private:
     std::string encode(const event_t &evt) const
     {
-      std::ostringstream sstr;
-      boost::archive::text_oarchive ar(sstr);
-      ar << evt;
-      return sstr.str();
+      return evt.encoded();
     }
 
     std::string service_;

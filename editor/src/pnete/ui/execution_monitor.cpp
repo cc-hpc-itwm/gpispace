@@ -2,12 +2,9 @@
 
 #include <fhg/util/alphanum.hpp>
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
-#include <boost/serialization/access.hpp>
 
 #include <QCheckBox>
 #include <QColorDialog>
@@ -389,13 +386,7 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
 {
   static const qreal task_height (8.0);
 
-  sdpa::daemon::NotificationEvent notification;
-
-  {
-    std::stringstream stream (event.message());
-    boost::archive::text_iarchive archive (stream);
-    archive >> notification;
-  }
+  const sdpa::daemon::NotificationEvent notification (event.message());
 
   const sdpa::daemon::NotificationEvent::state_t task_state
     (notification.activity_state());

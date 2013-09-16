@@ -140,10 +140,7 @@ private:
 
   static inline std::string encode (const task_event_t & e)
   {
-    std::ostringstream sstr;
-    boost::archive::text_oarchive ar (sstr);
-
-    const sdpa::daemon::NotificationEvent evt
+    return sdpa::daemon::NotificationEvent
       ( e.meta.find("agent.name") != e.meta.end()
       ? e.meta.find("agent.name")->second
       : "unknown"
@@ -156,11 +153,7 @@ private:
       : e.state == task_event_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELLED
       : sdpa::daemon::NotificationEvent::STATE_IGNORE
       , e.activity
-      );
-
-    ar << evt;
-
-    return sstr.str();
+      ).encoded();
   }
 
   std::string m_url;
