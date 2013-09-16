@@ -1,32 +1,16 @@
-/*
- * =====================================================================================
- *
- *       Filename:  NotificationEvent.hpp
- *
- *    Description:  notification event
- *
- *        Version:  1.0
- *        Created:  11/19/2009 01:27:22 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de, bernd.loerwald@itwm.fraunhofer.de
 
 #ifndef SDPA_DAEMON_NOTIFICATION_EVENT_HPP
-#define SDPA_DAEMON_NOTIFICATION_EVENT_HPP 1
+#define SDPA_DAEMON_NOTIFICATION_EVENT_HPP
 
-#include <sdpa/daemon/mpl.hpp>
-
-#include <boost/serialization/base_object.hpp>
 #include <boost/serialization/utility.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/mgmt/type/activity.hpp>
 
+#include <sstream>
 #include <string>
 
 namespace sdpa { namespace daemon {
@@ -82,6 +66,26 @@ namespace
                 )
       , a_state_(activity_state)
     {}
+
+    NotificationEvent (const std::string encoded)
+    {
+      std::istringstream stream (encoded);
+      boost::archive::text_iarchive archive (stream);
+      archive & m_component;
+      archive & a_id_;
+      archive & a_name_;
+      archive & a_state_;
+    }
+    std::string encoded() const
+    {
+      std::ostringstream stream;
+      boost::archive::text_oarchive archive (stream);
+      archive & m_component;
+      archive & a_id_;
+      archive & a_name_;
+      archive & a_state_;
+      return stream.str();
+    }
 
     const std::string &component() const { return m_component; }
     std::string &component() { return m_component; }
