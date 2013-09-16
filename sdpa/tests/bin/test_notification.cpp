@@ -61,8 +61,7 @@ int main(int ac, char **av)
   std::clog << "initializing notification service..." << std::endl;
   TestObservable daemon;
 
-  typedef NotificationService gui_service;
-  gui_service gui("SDPA", gui_location);
+  NotificationService gui("SDPA", gui_location);
 
   daemon.attach_observer( &gui );
 
@@ -72,20 +71,20 @@ int main(int ac, char **av)
     ostr << "activity-" << i;
     const std::string aid(ostr.str());
 
-    daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_CREATED);
-    daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_STARTED);
+    daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_CREATED);
+    daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_STARTED);
 
     int random_outcome = (int)(round(3 * drand48()));
 	switch (random_outcome)
 	{
 	  case 0:
-		daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_FINISHED);
+		daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_FINISHED);
 		break;
 	  case 1:
-		daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_FAILED);
+		daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_FAILED);
 		break;
 	  case 2:
-		daemon.activityStateUpdate(aid, "function placeholder", gui_service::event_t::STATE_CANCELLED);
+		daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_CANCELLED);
 		break;
 	}
 
@@ -98,8 +97,8 @@ int main(int ac, char **av)
     ostr << "activity-" << i;
     const std::string aid(ostr.str());
 
-    int random_state = (int)(round(gui_service::event_t::STATE_MAX * drand48()));
-    gui_service::event_t::state_t state = static_cast<gui_service::event_t::state_t>(random_state);
+    int random_state = (int)(round(NotificationEvent::STATE_MAX * drand48()));
+    NotificationEvent::state_t state = static_cast<NotificationEvent::state_t>(random_state);
     daemon.activityStateUpdate(aid, "function placeholder", state);
     if ( (i % 100) == 0 ) boost::this_thread::sleep(boost::posix_time::seconds(1));
   }
