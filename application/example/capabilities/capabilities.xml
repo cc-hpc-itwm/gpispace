@@ -44,21 +44,22 @@
       <connect-out port="two" place="wait_B"/>
     </transition>
 
-    <!-- related to path for capability A -->
+    <!-- path related to capability A -->
 
     <place name="generate_A" type="long" />
     <place name="wait_A" type="long" />
 
+    <place name="a" type="long" />
     <transition name="generate_a"  inline="true">
       <include-function href="sequence.xml"/>
       <connect-in  port="amount" place="generate_A" />
       <connect-out port="out"    place="a" />
     </transition>
 
-    <place name="a" type="long" />
 
+	<place name="finished_task_A" type="control" />
     <transition name="run_A">
-      <defun>
+    <defun>
 	<require key="A" />
 	<in name="id" type="long" />
 	<in name="t" type="long" />
@@ -79,72 +80,70 @@
       </defun>
       <connect-in port="id" place="a" />
       <connect-read port="t" place="time_A" />
-      <connect-out port="done" place="done_run_a" />
+      <connect-out port="done" place="finished_task_A" />
     </transition>
 
-    <place name="done_run_a" type="control" />
-
+ 
+	<place name="done_A" type="control" />
     <transition name="wait_until_A_is_complete">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait_A" />
-      <connect-in  port="trigger" place="done_run_a" />
+      <connect-in  port="trigger" place="finished_task_A" />
       <connect-out port="done"    place="done_A" />
     </transition>
-
-    <place name="done_A" type="control" />
-
     <!-- path A complete -->
 
 
-    <!-- related to path for capability B -->
+    <!-- path related to capability B -->
 
     <place name="generate_B" type="long" />
     <place name="wait_B" type="long" />
 
+  	<place name="b" type="long" />
     <transition name="generate_b"  inline="true">
       <include-function href="sequence.xml"/>
       <connect-in  port="amount" place="generate_B" />
       <connect-out port="out"    place="b" />
     </transition>
 
-    <place name="b" type="long" />
 
+	<place name="finished_task_B" type="control" />
     <transition name="run_B">
-      <defun>
-	<require key="B" />
-	<in name="id" type="long" />
-	<in name="t" type="long" />
-	<out name="done" type="control" />
-	<module name="capabilities_test" function="done B(id, t)">
-          <cinclude href="fhglog/minimal.hpp" />
-	  <cinclude href="unistd.h" />
-          <code><![CDATA[
-	  LOG(INFO, ">>> running  B(" << id << ", " << t << ")");
-
-	  usleep ((useconds_t)t);
-
-	  LOG(INFO, "<<< finished B(" << id << ", " << t << ")");
-
-	  return we::type::literal::control();
-	  ]]></code>
-	</module>
+    <defun>
+		<require key="B" />
+		<in name="id" type="long" />
+		<in name="t" type="long" />
+		<out name="done" type="control" />
+		<module name="capabilities_test" function="done B(id, t)">
+	          <cinclude href="fhglog/minimal.hpp" />
+		  <cinclude href="unistd.h" />
+	          <code><![CDATA[
+		  LOG(INFO, ">>> running  B(" << id << ", " << t << ")");
+	
+		  usleep ((useconds_t)t);
+	
+		  LOG(INFO, "<<< finished B(" << id << ", " << t << ")");
+	
+		  return we::type::literal::control();
+		  ]]></code>
+		</module>
       </defun>
       <connect-in port="id" place="b" />
       <connect-read port="t" place="time_B" />
-      <connect-out port="done" place="done_run_b" />
-    </transition>
+      <connect-out port="done" place="finished_task_B" />
+	</transition>
 
-    <place name="done_run_b" type="control" />
+ 
 
+   <place name="done_B" type="control" />
     <transition name="wait_until_B_is_complete">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait_B" />
-      <connect-in  port="trigger" place="done_run_b" />
+      <connect-in  port="trigger" place="finished_task_B" />
       <connect-out port="done"    place="done_B" />
     </transition>
 
-    <place name="done_B" type="control" />
-
+ 
     <!-- path B complete -->
 
     <!-- everything done, remove tokens -->
@@ -159,7 +158,7 @@
 
 	<out name="done" type="control" />
 	<expression>
-	  ${done} := []
+	  ${done}:=[];
 	</expression>
       </defun>
       <connect-in  port="done_A" place="done_A" />
