@@ -101,7 +101,7 @@ namespace fhg
 
       namespace
       {
-        char unquote (char c)
+        char unquote (char)
         {
           throw std::runtime_error ("Quoted characters are not yet supported");
         }

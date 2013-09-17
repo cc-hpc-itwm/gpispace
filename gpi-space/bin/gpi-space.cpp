@@ -7,7 +7,6 @@
 #include <stdio.h> // snprintf
 #include <unistd.h> // getuid, alarm, setsid, fork
 #include <sys/types.h> // uid_t
-#include <pwd.h> // getpwuid
 
 #include <csignal>
 #include <cassert>

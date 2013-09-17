@@ -6,6 +6,7 @@
 # * HWLOC_STATIC_LIBRARY
 # * HWLOC_SHARED_LIBRARY The lib to link to (currently only a static unix lib)
 # * HWLOC_INCLUDE_DIR
+# * HWLOC_LD_PATH the path to HWLOC_LIBRARY
 
 if (NOT HWLOC_FIND_QUIETLY)
   message(STATUS "FindHWLOC check")
@@ -38,6 +39,7 @@ endif()
 
 if (HWLOC_INCLUDE_DIR AND HWLOC_LIBRARY)
   set (HWLOC_FOUND TRUE)
+  get_filename_component (HWLOC_LD_PATH ${HWLOC_LIBRARY} PATH)
   if (NOT HWLOC_FIND_QUIETLY)
     message (STATUS "Found HWLOC headers in ${HWLOC_INCLUDE_DIR} and libraries ${HWLOC_LIBRARY} ${HWLOC_SHARED_LIBRARY}")
   endif ()

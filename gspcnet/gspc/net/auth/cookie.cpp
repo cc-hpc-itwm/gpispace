@@ -2,12 +2,14 @@
 
 #include <fstream>
 
+#include <string.h>             // memset
 #include <unistd.h>             // getuid
 #include <stdlib.h>             // getenv
 #include <sys/types.h>          // uid_t
 #include <sys/stat.h>           // stat
-#include <pwd.h>                // getpwuid_r
 #include <fcntl.h>              // O_RDONLY
+
+#include <fhg/util/get_home_dir.hpp>
 
 namespace gspc
 {
@@ -40,21 +42,14 @@ namespace gspc
                                        )
       {
         int rc;
-        struct passwd pwd;
-        struct passwd *result;
         struct stat stat_buf;
-        char buf [4096];
         char cookie [4096];
+
+        memset (&cookie[0], 0, sizeof(cookie));
 
         out = dflt;
 
-        rc = getpwuid_r (getuid (), &pwd, buf, sizeof(buf), &result);
-        if (not result)
-        {
-          return false;
-        }
-
-        std::string f (pwd.pw_dir);
+        std::string f (fhg::util::get_home_dir ());
         f += "/" + fname;
 
         int fd = open (f.c_str (), O_RDONLY);

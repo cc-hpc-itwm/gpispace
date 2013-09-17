@@ -6,10 +6,8 @@
 #include <we/expr/parse/parser.hpp>
 
 #include <we/type/id.hpp>
-#include <we/type/value.hpp>
-#include <we/type/signature.hpp>
 
-#include <we/type/value/missing_binding.hpp>
+#include <we/exception.hpp>
 
 #include <boost/function.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -43,10 +41,6 @@ namespace condition
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     friend std::ostream& operator<< (std::ostream&, const type&);
-
-    typedef boost::unordered_map< petri_net::place_id_type
-                                , std::list<value::type>
-                                > tokens_by_place_id_t;
 
   public:
     type ( const std::string& exp)
@@ -84,7 +78,7 @@ namespace condition
         {
           return false;
         }
-      catch (const value::exception::missing_binding&)
+      catch (const pnet::exception::missing_binding&)
         {
           return false;
         }

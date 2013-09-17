@@ -1,10 +1,10 @@
 #ifndef _H_UFBMIG_UTIL_RW
-#define _H_UFBMIG_UTIL_RW 1
+#define _H_UFBMIG_UTIL_RW
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <we/type/value/read.hpp>
 
 #include <fstream>
+#include <iterator>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -29,9 +29,7 @@ namespace ufbmig
             throw std::runtime_error (oss.str());
           }
 
-        boost::archive::text_oarchive oa (f);
-
-        oa << x;
+        f << x;
       }
 
       template<typename T>
@@ -48,12 +46,15 @@ namespace ufbmig
             throw std::runtime_error (oss.str());
           }
 
-        boost::archive::text_iarchive oa (f);
-
-        oa >> x;
+        x = T ( pnet::type::value::read
+                ( std::string ( std::istream_iterator<char> (f)
+                              , std::istream_iterator<char>()
+                              )
+                )
+              );
       }
-    } // namespace serialize
-  } // namespace util
-} // namespace ufbmig
+    }
+  }
+}
 
 #endif

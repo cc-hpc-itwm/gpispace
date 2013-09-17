@@ -6,11 +6,12 @@
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
-#include <we/type/value.hpp>
 #include <we/type/port.hpp>
-#include <we/type/value/require_type.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
+
+#include <we/type/value.hpp>
+#include <we/require_type.hpp>
 
 #include <we/expr/eval/context.hpp>
 
@@ -38,34 +39,13 @@ namespace dummy
 
 namespace module
 {
-  template <typename T>
-  class visitor_get_value_of_literal : public boost::static_visitor<T>
-  {
-  public:
-    T operator () (const literal::type & literal) const
-    {
-      return boost::get<T> (literal);
-    }
-
-    T operator () (const value::structured_t & o) const
-    {
-      throw std::runtime_error ("bad_get: expected literal, got: " + fhg::util::show (o));
-    }
-  };
-
-  template <typename T, typename V>
-  T get_value_of_literal (const V & v)
-  {
-    return boost::apply_visitor (visitor_get_value_of_literal<T>(), v);
-  }
-
   template <typename ModuleCall, typename Context, typename OutputList>
   void eval (const ModuleCall & mf, const Context & ctxt, OutputList & output)
   {
     if ( mf.module() == "dummy" && mf.function() == "dummy" )
     {
       const long result
-        (dummy::dummy (get_value_of_literal<long> (ctxt.value("input"))));
+        (dummy::dummy (boost::get<long> (ctxt.value ("input"))));
       output.push_back (std::make_pair (result, "output"));
     }
   }
@@ -85,13 +65,18 @@ namespace module
         ; ++top
         )
     {
-      const value::type& token (top->first);
+      const pnet::type::value::value_type& token (top->first);
       const petri_net::port_id_type& port_id (top->second);
 
-      context.bind (act.transition().name_of_port (port_id), token);
+      context.bind ( act.transition().name_of_port (port_id)
+                   , token
+                   );
     }
 
-    typedef std::vector <std::pair<value::type, std::string> > mod_output_t;
+    typedef std::vector <std::pair< pnet::type::value::value_type
+                                  , std::string
+                                  >
+                        > mod_output_t;
 
     mod_output_t mod_output;
     module::eval ( module_call, context, mod_output );
@@ -108,10 +93,11 @@ namespace module
 
       act.add_output
         ( output_t::value_type
-          ( value::require_type ( port.name()
-                                , port.signature()
-                                , ton->first
-                                )
+          ( pnet::require_type
+            ( ton->first
+            , port.signature()
+            , port.name()
+            )
           , port_id
           )
         );

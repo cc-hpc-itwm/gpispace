@@ -216,7 +216,7 @@
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
         <expression>
-          ${bunch.wait} := ${bunch.wait} - 1;
+          ${bunch.wait} := ${bunch.wait} - 1L;
 
           ${volume.assigned.bunch.id} := -1L;
           ${volume.assigned.store.id} := -1L;
@@ -244,7 +244,7 @@
           ${store} := ${bunch.bunch.store}
         </expression>
         <condition>
-          ${bunch.wait} :le: 0
+          ${bunch.wait} :le: 0L
         </condition>
       </defun>
       <connect-in port="bunch" place="bunch_loaded"/>
@@ -264,7 +264,7 @@
           ${credit_volume_done} := []
         </expression>
         <condition>
-          ${state.bunches.left} :le: 0
+          ${state.bunches.left} :le: 0L
         </condition>
       </defun>
       <connect-in port="state" place="check_volume_done"/>
@@ -285,7 +285,7 @@
           ${credit_volume_done} := []
         </expression>
         <condition>
-          ${state.bunches.left} :gt: 0
+          ${state.bunches.left} :gt: 0L
         </condition>
       </defun>
       <connect-in port="state" place="check_volume_done"/>
@@ -304,7 +304,7 @@
         <out name="sum" type="volume_in_reduction"/>
         <expression>
           ${sum.volume} := ${volume.volume};
-          ${sum.left} := ${state.copies} - 1;
+          ${sum.left} := ${state.copies} - 1L;
         </expression>
         <condition>
           ${state.volume} :eq: ${volume.volume.volume}

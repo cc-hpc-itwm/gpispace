@@ -7,7 +7,7 @@ endif
 
 PNETC_OPTS += -I$(SDPA_HOME)/share/sdpa/xml
 
-PUT_PORT += grid='[ll:=[x:=0.0,y:=0.0],ur:=[x:=1.0,y:=3.0],s:=[x:=1.0,y:=1.5]]'
+PUT_PORT += grid='Struct[ll:=[x:=0.0,y:=0.0],ur:=[x:=1.0,y:=3.0],s:=[x:=1.0,y:=1.5]]'
 
 NOT_STARTS_WITH += dup
 NOT_STARTS_WITH += rep

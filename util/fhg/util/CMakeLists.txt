@@ -25,7 +25,6 @@ set (hdrs
   warnings.hpp
 
   filesystem.hpp
-  cpp.hpp
 
   ini-parser.hpp
   ini-parser.tcc
@@ -51,15 +50,21 @@ set (hdrs
   remove_prefix.hpp
 
   stat.hpp
+  get_home_dir.hpp
+  hex.hpp
+  read_file.hpp
 )
 
 set (srcs
   backtracing_exception.cpp
   setproctitle.c
+  program_info.c
   threadname.cpp
   remove_prefix.cpp
   read_bool.cpp
   stat.cpp
+
+  ostream_modifier.cpp
 
   thread/poll.cpp
 
@@ -70,10 +75,15 @@ set (srcs
   num/show.cpp
   indenter.cpp
   cpp/block.cpp
+  cpp/include.cpp
+  cpp/include_guard.cpp
   cpp/namespace.cpp
   cpp/struct.cpp
 
   xml.cpp
+  get_home_dir.cpp
+  hex.cpp
+  read_file.cpp
 )
 
 add_library (fhg-util ${srcs})
@@ -85,7 +95,7 @@ set_target_properties(fhg-util-shared
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
-  COMPONENT headers)
+  COMPONENT runtime-headers)
 install (TARGETS fhg-util
   ARCHIVE DESTINATION lib
   COMPONENT runtime
@@ -98,7 +108,6 @@ install (TARGETS fhg-util-shared
 add_subdirectory (boost)
 add_subdirectory(thread)
 add_subdirectory(filesystem)
-add_subdirectory(cpp)
 if (BUILD_TESTING)
   add_subdirectory(test)
 endif ()

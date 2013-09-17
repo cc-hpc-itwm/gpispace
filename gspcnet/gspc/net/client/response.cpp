@@ -28,7 +28,7 @@ namespace gspc
       {
         boost::unique_lock<boost::mutex> lock (m_mutex);
 
-        while (!m_reply && !m_aborted)
+        if (!m_reply && !m_aborted)
         {
           m_wait_object.timed_wait (lock, t);
         }

@@ -75,14 +75,14 @@ namespace xml
           ).make_reference_id();
       }
 
-      void split_structs ( const xml::parse::structure_type::set_type & global
+      void split_structs ( const xml::parse::structure_type_util::set_type & global
                          , structs_type & child_structs
                          , structs_type & parent_structs
                          , const type_get_type & type_get
                          , const state::type & state
                          )
       {
-        namespace st = xml::parse::structure_type;
+        namespace st = xml::parse::structure_type_util;
 
         const st::set_type known_structs
           ( st::join ( global
@@ -110,71 +110,9 @@ namespace xml
           }
           else
           {
-            boost::apply_visitor ( st::resolve (known_structs, s)
-                                 , s.signature()
-                                 );
+            s.resolve (known_structs);
 
             parent_structs.push_back (s);
-          }
-        }
-      }
-
-      namespace
-      {
-        class specialize_visitor
-          : public boost::static_visitor<signature::desc_t>
-        {
-        private:
-          const type::type_map_type& map_in;
-
-        public:
-          specialize_visitor (const type::type_map_type& _map_in)
-            : map_in (_map_in)
-          {}
-
-          signature::desc_t operator() (std::string& t) const
-          {
-            const type::type_map_type::const_iterator mapped (map_in.find (t));
-
-            return (mapped != map_in.end()) ? mapped->second : t;
-          }
-
-          signature::desc_t operator() (signature::structured_t& map) const
-          {
-            for ( signature::structured_t::map_t::iterator pos (map.begin())
-                ; pos != map.end()
-                ; ++pos
-                )
-            {
-              const type::type_map_type::const_iterator mapped
-                (map_in.find (pos->first));
-
-              pos->second = (mapped != map_in.end())
-                          ? mapped->second
-                          : boost::apply_visitor (*this, pos->second);
-            }
-
-            return map;
-          }
-
-        };
-      }
-
-      void specialize_structs ( const type_map_type& map
-                              , structs_type& structs
-                              , const state::type& state
-                              )
-      {
-        BOOST_FOREACH (structure_type& s, structs)
-        {
-          s.signature
-            (boost::apply_visitor(specialize_visitor (map), s.signature()));
-
-          type_map_type::const_iterator pos (map.find (s.name()));
-
-          if (pos != map.end())
-          {
-            s.name (pos->second);
           }
         }
       }

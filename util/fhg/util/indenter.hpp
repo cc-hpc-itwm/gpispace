@@ -3,13 +3,15 @@
 #ifndef FHG_UTIL_INDENTER_HPP
 #define FHG_UTIL_INDENTER_HPP
 
+#include <fhg/util/ostream_modifier.hpp>
+
 #include <iosfwd>
 
 namespace fhg
 {
   namespace util
   {
-    class indenter
+    class indenter : public ostream::modifier
     {
     public:
       indenter (const unsigned int = 0);
@@ -22,9 +24,8 @@ namespace fhg
     private:
       unsigned int _depth;
     };
-    std::ostream& operator<< (std::ostream&, const indenter&);
 
-    class deeper
+    class deeper : public ostream::modifier
     {
     public:
       deeper (indenter&);
@@ -33,7 +34,6 @@ namespace fhg
     private:
       indenter& _indenter;
     };
-    std::ostream& operator<< (std::ostream&, const deeper&);
   }
 }
 

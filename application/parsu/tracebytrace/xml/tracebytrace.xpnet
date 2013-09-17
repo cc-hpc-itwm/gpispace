@@ -577,7 +577,7 @@
           ${w.loaded_package} := ${p};
           ${w.offset} := ${write_info.offset};
 
-          ${write_info.next_part} := ${p.package.part} + 1;
+          ${write_info.next_part} := ${p.package.part} + 1L;
           ${write_info.offset} := ${write_info.offset} + ${p.package.size.package};
         </expression>
         <condition>
@@ -601,12 +601,12 @@
         <out name="num_packages" type="long"/>
         <expression>
           ${packages_remaining} :=
-            1 + (${state.max} - ${state.id} - 1) div ${state.inc}
+            1L + (${state.max} - ${state.id} - 1L) div ${state.inc}
             ;
           ${num_packages} := ${num_packages} - ${packages_remaining};
         </expression>
         <condition>
-          ${remaining} == 0
+          ${remaining} :eq: 0L
         </condition>
       </defun>
       <connect-in port="state" place="generate_package_break_check"/>
@@ -742,7 +742,7 @@
               <in name="wait" type="long"/>
               <out name="wait" type="long"/>
               <in name="x" type="long"/>
-              <expression>${wait} := ${wait} - 1</expression>
+              <expression>${wait} := ${wait} - 1L</expression>
             </defun>
             <connect-in port="wait" place="N"/>
             <connect-out port="wait" place="check_break"/>
@@ -756,7 +756,7 @@
                 ${done} := []
               </expression>
               <condition>
-                ${wait} :le: 0
+                ${wait} :le: 0L
               </condition>
             </defun>
             <connect-in port="wait" place="check_break"/>
@@ -769,7 +769,7 @@
               <expression>
               </expression>
               <condition>
-                ${wait} :gt: 0
+                ${wait} :gt: 0L
               </condition>
             </defun>
             <connect-in port="wait" place="check_break"/>

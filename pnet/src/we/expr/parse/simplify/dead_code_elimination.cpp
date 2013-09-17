@@ -29,7 +29,7 @@ namespace expr
           , _has_assignment_somewhere (false)
           {}
 
-          node::type operator() (const value::type& t) const
+          node::type operator() (const pnet::type::value::value_type& t) const
           {
             return t;
           }

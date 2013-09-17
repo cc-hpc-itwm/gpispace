@@ -8,7 +8,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <fhg/util/thread/atomic.hpp>
 
@@ -39,7 +40,7 @@ namespace gspc
         typedef boost::shared_ptr<connection_type> connection_ptr_t;
 
         explicit
-        base_client (endpoint_type const &);
+        base_client (boost::asio::io_service & io, endpoint_type const &);
         ~base_client ();
 
         int start ();
@@ -96,17 +97,12 @@ namespace gspc
         typedef boost::shared_ptr<response_t> response_ptr;
         typedef std::map<std::string, response_ptr> response_map_t;
 
-        boost::asio::io_service         m_io_service;
+        boost::asio::io_service        &m_io_service;
         endpoint_type                   m_endpoint;
         int                             m_state;
         connection_ptr_t                m_connection;
 
         frame_handler_t                *m_frame_handler;
-
-        typedef boost::shared_ptr<boost::thread> thread_ptr_t;
-        typedef std::vector<thread_ptr_t>        thread_pool_t;
-        size_t                                   m_thread_pool_size;
-        thread_pool_t                            m_thread_pool;
 
         fhg::thread::atomic<size_t> m_message_id;
 

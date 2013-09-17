@@ -69,13 +69,35 @@ if ! cat "$xml" | pnetc | pnetput -p challenge=\"$challenge\" > "$job_desc" ; th
     exit 5
 fi
 
+runtime_started=false
+cleanup()
+{
+    if $runtime_started
+    then
+        sdpa stop >/dev/null 2>&1
+        runtime_started=false
+    fi
+}
+trap cleanup EXIT TERM INT
+
 $log --info "(re-)starting SDPA..."
 
+runtime_started=true
 err=$(sdpa restart 2>&1)
 ec=$?
 if [ $ec -ne 0 ] ; then
     sdpa stop >/dev/null 2>&1
+    runtime_started=false
     $log --error "restart failed: $err"
+    exit $ec
+fi
+
+err=$(sdpa status 2>&1)
+ec=$?
+if [ $ec -ne 0 ] ; then
+    sdpa stop >/dev/null 2>&1
+    runtime_started=false
+    $log --error "status failed (may indicate license problems): $err"
     exit $ec
 fi
 
@@ -143,5 +165,6 @@ fi
 rm "$job_desc"
 
 sdpa stop >/dev/null 2>&1
+runtime_started=false
 
 $log --info "Congratulations $greeting, your SDPA installation is working!"

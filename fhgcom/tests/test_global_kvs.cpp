@@ -153,6 +153,7 @@ BOOST_AUTO_TEST_CASE ( no_server_test )
       , port
       , boost::posix_time::seconds(1)
       , 1
+      , false
       );
     kvs::put ("test_global_int_kvs", 42);
     BOOST_CHECK(false);

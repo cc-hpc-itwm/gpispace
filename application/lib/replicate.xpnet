@@ -14,7 +14,7 @@
           <in name="x" type="T"/>
           <expression/>
           <condition>
-            ${n} :le: 0
+            ${n} :le: 0L
           </condition>
         </defun>
         <connect-in port="n" place="n"/>
@@ -25,10 +25,10 @@
           <inout name="n" type="long"/>
           <inout name="x" type="T"/>
           <expression>
-            ${n} := ${n} - 1;
+            ${n} := ${n} - 1L;
           </expression>
           <condition>
-            ${n} :gt: 0
+            ${n} :gt: 0L
           </condition>
         </defun>
         <connect-inout port="n" place="n"/>

@@ -12,9 +12,7 @@
 #include <boost/filesystem.hpp>
 
 #include <we/loader/exceptions.hpp>
-#include <we/loader/types.hpp>
 #include <we/loader/Module.hpp>
-#include <we/loader/module_traits.hpp>
 
 namespace we {
   namespace loader {
@@ -56,7 +54,6 @@ namespace we {
 
       void prepend_search_path (const boost::filesystem::path & p);
 
-      void writeTo(std::ostream &os) const;
       size_t unload_autoloaded ();
 
       int selftest ();
@@ -76,14 +73,6 @@ namespace we {
       search_path_t search_path_;
       mutable boost::recursive_mutex mtx_;
     };
-
-    inline std::ostream &operator<< ( std::ostream &os
-                                    , const loader &l
-                                    )
-    {
-      l.writeTo(os);
-      return os;
-    }
   }
 }
 

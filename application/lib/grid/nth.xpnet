@@ -4,7 +4,7 @@
   <out name="point" type="point_type"/>
   <expression>
     ${delta_x} := ${grid.ur.x} - ${grid.ll.x};
-    ${sizex} := 1 + long (floor (${delta_x} / ${grid.s.x}));
+    ${sizex} := 1L + long (floor (${delta_x} / ${grid.s.x}));
     ${posx} := double (${n} mod ${sizex});
     ${posy} := double (${n} div ${sizex});
     ${point.x} := ${grid.ll.x} + ${posx} * ${grid.s.x};

@@ -123,7 +123,11 @@ namespace sdpa {
       bool isTop() { return false; }
 
       // WE interface
-      virtual void submit(const id_type & id, const encoded_type&, const job_requirements_t& = empty_req_list() );
+      virtual void submit( const id_type & id
+                         , const encoded_type&
+                         , const job_requirements_t& = empty_req_list()
+                         , const we::type::schedule_data& = we::type::schedule_data()
+                         );
       virtual bool cancel(const id_type & id, const reason_type& reason);
       virtual bool finished(const id_type & id, const result_type& result);
       virtual bool failed( const id_type& wfId, const result_type& res, int errc, std::string const& reason);
@@ -272,7 +276,7 @@ namespace sdpa {
       // jobs
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
-      std::string gen_id() { return sdpa::events::id_generator::instance().next(); }
+      std::string gen_id() { return sdpa::JobId ().str (); }
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
     public:

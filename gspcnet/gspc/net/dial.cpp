@@ -2,11 +2,13 @@
 
 #include <string>
 
+#include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
 
 #include <fhg/util/url.hpp>
 
+#include <gspc/net/io.hpp>
 #include <gspc/net/option.hpp>
 #include <gspc/net/resolver.hpp>
 #include <gspc/net/client.hpp>
@@ -34,7 +36,8 @@ namespace gspc
     }
 
     static
-    client_ptr_t s_new_unix_client ( std::string const & path
+    client_ptr_t s_new_unix_client ( boost::asio::io_service & io
+                                   , std::string const & path
                                    , option_map_t const &opts
                                    , boost::system::error_code & ec
                                    )
@@ -52,7 +55,7 @@ namespace gspc
         if (ec)
           return client_ptr_t ();
 
-        unix_client *c = new unix_client (ep);
+        unix_client *c = new unix_client (io, ep);
         s_set_options (c, opts, ec);
         return client_ptr_t (c);
       }
@@ -65,7 +68,8 @@ namespace gspc
     }
 
     static
-    client_ptr_t s_new_tcp_client ( std::string const & location
+    client_ptr_t s_new_tcp_client ( boost::asio::io_service & io
+                                  , std::string const & location
                                   , option_map_t const &opts
                                   , boost::system::error_code & ec
                                   )
@@ -81,7 +85,7 @@ namespace gspc
         if (ec)
           return client_ptr_t ();
 
-        tcp_client *c = new tcp_client (ep);
+        tcp_client *c = new tcp_client (io, ep);
         s_set_options (c, opts, ec);
         return client_ptr_t (c);
       }
@@ -110,6 +114,8 @@ namespace gspc
                       , boost::system::error_code & ec
                       )
     {
+      gspc::net::initialize ();
+
       using namespace boost::system;
 
       ec = errc::make_error_code (errc::success);
@@ -120,11 +126,19 @@ namespace gspc
 
       if (url.type () == "unix")
       {
-        client = s_new_unix_client (url.path (), url.args (), ec);
+        client = s_new_unix_client ( gspc::net::io ()
+                                   , url.path ()
+                                   , url.args ()
+                                   , ec
+                                   );
       }
       else if (url.type () == "tcp")
       {
-        client = s_new_tcp_client (url.path (), url.args (), ec);
+        client = s_new_tcp_client ( gspc::net::io ()
+                                  , url.path ()
+                                  , url.args ()
+                                  , ec
+                                  );
       }
       else
       {

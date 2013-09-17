@@ -26,18 +26,18 @@
         <field name="sigma"><value>0.2</value></field>
         <field name="r"><value>0.05</value></field>
         <field name="d"><value>0.0</value></field>
-        <field name="FirstFixing"><value>1</value></field>
+        <field name="FirstFixing"><value>1L</value></field>
         <field name="FixingsProJahr"><value>50.0</value></field>
-        <field name="AnzahlderDividende"><value>3</value></field>
-        <field name="n"><value>200000</value></field>
+        <field name="AnzahlderDividende"><value>3L</value></field>
+        <field name="n"><value>200000L</value></field>
 
-        <field name="rowID"><value>0</value></field>
+        <field name="rowID"><value>0L</value></field>
         <field name="bin"><value>"@BUILD@/application/asian/Asian"</value></field>
 
         <field name="epsilon"><value>0.01</value></field>
         <field name="delta"><value>0.01</value></field>
 
-        <field name="iterations_per_run"><value>50000</value></field>
+        <field name="iterations_per_run"><value>50000L</value></field>
       </token>
 -->
     </place>

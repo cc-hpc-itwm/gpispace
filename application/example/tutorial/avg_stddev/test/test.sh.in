@@ -13,13 +13,15 @@ OUT="${DIR_BUILD}/avg_stddev.out"
 CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
 DAT="${DIR_BUILD}/dat"
+HOSTFILE="${DIR_BUILD}/hostfile"
 
 make_src='make BUILDDIR="${DIR_BUILD}" DATFILE="${DAT}" -C "${DIR_SOURCE}"'
 make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 
 cleanup()
 {
-  rm -rf "${CMP}" "${DAT}"
+  sdpa stop
+  rm -rf "${CMP}" "${DAT}" "${HOSTFILE}"
   eval ${make_src} clean
   eval ${make_gen} clean
   cleanup_dir_build
@@ -40,5 +42,21 @@ measured "build-wrapper" ${make_src} lib                    || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=10 ${make_src} run            || die $EX_ERR_RUN
 
 grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
-cat "${OUT}" | grep '=>' > "${CMP}"                         || die $EX_ERR_OTHER
+cat "${OUT}" | grep '=>' | sort > "${CMP}"                  || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
+
+measured "install" ${make_src} install                      || die $EX_ERR_RUN
+
+hostname > "${HOSTFILE}"                                    || die $EX_ERR_ENV
+
+sdpa stop
+
+SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa boot                   \
+                                -M -f "${HOSTFILE}" work:4  || die $EX_ERR_BOOT
+
+measured "submit" ${make_src} submit                        || die $EX_ERR_RUN
+
+test $(pnetget -i "${OUT}" -p avg) == "0.000193708"         || die $EX_ERR_RES
+test $(pnetget -i "${OUT}" -p stddev) == "0.999908"         || die $EX_ERR_RES
+
+sdpa stop                                                   || die $EX_ERR_STOP

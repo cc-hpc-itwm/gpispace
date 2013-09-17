@@ -4,10 +4,15 @@
 #include <string>
 #include <vector>
 
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
+#include <fhg/util/thread/atomic.hpp>
 
 #include <gspc/net/server.hpp>
 #include <gspc/net/frame_handler.hpp>
@@ -23,6 +28,7 @@ namespace gspc
       template <class Protocol>
       class base_server : public gspc::net::server_t
                         , public gspc::net::frame_handler_t
+                        , public boost::enable_shared_from_this<base_server<Protocol> >
                         , private boost::noncopyable
       {
       public:
@@ -30,7 +36,10 @@ namespace gspc
         typedef typename protocol_type::endpoint endpoint_type;
         typedef typename protocol_type::acceptor acceptor_type;
 
-        base_server (endpoint_type const &, queue_manager_t &qmgr);
+        base_server ( boost::asio::io_service &
+                    , endpoint_type const &
+                    , queue_manager_t &qmgr
+                    );
         ~base_server ();
 
         int start ();
@@ -41,24 +50,29 @@ namespace gspc
         int handle_error (user_ptr, boost::system::error_code const &);
 
         void set_queue_length (size_t);
-        void set_thread_pool_size (size_t);
       private:
+        typedef boost::shared_mutex            mutex_type;
+        typedef boost::shared_lock<mutex_type> shared_lock;
+        typedef boost::unique_lock<mutex_type> unique_lock;
+
         typedef base_connection<protocol_type> connection;
         typedef boost::shared_ptr<connection>  connection_ptr;
+        typedef std::map<int, connection_ptr>  connection_map_t;
 
         void start_accept ();
         void handle_accept (boost::system::error_code const &);
 
         queue_manager_t & m_qmgr;
 
-        boost::asio::io_service m_io_service;
+        boost::asio::io_service &m_io_service;
+        boost::asio::io_service::strand m_strand;
+        endpoint_type           m_endpoint;
         acceptor_type           m_acceptor;
         connection_ptr          m_new_connection;
 
-        typedef boost::shared_ptr<boost::thread> thread_ptr_t;
-        typedef std::vector<thread_ptr_t>        thread_pool_t;
-        size_t                                   m_thread_pool_size;
-        thread_pool_t                            m_thread_pool;
+        mutable mutex_type      m_active_connections_mtx;
+        connection_map_t        m_active_connections;
+        fhg::thread::atomic<size_t> m_active_connections_id;
 
         size_t m_queue_length;
       };

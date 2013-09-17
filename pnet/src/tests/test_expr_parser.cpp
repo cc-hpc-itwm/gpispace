@@ -3,8 +3,10 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
+#include <we/exception.hpp>
+
+#include <we/type/value.hpp>
 #include <we/type/value/show.hpp>
-#include <we/type/value/missing_binding.hpp>
 
 #include "timer.hpp"
 
@@ -96,10 +98,10 @@ int main (int ac, char **)
                     try
                       {
                         cout << "evals to: "
-                             << parser.eval_front (context)
+                             << pnet::type::value::show (parser.eval_front (context))
                              << endl;
                       }
-                    catch (const value::exception::missing_binding & e)
+                    catch (const pnet::exception::missing_binding & e)
                       {
                         cout << e.what() << endl;
                       }
@@ -151,7 +153,7 @@ int main (int ac, char **)
 
         context_t context;
 
-        context.bind("b",max);
+        context.bind("b", max);
 
         parser_t parser (input);
 
@@ -160,7 +162,7 @@ int main (int ac, char **)
             long i (0);
 
             do
-              context.bind ("a",i++);
+              context.bind ("a", i++);
             while (parser.eval_front_bool (context));
           }
       }
@@ -170,14 +172,14 @@ int main (int ac, char **)
 
         context_t context;
 
-        context.bind("b",max);
+        context.bind("b", max);
 
         for (int r (0); r < round; ++r)
           {
             long i (0);
 
             do
-              context.bind ("a",i++);
+              context.bind ("a", i++);
             while (parser_t (input, context).get_front_bool ());
           }
       }
@@ -190,8 +192,8 @@ int main (int ac, char **)
 
     std::ostringstream ss;
 
-    ss << "${x} := ${x} + 1;" << endl;
-    ss << "${y} := ${x} / 4;" << endl;
+    ss << "${x} := ${x} + 1L;" << endl;
+    ss << "${y} := double (${x}) / double (4L);" << endl;
     ss << "${ceil} := ceil(${y});" << endl;
     ss << "${floor} := floor${y} /* note the omision of parens */;" << endl;
     ss << "${round_half_up} := floor(${y} + 0.5/*comment, /* NESTED */*/);" << endl;
@@ -205,7 +207,7 @@ int main (int ac, char **)
     cout << "INPUT:" << endl << input << endl;
 
     context_t context;
-    context.bind("x",0L);
+    context.bind("x", 0L);
     parser_t parser (input);
 
     cout << "PARSED:" << endl << parser;

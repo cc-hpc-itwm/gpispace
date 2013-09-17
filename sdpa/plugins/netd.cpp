@@ -4,9 +4,6 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
-#include <boost/serialization/vector.hpp>
-#include <boost/archive/text_oarchive.hpp>
-
 #include <fhglog/minimal.hpp>
 
 #include <fhglog/format.hpp>
@@ -23,6 +20,10 @@ class DaemonImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
+    size_t nthreads = fhg_kernel ()->get ("nthreads", 4L);
+
+    gspc::net::initialize (nthreads);
+
     gspc::net::handle ("/service/echo", gspc::net::service::echo ());
 
     gspc::net::handle
@@ -66,6 +67,8 @@ public:
       m_server->stop ();
     }
 
+    gspc::net::shutdown ();
+
     FHG_PLUGIN_STOPPED();
   }
 private:
@@ -84,9 +87,9 @@ private:
     events.assign (backlog.rbegin (), backlog.rend ());
 
     std::ostringstream oss;
+    BOOST_FOREACH (fhg::log::LogEvent const &evt, events)
     {
-      boost::archive::text_oarchive oa (oss);
-      oa & events;
+      oss << evt;
     }
     rply.set_body (oss.str ());
 

@@ -1,13 +1,13 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#include <stdlib.h> // abort
+
 #include <we/expr/parse/action.hpp>
 
 #include <we/expr/token/assoc.hpp>
 #include <we/expr/token/prec.hpp>
 #include <we/expr/token/prop.hpp>
 #include <we/expr/exception.hpp>
-
-#include <fhg/util/show.hpp>
 
 #include <iostream>
 
@@ -28,7 +28,7 @@ namespace expr
           case error2: return s << "error: missing operator";
           case error3: return s << "error: unbalanced parenthesis";
           case error4: return s << "error: invalid function argument";
-          default: throw exception::strange ("action " + fhg::util::show(action));
+          default: abort();
           }
       }
 

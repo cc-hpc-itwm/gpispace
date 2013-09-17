@@ -172,6 +172,11 @@ int main (int argc, char *argv[])
   if (interval < 200 && getuid () != 0)
     interval = 200;
 
+  if (0 == interval)
+    interval = 1;
+
+  gspc::net::initialize ();
+
   reply_frame_handler_t reply_handler;
 
   try
@@ -188,7 +193,17 @@ int main (int argc, char *argv[])
   }
 
   std::string payload;
-  payload.resize (packetsize);
+  try
+  {
+    payload.resize (packetsize);
+  }
+  catch (std::exception const &ex)
+  {
+    std::cerr << "could not allocate memory: " << packetsize
+              << ": " << ex.what () << std::endl;
+    return 1;
+  }
+
   std::fill (payload.begin (), payload.end (), '0');
 
   std::cout << "PING " << url << " " << payload.size () << " bytes of data." << std::endl;
@@ -218,14 +233,19 @@ int main (int argc, char *argv[])
   {
     boost::posix_time::time_duration deadline_time =
       boost::posix_time::milliseconds
-      (std::max ( 2*reply_handler.rtt_max.total_milliseconds ()
-                , deadline
-                )
+      ( deadline == -1
+      ? std::max ( 200L
+                 , 2*reply_handler.rtt_max.total_microseconds () / 1000
+                 )
+      : deadline
       );
     boost::this_thread::sleep (deadline_time);
   }
 
   reply_handler.dump_stats_to (std::cerr);
+
+  client->stop ();
+  gspc::net::shutdown ();
 
   return reply_handler.had_error ? 1 : 0;
 }

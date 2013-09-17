@@ -29,6 +29,9 @@ do
         walltime=*)
             walltime="${arg#*=}"
             ;;
+        sockets=*)
+            sockets="${arg#*=}"
+            ;;
         atonce=*)
             atonce="${arg#*=}"
             ;;
@@ -47,5 +50,5 @@ fi
 
 for node in ${nodes[@]}
 do
-    echo "$node 0 master started RTM in $workdir, walltime=$walltime"
+    echo "$node 0 master started RTM in $workdir, walltime=$walltime, numa=$sockets"
 done

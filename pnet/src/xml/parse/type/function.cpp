@@ -17,16 +17,34 @@
 #include <xml/parse/type/dumps.hpp>
 
 #include <fhg/util/boost/variant.hpp>
-#include <fhg/util/cpp.hpp>
+#include <fhg/util/first_then.hpp>
+
+#include <fhg/util/cpp/block.hpp>
+#include <fhg/util/cpp/namespace.hpp>
+#include <fhg/util/cpp/include.hpp>
+#include <fhg/util/cpp/include_guard.hpp>
+#include <fhg/util/indenter.hpp>
+#include <fhg/util/ostream_modifier.hpp>
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-#include <we/type/literal/cpp.hpp>
 #include <we/type/signature/cpp.hpp>
+#include <we/type/signature/names.hpp>
+#include <we/type/signature/is_literal.hpp>
+#include <we/type/signature/complete.hpp>
+#include <we/type/signature/resolve.hpp>
+
+#include <we/type/value/name.hpp>
 
 #include <we/type/id.hpp>
+
+#include <boost/foreach.hpp>
+#include <boost/range/adaptors.hpp>
+
+#include <iostream>
+#include <string>
 
 namespace xml
 {
@@ -503,10 +521,10 @@ namespace xml
 
       // ***************************************************************** //
 
-      xml::parse::structure_type::forbidden_type
+      xml::parse::structure_type_util::forbidden_type
         function_type::forbidden_below (void) const
       {
-        xml::parse::structure_type::forbidden_type forbidden;
+        xml::parse::structure_type_util::forbidden_type forbidden;
 
         BOOST_FOREACH (const port_type& port, ports().values())
         {
@@ -518,13 +536,13 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<signature::type>
+      boost::optional<pnet::type::signature::signature_type>
       function_type::signature (const std::string& type) const
       {
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
                          , structs.end()
-                         , boost::bind ( parse::structure_type::struct_by_name
+                         , boost::bind ( parse::structure_type_util::struct_by_name
                                        , type
                                        , _1
                                        )
@@ -533,10 +551,9 @@ namespace xml
 
         if (pos != structs.end())
         {
-          return signature::type
-            ( parse::structure_type::resolve_with_fun
-              (*pos, boost::bind (&function_type::signature, *this, _1))
-            , pos->name()
+          return pnet::type::signature::resolve
+            ( pos->signature()
+            , boost::bind (&function_type::signature, *this, _1)
             );
         }
 
@@ -857,7 +874,7 @@ namespace xml
       {
         const type_map_type type_map_empty;
         const type_get_type type_get_empty;
-        const xml::parse::structure_type::set_type known_empty;
+        const xml::parse::structure_type_util::set_type known_empty;
 
         specialize ( type_map_empty
                    , type_get_empty
@@ -873,7 +890,7 @@ namespace xml
         private:
           const type::type_map_type & map;
           const type::type_get_type & get;
-          const xml::parse::structure_type::set_type & known_structs;
+          const xml::parse::structure_type_util::set_type & known_structs;
           state::type & state;
           function_type & fun;
 
@@ -881,7 +898,7 @@ namespace xml
           function_specialize
             ( const type::type_map_type & _map
             , const type::type_get_type & _get
-            , const xml::parse::structure_type::set_type & _known_structs
+            , const xml::parse::structure_type_util::set_type & _known_structs
             , state::type & _state
             , function_type & _fun
             )
@@ -910,7 +927,7 @@ namespace xml
 
       void function_type::specialize ( const type_map_type & map
                                      , const type_get_type & get
-                                     , const xml::parse::structure_type::set_type & known_structs
+                                     , const xml::parse::structure_type_util::set_type & known_structs
                                      , state::type & state
                                      )
       {
@@ -919,9 +936,12 @@ namespace xml
           port.specialize (map, state);
         }
 
-        specialize_structs (map, structs, state);
+        BOOST_FOREACH (structure_type& s, structs)
+        {
+          s.specialize (map);
+        }
 
-        namespace st = xml::parse::structure_type;
+        namespace st = xml::parse::structure_type_util;
 
         boost::apply_visitor
           ( function_specialize
@@ -1038,71 +1058,63 @@ namespace xml
                       , const fun_info_map & m
                       )
       {
-        namespace cpp_util = ::fhg::util::cpp;
+        fhg::util::indenter indent;
 
-        const path_t prefix (state.path_to_cpp());
+        BOOST_FOREACH (const fun_info_map::value_type& mod, m)
+        {
+          const std::string& modname (mod.first);
+          const fun_infos_type& funs (mod.second);
 
-        for ( fun_info_map::const_iterator mod (m.begin())
-            ; mod != m.end()
-            ; ++mod
-            )
+          util::check_no_change_fstream stream
+            ( state
+            , state.path_to_cpp() + "/pnetc/op/" + modname + ".cpp"
+            );
+
+          stream << fhg::util::cpp::include ("we/loader/macros.hpp");
+
+          BOOST_FOREACH (const fun_info_type& fun, funs)
           {
-            const path_t file ( prefix
-                              / cpp_util::path::op()
-                              / cpp_util::make::cpp (mod->first)
-                              );
-
-            util::check_no_change_fstream stream (state, file);
-
-            stream << "// GPI-Space generated: DO NOT EDIT THIS FILE!"
-                   << std::endl << std::endl
-              ;
-
-            cpp_util::include (stream, "we/loader/macros.hpp");
-
-            const fun_infos_type & funs (mod->second);
-
-            for ( fun_infos_type::const_iterator fun (funs.begin())
-                ; fun != funs.end()
-                ; ++fun
-                )
-              {
-                stream << std::endl << fun->code;
-              }
-
-            stream << std::endl;
-            stream << "WE_MOD_INITIALIZE_START (" << mod->first << ");" << std::endl;
-            stream << "{" << std::endl;
-            for ( fun_infos_type::const_iterator fun (funs.begin())
-                ; fun != funs.end()
-                ; ++fun
-                )
-              {
-                stream << "  WE_REGISTER_FUN_AS ("
-                       << cpp_util::access::make ("", "pnetc", "op", mod->first, fun->name)
-                       << ",\"" << fun->name << "\""
-                       << ");"
-                       << std::endl;
-              }
-            stream << "}" << std::endl;
-            stream << "WE_MOD_INITIALIZE_END (" << mod->first << ");" << std::endl;
-
-            stream << std::endl;
-            stream << "WE_MOD_FINALIZE_START (" << mod->first << ");" << std::endl;
-            stream << "{" << std::endl;
-            stream << "}" << std::endl;
-            stream << "WE_MOD_FINALIZE_END (" << mod->first << ");" << std::endl;
+            stream << std::endl << fun.code;
           }
+
+          stream << std::endl;
+          stream << "WE_MOD_INITIALIZE_START (" << modname << ");";
+          stream << fhg::util::cpp::block::open (indent);
+          BOOST_FOREACH (const fun_info_type& fun, funs)
+          {
+            stream << indent
+                   << "WE_REGISTER_FUN_AS ("
+                   << "::pnetc"
+                   << "::op"
+                   << "::" << modname
+                   << "::" << fun.name
+                   << ",\"" << fun.name << "\""
+                   << ");";
+          }
+          stream << fhg::util::cpp::block::close (indent) << std::endl;
+          stream << "WE_MOD_INITIALIZE_END (" << modname << ");" << std::endl;
+
+          stream << std::endl;
+          stream << "WE_MOD_FINALIZE_START (" << modname << ");";
+          stream << fhg::util::cpp::block::open (indent);
+          stream << fhg::util::cpp::block::close (indent);
+          stream << std::endl;
+          stream << "WE_MOD_FINALIZE_END (" << modname << ");" << std::endl;
+        }
       }
 
       void mk_makefile ( const state::type & state
                        , const fun_info_map & m
+                       , const boost::unordered_set<std::string>& structnames
                        )
       {
         namespace cpp_util = ::fhg::util::cpp;
 
         const path_t prefix (state.path_to_cpp());
         const path_t file (prefix / "Makefile");
+
+        const std::string path_type ("pnetc/type/");
+        const std::string path_op ("pnetc/op/");
 
         const std::string file_global_cxxflags ("Makefile.CXXFLAGS");
         const std::string file_global_ldflags ("Makefile.LDFLAGS");
@@ -1112,14 +1124,11 @@ namespace xml
         stream << "# GPI-Space generated: DO NOT EDIT THIS FILE!"  << std::endl;
         stream                                                     << std::endl;
 
-        for ( fun_info_map::const_iterator mod (m.begin())
-            ; mod != m.end()
-            ; ++mod
-            )
-          {
-            stream << "MODULES += " << cpp_util::make::mod_so (mod->first)
-                                                                   << std::endl;
-          }
+        BOOST_FOREACH (const fun_info_map::value_type& mod, m)
+        {
+          stream << "MODULES += pnetc/op/lib" << mod.first << ".so"
+                 << std::endl;
+        }
 
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -fPIC"                              << std::endl;
@@ -1153,9 +1162,6 @@ namespace xml
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
-        stream                                                     << std::endl;
-        stream << "LDFLAGS += -L$(BOOST_ROOT)/lib"                 << std::endl;
-        stream << "LDFLAGS += -lboost_serialization"               << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
         stream << "  CP = $(shell which cp 2>/dev/null)"           << std::endl;
@@ -1217,6 +1223,35 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
+        BOOST_FOREACH (const std::string& tname, structnames)
+        {
+          const std::string obj (path_type + tname + ".o");
+          const std::string obj_cpp (path_type + tname + ".cpp");
+          const std::string dep (path_type + tname + ".d");
+
+          stream << "####"                                         << std::endl;
+          stream << "#### struct " << tname                        << std::endl;
+          stream << "####"                                         << std::endl;
+
+          stream << "TYPE_OBJS += " << obj << std::endl;
+
+          stream << obj << ": " << obj_cpp << " "
+                 << file_global_cxxflags                         << std::endl;
+          stream << "\t$(CXX) $(CXXFLAGS) -c $< -o $@"           << std::endl;
+          stream << dep << ": " << obj_cpp
+                 << " "
+                 << file_global_cxxflags                         << std::endl;
+          stream << "\t$(CXX) $(CXXFLAGS)"
+                 << " -MM -MP -MT '" << dep << "' -MT '"
+                 << obj
+                 << "' $< -MF $@"                                << std::endl;
+          stream << "ifneq \"$(wildcard " << dep << ")\" \"\""   << std::endl;
+          stream << "  include " << dep                          << std::endl;
+          stream << "endif"                                      << std::endl;
+          stream << "DEPENDS += " << dep                         << std::endl;
+          stream                                                 << std::endl;
+        }
+
         for ( fun_info_map::const_iterator mod (m.begin())
             ; mod != m.end()
             ; ++mod
@@ -1248,9 +1283,10 @@ namespace xml
                 const std::string file_function_cxxflags
                   ("Makefile." + cxxflags);
 
-                stream << objs << " += "
-                       << cpp_util::make::obj (mod->first, fun->name)
-                                                                   << std::endl;
+                const std::string obj_fun
+                  (std::string ("pnetc/op/") + mod->first + "/" + fun->name + ".o");
+
+                stream << objs << " += " << obj_fun << std::endl;
 
                 BOOST_FOREACH (const link_type& link, fun->links)
                   {
@@ -1288,9 +1324,14 @@ namespace xml
 
                 stream << "include " << file_function_cxxflags     << std::endl;
 
-                stream << cpp_util::make::obj (mod->first, fun->name)
+                const std::string dep
+                  (path_op + mod->first + "/" + fun->name + ".d");
+                const std::string cpp
+                  (path_op + mod->first + "/" + fun->name + ".cpp");
+
+                stream << obj_fun
                        << ": "
-                       << cpp_util::make::cpp (mod->first, fun->name)
+                       << cpp
                        << " "
                        << file_global_cxxflags
                        << " "
@@ -1298,30 +1339,22 @@ namespace xml
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
                        << " -c $< -o $@"                           << std::endl;
-                stream << cpp_util::make::dep (mod->first, fun->name)
-                       << ": "
-                       << cpp_util::make::cpp (mod->first, fun->name)
+                stream << dep << ": "
+                       << cpp
                        << " "
                        << file_global_cxxflags
                        << " "
                        << file_function_cxxflags
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
-                       << " -MM -MP -MT '"
-                       << cpp_util::make::dep (mod->first, fun->name)
-                       << "' -MT '"
-                       << cpp_util::make::obj (mod->first, fun->name)
+                       << " -MM -MP -MT '" << dep << "' -MT '"
+                       << obj_fun
                        << "' $< -MF $@"                            << std::endl;
-                stream << "ifneq \"$(wildcard "
-                       << cpp_util::make::dep (mod->first, fun->name)
-                       << ")\" \"\""                        << std::endl;
-                stream << "  include "
-                       << cpp_util::make::dep (mod->first, fun->name)
+                stream << "ifneq \"$(wildcard " << dep << ")\" \"\""
                                                                    << std::endl;
+                stream << "  include " << dep                      << std::endl;
                 stream << "endif"                                  << std::endl;
-                stream << "DEPENDS += "
-                       << cpp_util::make::dep (mod->first, fun->name)
-                                                                   << std::endl;
+                stream << "DEPENDS += " << dep                     << std::endl;
                 stream                                             << std::endl;
               }
 
@@ -1329,46 +1362,33 @@ namespace xml
             stream << "#### module " << mod->first                 << std::endl;
             stream << "####"                                       << std::endl;
 
-            stream << objs << " += " << cpp_util::make::obj (mod->first)
-                                                                   << std::endl;
+            const std::string obj (path_op + mod->first + ".o");
 
-            const std::string obj_cpp (( cpp_util::path::op()
-                                       / cpp_util::make::cpp (mod->first)
-                                       ).string()
-                                      );
+            stream << objs << " += " << obj << std::endl;
 
-            stream << cpp_util::make::obj (mod->first)
-                   << ": "
-                   << obj_cpp
-                   << " "
+            const std::string obj_cpp (path_op + mod->first + ".cpp");
+            const std::string dep (path_op + mod->first + ".d");
+
+            stream << obj << ": " << obj_cpp << " "
                    << file_global_cxxflags                         << std::endl;
             stream << "\t$(CXX) $(CXXFLAGS) -c $< -o $@"           << std::endl;
-            stream << cpp_util::make::dep (mod->first)
-                   << ": "
-                   << obj_cpp
-                   << " "
+            stream << dep << ": " << obj_cpp << " "
                    << file_global_cxxflags                         << std::endl;
             stream << "\t$(CXX) $(CXXFLAGS)"
-                   << " -MM -MP -MT '"
-                   << cpp_util::make::dep (mod->first)
-                   << "' -MT '"
-                   << cpp_util::make::obj (mod->first)
+                   << " -MM -MP -MT '" << dep
+                   << "' -MT '" << obj
                    << "' $< -MF $@"                                << std::endl;
-            stream << "ifneq \"$(wildcard "
-                   << cpp_util::make::dep (mod->first)
-                   << ")\" \"\""                            << std::endl;
-            stream << "  include "
-                   << cpp_util::make::dep (mod->first)             << std::endl;
+            stream << "ifneq \"$(wildcard " << dep << ")\" \"\""   << std::endl;
+            stream << "  include " << dep                          << std::endl;
             stream << "endif"                                      << std::endl;
-            stream << "DEPENDS += "
-                   << cpp_util::make::dep (mod->first)             << std::endl;
+            stream << "DEPENDS += " << dep                         << std::endl;
 
             stream                                                 << std::endl;
             stream << "include " << file_module_ldflags            << std::endl;
             stream                                                 << std::endl;
-            stream << cpp_util::make::mod_so (mod->first)
+            stream << "pnetc/op/lib" << mod->first << ".so"
                    << ": $(" << objs << ")"
-                   << " "
+                   << " $(TYPE_OBJS) "
                    << file_global_ldflags
                    << " "
                    << file_module_ldflags                          << std::endl;
@@ -1422,8 +1442,8 @@ namespace xml
             ; ++mod
             )
           {
-            stream << cpp_util::make::mod_so_install (mod->first)
-                   << ": " << cpp_util::make::mod_so (mod->first)
+            stream << "$(LIB_DESTDIR)/lib" << mod->first << ".so"
+                   << ": pnetc/op/lib" << mod->first << ".so"
                    << " $(LIB_DESTDIR)"                            << std::endl;
             stream << "\t@$(CP) -v $< $@"                          << std::endl;
           }
@@ -1435,8 +1455,9 @@ namespace xml
             ; ++mod
             )
           {
-            stream << "MODULES_INSTALL += "
-                   << cpp_util::make::mod_so_install (mod->first)  << std::endl;
+            stream << "MODULES_INSTALL += $(LIB_DESTDIR)/lib"
+                   << mod->first << ".so"
+                   << std::endl;
           }
 
         stream                                                     << std::endl;
@@ -1599,94 +1620,113 @@ namespace xml
 
         typedef std::list<port_with_type> ports_with_type_type;
 
-        template<typename Stream>
-        void mod_includes (Stream& s, const types_type& types)
+        namespace
         {
-          namespace cpp_util = ::fhg::util::cpp;
-
-          for ( types_type::const_iterator type (types.begin())
-              ; type != types.end()
-              ; ++type
-              )
+          class include : public fhg::util::ostream::modifier
+          {
+          public:
+            include (const std::string& tname)
+              : _tname (tname)
+              , _inc()
             {
-              if (!literal::cpp::known (*type))
-                {
-                  cpp_util::include
-                    (s, cpp_util::path::type() / cpp_util::make::hpp (*type));
-                }
+              _inc[pnet::type::value::CONTROL()] = "we/type/literal/control.hpp";
+              _inc[pnet::type::value::STRING()] = "string";
+              _inc[pnet::type::value::BITSET()] = "we/type/bitsetofint.hpp";
+              _inc[pnet::type::value::BYTEARRAY()] = "we/type/bytearray.hpp";
+              _inc[pnet::type::value::LIST()] = "list";
+              _inc[pnet::type::value::SET()] = "set";
+              _inc[pnet::type::value::MAP()] = "map";
+            }
+
+            std::ostream& operator() (std::ostream& os) const
+            {
+              if (!pnet::type::signature::is_literal (_tname))
+              {
+                os << fhg::util::cpp::include ("pnetc/type/" + _tname + ".hpp");
+              }
               else
+              {
+                boost::unordered_map<std::string, std::string>::const_iterator
+                  pos (_inc.find (_tname));
+
+                if (pos != _inc.end())
                 {
-                  cpp_util::include (s, literal::cpp::include (*type));
+                  os << fhg::util::cpp::include (pos->second);
                 }
+              }
+
+              return os;
             }
-        }
 
-        template<typename Stream>
-        void namespace_open (Stream& s, const module_type& mod)
+          private:
+            const std::string _tname;
+            boost::unordered_map<std::string, std::string> _inc;
+          };
+        };
+
+        class mk_type : public fhg::util::ostream::modifier
         {
-          s << std::endl
-            << "namespace pnetc" << std::endl
-            << "{" << std::endl
-            << "  namespace op" << std::endl
-            << "  {" << std::endl
-            << "    namespace " << mod.name() << std::endl
-            << "    {" << std::endl
-            ;
-        }
-
-        template<typename Stream>
-        void namespace_close (Stream& s, const module_type & mod)
-        {
-          s << "    } // namespace " << mod.name() << std::endl
-            << "  } // namespace op" << std::endl
-            << "} // namespace pnetc" << std::endl
-            ;
-        }
-
-        std::string mk_type (const std::string & type)
-        {
-          namespace cpp_util = ::fhg::util::cpp;
-
-          return literal::cpp::known (type)
-            ? literal::cpp::translate (type)
-            : cpp_util::access::make ("", "pnetc", "type", type, type)
-            ;
-        }
-
-        std::string mk_get ( const port_with_type & port
-                           , const std::string & amper = ""
-                           )
-        {
-          namespace cpp_util = ::fhg::util::cpp;
-
-          std::ostringstream os;
-
-          os << mk_type (port.type) << " ";
-
-          if (literal::cpp::known (port.type))
+        public:
+          mk_type (const std::string& type)
+            : _type (type)
+          {}
+          std::ostream& operator() (std::ostream& os) const
+          {
+            if (pnet::type::signature::is_literal (_type))
             {
-              os << amper << port.name << " ("
-                 << "::we::loader::get< " << literal::cpp::translate (port.type) << " >"
-                 << "(_pnetc_input, \"" << port.name << "\")"
-                 << ")"
-                ;
+              os << pnet::type::signature::complete (_type);
             }
-          else
+            else
             {
-              os << port.name << " ("
-                 << cpp_util::access::make ("", "pnetc", "type", port.type, "from_value")
-                 << "("
-                 << "::we::loader::get< " << cpp_util::access::value_type() << " >"
-                 << "(_pnetc_input, \"" << port.name << "\")"
-                 << ")"
-                 << ")"
-                ;
+              os << "::pnetc::type::" << _type << "::" << _type << "";
             }
 
-          os << ";" << std::endl;
+            return os;
+          }
+        private:
+          const std::string& _type;
+        };
 
-          return os.str();
-        }
+        class mk_get : public fhg::util::ostream::modifier
+        {
+        public:
+          mk_get ( fhg::util::indenter& indent
+                 , const port_with_type& port
+                 , const std::string& modif = ""
+                 , const std::string& amper = ""
+                 )
+            : _indent (indent)
+            , _port (port)
+            , _modif (modif)
+            , _amper (amper)
+          {}
+          std::ostream& operator() (std::ostream& os) const
+          {
+            os << _indent << _modif;
+
+            if (pnet::type::signature::is_literal (_port.type))
+            {
+              using pnet::type::signature::complete;
+
+              os << complete (_port.type) << " " << _amper << _port.name << " ("
+                 << "boost::get< " << _modif << complete (_port.type) << _amper << " >"
+                 << " (_pnetc_input.value (\"" << _port.name << "\")));";
+            }
+            else
+            {
+              os << "::pnetc::type::" << _port.type <<  "::" << _port.type <<  " " << _port.name
+                 << " (_pnetc_input.value (\"" << _port.name << "\"));";
+            }
+
+            return os;
+          }
+
+        private:
+          fhg::util::indenter& _indent;
+          const port_with_type& _port;
+          const std::string _modif;
+          const std::string _amper;
+        };
 
         std::string mk_value (const port_with_type & port)
         {
@@ -1694,18 +1734,13 @@ namespace xml
 
           std::ostringstream os;
 
-          if (literal::cpp::known (port.type))
+          if (pnet::type::signature::is_literal (port.type))
             {
               os << port.name;
             }
           else
             {
-              os << cpp_util::access::make ( ""
-                                           , "pnetc"
-                                           , "type"
-                                           , port.type
-                                           , "to_value"
-                                           )
+              os << "::pnetc::type::" << port.type << "::value"
                  << " (" << port.name << ")"
                 ;
             }
@@ -1716,6 +1751,7 @@ namespace xml
         template<typename Stream>
         void
         mod_signature ( Stream& s
+                      , fhg::util::indenter& indent
                       , const boost::optional<port_with_type> & port_return
                       , const ports_with_type_type & ports_const
                       , const ports_with_type_type & ports_mutable
@@ -1723,65 +1759,42 @@ namespace xml
                       , const module_type & mod
                       )
         {
-          std::ostringstream pre;
+          using fhg::util::deeper;
 
-          pre << "      "
-              << (port_return ? mk_type ((*port_return).type) : "void")
-              << " "
-              << mod.function()
-              << " "
-            ;
+          s << indent;
 
-          s << pre.str() << "(";
+          if (port_return)
+          {
+            s << mk_type ((*port_return).type);
+          }
+          else
+          {
+            s << "void";
+          }
 
-          const std::string spre (pre.str());
+          s << " " << mod.function() << deeper (indent) << "(";
 
-          std::string white;
+          fhg::util::first_then<std::string> sep (" ", ", ");
 
-          for ( std::string::const_iterator pos (spre.begin())
-              ; pos != spre.end()
-              ; ++pos
-              )
-            {
-              white.push_back (' ');
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_const)
+          {
+            s << sep << "const " << mk_type (port.type) << "& " << port.name
+              << deeper (indent);
+          }
 
-          bool first (true);
+          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          {
+            s << sep << mk_type (port.type) << "& " << port.name
+              << deeper (indent);
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_const.begin())
-              ; port != ports_const.end()
-              ; ++port, first = false
-              )
-            {
-              s << (first ? " " : (white + ", "))
-                << "const " << mk_type (port->type) << " & " << port->name
-                << std::endl
-                ;
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_out)
+          {
+            s << sep << mk_type (port.type) << "& " << port.name
+              << deeper (indent);
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_mutable.begin())
-              ; port != ports_mutable.end()
-              ; ++port, first = false
-              )
-            {
-              s << (first ? " " : (white + ", "))
-                << mk_type (port->type) << " & " << port->name
-                << std::endl
-                ;
-            }
-
-          for ( ports_with_type_type::const_iterator port (ports_out.begin())
-              ; port != ports_out.end()
-              ; ++port, first = false
-              )
-            {
-              s << (first ? " " : (white + ", "))
-                << mk_type (port->type) << " & " << port->name
-                << std::endl
-                ;
-            }
-
-          s << white << ")";
+          s << ")";
         }
 
         template<typename Stream>
@@ -1795,175 +1808,116 @@ namespace xml
                     , const boost::optional<port_with_type> & port_return
                     )
         {
-          namespace cpp_util = ::fhg::util::cpp;
+          namespace block = fhg::util::cpp::block;
+          namespace ns = fhg::util::cpp::ns;
+          namespace cpp = fhg::util::cpp;
+          using fhg::util::deeper;
 
-          cpp_util::include ( s
-                            , cpp_util::path::op() / mod.name() / file_hpp
-                            );
+          fhg::util::indenter indent;
 
-          namespace_open (s, mod);
+          s << cpp::include ("pnetc/op/" + mod.name() + "/" + file_hpp.string());
+          s << ns::open (indent, "pnetc");
+          s << ns::open (indent, "op");
+          s << ns::open (indent, mod.name());
 
-          s << "      "
-            << "static void " << mod.function()
-            << " (void *, const ::we::loader::input_t & _pnetc_input, ::we::loader::output_t & _pnetc_output)"
-            << std::endl
-            << "      "
-            << "{" << std::endl;
+          s << indent << "static void " << mod.function();
+          s << deeper (indent) << "( void *";
+          s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
+          s << deeper (indent) << ", expr::eval::context& _pnetc_output";
+          s << deeper (indent) << ")";
+          s << block::open (indent);
 
-          for ( ports_with_type_type::const_iterator port (ports_const.begin())
-              ; port != ports_const.end()
-              ; ++port
-              )
-            {
-              s << "      "
-                << "  const " << mk_get (*port, "& ");
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_const)
+          {
+            s << mk_get (indent, port, "const ", "& ");
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_mutable.begin())
-              ; port != ports_mutable.end()
-              ; ++port
-              )
-            {
-              s << "      "
-                << "  " << mk_get (*port);
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          {
+            s << mk_get (indent, port);
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_out.begin())
-              ; port != ports_out.end()
-              ; ++port
-              )
-            {
-              s << "      "
-                << "  " << mk_type (port->type) << " " << port->name << ";"
-                << std::endl;
-            }
-
-          s << std::endl;
-
-          s << "      "
-            << "  ";
-
-          bool first_put (true);
+          BOOST_FOREACH (const port_with_type& port, ports_out)
+          {
+            s << indent << mk_type (port.type) << " " << port.name << ";";
+          }
 
           if (port_return)
+          {
+            s << indent << "_pnetc_output.bind ("
+              << "\"" << (*port_return).name << "\""
+              << ", "
+              ;
+
+            if (!pnet::type::signature::is_literal ((*port_return).type))
             {
-              first_put = false;
-
-              s << "_pnetc_output.bind ("
-                << "\"" << (*port_return).name << "\""
-                << ", "
+              s << "::pnetc::type::" << (*port_return).type << "::value"
+                << " ("
                 ;
-
-              if (!literal::cpp::known ((*port_return).type))
-                {
-                  s << cpp_util::access::make ( ""
-                                              , "pnetc"
-                                              , "type"
-                                              , (*port_return).type
-                                              , "to_value"
-                                              )
-                    << " ("
-                    ;
-                }
             }
+          }
 
-          s << cpp_util::access::make ( ""
-                                      , "pnetc"
-                                      , "op"
-                                      , mod.name()
-                                      , mod.function()
-                                      )
+          s << indent << "::pnetc::op::" << mod.name() << "::" << mod.function()
             << " ("
             ;
 
-          bool first_param (true);
+          fhg::util::first_then<std::string> sep ("", ", ");
 
-          for ( ports_with_type_type::const_iterator port (ports_const.begin())
-              ; port != ports_const.end()
-              ; ++port, first_param = false
-              )
-            {
-              s << (first_param ? "" : ", ") << port->name;
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_const)
+          {
+            s << sep << port.name;
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_mutable.begin())
-              ; port != ports_mutable.end()
-              ; ++port, first_param = false
-              )
-            {
-              s << (first_param ? "" : ", ") << port->name;
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          {
+            s << sep << port.name;
+          }
 
-          for ( ports_with_type_type::const_iterator port (ports_out.begin())
-              ; port != ports_out.end()
-              ; ++port, first_param = false
-              )
-            {
-              s << (first_param ? "" : ", ") << port->name;
-            }
+          BOOST_FOREACH (const port_with_type& port, ports_out)
+          {
+            s << sep << port.name;
+          }
 
           s << ")";
 
           if (port_return)
+          {
+            s << ")";
+
+            if (!pnet::type::signature::is_literal ((*port_return).type))
             {
               s << ")";
-
-              if (!literal::cpp::known ((*port_return).type))
-                {
-                  s << ")";
-                }
             }
+          }
 
-          s << ";" << std::endl;
+          s << ";";
 
-          for ( ports_with_type_type::const_iterator port (ports_mutable.begin())
-              ; port != ports_mutable.end()
-              ; ++port
-              )
-            {
-              if (first_put)
-                {
-                  s << std::endl;
+          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          {
+            s << indent
+              << "_pnetc_output.bind ("
+              << "\"" << port.name << "\""
+              << ", " << mk_value (port)
+              << ")"
+              << ";"
+              ;
+          }
 
-                  first_put = false;
-                }
+          BOOST_FOREACH (const port_with_type& port, ports_out)
+          {
+            s << indent
+              << "_pnetc_output.bind ("
+              << "\"" << port.name << "\""
+              << ", " << mk_value (port)
+              << ")"
+              << ";"
+              ;
+          }
 
-              s << "      "
-                << "  _pnetc_output.bind ("
-                << "\"" << port->name << "\""
-                << ", " << mk_value (*port)
-                << ")"
-                << ";"
-                << std::endl
-                ;
-            }
-
-          for ( ports_with_type_type::const_iterator port (ports_out.begin())
-              ; port != ports_out.end()
-              ; ++port
-              )
-            {
-              if (first_put)
-                {
-                  s << std::endl;
-
-                  first_put = false;
-                }
-
-              s << "      "
-                << "  _pnetc_output.bind ("
-                << "\"" << port->name << "\""
-                << ", " << mk_value (*port)
-                << ")"
-                << ";"
-                << std::endl
-                ;
-            }
-
-          s << "      "
-            << "} // " << mod.function() << std::endl;
-
-          namespace_close (s, mod);
+          s << block::close (indent)
+            << ns::close (indent)
+            << ns::close (indent)
+            << ns::close (indent);
         }
       }
       namespace
@@ -2103,13 +2057,10 @@ namespace xml
             }
 
             const path_t prefix (state.path_to_cpp());
-            const path_t path (prefix / cpp_util::path::op() / mod.name());
-            const std::string file_hpp (cpp_util::make::hpp (mod.function()));
+            const path_t path (state.path_to_cpp() + "/pnetc/op/" + mod.name());
+            const std::string file_hpp (mod.function() + ".hpp");
             const std::string file_cpp
-              ( mod.code()
-              ? cpp_util::make::cpp (mod.function())
-              : cpp_util::make::tmpl (mod.function())
-              );
+              (mod.function() + (mod.code() ? ".cpp" : ".cpp_tmpl"));
 
             {
               std::ostringstream stream;
@@ -2135,62 +2086,77 @@ namespace xml
             }
 
             {
+              namespace ns = fhg::util::cpp::ns;
+
+              fhg::util::indenter indent;
+
               const path_t file (path / file_hpp);
 
               util::check_no_change_fstream stream (state, file);
 
-              cpp_util::header_gen_full (stream);
-              cpp_util::include_guard_begin
-                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function());
+              stream << cpp_util::include_guard::open
+                ("PNETC_OP_" + mod.name() + "_" + mod.function());
 
-              mod_includes (stream, types);
+              BOOST_FOREACH (const std::string& tname, types)
+              {
+                stream << include (tname);
+              }
 
-              namespace_open (stream, mod);
+              stream << ns::open (indent, "pnetc");
+              stream << ns::open (indent, "op");
+              stream << ns::open (indent, mod.name());
 
               mod_signature ( stream
+                            , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
                             );
 
-              stream << ";" << std::endl;
+              stream << ";";
 
-              namespace_close (stream, mod);
+              stream << ns::close (indent)
+                     << ns::close (indent)
+                     << ns::close (indent);
 
               stream << std::endl;
 
-              cpp_util::include_guard_end
-                (stream, "PNETC_OP_" + mod.name() + "_" + mod.function());
+              stream << cpp_util::include_guard::close();
             }
 
             {
+              namespace ns = fhg::util::cpp::ns;
+              namespace block = fhg::util::cpp::block;
+
+              fhg::util::indenter indent;
+
               const path_t file (path / file_cpp);
 
               util::check_no_change_fstream stream (state, file);
 
-              cpp_util::header_gen (stream);
-
-              cpp_util::include ( stream
-                                , cpp_util::path::op() / mod.name() / file_hpp
-                                );
+              stream << cpp_util::include
+                ("pnetc/op/" + mod.name() + "/" + file_hpp);
 
               BOOST_FOREACH (const std::string& inc, mod.cincludes())
               {
-                cpp_util::include (stream, inc);
+                stream << cpp_util::include (inc);
               }
 
               if (not mod.code())
               {
-                cpp_util::include (stream, "stdexcept");
+                stream << cpp_util::include ("stdexcept");
               }
 
-              namespace_open (stream, mod);
+              stream << ns::open (indent, "pnetc");
+              stream << ns::open (indent, "op");
+              stream << ns::open (indent, mod.name());
 
               mod_signature ( stream
+                            , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
                             );
 
-              stream << std::endl << "      {" << std::endl;
+              stream << block::open (indent);
 
               if (not mod.code())
               {
@@ -2207,15 +2173,16 @@ namespace xml
                     ("STRANGE: There is code without a position of definition");
                 }
 
-                stream << "// defined at "
+                stream << indent << "// defined at "
                        << *mod.position_of_definition_of_code()
                        << std::endl;
                 stream << *mod.code();
               }
 
-              stream << std::endl << "      }" << std::endl;
-
-              namespace_close (stream, mod);
+              stream << block::close (indent)
+                     << ns::close (indent)
+                     << ns::close (indent)
+                     << ns::close (indent);
             }
 
             return true;
@@ -2252,37 +2219,83 @@ namespace xml
 
       namespace
       {
-        void to_cpp (const structs_type& structs, const state::type& state)
+        void to_cpp ( const structs_type& structs
+                    , const state::type& state
+                    , boost::unordered_set<std::string>& structnames
+                    )
         {
           BOOST_FOREACH (const structure_type& structure, structs)
           {
+            structnames.insert (structure.name());
+
             const boost::filesystem::path prefix (state.path_to_cpp());
-            const boost::filesystem::path file
-              ( prefix
-              / ::fhg::util::cpp::path::type()
-              / ::fhg::util::cpp::make::hpp (structure.name())
-              );
 
-            util::check_no_change_fstream stream (state, file);
+            {
+              const boost::filesystem::path file
+                ( prefix
+                / "pnetc/type"
+                / (structure.name() + ".hpp")
+                );
 
-            signature::cpp::cpp_header
-              ( stream
-              , structure.signature()
-              , structure.name()
-              , structure.position_of_definition().path()
-              , ::fhg::util::cpp::path::type()
-              );
+              util::check_no_change_fstream stream (state, file);
+
+              const pnet::type::signature::signature_type sig
+                (structure.signature());
+
+              stream << fhg::util::cpp::include_guard::open
+                ("PNETC_TYPE_" + structure.name());
+
+              const boost::unordered_set<std::string> names
+                (pnet::type::signature::names (sig));
+
+              BOOST_FOREACH (const std::string& tname, names)
+              {
+                if (!pnet::type::signature::is_literal (tname))
+                {
+                  stream <<
+                    fhg::util::cpp::include ("pnetc/type/" + tname + ".hpp");
+                }
+              }
+
+              stream << pnet::type::signature::cpp::header_signature (sig)
+                     << std::endl;
+
+              stream << fhg::util::cpp::include_guard::close();
+            }
+
+            {
+              const boost::filesystem::path file
+                ( prefix
+                / "pnetc/type"
+                / (structure.name() + ".cpp")
+                );
+
+              util::check_no_change_fstream stream (state, file);
+
+              const pnet::type::signature::signature_type sig
+                (structure.signature());
+
+              stream << "// defined in " << structure.position_of_definition()
+                     << std::endl;
+
+              stream << fhg::util::cpp::include ( "pnetc/type/"
+                                                + structure.name() + ".hpp"
+                                                );
+
+              stream << pnet::type::signature::cpp::impl_signature (sig)
+                     << std::endl;
+            }
           }
         }
 
         class visitor_to_cpp : public boost::static_visitor<void>
         {
-        private:
-          const state::type & state;
-
         public:
-          visitor_to_cpp (const state::type & _state)
+          visitor_to_cpp ( const state::type & _state
+                         , boost::unordered_set<std::string>& structnames
+                         )
             : state (_state)
+            , _structnames (structnames)
           {}
 
           void operator() (const id::ref::net& id) const
@@ -2291,13 +2304,13 @@ namespace xml
 
             if (n.contains_a_module_call)
             {
-              to_cpp (n.structs, state);
+              to_cpp (n.structs, state, _structnames);
 
               BOOST_FOREACH ( const id::ref::function& id_function
                             , n.functions().ids()
                             )
               {
-                struct_to_cpp (state, id_function);
+                struct_to_cpp (state, id_function, _structnames);
               }
 
               BOOST_FOREACH ( const transition_type& transition
@@ -2311,26 +2324,33 @@ namespace xml
 
           void operator() (const id::ref::function& f) const
           {
-            struct_to_cpp (state, f);
+            struct_to_cpp (state, f, _structnames);
           }
 
           void operator() (const id::ref::use&) const { }
           void operator() (const id::ref::module&) const { }
           void operator() (const id::ref::expression&) const { }
+
+        private:
+          const state::type & state;
+          boost::unordered_set<std::string>& _structnames;
         };
       }
 
       void struct_to_cpp ( const state::type& state
                          , const id::ref::function& function_id
+                         , boost::unordered_set<std::string>& structnames
                          )
       {
         const function_type& function (function_id.get());
 
         if (function.contains_a_module_call)
         {
-          to_cpp (function.structs, state);
+          to_cpp (function.structs, state, structnames);
 
-          boost::apply_visitor (visitor_to_cpp (state), function.content());
+          boost::apply_visitor ( visitor_to_cpp (state, structnames)
+                               , function.content()
+                               );
         }
       }
 

@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE(assert_true)
   {
     fhg_assert(1 == 1, "assert_true test case");
   }
-  catch (fhg::assertion_failed const & af)
+  catch (fhg::assertion_failed const &)
   {
     throw;
   }
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(assert_true_empty_message)
   {
     fhg_assert(1 == 1);
   }
-  catch (fhg::assertion_failed const & af)
+  catch (fhg::assertion_failed const &)
   {
     throw;
   }
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(replace_legacy_assert_true)
   {
     assert (1==1);
   }
-  catch (fhg::assertion_failed const & af)
+  catch (fhg::assertion_failed const &)
   {
     throw;
   }

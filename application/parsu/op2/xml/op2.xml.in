@@ -93,10 +93,10 @@
 
     <!-- tuning -->
     <place name="shmem_per_node" type="long">
-      <token><value>@SHMEM_PER_NODE@</value></token>
+      <token><value>@SHMEM_PER_NODE@L</value></token>
     </place>
     <place name="gpi_mem_per_node" type="long">
-      <token><value>@GPI_MEM_PER_NODE@</value></token>
+      <token><value>@GPI_MEM_PER_NODE@L</value></token>
     </place>
 
     <!-- necessary parameters -->
@@ -485,7 +485,7 @@
           <cinclude href="comm.hpp"/>
           <ld flag="-ldo_write"/>
           <code><![CDATA[
-            const ::pnetc::type::op2_loaded_package::op2_loaded_package & p
+            const ::pnetc::type::op2_loaded_package::op2_loaded_package& p
               (package_to_be_written.loaded_package);
 
             LOG (INFO, "WRITE " << ::print::loaded_package (p)

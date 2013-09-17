@@ -9,9 +9,6 @@
 
 #include <boost/program_options.hpp>
 
-#include <boost/serialization/vector.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
 namespace po = boost::program_options;
 
 int main(int argc, char **argv)
@@ -146,17 +143,14 @@ int main(int argc, char **argv)
 
   try
   {
-    typedef std::vector <fhg::log::LogEvent> event_list_t;
-    event_list_t events;
-    boost::archive::text_iarchive ia (std::cin);
-    ia & events;
-
-    event_list_t::iterator it;
-    event_list_t::iterator end = events.end ();
-
-    for (it = events.begin (); it != end; ++it)
+    while (std::cin)
     {
-      appender->append (*it);
+      fhg::log::LogEvent evt;
+      std::cin >> evt;
+      if (std::cin.good ())
+      {
+        appender->append (evt);
+      }
     }
   }
   catch (const std::exception& e)

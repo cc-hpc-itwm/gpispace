@@ -15,8 +15,8 @@ CXXLIBRARYPATHS += $(SDPA_HOME)/libexec/sdpa
 
 ###############################################################################
 
-PUT_PORT += m=25
-PUT_PORT += parallel=2
+PUT_PORT += m=25L
+PUT_PORT += parallel=2L
 PUT_PORT += cmd=\"demo.bin\"
 
 ###############################################################################

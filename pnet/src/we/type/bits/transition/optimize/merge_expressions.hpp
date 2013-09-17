@@ -173,9 +173,9 @@ namespace we { namespace type {
                           )
             {
               const petri_net::transition_id_type & tid_pred (transition_id);
-              const transition_t & trans (net.get_transition (tid_pred));
+              const transition_t & trans_pred (net.get_transition (tid_pred));
 
-              if (not content::is_expression (trans))
+              if (not content::is_expression (trans_pred))
               {
                 return boost::none;
               }
@@ -196,7 +196,7 @@ namespace we { namespace type {
                            );
               }
 
-              preds.insert (pair_type (trans, tid_pred));
+              preds.insert (pair_type (trans_pred, tid_pred));
             }
           }
         }

@@ -9,15 +9,15 @@
     <in name="value" type="long"/>
     <out name="value" type="long"/>
     <expression>
-      ${value} := ${value} - 1
+      ${value} := ${value} - 1L
       <![CDATA[${value} := 23L]]>
     </expression>
-    <condition>${value} &gt; 0</condition>
+    <condition>${value} &gt; 0L</condition>
   </defun>
     <connect-in place="i" port="value"/>
     <connect-out place="o" port="value"/>
-    <condition>${value} &gt;= 10</condition>
-    <condition>${value} &lt;= 20</condition>
+    <condition>${value} &gt;= 10L</condition>
+    <condition>${value} &lt;= 20L</condition>
   </transition>
 
   <transition name="i2">
@@ -25,19 +25,19 @@
     <in name="value" type="long"/>
     <out name="value" type="long"/>
     <expression>
-      ${value} := ${value} - 1
+      ${value} := ${value} - 1L
       <![CDATA[${value} := 23L]]>
     </expression>
-    <condition>${value} &gt; 0</condition>
+    <condition>${value} &gt; 0L</condition>
   </defun>
     <connect-in place="i" port="value"/>
     <connect-out place="o" port="value"/>
-    <condition><![CDATA[${value} < 10]]>
+    <condition><![CDATA[${value} < 10L]]>
                <!-- huhu -->
-               ${value} &gt; 20
+               ${value} &gt; 20L
                <![CDATA[${value} aber sowas von grün]]>
     </condition>
-    <condition>${value} &gt; 20</condition>
+    <condition>${value} &gt; 20L</condition>
   </transition>
 </net>
 </defun>

@@ -24,7 +24,7 @@
     </place>
 
     <place name="memsizeGPI" type="long">
-      <token><value>5*2^30</value></token>
+      <token><value>5L*2L^30L</value></token>
     </place>
 
     <place name="done" type="control"/>

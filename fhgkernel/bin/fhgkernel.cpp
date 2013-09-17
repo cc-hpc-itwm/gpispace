@@ -18,12 +18,17 @@
 
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/setproctitle.h>
+#include <fhg/util/get_home_dir.hpp>
+#include <fhg/util/program_info.h>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
+
+#include <fhg/plugin/core/license.hpp>
 
 // the following code was borrowed and slightly adapted from:
 //
@@ -266,6 +271,7 @@ int main(int ac, char **av)
   std::string state_path;
   std::string pidfile;
   std::string kernel_name ("fhgkernel");
+  std::string title (kernel_name);
   bool daemonize (false);
   fhg::core::kernel_t::search_path_t search_path;
 
@@ -273,7 +279,7 @@ int main(int ac, char **av)
     ("help,h", "this message")
     ("verbose,v", "be verbose")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
-    ("settitle,T", "set the program title according to name")
+    ("title,T", po::value<std::string>(&title), "set the program title according to name")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
     ("state,S", po::value<std::string>(&state_path), "state directory to use")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
@@ -315,10 +321,108 @@ int main(int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  if (vm.count ("settitle"))
+#ifndef FHG_DISABLE_LICENSE_CHECK
   {
-    std::string title = "[" + kernel_name + "]";
-    setproctitle (title.c_str (), ac, av);
+    std::string gspc_home;
+    {
+      namespace fs = boost::filesystem;
+
+      char buf [4096];
+      int rc;
+
+      rc = fhg_get_executable_path (buf, sizeof (buf));
+      if (rc < 0)
+      {
+        LOG (ERROR, "could not discover my own path");
+        return EXIT_FAILURE;
+      }
+
+      gspc_home = fs::path (buf).parent_path ().parent_path ().string ();
+    }
+    std::string curdir;
+    {
+      char buf [4096];
+      getcwd (buf, sizeof(buf));
+      curdir = buf;
+    }
+
+    std::vector<std::string> files;
+    files.push_back ("/etc/gspc/gspc.lic");
+    files.push_back (gspc_home + "/etc/gspc/gspc.lic");
+    files.push_back (fhg::util::get_home_dir () + "/.gspc.lic");
+    files.push_back (curdir + "/gspc.lic");
+
+    int rc = -1;
+    BOOST_FOREACH (std::string const &licfile, files)
+    {
+      if (boost::filesystem::exists (licfile))
+      {
+        rc = fhg::plugin::check_license_file (licfile);
+        if (rc == fhg::plugin::LICENSE_VALID)
+        {
+          break;
+        }
+        else
+        {
+          switch (rc)
+          {
+          case fhg::plugin::LICENSE_EXPIRED:
+            LOG (ERROR, "license '" << licfile << "' has expired");
+            break;
+          case fhg::plugin::LICENSE_CORRUPT:
+            LOG (ERROR, "license '" << licfile << "' is corrupt");
+            break;
+          case fhg::plugin::LICENSE_VERSION_MISMATCH:
+            LOG (ERROR, "license '" << licfile << "' has a different version");
+            break;
+          case fhg::plugin::LICENSE_NOT_VERIFYABLE:
+            LOG (ERROR, "license '" << licfile << "' is not verifyable");
+            break;
+          default:
+            LOG (ERROR, "license '" << licfile << "' is invalid");
+            break;
+          }
+        }
+      }
+    }
+
+    if (rc != fhg::plugin::LICENSE_VALID)
+    {
+      if (rc == -1)
+      {
+        std::cerr << "no license found" << std::endl;
+      }
+      return EXIT_FAILURE;
+    }
+  }
+#endif
+
+  if (vm.count ("title"))
+  {
+    // create a copy of argv, but filter -T
+    char ** new_argv = (char **)malloc ( (ac+1) * sizeof (char*));
+    int i = 0;
+    int j = 0;
+    for (i = 0, j = 0 ; i < ac ; ++i)
+    {
+      if (strcmp (av [i], "-T") == 0)
+      {
+        ++i; // also skip parameter to -T
+      }
+      else
+      {
+        new_argv [j] = strdup (av [i]);
+        ++j;
+      }
+    }
+    new_argv [j] = 0;
+
+    if (0 != setproctitle (title.c_str (), j, new_argv))
+    {
+      std::cerr << "failed to set title to: '" << title << "': " << strerror (errno) << std::endl;
+    }
+
+    free (new_argv);
   }
 
   if (vm.count("daemonize"))

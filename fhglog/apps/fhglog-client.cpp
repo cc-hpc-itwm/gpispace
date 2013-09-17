@@ -19,6 +19,8 @@
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
+
+#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -31,9 +33,10 @@ int main (int argc, char **argv)
 
   std::string url (getenv("FHGLOG_to_server") ? getenv("FHGLOG_to_server") : FHGLOG_DEFAULT_LOCATION);
   std::string file ("fhglog-client.cpp");
+  std::string function ("(main)");
   int line (0);
   std::string message("-");
-  std::string tag("default");
+  std::vector<std::string> tags;
   int level (LogLevel::DEF_LEVEL);
 
   desc.add_options()
@@ -41,8 +44,9 @@ int main (int argc, char **argv)
     ("url,U", po::value<std::string>(&url)->default_value(url), "url (host[:port]) to use")
     ("message,m", po::value<std::string>(&message), "message to send, if message is - stdin is used")
     ("priority,p", po::value<int>(&level)->default_value(level), "log level to use (0-5)")
-    ("tag,t", po::value<std::string>(&tag)->default_value(tag), "category tag of the message")
-    ("file,F", po::value<std::string>(&file)->default_value(file), "filename of the event")
+    ("tag,t", po::value<std::vector<std::string> >(&tags), "category tag of the message")
+    ("file,f", po::value<std::string>(&file)->default_value(file), "filename of the event")
+    ("function,F", po::value<std::string>(&function)->default_value(function), "ffunction to set")
     ("line,L", po::value<int>(&line)->default_value(line), "line number of the event")
     ("version,V", "print version information")
     ("dumpversion", "dump version information")
@@ -99,11 +103,14 @@ int main (int argc, char **argv)
 
   LogEvent e( (LogLevel::Level)level
             , file
-            , ""
+            , function
             , line
             , message
             );
-  e.logged_via() = tag;
+  BOOST_FOREACH (std::string const &tag, tags)
+  {
+    e.tag (tag);
+  }
 
   try
   {

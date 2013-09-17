@@ -16,7 +16,7 @@ extern "C" {
       @param argc the original argc
       @param argv the original argv
    */
-  int setproctitle (const char *title, int argc, char *argv[]);
+  int setproctitle (const char *title, int argc, char * const argv[]);
 
 #ifdef __cplusplus
 }

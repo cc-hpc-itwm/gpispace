@@ -18,18 +18,40 @@ general structure of an xpnet file.
 .B "bool"
         A bool token is represented as: true, false
 
+.B "int"
+        A token that can carry an int value.
+
+        Represented as: 23
+
 .B "long"
         A token that can carry a long value.
 
         Represented as: 42L
 
-.B "double"
-        A token that can carry a double value.
+.B "unsigned int"
+        A token that can carry an unsigned int value.
+
+        Represented as: 23U
+
+.B "unsigned long"
+        A token that can carry an unsigned long value.
+
+        Represented as: 42UL
+
+.B "float"
+        A token that can carry a float value.
 
         Represented as: 0.0f
 
+.B "double"
+        A token that can carry a double value.
+
+        Represented as: 0.0
+
 .B "char"
         A token that can carry a char value.
+
+        Represented as: 'c'
 
 .B "string"
         A token that can carry a string.
@@ -42,27 +64,32 @@ general structure of an xpnet file.
 
         Represented as: {<long> ...}
 
-.B "map"
-        A map from long -> long values.
-
-        Represented as: {|<long> -> <long>, ...|}
-
-.B "set"
-        A set of long values.
-
-        Represented as: {:<long> ...:}
-
-.B "stack"
-        A stack of long values.
-
-        Represented as: @<long> ...@
-
 .B "bytearray"
         An arbitrary blob of bytes. Expressions cannot directly operate on them,
         but you can use  them in C++ code. The "bytearray" can  be casted to any
         type you want and you can assign (memcpy) any type you like.
 
         Represented as: y(<long> ...)
+
+.B "list"
+        A list of values.
+
+        Represented as: List (value, ...)
+
+.B "map"
+        A map from value to values.
+
+        Represented as: Map [key -> value, ...]
+
+.B "set"
+        A set of values.
+
+        Represented as: Set {value, ...}
+
+-B "struct"
+        A structures value.
+
+        Represented as: Struct [name := value, ...]
 
 .SS OPERATIONS
 

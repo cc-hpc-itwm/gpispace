@@ -408,14 +408,14 @@ namespace xml
         private:
           const type::type_map_type & map;
           const type::type_get_type & get;
-          const xml::parse::structure_type::set_type & known_structs;
+          const xml::parse::structure_type_util::set_type & known_structs;
           state::type & state;
 
         public:
           transition_specialize
             ( const type::type_map_type & _map
             , const type::type_get_type & _get
-            , const xml::parse::structure_type::set_type & _known_structs
+            , const xml::parse::structure_type_util::set_type & _known_structs
             , state::type & _state
             )
               : map (_map)
@@ -434,7 +434,7 @@ namespace xml
 
       void transition_type::specialize ( const type::type_map_type & map
                                        , const type::type_get_type & get
-                                       , const xml::parse::structure_type::set_type & known_structs
+                                       , const xml::parse::structure_type_util::set_type & known_structs
                                        , state::type & state
                                        )
       {
@@ -558,7 +558,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      boost::optional<signature::type>
+      boost::optional<pnet::type::signature::signature_type>
       transition_type::signature (const std::string& type) const
       {
         if (has_parent())
@@ -652,7 +652,10 @@ namespace xml
 
           if (pos == pid_of_place.end())
           {
-            THROW_STRANGE ("missing place " << name << " in pid_of_place");
+            std::ostringstream s;
+            s << __FILE__ << " [" << __LINE__ << "]: "
+              << "missing place " << name << " in pid_of_place";
+            throw error::strange (s.str());
           }
 
           return pos->second;

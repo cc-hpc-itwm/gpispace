@@ -16,4 +16,4 @@ set_target_properties (gspcrif.shared
 )
 
 install (TARGETS gspcrif ARCHIVE DESTINATION lib COMPONENT libraries)
-install (TARGETS gspcrif.shared LIBRARY DESTINATION lib COMPONENT libraries)
+install (TARGETS gspcrif.shared LIBRARY DESTINATION lib COMPONENT runtime-libraries)

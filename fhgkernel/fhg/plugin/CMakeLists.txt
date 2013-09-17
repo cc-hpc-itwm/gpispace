@@ -19,6 +19,10 @@ set (core_srcs
   core/null_storage.cpp
 )
 
+if (ENABLE_LICENSE_CHECK)
+  set (core_srcs ${core_srcs} core/license.cpp)
+endif()
+
 add_library(fhg-plugin-core ${core_srcs})
 add_library(fhg-plugin-shared SHARED ${core_srcs})
 target_link_libraries(fhg-plugin-shared ${Boost_FILESYSTEM_SHARED_LIBRARY})
@@ -37,7 +41,7 @@ set (fhg-plugin-static-libs fhg-plugin-core)
 
 add_subdirectory(builtin)
 list(APPEND fhg-plugin-static-libs fhg-builtin-plugins)
-list(APPEND fhg-plugin-static-libs ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
+list(APPEND fhg-plugin-static-libs ${FhgLog_LIBRARY} ${Boost_LIBRARIES} ${NACL_LIBRARY})
 
 include (libutils)
 merge_static_libs(fhg-plugin fhg-plugin "${fhg-plugin-static-libs}")

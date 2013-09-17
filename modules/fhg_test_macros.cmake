@@ -1,6 +1,8 @@
 include(cmake_parse_arguments)
 include(car_cdr_macros)
 
+find_package(HWLOC REQUIRED QUIET)
+
 macro(FHG_ADD_TEST)
   PARSE_ARGUMENTS(TEST
     "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS;RESOURCE_LOCK"

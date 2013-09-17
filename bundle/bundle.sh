@@ -101,6 +101,13 @@ function is_filtered ()
     return 1
 }
 
+function normalize()
+{
+    local name="$1"; shift
+
+    readlink -f "${name}"
+}
+
 function bundle_dependencies ()
 {
     local file="$1" ; shift
@@ -135,10 +142,13 @@ function bundle_dependencies ()
             debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
 
-        if [[ ! "$pth" = "$dst/$dep" ]] ; then
-            if test "$pth" -nt "$dst/$dep" || $force ; then
-                debug $(printf "%$((indent + 2))s" "") cp "$pth" "$dst/$dep"
-                dry_run cp "$pth" "$dst/$dep"
+        pth=$(normalize "${pth}")
+        tgt=$(normalize "$dst/$dep")
+
+        if [[ ! "$pth" = "$tgt" ]] ; then
+            if test "$pth" -nt "$tgt" || $force ; then
+                debug $(printf "%$((indent + 2))s" "") cp "$pth" "$tgt"
+                dry_run cp "$pth" "$tgt"
                 bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
             fi
         fi

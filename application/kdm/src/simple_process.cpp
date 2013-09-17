@@ -4,7 +4,6 @@
 #include <fcntl.h>
 
 #include <we/loader/macros.hpp>
-#include <we/loader/putget.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
@@ -25,18 +24,28 @@
 #include <do_write.hpp>
 #include <do_load.hpp>
 
+#include <we/type/value/peek.hpp>
+#include <we/type/value/show.hpp>
+
 // ************************************************************************* //
 
-using we::loader::get;
+namespace
+{
+  template<typename R>
+    R peek (const pnet::type::value::value_type& x, const std::string& key)
+  {
+    return boost::get<R> (*pnet::type::value::peek (key, x));
+  }
+}
 
 // ************************************************************************* //
 
 static void init ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
-		 )
+                 , const expr::eval::context & input
+                 , expr::eval::context & output
+                 )
 {
-  const std::string & filename (get<std::string> (input, "desc"));
+  const std::string& filename (boost::get<const std::string&> (input.value ("desc")));
 
   MLOG (INFO, "init: got filename " << filename);
 
@@ -49,17 +58,14 @@ static void init ( void * state
 
   MLOG (INFO, "init: read from " << filename);
 
-  // set default params
-  value::type param;
-
-  output.bind ("config", "param.tpow.tpow", -1.0);
-  output.bind ("config", "param.clip.c", -1.0);
-  output.bind ("config", "param.trap.t", -1.0);
-  output.bind ("config", "param.bandpass.frequ1", -1.0);
-  output.bind ("config", "param.bandpass.frequ2", -1.0);
-  output.bind ("config", "param.bandpass.frequ3", -1.0);
-  output.bind ("config", "param.bandpass.frequ4", -1.0);
-  output.bind ("config", "exec.su", std::string(""));
+  output.bind ("config.param.tpow.tpow", -1.0);
+  output.bind ("config.param.clip.c", -1.0);
+  output.bind ("config.param.trap.t", -1.0);
+  output.bind ("config.param.bandpass.frequ1", -1.0);
+  output.bind ("config.param.bandpass.frequ2", -1.0);
+  output.bind ("config.param.bandpass.frequ3", -1.0);
+  output.bind ("config.param.bandpass.frequ4", -1.0);
+  output.bind ("config.exec.su", std::string(""));
 
   while (!file.eof())
     {
@@ -77,7 +83,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              output.bind ("config", s, v);
+              output.bind ("config." + s, v);
             }
 	  else if (fhg::util::starts_with ("param", s))
 	    {
@@ -86,7 +92,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              output.bind ("config", s, v);
+              output.bind ("config." + s, v);
 	    }
           else if (fhg::util::starts_with ("exec", s))
             {
@@ -109,7 +115,7 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << coll.substr(0,coll.size()-1));
 
-              output.bind ("config", s, coll.substr(0,coll.size()-1));
+              output.bind ("config." + s, coll.substr(0,coll.size()-1));
             }
           else
             {
@@ -118,20 +124,20 @@ static void init ( void * state
 
               MLOG (INFO, "init: read " << s << " " << v);
 
-              output.bind ("config", s, v);
+              output.bind ("config." + s, v);
             }
         }
     }
 
   // determine size, overwrite values given in config file
-  if (get<std::string> (output, "config", "input.type") != "text")
+  if (peek<std::string> (output.value("config"), "input.type") != "text")
   {
     long num (0);
     long size (0);
 
     try
       {
-        num = get<long> (output, "config", "trace_detect.number");
+        num = peek<long> (output.value ("config"), "trace_detect.number");
       }
     catch (...)
       {
@@ -140,53 +146,53 @@ static void init ( void * state
 
     try
       {
-        size = get<long> (output, "config", "trace_detect.size_in_bytes");
+        size = peek<long> (output.value("config"), "trace_detect.size_in_bytes");
       }
     catch (...)
       {
         // do nothing, the value is not given
       }
 
-    const std::string & t (get<std::string> (output, "config", "input.type"));
+    const std::string & t (peek<const std::string&> (output.value ("config"), "input.type"));
 
     if (t != "text")
       {
-        const std::string & inp (get<std::string> (output, "config", "input.file"));
+        const std::string& inp (peek<const std::string&> (output.value ("config"), "input.file"));
 
         determine_size (inp, t, num, size);
 
-        output.bind ("config", "trace_detect.number", num);
-        output.bind ("config", "trace_detect.size_in_bytes", size);
+        output.bind ("config.trace_detect.number", num);
+        output.bind ("config.trace_detect.size_in_bytes", size);
       }
 
     try
       {
-	const long & slots_per_node (get<long> (output, "config", "tune.slots_per_node"));
-	const long & memsize (get<long> (output, "config", "tune.memsize"));
+        const long & slots_per_node (peek<const long&> (output.value ("config"), "tune.slots_per_node"));
+        const long & memsize (peek<const long&> (output.value ("config"), "tune.memsize"));
 	const long trace_per_bunch ((memsize/slots_per_node) / size);
 
-	output.bind ("config", "tune.trace_per_bunch", trace_per_bunch);
+	output.bind ("config.tune.trace_per_bunch", trace_per_bunch);
       }
     catch (...)
       {
 	// do nothing, slots_per_node is not set
-	output.bind ("config", "tune.slots_per_node", 1L);
+	output.bind ("config.tune.slots_per_node", 1L);
       }
   }
 
-  const long & trace_per_bunch (get<long> (output, "config", "tune.trace_per_bunch"));
+  const long& trace_per_bunch (peek<const long&> (output.value ("config"), "tune.trace_per_bunch"));
 
   if (trace_per_bunch <= 0)
     {
       throw std::runtime_error ("BUMMER! trace_per_bunch <= 0");
     }
 
-  const long & trace_num (get<long> (output, "config", "trace_detect.number"));
-  const long & trace_size_in_bytes (get<long> (output, "config", "trace_detect.size_in_bytes"));
-  const long & memsize (get<long> (output, "config", "tune.memsize"));
+  const long& trace_num (peek<const long&> (output.value("config"), "trace_detect.number"));
+  const long& trace_size_in_bytes (peek<const long&> (output.value("config"), "trace_detect.size_in_bytes"));
+  const long & memsize (peek<const long&> (output.value("config"), "tune.memsize"));
 
-  const std::string & inputfile (get<std::string> (output, "config", "input.file"));
-  const std::string & outputfile (get<std::string> (output, "config", "output.file"));
+  const std::string& inputfile (peek<const std::string&> (output.value("config"), "input.file"));
+  const std::string& outputfile (peek<const std::string&> (output.value("config"), "output.file"));
 
   const long sizeofBunchBuffer (trace_per_bunch * trace_size_in_bytes);
 
@@ -222,9 +228,9 @@ static void init ( void * state
       num_part += 1;
     }
 
-  if ( get<std::string> (output, "config", "output.type")
+  if ( peek<std::string> (output.value("config"), "output.type")
        !=
-       get<std::string> (output, "config", "input.type")
+       peek<std::string> (output.value("config"), "input.type")
      )
   {
     throw std::runtime_error ("Sorry, input type != output type not implemented yet!");
@@ -239,33 +245,33 @@ static void init ( void * state
 
   close (outp_des);
 
-  output.bind ("config", "data.size", trace_size_in_bytes * trace_num);
+  output.bind ("config.data.size", trace_size_in_bytes * trace_num);
 
-  output.bind ("config", "bunchbuffer.size", sizeofBunchBuffer);
-  output.bind ("config", "num.store", (num_slot_per_node - 1) * node_count);
-  output.bind ("config", "num.part", num_part);
-  output.bind ("config", "num.write_credit", node_count);
-  output.bind ("config", "num.load_credit", node_count);
+  output.bind ("config.bunchbuffer.size", sizeofBunchBuffer);
+  output.bind ("config.num.store", (num_slot_per_node - 1) * node_count);
+  output.bind ("config.num.part", num_part);
+  output.bind ("config.num.write_credit", node_count);
+  output.bind ("config.num.load_credit", node_count);
 
-  output.bind ("config", "handle.data", static_cast<long>(handle_data));
-  output.bind ("config", "handle.scratch", static_cast<long>(handle_scratch));
+  output.bind ("config.handle.data", static_cast<long>(handle_data));
+  output.bind ("config.handle.scratch", static_cast<long>(handle_scratch));
 
-  MLOG (INFO, "init: got config " << get<value::type>(output, "config"));
+  MLOG (INFO, "init: got config " << pnet::type::value::show (output.value ("config")));
 }
 
 // ************************************************************************* //
 
 static void finalize ( void * state
-                     , const we::loader::input_t & input
-                     , we::loader::output_t & output
+                     , const expr::eval::context & input
+                     , expr::eval::context & output
                      )
 {
-  const value::type & config (get<value::type> (input, "config"));
+  const pnet::type::value::value_type& config (input.value("config"));
 
-  MLOG (INFO, "finalize: config " << config);
+  MLOG (INFO, "finalize: config " << pnet::type::value::show (config));
 
-  const fvmAllocHandle_t handle_data (get<long> (config, "handle.data"));
-  const fvmAllocHandle_t handle_scratch (get<long> (config, "handle.scratch"));
+  const fvmAllocHandle_t handle_data (peek<long> (config, "handle.data"));
+  const fvmAllocHandle_t handle_scratch (peek<long> (config, "handle.scratch"));
 
   fvmGlobalFree (handle_data);
   fvmGlobalFree (handle_scratch);
@@ -276,37 +282,37 @@ static void finalize ( void * state
 // ************************************************************************* //
 
 static void load ( void * state
-		 , const we::loader::input_t & input
-		 , we::loader::output_t & output
+		 , const expr::eval::context & input
+		 , expr::eval::context & output
 		 )
 {
-  const long & part (get<long> (input, "part"));
-  const long & store (get<long> (input, "store"));
-  const value::type & config (get<value::type> (input, "config"));
+  const long & part (boost::get<const long&> (input.value ("part")));
+  const long & store (boost::get<const long&> (input.value ("store")));
+  const pnet::type::value::value_type & config (input.value ("config"));
 
-  MLOG (INFO, "load: part " << part << ", store " << store << ", config " << config);
+  MLOG (INFO, "load: part " << part << ", store " << store << ", config " << pnet::type::value::show (config));
 
   // load data from disk to fvmGetShmemPtr()
 
-  const std::string & filename (get<std::string> (config, "input.file"));
-  const std::string & type (get<std::string> (config, "input.type"));
-  const long & sizeofBunchBuffer (get<long> (config, "bunchbuffer.size"));
-  const long & data_size (get<long> (config, "data.size"));
+  const std::string & filename (peek<const std::string&> (config, "input.file"));
+  const std::string & type (peek<const std::string&> (config, "input.type"));
+  const long & sizeofBunchBuffer (peek<const long&> (config, "bunchbuffer.size"));
+  const long & data_size (peek<const long&> (config, "data.size"));
 
   const long size (std::min ( sizeofBunchBuffer
                             , data_size - part * sizeofBunchBuffer
                             )
                   );
 
-  const long & trace_size_in_bytes (get<long> (config, "trace_detect.size_in_bytes"));
+  const long & trace_size_in_bytes (peek<const long&> (config, "trace_detect.size_in_bytes"));
   const long num (size / trace_size_in_bytes);
 
   do_load (filename, type, part, sizeofBunchBuffer, size, num, fvmGetShmemPtr());
 
   // communicate data to GPI space into handle.data using handle.scratch
 
-  const fvmAllocHandle_t & handle_data (get<long> (config, "handle.data"));
-  const fvmAllocHandle_t & handle_scratch (get<long> (config, "handle.scratch"));
+  const fvmAllocHandle_t handle_data (peek<long> (config, "handle.data"));
+  const fvmAllocHandle_t handle_scratch (peek<long> (config, "handle.scratch"));
 
   waitComm (fvmPutGlobalData ( handle_data
                              , store * sizeofBunchBuffer
@@ -316,37 +322,36 @@ static void load ( void * state
                              )
            );
 
-  output.bind ("part_loaded", "id.part", part);
-  output.bind ("part_loaded", "id.store", store);
+  output.bind ("part_loaded.id.part", part);
+  output.bind ("part_loaded.id.store", store);
 }
 
 // ************************************************************************* //
 
 static void write ( void * state
-                  , const we::loader::input_t & input
-                  , we::loader::output_t & output
+                  , const expr::eval::context & input
+                  , expr::eval::context & output
                   )
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const long & part (get<long> (input, "part_in_store", "id.part"));
-  const long & store (get<long> (input, "part_in_store", "id.store"));
-  const we::type::literal::control & credit (get<we::type::literal::control> (input, "credit"));
+  const pnet::type::value::value_type& config (input.value( "config"));
+  const long & part (peek<const long&> (input.value("part_in_store"), "id.part"));
+  const long & store (peek<const long&> (input.value("part_in_store"), "id.store"));
 
-  MLOG (INFO, "write: part " << part << ", store " << store << ", config " << config);
+  MLOG (INFO, "write: part " << part << ", store " << store << ", config " << pnet::type::value::show (config));
 
   // communicate from GPI space to fvmGetShmemPtr()
 
-  const fvmAllocHandle_t & handle_data (get<long> (config, "handle.data"));
-  const fvmAllocHandle_t & handle_scratch (get<long> (config, "handle.scratch"));
-  const long & sizeofBunchBuffer (get<long> (config, "bunchbuffer.size"));
-  const long & data_size (get<long> (config, "data.size"));
+  const fvmAllocHandle_t handle_data (peek<long> (config, "handle.data"));
+  const fvmAllocHandle_t handle_scratch (peek<long> (config, "handle.scratch"));
+  const long sizeofBunchBuffer (peek<long> (config, "bunchbuffer.size"));
+  const long data_size (peek<long> (config, "data.size"));
 
   const long size (std::min ( sizeofBunchBuffer
                             , data_size - part * sizeofBunchBuffer
                             )
                   );
 
-  const long & trace_size_in_bytes (get<long> (config, "trace_detect.size_in_bytes"));
+  const long trace_size_in_bytes (peek<long> (config, "trace_detect.size_in_bytes"));
   const long num (size / trace_size_in_bytes);
 
   waitComm (fvmGetGlobalData ( handle_data
@@ -359,14 +364,14 @@ static void write ( void * state
 
   // save to disk from fvmGetShmemPtr()
 
-  const std::string & filename (get<std::string> (config, "output.file"));
-  const std::string & type (get<std::string> (config, "output.type"));
+  const std::string filename (peek<std::string> (config, "output.file"));
+  const std::string type (peek<std::string> (config, "output.type"));
 
   do_write (filename, type, part, sizeofBunchBuffer, size, num, fvmGetShmemPtr());
 
   output.bind ("part", part);
   output.bind ("store", store);
-  output.bind ("credit", credit);
+  output.bind ("credit", we::type::literal::control());
 }
 
 // ************************************************************************* //

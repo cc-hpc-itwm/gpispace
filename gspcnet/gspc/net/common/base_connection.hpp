@@ -32,7 +32,8 @@ namespace gspc
         typedef typename protocol_type::socket socket_type;
 
         explicit
-        base_connection ( boost::asio::io_service & io_service
+        base_connection ( size_t id
+                        , boost::asio::io_service & io_service
                         , frame_handler_t & frame_handler
                         );
 
@@ -41,8 +42,10 @@ namespace gspc
         socket_type & socket ();
 
         void start ();
+        void stop ();
 
         int deliver (frame const &);
+        size_t id () const;
 
         void set_queue_length (size_t);
       private:
@@ -55,6 +58,7 @@ namespace gspc
                          );
         void handle_write (const boost::system::error_code &);
 
+        mutable boost::mutex     m_shutting_down_mutex;
         mutable boost::mutex     m_frame_list_mutex;
 
         frame_handler_t &m_frame_handler;
@@ -68,7 +72,10 @@ namespace gspc
         frame         m_frame;
         buffer_list_t m_buffer_list;
 
+        bool   m_shutting_down;
         size_t m_max_queue_length;
+
+        size_t m_id;
       };
     }
   }

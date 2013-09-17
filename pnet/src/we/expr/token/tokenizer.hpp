@@ -20,14 +20,14 @@ namespace expr
     {
     public:
       tokenizer (fhg::util::parse::position&);
-      const value::type& value() const;
+      const pnet::type::value::value_type& value() const;
       const token::type& token() const;
       void operator++();
       const std::list<std::string>& get_ref() const;
 
     public:
       void set_token (const token::type&);
-      void set_value (const value::type&);
+      void set_value (const pnet::type::value::value_type&);
       void unary (const token::type&, const std::string&);
       void cmp (const token::type&, const token::type&);
       void negsub();
@@ -41,10 +41,10 @@ namespace expr
     private:
       fhg::util::parse::position& _pos;
       token::type _token;
-      value::type _tokval;
+      pnet::type::value::value_type _tokval;
       std::list<std::string> _ref;
 
-      void skip_comment (const unsigned int);
+      void skip_comment (const std::size_t);
     };
   }
 }

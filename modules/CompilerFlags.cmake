@@ -79,7 +79,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
      )
 endif ()
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -fPIC ${FLAGS_WARNINGS}")
+  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -fPIC ${FLAGS_WARNINGS} -ftemplate-depth=1024")
 endif()
 
 # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?

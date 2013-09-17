@@ -7,9 +7,9 @@ endif
 
 PNETC_OPTS += -I$(SDPA_HOME)/share/sdpa/xml
 
-PUT_PORT += num_slots=4
-PUT_PORT += num_id=6
-PUT_PORT += multiplicity=4
+PUT_PORT += num_slots=4L
+PUT_PORT += num_id=6L
+PUT_PORT += multiplicity=4L
 
 NOT_STARTS_WITH += init_cache
 NOT_STARTS_WITH += multiply

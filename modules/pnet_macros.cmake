@@ -82,17 +82,35 @@ macro(PNET_COMPILE)
 
   set (PNET_GEN_OUTPUTS ${PNET_OUTPUT})
 
+  if (NOT PNET_GENERATE)
+    set (PNET_GENERATE "${PNET_NAME}.gen")
+  endif ()
+
   if (PNET_GENERATE)
-    set(PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})
+    set (PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})
     set (PNET_GEN_OUTPUTS ${PNET_GEN_OUTPUTS} ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
   endif()
 
-  add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
-    COMMAND ${PNETC_LOCATION} ${PNETC_ARGS}
-    DEPENDS ${PNETC_LOCATION} ${PNET_SOURCES} ${PNET_DEPENDS}
-    COMMENT "Building petri-net ${PNET_NAME}"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    )
+  if (${PNETC_LOCATION} IS_NEWER_THAN "${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}")
+    add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
+      COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}"
+      COMMAND ${PNETC_LOCATION} ${PNETC_ARGS}
+      DEPENDS ${PNETC_LOCATION} ${__pnet_sources} ${PNET_DEPENDS}
+      COMMENT "Re-building petri-net ${PNET_NAME}"
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      )
+  else()
+    add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
+      COMMAND ${PNETC_LOCATION} ${PNETC_ARGS}
+      DEPENDS ${PNETC_LOCATION} ${__pnet_sources} ${PNET_DEPENDS}
+      COMMENT "Building petri-net ${PNET_NAME}"
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      )
+  endif()
+
+  if (PNET_BUILD AND NOT PNET_GENERATE)
+    message(FATAL_ERROR "** pnet_compile: cannot build pnet without generating code")
+  endif()
 
   if (PNET_BUILD)
     set (_make_cmd make)
@@ -111,7 +129,7 @@ macro(PNET_COMPILE)
       )
   endif()
 
-  add_custom_target (pnet-${PNET_NAME} ALL DEPENDS ${PNET_GEN_OUTPUTS})
+  add_custom_target (pnet-${PNET_NAME} ALL DEPENDS ${PNET_GEN_OUTPUTS} ${PNETC_LOCATION})
 
   if (PNET_BUILD)
     set_target_properties(pnet-${PNET_NAME} PROPERTIES PNET_GENERATE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})

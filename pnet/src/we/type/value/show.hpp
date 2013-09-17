@@ -1,15 +1,29 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_VALUE_SHOW_HPP
-#define _WE_TYPE_VALUE_SHOW_HPP
+#ifndef PNET_SRC_WE_TYPE_VALUE_SHOW_HPP
+#define PNET_SRC_WE_TYPE_VALUE_SHOW_HPP
 
 #include <we/type/value.hpp>
 
 #include <iosfwd>
 
-namespace value
+namespace pnet
 {
-  std::ostream& operator<< (std::ostream&, const type&);
+  namespace type
+  {
+    namespace value
+    {
+      class show
+      {
+      public:
+        show (const value_type&);
+        std::ostream& operator() (std::ostream&) const;
+      private:
+        const value_type& _value;
+      };
+      std::ostream& operator<< (std::ostream&, const show&);
+    }
+  }
 }
 
 #endif

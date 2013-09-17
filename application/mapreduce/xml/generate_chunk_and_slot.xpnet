@@ -80,7 +80,7 @@
         <expression>
           ${chunk_and_slot.chunk} := ${state.id};
           ${chunk_and_slot.slot} := ${slot};
-          ${state.id} := ${state.id} + 1
+          ${state.id} := ${state.id} + 1L
         </expression>
       </defun>
       <connect-in port="slot" place="slot"/>

@@ -27,7 +27,7 @@ namespace expr
     , _floor, _ceil, _round
     , _sin, _cos
     , _sqrt, _log
-    , _tolong, _todouble
+    , _toint, _tolong, _touint, _toulong, _tofloat, _todouble
     , _bitset_insert, _bitset_delete, _bitset_is_element
     , _bitset_or, _bitset_and, _bitset_xor
     , _bitset_count
@@ -54,7 +54,16 @@ namespace expr
     , _token_end = eof
     };
 
-    std::ostream & operator << (std::ostream&, const type&);
+    std::ostream& operator<< (std::ostream&, const type&);
+    class show
+    {
+    public:
+      show (const type&);
+      std::ostream& operator() (std::ostream&) const;
+    private:
+      const type& _token;
+    };
+    std::ostream& operator<< (std::ostream&, const show&);
   }
 }
 

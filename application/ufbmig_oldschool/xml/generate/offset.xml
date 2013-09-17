@@ -92,7 +92,7 @@
         <expression>
           ${offsetA.id} := ${state.counter.id};
           ${offsetB} := ${offsetA};
-          ${state.counter.id} := ${state.counter.id} + 1;
+          ${state.counter.id} := ${state.counter.id} + 1L;
         </expression>
       </defun>
       <connect-in port="trigger" place="trigger"/>

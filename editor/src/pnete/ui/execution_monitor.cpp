@@ -2,12 +2,9 @@
 
 #include <fhg/util/alphanum.hpp>
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
-#include <boost/serialization/access.hpp>
 
 #include <QCheckBox>
 #include <QColorDialog>
@@ -247,11 +244,7 @@ namespace
       CHOICE (CANCELLED, "cancelled");
 
 #undef CHOICE
-    case event::STATE_IGNORE:
-      ;
     }
-
-    throw std::runtime_error ("invalid state");
   }
 }
 
@@ -389,21 +382,10 @@ void execution_monitor::append_exe (const fhg::log::LogEvent& event)
 {
   static const qreal task_height (8.0);
 
-  sdpa::daemon::NotificationEvent notification;
-
-  {
-    std::stringstream stream (event.message());
-    boost::archive::text_iarchive archive (stream);
-    archive >> notification;
-  }
+  const sdpa::daemon::NotificationEvent notification (event.message());
 
   const sdpa::daemon::NotificationEvent::state_t task_state
     (notification.activity_state());
-
-  if (task_state == sdpa::daemon::NotificationEvent::STATE_IGNORE)
-  {
-    return;
-  }
 
   const std::string& component (notification.component());
 

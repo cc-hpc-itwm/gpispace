@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  Macros.hpp
- *
- *    Description:  just the macro definitions for the modules
- *
- *        Version:  1.0
- *        Created:  11/14/2009 09:58:06 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef WE_LOADER_MACROS_HPP
 #define WE_LOADER_MACROS_HPP 1

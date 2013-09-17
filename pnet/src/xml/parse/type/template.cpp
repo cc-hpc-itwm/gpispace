@@ -5,6 +5,8 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
+#include <fhg/util/xml.hpp>
+
 #include <boost/foreach.hpp>
 
 namespace xml
@@ -83,7 +85,7 @@ namespace xml
         return boost::none;
       }
 
-      boost::optional<signature::type>
+      boost::optional<pnet::type::signature::signature_type>
       tmpl_type::signature (const std::string& type) const
       {
         if (has_parent())
@@ -121,7 +123,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (xml_util::xmlstream & s, const tmpl_type & t)
+        void dump (fhg::util::xml::xmlstream & s, const tmpl_type & t)
         {
           s.open ("template");
           s.attr ("name", t.name());

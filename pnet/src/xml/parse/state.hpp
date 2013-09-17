@@ -223,7 +223,7 @@ namespace xml
           check_for_include_loop (path);
 
           return generic_parse<T> (parse, path);
-        };
+        }
 
         void add_options (boost::program_options::options_description& desc);
 

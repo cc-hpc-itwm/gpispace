@@ -368,18 +368,6 @@ namespace we
         return activity_.can_fire();
       }
 
-      std::string descriptor::show_input() const
-      {
-        lock_t lock (mutex_);
-        return fhg::util::show (activity_.input().begin(), activity_.input().end());
-      }
-
-      std::string descriptor::show_output() const
-      {
-        lock_t lock (mutex_);
-        return fhg::util::show (activity_.output().begin(), activity_.output().end());
-      }
-
       void descriptor::apply_to_children (fun_t f) const
       {
         lock_t lock (mutex_);

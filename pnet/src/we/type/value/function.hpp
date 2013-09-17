@@ -1,22 +1,25 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _TYPE_VALUE_FUNCTION_HPP
-#define _TYPE_VALUE_FUNCTION_HPP
+#ifndef PNET_SRC_WE_TYPE_VALUE_FUNCTION_HPP
+#define PNET_SRC_WE_TYPE_VALUE_FUNCTION_HPP
 
 #include <we/type/value.hpp>
-#include <we/type/literal.hpp>
-#include <we/type/literal/function.hpp>
 
-#include <fhg/util/show.hpp>
+#include <we/expr/token/type.hpp>
 
-namespace value
+namespace pnet
 {
-  namespace function
+  namespace type
   {
-    value::type unary (const expr::token::type&, value::type&);
-    value::type binary (const expr::token::type&, value::type&, value::type&);
-
-    bool is_true (const type &);
+    namespace value
+    {
+      value_type unary (const expr::token::type&, const value_type&);
+      value_type binary ( const expr::token::type&
+                        , const value_type&
+                        , const value_type&
+                        );
+      bool is_true (const value_type&);
+    }
   }
 }
 

@@ -21,6 +21,9 @@
 #include <we/type/port.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/unordered_set.hpp>
+
+#include <string>
 
 namespace xml
 {
@@ -178,11 +181,11 @@ namespace xml
 
         // ***************************************************************** //
 
-        xml::parse::structure_type::forbidden_type forbidden_below (void) const;
+        xml::parse::structure_type_util::forbidden_type forbidden_below (void) const;
 
         // ***************************************************************** //
 
-        boost::optional<signature::type> signature (const std::string&) const;
+        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
 
         // ***************************************************************** //
 
@@ -209,7 +212,7 @@ namespace xml
 
         void specialize ( const type_map_type & map
                         , const type_get_type & get
-                        , const xml::parse::structure_type::set_type & known_structs
+                        , const xml::parse::structure_type_util::set_type & known_structs
                         , state::type & state
                         );
 
@@ -288,6 +291,7 @@ namespace xml
 
       void mk_makefile ( const state::type & state
                        , const fun_info_map & m
+                       , const boost::unordered_set<std::string>& structnames
                        );
 
       bool find_module_calls ( const state::type & state
@@ -297,7 +301,10 @@ namespace xml
 
       // ***************************************************************** //
 
-      void struct_to_cpp (const state::type &, const id::ref::function &);
+      void struct_to_cpp ( const state::type &
+                         , const id::ref::function &
+                         , boost::unordered_set<std::string>&
+                         );
 
       // ******************************************************************* //
 
