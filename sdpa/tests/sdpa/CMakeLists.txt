@@ -40,7 +40,7 @@ include(pnet_macros)
 get_target_property(PNETPUT_LOCATION pnetput LOCATION)
 
 ###########################################################################################
-pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabilities.xml
+pnet_compile(capabilities-test-wf ${CMAKE_SOURCE_DIR}/application/example/capabilities/capabilities.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
   GENERATE capabilities
   INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
@@ -54,7 +54,7 @@ pnet_compile(capabilities-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabili
 
 get_target_property(CAPABILITY_PNET_LOCATION pnet-capabilities-test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-capabilities-test-wf GEN_OUTPUTS)
-set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=100L -p time_A=500000L -p n_B=50L -p time_B=500000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
+set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=100L -p time_A=50000L -p n_B=50L -p time_B=50000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
 
 add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMAND ${command}
@@ -63,7 +63,7 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
 )
 add_dependencies(pnet-capabilities-test-wf pnetput)
 ###########################################################################################
-pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workflows/capabilities_no_mandatory.xml
+pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_SOURCE_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
   GENERATE capabilities_no_mandatory
   INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
@@ -77,7 +77,7 @@ pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_CURRENT_SOURCE_DIR}/workf
 
 get_target_property(CAPABILITY_NO_MANDATORY_PNET_LOCATION pnet-capabilities_no_mandatory-test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-capabilities_no_mandatory-test-wf GEN_OUTPUTS)
-set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=500L -p n_B=10L -p time_B=500L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
+set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=50000L -p n_B=10L -p time_B=50000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
 
 add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMAND ${command}
