@@ -114,7 +114,7 @@
 #ifdef FHG_ASSERT_REPLACE_LEGACY
 #  if FHG_ASSERT_LEGACY != FHG_ASSERT_MODE
 #    undef assert
-#    define assert(cond) fhg_assert(cond)
+#    define assert(cond) fhg_assert(cond, #cond)
 #  else
 #    error cannot replace legacy 'assert' statements in FHG_ASSERT_LEGACY mode!
 #  endif
