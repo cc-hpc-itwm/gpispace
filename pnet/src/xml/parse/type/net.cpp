@@ -749,7 +749,6 @@ namespace xml
               , pnet::require_type
                 ( util::generic_we_parse (token, "parse token").eval_all()
                 , place.signature_or_throw()
-                , ""
                 )
               );
           }
