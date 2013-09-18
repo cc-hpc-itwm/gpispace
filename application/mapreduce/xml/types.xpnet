@@ -48,9 +48,9 @@
    <struct name="map_chunk_info_t">
 	<field name="map_slot_id" type="long"/>
     <field name="chunk_id" type="long"/>
-    <field name="arr_part_offset" type="stack"/>
-    <field name="arr_part_used" type="stack"/>
-    <field name="arr_part_ids" type="stack"/>
+    <field name="arr_part_offset" type="list"/>
+    <field name="arr_part_used" type="list"/>
+    <field name="arr_part_ids" type="list"/>
   </struct>
   
    <struct name="part_slice_info">
@@ -78,13 +78,13 @@
 	<field name="reduce_info" type="reduce_info"/> 
 	<field name="partition_info" type="partition_info"/> 
 	<field name="part_slice_info" type="part_slice_info"/>
-	<field name="succeeded" type="long"/>
+	<field name="succeeded" type="bool"/>
   </struct>
   
   <struct name="partition_result">
-	<field name="succeeded" type="long"/>
     <field name="partition_info" type="partition_info"/>
     <field name="part_slice_info" type="part_slice_info"/>
+    <field name="succeeded" type="bool"/>
   </struct>
   
   <struct name="counter_partial_updates_t">
