@@ -38,6 +38,9 @@ namespace pnet
           tn[value::SET()] = "std::set<pnet::type::value::value_type>";
           tn[value::MAP()] = "std::map<pnet::type::value::value_type,pnet::type::value::value_type>";
 
+          //\! Remove when old value type has been removed
+          tn["stack"] = "std::list<pnet::type::value::value_type>";
+
           return tn;
         }
 
