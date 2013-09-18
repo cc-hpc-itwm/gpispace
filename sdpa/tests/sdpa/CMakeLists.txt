@@ -227,6 +227,7 @@ foreach (test ${tests})
                      ${SEDA_LIBRARY}
                      ${FhgLog_LIBRARY}
                      pnet
+                     we-dev
                      fhg-util
                      ${Boost_UNIT_TEST_LIBRARIES}
                      ${Boost_LIBRARIES}
