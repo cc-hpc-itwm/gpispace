@@ -33,6 +33,10 @@ namespace expr
                                 , const pnet::type::value::value_type&
                                 );
 
+      void bind ( const std::list<std::string>&
+                , const pnet::type::value::value_type&
+                );
+
       const pnet::type::value::value_type& value (const std::string&) const;
       const pnet::type::value::value_type& value (const std::list<std::string>&) const;
 
