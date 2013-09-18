@@ -381,11 +381,8 @@ namespace petri_net
   {
     const place::type& place (get_place (pid));
 
-    put_token (pid, pnet::require_type
-                      ( value
-                      , place.signature()
-                      , place.name()
-                      )
+    put_token ( pid
+              , pnet::require_type (value, place.signature(), place.name())
               );
   }
 

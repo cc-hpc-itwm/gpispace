@@ -31,11 +31,7 @@ namespace we
           (act.transition().get_port (pid).signature());
 
         act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( pnet::require_type
-                          ( value
-                          , port_signature
-                          , port
-                          )
+                        ( pnet::require_type (value, port_signature, port)
                         , pid
                         )
                       );
