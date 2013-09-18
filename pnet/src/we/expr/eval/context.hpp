@@ -25,6 +25,12 @@ namespace expr
 
       container_type _container;
 
+      typedef boost::unordered_map< std::string
+                                  , const pnet::type::value::value_type*
+                                  > ref_container_type;
+
+      ref_container_type _ref_container;
+
     public:
       void bind (const std::string&, const pnet::type::value::value_type&);
       void bind_ref (const std::string&, const pnet::type::value::value_type&);
