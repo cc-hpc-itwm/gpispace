@@ -9,7 +9,7 @@ ec=0
 tmpdir=
 keep_tmp=false
 force=false
-destdir=
+destdir=/opt/sdpa
 license=
 verbose=0
 execute_selftest=true
@@ -17,7 +17,7 @@ execute_selftest=true
 usage ()
 {
     cat <<EOF
-usage: $(basename "$0") [options] -- [options for setup]
+usage: $(basename "$0") [options]
 
   -h|--help         : print this help
   -v|--verbose      : be more verbose
@@ -25,10 +25,10 @@ usage: $(basename "$0") [options] -- [options for setup]
   -f|--force        : remove the previous installation
   -X|--no-selftest  : do not run the selftest
 
-  -d|--destdir dir  : where to install to (required)
+  -d|--destdir dir  : where to install to (=$destdir)
   -l|--license file : path to the license file
 
-  -t|--tempdir dir  : use this directory as the base temporary directory
+  -t|--tempdir dir  : use this directory as the base temporary directory (=$TMPDIR)
 EOF
 }
 
@@ -153,7 +153,10 @@ destdir=$(abspath "${destdir}")
 
 if [ ! -d "${destdir}" ]
 then
-    mkdir -p "${destdir}"
+    mkdir -p "${destdir}" || {
+        echo >&2 "install: could not create destination directory"
+        exit 1
+    }
 fi
 dst="${destdir}/$GSPC_DIRECTORY_NAME"
 
@@ -169,7 +172,12 @@ then
 fi
 
 # uses TMPDIR as a prefix if set, otherwise /tmp
-tmpdir=$(mktemp -d gspc-installer.XXXXXXXXXX)
+tmpdir=$(mktemp --tmpdir -d "gspc-installer.XXXXXXXXXX" 2>&1)
+if [ $? -ne 0 ]
+then
+    echo >&2 "install: could not create temporary directory: $tmpdir"
+    exit 1
+fi
 
 cleanup ()
 {
@@ -183,7 +191,7 @@ trap 'cleanup' EXIT TERM
 # query user information
 if [ -z "$license" ]
 then
-    get_user_input "Path to the license file:" license
+    get_user_input "Path to the license file: " license
 fi
 
 if [ ! -r "$license" ]
@@ -194,11 +202,17 @@ fi
 info "installing..."
 
 ARCHIVE=$(awk '/^__TAR_ARCHIVE_STARTS_HERE__/ {print NR + 1; exit 0; }' "$0")
-tail -n+"$ARCHIVE" "$0" | tar xjf - -C "${tmpdir}"
+tail -n+"$ARCHIVE" "$0" | tar xjf - -C "${tmpdir}" || {
+    echo >&2 "install: could not unpack!"
+    exit 3
+}
 
 olddir="$(pwd)"
 
-mv "${tmpdir}/${GSPC_DIRECTORY_NAME}" "${dst}"
+mv "${tmpdir}/${GSPC_DIRECTORY_NAME}" "${dst}" || {
+    echo >&2 "install: could not move to '${dst}'"
+    exit 3
+}
 
 if [ -r "${license}" ]
 then
@@ -222,7 +236,8 @@ done
 
 if $execute_selftest
 then
-    "${dst}/bin/sdpa" selftest
+    export SDPA_PERFORM_UNATTENDED_SETUP=1
+    "${dst}/bin/sdpa" selftest </dev/null
 fi
 
 cat <<EOF

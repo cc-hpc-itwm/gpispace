@@ -108,7 +108,7 @@ namespace fhg
 
           return 0;
         }
-        catch (std::exception const &ex)
+        catch (std::exception const &)
         {
           return -EINVAL;
         }
@@ -126,7 +126,7 @@ namespace fhg
 
           return 0;
         }
-        catch (std::exception const &ex)
+        catch (std::exception const &)
         {
           return -EINVAL;
         }

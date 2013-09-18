@@ -17,8 +17,11 @@ set (core_srcs
   core/plugin_kernel_mediator.cpp
   core/file_storage.cpp
   core/null_storage.cpp
-  core/license.cpp
 )
+
+if (ENABLE_LICENSE_CHECK)
+  set (core_srcs ${core_srcs} core/license.cpp)
+endif()
 
 add_library(fhg-plugin-core ${core_srcs})
 add_library(fhg-plugin-shared SHARED ${core_srcs})

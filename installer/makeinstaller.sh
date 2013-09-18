@@ -32,6 +32,7 @@ version=
 destdir="$(pwd)"
 verbose=0
 hooks=()
+apps=()
 
 while [ $# -gt 0 ]
 do
@@ -79,6 +80,27 @@ do
                 exit 1
             fi
             hooks+=("$h")
+            shift
+            ;;
+        -A|--app)
+            shift
+            if [ -z "$1" ]
+            then
+                echo >&2 "make: missing argument to --app"
+                exit 1
+            fi
+            appname=${1%=*}
+            apppath=${1#*=}
+            if [ -z "$appname" -o -z "${apppath}" ]
+            then
+                echo >&2 "make: invalid app specification: $1"
+                exit 1
+            fi
+
+            apps+=("$appname" "$apppath")
+
+            unset appname
+            unset apppath
             shift
             ;;
         *)
@@ -130,7 +152,12 @@ then
 fi
 
 oldpwd="$(pwd)"
-tmpdir=$(mktemp -d)
+tmpdir=$(mktemp -d 2>&1)
+if [ $? -ne 0 ]
+then
+    echo >&2 "make: could not create temporary directory: $tmpdir"
+    exit 2
+fi
 
 cleanup()
 {
