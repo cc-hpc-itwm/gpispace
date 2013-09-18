@@ -45,7 +45,6 @@ namespace sdpa
       , STATE_FINISHED
       , STATE_FAILED
       , STATE_CANCELLED
-      , STATE_MIN = STATE_CREATED
       , STATE_MAX = STATE_CANCELLED
       };
 
