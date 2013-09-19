@@ -226,6 +226,7 @@ foreach (test ${tests})
                      fhg-revision
                      ${SEDA_LIBRARY}
                      ${FhgLog_LIBRARY}
+                     we-dev
                      pnet
                      we-dev
                      fhg-util

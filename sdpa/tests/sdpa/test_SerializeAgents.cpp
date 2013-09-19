@@ -68,13 +68,11 @@ struct MyFixture
 		ostringstream os;
 		os.str("");
 
-		if( f.is_open() )
-		{
-			char c;
-			while (f.get(c)) os<<c;
-			f.close();
-		}else
-			cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
+		BOOST_REQUIRE (f.is_open());
+
+    char c;
+    while (f.get(c)) os<<c;
+    f.close();
 
 		return os.str();
 	}
@@ -93,7 +91,7 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 
 	std::string filename = "testDummyWorkflowEngineSerialization.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
-	IWorkflowEngine* pWfEng = new DummyWorkflowEngine();
+	we::mgmt::basic_layer* pWfEng = new DummyWorkflowEngine();
 
 	const int NWFS = 10;
 	encoded_type wf_desc("workflow description ");
@@ -123,7 +121,7 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 	// restore state to one equivalent to the original
 	try
 	{
-		IWorkflowEngine* pRestoredWfEng;
+		we::mgmt::basic_layer* pRestoredWfEng;
 		// open the archive
 		std::ifstream ifs(filename.c_str());
 		boost::archive::text_iarchive ia(ifs);

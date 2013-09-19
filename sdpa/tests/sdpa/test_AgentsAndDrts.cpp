@@ -67,13 +67,11 @@ struct MyFixture
 		ostringstream os;
 		os.str("");
 
-		if( f.is_open() )
-		{
-			char c;
-			while (f.get(c)) os<<c;
-			f.close();
-		}else
-			cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
+    BOOST_REQUIRE (f.is_open());
+
+    char c;
+    while (f.get(c)) os<<c;
+    f.close();
 
 		return os.str();
 	}
@@ -106,32 +104,17 @@ void MyFixture::run_client()
 
 	for( int k=0; k<m_nITER; k++ )
 	{
-		int nTrials = 0;
 		sdpa::job_id_t job_id_user;
 
-		try {
-
-			LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
-			job_id_user = ptrCli->submitJob(m_strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-		}
+    LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
+    job_id_user = ptrCli->submitJob(m_strWorkflow);
 
 		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
 
 		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-		nTrials = 0;
+		int nTrials = 0;
 		while( job_status.find("Finished") == std::string::npos &&
 			   job_status.find("Failed") == std::string::npos &&
 			   job_status.find("Cancelled") == std::string::npos)
@@ -144,49 +127,17 @@ void MyFixture::run_client()
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
-				if(nTrials++ > NMAXTRIALS)
-				{
-					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
-
-					ptrCli->shutdown_network();
-					ptrCli.reset();
-					return;
-				}
+        BOOST_REQUIRE_LT (nTrials, NMAXTRIALS);
 
 				boost::this_thread::sleep(boost::posix_time::seconds(1));
 			}
 		}
 
-		nTrials = 0;
+    LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+    ptrCli->retrieveResults(job_id_user);
 
-		try {
-			LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-			ptrCli->retrieveResults(job_id_user);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-
-			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
-		}
-
-		nTrials = 0;
-
-		try {
-			LOG( DEBUG, "User: delete the job "<<job_id_user);
-			ptrCli->deleteJob(job_id_user);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
-		}
+    LOG( DEBUG, "User: delete the job "<<job_id_user);
+    ptrCli->deleteJob(job_id_user);
 	}
 
 	ptrCli->shutdown_network();

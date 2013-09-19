@@ -52,7 +52,7 @@ static std::string id_gen_f() { return dflt_id_generator::instance().next(); }
 
 typedef boost::function<id_type()> Function_t;
 
-class DummyWorkflowEngine : public IWorkflowEngine {
+class DummyWorkflowEngine : public we::mgmt::basic_layer {
   private:
     SDPA_DECLARE_LOGGER();
   public:
@@ -252,7 +252,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)
     {
-      ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+      ar & boost::serialization::base_object<we::mgmt::basic_layer>(*this);
       ar & map_Act2Wf_Ids_;
     }
 
@@ -299,6 +299,6 @@ inline void load_construct_data(
 
 
 
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(IWorkflowEngine)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(we::mgmt::basic_layer)
 
 #endif //DUMMY_WORKFLOW_ENGINE_HPP

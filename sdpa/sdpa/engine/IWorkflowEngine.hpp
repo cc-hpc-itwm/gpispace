@@ -36,7 +36,4 @@ private:
 	size_t m_nInstances_;
 };
 
-typedef we::mgmt::basic_layer IWorkflowEngine;
-typedef we::mgmt::layer RealWorkflowEngine;
-
 #endif //IWORKFLOWENGINE_HPP

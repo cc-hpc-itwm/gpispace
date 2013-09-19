@@ -37,13 +37,11 @@ struct MyFixture
 		ostringstream os;
 		os.str("");
 
-		if( f.is_open() )
-		{
-			char c;
-			while (f.get(c)) os<<c;
-			f.close();
-		}else
-			cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
+		BOOST_REQUIRE (f.is_open());
+
+    char c;
+    while (f.get(c)) os<<c;
+    f.close();
 
 		return os.str();
 	}

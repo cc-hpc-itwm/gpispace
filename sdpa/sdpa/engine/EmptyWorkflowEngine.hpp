@@ -89,7 +89,7 @@ public:
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)
     {
-      ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+      ar & boost::serialization::base_object<we::mgmt::basic_layer>(*this);
       ar & jobId;
       ar & status;
       ar & result;
@@ -102,7 +102,7 @@ public:
     result_type result;
 };
 
-class EmptyWorkflowEngine : public IWorkflowEngine {
+class EmptyWorkflowEngine : public we::mgmt::basic_layer {
   private:
     SDPA_DECLARE_LOGGER();
   public:
@@ -378,7 +378,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)
     {
-      ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+      ar & boost::serialization::base_object<we::mgmt::basic_layer>(*this);
       ar & map_Act2Wf_Ids_;
       ar & qResults;
     }
@@ -423,6 +423,6 @@ inline void load_construct_data(
 }} // namespace ...
 
 
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(IWorkflowEngine)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(we::mgmt::basic_layer)
 
 #endif //EMPTY_WORKFLOW_ENGINE_HPP

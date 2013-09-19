@@ -124,7 +124,7 @@ namespace sdpa { namespace util {
             std::string val;
             try {
                 val = get(key);
-            } catch (const PropertyLookupFailed &plf) {
+            } catch (const PropertyLookupFailed&) {
                 return def;
             }
 

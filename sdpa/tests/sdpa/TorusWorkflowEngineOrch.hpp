@@ -24,7 +24,7 @@
 
 using namespace boost::numeric::ublas;
 
-class TorusWorkflowEngineOrch : public IWorkflowEngine {
+class TorusWorkflowEngineOrch : public we::mgmt::basic_layer {
   private:
     SDPA_DECLARE_LOGGER();
 

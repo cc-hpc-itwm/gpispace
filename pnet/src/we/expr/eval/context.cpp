@@ -20,74 +20,75 @@ namespace expr
   {
     namespace
     {
-      void do_bind ( boost::unordered_map< std::string
-                                          , pnet::type::value::value_type
-                                          >& container
-                    , const std::list<std::string>& key_vec
-                    , const pnet::type::value::value_type& value
-                    )
+      std::list<std::string> split (const std::string& s)
       {
-        if (key_vec.empty())
-        {
-          throw std::runtime_error ("context::bind []");
-        }
-
-        std::list<std::string>::const_iterator key_pos (key_vec.begin());
-        const std::string& key (*key_pos); ++key_pos;
-
-        pnet::type::value::poke ( key_pos
-                                , key_vec.end()
-                                , container[key]
-                                , value
-                                );
-      }
-      void do_bind ( boost::unordered_map< std::string
-                                          , pnet::type::value::value_type
-                                          >& container
-                    , const std::string& path
-                    , const pnet::type::value::value_type& value
-                    )
-      {
-        do_bind ( container
-                 , fhg::util::split< std::string
-                                   , std::list<std::string>
-                                   > (path, '.')
-                 , value
-                 );
+        return fhg::util::split<std::string, std::list<std::string> > (s, '.');
       }
     }
 
+    void context::bind ( const std::list<std::string>& path
+                       , const pnet::type::value::value_type& value
+                       )
+    {
+      if (path.empty())
+      {
+        throw std::runtime_error ("context::bind []");
+      }
+
+      std::list<std::string>::const_iterator key_pos (path.begin());
+      const std::string& key (*key_pos); ++key_pos;
+
+      pnet::type::value::poke ( key_pos
+                              , path.end()
+                              , _container[key]
+                              , value
+                              );
+    }
     void context::bind ( const std::string& path
                        , const pnet::type::value::value_type& value
                        )
     {
-      do_bind (_container, path, value);
+      bind (split (path), value);
     }
-    void context::bind_ref ( const std::string& path
+
+    void context::bind_ref ( const std::string& key
                            , const pnet::type::value::value_type& value
                            )
     {
-      do_bind (_container, path, value);
+      _ref_container[key] = &value;
     }
 
     void context::bind_and_discard_ref ( const std::list<std::string>& key_vec
                                        , const pnet::type::value::value_type& value
                                        )
     {
-      do_bind (_container, key_vec, value);
+      if (key_vec.empty())
+      {
+        throw std::runtime_error ("context::bind_and_discard_ref []");
+      }
+
+      std::list<std::string>::const_iterator key_pos (key_vec.begin());
+      const std::string& key (*key_pos); ++key_pos;
+
+      const ref_container_type::const_iterator pos (_ref_container.find (key));
+
+      if (pos != _ref_container.end())
+      {
+        _container[key] = *pos->second;
+        _ref_container.erase (pos);
+      }
+
+      pnet::type::value::poke ( key_pos
+                              , key_vec.end()
+                              , _container[key]
+                              , value
+                              );
     }
 
     const pnet::type::value::value_type&
       context::value (const std::string& key) const
     {
-      const container_type::const_iterator pos (_container.find (key));
-
-      if (pos != _container.end())
-      {
-        return pos->second;
-      }
-
-      throw pnet::exception::missing_binding (key);
+      return value (split (key));
     }
 
     const pnet::type::value::value_type&
@@ -100,6 +101,21 @@ namespace expr
 
       std::list<std::string>::const_iterator key_pos (key_vec.begin());
       const std::string& key (*key_pos); ++key_pos;
+
+      {
+        const ref_container_type::const_iterator pos (_ref_container.find (key));
+
+        if (pos != _ref_container.end())
+        {
+          boost::optional<const pnet::type::value::value_type&>
+            v (pnet::type::value::peek (key_pos, key_vec.end(), *pos->second));
+
+          if (v)
+          {
+            return *v;
+          }
+        }
+      }
 
       {
         const container_type::const_iterator pos (_container.find (key));
@@ -121,13 +137,26 @@ namespace expr
 
     std::ostream& operator<< (std::ostream& s, const context& cntx)
     {
-      typedef std::pair<std::string, pnet::type::value::value_type> kv_type;
-
-      BOOST_FOREACH (const kv_type& kv, cntx._container)
       {
-        s << kv.first
-          << " := " << pnet::type::value::show (kv.second)
-          << std::endl;
+        typedef std::pair<std::string, pnet::type::value::value_type> kv_type;
+
+        BOOST_FOREACH (const kv_type& kv, cntx._container)
+        {
+          s << kv.first
+            << " := " << pnet::type::value::show (kv.second)
+            << std::endl;
+        }
+      }
+
+      {
+        typedef std::pair<std::string, const pnet::type::value::value_type*> kv_type;
+
+        BOOST_FOREACH (const kv_type& kv, cntx._ref_container)
+        {
+          s << kv.first
+            << " -> " << pnet::type::value::show (*kv.second)
+            << std::endl;
+        }
       }
 
       return s;

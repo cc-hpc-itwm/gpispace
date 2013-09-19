@@ -60,13 +60,11 @@ struct MyFixture
 		ostringstream os;
 		os.str("");
 
-		if( f.is_open() )
-		{
-			char c;
-			while (f.get(c)) os<<c;
-			f.close();
-		}else
-			cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
+		BOOST_REQUIRE (f.is_open());
+
+    char c;
+    while (f.get(c)) os<<c;
+    f.close();
 
 		return os.str();
 	}
@@ -305,7 +303,7 @@ BOOST_AUTO_TEST_CASE( Test3)
 	ptrOrch->start_agent(false, strBackupOrch);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false, strBackupAgent);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0",  "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
@@ -319,7 +317,7 @@ BOOST_AUTO_TEST_CASE( Test3)
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	// now try to recover the system
-	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrRecAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 
 	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
 	ptrRecAgent->start_agent(false, strBackupAgent);
