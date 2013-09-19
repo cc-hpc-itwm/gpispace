@@ -27,7 +27,7 @@ for k in $list ; do
 	sleep 30
 
         echo "Run mapreduce on words.$k"
-        cat Makefile_ml.tpl | sed -e "s/2000/$k/g" > Makefile
+        cat ../bin/Makefile_ml.tpl | sed -e "s/2000/$k/g" > Makefile
 
         command_run="make submit"
         START=$(date +%s)
