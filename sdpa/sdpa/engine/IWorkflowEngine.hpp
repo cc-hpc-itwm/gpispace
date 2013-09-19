@@ -6,6 +6,7 @@
 #include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
 
 typedef we::mgmt::basic_layer::id_type id_type;
 typedef we::mgmt::basic_layer::result_type result_type;
@@ -13,27 +14,25 @@ typedef we::mgmt::basic_layer::reason_type reason_type;
 typedef we::mgmt::basic_layer::encoded_type encoded_type;
 
 typedef we::type::requirement_t requirement_t;
-typedef std::list<requirement_t> requirements_list_t;
+typedef std::list<requirement_t> requirement_list_t;
+typedef we::type::schedule_data schedule_data;
 
 struct job_requirements_t
 {
-	typedef requirements_list_t::const_iterator const_iterator;
+	typedef requirement_list_t::const_iterator const_iterator;
 
-	job_requirements_t() :  m_nInstances_(1) {};
-	job_requirements_t(const requirements_list_t& r_list, int m=1) :
-		m_requirementsList(r_list), m_nInstances_(m)
+	job_requirements_t(const requirement_list_t& r_list, const schedule_data& schedule_data) :
+		m_requirementList(r_list), m_scheduleData(schedule_data)
 	{
 	}
 
-	void add(const requirement_t& req) {m_requirementsList.push_back(req); }
+	void add(const requirement_t& req) {m_requirementList.push_back(req); }
 
-	size_t nInstances() { return m_nInstances_; }
-	void setNumberOfInstances(size_t n) { m_nInstances_ = n; }
-
-	const requirements_list_t& getReqList() const { return m_requirementsList; }
+	long numWorkers() { return m_scheduleData.num_worker()?m_scheduleData.num_worker().get():1; }
+	const requirement_list_t& getReqList() const { return m_requirementList; }
 private:
-	requirements_list_t m_requirementsList;
-	size_t m_nInstances_;
+	requirement_list_t m_requirementList;
+	schedule_data m_scheduleData;
 };
 
 #endif //IWORKFLOWENGINE_HPP
