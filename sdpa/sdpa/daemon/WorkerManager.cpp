@@ -470,7 +470,7 @@ bool compare_degrees( sdpa::list_match_workers_t::value_type left, sdpa::list_ma
 size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 {
 	size_t count = 0;
-	requirements_list_t listR = listJobReq.getReqList();
+	requirement_list_t listR = listJobReq.getReqList();
 	BOOST_FOREACH(const requirement_t& req, listR)
 	{
 		count+=(int)req.is_mandatory();
