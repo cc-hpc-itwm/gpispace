@@ -282,7 +282,7 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
       if(pGenericDaemon_)
       {
         SDPA_LOG_DEBUG("Submit to the agent "<<pGenericDaemon_->name()<<" new activity \""<<act_id<<"\"");
-        pGenericDaemon_->submit(act_id, wf_desc, empty_req_list());
+        pGenericDaemon_->submit(act_id, wf_desc);
       }
     }
 
