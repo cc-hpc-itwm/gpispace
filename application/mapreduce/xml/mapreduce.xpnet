@@ -327,8 +327,8 @@
         <expression>
         	${reduce_info.slot_id}:=${red_slot_id};
         	${reduce_info.part_id}:=div(${red_slot_id},${config.num.slots_per_part});
-		  	${reduce_info.red_used}:=0L;
 		  	${reduce_info.old_red_used}:=0L;
+		  	${reduce_info.red_used}:=0L;
         </expression>
       </defun>
       <connect-read port="config" place="config"/>
@@ -352,7 +352,6 @@
       <connect-in port="amount" place="n_part_ids_gen"/>
       <connect-out port="out" place="part_id"/>
     </transition>
-
 
     <place name="n_map_slots_cnt" type="long"/>
     <place name="n_map_slots_gen" type="long"/>
@@ -528,7 +527,7 @@
 
 			map_chunk_info.map_slot_id 		= map_slot_id;
             map_chunk_info.chunk_id 		= read_chunk_info.chunk_id;
-			map_chunk_info.arr_part_ids    	= std::list<pnet::type::value::value_type>();
+			map_chunk_info.arr_part_ids     = std::list<pnet::type::value::value_type>();
   			map_chunk_info.arr_part_offset 	= std::list<pnet::type::value::value_type>();
   			map_chunk_info.arr_part_used   	= std::list<pnet::type::value::value_type>();
 
@@ -621,11 +620,10 @@
 	     <expression>
 	        ${part_slice_info.map_slot_id}:=${map_chunk_info.map_slot_id};
 			${part_slice_info.chunk_id}:=${map_chunk_info.chunk_id};
-
 			${part_slice_info.part_id}:=stack_top(${map_chunk_info.arr_part_ids});
 			${part_slice_info.part_offset}:=stack_top(${map_chunk_info.arr_part_offset});
 			${part_slice_info.part_used}:=stack_top(${map_chunk_info.arr_part_used});
-
+			
 			${map_chunk_info.chunk_id}:=${map_chunk_info.chunk_id};
 			${map_chunk_info.map_slot_id}:=${map_chunk_info.map_slot_id};
 	        ${map_chunk_info.arr_part_ids}:=stack_pop(${map_chunk_info.arr_part_ids});
@@ -642,7 +640,7 @@
     </transition>
 
    <place name="partition_result" type="partition_result"/>
-    <transition name="copy_into_partition_slot" inline="true">
+    <transition name="shuffle" inline="true">
       <require key="GPI" />
       <require key="RED" />
     	<defun>
@@ -650,7 +648,7 @@
         <in name="partition_info" type="partition_info"/>
         <in name="config" type="config"/>
         <out name="partition_result" type="partition_result"/>
-        <module name="store_into_partition_slot" function="copy_map_slice_into_partition(part_slice_info, partition_info, config, partition_result)">
+        <module name="store_into_partition_slot" function="shuffle(part_slice_info, partition_info, config, partition_result)">
            <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="sstream"/>
@@ -681,7 +679,7 @@
             // initialize partition_result
             partition_result.partition_info = partition_info;
             partition_result.part_slice_info = part_slice_info;
-            partition_result.succeeded = 0;
+            partition_result.succeeded = false;
 
             char* ptr_shmem = static_cast<char *> (fvmGetShmemPtr());
             char* ptr_out_buff = ptr_shmem + offset_out_buff;
@@ -787,7 +785,7 @@
 
 
 	        	partition_result.partition_info.part_used = last_pos;
-	        	partition_result.succeeded = 1;
+	        	partition_result.succeeded = true;
 
 	            MLOG( INFO, "Stored partition slice of the map slot "<<part_slice_info.map_slot_id<<" into the partition slot"
 	                	    << partition_info.slot_id << " of size " << partition_result.partition_info.part_used<<" ...");
@@ -795,7 +793,7 @@
 			}
             else
             {
-                partition_result.succeeded = 0;
+                partition_result.succeeded = false;
                 MLOG (ERROR, "cannot continue: " << part_slice_info.part_used << " bytes required, but I only have: " << config.size.partition.slot << " increase partition slot size!");
                 throw std::runtime_error ("out of memory: partition slot too small");
             }
@@ -827,7 +825,7 @@
 		  	${update_gid} := ${partition_result.part_slice_info.chunk_id}
         </expression>
         <condition>
-            ${partition_result.succeeded}:eq:1L
+            ${partition_result.succeeded}
         </condition>
       </defun>
       <connect-in port="partition_result" place="partition_result"/>
@@ -844,9 +842,9 @@
     	<in name="counter_partial_updates" type="counter_partial_updates_t"/>
     	<out name="counter_partial_updates_new" type="counter_partial_updates_t"/>
      	<expression>
-			${counter_partial_updates_new.counter}:=${counter_partial_updates.counter}-1;
 			${counter_partial_updates_new.chunk_id}:=${counter_partial_updates.chunk_id};
 			${counter_partial_updates_new.map_slot_id}:=${counter_partial_updates.map_slot_id};
+			${counter_partial_updates_new.counter}:=${counter_partial_updates.counter}-1L;
         </expression>
     	<condition>
       		${counter_partial_updates.counter}:gt:0L
@@ -865,9 +863,9 @@
     	<in name="counter_partial_updates_new" type="counter_partial_updates_t"/>
     	<out name="counter_partial_updates" type="counter_partial_updates_t"/>
      	<expression>
-			${counter_partial_updates.counter}:=${counter_partial_updates_new.counter};
 			${counter_partial_updates.chunk_id}:=${counter_partial_updates_new.chunk_id};
 			${counter_partial_updates.map_slot_id}:=${counter_partial_updates_new.map_slot_id};
+			${counter_partial_updates.counter}:=${counter_partial_updates_new.counter};
         </expression>
 	</defun>
     <connect-in port="counter_partial_updates_new" place="counter_partial_updates_new"/>
@@ -947,7 +945,7 @@
                 partition_move_info.reduce_info = reduce_info;
              	partition_move_info.partition_info = partition_result.partition_info;
              	partition_move_info.part_slice_info = partition_result.part_slice_info;
-             	partition_move_info.succeeded = 0;
+             	partition_move_info.succeeded = false;
 			}
 			else
 			{
@@ -994,7 +992,7 @@
 		             	partition_move_info.reduce_info = reduce_info;
 		             	partition_move_info.partition_info = partition_result.partition_info;
 		             	partition_move_info.part_slice_info = partition_result.part_slice_info;
-		             	partition_move_info.succeeded = 0;
+		             	partition_move_info.succeeded = false;
 	                }
 	                else
 	                {
@@ -1016,7 +1014,7 @@
 
 			             partition_move_info.partition_info = partition_result.partition_info;
 			             partition_move_info.part_slice_info = partition_result.part_slice_info;
-			             partition_move_info.succeeded = 1;
+			             partition_move_info.succeeded = true;
 		            }
 				}
 	            else // partition_info.part_used == 0, nothing to be done
@@ -1024,7 +1022,7 @@
 	             	partition_move_info.reduce_info = reduce_info;
 	             	partition_move_info.partition_info = partition_result.partition_info;
 	             	partition_move_info.part_slice_info = partition_result.part_slice_info;
-	             	partition_move_info.succeeded = 0;
+	             	partition_move_info.succeeded = false;
 
 	                MLOG_IF (WARN, partition_result.succeeded, "condition is incorrect");
 	                MLOG (ERROR, "The partition "<<partition_result.partition_info.slot_id<<" is empty, there is nothing to reduce!");
@@ -1037,7 +1035,7 @@
           ]]></code>
         </module>
         <condition>
-            ${partition_result.succeeded}:eq:0L
+            !${partition_result.succeeded}
         </condition>
 		<condition>
             ${reduce_info.part_id}:eq:${partition_result.partition_info.part_id}
@@ -1065,7 +1063,7 @@
         	${part_slice_info}:=${partition_move_info.part_slice_info};
         </expression>
         <condition>
-            ${partition_move_info.succeeded}:eq:1L
+            ${partition_move_info.succeeded}
         </condition>
       </defun>
       <connect-in port="partition_move_info" place="partition_move_info"/>
@@ -1328,7 +1326,7 @@
 		</module>
       </defun>
         <condition>
-            ${partition_move_info.succeeded}:eq:0L
+            !${partition_move_info.succeeded}
         </condition>
       <connect-in port="partition_move_info" place="partition_move_info"/>
       <connect-read port="config" place="config"/>
@@ -1343,7 +1341,7 @@
         <expression>
         	${partition_result.partition_info}:=${reduce_result.partition_info};
         	${partition_result.part_slice_info}:=${reduce_result.part_slice_info};
-        	${partition_result.succeeded}:=0L;
+        	${partition_result.succeeded}:=false;
         </expression>
       </defun>
       <connect-in port="reduce_result" place="reduce_result"/>
