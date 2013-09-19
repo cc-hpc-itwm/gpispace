@@ -133,7 +133,7 @@ protected:
     int matchingDeg = 0;
 
     // for all job requirements
-    const requirements_list_t& listR = job_req_set.getReqList();
+    const requirement_list_t& listR = job_req_set.getReqList();
     for( typename TReqSet::const_iterator it = listR.begin(); it != listR.end(); it++ )
     {
       //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
