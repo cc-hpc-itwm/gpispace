@@ -103,30 +103,22 @@ BOOST_AUTO_TEST_CASE(testCoAllocation)
 	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
 	pAgent->jobManager()->addJob(jobId2, pJob2);
 
-	job_requirements_t req_list_0;
-	requirement_t req_0(WORKER_CPBS[0], true);
-	req_list_0.add(req_0);
-	req_list_0.setNumberOfInstances(4);
-	pAgent->jobManager()->addJobRequirements(jobId0, req_list_0);
+	job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
 	pAgent->scheduler()->schedule_remote(jobId0);
 
-	job_requirements_t req_list_1;
-	requirement_t req_1(WORKER_CPBS[1], true);
-	req_list_1.add(req_1);
-	req_list_1.setNumberOfInstances(4);
-	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
+	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
 	pAgent->scheduler()->schedule_remote(jobId1);
 
-	job_requirements_t req_list_2;
-	requirement_t req_2(WORKER_CPBS[2], true);
-	req_list_2.add(req_2);
-	req_list_2.setNumberOfInstances(4);
-	pAgent->jobManager()->addJobRequirements(jobId2, req_list_2);
+	job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
 	pAgent->scheduler()->schedule_remote(jobId2);
 
 	pAgent->scheduler()->assignJobsToWorkers();
 
 	ostringstream ossrw;int k=-1;
+	ossrw<<std::setfill (' ')<<std::setw(2);
 	sdpa::worker_id_list_t listJobAssignedWorkers = pAgent->scheduler()->getListAllocatedWorkers(jobId0);
 	BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
 	{
@@ -142,7 +134,7 @@ BOOST_AUTO_TEST_CASE(testCoAllocation)
 	{
 		k = boost::lexical_cast<int>(wid);
 		BOOST_CHECK( k==1 || k==4 || k==7 || k==10);
-		ossrw<<wid<<" ";
+		ossrw<<std::setfill (' ')<<std::setw(10)<<wid<<" ";
 	}
 	//LOG(INFO, "The job jobId1 has been allocated the workers "<<ossrw.str());
 
@@ -161,13 +153,15 @@ BOOST_AUTO_TEST_CASE(testCoAllocation)
 	sdpa::daemon::Job::ptr_t pJob4(new JobFSM(jobId4, "description 4"));
 	pAgent->jobManager()->addJob(jobId4, pJob4);
 
-	req_list_0.setNumberOfInstances(2);
-    pAgent->jobManager()->addJobRequirements(jobId4, req_list_0);
+	job_requirements_t jobReqs_5(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(2, 100));
+    pAgent->jobManager()->addJobRequirements(jobId4, jobReqs_5);
 	pAgent->scheduler()->schedule_remote(jobId4);
 
 	pAgent->scheduler()->assignJobsToWorkers();
 	sdpa::worker_id_list_t listFreeWorkers(pAgent->scheduler()->getListAllocatedWorkers(jobId4));
 	BOOST_CHECK(listFreeWorkers.empty());
+
+	reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
 
 	// Now report that jobId0 has finished and try to assign again resources to the job 4
 	pAgent->scheduler()->releaseAllocatedWorkers(jobId0);
@@ -181,9 +175,8 @@ BOOST_AUTO_TEST_CASE(testCoAllocation)
 
 	int w1 = boost::lexical_cast<int>(listFreeWorkers[1]);
 	BOOST_CHECK(w1==0 || w1 == 3  || w1 == 6|| w1 == 9);
-	//reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
+	reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
 }
-
 
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
@@ -208,10 +201,8 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 	const sdpa::job_id_t jobId1("Job1");
 	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
 	pAgent->jobManager()->addJob(jobId1, pJob1);
-	job_requirements_t req_list_1;
-	requirement_t req_1("C", true);
-	req_list_1.add(req_1);
-	pAgent->jobManager()->addJobRequirements(jobId1, req_list_1);
+	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
+	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
 
 	LOG(DEBUG, "Schedule the job "<<jobId1);
 	ptrScheduler->schedule_remote(jobId1);
@@ -294,9 +285,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
 		pAgent->jobManager()->addJob(jobId, pJob);
 
-		job_requirements_t job_reqs;
-		job_reqs.add(requirement_t("C", true));
-		pAgent->jobManager()->addJobRequirements(jobId, job_reqs);
+		job_requirements_t jobReqs(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
+		pAgent->jobManager()->addJobRequirements(jobId, jobReqs);
 	}
 
 	// schedule all jobs now
@@ -379,9 +369,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 		osstr.str("");
 		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
 		pAgent->jobManager()->addJob(jobId, pJob);
-		job_requirements_t job_reqs;
-		job_reqs.add(requirement_t("C", true));
-		pAgent->jobManager()->addJobRequirements(jobId, job_reqs);
+		pAgent->jobManager()->addJobRequirements(jobId, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
 	}
 
 	// schedule all jobs now
@@ -471,9 +459,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
 		pAgent->jobManager()->addJob(jobId, pJob);
 
-		job_requirements_t job_reqs;
-		job_reqs.add(requirement_t("C", true));
-		pAgent->jobManager()->addJobRequirements(jobId, job_reqs);
+		pAgent->jobManager()->addJobRequirements(jobId, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
 	}
 
 	// schedule all jobs now
@@ -555,9 +541,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 		osstr.str("");
 		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
 		pAgent->jobManager()->addJob(jobId, pJob);
-		job_requirements_t job_reqs;
-		job_reqs.add(requirement_t("C", true));
-		pAgent->jobManager()->addJobRequirements(jobId, job_reqs);
+		pAgent->jobManager()->addJobRequirements(jobId, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
 	}
 
 	// schedule all jobs now
