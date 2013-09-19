@@ -1059,7 +1059,8 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
  */
 void GenericDaemon::submit( const id_type& activityId
                           , const encoded_type& desc
-                          , const job_requirements_t& job_req_list
+                          //, const job_requirements_t& job_req_list
+                          , const requirement_list_t& req_list
                           , const we::type::schedule_data& schedule_data
                           )
 {
@@ -1067,6 +1068,7 @@ void GenericDaemon::submit( const id_type& activityId
   // set the parent_id to ?
   // add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
   // schedule the new job to some worker
+  job_requirements_t jobReqs(req_list, schedule_data);
 
   try {
     DMLOG(TRACE, "workflow engine submitted "<<activityId);
@@ -1074,7 +1076,7 @@ void GenericDaemon::submit( const id_type& activityId
     job_id_t job_id(activityId);
     job_id_t parent_id("WE"); // is this really needed?
 
-    jobManager()->addJobRequirements(job_id, job_req_list);
+    jobManager()->addJobRequirements(job_id, jobReqs);
 
     // WORK HERE: limit number of maximum parallel jobs
     jobManager()->waitForFreeSlot ();
