@@ -24,10 +24,10 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 ###############################################################################
 
-#PUT_PORT += input_file=\"/scratch/rotaru/data/words.10000\"
-PUT_PORT += input_file_1=\"/scratch/rotaru/data/words.1000\"
-PUT_PORT += input_file_2=\"/scratch/rotaru/data/words.1000\"
-PUT_PORT += output_file=\"/scratch/rotaru/data/out_2x1000.txt\"
+#PUT_PORT += input_file=\"/scratch/rotaru/data/words.10\"
+PUT_PORT += input_file_1=\"/scratch/rotaru/data/words.1\"
+PUT_PORT += input_file_2=\"/scratch/rotaru/data/words.1\"
+PUT_PORT += output_file=\"/scratch/rotaru/data/out_2x1.txt\"
 PUT_PORT += read_chunk_size=180108864L #160108864 #130108864 #260108864
 PUT_PORT += map_chunk_size=220943004L #200943004 #190943004 #190943004 #360943004
 #PUT_PORT += map_chunk_size=360943004L #35582912
