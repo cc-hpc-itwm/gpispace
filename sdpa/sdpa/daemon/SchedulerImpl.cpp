@@ -711,7 +711,7 @@ void SchedulerImpl::assignJobsToWorkers()
 			job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
 			// LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
 
-			nReqWorkers = job_reqs.nInstances();
+			nReqWorkers = job_reqs.numWorkers();
 			matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
 		}
 		catch( const NoJobRequirements& ex ) // no requirements are specified
