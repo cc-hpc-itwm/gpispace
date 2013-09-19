@@ -69,11 +69,6 @@
 
 #include <boost/utility.hpp>
 
-inline const job_requirements_t& empty_req_list()
-{
-  static job_requirements_t e_req_list;
-  return e_req_list;
-}
 
 namespace sdpa {
   namespace daemon {
@@ -127,7 +122,8 @@ namespace sdpa {
       // WE interface
       virtual void submit( const id_type & id
                          , const encoded_type&
-                         , const job_requirements_t& = empty_req_list()
+                         //, const job_requirements_t& = empty_req_list()
+                         , const requirement_list_t& = requirement_list_t()
                          , const we::type::schedule_data& = we::type::schedule_data()
                          );
       virtual bool cancel(const id_type & id, const reason_type& reason);
