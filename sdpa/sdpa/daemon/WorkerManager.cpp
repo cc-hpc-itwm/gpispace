@@ -594,3 +594,15 @@ void WorkerManager::removeWorkers()
 	common_queue_.clear();
 	worker_map_.clear();
 }
+
+void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id) throw (WorkerReservationFailed)
+{
+	lock_type lock(mtx_);
+	worker_map_t::iterator it = worker_map_.find(worker_id);
+	if( it != worker_map_.end() )
+	{
+		  it->second->reserve();
+	}
+	else
+		throw WorkerReservationFailed(worker_id);
+}
