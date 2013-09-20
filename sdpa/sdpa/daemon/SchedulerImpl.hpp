@@ -93,7 +93,7 @@ namespace sdpa {
 
 	    sdpa::worker_id_t findSuitableWorker(const job_requirements_t&, sdpa::worker_id_list_t&);
 	    void releaseAllocatedWorkers(const sdpa::job_id_t& jobId);
-	    Worker::ptr_t reserveWorker(const sdpa::job_id_t&, const sdpa::worker_id_t&);
+	    void reserveWorker(const sdpa::job_id_t&, const sdpa::worker_id_t&) throw (WorkerReservationFailed);
 
 	    virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
@@ -151,6 +151,8 @@ namespace sdpa {
 	    mutable mutex_type mtx_;
 	    condition_type cond_feed_workers;
 	    condition_type cond_workers_registered;
+
+	    mutable mutex_type mtx_alloc_table_;
 	    allocation_table_t allocation_table;
 
     };
