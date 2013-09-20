@@ -597,7 +597,8 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
     // you should consume from the  worker's pending list; put the job into the worker's submitted list
     //sdpa::job_id_t jobId = scheduler()->getNextJob(worker_id, last_job_id);
 	//check first if the worker exist
-	Worker::ptr_t ptrWorker(findWorker(worker_id));
+	//Worker::ptr_t ptrWorker(findWorker(worker_id));
+
     DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
 
     const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
@@ -610,7 +611,10 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 
     // Post a SubmitJobEvent to the slave who made the request
     sendEventToSlave(pSubmitEvt);
-    scheduler()->setLastTimeServed(worker_id, sdpa::util::now());
+
+    // if everything was fine up to here, mark the job as submitted
+    Worker::ptr_t pWorker(findWorker(worker_id));
+    pWorker->submit(jobId);
   }
   catch(const NoJobScheduledException&)
   {
