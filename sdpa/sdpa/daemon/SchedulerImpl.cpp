@@ -641,20 +641,12 @@ void SchedulerImpl::getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerLis
 	ptr_worker_man_->getListWorkersNotReserved(workerList);
 }
 
-Worker::ptr_t SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId)
+void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId) throw( WorkerReservationFailed)
 {
-	lock_type lock(mtx_);
-	const Worker::ptr_t pWorker = findWorker(matchingWorkerId);
-
-	// reserve the worker first
-	pWorker->reserve();
-
-	//pWorker->dispatch(matchingWorkerId);
-
+	ptr_worker_man_->reserveWorker(matchingWorkerId);
 	// allocate this worker to the job with the jobId
+	lock_type lock_table(mtx_alloc_table_);
 	allocation_table[jobId].push_back(matchingWorkerId);
-
-	return pWorker;
 }
 
 sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
@@ -723,7 +715,7 @@ void SchedulerImpl::assignJobsToWorkers()
 
 		if( !matchingWorkerId.empty() ) // matching found
 		{
-			Worker::ptr_t pWorker(reserveWorker(jobId, matchingWorkerId));
+			reserveWorker(jobId, matchingWorkerId);
 
 			// attention: what to do if job_reqs.n_workers_req > total number of registered workers?
 			// if all the required resources were acquired, mark the job as submitted
@@ -731,7 +723,6 @@ void SchedulerImpl::assignJobsToWorkers()
 			{
 				ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
 				ptr_worker_man_->common_queue_.pop();
-				pWorker->submit(jobId);
 			}
 		}
 		else // put it back into the common queue
@@ -981,9 +972,10 @@ void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
 
 void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
 {
-	lock_type lock(mtx_);
+	lock_type lock_table(mtx_alloc_table_);
 	BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
 	{
+		lock_type lock_worker;
 		Worker::ptr_t ptrWorker = findWorker(workerId);
 		ptrWorker->free();
 	}
@@ -1170,7 +1162,7 @@ void SchedulerImpl::setLastTimeServed(const worker_id_t& wid, const sdpa::util::
 
 void SchedulerImpl::printAllocationTable()
 {
-	lock_type lock(mtx_);
+	lock_type lock(mtx_alloc_table_);
 	ostringstream oss;
 	BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table)
 	{
@@ -1185,6 +1177,7 @@ void SchedulerImpl::printAllocationTable()
 
 sdpa::job_id_t SchedulerImpl::getAssignedJob(const sdpa::worker_id_t& wid)
 {
+	lock_type lock(mtx_alloc_table_);
 	allocation_table_t::iterator it = allocation_table.begin();
 	while(it != allocation_table.end())
 	{
