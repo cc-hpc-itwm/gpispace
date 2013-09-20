@@ -83,6 +83,7 @@ namespace sdpa { namespace daemon {
     void cancelWorkerJobs(sdpa::daemon::Scheduler*);
     void forceOldWorkerJobsTermination();
     virtual Worker::worker_id_t getWorkerId(unsigned int r);
+    void reserveWorker(const sdpa::worker_id_t&) throw (WorkerReservationFailed);
 
     bool has_job(const sdpa::job_id_t& job_id);
 
