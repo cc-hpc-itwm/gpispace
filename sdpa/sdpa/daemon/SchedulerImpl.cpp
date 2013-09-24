@@ -649,7 +649,7 @@ void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worke
 	allocation_table[jobId].push_back(matchingWorkerId);
 }
 
-sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
+/*sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
 {
 	lock_type lock(mtx_);
 	sdpa::worker_id_t matchingWorkerId;
@@ -670,6 +670,23 @@ sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& jo
 			else
 				itPref++;
 		}
+	}
+	catch(NoWorkerFoundException& exc)
+	{
+	}
+
+	return matchingWorkerId;
+}*/
+
+sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
+{
+	lock_type lock(mtx_);
+	sdpa::worker_id_t matchingWorkerId;
+
+	try {
+		matchingWorkerId = ptr_worker_man_->getBestMatchingWorker(job_reqs, listAvailWorkers);
+		sdpa::worker_id_list_t::iterator it = std::find(listAvailWorkers.begin(), listAvailWorkers.end(), matchingWorkerId);
+		listAvailWorkers.erase(it);
 	}
 	catch(NoWorkerFoundException& exc)
 	{
