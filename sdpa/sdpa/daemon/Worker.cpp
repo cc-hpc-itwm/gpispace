@@ -114,27 +114,6 @@ void Worker::delete_job(const sdpa::job_id_t &job_id)
 	}
 }
 
-sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
-{
-	lock_type lock(mtx_);
-	// acknowledge a previous job
-	if( !last_job_id.str().empty() && last_job_id != sdpa::job_id_t::invalid_job_id())
-		acknowledge(last_job_id);
-
-	try
-	{
-		// move the job from pending to submitted
-		sdpa::job_id_t jobId = pending().pop();
-		submitted().push(jobId);
-		//update();
-		return jobId;
-	}
-	catch(const QueueEmpty& )
-	{
-		throw NoJobScheduledException(name());
-	}
-}
-
 void Worker::print()
 {
 	lock_type lock(mtx_);

@@ -134,13 +134,6 @@ namespace sdpa { namespace daemon {
     void set_disconnected(bool bValue = true) { lock_type lock(mtx_); disconnected_ = bValue; }
 
     /**
-      Return the next pending job or throw an exception.
-
-      @param last_job_id the id of the last sucessfully submitted job
-      */
-    sdpa::job_id_t get_next_job( const sdpa::job_id_t &last_job_id ) throw (NoJobScheduledException);
-
-    /**
 	  Remove a job that was finished or failed from the acknowledged_ queue
 
 	  a second flag is needed in the case the job is canceled (in order to look into the other queues, as well)
