@@ -121,7 +121,7 @@ else
     extra+=(-DBUILD_TESTING=OFF)
 fi
 
-"${srcdir}/configure" -p "${instdir}" -- "${extra[@]}" || { echo >&2 "FAILED: could not CONFIGURE"; exit 11; }
+"${srcdir}/configure" --prefix="${instdir}" -- "${extra[@]}" || { echo >&2 "FAILED: could not CONFIGURE"; exit 11; }
 
 make -j "${jobs}" -k || { echo >&2 "FAILED: could not BUILD" ; exit 12; }
 if [ -d "${instdir}" ] ; then

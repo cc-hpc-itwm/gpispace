@@ -56,7 +56,6 @@ function get_cmake_cache_entry ()
 }
 
 # initialize from CMakeCache.txt
-echo -n "initializing variables..." >&2
 if [ -r "CMakeCache.txt" ] ; then
 
     get_cmake_cache_entry CMAKE_HOME_DIRECTORY src
@@ -75,7 +74,6 @@ if [ -r "CMakeCache.txt" ] ; then
 
     get_cmake_cache_entry FHG_ASSERT_MODE fhg_assert_mode
 fi
-echo "done." >&2
 
 build_rev=$( cd "$src" && git rev-parse HEAD 2>/dev/null )
 if [ $? != 0 ]; then
@@ -117,198 +115,221 @@ EOF
 function usage ()
 {
     cat >&2 <<EOF
-$0 [-h] [-b type] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-m|-M] [-V version] [-L level] [-p prefix] [-R assert-mode] [-- options to cmake]
-   -h  : print help
-   -b  : build type
-   -aA : build apps (a:yes A:no)
-   -tT : build tests (t:yes T:no)
-   -sS : build static (s:yes S:no)
-   -gG : build gpi (g:yes G:no)
-   -fF : build gpi filesystem (f:yes F:no)
-   -mM : build monitor guil (m:yes M:no)
-   -eE : build pnet editor (e:yes E:no)
-   -R  : set fhg_assert mode (0:off 1:on 2:assert 3:throw 4:log)
-   -V  : explicitly set revision
-   -L  : strip log level up to and including N
-   -p  : install prefix
+$0 [-h] [options] [--] [cmake options]
 
+general options:
+----------------
+
+      -h|--help : print help
+        --query : query the current settings
+    --type type : set the build type
+  --prefix=PATH : install prefix
+
+modify behavior:
+----------------
+
+    --strip-log=N : strip log level up to and including N
+  --assert-mode=M : set the assert mode to one of:
+
+                       off, on, assert, throw, log
+
+control features:
+-----------------
+
+    --with-apps[=yes|no] : build applications
+   --with-tests[=yes|no] : build tests
+     --with-gui[=yes|no] : build the monitoring gui
+  --with-editor[=yes|no] : build the PNET Editor
+     --with-gpi[=yes|no] : build GPI virtual memory manager
+   --with-gpifs[=yes|no] : build GPI filesystem
 EOF
-    print_settings
 }
 
-count=0
-while getopts ":hb:tTsSaAgGfFmMeER:L:V:p:" opt; do
-    case $opt in
-        h)
+function read_bool ()
+{
+    local b="$1"; shift
+    local t="$1"; shift # counts as true as well
+    case "$(echo ${b} | tr [A-Z] [a-z])" in
+        yes|true|1|on|${t})
+            echo true
+            ;;
+        no|false|0|off)
+            echo false
+            ;;
+        *)
+            echo >&2 "invalid boolean value: $b"
+            exit 66
+            ;;
+    esac
+}
+
+while [ $# -gt 0 ]
+do
+    case "${1}" in
+        -h|--help)
+            shift
             usage
             exit 0
             ;;
-        b)
-            count=$(( count + 2 ))
-            build_type="$OPTARG"
+        -q|--query)
+            print_settings
+            shift
+            exit 0
             ;;
-        a)
-            count=$(( count + 1 ))
-            build_apps=true
+        --prefix=*)
+            build_prefix="${1#*=}"
+            shift
             ;;
-        A)
-            count=$(( count + 1 ))
-            build_apps=false
+        --type=*)
+            build_type="${1#*=}"
+            shift
             ;;
-        t)
-            count=$(( count + 1 ))
-            build_tests=true
+        --strip-log=*)
+            strip_log="${1#*=}"
+            shift
             ;;
-        T)
-            count=$(( count + 1 ))
-            build_tests=false
+        --revision=*)
+            build_rev="${1#*=}"
+            shift
             ;;
-        s)
-            count=$(( count + 1 ))
-            build_static=true
+        --assert-mode=*)
+            fhg_assert_mode="${1#*=}"
+            case "${fhg_assert_mode}" in
+                [0-4])
+                    ;;
+                off)
+                    fhg_assert_mode=0
+                    ;;
+                on)
+                    fhg_assert_mode=1
+                    ;;
+                assert)
+                    fhg_assert_mode=2
+                    ;;
+                throw)
+                    fhg_assert_mode=3
+                    ;;
+                log)
+                    fhg_assert_mode=4
+                    ;;
+                *)
+                    echo >&2 "configure: invalid assert-mode: $fhg_assert_mode"
+                    exit 1
+            esac
+            shift
             ;;
-        S)
-            count=$(( count + 1 ))
-            build_static=false
+        --with-apps|--with-apps=*)
+            build_apps=$(read_bool "${1#*=}" --with-apps)
+            shift
             ;;
-        g)
-            count=$(( count + 1 ))
-            build_gpi=true
+        --with-tests|--with-tests=*)
+            build_tests=$(read_bool "${1#*=}" --with-tests)
+            shift
             ;;
-        G)
-            count=$(( count + 1 ))
-            build_gpi=false
+        --with-gui|--with-gui=*)
+            build_gui=$(read_bool "${1#*=}" --with-gui)
+            shift
             ;;
-        f)
-            count=$(( count + 1 ))
-            build_gpi_fuse=true
+        --with-editor|--with-editor=*)
+            build_pnete=$(read_bool "${1#*=}" --with-editor)
+            shift
             ;;
-        F)
-            count=$(( count + 1 ))
-            build_gpi_fuse=false
+        --with-gpi|--with-gpi=*)
+            build_gpi=$(read_bool "${1#*=}" --with-gpi)
+            shift
             ;;
-        m)
-            count=$(( count + 1 ))
-            build_gui=true
+        --with-gpifs|--with-gpifs=*)
+            build_gpi_fuse=$(read_bool "${1#*=}" --with-gpifs)
+            shift
             ;;
-        M)
-            count=$(( count + 1 ))
-            build_gui=false
+        --)
+            shift
+            break
             ;;
-        e)
-            count=$(( count + 1 ))
-            build_pnete=true
-            ;;
-        E)
-            count=$(( count + 1 ))
-            build_pnete=false
-            ;;
-        L)
-            count=$(( count + 2 ))
-            strip_log="$OPTARG"
-            ;;
-        V)
-            count=$(( count + 2 ))
-            build_rev="$OPTARG"
-            ;;
-        p)
-            count=$(( count + 2 ))
-            build_prefix="$OPTARG"
-            ;;
-        R)
-            count=$(( count + 2 ))
-            fhg_assert_mode="$OPTARG"
-            ;;
-        \?)
-            echo "E: invalid option: -$OPTARG" >&2
-            echo "try: $0 -h" >&2
-            exit 1
+        *)
+            break
             ;;
     esac
 done
-shift $count
 
-if [ "$1" == "--" ] ; then
-    shift
-fi
+cmake_flags=()
 
-cmake_flags=
-
-cmake_flags="$cmake_flags --no-warn-unused-cli"
+cmake_flags+=(--no-warn-unused-cli)
 
 if [ -n "$build_rev" ] ; then
     build_rev=$( echo $build_rev | sed -e 's/^v//' )
-    cmake_flags="$cmake_flags -DPROJECT_REVISION=$build_rev"
+    cmake_flags+=("-DPROJECT_REVISION=$build_rev")
 else
     echo "E: no revision specified!" >&2
     exit 2
 fi
-cmake_flags="$cmake_flags -DPROJECT_VERSION=$build_vsn"
+cmake_flags+=("-DPROJECT_VERSION=$build_vsn")
 
 if [ -n "$strip_log" ] ; then
-    cmake_flags="$cmake_flags -DFHGLOG_STRIP_LEVEL=$strip_log"
+    cmake_flags+=("-DFHGLOG_STRIP_LEVEL=$strip_log")
 fi
 
 if [ -n "$build_type" ] ; then
-    cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=$build_type"
+    cmake_flags+=("-DCMAKE_BUILD_TYPE=$build_type")
 fi
 
 if [ "$build_tests" == "true" ] ; then
-    cmake_flags="$cmake_flags -DBUILD_TESTING=ON"
+    cmake_flags+=("-DBUILD_TESTING=ON")
 else
-    cmake_flags="$cmake_flags -DBUILD_TESTING=OFF"
+    cmake_flags+=("-DBUILD_TESTING=OFF")
 fi
 
 if [ "$build_static" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_STATIC_BINARIES=ON"
+    cmake_flags+=("-DENABLE_STATIC_BINARIES=ON")
 else
-    cmake_flags="$cmake_flags -DENABLE_STATIC_BINARIES=OFF"
+    cmake_flags+=("-DENABLE_STATIC_BINARIES=OFF")
 fi
 
 if [ "$build_apps" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_APPLICATION=ON"
+    cmake_flags+=("-DENABLE_APPLICATION=ON")
 else
-    cmake_flags="$cmake_flags -DENABLE_APPLICATION=OFF"
+    cmake_flags+=("-DENABLE_APPLICATION=OFF")
 fi
 
 if [ "$build_gpi" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_REAL_GPI=ON -DENABLE_GPI_SPACE=ON"
+    cmake_flags+=("-DENABLE_REAL_GPI=ON" "-DENABLE_GPI_SPACE=ON")
 else
-    cmake_flags="$cmake_flags -DENABLE_REAL_GPI=OFF"
+    cmake_flags+=("-DENABLE_REAL_GPI=OFF")
 fi
 
 if [ "$build_gpi_fuse" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_GPI_FUSE=ON"
+    cmake_flags+=("-DENABLE_GPI_FUSE=ON")
 else
-    cmake_flags="$cmake_flags -DENABLE_GPI_FUSE=OFF"
+    cmake_flags+=("-DENABLE_GPI_FUSE=OFF")
 fi
 
 if [ "$build_gui" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_SDPA_GUI=ON"
+    cmake_flags+=("-DENABLE_SDPA_GUI=ON")
 else
-    cmake_flags="$cmake_flags -DENABLE_SDPA_GUI=OFF"
+    cmake_flags+=("-DENABLE_SDPA_GUI=OFF")
 fi
 
 if [ "$build_pnete" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_PNET_EDITOR=ON"
+    cmake_flags+=("-DENABLE_PNET_EDITOR=ON")
 else
-    cmake_flags="$cmake_flags -DENABLE_PNET_EDITOR=OFF"
+    cmake_flags+=("-DENABLE_PNET_EDITOR=OFF")
 fi
 
 if [ -z "$build_prefix" ] ; then
     build_prefix=$( grep CMAKE_INSTALL_PREFIX ./CMakeCache.txt 2>/dev/null | cut -d= -f 2 | tr -d \" 2>&1 )
 fi
 if [ -n "$build_prefix" ] ; then
-    cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
+    cmake_flags+=("-DCMAKE_INSTALL_PREFIX=$build_prefix")
 fi
-cmake_flags="$cmake_flags -DFHG_ASSERT_MODE=${fhg_assert_mode}"
+cmake_flags+=("-DFHG_ASSERT_MODE=${fhg_assert_mode}")
 
-cmake_flags="$cmake_flags $@"
+cmake_flags+=("$@")
 
-cmd="cmake \"$src\" $cmake_flags"
+cmd=(cmake "${cmake_flags[@]}" "$src")
 print_settings
 echo "#"
-echo "# cmake $cmake_flags \"$src\""
+echo "# ${cmd[@]}"
 read -t 10 -n 1 -p "press any key to continue (Ctrl+C to abort)..."
 echo
-cmake $cmake_flags "$src"
+
+"${cmd[@]}"
