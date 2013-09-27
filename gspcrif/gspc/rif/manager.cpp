@@ -20,15 +20,6 @@ namespace gspc
 {
   namespace rif
   {
-    namespace io_thread_command
-    {
-      enum io_thread_cmd_e
-        {
-          SHUTDOWN
-        , NEWPROCESS
-        };
-    }
-
     namespace detail
     {
       static void add_pollfd ( int fd
@@ -42,6 +33,21 @@ namespace gspc
         p.revents = 0;
         to_poll.push_back (p);
       }
+
+      namespace io_thread_command
+      {
+        enum io_thread_command_code
+          {
+            SHUTDOWN
+          , NEWPROCESS
+          };
+      }
+
+      struct io_thread_command_t
+      {
+        int command;
+        int data;
+      };
     }
 
     manager_t::manager_t ()
@@ -114,7 +120,7 @@ namespace gspc
         }
       }
 
-      notify_io_thread (io_thread_command::SHUTDOWN);
+      notify_io_thread (detail::io_thread_command::SHUTDOWN);
 
       m_io_thread->join ();
       m_io_thread.reset ();
@@ -219,7 +225,7 @@ namespace gspc
       ::fcntl (p->stdout ().rd (), F_SETFL, O_NONBLOCK);
       ::fcntl (p->stderr ().rd (), F_SETFL, O_NONBLOCK);
 
-      notify_io_thread (io_thread_command::NEWPROCESS);
+      notify_io_thread (detail::io_thread_command::NEWPROCESS, id);
 
       return id;
     }
@@ -336,9 +342,13 @@ namespace gspc
       return p->buffer (fd).write (buf, len);
     }
 
-    void manager_t::notify_io_thread (int cmd) const
+    void manager_t::notify_io_thread (int cmd, int data) const
     {
-      m_io_thread_pipe.write (&cmd, sizeof(cmd));
+      detail::io_thread_command_t s;
+      s.command = cmd;
+      s.data = data;
+
+      m_io_thread_pipe.write (&s, sizeof(s));
     }
 
     manager_t::process_ptr_t manager_t::process_by_fd (int fd) const
@@ -481,19 +491,21 @@ namespace gspc
         {
           if (pfd.fd == me.rd () && pfd.revents & POLLIN)
           {
-            int cmd = -1;
-            ssize_t bytes = me.read (&cmd, sizeof(cmd));
-            if (bytes != sizeof(cmd))
+            detail::io_thread_command_t s;
+            s.command = -1;
+
+            ssize_t bytes = me.read (&s, sizeof(s));
+            if (bytes != sizeof(s))
             {
               abort ();
             }
 
-            switch (cmd)
+            switch (s.command)
             {
-            case io_thread_command::SHUTDOWN:
+            case detail::io_thread_command::SHUTDOWN:
               done = true;
               break;
-            case io_thread_command::NEWPROCESS:
+            case detail::io_thread_command::NEWPROCESS:
               break;
             default:
               break;

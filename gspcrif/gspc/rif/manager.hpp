@@ -108,7 +108,7 @@ namespace gspc
       typedef boost::unordered_map<int, proc_t> fd_to_proc_map_t;
 
       void io_thread (pipe_t &);
-      void notify_io_thread (int cmd) const;
+      void notify_io_thread (int cmd, int data = 0) const;
 
       process_ptr_t process_by_fd (int) const;
       void remove_fd_mapping (int);
