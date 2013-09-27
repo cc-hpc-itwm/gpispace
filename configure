@@ -16,16 +16,16 @@ fi
 cd "${build_dir}"
 
 build_type=Release
-build_tests=false
 build_static=false
 
-build_apps=true
-build_gpi=true
-build_gpi_fuse=false
-build_gui=true
-build_pnete=true
-fhg_assert_mode=0
+with_tests=false
+with_apps=true
+with_gpi=true
+with_gpifs=false
+with_gui=true
+with_editor=true
 
+fhg_assert_mode=0
 strip_log=
 build_rev=
 build_vsn=
@@ -60,14 +60,15 @@ if [ -r "CMakeCache.txt" ] ; then
 
     get_cmake_cache_entry CMAKE_HOME_DIRECTORY src
     get_cmake_cache_entry CMAKE_BUILD_TYPE build_type
-    get_cmake_cache_entry BUILD_TESTING build_tests
 
     get_cmake_cache_entry ENABLE_STATIC_BINARIES build_static
-    get_cmake_cache_entry ENABLE_APPLICATION build_apps
-    get_cmake_cache_entry ENABLE_GPI_SPACE build_gpi
-    get_cmake_cache_entry ENABLE_GPI_FUSE build_gpi_fuse
-    get_cmake_cache_entry ENABLE_SDPA_GUI build_gui
-    get_cmake_cache_entry ENABLE_PNET_EDITOR build_pnete
+
+    get_cmake_cache_entry BUILD_TESTING      with_tests
+    get_cmake_cache_entry ENABLE_APPLICATION with_apps
+    get_cmake_cache_entry ENABLE_GPI_SPACE   with_gpi
+    get_cmake_cache_entry ENABLE_GPI_FUSE    with_gpifs
+    get_cmake_cache_entry ENABLE_SDPA_GUI    with_gui
+    get_cmake_cache_entry ENABLE_PNET_EDITOR with_editor
 
     get_cmake_cache_entry CMAKE_INSTALL_PREFIX build_prefix
     get_cmake_cache_entry FHGLOG_STRIP_LEVEL strip_log
@@ -91,24 +92,29 @@ build_vsn=$(cd "${src}" && git describe | sed -e 's/^v//')
 function print_settings ()
 {
 cat >&2 <<EOF
-#  Current settings:
-#  =================
+# Current settings:
+# =================
 #
-#     revision: $build_rev
 #      version: $build_vsn
 #       prefix: $build_prefix
 #       source: $src
 #        build: $build_dir
-#         type: $build_type
+#     revision: $build_rev
 #
-#        tests: $build_tests
-#         apps: $build_apps
-#       static: $build_static
-#        gpifs: $build_gpi_fuse
-#          gui: $build_gui
-#     real-gpi: $build_gpi
-#    strip-log: $strip_log
+#  optional components:
+#
+#        tests: $with_tests
+#         apps: $with_apps
+#          gpi: $with_gpi
+#        gpifs: $with_gpifs
+#          gui: $with_gui
+#       editor: $with_editor
+#
+#  compilation settings:
+#
+#         type: $build_type
 #      asserts: $fhg_assert_mode
+#    strip-log: $strip_log
 EOF
 }
 
@@ -219,27 +225,27 @@ do
             shift
             ;;
         --with-apps|--with-apps=*)
-            build_apps=$(read_bool "${1#*=}" --with-apps)
+            with_apps=$(read_bool "${1#*=}" --with-apps)
             shift
             ;;
         --with-tests|--with-tests=*)
-            build_tests=$(read_bool "${1#*=}" --with-tests)
+            with_tests=$(read_bool "${1#*=}" --with-tests)
             shift
             ;;
         --with-gui|--with-gui=*)
-            build_gui=$(read_bool "${1#*=}" --with-gui)
+            with_gui=$(read_bool "${1#*=}" --with-gui)
             shift
             ;;
         --with-editor|--with-editor=*)
-            build_pnete=$(read_bool "${1#*=}" --with-editor)
+            with_editor=$(read_bool "${1#*=}" --with-editor)
             shift
             ;;
         --with-gpi|--with-gpi=*)
-            build_gpi=$(read_bool "${1#*=}" --with-gpi)
+            with_gpi=$(read_bool "${1#*=}" --with-gpi)
             shift
             ;;
         --with-gpifs|--with-gpifs=*)
-            build_gpi_fuse=$(read_bool "${1#*=}" --with-gpifs)
+            with_gpifs=$(read_bool "${1#*=}" --with-gpifs)
             shift
             ;;
         --)
@@ -273,43 +279,43 @@ if [ -n "$build_type" ] ; then
     cmake_flags+=("-DCMAKE_BUILD_TYPE=$build_type")
 fi
 
-if [ "$build_tests" == "true" ] ; then
+if $with_tests ; then
     cmake_flags+=("-DBUILD_TESTING=ON")
 else
     cmake_flags+=("-DBUILD_TESTING=OFF")
 fi
 
-if [ "$build_static" == "true" ] ; then
+if $build_static ; then
     cmake_flags+=("-DENABLE_STATIC_BINARIES=ON")
 else
     cmake_flags+=("-DENABLE_STATIC_BINARIES=OFF")
 fi
 
-if [ "$build_apps" == "true" ] ; then
+if $with_apps ; then
     cmake_flags+=("-DENABLE_APPLICATION=ON")
 else
     cmake_flags+=("-DENABLE_APPLICATION=OFF")
 fi
 
-if [ "$build_gpi" == "true" ] ; then
+if $with_gpi ; then
     cmake_flags+=("-DENABLE_REAL_GPI=ON" "-DENABLE_GPI_SPACE=ON")
 else
     cmake_flags+=("-DENABLE_REAL_GPI=OFF")
 fi
 
-if [ "$build_gpi_fuse" == "true" ] ; then
+if $with_gpifs ; then
     cmake_flags+=("-DENABLE_GPI_FUSE=ON")
 else
     cmake_flags+=("-DENABLE_GPI_FUSE=OFF")
 fi
 
-if [ "$build_gui" == "true" ] ; then
+if $with_gui ; then
     cmake_flags+=("-DENABLE_SDPA_GUI=ON")
 else
     cmake_flags+=("-DENABLE_SDPA_GUI=OFF")
 fi
 
-if [ "$build_pnete" == "true" ] ; then
+if $with_editor ; then
     cmake_flags+=("-DENABLE_PNET_EDITOR=ON")
 else
     cmake_flags+=("-DENABLE_PNET_EDITOR=OFF")
