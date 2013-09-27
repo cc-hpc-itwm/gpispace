@@ -89,6 +89,24 @@ if [ $? != 0 ]; then
 fi
 build_vsn=$(cd "${src}" && git describe | sed -e 's/^v//')
 
+function read_bool ()
+{
+    local b="$1"; shift
+    local t="$1"; shift # counts as true as well
+    case "$(echo ${b} | tr [A-Z] [a-z])" in
+        yes|true|1|on|${t})
+            echo true
+            ;;
+        no|false|0|off)
+            echo false
+            ;;
+        *)
+            echo >&2 "invalid boolean value: $b"
+            exit 66
+            ;;
+    esac
+}
+
 function print_settings ()
 {
 cat >&2 <<EOF
@@ -149,24 +167,6 @@ control features:
      --with-gpi[=yes|no] : build GPI virtual memory manager
    --with-gpifs[=yes|no] : build GPI filesystem
 EOF
-}
-
-function read_bool ()
-{
-    local b="$1"; shift
-    local t="$1"; shift # counts as true as well
-    case "$(echo ${b} | tr [A-Z] [a-z])" in
-        yes|true|1|on|${t})
-            echo true
-            ;;
-        no|false|0|off)
-            echo false
-            ;;
-        *)
-            echo >&2 "invalid boolean value: $b"
-            exit 66
-            ;;
-    esac
 }
 
 while [ $# -gt 0 ]
