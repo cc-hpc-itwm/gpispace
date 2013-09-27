@@ -107,6 +107,35 @@ function read_bool ()
     esac
 }
 
+function show_fhg_assert_mode()
+{
+    local mode="$1" ; shift
+
+    case "$mode" in
+        0)
+            echo off
+            ;;
+        1)
+            echo on
+            ;;
+        2)
+            echo assert
+            ;;
+        3)
+            echo throw
+            ;;
+        4)
+            echo log
+            ;;
+        *)
+            echo >&2 "configure: invalid fhg_assert_mode: $mode"
+            exit 1
+            ;;
+    esac
+
+    return 0
+}
+
 function print_settings ()
 {
 cat >&2 <<EOF
@@ -131,7 +160,7 @@ cat >&2 <<EOF
 #  compilation settings:
 #
 #         type: $build_type
-#      asserts: $fhg_assert_mode
+#      asserts: $(show_fhg_assert_mode $fhg_assert_mode)
 #    strip-log: $strip_log
 EOF
 }
