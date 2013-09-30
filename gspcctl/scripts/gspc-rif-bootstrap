@@ -39,7 +39,7 @@ EOF
 rif_port=
 
 method=
-fanout=1
+fanout=32
 tmpnodes=()
 only_pbs_nodes=false
 
@@ -139,7 +139,7 @@ function bootstrap_ssh ()
             wait
             count=0
         fi
-        gspc rexec -R ssh "$h" "${cmd[@]}"
+        gspc rexec -R ssh "$h" "${cmd[@]}" &
         count=$((count + 1))
     done
     if [ $count -gt 0 ]
