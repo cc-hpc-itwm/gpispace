@@ -6,6 +6,7 @@ set (gspcrif_src
   rif/process.cpp
   rif/manager.cpp
   rif/convenience.cpp
+  rif/null_process_handler.cpp
 )
 
 add_library (gspcrif        STATIC ${gspcrif_src})
