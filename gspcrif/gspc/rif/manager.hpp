@@ -14,16 +14,16 @@
 
 #include <gspc/rif/types.hpp>
 #include <gspc/rif/pipe.hpp>
+#include <gspc/rif/process_handler.hpp>
 
 namespace gspc
 {
   namespace rif
   {
     class proc_info_t;
-    class proc_handler_t;
     class process_t;
 
-    class manager_t : boost::noncopyable
+    class manager_t : boost::noncopyable, virtual process_handler_t
     {
     public:
       manager_t ();
@@ -97,7 +97,12 @@ namespace gspc
          Register a  callback handler that  will be  run when a  process changes
          state.
        */
-      void register_handler (proc_handler_t);
+      void register_handler (process_handler_t *);
+
+      /**
+         Remove a previously registered process handler.
+      */
+      void unregister_handler (process_handler_t *);
     private:
       typedef boost::shared_lock<boost::shared_mutex> shared_lock;
       typedef boost::unique_lock<boost::shared_mutex> unique_lock;
@@ -106,6 +111,8 @@ namespace gspc
       typedef boost::unordered_map<proc_t, process_ptr_t> proc_map_t;
       typedef boost::unordered_map<pid_t, proc_t> pid_to_proc_map_t;
       typedef boost::unordered_map<int, proc_t> fd_to_proc_map_t;
+
+      typedef std::list<process_handler_t *> process_handler_list_t;
 
       void io_thread (pipe_t &);
       void notify_io_thread (int cmd, int data = 0) const;
@@ -119,6 +126,8 @@ namespace gspc
       process_ptr_t process_by_id (proc_t) const;
 
       void update_search_path (std::string const &val);
+
+      void onStateChange (proc_t p, process_state_t s);
 
       bool m_stopping;
 
@@ -134,6 +143,9 @@ namespace gspc
       proc_map_t        m_processes;
       pid_to_proc_map_t m_pid_to_proc;
       fd_to_proc_map_t  m_fd_to_proc;
+
+      mutable boost::shared_mutex m_process_handler_mutex;
+      process_handler_list_t m_process_handler;
     };
   }
 }

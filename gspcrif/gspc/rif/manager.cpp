@@ -15,6 +15,7 @@
 #include "process.hpp"
 #include "buffer.hpp"
 #include "proc_info.hpp"
+#include "process_handler.hpp"
 
 namespace gspc
 {
@@ -206,7 +207,7 @@ namespace gspc
         id = ++m_proc_ids;
       }
 
-      process_ptr_t p (new process_t (id, filename, argv, env));
+      process_ptr_t p (new process_t (id, filename, argv, env, this));
 
       rc = p->fork_and_exec ();
       if (rc < 0)
@@ -244,6 +245,30 @@ namespace gspc
       }
 
       return pl;
+    }
+
+    void manager_t::onStateChange (proc_t p, process_state_t s)
+    {
+      shared_lock lock (m_process_handler_mutex);
+      BOOST_FOREACH (process_handler_t *h, m_process_handler)
+      {
+        h->onStateChange (p, s);
+      }
+    }
+
+    void manager_t::register_handler (process_handler_t *h)
+    {
+      unique_lock lock (m_process_handler_mutex);
+      if ( std::find (m_process_handler.begin (), m_process_handler.end (), h)
+         == m_process_handler.end ()
+         )
+        m_process_handler.push_back (h);
+    }
+
+    void manager_t::unregister_handler (process_handler_t *h)
+    {
+      unique_lock lock (m_process_handler_mutex);
+      m_process_handler.remove (h);
     }
 
     int manager_t::proc_info (proc_t procid, proc_info_t &info) const

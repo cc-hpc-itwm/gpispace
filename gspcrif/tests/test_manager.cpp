@@ -23,6 +23,18 @@ struct F
   }
 };
 
+struct handler_t : gspc::rif::process_handler_t
+{
+  void onStateChange (gspc::rif::proc_t p, gspc::rif::process_state_t s)
+  {
+    proc = p;
+    state = s;
+  }
+
+  gspc::rif::proc_t proc;
+  gspc::rif::process_state_t state;
+};
+
 BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE (test_start_stop)
@@ -43,7 +55,9 @@ BOOST_AUTO_TEST_CASE (test_exec)
   int rc;
   int status;
   gspc::rif::proc_t p;
+  handler_t handler;
   gspc::rif::manager_t manager;
+  manager.register_handler (&handler);
   manager.start ();
 
   gspc::rif::argv_t argv;
@@ -54,11 +68,15 @@ BOOST_AUTO_TEST_CASE (test_exec)
 
   p = manager.exec (argv);
   BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_EQUAL (handler.proc, p);
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
 
   rc = manager.wait (p, &status);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
+  BOOST_REQUIRE_EQUAL (handler.proc, p);
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
 
   manager.stop ();
 }
@@ -341,6 +359,41 @@ BOOST_AUTO_TEST_CASE (test_communicate)
 
   rc = manager.remove (p);
   BOOST_REQUIRE_EQUAL (rc, 0);
+
+  manager.stop ();
+}
+
+BOOST_AUTO_TEST_CASE (test_async_handler)
+{
+  int rc;
+  int status;
+  gspc::rif::proc_t p;
+  handler_t handler;
+  gspc::rif::manager_t manager;
+  manager.register_handler (&handler);
+  manager.start ();
+
+  gspc::rif::argv_t argv;
+
+  argv.push_back ("/bin/sleep");
+  argv.push_back ("1");
+
+  p = manager.exec (argv);
+  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_EQUAL (handler.proc, p);
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
+
+  sleep (2); // give enough time to get an async handler callback
+
+  BOOST_REQUIRE_EQUAL (handler.proc, p);
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
+
+  rc = manager.wait (p, &status);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE (WIFEXITED (status));
+  BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
+  BOOST_REQUIRE_EQUAL (handler.proc, p);
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
 
   manager.stop ();
 }
