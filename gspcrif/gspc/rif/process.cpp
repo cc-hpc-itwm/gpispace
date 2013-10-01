@@ -18,6 +18,7 @@
 
 #include "util.hpp"
 #include "buffer.hpp"
+#include "null_process_handler.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -73,31 +74,39 @@ namespace gspc
                          , boost::filesystem::path const &filename
                          , argv_t const &argv
                          , env_t const &env
+                         , process_handler_t *handler
                          )
       : m_proc_id (id)
+      , m_state (PROCESS_CREATED)
       , m_filename (fs::absolute (filename))
       , m_argv (argv)
       , m_env (env)
       , m_pid (-1)
       , m_status ()
+      , m_handler (handler)
     {
       for (size_t i = 0 ; i < 3 ; ++i)
       {
         m_pipes.push_back (pipe_t ());
         m_buffers.push_back (new buffer_t (2097152));
       }
+
+      set_state (PROCESS_CREATED);
     }
 
     process_t::process_t ( proc_t id
                          , boost::filesystem::path const &filename
                          , argv_t const &argv
+                         , process_handler_t *handler
                          )
       : m_proc_id (id)
+      , m_state (PROCESS_CREATED)
       , m_filename (fs::absolute (filename))
       , m_argv (argv)
       , m_env ()
       , m_pid (-1)
       , m_status ()
+      , m_handler (handler)
     {
       for (size_t i = 0 ; i < 3 ; ++i)
       {
@@ -116,6 +125,8 @@ namespace gspc
 
         ++env_entry;
       }
+
+      set_state (PROCESS_CREATED);
     }
 
     process_t::~process_t ()
@@ -149,6 +160,12 @@ namespace gspc
         return 0;
     }
 
+    void process_t::set_state (process_state_t s)
+    {
+      m_state = s;
+      m_handler->onStateChange (m_proc_id, m_state);
+    }
+
     int process_t::fork_and_exec ()
     {
       if (m_pid != -1)
@@ -169,6 +186,8 @@ namespace gspc
         int err = errno;
         for (size_t i = 0 ; i < m_pipes.size () ; ++i)
           m_pipes [i].close ();
+
+        set_state (PROCESS_FAILED);
         return -err;
       }
 
@@ -224,6 +243,8 @@ namespace gspc
         this->stdin ().close_rd ();
         this->stdout ().close_wr ();
         this->stderr ().close_wr ();
+
+        set_state (PROCESS_STARTED);
       }
 
       return 0;
@@ -243,6 +264,12 @@ namespace gspc
     {
       shared_lock lock (m_mutex);
       return m_proc_id;
+    }
+
+    gspc::rif::process_state_t process_t::state () const
+    {
+      shared_lock lock (m_mutex);
+      return m_state;
     }
 
     boost::optional<int> process_t::status () const
@@ -300,6 +327,8 @@ namespace gspc
       {
         m_status = s;
         m_pid = -1;
+
+        set_state (PROCESS_TERMINATED);
       }
 
       lock.unlock ();

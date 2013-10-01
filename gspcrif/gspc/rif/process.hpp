@@ -11,6 +11,8 @@
 #include <gspc/rif/types.hpp>
 #include <gspc/rif/pipe.hpp>
 #include <gspc/rif/buffer_fwd.hpp>
+#include <gspc/rif/process_state.hpp>
+#include <gspc/rif/null_process_handler.hpp>
 
 #include <sys/resource.h>
 
@@ -18,6 +20,8 @@ namespace gspc
 {
   namespace rif
   {
+    class process_handler_t;
+
     class process_t : boost::noncopyable
     {
     public:
@@ -26,12 +30,14 @@ namespace gspc
                 , boost::filesystem::path const &filename
                 , argv_t const &
                 , env_t const &
+                , process_handler_t *handler = null_process_handler_t::instance ()
                 );
 
       explicit
       process_t ( proc_t id
                 , boost::filesystem::path const &filename
                 , argv_t const &
+                , process_handler_t *handler = null_process_handler_t::instance ()
                 );
 
       ~process_t ();
@@ -40,6 +46,7 @@ namespace gspc
 
       pid_t pid () const;
       proc_t id () const;
+      process_state_t state () const;
       boost::optional<int> status () const;
       /**
          Return a unified exit code within the range [0,255].
@@ -78,6 +85,7 @@ namespace gspc
       const buffer_t & buffer (int fd) const;
     private:
       int waitpid_and_notify (int flags);
+      void set_state (process_state_t s);
 
       typedef boost::shared_mutex            mutex_type;
       typedef boost::shared_lock<mutex_type> shared_lock;
@@ -86,6 +94,7 @@ namespace gspc
       mutable boost::condition_variable_any m_terminated;
 
       proc_t                  m_proc_id;
+      process_state_t         m_state;
       boost::filesystem::path m_filename;
       argv_t                  m_argv;
       env_t                   m_env;
@@ -96,6 +105,8 @@ namespace gspc
 
       std::vector<pipe_t>    m_pipes;
       std::vector<buffer_t*> m_buffers;
+
+      process_handler_t     *m_handler;
     };
   }
 }

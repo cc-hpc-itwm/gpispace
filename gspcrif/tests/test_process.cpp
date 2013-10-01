@@ -14,6 +14,16 @@ struct F
   }
 };
 
+struct handler_t : gspc::rif::process_handler_t
+{
+  void onStateChange (gspc::rif::proc_t p, gspc::rif::process_state_t s)
+  {
+    state = s;
+  }
+
+  gspc::rif::process_state_t state;
+};
+
 BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
@@ -27,10 +37,14 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
 
   argv.push_back ("/bin/cat");
 
-  gspc::rif::process_t proc (0, argv.front (), argv, env);
+  handler_t handler;
+  gspc::rif::process_t proc (0, argv.front (), argv, env, &handler);
+
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_CREATED);
 
   rc = proc.fork_and_exec ();
 
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE (proc.pid () > 0);
 
@@ -47,12 +61,14 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
 
   rc = proc.try_waitpid ();
   BOOST_REQUIRE_EQUAL (rc, -EBUSY);
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
 
   rc = proc.kill (SIGTERM);
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   rc = proc.waitpid ();
   BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
 
   int status = *proc.status ();
   BOOST_REQUIRE (WIFSIGNALED (status));
