@@ -71,14 +71,14 @@ namespace pnet
     class eval : public type_error
     {
     public:
-      eval (const expr::token::type&, const type::value::value_type&);
-      eval ( const expr::token::type&
+      eval (const ::expr::token::type&, const type::value::value_type&);
+      eval ( const ::expr::token::type&
            , const type::value::value_type&
            , const type::value::value_type&
            );
       ~eval() throw() {}
 
-      MEMBER (token, expr::token::type);
+      MEMBER (token, ::expr::token::type);
       MEMBER (values, std::list<type::value::value_type>);
     };
 

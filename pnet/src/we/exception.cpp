@@ -65,7 +65,7 @@ namespace pnet
       , _value (value)
       , _path (path)
     {}
-    eval::eval ( const expr::token::type& token
+    eval::eval ( const ::expr::token::type& token
                , const type::value::value_type& x
                )
       : type_error
@@ -79,13 +79,13 @@ namespace pnet
     {
       _values.push_back (x);
     }
-    eval::eval ( const expr::token::type& token
+    eval::eval ( const ::expr::token::type& token
                , const type::value::value_type& l
                , const type::value::value_type& r
                )
       : type_error
         ( ( boost::format ("eval %1% (%2%, %3%)")
-          % expr::token::show (token)
+          % ::expr::token::show (token)
           % type::value::show (l)
           % type::value::show (r)
           ).str()
