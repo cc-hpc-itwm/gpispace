@@ -213,6 +213,9 @@ namespace prefix
     connect ( _communication
             , SIGNAL (states_actions_arguments (const QString&, const QList<action_argument_data>&))
             , SLOT (states_actions_arguments (const QString&, const QList<action_argument_data>&)));
+    connect ( _communication
+            , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
+            , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
 
     connect ( _communication
             , SIGNAL (states_add (const QString&, const QStringList&))
@@ -322,6 +325,11 @@ namespace prefix
   {
     _action_arguments[action] = arguments;
   }
+  void node_state_widget::states_actions_expected_next_state
+    (const QString& action, const QString& expected_next_state)
+  {
+    _action_expects_next_state[action] = expected_next_state;
+  }
 
   void node_state_widget::update_nodes_with_state (const QString& s)
   {
@@ -364,6 +372,12 @@ namespace prefix
   void node_state_widget::nodes_state
     (const QString& hostname, const QString& state)
   {
+    if (_ignore_next_nodes_state.contains (hostname))
+    {
+      _ignore_next_nodes_state.remove (hostname);
+      return;
+    }
+
     const QList<node_type>::iterator it
       ( std::find_if ( _nodes.begin()
                      , _nodes.end()
@@ -375,6 +389,7 @@ namespace prefix
     {
       const boost::optional<QString> old_state (it->state());
       it->state (state);
+      it->expects_state_change (boost::none);
 
       if (old_state != state)
       {
@@ -406,6 +421,12 @@ namespace prefix
       _pending_updates.removeAll (hostname);
       _nodes_to_update << hostname;
 
+      if (_ignore_next_nodes_state_clear.contains (hostname))
+      {
+        _ignore_next_nodes_state_clear.remove (hostname);
+        return;
+      }
+
       it->details (boost::none);
       update (it - _nodes.begin());
     }
@@ -426,6 +447,7 @@ namespace prefix
       if (!hostnames.contains (hostname))
       {
         node.state (boost::none);
+        node.expects_state_change (boost::none);
 
         _pending_updates.removeAll (hostname);
         _nodes_to_update.removeAll (hostname);
@@ -707,9 +729,10 @@ namespace prefix
   {
     pos.skip_spaces();
 
-    if (pos.end() || (*pos != 'l' && *pos != 'a'))
+    if (pos.end() || (*pos != 'a' && *pos != 'e' && *pos != 'l'))
     {
-      throw fhg::util::parse::error::expected ("long_text' or 'arguments", pos);
+      throw fhg::util::parse::error::expected
+        ("arguments' or 'expected_next_state' or 'long_text", pos);
     }
 
     switch (*pos)
@@ -726,6 +749,14 @@ namespace prefix
         emit states_actions_arguments (action, data);
       }
 
+      break;
+
+    case 'e':
+      ++pos;
+      pos.require ("xpected_next_state");
+      require::token (pos, ":");
+
+      emit states_actions_expected_next_state (action, require::qstring (pos));
 
       break;
 
@@ -1237,6 +1268,15 @@ namespace prefix
             painter.drawRect (rect_for_node (i, per_row));
           }
 
+          if (node (i).expects_state_change())
+          {
+            const QRectF rect (rect_for_node (i, per_row));
+            const QPointF points[3] =
+              {rect.bottomRight(), rect.bottomLeft(), rect.topRight()};
+            painter.setBrush (state (*node (i).expects_state_change())._brush);
+            painter.drawPolygon (points, sizeof (points) / sizeof (*points));
+          }
+
           if (node (i).watched())
           {
             painter.setBrush (Qt::Dense6Pattern);
@@ -1488,6 +1528,21 @@ namespace prefix
     {
       _communication->request_action (host, action, value_getters);
     }
+
+    if (_action_expects_next_state.contains (action))
+    {
+      const QString expected (_action_expects_next_state[action]);
+      _ignore_next_nodes_state |= hosts.toSet();
+      _ignore_next_nodes_state_clear |= hosts.toSet();
+      for (int i (0); i < _nodes.size(); ++i)
+      {
+        if (hosts.contains (_nodes[i].hostname()))
+        {
+          _nodes[i].expects_state_change (expected);
+          update (i);
+        }
+      }
+    }
   }
 
   bool node_state_widget::event (QEvent* event)
@@ -1555,10 +1610,15 @@ namespace prefix
             (QSet<QString>::fromList (state (node (*node_index).state())._actions));
           QSet<QString> action_name_union;
 
+          bool one_node_expects_state_change (false);
+
           foreach (const int index, nodes)
           {
             const node_type& n (node (index));
             hostnames << n.hostname();
+
+            one_node_expects_state_change
+              = one_node_expects_state_change || n.expects_state_change();
 
             const QSet<QString> actions
               (QSet<QString>::fromList (state (n.state())._actions));
@@ -1569,7 +1629,22 @@ namespace prefix
 
           QMenu context_menu;
 
+          QSet<QString> triggering_actions;
+          QSet<QString> non_triggering_actions;
+
           foreach (const QString& action_name, action_name_union)
+          {
+            if (_action_expects_next_state.contains (action_name))
+            {
+              triggering_actions << action_name;
+            }
+            else
+            {
+              non_triggering_actions << action_name;
+            }
+          }
+
+          foreach (const QString& action_name, triggering_actions)
           {
             QAction* action ( context_menu.addAction
                               ( QString ( _long_action.contains (action_name)
@@ -1580,7 +1655,46 @@ namespace prefix
                               )
                             );
 
-            if (action_name_intersection.contains (action_name))
+            if ( !one_node_expects_state_change
+               && action_name_intersection.contains (action_name)
+               )
+            {
+              fhg::util::qt::boost_connect<void (void)>
+                ( action
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &node_state_widget::trigger_action
+                              , this
+                              , hostnames
+                              , action_name
+                              )
+                );
+            }
+            else
+            {
+              action->setEnabled (false);
+            }
+          }
+
+          if (!action_name_union.empty())
+          {
+            context_menu.addSeparator();
+          }
+
+          foreach (const QString& action_name, non_triggering_actions)
+          {
+            QAction* action ( context_menu.addAction
+                              ( QString ( _long_action.contains (action_name)
+                                        ? _long_action[action_name]
+                                        : action_name
+                                        )
+                              .replace ("{hostname}", hostname_replacement)
+                              )
+                            );
+
+            if ( !one_node_expects_state_change
+               && action_name_intersection.contains (action_name)
+               )
             {
               fhg::util::qt::boost_connect<void (void)>
                 ( action

@@ -35,6 +35,7 @@ namespace prefix
       , _hostname (hostname)
       , _details (boost::none)
       , _watched (false)
+      , _expects_state_change (boost::none)
     { }
 
     const bool& watched() const { return _watched; }
@@ -45,6 +46,15 @@ namespace prefix
     {
       _state = state_;
       _state_update_time = QDateTime::currentDateTime();
+    }
+
+    const boost::optional<QString>& expects_state_change() const
+    {
+      return _expects_state_change;
+    }
+    void expects_state_change (const boost::optional<QString>& t)
+    {
+      _expects_state_change = t;
     }
 
     const QDateTime& state_update_time() const { return _state_update_time; }
@@ -60,6 +70,7 @@ namespace prefix
     QString _hostname;
     boost::optional<QString> _details;
     bool _watched;
+    boost::optional<QString> _expects_state_change;
   };
 
   struct state_description
@@ -267,6 +278,7 @@ namespace prefix
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
       (const QString&, const QList<action_argument_data>&);
+    void states_actions_expected_next_state (const QString&, const QString&);
     void states_add (const QString&, const QStringList&);
     void states_layout_hint_border (const QString&, const QColor&);
     void states_layout_hint_character (const QString&, const char&);
@@ -333,6 +345,7 @@ namespace prefix
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
       (const QString&, const QList<action_argument_data>&);
+    void states_actions_expected_next_state (const QString&, const QString&);
 
     void update_nodes_with_state (const QString&);
     void trigger_action (const QStringList& hosts, const QString& action);
@@ -354,9 +367,12 @@ namespace prefix
   private:
     QMap<QString, QString> _long_action;
     QMap<QString, QList<action_argument_data> > _action_arguments;
+    QMap<QString, QString> _action_expects_next_state;
 
     QList<QString> _pending_updates;
     QList<QString> _nodes_to_update;
+    QSet<QString> _ignore_next_nodes_state;
+    QSet<QString> _ignore_next_nodes_state_clear;
 
     void update (int node);
     void update();
