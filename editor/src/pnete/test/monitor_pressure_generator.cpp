@@ -4,6 +4,7 @@
 #include <fhglog/fhglog.hpp>
 #include <cstdlib>
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
 
 #include <sdpa/daemon/Observable.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
@@ -72,7 +73,7 @@ std::string worker_gen()
   static long ids[]          = {0,      0,      0,       0,     0,     0};
   static const char* names[] = {"calc", "load", "store", "foo", "bar", "baz"};
 
-  const long r (lrand48() % sizeof(names)/sizeof(*names));
+  const unsigned long r (lrand48() % sizeof(names)/sizeof(*names));
   return (boost::format ("%1%-%2%") % names[r] % ++ids[r]).str();
 }
 
@@ -94,33 +95,31 @@ int main(int ac, char **av)
   service_a.open();
   service_b.open();
 
-  std::vector<std::string> workers (2000);
+  std::vector<std::string> worker_names (2000);
+  std::generate (worker_names.begin(), worker_names.end(), worker_gen);
 
-  std::generate (workers.begin(), workers.end(), worker_gen);
-
-  std::vector<activity> activities;
+  std::map<std::string, boost::optional<activity> > workers;
 
   for (;;)
   {
-    switch (lrand48() % (activities.empty() ? 1 : 2))
+    const std::string worker (worker_names[lrand48() % worker_names.size()]);
+    if (!workers[worker])
     {
-    case 0:
-      activities.push_back (workers[lrand48() % workers.size()]);
-      break;
-    case 1:
+      workers[worker] = activity (worker);
+      workers[worker]->send_out_notification (&service_a, &service_b);
+      if (!workers[worker]->next_state())
       {
-        const long r (lrand48() % activities.size());
-        activity& a (activities[r]);
-        a.send_out_notification (&service_a, &service_b);
-        if (!a.next_state())
-        {
-          activities.erase (activities.begin() + r);
-        }
+        workers[worker] = boost::none;
       }
-      break;
     }
 
-    boost::this_thread::sleep (boost::posix_time::milliseconds (1));
+    workers[worker]->send_out_notification (&service_a, &service_b);
+    if (!workers[worker]->next_state())
+    {
+      workers[worker] = boost::none;
+    }
+
+    boost::this_thread::sleep (boost::posix_time::milliseconds (2));
   }
 
   //! \note Wait for remote logger being done.
