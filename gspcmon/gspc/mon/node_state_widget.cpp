@@ -353,15 +353,31 @@ namespace prefix
     }
   }
 
+  namespace
+  {
+    struct match_name
+    {
+      match_name (const QString& hostname)
+        : _hostname (hostname)
+      {}
+      bool operator() (const node_type& elem)
+      {
+        return elem.hostname() == _hostname;
+      }
+      const QString& _hostname;
+    };
+    QList<node_type>::iterator get_node
+      (QList<node_type>& nodes, const QString& name)
+    {
+      const match_name pred (name);
+      return std::find_if (nodes.begin(), nodes.end(), pred);
+    }
+  }
+
   void node_state_widget::nodes_details
     (const QString& hostname, const QString& details)
   {
-    const QList<node_type>::iterator it
-      ( std::find_if ( _nodes.begin()
-                     , _nodes.end()
-                     , boost::bind (&node_type::hostname, _1) == hostname
-                     )
-      );
+    const QList<node_type>::iterator it (get_node (_nodes, hostname));
 
     if (it != _nodes.end())
     {
@@ -378,12 +394,7 @@ namespace prefix
       return;
     }
 
-    const QList<node_type>::iterator it
-      ( std::find_if ( _nodes.begin()
-                     , _nodes.end()
-                     , boost::bind (&node_type::hostname, _1) == hostname
-                     )
-      );
+    const QList<node_type>::iterator it (get_node (_nodes, hostname));
 
     if (it != _nodes.end())
     {
@@ -409,12 +420,7 @@ namespace prefix
 
   void node_state_widget::nodes_state_clear (const QString& hostname)
   {
-    const QList<node_type>::iterator it
-      ( std::find_if ( _nodes.begin()
-                     , _nodes.end()
-                     , boost::bind (&node_type::hostname, _1) == hostname
-                     )
-      );
+    const QList<node_type>::iterator it (get_node (_nodes, hostname));
 
     if (it != _nodes.end())
     {
