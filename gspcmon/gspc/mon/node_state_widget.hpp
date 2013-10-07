@@ -359,9 +359,9 @@ namespace prefix
     void select_all();
     void clear_selection();
 
-  signals:
-
   private:
+    void sort_by (boost::function<bool (const node_type&, const node_type&)>);
+
     QMap<QString, QString> _long_action;
     QMap<QString, QList<action_argument_data> > _action_arguments;
     QMap<QString, QString> _action_expects_next_state;

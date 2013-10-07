@@ -1813,7 +1813,8 @@ namespace prefix
     return (node_count() + per_row - 1) / per_row * per_step;
   }
 
-  void node_state_widget::sort_by_name()
+  void node_state_widget::sort_by
+    (boost::function<bool (const node_type&, const node_type&)> pred)
   {
     _communication->pause();
 
@@ -1824,23 +1825,7 @@ namespace prefix
       selected_hostnames << node (index).hostname();
     }
 
-    fhg::util::alphanum::less less;
-
-    qStableSort
-      ( _nodes.begin(), _nodes.end()
-      // , [](const QString& l, const QString& r) -> bool
-      // {
-      //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
-      // }
-      , boost::bind ( &fhg::util::alphanum::less::operator(), less
-                    , boost::bind ( &QString::toStdString
-                                  , boost::bind (&node_type::hostname, _1)
-                                  )
-                    , boost::bind ( &QString::toStdString
-                                  , boost::bind (&node_type::hostname, _2)
-                                  )
-                    )
-      );
+    qStableSort (_nodes.begin(), _nodes.end(), pred);
 
     _selection.clear();
     _last_manual_selection = boost::none;
@@ -1859,38 +1844,31 @@ namespace prefix
     update();
     _communication->resume();
   }
+
+  void node_state_widget::sort_by_name()
+  {
+    // [](const QString& l, const QString& r) -> bool
+    // {
+    //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
+    // }
+
+    fhg::util::alphanum::less less;
+
+    sort_by ( boost::bind ( &fhg::util::alphanum::less::operator(), less
+                          , boost::bind ( &QString::toStdString
+                                        , boost::bind (&node_type::hostname, _1)
+                                        )
+                          , boost::bind ( &QString::toStdString
+                                        , boost::bind (&node_type::hostname, _2)
+                                        )
+                          )
+            );
+  }
   void node_state_widget::sort_by_state()
   {
-    _communication->pause();
-
-    QList<QString> selected_hostnames;
-
-    foreach (const int& index, _selection)
-    {
-      selected_hostnames << node (index).hostname();
-    }
-
-    qStableSort ( _nodes.begin(), _nodes.end()
-                , boost::bind (&node_type::state, _1)
-                < boost::bind (&node_type::state, _2)
-                );
-
-    _selection.clear();
-    _last_manual_selection = boost::none;
-
-    int i (0);
-    foreach (const node_type& node, _nodes)
-    {
-      if (selected_hostnames.contains (node.hostname()))
-      {
-        _selection << i;
-      }
-
-      ++i;
-    }
-
-    update();
-    _communication->resume();
+    sort_by ( boost::bind (&node_type::state, _1)
+            < boost::bind (&node_type::state, _2)
+            );
   }
 
   void node_state_widget::select_all()
