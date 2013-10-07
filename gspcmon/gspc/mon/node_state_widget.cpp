@@ -424,7 +424,7 @@ namespace prefix
 
     if (it != _nodes.end())
     {
-      _pending_updates.removeAll (hostname);
+      _pending_updates.remove (hostname);
       _nodes_to_update << hostname;
 
       if (_ignore_next_nodes_state_clear.contains (hostname))
@@ -455,7 +455,7 @@ namespace prefix
         node.state (boost::none);
         node.expects_state_change (boost::none);
 
-        _pending_updates.removeAll (hostname);
+        _pending_updates.remove (hostname);
         _nodes_to_update.removeAll (hostname);
 
         remove_from_selection (index);
@@ -502,7 +502,7 @@ namespace prefix
   void node_state_widget::refresh_stati()
   {
     _communication->request_status (_nodes_to_update);
-    _pending_updates << _nodes_to_update;
+    _pending_updates.unite (_nodes_to_update.toSet());
     _nodes_to_update.clear();
   }
 
@@ -1539,7 +1539,7 @@ namespace prefix
     {
       const QString expected (_action_expects_next_state[action]);
       const QSet<QString> currently_pending_hosts
-        (hosts.toSet().intersect (_pending_updates.toSet()));
+        (hosts.toSet().intersect (_pending_updates));
       _ignore_next_nodes_state |= currently_pending_hosts;
       _ignore_next_nodes_state_clear |= currently_pending_hosts;
       for (int i (0); i < _nodes.size(); ++i)

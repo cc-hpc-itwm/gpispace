@@ -369,7 +369,7 @@ namespace prefix
     QMap<QString, QList<action_argument_data> > _action_arguments;
     QMap<QString, QString> _action_expects_next_state;
 
-    QList<QString> _pending_updates;
+    QSet<QString> _pending_updates;
     QList<QString> _nodes_to_update;
     QSet<QString> _ignore_next_nodes_state;
     QSet<QString> _ignore_next_nodes_state_clear;
