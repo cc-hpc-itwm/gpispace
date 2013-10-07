@@ -374,6 +374,7 @@ namespace prefix
     void update();
 
     QList<node_type> _nodes;
+    QMap<QString, size_t> _node_index_by_hostname;
     QList<int> _selection;
 
     void add_to_selection (const int&);
@@ -385,6 +386,8 @@ namespace prefix
     log_widget* _log;
 
     const state_description& state (const boost::optional<QString>&) const;
+    boost::optional<size_t> node_index_by_name (const QString&) const;
+    void rebuild_node_index();
     const node_type& node (int) const;
     node_type& node (int);
     boost::optional<int> node_at (const QPoint&) const;

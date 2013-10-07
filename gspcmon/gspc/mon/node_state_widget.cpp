@@ -31,6 +31,7 @@
 #include <QDateTime>
 
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
 #include <fhg/util/read_bool.hpp>
@@ -330,7 +331,7 @@ namespace prefix
 
   void node_state_widget::update_nodes_with_state (const QString& s)
   {
-    for (int i (0); i < _nodes.size(); ++i)
+    for (size_t i (0); i < _nodes.size(); ++i)
     {
       if (_nodes[i].state() == s)
       {
@@ -350,35 +351,13 @@ namespace prefix
     }
   }
 
-  namespace
-  {
-    struct match_name
-    {
-      match_name (const QString& hostname)
-        : _hostname (hostname)
-      {}
-      bool operator() (const node_type& elem)
-      {
-        return elem.hostname() == _hostname;
-      }
-      const QString& _hostname;
-    };
-    QList<node_type>::iterator get_node
-      (QList<node_type>& nodes, const QString& name)
-    {
-      const match_name pred (name);
-      return std::find_if (nodes.begin(), nodes.end(), pred);
-    }
-  }
-
   void node_state_widget::nodes_details
     (const QString& hostname, const QString& details)
   {
-    const QList<node_type>::iterator it (get_node (_nodes, hostname));
-
-    if (it != _nodes.end())
+    const boost::optional<size_t> node_index (node_index_by_name (hostname));
+    if (node_index)
     {
-      it->details (details);
+      node (*node_index).details (details);
     }
   }
 
@@ -394,19 +373,20 @@ namespace prefix
       return;
     }
 
-    const QList<node_type>::iterator it (get_node (_nodes, hostname));
-
-    if (it != _nodes.end())
+    const boost::optional<size_t> node_index (node_index_by_name (hostname));
+    if (node_index)
     {
-      const boost::optional<QString> old_state (it->state());
-      it->state (state);
-      it->expects_state_change (boost::none);
+      node_type& n (node (*node_index));
+
+      const boost::optional<QString> old_state (n.state());
+      n.state (state);
+      n.expects_state_change (boost::none);
 
       if (old_state != state)
       {
-        update (it - _nodes.begin());
+        update (*node_index);
 
-        if (it->watched())
+        if (n.watched())
         {
           _log->warning ( QString ("%3: State changed from %1 to %2.")
                         .arg (old_state.get_value_or ("unknown"))
@@ -457,6 +437,8 @@ namespace prefix
       update (_nodes.size() - 1);
       update_requests << hostname;
     }
+
+    rebuild_node_index();
 
     foreach (const QString& hostname, update_requests)
     {
@@ -1209,6 +1191,23 @@ namespace prefix
     return _legend_widget->state (name);
   }
 
+  boost::optional<size_t>
+    node_state_widget::node_index_by_name (const QString& hostname) const
+  {
+    const QMap<QString, size_t>::const_iterator it
+      (_node_index_by_hostname.find (hostname));
+    return it == _node_index_by_hostname.end()
+      ? boost::none : boost::optional<size_t> (*it);
+  }
+
+  void node_state_widget::rebuild_node_index()
+  {
+    _node_index_by_hostname.clear();
+    for (size_t i (0); i < _nodes.size(); ++i)
+    {
+      _node_index_by_hostname[node (i).hostname()] = i;
+    }
+  }
 
   const node_type& node_state_widget::node (int index) const
   {
@@ -1537,13 +1536,12 @@ namespace prefix
       const QSet<QString> currently_pending_hosts
         (hosts.toSet().intersect (_pending_updates));
       _ignore_next_nodes_state |= currently_pending_hosts;
-      for (int i (0); i < _nodes.size(); ++i)
+
+      BOOST_FOREACH (const QString& host, hosts)
       {
-        if (hosts.contains (_nodes[i].hostname()))
-        {
-          _nodes[i].expects_state_change (expected);
-          update (i);
-        }
+        const size_t index (*node_index_by_name (host));
+        node (index).expects_state_change (expected);
+        update (index);
       }
     }
   }
@@ -1827,21 +1825,18 @@ namespace prefix
 
     qStableSort (_nodes.begin(), _nodes.end(), pred);
 
-    _selection.clear();
+    rebuild_node_index();
+
     _last_manual_selection = boost::none;
 
-    int i (0);
-    foreach (const node_type& node, _nodes)
+    _selection.clear();
+    BOOST_FOREACH (const QString& name, selected_hostnames)
     {
-      if (selected_hostnames.contains (node.hostname()))
-      {
-        _selection << i;
-      }
-
-      ++i;
+      _selection << *node_index_by_name (name);
     }
 
     update();
+
     _communication->resume();
   }
 
@@ -1875,7 +1870,7 @@ namespace prefix
   {
     _selection.clear();
 
-    for (int i (_nodes.size() - 1); i >= 0; --i)
+    for (size_t i (0); i < _nodes.size(); ++i)
     {
       _selection << i;
     }
