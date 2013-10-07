@@ -83,7 +83,6 @@ namespace fhg
 
       void execute ()
       {
-        lock_type lck(m_mutex);
         if (state == PENDING)
         {
           try
@@ -92,12 +91,15 @@ namespace fhg
           }
           catch (...)
           {
+            lock_type lck(m_mutex);
             state = CANCELLED;
             termination_condition.notify_all();
             throw;
           }
           state = DONE;
         }
+
+        lock_type lck(m_mutex);
         termination_condition.notify_all();
       }
 
