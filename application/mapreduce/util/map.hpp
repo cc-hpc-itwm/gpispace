@@ -129,7 +129,7 @@ namespace mapreduce
 			BOOST_FOREACH(key_val_pair_t& key_val_pair, list_key_val_pairs)
 			{
 				std::string str_pair = kvpair2str( key_val_pair_t(key_val_pair.first, key_val_pair.second));
-				part_id  = hash( key_val_pair.first, n_part);
+				part_id = hash(key_val_pair.first, n_part);
 				arr_part_buffs[part_id].push_back(str_pair);
 			}
 		}
@@ -142,24 +142,24 @@ namespace mapreduce
          				 	 long map_slot_size,
          				 	 bool first_char_is_delim,
          				 	 bool last_char_is_delim,
-                         std::list<pnet::type::value::value_type>& arr_part_ids,
-                         std::list<pnet::type::value::value_type>& arr_part_offset,
-                         std::list<pnet::type::value::value_type>& arr_part_used,
+         				 	 std::list<pnet::type::value::value_type>& arr_part_ids,
+         				 	 std::list<pnet::type::value::value_type>& arr_part_offset,
+         				 	 std::list<pnet::type::value::value_type>& arr_part_used,
          				 	 int& counter,
          				 	 size_t& last_pos,
          				 	 char* ptr_shmem)
        {
     	   // try this here: it should be faster!
-    	size_t offset = 0;
+    	long offset = 0;
 
     	std::vector<set_of_mapped_items_t> arr_part_buffs_0(n_part), arr_part_buffs_1(n_part);
 
     	std::vector<std::string> arr_items;
-    	//arr_items = ::mapreduce::util::get_list_items(ptr_shmem, EXTERNAL_DELIMITERS);
+    	arr_items = ::mapreduce::util::get_list_items(ptr_shmem, EXTERNAL_DELIMITERS);
 
-    	std::string str_buff(ptr_shmem);
+    	/*std::string str_buff(ptr_shmem);
     	boost::trim_if(str_buff, boost::is_any_of(EXTERNAL_DELIMITERS));
-    	boost::split(arr_items, str_buff, boost::is_any_of(EXTERNAL_DELIMITERS), boost::token_compress_on );
+    	boost::split(arr_items, str_buff, boost::is_any_of(EXTERNAL_DELIMITERS), boost::token_compress_on );*/
 
     	std::vector<std::string>::iterator tok_first(boost::next(arr_items.begin()));
     	std::vector<std::string>::iterator tok_last(boost::prior(arr_items.end()));
@@ -172,20 +172,20 @@ namespace mapreduce
 
 		boost::thread_group tg;
 		int d=(tok_last-tok_first+1)/2;
-		set_of_mapped_items_t::iterator tok_middle_1(boost::next(tok_first, d));
-		tg.create_thread( boost::bind(::mapreduce::util::map_items, n_part, tok_first, tok_middle_1, boost::ref(arr_part_buffs_0) ));
-		tg.create_thread( boost::bind(::mapreduce::util::map_items, n_part, tok_middle_1, tok_last, boost::ref(arr_part_buffs_1)));
+		set_of_mapped_items_t::iterator tok_middle(boost::next(tok_first, d));
+		tg.create_thread( boost::bind(::mapreduce::util::map_items, n_part, tok_first, tok_middle, boost::ref(arr_part_buffs_0) ));
+		tg.create_thread( boost::bind(::mapreduce::util::map_items, n_part, tok_middle, tok_last, boost::ref(arr_part_buffs_1)));
 		tg.join_all();
 
 		arr_items.clear();
 
-		for(int part_id = 0; part_id<n_part; part_id++ )
+		for(long part_id = 0; part_id<n_part; part_id++ )
 		{
 			if(!arr_part_buffs_0[part_id].empty() || !arr_part_buffs_1[part_id].empty())
 			{
 				offset = last_pos;
-				arr_part_ids.push_front(static_cast<long>(part_id));
-				arr_part_offset.push_front(static_cast<long>(offset));
+				arr_part_ids.push_front(part_id);
+				arr_part_offset.push_front(offset);
 
 				::mapreduce::util::write_arr_to_buff( arr_part_buffs_0[part_id], ptr_shmem, last_pos, map_slot_size );
 				arr_part_buffs_0[part_id].clear();
@@ -193,7 +193,8 @@ namespace mapreduce
 				::mapreduce::util::write_arr_to_buff( arr_part_buffs_1[part_id], ptr_shmem, last_pos, map_slot_size );
 				arr_part_buffs_1[part_id].clear();
 
-				arr_part_used.push_front(static_cast<long>(last_pos-offset));
+				long used(last_pos-offset);
+				arr_part_used.push_front(used);
 
 				counter++;
 			}
