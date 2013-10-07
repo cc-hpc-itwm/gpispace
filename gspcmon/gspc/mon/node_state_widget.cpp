@@ -1532,8 +1532,10 @@ namespace prefix
     if (_action_expects_next_state.contains (action))
     {
       const QString expected (_action_expects_next_state[action]);
-      _ignore_next_nodes_state |= hosts.toSet();
-      _ignore_next_nodes_state_clear |= hosts.toSet();
+      const QSet<QString> currently_pending_hosts
+        (hosts.toSet().intersect (_pending_updates.toSet()));
+      _ignore_next_nodes_state |= currently_pending_hosts;
+      _ignore_next_nodes_state_clear |= currently_pending_hosts;
       for (int i (0); i < _nodes.size(); ++i)
       {
         if (hosts.contains (_nodes[i].hostname()))
