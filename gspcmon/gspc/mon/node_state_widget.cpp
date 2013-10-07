@@ -2,10 +2,15 @@
 
 #include "node_state_widget.hpp"
 
-#include "parse.hpp"
 #include "file_line_edit.hpp"
 
 #include <util/qt/boost_connect.hpp>
+
+#include <fhg/util/num.hpp>
+#include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
+#include <fhg/util/read_bool.hpp>
 
 #include <QApplication>
 #include <QCheckBox>
@@ -34,9 +39,6 @@
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
-#include <fhg/util/read_bool.hpp>
-#include <fhg/util/parse/error.hpp>
-
 #include <iostream>
 #include <sstream>
 
@@ -44,6 +46,52 @@ namespace prefix
 {
   namespace
   {
+    namespace require
+    {
+      using namespace fhg::util::parse::require;
+
+      QString qstring (fhg::util::parse::position& pos)
+      {
+        return QString::fromStdString (string (pos));
+      }
+
+      QString label (fhg::util::parse::position& pos)
+      {
+        const QString key (qstring (pos));
+        token (pos, ":");
+        return key;
+      }
+
+      QColor qcolor (fhg::util::parse::position& pos)
+      {
+        pos.skip_spaces();
+        return QColor (fhg::util::read_uint (pos));
+      }
+
+      void list ( fhg::util::parse::position& pos
+                , const boost::function<void (fhg::util::parse::position&)>& f
+                )
+      {
+        pos.list ('[', ',', ']', f);
+      }
+
+      void named_list
+        ( fhg::util::parse::position& pos
+        , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+        )
+      {
+        require::list (pos, boost::bind (f, _1, label (pos)));
+      }
+
+      void list_of_named_lists
+        ( fhg::util::parse::position& pos
+        , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+        )
+      {
+        require::list (pos, boost::bind (named_list, _1, f));
+      }
+    }
+
     const qreal item_size (30.0);
     const qreal pen_size (0.0);
     const qreal padding (0.0);
