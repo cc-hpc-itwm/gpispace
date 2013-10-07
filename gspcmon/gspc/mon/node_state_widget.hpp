@@ -272,9 +272,8 @@ namespace prefix
                        , const boost::optional<QString>&
                        );
     void nodes (QStringList);
-    void nodes_state_clear (const QString&);
     void nodes_details (const QString&, const QString&);
-    void nodes_state (const QString&, const QString&);
+    void nodes_state (const QString&, const boost::optional<QString>&);
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
       (const QString&, const QList<action_argument_data>&);
@@ -293,7 +292,6 @@ namespace prefix
     void action_description (fhg::util::parse::position&, const QString&);
     void layout_hint (fhg::util::parse::position&, const QString&);
     void status_update (fhg::util::parse::position&);
-    void status_update_data (fhg::util::parse::position&, const QString&);
     void action_result (fhg::util::parse::position&);
 
     async_tcp_communication* _connection;
@@ -340,8 +338,7 @@ namespace prefix
     void refresh_stati();
     void nodes (QStringList);
     void nodes_details (const QString&, const QString&);
-    void nodes_state (const QString&, const QString&);
-    void nodes_state_clear (const QString&);
+    void nodes_state (const QString&, const boost::optional<QString>&);
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
       (const QString&, const QList<action_argument_data>&);
@@ -372,7 +369,6 @@ namespace prefix
     QSet<QString> _pending_updates;
     QSet<QString> _nodes_to_update;
     QSet<QString> _ignore_next_nodes_state;
-    QSet<QString> _ignore_next_nodes_state_clear;
 
     void update (int node);
     void update();

@@ -202,11 +202,8 @@ namespace prefix
             , SIGNAL (nodes_details (const QString&, const QString&))
             , SLOT (nodes_details (const QString&, const QString&)));
     connect ( _communication
-            , SIGNAL (nodes_state (const QString&, const QString&))
-            , SLOT (nodes_state (const QString&, const QString&)));
-    connect ( _communication
-            , SIGNAL (nodes_state_clear (const QString&))
-            , SLOT (nodes_state_clear (const QString&)));
+            , SIGNAL (nodes_state (const QString&, const boost::optional<QString>&))
+            , SLOT (nodes_state (const QString&, const boost::optional<QString>&)));
     connect ( _communication
             , SIGNAL (states_actions_long_text (const QString&, const QString&))
             , SLOT (states_actions_long_text (const QString&, const QString&)));
@@ -386,8 +383,11 @@ namespace prefix
   }
 
   void node_state_widget::nodes_state
-    (const QString& hostname, const QString& state)
+    (const QString& hostname, const boost::optional<QString>& state)
   {
+    _pending_updates.remove (hostname);
+    _nodes_to_update << hostname;
+
     if (_ignore_next_nodes_state.contains (hostname))
     {
       _ignore_next_nodes_state.remove (hostname);
@@ -410,31 +410,11 @@ namespace prefix
         {
           _log->warning ( QString ("%3: State changed from %1 to %2.")
                         .arg (old_state.get_value_or ("unknown"))
-                        .arg (state)
+                        .arg (state.get_value_or ("unknown"))
                         .arg (hostname)
                         );
         }
       }
-    }
-  }
-
-  void node_state_widget::nodes_state_clear (const QString& hostname)
-  {
-    const QList<node_type>::iterator it (get_node (_nodes, hostname));
-
-    if (it != _nodes.end())
-    {
-      _pending_updates.remove (hostname);
-      _nodes_to_update << hostname;
-
-      if (_ignore_next_nodes_state_clear.contains (hostname))
-      {
-        _ignore_next_nodes_state_clear.remove (hostname);
-        return;
-      }
-
-      it->details (boost::none);
-      update (it - _nodes.begin());
     }
   }
 
@@ -844,44 +824,56 @@ namespace prefix
       break;
     }
   }
-  void communication::status_update_data
-    (fhg::util::parse::position& pos, const QString& hostname)
+
+  namespace
   {
-    pos.skip_spaces();
-
-    if (pos.end() || (*pos != 'd' && *pos != 's'))
+    void status_update_data ( fhg::util::parse::position& pos
+                            , boost::optional<QString>* details
+                            , boost::optional<QString>* state
+                            )
     {
-      throw fhg::util::parse::error::expected ("details' or 'state", pos);
-    }
+      pos.skip_spaces();
 
-    switch (*pos)
-    {
-    case 'd':
-      ++pos;
-      pos.require ("etails");
-      require::token (pos, ":");
+      if (pos.end() || (*pos != 'd' && *pos != 's'))
+      {
+        throw fhg::util::parse::error::expected ("details' or 'state", pos);
+      }
 
-      emit nodes_details (hostname, require::qstring (pos));
+      switch (*pos)
+      {
+      case 'd':
+        ++pos;
+        pos.require ("etails");
+        require::token (pos, ":");
 
-      break;
+        *details = require::qstring (pos);
 
-    case 's':
-      ++pos;
-      pos.require ("tate");
-      require::token (pos, ":");
+        break;
 
-      emit nodes_state (hostname, require::qstring (pos));
+      case 's':
+        ++pos;
+        pos.require ("tate");
+        require::token (pos, ":");
 
-      break;
+        *state = require::qstring (pos);
+
+        break;
+      }
     }
   }
 
   void communication::status_update (fhg::util::parse::position& pos)
   {
     const QString host (require::label (pos));
-    emit nodes_state_clear (host);
+    boost::optional<QString> details (boost::none);
+    boost::optional<QString> state (boost::none);
     require::list
-      (pos, boost::bind (&communication::status_update_data, this, _1, host));
+      (pos, boost::bind (&status_update_data, _1, &details, &state));
+    emit nodes_state (host, state);
+    if (details)
+    {
+      emit nodes_details (host, *details);
+    }
   }
 
   namespace
@@ -1545,7 +1537,6 @@ namespace prefix
       const QSet<QString> currently_pending_hosts
         (hosts.toSet().intersect (_pending_updates));
       _ignore_next_nodes_state |= currently_pending_hosts;
-      _ignore_next_nodes_state_clear |= currently_pending_hosts;
       for (int i (0); i < _nodes.size(); ++i)
       {
         if (hosts.contains (_nodes[i].hostname()))
