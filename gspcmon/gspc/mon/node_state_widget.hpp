@@ -260,7 +260,7 @@ namespace prefix
     void request_layout_hint (const QString&);
     void request_action_description (const QStringList&);
     void request_hostlist();
-    void request_status (QStringList);
+    void request_status (const QSet<QString>);
 
     void pause();
     void resume();
@@ -370,7 +370,7 @@ namespace prefix
     QMap<QString, QString> _action_expects_next_state;
 
     QSet<QString> _pending_updates;
-    QList<QString> _nodes_to_update;
+    QSet<QString> _nodes_to_update;
     QSet<QString> _ignore_next_nodes_state;
     QSet<QString> _ignore_next_nodes_state_clear;
 

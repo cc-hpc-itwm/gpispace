@@ -456,7 +456,7 @@ namespace prefix
         node.expects_state_change (boost::none);
 
         _pending_updates.remove (hostname);
-        _nodes_to_update.removeAll (hostname);
+        _nodes_to_update.remove (hostname);
 
         remove_from_selection (index);
       }
@@ -502,22 +502,26 @@ namespace prefix
   void node_state_widget::refresh_stati()
   {
     _communication->request_status (_nodes_to_update);
-    _pending_updates.unite (_nodes_to_update.toSet());
+    _pending_updates.unite (_nodes_to_update);
     _nodes_to_update.clear();
   }
 
-  void communication::request_status (QStringList nodes_to_update)
+  void communication::request_status (const QSet<QString> nodes_to_update)
   {
     static const int chunk_size (1000);
 
-    while (!nodes_to_update.empty())
+    for ( QSet<QString>::const_iterator it (nodes_to_update.constBegin())
+        ; it != nodes_to_update.constEnd()
+        ;
+        )
     {
       QString message ("status: [");
-      while (message.size() < chunk_size && !nodes_to_update.empty())
+      for (
+          ; message.size() < chunk_size && it != nodes_to_update.constEnd()
+          ; ++it
+          )
       {
-        message.append ("\"")
-               .append (nodes_to_update.takeFirst())
-               .append ("\",");
+        message.append ("\"").append (*it).append ("\",");
       }
       message.append ("]");
       _connection->push (message);
