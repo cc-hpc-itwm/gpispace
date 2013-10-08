@@ -76,74 +76,16 @@ namespace prefix
 
   public:
     async_tcp_communication
-        (const QString& host, int port, QObject* parent = NULL)
-      : QObject (parent)
-    {
-      connect (&_socket, SIGNAL (readyRead()), SLOT (may_read()));
-      _socket.connectToHost (host, port);
-      if (!_socket.waitForConnected())
-      {
-        throw std::runtime_error
-          (qPrintable ("failed to connect: " + _socket.errorString()));
-      }
-
-      QTimer* timer (new QTimer (this));
-      connect (timer, SIGNAL (timeout()), SLOT (send_outstanding()));
-      timer->start (100);
-    }
+      (const QString& host, int port, QObject* parent = NULL);
 
     typedef QList<QString> messages_type;
 
-    messages_type get()
-    {
-      messages_type messages;
-      {
-        const QMutexLocker lock (&_outstanding_incoming_lock);
-        std::swap (messages, _outstanding_incoming);
-      }
-      return messages;
-    }
-
-    void push (const QString& message)
-    {
-      const QMutexLocker lock (&_outstanding_outgoing_lock);
-      _outstanding_outgoing << message;
-    }
+    messages_type get();
+    void push (const QString& message);
 
   private slots:
-    void send_outstanding()
-    {
-      messages_type messages;
-
-      {
-        const QMutexLocker lock (&_outstanding_outgoing_lock);
-        std::swap (messages, _outstanding_outgoing);
-      }
-
-      foreach (const QString& message, messages)
-      {
-        _socket.write (qPrintable (message));
-        _socket.write ("\n");
-      }
-    }
-
-    void may_read()
-    {
-      if (!_socket.canReadLine())
-      {
-        return;
-      }
-
-      messages_type messages;
-
-      while (_socket.canReadLine())
-      {
-        messages << _socket.readLine().trimmed();
-      }
-
-      const QMutexLocker lock (&_outstanding_incoming_lock);
-      _outstanding_incoming << messages;
-    }
+    void send_outstanding();
+    void may_read();
 
   private:
     messages_type _outstanding_incoming;
