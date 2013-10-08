@@ -380,7 +380,7 @@ namespace prefix
   {
     for (size_t i (0); i < _nodes.size(); ++i)
     {
-      if (_nodes[i].state() == s)
+      if (_nodes[i]._state == s)
       {
         update (i);
       }
@@ -404,7 +404,7 @@ namespace prefix
     const boost::optional<size_t> node_index (node_index_by_name (hostname));
     if (node_index)
     {
-      node (*node_index).details (details);
+      node (*node_index)._details = details;
     }
   }
 
@@ -425,15 +425,16 @@ namespace prefix
     {
       node_type& n (node (*node_index));
 
-      const boost::optional<QString> old_state (n.state());
-      n.state (state);
-      n.expects_state_change (boost::none);
+      const boost::optional<QString> old_state (n._state);
+      n._state = state;
+      n._state_update_time = QDateTime::currentDateTime();
+      n._expects_state_change = boost::none;
 
       if (old_state != state)
       {
         update (*node_index);
 
-        if (n.watched())
+        if (n._watched)
         {
           _log->warning ( QString ("%3: State changed from %1 to %2.")
                         .arg (old_state.get_value_or ("unknown"))
@@ -456,11 +457,12 @@ namespace prefix
     while (i.hasNext())
     {
       node_type& node (i.next());
-      const QString& hostname (node.hostname());
+      const QString& hostname (node._hostname);
       if (!hostnames.contains (hostname))
       {
-        node.state (boost::none);
-        node.expects_state_change (boost::none);
+        node._state = boost::none;
+        node._state_update_time = QDateTime::currentDateTime();
+        node._expects_state_change = boost::none;
 
         _pending_updates.remove (hostname);
         _nodes_to_update.remove (hostname);
@@ -469,7 +471,7 @@ namespace prefix
       }
       else
       {
-        if (node.state() == boost::none)
+        if (node._state == boost::none)
         {
           update_requests << hostname;
         }
@@ -1252,7 +1254,7 @@ namespace prefix
     _node_index_by_hostname.clear();
     for (size_t i (0); i < _nodes.size(); ++i)
     {
-      _node_index_by_hostname[node (i).hostname()] = i;
+      _node_index_by_hostname[node (i)._hostname] = i;
     }
   }
 
@@ -1307,7 +1309,7 @@ namespace prefix
         if (i < node_count())
         {
           painter.drawPixmap ( rect_for_node (i, per_row)
-                             , state (node (i).state())._pixmap
+                             , state (node (i)._state)._pixmap
                              );
 
           if (_selection.contains (i))
@@ -1316,16 +1318,16 @@ namespace prefix
             painter.drawRect (rect_for_node (i, per_row));
           }
 
-          if (node (i).expects_state_change())
+          if (node (i)._expects_state_change)
           {
             const QRectF rect (rect_for_node (i, per_row));
             const QPointF points[3] =
               {rect.bottomRight(), rect.bottomLeft(), rect.topRight()};
-            painter.setBrush (state (*node (i).expects_state_change())._brush);
+            painter.setBrush (state (*node (i)._expects_state_change)._brush);
             painter.drawPolygon (points, sizeof (points) / sizeof (*points));
           }
 
-          if (node (i).watched())
+          if (node (i)._watched)
           {
             painter.setBrush (Qt::Dense6Pattern);
             painter.drawRect (rect_for_node (i, per_row));
@@ -1587,7 +1589,7 @@ namespace prefix
       BOOST_FOREACH (const QString& host, hosts)
       {
         const size_t index (*node_index_by_name (host));
-        node (index).expects_state_change (expected);
+        node (index)._expects_state_change = expected;
         update (index);
       }
     }
@@ -1607,13 +1609,13 @@ namespace prefix
           QToolTip::showText
             ( help_event->globalPos()
             , QString ("%1: %2%3 [last update: %4]")
-            .arg (node (*node_index).hostname())
-            .arg (node (*node_index).state().get_value_or ("unknown state"))
-            .arg ( node (*node_index).details()
-                 ? QString (*node (*node_index).details()).prepend (" (").append (")")
+            .arg (node (*node_index)._hostname)
+            .arg (node (*node_index)._state.get_value_or ("unknown state"))
+            .arg ( node (*node_index)._details
+                 ? QString (*node (*node_index)._details).prepend (" (").append (")")
                  : ""
                  )
-            .arg (node (*node_index).state_update_time().toString())
+            .arg (node (*node_index)._state_update_time.toString())
             );
           event->accept();
           return true;
@@ -1642,12 +1644,12 @@ namespace prefix
 
           QSet<int> nodes (QSet<int>::fromList (_selection));
           const QString hostname_replacement ( nodes.size() <= 1
-                                             ? node (*node_index).hostname()
+                                             ? node (*node_index)._hostname
                                              : nodes.size() == 2
                                              ? QString ("%1 (and one other)")
-                                             .arg (node (*node_index).hostname())
+                                             .arg (node (*node_index)._hostname)
                                              : QString ("%1 (and %2 others)")
-                                             .arg (node (*node_index).hostname())
+                                             .arg (node (*node_index)._hostname)
                                              .arg (nodes.size() - 1)
                                              );
           nodes << *node_index;
@@ -1655,7 +1657,7 @@ namespace prefix
           QStringList hostnames;
 
           QSet<QString> action_name_intersection
-            (QSet<QString>::fromList (state (node (*node_index).state())._actions));
+            (QSet<QString>::fromList (state (node (*node_index)._state)._actions));
           QSet<QString> action_name_union;
 
           bool one_node_expects_state_change (false);
@@ -1663,13 +1665,13 @@ namespace prefix
           foreach (const int index, nodes)
           {
             const node_type& n (node (index));
-            hostnames << n.hostname();
+            hostnames << n._hostname;
 
             one_node_expects_state_change
-              = one_node_expects_state_change || n.expects_state_change();
+              = one_node_expects_state_change || n._expects_state_change;
 
             const QSet<QString> actions
-              (QSet<QString>::fromList (state (n.state())._actions));
+              (QSet<QString>::fromList (state (n._state)._actions));
 
             action_name_union.unite (actions);
             action_name_intersection.intersect (actions);
@@ -1772,8 +1774,8 @@ namespace prefix
 
             foreach (const int index, nodes)
             {
-              all = all && node (index).watched();
-              none = none && !node (index).watched();
+              all = all && node (index)._watched;
+              none = none && !node (index)._watched;
             }
 
             const QString text (tr ("Notify on state changes"));
@@ -1867,7 +1869,7 @@ namespace prefix
 
     foreach (const int& index, _selection)
     {
-      selected_hostnames << node (index).hostname();
+      selected_hostnames << node (index)._hostname;
     }
 
     qStableSort (_nodes.begin(), _nodes.end(), pred);
@@ -1898,18 +1900,18 @@ namespace prefix
 
     sort_by ( boost::bind ( &fhg::util::alphanum::less::operator(), less
                           , boost::bind ( &QString::toStdString
-                                        , boost::bind (&node_type::hostname, _1)
+                                        , boost::bind (&node_type::_hostname, _1)
                                         )
                           , boost::bind ( &QString::toStdString
-                                        , boost::bind (&node_type::hostname, _2)
+                                        , boost::bind (&node_type::_hostname, _2)
                                         )
                           )
             );
   }
   void node_state_widget::sort_by_state()
   {
-    sort_by ( boost::bind (&node_type::state, _1)
-            < boost::bind (&node_type::state, _2)
+    sort_by ( boost::bind (&node_type::_state, _1)
+            < boost::bind (&node_type::_state, _2)
             );
   }
 

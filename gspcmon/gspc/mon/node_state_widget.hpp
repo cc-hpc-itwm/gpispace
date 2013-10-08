@@ -314,9 +314,8 @@ namespace prefix
     void clear_selection();
 
   private:
-    class node_type
+    struct node_type
     {
-    public:
       node_type (const QString& hostname)
         : _state (boost::none)
         , _hostname (hostname)
@@ -325,38 +324,12 @@ namespace prefix
         , _expects_state_change (boost::none)
       { }
 
-      const bool& watched() const { return _watched; }
-      void watched (const bool& watched_) { _watched = watched_; }
-
-      const boost::optional<QString>& state() const { return _state; }
-      void state (const boost::optional<QString>& state_)
-      {
-        _state = state_;
-        _state_update_time = QDateTime::currentDateTime();
-      }
-
-      const boost::optional<QString>& expects_state_change() const
-      {
-        return _expects_state_change;
-      }
-      void expects_state_change (const boost::optional<QString>& t)
-      {
-        _expects_state_change = t;
-      }
-
-      const QDateTime& state_update_time() const { return _state_update_time; }
-
-      const boost::optional<QString>& details() const { return _details; }
-      void details (const boost::optional<QString>& details_) { _details = details_; }
-
-      const QString& hostname() const { return _hostname; }
-
-    private:
       boost::optional<QString> _state;
       QDateTime _state_update_time;
       QString _hostname;
       boost::optional<QString> _details;
       bool _watched;
+      void watched (bool w) { _watched = w; }
       boost::optional<QString> _expects_state_change;
     };
 
