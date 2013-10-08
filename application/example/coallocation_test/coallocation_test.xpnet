@@ -1,0 +1,168 @@
+<defun name="coallocation_test">
+  <in name="n_tasks_A" type="long" place="n_tasks_A" />
+  <in name="n_workers_A" type="long" place="n_workers_A" />
+  <in name="n_tasks_B" type="long" place="n_tasks_B" />
+  <in name="n_workers_B" type="long" place="n_workers_B" />
+  <out name="done" type="control" place="done" />
+
+  <net>
+    <!-- input/output places -->
+    <place name="n_tasks_A" type="long" />
+    <place name="n_workers_A" type="long" />
+
+    <place name="n_tasks_B" type="long" />
+    <place name="n_workers_B" type="long" />
+
+    <place name="done" type="control" />
+
+    <!-- template specializations -->
+    <include-template href="dup.xml" />
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long" />
+    </specialize>
+
+    <include-template href="wait.xml" />
+    <specialize name="wait_control" use="wait">
+      <type-map replace="T" with="control" />
+    </specialize>
+
+    <!-- initialization -->
+
+    <transition name="init_places_a">
+      <use name="dup_long" />
+      <connect-in port="in" place="n_tasks_A"/>
+      <connect-out port="one" place="n_tasks_gen_A"/>
+      <connect-out port="two" place="wait_A"/>
+    </transition>
+
+    <transition name="init_places_b">
+      <use name="dup_long" />
+      <connect-in port="in" place="n_tasks_B"/>
+      <connect-out port="one" place="n_tasks_gen_B"/>
+      <connect-out port="two" place="wait_B"/>
+    </transition>
+
+    <!-- path related to capability A -->
+
+    <place name="n_tasks_gen_A" type="long" />
+    <place name="wait_A" type="long" />
+
+    <place name="id_A" type="long" />
+    <transition name="n_tasks_gen_A"  inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in  port="amount" place="n_tasks_gen_A" />
+      <connect-out port="out"    place="id_A" />
+    </transition>
+
+	<place name="finished_task_A" type="control" />
+    <transition name="run_task_A">
+    <defun>
+	<require key="A" />
+	<in name="id" type="long" />
+	<in name="nw" type="long" />
+	<out name="done" type="control" />
+	<properties name="fhg">
+ 		<properties name="drts">
+    		<properties name="schedule">
+      			<property key="num_worker">${nw}</property>
+    		</properties>
+  		</properties>
+	</properties>
+	<module name="coallocation_test" function="done task_A (id, nw)">
+      <cinclude href="fhglog/minimal.hpp"/>
+	  <cinclude href="unistd.h"/>
+	  <code><![CDATA[
+	  LOG(INFO, ">>> running task A_" << id << " on " << nw << " workers ...");
+	  usleep(1000);
+	  LOG(INFO, "<<< finished task A_" << id << " on " << nw << " workers ...");
+	  return we::type::literal::control();
+	  ]]></code>
+	</module>
+      </defun>
+      <connect-in port="id" place="id_A" />
+      <connect-read port="nw" place="n_workers_A" />
+      <connect-out port="done" place="finished_task_A" />
+    </transition>
+
+	<place name="done_A" type="control" />
+    <transition name="wait_until_A_is_complete">
+      <use name="wait_control"/>
+      <place-map virtual="wait" real="wait_A" />
+      <connect-in  port="trigger" place="finished_task_A" />
+      <connect-out port="done"    place="done_A" />
+    </transition>
+    <!-- path A complete -->
+
+    <!-- path related to capability B -->
+    <place name="n_tasks_gen_B" type="long" />
+    <place name="wait_B" type="long" />
+
+  	<place name="id_B" type="long" />
+    <transition name="n_tasks_gen_B"  inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in  port="amount" place="n_tasks_gen_B" />
+      <connect-out port="out"    place="id_B" />
+    </transition>
+
+	<place name="finished_task_B" type="control" />
+    <transition name="run_task_B">
+    <defun>
+		<require key="B" />
+		<in name="id" type="long" />
+		<in name="nw" type="long" />
+		<out name="done" type="control" />
+		<properties name="fhg">
+ 			<properties name="drts">
+    			<properties name="schedule">
+      				<property key="num_worker">${nw}</property>
+    			</properties>
+  			</properties>
+		</properties>
+		<module name="coallocation_test" function=" done task_B (id, nw)">
+	        <cinclude href="fhglog/minimal.hpp" />
+		  	<cinclude href="unistd.h" />
+	    	<code><![CDATA[
+			LOG(INFO, ">>> running task B_" << id << " on " << nw << " workers ...");
+	  		usleep(1000);
+	  		LOG(INFO, "<<< finished task B_" << id << " on " << nw << " workers ...");
+	  		return we::type::literal::control();
+		  ]]></code>
+		</module>
+      </defun>
+      <connect-in port="id" place="id_B" />
+      <connect-read port="nw" place="n_workers_B" />
+      <connect-out port="done" place="finished_task_B" />
+	</transition>
+
+   <place name="done_B" type="control" />
+    <transition name="wait_until_B_is_complete">
+      <use name="wait_control"/>
+      <place-map virtual="wait" real="wait_B" />
+      <connect-in  port="trigger" place="finished_task_B" />
+      <connect-out port="done"    place="done_B" />
+    </transition>
+    <!-- path B complete -->
+
+    <!-- everything done, remove tokens -->
+
+    <transition name="finalize">
+      <defun>
+	<in name="done_A" type="control" />
+	<in name="done_B" type="control" />
+
+	<in name="n_workers_A" type="long" />
+	<in name="n_workers_B" type="long" />
+
+	<out name="done" type="control" />
+	<expression>
+	  ${done}:=[];
+	</expression>
+      </defun>
+      <connect-in  port="done_A" place="done_A" />
+      <connect-in  port="n_workers_A" place="n_workers_A" />
+      <connect-in  port="done_B" place="done_B" />
+      <connect-in  port="n_workers_B" place="n_workers_B" />
+      <connect-out port="done"   place="done" />
+    </transition>
+  </net>
+</defun>
