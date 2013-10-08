@@ -122,7 +122,7 @@ namespace prefix
     }
   }
 
-  communication::communication (const QString& host, int port, QObject* parent)
+  monitor_client::monitor_client (const QString& host, int port, QObject* parent)
     : QObject (parent)
     , _timer (NULL)
   {
@@ -142,22 +142,22 @@ namespace prefix
     push ("possible_status");
   }
 
-  void communication::pause()
+  void monitor_client::pause()
   {
     delete _timer;
   }
-  void communication::resume()
+  void monitor_client::resume()
   {
     _timer = timer (this, 100, SLOT (check_for_incoming_messages()));
   }
 
-  void communication::push (const QString& message)
+  void monitor_client::push (const QString& message)
   {
     const QMutexLocker lock (&_outstanding_outgoing_lock);
     _outstanding_outgoing << message;
   }
 
-  void communication::send_outstanding()
+  void monitor_client::send_outstanding()
   {
     messages_type messages;
 
@@ -173,7 +173,7 @@ namespace prefix
     }
   }
 
-  void communication::may_read()
+  void monitor_client::may_read()
   {
     if (!_socket.canReadLine())
     {
@@ -191,7 +191,7 @@ namespace prefix
     _outstanding_incoming << messages;
   }
 
-  void communication::request_hostlist()
+  void monitor_client::request_hostlist()
   {
     push ("hosts");
   }
@@ -268,11 +268,11 @@ namespace prefix
       : QWidget (parent)
       , _legend_widget (legend_widget)
       , _log (log)
-      , _communication (new communication (host, port, this))
+      , _monitor_client (new monitor_client (host, port, this))
       , _host (host)
   {
     timer
-      (this, 30000, boost::bind (&communication::request_hostlist, _communication));
+      (this, 30000, boost::bind (&monitor_client::request_hostlist, _monitor_client));
     timer (this, 1000, SLOT (refresh_stati()));
 
     setSizeIncrement (per_step, per_step);
@@ -294,48 +294,48 @@ namespace prefix
       addAction (clear_selection);
     }
 
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (nodes (QStringList))
             , SLOT (nodes (QStringList)));
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (nodes_details (const QString&, const QString&))
             , SLOT (nodes_details (const QString&, const QString&)));
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (nodes_state (const QString&, const boost::optional<QString>&))
             , SLOT (nodes_state (const QString&, const boost::optional<QString>&)));
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (states_actions_long_text (const QString&, const QString&))
             , SLOT (states_actions_long_text (const QString&, const QString&)));
-    connect ( _communication
-            , SIGNAL (states_actions_arguments (const QString&, const QList<communication::action_argument_data>&))
-            , SLOT (states_actions_arguments (const QString&, const QList<communication::action_argument_data>&)));
-    connect ( _communication
+    connect ( _monitor_client
+            , SIGNAL (states_actions_arguments (const QString&, const QList<monitor_client::action_argument_data>&))
+            , SLOT (states_actions_arguments (const QString&, const QList<monitor_client::action_argument_data>&)));
+    connect ( _monitor_client
             , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
             , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
 
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (states_add (const QString&, const QStringList&))
             , _legend_widget
             , SLOT (states_add (const QString&, const QStringList&)));
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (states_layout_hint_border (const QString&, const QColor&))
             , _legend_widget
             , SLOT (states_layout_hint_border (const QString&, const QColor&)));
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (states_layout_hint_character (const QString&, const char&))
             , _legend_widget
             , SLOT (states_layout_hint_character (const QString&, const char&)));
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
             , _legend_widget
             , SLOT (states_layout_hint_color (const QString&, const QColor&)));
-    connect ( _communication
+    connect ( _monitor_client
             , SIGNAL (states_layout_hint_hidden (const QString&, const bool&))
             , _legend_widget
             , SLOT (states_layout_hint_hidden (const QString&, const bool&)));
-    connect ( _communication
-            , SIGNAL (action_result (const QString&, const QString&, const communication::action_result_code&, const boost::optional<QString>&))
-            , SLOT (action_result (const QString&, const QString&, const communication::action_result_code&, const boost::optional<QString>&))
+    connect ( _monitor_client
+            , SIGNAL (action_result (const QString&, const QString&, const monitor_client::action_result_code&, const boost::optional<QString>&))
+            , SLOT (action_result (const QString&, const QString&, const monitor_client::action_result_code&, const boost::optional<QString>&))
             );
 
     connect ( _legend_widget
@@ -344,7 +344,7 @@ namespace prefix
             );
 
     // request the hosts immediately
-    _communication->request_hostlist ();
+    _monitor_client->request_hostlist ();
   }
 
   QRect rect_for_node (const int node, const int per_row)
@@ -417,7 +417,7 @@ namespace prefix
     _long_action[action] = long_text;
   }
   void node_state_widget::states_actions_arguments
-    (const QString& action, const QList<communication::action_argument_data>& arguments)
+    (const QString& action, const QList<monitor_client::action_argument_data>& arguments)
   {
     _action_arguments[action] = arguments;
   }
@@ -578,12 +578,12 @@ namespace prefix
 
   void node_state_widget::refresh_stati()
   {
-    _communication->request_status (_nodes_to_update);
+    _monitor_client->request_status (_nodes_to_update);
     _pending_updates.unite (_nodes_to_update);
     _nodes_to_update.clear();
   }
 
-  void communication::request_status (const QSet<QString> nodes_to_update)
+  void monitor_client::request_status (const QSet<QString> nodes_to_update)
   {
     static const int chunk_size (1000);
 
@@ -605,12 +605,12 @@ namespace prefix
     }
   }
 
-  void communication::request_layout_hint (const QString& state)
+  void monitor_client::request_layout_hint (const QString& state)
   {
     push (QString ("layout_hint: [\"%1\"]").arg (state));
   }
 
-  void communication::request_action_description (const QStringList& actions)
+  void monitor_client::request_action_description (const QStringList& actions)
   {
     if (!actions.empty())
     {
@@ -626,7 +626,7 @@ namespace prefix
     }
   }
 
-  void communication::request_action
+  void monitor_client::request_action
     ( const QString& hostname
     , const QString& action
     , const QMap<QString, boost::function<QString()> >& value_getters
@@ -661,7 +661,7 @@ namespace prefix
          );
   }
 
-  void communication::possible_status (fhg::util::parse::position& pos)
+  void monitor_client::possible_status (fhg::util::parse::position& pos)
   {
     const QString state (require::label (pos));
 
@@ -679,11 +679,11 @@ namespace prefix
     request_action_description (actions);
   }
 
-  communication::action_argument_data::action_argument_data (const QString& name)
+  monitor_client::action_argument_data::action_argument_data (const QString& name)
     : _name (name)
   { }
 
-  void communication::action_argument_data::append (fhg::util::parse::position& pos)
+  void monitor_client::action_argument_data::append (fhg::util::parse::position& pos)
   {
     pos.skip_spaces();
 
@@ -798,20 +798,20 @@ namespace prefix
   namespace
   {
     void action_argument ( fhg::util::parse::position& pos
-                         , QList<communication::action_argument_data>* data_list
+                         , QList<monitor_client::action_argument_data>* data_list
                          )
     {
       const QString name (require::qstring (pos));
       require::token (pos, ":");
 
-      communication::action_argument_data data (name);
-      require::list (pos, boost::bind (&communication::action_argument_data::append, &data, _1));
+      monitor_client::action_argument_data data (name);
+      require::list (pos, boost::bind (&monitor_client::action_argument_data::append, &data, _1));
 
       data_list->append (data);
     }
   }
 
-  void communication::action_description
+  void monitor_client::action_description
     (fhg::util::parse::position& pos, const QString& action)
   {
     pos.skip_spaces();
@@ -858,7 +858,7 @@ namespace prefix
     }
   }
 
-  void communication::layout_hint
+  void monitor_client::layout_hint
     (fhg::util::parse::position& pos, const QString& state)
   {
     pos.skip_spaces();
@@ -959,7 +959,7 @@ namespace prefix
     }
   }
 
-  void communication::status_update (fhg::util::parse::position& pos)
+  void monitor_client::status_update (fhg::util::parse::position& pos)
   {
     const QString host (require::label (pos));
     boost::optional<QString> details (boost::none);
@@ -982,7 +982,7 @@ namespace prefix
         , _message (boost::none)
       { }
 
-      boost::optional<communication::action_result_code> _result;
+      boost::optional<monitor_client::action_result_code> _result;
       boost::optional<QString> _message;
 
       void append (fhg::util::parse::position& pos)
@@ -1025,7 +1025,7 @@ namespace prefix
               ++pos;
               pos.require ("ail");
 
-              _result = communication::fail;
+              _result = monitor_client::fail;
 
               break;
 
@@ -1033,7 +1033,7 @@ namespace prefix
               ++pos;
               pos.require ("kay");
 
-              _result = communication::okay;
+              _result = monitor_client::okay;
 
               break;
 
@@ -1041,7 +1041,7 @@ namespace prefix
               ++pos;
               pos.require ("arn");
 
-              _result = communication::warn;
+              _result = monitor_client::warn;
 
               break;
             }
@@ -1053,7 +1053,7 @@ namespace prefix
     };
   }
 
-  void communication::action_result (fhg::util::parse::position& pos)
+  void monitor_client::action_result (fhg::util::parse::position& pos)
   {
     require::token (pos, "(");
     const QString host (require::qstring (pos));
@@ -1075,7 +1075,7 @@ namespace prefix
 
   void node_state_widget::action_result ( const QString& host
                                         , const QString& action
-                                        , const communication::action_result_code& result
+                                        , const monitor_client::action_result_code& result
                                         , const boost::optional<QString>& message
                                         )
   {
@@ -1085,22 +1085,22 @@ namespace prefix
 
       switch (result)
       {
-      case communication::okay:
+      case monitor_client::okay:
         _log->information (msg);
         break;
 
-      case communication::fail:
+      case monitor_client::fail:
         _log->critical (msg);
         break;
 
-      case communication::warn:
+      case monitor_client::warn:
         _log->warning (msg);
         break;
       }
     }
   }
 
-  void communication::check_for_incoming_messages()
+  void monitor_client::check_for_incoming_messages()
   {
     messages_type messages;
     {
@@ -1148,7 +1148,7 @@ namespace prefix
 
             require::list_of_named_lists
               ( pos
-              , boost::bind (&communication::action_description, this, _1, _2)
+              , boost::bind (&monitor_client::action_description, this, _1, _2)
               );
 
             break;
@@ -1159,7 +1159,7 @@ namespace prefix
             require::token (pos, ":");
 
             require::list
-              (pos, boost::bind (&communication::action_result, this, _1));
+              (pos, boost::bind (&monitor_client::action_result, this, _1));
           }
           break;
 
@@ -1189,7 +1189,7 @@ namespace prefix
 
           require::list_of_named_lists
             ( pos
-            , boost::bind (&communication::layout_hint, this, _1, _2)
+            , boost::bind (&monitor_client::layout_hint, this, _1, _2)
             );
 
           break;
@@ -1200,7 +1200,7 @@ namespace prefix
           require::token (pos, ":");
 
           require::list
-            (pos, boost::bind (&communication::possible_status, this, _1));
+            (pos, boost::bind (&monitor_client::possible_status, this, _1));
 
           break;
 
@@ -1210,7 +1210,7 @@ namespace prefix
           require::token (pos, ":");
 
           require::list
-            (pos, boost::bind (&communication::status_update, this, _1));
+            (pos, boost::bind (&monitor_client::status_update, this, _1));
 
           break;
         }
@@ -1518,11 +1518,11 @@ namespace prefix
     }
 
     std::pair<QWidget*, boost::function<QString()> > widget_for_item
-      (const communication::action_argument_data& item)
+      (const monitor_client::action_argument_data& item)
     {
       switch (*item._type)
       {
-      case communication::action_argument_data::boolean:
+      case monitor_client::action_argument_data::boolean:
         {
           QCheckBox* box (new QCheckBox);
           box->setChecked ( fhg::util::read_bool
@@ -1532,7 +1532,7 @@ namespace prefix
             (box, boost::bind (checkbox_to_string, box));
         }
 
-      case communication::action_argument_data::directory:
+      case monitor_client::action_argument_data::directory:
         {
           fhg::util::qt::file_line_edit* edit
             ( new fhg::util::qt::file_line_edit
@@ -1542,7 +1542,7 @@ namespace prefix
             (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
         }
 
-      case communication::action_argument_data::duration:
+      case monitor_client::action_argument_data::duration:
         {
           QSpinBox* edit (new QSpinBox);
           edit->setMinimum (1);
@@ -1553,7 +1553,7 @@ namespace prefix
             (edit, boost::bind (spinbox_to_string, edit));
         }
 
-      case communication::action_argument_data::filename:
+      case monitor_client::action_argument_data::filename:
         {
           fhg::util::qt::file_line_edit* edit
             ( new fhg::util::qt::file_line_edit
@@ -1563,7 +1563,7 @@ namespace prefix
             (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
         }
 
-      case communication::action_argument_data::integer:
+      case monitor_client::action_argument_data::integer:
         {
           QSpinBox* edit (new QSpinBox);
           edit->setMinimum (INT_MIN);
@@ -1573,7 +1573,7 @@ namespace prefix
             (edit, boost::bind (spinbox_to_string, edit));
         }
 
-      case communication::action_argument_data::string:
+      case monitor_client::action_argument_data::string:
         {
           QLineEdit* edit (new QLineEdit (item._default.get_value_or ("")));
           return std::pair<QWidget*, boost::function<QString()> >
@@ -1602,7 +1602,7 @@ namespace prefix
       QWidget* wid (new QWidget (dialog));
       QFormLayout* layout (new QFormLayout (wid));
 
-      foreach (const communication::action_argument_data& item, _action_arguments[action])
+      foreach (const monitor_client::action_argument_data& item, _action_arguments[action])
       {
         if (!item._type)
         {
@@ -1636,7 +1636,7 @@ namespace prefix
 
     foreach (QString const &host, hosts)
     {
-      _communication->request_action (host, action, value_getters);
+      _monitor_client->request_action (host, action, value_getters);
     }
 
     if (_action_expects_next_state.contains (action))
@@ -1700,7 +1700,7 @@ namespace prefix
 
         if (node_index)
         {
-          _communication->pause();
+          _monitor_client->pause();
 
           QSet<int> nodes (QSet<int>::fromList (_selection));
           const QString hostname_replacement ( nodes.size() <= 1
@@ -1850,7 +1850,7 @@ namespace prefix
                 fhg::util::qt::boost_connect<void (bool)>
                   ( action
                   , SIGNAL (toggled (bool))
-                  , _communication
+                  , _monitor_client
                   , boost::bind (&node_type::watched, &(node (index)), !all)
                   );
 
@@ -1874,13 +1874,13 @@ namespace prefix
                 fhg::util::qt::boost_connect<void (void)>
                   ( unwatch_all
                   , SIGNAL (triggered())
-                  , _communication
+                  , _monitor_client
                   , boost::bind (&node_type::watched, &(node (index)), false)
                   );
                 fhg::util::qt::boost_connect<void (void)>
                   ( watch_all
                   , SIGNAL (triggered())
-                  , _communication
+                  , _monitor_client
                   , boost::bind (&node_type::watched, &(node (index)), true)
                   );
 
@@ -1901,7 +1901,7 @@ namespace prefix
           }
 
           context_menu.exec (context_menu_event->globalPos());
-          _communication->resume();
+          _monitor_client->resume();
           event->accept();
           return true;
         }
@@ -1923,7 +1923,7 @@ namespace prefix
   void node_state_widget::sort_by
     (boost::function<bool (const node_type&, const node_type&)> pred)
   {
-    _communication->pause();
+    _monitor_client->pause();
 
     QList<QString> selected_hostnames;
 
@@ -1946,7 +1946,7 @@ namespace prefix
 
     update();
 
-    _communication->resume();
+    _monitor_client->resume();
   }
 
   void node_state_widget::sort_by_name()

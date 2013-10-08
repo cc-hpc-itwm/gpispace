@@ -70,12 +70,12 @@ namespace prefix
     QMap<QString, QWidget*> _state_legend;
   };
 
-  class communication : public QObject
+  class monitor_client : public QObject
   {
     Q_OBJECT;
 
   public:
-    communication (const QString& host, int port, QObject* parent = NULL);
+    monitor_client (const QString& host, int port, QObject* parent = NULL);
 
     void request_action ( const QString&
                         , const QString&
@@ -121,7 +121,7 @@ namespace prefix
   signals:
     void action_result ( const QString&
                        , const QString&
-                       , const communication::action_result_code&
+                       , const monitor_client::action_result_code&
                        , const boost::optional<QString>&
                        );
     void nodes (QStringList);
@@ -129,7 +129,7 @@ namespace prefix
     void nodes_state (const QString&, const boost::optional<QString>&);
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
-      (const QString&, const QList<communication::action_argument_data>&);
+      (const QString&, const QList<monitor_client::action_argument_data>&);
     void states_actions_expected_next_state (const QString&, const QString&);
     void states_add (const QString&, const QStringList&);
     void states_layout_hint_border (const QString&, const QColor&);
@@ -205,7 +205,7 @@ namespace prefix
     void nodes_state (const QString&, const boost::optional<QString>&);
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
-      (const QString&, const QList<communication::action_argument_data>&);
+      (const QString&, const QList<monitor_client::action_argument_data>&);
     void states_actions_expected_next_state (const QString&, const QString&);
 
     void update_nodes_with_state (const QString&);
@@ -213,7 +213,7 @@ namespace prefix
 
     void action_result ( const QString&
                        , const QString&
-                       , const communication::action_result_code&
+                       , const monitor_client::action_result_code&
                        , const boost::optional<QString>&
                        );
 
@@ -246,7 +246,7 @@ namespace prefix
     void sort_by (boost::function<bool (const node_type&, const node_type&)>);
 
     QMap<QString, QString> _long_action;
-    QMap<QString, QList<communication::action_argument_data> > _action_arguments;
+    QMap<QString, QList<monitor_client::action_argument_data> > _action_arguments;
     QMap<QString, QString> _action_expects_next_state;
 
     QSet<QString> _pending_updates;
@@ -276,7 +276,7 @@ namespace prefix
     boost::optional<int> node_at (const QPoint&) const;
     int node_count() const;
 
-    communication* _communication;
+    monitor_client* _monitor_client;
 
     QString _host;
   };
