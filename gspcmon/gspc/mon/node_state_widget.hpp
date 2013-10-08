@@ -27,41 +27,6 @@
 
 namespace prefix
 {
-  class node_type
-  {
-  public:
-    node_type (const QString& hostname)
-      : _state (boost::none)
-      , _hostname (hostname)
-      , _details (boost::none)
-      , _watched (false)
-    { }
-
-    const bool& watched() const { return _watched; }
-    void watched (const bool& watched_) { _watched = watched_; }
-
-    const boost::optional<QString>& state() const { return _state; }
-    void state (const boost::optional<QString>& state_)
-    {
-      _state = state_;
-      _state_update_time = QDateTime::currentDateTime();
-    }
-
-    const QDateTime& state_update_time() const { return _state_update_time; }
-
-    const boost::optional<QString>& details() const { return _details; }
-    void details (const boost::optional<QString>& details_) { _details = details_; }
-
-    const QString& hostname() const { return _hostname; }
-
-  private:
-    boost::optional<QString> _state;
-    QDateTime _state_update_time;
-    QString _hostname;
-    boost::optional<QString> _details;
-    bool _watched;
-  };
-
   struct state_description
   {
     QStringList _actions;
@@ -249,7 +214,7 @@ namespace prefix
     void request_layout_hint (const QString&);
     void request_action_description (const QStringList&);
     void request_hostlist();
-    void request_status (QStringList);
+    void request_status (const QSet<QString>);
 
     void pause();
     void resume();
@@ -261,12 +226,12 @@ namespace prefix
                        , const boost::optional<QString>&
                        );
     void nodes (QStringList);
-    void nodes_state_clear (const QString&);
     void nodes_details (const QString&, const QString&);
-    void nodes_state (const QString&, const QString&);
+    void nodes_state (const QString&, const boost::optional<QString>&);
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
       (const QString&, const QList<action_argument_data>&);
+    void states_actions_expected_next_state (const QString&, const QString&);
     void states_add (const QString&, const QStringList&);
     void states_layout_hint_border (const QString&, const QColor&);
     void states_layout_hint_character (const QString&, const char&);
@@ -281,7 +246,6 @@ namespace prefix
     void action_description (fhg::util::parse::position&, const QString&);
     void layout_hint (fhg::util::parse::position&, const QString&);
     void status_update (fhg::util::parse::position&);
-    void status_update_data (fhg::util::parse::position&, const QString&);
     void action_result (fhg::util::parse::position&);
 
     async_tcp_communication* _connection;
@@ -328,11 +292,11 @@ namespace prefix
     void refresh_stati();
     void nodes (QStringList);
     void nodes_details (const QString&, const QString&);
-    void nodes_state (const QString&, const QString&);
-    void nodes_state_clear (const QString&);
+    void nodes_state (const QString&, const boost::optional<QString>&);
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
       (const QString&, const QList<action_argument_data>&);
+    void states_actions_expected_next_state (const QString&, const QString&);
 
     void update_nodes_with_state (const QString&);
     void trigger_action (const QStringList& hosts, const QString& action);
@@ -349,19 +313,68 @@ namespace prefix
     void select_all();
     void clear_selection();
 
-  signals:
-
   private:
+    class node_type
+    {
+    public:
+      node_type (const QString& hostname)
+        : _state (boost::none)
+        , _hostname (hostname)
+        , _details (boost::none)
+        , _watched (false)
+        , _expects_state_change (boost::none)
+      { }
+
+      const bool& watched() const { return _watched; }
+      void watched (const bool& watched_) { _watched = watched_; }
+
+      const boost::optional<QString>& state() const { return _state; }
+      void state (const boost::optional<QString>& state_)
+      {
+        _state = state_;
+        _state_update_time = QDateTime::currentDateTime();
+      }
+
+      const boost::optional<QString>& expects_state_change() const
+      {
+        return _expects_state_change;
+      }
+      void expects_state_change (const boost::optional<QString>& t)
+      {
+        _expects_state_change = t;
+      }
+
+      const QDateTime& state_update_time() const { return _state_update_time; }
+
+      const boost::optional<QString>& details() const { return _details; }
+      void details (const boost::optional<QString>& details_) { _details = details_; }
+
+      const QString& hostname() const { return _hostname; }
+
+    private:
+      boost::optional<QString> _state;
+      QDateTime _state_update_time;
+      QString _hostname;
+      boost::optional<QString> _details;
+      bool _watched;
+      boost::optional<QString> _expects_state_change;
+    };
+
+    void sort_by (boost::function<bool (const node_type&, const node_type&)>);
+
     QMap<QString, QString> _long_action;
     QMap<QString, QList<action_argument_data> > _action_arguments;
+    QMap<QString, QString> _action_expects_next_state;
 
-    QList<QString> _pending_updates;
-    QList<QString> _nodes_to_update;
+    QSet<QString> _pending_updates;
+    QSet<QString> _nodes_to_update;
+    QSet<QString> _ignore_next_nodes_state;
 
     void update (int node);
     void update();
 
     QList<node_type> _nodes;
+    QMap<QString, size_t> _node_index_by_hostname;
     QList<int> _selection;
 
     void add_to_selection (const int&);
@@ -373,6 +386,8 @@ namespace prefix
     log_widget* _log;
 
     const state_description& state (const boost::optional<QString>&) const;
+    boost::optional<size_t> node_index_by_name (const QString&) const;
+    void rebuild_node_index();
     const node_type& node (int) const;
     node_type& node (int);
     boost::optional<int> node_at (const QPoint&) const;

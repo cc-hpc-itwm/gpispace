@@ -2,10 +2,14 @@
 
 #include "node_state_widget.hpp"
 
-#include "parse.hpp"
-#include "file_line_edit.hpp"
-
 #include <util/qt/boost_connect.hpp>
+#include <util/qt/file_line_edit.hpp>
+
+#include <fhg/util/num.hpp>
+#include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
+#include <fhg/util/read_bool.hpp>
 
 #include <QApplication>
 #include <QCheckBox>
@@ -31,10 +35,8 @@
 #include <QDateTime>
 
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
-
-#include <fhg/util/read_bool.hpp>
-#include <fhg/util/parse/error.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -43,6 +45,52 @@ namespace prefix
 {
   namespace
   {
+    namespace require
+    {
+      using namespace fhg::util::parse::require;
+
+      QString qstring (fhg::util::parse::position& pos)
+      {
+        return QString::fromStdString (string (pos));
+      }
+
+      QString label (fhg::util::parse::position& pos)
+      {
+        const QString key (qstring (pos));
+        token (pos, ":");
+        return key;
+      }
+
+      QColor qcolor (fhg::util::parse::position& pos)
+      {
+        pos.skip_spaces();
+        return QColor (fhg::util::read_uint (pos));
+      }
+
+      void list ( fhg::util::parse::position& pos
+                , const boost::function<void (fhg::util::parse::position&)>& f
+                )
+      {
+        pos.list ('[', ',', ']', f);
+      }
+
+      void named_list
+        ( fhg::util::parse::position& pos
+        , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+        )
+      {
+        require::list (pos, boost::bind (f, _1, label (pos)));
+      }
+
+      void list_of_named_lists
+        ( fhg::util::parse::position& pos
+        , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+        )
+      {
+        require::list (pos, boost::bind (named_list, _1, f));
+      }
+    }
+
     const qreal item_size (30.0);
     const qreal pen_size (0.0);
     const qreal padding (0.0);
@@ -202,17 +250,17 @@ namespace prefix
             , SIGNAL (nodes_details (const QString&, const QString&))
             , SLOT (nodes_details (const QString&, const QString&)));
     connect ( _communication
-            , SIGNAL (nodes_state (const QString&, const QString&))
-            , SLOT (nodes_state (const QString&, const QString&)));
-    connect ( _communication
-            , SIGNAL (nodes_state_clear (const QString&))
-            , SLOT (nodes_state_clear (const QString&)));
+            , SIGNAL (nodes_state (const QString&, const boost::optional<QString>&))
+            , SLOT (nodes_state (const QString&, const boost::optional<QString>&)));
     connect ( _communication
             , SIGNAL (states_actions_long_text (const QString&, const QString&))
             , SLOT (states_actions_long_text (const QString&, const QString&)));
     connect ( _communication
             , SIGNAL (states_actions_arguments (const QString&, const QList<action_argument_data>&))
             , SLOT (states_actions_arguments (const QString&, const QList<action_argument_data>&)));
+    connect ( _communication
+            , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
+            , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
 
     connect ( _communication
             , SIGNAL (states_add (const QString&, const QStringList&))
@@ -322,10 +370,15 @@ namespace prefix
   {
     _action_arguments[action] = arguments;
   }
+  void node_state_widget::states_actions_expected_next_state
+    (const QString& action, const QString& expected_next_state)
+  {
+    _action_expects_next_state[action] = expected_next_state;
+  }
 
   void node_state_widget::update_nodes_with_state (const QString& s)
   {
-    for (int i (0); i < _nodes.size(); ++i)
+    for (size_t i (0); i < _nodes.size(); ++i)
     {
       if (_nodes[i].state() == s)
       {
@@ -348,66 +401,47 @@ namespace prefix
   void node_state_widget::nodes_details
     (const QString& hostname, const QString& details)
   {
-    const QList<node_type>::iterator it
-      ( std::find_if ( _nodes.begin()
-                     , _nodes.end()
-                     , boost::bind (&node_type::hostname, _1) == hostname
-                     )
-      );
-
-    if (it != _nodes.end())
+    const boost::optional<size_t> node_index (node_index_by_name (hostname));
+    if (node_index)
     {
-      it->details (details);
+      node (*node_index).details (details);
     }
   }
 
   void node_state_widget::nodes_state
-    (const QString& hostname, const QString& state)
+    (const QString& hostname, const boost::optional<QString>& state)
   {
-    const QList<node_type>::iterator it
-      ( std::find_if ( _nodes.begin()
-                     , _nodes.end()
-                     , boost::bind (&node_type::hostname, _1) == hostname
-                     )
-      );
+    _pending_updates.remove (hostname);
+    _nodes_to_update << hostname;
 
-    if (it != _nodes.end())
+    if (_ignore_next_nodes_state.contains (hostname))
     {
-      const boost::optional<QString> old_state (it->state());
-      it->state (state);
+      _ignore_next_nodes_state.remove (hostname);
+      return;
+    }
+
+    const boost::optional<size_t> node_index (node_index_by_name (hostname));
+    if (node_index)
+    {
+      node_type& n (node (*node_index));
+
+      const boost::optional<QString> old_state (n.state());
+      n.state (state);
+      n.expects_state_change (boost::none);
 
       if (old_state != state)
       {
-        update (it - _nodes.begin());
+        update (*node_index);
 
-        if (it->watched())
+        if (n.watched())
         {
           _log->warning ( QString ("%3: State changed from %1 to %2.")
                         .arg (old_state.get_value_or ("unknown"))
-                        .arg (state)
+                        .arg (state.get_value_or ("unknown"))
                         .arg (hostname)
                         );
         }
       }
-    }
-  }
-
-  void node_state_widget::nodes_state_clear (const QString& hostname)
-  {
-    const QList<node_type>::iterator it
-      ( std::find_if ( _nodes.begin()
-                     , _nodes.end()
-                     , boost::bind (&node_type::hostname, _1) == hostname
-                     )
-      );
-
-    if (it != _nodes.end())
-    {
-      _pending_updates.removeAll (hostname);
-      _nodes_to_update << hostname;
-
-      it->details (boost::none);
-      update (it - _nodes.begin());
     }
   }
 
@@ -426,9 +460,10 @@ namespace prefix
       if (!hostnames.contains (hostname))
       {
         node.state (boost::none);
+        node.expects_state_change (boost::none);
 
-        _pending_updates.removeAll (hostname);
-        _nodes_to_update.removeAll (hostname);
+        _pending_updates.remove (hostname);
+        _nodes_to_update.remove (hostname);
 
         remove_from_selection (index);
       }
@@ -449,6 +484,8 @@ namespace prefix
       update (_nodes.size() - 1);
       update_requests << hostname;
     }
+
+    rebuild_node_index();
 
     foreach (const QString& hostname, update_requests)
     {
@@ -474,22 +511,26 @@ namespace prefix
   void node_state_widget::refresh_stati()
   {
     _communication->request_status (_nodes_to_update);
-    _pending_updates << _nodes_to_update;
+    _pending_updates.unite (_nodes_to_update);
     _nodes_to_update.clear();
   }
 
-  void communication::request_status (QStringList nodes_to_update)
+  void communication::request_status (const QSet<QString> nodes_to_update)
   {
     static const int chunk_size (1000);
 
-    while (!nodes_to_update.empty())
+    for ( QSet<QString>::const_iterator it (nodes_to_update.constBegin())
+        ; it != nodes_to_update.constEnd()
+        ;
+        )
     {
       QString message ("status: [");
-      while (message.size() < chunk_size && !nodes_to_update.empty())
+      for (
+          ; message.size() < chunk_size && it != nodes_to_update.constEnd()
+          ; ++it
+          )
       {
-        message.append ("\"")
-               .append (nodes_to_update.takeFirst())
-               .append ("\",");
+        message.append ("\"").append (*it).append ("\",");
       }
       message.append ("]");
       _connection->push (message);
@@ -707,9 +748,10 @@ namespace prefix
   {
     pos.skip_spaces();
 
-    if (pos.end() || (*pos != 'l' && *pos != 'a'))
+    if (pos.end() || (*pos != 'a' && *pos != 'e' && *pos != 'l'))
     {
-      throw fhg::util::parse::error::expected ("long_text' or 'arguments", pos);
+      throw fhg::util::parse::error::expected
+        ("arguments' or 'expected_next_state' or 'long_text", pos);
     }
 
     switch (*pos)
@@ -726,6 +768,14 @@ namespace prefix
         emit states_actions_arguments (action, data);
       }
 
+      break;
+
+    case 'e':
+      ++pos;
+      pos.require ("xpected_next_state");
+      require::token (pos, ":");
+
+      emit states_actions_expected_next_state (action, require::qstring (pos));
 
       break;
 
@@ -803,44 +853,56 @@ namespace prefix
       break;
     }
   }
-  void communication::status_update_data
-    (fhg::util::parse::position& pos, const QString& hostname)
+
+  namespace
   {
-    pos.skip_spaces();
-
-    if (pos.end() || (*pos != 'd' && *pos != 's'))
+    void status_update_data ( fhg::util::parse::position& pos
+                            , boost::optional<QString>* details
+                            , boost::optional<QString>* state
+                            )
     {
-      throw fhg::util::parse::error::expected ("details' or 'state", pos);
-    }
+      pos.skip_spaces();
 
-    switch (*pos)
-    {
-    case 'd':
-      ++pos;
-      pos.require ("etails");
-      require::token (pos, ":");
+      if (pos.end() || (*pos != 'd' && *pos != 's'))
+      {
+        throw fhg::util::parse::error::expected ("details' or 'state", pos);
+      }
 
-      emit nodes_details (hostname, require::qstring (pos));
+      switch (*pos)
+      {
+      case 'd':
+        ++pos;
+        pos.require ("etails");
+        require::token (pos, ":");
 
-      break;
+        *details = require::qstring (pos);
 
-    case 's':
-      ++pos;
-      pos.require ("tate");
-      require::token (pos, ":");
+        break;
 
-      emit nodes_state (hostname, require::qstring (pos));
+      case 's':
+        ++pos;
+        pos.require ("tate");
+        require::token (pos, ":");
 
-      break;
+        *state = require::qstring (pos);
+
+        break;
+      }
     }
   }
 
   void communication::status_update (fhg::util::parse::position& pos)
   {
     const QString host (require::label (pos));
-    emit nodes_state_clear (host);
+    boost::optional<QString> details (boost::none);
+    boost::optional<QString> state (boost::none);
     require::list
-      (pos, boost::bind (&communication::status_update_data, this, _1, host));
+      (pos, boost::bind (&status_update_data, _1, &details, &state));
+    emit nodes_state (host, state);
+    if (details)
+    {
+      emit nodes_details (host, *details);
+    }
   }
 
   namespace
@@ -1176,12 +1238,29 @@ namespace prefix
     return _legend_widget->state (name);
   }
 
+  boost::optional<size_t>
+    node_state_widget::node_index_by_name (const QString& hostname) const
+  {
+    const QMap<QString, size_t>::const_iterator it
+      (_node_index_by_hostname.find (hostname));
+    return it == _node_index_by_hostname.end()
+      ? boost::none : boost::optional<size_t> (*it);
+  }
 
-  const node_type& node_state_widget::node (int index) const
+  void node_state_widget::rebuild_node_index()
+  {
+    _node_index_by_hostname.clear();
+    for (size_t i (0); i < _nodes.size(); ++i)
+    {
+      _node_index_by_hostname[node (i).hostname()] = i;
+    }
+  }
+
+  const node_state_widget::node_type& node_state_widget::node (int index) const
   {
     return _nodes.at (index);
   }
-  node_type& node_state_widget::node (int index)
+  node_state_widget::node_type& node_state_widget::node (int index)
   {
     return _nodes[index];
   }
@@ -1235,6 +1314,15 @@ namespace prefix
           {
             painter.setBrush (Qt::Dense3Pattern);
             painter.drawRect (rect_for_node (i, per_row));
+          }
+
+          if (node (i).expects_state_change())
+          {
+            const QRectF rect (rect_for_node (i, per_row));
+            const QPointF points[3] =
+              {rect.bottomRight(), rect.bottomLeft(), rect.topRight()};
+            painter.setBrush (state (*node (i).expects_state_change())._brush);
+            painter.drawPolygon (points, sizeof (points) / sizeof (*points));
           }
 
           if (node (i).watched())
@@ -1384,12 +1472,12 @@ namespace prefix
 
       case action_argument_data::directory:
         {
-          file_line_edit* edit
-            ( new file_line_edit
+          fhg::util::qt::file_line_edit* edit
+            ( new fhg::util::qt::file_line_edit
                (QFileDialog::Directory, item._default.get_value_or (""))
             );
           return std::pair<QWidget*, boost::function<QString()> >
-            (edit, boost::bind (&file_line_edit::text, edit));
+            (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
         }
 
       case action_argument_data::duration:
@@ -1405,12 +1493,12 @@ namespace prefix
 
       case action_argument_data::filename:
         {
-          file_line_edit* edit
-            ( new file_line_edit
+          fhg::util::qt::file_line_edit* edit
+            ( new fhg::util::qt::file_line_edit
                (QFileDialog::AnyFile, item._default.get_value_or (""))
             );
           return std::pair<QWidget*, boost::function<QString()> >
-            (edit, boost::bind (&file_line_edit::text, edit));
+            (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
         }
 
       case action_argument_data::integer:
@@ -1488,6 +1576,21 @@ namespace prefix
     {
       _communication->request_action (host, action, value_getters);
     }
+
+    if (_action_expects_next_state.contains (action))
+    {
+      const QString expected (_action_expects_next_state[action]);
+      const QSet<QString> currently_pending_hosts
+        (hosts.toSet().intersect (_pending_updates));
+      _ignore_next_nodes_state |= currently_pending_hosts;
+
+      BOOST_FOREACH (const QString& host, hosts)
+      {
+        const size_t index (*node_index_by_name (host));
+        node (index).expects_state_change (expected);
+        update (index);
+      }
+    }
   }
 
   bool node_state_widget::event (QEvent* event)
@@ -1555,10 +1658,15 @@ namespace prefix
             (QSet<QString>::fromList (state (node (*node_index).state())._actions));
           QSet<QString> action_name_union;
 
+          bool one_node_expects_state_change (false);
+
           foreach (const int index, nodes)
           {
             const node_type& n (node (index));
             hostnames << n.hostname();
+
+            one_node_expects_state_change
+              = one_node_expects_state_change || n.expects_state_change();
 
             const QSet<QString> actions
               (QSet<QString>::fromList (state (n.state())._actions));
@@ -1569,7 +1677,22 @@ namespace prefix
 
           QMenu context_menu;
 
+          QSet<QString> triggering_actions;
+          QSet<QString> non_triggering_actions;
+
           foreach (const QString& action_name, action_name_union)
+          {
+            if (_action_expects_next_state.contains (action_name))
+            {
+              triggering_actions << action_name;
+            }
+            else
+            {
+              non_triggering_actions << action_name;
+            }
+          }
+
+          foreach (const QString& action_name, triggering_actions)
           {
             QAction* action ( context_menu.addAction
                               ( QString ( _long_action.contains (action_name)
@@ -1580,7 +1703,46 @@ namespace prefix
                               )
                             );
 
-            if (action_name_intersection.contains (action_name))
+            if ( !one_node_expects_state_change
+               && action_name_intersection.contains (action_name)
+               )
+            {
+              fhg::util::qt::boost_connect<void (void)>
+                ( action
+                , SIGNAL (triggered())
+                , this
+                , boost::bind ( &node_state_widget::trigger_action
+                              , this
+                              , hostnames
+                              , action_name
+                              )
+                );
+            }
+            else
+            {
+              action->setEnabled (false);
+            }
+          }
+
+          if (!action_name_union.empty())
+          {
+            context_menu.addSeparator();
+          }
+
+          foreach (const QString& action_name, non_triggering_actions)
+          {
+            QAction* action ( context_menu.addAction
+                              ( QString ( _long_action.contains (action_name)
+                                        ? _long_action[action_name]
+                                        : action_name
+                                        )
+                              .replace ("{hostname}", hostname_replacement)
+                              )
+                            );
+
+            if ( !one_node_expects_state_change
+               && action_name_intersection.contains (action_name)
+               )
             {
               fhg::util::qt::boost_connect<void (void)>
                 ( action
@@ -1696,7 +1858,8 @@ namespace prefix
     return (node_count() + per_row - 1) / per_row * per_step;
   }
 
-  void node_state_widget::sort_by_name()
+  void node_state_widget::sort_by
+    (boost::function<bool (const node_type&, const node_type&)> pred)
   {
     _communication->pause();
 
@@ -1706,81 +1869,55 @@ namespace prefix
     {
       selected_hostnames << node (index).hostname();
     }
+
+    qStableSort (_nodes.begin(), _nodes.end(), pred);
+
+    rebuild_node_index();
+
+    _last_manual_selection = boost::none;
+
+    _selection.clear();
+    BOOST_FOREACH (const QString& name, selected_hostnames)
+    {
+      _selection << *node_index_by_name (name);
+    }
+
+    update();
+
+    _communication->resume();
+  }
+
+  void node_state_widget::sort_by_name()
+  {
+    // [](const QString& l, const QString& r) -> bool
+    // {
+    //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
+    // }
 
     fhg::util::alphanum::less less;
 
-    qStableSort
-      ( _nodes.begin(), _nodes.end()
-      // , [](const QString& l, const QString& r) -> bool
-      // {
-      //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
-      // }
-      , boost::bind ( &fhg::util::alphanum::less::operator(), less
-                    , boost::bind ( &QString::toStdString
-                                  , boost::bind (&node_type::hostname, _1)
-                                  )
-                    , boost::bind ( &QString::toStdString
-                                  , boost::bind (&node_type::hostname, _2)
-                                  )
-                    )
-      );
-
-    _selection.clear();
-    _last_manual_selection = boost::none;
-
-    int i (0);
-    foreach (const node_type& node, _nodes)
-    {
-      if (selected_hostnames.contains (node.hostname()))
-      {
-        _selection << i;
-      }
-
-      ++i;
-    }
-
-    update();
-    _communication->resume();
+    sort_by ( boost::bind ( &fhg::util::alphanum::less::operator(), less
+                          , boost::bind ( &QString::toStdString
+                                        , boost::bind (&node_type::hostname, _1)
+                                        )
+                          , boost::bind ( &QString::toStdString
+                                        , boost::bind (&node_type::hostname, _2)
+                                        )
+                          )
+            );
   }
   void node_state_widget::sort_by_state()
   {
-    _communication->pause();
-
-    QList<QString> selected_hostnames;
-
-    foreach (const int& index, _selection)
-    {
-      selected_hostnames << node (index).hostname();
-    }
-
-    qStableSort ( _nodes.begin(), _nodes.end()
-                , boost::bind (&node_type::state, _1)
-                < boost::bind (&node_type::state, _2)
-                );
-
-    _selection.clear();
-    _last_manual_selection = boost::none;
-
-    int i (0);
-    foreach (const node_type& node, _nodes)
-    {
-      if (selected_hostnames.contains (node.hostname()))
-      {
-        _selection << i;
-      }
-
-      ++i;
-    }
-
-    update();
-    _communication->resume();
+    sort_by ( boost::bind (&node_type::state, _1)
+            < boost::bind (&node_type::state, _2)
+            );
   }
 
   void node_state_widget::select_all()
   {
     _selection.clear();
 
-    for (int i (_nodes.size() - 1); i >= 0; --i)
+    for (size_t i (0); i < _nodes.size(); ++i)
     {
       _selection << i;
     }

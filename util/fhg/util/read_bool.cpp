@@ -2,6 +2,9 @@
 
 #include <fhg/util/read_bool.hpp>
 
+#include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
+
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
@@ -18,17 +21,9 @@ namespace fhg
                      , std::back_inserter (inp), tolower
                      );
 
-      if (inp == "true" || inp == "yes" || inp == "1" || inp == "on")
-        {
-          return true;
-        }
+      parse::position pos (inp);
 
-      if (inp == "false" || inp == "no" || inp == "0" || inp == "off")
-        {
-          return false;
-        }
-
-      throw std::runtime_error ("failed to read a bool from: '" + _inp + "'");
+      return parse::require::boolean (pos);
     }
   }
 }

@@ -2,7 +2,9 @@
 
 #include "server.hpp"
 
-#include "parse.hpp"
+#include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
 
 #include <stdlib.h>
 
@@ -24,6 +26,7 @@
 #include <QtCore>
 #include <QMapIterator>
 
+#include <boost/bind.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
 
@@ -34,6 +37,41 @@ namespace gspc
 {
   namespace mon
   {
+    namespace
+    {
+      namespace require
+      {
+        using namespace fhg::util::parse::require;
+
+        QString qstring (fhg::util::parse::position& pos)
+        {
+          return QString::fromStdString (require::string (pos));
+        }
+
+        QString label (fhg::util::parse::position& pos)
+        {
+          const QString key (qstring (pos));
+          token (pos, ":");
+          return key;
+        }
+
+        void list ( fhg::util::parse::position& pos
+                  , const boost::function<void (fhg::util::parse::position&)>& f
+                  )
+        {
+          pos.list ('[', ',', ']', f);
+        }
+
+        void named_list
+          ( fhg::util::parse::position& pos
+          , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+          )
+        {
+          require::list (pos, boost::bind (f, _1, label (pos)));
+        }
+      }
+    }
+
     server::server ( int port
                    , const QString& hostlist
                    , const QDir& hookdir
@@ -247,9 +285,9 @@ namespace gspc
       void insert_into_map
       (fhg::util::parse::position& pos, QMap<QString, QString>* map)
       {
-        const QString key (prefix::require::qstring (pos));
-        prefix::require::token (pos, ":");
-        map->insert (key, prefix::require::qstring (pos));
+        const QString key (require::qstring (pos));
+        require::token (pos, ":");
+        map->insert (key, require::qstring (pos));
       }
 
       struct action_invocation
@@ -282,18 +320,18 @@ namespace gspc
               case 'c':
                 ++pos;
                 pos.require ("tion");
-                prefix::require::token (pos, ":");
+                require::token (pos, ":");
 
-                _action = prefix::require::qstring (pos);
+                _action = require::qstring (pos);
 
                 break;
 
               case 'r':
                 ++pos;
                 pos.require ("guments");
-                prefix::require::token (pos, ":");
+                require::token (pos, ":");
 
-                prefix::require::list
+                require::list
                   (pos, boost::bind (insert_into_map, _1, &_arguments));
 
                 break;
@@ -305,9 +343,9 @@ namespace gspc
           case 'h':
             ++pos;
             pos.require ("ost");
-            prefix::require::token (pos, ":");
+            require::token (pos, ":");
 
-            _host = prefix::require::qstring (pos);
+            _host = require::qstring (pos);
 
             break;
           }
@@ -504,7 +542,7 @@ namespace gspc
     void thread::execute_action (fhg::util::parse::position& pos)
     {
       action_invocation invoc;
-      prefix::require::list
+      require::list
         (pos, boost::bind (&action_invocation::append, &invoc, _1));
 
       if (!invoc._host || !invoc._action)
@@ -551,7 +589,7 @@ namespace gspc
 
     void thread::send_action_description (fhg::util::parse::position& pos)
     {
-      const QString action (prefix::require::qstring (pos));
+      const QString action (require::qstring (pos));
 
       action_info_t const &ai = _actions [action];
 
@@ -598,7 +636,7 @@ namespace gspc
 
     void thread::send_layout_hint (fhg::util::parse::position& pos)
     {
-      const state_info_t &state = _states [prefix::require::qstring (pos)];
+      const state_info_t &state = _states [require::qstring (pos)];
 
       write_to_socket
         ( qPrintable ( QString
@@ -651,18 +689,18 @@ namespace gspc
           case 'a':
             ++pos;
             pos.require ("ction");
-            prefix::require::token (pos, ":");
+            require::token (pos, ":");
 
-            prefix::require::list (pos, boost::bind (&thread::execute_action, this, _1));
+            require::list (pos, boost::bind (&thread::execute_action, this, _1));
 
             break;
 
           case 'd':
             ++pos;
             pos.require ("escribe_action");
-            prefix::require::token (pos, ":");
+            require::token (pos, ":");
 
-            prefix::require::list
+            require::list
               (pos, boost::bind (&thread::send_action_description, this, _1));
 
             break;
@@ -694,9 +732,9 @@ namespace gspc
           case 'l':
             ++pos;
             pos.require ("ayout_hint");
-            prefix::require::token (pos, ":");
+            require::token (pos, ":");
 
-            prefix::require::list (pos, boost::bind (&thread::send_layout_hint, this, _1));
+            require::list (pos, boost::bind (&thread::send_layout_hint, this, _1));
 
             break;
 
@@ -729,15 +767,15 @@ namespace gspc
           case 's':
             ++pos;
             pos.require ("tatus");
-            prefix::require::token (pos, ":");
+            require::token (pos, ":");
 
             {
               const QMutexLocker lock (&_pending_status_updates_mutex);
-              prefix::require::list
+              require::list
                 ( pos
                 , boost::bind ( &QStringList::push_back
                               , &_pending_status_updates
-                              , boost::bind (prefix::require::qstring, _1)
+                              , boost::bind (require::qstring, _1)
                               )
                 );
             }
