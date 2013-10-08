@@ -1,4 +1,4 @@
-#include <gspc/mon/node_state_widget.hpp>
+#include <node_state_widget.hpp>
 
 #include <sysexits.h>
 
