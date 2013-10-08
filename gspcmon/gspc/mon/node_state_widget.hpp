@@ -70,33 +70,6 @@ namespace prefix
     QMap<QString, QWidget*> _state_legend;
   };
 
-  class async_tcp_communication : public QObject
-  {
-    Q_OBJECT;
-
-  public:
-    async_tcp_communication
-      (const QString& host, int port, QObject* parent = NULL);
-
-    typedef QList<QString> messages_type;
-
-    messages_type get();
-    void push (const QString& message);
-
-  private slots:
-    void send_outstanding();
-    void may_read();
-
-  private:
-    messages_type _outstanding_incoming;
-    mutable QMutex _outstanding_incoming_lock;
-
-    messages_type _outstanding_outgoing;
-    mutable QMutex _outstanding_outgoing_lock;
-
-    QTcpSocket _socket;
-  };
-
   //! action_result
   enum result_code
   {
@@ -167,6 +140,8 @@ namespace prefix
 
   private slots:
     void check_for_incoming_messages();
+    void send_outstanding();
+    void may_read();
 
   private:
     void possible_status (fhg::util::parse::position&);
@@ -175,7 +150,16 @@ namespace prefix
     void status_update (fhg::util::parse::position&);
     void action_result (fhg::util::parse::position&);
 
-    async_tcp_communication* _connection;
+    void push (const QString& message);
+
+    typedef QList<QString> messages_type;
+    messages_type _outstanding_incoming;
+    mutable QMutex _outstanding_incoming_lock;
+
+    messages_type _outstanding_outgoing;
+    mutable QMutex _outstanding_outgoing_lock;
+
+    QTcpSocket _socket;
 
     QTimer* _timer;
   };

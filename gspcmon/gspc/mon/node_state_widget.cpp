@@ -122,9 +122,9 @@ namespace prefix
     }
   }
 
-  async_tcp_communication::async_tcp_communication
-    (const QString& host, int port, QObject* parent)
-      : QObject (parent)
+  communication::communication (const QString& host, int port, QObject* parent)
+    : QObject (parent)
+    , _timer (NULL)
   {
     connect (&_socket, SIGNAL (readyRead()), SLOT (may_read()));
     _socket.connectToHost (host, port);
@@ -137,25 +137,27 @@ namespace prefix
     QTimer* timer (new QTimer (this));
     connect (timer, SIGNAL (timeout()), SLOT (send_outstanding()));
     timer->start (100);
+
+    resume();
+    push ("possible_status");
   }
 
-  messages_type async_tcp_communication::get()
+  void communication::pause()
   {
-    messages_type messages;
-    {
-      const QMutexLocker lock (&_outstanding_incoming_lock);
-      std::swap (messages, _outstanding_incoming);
-    }
-    return messages;
+    delete _timer;
+  }
+  void communication::resume()
+  {
+    _timer = timer (this, 100, SLOT (check_for_incoming_messages()));
   }
 
-  void async_tcp_communication::push (const QString& message)
+  void communication::push (const QString& message)
   {
     const QMutexLocker lock (&_outstanding_outgoing_lock);
     _outstanding_outgoing << message;
   }
 
-  void async_tcp_communication::send_outstanding()
+  void communication::send_outstanding()
   {
     messages_type messages;
 
@@ -171,7 +173,7 @@ namespace prefix
     }
   }
 
-  void async_tcp_communication::may_read()
+  void communication::may_read()
   {
     if (!_socket.canReadLine())
     {
@@ -189,29 +191,11 @@ namespace prefix
     _outstanding_incoming << messages;
   }
 
-  communication::communication (const QString& host, int port, QObject* parent)
-    : QObject (parent)
-    , _connection (new async_tcp_communication (host, port, this))
-    , _timer (NULL)
-  {
-    resume();
-    _connection->push ("possible_status");
-  }
-
   void communication::request_hostlist()
   {
-    _connection->push ("hosts");
+    push ("hosts");
   }
 
-  void communication::pause()
-  {
-    delete _timer;
-  }
-
-  void communication::resume()
-  {
-    _timer = timer (this, 100, SLOT (check_for_incoming_messages()));
-  }
 
   legend::legend (QWidget* parent)
     : QWidget (parent)
@@ -617,13 +601,13 @@ namespace prefix
         message.append ("\"").append (*it).append ("\",");
       }
       message.append ("]");
-      _connection->push (message);
+      push (message);
     }
   }
 
   void communication::request_layout_hint (const QString& state)
   {
-    _connection->push (QString ("layout_hint: [\"%1\"]").arg (state));
+    push (QString ("layout_hint: [\"%1\"]").arg (state));
   }
 
   void communication::request_action_description (const QStringList& actions)
@@ -638,7 +622,7 @@ namespace prefix
                .append ("\", ");
       }
       message.append ("]");
-      _connection->push (message);
+      push (message);
     }
   }
 
@@ -670,11 +654,11 @@ namespace prefix
       ss << "]";
     }
 
-    _connection->push ( QString ("action: [[host: \"%1\", action: \"%2\"%3]]")
-                      .arg (hostname)
-                      .arg (action)
-                      .arg (QString::fromStdString (ss.str()))
-                      );
+    push ( QString ("action: [[host: \"%1\", action: \"%2\"%3]]")
+         .arg (hostname)
+         .arg (action)
+         .arg (QString::fromStdString (ss.str()))
+         );
   }
 
   void communication::possible_status (fhg::util::parse::position& pos)
@@ -1118,7 +1102,12 @@ namespace prefix
 
   void communication::check_for_incoming_messages()
   {
-    const async_tcp_communication::messages_type messages (_connection->get());
+    messages_type messages;
+    {
+      const QMutexLocker lock (&_outstanding_incoming_lock);
+      std::swap (messages, _outstanding_incoming);
+    }
+
     foreach (const QString& message, messages)
     {
       const std::string std_message (message.toStdString());
