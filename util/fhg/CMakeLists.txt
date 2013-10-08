@@ -104,6 +104,8 @@ install (FILES ${CMAKE_CURRENT_BINARY_DIR}/version.hpp
 
 install (FILES
   util/parse/position.hpp
+  util/parse/error.hpp
+  util/parse/require.hpp
   DESTINATION include/fhg/util/parse
   COMPONENT sdk
 )
