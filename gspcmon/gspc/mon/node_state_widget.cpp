@@ -2,9 +2,8 @@
 
 #include "node_state_widget.hpp"
 
-#include "file_line_edit.hpp"
-
 #include <util/qt/boost_connect.hpp>
+#include <util/qt/file_line_edit.hpp>
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/error.hpp>
@@ -1473,12 +1472,12 @@ namespace prefix
 
       case action_argument_data::directory:
         {
-          file_line_edit* edit
-            ( new file_line_edit
+          fhg::util::qt::file_line_edit* edit
+            ( new fhg::util::qt::file_line_edit
                (QFileDialog::Directory, item._default.get_value_or (""))
             );
           return std::pair<QWidget*, boost::function<QString()> >
-            (edit, boost::bind (&file_line_edit::text, edit));
+            (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
         }
 
       case action_argument_data::duration:
@@ -1494,12 +1493,12 @@ namespace prefix
 
       case action_argument_data::filename:
         {
-          file_line_edit* edit
-            ( new file_line_edit
+          fhg::util::qt::file_line_edit* edit
+            ( new fhg::util::qt::file_line_edit
                (QFileDialog::AnyFile, item._default.get_value_or (""))
             );
           return std::pair<QWidget*, boost::function<QString()> >
-            (edit, boost::bind (&file_line_edit::text, edit));
+            (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
         }
 
       case action_argument_data::integer:
