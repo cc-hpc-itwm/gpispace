@@ -53,6 +53,8 @@ set (hdrs
   get_home_dir.hpp
   hex.hpp
   read_file.hpp
+
+  get_cpucount.h
 )
 
 set (srcs
@@ -84,6 +86,8 @@ set (srcs
   get_home_dir.cpp
   hex.cpp
   read_file.cpp
+
+  get_cpucount.c
 )
 
 add_library (fhg-util ${srcs})
