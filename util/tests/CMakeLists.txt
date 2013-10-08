@@ -54,3 +54,8 @@ fhg_add_test(test_read_show.cpp
   LINK_LIBRARIES fhg-util
   DESCRIPTION "Tests the read/show functions"
 )
+
+fhg_add_test(test_pool.cpp
+  LINK_LIBRARIES fhg-util
+  DESCRIPTION "Tests the thread pool implementation"
+)

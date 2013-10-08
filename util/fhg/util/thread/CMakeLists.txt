@@ -6,6 +6,7 @@ set (hdrs
   channel.hpp
   poll.hpp
   pollable.hpp
+  pool.hpp
 )
 
 install(FILES ${hdrs}
