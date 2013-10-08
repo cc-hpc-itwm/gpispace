@@ -34,17 +34,18 @@ try
   QSplitter window (Qt::Vertical);
 
   QWidget* main (new QWidget (&window));
-  prefix::log_widget* log (new prefix::log_widget (&window));
+  fhg::pnete::ui::log_widget* log (new fhg::pnete::ui::log_widget (&window));
 
   QWidget* sidebar (new QWidget (main));
   QScrollArea* content (new QScrollArea (main));
 
   fhg::pnete::ui::monitor_client* monitor_client
     (new fhg::pnete::ui::monitor_client (host, port, main));
-  prefix::legend* legend_widget (new prefix::legend (monitor_client, sidebar));
+  fhg::pnete::ui::legend* legend_widget
+    (new fhg::pnete::ui::legend (monitor_client, sidebar));
 
-  prefix::node_state_widget* node_widget
-    ( new prefix::node_state_widget
+  fhg::pnete::ui::node_state_widget* node_widget
+    ( new fhg::pnete::ui::node_state_widget
       ( host
       , legend_widget
       , log
