@@ -3,8 +3,6 @@
 #ifndef FHG_PNETE_UI_MONITOR_CLIENT_HPP
 #define FHG_PNETE_UI_MONITOR_CLIENT_HPP
 
-#include <pnete/ui/monitor_client.fwd.hpp>
-
 #include <fhg/util/parse/position.hpp>
 
 #include <boost/function.hpp>

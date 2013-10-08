@@ -168,14 +168,14 @@ endif()
 
 qt4_wrap_cpp (wrapped_cpp_client
   ui/gspc_monitor.hpp
-  ui/monitor_client.hpp
-  ui/node_state_widget.hpp
+  ui/gspc_monitor_detail.hpp
+  ui/gspc_monitor_client.hpp
   OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
 set (gspcmon_client_src
   ui/gspc_monitor.cpp
-  ui/monitor_client.cpp
-  ui/node_state_widget.cpp
+  ui/gspc_monitor_detail.cpp
+  ui/gspc_monitor_client.cpp
   ${wrapped_cpp_client}
 )
 

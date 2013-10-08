@@ -1,8 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <pnete/ui/node_state_widget.hpp>
-
-#include <pnete/ui/monitor_client.hpp>
+#include <pnete/ui/gspc_monitor_detail.hpp>
 
 #include <util/qt/boost_connect.hpp>
 #include <util/qt/file_line_edit.hpp>

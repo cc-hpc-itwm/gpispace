@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <pnete/ui/monitor_client.hpp>
+#include <pnete/ui/gspc_monitor_client.hpp>
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/error.hpp>

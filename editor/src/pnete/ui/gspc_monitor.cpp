@@ -2,7 +2,7 @@
 
 #include <pnete/ui/gspc_monitor.hpp>
 
-#include <pnete/ui/node_state_widget.hpp>
+#include <pnete/ui/gspc_monitor_detail.hpp>
 
 #include <QCheckBox>
 #include <QGroupBox>

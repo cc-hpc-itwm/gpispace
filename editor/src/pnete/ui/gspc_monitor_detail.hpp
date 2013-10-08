@@ -1,9 +1,9 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_NODE_STATE_WIDGET_HPP
-#define FHG_PNETE_UI_NODE_STATE_WIDGET_HPP
+#ifndef FHG_PNETE_UI_GSPC_MONITOR_DETAIL_HPP
+#define FHG_PNETE_UI_GSPC_MONITOR_DETAIL_HPP
 
-#include <pnete/ui/monitor_client.hpp>
+#include <pnete/ui/gspc_monitor_client.hpp>
 
 #include <boost/optional.hpp>
 
