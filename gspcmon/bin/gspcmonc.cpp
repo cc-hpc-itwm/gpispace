@@ -1,6 +1,6 @@
 #include <node_state_widget.hpp>
 
-#include <sysexits.h>
+#include <pnete/ui/monitor_client.hpp>
 
 #include <QApplication>
 #include <QSplitter>
@@ -37,12 +37,21 @@ try
   prefix::log_widget* log (new prefix::log_widget (&window));
 
   QWidget* sidebar (new QWidget (main));
-  prefix::legend* legend_widget (new prefix::legend (sidebar));
-
   QScrollArea* content (new QScrollArea (main));
 
+  fhg::pnete::ui::monitor_client* monitor_client
+    (new fhg::pnete::ui::monitor_client (host, port, main));
+  prefix::legend* legend_widget (new prefix::legend (monitor_client, sidebar));
+
   prefix::node_state_widget* node_widget
-    (new prefix::node_state_widget (host, port, legend_widget, log, content));
+    ( new prefix::node_state_widget
+      ( host
+      , legend_widget
+      , log
+      , monitor_client
+      , content
+      )
+    );
 
   content->setWidget (node_widget);
   content->setWidgetResizable (true);

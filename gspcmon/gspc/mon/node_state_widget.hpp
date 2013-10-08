@@ -52,7 +52,7 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    legend (QWidget* parent = NULL);
+    legend (fhg::pnete::ui::monitor_client*, QWidget* parent = NULL);
 
     const state_description& state (const boost::optional<QString>&) const;
 
@@ -92,10 +92,10 @@ namespace prefix
     Q_OBJECT;
 
   public:
-    node_state_widget ( const QString& host
-                      , int port
+    node_state_widget ( const QString& window_title
                       , legend*
                       , log_widget*
+                      , fhg::pnete::ui::monitor_client*
                       , QWidget* parent = NULL
                       );
 
@@ -194,7 +194,7 @@ namespace prefix
 
     fhg::pnete::ui::monitor_client* _monitor_client;
 
-    QString _host;
+    QString _window_title;
   };
 }
 

@@ -2,6 +2,8 @@
 
 #include "node_state_widget.hpp"
 
+#include <pnete/ui/monitor_client.hpp>
+
 #include <util/qt/boost_connect.hpp>
 #include <util/qt/file_line_edit.hpp>
 
@@ -166,17 +168,18 @@ namespace prefix
     }
   }
 
-  node_state_widget::node_state_widget ( const QString& host
-                                       , int port
-                                       , legend* legend_widget
-                                       , log_widget* log
-                                       , QWidget* parent
-                                       )
+  node_state_widget::node_state_widget
+    ( const QString& window_title
+    , legend* legend_widget
+    , log_widget* log
+    , fhg::pnete::ui::monitor_client* monitor_client_
+    , QWidget* parent
+    )
       : QWidget (parent)
       , _legend_widget (legend_widget)
       , _log (log)
-      , _monitor_client (new fhg::pnete::ui::monitor_client (host, port, this))
-      , _host (host)
+      , _monitor_client (monitor_client_)
+      , _window_title (window_title)
   {
     timer
       (this, 30000, boost::bind (&fhg::pnete::ui::monitor_client::request_hostlist, _monitor_client));
@@ -219,27 +222,6 @@ namespace prefix
     connect ( _monitor_client
             , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
             , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
-
-    connect ( _monitor_client
-            , SIGNAL (states_add (const QString&, const QStringList&))
-            , _legend_widget
-            , SLOT (states_add (const QString&, const QStringList&)));
-    connect ( _monitor_client
-            , SIGNAL (states_layout_hint_border (const QString&, const QColor&))
-            , _legend_widget
-            , SLOT (states_layout_hint_border (const QString&, const QColor&)));
-    connect ( _monitor_client
-            , SIGNAL (states_layout_hint_character (const QString&, const char&))
-            , _legend_widget
-            , SLOT (states_layout_hint_character (const QString&, const char&)));
-    connect ( _monitor_client
-            , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
-            , _legend_widget
-            , SLOT (states_layout_hint_color (const QString&, const QColor&)));
-    connect ( _monitor_client
-            , SIGNAL (states_layout_hint_hidden (const QString&, const bool&))
-            , _legend_widget
-            , SLOT (states_layout_hint_hidden (const QString&, const bool&)));
     connect ( _monitor_client
             , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&))
             , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&))
@@ -273,7 +255,7 @@ namespace prefix
 
 
 
-  legend::legend (QWidget* parent)
+  legend::legend (fhg::pnete::ui::monitor_client* monitor_client, QWidget* parent)
     : QWidget (parent)
   {
     new QVBoxLayout (this);
@@ -282,6 +264,22 @@ namespace prefix
             , SIGNAL (state_pixmap_changed (const QString&))
             , SLOT (update (const QString&))
             );
+
+    connect ( monitor_client
+            , SIGNAL (states_add (const QString&, const QStringList&))
+            , SLOT (states_add (const QString&, const QStringList&)));
+    connect ( monitor_client
+            , SIGNAL (states_layout_hint_border (const QString&, const QColor&))
+            , SLOT (states_layout_hint_border (const QString&, const QColor&)));
+    connect ( monitor_client
+            , SIGNAL (states_layout_hint_character (const QString&, const char&))
+            , SLOT (states_layout_hint_character (const QString&, const char&)));
+    connect ( monitor_client
+            , SIGNAL (states_layout_hint_color (const QString&, const QColor&))
+            , SLOT (states_layout_hint_color (const QString&, const QColor&)));
+    connect ( monitor_client
+            , SIGNAL (states_layout_hint_hidden (const QString&, const bool&))
+            , SLOT (states_layout_hint_hidden (const QString&, const bool&)));
   }
 
   void legend::states_add
@@ -498,8 +496,8 @@ namespace prefix
       updateGeometry();
     }
 
-    setWindowTitle ( tr ("Cluster Monitor: %1; watching %2 nodes")
-                   .arg (_host)
+    setWindowTitle ( tr ("%1; watching %2 nodes")
+                   .arg (_window_title)
                    .arg (_nodes.size())
                    );
   }
