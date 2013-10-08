@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include "node_state_widget.hpp"
+#include <pnete/ui/node_state_widget.hpp>
 
 #include <pnete/ui/monitor_client.hpp>
 

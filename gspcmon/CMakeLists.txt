@@ -15,13 +15,13 @@ include_directories(${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR}/editor/src ${Boost_INCLUDE_DIR})
 
 qt4_wrap_cpp (wrapped_cpp_client
-  gspc/mon/node_state_widget.hpp
   gspc/mon/pnete/ui/monitor_client.hpp
+  gspc/mon/pnete/ui/node_state_widget.hpp
   OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
 set (gspcmon_client_src
-  gspc/mon/node_state_widget.cpp
   gspc/mon/pnete/ui/monitor_client.cpp
+  gspc/mon/pnete/ui/node_state_widget.cpp
   ${wrapped_cpp_client}
 )
 
