@@ -45,15 +45,6 @@ namespace prefix
     void reset();
   };
 
-  class legend_entry : public QWidget
-  {
-    Q_OBJECT;
-
-  public:
-    legend_entry
-      (const QString&, const state_description&, QWidget* parent = NULL);
-  };
-
   class legend : public QWidget
   {
     Q_OBJECT;
@@ -76,7 +67,7 @@ namespace prefix
 
   private:
     QMap<QString, state_description> _states;
-    QMap<QString, legend_entry*> _state_legend;
+    QMap<QString, QWidget*> _state_legend;
   };
 
   struct connection_error : public std::runtime_error

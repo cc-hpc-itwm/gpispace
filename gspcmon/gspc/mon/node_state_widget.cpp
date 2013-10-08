@@ -387,12 +387,27 @@ namespace prefix
     }
   }
 
+  namespace
+  {
+    QWidget* legend_entry
+      (const QString& name, const state_description& desc, QWidget* parent)
+    {
+      QWidget* widget (new QWidget (parent));
+      QGridLayout* layout (new QGridLayout (widget));
+      QLabel* label (new QLabel (widget));
+      label->setPixmap (desc._pixmap);
+      layout->addWidget (label, 0, 0);
+      layout->addWidget (new QLabel (name, widget), 0, 1);
+      return widget;
+    }
+  }
+
   void legend::update (const QString& s)
   {
     delete _state_legend[s];
     if (!state (s)._hidden)
     {
-      _state_legend[s] = new legend_entry (s, state (s), this);
+      _state_legend[s] = legend_entry (s, state (s), this);
 
       layout()->addWidget (_state_legend[s]);
     }
@@ -1183,17 +1198,6 @@ namespace prefix
       painter.drawText
         (0, 0, node_size, node_size, Qt::AlignCenter, QString (*_character));
     }
-  }
-
-  legend_entry::legend_entry
-    (const QString& name, const state_description& desc, QWidget* parent)
-    : QWidget (parent)
-  {
-    QGridLayout* layout (new QGridLayout (this));
-    QLabel* label (new QLabel (this));
-    label->setPixmap (desc._pixmap);
-    layout->addWidget (label, 0, 0);
-    layout->addWidget (new QLabel (name, this), 0, 1);
   }
 
   boost::optional<int> node_state_widget::node_at (const QPoint& pos) const
