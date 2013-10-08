@@ -1,5 +1,4 @@
-#include <pnete/ui/monitor_client.hpp>
-#include <pnete/ui/node_state_widget.hpp>
+#include <pnete/ui/gspc_monitor.hpp>
 
 #include <QApplication>
 #include <QString>

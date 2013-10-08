@@ -165,3 +165,35 @@ if (ENABLE_SDPA_GUI)
 
   add_subdirectory (test)
 endif()
+
+qt4_wrap_cpp (wrapped_cpp_client
+  ui/gspc_monitor.hpp
+  ui/monitor_client.hpp
+  ui/node_state_widget.hpp
+  OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
+
+set (gspcmon_client_src
+  ui/gspc_monitor.cpp
+  ui/monitor_client.cpp
+  ui/node_state_widget.cpp
+  ${wrapped_cpp_client}
+)
+
+add_library (gspcmon_client        STATIC ${gspcmon_client_src})
+
+add_executable (gspcmonc gspcmonc.cpp)
+
+target_link_libraries (gspcmonc
+  gspcmon_client
+  ${QT_LIBRARIES} fhg_util_qt fhg-util
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_DATE_TIME_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${CMAKE_THREAD_LIBS_INIT}
+)
+
+install (TARGETS gspcmonc
+  DESTINATION bin
+  COMPONENT runtime
+)
