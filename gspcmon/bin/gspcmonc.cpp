@@ -93,11 +93,6 @@ try
 
   return app.exec();
 }
-catch (const prefix::connection_error& err)
-{
-  std::cerr << "failed to connect: " << err.what() << "\n";
-  return 1;
-}
 catch (const std::runtime_error& err)
 {
   std::cerr << "error: " << err.what() << "\n";
