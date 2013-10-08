@@ -50,6 +50,30 @@ namespace fhg
         return atomic<value_type> (old);
       }
 
+      template <typename U>
+      atomic<value_type> & operator+= (U u)
+      {
+        lock_type lock (m_mutex);
+        m_value += u;
+        return *this;
+      }
+
+      template <typename U>
+      atomic<value_type> & operator-= (U u)
+      {
+        lock_type lock (m_mutex);
+        m_value -= u;
+        return *this;
+      }
+
+      template <typename U>
+      atomic<value_type> & operator= (U u)
+      {
+        lock_type lock (m_mutex);
+        m_value = u;
+        return *this;
+      }
+
       atomic<value_type> & operator-- ()
       {
         lock_type lock (m_mutex);
