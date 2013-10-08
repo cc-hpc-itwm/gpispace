@@ -307,8 +307,8 @@ namespace prefix
             , SIGNAL (states_actions_long_text (const QString&, const QString&))
             , SLOT (states_actions_long_text (const QString&, const QString&)));
     connect ( _communication
-            , SIGNAL (states_actions_arguments (const QString&, const QList<action_argument_data>&))
-            , SLOT (states_actions_arguments (const QString&, const QList<action_argument_data>&)));
+            , SIGNAL (states_actions_arguments (const QString&, const QList<communication::action_argument_data>&))
+            , SLOT (states_actions_arguments (const QString&, const QList<communication::action_argument_data>&)));
     connect ( _communication
             , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
             , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
@@ -334,8 +334,8 @@ namespace prefix
             , _legend_widget
             , SLOT (states_layout_hint_hidden (const QString&, const bool&)));
     connect ( _communication
-            , SIGNAL (action_result (const QString&, const QString&, const result_code&, const boost::optional<QString>&))
-            , SLOT (action_result (const QString&, const QString&, const result_code&, const boost::optional<QString>&))
+            , SIGNAL (action_result (const QString&, const QString&, const communication::action_result_code&, const boost::optional<QString>&))
+            , SLOT (action_result (const QString&, const QString&, const communication::action_result_code&, const boost::optional<QString>&))
             );
 
     connect ( _legend_widget
@@ -417,7 +417,7 @@ namespace prefix
     _long_action[action] = long_text;
   }
   void node_state_widget::states_actions_arguments
-    (const QString& action, const QList<action_argument_data>& arguments)
+    (const QString& action, const QList<communication::action_argument_data>& arguments)
   {
     _action_arguments[action] = arguments;
   }
@@ -679,11 +679,11 @@ namespace prefix
     request_action_description (actions);
   }
 
-  action_argument_data::action_argument_data (const QString& name)
+  communication::action_argument_data::action_argument_data (const QString& name)
     : _name (name)
   { }
 
-  void action_argument_data::append (fhg::util::parse::position& pos)
+  void communication::action_argument_data::append (fhg::util::parse::position& pos)
   {
     pos.skip_spaces();
 
@@ -798,14 +798,14 @@ namespace prefix
   namespace
   {
     void action_argument ( fhg::util::parse::position& pos
-                         , QList<action_argument_data>* data_list
+                         , QList<communication::action_argument_data>* data_list
                          )
     {
       const QString name (require::qstring (pos));
       require::token (pos, ":");
 
-      action_argument_data data (name);
-      require::list (pos, boost::bind (&action_argument_data::append, &data, _1));
+      communication::action_argument_data data (name);
+      require::list (pos, boost::bind (&communication::action_argument_data::append, &data, _1));
 
       data_list->append (data);
     }
@@ -982,7 +982,7 @@ namespace prefix
         , _message (boost::none)
       { }
 
-      boost::optional<result_code> _result;
+      boost::optional<communication::action_result_code> _result;
       boost::optional<QString> _message;
 
       void append (fhg::util::parse::position& pos)
@@ -1025,7 +1025,7 @@ namespace prefix
               ++pos;
               pos.require ("ail");
 
-              _result = fail;
+              _result = communication::fail;
 
               break;
 
@@ -1033,7 +1033,7 @@ namespace prefix
               ++pos;
               pos.require ("kay");
 
-              _result = okay;
+              _result = communication::okay;
 
               break;
 
@@ -1041,7 +1041,7 @@ namespace prefix
               ++pos;
               pos.require ("arn");
 
-              _result = warn;
+              _result = communication::warn;
 
               break;
             }
@@ -1075,7 +1075,7 @@ namespace prefix
 
   void node_state_widget::action_result ( const QString& host
                                         , const QString& action
-                                        , const result_code& result
+                                        , const communication::action_result_code& result
                                         , const boost::optional<QString>& message
                                         )
   {
@@ -1085,15 +1085,15 @@ namespace prefix
 
       switch (result)
       {
-      case okay:
+      case communication::okay:
         _log->information (msg);
         break;
 
-      case fail:
+      case communication::fail:
         _log->critical (msg);
         break;
 
-      case warn:
+      case communication::warn:
         _log->warning (msg);
         break;
       }
@@ -1518,11 +1518,11 @@ namespace prefix
     }
 
     std::pair<QWidget*, boost::function<QString()> > widget_for_item
-      (const action_argument_data& item)
+      (const communication::action_argument_data& item)
     {
       switch (*item._type)
       {
-      case action_argument_data::boolean:
+      case communication::action_argument_data::boolean:
         {
           QCheckBox* box (new QCheckBox);
           box->setChecked ( fhg::util::read_bool
@@ -1532,7 +1532,7 @@ namespace prefix
             (box, boost::bind (checkbox_to_string, box));
         }
 
-      case action_argument_data::directory:
+      case communication::action_argument_data::directory:
         {
           fhg::util::qt::file_line_edit* edit
             ( new fhg::util::qt::file_line_edit
@@ -1542,7 +1542,7 @@ namespace prefix
             (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
         }
 
-      case action_argument_data::duration:
+      case communication::action_argument_data::duration:
         {
           QSpinBox* edit (new QSpinBox);
           edit->setMinimum (1);
@@ -1553,7 +1553,7 @@ namespace prefix
             (edit, boost::bind (spinbox_to_string, edit));
         }
 
-      case action_argument_data::filename:
+      case communication::action_argument_data::filename:
         {
           fhg::util::qt::file_line_edit* edit
             ( new fhg::util::qt::file_line_edit
@@ -1563,7 +1563,7 @@ namespace prefix
             (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
         }
 
-      case action_argument_data::integer:
+      case communication::action_argument_data::integer:
         {
           QSpinBox* edit (new QSpinBox);
           edit->setMinimum (INT_MIN);
@@ -1573,7 +1573,7 @@ namespace prefix
             (edit, boost::bind (spinbox_to_string, edit));
         }
 
-      case action_argument_data::string:
+      case communication::action_argument_data::string:
         {
           QLineEdit* edit (new QLineEdit (item._default.get_value_or ("")));
           return std::pair<QWidget*, boost::function<QString()> >
@@ -1602,7 +1602,7 @@ namespace prefix
       QWidget* wid (new QWidget (dialog));
       QFormLayout* layout (new QFormLayout (wid));
 
-      foreach (const action_argument_data& item, _action_arguments[action])
+      foreach (const communication::action_argument_data& item, _action_arguments[action])
       {
         if (!item._type)
         {

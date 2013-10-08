@@ -70,36 +70,6 @@ namespace prefix
     QMap<QString, QWidget*> _state_legend;
   };
 
-  //! action_result
-  enum result_code
-  {
-    okay,
-    fail,
-    warn,
-  };
-
-  struct action_argument_data
-  {
-    enum type
-    {
-      boolean,
-      directory,
-      duration,
-      filename,
-      integer,
-      string,
-    };
-
-    action_argument_data (const QString& name);
-
-    QString _name;
-    boost::optional<type> _type;
-    boost::optional<QString> _label;
-    boost::optional<QString> _default;
-
-    void append (fhg::util::parse::position&);
-  };
-
   class communication : public QObject
   {
     Q_OBJECT;
@@ -119,10 +89,39 @@ namespace prefix
     void pause();
     void resume();
 
+    enum action_result_code
+    {
+      okay,
+      fail,
+      warn,
+    };
+
+    struct action_argument_data
+    {
+      enum type
+      {
+        boolean,
+        directory,
+        duration,
+        filename,
+        integer,
+        string,
+      };
+
+      action_argument_data (const QString& name);
+
+      QString _name;
+      boost::optional<type> _type;
+      boost::optional<QString> _label;
+      boost::optional<QString> _default;
+
+      void append (fhg::util::parse::position&);
+    };
+
   signals:
     void action_result ( const QString&
                        , const QString&
-                       , const result_code&
+                       , const communication::action_result_code&
                        , const boost::optional<QString>&
                        );
     void nodes (QStringList);
@@ -130,7 +129,7 @@ namespace prefix
     void nodes_state (const QString&, const boost::optional<QString>&);
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
-      (const QString&, const QList<action_argument_data>&);
+      (const QString&, const QList<communication::action_argument_data>&);
     void states_actions_expected_next_state (const QString&, const QString&);
     void states_add (const QString&, const QStringList&);
     void states_layout_hint_border (const QString&, const QColor&);
@@ -206,7 +205,7 @@ namespace prefix
     void nodes_state (const QString&, const boost::optional<QString>&);
     void states_actions_long_text (const QString&, const QString&);
     void states_actions_arguments
-      (const QString&, const QList<action_argument_data>&);
+      (const QString&, const QList<communication::action_argument_data>&);
     void states_actions_expected_next_state (const QString&, const QString&);
 
     void update_nodes_with_state (const QString&);
@@ -214,7 +213,7 @@ namespace prefix
 
     void action_result ( const QString&
                        , const QString&
-                       , const result_code&
+                       , const communication::action_result_code&
                        , const boost::optional<QString>&
                        );
 
@@ -247,7 +246,7 @@ namespace prefix
     void sort_by (boost::function<bool (const node_type&, const node_type&)>);
 
     QMap<QString, QString> _long_action;
-    QMap<QString, QList<action_argument_data> > _action_arguments;
+    QMap<QString, QList<communication::action_argument_data> > _action_arguments;
     QMap<QString, QString> _action_expects_next_state;
 
     QSet<QString> _pending_updates;
