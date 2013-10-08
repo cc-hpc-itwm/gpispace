@@ -1257,11 +1257,11 @@ namespace prefix
     }
   }
 
-  const node_type& node_state_widget::node (int index) const
+  const node_state_widget::node_type& node_state_widget::node (int index) const
   {
     return _nodes.at (index);
   }
-  node_type& node_state_widget::node (int index)
+  node_state_widget::node_type& node_state_widget::node (int index)
   {
     return _nodes[index];
   }
