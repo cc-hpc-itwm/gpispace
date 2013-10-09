@@ -2,9 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-//#include <unistd.h>
 #include <csignal>
-#include "sdpa/daemon/JobFSM.hpp"
 
 #include <sdpa/sdpa-config.hpp>
 
