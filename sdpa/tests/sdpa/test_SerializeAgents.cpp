@@ -37,7 +37,12 @@
 #include "kvs_setup_fixture.hpp"
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
-const int MAX_CAP = 100;
+const int NWORKERS = 12;
+const int NJOBS    = 4;
+const int MAX_CAP  = 100;
+
+const std::string WORKER_CPBS[] = {"A", "B", "C"};
+
 
 using namespace sdpa::daemon;
 using namespace sdpa;
@@ -144,104 +149,99 @@ BOOST_AUTO_TEST_CASE(testAgentSerialization)
 {
     std::cout<<std::endl<<"----------------Begin  testAgentSerialization----------------"<<std::endl;
     std::string filename = "testSerializeAgent.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-    Agent::ptr_t pAgg = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create(	"agent_0",
-    																						"127.0.0.1:7001",
-    																						sdpa::master_info_list_t(1,MasterInfo("orchestrator_0")),
-    																						MAX_CAP); //, "127.0.0.1:7000");
 
-    pAgg->setScheduler(new SchedulerImpl());
-    SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pAgg->scheduler().get());
+    LOG(INFO, "Test the co-allocation ...");
 
-    JobId id1("_1");
-    sdpa::daemon::Job::ptr_t  p1(new JobFSM(id1, "decsription 1"));
-    pAgg->jobManager()->addJob(id1, p1);
+	string addrAg = "127.0.0.1";
+	string strBackupOrch;
+	ostringstream oss;
 
-    JobId id2("_2");
-    sdpa::daemon::Job::ptr_t  p2(new JobFSM(id2, "decsription 2"));
-    pAgg->jobManager()->addJob(id2, p2);
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
-    JobId id3("_3");
-    sdpa::daemon::Job::ptr_t  p3(new JobFSM(id3, "decsription 3"));
-    pAgg->jobManager()->addJob(id3, p3);
+	pAgent-> createScheduler(false);
 
-    JobId id4("_4");
-    sdpa::daemon::Job::ptr_t  p4(new JobFSM(id4, "decsription 4"));
-    pAgg->jobManager()->addJob(id4, p4);
+	if(!pAgent->scheduler())
+		LOG(FATAL, "The scheduler was not properly initialized");
 
-    JobId id5("_5");
-    sdpa::daemon::Job::ptr_t  p5(new JobFSM(id5, "decsription 5"));
-    pAgg->jobManager()->addJob(id5, p5);
+	// add a couple of workers
+	for( int k=0; k<NWORKERS; k++ )
+	{
+		oss.str("");
+		oss<<k;
 
-    int nSchedQSize = 5;
-    for(int i=0; i<nSchedQSize; i++)
-    {
-      std::ostringstream ossJobId;;
-      ossJobId<<"Job_"<<i;
-      sdpa::job_id_t jobId(ossJobId.str());
-      pScheduler->schedule(jobId);
-    }
+		sdpa::worker_id_t workerId(oss.str());
+		std::string cpbName(WORKER_CPBS[k%3]);
+		sdpa::capability_t cpb(cpbName, "virtual", workerId);
+		sdpa::capabilities_set_t cpbSet;
+		cpbSet.insert(cpb);
+		pAgent->scheduler()->addWorker(workerId, 1, cpbSet);
+	}
 
-    int nWorkers=3;
-    for(int k=0; k<nWorkers; k++)
-    {
-      std::ostringstream ossWorkerId;;
-      ossWorkerId<<"Worker_"<<k;
-      Worker::worker_id_t workerId(ossWorkerId.str());
-      pScheduler->addWorker(workerId, k);
+	// create a number of jobs
+	const sdpa::job_id_t jobId0("Job0");
+	sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0"));
+	pAgent->jobManager()->addJob(jobId0, pJob0);
 
-      for( int l=0; l<3; l++)
-      {
-        std::ostringstream ossJobId;
-        ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
-        sdpa::job_id_t jobId(ossJobId.str());
+	const sdpa::job_id_t jobId1("Job1");
+	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+	pAgent->jobManager()->addJob(jobId1, pJob1);
 
-        pScheduler->schedule_to(jobId, workerId);
-        if(l>=1)
-        {
-          sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
-          if(l>=2)
-                  pScheduler->acknowledgeJob(workerId, jobToSubmit);
-        }
-      }
-    }
+	const sdpa::job_id_t jobId2("Job2");
+	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
+	pAgent->jobManager()->addJob(jobId2, pJob2);
+
+	job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
+	pAgent->scheduler()->schedule_remote(jobId0);
+
+	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
+	pAgent->scheduler()->schedule_remote(jobId1);
+
+	job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
+	pAgent->scheduler()->schedule_remote(jobId2);
+
+	pAgent->scheduler()->assignJobsToWorkers();
 
     try
     {
-      std::cout<<"----------------The Agent<DummyWorkflowEngine>'s content before backup is:----------------"<<std::endl;
-      pAgg->print();
+    	std::cout<<"----------------The Agent<DummyWorkflowEngine>'s content before backup is:----------------"<<std::endl;
+    	//pAgent->print();
 
-      std::ofstream ofs(filename.c_str());
-      boost::archive::text_oarchive oa(ofs);
-      oa.register_type(static_cast<Agent*>(NULL));
-      oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-      oa.register_type(static_cast<DaemonFSM*>(NULL));
-      oa.register_type(static_cast<GenericDaemon*>(NULL));
-      oa.register_type(static_cast<SchedulerImpl*>(NULL));
-      oa.register_type(static_cast<JobFSM*>(NULL));
-      oa << pAgg;
+    	std::ofstream ofs(filename.c_str());
+    	boost::archive::text_oarchive oa(ofs);
+    	oa.register_type(static_cast<Agent*>(NULL));
+    	oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
+    	oa.register_type(static_cast<DaemonFSM*>(NULL));
+    	oa.register_type(static_cast<GenericDaemon*>(NULL));
+    	oa.register_type(static_cast<SchedulerImpl*>(NULL));
+    	oa.register_type(static_cast<JobFSM*>(NULL));
+    	oa << pAgent;
     }
     catch(exception &e)
     {
-      cout <<"Exception occurred: "<< e.what() << endl;
-      return;
+    	cout <<"Exception occurred: "<< e.what() << endl;
+    	return;
     }
 
     std::cout<<"----------------Try now to restore the Agent<DummyWorkflowEngine>:----------------"<<std::endl;
     try
     {
-      Agent::ptr_t pRestoredAgg;
-      std::ifstream ifs(filename.c_str());
-      boost::archive::text_iarchive ia(ifs);
-      ia.register_type(static_cast<Agent*>(NULL));
-      ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-      ia.register_type(static_cast<DaemonFSM*>(NULL));
-      ia.register_type(static_cast<GenericDaemon*>(NULL));
-      ia.register_type(static_cast<SchedulerImpl*>(NULL));
-      ia.register_type(static_cast<JobFSM*>(NULL));
-      ia >> pRestoredAgg;
+    	Agent::ptr_t pRestoredAgg;
+    	std::ifstream ifs(filename.c_str());
+    	boost::archive::text_iarchive ia(ifs);
+    	ia.register_type(static_cast<Agent*>(NULL));
+    	ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
+    	ia.register_type(static_cast<DaemonFSM*>(NULL));
+    	ia.register_type(static_cast<GenericDaemon*>(NULL));
+    	ia.register_type(static_cast<SchedulerImpl*>(NULL));
+    	ia.register_type(static_cast<JobFSM*>(NULL));
+    	ia >> pRestoredAgg;
 
-      std::cout<<std::endl<<"----------------The restored content of the Agent<DummyWorkflowEngine> is:----------------"<<std::endl;
-      pRestoredAgg->print();
+    	std::cout<<std::endl<<"----------------The restored content of the Agent<DummyWorkflowEngine> is:----------------"<<std::endl;
+    	//pRestoredAgg->print();
     }
     catch(exception &e)
     {
