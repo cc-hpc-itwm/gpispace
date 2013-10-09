@@ -46,12 +46,6 @@ namespace gspc
       return m_data.size ();
     }
 
-    size_t buffer_t::capacity () const
-    {
-      shared_lock lock (m_mutex);
-      return m_data.capacity ();
-    }
-
     ssize_t buffer_t::write_to (int fd)
     {
       unique_lock lock (m_mutex);

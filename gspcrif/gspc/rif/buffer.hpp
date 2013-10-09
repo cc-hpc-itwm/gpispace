@@ -23,7 +23,6 @@ namespace gspc
       ssize_t write_to (int fd);
 
       size_t size () const;
-      size_t capacity () const;
     private:
       typedef boost::shared_mutex            mutex_type;
       typedef boost::shared_lock<mutex_type> shared_lock;
