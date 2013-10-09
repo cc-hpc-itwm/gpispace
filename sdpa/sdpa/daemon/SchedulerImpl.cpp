@@ -247,38 +247,38 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 		return;
 	}
 
-  // first re-schedule the work:
-  // inspect all queues and re-schedule each job
-  try {
-    const Worker::ptr_t& pWorker = findWorker(worker_id);
+	// first re-schedule the work:
+	// inspect all queues and re-schedule each job
+	try {
+		const Worker::ptr_t& pWorker = findWorker(worker_id);
 
-    // The jobs submitted by the WE should have set a property
-    // which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
+		// The jobs submitted by the WE should have set a property
+		// which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
 
-    // for each job in the queue, either re-schedule it, if is allowed
-    // re_schedule( &pWorker->acknowledged() );
-    // re_schedule( &pWorker->submitted() );
-    // or declare it failed
-    pWorker->set_disconnected();
+		// for each job in the queue, either re-schedule it, if is allowed
+		// re_schedule( &pWorker->acknowledged() );
+		// re_schedule( &pWorker->submitted() );
+		// or declare it failed
+		pWorker->set_disconnected();
 
-    // declare the submitted jobs failed
-    //declare_jobs_failed( worker_id, &pWorker->submitted() );
-    reschedule(worker_id, &pWorker->submitted() );
+		// declare the submitted jobs failed
+		//declare_jobs_failed( worker_id, &pWorker->submitted() );
+		reschedule(worker_id, &pWorker->submitted() );
 
-    // declare the acknowledged jobs failed
-    //declare_jobs_failed( worker_id, &pWorker->acknowledged() );
-    reschedule(worker_id, &pWorker->acknowledged() );
+		// declare the acknowledged jobs failed
+		//declare_jobs_failed( worker_id, &pWorker->acknowledged() );
+		reschedule(worker_id, &pWorker->acknowledged() );
 
-    // re-schedule the pending jobs
-    reschedule(worker_id, &pWorker->pending() );
+		// re-schedule the pending jobs
+		reschedule(worker_id, &pWorker->pending() );
 
-    // put the jobs back into the central queue and don't forget
-    // to reset the status
-  }
-  catch (const WorkerNotFoundException& ex)
-  {
-    SDPA_LOG_WARN("Could not re-schedule the jobs of the worker "<<worker_id<<": no such worker exists!");
-  }
+		// put the jobs back into the central queue and don't forget
+		// to reset the status
+	}
+	catch (const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_WARN("Could not re-schedule the jobs of the worker "<<worker_id<<": no such worker exists!");
+	}
 }
 
 void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
