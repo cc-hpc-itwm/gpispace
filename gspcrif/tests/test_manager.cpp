@@ -398,4 +398,39 @@ BOOST_AUTO_TEST_CASE (test_async_handler)
   manager.stop ();
 }
 
+BOOST_AUTO_TEST_CASE (test_wait_twice)
+{
+  int rc;
+  int status;
+  gspc::rif::proc_t p;
+  handler_t handler;
+  gspc::rif::manager_t manager;
+  manager.register_handler (&handler);
+  manager.start ();
+
+  gspc::rif::argv_t argv;
+
+  argv.push_back ("/bin/cat");
+
+  p = manager.exec (argv);
+  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_EQUAL (handler.proc, p);
+  BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
+
+  manager.kill (p, SIGTERM);
+
+  for (int i = 0 ; i < 2 ; ++i)
+  {
+    rc = manager.wait (p, &status);
+
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE (WIFSIGNALED (status));
+    BOOST_REQUIRE_EQUAL (WTERMSIG (status), SIGTERM);
+    BOOST_REQUIRE_EQUAL (handler.proc, p);
+    BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
+  }
+
+  manager.stop ();
+}
+
 BOOST_AUTO_TEST_SUITE_END()
