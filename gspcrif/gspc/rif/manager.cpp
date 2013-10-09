@@ -308,6 +308,25 @@ namespace gspc
       return p->kill (sig);
     }
 
+    int manager_t::status (proc_t proc, int *status)
+    {
+      process_ptr_t p = process_by_id (proc);
+      if (not p)
+        return -ESRCH;
+
+
+      if (p->status ())
+      {
+        if (status)
+          *status = *p->status ();
+        return 0;
+      }
+      else
+      {
+        return -EBUSY;
+      }
+    }
+
     int manager_t::wait (proc_t proc, int *status)
     {
       return this->wait (proc, status, boost::posix_time::pos_infin);
