@@ -173,6 +173,7 @@ if (ENABLE_SDPA_GUI)
   install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)
 
   target_link_libraries ( gspcmonc
+                          pnet
                           "fhg_util_qt"
                           fhg-util
                           ${FhgLog_LIBRARY}
