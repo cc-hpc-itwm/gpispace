@@ -109,10 +109,16 @@ set (editor_ui_resources
 
 set (monitor_ui_sources
   ui/execution_monitor.cpp
+  ui/gspc_monitor.cpp
+  ui/gspc_monitor_client.cpp
+  ui/gspc_monitor_detail.cpp
   ui/log_monitor.cpp
 )
 set (monitor_ui_tomoc
   ui/execution_monitor.hpp
+  ui/gspc_monitor.hpp
+  ui/gspc_monitor_client.hpp
+  ui/gspc_monitor_detail.hpp
   ui/log_monitor.hpp
 )
 
@@ -153,6 +159,9 @@ if (ENABLE_SDPA_GUI)
   add_executable ( sdpa-gui
     monitor.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
 
+  add_executable (gspcmonc
+    gspcmonc.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
+
   target_link_libraries ( sdpa-gui
                           pnet
                           "fhg_util_qt"
@@ -163,37 +172,14 @@ if (ENABLE_SDPA_GUI)
 
   install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)
 
+  target_link_libraries ( gspcmonc
+                          "fhg_util_qt"
+                          fhg-util
+                          ${FhgLog_LIBRARY}
+                          ${Boost_LIBRARIES}
+                          ${QT_LIBRARIES})
+
+  install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)
+
   add_subdirectory (test)
 endif()
-
-qt4_wrap_cpp (wrapped_cpp_client
-  ui/gspc_monitor.hpp
-  ui/gspc_monitor_detail.hpp
-  ui/gspc_monitor_client.hpp
-  OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
-
-set (gspcmon_client_src
-  ui/gspc_monitor.cpp
-  ui/gspc_monitor_detail.cpp
-  ui/gspc_monitor_client.cpp
-  ${wrapped_cpp_client}
-)
-
-add_library (gspcmon_client        STATIC ${gspcmon_client_src})
-
-add_executable (gspcmonc gspcmonc.cpp)
-
-target_link_libraries (gspcmonc
-  gspcmon_client
-  ${QT_LIBRARIES} fhg_util_qt fhg-util
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_THREAD_LIBRARY}
-  ${Boost_DATE_TIME_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${CMAKE_THREAD_LIBS_INIT}
-)
-
-install (TARGETS gspcmonc
-  DESTINATION bin
-  COMPONENT runtime
-)
