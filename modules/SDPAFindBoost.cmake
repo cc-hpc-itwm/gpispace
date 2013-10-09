@@ -11,6 +11,7 @@ set (COMPONENTS
   serialization
   program_options
   regex
+  signals
   iostreams
   date_time
   test_exec_monitor
