@@ -17,7 +17,7 @@ struct table
   table()
     : m_fork (TABLE_SIZE)
   {
-    using namespace fhg::util::thread;
+    using namespace fhg::thread;
 
     for (std::size_t i = 0; i < TABLE_SIZE; ++i)
     {
@@ -27,7 +27,7 @@ struct table
 
   ~table()
   {
-    using namespace fhg::util::thread;
+    using namespace fhg::thread;
 
     BOOST_FOREACH (semaphore * fork, m_fork)
     {
@@ -59,7 +59,7 @@ struct table
   }
 
 private:
-  std::vector<fhg::util::thread::semaphore*> m_fork;
+  std::vector<fhg::thread::semaphore*> m_fork;
 };
 
 struct philosopher
@@ -120,7 +120,7 @@ private:
 
 BOOST_AUTO_TEST_CASE ( dining_philosophers )
 {
-  using namespace fhg::util::thread;
+  using namespace fhg::thread;
   table wishing_table;
   std::vector<boost::shared_ptr<philosopher> > nerds;
   for (std::size_t i (0); i < table::TABLE_SIZE; ++i)
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE ( dining_philosophers )
 
 BOOST_AUTO_TEST_CASE ( enter_critical_section )
 {
-  fhg::util::thread::semaphore s (1);
+  fhg::thread::semaphore s (1);
   s.P();
   s.V();
 
