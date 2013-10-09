@@ -58,7 +58,7 @@ int main (int ac, char *av[])
   maybe_set_default_settings();
 
   QTabWidget window;
-  window.addTab ( new execution_monitor (QString (av[1]).toUShort())
+  window.addTab ( new fhg::pnete::ui::execution_monitor (QString (av[1]).toUShort())
                 , QObject::tr ("Execution Monitor")
                 );
   window.addTab ( new log_monitor (ac > 2 ? QString (av[2]).toUShort() : 2438)
