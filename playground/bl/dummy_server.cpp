@@ -299,9 +299,19 @@ void thread::send_action_description (fhg::util::parse::position& pos)
   const QString action (prefix::require::qstring (pos));
   _socket->write
     ( qPrintable ( QString
-                   ("action_description: [\"%1\": [long_text: \"%2\",],]\n")
+                   ("action_description: [\"%1\": [long_text: \"%2\", %3],]\n")
                  .arg (action)
                  .arg (description (action))
+                 .arg (action == "add_to_working_set"
+                      ? "expected_next_state: \"used\""
+                      : action == "reboot"
+                      ? "expected_next_state: \"down\""
+                      : action == "remove_from_working_set"
+                      ? "expected_next_state: \"available\""
+                      : action == "foo"
+                      ? ""
+                      : throw std::runtime_error ("unknown action")
+                      )
                  )
     );
 }

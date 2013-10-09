@@ -109,10 +109,20 @@ set (editor_ui_resources
 
 set (monitor_ui_sources
   ui/execution_monitor.cpp
+  ui/execution_monitor_detail.cpp
+  ui/execution_monitor_worker_model.cpp
+  ui/gspc_monitor.cpp
+  ui/gspc_monitor_client.cpp
+  ui/gspc_monitor_detail.cpp
   ui/log_monitor.cpp
 )
 set (monitor_ui_tomoc
   ui/execution_monitor.hpp
+  ui/execution_monitor_detail.hpp
+  ui/execution_monitor_worker_model.hpp
+  ui/gspc_monitor.hpp
+  ui/gspc_monitor_client.hpp
+  ui/gspc_monitor_detail.hpp
   ui/log_monitor.hpp
 )
 
@@ -148,15 +158,29 @@ if (ENABLE_PNET_EDITOR)
 endif()
 
 if (ENABLE_SDPA_GUI)
-  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
+  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc}
+    OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
   add_executable ( sdpa-gui
     monitor.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
+
+  add_executable (gspcmonc
+    gspcmonc.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
 
   target_link_libraries ( sdpa-gui
                           pnet
                           "fhg_util_qt"
                           fhg-revision
+                          ${FhgLog_LIBRARY}
+                          ${Boost_LIBRARIES}
+                          ${QT_LIBRARIES})
+
+  install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)
+
+  target_link_libraries ( gspcmonc
+                          pnet
+                          "fhg_util_qt"
+                          fhg-util
                           ${FhgLog_LIBRARY}
                           ${Boost_LIBRARIES}
                           ${QT_LIBRARIES})

@@ -73,6 +73,7 @@ set (srcs
 
   parse/position.cpp
   parse/error.cpp
+  parse/require.cpp
 
   num.cpp
   num/show.cpp
