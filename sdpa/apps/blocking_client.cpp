@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/program_options.hpp>
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/logging.hpp>
