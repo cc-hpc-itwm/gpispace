@@ -330,11 +330,11 @@ namespace gspc
       {
         m_status = s;
         m_pid = -1;
-
-        set_state (PROCESS_TERMINATED);
       }
 
       lock.unlock ();
+
+      set_state (PROCESS_TERMINATED);
       m_terminated.notify_all ();
     }
 
