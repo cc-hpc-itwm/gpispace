@@ -109,6 +109,8 @@ set (editor_ui_resources
 
 set (monitor_ui_sources
   ui/execution_monitor.cpp
+  ui/execution_monitor_detail.cpp
+  ui/execution_monitor_worker_model.cpp
   ui/gspc_monitor.cpp
   ui/gspc_monitor_client.cpp
   ui/gspc_monitor_detail.cpp
@@ -116,6 +118,8 @@ set (monitor_ui_sources
 )
 set (monitor_ui_tomoc
   ui/execution_monitor.hpp
+  ui/execution_monitor_detail.hpp
+  ui/execution_monitor_worker_model.hpp
   ui/gspc_monitor.hpp
   ui/gspc_monitor_client.hpp
   ui/gspc_monitor_detail.hpp
