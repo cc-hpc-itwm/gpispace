@@ -533,10 +533,7 @@ namespace fhg
         require::list
           (pos, boost::bind (&status_update_data, _1, &details, &state));
         emit nodes_state (host, state);
-        if (details)
-        {
-          emit nodes_details (host, *details);
-        }
+        emit nodes_details (host, details);
       }
 
       namespace

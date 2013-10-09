@@ -115,7 +115,7 @@ namespace fhg
       private slots:
         void refresh_stati();
         void nodes (QStringList);
-        void nodes_details (const QString&, const QString&);
+        void nodes_details (const QString&, const boost::optional<QString>&);
         void nodes_state (const QString&, const boost::optional<QString>&);
         void states_actions_long_text (const QString&, const QString&);
         void states_actions_arguments

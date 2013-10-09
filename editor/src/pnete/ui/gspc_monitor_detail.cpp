@@ -326,8 +326,8 @@ namespace fhg
                 , SIGNAL (nodes (QStringList))
                 , SLOT (nodes (QStringList)));
         connect ( _monitor_client
-                , SIGNAL (nodes_details (const QString&, const QString&))
-                , SLOT (nodes_details (const QString&, const QString&)));
+                , SIGNAL (nodes_details (const QString&, const boost::optional<QString>&))
+                , SLOT (nodes_details (const QString&, const boost::optional<QString>&)));
         connect ( _monitor_client
                 , SIGNAL (nodes_state (const QString&, const boost::optional<QString>&))
                 , SLOT (nodes_state (const QString&, const boost::optional<QString>&)));
@@ -396,7 +396,7 @@ namespace fhg
       }
 
       void node_state_widget::nodes_details
-        (const QString& hostname, const QString& details)
+        (const QString& hostname, const boost::optional<QString>& details)
       {
         const boost::optional<size_t> node_index (node_index_by_name (hostname));
         if (node_index)
