@@ -444,7 +444,7 @@ void s_handle_rif ( std::string const &dst
         int rc = s_rif->mgr ().read ( p
                                     , fd
                                     , buf
-                                    , std::min (sizeof(buf) - 1, maxlen)
+                                    , std::min (sizeof(buf), maxlen)
                                     , ec
                                     );
         if (rc > 0)
