@@ -4,12 +4,15 @@
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
+#include "sdpa/daemon/JobFSM.hpp"
 #include "kvs_setup_fixture.hpp"
 
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
 using namespace seda;
+
+using namespace sdpa::fsm::bmsm;
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
@@ -222,164 +225,6 @@ BOOST_AUTO_TEST_CASE( testSerializeMapJobShPtr )
 	//std::cout<<"The restored value of the pointer is "<<p2->str()<<endl;
 	for(  sdpa::daemon::JobManager::job_map_t::iterator iter = mapPtrsIn.begin(); iter !=  mapPtrsIn.end(); iter++  )
 		std::cout<<"mapPtrIn["<<iter->first<<"] = "<<iter->second->print_info()<<std::endl;
-}
-
-BOOST_AUTO_TEST_CASE(testOrchFileSerialization)
-{
-	std::cout<<std::endl<<"----------------Begin  testOrchestratorSerialization----------------"<<std::endl;
-	std::string filename = "testSerializeOrchestrator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	Orchestrator::ptr_t pOrchBkp = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create( "orchestrator_0", "127.0.0.1:6000");
-
-	pOrchBkp->setScheduler(new SchedulerImpl());
-	SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pOrchBkp->scheduler().get());
-	JobManager::ptr_t pJobMan(pOrchBkp->jobManager());
-
-	JobId id1("_1");
-	sdpa::daemon::Job::ptr_t  p1(new JobFSM(id1, "decsription 1"));
-	pJobMan->addJob(id1, p1);
-
-	JobId id2("_2");
-	sdpa::daemon::Job::ptr_t  p2(new JobFSM(id2, "decsription 2"));
-	pJobMan->addJob(id2, p2);
-
-	JobId id3("_3");
-	sdpa::daemon::Job::ptr_t  p3(new JobFSM(id3, "decsription 3"));
-	pJobMan->addJob(id3, p3);
-
-	JobId id4("_4");
-	sdpa::daemon::Job::ptr_t  p4(new JobFSM(id4, "decsription 4"));
-	pJobMan->addJob(id4, p4);
-
-	JobId id5("_5");
-	sdpa::daemon::Job::ptr_t  p5(new JobFSM(id5, "decsription 5"));
-	pJobMan->addJob(id5, p5);
-
-	int nSchedQSize = 5;
-	for(int i=0; i<nSchedQSize; i++)
-	{
-		std::ostringstream ossJobId;;
-		ossJobId<<"Job_"<<i;
-		sdpa::job_id_t jobId(ossJobId.str());
-		pScheduler->schedule(jobId);
-	}
-
-	int nWorkers=3;
-	for(int k=0; k<nWorkers; k++)
-	{
-		std::ostringstream ossWorkerId;;
-		ossWorkerId<<"Worker_"<<k;
-		Worker::worker_id_t workerId(ossWorkerId.str());
-		pScheduler->addWorker(workerId, k);
-
-		for( int l=0; l<3; l++)
-		{
-			std::ostringstream ossJobId;
-			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
-			sdpa::job_id_t jobId(ossJobId.str());
-
-			pScheduler->schedule_to(jobId, k);
-			if(l>=1)
-			{
-				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
-				if(l>=2)
-					pScheduler->acknowledgeJob(workerId, jobToSubmit);
-			}
-		}
-	}
-
-	std::cout<<"----------------The Orchestrator's content before backup is:----------------"<<std::endl;
-	std::ofstream os("orchestrator.bkp");
-	pOrchBkp->backup(os);
-	os.close();
-	pOrchBkp->print();
-	seda::StageRegistry::instance().remove("orchestrator_0");
-
-    Orchestrator::ptr_t pOrchRec = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create( "orchestrator_1", "127.0.0.1:6000");
-
-    std::ifstream is("orchestrator.bkp");
-	pOrchRec->recover(is);
-	is.close();
-	std::cout<<"----------------The Orchestrator's content after recovering is:----------------"<<std::endl;
-	pOrchRec->print();
-	seda::StageRegistry::instance().remove("orchestrator_1");
-}
-
-BOOST_AUTO_TEST_CASE(testOrchStringSerialization)
-{
-	std::cout<<std::endl<<"----------------Begin  testOrchestratorSerialization----------------"<<std::endl;
-	std::string filename = "testSerializeOrchestrator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	Orchestrator::ptr_t pOrchBkp = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create( "orchestrator_0", "127.0.0.1:6000");
-
-	pOrchBkp->setScheduler(new SchedulerImpl());
-	SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pOrchBkp->scheduler().get());
-	JobManager::ptr_t pJobMan(pOrchBkp->jobManager());
-
-	JobId id1("_1");
-	sdpa::daemon::Job::ptr_t  p1(new JobFSM(id1, "decsription 1"));
-	pJobMan->addJob(id1, p1);
-
-	JobId id2("_2");
-	sdpa::daemon::Job::ptr_t  p2(new JobFSM(id2, "decsription 2"));
-	pJobMan->addJob(id2, p2);
-
-	JobId id3("_3");
-	sdpa::daemon::Job::ptr_t  p3(new JobFSM(id3, "decsription 3"));
-	pJobMan->addJob(id3, p3);
-
-	JobId id4("_4");
-	sdpa::daemon::Job::ptr_t  p4(new JobFSM(id4, "decsription 4"));
-	pJobMan->addJob(id4, p4);
-
-	JobId id5("_5");
-	sdpa::daemon::Job::ptr_t  p5(new JobFSM(id5, "decsription 5"));
-	pJobMan->addJob(id5, p5);
-
-	int nSchedQSize = 5;
-	for(int i=0; i<nSchedQSize; i++)
-	{
-		std::ostringstream ossJobId;;
-		ossJobId<<"Job_"<<i;
-		sdpa::job_id_t jobId(ossJobId.str());
-		pScheduler->schedule(jobId);
-	}
-
-	int nWorkers=3;
-	for(int k=0; k<nWorkers; k++)
-	{
-		std::ostringstream ossWorkerId;;
-		ossWorkerId<<"Worker_"<<k;
-		Worker::worker_id_t workerId(ossWorkerId.str());
-		pScheduler->addWorker(workerId, k);
-
-		for( int l=0; l<3; l++)
-		{
-			std::ostringstream ossJobId;
-			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
-			sdpa::job_id_t jobId(ossJobId.str());
-
-			pScheduler->schedule_to(jobId, k);
-			if(l>=1)
-			{
-				sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
-				if(l>=2)
-					pScheduler->acknowledgeJob(workerId, jobToSubmit);
-			}
-		}
-	}
-
-	std::cout<<"----------------The Orchestrator's content before backup is:----------------"<<std::endl;
-	std::stringstream ss;
-	pOrchBkp->backup(ss);
-	pOrchBkp->print();
-	seda::StageRegistry::instance().remove("orchestrator_0");
-
-	Orchestrator::ptr_t pOrchRec = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create( "orchestrator_1", "127.0.0.1:6000");
-
-	//std::istringstream iss(oss.str());
-	pOrchRec->recover(ss);
-	std::cout<<"----------------The Orchestrator's content after recovering is:----------------"<<std::endl;
-	pOrchRec->print();
-	seda::StageRegistry::instance().remove("orchestrator_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
