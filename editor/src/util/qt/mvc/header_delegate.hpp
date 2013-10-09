@@ -4,6 +4,8 @@
 #define FHG_UTIL_QT_HEADER_DELEGATE_HPP
 
 #include <util/qt/mvc/header_delegate.fwd.hpp>
+
+#include <util/qt/mvc/delegating_header_view.fwd.hpp>
 #include <util/qt/mvc/section_index.hpp>
 
 namespace fhg

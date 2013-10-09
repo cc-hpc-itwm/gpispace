@@ -10,6 +10,7 @@
 
 #include <QColor>
 
+#include <iostream>
 #include <sstream>
 
 namespace fhg
