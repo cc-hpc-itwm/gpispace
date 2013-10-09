@@ -1,9 +1,10 @@
 #ifndef GSPC_RIF_BUFFER_HPP
 #define GSPC_RIF_BUFFER_HPP
 
+#include <vector>
+
 #include <boost/utility.hpp>
 #include <boost/thread/shared_mutex.hpp>
-#include <boost/circular_buffer.hpp>
 
 namespace gspc
 {
@@ -30,7 +31,7 @@ namespace gspc
 
       mutable mutex_type m_mutex;
 
-      boost::circular_buffer<char> m_data;
+      std::vector<char> m_data;
     };
   }
 }

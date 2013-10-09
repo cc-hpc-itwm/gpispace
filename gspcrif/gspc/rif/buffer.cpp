@@ -7,9 +7,9 @@ namespace gspc
   namespace rif
   {
     buffer_t::buffer_t (size_t len)
-      : m_data (len)
+      : m_data ()
     {
-      m_data.linearize ();
+      m_data.reserve (len);
     }
 
     buffer_t::~buffer_t ()
@@ -20,10 +20,8 @@ namespace gspc
       unique_lock lock (m_mutex);
 
       size_t s = std::min (m_data.size (), len);
-      for (size_t i = 0 ; i < s ; ++i)
-      {
-        dst [i] = m_data.front (); m_data.pop_front ();
-      }
+      std::memcpy (dst, &m_data [0], s);
+      m_data.erase (m_data.begin (), m_data.begin () + s);
 
       return s;
     }
@@ -32,10 +30,7 @@ namespace gspc
     {
       unique_lock lock (m_mutex);
 
-      for (size_t i = 0 ; i < len ; ++i)
-      {
-        m_data.push_back (src [i]);
-      }
+      m_data.insert (m_data.end (), src, src+len);
 
       return len;
     }
@@ -49,9 +44,8 @@ namespace gspc
     ssize_t buffer_t::write_to (int fd)
     {
       unique_lock lock (m_mutex);
-      char *buf = m_data.linearize ();
 
-      ssize_t s = ::write (fd, buf, m_data.size ());
+      ssize_t s = ::write (fd, &m_data [0], m_data.size ());
       if (s > 0)
         m_data.erase (m_data.begin (), m_data.begin () + s);
       return s;
@@ -61,18 +55,16 @@ namespace gspc
     {
       unique_lock lock (m_mutex);
 
-      ssize_t len = m_data.capacity ();
       ssize_t count = 0;
 
-      while (len > 0)
+      for (;;)
       {
         char c;
         ssize_t s = ::read (fd, &c, 1);
-        if (s > 0)
+        if (s == 1)
         {
           m_data.push_back (c);
           count += s;
-          len -= s;
         }
         else
         {
@@ -80,7 +72,7 @@ namespace gspc
         }
       }
 
-      return (ssize_t)count;
+      return count;
     }
   }
 }
