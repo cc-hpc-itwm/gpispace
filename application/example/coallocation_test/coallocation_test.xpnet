@@ -73,7 +73,7 @@
 	  <cinclude href="unistd.h"/>
 	  <code><![CDATA[
 	  LOG(INFO, ">>> running task A_" << id << " on " << nw << " workers ...");
-	  usleep(1000);
+	  //sleep(1);
 	  LOG(INFO, "<<< finished task A_" << id << " on " << nw << " workers ...");
 	  return we::type::literal::control();
 	  ]]></code>
@@ -107,7 +107,7 @@
 	<place name="finished_task_B" type="control" />
     <transition name="run_task_B">
     <defun>
-		<require key="B" />
+		<require key="D" />
 		<in name="id" type="long" />
 		<in name="nw" type="long" />
 		<out name="done" type="control" />
@@ -117,13 +117,13 @@
       				<property key="num_worker">${nw}</property>
     			</properties>
   			</properties>
-		</properties>
+		</properties> 
 		<module name="coallocation_test" function=" done task_B (id, nw)">
 	        <cinclude href="fhglog/minimal.hpp" />
 		  	<cinclude href="unistd.h" />
 	    	<code><![CDATA[
 			LOG(INFO, ">>> running task B_" << id << " on " << nw << " workers ...");
-	  		usleep(1000);
+	  		//sleep(1);
 	  		LOG(INFO, "<<< finished task B_" << id << " on " << nw << " workers ...");
 	  		return we::type::literal::control();
 		  ]]></code>
