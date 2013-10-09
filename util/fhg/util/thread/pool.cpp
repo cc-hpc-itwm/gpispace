@@ -1,7 +1,9 @@
 #include "pool.hpp"
 
 #include <stdexcept>
+#include <boost/format.hpp>
 
+#include <fhg/util/threadname.hpp>
 #include <fhg/util/get_cpucount.h>
 
 namespace fhg
@@ -14,9 +16,10 @@ namespace fhg
       {}
     }
 
-    pool_t::pool_t (std::size_t nthread)
+    pool_t::pool_t (std::size_t nthread, std::string const &name)
       : m_stop (false)
       , m_nthread (nthread)
+      , m_pool_name (name)
     {
       if (0 == m_nthread)
         throw std::invalid_argument
@@ -34,6 +37,10 @@ namespace fhg
       {
         m_threads.push_back
           (new boost::thread (&pool_t::worker, this, i));
+        fhg::util::set_threadname
+          ( *m_threads.back ()
+          , (boost::format ("%1%-%2%") % m_pool_name % i).str ()
+          );
       }
     }
 
@@ -99,7 +106,7 @@ namespace fhg
           int ncpu = fhg_get_cpucount ();
           if (ncpu < 0) ncpu = 1;
 
-          pool = new pool_t (ncpu);
+          pool = new pool_t (ncpu, "global-pool");
           pool->start ();
         };
 

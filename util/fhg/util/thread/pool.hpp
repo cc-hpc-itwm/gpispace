@@ -19,7 +19,7 @@ namespace fhg
       typedef boost::function<void (void)> callback_t;
 
       explicit
-      pool_t (std::size_t nthread);
+      pool_t (std::size_t nthread, std::string const &name="threadpool");
 
       void start ();
       void stop ();
@@ -38,6 +38,7 @@ namespace fhg
 
       bool          m_stop;
       std::size_t   m_nthread;
+      std::string   m_pool_name;
       thread_list_t m_threads;
       work_queue_t  m_workload;
     };
