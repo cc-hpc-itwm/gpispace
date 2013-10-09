@@ -94,6 +94,6 @@ namespace sdpa {
   };
 }}
 
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
+BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
 
 #endif
