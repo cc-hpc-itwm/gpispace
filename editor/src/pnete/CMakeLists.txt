@@ -158,7 +158,8 @@ if (ENABLE_PNET_EDITOR)
 endif()
 
 if (ENABLE_SDPA_GUI)
-  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
+  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc}
+    OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
   add_executable ( sdpa-gui
     monitor.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
