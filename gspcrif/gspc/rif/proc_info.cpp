@@ -13,9 +13,9 @@ namespace gspc
       , m_argv ()
       , m_env ()
       , m_status ()
-      , m_inp_pending (false)
-      , m_out_pending (false)
-      , m_err_pending (false)
+      , m_inp_pending (0)
+      , m_out_pending (0)
+      , m_err_pending (0)
     {}
 
     void proc_info_t::assign_from (process_t const &p)
