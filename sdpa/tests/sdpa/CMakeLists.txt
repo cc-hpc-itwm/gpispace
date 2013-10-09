@@ -13,6 +13,8 @@ set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/atomic")
 set(TESTS_N_ATOMIC_TASKS 100)
 set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
 set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
+set(TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test")
+
 get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
 get_target_property(TESTS_FVM_PC_FAKE_MODULE fvm-pc-fake.shared LOCATION)
 
@@ -183,8 +185,38 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
 )
 add_dependencies(pnet-transform_file-test-wf pnetput)
 ################################################################################################
+#coallocation_test
+pnet_compile(coallocation_test-wf ${CMAKE_SOURCE_DIR}/application/example/coallocation_test/coallocation_test.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
+  GENERATE coallocation_test
+  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/fvm-pc
+           -I${CMAKE_SOURCE_DIR}/application/example/coallocation_test
+           -O3
+  BUILD
+  COMPONENT tests
+)
+
+get_target_property(COALLOCATION_TEST_PNET_LOCATION pnet-coallocation_test-wf LOCATION)
+get_target_property(__PNET_GEN_OUTPUTS pnet-coallocation_test-wf GEN_OUTPUTS)
+set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="5L"
+                                                                        	-p n_workers_A="2L"
+                                                                        	-p n_tasks_B="10L"
+                                                                        	-p n_workers_B="3L"
+                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet")
+
+add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
+                   COMMAND ${command}
+                   COMMENT "putting tokens into transform_file workflow: ${command}"
+                   APPEND
+)
+add_dependencies(pnet-transform_file-test-wf pnetput)
+################################################################################################
 set (tests
   test_Atomic.cpp
+  test_BackupRecover.cpp
   test_Inotify.cpp
   test_CancelJob.cpp
   test_Config.cpp
@@ -209,6 +241,7 @@ set (tests
   test_Subscriber.cpp
   #test_CannonOnTorus.cpp
   test_Capabilities.cpp
+  test_Coallocation.cpp
   test_TransformFile.cpp
   test_wfe_plugin.cpp
 )
@@ -240,5 +273,6 @@ foreach (test ${tests})
               pnet-atomic-test-wf
               pnet-inotify-test-wf
               pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
      )
 endforeach()
