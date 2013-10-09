@@ -304,5 +304,4 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 	LOG( INFO, "The test case Test2 terminated!");
 }
 
-
 BOOST_AUTO_TEST_SUITE_END()
