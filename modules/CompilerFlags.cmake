@@ -52,6 +52,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   include (CheckCXXSourceCompiles)
 
   set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -fpic -fPIC ${FLAGS_WARNING}")
+  set(CMAKE_C_FLAGS "$ENV{CFLAGS} -fpic -fPIC ${FLAGS_WARNING}")
 
   set (CMAKE_REQUIRED_FLAGS "-Wno-ignored-qualifiers")
   set (__CXX_FLAG_CHECK_SOURCE "int main () { return 0; }")
@@ -80,11 +81,13 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 endif ()
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CXXFLAGS} -fPIC ${FLAGS_WARNINGS} -ftemplate-depth=1024")
+  set(CMAKE_C_FLAGS   "${CFLAGS}   -fPIC ${FLAGS_WARNINGS} -ftemplate-depth=1024")
 endif()
 
 # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
   set(CMAKE_CXX_FLAGS "${CXXFLAGS} -wd191 -wd1170 -wd1292 -wd2196 -fPIC -fpic")
+  set(CMAKE_C_FLAGS   "${CFLAGS}   -wd191 -wd1170 -wd1292 -wd2196 -fPIC -fpic")
 # why was that set, Alex, could you remember it? (10/2010)
 #  if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
 #    message(WARNING "adding __aligned__=ignored to the list of definitions")
