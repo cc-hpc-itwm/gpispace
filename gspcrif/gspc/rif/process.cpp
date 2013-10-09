@@ -162,8 +162,11 @@ namespace gspc
 
     void process_t::set_state (process_state_t s)
     {
-      m_state = s;
-      m_handler->onStateChange (m_proc_id, m_state);
+      if (m_state != s)
+      {
+        m_state = s;
+        m_handler->onStateChange (m_proc_id, m_state);
+      }
     }
 
     int process_t::fork_and_exec ()
