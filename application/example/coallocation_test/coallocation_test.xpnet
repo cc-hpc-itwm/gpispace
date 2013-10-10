@@ -107,7 +107,7 @@
 	<place name="finished_task_B" type="control" />
     <transition name="run_task_B">
     <defun>
-		<require key="D" />
+		<require key="B" />
 		<in name="id" type="long" />
 		<in name="nw" type="long" />
 		<out name="done" type="control" />
