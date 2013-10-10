@@ -210,37 +210,34 @@ namespace fhg
       {
         const util::qt::mvc::section_index index (this, orientation, section);
 
-        if (role == visible_range_role && _visible_ranges.contains (index))
+        switch (role)
         {
+        case visible_range_role:
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           return QVariant::fromValue (_visible_ranges[index]);
-        }
-        else if (role == visible_range_from_role && _visible_ranges.contains (index))
-        {
+
+        case visible_range_from_role:
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           return QVariant::fromValue (_visible_ranges[index].from);
-        }
-        else if (role == visible_range_to_role && _visible_ranges.contains (index))
-        {
+
+        case visible_range_to_role:
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           return QVariant::fromValue (_visible_ranges[index].to);
-        }
-        else if (role == automatically_move_role)
-        {
+
+        case automatically_move_role:
           fhg_assert (_column_types[index] == gantt_column, "automatically moving only defined for gantt columns");
           return _auto_moving.contains (index);
-        }
-        else if (role == elapsed_time_role)
-        {
+
+        case elapsed_time_role:
           return QVariant::fromValue<long>
             ( QDateTime::currentDateTime().toMSecsSinceEpoch()
             - util::qt::value<QDateTime>
-            (headerData (section, orientation, worker_model::base_time_role))
-            .toMSecsSinceEpoch()
+              ( util::qt::mvc::id_proxy::headerData
+                (section, orientation, worker_model::base_time_role)
+              ).toMSecsSinceEpoch()
             );
-        }
-        else if (role == column_type_role)
-        {
+
+        case column_type_role:
           return QVariant::fromValue (_column_types[index]);
         }
 
