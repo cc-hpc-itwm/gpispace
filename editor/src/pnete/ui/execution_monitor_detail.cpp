@@ -844,9 +844,19 @@ namespace fhg
 
       namespace
       {
-        QMap<unsigned long, QString> populate_format_for_tick_distance_map()
+        const QString& format_for_distance (const long dist)
         {
-          QMap<unsigned long, QString> result;
+          const unsigned long abs_dist ( dist < 0
+                                       ? static_cast<unsigned long> (-dist)
+                                       : static_cast<unsigned long> (dist)
+                                       );
+
+#define CASE(distance, format)                  \
+          if (abs_dist < distance)              \
+          {                                     \
+            static const QString fmt (format);  \
+            return fmt;                         \
+          }
 
           enum
           {
@@ -860,35 +870,17 @@ namespace fhg
             // thus no need for more
           };
 
-          result[ms] = "hh:mm:ss.zzz";
-          result[s] = "hh:mm:ss.zzz";
-          result[min] = "hh:mm:ss";
-          result[hr] = "ddd, hh:mm";
-          result[day] = "dd.MM., hh:mm";
-          result[week] = "dd.MM., hh:mm";
+          CASE (ms, "hh:mm:ss.zzz")
+          CASE (s, "hh:mm:ss.zzz")
+          CASE (min, "hh:mm:ss")
+          CASE (hr, "ddd, hh:mm")
+          CASE (day, "dd.MM., hh:mm")
+          CASE (week, "dd.MM., hh:mm")
 
-          return result;
-        }
+#undef CASE
 
-        QString format_for_distance (const long dist)
-        {
-          static const QMap<unsigned long, QString> format_for_tick_distance
-            (populate_format_for_tick_distance_map());
-
-          const unsigned long abs_dist ( dist < 0
-                                       ? static_cast<unsigned long> (-dist)
-                                       : static_cast<unsigned long> (dist)
-                                       );
-
-          BOOST_FOREACH (unsigned long distance, format_for_tick_distance.keys())
-          {
-            if (distance >= abs_dist)
-            {
-              return format_for_tick_distance[distance];
-            }
-          }
-
-          return "dd.MM.yyyy hh:mm:ss.zzz";
+          static const QString fallback ("dd.MM.yyyy hh:mm:ss.zzz");
+          return fallback;
         }
       }
 
@@ -926,7 +918,7 @@ namespace fhg
             const long small_tick_interval (visible_range / maximum_ticks / 10 * 10);
             const long large_tick_interval (small_tick_interval * 10);
 
-            const QString format (format_for_distance (large_tick_interval));
+            const QString& format (format_for_distance (large_tick_interval));
 
             for ( double i (from - from % large_tick_interval - large_tick_interval)
                 ; i < to + large_tick_interval
