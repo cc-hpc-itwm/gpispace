@@ -32,6 +32,11 @@
                                         );
 
               MLOG (INFO, "running on: " << workers);
+
+              MLOG ( INFO
+                   , "hostname of first worker: "
+                   << gspc::drts::info::worker_to_hostname (wlist.front ())
+                   );
             }
 
             return;
