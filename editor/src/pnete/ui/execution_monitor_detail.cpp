@@ -44,7 +44,8 @@ namespace fhg
 
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (move_tick()));
-        timer->start();
+        static int fps (30);
+        timer->start (1000/fps);
       }
 
       namespace
