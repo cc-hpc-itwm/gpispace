@@ -3,6 +3,7 @@
 #include "wfe_context.hpp"
 #include "observable.hpp"
 #include "task_event.hpp"
+#include "drts_info_impl.hpp"
 #include <errno.h>
 
 #include <list>
@@ -198,6 +199,7 @@ public:
               , wfe::capabilities_t const & capabilities
               , std::string & result
               , std::string & error_message
+              , std::list<std::string> const & worker_list
               , wfe::meta_data_t const & meta_data
               )
   {
@@ -208,6 +210,7 @@ public:
     task.id = job_id;
     task.capabilities = capabilities;
     task.meta = meta_data;
+    task.workers = worker_list;
 
     {
       lock_type task_map_lock(m_mutex);
@@ -463,6 +466,8 @@ private:
         try
         {
           wfe_exec_context ctxt (*m_loader, *task);
+
+          gspc::drts::info::set_worker_list (task->workers);
 
           task->activity.inject_input();
           task->activity.execute (&ctxt);

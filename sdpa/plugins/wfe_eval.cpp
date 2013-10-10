@@ -35,11 +35,15 @@ public:
     std::string       workflow_result;
     std::string       error_message;
 
+    std::list<std::string> worker_list;
+    worker_list.push_back ("worker-localhost-1");
+
     int ec = wfe->execute ( "job-1"
                           , workflow_description
                           , wfe::capabilities_t ()
                           , workflow_result
                           , error_message
+                          , worker_list
                           );
 
     if (output == "-")

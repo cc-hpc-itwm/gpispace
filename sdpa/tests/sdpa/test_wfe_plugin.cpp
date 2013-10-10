@@ -55,11 +55,15 @@ static int s_load_unload_test ()
 
     unlink ("atomic_wfe_plugin_test.txt");
 
+    std::list<std::string> worker_list;
+    worker_list.push_back ("worker-localhost-1");
+
     rc = wfe->execute ("test_job"
                       , jobdesc.str ()
                       , wfe::capabilities_t ()
                       , result
                       , error_message
+                      , worker_list
                       );
 
     {

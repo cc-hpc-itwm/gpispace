@@ -2,6 +2,7 @@
 #define WFE_PLUGIN_TASK_HPP 1
 
 #include <string>
+#include <list>
 #include <map>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -15,6 +16,7 @@ struct wfe_task_t
   typedef boost::posix_time::ptime time_type;
   typedef std::map<std::string, fhg::plugin::Capability*> capabilities_t;
   typedef std::map<std::string, std::string> meta_data_t;
+  typedef std::list<std::string> worker_list_t;
 
   enum state_t
     {
@@ -33,6 +35,7 @@ struct wfe_task_t
   std::string result;
   fhg::util::thread::event<int> done;
   meta_data_t meta;
+  worker_list_t workers;
   std::string error_message;
 
   time_type enqueue_time;

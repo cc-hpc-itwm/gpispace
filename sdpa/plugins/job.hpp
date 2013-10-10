@@ -1,6 +1,7 @@
 #ifndef DRTS_PLUGIN_JOB_HPP
 #define DRTS_PLUGIN_JOB_HPP 1
 
+#include <list>
 #include <string>
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -117,6 +118,17 @@ namespace drts
       m_completed = t;
       return *this;
     }
+
+    std::list<std::string> const &worker_list () const
+    {
+      return m_worker_list;
+    }
+
+    Job & worker_list (std::list<std::string> const &workers)
+    {
+      m_worker_list = workers;
+      return *this;
+    }
   private:
     Job () {}
 
@@ -142,6 +154,11 @@ namespace drts
         ar & BOOST_SERIALIZATION_NVP(m_result_code);
         ar & BOOST_SERIALIZATION_NVP(m_message);
       }
+
+      if (version > 2)
+      {
+        ar & BOOST_SERIALIZATION_NVP(m_worker_list);
+      }
     }
 
     inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
@@ -154,15 +171,15 @@ namespace drts
     std::string m_result;
     int         m_result_code;
     std::string m_message;
+    std::list<std::string> m_worker_list;
 
     // timestamps
     boost::posix_time::ptime m_entered;
     boost::posix_time::ptime m_started;
     boost::posix_time::ptime m_completed;
   };
-
 }
 
-BOOST_CLASS_VERSION(drts::Job, 2);
+BOOST_CLASS_VERSION(drts::Job, 3);
 
 #endif
