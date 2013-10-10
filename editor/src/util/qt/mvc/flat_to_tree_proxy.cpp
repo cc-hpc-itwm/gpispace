@@ -471,19 +471,11 @@ namespace fhg
             BOOST_FOREACH (const QString& segment, path)
             {
               index_tree_item* branch (last_item->find_branch (segment));
-              if (!branch)
-              {
-                const int rows (rowCount (last_parent));
-                last_item = new index_tree_item (segment, last_item);
-              }
-              else
-              {
-                last_item = branch;
-              }
+              last_item = branch
+                        ? branch
+                        : new index_tree_item (segment, last_item);
               last_parent = index_for (last_item, 0);
             }
-
-            const int leaf_parent_rows (rowCount (last_parent));
 
             index_tree_item* leaf (new index_tree_item (index, last_item));
 
