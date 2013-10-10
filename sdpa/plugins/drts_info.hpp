@@ -11,6 +11,7 @@ namespace gspc
     namespace info
     {
       std::list<std::string> const &worker_list ();
+      std::string worker_to_hostname (std::string const &);
     }
   }
 }
