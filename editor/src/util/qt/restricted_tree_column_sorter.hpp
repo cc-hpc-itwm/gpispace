@@ -3,6 +3,7 @@
 #ifndef FHG_UTIL_QT_RESTRICTED_TREE_COLUMN_SORTER_HPP
 #define FHG_UTIL_QT_RESTRICTED_TREE_COLUMN_SORTER_HPP
 
+#include <QObject>
 #include <QSet>
 
 class QTreeView;
@@ -13,11 +14,13 @@ namespace fhg
   {
     namespace qt
     {
-      class restricted_tree_column_sorter
+      class restricted_tree_column_sorter : public QObject
       {
+        Q_OBJECT;
+
       public:
         restricted_tree_column_sorter
-          (QTreeView*, const QSet<int> allowed_columns);
+          (QTreeView*, const QSet<int> allowed_columns, QObject* parent = NULL);
 
       private:
         enum state

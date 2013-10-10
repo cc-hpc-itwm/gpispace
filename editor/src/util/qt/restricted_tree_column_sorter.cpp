@@ -9,6 +9,8 @@
 #include <QHeaderView>
 #include <QTreeView>
 
+#include <QDebug>
+
 namespace fhg
 {
   namespace util
@@ -16,8 +18,9 @@ namespace fhg
     namespace qt
     {
       restricted_tree_column_sorter::restricted_tree_column_sorter
-        (QTreeView* tree, const QSet<int> allowed_columns)
-          : _tree (tree)
+        (QTreeView* tree, const QSet<int> allowed_columns, QObject* parent)
+          : QObject (parent)
+          , _tree (tree)
           , _allowed_columns (allowed_columns)
           , _last_state (none)
           , _last_column (-1)

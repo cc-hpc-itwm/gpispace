@@ -54,6 +54,7 @@ add_library (pnet
   we/expr/eval/context.cpp
   we/expr/eval/eval.cpp
   we/expr/eval/refnode.cpp
+  we/expr/type/calculate.cpp
   we/expr/exception.cpp
   we/expr/parse/action.cpp
   we/expr/parse/node.cpp
@@ -274,6 +275,11 @@ fhg_add_test (we/test/signature_of.cpp
 )
 
 fhg_add_test (we/test/exception.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet
+)
+
+fhg_add_test (we/test/expr_type_calculate.cpp
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
