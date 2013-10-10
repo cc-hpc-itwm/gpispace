@@ -12,9 +12,9 @@ namespace fhg
       {
         namespace
         {
-          bool fall_back_to_id ( const QAbstractProxyModel* model
-                               , int section
-                               , Qt::Orientation orientation
+          bool fall_back_to_id ( const QAbstractProxyModel* const model
+                               , const int& section
+                               , const Qt::Orientation& orientation
                                )
           {
             return orientation == Qt::Horizontal
