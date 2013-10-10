@@ -100,4 +100,6 @@ namespace sdpa {
 
 }}
 
+BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::IAgent )
+
 #endif
