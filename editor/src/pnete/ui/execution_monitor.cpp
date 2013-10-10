@@ -226,8 +226,10 @@ namespace fhg
         header_view->setSortIndicatorShown (true);
         header_view->delegate (delegate);
 
-        const util::qt::restricted_tree_column_sorter column_sorter
-          (tree, QSet<int>() << 0);
+        const util::qt::restricted_tree_column_sorter* column_sorter
+          ( new util::qt::restricted_tree_column_sorter
+            (tree, QSet<int>() << 0, this)
+          );
 
 
         QAction* add_column
