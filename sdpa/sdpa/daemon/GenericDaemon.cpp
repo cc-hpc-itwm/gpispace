@@ -1895,3 +1895,52 @@ void GenericDaemon::reScheduleAllMasterJobs()
     reschedule(jobId);
   }
 }
+
+void GenericDaemon::backup( std::ostream& ofs )
+{
+	try {
+		//std::string strArchiveName(name()+".bkp");
+		//SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
+
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<JobManager*>(NULL));
+		oa.register_type(static_cast<JobImpl*>(NULL));
+		oa.register_type(static_cast<JobFSM*>(NULL));
+		backupJobManager(oa);
+
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		backupScheduler(oa);
+
+		/*oa.register_type(static_cast<T*>(NULL));
+    	oa << ptr_workflow_engine_;*/
+		oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
+	}
+	catch(exception &e) {
+		cout <<"Exception occurred: "<< e.what() << endl;
+	}
+}
+
+void GenericDaemon::recover( std::istream& ifs )
+{
+	try {
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<JobManager*>(NULL));
+		ia.register_type(static_cast<JobImpl*>(NULL));
+		ia.register_type(static_cast<JobFSM*>(NULL));
+		recoverJobManager(ia);
+
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		recoverScheduler(ia);
+
+		// should ignore the workflow engine,
+		// since it is not always possible to recover it
+
+		/*ia.register_type(static_cast<T*>(NULL));
+    	ia >> ptr_workflow_engine_;*/
+		ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
+		SDPA_LOG_INFO("The list of recoverd masters is: ");
+	}
+	catch(exception &e) {
+		cout <<"Exception occurred: " << e.what() << endl;
+	}
+}
