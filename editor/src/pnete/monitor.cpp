@@ -5,37 +5,9 @@
 
 #include <QApplication>
 #include <QTabWidget>
-#include <QtCore/QSettings>
 #include <QtCore/QString>
 
 #include <iostream>
-
-namespace
-{
-  void maybe_set
-    (QSettings& settings, const QString& key, const QVariant& value)
-  {
-    if (!settings.value (key).isValid())
-    {
-      settings.setValue (key, value);
-    }
-  }
-
-  void maybe_set_default_settings()
-  {
-    QSettings settings;
-
-    settings.beginGroup ("gantt");
-
-    maybe_set (settings, "created", QColor (128, 128, 128));
-    maybe_set (settings, "started", QColor (255, 255, 0));
-    maybe_set (settings, "finished", QColor (0, 200, 0));
-    maybe_set (settings, "failed", QColor (255, 0, 0));
-    maybe_set (settings, "cancelled", QColor (165, 42, 42));
-
-    settings.endGroup();
-  }
-}
 
 int main (int ac, char *av[])
 {
@@ -54,8 +26,6 @@ int main (int ac, char *av[])
                                       );
   QApplication::setOrganizationDomain ("itwm.fraunhofer.de");
   QApplication::setOrganizationName ("Fraunhofer ITWM");
-
-  maybe_set_default_settings();
 
   QTabWidget window;
   window.addTab ( new fhg::pnete::ui::execution_monitor (QString (av[1]).toUShort())

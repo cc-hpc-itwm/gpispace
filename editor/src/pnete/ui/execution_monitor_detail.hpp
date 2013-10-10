@@ -102,6 +102,7 @@ namespace fhg
       public:
         execution_monitor_delegate ( boost::function<void (QString)> set_filter
                                    , boost::function<QString()> get_filter
+                                   , QMap<worker_model::state_type, QColor>
                                    , QWidget* parent = NULL
                                    );
 
@@ -123,7 +124,14 @@ namespace fhg
         virtual bool can_edit_section (util::qt::mvc::section_index) const;
         virtual QMenu* menu_for_section (util::qt::mvc::section_index) const;
 
+        QColor color_for_state (worker_model::state_type) const;
+
+      signals:
+        void color_for_state_changed (worker_model::state_type, QColor);
+
       public slots:
+        void color_for_state (worker_model::state_type, QColor);
+
         bool helpEvent ( QHelpEvent* event
                        , QAbstractItemView* view
                        , const QStyleOptionViewItem& option
@@ -133,6 +141,8 @@ namespace fhg
       private:
         boost::function<void (QString)> _set_filter;
         boost::function<QString()> _get_filter;
+
+        QMap<worker_model::state_type, QColor> _color_for_state;
       };
 
       class execution_monitor_editor : public QWidget

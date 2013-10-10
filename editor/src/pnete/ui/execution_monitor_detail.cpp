@@ -378,18 +378,6 @@ namespace fhg
 
       namespace
       {
-        QColor color_for_state (worker_model::state_type state)
-        {
-          switch (state)
-          {
-          case sdpa::daemon::NotificationEvent::STATE_CANCELLED: return Qt::blue;
-          case sdpa::daemon::NotificationEvent::STATE_CREATED: return Qt::gray;
-          case sdpa::daemon::NotificationEvent::STATE_FAILED: return Qt::red;
-          case sdpa::daemon::NotificationEvent::STATE_FINISHED: return Qt::green;
-          case sdpa::daemon::NotificationEvent::STATE_STARTED: return Qt::yellow;
-          }
-        }
-
         template<typename T> T sorted (T t) { qSort (t); return t; }
 
         bool intersects_or_touches (const QRectF& lhs, const QRectF& rhs)
@@ -416,14 +404,30 @@ namespace fhg
         const bool do_antialiasing (false);
       }
 
-      execution_monitor_delegate::execution_monitor_delegate ( boost::function<void (QString)> set_filter
-                                                             , boost::function<QString()> get_filter
-                                                             , QWidget* parent
-                                                             )
-        : QStyledItemDelegate (parent)
-        , _set_filter (set_filter)
-        , _get_filter (get_filter)
+      execution_monitor_delegate::execution_monitor_delegate
+        ( boost::function<void (QString)> set_filter
+        , boost::function<QString()> get_filter
+        , QMap<worker_model::state_type, QColor> color_for_state
+        , QWidget* parent
+        )
+          : QStyledItemDelegate (parent)
+          , _set_filter (set_filter)
+          , _get_filter (get_filter)
+          , _color_for_state (color_for_state)
       {
+      }
+
+      QColor execution_monitor_delegate::color_for_state
+        (worker_model::state_type state) const
+      {
+        return _color_for_state[state];
+      }
+      void execution_monitor_delegate::color_for_state
+        (worker_model::state_type state, QColor color)
+      {
+        _color_for_state[state] = color;
+        //! \todo This would require the view to be updated, but _how_?
+        emit color_for_state_changed (state, color);
       }
 
       void execution_monitor_delegate::paint ( QPainter* painter
