@@ -1,0 +1,45 @@
+<defun name="workerlist">
+  <in  name="trigger" type="control" place="trigger_in"/>
+  <out name="workers" type="string" place="workers"/>
+
+  <net>
+    <place name="trigger_in" type="control"/>
+    <place name="workers" type="string"/>
+
+    <transition name="run">
+      <defun>
+        <in  name="trigger" type="control"/>
+        <out name="workers" type="string"/>
+        <module name="workerlist" function="run (workers)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhg/util/join.hpp"/>
+          <cinclude href="fhg/plugins/drts_info.hpp"/>
+          <code><![CDATA[
+            MLOG (INFO, "run ()");
+
+            std::list<std::string> wlist =
+              gspc::drts::info::worker_list ();
+
+            if (wlist.empty())
+            {
+              throw std::runtime_error ("worker list is empty!");
+            }
+            else
+            {
+              workers = fhg::util::join ( wlist.begin ()
+                                        , wlist.end ()
+                                        , ", "
+                                        );
+
+              MLOG (INFO, "running on: " << workers);
+            }
+
+            return;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in  port="trigger" place="trigger_in"/>
+      <connect-out port="workers" place="workers"/>
+    </transition>
+  </net>
+</defun>
