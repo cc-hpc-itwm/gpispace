@@ -61,7 +61,7 @@ fhg_add_plugin(kvs_dummy kvs_dummy.cpp
   COMPONENT plugins
 )
 
-fhg_add_plugin(wfe wfe.cpp observable.cpp
+fhg_add_plugin(wfe wfe.cpp observable.cpp drts_info_impl.cpp
   EXPORTS WFE
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  pnet
@@ -71,7 +71,7 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
-  HEADERS wfe.hpp observable.hpp
+  HEADERS wfe.hpp observable.hpp drts_info.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins

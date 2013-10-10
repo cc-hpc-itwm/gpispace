@@ -10,8 +10,7 @@ namespace gspc
   {
     namespace info
     {
-      std::list<std::string> const &get_worker_list ();
-      void set_worker_list (std::list<std::string> const &);
+      std::list<std::string> const &worker_list ();
     }
   }
 }

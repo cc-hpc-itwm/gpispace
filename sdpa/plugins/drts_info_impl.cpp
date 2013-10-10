@@ -1,4 +1,5 @@
 #include "drts_info.hpp"
+#include "drts_info_impl.hpp"
 
 namespace gspc
 {
@@ -12,7 +13,7 @@ namespace gspc
         return worker_list;
       }
 
-      std::list<std::string> const &get_worker_list ()
+      std::list<std::string> const &worker_list ()
       {
         return s_get_worker_list ();
       }
