@@ -82,8 +82,10 @@ namespace sdpa {
       DaemonFSM::DaemonFSM( const std::string &name,
                             const sdpa::master_info_list_t& arrMasterNames,
                             unsigned int cap,
-                            unsigned int rank )
-      : GenericDaemon(name, arrMasterNames, cap, rank )
+                            unsigned int rank
+                          , std::string const &guiUrl
+                          )
+        : GenericDaemon(name, arrMasterNames, cap, rank, guiUrl)
       {
     	  DLOG(TRACE, "Daemon state machine created");
       }

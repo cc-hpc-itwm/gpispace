@@ -95,7 +95,7 @@ namespace sdpa {
     virtual void addCapability(const capability_t&) = 0;
     virtual bool canRunTasksLocally() { return false; }
 
-    virtual NotificationService* gui_service() { return NULL; }
+    virtual NotificationService* gui_service() = 0;
   };
 
 }}

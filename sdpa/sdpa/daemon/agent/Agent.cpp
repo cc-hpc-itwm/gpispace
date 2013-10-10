@@ -194,6 +194,18 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
       sendEventToMaster(pEvtJobFinished);
     }
 
+    {
+      const sdpa::daemon::NotificationEvent evt
+        ( name ()
+        , pJob->id().str()
+        , "unknown"
+        , NotificationEvent::STATE_FINISHED
+        , pJob->description()
+        );
+
+      gui_service()->notify (evt);
+    }
+
     BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
     {
       if(subscribedFor(pair_subscr_joblist.first, id))
@@ -479,6 +491,18 @@ bool Agent::failed( const id_type& wfid
 
     if(!isSubscriber(pJob->owner()))
       sendEventToMaster(pEvtJobFailed);
+
+    {
+      const sdpa::daemon::NotificationEvent evt
+        ( name ()
+        , pJob->id().str()
+        , "unknown"
+        , NotificationEvent::STATE_FINISHED
+        , pJob->description()
+        );
+
+      gui_service()->notify (evt);
+    }
 
     BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
     {

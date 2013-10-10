@@ -20,7 +20,6 @@
 
 #include <sdpa/daemon/DaemonFSM.hpp>
 #include <sdpa/daemon/agent/AgentScheduler.hpp>
-#include <sdpa/daemon/NotificationService.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -40,10 +39,9 @@ namespace sdpa {
               bool bCanRunTasksLocally = false,
               int rank = -1,
               const std::string& guiUrl = "")
-        : DaemonFSM( name, arrMasterNames, cap, rank ),
+          : DaemonFSM( name, arrMasterNames, cap, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
           url_(url),
-          m_guiService("SDPA", guiUrl),
           m_bCanRunTasksLocally(bCanRunTasksLocally)
         {
           if(rank>=0)
@@ -53,14 +51,6 @@ namespace sdpa {
 
             sdpa::capability_t properCpb(oss.str(), "rank", name);
             addCapability(properCpb);
-          }
-
-         // application gui service
-          if(!guiUrl.empty())
-          {
-            m_guiService.open ();
-            // attach gui observer
-            DMLOG (TRACE, "Application GUI service at " << guiUrl << " attached...");
           }
         }
 
@@ -82,8 +72,6 @@ namespace sdpa {
         bool failed( const id_type& workflowId, const result_type& result, int error_code, std::string const& reason);
 
         const std::string url() const {return url_;}
-
-        virtual NotificationService* gui_service() { return !m_guiService.location().empty()?&m_guiService:NULL; }
 
         template <class Archive>
         void serialize(Archive& ar, const unsigned int)
@@ -113,7 +101,6 @@ namespace sdpa {
 
         std::string url_;
 
-        NotificationService m_guiService;
         bool m_bCanRunTasksLocally;
       };
   }

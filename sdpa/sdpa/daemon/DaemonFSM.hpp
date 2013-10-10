@@ -100,7 +100,9 @@ namespace sdpa {
         DaemonFSM(const std::string &name = "",
                   const sdpa::master_info_list_t& arrMasterNames = sdpa::master_info_list_t(),
                   unsigned int cap = 10000,
-                  unsigned int rank = 0 );
+                  unsigned int rank = 0
+                 , const std::string& guiUrl = ""
+                 );
 
         virtual ~DaemonFSM();
 

@@ -59,7 +59,8 @@ using namespace sdpa::events;
 GenericDaemon::GenericDaemon( const std::string name,
                               const master_info_list_t arrMasterInfo,
                               unsigned int cap,
-                              unsigned int rank )
+                              unsigned int rank
+                            , std::string const &guiUrl)
   : Strategy(name),
     SDPA_INIT_LOGGER(name),
     m_arrMasterInfo(arrMasterInfo),
@@ -81,6 +82,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_bStopped(false),
     m_threadBkpService(this),
     m_last_request_time(0)
+ , m_guiService ("GSPC", guiUrl)
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -91,6 +93,20 @@ GenericDaemon::GenericDaemon( const std::string name,
   //                - remove them in destructor
 
   //daemon_cfg_ = new sdpa::util::Config;
+
+  // application gui service
+  if (not guiUrl.empty())
+  {
+    try
+    {
+      m_guiService.open ();
+      DMLOG (TRACE, "Application GUI service at " << guiUrl << " attached...");
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG (WARN, "could not attach GUI at " << guiUrl << ": " << ex.what ());
+    }
+  }
 }
 
 GenericDaemon::~GenericDaemon()
@@ -768,6 +784,18 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
     {
       DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
       pJob->setType(Job::MASTER);
+
+      {
+        const sdpa::daemon::NotificationEvent evt
+          ( name ()
+          , pJob->id().str()
+          , "unknown"
+          , NotificationEvent::STATE_STARTED
+          , pJob->description()
+          );
+
+        gui_service()->notify (evt);
+      }
     }
 
     schedule(job_id);

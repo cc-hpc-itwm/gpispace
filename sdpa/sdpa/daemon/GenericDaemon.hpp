@@ -68,6 +68,7 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include <boost/utility.hpp>
+#include <sdpa/daemon/NotificationService.hpp>
 
 inline const job_requirements_t& empty_req_list()
 {
@@ -92,7 +93,9 @@ namespace sdpa {
       GenericDaemon(const std::string name = "orchestrator_0",
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
                     unsigned int cap = 10000,
-                    unsigned int rank = 0);
+                    unsigned int rank = 0
+                   , const std::string& guiUrl = ""
+                   );
 
       virtual ~GenericDaemon();
 
@@ -137,6 +140,8 @@ namespace sdpa {
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
+
+      NotificationService* gui_service() { return &m_guiService; }
 
     protected:
 
@@ -353,6 +358,7 @@ namespace sdpa {
       BackupService m_threadBkpService;
       sdpa::capabilities_set_t m_capabilities;
       sdpa::util::time_type m_last_request_time;
+      NotificationService m_guiService;
     };
 
      /**
