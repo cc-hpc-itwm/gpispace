@@ -11,6 +11,7 @@ qt4_wrap_cpp (moc_util_qt
   mvc/flat_to_tree_proxy.hpp
   mvc/multiplicated_column_proxy.hpp
   no_undoredo_lineedit.hpp
+  restricted_tree_column_sorter.hpp
   OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
 add_library (fhg_util_qt
