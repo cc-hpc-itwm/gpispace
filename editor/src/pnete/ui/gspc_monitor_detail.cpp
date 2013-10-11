@@ -433,11 +433,13 @@ namespace fhg
           node_type& n (node (*node_index));
 
           const boost::optional<QString> old_state (n._state);
+          const boost::optional<QString> old_expected_state
+            (n._expects_state_change);
           n._state = state;
           n._state_update_time = QDateTime::currentDateTime();
           n._expects_state_change = boost::none;
 
-          if (old_state != state)
+          if (old_state != state || old_expected_state)
           {
             update (*node_index);
 
