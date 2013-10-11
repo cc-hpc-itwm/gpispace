@@ -90,6 +90,7 @@ namespace fhg
         void states_layout_hint_character (const QString&, const char&);
         void states_layout_hint_color (const QString&, const QColor&);
         void states_layout_hint_hidden (const QString&, const bool&);
+        void states_layout_hint_descriptive_name (const QString&, const QString&);
 
       private slots:
         void check_for_incoming_messages();

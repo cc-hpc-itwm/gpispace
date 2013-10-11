@@ -30,6 +30,7 @@ namespace fhg
         QColor _brush;
         QColor _pen;
         bool _hidden;
+        boost::optional<QString> _descriptive_name;
 
         QPixmap _pixmap;
 
@@ -59,6 +60,7 @@ namespace fhg
         void states_layout_hint_character (const QString&, const char&);
         void states_layout_hint_color (const QString&, const QColor&);
         void states_layout_hint_hidden (const QString&, const bool&);
+        void states_layout_hint_descriptive_name (const QString&, const QString&);
 
       signals:
         void state_pixmap_changed (const QString&);

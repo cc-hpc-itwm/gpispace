@@ -117,6 +117,9 @@ namespace fhg
         connect ( monitor_client
                 , SIGNAL (states_layout_hint_hidden (const QString&, const bool&))
                 , SLOT (states_layout_hint_hidden (const QString&, const bool&)));
+        connect ( monitor_client
+                , SIGNAL (states_layout_hint_descriptive_name (const QString&, const QString&))
+                , SLOT (states_layout_hint_descriptive_name (const QString&, const QString&)));
       }
 
       void legend::states_add (const QString& state, const QStringList& actions)
@@ -157,6 +160,13 @@ namespace fhg
         update (state);
       }
 
+      void legend::states_layout_hint_descriptive_name
+        (const QString& state, const QString& val)
+      {
+        _states[state]._descriptive_name = val;
+        update (state);
+      }
+
       namespace
       {
         QWidget* legend_entry
@@ -178,7 +188,7 @@ namespace fhg
         _state_legend[s] = NULL;
         if (!state (s)._hidden)
         {
-          _state_legend[s] = legend_entry (s, state (s), this);
+          _state_legend[s] = legend_entry (state (s)._descriptive_name.get_value_or (s), state (s), this);
           layout()->addWidget (_state_legend[s]);
         }
       }
@@ -938,11 +948,17 @@ namespace fhg
             const boost::optional<int> node_index (node_at (help_event->pos()));
             if (node_index)
             {
+              const boost::optional<QString> s (node (*node_index)._state);
+              const QString displayed_state
+                ( s
+                ? state (s)._descriptive_name.get_value_or (*s)
+                : "unknown state"
+                );
               QToolTip::showText
                 ( help_event->globalPos()
                 , QString ("%1: %2%3 [last update: %4]")
                 .arg (node (*node_index)._hostname)
-                .arg (node (*node_index)._state.get_value_or ("unknown state"))
+                .arg (displayed_state)
                 .arg ( node (*node_index)._details
                      ? QString (*node (*node_index)._details).prepend (" (").append (")")
                      : ""

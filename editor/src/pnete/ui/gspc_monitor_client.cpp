@@ -430,10 +430,10 @@ namespace fhg
       {
         pos.skip_spaces();
 
-        if (pos.end() || (*pos != 'b' && *pos != 'c' && *pos != 'h'))
+        if (pos.end() || (*pos != 'b' && *pos != 'c' && *pos != 'd' && *pos != 'h'))
         {
           throw fhg::util::parse::error::expected
-            ("border' or 'character' or 'color' or 'hidden", pos);
+            ("border' or 'character' or 'color' or 'descriptive_name' or 'hidden", pos);
         }
 
         switch (*pos)
@@ -476,6 +476,15 @@ namespace fhg
               break;
             }
           }
+          break;
+
+        case 'd':
+          ++pos;
+          pos.require ("escriptive_name");
+          require::token (pos, ":");
+
+          emit states_layout_hint_descriptive_name (state, require::qstring (pos));
+
           break;
 
         case 'h':
