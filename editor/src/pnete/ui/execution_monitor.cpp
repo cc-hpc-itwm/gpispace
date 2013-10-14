@@ -337,10 +337,8 @@ namespace fhg
         new util::qt::restricted_tree_column_sorter (tree, QSet<int>() << 0, this);
 
 
-        QAction* add_column
-          (new QAction (QObject::tr ("add_column_action"), next));
-        QAction* remove_column
-          (new QAction (QObject::tr ("remove_column_action"), next));
+        QAction* add_column (new QAction (tr ("add_column_action"), next));
+        QAction* remove_column (new QAction (tr ("remove_column_action"), next));
 
         util::qt::boost_connect<void()>
           (add_column, SIGNAL (triggered()), boost::bind (&add_columns, 1, next));
