@@ -200,57 +200,6 @@ std::ostream & LogEvent::encode (std::ostream &os, int flags) const
   return os;
 }
 
-static const json_spirit::Value *get_value (json_spirit::Value const &val, std::string const &name)
-{
-  if (val.type () == json_spirit::obj_type)
-  {
-    json_spirit::Object const & obj = val.get_obj ();
-    json_spirit::Object::const_iterator it = obj.begin ();
-    const json_spirit::Object::const_iterator end = obj.end ();
-    for (; it != end ; ++it)
-    {
-      if (it->name_ == name)
-        return &it->value_;
-    }
-  }
-
-  return 0;
-}
-
-template <typename T>
-static bool
-get_value (json_spirit::Value const &val, std::string const &name, T &r)
-{
-  const json_spirit::Value *v = get_value (val, "id");
-  if (v)
-  {
-    std::stringstream sstr;
-    switch (v->type ())
-    {
-    case json_spirit::str_type:
-      sstr << v->get_str ();
-      break;
-    case json_spirit::int_type:
-      sstr << v->get_int ();
-      break;
-    case json_spirit::bool_type:
-      sstr << v->get_bool ();
-      break;
-    case json_spirit::real_type:
-      sstr << v->get_real ();
-      break;
-    default:
-      throw std::runtime_error
-        ("log: could not decode non-terminal value in event");
-    }
-
-    sstr >> r;
-    return !sstr.bad ();
-  }
-
-  return false;
-}
-
 namespace detail
 {
   static void decode_location (LogEvent &evt, json_spirit::Value const &val, int)
