@@ -23,28 +23,29 @@
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 //#include <boost/msm/back/favor_compile_time.hpp>
 
+//using namespace sdpa;
+//using namespace sdpa::daemon;
+//using namespace sdpa::events;
+
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
 char const* const state_names[] = {     "SDPA::Pending"
+										, "SDPA::Stalled"
                                         , "SDPA::Running"
                                         , "SDPA::Finished"
                                         , "SDPA::Failed"
                                         , "SDPA::Canceling"
                                         , "SDPA::Canceled"
-                                        , "SDPA::Stalled"
 };
 
 namespace sdpa {
   namespace fsm {
-    namespace events {
-    	struct DispatchEvent{};
-        struct RescheduleEvent{};
-        struct StallEvent{};
-        struct RestartEvent{};
-    }
-
     namespace bmsm {
+      struct MSMDispatchEvent{};
+      struct MSMRescheduleEvent{};
+      struct MSMStallEvent{};
+
       // front-end: define the FSM structure
       struct JobFSM_ : public msm::front::state_machine_def<JobFSM_>
       {
@@ -52,12 +53,12 @@ namespace sdpa {
 
         // The list of FSM states
         struct Pending :        public msm::front::state<>{};
+        struct Stalled :        public msm::front::state<>{};
         struct Running :        public msm::front::state<>{};
         struct Finished :       public msm::front::state<>{};
         struct Failed :         public msm::front::state<>{};
         struct Cancelling : 	public msm::front::state<>{};
         struct Cancelled :      public msm::front::state<>{};
-        struct Stalled :        public msm::front::state<>{};
 
         // the initial state of the JobFSM SM. Must be defined
         typedef Pending initial_state;
@@ -77,19 +78,18 @@ namespace sdpa {
         <
         //      Start       Event                                       Next        		Action                Guard
         //      +-----------+-------------------------------------------+------------------+---------------------+-----
-        _row<   Pending,    sdpa::fsm::events::DispatchEvent,           					Running >,
+        _row<   Pending,    MSMDispatchEvent,           				Running >,
         a_row<  Pending,    sdpa::events::CancelJobEvent, 				Cancelled,          &sm::action_cancel_job_from_pending >,
         a_row<  Pending,    sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
         a_row<  Pending,    sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        _row<   Pending,    sdpa::fsm::events::StallEvent,              					Stalled >,
+        _row<   Pending,    MSMStallEvent,                              Stalled >,
+        //      +-----------+-------------------------------------------+-------------------+---------------------+-----
+        _row<   Stalled,    MSMRescheduleEvent,        					Pending >,
         //      +-----------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,    sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
         a_row<  Running,    sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
         a_row<  Running,    sdpa::events::CancelJobEvent,       		Cancelling, 		&sm::action_cancel_job >,
-        _row<   Running,    sdpa::fsm::events::RescheduleEvent,                 			Pending >,
-        _row<   Running,    sdpa::fsm::events::StallEvent,              					Stalled >,
-        //      +-----------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Stalled,    sdpa::fsm::events::RestartEvent,              					Running >,
+        _row<   Running,    MSMRescheduleEvent,                 		Pending >,
         //      +-----------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
         a_irow< Finished,   sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
@@ -193,14 +193,14 @@ namespace sdpa {
 
         void Reschedule()
         {
-        	sdpa::fsm::events::RescheduleEvent ReschedEvt;
+        	MSMRescheduleEvent ReschedEvt;
             lock_type lock(mtx_);
             process_event(ReschedEvt);
         }
 
         void Dispatch()
         {
-            sdpa::fsm::events::DispatchEvent DispEvt;
+            MSMDispatchEvent DispEvt;
             lock_type lock(mtx_);
             process_event(DispEvt);
         }
