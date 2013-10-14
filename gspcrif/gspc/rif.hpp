@@ -6,5 +6,6 @@
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/process.hpp>
 #include <gspc/rif/proc_info.hpp>
+#include <gspc/rif/supervisor.hpp>
 
 #endif
