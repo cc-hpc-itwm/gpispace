@@ -28,6 +28,8 @@ namespace fhg
 
     void pool_t::start ()
     {
+      unique_lock lock (m_mutex);
+
       if (m_threads.size ())
         return;
 
@@ -46,6 +48,8 @@ namespace fhg
 
     void pool_t::stop ()
     {
+      unique_lock lock (m_mutex);
+
       m_stop = true;
 
       for (std::size_t i = 0 ; i != m_threads.size () ; ++i)
