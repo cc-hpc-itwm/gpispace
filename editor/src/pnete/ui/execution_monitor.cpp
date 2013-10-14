@@ -307,6 +307,7 @@ namespace fhg
         next = alphanum_sorted;
 
         filtered_by_user->setFilterKeyColumn (0);
+        alphanum_sorted->setDynamicSortFilter (true);
 
 
         QTreeView* tree (new QTreeView (this));
