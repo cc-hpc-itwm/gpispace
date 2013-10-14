@@ -21,6 +21,7 @@
 #include <QColorDialog>
 #include <QGroupBox>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSettings>
 #include <QTreeView>
 #include <QVBoxLayout>
@@ -272,10 +273,8 @@ namespace fhg
       }
 
       execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
-        : QWidget (parent)
+        : QSplitter (Qt::Horizontal, parent)
       {
-        new QVBoxLayout (this);
-
         util::qt::mvc::transform_functions_model* available_transform_functions
           (new util::qt::mvc::transform_functions_model);
         util::qt::mvc::transform_functions_model* transform_functions
@@ -426,11 +425,19 @@ namespace fhg
           }
         }
 
-        layout()->addWidget (tree);
-        layout()->addWidget (add_column_button);
-        layout()->addWidget (remove_column_button);
-        layout()->addWidget (list_builder);
-        layout()->addWidget (legend_box);
+        QScrollArea* sidebar (new QScrollArea (this));
+        QWidget* sidebar_content (new QWidget (sidebar));
+        sidebar->setWidget (sidebar_content);
+        sidebar->setWidgetResizable (true);
+
+        QVBoxLayout* sidebar_layout (new QVBoxLayout (sidebar_content));
+
+        addWidget (tree);
+        addWidget (sidebar);
+        sidebar_layout->addWidget (add_column_button);
+        sidebar_layout->addWidget (remove_column_button);
+        sidebar_layout->addWidget (list_builder);
+        sidebar_layout->addWidget (legend_box);
 
         add_column->trigger();
       }
