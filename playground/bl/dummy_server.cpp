@@ -509,17 +509,17 @@ void thread::send_some_status_updates()
     QString& state (_hosts[host].first);
     int& last_change (_hosts[host].second);
 
-    if (state == "down" && last_change > 10 && chance (10.0 * (last_change - 10)))
+    if (state == "down" && last_change > 10 && chance (5.0 * (last_change - 5)))
     {
       state = "available";
       last_change = 0;
     }
-    else if (chance (0.1) && (state == "available" || state == "used"))
+    else if (chance (0.5) && (state == "available" || state == "used"))
     {
       state = "unavailable";
       last_change = 0;
     }
-    else if (chance (0.05) && state != "down")
+    else if (chance (0.25) && state != "down")
     {
       state = "down";
       last_change = 0;
