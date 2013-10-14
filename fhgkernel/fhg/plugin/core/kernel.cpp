@@ -17,6 +17,7 @@
 
 #include <fhg/util/split.hpp>
 #include <fhg/util/threadname.hpp>
+#include <fhg/util/thread/async.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
@@ -49,6 +50,12 @@ namespace fhg
 
     kernel_t::~kernel_t ()
     {
+      if (m_running)
+      {
+        stop ();
+        wait_until_stopped ();
+      }
+
       // unload all non-static plugins according to dependency graph
       unload_all ();
 
@@ -579,6 +586,12 @@ namespace fhg
       m_stop_requested = false;
     }
 
+    void kernel_t::wait_until_stopped ()
+    {
+      int dummy;
+      m_stopped.wait (dummy);
+    }
+
     fhg::plugin::Storage* kernel_t::storage ()
     {
       return m_storage;
@@ -697,6 +710,8 @@ namespace fhg
       }
 
       m_running = false;
+
+      m_stopped.notify (0);
 
       return 0;
     }
