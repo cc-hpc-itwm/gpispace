@@ -316,6 +316,17 @@ namespace fhg
       {
         return QModelIndex();
       }
+
+      void worker_model::clear()
+      {
+        beginResetModel();
+
+        _workers.clear();
+        _worker_containers.clear();
+        _base_time = QDateTime::currentDateTime();
+
+        endResetModel();
+      }
     }
   }
 }

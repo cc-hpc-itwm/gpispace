@@ -380,6 +380,18 @@ namespace fhg
           (new util::qt::mini_button (remove_column, this));
 
 
+        QAction* clear_model (new QAction (tr ("clear_action"), base));
+        clear_model->setIcon (QIcon::fromTheme ("edit-clear"));
+
+        util::qt::boost_connect<void()>
+          ( clear_model, SIGNAL (triggered())
+          , this, boost::bind (&worker_model::clear, base)
+          );
+
+        util::qt::mini_button* clear_button
+          (new util::qt::mini_button (clear_model, this));
+
+
         util::qt::dual_list_selector* list_builder
           ( new util::qt::dual_list_selector ( available_transform_functions
                                              , transform_functions
@@ -436,6 +448,7 @@ namespace fhg
         addWidget (sidebar);
         sidebar_layout->addWidget (add_column_button);
         sidebar_layout->addWidget (remove_column_button);
+        sidebar_layout->addWidget (clear_button);
         sidebar_layout->addWidget (list_builder);
         sidebar_layout->addWidget (legend_box);
 

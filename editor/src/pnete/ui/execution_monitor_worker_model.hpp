@@ -50,6 +50,8 @@ namespace fhg
           (int row, int column, const QModelIndex& = QModelIndex()) const;
         virtual QModelIndex parent (const QModelIndex&) const;
 
+        void clear();
+
         typedef long timestamp_type;
         typedef long duration_type;
         typedef sdpa::daemon::NotificationEvent::state_t state_type;
