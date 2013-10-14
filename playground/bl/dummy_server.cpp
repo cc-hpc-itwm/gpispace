@@ -195,6 +195,11 @@ namespace
   };
 }
 
+namespace
+{
+  QString block_updates_for_host;
+}
+
 void thread::execute_action (fhg::util::parse::position& pos)
 {
   action_invocation invoc;
@@ -273,6 +278,12 @@ void thread::execute_action (fhg::util::parse::position& pos)
   }
   else if (*invoc._action == "foo" && state == "used")
   {
+    if (!block_updates_for_host.isEmpty())
+    {
+      const QMutexLocker lock (&_pending_status_updates_mutex);
+      _pending_status_updates << block_updates_for_host;
+    }
+    block_updates_for_host = *invoc._host;
     _socket->write
       ( qPrintable ( QString
                      ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"bar\"]]\n")
@@ -309,7 +320,7 @@ void thread::send_action_description (fhg::util::parse::position& pos)
                       : action == "remove_from_working_set"
                       ? "expected_next_state: \"available\""
                       : action == "foo"
-                      ? ""
+                      ? "expected_next_state: \"available\""
                       : throw std::runtime_error ("unknown action")
                       )
                  )
@@ -481,6 +492,11 @@ void thread::send_some_status_updates()
   while (!_pending_status_updates.empty() && chance (99.9))
   {
     const QString host (_pending_status_updates.takeFirst());
+
+    if (host == block_updates_for_host)
+    {
+      continue;
+    }
 
     const QMutexLocker lock (&_hosts_mutex);
 
