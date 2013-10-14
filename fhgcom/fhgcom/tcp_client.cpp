@@ -238,7 +238,6 @@ namespace fhg
 
       if (ec)
       {
-        LOG(WARN, "send failed: " << ec);
         throw boost::system::system_error(ec);
       }
     }
