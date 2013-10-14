@@ -46,6 +46,8 @@ namespace gspc
         , restart_mode (restart_mode)
         , shutdown_mode (shutdown_mode)
         , timeout (timeout)
+        , max_restarts (0)
+        , max_start_time (0)
       {}
 
       std::string     name;
@@ -54,6 +56,9 @@ namespace gspc
       restart_mode_e  restart_mode;
       shutdown_mode_e shutdown_mode;
       int             timeout;
+
+      size_t          max_restarts;
+      size_t          max_start_time;
     };
 
     class manager_t;
@@ -97,8 +102,8 @@ namespace gspc
         mutable boost::shared_mutex mutex;
       };
 
-      boost::signal<void ()>                        onSupervisorStopped;
-      boost::signal<void ()>                        onSupervisorStarted;
+      boost::signal<void ()>                     onSupervisorStopped;
+      boost::signal<void ()>                     onSupervisorStarted;
       boost::signal<void (child_info_t const &)> onChildFailed;
       boost::signal<void (child_info_t const &)> onChildStarted;
       boost::signal<void (child_info_t const &)> onChildTerminated;

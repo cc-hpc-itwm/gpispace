@@ -66,6 +66,10 @@ namespace gspc
 
       child_t *child = new child_t;
       child->info.descriptor = c;
+      if (0 == c.max_start_time)
+        child->info.descriptor.max_start_time = m_max_start_time;
+      if (0 == c.max_restarts)
+        child->info.descriptor.max_restarts = m_max_restarts;
       child->info.proc = -1;
       child->info.started = 0;
       child->info.trial = 0;
@@ -118,7 +122,7 @@ namespace gspc
       }
       child->info.errors.push_back (error_info);
 
-      if (child->info.errors.size () > m_max_restarts)
+      if (child->info.errors.size () > child->info.descriptor.max_restarts)
         child->info.errors.pop_front ();
 
       m_process_manager.remove (child->info.proc);
@@ -126,7 +130,9 @@ namespace gspc
 
       if (child->info.restart)
       {
-        if (child->info.trial >= m_max_restarts)
+        ++child->info.trial;
+
+        if (child->info.trial > child->info.descriptor.max_restarts)
         {
           lock.unlock ();
 
@@ -138,7 +144,7 @@ namespace gspc
 
           onChildTerminated (child->info);
 
-          if ((child->info.started + m_max_start_time) < (unsigned long)(time (NULL)))
+          if ((child->info.started + child->info.descriptor.max_start_time) < (unsigned long)(time (NULL)))
           {
             // reset trial counter, child lived long enough
             child->info.trial = 0;
@@ -228,7 +234,6 @@ namespace gspc
           child->info.started = time (NULL);
         }
 
-        ++child->info.trial;
         child->state = child_t::CHILD_RUNNING;
       }
 
@@ -347,7 +352,7 @@ namespace gspc
       m_process_manager.remove (child->info.proc);
       child->info.proc = 0;
 
-      if (child->info.errors.size () > m_max_restarts)
+      if (child->info.errors.size () > child->info.descriptor.max_restarts)
         child->info.errors.pop_front ();
 
       return 0;
