@@ -553,8 +553,9 @@ int main(int ac, char **av)
 
   kernel->unload_all();
 
-  delete kernel;
+  fhg::core::kernel_t *tmp_kernel = kernel;
   kernel = 0;
+  delete tmp_kernel;
 
   return rc;
 }
