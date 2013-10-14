@@ -10,7 +10,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
                  sdpa-util
                  sdpa
                  ${FhgCom_LIBRARY}
-                 ${GSPC_NET_LIBRARY_SHARED}
+                 ${GSPC_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
@@ -65,7 +65,7 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp drts_info_impl.cpp
   EXPORTS WFE
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  pnet
-                 ${GSPC_NET_LIBRARY_SHARED}
+                 ${GSPC_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_FILESYSTEM_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
@@ -110,7 +110,7 @@ fhg_add_plugin(sdpac sdpac.cpp
                  sdpa-util
                  sdpa
                  ${FhgCom_LIBRARY}
-                 ${GSPC_NET_LIBRARY_SHARED}
+                 ${GSPC_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
@@ -184,7 +184,7 @@ fhg_add_plugin(logc logc.cpp
 
 fhg_add_plugin(netd netd.cpp
   EXPORTS NETD
-  LINK_LIBRARIES ${GSPC_NET_LIBRARY_SHARED}
+  LINK_LIBRARIES ${GSPC_LIBRARY_SHARED}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}

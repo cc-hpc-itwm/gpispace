@@ -2,6 +2,8 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/util/read.hpp>
+#include <fhg/util/split.hpp>
 
 #include <unistd.h> // gethostname
 #include <algorithm>
@@ -42,6 +44,8 @@ class RifImpl : FHG_PLUGIN
 {
 public:
   RifImpl ()
+    : m_mgr ()
+    , m_supervisor (m_mgr)
   {
     s_rif = this;
   }
@@ -58,11 +62,184 @@ public:
     fhg_kernel ()->shutdown ();
   }
 
+  int supervise (std::list<std::string> argv)
+  {
+    gspc::rif::child_descriptor_t child;
+    child.name = "";
+    child.restart_mode = gspc::rif::child_descriptor_t::RESTART_ALWAYS;
+    child.shutdown_mode = gspc::rif::child_descriptor_t::SHUTDOWN_KILL;
+
+    while (argv.size ())
+    {
+      std::string arg = argv.front ();
+
+      if       (arg == "--")
+      {
+        argv.erase (argv.begin ());
+        break;
+      }
+      else if (arg.size () > 2 && arg [0] == '-' && arg [1] == '-')
+      {
+        argv.pop_front ();
+        if       (arg == "--name")
+        {
+          if (argv.empty ())
+          {
+            throw std::runtime_error ("supervise: --name needs an argument");
+          }
+          child.name = argv.front ();
+          argv.pop_front ();
+        }
+        else if (arg == "--max-restarts")
+        {
+          if (argv.empty ())
+          {
+            throw std::runtime_error ("supervise: --max-restarts needs an argument");
+          }
+
+          std::string value = argv.front ();
+          argv.pop_front ();
+
+          try
+          {
+            child.max_restarts = fhg::util::read<size_t> (value);
+          }
+          catch (std::exception const &)
+          {
+            throw std::runtime_error
+              ("supervise: invalid max-restarts: " + value);
+          }
+        }
+        else if (arg == "--max-start-time")
+        {
+          if (argv.empty ())
+          {
+            throw std::runtime_error ("supervise: --max-start-time needs an argument");
+          }
+
+          std::string value = argv.front ();
+          argv.pop_front ();
+
+          try
+          {
+            child.max_start_time = fhg::util::read<size_t> (value);
+          }
+          catch (std::exception const &)
+          {
+            throw std::runtime_error
+              ("supervise: invalid max-start-time: " + value);
+          }
+        }
+        else if (arg == "--restart")
+        {
+          if (argv.empty ())
+          {
+            throw std::runtime_error ("supervise: --mode needs an argument");
+          }
+
+          std::string mode = argv.front ();
+          argv.pop_front ();
+
+          if (mode == "never")
+            child.restart_mode = gspc::rif::child_descriptor_t::RESTART_NEVER;
+          else if (mode == "always")
+            child.restart_mode = gspc::rif::child_descriptor_t::RESTART_ALWAYS;
+          else if (mode == "only_if_failed")
+            child.restart_mode = gspc::rif::child_descriptor_t::RESTART_ONLY_IF_FAILED;
+          else
+          {
+            throw std::runtime_error
+              ("supervise: invalid restart mode: " + mode);
+          }
+        }
+        else if (arg == "--shutdown")
+        {
+          if (argv.empty ())
+          {
+            throw std::runtime_error ("supervise: --mode needs an argument");
+          }
+
+          std::string mode = argv.front ();
+          argv.pop_front ();
+
+          if (mode == "kill")
+            child.shutdown_mode = gspc::rif::child_descriptor_t::SHUTDOWN_KILL;
+          else if (mode == "wait")
+            child.shutdown_mode = gspc::rif::child_descriptor_t::SHUTDOWN_INFINITY;
+          else
+          {
+            try
+            {
+              child.timeout = fhg::util::read<int> (mode);
+              child.shutdown_mode = gspc::rif::child_descriptor_t::SHUTDOWN_WITH_TIMEOUT;
+            }
+            catch (std::exception const &)
+            {
+              throw std::runtime_error
+                ("supervise: invalid shutdown mode: " + mode);
+            }
+          }
+        }
+        else if (arg == "--setenv")
+        {
+          if (argv.empty ())
+          {
+            throw std::runtime_error ("supervise: --setenv needs an argument");
+          }
+
+          const std::pair<std::string, std::string> env_kvp =
+            fhg::util::split_string (argv.front (), "=");
+          child.env.insert (env_kvp);
+        }
+      }
+      else
+      {
+        break;
+      }
+    }
+
+    if (argv.empty ())
+    {
+      throw std::runtime_error ("supervise: command is missing");
+    }
+
+    if (child.name.empty ())
+    {
+      throw std::runtime_error ("supervise: --name is required");
+    }
+
+    child.argv.assign (argv.begin (), argv.end ());
+
+    return m_supervisor.add_child (child);
+  }
+
+  void on_child_failed (gspc::rif::supervisor_t::child_info_t const &chld)
+  {
+    MLOG (WARN, "child failed: " << chld.descriptor.name);
+  }
+  void on_child_started (gspc::rif::supervisor_t::child_info_t const &chld)
+  {
+    MLOG (INFO, "child started: " << chld.descriptor.name);
+  }
+  void on_child_terminated (gspc::rif::supervisor_t::child_info_t const &chld)
+  {
+    MLOG (WARN, "child terminated: " << chld.descriptor.name);
+  }
+
   FHG_PLUGIN_START()
   {
     signal (SIGCHLD, SIG_DFL);
 
     m_mgr.start ();
+
+    m_supervisor.onChildFailed.connect
+      (boost::bind (&RifImpl::on_child_failed, this, _1));
+    m_supervisor.onChildStarted.connect
+      (boost::bind (&RifImpl::on_child_started, this, _1));
+    m_supervisor.onChildTerminated.connect
+      (boost::bind (&RifImpl::on_child_terminated, this, _1));
+
+    m_supervisor.start ();
 
     gspc::net::handle
       ("/service/rif", &s_handle_rif);
@@ -71,12 +248,21 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    m_supervisor.onChildFailed.connect
+      (boost::bind (&RifImpl::on_child_failed, this, _1));
+    m_supervisor.onChildStarted.connect
+      (boost::bind (&RifImpl::on_child_started, this, _1));
+    m_supervisor.onChildTerminated.connect
+      (boost::bind (&RifImpl::on_child_terminated, this, _1));
+
+    m_supervisor.stop ();
     m_mgr.stop ();
 
     FHG_PLUGIN_STOPPED();
   }
 
   gspc::rif::manager_t m_mgr;
+  gspc::rif::supervisor_t m_supervisor;
 };
 
 void s_handle_rif ( std::string const &dst
@@ -99,7 +285,6 @@ void s_handle_rif ( std::string const &dst
                   );
     return;
   }
-
 
   std::string command;
   if (not argv.empty ())
@@ -597,6 +782,23 @@ void s_handle_rif ( std::string const &dst
   else if (command == "shutdown")
   {
     s_rif->shutdown ();
+  }
+  else if (command == "supervise")
+  {
+    try
+    {
+      s_rif->supervise (std::list<std::string>(argv.begin (), argv.end ()));
+      rply.set_body ("OK");
+    }
+    catch (std::exception const &ex)
+    {
+      rply = gspc::net::make::error_frame ( rqst
+                                          , gspc::net::E_SERVICE_FAILED
+                                          , ex.what ()
+                                          );
+      user->deliver (rply);
+      return;
+    }
   }
   else
   {
