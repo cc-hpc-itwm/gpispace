@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  Filter.hpp
- *
- *    Description:  Implementation of a generic filter mechanism for event filtering
- *
- *        Version:  1.0
- *        Created:  09/13/2009 05:50:21 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #ifndef FHGLOG_FILTER_HPP
 #define FHGLOG_FILTER_HPP 1
 

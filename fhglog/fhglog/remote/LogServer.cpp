@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  LogServer.cpp
- *
- *    Description:  log server implementation
- *
- *        Version:  1.0
- *        Created:  10/19/2009 09:08:11 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #include <boost/bind.hpp>
 
 #include <fhglog/fhglog.hpp>
