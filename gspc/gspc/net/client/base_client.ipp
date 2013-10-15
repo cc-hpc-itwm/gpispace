@@ -58,7 +58,7 @@ namespace gspc
         if (not ec)
         {
           m_connection->start ();
-          return 0;
+          return this->connect ();
         }
         else
         {
@@ -75,6 +75,13 @@ namespace gspc
         }
 
         return 0;
+      }
+
+      template <class Proto>
+      bool
+      base_client<Proto>::is_connected () const
+      {
+        return this->m_state == CONNECTED;
       }
 
       template <class Proto>
@@ -123,6 +130,9 @@ namespace gspc
         if (rc != 0)
         {
           m_state = FAILED;
+
+          m_connection.reset ();
+
           return rc;
         }
 
@@ -386,14 +396,19 @@ namespace gspc
       }
 
       template <class Proto>
-      void
+      size_t
       base_client<Proto>::abort_all_responses (boost::system::error_code const &ec)
       {
+        size_t count = 0;
+
         shared_lock lock (m_responses_mutex);
         BOOST_FOREACH (response_map_t::value_type resp, m_responses)
         {
           resp.second->abort (ec);
+          ++count;
         }
+
+        return count;
       }
 
       template <class Proto>
@@ -401,6 +416,8 @@ namespace gspc
       {
         if (try_notify_response (f))
           return 0;
+
+        onFrame (f);
 
         return this->m_frame_handler->handle_frame (user, f);
       }
@@ -412,9 +429,13 @@ namespace gspc
       {
         m_state = FAILED;
 
-        abort_all_responses (ec);
+        if (0 == abort_all_responses (ec))
+        {
+          onError (ec);
+          return m_frame_handler->handle_error (user, ec);
+        }
 
-        return m_frame_handler->handle_error (user, ec);
+        return 0;
       }
     }
   }

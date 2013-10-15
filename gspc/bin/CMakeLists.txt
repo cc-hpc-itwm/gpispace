@@ -3,6 +3,7 @@ target_link_libraries (gspcnetd
   libgspc
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
+  ${Boost_SIGNALS_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
@@ -13,6 +14,7 @@ target_link_libraries (gspcnetc
   libgspc
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
+  ${Boost_SIGNALS_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
@@ -23,6 +25,7 @@ target_link_libraries (gspcnet-ping
   libgspc
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
+  ${Boost_SIGNALS_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
@@ -34,6 +37,7 @@ target_link_libraries (gspcnet-req
   libgspc
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
+  ${Boost_SIGNALS_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
@@ -52,6 +56,7 @@ target_link_libraries (gspc
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_REGEX_LIBRARY}
   ${Boost_THREAD_LIBRARY}
+  ${Boost_SIGNALS_LIBRARY}
   ${Boost_SERIALIZATION_LIBRARY} # fhglog
   ${Boost_SYSTEM_LIBRARY}
 )

@@ -49,6 +49,8 @@ namespace gspc
         int connect ();
         int disconnect ();
 
+        bool is_connected () const;
+
         void set_frame_handler (frame_handler_t &);
 
         int send_raw (frame const &);
@@ -89,7 +91,7 @@ namespace gspc
         void set_timeout (size_t ms);
       private:
         bool try_notify_response (frame const & f);
-        void abort_all_responses (boost::system::error_code const &);
+        size_t abort_all_responses (boost::system::error_code const &);
 
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
         typedef boost::shared_lock<boost::shared_mutex> shared_lock;

@@ -26,7 +26,6 @@ public:
     , recv (0)
     , last (-1)
     , lost (0)
-    , had_error (false)
   {}
 
   int handle_frame (gspc::net::user_ptr, gspc::net::frame const &f)
@@ -40,7 +39,6 @@ public:
                 << ": "
                 << gspc::net::header::get (f,"message",std::string("unknown"))
                 << std::endl;
-      had_error = true;
     }
     else
     {
@@ -72,8 +70,6 @@ public:
 
   int handle_error (gspc::net::user_ptr, boost::system::error_code const &ec)
   {
-    std::cerr << "error: " << ec << ": " << ec.message () << std::endl;
-    had_error = true;
     return 0;
   }
 
@@ -114,7 +110,6 @@ public:
   size_t recv;
   size_t last;
   size_t lost;
-  bool   had_error;
 };
 
 #define MS 1000
@@ -179,18 +174,10 @@ int main (int argc, char *argv[])
 
   reply_frame_handler_t reply_handler;
 
-  try
-  {
-    client = gspc::net::dial (url);
-    client->set_frame_handler (reply_handler);
-  }
-  catch (std::exception const &ex)
-  {
-    std::cerr << "could not connect to '" << url << "': "
-              << ex.what ()
-              << std::endl;
-    return 1;
-  }
+  boost::system::error_code ec;
+
+  client = gspc::net::dial (url, ec);
+  client->set_frame_handler (reply_handler);
 
   std::string payload;
   try
@@ -208,20 +195,34 @@ int main (int argc, char *argv[])
 
   std::cout << "PING " << url << " " << payload.size () << " bytes of data." << std::endl;
 
-  while (not stop_requested && not reply_handler.had_error)
+  while (not stop_requested)
   {
-    using namespace gspc::net;
+    if (client->is_connected ())
+    {
+      using namespace gspc::net;
 
-    frame ping ("SEND");
-    ping.set_body (payload);
-    header::set (ping, "sequence", reply_handler.sent++);
-    header::set (ping, "ttl", 255);
-    header::set (ping, "reply-to", client->get_private_queue ());
-    header::set (ping, "destination", "/service/echo");
+      frame ping ("SEND");
+      ping.set_body (payload);
+      header::set (ping, "sequence", reply_handler.sent);
+      header::set (ping, "ttl", 255);
+      header::set (ping, "reply-to", client->get_private_queue ());
+      header::set (ping, "destination", "/service/echo");
 
-    header::set (ping, "timestamp", boost::posix_time::microsec_clock::universal_time ());
+      header::set (ping, "timestamp", boost::posix_time::microsec_clock::universal_time ());
 
-    client->send_raw (ping);
+      client->send_raw (ping);
+    }
+    else
+    {
+      int rc = client->start ();
+      if (rc < 0)
+      {
+        std::cerr << "ping: failed: " << strerror (-rc)
+                  << std::endl;
+      }
+    }
+
+    reply_handler.sent++;
 
     if (count && reply_handler.sent == count)
       break;
@@ -247,5 +248,5 @@ int main (int argc, char *argv[])
   client->stop ();
   gspc::net::shutdown ();
 
-  return reply_handler.had_error ? 1 : 0;
+  return reply_handler.recv > 0 ? 0 : 1;
 }

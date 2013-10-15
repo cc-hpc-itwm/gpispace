@@ -18,6 +18,7 @@ fhg_add_test(test_frame_builder.cpp
 fhg_add_test(test_queue_manager.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
@@ -27,6 +28,7 @@ fhg_add_test(test_queue_manager.cpp
 fhg_add_test(test_demux.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
@@ -36,6 +38,7 @@ fhg_add_test(test_demux.cpp
 fhg_add_test(test_services.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
@@ -45,6 +48,7 @@ fhg_add_test(test_services.cpp
 fhg_add_test(test_serve.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_FILE_SYSTEM_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
@@ -55,6 +59,7 @@ fhg_add_test(test_serve.cpp
 fhg_add_test(test_auth.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_FILE_SYSTEM_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
@@ -65,6 +70,7 @@ fhg_add_test(test_auth.cpp
 fhg_add_test(test_io.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_FILE_SYSTEM_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
@@ -80,6 +86,7 @@ fhg_add_test(test_parse_command_line.cpp
 fhg_add_test(test_process.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   DESCRIPTION "GSPCRif - process tests"
@@ -88,6 +95,7 @@ fhg_add_test(test_process.cpp
 fhg_add_test(test_manager.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   DESCRIPTION "GSPCRif - process manager tests"

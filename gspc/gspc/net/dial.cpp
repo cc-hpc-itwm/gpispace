@@ -152,32 +152,25 @@ namespace gspc
         rc = client->start ();
         if (0 != rc)
         {
-          ec = errc::make_error_code (errc::connection_refused);
-          return client_ptr_t ();
-        }
-
-        rc = client->connect ();
-        if (rc != 0)
-        {
-          if (-ETIME == rc)
+          if (-ECONNREFUSED == rc)
+          {
+            ec = errc::make_error_code (errc::connection_refused);
+          }
+          else if (-ETIME == rc)
           {
             ec = errc::make_error_code (errc::stream_timeout);
-            return client_ptr_t ();
           }
           else if (-EPERM == rc)
           {
             ec = errc::make_error_code (errc::permission_denied);
-            return client_ptr_t ();
           }
           else if (E_UNAUTHORIZED == rc)
           {
             ec = errc::make_error_code (errc::operation_not_permitted);
-            return client_ptr_t ();
           }
           else
           {
             ec = errc::make_error_code (errc::protocol_error);
-            return client_ptr_t ();
           }
         }
       }

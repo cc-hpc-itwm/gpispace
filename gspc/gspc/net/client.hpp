@@ -4,6 +4,8 @@
 #include <string>
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/frame_handler_fwd.hpp>
+
+#include <boost/signal.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace gspc
@@ -15,10 +17,15 @@ namespace gspc
     public:
       virtual ~client_t () {}
 
+      boost::signal<void (boost::system::error_code const &)> onError;
+      boost::signal<void (frame const &)>                     onFrame;
+
       virtual int start () = 0;
       virtual int stop () = 0;
 
       virtual std::string const & get_private_queue () const = 0;
+
+      virtual bool is_connected () const = 0;
 
       virtual int connect () = 0;
       virtual int disconnect () = 0;
