@@ -143,14 +143,12 @@ int main(int argc, char **argv)
 
   try
   {
-    while (std::cin)
+    // DOES NOT WORK FOR MESSAGES THAT CONTAIN LINEBREAKS
+    //! \todo build parse::positon from istream
+    std::string line;
+    while (std::getline (std::cin, line).good())
     {
-      fhg::log::LogEvent evt;
-      std::cin >> evt;
-      if (std::cin.good ())
-      {
-        appender->append (evt);
-      }
+      appender->append (fhg::log::LogEvent::from_string (line));
     }
   }
   catch (const std::exception& e)

@@ -3,18 +3,19 @@
 #include "LogEvent.hpp"
 #include "util.hpp"
 
+#include <fhg/util/num.hpp>
+#include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
 #include <fhg/util/thread/atomic.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 #include <iterator>
 #include <sstream>
 #include <sys/time.h>
-
-#include <json_spirit_value.h>
-#include <json_spirit_reader_template.h>
-#include <json_spirit_writer_template.h>
 
 namespace fhg
 {
@@ -27,9 +28,9 @@ namespace fhg
         return time(NULL);
       }
 
-      std::size_t next_id ()
+      uint64_t next_id()
       {
-        static fhg::thread::atomic<std::size_t> counter;
+        static fhg::thread::atomic<uint64_t> counter;
         return ++counter;
       }
 
@@ -47,7 +48,7 @@ namespace fhg
       }
     }
 
-    LogEvent::LogEvent(const severity_type &a_severity
+    LogEvent::LogEvent( const severity_type &a_severity
                       , const file_type &a_path
                       , const function_type &a_function
                       , const line_type &a_line
@@ -82,245 +83,163 @@ namespace fhg
     {
     }
 
-    bool LogEvent::operator<(const LogEvent &rhs) const
+    bool LogEvent::operator< (const LogEvent &rhs) const
     {
       return tstamp() < rhs.tstamp();
     }
 
-    std::ostream & LogEvent::encode (std::ostream &os, int flags) const
+    std::string LogEvent::encoded() const
     {
-      json_spirit::Object evt;
-
-      evt.push_back (json_spirit::Pair ("version", 1));
-      evt.push_back (json_spirit::Pair ("id", id_));
-      evt.push_back (json_spirit::Pair ("level", static_cast<int>(severity_.lvl ())));
-      evt.push_back (json_spirit::Pair ("message", message_));
-      evt.push_back (json_spirit::Pair ("time", static_cast<uint64_t>(tstamp_)));
-
-      {
-        json_spirit::Object location;
-        location.push_back (json_spirit::Pair ("path", path_));
-        location.push_back (json_spirit::Pair ("function", function_));
-        location.push_back (json_spirit::Pair ("line", line_));
-
-        evt.push_back (json_spirit::Pair ("location", location));
-      }
-
-      {
-        json_spirit::Object process;
-        process.push_back (json_spirit::Pair ("pid", pid_));
-        process.push_back (json_spirit::Pair ("tid", tid_));
-        process.push_back (json_spirit::Pair ("host", host_));
-
-        evt.push_back (json_spirit::Pair ("process", process));
-      }
-
-      {
-        json_spirit::Array tag;
-        std::copy ( tags_.begin ()
-                  , tags_.end ()
-                  , std::back_inserter (tag)
-                  );
-
-        evt.push_back (json_spirit::Pair ("tags", tag));
-      }
-
-      {
-        json_spirit::Array trace;
-        std::copy ( trace_.begin ()
-                  , trace_.end ()
-                  , std::back_inserter (trace)
-                  );
-
-        evt.push_back (json_spirit::Pair ("trace", trace));
-      }
-
-      json_spirit::write_stream (json_spirit::Value (evt), os, flags);
-
-      return os;
+      std::ostringstream os;
+      os << *this;
+      return os.str();
     }
 
-    namespace detail
+    namespace
     {
-      static void decode_location (LogEvent &evt, json_spirit::Value const &val, int)
+      template<typename T>
+        T read_integral (fhg::util::parse::position& pos)
       {
-        if (val.type () == json_spirit::obj_type)
+        T x (0);
+        while (!pos.end() && isdigit (*pos))
         {
-          json_spirit::Object const & obj = val.get_obj ();
-          json_spirit::Object::const_iterator it = obj.begin ();
-          const json_spirit::Object::const_iterator end = obj.end ();
-          for (; it != end ; ++it)
-          {
-            if (it->name_ == "path")
-            {
-              evt.path () = it->value_.get_str ();
-            }
-            else if (it->name_ == "function")
-            {
-              evt.function () = it->value_.get_str ();
-            }
-            else if (it->name_ == "line")
-            {
-              evt.line () = it->value_.get_int ();
-            }
-          }
+          x *= 10;
+          x += *pos - '0';
+          ++pos;
         }
-        else
-        {
-          throw std::runtime_error ("log: could not decode LogEvent location");
-        }
+        return x;
       }
-
-      static void decode_process (LogEvent &evt, json_spirit::Value const &val, int)
+      std::string read_string (fhg::util::parse::position& pos)
       {
-        if (val.type () == json_spirit::obj_type)
-        {
-          json_spirit::Object const & obj = val.get_obj ();
-          json_spirit::Object::const_iterator it = obj.begin ();
-          const json_spirit::Object::const_iterator end = obj.end ();
-          for (; it != end ; ++it)
-          {
-            if (it->name_ == "pid")
-            {
-              evt.pid () = it->value_.get_int ();
-            }
-            else if (it->name_ == "tid")
-            {
-              evt.tid () = it->value_.get_int ();
-            }
-            else if (it->name_ == "host")
-            {
-              evt.host () = it->value_.get_str ();
-            }
-          }
-        }
-        else
-        {
-          throw std::runtime_error ("log: could not decode LogEvent process");
-        }
+        unsigned long const s (read_integral<unsigned long> (pos));
+        ++pos;
+        const char* beg (&*pos);
+        pos.advance (s);
+        const char* end (&*pos);
+        return std::string (beg, end);
       }
-
-      static void decode_trace (LogEvent &evt, json_spirit::Value const &val, int)
+      std::vector<std::string> read_vec (fhg::util::parse::position& pos)
       {
-        if (val.type () == json_spirit::array_type)
+        std::vector<std::string> ret;
+
+        while (!pos.end() && *pos != ',')
         {
-          json_spirit::Array const & arr = val.get_array ();
-          json_spirit::Array::const_iterator it = arr.begin ();
-          const json_spirit::Array::const_iterator end = arr.end ();
-          for (; it != end ; ++it)
-          {
-            evt.trace (it->get_str ());
-          }
+          ret.push_back (read_string (pos));
         }
-        else
-        {
-          throw std::runtime_error ("log: could not decode LogEvent trace");
-        }
+
+        return ret;
       }
-
-      static void decode_tags (LogEvent &evt, json_spirit::Value const &val, int)
+      std::set<std::string> read_set (fhg::util::parse::position& pos)
       {
-        if (val.type () == json_spirit::array_type)
+        std::set<std::string> ret;
+
+        while (!pos.end())
         {
-          json_spirit::Array const & arr = val.get_array ();
-          json_spirit::Array::const_iterator it = arr.begin ();
-          const json_spirit::Array::const_iterator end = arr.end ();
-          for (; it != end ; ++it)
-          {
-            evt.tag (it->get_str ());
-          }
+          ret.insert (read_string (pos));
         }
-        else
-        {
-          throw std::runtime_error ("log: could not decode LogEvent tags");
-        }
+
+        return ret;
       }
-
-      static void decode (LogEvent &evt, json_spirit::Value const &val)
+      LogLevel::Level read_loglevel (fhg::util::parse::position& pos)
       {
-        int version = 0;
+        switch (*pos)
+        {
+        case 'T': ++pos; return LogLevel::TRACE;
+        case 'D': ++pos; return LogLevel::DEBUG;
+        case 'I': ++pos; return LogLevel::INFO;
+        case 'W': ++pos; return LogLevel::WARN;
+        case 'E': ++pos; return LogLevel::ERROR;
+        case 'F': ++pos; return LogLevel::FATAL;
+        }
 
-        if (val.type () == json_spirit::obj_type)
-        {
-          json_spirit::Object const & obj = val.get_obj ();
-          json_spirit::Object::const_iterator it = obj.begin ();
-          const json_spirit::Object::const_iterator end = obj.end ();
-          for (; it != end ; ++it)
-          {
-            if (it->name_ == "version")
-            {
-              version = it->value_.get_int ();
-            }
-            else if (it->name_ == "id")
-            {
-              evt.id () = it->value_.get_int ();
-            }
-            else if (it->name_ == "level")
-            {
-              evt.severity ().lvl () = (LogLevel::Level)it->value_.get_int ();
-            }
-            else if (it->name_ == "message")
-            {
-              evt.message () = it->value_.get_str ();
-            }
-            else if (it->name_ == "time")
-            {
-              evt.tstamp () = it->value_.get_int ();
-            }
-            else if (it->name_ == "location")
-            {
-              decode_location (evt, it->value_, version);
-            }
-            else if (it->name_ == "process")
-            {
-              decode_process (evt, it->value_, version);
-            }
-            else if (it->name_ == "trace")
-            {
-              decode_trace (evt, it->value_, version);
-            }
-            else if (it->name_ == "tags")
-            {
-              decode_tags (evt, it->value_, version);
-            }
-          }
-        }
-        else
-        {
-          throw std::runtime_error ("log: could not decode LogEvent");
-        }
+        throw std::runtime_error ("unknown log level");
       }
     }
 
-    std::istream & LogEvent::decode (std::istream &is)
-    {
-      json_spirit::Value val;
-      if (not json_spirit::read_stream (is, val))
-      {
-        throw std::runtime_error ("log: could not deserialize LogEvent");
-      }
+    LogEvent::LogEvent (fhg::util::parse::position& pos)
+      : id_ ((++pos, read_integral<uint64_t> (pos)))
+      , severity_ ((++pos, read_loglevel (pos)))
+      , path_ ((++pos, read_string (pos)))
+      , function_ ((++pos, read_string (pos)))
+      , line_ ((++pos, read_integral<line_type> (pos)))
+      , message_ ((++pos, read_string (pos)))
+      , tstamp_ ((++pos, read_integral<tstamp_type> (pos)))
+      , pid_ ((++pos, read_integral<pid_t> (pos)))
+      , tid_ ((++pos, read_integral<unsigned long> (pos)))
+      , host_ ((++pos, read_string (pos)))
+      , trace_ ((++pos, read_vec (pos)))
+      , tags_ ((++pos, read_set (pos)))
+    {}
 
-      detail::decode (*this, val);
-      return is;
+    LogEvent LogEvent::from_string (const std::string& str)
+    {
+      fhg::util::parse::position pos (str);
+      return LogEvent (pos);
     }
   }
 }
 
-std::istream & operator >> (std::istream &is, fhg::log::LogEvent &evt)
+namespace
 {
-  try
+  namespace encode
   {
-    evt.decode (is);
-  }
-  catch (...)
-  {
-    is.setstate (std::ios::failbit);
-  }
+    class string
+    {
+    public:
+      string (std::string const& s)
+        : _s (s)
+      {}
+      std::ostream& operator() (std::ostream& os) const
+      {
+        return os << _s.size() << '_' << _s;
+      }
+    private:
+      std::string const& _s;
+    };
+    std::ostream& operator<< (std::ostream& os, string const& s)
+    {
+      return s (os);
+    }
 
-  return is;
+    char loglevel (fhg::log::LogLevel::Level const& level)
+    {
+      switch (level)
+      {
+      case fhg::log::LogLevel::TRACE: return 'T';
+      case fhg::log::LogLevel::DEBUG: return 'D';
+      case fhg::log::LogLevel::INFO: return 'I';
+      case fhg::log::LogLevel::WARN: return 'W';
+      case fhg::log::LogLevel::ERROR: return 'E';
+      case fhg::log::LogLevel::FATAL: return 'F';
+      }
+
+      throw std::runtime_error ("unknown log level");
+    }
+  }
 }
 
-std::ostream & operator << (std::ostream &os, fhg::log::LogEvent const &evt)
+std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
 {
-  return evt.encode (os, 0);
+  os << ',' << event.id();
+  os << ',' << encode::loglevel (event.severity());
+  os << ',' << encode::string (event.path());
+  os << ',' << encode::string (event.function());
+  os << ',' << event.line();
+  os << ',' << encode::string (event.message());
+  os << ',' << event.tstamp();
+  os << ',' << event.pid();
+  os << ',' << event.tid();
+  os << ',' << encode::string (event.host());
+  os << ',';
+  BOOST_FOREACH (std::string const& t, event.trace())
+  {
+    os << encode::string (t);
+  }
+  os << ',';
+  BOOST_FOREACH (std::string const& t, event.tags())
+  {
+    os << encode::string (t);
+  }
+
+  return os;
 }

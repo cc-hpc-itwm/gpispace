@@ -43,9 +43,7 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
 
     try
     {
-      LogEvent evt;
-      std::stringstream sstr (msg);
-      evt.decode (sstr);
+      LogEvent evt (LogEvent::from_string (msg));
 
       {
         std::ostringstream ostr;
