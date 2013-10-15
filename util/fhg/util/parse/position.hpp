@@ -20,12 +20,30 @@ namespace fhg
         position ( const std::string::const_iterator& begin
                  , const std::string::const_iterator& end
                  );
+
+        const char& operator*() const
+        {
+          return *_pos;
+        }
+        void operator++()
+        {
+          ++_k;
+          ++_pos;
+        }
+        void advance (std::size_t d)
+        {
+          _k += d;
+          _pos += d;
+        }
+        bool end() const
+        {
+          return _pos == _end;
+        }
+
         std::string consumed() const;
         std::string rest() const;
-        const char& operator*() const;
-        void operator++();
-        bool end() const;
         const std::size_t& operator() () const;
+
         void skip_spaces();
         void require (const std::string&);
         void require (const char&);

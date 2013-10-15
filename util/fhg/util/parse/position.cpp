@@ -32,19 +32,6 @@ namespace fhg
       {
         return std::string (_pos, _end);
       }
-      const char& position::operator*() const
-      {
-        return *_pos;
-      }
-      void position::operator++()
-      {
-        ++_k;
-        ++_pos;
-      }
-      bool position::end() const
-      {
-        return _pos == _end;
-      }
       const std::size_t& position::operator() () const
       {
         return _k;
