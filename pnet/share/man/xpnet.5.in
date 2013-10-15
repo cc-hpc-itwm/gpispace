@@ -86,7 +86,7 @@ general structure of an xpnet file.
 
         Represented as: Set {value, ...}
 
--B "struct"
+.B "struct"
         A structures value.
 
         Represented as: Struct [name := value, ...]
