@@ -102,3 +102,17 @@ fhg_add_test(test_supervisor.cpp
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   DESCRIPTION "GSPCRif - process supervisor tests"
 )
+
+#### KVS related tests
+
+fhg_add_test(test_kvs.cpp
+  LINK_LIBRARIES libgspc
+                 fhg-util
+                 we-dev
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SIGNALS_SHARED_LIBRARY}
+                 ${Boost_DATE_TIME_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${CMAKE_DL_LIBS}
+  DESCRIPTION "GSPCRif - process supervisor tests"
+)
