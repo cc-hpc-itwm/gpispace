@@ -31,7 +31,7 @@ namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
 char const* const state_names[] = {     "SDPA::Pending"
-										, "SDPA::Stalled"
+										, "SDPA::Provisioning"
                                         , "SDPA::Running"
                                         , "SDPA::Finished"
                                         , "SDPA::Failed"
@@ -44,7 +44,7 @@ namespace sdpa {
     namespace bmsm {
       struct MSMDispatchEvent{};
       struct MSMRescheduleEvent{};
-      struct MSMStallEvent{};
+      struct MSMProvisioningEvent{};
 
       // front-end: define the FSM structure
       struct JobFSM_ : public msm::front::state_machine_def<JobFSM_>
@@ -53,7 +53,7 @@ namespace sdpa {
 
         // The list of FSM states
         struct Pending :        public msm::front::state<>{};
-        struct Stalled :        public msm::front::state<>{};
+        struct Provisioning :   public msm::front::state<>{};
         struct Running :        public msm::front::state<>{};
         struct Finished :       public msm::front::state<>{};
         struct Failed :         public msm::front::state<>{};
@@ -77,32 +77,33 @@ namespace sdpa {
         struct transition_table : mpl::vector
         <
         //      Start       Event                                       Next        		Action                Guard
-        //      +-----------+-------------------------------------------+------------------+---------------------+-----
-        _row<   Pending,    MSMDispatchEvent,           				Running >,
-        a_row<  Pending,    sdpa::events::CancelJobEvent, 				Cancelled,          &sm::action_cancel_job_from_pending >,
-        a_row<  Pending,    sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
-        a_row<  Pending,    sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        _row<   Pending,    MSMStallEvent,                              Stalled >,
-        //      +-----------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Stalled,    MSMRescheduleEvent,        					Pending >,
-        //      +-----------+-------------------------------------------+------------------+---------------------+-----
-        a_row<  Running,    sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
-        a_row<  Running,    sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        a_row<  Running,    sdpa::events::CancelJobEvent,       		Cancelling, 		&sm::action_cancel_job >,
-        _row<   Running,    MSMRescheduleEvent,                 		Pending >,
-        //      +-----------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Finished,   sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
-        a_irow< Finished,   sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
-        //      +-----------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Failed,     sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
-        a_irow< Failed,     sdpa::events::RetrieveJobResultsEvent,                  		&sm::action_retrieve_job_results >,
-        //      +-----------+-------------------------------------------+-------------------+---------------------+-----
-        a_row<  Cancelling, sdpa::events::CancelJobAckEvent,     		Cancelled, 			&sm::action_cancel_job_ack>,
-        a_row<  Cancelling, sdpa::events::JobFinishedEvent,      		Cancelled, 			&sm::action_job_finished>,
-        a_row<  Cancelling, sdpa::events::JobFailedEvent,               Cancelled, 			&sm::action_job_failed>,
-        //      +-----------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Cancelled,  sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
-        a_irow< Cancelled,  sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >
+        //      +---------------+-------------------------------------------+------------------+---------------------+-----
+        _row<   Pending,    	MSMDispatchEvent,           				Running >,
+        a_row<  Pending,    	sdpa::events::CancelJobEvent, 				Cancelled,          &sm::action_cancel_job_from_pending >,
+        //a_row<  Pending,  	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished >,
+        //a_row<  Pending,  	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
+        _row<   Pending,    	MSMProvisioningEvent,                       Provisioning >,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        _row<   Provisioning,	MSMDispatchEvent,        					Running >,
+        _row<   Provisioning,	MSMRescheduleEvent,        					Pending >,
+        //      +---------------+-------------------------------------------+------------------+---------------------+-----
+        a_row<  Running,    	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
+        a_row<  Running,    	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
+        a_row<  Running,    	sdpa::events::CancelJobEvent,       		Cancelling, 		&sm::action_cancel_job >,
+        _row<   Running,    	MSMRescheduleEvent,                 		Pending >,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
+        a_irow< Finished,   	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Failed,     	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
+        a_irow< Failed,     	sdpa::events::RetrieveJobResultsEvent,                  		&sm::action_retrieve_job_results >,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_row<  Cancelling, 	sdpa::events::CancelJobAckEvent,     		Cancelled, 			&sm::action_cancel_job_ack>,
+        a_row<  Cancelling, 	sdpa::events::JobFinishedEvent,      		Cancelled, 			&sm::action_job_finished>,
+        a_row<  Cancelling, 	sdpa::events::JobFailedEvent,               Cancelled, 			&sm::action_job_failed>,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Cancelled,  	sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
+        a_irow< Cancelled,  	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >
         >{};
 
         template <class FSM, class Event>
@@ -203,6 +204,13 @@ namespace sdpa {
             MSMDispatchEvent DispEvt;
             lock_type lock(mtx_);
             process_event(DispEvt);
+        }
+
+        void WaitForResources()
+        {
+        	MSMProvisioningEvent ProvisioningEvt;
+        	lock_type lock(mtx_);
+        	process_event(ProvisioningEvt);
         }
 
         // actions
