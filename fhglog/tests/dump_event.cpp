@@ -26,9 +26,9 @@ namespace
 
 BOOST_AUTO_TEST_CASE (encode_decode)
 {
-  const std::string evts (gen_event().encode());
+  const std::string evts (gen_event().encoded());
 
-  BOOST_REQUIRE_EQUAL (fhg::log::LogEvent::from_string (evts).encode(), evts);
+  BOOST_REQUIRE_EQUAL (fhg::log::LogEvent::from_string (evts).encoded(), evts);
 }
 
 namespace
@@ -46,7 +46,7 @@ namespace
 BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
 {
   fhg::log::LogEvent evt (gen_event());
-  const char first_encoded_char (*evt.encode().begin());
+  const char first_encoded_char (*evt.encoded().begin());
 
   const std::size_t max (250000);
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
 
   for (std::size_t i (0); i < max; ++i)
   {
-    count += *evt.encode().begin();
+    count += *evt.encoded().begin();
   }
 
   t += current_time();
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
 BOOST_AUTO_TEST_CASE (decode_with_time_constraint)
 {
   fhg::log::LogEvent evt (gen_event());
-  const std::string evts (evt.encode());
+  const std::string evts (evt.encoded());
   const size_t id (evt.id());
 
   const std::size_t max (750000);
