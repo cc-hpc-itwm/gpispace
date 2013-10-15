@@ -62,7 +62,12 @@ namespace fhg
       }
       void position::require (const char& c)
       {
-        require (std::string (1, c));
+        if (end() || operator*() != c)
+        {
+          throw error::expected (std::string (1, c), *this);
+        }
+
+        operator++();
       }
 
       std::string position::identifier()
