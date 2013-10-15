@@ -154,7 +154,9 @@ namespace fhg
           }
           else
           {
-            s.push_back (character());
+            s.push_back (*_pos);
+
+            operator++();
           }
         }
 
