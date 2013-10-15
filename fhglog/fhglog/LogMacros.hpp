@@ -124,7 +124,8 @@ namespace fhg { namespace log {
         FHGLOG_MKEVENT(__log_evt, level, "");                           \
         if (! logger.isFiltered(__log_evt))                             \
         {                                                               \
-          __log_evt.stream() << msg;                                    \
+          std::ostringstream msg_; msg_ << msg;                         \
+          __log_evt.message() = msg_.str();                             \
           logger.log(__log_evt);                                        \
         }                                                               \
       }                                                                 \

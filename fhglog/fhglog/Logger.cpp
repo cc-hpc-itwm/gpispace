@@ -149,7 +149,6 @@ void Logger::log(const LogEvent &event)
 {
   if (! isLevelEnabled(event.severity()))
     return;
-  event.finish();
   event.trace(name());
 
   bool logged (false);

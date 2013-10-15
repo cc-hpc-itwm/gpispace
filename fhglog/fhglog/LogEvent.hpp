@@ -83,15 +83,6 @@ namespace fhg { namespace log {
         tags_.erase (t);
       }
 
-      inline void finish() const
-      {
-        if (message_.empty())
-        {
-          const_cast<std::string&>(message_) = message_buffer_.str();
-        }
-      }
-      inline std::ostream &stream() { return message_buffer_; }
-
     std::ostream & encode (std::ostream &, int flags = 0) const;
     std::istream & decode (std::istream &);
 
@@ -108,7 +99,6 @@ namespace fhg { namespace log {
       std::string host_;
       mutable trace_type trace_;
       mutable tags_type tags_;
-      std::ostringstream message_buffer_;
   };
 }}
 

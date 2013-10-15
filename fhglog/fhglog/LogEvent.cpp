@@ -147,8 +147,6 @@ bool LogEvent::operator<(const LogEvent &rhs) const
 
 std::ostream & LogEvent::encode (std::ostream &os, int flags) const
 {
-  finish ();
-
   json_spirit::Object evt;
 
   evt.push_back (json_spirit::Pair ("version", 1));
