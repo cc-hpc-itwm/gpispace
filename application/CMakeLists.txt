@@ -2,6 +2,9 @@ set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 set (PNETC_EXAMPLES_DIR "share/sdpa/xml/examples")
 set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
+find_package(UTIL REQUIRED QUIET)
+include_directories(${UTIL_INCLUDE_DIR})
+
 add_subdirectory(lib)
 add_subdirectory(example)
 add_subdirectory(kdm)
