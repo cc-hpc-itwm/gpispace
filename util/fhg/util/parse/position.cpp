@@ -140,6 +140,7 @@ namespace fhg
             if (!end() && (*_pos == c || *_pos == escape))
             {
               s.push_back (*_pos);
+
               operator++();
             }
             else
