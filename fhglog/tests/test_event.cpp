@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_disabled_logging.cpp
- *
- *    Description:  Tests log-event creation
- *
- *        Version:  1.0
- *        Created:  09/21/2009 04:46:15 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #include <sstream> // ostringstream
 #include <iostream>
 #include <ctime>   // time
@@ -73,45 +55,8 @@ int main (int, char **)
       LogEvent evt3(LogLevel::INFO
                  , "tests/test_formatter.cpp"
                  , "foo"
-                 , 42 
+                 , 42
                  , "blah!");
-
-      std::clog << "** testing copy constructor...";
-      if (evt1 != evt2)
-      {
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tcopy constructor missed something!" << std::endl;
-        ++errcount;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-
-      std::clog << "** testing equality operator...";
-      if (evt1 == evt3)
-      {
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tequal operator missed something!" << std::endl;
-        ++errcount;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-
-      std::clog << "** testing assignment operator...";
-      evt1 = evt3;
-      if (evt1 != evt3)
-      {
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tassignment operator missed something!" << std::endl;
-        ++errcount;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
     } catch (const std::exception &ex) {
       std::clog << "FAILED!" << std::endl;
       std::clog << "\texception occured: " << ex.what() << std::endl;

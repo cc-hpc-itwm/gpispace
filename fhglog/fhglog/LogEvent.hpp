@@ -30,17 +30,6 @@ namespace fhg { namespace log {
              , const line_type &line
              , const message_type &message);
 
-      LogEvent(const LogEvent &);
-
-      ~LogEvent();
-
-      LogEvent &operator=(const LogEvent &);
-      bool operator==(const LogEvent &) const;
-      bool operator!=(const LogEvent &rhs) const
-      {
-        return !(*this == rhs);
-      }
-
       bool operator<(const LogEvent &) const;
 
       inline       std::size_t id () const { return id_; }
