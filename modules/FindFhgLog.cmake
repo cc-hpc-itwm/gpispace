@@ -43,7 +43,7 @@ if (NOT TARGET fhglog)
 
 else (NOT TARGET fhglog)
   set(FhgLog_FOUND true)
-  set(FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
+  set(FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
   set(FhgLog_LIBRARY_DIR "")
   set(FhgLog_LIBRARY fhglog)
   set(FhgLog_LIBRARY_SHARED fhglog-shared)
