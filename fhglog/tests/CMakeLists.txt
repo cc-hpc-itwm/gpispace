@@ -31,3 +31,8 @@ endforeach()
 if (ENABLE_REMOTE_LOGGING)
   add_subdirectory(remote)
 endif (ENABLE_REMOTE_LOGGING)
+
+fhg_add_test (dump_event dump_event.cpp
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog
+)
