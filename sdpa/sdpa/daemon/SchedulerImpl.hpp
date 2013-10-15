@@ -51,7 +51,6 @@ namespace sdpa {
 
 	    bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
 	    bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
-	    void dispatch( const sdpa::job_id_t& jobId );
 
 	    void reschedule( const sdpa::job_id_t& job );
 	    void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
@@ -130,11 +129,11 @@ namespace sdpa {
 	    virtual void removeRecoveryInconsistencies();
         void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 
-        void printQ() { jobs_to_be_scheduled.print(); }
+        void printQ() { pending_jobs_queue_.print(); }
         void printAllocationTable();
 
     protected:
-	    JobQueue jobs_to_be_scheduled;
+	    JobQueue pending_jobs_queue_;
 	    WorkerManager::ptr_t ptr_worker_man_;
 
 	    bool bStopRequested;
