@@ -3,6 +3,7 @@
 #include <csignal>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
+#include <boost/bind.hpp>
 
 #include <gspc/net.hpp>
 
@@ -13,7 +14,7 @@ static void handle_stop_request (int)
   stop_requested = true;
 }
 
-class reply_frame_handler_t : public gspc::net::frame_handler_t
+class reply_frame_handler_t
 {
 public:
   reply_frame_handler_t ()
@@ -28,7 +29,7 @@ public:
     , lost (0)
   {}
 
-  int handle_frame (gspc::net::user_ptr, gspc::net::frame const &f)
+  int handle_frame (gspc::net::frame const &f)
   {
     ++recv;
 
@@ -65,11 +66,6 @@ public:
                 << " time=" << (rtt.total_microseconds () / 1000.0) << " ms"
                 << std::endl;
     }
-    return 0;
-  }
-
-  int handle_error (gspc::net::user_ptr, boost::system::error_code const &ec)
-  {
     return 0;
   }
 
@@ -177,7 +173,11 @@ int main (int argc, char *argv[])
   boost::system::error_code ec;
 
   client = gspc::net::dial (url, ec);
-  client->set_frame_handler (reply_handler);
+  client->onFrame.connect (boost::bind ( &reply_frame_handler_t::handle_frame
+                                       , &reply_handler
+                                       , _1
+                                       )
+                          );
 
   std::string payload;
   try
