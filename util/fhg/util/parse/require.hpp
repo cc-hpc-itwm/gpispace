@@ -56,6 +56,9 @@ namespace fhg
                   , const bool skip_space_before_element = true
                   , const bool skip_space_after_element = true
                   );
+
+        //! \note everything until pos.end()
+        std::string rest (position&);
       }
     }
   }

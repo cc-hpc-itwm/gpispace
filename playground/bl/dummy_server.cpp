@@ -473,7 +473,8 @@ void thread::may_read()
     catch (const std::runtime_error& ex)
     {
       //! \todo Report back to client?
-      std::cerr << "PARSE ERROR: " << ex.what() << "\nmessage: " << message << "\nrest: " << pos.rest() << "\n";
+      std::cerr << "PARSE ERROR: " << ex.what()
+                << "\nmessage: " << message << "\n";
     }
   }
 }

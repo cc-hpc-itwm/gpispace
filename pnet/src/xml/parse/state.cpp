@@ -4,6 +4,7 @@
 #include <xml/parse/error.hpp>
 
 #include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
 
 namespace xml
 {
@@ -245,7 +246,8 @@ namespace xml
               throw error::parse_link_prefix ("Missing value", kv, inp());
             }
 
-            _link_prefix_by_key[parsed_key] = inp.rest();
+            _link_prefix_by_key[parsed_key] =
+              fhg::util::parse::require::rest (inp);
           }
 
           _link_prefix_parsed = true;

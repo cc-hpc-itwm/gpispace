@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE (_ulong)
     position pos (inp);
 
     BOOST_REQUIRE_EQUAL (23UL, read_ulong (pos));
-    BOOST_REQUIRE_EQUAL (pos.rest(), std::string ("foo"));
+    BOOST_REQUIRE_EQUAL (fhg::util::parse::require::rest (pos), std::string ("foo"));
   }
   {
     const std::string inp ("-2");
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE (_num)
     fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (44.0), read_num (pos));
     fhg::util::parse::require::skip_spaces (pos);
-    BOOST_REQUIRE_EQUAL (pos.rest(), "rest");
+    BOOST_REQUIRE_EQUAL (fhg::util::parse::require::rest (pos), "rest");
   }
 }
 

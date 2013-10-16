@@ -282,6 +282,16 @@ namespace fhg
           }
           while (!closed);
         }
+
+        std::string rest (position& pos)
+        {
+          std::string ret;
+          for (; !pos.end(); ++pos)
+          {
+            ret.push_back (*pos);
+          }
+          return ret;
+        }
       }
     }
   }
