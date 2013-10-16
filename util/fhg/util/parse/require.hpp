@@ -13,8 +13,20 @@ namespace fhg
     {
       namespace require
       {
+        //! \note require the given value or throw
+        void require (position&, const char&);
+        void require (position&, const std::string&);
+
+        //! \note skip all white space characters
+        void skip_spaces (position&);
+
         //! \note return the next character, throws when end()
         char plain_character (position&);
+
+        //! \note return all characters until <until>, while
+        //! 'escape''until' is ignored. 'until' will be consumed.
+        std::string plain_string
+          (position&, const char until, const char escape = '\\');
 
         //! \note a c-style identifier ([a-zA-Z_][a-zA-Z_0-9]*)
         std::string identifier (position&);
@@ -33,6 +45,17 @@ namespace fhg
         //! \note skip spaces, '0' or 'false' or 'no' or 'off' == false,
         //!                    '1' or 'on' or 'true' or 'yes' == true
         bool boolean (fhg::util::parse::position&);
+
+        //! \note expect a list, calling given function for all elements.
+        //!       <open>[<skip? *><list_element><skip? *><sep>]*<close>
+        //!       the function is expected to consume everything up to
+        //!       the list seperator.
+        void list ( position&
+                  , const char open, const char sep, const char close
+                  , const boost::function<void (position&)>&
+                  , const bool skip_space_before_element = true
+                  , const bool skip_space_after_element = true
+                  );
       }
     }
   }

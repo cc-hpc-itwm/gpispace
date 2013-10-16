@@ -13,6 +13,42 @@ namespace fhg
     {
       namespace require
       {
+        void require (position& pos, const char& what)
+        {
+          if (pos.end() || *pos != what)
+          {
+            throw error::expected (std::string (1, what), pos);
+          }
+
+          ++pos;
+        }
+        void require (position& pos, const std::string& what)
+        {
+          std::string::const_iterator what_pos (what.begin());
+          const std::string::const_iterator what_end (what.end());
+
+          while (what_pos != what_end)
+          {
+            if (pos.end() || *pos != *what_pos)
+            {
+              throw error::expected (std::string (what_pos, what_end), pos);
+            }
+            else
+            {
+              ++pos;
+              ++what_pos;
+            }
+          }
+        }
+
+        void skip_spaces (position& pos)
+        {
+          while (!pos.end() && isspace (*pos))
+          {
+            ++pos;
+          }
+        }
+
         char plain_character (position& pos)
         {
           if (pos.end())
@@ -25,6 +61,50 @@ namespace fhg
           ++pos;
 
           return c;
+        }
+
+        std::string plain_string
+          (position& pos, const char until, const char escape)
+        {
+          std::string s;
+
+          while (!pos.end() && *pos != until)
+          {
+            if (*pos == escape)
+            {
+              ++pos;
+
+              if (!pos.end() && (*pos == until || *pos == escape))
+              {
+                s.push_back (*pos);
+
+                ++pos;
+              }
+              else
+              {
+                throw error::expected ( std::string (1, until)
+                                      + " or "
+                                      + std::string (1, escape)
+                                      , pos
+                                      );
+              }
+            }
+            else
+            {
+              s.push_back (*pos);
+
+              ++pos;
+            }
+          }
+
+          if (pos.end())
+          {
+            throw error::expected (std::string (1, until), pos);
+          }
+
+          ++pos;
+
+          return s;
         }
 
         std::string identifier (position& pos)
@@ -133,6 +213,73 @@ namespace fhg
           default:
             return false; // never happens, as throw above, but compilers warn.
           }
+        }
+
+        void list ( position& pos
+                  , const char open, const char sep, const char close
+                  , const boost::function<void (position&)>& f
+                  , const bool skip_space_before_element
+                  , const bool skip_space_after_element
+                  )
+        {
+          skip_spaces (pos);
+
+          require (pos, open);
+
+          if (skip_space_before_element)
+          {
+            skip_spaces (pos);
+          }
+
+          bool closed (false);
+          bool expect_sep (false);
+
+          do
+          {
+            if (pos.end())
+            {
+              throw error::expected
+                ( std::string (1, close)
+                + " or "
+                + (expect_sep ? std::string (1, sep) : "<list_element>")
+                , pos
+                );
+            }
+
+            if (*pos == close)
+            {
+              ++pos;
+
+              closed = true;
+            }
+            else if (expect_sep)
+            {
+              require (pos, sep);
+
+              if (skip_space_before_element)
+              {
+                skip_spaces (pos);
+              }
+
+              expect_sep = false;
+            }
+            else if (*pos == sep)
+            {
+              throw error::expected ("<list_element>", pos);
+            }
+            else
+            {
+              f (pos);
+
+              if (skip_space_after_element)
+              {
+                skip_spaces (pos);
+              }
+
+              expect_sep = true;
+            }
+          }
+          while (!closed);
         }
       }
     }
