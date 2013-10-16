@@ -111,12 +111,14 @@ namespace fhg
       }
       std::string read_string (fhg::util::parse::position& pos)
       {
-        unsigned long const s (read_integral<unsigned long> (pos));
+        unsigned long s (read_integral<unsigned long> (pos));
         ++pos;
-        const char* beg (&*pos);
-        pos.advance (s);
-        const char* end (&*pos);
-        return std::string (beg, end);
+        std::string accum; accum.reserve (s);
+        for (; s > 0; --s, ++pos)
+        {
+          accum.push_back (*pos);
+        }
+        return accum;
       }
       std::vector<std::string> read_vec (fhg::util::parse::position& pos)
       {
