@@ -3,6 +3,7 @@
 #ifndef _FHG_UTIL_PARSE_POSITION_HPP
 #define _FHG_UTIL_PARSE_POSITION_HPP
 
+#include <iterator>
 #include <string>
 
 namespace fhg
@@ -64,6 +65,41 @@ namespace fhg
         std::string::const_iterator _pos;
         const std::string::const_iterator _begin;
         const std::string::const_iterator _end;
+      };
+
+      class position_istream : public position
+      {
+      public:
+        position_istream (std::istream&);
+
+        virtual char operator*() const
+        {
+          return *_pos;
+        }
+        virtual void operator++()
+        {
+          ++_k;
+          ++_pos;
+        }
+        virtual void advance (std::size_t d)
+        {
+          _k += d;
+          std::advance (_pos, d);
+        }
+        virtual bool end() const
+        {
+          return _pos == std::istream_iterator<char>();
+        }
+        virtual std::size_t eaten() const
+        {
+          return _k;
+        }
+
+        virtual std::string error_message (const std::string&) const;
+
+      private:
+        std::size_t _k;
+        std::istream_iterator<char> _pos;
       };
     }
   }

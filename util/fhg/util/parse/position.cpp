@@ -42,3 +42,27 @@ namespace fhg
     }
   }
 }
+
+namespace fhg
+{
+  namespace util
+  {
+    namespace parse
+    {
+      position_istream::position_istream (std::istream& input)
+        : _k (0)
+        , _pos (input)
+      {
+      }
+
+      std::string position_istream::error_message (const std::string& message) const
+      {
+        std::ostringstream oss;
+
+        oss << "PARSE ERROR [" << eaten() << "]: " << message << std::endl;
+
+        return oss.str();
+      }
+    }
+  }
+}
