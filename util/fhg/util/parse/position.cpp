@@ -1,7 +1,9 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <fhg/util/parse/position.hpp>
+
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/require.hpp>
 
 namespace fhg
 {
@@ -38,145 +40,27 @@ namespace fhg
       }
       void position::skip_spaces()
       {
-        while (_pos != _end && isspace (*_pos))
-        {
-          ++_pos;
-        }
+        require::skip_spaces (*this);
       }
       void position::require (const std::string& what)
       {
-        std::string::const_iterator what_pos (what.begin());
-        const std::string::const_iterator what_end (what.end());
-
-        while (what_pos != what_end)
-        {
-          if (end() || operator*() != *what_pos)
-          {
-            throw error::expected (std::string (what_pos, what_end), *this);
-          }
-          else
-          {
-            operator++(); ++what_pos;
-          }
-        }
+        require::require (*this, what);
       }
       void position::require (const char& c)
       {
-        if (end() || operator*() != c)
-        {
-          throw error::expected (std::string (1, c), *this);
-        }
-
-        operator++();
+        require::require (*this, c);
       }
-
       std::string position::until (const char c, const char escape)
       {
-        std::string s;
-
-        while (!end() && *_pos != c)
-        {
-          if (*_pos == escape)
-          {
-            operator++();
-
-            if (!end() && (*_pos == c || *_pos == escape))
-            {
-              s.push_back (*_pos);
-
-              operator++();
-            }
-            else
-            {
-              throw error::expected ( std::string (1, c)
-                                    + " or "
-                                    + std::string (1, escape)
-                                    , *this
-                                    );
-            }
-          }
-          else
-          {
-            s.push_back (*_pos);
-
-            operator++();
-          }
-        }
-
-        if (end())
-        {
-          throw error::expected (std::string (1, c), *this);
-        }
-
-        operator++();
-
-        return s;
+        return require::plain_string (*this, c, escape);
       }
-
       void position::list ( const char open, const char sep, const char close
-                          , const boost::function<void (position&)>& f
-                          , const bool skip_space_before_element
-                          , const bool skip_space_after_element
+                          , const boost::function<void (position&)>& fun
+                          , const bool skip_before
+                          , const bool skip_after
                           )
       {
-        skip_spaces();
-
-        require (open);
-
-        if (skip_space_before_element)
-        {
-          skip_spaces();
-        }
-
-        bool closed (false);
-        bool expect_sep (false);
-
-        do
-        {
-          if (end())
-          {
-            throw error::expected
-              ( std::string (1, close)
-              + " or "
-              + (expect_sep ? std::string (1, sep) : "<list_element>")
-              , *this
-              );
-          }
-
-          if (*_pos == close)
-          {
-            operator++();
-
-            closed = true;
-          }
-          else if (expect_sep)
-          {
-            require (sep);
-
-            if (skip_space_before_element)
-            {
-              skip_spaces();
-            }
-
-            expect_sep = false;
-          }
-          else if (*_pos == sep)
-          {
-            throw error::expected ("<list_element>", *this);
-          }
-          else
-          {
-            f (*this);
-
-            if (skip_space_after_element)
-            {
-              skip_spaces();
-            }
-
-            expect_sep = true;
-          }
-        }
-        while (!closed);
+        require::list (*this, open, sep, close, fun, skip_before, skip_after);
       }
     }
   }
