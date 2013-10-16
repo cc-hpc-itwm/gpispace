@@ -45,16 +45,6 @@ namespace fhg
         std::string rest() const;
         const std::size_t& operator() () const;
 
-        void skip_spaces();
-        void require (const std::string&);
-        void require (const char&);
-        std::string until (const char c, const char escape = '\\');
-        void list ( const char open, const char sep, const char close
-                  , const boost::function<void (position&)>&
-                  , const bool skip_space_before_element = true
-                  , const bool skip_space_after_element = true
-                  );
-
       private:
         std::size_t _k;
         std::string::const_iterator _pos;

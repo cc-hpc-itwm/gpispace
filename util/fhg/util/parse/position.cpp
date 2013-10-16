@@ -38,30 +38,6 @@ namespace fhg
       {
         return _k;
       }
-      void position::skip_spaces()
-      {
-        require::skip_spaces (*this);
-      }
-      void position::require (const std::string& what)
-      {
-        require::require (*this, what);
-      }
-      void position::require (const char& c)
-      {
-        require::require (*this, c);
-      }
-      std::string position::until (const char c, const char escape)
-      {
-        return require::plain_string (*this, c, escape);
-      }
-      void position::list ( const char open, const char sep, const char close
-                          , const boost::function<void (position&)>& fun
-                          , const bool skip_before
-                          , const bool skip_after
-                          )
-      {
-        require::list (*this, open, sep, close, fun, skip_before, skip_after);
-      }
     }
   }
 }
