@@ -70,27 +70,6 @@ namespace fhg
         operator++();
       }
 
-      std::string position::identifier()
-      {
-        skip_spaces();
-
-        std::string id;
-
-        if (end() || !(isalpha (*_pos) || *_pos == '_'))
-        {
-          throw error::expected ("identifier [a-zA-Z_][a-zA-Z_0-9]*", *this);
-        }
-
-        id.push_back (*_pos); operator++();
-
-        while (!end() && (isalpha (*_pos) || *_pos == '_' || isdigit (*_pos)))
-        {
-          id.push_back (*_pos); operator++();
-        }
-
-        return id;
-      }
-
       std::string position::until (const char c, const char escape)
       {
         std::string s;

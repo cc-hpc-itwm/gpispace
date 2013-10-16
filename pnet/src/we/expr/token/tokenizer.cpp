@@ -14,6 +14,8 @@
 
 #include <we/type/value/read.hpp>
 
+#include <fhg/util/parse/require.hpp>
+
 namespace expr
 {
   namespace token
@@ -378,7 +380,8 @@ namespace expr
 
       do
         {
-          _ref.push_back (_pos.identifier());
+          _pos.skip_spaces();
+          _ref.push_back (fhg::util::parse::require::identifier (_pos));
 
           if (_pos.end())
           {

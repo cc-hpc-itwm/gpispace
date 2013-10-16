@@ -16,6 +16,9 @@ namespace fhg
         //! \note return the next character, throws when end()
         char plain_character (position&);
 
+        //! \note a c-style identifier ([a-zA-Z_][a-zA-Z_0-9]*)
+        std::string identifier (position&);
+
         //! \todo eliminate the skip_space in all the functions below
 
         //! \note skip spaces, require what

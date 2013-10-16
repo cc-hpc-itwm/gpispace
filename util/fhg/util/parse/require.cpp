@@ -27,6 +27,25 @@ namespace fhg
           return c;
         }
 
+        std::string identifier (position& pos)
+        {
+          std::string id;
+
+          if (pos.end() || !(isalpha (*pos) || *pos == '_'))
+          {
+            throw error::expected ("identifier [a-zA-Z_][a-zA-Z_0-9]*", pos);
+          }
+
+          id.push_back (*pos); ++pos;
+
+          while (!pos.end() && (isalpha (*pos) || *pos == '_' || isdigit (*pos)))
+          {
+            id.push_back (*pos); ++pos;
+          }
+
+          return id;
+        }
+
         void token (fhg::util::parse::position& pos, const std::string& what)
         {
           pos.skip_spaces();

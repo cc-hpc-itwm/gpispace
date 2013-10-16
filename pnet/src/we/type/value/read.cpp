@@ -31,7 +31,9 @@ namespace pnet
                          , fhg::util::parse::position& pos
                          )
         {
-          const std::string fieldname (pos.identifier());
+          pos.skip_spaces();
+          const std::string fieldname
+            (fhg::util::parse::require::identifier (pos));
 
           pos.skip_spaces();
           pos.require (":=");

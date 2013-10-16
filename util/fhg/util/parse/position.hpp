@@ -48,7 +48,6 @@ namespace fhg
         void skip_spaces();
         void require (const std::string&);
         void require (const char&);
-        std::string identifier();
         std::string until (const char c, const char escape = '\\');
         void list ( const char open, const char sep, const char close
                   , const boost::function<void (position&)>&
