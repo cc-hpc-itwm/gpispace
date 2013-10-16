@@ -141,9 +141,11 @@ namespace pnet
 
             std::map<value_type, value_type> m;
 
-            pos.list ( '[', ',', ']'
-                     , boost::bind (map_item, boost::ref (m), _1)
-                     );
+            fhg::util::parse::require::list
+              ( pos
+              , '[', ',', ']'
+              , boost::bind (map_item, boost::ref (m), _1)
+              );
 
             return m;
           }
@@ -163,9 +165,11 @@ namespace pnet
 
               std::set<value_type> s;
 
-              pos.list ( '{', ',', '}'
-                       , boost::bind (set_item, boost::ref (s), _1)
-                       );
+              fhg::util::parse::require::list
+                ( pos
+                ,  '{', ',', '}'
+                , boost::bind (set_item, boost::ref (s), _1)
+                );
 
               return s;
             }
@@ -176,9 +180,11 @@ namespace pnet
 
               structured_type m;
 
-              pos.list ( '[', ',', ']'
-                       , boost::bind (struct_item, boost::ref (m), _1)
-                       );
+              fhg::util::parse::require::list
+                ( pos
+                ,  '[', ',', ']'
+                , boost::bind (struct_item, boost::ref (m), _1)
+                );
 
               return m;
             }
@@ -194,9 +200,11 @@ namespace pnet
 
             std::list<value_type> l;
 
-            pos.list ( '(', ',', ')'
-                     , boost::bind (list_item, boost::ref (l), _1)
-                     );
+            fhg::util::parse::require::list
+              ( pos
+              ,  '(', ',', ')'
+              , boost::bind (list_item, boost::ref (l), _1)
+              );
 
             return l;
           }

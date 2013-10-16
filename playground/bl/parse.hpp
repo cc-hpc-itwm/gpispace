@@ -4,6 +4,7 @@
 #define PREFIX_PARSE_HPP
 
 #include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
 #include <fhg/util/num.hpp>
 
 #include <boost/bind.hpp>
@@ -44,7 +45,7 @@ namespace prefix
               , const boost::function<void (fhg::util::parse::position&)>& f
               )
     {
-      pos.list ('[', ',', ']', f);
+      fhg::util::parse::require::list (pos, '[', ',', ']', f);
     }
 
     void named_list

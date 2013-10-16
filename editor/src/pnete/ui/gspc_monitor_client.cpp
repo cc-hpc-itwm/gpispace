@@ -47,7 +47,7 @@ namespace fhg
                     , const boost::function<void (fhg::util::parse::position&)>& f
                     )
           {
-            pos.list ('[', ',', ']', f);
+            fhg::util::parse::require::list (pos, '[', ',', ']', f);
           }
 
           void named_list
