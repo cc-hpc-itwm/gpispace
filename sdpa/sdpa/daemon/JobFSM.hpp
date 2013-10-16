@@ -31,7 +31,7 @@ namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
 char const* const state_names[] = {     "SDPA::Pending"
-										, "SDPA::Provisioning"
+										, "SDPA::Stalled"
                                         , "SDPA::Running"
                                         , "SDPA::Finished"
                                         , "SDPA::Failed"
@@ -44,7 +44,7 @@ namespace sdpa {
     namespace bmsm {
       struct MSMDispatchEvent{};
       struct MSMRescheduleEvent{};
-      struct MSMProvisioningEvent{};
+      struct MSMStalledEvent{};
 
       // front-end: define the FSM structure
       struct JobFSM_ : public msm::front::state_machine_def<JobFSM_>
@@ -53,7 +53,7 @@ namespace sdpa {
 
         // The list of FSM states
         struct Pending :        public msm::front::state<>{};
-        struct Provisioning :   public msm::front::state<>{};
+        struct Stalled :        public msm::front::state<>{};
         struct Running :        public msm::front::state<>{};
         struct Finished :       public msm::front::state<>{};
         struct Failed :         public msm::front::state<>{};
@@ -82,15 +82,15 @@ namespace sdpa {
         a_row<  Pending,    	sdpa::events::CancelJobEvent, 				Cancelled,          &sm::action_cancel_job_from_pending >,
         //a_row<  Pending,  	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished >,
         //a_row<  Pending,  	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        _row<   Pending,    	MSMProvisioningEvent,                       Provisioning >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Provisioning,	MSMDispatchEvent,        					Running >,
-        _row<   Provisioning,	MSMRescheduleEvent,        					Pending >,
+        _row<   Stalled,	    MSMDispatchEvent,        					Running >,
+        _row<   Stalled,    	MSMRescheduleEvent,                 		Pending >,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,    	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
         a_row<  Running,    	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
         a_row<  Running,    	sdpa::events::CancelJobEvent,       		Cancelling, 		&sm::action_cancel_job >,
         _row<   Running,    	MSMRescheduleEvent,                 		Pending >,
+        _row<   Running,	    MSMStalledEvent,        					Stalled >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
         a_irow< Finished,   	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
@@ -146,7 +146,19 @@ namespace sdpa {
 
         //transitions
         void CancelJob(const sdpa::events::CancelJobEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
-        void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
+        void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
+        {
+        	lock_type lock(mtx_);
+        	process_event(*pEvt);
+        	/*BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
+        		{
+        			lock_type lock_worker;
+        			Worker::ptr_t ptrWorker = findWorker(workerId);
+        			ptrWorker->free();
+        		}
+
+        		allocation_table.erase(jobId);*/
+        }
 
         void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm)
         {
@@ -206,11 +218,11 @@ namespace sdpa {
             process_event(DispEvt);
         }
 
-        void WaitForResources()
+        void Pause()
         {
-        	MSMProvisioningEvent ProvisioningEvt;
+        	MSMStalledEvent StalledEvt;
         	lock_type lock(mtx_);
-        	process_event(ProvisioningEvt);
+        	process_event(StalledEvt);
         }
 
         // actions
@@ -264,6 +276,13 @@ namespace sdpa {
         {
         	sdpa::status_t status = getStatus();
         	return status=="SDPA::Finished" || status=="SDPA::Failed" || status=="SDPA::Canceled";
+        }
+
+
+        bool is_running()
+        {
+        	sdpa::status_t status = getStatus();
+        	return status=="SDPA::Running";
         }
 
         template <class Archive>
