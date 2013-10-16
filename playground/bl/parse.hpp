@@ -18,14 +18,13 @@ namespace prefix
   {
     void token (fhg::util::parse::position& pos, const std::string& what)
     {
-      pos.skip_spaces();
-      pos.require (what);
+      fhg::util::parse::require::skip_spaces (pos);
+      fhg::util::parse::require::require (pos, what);
     }
 
     QString qstring (fhg::util::parse::position& pos)
     {
-      token (pos, "\"");
-      return QString::fromStdString (pos.until ('"'));
+      return QString::fromStdString (fhg::util::parse::require::string (pos));
     }
 
     QString label (fhg::util::parse::position& pos)
@@ -37,7 +36,7 @@ namespace prefix
 
     QColor qcolor (fhg::util::parse::position& pos)
     {
-      pos.skip_spaces();
+      fhg::util::parse::require::skip_spaces (pos);
       return QColor (fhg::util::read_uint (pos));
     }
 
