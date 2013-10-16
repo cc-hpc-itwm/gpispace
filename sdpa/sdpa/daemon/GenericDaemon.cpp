@@ -589,6 +589,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
 }
 
+/*
 std::ostream& operator<<(std::ostream& os, sdpa::worker_id_list_t& worker_list)
 {
 	os<<"(";
@@ -603,6 +604,7 @@ std::ostream& operator<<(std::ostream& os, sdpa::worker_id_list_t& worker_list)
 
 	return os;
 }
+*/
 
 void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
 {
@@ -622,7 +624,8 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 
     // create a SubmitJobEvent for the job job_id serialize and attach description
     sdpa::worker_id_list_t worker_list( scheduler()->getListAllocatedWorkers(jobId));
-    LOG(INFO, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id<<". The list of asigned workers is:"<<worker_list);
+    LOG(TRACE, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id);
+    LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
     SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), "", worker_list));
 
     // Post a SubmitJobEvent to the slave who made the request
