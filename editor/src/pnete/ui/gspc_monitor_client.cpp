@@ -39,7 +39,7 @@ namespace fhg
 
           QColor qcolor (fhg::util::parse::position& pos)
           {
-            pos.skip_spaces();
+            require::skip_spaces (pos);
             return QColor (fhg::util::read_uint (pos));
           }
 
@@ -252,7 +252,7 @@ namespace fhg
 
       void monitor_client::action_argument_data::append (fhg::util::parse::position& pos)
       {
-        pos.skip_spaces();
+        require::skip_spaces (pos);
 
         if (pos.end() || (*pos != 'd' && *pos != 'l' && *pos != 't'))
         {
@@ -264,7 +264,7 @@ namespace fhg
         {
         case 'd':
           ++pos;
-          pos.require ("efault");
+          require::require (pos, "efault");
           require::token (pos, ":");
 
           _default = require::qstring (pos);
@@ -273,7 +273,7 @@ namespace fhg
 
         case 'l':
           ++pos;
-          pos.require ("abel");
+          require::require (pos, "abel");
           require::token (pos, ":");
 
           _label = require::qstring (pos);
@@ -282,9 +282,9 @@ namespace fhg
 
         case 't':
           ++pos;
-          pos.require ("ype");
+          require::require (pos, "ype");
           require::token (pos, ":");
-          pos.skip_spaces();
+          require::skip_spaces (pos);
 
           if ( pos.end() || ( *pos != 'b' && *pos != 'd'
                             && *pos != 'f' && *pos != 'i' && *pos != 's'
@@ -299,7 +299,7 @@ namespace fhg
           {
           case 'b':
             ++pos;
-            pos.require ("oolean");
+            require::require (pos, "oolean");
 
             _type = boolean;
 
@@ -316,7 +316,7 @@ namespace fhg
             {
             case 'i':
               ++pos;
-              pos.require ("rectory");
+              require::require (pos, "rectory");
 
               _type = directory;
 
@@ -324,7 +324,7 @@ namespace fhg
 
             case 'u':
               ++pos;
-              pos.require ("ration");
+              require::require (pos, "ration");
 
               _type = duration;
 
@@ -335,7 +335,7 @@ namespace fhg
 
           case 'f':
             ++pos;
-            pos.require ("ilename");
+            require::require (pos, "ilename");
 
             _type = filename;
 
@@ -343,7 +343,7 @@ namespace fhg
 
           case 'i':
             ++pos;
-            pos.require ("nteger");
+            require::require (pos, "nteger");
 
             _type = integer;
 
@@ -351,7 +351,7 @@ namespace fhg
 
           case 's':
             ++pos;
-            pos.require ("tring");
+            require::require (pos, "tring");
 
             _type = string;
 
@@ -381,7 +381,7 @@ namespace fhg
       void monitor_client::action_description
         (fhg::util::parse::position& pos, const QString& action)
       {
-        pos.skip_spaces();
+        require::skip_spaces (pos);
 
         if (pos.end() || (*pos != 'a' && *pos != 'e' && *pos != 'l'))
         {
@@ -393,7 +393,7 @@ namespace fhg
         {
         case 'a':
           ++pos;
-          pos.require ("rguments");
+          require::require (pos, "rguments");
           require::token (pos, ":");
 
           {
@@ -407,7 +407,7 @@ namespace fhg
 
         case 'e':
           ++pos;
-          pos.require ("xpected_next_state");
+          require::require (pos, "xpected_next_state");
           require::token (pos, ":");
 
           emit states_actions_expected_next_state (action, require::qstring (pos));
@@ -416,7 +416,7 @@ namespace fhg
 
         case 'l':
           ++pos;
-          pos.require ("ong_text");
+          require::require (pos, "ong_text");
           require::token (pos, ":");
 
           emit states_actions_long_text (action, require::qstring (pos));
@@ -428,7 +428,7 @@ namespace fhg
       void monitor_client::layout_hint
         (fhg::util::parse::position& pos, const QString& state)
       {
-        pos.skip_spaces();
+        require::skip_spaces (pos);
 
         if (pos.end() || (*pos != 'b' && *pos != 'c' && *pos != 'd' && *pos != 'h'))
         {
@@ -440,7 +440,7 @@ namespace fhg
         {
         case 'b':
           ++pos;
-          pos.require ("order");
+          require::require (pos, "order");
           require::token (pos, ":");
 
           emit states_layout_hint_border (state, require::qcolor (pos));
@@ -459,7 +459,7 @@ namespace fhg
             {
             case 'h':
               ++pos;
-              pos.require ("aracter");
+              require::require (pos, "aracter");
               require::token (pos, ":");
 
               emit states_layout_hint_character (state, require::character (pos));
@@ -468,7 +468,7 @@ namespace fhg
 
             case 'o':
               ++pos;
-              pos.require ("lor");
+              require::require (pos, "lor");
               require::token (pos, ":");
 
               emit states_layout_hint_color (state, require::qcolor (pos));
@@ -480,7 +480,7 @@ namespace fhg
 
         case 'd':
           ++pos;
-          pos.require ("escriptive_name");
+          require::require (pos, "escriptive_name");
           require::token (pos, ":");
 
           emit states_layout_hint_descriptive_name (state, require::qstring (pos));
@@ -489,7 +489,7 @@ namespace fhg
 
         case 'h':
           ++pos;
-          pos.require ("idden");
+          require::require (pos, "idden");
           require::token (pos, ":");
 
           emit states_layout_hint_hidden (state, require::boolean (pos));
@@ -505,7 +505,7 @@ namespace fhg
                                 , boost::optional<QString>* state
                                 )
         {
-          pos.skip_spaces();
+          require::skip_spaces (pos);
 
           if (pos.end() || (*pos != 'd' && *pos != 's'))
           {
@@ -516,7 +516,7 @@ namespace fhg
           {
           case 'd':
             ++pos;
-            pos.require ("etails");
+            require::require (pos, "etails");
             require::token (pos, ":");
 
             *details = require::qstring (pos);
@@ -525,7 +525,7 @@ namespace fhg
 
           case 's':
             ++pos;
-            pos.require ("tate");
+            require::require (pos, "tate");
             require::token (pos, ":");
 
             *state = require::qstring (pos);
@@ -560,7 +560,7 @@ namespace fhg
 
           void append (fhg::util::parse::position& pos)
           {
-            pos.skip_spaces();
+            require::skip_spaces (pos);
 
             if (pos.end() || (*pos != 'm' && *pos != 'r'))
             {
@@ -571,7 +571,7 @@ namespace fhg
             {
             case 'm':
               ++pos;
-              pos.require ("essage");
+              require::require (pos, "essage");
               require::token (pos, ":");
 
               _message = require::qstring (pos);
@@ -580,11 +580,11 @@ namespace fhg
 
             case 'r':
               ++pos;
-              pos.require ("esult");
+              require::require (pos, "esult");
               require::token (pos, ":");
 
               {
-                pos.skip_spaces();
+                require::skip_spaces (pos);
 
                 if (pos.end() || (*pos != 'f' && *pos != 'o' && *pos != 'w'))
                 {
@@ -596,7 +596,7 @@ namespace fhg
                 {
                 case 'f':
                   ++pos;
-                  pos.require ("ail");
+                  require::require (pos, "ail");
 
                   _result = monitor_client::fail;
 
@@ -604,7 +604,7 @@ namespace fhg
 
                 case 'o':
                   ++pos;
-                  pos.require ("kay");
+                  require::require (pos, "kay");
 
                   _result = monitor_client::okay;
 
@@ -612,7 +612,7 @@ namespace fhg
 
                 case 'w':
                   ++pos;
-                  pos.require ("arn");
+                  require::require (pos, "arn");
 
                   _result = monitor_client::warn;
 
@@ -661,7 +661,7 @@ namespace fhg
 
           try
           {
-            pos.skip_spaces();
+            require::skip_spaces (pos);
 
             if ( pos.end()
                || ( *pos != 'a' && *pos != 'h' && *pos != 'l'
@@ -677,7 +677,7 @@ namespace fhg
             {
             case 'a':
               ++pos;
-              pos.require ("ction_");
+              require::require (pos, "ction_");
 
               if (pos.end() || (*pos != 'd' && *pos != 'r'))
               {
@@ -689,7 +689,7 @@ namespace fhg
               {
               case 'd':
                 ++pos;
-                pos.require ("escription");
+                require::require (pos, "escription");
                 require::token (pos, ":");
 
                 require::list_of_named_lists
@@ -701,7 +701,7 @@ namespace fhg
 
               case 'r':
                 ++pos;
-                pos.require ("esult");
+                require::require (pos, "esult");
                 require::token (pos, ":");
 
                 require::list
@@ -711,7 +711,7 @@ namespace fhg
 
             case 'h':
               ++pos;
-              pos.require ("osts");
+              require::require (pos, "osts");
               require::token (pos, ":");
 
               {
@@ -730,7 +730,7 @@ namespace fhg
 
             case 'l':
               ++pos;
-              pos.require ("ayout_hint");
+              require::require (pos, "ayout_hint");
               require::token (pos, ":");
 
               require::list_of_named_lists
@@ -742,7 +742,7 @@ namespace fhg
 
             case 'p':
               ++pos;
-              pos.require ("ossible_status");
+              require::require (pos, "ossible_status");
               require::token (pos, ":");
 
               require::list
@@ -752,7 +752,7 @@ namespace fhg
 
             case 's':
               ++pos;
-              pos.require ("tatus");
+              require::require (pos, "tatus");
               require::token (pos, ":");
 
               require::list
