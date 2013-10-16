@@ -128,28 +128,29 @@ namespace fhg
 
         void token (fhg::util::parse::position& pos, const std::string& what)
         {
-          pos.skip_spaces();
-          pos.require (what);
+          skip_spaces (pos);
+          require (pos, what);
         }
 
         char character (fhg::util::parse::position& pos)
         {
-          pos.skip_spaces();
-          pos.require ("'");
+          skip_spaces (pos);
+          require (pos, '\'');
           const char ch (plain_character (pos));
-          pos.require ("'");
+          require (pos, '\'');
           return ch;
         }
 
         std::string string (fhg::util::parse::position& pos)
         {
-          token (pos, "\"");
-          return pos.until ('"');
+          skip_spaces (pos);
+          require (pos, '"');
+          return plain_string (pos, '"');
         }
 
         bool boolean (fhg::util::parse::position& pos)
         {
-          pos.skip_spaces();
+          skip_spaces (pos);
 
           if ( pos.end() || ( *pos != '0' && *pos != '1' && *pos != 'f' && *pos != 'n'
                             && *pos != 'o' && *pos != 't' && *pos != 'y'
@@ -172,12 +173,12 @@ namespace fhg
 
           case 'f':
             ++pos;
-            pos.require ("alse");
+            require (pos, "alse");
             return false;
 
           case 'n':
             ++pos;
-            pos.require ("o");
+            require (pos, 'o');
             return false;
 
           case 'o':
@@ -192,7 +193,7 @@ namespace fhg
             {
             case 'f':
               ++pos;
-              pos.require ("f");
+              require (pos, 'f');
               return false;
 
             case 'n':
@@ -202,12 +203,12 @@ namespace fhg
 
           case 't':
             ++pos;
-            pos.require ("rue");
+            require (pos, "rue");
             return true;
 
           case 'y':
             ++pos;
-            pos.require ("es");
+            require (pos, "es");
             return true;
 
           default:
