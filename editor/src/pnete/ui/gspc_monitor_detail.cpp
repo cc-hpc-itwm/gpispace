@@ -380,7 +380,7 @@ namespace fhg
       }
       void node_state_widget::update_nodes_with_state (const QString& s)
       {
-        for (size_t i (0); i < _nodes.size(); ++i)
+        for (int i (0); i < _nodes.size(); ++i)
         {
           if (_nodes[i]._state == s)
           {
@@ -596,7 +596,7 @@ namespace fhg
       void node_state_widget::rebuild_node_index()
       {
         _node_index_by_hostname.clear();
-        for (size_t i (0); i < _nodes.size(); ++i)
+        for (int i (0); i < _nodes.size(); ++i)
         {
           _node_index_by_hostname[node (i)._hostname] = i;
         }
@@ -1270,7 +1270,7 @@ namespace fhg
       {
         _selection.clear();
 
-        for (size_t i (0); i < _nodes.size(); ++i)
+        for (int i (0); i < _nodes.size(); ++i)
         {
           _selection << i;
         }
