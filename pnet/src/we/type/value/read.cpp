@@ -216,7 +216,7 @@ namespace pnet
 
       value_type read (const std::string& input)
       {
-        fhg::util::parse::position_string pos (input.begin(), input.end());
+        fhg::util::parse::position_string pos (input);
 
         return read (pos);
       }
