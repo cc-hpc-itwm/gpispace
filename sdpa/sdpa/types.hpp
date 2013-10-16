@@ -72,4 +72,19 @@ namespace sdpa {
 	typedef std::vector<MasterInfo> master_info_list_t;
 }
 
+inline std::ostream& operator<<(std::ostream& os, sdpa::worker_id_list_t& worker_list)
+{
+	os<<"(";
+	for(sdpa::worker_id_list_t::iterator it=worker_list.begin(); it!=worker_list.end(); it++)
+	{
+		os<<*it;
+		if( boost::next(it) != worker_list.end() )
+			os<<",";
+		else
+			os<<")";
+	}
+
+	return os;
+}
+
 #endif
