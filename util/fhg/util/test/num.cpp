@@ -6,6 +6,7 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/num/show.hpp>
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/require.hpp>
 
 #include <string>
 #include <iostream>
@@ -274,17 +275,17 @@ BOOST_AUTO_TEST_CASE (_num)
     position pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (23UL), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (44.0f), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (23U), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (23L), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (23), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (44.0), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (pos.rest(), "rest");
   }
 }
