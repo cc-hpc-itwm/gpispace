@@ -292,7 +292,7 @@ namespace expr
     {
       op_stack.push (token::eof);
 
-      fhg::util::parse::position pos (input);
+      fhg::util::parse::position_string pos (input);
       token::tokenizer token (pos);
 
       while (!pos.end())

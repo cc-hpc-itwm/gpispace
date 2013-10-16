@@ -40,7 +40,7 @@ namespace fhg
         {
           qreal operator() (const std::string& inp) const
           {
-            util::parse::position pos (inp);
+            util::parse::position_string pos (inp);
             util::parse::require::skip_spaces (pos);
             return util::read_double (pos);
           }

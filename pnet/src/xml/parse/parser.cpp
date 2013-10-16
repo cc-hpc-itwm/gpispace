@@ -925,7 +925,7 @@ namespace xml
           // here R stands for the return port, F for the function
           // name and A for the list of argument ports
 
-          fhg::util::parse::position pos (input);
+          fhg::util::parse::position_string pos (input);
 
           std::string function (parse_name (pos));
           boost::optional<std::string> port_return;

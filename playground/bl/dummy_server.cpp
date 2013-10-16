@@ -363,7 +363,7 @@ void thread::may_read()
   {
     const std::string message
       (QString (_socket->readLine()).trimmed().toStdString());
-    fhg::util::parse::position pos (message);
+    fhg::util::parse::position_string pos (message);
 
     try
     {

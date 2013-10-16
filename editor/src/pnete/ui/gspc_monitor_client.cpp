@@ -657,7 +657,7 @@ namespace fhg
         foreach (const QString& message, messages)
         {
           const std::string std_message (message.toStdString());
-          fhg::util::parse::position pos (std_message);
+          fhg::util::parse::position_string pos (std_message);
 
           try
           {

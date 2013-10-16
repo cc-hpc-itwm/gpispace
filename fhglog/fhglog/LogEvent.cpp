@@ -175,7 +175,7 @@ namespace fhg
 
     LogEvent LogEvent::from_string (const std::string& str)
     {
-      fhg::util::parse::position pos (str);
+      fhg::util::parse::position_string pos (str);
       return LogEvent (pos);
     }
   }

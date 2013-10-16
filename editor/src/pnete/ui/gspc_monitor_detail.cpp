@@ -788,7 +788,7 @@ namespace fhg
         int string_to_int (const QString& str)
         {
           const std::string stdstr (str.toStdString());
-          fhg::util::parse::position pos (stdstr);
+          fhg::util::parse::position_string pos (stdstr);
           return fhg::util::read_int (pos);
         }
 

@@ -30,14 +30,14 @@ namespace
     using pnet::type::value::value_type;
     using pnet::type::value::show;
     using pnet::type::value::read;
-    using fhg::util::parse::position;
+    using fhg::util::parse::position_string;
 
     {
       std::ostringstream oss;
       oss << show (value_type (x));
       BOOST_CHECK_EQUAL (expected_show, oss.str());
       const std::string inp (oss.str());
-      position pos (inp);
+      position_string pos (inp);
       BOOST_CHECK (value_type (x) == read (pos));
       BOOST_CHECK (pos.end());
     }
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE (_read)
     std::list<value_type> l;
     std::map<value_type, value_type> m;
     std::string input ("List( ) Map[]");
-    fhg::util::parse::position pos (input);
+    fhg::util::parse::position_string pos (input);
 
     BOOST_CHECK (value_type (l) == read (pos));
     BOOST_CHECK (value_type (m) == read (pos));

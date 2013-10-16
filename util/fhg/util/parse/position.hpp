@@ -15,26 +15,40 @@ namespace fhg
       class position
       {
       public:
-        position (const std::string&);
-        position ( const std::string::const_iterator& begin
-                 , const std::string::const_iterator& end
-                 );
+        virtual ~position() {}
 
-        const char& operator*() const
+        virtual char operator*() const = 0;
+        virtual void operator++() = 0;
+        virtual void advance (std::size_t) = 0;
+        virtual bool end() const = 0;
+        virtual std::size_t eaten() const = 0;
+
+        virtual std::string error_message (const std::string&) const = 0;
+      };
+
+      class position_string : public position
+      {
+      public:
+        position_string (const std::string&);
+        position_string ( const std::string::const_iterator& begin
+                        , const std::string::const_iterator& end
+                        );
+
+        virtual char operator*() const
         {
           return *_pos;
         }
-        void operator++()
+        virtual void operator++()
         {
           ++_k;
           ++_pos;
         }
-        void advance (std::size_t d)
+        virtual void advance (std::size_t d)
         {
           _k += d;
-          _pos += d;
+          std::advance (_pos, d);
         }
-        bool end() const
+        virtual bool end() const
         {
           return _pos == _end;
         }
@@ -43,8 +57,7 @@ namespace fhg
           return _k;
         }
 
-        std::string consumed() const;
-        std::string rest() const;
+        virtual std::string error_message (const std::string&) const;
 
       private:
         std::size_t _k;

@@ -26,7 +26,7 @@ namespace xml
 
         if (_prefix)
         {
-          fhg::util::parse::position inp (*_prefix);
+          fhg::util::parse::position_string inp (*_prefix);
 
           while (!inp.end())
           {

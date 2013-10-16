@@ -214,7 +214,7 @@ namespace xml
           BOOST_FOREACH (const std::string& kv, _link_prefix)
           {
             std::string parsed_key;
-            fhg::util::parse::position inp (kv.begin(), kv.end());
+            fhg::util::parse::position_string inp (kv.begin(), kv.end());
             bool found_eq (false);
 
             while (!found_eq && !inp.end())

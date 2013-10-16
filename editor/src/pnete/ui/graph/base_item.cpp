@@ -193,7 +193,7 @@ namespace fhg
         {
           qreal read_qreal (const std::string& inp)
           {
-            util::parse::position pos (inp);
+            util::parse::position_string pos (inp);
             util::parse::require::skip_spaces (pos);
             return util::read_double (pos);
           }
