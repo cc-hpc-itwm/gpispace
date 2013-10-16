@@ -140,7 +140,7 @@ namespace
 
     void append (fhg::util::parse::position& pos)
     {
-      pos.skip_spaces();
+      fhg::util::parse::require::skip_spaces (pos);
 
       if (pos.end() || (*pos != 'a' && *pos != 'h'))
       {
@@ -161,7 +161,7 @@ namespace
           {
           case 'c':
             ++pos;
-            pos.require ("tion");
+            fhg::util::parse::require::require (pos, "tion");
             prefix::require::token (pos, ":");
 
             _action = prefix::require::qstring (pos);
@@ -170,7 +170,7 @@ namespace
 
           case 'r':
             ++pos;
-            pos.require ("guments");
+            fhg::util::parse::require::require (pos, "guments");
             prefix::require::token (pos, ":");
 
             prefix::require::list
@@ -184,7 +184,7 @@ namespace
 
       case 'h':
         ++pos;
-        pos.require ("ost");
+        fhg::util::parse::require::require (pos, "ost");
         prefix::require::token (pos, ":");
 
         _host = prefix::require::qstring (pos);
@@ -367,7 +367,7 @@ void thread::may_read()
 
     try
     {
-      pos.skip_spaces();
+      fhg::util::parse::require::skip_spaces (pos);
 
       if ( pos.end()
         || ( *pos != 'a' && *pos != 'd' && *pos != 'h'
@@ -382,7 +382,7 @@ void thread::may_read()
       {
       case 'a':
         ++pos;
-        pos.require ("ction");
+        fhg::util::parse::require::require (pos, "ction");
         prefix::require::token (pos, ":");
 
         prefix::require::list (pos, boost::bind (&thread::execute_action, this, _1));
@@ -391,7 +391,7 @@ void thread::may_read()
 
       case 'd':
         ++pos;
-        pos.require ("escribe_action");
+        fhg::util::parse::require::require (pos, "escribe_action");
         prefix::require::token (pos, ":");
 
         prefix::require::list
@@ -401,7 +401,7 @@ void thread::may_read()
 
       case 'h':
         ++pos;
-        pos.require ("osts");
+        fhg::util::parse::require::require (pos, "osts");
 
         {
           _socket->write ("hosts: [");
@@ -422,7 +422,7 @@ void thread::may_read()
 
       case 'l':
         ++pos;
-        pos.require ("ayout_hint");
+        fhg::util::parse::require::require (pos, "ayout_hint");
         prefix::require::token (pos, ":");
 
         prefix::require::list (pos, boost::bind (&thread::send_layout_hint, this, _1));
@@ -431,7 +431,7 @@ void thread::may_read()
 
       case 'p':
         ++pos;
-        pos.require ("ossible_status");
+        fhg::util::parse::require::require (pos, "ossible_status");
 
         {
           _socket->write ("possible_status: [");
@@ -455,7 +455,7 @@ void thread::may_read()
 
       case 's':
         ++pos;
-        pos.require ("tatus");
+        fhg::util::parse::require::require (pos, "tatus");
         prefix::require::token (pos, ":");
 
         {
