@@ -380,7 +380,7 @@ namespace expr
 
       do
         {
-          _pos.skip_spaces();
+          fhg::util::parse::require::skip_spaces (_pos);
           _ref.push_back (fhg::util::parse::require::identifier (_pos));
 
           if (_pos.end())
@@ -395,7 +395,7 @@ namespace expr
         }
       while (!_pos.end() && *_pos != '}');
 
-      _pos.require ("}");
+      fhg::util::parse::require::require (_pos, '}');
     }
 
     void tokenizer::notne()
@@ -451,7 +451,7 @@ namespace expr
 
     void tokenizer::operator++()
     {
-      _pos.skip_spaces();
+      fhg::util::parse::require::skip_spaces (_pos);
 
       if (is_eof())
       {
