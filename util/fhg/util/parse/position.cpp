@@ -34,10 +34,6 @@ namespace fhg
       {
         return std::string (_pos, _end);
       }
-      const std::size_t& position::operator() () const
-      {
-        return _k;
-      }
     }
   }
 }

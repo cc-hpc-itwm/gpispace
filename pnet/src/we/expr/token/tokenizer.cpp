@@ -269,7 +269,7 @@ namespace expr
         {
           if (_tokenizer.is_eof())
           {
-            throw exception::parse::expected (names (m), _tokenizer.pos()());
+            throw exception::parse::expected (names (m), _tokenizer.pos().eaten());
           }
           else
           {
@@ -293,7 +293,7 @@ namespace expr
           }
           else
           {
-            throw exception::parse::expected (names (m), _tokenizer.pos()());
+            throw exception::parse::expected (names (m), _tokenizer.pos().eaten());
           }
         }
 
@@ -362,7 +362,7 @@ namespace expr
       {
         ++_pos;
 
-        skip_comment (_pos());
+        skip_comment (_pos.eaten());
 
         operator++();
       }
@@ -385,7 +385,7 @@ namespace expr
 
           if (_pos.end())
           {
-            throw exception::parse::expected ("'.' or '}'", _pos());
+            throw exception::parse::expected ("'.' or '}'", _pos.eaten());
           }
 
           if (*_pos == '.')
@@ -420,7 +420,7 @@ namespace expr
       }
       else
       {
-        throw exception::parse::misplaced (descr, _pos());
+        throw exception::parse::misplaced (descr, _pos.eaten());
       }
     }
 
@@ -433,7 +433,7 @@ namespace expr
             ++_pos;
             if (!_pos.end() && *_pos == '*')
               {
-                ++_pos; skip_comment (_pos());
+                ++_pos; skip_comment (_pos.eaten());
               }
             break;
           case '*':
@@ -446,7 +446,7 @@ namespace expr
           default: ++_pos; break;
           }
 
-      throw exception::parse::unterminated ("comment", open-2, _pos());
+      throw exception::parse::unterminated ("comment", open-2, _pos.eaten());
     }
 
     void tokenizer::operator++()

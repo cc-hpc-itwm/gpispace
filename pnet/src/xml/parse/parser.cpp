@@ -946,7 +946,7 @@ namespace xml
                 throw error::parse_function::expected ( _name
                                                       , input
                                                       , "("
-                                                      , pos()
+                                                      , pos.eaten()
                                                       , pod.path()
                                                       );
               }
@@ -964,7 +964,7 @@ namespace xml
                     throw error::parse_function::expected ( _name
                                                           , input
                                                           , ","
-                                                          , pos()
+                                                          , pos.eaten()
                                                           , pod.path()
                                                           );
                   }
@@ -978,7 +978,7 @@ namespace xml
                 throw error::parse_function::expected ( _name
                                                       , input
                                                       , ")"
-                                                      , pos()
+                                                      , pos.eaten()
                                                       , pod.path()
                                                       );
               }
@@ -996,7 +996,7 @@ namespace xml
               throw error::parse_function::expected ( _name
                                                     , input
                                                     , "<end of input>"
-                                                    , pos()
+                                                    , pos.eaten()
                                                     , pod.path()
                                                     );
             }

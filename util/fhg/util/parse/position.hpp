@@ -40,10 +40,13 @@ namespace fhg
         {
           return _pos == _end;
         }
+        virtual std::size_t eaten() const
+        {
+          return _k;
+        }
 
         std::string consumed() const;
         std::string rest() const;
-        const std::size_t& operator() () const;
 
       private:
         std::size_t _k;

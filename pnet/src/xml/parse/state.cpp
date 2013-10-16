@@ -233,17 +233,17 @@ namespace xml
 
             if (!parsed_key.size())
             {
-              throw error::parse_link_prefix ("Missing key", kv, inp());
+              throw error::parse_link_prefix ("Missing key", kv, inp.eaten());
             }
 
             if (!found_eq)
             {
-              throw error::parse_link_prefix ("Missing =", kv, inp());
+              throw error::parse_link_prefix ("Missing =", kv, inp.eaten());
             }
 
             if (inp.end())
             {
-              throw error::parse_link_prefix ("Missing value", kv, inp());
+              throw error::parse_link_prefix ("Missing value", kv, inp.eaten());
             }
 
             _link_prefix_by_key[parsed_key] =

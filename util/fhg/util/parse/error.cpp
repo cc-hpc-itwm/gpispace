@@ -18,10 +18,10 @@ namespace fhg
           {
             std::ostringstream oss;
 
-            oss << "PARSE ERROR [" << inp() << "]: " << msg << std::endl;
+            oss << "PARSE ERROR [" << inp.eaten() << "]: " << msg << std::endl;
             oss << inp.consumed() << " " << inp.rest() << std::endl;
 
-            for (std::size_t i (0); i < inp(); ++i)
+            for (std::size_t i (0); i < inp.eaten(); ++i)
             {
               oss << " ";
             }
