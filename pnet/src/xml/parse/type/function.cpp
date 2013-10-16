@@ -45,6 +45,7 @@
 
 #include <iostream>
 #include <string>
+#include <set>
 
 namespace xml
 {
@@ -1629,13 +1630,18 @@ namespace xml
               : _tname (tname)
               , _inc()
             {
-              _inc[pnet::type::value::CONTROL()] = "we/type/literal/control.hpp";
-              _inc[pnet::type::value::STRING()] = "string";
-              _inc[pnet::type::value::BITSET()] = "we/type/bitsetofint.hpp";
-              _inc[pnet::type::value::BYTEARRAY()] = "we/type/bytearray.hpp";
-              _inc[pnet::type::value::LIST()] = "list";
-              _inc[pnet::type::value::SET()] = "set";
-              _inc[pnet::type::value::MAP()] = "map";
+              namespace value = pnet::type::value;
+
+              _inc[value::CONTROL()].insert ("we/type/literal/control.hpp");
+              _inc[value::STRING()].insert ("string");
+              _inc[value::BITSET()].insert ("we/type/bitsetofint.hpp");
+              _inc[value::BYTEARRAY()].insert ("we/type/bytearray.hpp");
+              _inc[value::LIST()].insert ("list");
+              _inc[value::LIST()].insert ("we/type/value.hpp");
+              _inc[value::SET()].insert ("set");
+              _inc[value::SET()].insert ("we/type/value.hpp");
+              _inc[value::MAP()].insert ("map");
+              _inc[value::MAP()].insert ("we/type/value.hpp");
             }
 
             std::ostream& operator() (std::ostream& os) const
@@ -1646,12 +1652,17 @@ namespace xml
               }
               else
               {
-                boost::unordered_map<std::string, std::string>::const_iterator
+                boost::unordered_map< std::string
+                                    , std::set<std::string>
+                                    >::const_iterator
                   pos (_inc.find (_tname));
 
                 if (pos != _inc.end())
                 {
-                  os << fhg::util::cpp::include (pos->second);
+                  BOOST_FOREACH (std::string const& i, pos->second)
+                  {
+                    os << fhg::util::cpp::include (i);
+                  }
                 }
               }
 
@@ -1660,7 +1671,9 @@ namespace xml
 
           private:
             const std::string _tname;
-            boost::unordered_map<std::string, std::string> _inc;
+            boost::unordered_map< std::string
+                                , std::set<std::string>
+                                > _inc;
           };
         };
 
