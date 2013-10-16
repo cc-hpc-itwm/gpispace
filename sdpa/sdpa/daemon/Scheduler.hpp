@@ -72,7 +72,7 @@ namespace daemon {
 	 virtual void schedule(const sdpa::job_id_t& jobId) = 0;
 	 virtual bool schedule_to(const sdpa::job_id_t&, const Worker::ptr_t& pWorker) = 0;
 	 virtual bool schedule_to(const sdpa::job_id_t&, const sdpa::worker_id_t&) = 0;
-	 virtual void schedule_remote(const sdpa::job_id_t &job) = 0;
+	 virtual void schedule_remotely(const sdpa::job_id_t &job) = 0;
 	 virtual void schedule_local(const sdpa::job_id_t &job) = 0;
 
 	 virtual void reschedule(const sdpa::job_id_t &job) = 0;
@@ -83,6 +83,7 @@ namespace daemon {
 	 virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
 	 virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
 	 virtual void assignJobsToWorkers() = 0;
+	 virtual void checkAllocations() = 0;
 	 virtual sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t&) = 0;
 	 virtual void releaseAllocatedWorkers(const sdpa::job_id_t& jobId) = 0;
 
