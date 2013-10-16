@@ -5,6 +5,8 @@
 
 #include <fhg/util/parse/position.hpp>
 
+#include <boost/function.hpp>
+
 namespace fhg
 {
   namespace util

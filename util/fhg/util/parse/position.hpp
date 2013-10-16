@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include <boost/function.hpp>
-
 namespace fhg
 {
   namespace util
