@@ -198,7 +198,7 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 
 				pJob->Reschedule(); // put the job back into the pending state
 				releaseAllocatedWorkers(job_id);
-				schedule_remote(job_id);
+				schedule_remotely(job_id);
 			}
 		}
 	}
@@ -488,7 +488,7 @@ void printMatchingWorkers(const sdpa::job_id_t& jobId, const sdpa::list_match_wo
 	DLOG( INFO, "The workers matching the requirements of the job "<<jobId<<" are: "<<ossMatchWorkers.str());*/
 }
 
-void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
+void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
 {
 	/*if( !numberOfWorkers() )
 	{
@@ -509,7 +509,8 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 	    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
 
 	    ptr_worker_man_->dispatchJob(jobId);
-	    pJob->WaitForResources();
+	    // put the job into the running state
+	    pJob->Dispatch();
 	    cond_feed_workers.notify_one();
 	  }
 	  catch(const JobNotFoundException& ex)
@@ -682,7 +683,7 @@ void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worke
 	ptr_worker_man_->reserveWorker(matchingWorkerId);
 	// allocate this worker to the job with the jobId
 	lock_type lock_table(mtx_alloc_table_);
-	allocation_table[jobId].push_back(matchingWorkerId);
+	allocation_table_[jobId].push_back(matchingWorkerId);
 }
 
 sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
@@ -743,9 +744,10 @@ void SchedulerImpl::assignJobsToWorkers()
 
 			// attention: what to do if job_reqs.n_workers_req > total number of registered workers?
 			// if all the required resources were acquired, mark the job as submitted
-			if( allocation_table[jobId].size() == (size_t)nReqWorkers )
+			if( allocation_table_[jobId].size() == (size_t)nReqWorkers )
 			{
-				ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
+				sdpa::job_id_t headWorker(allocation_table_[jobId][0]);
+				ptr_comm_handler_->serveJob(headWorker, jobId);
 				ptr_worker_man_->common_queue_.pop();
 			}
 		}
@@ -802,7 +804,7 @@ void SchedulerImpl::run()
 		  // or has an Worker Manager and the workers are threads
 		  if( numberOfWorkers()>0 ) //
 		  {
-			  schedule_remote(jobId);
+			  schedule_remotely(jobId);
 		  }
 		  else //  if the agent has backends, try to execute the job!
 		  {
@@ -996,14 +998,38 @@ void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
 void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
 {
 	lock_type lock_table(mtx_alloc_table_);
-	BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
+	// should first kill/cancel the job
+
+	allocation_table_t::const_iterator it = allocation_table_.find(jobId);
+
+	// if there are allocated resources
+	if(it==allocation_table_.end())
+		return;
+
+	// if the status is not terminal
+	Job::ptr_t pJob(ptr_comm_handler_->findJob(jobId));
+
+    if(pJob->is_running())
+    {
+		sdpa::worker_id_t head_worker_id(allocation_table_[jobId][0]);
+		SDPA_LOG_INFO("Tell the worker "<<head_worker_id<<" to cancel the job "<<jobId);
+		Worker::ptr_t pWorker = findWorker(head_worker_id);
+		CancelJobEvent::Ptr pEvtCancelJob (new CancelJobEvent(  ptr_comm_handler_->name()
+																, head_worker_id
+																, jobId
+																, "The master recovered after a crash!") );
+
+		ptr_comm_handler_->sendEventToSlave(pEvtCancelJob);
+    }
+
+	BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table_[jobId])
 	{
 		lock_type lock_worker;
 		Worker::ptr_t ptrWorker = findWorker(workerId);
 		ptrWorker->free();
 	}
 
-	allocation_table.erase(jobId);
+	allocation_table_.erase(jobId);
 }
 
 void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId ) throw (JobNotDeletedException, WorkerNotFoundException)
@@ -1172,7 +1198,6 @@ void SchedulerImpl::forceOldWorkerJobsTermination()
   }
 }
 
-
 Worker::worker_id_t SchedulerImpl::getWorkerId(unsigned int r)
 {
   return ptr_worker_man_->getWorkerId(r);
@@ -1187,7 +1212,7 @@ void SchedulerImpl::printAllocationTable()
 {
 	lock_type lock(mtx_alloc_table_);
 	ostringstream oss;
-	BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table)
+	BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table_)
 	{
 		oss<<pairJLW.first<<" : ";
 		BOOST_FOREACH(const sdpa::worker_id_t& wid, pairJLW.second)
@@ -1201,8 +1226,8 @@ void SchedulerImpl::printAllocationTable()
 sdpa::job_id_t SchedulerImpl::getAssignedJob(const sdpa::worker_id_t& wid)
 {
 	lock_type lock(mtx_alloc_table_);
-	allocation_table_t::iterator it = allocation_table.begin();
-	while(it != allocation_table.end())
+	allocation_table_t::iterator it = allocation_table_.begin();
+	while(it != allocation_table_.end())
 	{
 		sdpa::worker_id_list_t::iterator itw = std::find(it->second.begin(), it->second.end(), wid);
 		if(itw != it->second.end())
@@ -1213,4 +1238,39 @@ sdpa::job_id_t SchedulerImpl::getAssignedJob(const sdpa::worker_id_t& wid)
 
 	return job_id_t("");
 }
+
+void SchedulerImpl::checkAllocations()
+{
+	lock_type lock(mtx_alloc_table_);
+	typedef std::map<worker_id_t,int> worker_cnt_map_t;
+	worker_cnt_map_t worker_cnt_map;
+	worker_id_list_t worker_list;
+	getWorkerList(worker_list);
+
+    BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
+	{
+    	worker_cnt_map.insert(worker_cnt_map_t::value_type(worker_id, 0));
+	}
+
+	BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table_)
+	{
+		BOOST_FOREACH(const sdpa::worker_id_t& wid, pairJLW.second)
+		{
+			worker_cnt_map[wid]++;
+			if(worker_cnt_map[wid]>1)
+			{
+				LOG(FATAL, "Error! The worker "<<wid<<" was allocated to two different jobs!");
+				throw;
+			}
+		}
+	}
+
+	ostringstream oss;
+	BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
+	{
+		oss<<worker_id<<":"<<worker_cnt_map[worker_id]<<" ";
+	}
+	LOG(INFO, oss.str());
+}
+
 
