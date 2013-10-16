@@ -22,8 +22,8 @@ namespace pnet
         {
           const value_type key (read (pos));
 
-          pos.skip_spaces();
-          pos.require ("->");
+          fhg::util::parse::require::skip_spaces (pos);
+          fhg::util::parse::require::require (pos, "->");
 
           m[key] = read (pos);
         }
@@ -31,12 +31,12 @@ namespace pnet
                          , fhg::util::parse::position& pos
                          )
         {
-          pos.skip_spaces();
+          fhg::util::parse::require::skip_spaces (pos);
           const std::string fieldname
             (fhg::util::parse::require::identifier (pos));
 
-          pos.skip_spaces();
-          pos.require (":=");
+          fhg::util::parse::require::skip_spaces (pos);
+          fhg::util::parse::require::require (pos, ":=");
 
           m.push_back (std::make_pair (fieldname, read (pos)));
         }
@@ -56,7 +56,7 @@ namespace pnet
 
       value_type read (fhg::util::parse::position& pos)
       {
-        pos.skip_spaces();
+        fhg::util::parse::require::skip_spaces (pos);
 
         if (pos.end())
         {
@@ -67,30 +67,30 @@ namespace pnet
         {
         case '[':
           ++pos;
-          pos.require ("]");
+          fhg::util::parse::require::require (pos, ']');
           return we::type::literal::control();
 
         case 't':
           ++pos;
-          pos.require ("rue");
+          fhg::util::parse::require::require (pos, "rue");
           return true;
 
         case 'f':
           ++pos;
-          pos.require ("alse");
+          fhg::util::parse::require::require (pos, "alse");
           return false;
 
         case '\'':
           {
             ++pos;
             const char c (fhg::util::parse::require::plain_character (pos));
-            pos.require ("'");
+            fhg::util::parse::require::require (pos, '\'');
             return c;
           }
 
         case '"':
           ++pos;
-          return pos.until ('\"');
+          return fhg::util::parse::require::plain_string (pos, '\"');
 
         case '{':
           {
@@ -98,16 +98,16 @@ namespace pnet
 
             bitsetofint::type bs;
 
-            pos.skip_spaces();
+            fhg::util::parse::require::skip_spaces (pos);
 
             while (!pos.end() && *pos != '}')
             {
               bs.push_back (fhg::util::read_ulong (pos));
 
-              pos.skip_spaces();
+              fhg::util::parse::require::skip_spaces (pos);
             }
 
-            pos.require ("}");
+            fhg::util::parse::require::require (pos, '}');
 
             return bs;
           }
@@ -116,20 +116,20 @@ namespace pnet
           {
             ++pos;
 
-            pos.require ("(");
+            fhg::util::parse::require::require (pos, '(');
 
             bytearray::type ba;
 
-            pos.skip_spaces();
+            fhg::util::parse::require::skip_spaces (pos);
 
             while (!pos.end() && *pos != ')')
             {
               ba.push_back (fhg::util::read_ulong (pos));
 
-              pos.skip_spaces();
+              fhg::util::parse::require::skip_spaces (pos);
             }
 
-            pos.require (")");
+            fhg::util::parse::require::require (pos, ')');
 
             return ba;
           }
@@ -137,7 +137,7 @@ namespace pnet
         case 'M':
           {
             ++pos;
-            pos.require ("ap");
+            fhg::util::parse::require::require (pos, "ap");
 
             std::map<value_type, value_type> m;
 
@@ -161,7 +161,7 @@ namespace pnet
           case 'e':
             {
               ++pos;
-              pos.require ("t");
+              fhg::util::parse::require::require (pos, 't');
 
               std::set<value_type> s;
 
@@ -176,7 +176,7 @@ namespace pnet
           case 't':
             {
               ++pos;
-              pos.require ("ruct");
+              fhg::util::parse::require::require (pos, "ruct");
 
               structured_type m;
 
@@ -196,7 +196,7 @@ namespace pnet
         case 'L':
           {
             ++pos;
-            pos.require ("ist");
+            fhg::util::parse::require::require (pos, "ist");
 
             std::list<value_type> l;
 
