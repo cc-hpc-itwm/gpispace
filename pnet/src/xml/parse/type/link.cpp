@@ -3,8 +3,9 @@
 #include <xml/parse/type/link.hpp>
 
 #include <fhg/util/xml.hpp>
-#include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
 
 namespace xml
 {
@@ -34,7 +35,7 @@ namespace xml
             case '$':
               {
                 ++inp;
-                inp.require ("{");
+                fhg::util::parse::require::require (inp, '{');
                 bool read_key (false);
                 std::string key;
 
