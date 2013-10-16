@@ -91,42 +91,6 @@ namespace fhg
         return id;
       }
 
-      namespace
-      {
-        char unquote (char)
-        {
-          throw std::runtime_error ("Quoted characters are not yet supported");
-        }
-      }
-
-      char position::character()
-      {
-        if (end())
-        {
-          throw error::expected ("character", *this);
-        }
-
-        bool quoted (false);
-
-        if (*_pos == '\\')
-        {
-          operator++();
-
-          quoted = true;
-        }
-
-        if (end())
-        {
-          throw error::expected ("character", *this);
-        }
-
-        const char c (quoted ? unquote (*_pos) : *_pos);
-
-        operator++();
-
-        return c;
-      }
-
       std::string position::until (const char c, const char escape)
       {
         std::string s;

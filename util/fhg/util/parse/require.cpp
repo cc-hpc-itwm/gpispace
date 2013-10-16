@@ -13,6 +13,20 @@ namespace fhg
     {
       namespace require
       {
+        char plain_character (position& pos)
+        {
+          if (pos.end())
+          {
+            throw error::expected ("character", pos);
+          }
+
+          char const c (*pos);
+
+          ++pos;
+
+          return c;
+        }
+
         void token (fhg::util::parse::position& pos, const std::string& what)
         {
           pos.skip_spaces();
@@ -23,7 +37,7 @@ namespace fhg
         {
           pos.skip_spaces();
           pos.require ("'");
-          const char ch (pos.character());
+          const char ch (plain_character (pos));
           pos.require ("'");
           return ch;
         }

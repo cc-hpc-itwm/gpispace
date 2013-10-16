@@ -13,6 +13,11 @@ namespace fhg
     {
       namespace require
       {
+        //! \note return the next character, throws when end()
+        char plain_character (position&);
+
+        //! \todo eliminate the skip_space in all the functions below
+
         //! \note skip spaces, require what
         void token (fhg::util::parse::position&, const std::string& what);
 
