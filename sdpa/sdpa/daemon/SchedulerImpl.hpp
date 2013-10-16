@@ -46,7 +46,7 @@ namespace sdpa {
 
 	    virtual void schedule(const sdpa::job_id_t&);
 	    virtual void schedule_local(const sdpa::job_id_t&);
-	    virtual void schedule_remote(const sdpa::job_id_t&);
+	    virtual void schedule_remotely(const sdpa::job_id_t&);
 	    void delete_job(const sdpa::job_id_t&);
 
 	    bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
@@ -77,7 +77,7 @@ namespace sdpa {
 	    void getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList);
 	    virtual Worker::worker_id_t getWorkerId(unsigned int rank);
 	    sdpa::job_id_t getAssignedJob(const sdpa::worker_id_t&);
-	    sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId) { return allocation_table[jobId]; }
+	    sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId) { return allocation_table_[jobId]; }
 	    void assignJobsToWorkers();
 
 	    virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
@@ -131,6 +131,7 @@ namespace sdpa {
 
         void printQ() { pending_jobs_queue_.print(); }
         void printAllocationTable();
+        void checkAllocations();
 
     protected:
 	    JobQueue pending_jobs_queue_;
@@ -152,7 +153,7 @@ namespace sdpa {
 	    condition_type cond_workers_registered;
 
 	    mutable mutex_type mtx_alloc_table_;
-	    allocation_table_t allocation_table;
+	    allocation_table_t allocation_table_;
 
     };
   }
