@@ -7,6 +7,8 @@
 #include <fhglog/FilteringAppender.hpp>
 #include <fhglog/format.hpp>
 
+#include <fhg/util/parse/position.hpp>
+
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -143,12 +145,15 @@ int main(int argc, char **argv)
 
   try
   {
-    // DOES NOT WORK FOR MESSAGES THAT CONTAIN LINEBREAKS
-    //! \todo build parse::positon from istream
-    std::string line;
-    while (std::getline (std::cin, line).good())
+    std::cin.unsetf (std::ios_base::skipws);
+    fhg::util::parse::position_istream pos (std::cin);
+    while (std::cin)
     {
-      appender->append (fhg::log::LogEvent::from_string (line));
+      appender->append (fhg::log::LogEvent (pos));
+      if (!std::cin.good())
+      {
+        break;
+      }
     }
   }
   catch (const std::exception& e)
