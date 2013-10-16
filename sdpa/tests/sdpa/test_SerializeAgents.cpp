@@ -193,15 +193,15 @@ BOOST_AUTO_TEST_CASE(testAgentSerializationNoWfe)
 
 	job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
-	pAgent->scheduler()->schedule_remote(jobId0);
+	pAgent->scheduler()->schedule_remotely(jobId0);
 
 	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
-	pAgent->scheduler()->schedule_remote(jobId1);
+	pAgent->scheduler()->schedule_remotely(jobId1);
 
 	job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
-	pAgent->scheduler()->schedule_remote(jobId2);
+	pAgent->scheduler()->schedule_remotely(jobId2);
 
 	pAgent->scheduler()->assignJobsToWorkers();
 
@@ -269,15 +269,15 @@ BOOST_AUTO_TEST_CASE(testAgentSerializationEmptyWfe)
 
 	job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
-	pAgent->scheduler()->schedule_remote(jobId0);
+	pAgent->scheduler()->schedule_remotely(jobId0);
 
 	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
-	pAgent->scheduler()->schedule_remote(jobId1);
+	pAgent->scheduler()->schedule_remotely(jobId1);
 
 	job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
-	pAgent->scheduler()->schedule_remote(jobId2);
+	pAgent->scheduler()->schedule_remotely(jobId2);
 
 	pAgent->scheduler()->assignJobsToWorkers();
 
@@ -345,15 +345,15 @@ BOOST_AUTO_TEST_CASE(testAgentSerializationDummyWfe)
 
 	job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
-	pAgent->scheduler()->schedule_remote(jobId0);
+	pAgent->scheduler()->schedule_remotely(jobId0);
 
 	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
-	pAgent->scheduler()->schedule_remote(jobId1);
+	pAgent->scheduler()->schedule_remotely(jobId1);
 
 	job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
 	pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
-	pAgent->scheduler()->schedule_remote(jobId2);
+	pAgent->scheduler()->schedule_remotely(jobId2);
 
 	pAgent->scheduler()->assignJobsToWorkers();
 
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
 	// schedule all jobs now
 	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
 	{
-		ptrScheduler->schedule_remote(jobId);
+		ptrScheduler->schedule_remotely(jobId);
 	}
 
 	ptrScheduler->assignJobsToWorkers();
