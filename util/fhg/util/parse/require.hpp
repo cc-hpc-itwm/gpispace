@@ -34,17 +34,17 @@ namespace fhg
         //! \todo eliminate the skip_space in all the functions below
 
         //! \note skip spaces, require what
-        void token (fhg::util::parse::position&, const std::string& what);
+        void token (position&, const std::string& what);
 
         //! \note skip spaces, single-tick-character ('x')
-        char character (fhg::util::parse::position&);
+        char character (position&);
 
         //! \note skip spaces, double-tick-string ("foobar")
-        std::string string (fhg::util::parse::position&);
+        std::string string (position&);
 
         //! \note skip spaces, '0' or 'false' or 'no' or 'off' == false,
         //!                    '1' or 'on' or 'true' or 'yes' == true
-        bool boolean (fhg::util::parse::position&);
+        bool boolean (position&);
 
         //! \note expect a list, calling given function for all elements.
         //!       <open>[<skip? *><list_element><skip? *><sep>]*<close>

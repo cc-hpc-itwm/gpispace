@@ -126,13 +126,13 @@ namespace fhg
           return id;
         }
 
-        void token (fhg::util::parse::position& pos, const std::string& what)
+        void token (position& pos, const std::string& what)
         {
           skip_spaces (pos);
           require (pos, what);
         }
 
-        char character (fhg::util::parse::position& pos)
+        char character (position& pos)
         {
           skip_spaces (pos);
           require (pos, '\'');
@@ -141,14 +141,14 @@ namespace fhg
           return ch;
         }
 
-        std::string string (fhg::util::parse::position& pos)
+        std::string string (position& pos)
         {
           skip_spaces (pos);
           require (pos, '"');
           return plain_string (pos, '"');
         }
 
-        bool boolean (fhg::util::parse::position& pos)
+        bool boolean (position& pos)
         {
           skip_spaces (pos);
 
@@ -157,7 +157,7 @@ namespace fhg
                             )
              )
           {
-            throw fhg::util::parse::error::expected
+            throw error::expected
               ("0' or '1' or 'false' or 'no' or 'off' or 'on' or 'true' or 'yes", pos);
           }
 
@@ -186,7 +186,7 @@ namespace fhg
 
             if (pos.end() || (*pos != 'f' && *pos != 'n'))
             {
-              throw fhg::util::parse::error::expected ("ff' or 'n", pos);
+              throw error::expected ("ff' or 'n", pos);
             }
 
             switch (*pos)
