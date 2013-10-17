@@ -1038,10 +1038,7 @@ namespace fhg
           }
         }
 
-        foreach (QString const &host, hosts)
-        {
-          _monitor_client->request_action (host, action, value_getters);
-        }
+        _monitor_client->request_action (hosts, action, value_getters);
 
         if (_action_expects_next_state.contains (action))
         {

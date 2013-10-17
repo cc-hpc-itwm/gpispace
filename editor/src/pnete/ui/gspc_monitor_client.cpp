@@ -7,6 +7,7 @@
 #include <fhg/util/parse/require.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 
 #include <QColor>
 
@@ -194,7 +195,7 @@ namespace fhg
       }
 
       void monitor_client::request_action
-        ( const QString& hostname
+        ( const QStringList& hosts
         , const QString& action
         , const QMap<QString, boost::function<QString()> >& value_getters
         )
@@ -221,11 +222,20 @@ namespace fhg
           ss << "]";
         }
 
-        push ( QString ("action: [[host: \"%1\", action: \"%2\"%3]]")
-             .arg (hostname)
-             .arg (action)
-             .arg (QString::fromStdString (ss.str()))
-             );
+        const QString templ ( QString ("[host: \"##__##\", action: \"%2\"%3],")
+                            .arg (action)
+                            .arg (QString::fromStdString (ss.str()))
+                            .replace ("##__##", "%1")
+                            );
+
+        QString request ("action: [");
+        BOOST_FOREACH (QString host, hosts)
+        {
+          request += templ.arg (host);
+        }
+        request += "]";
+
+        push (request);
       }
 
       void monitor_client::possible_status (fhg::util::parse::position& pos)

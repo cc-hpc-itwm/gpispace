@@ -30,7 +30,7 @@ namespace fhg
       public:
         monitor_client (const QString& host, int port, QObject* parent = NULL);
 
-        void request_action ( const QString&
+        void request_action ( const QStringList&
                             , const QString&
                             , const QMap<QString, boost::function<QString()> >&
                             );
