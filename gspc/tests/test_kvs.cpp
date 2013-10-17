@@ -3,6 +3,7 @@
 
 #include <errno.h>
 
+#include <algorithm>    // std::sort
 #include <gspc/kvs/kvs_impl.hpp>
 
 BOOST_AUTO_TEST_CASE (test_kvs_backend_put_get_del)
@@ -52,6 +53,7 @@ BOOST_AUTO_TEST_CASE (test_kvs_backend_push_try_pop)
   BOOST_REQUIRE_EQUAL (rc, -EINVAL);
 
   rc = kvs.del ("foo");
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
   rc = kvs.push ("foo", 1);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -105,4 +107,87 @@ BOOST_AUTO_TEST_CASE (test_kvs_backend_reset_inc_dec)
   BOOST_REQUIRE_EQUAL (val, 0);
 
   rc = kvs.del ("foo");
+}
+
+struct compare_first
+{
+  template <typename T>
+  bool operator()(T const &a, T const &b)
+  {
+    return a.first < b.first;
+  }
+};
+
+BOOST_AUTO_TEST_CASE (test_kvs_backend_get_regex)
+{
+  int rc;
+  gspc::kvs::kvs_t kvs;
+  std::list<std::pair< gspc::kvs::kvs_t::key_type
+                     , gspc::kvs::kvs_t::value_type
+                     > > values;
+
+  kvs.put ("foo.1", "bar");
+  kvs.put ("foo.2", "bar");
+  kvs.put ("foo.3", "bar");
+  kvs.put ("foo.bar", "bar");
+
+  rc = kvs.get_regex ("^foo\\.[0-9]$", values);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  BOOST_REQUIRE_EQUAL (values.size (), 3u);
+
+  std::list<std::pair< gspc::kvs::kvs_t::key_type
+                     , gspc::kvs::kvs_t::value_type
+                     > >::const_iterator it = values.begin ();
+  std::list<std::pair< gspc::kvs::kvs_t::key_type
+                     , gspc::kvs::kvs_t::value_type
+                     > >::const_iterator end = values.end ();
+
+  while (it != end)
+  {
+    if (it->first == "foo.bar")
+      BOOST_ERROR ("key 'foo.bar' must not be in the result set");
+    ++it;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (test_kvs_backend_del_regex)
+{
+  int rc;
+  gspc::kvs::kvs_t kvs;
+  gspc::kvs::kvs_t::value_type val;
+
+  kvs.put ("foo.1", "bar");
+  kvs.put ("foo.2", "bar");
+  kvs.put ("foo.3", "bar");
+  kvs.put ("foo.bar", std::string ("bar"));
+
+  rc = kvs.del_regex ("^foo\\.[0-9]$");
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = kvs.get ("foo.1", val);
+  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  rc = kvs.get ("foo.2", val);
+  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  rc = kvs.get ("foo.3", val);
+  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+
+  rc = kvs.get ("foo.bar", val);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE (boost::get<std::string>(val) == "bar");
+}
+
+BOOST_AUTO_TEST_CASE (test_kvs_backend_expiry)
+{
+  int rc;
+  gspc::kvs::kvs_t kvs;
+  gspc::kvs::kvs_t::value_type val;
+
+  kvs.put ("foo.1", "bar");
+  kvs.set_ttl ("foo.1", 1);
+
+  sleep (1);
+
+  rc = kvs.get ("foo.1", val);
+  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
 }
