@@ -316,7 +316,7 @@ void thread::send_action_description (fhg::util::parse::position& pos)
                  .arg (action == "add_to_working_set"
                       ? "expected_next_state: \"used\""
                       : action == "reboot"
-                      ? "expected_next_state: \"down\""
+                      ? "expected_next_state: \"down\", requires_confirmation: true, arguments: [\"foo\":[label:\"foo bar\",type:boolean], \"bar\":[label:\"bar baz\",type:integer]], "
                       : action == "remove_from_working_set"
                       ? "expected_next_state: \"available\""
                       : action == "foo"
