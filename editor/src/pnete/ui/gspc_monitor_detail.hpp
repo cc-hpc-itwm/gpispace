@@ -128,10 +128,11 @@ namespace fhg
         void update_nodes_with_state (const QString&);
         void trigger_action (const QStringList& hosts, const QSet<int>& host_ids, const QString& action);
 
-        void action_result ( const QString&
-                           , const QString&
+        void action_result ( const QString& host
+                           , const QString& action
                            , const action_result_code&
-                           , const boost::optional<QString>&
+                           , const boost::optional<QString>& message
+                           , QMap<QString, QString> additional_data
                            );
 
         void sort_by_name();

@@ -558,27 +558,47 @@ namespace fhg
 
       namespace
       {
+        void kv_pair
+          (fhg::util::parse::position& pos, QMap<QString, QString>* map)
+        {
+          const QString key (require::qstring (pos));
+          require::token (pos, ":");
+          map->insert (key, require::qstring (pos));
+        }
+
         struct action_result_data
         {
           action_result_data()
             : _result (boost::none)
             , _message (boost::none)
+            , _additional_data()
           { }
 
           boost::optional<monitor_client::action_result_code> _result;
           boost::optional<QString> _message;
+          QMap<QString, QString> _additional_data;
 
           void append (fhg::util::parse::position& pos)
           {
             require::skip_spaces (pos);
 
-            if (pos.end() || (*pos != 'm' && *pos != 'r'))
+            if (pos.end() || (*pos != 'a' && *pos != 'm' && *pos != 'r'))
             {
-              throw fhg::util::parse::error::expected ("message' or 'result", pos);
+              throw fhg::util::parse::error::expected
+                ("additional_data' or 'message' or 'result", pos);
             }
 
             switch (*pos)
             {
+            case 'a':
+              ++pos;
+              require::require (pos, "dditional_data");
+              require::token (pos, ":");
+
+              require::list (pos, boost::bind (&kv_pair, _1, &_additional_data));
+
+              break;
+
             case 'm':
               ++pos;
               require::require (pos, "essage");
@@ -653,7 +673,12 @@ namespace fhg
           throw std::runtime_error ("action result without result code");
         }
 
-        emit action_result (host, action, *result._result, result._message);
+        emit action_result ( host
+                           , action
+                           , *result._result
+                           , result._message
+                           , result._additional_data
+                           );
       }
 
       void monitor_client::check_for_incoming_messages()

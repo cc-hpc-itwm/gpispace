@@ -355,8 +355,8 @@ namespace fhg
                 , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
                 , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
         connect ( _monitor_client
-                , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&))
-                , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&))
+                , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QMap<QString, QString>))
+                , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QMap<QString, QString>))
                 );
 
         connect ( _legend_widget
@@ -561,6 +561,7 @@ namespace fhg
         , const QString& action
         , const monitor_client::action_result_code& result
         , const boost::optional<QString>& message
+        , QMap<QString, QString> additional_data
         )
       {
         if (message)
