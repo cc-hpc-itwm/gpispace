@@ -34,6 +34,7 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QDateTime>
+#include <QHeaderView>
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
@@ -211,34 +212,55 @@ namespace fhg
       // ------------------------------------------------------------------------
 
       log_widget::log_widget (QWidget* parent)
-        : QListWidget (parent)
-      { }
-
-      void log_widget::information (const QString& message)
+        : QTableWidget (parent)
       {
-        new QListWidgetItem
-          ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxInformation)
-          , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
-          , this
-          );
+        setColumnCount (3);
+        setShowGrid (false);
+        setSelectionMode (QAbstractItemView::NoSelection);
+        verticalHeader()->setVisible (false);
+        horizontalHeader()->setStretchLastSection (true);
+        verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
       }
 
-      void log_widget::warning (const QString& message)
+      namespace
       {
-        new QListWidgetItem
-          ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxWarning)
-          , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
-          , this
-          );
+        void append (log_widget* wid, QStyle::StandardPixmap icon, QString host, QString message, QStringList additional_rows)
+        {
+          const int first_row (wid->rowCount());
+          wid->insertRow (first_row);
+          wid->setItem ( first_row
+                       , 0
+                       , new QTableWidgetItem
+                         ( QApplication::style()->standardIcon (icon)
+                         , QDateTime::currentDateTime().toString ("hh:mm:ss")
+                         )
+                       );
+          wid->setItem (first_row, 1, new QTableWidgetItem (host));
+          wid->setItem (first_row, 2, new QTableWidgetItem (message));
+          BOOST_FOREACH (QString additional, additional_rows)
+          {
+            const int row (wid->rowCount());
+            wid->insertRow (row);
+            QTableWidgetItem* item (new QTableWidgetItem (additional));
+            item->setForeground (QBrush (Qt::gray));
+            wid->setItem (row, 2, item);
+          }
+        }
       }
 
-      void log_widget::critical (const QString& message)
+      void log_widget::information (QString host, const QString& message, QStringList additional_rows )
       {
-        new QListWidgetItem
-          ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxCritical)
-          , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
-          , this
-          );
+        append (this, QStyle::SP_MessageBoxInformation, host, message, additional_rows);
+      }
+
+      void log_widget::warning (QString host, const QString& message, QStringList additional_rows )
+      {
+        append (this, QStyle::SP_MessageBoxWarning, host, message, additional_rows);
+      }
+
+      void log_widget::critical (QString host, const QString& message, QStringList additional_rows )
+      {
+        append (this, QStyle::SP_MessageBoxCritical, host, message, additional_rows);
       }
 
       void log_widget::follow (bool follow)
@@ -355,8 +377,8 @@ namespace fhg
                 , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
                 , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
         connect ( _monitor_client
-                , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QMap<QString, QString>))
-                , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QMap<QString, QString>))
+                , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QList<QPair<QString, QString> >))
+                , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QList<QPair<QString, QString> >))
                 );
 
         connect ( _legend_widget
@@ -482,10 +504,11 @@ namespace fhg
 
             if (n._watched)
             {
-              _log->warning ( QString ("%3: State changed from %1 to %2.")
+              _log->warning ( hostname
+                            , QString ("State changed from %1 to %2.")
                             .arg (old_state.get_value_or ("unknown"))
                             .arg (state.get_value_or ("unknown"))
-                            .arg (hostname)
+                            , QStringList()
                             );
             }
           }
@@ -561,28 +584,35 @@ namespace fhg
         , const QString& action
         , const monitor_client::action_result_code& result
         , const boost::optional<QString>& message
-        , QMap<QString, QString> additional_data
+        , QList<QPair<QString, QString> > additional_data
         )
       {
+        const boost::function<void (QString, QString, QStringList)> append
+          ( boost::bind
+            ( result == monitor_client::okay ? &log_widget::information
+            : result == monitor_client::fail ? &log_widget::critical
+            : &log_widget::warning
+            , _log
+            , _1
+            , _2
+            , _3
+            )
+          );
+
+        QString msg;
         if (message)
         {
-          const QString msg (QString ("%1: %2").arg (host).arg (*message));
-
-          switch (result)
-          {
-          case monitor_client::okay:
-            _log->information (msg);
-            break;
-
-          case monitor_client::fail:
-            _log->critical (msg);
-            break;
-
-          case monitor_client::warn:
-            _log->warning (msg);
-            break;
-          }
+          msg += *message;
         }
+
+        QStringList additional;
+        typedef QPair<QString, QString> kv_pair;
+        BOOST_FOREACH (kv_pair pair, additional_data)
+        {
+          additional << QString ("%1 = %2").arg (pair.first).arg (pair.second);
+        }
+
+        append (host, msg, additional);
       }
 
       void node_state_widget::refresh_stati()

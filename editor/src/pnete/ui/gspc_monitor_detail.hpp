@@ -10,10 +10,10 @@
 #include <QColor>
 #include <QDateTime>
 #include <QList>
-#include <QListWidget>
 #include <QMap>
 #include <QPixmap>
 #include <QStringList>
+#include <QTableWidget>
 #include <QTimer>
 #include <QWidget>
 
@@ -72,16 +72,16 @@ namespace fhg
 
       // ------------------------------------------------------------------------
 
-      class log_widget : public QListWidget
+      class log_widget : public QTableWidget
       {
         Q_OBJECT;
 
       public:
         log_widget (QWidget* parent = NULL);
 
-        void critical (const QString&);
-        void information (const QString&);
-        void warning (const QString&);
+        void critical (QString host, const QString&, QStringList);
+        void information (QString host, const QString&, QStringList);
+        void warning (QString host, const QString&, QStringList);
 
       public slots:
         void follow (bool);
@@ -132,7 +132,7 @@ namespace fhg
                            , const QString& action
                            , const action_result_code&
                            , const boost::optional<QString>& message
-                           , QMap<QString, QString> additional_data
+                           , QList<QPair<QString, QString> > additional_data
                            );
 
         void sort_by_name();

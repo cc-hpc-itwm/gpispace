@@ -77,7 +77,7 @@ namespace fhg
                            , const QString&
                            , const action_result_code&
                            , const boost::optional<QString>&
-                           , QMap<QString, QString>
+                           , QList<QPair<QString, QString> >
                            );
         void nodes (QStringList);
         void nodes_details (const QString&, const boost::optional<QString>&);

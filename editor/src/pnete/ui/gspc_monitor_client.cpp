@@ -559,11 +559,11 @@ namespace fhg
       namespace
       {
         void kv_pair
-          (fhg::util::parse::position& pos, QMap<QString, QString>* map)
+          (fhg::util::parse::position& pos, QList<QPair<QString, QString> >* list)
         {
           const QString key (require::qstring (pos));
           require::token (pos, ":");
-          map->insert (key, require::qstring (pos));
+          list->append (QPair<QString, QString> (key, require::qstring (pos)));
         }
 
         struct action_result_data
@@ -576,7 +576,7 @@ namespace fhg
 
           boost::optional<monitor_client::action_result_code> _result;
           boost::optional<QString> _message;
-          QMap<QString, QString> _additional_data;
+          QList<QPair<QString, QString> > _additional_data;
 
           void append (fhg::util::parse::position& pos)
           {
