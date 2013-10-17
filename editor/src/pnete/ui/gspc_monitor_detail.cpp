@@ -989,7 +989,7 @@ namespace fhg
             {
               params += QString ("<li><b>%1</b> = %2").arg (i.key()).arg (i.value()());
             }
-            params += "</ul>";
+            params += "</ul><br>";
           }
 
           if ( QMessageBox::question
