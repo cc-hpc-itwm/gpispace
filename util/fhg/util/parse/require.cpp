@@ -129,22 +129,22 @@ namespace fhg
         void token (position& pos, const std::string& what)
         {
           skip_spaces (pos);
-          require (pos, what);
+          require::require (pos, what);
         }
 
         char character (position& pos)
         {
           skip_spaces (pos);
-          require (pos, '\'');
+          require::require (pos, '\'');
           const char ch (plain_character (pos));
-          require (pos, '\'');
+          require::require (pos, '\'');
           return ch;
         }
 
         std::string string (position& pos)
         {
           skip_spaces (pos);
-          require (pos, '"');
+          require::require (pos, '"');
           return plain_string (pos, '"');
         }
 
@@ -173,12 +173,12 @@ namespace fhg
 
           case 'f':
             ++pos;
-            require (pos, "alse");
+            require::require (pos, "alse");
             return false;
 
           case 'n':
             ++pos;
-            require (pos, 'o');
+            require::require (pos, 'o');
             return false;
 
           case 'o':
@@ -193,7 +193,7 @@ namespace fhg
             {
             case 'f':
               ++pos;
-              require (pos, 'f');
+              require::require (pos, 'f');
               return false;
 
             case 'n':
@@ -203,12 +203,12 @@ namespace fhg
 
           case 't':
             ++pos;
-            require (pos, "rue");
+            require::require (pos, "rue");
             return true;
 
           case 'y':
             ++pos;
-            require (pos, "es");
+            require::require (pos, "es");
             return true;
 
           default:
@@ -225,7 +225,7 @@ namespace fhg
         {
           skip_spaces (pos);
 
-          require (pos, open);
+          require::require (pos, open);
 
           if (skip_space_before_element)
           {
@@ -255,7 +255,7 @@ namespace fhg
             }
             else if (expect_sep)
             {
-              require (pos, sep);
+              require::require (pos, sep);
 
               if (skip_space_before_element)
               {
