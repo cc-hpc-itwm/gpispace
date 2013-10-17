@@ -82,6 +82,7 @@ namespace fhg
         void nodes_details (const QString&, const boost::optional<QString>&);
         void nodes_state (const QString&, const boost::optional<QString>&);
         void states_actions_long_text (const QString&, const QString&);
+        void states_actions_requires_confirmation (const QString&, bool);
         void states_actions_arguments
           (const QString&, const QList<action_argument_data>&);
         void states_actions_expected_next_state (const QString&, const QString&);

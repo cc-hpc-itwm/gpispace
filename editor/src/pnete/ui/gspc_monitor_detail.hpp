@@ -120,12 +120,13 @@ namespace fhg
         void nodes_details (const QString&, const boost::optional<QString>&);
         void nodes_state (const QString&, const boost::optional<QString>&);
         void states_actions_long_text (const QString&, const QString&);
+        void states_actions_requires_confirmation (const QString&, bool);
         void states_actions_arguments
           (const QString&, const QList<action_argument_data>&);
         void states_actions_expected_next_state (const QString&, const QString&);
 
         void update_nodes_with_state (const QString&);
-        void trigger_action (const QStringList& hosts, const QString& action);
+        void trigger_action (const QStringList& hosts, const QSet<int>& host_ids, const QString& action);
 
         void action_result ( const QString&
                            , const QString&
@@ -162,8 +163,11 @@ namespace fhg
         void sort_by (boost::function<bool (const node_type&, const node_type&)>);
 
         QMap<QString, QString> _long_action;
+        QSet<QString> _action_requires_confirmation;
         QMap<QString, QList<monitor_client::action_argument_data> > _action_arguments;
         QMap<QString, QString> _action_expects_next_state;
+
+        QString full_action_name (QString, const QSet<int>& host_ids) const;
 
         QSet<QString> _pending_updates;
         QSet<QString> _nodes_to_update;

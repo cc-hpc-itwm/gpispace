@@ -383,10 +383,10 @@ namespace fhg
       {
         require::skip_spaces (pos);
 
-        if (pos.end() || (*pos != 'a' && *pos != 'e' && *pos != 'l'))
+        if (pos.end() || (*pos != 'a' && *pos != 'e' && *pos != 'l' && *pos != 'r'))
         {
           throw fhg::util::parse::error::expected
-            ("arguments' or 'expected_next_state' or 'long_text", pos);
+            ("arguments' or 'expected_next_state' or 'long_text' or 'requires_confirmation", pos);
         }
 
         switch (*pos)
@@ -420,6 +420,16 @@ namespace fhg
           require::token (pos, ":");
 
           emit states_actions_long_text (action, require::qstring (pos));
+
+          break;
+
+        case 'r':
+          ++pos;
+          require::require (pos, "equires_confirmation");
+          require::token (pos, ":");
+
+          emit states_actions_requires_confirmation
+            (action, require::boolean (pos));
 
           break;
         }

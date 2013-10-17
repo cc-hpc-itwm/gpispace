@@ -5,6 +5,7 @@
 #include <util/qt/boost_connect.hpp>
 #include <util/qt/file_line_edit.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/util/alphanum.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
@@ -345,6 +346,9 @@ namespace fhg
                 , SIGNAL (states_actions_long_text (const QString&, const QString&))
                 , SLOT (states_actions_long_text (const QString&, const QString&)));
         connect ( _monitor_client
+                , SIGNAL (states_actions_requires_confirmation (const QString&, bool))
+                , SLOT (states_actions_requires_confirmation (const QString&, bool)));
+        connect ( _monitor_client
                 , SIGNAL (states_actions_arguments (const QString&, const QList<action_argument_data>&))
                 , SLOT (states_actions_arguments (const QString&, const QList<action_argument_data>&)));
         connect ( _monitor_client
@@ -393,6 +397,39 @@ namespace fhg
         (const QString& action, const QString& long_text)
       {
         _long_action[action] = long_text;
+      }
+
+      QString node_state_widget::full_action_name
+        (QString action, const QSet<int>& host_ids) const
+      {
+        fhg_assert (!host_ids.empty(), "an action needs to be executed on at least one host");
+
+        const QString first_hostname (node (*host_ids.begin())._hostname);
+        const QString replacement
+          ( host_ids.size() <= 1 ? first_hostname
+          : host_ids.size() == 2 ? QString ("%1 (and one other)")
+                              .arg (first_hostname)
+          : QString ("%1 (and %2 others)")
+          .arg (first_hostname).arg (host_ids.size() - 1)
+          );
+
+        return QString ( _long_action.contains (action)
+                       ? _long_action[action]
+                       : action
+                       ).replace ("{hostname}", replacement);
+      }
+
+      void node_state_widget::states_actions_requires_confirmation
+        (const QString& action, bool requires)
+      {
+        if (requires)
+        {
+          _action_requires_confirmation.insert (action);
+        }
+        else
+        {
+          _action_requires_confirmation.remove (action);
+        }
       }
       void node_state_widget::states_actions_arguments
         (const QString& action, const QList<monitor_client::action_argument_data>& arguments)
@@ -869,8 +906,16 @@ namespace fhg
         }
       }
 
+      namespace
+      {
+        QString possibly_elide (QString in, int max, QString suffix)
+        {
+          return in.size() <= max ? in : in.left (max) + ".." + suffix;
+        }
+      }
+
       void node_state_widget::trigger_action
-        (const QStringList& hosts, const QString& action)
+        (const QStringList& hosts, const QSet<int>& host_ids, const QString& action)
       {
         QMap<QString, boost::function<QString()> > value_getters;
 
@@ -913,6 +958,50 @@ namespace fhg
           dialog->layout()->addWidget (buttons);
 
           if (!dialog->exec())
+          {
+            return;
+          }
+        }
+
+        if (_action_requires_confirmation.contains (action))
+        {
+          const QString action_name (full_action_name (action, host_ids));
+
+          const QString hostnames
+            ( hosts.size() == 1 ? "on host " + hosts.first()
+            : possibly_elide ( "on hosts " + hosts.join (", ")
+                             , 200 //! \todo Depending on number of hosts?
+                             , " (and more)"
+                             )
+            );
+
+          QString params;
+
+          if (!value_getters.isEmpty())
+          {
+            params += "<li>with arguments<ul>";
+
+            for ( QMap<QString, boost::function<QString()> >::const_iterator i
+                   (value_getters.constBegin())
+                ; i != value_getters.constEnd()
+                ; ++i
+                )
+            {
+              params += QString ("<li><b>%1</b> = %2").arg (i.key()).arg (i.value()());
+            }
+            params += "</ul>";
+          }
+
+          if ( QMessageBox::question
+               ( this
+               , tr ("Execute \"%1\"?").arg (action_name)
+               , tr ("You will execute<ul><li>%1<li>%2%3</ul>Continue?")
+               . arg (action_name).arg (hostnames).arg (params)
+               , QMessageBox::Yes | QMessageBox::No
+               , QMessageBox::No
+               )
+             == QMessageBox::No
+             )
           {
             return;
           }
@@ -993,15 +1082,6 @@ namespace fhg
               _monitor_client->pause();
 
               QSet<int> nodes (QSet<int>::fromList (_selection));
-              const QString hostname_replacement ( nodes.size() <= 1
-                                                 ? node (*node_index)._hostname
-                                                 : nodes.size() == 2
-                                                 ? QString ("%1 (and one other)")
-                                                 .arg (node (*node_index)._hostname)
-                                                 : QString ("%1 (and %2 others)")
-                                                 .arg (node (*node_index)._hostname)
-                                                 .arg (nodes.size() - 1)
-                                                 );
               nodes << *node_index;
 
               QStringList hostnames;
@@ -1046,14 +1126,8 @@ namespace fhg
 
               foreach (const QString& action_name, triggering_actions)
               {
-                QAction* action ( context_menu.addAction
-                                  ( QString ( _long_action.contains (action_name)
-                                            ? _long_action[action_name]
-                                            : action_name
-                                            )
-                                  .replace ("{hostname}", hostname_replacement)
-                                  )
-                                );
+                QAction* action
+                  (context_menu.addAction (full_action_name (action_name, nodes)));
 
                 if ( !one_node_expects_state_change
                    && action_name_intersection.contains (action_name)
@@ -1066,6 +1140,7 @@ namespace fhg
                     , boost::bind ( &node_state_widget::trigger_action
                                   , this
                                   , hostnames
+                                  , nodes
                                   , action_name
                                   )
                     );
@@ -1083,14 +1158,8 @@ namespace fhg
 
               foreach (const QString& action_name, non_triggering_actions)
               {
-                QAction* action ( context_menu.addAction
-                                  ( QString ( _long_action.contains (action_name)
-                                            ? _long_action[action_name]
-                                            : action_name
-                                            )
-                                  .replace ("{hostname}", hostname_replacement)
-                                  )
-                                );
+                QAction* action
+                  (context_menu.addAction (full_action_name (action_name, nodes)));
 
                 if ( !one_node_expects_state_change
                    && action_name_intersection.contains (action_name)
@@ -1103,6 +1172,7 @@ namespace fhg
                     , boost::bind ( &node_state_widget::trigger_action
                                   , this
                                   , hostnames
+                                  , nodes
                                   , action_name
                                   )
                     );
