@@ -239,3 +239,24 @@ bool Worker::hasCapability(const std::string& cpbName, bool bOwn)
 
 	return bHasCpb;
 }
+
+void Worker::reserve()
+{
+	lock_type lock(mtx_);
+	//DMLOG(TRACE, "Marked the worker "<<name()<<" as reserved ");
+	reserved_ = true;
+	last_schedule_time_ = sdpa::util::now();
+}
+
+bool Worker::isReserved()
+{
+	lock_type lock(mtx_);
+	return reserved_;
+}
+
+void Worker::free()
+{
+	lock_type lock(mtx_);
+	reserved_ = false;
+}
+

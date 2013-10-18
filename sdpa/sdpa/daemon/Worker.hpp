@@ -185,9 +185,10 @@ namespace sdpa { namespace daemon {
 
     void print();
 
-    bool isReserved() {  lock_type lock(mtx_); return reserved_; }
-    void reserve() { lock_type lock(mtx_); reserved_ = true; last_schedule_time_ = sdpa::util::now(); }
-    void free() { lock_type lock(mtx_); reserved_ = false; }
+    // methods relatesd to reservation
+    bool isReserved();
+    void reserve();
+    void free();
 
   private:
     SDPA_DECLARE_LOGGER();
