@@ -36,6 +36,63 @@ namespace gspc
     }
 
     bool is_heartbeat (frame const &f);
+
+    struct set_header
+    {
+      explicit
+      set_header (std::string const &k, std::string const &v)
+        : key (k)
+        , value (v)
+      {}
+
+      const std::string key;
+      const std::string value;
+    };
+
+    class stream
+    {
+    public:
+      explicit stream (frame & f)
+        : m_frame (f)
+        , m_sstr ()
+      {}
+
+      ~stream ()
+      {
+        m_frame.add_body (m_sstr.str ());
+      }
+
+      frame & get_frame () { return m_frame; }
+
+      template <class T>
+      stream &operator << (T const &t)
+      {
+        m_sstr << t;
+        return *this;
+      }
+
+      stream & operator << (set_header const &hdr)
+      {
+        m_frame.set_header (hdr.key, hdr.value);
+        return *this;
+      }
+
+      typedef std::ostream & (*ostream_manip)(std::ostream &);
+      stream &operator << (ostream_manip manip)
+      {
+        manip (m_sstr);
+        return *this;
+      }
+
+      typedef stream & (*stream_manip)(stream &);
+      stream &operator << (const stream_manip &manip)
+      {
+        return manip (*this);
+      }
+    private:
+      frame & m_frame;
+      std::ostringstream m_sstr;
+    };
   }
 }
 
