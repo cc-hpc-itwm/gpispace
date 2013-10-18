@@ -44,6 +44,7 @@ namespace gspc
       virtual int request ( frame const &rqst, frame &rply
                           , const boost::posix_time::time_duration
                           ) = 0;
+      virtual int request (frame const &rqst, frame &rply) = 0;
       virtual int send ( std::string const & dst
                        , std::string const & body
                        ) = 0;

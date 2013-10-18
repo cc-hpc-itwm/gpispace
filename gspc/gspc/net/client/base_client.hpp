@@ -78,6 +78,7 @@ namespace gspc
         int request ( frame const &rqst, frame &rply
                     , const boost::posix_time::time_duration
                     );
+        int request (frame const &rqst, frame &rply);
 
         int subscribe ( std::string const &dest
                       , std::string const &id

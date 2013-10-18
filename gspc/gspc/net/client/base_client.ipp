@@ -342,6 +342,14 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::request ( frame const &f
                                       , frame &rply
+                                      )
+      {
+        return this->request (f, rply, m_timeout);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::request ( frame const &f
+                                      , frame &rply
                                       , const boost::posix_time::time_duration t
                                       )
       {
