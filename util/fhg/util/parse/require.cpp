@@ -126,12 +126,6 @@ namespace fhg
           return id;
         }
 
-        void token (position& pos, const std::string& what)
-        {
-          skip_spaces (pos);
-          require::require (pos, what);
-        }
-
         char character (position& pos)
         {
           skip_spaces (pos);

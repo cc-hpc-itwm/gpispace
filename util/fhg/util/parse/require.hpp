@@ -36,7 +36,11 @@ namespace fhg
         //! \todo eliminate the skip_space in all the functions below
 
         //! \note skip spaces, require what
-        void token (position&, const std::string& what);
+        template<typename T> void token (position& pos, T x)
+        {
+          skip_spaces (pos);
+          require::require (pos, x);
+        }
 
         //! \note skip spaces, single-tick-character ('x')
         char character (position&);
