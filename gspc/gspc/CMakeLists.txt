@@ -22,6 +22,7 @@ set (gspc_src
   net/server/queue_manager.cpp
   net/server/service_demux.cpp
   net/server/default_service_demux.cpp
+  net/server/default_queue_manager.cpp
   net/server/tcp_server.cpp
   net/server/unix_server.cpp
 
