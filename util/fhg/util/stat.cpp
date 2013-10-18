@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <fhg/util/stat.hpp>
+#include <fhg/util/now.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
@@ -35,15 +36,6 @@ namespace fhg
 
           return m;
         }
-
-        double current_time()
-        {
-          struct timeval tv;
-
-          gettimeofday (&tv, NULL);
-
-          return (double(tv.tv_sec) + double (tv.tv_usec) * 1E-6);
-        }
       }
       void reset ()
       {
@@ -56,11 +48,11 @@ namespace fhg
       }
       void start (const std::string& k)
       {
-        time_map()[k] -= current_time();
+        time_map()[k] -= now ();
       }
       void stop (const std::string& k)
       {
-        time_map()[k] += current_time();
+        time_map()[k] += now ();
       }
       void out (std::ostream& s)
       {
