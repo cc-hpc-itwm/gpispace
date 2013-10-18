@@ -591,8 +591,10 @@ namespace fhg
           {
             const QList<boost::optional<worker_model::value_type> > current_intervals
               ( util::qt::collect<boost::optional<worker_model::value_type> >
-              (index.data (worker_model::current_interval_role))
+                (index.data (worker_model::current_interval_role))
               );
+
+            const util::qt::painter_state_saver state_saver (painter);
 
             if (option.state & QStyle::State_Selected)
             {
