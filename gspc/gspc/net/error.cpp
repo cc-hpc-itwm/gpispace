@@ -84,13 +84,24 @@ namespace gspc
       {
         error_code_t e =
           static_cast<error_code_t>(fhg::util::read<int>(*frame.get_header ("code")));
-        return make_error_code (e);
+        if (e != E_OK)
+        {
+          return make_error_code (e);
+        }
+        else
+        {
+          return boost::system::error_code ();
+        }
       }
+      /* ? either handle invalid frames as erroneous or treat them as success...
       else
       {
         return boost::system::errc::make_error_code
           (boost::system::errc::bad_message);
       }
+      */
+
+      return boost::system::error_code ();
     }
   }
 }
