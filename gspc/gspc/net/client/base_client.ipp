@@ -362,6 +362,7 @@ namespace gspc
       {
         int rc;
         frame rqst (f);
+        rqst.set_command ("SEND");
         rqst.set_header ("reply-to", m_priv_queue);
 
         rc = send_and_wait (rqst, rply, t);
