@@ -192,7 +192,14 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::send_raw (frame const &f)
       {
-        return m_connection->deliver (f);
+        if (m_connection)
+        {
+          return m_connection->deliver (f);
+        }
+        else
+        {
+          return -ENOTCONN;
+        }
       }
 
       template <class Proto>
