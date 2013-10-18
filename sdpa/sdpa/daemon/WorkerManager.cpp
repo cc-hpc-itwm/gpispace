@@ -318,7 +318,7 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
     throw WorkerNotFoundException(workerId);
 
   worker_map_.erase (w);
-  MLOG (TRACE, "worker " << workerId << " removed");
+  DMLOG (TRACE, "worker " << workerId << " removed");
 }
 
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
