@@ -21,6 +21,7 @@ namespace gspc
       boost::signal<void (frame const &)>                     onFrame;
 
       virtual int start () = 0;
+      virtual int start (const boost::posix_time::time_duration) = 0;
       virtual int stop () = 0;
 
       virtual std::string const & get_private_queue () const = 0;
@@ -28,6 +29,7 @@ namespace gspc
       virtual bool is_connected () const = 0;
 
       virtual int connect () = 0;
+      virtual int connect (const boost::posix_time::time_duration) = 0;
       virtual int disconnect () = 0;
 
       virtual void set_frame_handler (frame_handler_t &) = 0;

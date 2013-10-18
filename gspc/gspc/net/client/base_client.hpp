@@ -44,9 +44,11 @@ namespace gspc
         ~base_client ();
 
         int start ();
+        int start (const boost::posix_time::time_duration);
         int stop ();
 
         int connect ();
+        int connect (const boost::posix_time::time_duration);
         int disconnect ();
 
         bool is_connected () const;

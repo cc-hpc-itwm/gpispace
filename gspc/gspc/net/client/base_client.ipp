@@ -51,6 +51,12 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::start ()
       {
+        return this->start (m_timeout);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::start (const boost::posix_time::time_duration timeout)
+      {
         boost::system::error_code ec;
         m_connection.reset (new connection_type (0, m_io_service, *this));
         m_connection->socket ().connect (m_endpoint, ec);
@@ -58,7 +64,7 @@ namespace gspc
         if (not ec)
         {
           m_connection->start ();
-          return this->connect ();
+          return this->connect (timeout);
         }
         else
         {
@@ -115,6 +121,12 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::connect ()
       {
+        return this->connect (m_timeout);
+      }
+
+      template <class Proto>
+      int base_client<Proto>::connect (const boost::posix_time::time_duration timeout)
+      {
         frame rply;
         frame cnct;
         int rc;
@@ -124,7 +136,7 @@ namespace gspc
 
         rc = send_and_wait ( cnct
                            , rply
-                           , m_timeout
+                           , timeout
                            );
 
         if (rc != 0)
