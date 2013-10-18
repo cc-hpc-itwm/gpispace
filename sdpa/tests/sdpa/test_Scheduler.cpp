@@ -550,8 +550,10 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 		ptrScheduler->schedule_remotely(jobId);
 	}
 
-	ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+	ptrScheduler->assignJobsToWorkers();  ptrScheduler->checkAllocations();
 
+	LOG(DEBUG, "Initial allocations ...");
+	ptrScheduler->printAllocationTable();
 	// all the workers should have assigned jobs
 	sdpa::worker_id_list_t workerList;
 	ptrScheduler->getListNotAllocatedWorkers(workerList);
@@ -561,12 +563,16 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 	sdpa::worker_id_t lastWorkerId("worker_9");
 	sdpa::job_id_t jobId = ptrScheduler->getAssignedJob(lastWorkerId);
 	LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
+	sdpa::job_id_t oldJobId(jobId);
 
 	// and now simply delete the last worker !!!!
+	LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
+	ptrScheduler->reschedule(lastWorkerId, jobId);
+	LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
 	ptrScheduler->delWorker(lastWorkerId);
     sdpa::worker_id_list_t listW = ptrScheduler->getListAllocatedWorkers(jobId);
 	BOOST_CHECK(listW.empty());
-	LOG(DEBUG, "The worker "<<lastWorkerId<<" was deleted!");
+	LOG_IF(DEBUG, listW.empty(), "The worker "<<lastWorkerId<<" was deleted!");
 
 	std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
 	sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
@@ -575,8 +581,14 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
 	LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
 	// assign jobs to the workers
-	ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
-	sdpa::job_id_t oldJobId(jobId);
+	ptrScheduler->printAllocationTable();
+	sdpa::job_id_t jid(ptrScheduler->getNextJobToSchedule());
+	BOOST_ASSERT(jid.str().empty());
+	ptrScheduler->schedule_remotely(jid);
+	ptrScheduler->assignJobsToWorkers();
+	ptrScheduler->checkAllocations();
+	ptrScheduler->printAllocationTable();
+
 	jobId = ptrScheduler->getAssignedJob(lastWorkerId);
 	BOOST_CHECK(jobId==oldJobId);
 	if(jobId==oldJobId)
