@@ -12,7 +12,6 @@ namespace fhg
   {
     namespace parse
     {
-      //! \todo build parse::positon from istream
       class position
       {
       public:
