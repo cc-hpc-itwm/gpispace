@@ -1,6 +1,10 @@
 #ifndef GSPC_NET_ERROR_HPP
 #define GSPC_NET_ERROR_HPP
 
+#include <string>
+#include <gspc/net/frame_fwd.hpp>
+#include <boost/system/error_code.hpp>
+
 namespace gspc
 {
   namespace net
@@ -22,7 +26,9 @@ namespace gspc
       , E_PERMISSION_DENIED       = 550
       };
 
-    const char * error_string (const error_code_t);
+    std::string error_string (const error_code_t);
+    boost::system::error_code make_error_code (error_code_t);
+    boost::system::error_code make_error_code (frame const &f);
   }
 }
 
