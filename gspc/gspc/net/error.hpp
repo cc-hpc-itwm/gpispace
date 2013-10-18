@@ -29,6 +29,7 @@ namespace gspc
     std::string error_string (const error_code_t);
     boost::system::error_code make_error_code (error_code_t);
     boost::system::error_code make_error_code (frame const &f);
+    const boost::system::error_category & get_error_category ();
   }
 }
 

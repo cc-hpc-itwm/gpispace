@@ -58,23 +58,23 @@ namespace gspc
           }
         }
       };
+    }
 
-      static const boost::system::error_category & get_gspc_net_category ()
-      {
-        static detail::error_category cat;
-        return cat;
-      }
+    const boost::system::error_category & get_error_category ()
+    {
+      static detail::error_category cat;
+      return cat;
     }
 
     std::string error_string (const error_code_t code)
     {
-      return detail::get_gspc_net_category ().message (code);
+      return get_error_category ().message (code);
     }
 
     boost::system::error_code make_error_code (error_code_t e)
     {
       return boost::system::error_code ( static_cast<int>(e)
-                                       , detail::get_gspc_net_category ()
+                                       , get_error_category ()
                                        );
     }
 
