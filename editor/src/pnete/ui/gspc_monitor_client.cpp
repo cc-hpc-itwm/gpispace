@@ -804,8 +804,7 @@ namespace fhg
           catch (const std::runtime_error& ex)
           {
             //! \todo Report back to server?
-            std::cerr << "PARSE ERROR: " << ex.what()
-                      << "\nmessage: " << qPrintable (message) << "\n";
+            std::cerr << ex.what() << "\n";
           }
         }
       }
