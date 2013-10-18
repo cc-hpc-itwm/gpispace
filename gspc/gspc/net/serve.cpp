@@ -16,6 +16,7 @@
 #include <gspc/net/resolver.hpp>
 #include <gspc/net/server/tcp_server.hpp>
 #include <gspc/net/server/unix_server.hpp>
+#include <gspc/net/server/default_queue_manager.hpp>
 
 namespace gspc
 {
@@ -96,6 +97,11 @@ namespace gspc
       }
 
       return server_ptr_t ();
+    }
+
+    server_ptr_t serve (std::string const &url)
+    {
+      return serve (url, server::default_queue_manager ());
     }
 
     server_ptr_t serve ( std::string const &url
