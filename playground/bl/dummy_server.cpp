@@ -18,6 +18,7 @@
 #include <QFileSystemWatcher>
 #include <QFile>
 
+#include <boost/foreach.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
 
@@ -132,9 +133,15 @@ namespace
     map->insert (key, prefix::require::qstring (pos));
   }
 
+  void insert_into_set
+    (fhg::util::parse::position& pos, QSet<QString>* set)
+  {
+    set->insert (prefix::require::qstring (pos));
+  }
+
   struct action_invocation
   {
-    boost::optional<QString> _host;
+    QSet<QString> _hosts;
     boost::optional<QString> _action;
     QMap<QString, QString> _arguments;
 
@@ -184,10 +191,10 @@ namespace
 
       case 'h':
         ++pos;
-        fhg::util::parse::require::require (pos, "ost");
+        fhg::util::parse::require::require (pos, "osts");
         prefix::require::token (pos, ":");
 
-        _host = prefix::require::qstring (pos);
+        prefix::require::list (pos, boost::bind (&insert_into_set, _1, &_hosts));
 
         break;
       }
@@ -206,12 +213,12 @@ void thread::execute_action (fhg::util::parse::position& pos)
   prefix::require::list
     (pos, boost::bind (&action_invocation::append, &invoc, _1));
 
-  if (!invoc._host || !invoc._action)
+  if (invoc._hosts.empty() || !invoc._action)
   {
     throw std::runtime_error ("action missing action name or host");
   }
 
-  qDebug() << "execute" << *invoc._action << "for" << *invoc._host << "with arguments:";
+  qDebug() << "execute" << *invoc._action << "for" << invoc._hosts << "with arguments:";
   QMap<QString, QString>::const_iterator i (invoc._arguments.constBegin());
   while (i != invoc._arguments.constEnd())
   {
@@ -221,87 +228,90 @@ void thread::execute_action (fhg::util::parse::position& pos)
 
   const QMutexLocker lock (&_hosts_mutex);
 
-  if (!_hosts.contains (*invoc._host))
+  BOOST_FOREACH (QString host, invoc._hosts)
   {
-    _socket->write
-      ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Unknown host.\"],]\n")
-                   .arg (*invoc._host)
-                   .arg (*invoc._action)
-                   )
-    );
-
-    return;
-  }
-
-  QString& state (_hosts[*invoc._host].first);
-  int& last_change (_hosts[*invoc._host].second);
-
-  if (*invoc._action == "reboot" && (state == "unavailable" || state == "available"))
-  {
-    state = "down";
-    last_change = 0;
-
-    _socket->write
-      ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Will reboot.\"],]\n")
-                   .arg (*invoc._host)
-                   .arg (*invoc._action)
-                   )
-    );
-  }
-  else if (*invoc._action == "add_to_working_set" && state == "available")
-  {
-    state = "used";
-    last_change = 0;
-
-    _socket->write
-      ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Added to working set.\"]]\n")
-                   .arg (*invoc._host)
-                   .arg (*invoc._action)
-                   )
-    );
-  }
-  else if (*invoc._action == "remove_from_working_set" && state == "used")
-  {
-    state = "available";
-    last_change = 0;
-
-    _socket->write
-      ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Removed from working set.\"]]\n")
-                   .arg (*invoc._host)
-                   .arg (*invoc._action)
-                   )
-    );
-  }
-  else if (*invoc._action == "foo" && state == "used")
-  {
-    if (!block_updates_for_host.isEmpty())
+    if (!_hosts.contains (host))
     {
-      const QMutexLocker lock (&_pending_status_updates_mutex);
-      _pending_status_updates << block_updates_for_host;
+      _socket->write
+        ( qPrintable ( QString
+                       ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Unknown host.\"],]\n")
+                     .arg (host)
+                     .arg (*invoc._action)
+                     )
+        );
+
+      return;
     }
-    block_updates_for_host = *invoc._host;
-    _socket->write
-      ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"bar\"]]\n")
-                   .arg (*invoc._host)
-                   .arg (*invoc._action)
-                   )
-    );
-  }
-  else
-  {
-    _socket->write
-      ( qPrintable ( QString
-                     ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Can't execute %2 on host %1 in state %3.\"],]\n")
-                   .arg (*invoc._host)
-                   .arg (*invoc._action)
-                   .arg (state)
-                   )
-      );
+
+    QString& state (_hosts[host].first);
+    int& last_change (_hosts[host].second);
+
+    if (*invoc._action == "reboot" && (state == "unavailable" || state == "available"))
+    {
+      state = "down";
+      last_change = 0;
+
+      _socket->write
+        ( qPrintable ( QString
+                       ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Will reboot.\", additional_data: [\"foo\" : \"bar\", \"baz\":\"boo\"]],]\n")
+                     .arg (host)
+                     .arg (*invoc._action)
+                     )
+        );
+    }
+    else if (*invoc._action == "add_to_working_set" && state == "available")
+    {
+      state = "used";
+      last_change = 0;
+
+      _socket->write
+        ( qPrintable ( QString
+                       ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Added to working set.\", additional_data: [\"dir\" : \"/p/herc/itwm/hpc/mr/rtm/rtm/mon/util/plural.cpp\", \"di4\" : \"/p/herc/itwm/hpc/mr/rtm/rtm/mon/util/plural.cpp\", \"di2\" : \"/p/herc/itwm/hpc/mr/rtm/rtm/mon/util/plural.cpp\", \"baz\":\"boo\"]]]\n")
+                     .arg (host)
+                     .arg (*invoc._action)
+                     )
+        );
+    }
+    else if (*invoc._action == "remove_from_working_set" && state == "used")
+    {
+      state = "available";
+      last_change = 0;
+
+      _socket->write
+        ( qPrintable ( QString
+                       ("action_result: [(\"%1\", \"%2\"): [result: okay, message: \"Removed from working set.\"]]\n")
+                     .arg (host)
+                     .arg (*invoc._action)
+                     )
+        );
+    }
+    else if (*invoc._action == "foo" && state == "used")
+    {
+      if (!block_updates_for_host.isEmpty())
+      {
+        const QMutexLocker lock (&_pending_status_updates_mutex);
+        _pending_status_updates << block_updates_for_host;
+      }
+      block_updates_for_host = host;
+      _socket->write
+        ( qPrintable ( QString
+                       ("action_result: [(\"%1\", \"%2\"): [result: warn, message: \"bar\"]]\n")
+                     .arg (host)
+                     .arg (*invoc._action)
+                     )
+        );
+    }
+    else
+    {
+      _socket->write
+        ( qPrintable ( QString
+                       ("action_result: [(\"%1\", \"%2\"): [result: fail, message: \"Can't execute %2 on host %1 in state %3.\"],]\n")
+                     .arg (host)
+                     .arg (*invoc._action)
+                     .arg (state)
+                     )
+        );
+    }
   }
 }
 
@@ -385,7 +395,7 @@ void thread::may_read()
         fhg::util::parse::require::require (pos, "ction");
         prefix::require::token (pos, ":");
 
-        prefix::require::list (pos, boost::bind (&thread::execute_action, this, _1));
+        execute_action (pos);
 
         break;
 

@@ -222,20 +222,15 @@ namespace fhg
           ss << "]";
         }
 
-        const QString templ ( QString ("[host: \"##__##\", action: \"%2\"%3],")
-                            .arg (action)
-                            .arg (QString::fromStdString (ss.str()))
-                            .replace ("##__##", "%1")
-                            );
-
-        QString request ("action: [");
+        QString hosts_string;
         BOOST_FOREACH (QString host, hosts)
         {
-          request += templ.arg (host);
+          hosts_string += '"' + host + "\",";
         }
-        request += "]";
 
-        push (request);
+        push ( QString ("action: [hosts: [%1], action: \"%2\"%3],")
+             .arg (hosts_string, action, QString::fromStdString (ss.str()))
+             );
       }
 
       void monitor_client::possible_status (fhg::util::parse::position& pos)
