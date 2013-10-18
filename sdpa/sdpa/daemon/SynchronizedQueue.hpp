@@ -216,25 +216,25 @@ namespace sdpa { namespace daemon {
 
     inline iterator begin()
     {
-      // WARN: make sure you hold a lock to the mutex!
-      return container_.begin();
+    	lock_type lock(mtx_);
+    	return container_.begin();
     }
 
     inline const_iterator begin() const
     {
-      // WARN: make sure you hold a lock to the mutex!
-      return container_.begin();
+    	lock_type lock(mtx_);
+    	return container_.begin();
     }
 
     inline iterator end()
     {
-      // WARN: make sure you hold a lock to the mutex!
-      return container_.end();
+    	lock_type lock(mtx_);
+    	return container_.end();
     }
     inline const_iterator end() const
     {
-      // WARN: make sure you hold a lock to the mutex!
-      return container_.end();
+    	lock_type lock(mtx_);
+    	return container_.end();
     }
 
     inline void clear()
