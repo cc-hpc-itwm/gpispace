@@ -78,6 +78,7 @@ namespace sdpa {
 	    virtual Worker::worker_id_t getWorkerId(unsigned int rank);
 	    sdpa::job_id_t getAssignedJob(const sdpa::worker_id_t&);
 	    sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId) { return allocation_table_[jobId]; }
+	    sdpa::job_id_t getNextJobToSchedule();
 	    void assignJobsToWorkers();
 
 	    virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
@@ -129,12 +130,12 @@ namespace sdpa {
 	    virtual void removeRecoveryInconsistencies();
         void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 
-        void printQ() { pending_jobs_queue_.print(); }
+        void printPendingJobs() { pending_jobs_queue_.print(); }
         void printAllocationTable();
         void checkAllocations();
 
     protected:
-	    JobQueue pending_jobs_queue_;
+        JobQueue pending_jobs_queue_;
 	    WorkerManager::ptr_t ptr_worker_man_;
 
 	    bool bStopRequested;
