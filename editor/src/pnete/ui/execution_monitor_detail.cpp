@@ -612,8 +612,12 @@ namespace fhg
                           , current_intervals
                           )
             {
-              in_state[current->state()] += +(current && current->duration());
+              if (current && !current->duration())
+              {
+                ++in_state[current->state()];
+              }
             }
+
             const int inset (1);
             const QRectF rect_with_inset
               (option.rect.adjusted (inset, inset, -inset, -inset));
