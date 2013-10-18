@@ -127,12 +127,12 @@ void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
   try {
 
     Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-    std::string status = pJob->getStatus();
-    if(  status.find("Pending")!= std::string::npos || status.find("Running") != std::string::npos )
+    if(!pJob->completed())
     {
       pJob->Reschedule(); // put the job back into the pending state
       // clear the allocation table
       releaseAllocatedWorkers(job_id);
+
       schedule(job_id);
     }
   }
@@ -164,51 +164,13 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 
 	try
 	{
-		// should release all the allocated resources!!!!
-		// if the job was not assigned to this worker_id
-		// trigger the rescheduling of the job to which the
-		// worker was allocated
-		// eventually the job should be killed1
-
-		//releaseAllocatedWorkers(job_id);
-		sdpa::job_id_t jobId = getAssignedJob(worker_id);
-		reschedule(jobId);
-
 		// delete it from the worker's queues
 		Worker::ptr_t pWorker = findWorker(worker_id);
 		pWorker->delete_job(job_id);
-
-		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-		if(pJob)
-		{
-			std::string status = pJob->getStatus();
-			if( !pJob->completed() )
-			{
-				if(ptr_comm_handler_->gui_service())
-				{
-					const sdpa::daemon::NotificationEvent evt( worker_id
-																, pJob->id().str()
-																, "unknown"
-																, NotificationEvent::STATE_FAILED
-																, pJob->description()
-                    										);
-
-					ptr_comm_handler_->gui_service()->notify (evt);
-				}
-
-				pJob->Reschedule(); // put the job back into the pending state
-				releaseAllocatedWorkers(job_id);
-				schedule_remotely(job_id);
-			}
-		}
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
 		SDPA_LOG_WARN("Cannot find the worker "<<worker_id);
-	}
-	catch(JobNotFoundException const &ex)
-	{
-		SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
 	}
 	catch(JobNotDeletedException const & ex)
 	{
@@ -218,6 +180,8 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 	{
 		SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
 	}
+
+	reschedule(job_id);
 }
 
 void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::JobQueue* pQueue )
@@ -506,8 +470,6 @@ void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
 	 try {
 	    const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-	    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
-
 	    ptr_worker_man_->dispatchJob(jobId);
 	    // put the job into the running state
 	    pJob->Dispatch();
@@ -549,7 +511,7 @@ void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
-	DLOG(TRACE, "Schedule the job " << jobId.str());
+	//DMLOG(TRACE, "Schedule the job " << jobId.str());
 	pending_jobs_queue_.push(jobId);
 }
 
@@ -682,6 +644,7 @@ void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worke
 {
 	ptr_worker_man_->reserveWorker(matchingWorkerId);
 	// allocate this worker to the job with the jobId
+
 	lock_type lock_table(mtx_alloc_table_);
 	allocation_table_[jobId].push_back(matchingWorkerId);
 }
@@ -726,7 +689,6 @@ void SchedulerImpl::assignJobsToWorkers()
 
 		try {
 			job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
-			// LOG(INFO, "Check if the requirements of the job "<<jobId<<" are matching the capabilities of the worker "<<worker_id);
 
 			nReqWorkers = job_reqs.numWorkers();
 			matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
@@ -742,6 +704,7 @@ void SchedulerImpl::assignJobsToWorkers()
 		{
 			reserveWorker(jobId, matchingWorkerId);
 
+			 lock_type lock(mtx_alloc_table_);
 			// attention: what to do if job_reqs.n_workers_req > total number of registered workers?
 			// if all the required resources were acquired, mark the job as submitted
 			if( allocation_table_[jobId].size() == (size_t)nReqWorkers )
@@ -1273,4 +1236,16 @@ void SchedulerImpl::checkAllocations()
 	LOG(INFO, oss.str());
 }
 
+sdpa::job_id_t SchedulerImpl::getNextJobToSchedule()
+{
+	sdpa::job_id_t jobId;
+	try {
+		jobId = pending_jobs_queue_.pop();
+	}
+	catch( QueueEmpty& ex)
+	{
+		LOG(WARN, "there is no job to be scheduled");
+	}
+	return jobId;
+}
 
