@@ -34,6 +34,7 @@ add_library (we-dev SHARED
   we/type/value/peek.cpp
   we/type/value/poke.cpp
   we/type/value/show.cpp
+  we/type/value/read.cpp
 
   we/loader/Module.cpp
 )
