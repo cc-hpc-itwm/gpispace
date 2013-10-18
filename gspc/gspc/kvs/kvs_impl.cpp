@@ -44,7 +44,15 @@ namespace gspc
 
       {
         unique_lock lock (m_mutex);
-        m_values.insert (std::make_pair (key, entry_t (val)));
+        value_map_t::iterator it = m_values.find (key);
+        if (it == m_values.end ())
+        {
+          m_values.insert (std::make_pair (key, entry_t (val)));
+        }
+        else
+        {
+          it->second = val;
+        }
       }
 
       onChange (key);
