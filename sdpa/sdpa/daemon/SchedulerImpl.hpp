@@ -151,7 +151,6 @@ namespace sdpa {
 
 	    mutable mutex_type mtx_;
 	    condition_type cond_feed_workers;
-	    condition_type cond_workers_registered;
 
 	    mutable mutex_type mtx_alloc_table_;
 	    allocation_table_t allocation_table_;
