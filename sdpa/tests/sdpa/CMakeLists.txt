@@ -201,9 +201,9 @@ pnet_compile(coallocation_test-wf ${CMAKE_SOURCE_DIR}/application/example/coallo
 
 get_target_property(COALLOCATION_TEST_PNET_LOCATION pnet-coallocation_test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-coallocation_test-wf GEN_OUTPUTS)
-set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="5L"
+set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="30L"
                                                                         	-p n_workers_A="2L"
-                                                                        	-p n_tasks_B="10L"
+                                                                        	-p n_tasks_B="20L"
                                                                         	-p n_workers_B="3L"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet")
 
