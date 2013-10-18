@@ -50,6 +50,7 @@ set (hdrs
   remove_prefix.hpp
 
   stat.hpp
+  now.hpp
   get_home_dir.hpp
   hex.hpp
   read_file.hpp
@@ -64,6 +65,7 @@ set (srcs
   threadname.cpp
   remove_prefix.cpp
   read_bool.cpp
+  now.cpp
   stat.cpp
 
   ostream_modifier.cpp
