@@ -6,7 +6,7 @@
 #include <algorithm>    // std::sort
 #include <gspc/kvs/kvs_impl.hpp>
 
-BOOST_AUTO_TEST_CASE (test_kvs_backend_put_get_del)
+BOOST_AUTO_TEST_CASE (test_kvs_impl_put_get_del)
 {
   int rc;
   gspc::kvs::kvs_t kvs;
@@ -23,8 +23,17 @@ BOOST_AUTO_TEST_CASE (test_kvs_backend_put_get_del)
   rc = kvs.get ("foo", val);
 
   BOOST_REQUIRE_EQUAL (rc, 0);
-
   BOOST_REQUIRE_EQUAL (boost::get<int>(val), 42);
+
+  rc = kvs.put ("foo", std::string ("bar"));
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = kvs.get ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  BOOST_REQUIRE_EQUAL ( std::string (boost::get<std::string>(val))
+                      , "bar"
+                      );
 
   rc = kvs.del ("foo");
 
@@ -39,7 +48,7 @@ BOOST_AUTO_TEST_CASE (test_kvs_backend_put_get_del)
   BOOST_REQUIRE_EQUAL (rc, -ESRCH);
 }
 
-BOOST_AUTO_TEST_CASE (test_kvs_backend_push_try_pop)
+BOOST_AUTO_TEST_CASE (test_kvs_impl_push_try_pop)
 {
   int rc;
   gspc::kvs::kvs_t kvs;
@@ -75,7 +84,36 @@ BOOST_AUTO_TEST_CASE (test_kvs_backend_push_try_pop)
   BOOST_REQUIRE_EQUAL (boost::get<int>(val), 3);
 }
 
-BOOST_AUTO_TEST_CASE (test_kvs_backend_reset_inc_dec)
+BOOST_AUTO_TEST_CASE (test_kvs_impl_push_pop)
+{
+  int rc;
+  gspc::kvs::kvs_t kvs;
+  gspc::kvs::api_t::value_type val;
+
+  rc = kvs.push ("foo", 1);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  rc = kvs.push ("foo", 2);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  rc = kvs.push ("foo", 3);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = kvs.pop ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (boost::get<int>(val), 1);
+
+  rc = kvs.pop ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (boost::get<int>(val), 2);
+
+  rc = kvs.pop ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (boost::get<int>(val), 3);
+
+  rc = kvs.try_pop ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, -EAGAIN);
+}
+
+BOOST_AUTO_TEST_CASE (test_kvs_impl_reset_inc_dec)
 {
   int rc;
   gspc::kvs::kvs_t kvs;
@@ -118,7 +156,7 @@ struct compare_first
   }
 };
 
-BOOST_AUTO_TEST_CASE (test_kvs_backend_get_regex)
+BOOST_AUTO_TEST_CASE (test_kvs_impl_get_regex)
 {
   int rc;
   gspc::kvs::kvs_t kvs;
@@ -151,7 +189,7 @@ BOOST_AUTO_TEST_CASE (test_kvs_backend_get_regex)
   }
 }
 
-BOOST_AUTO_TEST_CASE (test_kvs_backend_del_regex)
+BOOST_AUTO_TEST_CASE (test_kvs_impl_del_regex)
 {
   int rc;
   gspc::kvs::kvs_t kvs;
@@ -177,11 +215,11 @@ BOOST_AUTO_TEST_CASE (test_kvs_backend_del_regex)
   BOOST_REQUIRE (boost::get<std::string>(val) == "bar");
 }
 
-BOOST_AUTO_TEST_CASE (test_kvs_backend_expiry)
+BOOST_AUTO_TEST_CASE (test_kvs_impl_expiry)
 {
   int rc;
   gspc::kvs::kvs_t kvs;
-  gspc::kvs::kvs_t::value_type val;
+  gspc::kvs::api_t::value_type val;
 
   kvs.put ("foo.1", "bar");
   kvs.set_ttl ("foo.1", 1);

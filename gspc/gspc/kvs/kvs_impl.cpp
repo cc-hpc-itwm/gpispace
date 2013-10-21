@@ -24,7 +24,7 @@ namespace gspc
       if (it == m_values.end ())
         return -ESRCH;
 
-      if (it->second.is_expired ())
+      if (it->second->is_expired ())
       {
         unique_lock expired_lock (m_expired_entries_mutex);
         m_expired_entries.push_back (it->first);
@@ -32,7 +32,7 @@ namespace gspc
       }
       else
       {
-        val = it->second.value;
+        val = it->second->get_value ();
       }
 
       return 0;
@@ -47,11 +47,15 @@ namespace gspc
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
         {
-          m_values.insert (std::make_pair (key, entry_t (val)));
+          m_values.insert
+            (std::make_pair ( key
+                            , entry_ptr_t (new entry_t (val))
+                            )
+            );
         }
         else
         {
-          it->second = val;
+          it->second->set_value (val);
         }
       }
 
@@ -90,14 +94,15 @@ namespace gspc
       {
         if (boost::regex_match (it->first, regex))
         {
-          if (it->second.is_expired ())
+          if (it->second->is_expired ())
           {
             unique_lock expired_lock (m_expired_entries_mutex);
             m_expired_entries.push_back (it->first);
           }
           else
           {
-            values.push_back (std::make_pair (it->first, it->second.value));
+            values.push_back
+              (std::make_pair (it->first, it->second->get_value ()));
           }
         }
 
@@ -179,6 +184,105 @@ namespace gspc
         expiry = EXPIRES_NEVER;
     }
 
+    void kvs_t::entry_t::set_value (kvs_t::value_type const &val)
+    {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex);
+      value = val;
+      value_changed.notify_all ();
+    }
+
+    kvs_t::value_type & kvs_t::entry_t::get_value ()
+    {
+      return value;
+    }
+
+    kvs_t::value_type const & kvs_t::entry_t::get_value () const
+    {
+      return value;
+    }
+
+    int kvs_t::entry_t::pop (value_type &val)
+    {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex);
+
+      int rc = is_value_available ();
+
+      while (rc == -EAGAIN)
+      {
+        value_changed.wait (lock);
+        rc = is_value_available ();
+      }
+
+      if (rc == 0)
+      {
+        return try_pop (val);
+      }
+      else
+      {
+        return rc;
+      }
+    }
+
+    int kvs_t::entry_t::try_pop (value_type &val)
+    {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex);
+
+      std::list<value_type> *alist =
+        boost::get<std::list<value_type> >(&value);
+
+      if (alist)
+      {
+        if (alist->empty ())
+        {
+          return -EAGAIN;
+        }
+        else
+        {
+          val = alist->front (); alist->pop_front ();
+          return 0;
+        }
+      }
+      else
+      {
+        return -EINVAL;
+      }
+    }
+
+    int kvs_t::entry_t::push (value_type const &val)
+    {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex);
+
+      std::list<value_type> *alist =
+        boost::get<std::list<value_type> >(&value);
+
+      if (alist)
+      {
+        alist->push_back (val);
+        value_changed.notify_one ();
+        return 0;
+      }
+      else
+      {
+        return -EINVAL;
+      }
+    }
+
+    int kvs_t::entry_t::is_value_available () const
+    {
+      const std::list<value_type> *alist =
+        boost::get<std::list<value_type> >(&value);
+
+      if (alist)
+      {
+        if (not alist->empty ())
+          return 0;
+        else
+          return -EAGAIN;
+      }
+
+      return -EINVAL;
+    }
+
     int kvs_t::set_ttl (key_type const &key, int ttl)
     {
       purge_expired_keys ();
@@ -189,7 +293,7 @@ namespace gspc
       if (it == m_values.end ())
         return -ESRCH;
 
-      it->second.expires_in (ttl);
+      it->second->expires_in (ttl);
 
       return 0;
     }
@@ -209,7 +313,7 @@ namespace gspc
       {
         if (boost::regex_match (it->first, regex))
         {
-          it->second.expires_in (ttl);
+          it->second->expires_in (ttl);
         }
 
         ++it;
@@ -230,20 +334,16 @@ namespace gspc
         {
           std::list<value_type> alist;
 
-          it = m_values.insert (std::make_pair (key, entry_t (alist))).first;
+          it = m_values.insert
+            (std::make_pair ( key
+                            , entry_ptr_t (new entry_t (alist))
+                            )
+            ).first;
         }
 
-        std::list<value_type> *alist =
-          boost::get<std::list<value_type> >(&it->second.value);
-
-        if (alist)
-        {
-          alist->push_back (val);
-        }
-        else
-        {
-          return -EINVAL;
-        }
+        int rc = it->second->push (val);
+        if (rc != 0)
+          return rc;
       }
 
       onChange (key);
@@ -253,7 +353,28 @@ namespace gspc
 
     int kvs_t::pop (key_type const &key, value_type &val)
     {
-      return -ENOTSUP;
+      purge_expired_keys ();
+
+      {
+        unique_lock lock (m_mutex);
+
+        value_map_t::iterator it = m_values.find (key);
+        if (it == m_values.end ())
+        {
+          return -ESRCH;
+        }
+
+        entry_ptr_t e = it->second;
+        lock.unlock ();
+
+        int rc = e->pop (val);
+        if (rc != 0)
+          return rc;
+      }
+
+      onChange (key);
+
+      return 0;
     }
 
     int kvs_t::try_pop (key_type const &key, value_type &val)
@@ -269,24 +390,9 @@ namespace gspc
           return -ESRCH;
         }
 
-        std::list<value_type> *alist =
-          boost::get<std::list<value_type> >(&it->second.value);
-
-        if (alist)
-        {
-          if (alist->empty ())
-          {
-            return -EAGAIN;
-          }
-          else
-          {
-            val = alist->front (); alist->pop_front ();
-          }
-        }
-        else
-        {
-          return -EINVAL;
-        }
+        int rc = it->second->try_pop (val);
+        if (rc != 0)
+          return rc;
       }
 
       onChange (key);
@@ -304,11 +410,15 @@ namespace gspc
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
         {
-          m_values.insert (it, std::make_pair (key, entry_t (val)));
+          m_values.insert
+            (it, std::make_pair ( key
+                                , entry_ptr_t (new entry_t (val))
+                                )
+            );
         }
         else
         {
-          it->second.value = val;
+          it->second->set_value (val);
         }
       }
 
@@ -335,7 +445,7 @@ namespace gspc
           return -ESRCH;
         }
 
-        int *cur = boost::get<int>(&it->second.value);
+        int *cur = boost::get<int>(&it->second->get_value ());
         if (cur)
         {
           *cur += delta;

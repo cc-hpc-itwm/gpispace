@@ -6,6 +6,9 @@
 #include <gspc/kvs/api.hpp>
 
 #include <boost/signal.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/condition_variable.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
 namespace gspc
@@ -45,8 +48,12 @@ namespace gspc
       int counter_decrement (key_type const &key, int &val, int delta);
       int counter_decrement (key_type const &key, int &val);
     private:
-      struct entry_t
+      typedef boost::shared_mutex mutex_type;
+
+      class entry_t
       {
+      public:
+        explicit
         entry_t (value_type const &value)
           : value (value)
           , expiry (-1)
@@ -55,13 +62,24 @@ namespace gspc
         bool is_expired () const;
         void expires_in (int ttl);
 
+        void set_value (value_type const &);
+        value_type & get_value ();
+        value_type const & get_value () const;
+
+        int pop (value_type &);
+        int try_pop (value_type &);
+        int push (value_type const &);
+      private:
+        int is_value_available () const;
+
+        mutable boost::recursive_mutex mutex;
+        boost::condition_variable_any value_changed;
         value_type value;
         int        expiry;
       };
 
-      typedef boost::shared_mutex mutex_type;
-
-      typedef std::map<key_type, entry_t> value_map_t;
+      typedef boost::shared_ptr<entry_t> entry_ptr_t;
+      typedef std::map<key_type, entry_ptr_t> value_map_t;
 
       void purge_expired_keys () const;
 
