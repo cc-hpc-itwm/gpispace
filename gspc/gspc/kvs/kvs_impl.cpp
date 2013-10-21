@@ -251,6 +251,11 @@ namespace gspc
       return 0;
     }
 
+    int kvs_t::pop (key_type const &key, value_type &val)
+    {
+      return -ENOTSUP;
+    }
+
     int kvs_t::try_pop (key_type const &key, value_type &val)
     {
       purge_expired_keys ();
