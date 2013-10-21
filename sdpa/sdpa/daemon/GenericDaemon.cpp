@@ -1082,7 +1082,6 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
  */
 void GenericDaemon::submit( const id_type& activityId
                           , const encoded_type& desc
-                          //, const job_requirements_t& job_req_list
                           , const requirement_list_t& req_list
                           , const we::type::schedule_data& schedule_data
                           )
