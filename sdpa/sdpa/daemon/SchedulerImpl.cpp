@@ -730,12 +730,10 @@ void SchedulerImpl::feedWorkers()
 	while(!bStopRequested)
 	{
 		lock_type lock(mtx_);
-		cond_feed_workers.timed_wait(lock, m_timeout);
+		cond_feed_workers.wait(lock);
 
-		if( ptr_comm_handler_->jobManager()->getNumberOfJobs() == 0 )
-			continue;
-
-		assignJobsToWorkers();
+		if( ptr_comm_handler_->jobManager()->getNumberOfJobs() > 0 )
+			assignJobsToWorkers();
 	}
 }
 
