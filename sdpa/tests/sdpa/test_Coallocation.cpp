@@ -21,6 +21,7 @@
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <tests/sdpa/CreateDrtsWorker.hpp>
 #include "kvs_setup_fixture.hpp"
@@ -41,26 +42,22 @@ BOOST_GLOBAL_FIXTURE (KVSSetup);
 struct MyFixture
 {
 	MyFixture()
-			: m_nITER(1)
-			, m_sleep_interval(1000000)
-			, m_arrAggMasterInfo(1, sdpa::MasterInfo("orchestrator_0"))
+			:m_sleep_interval(1000) //microseconds
 	{
 		LOG(DEBUG, "Fixture's constructor called ...");
-		m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 	}
 
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 
-		sstrOrch.str("");
-		sstrAgg.str("");
-
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
+		testNb++;
 	}
 
-	void run_client();
+	void run_client(const std::string&, const std::string&);
+	int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli );
 
 	string read_workflow(string strFileName)
 	{
@@ -71,133 +68,197 @@ struct MyFixture
 		BOOST_REQUIRE (f.is_open());
 
 		char c;
-		while (f.get(c)) os<<c;
+		while (f.get(c))
+			os<<c;
 		f.close();
-
 		return os.str();
 	}
 
-	int m_nITER;
 	int m_sleep_interval ;
     std::string m_strWorkflow;
 
-	sdpa::master_info_list_t m_arrAggMasterInfo;
-
-	std::stringstream sstrOrch;
-	std::stringstream sstrAgg;
+	std::string strBackupOrch;
+	std::string strBackupAgent;
 
 	boost::thread m_threadClient;
 };
 
-void MyFixture::run_client()
+/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
+{
+	typedef boost::posix_time::ptime time_type;
+	time_type poll_start = boost::posix_time::microsec_clock::local_time();
+
+	int exit_code(4);
+	std::string job_status;
+	bool bSubscribed=false;
+
+  	int nTrials = 0;
+  	do
+  	{
+  		do
+		{
+			try
+			{
+				ptrCli->subscribe(job_id);
+				bSubscribed = true;
+			}
+			catch(...)
+			{
+				bSubscribed = false;
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
+			}
+
+			if(bSubscribed)
+				break;
+
+			nTrials++;
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+		}while(nTrials<NMAXTRIALS);
+
+		if(bSubscribed)
+		{
+			LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+			nTrials = 0;
+		}
+		else
+		{
+			LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
+		  	return exit_code;
+		}
+
+
+  		LOG(INFO, "start waiting at: " << poll_start);
+
+  		try
+  		{
+  			if(nTrials<NMAXTRIALS)
+  			{
+  				boost::this_thread::sleep(boost::posix_time::seconds(1));
+  				LOG(INFO, "Re-trying ...");
+  			}
+
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
+
+			// check event type
+			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
+			{
+				job_status="Finished";
+				LOG(WARN, "The job has finished!");
+				exit_code = 0;
+			}
+			else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
+			{
+				job_status="Failed";
+				LOG(WARN, "The job has failed!");
+				exit_code = 1;
+			}
+			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
+			{
+				LOG(WARN, "The job has been canceled!");
+				job_status="Cancelled";
+				exit_code = 2;
+			}
+			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
+			{
+				LOG(WARN, "got error event: reason := "
+							+ err->reason()
+							+ " code := "
+							+ boost::lexical_cast<std::string>(err->error_code()));
+
+				// give some time to the orchestrator to come up
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
+
+			}
+			else
+			{
+				LOG(WARN, "unexpected reply: " << (reply ? reply->str() : "null"));
+			}
+		}
+		catch (const sdpa::client::Timedout &)
+		{
+			LOG(INFO, "Timeout expired!");
+		}
+
+  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS);
+
+  	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
+
+  	if( job_status != std::string("Finished") &&
+  		job_status != std::string("Failed")   &&
+  		job_status != std::string("Cancelled") )
+  	{
+  		LOG(ERROR, "Unexpected status, leave now ...");
+  		return exit_code;
+  	}
+
+  	time_type poll_end = boost::posix_time::microsec_clock::local_time();
+
+  	LOG(INFO, "Client stopped waiting at: " << poll_end);
+  	LOG(INFO, "Execution time: " << (poll_end - poll_start));
+  	return exit_code;
+}
+
+void MyFixture::run_client(const std::string& orchName, const std::string& cliName)
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
+	std::string prefix("--orchestrator=");
+	cav.push_back(prefix+orchName);
+	cav.push_back("--network.timeout=-1");
 	config.parse_command_line(cav);
 
-	std::ostringstream osstr;
-	osstr<<"sdpac_"<<testNb++;
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, cliName, cliName+".apps.client.out" );
 	ptrCli->configure_network( config );
 
-	for( int k=0; k<m_nITER; k++ )
+	int nTrials = 0;
+	sdpa::job_id_t job_id_user;
+
+	try {
+
+		LOG( INFO, "Submitting new workflow ..."); //<<m_strWorkflow);
+		job_id_user = ptrCli->submitJob(m_strWorkflow);
+	}
+	catch(const sdpa::client::ClientException& cliExc)
 	{
-		int nTrials = 0;
-		sdpa::job_id_t job_id_user;
-
-		try {
-
-			//LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
-			job_id_user = ptrCli->submitJob(m_strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
+		if(nTrials++ > NMAXTRIALS)
 		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-		}
-
-		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
-
-		std::string job_status = ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-		nTrials = 0;
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
-		{
-			try {
-				job_status = ptrCli->queryJob(job_id_user);
-				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-			}
-			catch(const sdpa::client::ClientException& cliExc)
-			{
-				if(nTrials++ > NMAXTRIALS)
-				{
-					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
-
-					ptrCli->shutdown_network();
-					ptrCli.reset();
-					return;
-				}
-
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-			}
-		}
-
-		nTrials = 0;
-
-		try {
-				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-				ptrCli->retrieveResults(job_id_user);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-
-			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
-		}
-
-		nTrials = 0;
-
-		try {
-			LOG( DEBUG, "User: delete the job "<<job_id_user);
-			ptrCli->deleteJob(job_id_user);
-			//boost::this_thread::sleep(boost::posix_time::seconds(3));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
+			LOG( WARN, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
 			return;
 		}
+
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+	}
+
+	subscribe_and_wait( job_id_user, ptrCli );
+
+	try {
+		LOG( INFO, "The client requests to delete the job "<<job_id_user);
+		ptrCli->deleteJob(job_id_user);
+	}
+	catch(const sdpa::client::ClientException& cliExc)
+	{
+		LOG( WARN, "The maximum number of  trials was exceeded. Giving-up now!");
+
+		ptrCli->shutdown_network();
+		ptrCli.reset();
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		return;
 	}
 
 	ptrCli->shutdown_network();
-    ptrCli.reset();
+	ptrCli.reset();
 }
+
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-/*
+
 BOOST_AUTO_TEST_CASE( testCoallocationWorkflow )
 {
 	LOG( INFO, "***** Test capabilities *****"<<std::endl);
@@ -211,11 +272,23 @@ BOOST_AUTO_TEST_CASE( testCoallocationWorkflow )
 
 	m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
+	ostringstream osstr;
+	osstr<<"orchestrator_"<<testNb;
+	std::string orchName(osstr.str());
+
+	osstr.str("");
+	osstr<<"client_"<<testNb;
+	std::string cliName(osstr.str());
+
+	osstr.str("");
+	osstr<<"agent_"<<testNb;
+	std::string agentName(osstr.str());
+
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create(orchName, addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
-	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
 
 	boost::thread drts_thread[NWORKERS];
@@ -224,21 +297,21 @@ BOOST_AUTO_TEST_CASE( testCoallocationWorkflow )
 	ostringstream oss; int i;
 	for(i=0;i<2;i++)
 	{
-		oss<<"drts_"<<i;
-		drts[i] = createDRTSWorker(oss.str(), "agent_0", "A", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
+		oss<<"drts_"<<testNb<<"_"<<i;
+		drts[i] = createDRTSWorker(oss.str(), agentName, "A", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
 		drts_thread[i] = boost::thread( &fhg::core::kernel_t::run, drts[i] );
 		oss.str("");
 	}
 
 	for(i=2;i<NWORKERS;i++)
 	{
-		oss<<"drts_"<<i;
-		drts[i] = createDRTSWorker(oss.str(), "agent_0", "B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
+		oss<<"drts_"<<testNb<<"_"<<i;
+		drts[i] = createDRTSWorker(oss.str(), agentName, "B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
 		drts_thread[i] = boost::thread( &fhg::core::kernel_t::run, drts[i] );
 		oss.str("");
 	}
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, orchName, cliName));
 
 	if(threadClient.joinable())
 		threadClient.join();
@@ -256,26 +329,37 @@ BOOST_AUTO_TEST_CASE( testCoallocationWorkflow )
 
 	LOG( INFO, "The test case Test1 terminated!");
 }
-*/
 
-BOOST_AUTO_TEST_CASE( TestStopRestartCoalloc )
+BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoalloc )
 {
 	LOG( INFO, "***** Test stop/restart *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
+	ostringstream osstr;
+	osstr<<"orchestrator_"<<testNb;
+	std::string orchName(osstr.str());
+
+	osstr.str("");
+	osstr<<"client_"<<testNb;
+	std::string cliName(osstr.str());
+
 	m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create(orchName, addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
-	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
+
+	osstr.str("");
+	osstr<<"agent_"<<testNb;
+	std::string agentName(osstr.str());
+
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
 
 	boost::thread drts_thread[NWORKERS];
@@ -284,21 +368,21 @@ BOOST_AUTO_TEST_CASE( TestStopRestartCoalloc )
 	ostringstream oss; int i;
 	for(i=0;i<2;i++)
 	{
-		oss<<"drts_"<<i;
-		drts[i] = createDRTSWorker(oss.str(), "agent_0", "A", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
+		oss<<"drts_"<<testNb<<"_"<<i;
+		drts[i] = createDRTSWorker(oss.str(), agentName, "A", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
 		drts_thread[i] = boost::thread( &fhg::core::kernel_t::run, drts[i] );
 		oss.str("");
 	}
 
 	for(i=2;i<NWORKERS;i++)
 	{
-		oss<<"drts_"<<i;
-		drts[i] = createDRTSWorker(oss.str(), "agent_0", "B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
+		oss<<"drts_"<<testNb<<"_"<<i;
+		drts[i] = createDRTSWorker(oss.str(), agentName, "B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
 		drts_thread[i] = boost::thread( &fhg::core::kernel_t::run, drts[i] );
 		oss.str("");
 	}
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, orchName, cliName));
 
 	// stop the last worker
 	i = 4; //NWORKERS-1;
@@ -309,7 +393,10 @@ BOOST_AUTO_TEST_CASE( TestStopRestartCoalloc )
 	LOG( INFO, "Stopping now the last worker ...");
 	sleep(5);
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_new(createDRTSWorker("drts_new", "agent_0", "B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port()));
+	oss.str("");
+	oss<<"drts_"<<testNb<<"_new";
+
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_new(createDRTSWorker(oss.str(), agentName, "B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port()));
 	boost::thread drts_thread_new = boost::thread( &fhg::core::kernel_t::run, drts_new );
 
 	if(threadClient.joinable())
@@ -330,9 +417,94 @@ BOOST_AUTO_TEST_CASE( TestStopRestartCoalloc )
 
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
-
-	LOG( INFO, "The test case Test1 terminated!");
 }
 
+BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoallocCommonCpb )
+{
+	LOG( INFO, "***** TestStopRestartDrtsCoallocCommonCpb *****"<<std::endl);
+	//guiUrl
+	string guiUrl   	= "";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgent 	= "127.0.0.1";
+
+	typedef void OrchWorkflowEngine;
+
+	m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
+
+	ostringstream osstr;
+	osstr<<"orchestrator_"<<testNb;
+	std::string orchName(osstr.str());
+
+	osstr.str("");
+	osstr<<"client_"<<testNb;
+	std::string cliName(osstr.str());
+
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create(orchName, addrOrch, MAX_CAP);
+	ptrOrch->start_agent(false);
+
+	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
+
+	osstr.str("");
+	osstr<<"agent_"<<testNb;
+	std::string agentName(osstr.str());
+
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
+	ptrAgent->start_agent(false);
+
+	boost::thread drts_thread[NWORKERS];
+	sdpa::shared_ptr<fhg::core::kernel_t> drts[NWORKERS];
+
+	ostringstream oss; int i;
+	for(i=0;i<2;i++)
+	{
+		oss<<"drts_"<<testNb<<"_"<<i;
+		drts[i] = createDRTSWorker(oss.str(), agentName, "A", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
+		drts_thread[i] = boost::thread( &fhg::core::kernel_t::run, drts[i] );
+		oss.str("");
+	}
+
+	for(i=2;i<NWORKERS;i++)
+	{
+		oss<<"drts_"<<testNb<<"_"<<i;
+		drts[i] = createDRTSWorker(oss.str(), agentName, "A,B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
+		drts_thread[i] = boost::thread( &fhg::core::kernel_t::run, drts[i] );
+		oss.str("");
+	}
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, orchName, cliName));
+
+	// stop the last worker
+	i = NWORKERS-1;
+	drts[i]->stop();
+	if(drts_thread[i].joinable())
+		drts_thread[i].join();
+
+	LOG( INFO, "Stopping now the last worker ...");
+	sleep(5);
+
+	oss.str("");
+	oss<<"drts_"<<testNb<<"_new";
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_new(createDRTSWorker(oss.str(), agentName, "B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port()));
+	boost::thread drts_thread_new = boost::thread( &fhg::core::kernel_t::run, drts_new );
+
+	if(threadClient.joinable())
+		threadClient.join();
+
+	LOG( INFO, "The client thread joined the main thread!" );
+
+	for(i=0;i<NWORKERS;i++)
+	{
+		drts[i]->stop();
+		if(drts_thread[i].joinable())
+			drts_thread[i].join();
+	}
+
+	drts_new->stop();
+	if(drts_thread_new.joinable())
+		drts_thread_new.join();
+
+	ptrAgent->shutdown();
+	ptrOrch->shutdown();
+}
 
 BOOST_AUTO_TEST_SUITE_END()
