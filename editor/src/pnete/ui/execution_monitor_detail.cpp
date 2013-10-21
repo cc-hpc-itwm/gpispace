@@ -160,6 +160,10 @@ namespace fhg
 
         move_existing_columns (column + count, column + count - column);
 
+        _column_count += count;
+
+        endInsertColumns();
+
         for (int i (0); i < count; ++i)
         {
           setHeaderData ( _column_count + i
@@ -169,9 +173,13 @@ namespace fhg
                         );
         }
 
-        _column_count += count;
+        //! \note QSortFilterProxyModel (alphanum_sort) does not
+        //! recursively invalidate cached columnCount(). Thus, force
+        //! doing so by "changing the layout", which clears the cached
+        //! mapping.
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
 
-        endInsertColumns();
         return true;
       }
 
@@ -202,6 +210,14 @@ namespace fhg
         _column_count -= count;
 
         endRemoveColumns();
+
+        //! \note QSortFilterProxyModel (alphanum_sort) does not
+        //! recursively invalidate cached columnCount(). Thus, force
+        //! doing so by "changing the layout", which clears the cached
+        //! mapping.
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
+
         return true;
       }
 
