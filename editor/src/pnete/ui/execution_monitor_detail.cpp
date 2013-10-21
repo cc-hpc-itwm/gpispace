@@ -134,6 +134,11 @@ namespace fhg
 
       QModelIndex execution_monitor_proxy::index (int r, int c, const QModelIndex& p) const
       {
+        if (r >= rowCount (p) || c >= columnCount (p))
+        {
+          return QModelIndex();
+        }
+
         const QModelIndex base (id_proxy::index (r, 0, p));
         return createIndex (base.row(), c, base.internalPointer());
       }
