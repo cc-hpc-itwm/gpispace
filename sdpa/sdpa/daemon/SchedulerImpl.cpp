@@ -73,6 +73,7 @@ void SchedulerImpl::addWorker(  const Worker::worker_id_t& workerId,
 {
   try {
     ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
+    cond_workers_registered.notify_all();
     cond_feed_workers.notify_one();
   }
   catch( const WorkerAlreadyExistException& ex)
@@ -439,8 +440,8 @@ void SchedulerImpl::delete_job (sdpa::job_id_t const & job)
 
 void printMatchingWorkers(const sdpa::job_id_t& jobId, const sdpa::list_match_workers_t& listMatchingWorkers)
 {
-	ostringstream ossMatchWorkers;ossMatchWorkers<<"[";
-	for( sdpa::list_match_workers_t::const_iterator it=listMatchingWorkers.begin(); it!=listMatchingWorkers.end(); it++ )
+	/*ostringstream ossMatchWorkers;ossMatchWorkers<<"[";
+	for( sdpa::list_match_workers_t::iterator it=listMatchingWorkers.begin(); it!=listMatchingWorkers.end(); it++ )
 	{
 		ossMatchWorkers<<"("<<it->first<<","<<it->second<<")";
 		if(boost::next(it)!=listMatchingWorkers.end())
@@ -448,11 +449,24 @@ void printMatchingWorkers(const sdpa::job_id_t& jobId, const sdpa::list_match_wo
 	}
 
 	ossMatchWorkers<<"]";
-	DLOG( INFO, "The workers matching the requirements of the job "<<jobId<<" are: "<<ossMatchWorkers.str());
+	DLOG( INFO, "The workers matching the requirements of the job "<<jobId<<" are: "<<ossMatchWorkers.str());*/
 }
 
 void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
 {
+	/*if( !numberOfWorkers() )
+	{
+		DLOG(TRACE, "No worker found! Put the job "<<jobId.str()<<" into the common queue");
+		// do so as when no preferences were set, just ignore them right now
+		lock_type lock(mtx_);
+		cond_workers_registered.wait(lock);
+	}*/
+
+	/*DLOG(TRACE, "No worker matching the requirements of the job "<<jobId.str()<<" was found!");
+	// do so as when no preferences were set, just ignore them right now
+	ptr_worker_man_->dispatchJob(jobId);
+	cond_feed_workers.notify_one();*/
+
 	 try {
 	    const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
@@ -637,6 +651,7 @@ void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worke
 
 sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
 {
+	lock_type lock(mtx_);
 	sdpa::worker_id_t matchingWorkerId;
 
 	try {
@@ -653,6 +668,7 @@ sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& jo
 
 void SchedulerImpl::assignJobsToWorkers()
 {
+	 lock_type lock(mtx_);
 	 sdpa::worker_id_list_t listAvailWorkers;
 
 	 // replace this with the list of workers not reserved
@@ -767,6 +783,8 @@ void SchedulerImpl::run()
 			  if( !ptr_comm_handler_->canRunTasksLocally() )
 			  {
 				pending_jobs_queue_.push(jobId);
+				lock_type lock(mtx_);
+				cond_workers_registered.wait(lock);
 			  }
 			  else
 				execute(jobId);
