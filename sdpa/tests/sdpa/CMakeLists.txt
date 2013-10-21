@@ -217,6 +217,9 @@ add_dependencies(pnet-transform_file-test-wf pnetput)
 set (tests
   test_Atomic.cpp
   test_BackupRecover.cpp
+  test_Capabilities.cpp
+  test_Coallocation.cpp
+  test_StopRestartAgentsCoalloc.cpp
   test_Inotify.cpp
   test_CancelJob.cpp
   test_Config.cpp
@@ -233,7 +236,6 @@ set (tests
   test_StopRestartOrchSubscriberCli.cpp
   test_StopRestartAgentsSubscriberCli.cpp
   test_StopRestartAgentsPollingCli.cpp
-  test_StopRestartAgentsCoalloc.cpp
   test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
   test_SubmitJobFails.cpp
@@ -241,8 +243,6 @@ set (tests
   test_Topologies.cpp
   test_Subscriber.cpp
   #test_CannonOnTorus.cpp
-  test_Capabilities.cpp
-  test_Coallocation.cpp
   test_TransformFile.cpp
   test_wfe_plugin.cpp
 )
