@@ -148,7 +148,7 @@ namespace fhg
       {
         if (parent.isValid())
         {
-          return id_proxy::insertColumns (column, count, parent);
+          return false;
         }
 
         beginInsertColumns (parent, column, column + count - 1);
@@ -174,12 +174,7 @@ namespace fhg
       bool execution_monitor_proxy::removeColumns
         (int column, int count, const QModelIndex& parent)
       {
-        if (parent.isValid())
-        {
-          return id_proxy::removeColumns (column, count, parent);
-        }
-
-        if (_column_count - count < 1)
+        if (parent.isValid() || _column_count - count < 1)
         {
           return false;
         }
