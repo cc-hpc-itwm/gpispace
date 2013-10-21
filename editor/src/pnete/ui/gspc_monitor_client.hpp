@@ -30,7 +30,7 @@ namespace fhg
       public:
         monitor_client (const QString& host, int port, QObject* parent = NULL);
 
-        void request_action ( const QString&
+        void request_action ( const QStringList&
                             , const QString&
                             , const QMap<QString, boost::function<QString()> >&
                             );
@@ -77,11 +77,13 @@ namespace fhg
                            , const QString&
                            , const action_result_code&
                            , const boost::optional<QString>&
+                           , QList<QPair<QString, QString> >
                            );
         void nodes (QStringList);
         void nodes_details (const QString&, const boost::optional<QString>&);
         void nodes_state (const QString&, const boost::optional<QString>&);
         void states_actions_long_text (const QString&, const QString&);
+        void states_actions_requires_confirmation (const QString&, bool);
         void states_actions_arguments
           (const QString&, const QList<action_argument_data>&);
         void states_actions_expected_next_state (const QString&, const QString&);
@@ -90,6 +92,7 @@ namespace fhg
         void states_layout_hint_character (const QString&, const char&);
         void states_layout_hint_color (const QString&, const QColor&);
         void states_layout_hint_hidden (const QString&, const bool&);
+        void states_layout_hint_descriptive_name (const QString&, const QString&);
 
       private slots:
         void check_for_incoming_messages();

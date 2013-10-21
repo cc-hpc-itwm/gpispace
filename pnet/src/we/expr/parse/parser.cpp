@@ -292,7 +292,7 @@ namespace expr
     {
       op_stack.push (token::eof);
 
-      fhg::util::parse::position pos (input);
+      fhg::util::parse::position_string pos (input);
       token::tokenizer token (pos);
 
       while (!pos.end())
@@ -318,7 +318,7 @@ namespace expr
                     switch (action)
                       {
                       case action::reduce:
-                        reduce (token.pos()());
+                        reduce (token.pos().eaten());
                         goto ACTION;
                       case action::shift:
                         op_stack.push (token.token());
@@ -331,7 +331,7 @@ namespace expr
                         tmp_stack.clear();
                         break;
                       default:
-                        throw exception::parse::exception (fhg::util::show(action), token.pos()());
+                        throw exception::parse::exception (fhg::util::show(action), token.pos().eaten());
                       }
                     break;
                   }

@@ -6,11 +6,13 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/num/show.hpp>
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/require.hpp>
 
 #include <string>
 #include <iostream>
 
 using fhg::util::parse::position;
+using fhg::util::parse::position_string;
 namespace error = fhg::util::parse::error;
 
 BOOST_AUTO_TEST_CASE (_ulong)
@@ -19,21 +21,21 @@ BOOST_AUTO_TEST_CASE (_ulong)
 
   {
     const std::string inp ("23");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (23UL, read_ulong (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("23foo");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (23UL, read_ulong (pos));
-    BOOST_REQUIRE_EQUAL (pos.rest(), std::string ("foo"));
+    BOOST_REQUIRE_EQUAL (fhg::util::parse::require::rest (pos), std::string ("foo"));
   }
   {
     const std::string inp ("-2");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_THROW (read_ulong (pos), error::expected);
   }
@@ -44,7 +46,7 @@ BOOST_AUTO_TEST_CASE (_uint)
   using fhg::util::read_uint;
 
   const std::string inp ("23");
-  position pos (inp);
+  position_string pos (inp);
 
   BOOST_REQUIRE_EQUAL (23U, read_uint (pos));
 }
@@ -55,13 +57,13 @@ BOOST_AUTO_TEST_CASE (_long)
 
   {
     const std::string inp ("23");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (23L, read_long (pos));
   }
   {
     const std::string inp ("-2");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2L, read_long (pos));
   }
@@ -73,13 +75,13 @@ BOOST_AUTO_TEST_CASE (_int)
 
   {
     const std::string inp ("23");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (23, read_int (pos));
   }
   {
     const std::string inp ("-2");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2, read_int (pos));
   }
@@ -91,49 +93,49 @@ BOOST_AUTO_TEST_CASE (_double)
 
   {
     const std::string inp ("23");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (23.0, read_double (pos));
   }
   {
     const std::string inp ("-2");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2.0, read_double (pos));
   }
   {
     const std::string inp ("-2e4");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2e4, read_double (pos));
   }
   {
     const std::string inp ("-2e+4");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2e4, read_double (pos));
   }
   {
     const std::string inp ("-2.e4");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2e4, read_double (pos));
   }
   {
     const std::string inp ("-2.0e4");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2e4, read_double (pos));
   }
   {
     const std::string inp ("-2e-4");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2e-4, read_double (pos));
   }
   {
     const std::string inp ("-0.125");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-0.125, read_double (pos));
   }
@@ -145,19 +147,19 @@ BOOST_AUTO_TEST_CASE (_float)
 
   {
     const std::string inp ("23.125f");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (23.125f, read_float (pos));
   }
   {
     const std::string inp ("-2f");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2.0f, read_float (pos));
   }
   {
     const std::string inp ("-2e4f");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (-2e4f, read_float (pos));
   }
@@ -177,7 +179,7 @@ namespace
       std::ostringstream oss;
       oss << n;
       const std::string inp (oss.str());
-      position pos (inp);
+      position_string pos (inp);
 
       BOOST_CHECK_EQUAL (n, read_num (pos));
       BOOST_CHECK (pos.end());
@@ -200,70 +202,70 @@ BOOST_AUTO_TEST_CASE (_num)
 
   {
     const std::string inp ("-2.125e4f");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (-2.125e4f), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("-2.125e4");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (-2.125e4), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("2.125e-1");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (2.125e-1), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("23");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (23), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("-23");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (-23), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("23U");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (23U), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("-1U");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (-1U), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("23L");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (23L), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("-23L");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (-23L), read_num (pos));
     BOOST_REQUIRE (pos.end());
   }
   {
     const std::string inp ("23UL");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (23UL), read_num (pos));
     BOOST_REQUIRE (pos.end());
@@ -271,21 +273,21 @@ BOOST_AUTO_TEST_CASE (_num)
 
   {
     const std::string inp ("23UL 44.0f 23U 23L 23 44.0 rest");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (23UL), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (44.0f), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (23U), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (23L), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (23), read_num (pos));
-    pos.skip_spaces();
+    fhg::util::parse::require::skip_spaces (pos);
     BOOST_REQUIRE_EQUAL (num_type (44.0), read_num (pos));
-    pos.skip_spaces();
-    BOOST_REQUIRE_EQUAL (pos.rest(), "rest");
+    fhg::util::parse::require::skip_spaces (pos);
+    BOOST_REQUIRE_EQUAL (fhg::util::parse::require::rest (pos), "rest");
   }
 }
 
@@ -294,7 +296,7 @@ BOOST_AUTO_TEST_CASE (unexpected_digit)
 #define CHECK(s,T,f)                                                    \
   {                                                                     \
     const std::string inp (s);                                          \
-    position p (inp);                                                   \
+    position_string p (inp);                                            \
                                                                         \
     BOOST_CHECK_THROW ( fhg::util::read_ ## f (p)                       \
                       , error::unexpected_digit<T>                      \
@@ -307,7 +309,7 @@ BOOST_AUTO_TEST_CASE (unexpected_digit)
   CHECK ("0x80000000", int, int);
   {
     const std::string inp ("-0x80000000");
-    position p (inp);
+    position_string p (inp);
 
     BOOST_CHECK_EQUAL (fhg::util::read_int (p), -0x80000000);
   }
@@ -323,19 +325,19 @@ BOOST_AUTO_TEST_CASE (limits)
 
   {
     const std::string inp ("9223372036854775807L");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (9223372036854775807L), read_num (pos));
   }
   {
     const std::string inp ("-9223372036854775807L");
-    position pos (inp);
+    position_string pos (inp);
 
     BOOST_REQUIRE_EQUAL (num_type (-9223372036854775807L), read_num (pos));
   }
   {
     const std::string inp ("9223372036854775808L");
-    position pos (inp);
+    position_string pos (inp);
 
     typedef error::value_too_big<unsigned long, long> error_type;
 
@@ -343,7 +345,7 @@ BOOST_AUTO_TEST_CASE (limits)
   }
   {
     const std::string inp ("-9223372036854775808L");
-    position pos (inp);
+    position_string pos (inp);
 
     typedef error::value_too_big<unsigned long, long> error_type;
 
@@ -356,7 +358,7 @@ BOOST_AUTO_TEST_CASE (limits)
     std::ostringstream oss;
     oss << d << "f";
     const std::string inp (oss.str());
-    position pos (inp);
+    position_string pos (inp);
 
     typedef error::value_too_big<double, float> error_type;
 

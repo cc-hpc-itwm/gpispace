@@ -20,6 +20,7 @@
 #include <pnete/ui/graph/style/predicate.hpp>
 
 #include <fhg/util/num.hpp>
+#include <fhg/util/parse/require.hpp>
 
 #include <xml/parse/type/port.hpp>
 
@@ -462,8 +463,8 @@ namespace fhg
         {
           qreal read_qreal (const std::string& inp)
           {
-            util::parse::position pos (inp);
-            pos.skip_spaces();
+            util::parse::position_string pos (inp);
+            fhg::util::parse::require::skip_spaces (pos);
             return util::read_double (pos);
           }
         }

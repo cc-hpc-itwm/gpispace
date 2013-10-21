@@ -82,16 +82,12 @@ private:
     fhg::log::MemoryAppender::backlog_t backlog =
       fhg::log::global_memory_appender ("system")->backlog ();
 
-    typedef std::vector <fhg::log::LogEvent> event_list_t;
-    event_list_t events;
-    events.assign (backlog.rbegin (), backlog.rend ());
-
     std::ostringstream oss;
-    BOOST_FOREACH (fhg::log::LogEvent const &evt, events)
+    BOOST_REVERSE_FOREACH (fhg::log::LogEvent const &evt, backlog)
     {
       oss << evt;
     }
-    rply.set_body (oss.str ());
+    rply.set_body (oss.str());
 
     user->deliver (rply);
   }

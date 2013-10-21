@@ -14,6 +14,8 @@
 
 #include <we/type/value/read.hpp>
 
+#include <fhg/util/parse/require.hpp>
+
 namespace expr
 {
   namespace token
@@ -267,7 +269,7 @@ namespace expr
         {
           if (_tokenizer.is_eof())
           {
-            throw exception::parse::expected (names (m), _tokenizer.pos()());
+            throw exception::parse::expected (names (m), _tokenizer.pos().eaten());
           }
           else
           {
@@ -291,7 +293,7 @@ namespace expr
           }
           else
           {
-            throw exception::parse::expected (names (m), _tokenizer.pos()());
+            throw exception::parse::expected (names (m), _tokenizer.pos().eaten());
           }
         }
 
@@ -360,7 +362,7 @@ namespace expr
       {
         ++_pos;
 
-        skip_comment (_pos());
+        skip_comment (_pos.eaten());
 
         operator++();
       }
@@ -378,11 +380,12 @@ namespace expr
 
       do
         {
-          _ref.push_back (_pos.identifier());
+          fhg::util::parse::require::skip_spaces (_pos);
+          _ref.push_back (fhg::util::parse::require::identifier (_pos));
 
           if (_pos.end())
           {
-            throw exception::parse::expected ("'.' or '}'", _pos());
+            throw exception::parse::expected ("'.' or '}'", _pos.eaten());
           }
 
           if (*_pos == '.')
@@ -392,7 +395,7 @@ namespace expr
         }
       while (!_pos.end() && *_pos != '}');
 
-      _pos.require ("}");
+      fhg::util::parse::require::require (_pos, '}');
     }
 
     void tokenizer::notne()
@@ -417,7 +420,7 @@ namespace expr
       }
       else
       {
-        throw exception::parse::misplaced (descr, _pos());
+        throw exception::parse::misplaced (descr, _pos.eaten());
       }
     }
 
@@ -430,7 +433,7 @@ namespace expr
             ++_pos;
             if (!_pos.end() && *_pos == '*')
               {
-                ++_pos; skip_comment (_pos());
+                ++_pos; skip_comment (_pos.eaten());
               }
             break;
           case '*':
@@ -443,12 +446,12 @@ namespace expr
           default: ++_pos; break;
           }
 
-      throw exception::parse::unterminated ("comment", open-2, _pos());
+      throw exception::parse::unterminated ("comment", open-2, _pos.eaten());
     }
 
     void tokenizer::operator++()
     {
-      _pos.skip_spaces();
+      fhg::util::parse::require::skip_spaces (_pos);
 
       if (is_eof())
       {

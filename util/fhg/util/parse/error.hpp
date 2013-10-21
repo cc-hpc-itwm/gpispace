@@ -18,11 +18,6 @@ namespace fhg
     {
       namespace error
       {
-        namespace detail
-        {
-          std::string nice (const std::string&, const position&);
-        }
-
 #ifndef NO_BACKTRACE_ON_PARSE_ERROR
 #define GENERIC_EXCEPTION_BASE_CLASS fhg::util::backtracing_exception
 #else
@@ -33,10 +28,10 @@ namespace fhg
         {
         public:
           generic (const std::string& msg, const position& inp)
-            : GENERIC_EXCEPTION_BASE_CLASS (detail::nice (msg, inp))
+            : GENERIC_EXCEPTION_BASE_CLASS (inp.error_message (msg))
           {}
           generic (const boost::format& msg, const position& inp)
-            : GENERIC_EXCEPTION_BASE_CLASS (detail::nice (msg.str(), inp))
+            : GENERIC_EXCEPTION_BASE_CLASS (inp.error_message (msg.str()))
           {}
         };
 

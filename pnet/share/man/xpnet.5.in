@@ -8,10 +8,7 @@ xpnet - the GPISpace Petri-Net XML format
 general structure of an xpnet file.
 .SS TYPES
 .B "control"
-        just a simple  token, you can take it  as a thing whose value  is not of
-        interest just  whether it's there  or not.   For example, in  petri nets
-        there are  no functions  returning void, every  function is  required to
-        return something  - a  control token  is such  a 'something'.
+        just a simple token, you can take it as a thing whose value is not of interest just whether it's there or not.  For example, in petri nets there are no functions returning void, every function is required to return something - a control token is such a 'something'.
 
         Represented as: []
 
@@ -59,15 +56,12 @@ general structure of an xpnet file.
         Represented as: "Hello World!"
 
 .B "bitset"
-        A token that can carry a bitset. The set can contain an arbitrary number
-        of bits.
+        A token that can carry a bitset. The set can contain an arbitrary number of bits.
 
         Represented as: {<long> ...}
 
 .B "bytearray"
-        An arbitrary blob of bytes. Expressions cannot directly operate on them,
-        but you can use  them in C++ code. The "bytearray" can  be casted to any
-        type you want and you can assign (memcpy) any type you like.
+        An arbitrary blob of bytes. Expressions cannot directly operate on them, but you can use them in C++ code. The "bytearray" can be casted to any type you want and you can assign (memcpy) any type you like.
 
         Represented as: y(<long> ...)
 
@@ -86,20 +80,17 @@ general structure of an xpnet file.
 
         Represented as: Set {value, ...}
 
--B "struct"
+.B "struct"
         A structures value.
 
         Represented as: Struct [name := value, ...]
 
 .SS OPERATIONS
 
-Most binary operations  are strongly typed, i.e. they only  accept tokens of the
-same type.  For  example, you cannot evaluate "max(1L, 0.0f)",  you have to cast
-one of the inputs explicitly: "max(1L, tolong(0.0f))".
+Most binary operations are strongly typed, i.e. they only accept tokens of the same type. For example, you cannot evaluate "max(1L, 0.0f)", you have to cast one of the inputs explicitly: "max(1L, tolong(0.0f))".
 
 .B :or: :and: :not:
-        Simple boolean algebra on boolean expressions. :not: can also be written
-        as "!". Evaluation is short-circuit.
+        Simple boolean algebra on boolean expressions. :not: can also be written as "!". Evaluation is short-circuit.
 
 .B :lt: :le: :gt: :ge: :ne: :eq:
         Simple comparisons on tokens of type

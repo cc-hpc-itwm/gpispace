@@ -21,7 +21,7 @@ namespace fhg
                      , std::back_inserter (inp), tolower
                      );
 
-      parse::position pos (inp);
+      parse::position_string pos (inp);
 
       return parse::require::boolean (pos);
     }

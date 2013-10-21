@@ -21,6 +21,7 @@
 #include <QColorDialog>
 #include <QGroupBox>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSettings>
 #include <QTreeView>
 #include <QVBoxLayout>
@@ -272,10 +273,8 @@ namespace fhg
       }
 
       execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
-        : QWidget (parent)
+        : QSplitter (Qt::Horizontal, parent)
       {
-        new QVBoxLayout (this);
-
         util::qt::mvc::transform_functions_model* available_transform_functions
           (new util::qt::mvc::transform_functions_model);
         util::qt::mvc::transform_functions_model* transform_functions
@@ -307,6 +306,7 @@ namespace fhg
         next = alphanum_sorted;
 
         filtered_by_user->setFilterKeyColumn (0);
+        alphanum_sorted->setDynamicSortFilter (true);
 
 
         QTreeView* tree (new QTreeView (this));
@@ -337,10 +337,8 @@ namespace fhg
         new util::qt::restricted_tree_column_sorter (tree, QSet<int>() << 0, this);
 
 
-        QAction* add_column
-          (new QAction (QObject::tr ("add_column_action"), next));
-        QAction* remove_column
-          (new QAction (QObject::tr ("remove_column_action"), next));
+        QAction* add_column (new QAction (tr ("add_column_action"), next));
+        QAction* remove_column (new QAction (tr ("remove_column_action"), next));
 
         util::qt::boost_connect<void()>
           (add_column, SIGNAL (triggered()), boost::bind (&add_columns, 1, next));
@@ -378,6 +376,18 @@ namespace fhg
           (new util::qt::mini_button (add_column, this));
         util::qt::mini_button* remove_column_button
           (new util::qt::mini_button (remove_column, this));
+
+
+        QAction* clear_model (new QAction (tr ("clear_action"), base));
+        clear_model->setIcon (QIcon::fromTheme ("edit-clear"));
+
+        util::qt::boost_connect<void()>
+          ( clear_model, SIGNAL (triggered())
+          , this, boost::bind (&worker_model::clear, base)
+          );
+
+        util::qt::mini_button* clear_button
+          (new util::qt::mini_button (clear_model, this));
 
 
         util::qt::dual_list_selector* list_builder
@@ -425,11 +435,20 @@ namespace fhg
           }
         }
 
-        layout()->addWidget (tree);
-        layout()->addWidget (add_column_button);
-        layout()->addWidget (remove_column_button);
-        layout()->addWidget (list_builder);
-        layout()->addWidget (legend_box);
+        QScrollArea* sidebar (new QScrollArea (this));
+        QWidget* sidebar_content (new QWidget (sidebar));
+        sidebar->setWidget (sidebar_content);
+        sidebar->setWidgetResizable (true);
+
+        QVBoxLayout* sidebar_layout (new QVBoxLayout (sidebar_content));
+
+        addWidget (tree);
+        addWidget (sidebar);
+        sidebar_layout->addWidget (add_column_button);
+        sidebar_layout->addWidget (remove_column_button);
+        sidebar_layout->addWidget (clear_button);
+        sidebar_layout->addWidget (list_builder);
+        sidebar_layout->addWidget (legend_box);
 
         add_column->trigger();
       }

@@ -7,6 +7,8 @@
 #include <fhglog/FilteringAppender.hpp>
 #include <fhglog/format.hpp>
 
+#include <fhg/util/parse/position.hpp>
+
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -143,13 +145,14 @@ int main(int argc, char **argv)
 
   try
   {
+    std::cin.unsetf (std::ios_base::skipws);
+    fhg::util::parse::position_istream pos (std::cin);
     while (std::cin)
     {
-      fhg::log::LogEvent evt;
-      std::cin >> evt;
-      if (std::cin.good ())
+      appender->append (fhg::log::LogEvent (pos));
+      if (!std::cin.good())
       {
-        appender->append (evt);
+        break;
       }
     }
   }

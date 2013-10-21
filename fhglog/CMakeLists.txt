@@ -59,6 +59,4 @@ endif (DEBUG_FHGLOG)
 add_subdirectory(fhglog)
 add_subdirectory(apps)
 
-if (BUILD_TESTING)
-  add_subdirectory(tests)
-endif (BUILD_TESTING)
+add_subdirectory(tests)

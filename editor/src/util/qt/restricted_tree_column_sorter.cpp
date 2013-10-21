@@ -30,6 +30,7 @@ namespace fhg
           ( _tree->header(), SIGNAL (sectionClicked (int))
           , boost::bind (&restricted_tree_column_sorter::next, this, _1)
           );
+        next (*_allowed_columns.begin());
       }
 
       void restricted_tree_column_sorter::next (int column)

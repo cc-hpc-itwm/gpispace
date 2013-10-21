@@ -80,7 +80,9 @@ void RemoteAppender::close()
 void RemoteAppender::append(const LogEvent &evt)
 {
   boost::system::error_code ignored_error;
-  std::stringstream sstr;
-  evt.encode (sstr);
-  socket_->send_to(boost::asio::buffer(sstr.str ()), logserver_, 0, ignored_error);
+  socket_->send_to ( boost::asio::buffer(evt.encoded())
+                   , logserver_
+                   , 0
+                   , ignored_error
+                   );
 }

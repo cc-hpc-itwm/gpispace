@@ -4,6 +4,7 @@
 #include <xml/parse/error.hpp>
 
 #include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
 
 namespace xml
 {
@@ -213,7 +214,7 @@ namespace xml
           BOOST_FOREACH (const std::string& kv, _link_prefix)
           {
             std::string parsed_key;
-            fhg::util::parse::position inp (kv.begin(), kv.end());
+            fhg::util::parse::position_string inp (kv);
             bool found_eq (false);
 
             while (!found_eq && !inp.end())
@@ -232,20 +233,21 @@ namespace xml
 
             if (!parsed_key.size())
             {
-              throw error::parse_link_prefix ("Missing key", kv, inp());
+              throw error::parse_link_prefix ("Missing key", kv, inp.eaten());
             }
 
             if (!found_eq)
             {
-              throw error::parse_link_prefix ("Missing =", kv, inp());
+              throw error::parse_link_prefix ("Missing =", kv, inp.eaten());
             }
 
             if (inp.end())
             {
-              throw error::parse_link_prefix ("Missing value", kv, inp());
+              throw error::parse_link_prefix ("Missing value", kv, inp.eaten());
             }
 
-            _link_prefix_by_key[parsed_key] = inp.rest();
+            _link_prefix_by_key[parsed_key] =
+              fhg::util::parse::require::rest (inp);
           }
 
           _link_prefix_parsed = true;

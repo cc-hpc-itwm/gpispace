@@ -10,10 +10,10 @@
 #include <QColor>
 #include <QDateTime>
 #include <QList>
-#include <QListWidget>
 #include <QMap>
 #include <QPixmap>
 #include <QStringList>
+#include <QTableWidget>
 #include <QTimer>
 #include <QWidget>
 
@@ -30,6 +30,7 @@ namespace fhg
         QColor _brush;
         QColor _pen;
         bool _hidden;
+        boost::optional<QString> _descriptive_name;
 
         QPixmap _pixmap;
 
@@ -59,6 +60,7 @@ namespace fhg
         void states_layout_hint_character (const QString&, const char&);
         void states_layout_hint_color (const QString&, const QColor&);
         void states_layout_hint_hidden (const QString&, const bool&);
+        void states_layout_hint_descriptive_name (const QString&, const QString&);
 
       signals:
         void state_pixmap_changed (const QString&);
@@ -70,16 +72,16 @@ namespace fhg
 
       // ------------------------------------------------------------------------
 
-      class log_widget : public QListWidget
+      class log_widget : public QTableWidget
       {
         Q_OBJECT;
 
       public:
         log_widget (QWidget* parent = NULL);
 
-        void critical (const QString&);
-        void information (const QString&);
-        void warning (const QString&);
+        void critical (QString host, const QString&, QStringList);
+        void information (QString host, const QString&, QStringList);
+        void warning (QString host, const QString&, QStringList);
 
       public slots:
         void follow (bool);
@@ -118,17 +120,19 @@ namespace fhg
         void nodes_details (const QString&, const boost::optional<QString>&);
         void nodes_state (const QString&, const boost::optional<QString>&);
         void states_actions_long_text (const QString&, const QString&);
+        void states_actions_requires_confirmation (const QString&, bool);
         void states_actions_arguments
           (const QString&, const QList<action_argument_data>&);
         void states_actions_expected_next_state (const QString&, const QString&);
 
         void update_nodes_with_state (const QString&);
-        void trigger_action (const QStringList& hosts, const QString& action);
+        void trigger_action (const QStringList& hosts, const QSet<int>& host_ids, const QString& action);
 
-        void action_result ( const QString&
-                           , const QString&
+        void action_result ( const QString& host
+                           , const QString& action
                            , const action_result_code&
-                           , const boost::optional<QString>&
+                           , const boost::optional<QString>& message
+                           , QList<QPair<QString, QString> > additional_data
                            );
 
         void sort_by_name();
@@ -160,8 +164,11 @@ namespace fhg
         void sort_by (boost::function<bool (const node_type&, const node_type&)>);
 
         QMap<QString, QString> _long_action;
+        QSet<QString> _action_requires_confirmation;
         QMap<QString, QList<monitor_client::action_argument_data> > _action_arguments;
         QMap<QString, QString> _action_expects_next_state;
+
+        QString full_action_name (QString, const QSet<int>& host_ids) const;
 
         QSet<QString> _pending_updates;
         QSet<QString> _nodes_to_update;

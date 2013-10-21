@@ -8,6 +8,19 @@
 #include <sys/types.h>
 #include <fhglog/LogLevel.hpp>
 
+#include <boost/cstdint.hpp>
+
+namespace fhg
+{
+  namespace util
+  {
+    namespace parse
+    {
+      class position;
+    }
+  }
+}
+
 namespace fhg { namespace log {
   class LogEvent {
     public:
@@ -23,80 +36,59 @@ namespace fhg { namespace log {
       typedef std::vector<std::string> trace_type;
       typedef std::set<std::string> tags_type;
 
+      LogEvent(util::parse::position&);
+      static LogEvent from_string (const std::string&);
       LogEvent();
       LogEvent(const severity_type &severity
-             , const file_type &path
+             , const file_type &pa
              , const function_type &function
              , const line_type &line
              , const message_type &message);
 
-      LogEvent(const LogEvent &);
-
-      ~LogEvent();
-
-      LogEvent &operator=(const LogEvent &);
-      bool operator==(const LogEvent &) const;
-      bool operator!=(const LogEvent &rhs) const
-      {
-        return !(*this == rhs);
-      }
-
       bool operator<(const LogEvent &) const;
 
-      inline       std::size_t id () const { return id_; }
-      inline const severity_type &severity() const { return severity_; }
-      inline const file_type &path() const { return path_; }
-      inline const function_type &function() const { return function_; }
-      inline const line_type &line() const { return line_; }
-      inline const message_type &message() const { return message_; }
-      inline const tstamp_type &tstamp() const { return tstamp_; }
-      inline const pid_type &pid() const { return pid_; }
-      inline const tid_type &tid() const { return tid_; }
-      inline const trace_type &trace() const { return trace_; }
-      inline const std::string &host() const { return host_; }
-      inline const tags_type &tags () const { return tags_; }
+      const std::size_t& id() const { return id_; }
+      const severity_type& severity() const { return severity_; }
+      const file_type& path() const { return path_; }
+      const function_type& function() const { return function_; }
+      const line_type& line() const { return line_; }
+      const message_type& message() const { return message_; }
+      const tstamp_type& tstamp() const { return tstamp_; }
+      const pid_type& pid() const { return pid_; }
+      const tid_type& tid() const { return tid_; }
+      const trace_type& trace() const { return trace_; }
+      const std::string& host() const { return host_; }
+      const tags_type& tags () const { return tags_; }
 
-      inline       std::size_t &id () { return id_; }
-      inline severity_type &severity() { return severity_; }
-      inline file_type &path() { return path_; }
-      inline function_type &function() { return function_; }
-      inline line_type &line() { return line_; }
-      inline message_type &message() { return message_; }
-      inline tstamp_type &tstamp() { return tstamp_; }
-      inline pid_type &pid() { return pid_; }
-      inline tid_type &tid() { return tid_; }
-      inline trace_type &trace() { return trace_; }
-      inline std::string &host() { return host_; }
+      std::size_t &id() { return id_; }
+      severity_type &severity() { return severity_; }
+      file_type &path() { return path_; }
+      function_type &function() { return function_; }
+      line_type &line() { return line_; }
+      message_type &message() { return message_; }
+      tstamp_type &tstamp() { return tstamp_; }
+      pid_type &pid() { return pid_; }
+      tid_type &tid() { return tid_; }
+      trace_type &trace() { return trace_; }
+      std::string &host() { return host_; }
 
-      inline void trace (const std::string &name) const
+      void trace (const std::string &name) const
       {
         trace_.push_back (name);
       }
-
-      inline void tag (const std::string &t) const
+      void tag (const std::string &t)
       {
         tags_.insert (t);
       }
-
-      inline void untag (const std::string &t)
+      void untag (const std::string &t)
       {
         tags_.erase (t);
       }
 
-      inline void finish() const
-      {
-        if (message_.empty())
-        {
-          const_cast<std::string&>(message_) = message_buffer_.str();
-        }
-      }
-      inline std::ostream &stream() { return message_buffer_; }
-
-    std::ostream & encode (std::ostream &, int flags = 0) const;
-    std::istream & decode (std::istream &);
+      std::string encoded() const;
 
     private:
-      std::size_t id_;
+      uint64_t id_;
       severity_type severity_;
       file_type path_;
       function_type function_;
@@ -107,12 +99,10 @@ namespace fhg { namespace log {
       tid_type tid_;
       std::string host_;
       mutable trace_type trace_;
-      mutable tags_type tags_;
-      std::ostringstream message_buffer_;
+      tags_type tags_;
   };
 }}
 
-std::ostream & operator << (std::ostream &os, fhg::log::LogEvent const &evt);
-std::istream & operator >> (std::istream &is, fhg::log::LogEvent &evt);
+std::ostream& operator<< (std::ostream&, fhg::log::LogEvent const&);
 
 #endif

@@ -134,6 +134,11 @@ namespace fhg
 
       QModelIndex execution_monitor_proxy::index (int r, int c, const QModelIndex& p) const
       {
+        if (r >= rowCount (p) || c >= columnCount (p))
+        {
+          return QModelIndex();
+        }
+
         const QModelIndex base (id_proxy::index (r, 0, p));
         return createIndex (base.row(), c, base.internalPointer());
       }
@@ -148,12 +153,16 @@ namespace fhg
       {
         if (parent.isValid())
         {
-          return id_proxy::insertColumns (column, count, parent);
+          return false;
         }
 
         beginInsertColumns (parent, column, column + count - 1);
 
         move_existing_columns (column + count, column + count - column);
+
+        _column_count += count;
+
+        endInsertColumns();
 
         for (int i (0); i < count; ++i)
         {
@@ -164,9 +173,13 @@ namespace fhg
                         );
         }
 
-        _column_count += count;
+        //! \note QSortFilterProxyModel (alphanum_sort) does not
+        //! recursively invalidate cached columnCount(). Thus, force
+        //! doing so by "changing the layout", which clears the cached
+        //! mapping.
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
 
-        endInsertColumns();
         return true;
       }
 
@@ -174,12 +187,7 @@ namespace fhg
       bool execution_monitor_proxy::removeColumns
         (int column, int count, const QModelIndex& parent)
       {
-        if (parent.isValid())
-        {
-          return id_proxy::removeColumns (column, count, parent);
-        }
-
-        if (_column_count - count < 1)
+        if (parent.isValid() || _column_count - count < 1)
         {
           return false;
         }
@@ -202,6 +210,14 @@ namespace fhg
         _column_count -= count;
 
         endRemoveColumns();
+
+        //! \note QSortFilterProxyModel (alphanum_sort) does not
+        //! recursively invalidate cached columnCount(). Thus, force
+        //! doing so by "changing the layout", which clears the cached
+        //! mapping.
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
+
         return true;
       }
 
@@ -591,8 +607,10 @@ namespace fhg
           {
             const QList<boost::optional<worker_model::value_type> > current_intervals
               ( util::qt::collect<boost::optional<worker_model::value_type> >
-              (index.data (worker_model::current_interval_role))
+                (index.data (worker_model::current_interval_role))
               );
+
+            const util::qt::painter_state_saver state_saver (painter);
 
             if (option.state & QStyle::State_Selected)
             {
@@ -610,8 +628,12 @@ namespace fhg
                           , current_intervals
                           )
             {
-              in_state[current->state()] += +(current && current->duration());
+              if (current && !current->duration())
+              {
+                ++in_state[current->state()];
+              }
             }
+
             const int inset (1);
             const QRectF rect_with_inset
               (option.rect.adjusted (inset, inset, -inset, -inset));

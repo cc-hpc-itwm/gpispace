@@ -5,6 +5,7 @@
 #include <util/qt/boost_connect.hpp>
 #include <util/qt/file_line_edit.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/util/alphanum.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
@@ -33,6 +34,7 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QDateTime>
+#include <QHeaderView>
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
@@ -117,6 +119,9 @@ namespace fhg
         connect ( monitor_client
                 , SIGNAL (states_layout_hint_hidden (const QString&, const bool&))
                 , SLOT (states_layout_hint_hidden (const QString&, const bool&)));
+        connect ( monitor_client
+                , SIGNAL (states_layout_hint_descriptive_name (const QString&, const QString&))
+                , SLOT (states_layout_hint_descriptive_name (const QString&, const QString&)));
       }
 
       void legend::states_add (const QString& state, const QStringList& actions)
@@ -157,6 +162,13 @@ namespace fhg
         update (state);
       }
 
+      void legend::states_layout_hint_descriptive_name
+        (const QString& state, const QString& val)
+      {
+        _states[state]._descriptive_name = val;
+        update (state);
+      }
+
       namespace
       {
         QWidget* legend_entry
@@ -178,7 +190,7 @@ namespace fhg
         _state_legend[s] = NULL;
         if (!state (s)._hidden)
         {
-          _state_legend[s] = legend_entry (s, state (s), this);
+          _state_legend[s] = legend_entry (state (s)._descriptive_name.get_value_or (s), state (s), this);
           layout()->addWidget (_state_legend[s]);
         }
       }
@@ -200,34 +212,55 @@ namespace fhg
       // ------------------------------------------------------------------------
 
       log_widget::log_widget (QWidget* parent)
-        : QListWidget (parent)
-      { }
-
-      void log_widget::information (const QString& message)
+        : QTableWidget (parent)
       {
-        new QListWidgetItem
-          ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxInformation)
-          , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
-          , this
-          );
+        setColumnCount (3);
+        setShowGrid (false);
+        setSelectionMode (QAbstractItemView::NoSelection);
+        verticalHeader()->setVisible (false);
+        horizontalHeader()->setStretchLastSection (true);
+        verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
       }
 
-      void log_widget::warning (const QString& message)
+      namespace
       {
-        new QListWidgetItem
-          ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxWarning)
-          , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
-          , this
-          );
+        void append (log_widget* wid, QStyle::StandardPixmap icon, QString host, QString message, QStringList additional_rows)
+        {
+          const int first_row (wid->rowCount());
+          wid->insertRow (first_row);
+          wid->setItem ( first_row
+                       , 0
+                       , new QTableWidgetItem
+                         ( QApplication::style()->standardIcon (icon)
+                         , QDateTime::currentDateTime().toString ("hh:mm:ss")
+                         )
+                       );
+          wid->setItem (first_row, 1, new QTableWidgetItem (host));
+          wid->setItem (first_row, 2, new QTableWidgetItem (message));
+          BOOST_FOREACH (QString additional, additional_rows)
+          {
+            const int row (wid->rowCount());
+            wid->insertRow (row);
+            QTableWidgetItem* item (new QTableWidgetItem (additional));
+            item->setForeground (QBrush (Qt::gray));
+            wid->setItem (row, 2, item);
+          }
+        }
       }
 
-      void log_widget::critical (const QString& message)
+      void log_widget::information (QString host, const QString& message, QStringList additional_rows )
       {
-        new QListWidgetItem
-          ( QApplication::style()->standardIcon (QStyle::SP_MessageBoxCritical)
-          , QDateTime::currentDateTime().toString("hh:mm:ss") + ": " + message
-          , this
-          );
+        append (this, QStyle::SP_MessageBoxInformation, host, message, additional_rows);
+      }
+
+      void log_widget::warning (QString host, const QString& message, QStringList additional_rows )
+      {
+        append (this, QStyle::SP_MessageBoxWarning, host, message, additional_rows);
+      }
+
+      void log_widget::critical (QString host, const QString& message, QStringList additional_rows )
+      {
+        append (this, QStyle::SP_MessageBoxCritical, host, message, additional_rows);
       }
 
       void log_widget::follow (bool follow)
@@ -335,14 +368,17 @@ namespace fhg
                 , SIGNAL (states_actions_long_text (const QString&, const QString&))
                 , SLOT (states_actions_long_text (const QString&, const QString&)));
         connect ( _monitor_client
+                , SIGNAL (states_actions_requires_confirmation (const QString&, bool))
+                , SLOT (states_actions_requires_confirmation (const QString&, bool)));
+        connect ( _monitor_client
                 , SIGNAL (states_actions_arguments (const QString&, const QList<action_argument_data>&))
                 , SLOT (states_actions_arguments (const QString&, const QList<action_argument_data>&)));
         connect ( _monitor_client
                 , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
                 , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
         connect ( _monitor_client
-                , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&))
-                , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&))
+                , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QList<QPair<QString, QString> >))
+                , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QList<QPair<QString, QString> >))
                 );
 
         connect ( _legend_widget
@@ -370,7 +406,7 @@ namespace fhg
       }
       void node_state_widget::update_nodes_with_state (const QString& s)
       {
-        for (size_t i (0); i < _nodes.size(); ++i)
+        for (int i (0); i < _nodes.size(); ++i)
         {
           if (_nodes[i]._state == s)
           {
@@ -383,6 +419,39 @@ namespace fhg
         (const QString& action, const QString& long_text)
       {
         _long_action[action] = long_text;
+      }
+
+      QString node_state_widget::full_action_name
+        (QString action, const QSet<int>& host_ids) const
+      {
+        fhg_assert (!host_ids.empty(), "an action needs to be executed on at least one host");
+
+        const QString first_hostname (node (*host_ids.begin())._hostname);
+        const QString replacement
+          ( host_ids.size() <= 1 ? first_hostname
+          : host_ids.size() == 2 ? QString ("%1 (and one other)")
+                              .arg (first_hostname)
+          : QString ("%1 (and %2 others)")
+          .arg (first_hostname).arg (host_ids.size() - 1)
+          );
+
+        return QString ( _long_action.contains (action)
+                       ? _long_action[action]
+                       : action
+                       ).replace ("{hostname}", replacement);
+      }
+
+      void node_state_widget::states_actions_requires_confirmation
+        (const QString& action, bool requires)
+      {
+        if (requires)
+        {
+          _action_requires_confirmation.insert (action);
+        }
+        else
+        {
+          _action_requires_confirmation.remove (action);
+        }
       }
       void node_state_widget::states_actions_arguments
         (const QString& action, const QList<monitor_client::action_argument_data>& arguments)
@@ -423,20 +492,23 @@ namespace fhg
           node_type& n (node (*node_index));
 
           const boost::optional<QString> old_state (n._state);
+          const boost::optional<QString> old_expected_state
+            (n._expects_state_change);
           n._state = state;
           n._state_update_time = QDateTime::currentDateTime();
           n._expects_state_change = boost::none;
 
-          if (old_state != state)
+          if (old_state != state || old_expected_state)
           {
             update (*node_index);
 
             if (n._watched)
             {
-              _log->warning ( QString ("%3: State changed from %1 to %2.")
+              _log->warning ( hostname
+                            , QString ("State changed from %1 to %2.")
                             .arg (old_state.get_value_or ("unknown"))
                             .arg (state.get_value_or ("unknown"))
-                            .arg (hostname)
+                            , QStringList()
                             );
             }
           }
@@ -512,27 +584,35 @@ namespace fhg
         , const QString& action
         , const monitor_client::action_result_code& result
         , const boost::optional<QString>& message
+        , QList<QPair<QString, QString> > additional_data
         )
       {
+        const boost::function<void (QString, QString, QStringList)> append
+          ( boost::bind
+            ( result == monitor_client::okay ? &log_widget::information
+            : result == monitor_client::fail ? &log_widget::critical
+            : &log_widget::warning
+            , _log
+            , _1
+            , _2
+            , _3
+            )
+          );
+
+        QString msg;
         if (message)
         {
-          const QString msg (QString ("%1: %2").arg (host).arg (*message));
-
-          switch (result)
-          {
-          case monitor_client::okay:
-            _log->information (msg);
-            break;
-
-          case monitor_client::fail:
-            _log->critical (msg);
-            break;
-
-          case monitor_client::warn:
-            _log->warning (msg);
-            break;
-          }
+          msg += *message;
         }
+
+        QStringList additional;
+        typedef QPair<QString, QString> kv_pair;
+        BOOST_FOREACH (kv_pair pair, additional_data)
+        {
+          additional << QString ("%1 = %2").arg (pair.first).arg (pair.second);
+        }
+
+        append (host, msg, additional);
       }
 
       void node_state_widget::refresh_stati()
@@ -584,7 +664,7 @@ namespace fhg
       void node_state_widget::rebuild_node_index()
       {
         _node_index_by_hostname.clear();
-        for (size_t i (0); i < _nodes.size(); ++i)
+        for (int i (0); i < _nodes.size(); ++i)
         {
           _node_index_by_hostname[node (i)._hostname] = i;
         }
@@ -776,7 +856,7 @@ namespace fhg
         int string_to_int (const QString& str)
         {
           const std::string stdstr (str.toStdString());
-          fhg::util::parse::position pos (stdstr);
+          fhg::util::parse::position_string pos (stdstr);
           return fhg::util::read_int (pos);
         }
 
@@ -857,8 +937,16 @@ namespace fhg
         }
       }
 
+      namespace
+      {
+        QString possibly_elide (QString in, int max, QString suffix)
+        {
+          return in.size() <= max ? in : in.left (max) + ".." + suffix;
+        }
+      }
+
       void node_state_widget::trigger_action
-        (const QStringList& hosts, const QString& action)
+        (const QStringList& hosts, const QSet<int>& host_ids, const QString& action)
       {
         QMap<QString, boost::function<QString()> > value_getters;
 
@@ -906,10 +994,51 @@ namespace fhg
           }
         }
 
-        foreach (QString const &host, hosts)
+        if (_action_requires_confirmation.contains (action))
         {
-          _monitor_client->request_action (host, action, value_getters);
+          const QString action_name (full_action_name (action, host_ids));
+
+          const QString hostnames
+            ( hosts.size() == 1 ? "on host " + hosts.first()
+            : possibly_elide ( "on hosts " + hosts.join (", ")
+                             , 200 //! \todo Depending on number of hosts?
+                             , " (and more)"
+                             )
+            );
+
+          QString params;
+
+          if (!value_getters.isEmpty())
+          {
+            params += "<li>with arguments<ul>";
+
+            for ( QMap<QString, boost::function<QString()> >::const_iterator i
+                   (value_getters.constBegin())
+                ; i != value_getters.constEnd()
+                ; ++i
+                )
+            {
+              params += QString ("<li><b>%1</b> = %2").arg (i.key()).arg (i.value()());
+            }
+            params += "</ul><br>";
+          }
+
+          if ( QMessageBox::question
+               ( this
+               , tr ("Execute \"%1\"?").arg (action_name)
+               , tr ("You will execute<ul><li>%1<li>%2%3</ul>Continue?")
+               . arg (action_name).arg (hostnames).arg (params)
+               , QMessageBox::Yes | QMessageBox::No
+               , QMessageBox::No
+               )
+             == QMessageBox::No
+             )
+          {
+            return;
+          }
         }
+
+        _monitor_client->request_action (hosts, action, value_getters);
 
         if (_action_expects_next_state.contains (action))
         {
@@ -938,11 +1067,17 @@ namespace fhg
             const boost::optional<int> node_index (node_at (help_event->pos()));
             if (node_index)
             {
+              const boost::optional<QString> s (node (*node_index)._state);
+              const QString displayed_state
+                ( s
+                ? state (s)._descriptive_name.get_value_or (*s)
+                : "unknown state"
+                );
               QToolTip::showText
                 ( help_event->globalPos()
                 , QString ("%1: %2%3 [last update: %4]")
                 .arg (node (*node_index)._hostname)
-                .arg (node (*node_index)._state.get_value_or ("unknown state"))
+                .arg (displayed_state)
                 .arg ( node (*node_index)._details
                      ? QString (*node (*node_index)._details).prepend (" (").append (")")
                      : ""
@@ -975,15 +1110,6 @@ namespace fhg
               _monitor_client->pause();
 
               QSet<int> nodes (QSet<int>::fromList (_selection));
-              const QString hostname_replacement ( nodes.size() <= 1
-                                                 ? node (*node_index)._hostname
-                                                 : nodes.size() == 2
-                                                 ? QString ("%1 (and one other)")
-                                                 .arg (node (*node_index)._hostname)
-                                                 : QString ("%1 (and %2 others)")
-                                                 .arg (node (*node_index)._hostname)
-                                                 .arg (nodes.size() - 1)
-                                                 );
               nodes << *node_index;
 
               QStringList hostnames;
@@ -1028,14 +1154,8 @@ namespace fhg
 
               foreach (const QString& action_name, triggering_actions)
               {
-                QAction* action ( context_menu.addAction
-                                  ( QString ( _long_action.contains (action_name)
-                                            ? _long_action[action_name]
-                                            : action_name
-                                            )
-                                  .replace ("{hostname}", hostname_replacement)
-                                  )
-                                );
+                QAction* action
+                  (context_menu.addAction (full_action_name (action_name, nodes)));
 
                 if ( !one_node_expects_state_change
                    && action_name_intersection.contains (action_name)
@@ -1048,6 +1168,7 @@ namespace fhg
                     , boost::bind ( &node_state_widget::trigger_action
                                   , this
                                   , hostnames
+                                  , nodes
                                   , action_name
                                   )
                     );
@@ -1065,14 +1186,8 @@ namespace fhg
 
               foreach (const QString& action_name, non_triggering_actions)
               {
-                QAction* action ( context_menu.addAction
-                                  ( QString ( _long_action.contains (action_name)
-                                            ? _long_action[action_name]
-                                            : action_name
-                                            )
-                                  .replace ("{hostname}", hostname_replacement)
-                                  )
-                                );
+                QAction* action
+                  (context_menu.addAction (full_action_name (action_name, nodes)));
 
                 if ( !one_node_expects_state_change
                    && action_name_intersection.contains (action_name)
@@ -1085,6 +1200,7 @@ namespace fhg
                     , boost::bind ( &node_state_widget::trigger_action
                                   , this
                                   , hostnames
+                                  , nodes
                                   , action_name
                                   )
                     );
@@ -1252,7 +1368,7 @@ namespace fhg
       {
         _selection.clear();
 
-        for (size_t i (0); i < _nodes.size(); ++i)
+        for (int i (0); i < _nodes.size(); ++i)
         {
           _selection << i;
         }

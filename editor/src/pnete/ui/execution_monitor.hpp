@@ -1,7 +1,7 @@
 #ifndef FHG_PNETE_UI_EXECUTION_MONITOR_HPP
 #define FHG_PNETE_UI_EXECUTION_MONITOR_HPP
 
-#include <QWidget>
+#include <QSplitter>
 
 namespace fhg
 {
@@ -9,7 +9,7 @@ namespace fhg
   {
     namespace ui
     {
-      class execution_monitor : public QWidget
+      class execution_monitor : public QSplitter
       {
         Q_OBJECT
 
