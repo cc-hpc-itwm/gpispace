@@ -57,13 +57,6 @@ static void s_child_started ( gspc::rif::supervisor_t *sup
   std::cout << "child (" << info.descriptor.name << ") started" << std::endl;
 }
 
-static void s_child_remove ( gspc::rif::supervisor_t *sup
-                           , gspc::rif::supervisor_t::child_info_t const &info
-                           )
-{
-  sup->remove_child (info.descriptor.name);
-}
-
 static void s_wakeup (fhg::thread::semaphore *sem)
 {
   sem->V ();
