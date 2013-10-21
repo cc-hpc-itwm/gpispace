@@ -139,7 +139,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
   				LOG(INFO, "Re-trying ...");
   			}
 
-			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(1000000) );
 
 			// check event type
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
@@ -256,7 +256,7 @@ void MyFixture::run_client(const std::string& orchName, const std::string& cliNa
 }
 
 
-BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
+BOOST_FIXTURE_TEST_SUITE( test_dtop_restart_coalloc, MyFixture )
 
 BOOST_AUTO_TEST_CASE( TestStopRestarAgentCoallocRealWfe )
 {
@@ -313,16 +313,14 @@ BOOST_AUTO_TEST_CASE( TestStopRestarAgentCoallocRealWfe )
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, orchName, cliName));
 
-	sleep(1);
+	sleep(2);
 	LOG( INFO, "Shutdown the agent");
-	ptrAgent->shutdown();
+	ptrAgent->shutdown(strBackupAgent);
 	ptrAgent.reset();
 
 	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	sleep(3);
-
 	sdpa::daemon::Agent::ptr_t ptrAgentNew = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgentNew->start_agent(false);
+	ptrAgentNew->start_agent(false, strBackupAgent);
 
 	if(threadClient.joinable())
 		threadClient.join();
