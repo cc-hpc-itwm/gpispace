@@ -721,8 +721,10 @@ void SchedulerImpl::assignJobsToWorkers()
 		}
 	 }
 
+	 // nonmatching_jobs_queue.print("The list of non-matching jobs: ");
 	 while(!nonmatching_jobs_queue.empty())
 		 ptr_worker_man_->common_queue_.push_front(nonmatching_jobs_queue.pop_back());
+
 }
 
 void SchedulerImpl::feedWorkers()
