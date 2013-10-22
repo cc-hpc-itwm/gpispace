@@ -238,7 +238,6 @@ set (tests
   test_StopRestartAgentsPollingCli.cpp
   test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
-  test_SubmitJobFails.cpp
   test_MultipleMasters.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
