@@ -22,6 +22,8 @@
 #include <string>
 #include <boost/serialization/access.hpp>
 
+#include <we/type/user_data.hpp>
+
 namespace we
 {
   namespace mgmt {
@@ -33,7 +35,7 @@ namespace we
       typedef std::string reason_type;
       typedef std::string encoded_type;
 
-      virtual void submit(const id_type & id, const encoded_type & ) = 0;
+      virtual void submit(const id_type & id, const encoded_type &, we::type::user_data const &) = 0;
       virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
 
       virtual bool finished(const id_type & id, const result_type & result) = 0;

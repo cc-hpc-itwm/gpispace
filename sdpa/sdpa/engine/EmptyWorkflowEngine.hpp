@@ -25,6 +25,8 @@
 #include <sdpa/id_generator.hpp>
 #include <map>
 
+#include <we/type/user_data.hpp>
+
 #include <boost/config.hpp>
 #include <iostream>
 
@@ -253,7 +255,7 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
      * asynchronously and notifiy the SPDA about status transitions
      * using the callback methods of the Gwes2Sdpa handler.
     */
-    void submit(const id_type& wfid, const encoded_type& wf_desc)
+  void submit(const id_type& wfid, const encoded_type& wf_desc, we::type::user_data const &ud)
     {
       // GWES is supposed to parse the workflow and generate a suite of
       // sub-workflows or activities that are sent to SDPA

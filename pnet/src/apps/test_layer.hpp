@@ -96,7 +96,8 @@ namespace test {
       {
         id_type new_id (daemon.gen_id());
         daemon.add_mapping (id, new_id);
-        daemon.layer().submit (new_id,  act);
+        we::type::user_data ud;
+        daemon.layer().submit (new_id,  act, ud);
         return 0;
       }
 
@@ -245,6 +246,7 @@ namespace test {
                , const std::string & desc
                , requirement_list_t req_list = requirement_list_t()
                , const we::type::schedule_data& = we::type::schedule_data()
+               , const we::type::user_data& = we::type::user_data ()
                )
     {
       job_type job (id, desc);

@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 	for(int i=0; i<NWFS; i++)
 	{
 		sdpa::job_id_t jobId;
-		pWfEng->submit(jobId.str(), wf_desc);
+		pWfEng->submit(jobId.str(), wf_desc, we::type::user_data ());
 	}
 
 	// serialize now the job queue

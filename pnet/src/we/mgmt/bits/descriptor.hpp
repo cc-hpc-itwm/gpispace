@@ -2,6 +2,7 @@
 #define WE_MGMT_LAYER_DESCRIPTOR_HPP 1
 
 #include <we/type/id.hpp>
+#include <we/type/user_data.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/bits/execution_policy.hpp>
 
@@ -91,6 +92,15 @@ namespace we
 
         void apply_to_children (fun_t) const;
 
+        void set_user_data (we::type::user_data const &data)
+        {
+          m_user_data = data;
+        }
+
+        we::type::user_data const &get_user_data () const
+        {
+          return m_user_data;
+        }
       private:
         void add_child (id_type const&);
         bool is_child (id_type const&);
@@ -112,6 +122,8 @@ namespace we
         int m_error_code;
         std::string m_error_message;
         std::string m_result;
+
+        we::type::user_data m_user_data;
 
         friend std::ostream& operator<< (std::ostream&, const descriptor&);
       };
