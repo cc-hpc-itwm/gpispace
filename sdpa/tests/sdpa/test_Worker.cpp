@@ -56,21 +56,7 @@ BOOST_AUTO_TEST_CASE(testDispatch) {
   worker.pending().clear();
 }
 
-BOOST_AUTO_TEST_CASE(testGetNextJob) {
-  Worker worker("w0", 100);
-
-  job_id_t jobId("1");
-  worker.dispatch(jobId);
-
-  BOOST_CHECK(!worker.pending().empty());
-
-  job_id_t jobIdNext = worker.get_next_job(sdpa::job_id_t::invalid_job_id());
-  BOOST_CHECK(worker.pending().empty()); // pending is empty now
-  BOOST_CHECK(!worker.submitted().empty()); // submitted has one job
-  BOOST_CHECK(jobIdNext == jobId);
-}
-
-BOOST_AUTO_TEST_CASE(testAcknowledge)
+/*BOOST_AUTO_TEST_CASE(testAcknowledge)
 {
   Worker worker("w0", 100);
 
@@ -88,7 +74,7 @@ BOOST_AUTO_TEST_CASE(testAcknowledge)
   BOOST_CHECK(worker.pending().empty()); // pending still empty
   BOOST_CHECK(worker.submitted().empty()); // submitted is now empty
   BOOST_CHECK(!worker.acknowledged().empty()); // added to acknowledged
-}
+}*/
   
 BOOST_AUTO_TEST_CASE(testQueue)
 {

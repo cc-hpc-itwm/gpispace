@@ -23,7 +23,8 @@ Worker::Worker(	const worker_id_t& name,
     last_time_served_(0),
     last_schedule_time_(0),
     timedout_(false),
-    disconnected_(false)
+    disconnected_(false),
+    reserved_(false)
 {
 
 }
@@ -110,27 +111,6 @@ void Worker::delete_job(const sdpa::job_id_t &job_id)
 	if( acknowledged().erase(job_id) )
 	{
 		DLOG(TRACE, "removed the job "<<job_id.str()<<" acknowledged queue");
-	}
-}
-
-sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
-{
-	lock_type lock(mtx_);
-	// acknowledge a previous job
-	if( !last_job_id.str().empty() && last_job_id != sdpa::job_id_t::invalid_job_id())
-		acknowledge(last_job_id);
-
-	try
-	{
-		// move the job from pending to submitted
-		sdpa::job_id_t jobId = pending().pop();
-		submitted().push(jobId);
-		//update();
-		return jobId;
-	}
-	catch(const QueueEmpty& )
-	{
-		throw NoJobScheduledException(name());
 	}
 }
 
@@ -259,3 +239,24 @@ bool Worker::hasCapability(const std::string& cpbName, bool bOwn)
 
 	return bHasCpb;
 }
+
+void Worker::reserve()
+{
+	lock_type lock(mtx_);
+	//DMLOG(TRACE, "Marked the worker "<<name()<<" as reserved ");
+	reserved_ = true;
+	last_schedule_time_ = sdpa::util::now();
+}
+
+bool Worker::isReserved()
+{
+	lock_type lock(mtx_);
+	return reserved_;
+}
+
+void Worker::free()
+{
+	lock_type lock(mtx_);
+	reserved_ = false;
+}
+

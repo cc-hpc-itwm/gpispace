@@ -55,29 +55,6 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-# sends a given pid after N(=0) seconds to the background
-function to_bg ()
-{
-    local pid="$1"; shift
-    if [ -z "$pid" ] ; then
-        return 1
-    fi
-    if ! kill -0 "$pid" &>/dev/null ; then
-        return 2
-    fi
-    local when="$1"; shift
-    if [ -z "$when" ] ; then
-        when=0
-    fi
-    #echo "to_bg: sleeping $when second(s)"
-    sleep $when
-    #echo "to_bg: stopping $pid"
-    # note: the builtin kill doesn't seem to to work always(?)
-    /bin/kill -STOP "$pid"
-    #echo "to_bg: resuming $pid"
-    /bin/kill -CONT "$pid"
-}
-
 while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
     case $opt in
         h)

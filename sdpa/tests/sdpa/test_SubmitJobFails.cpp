@@ -9,7 +9,6 @@
 #include <tests/sdpa/CreateDrtsWorker.hpp>
 #include "kvs_setup_fixture.hpp"
 
-using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
@@ -223,7 +222,7 @@ void MyFixture::run_client_cancel_failed_job()
 	nTrials = 0;
 
 	try {
-			LOG( DEBUG, "Cancel the the job "<<job_id_user);
+			LOG( DEBUG, "Cancel the job "<<job_id_user);
 			ptrCli->cancelJob(job_id_user);
 			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 	}
@@ -292,7 +291,7 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure1 )
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
+	//boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
@@ -327,7 +326,7 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure2 )
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client_cancel_failed_job, this));
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
+	//boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );

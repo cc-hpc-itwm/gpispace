@@ -32,7 +32,6 @@ const int MAX_CAP = 100;
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace sdpa::tests;
 
 #define NO_GUI ""
 

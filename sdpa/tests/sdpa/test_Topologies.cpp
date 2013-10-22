@@ -35,7 +35,6 @@ const int BUNCH_SIZE = 1;
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace sdpa::tests;
 
 #define NO_GUI ""
 
@@ -266,7 +265,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
 			}
 
-			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(1000000) );
 
 			// check event type
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))

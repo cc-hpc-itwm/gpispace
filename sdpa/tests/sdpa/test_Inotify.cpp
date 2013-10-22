@@ -16,7 +16,6 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testInotify
-#include "sdpa/daemon/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
 
 #include "tests_config.hpp"
@@ -45,7 +44,6 @@ static int testNb = 0;
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace sdpa::tests;
 
 #define NO_GUI ""
 

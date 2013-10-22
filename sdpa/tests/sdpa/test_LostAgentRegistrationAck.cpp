@@ -11,7 +11,6 @@
 #include "kvs_setup_fixture.hpp"
 
 namespace bfs=boost::filesystem;
-using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
@@ -130,7 +129,7 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
   				LOG(INFO, "Re-trying ...");
   			}
 
-			seda::IEvent::Ptr reply( ptrCli->waitForNotification(10000) );
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(1000000) );
 
 			// check event type
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))

@@ -76,6 +76,15 @@ namespace sdpa { namespace daemon {
     SynchronizedQueue() : stopped_(false) {}
     ~SynchronizedQueue() { }
 
+    inline value_type front()
+    {
+    	lock_type lock(mtx_);
+    	if (container_.empty()) throw QueueEmpty();
+
+    	value_type item = container_.front();
+    	return item;
+    }
+
     inline value_type pop()
     {
       lock_type lock(mtx_);
@@ -144,6 +153,13 @@ namespace sdpa { namespace daemon {
       not_empty_.notify_one();
     }
 
+    inline void push_front(value_type item)
+    {
+    	lock_type lock(mtx_);
+    	container_.push_front(item);
+    	not_empty_.notify_one();
+    }
+
     inline size_type size() const
     {
       lock_type lock(mtx_);
@@ -200,25 +216,25 @@ namespace sdpa { namespace daemon {
 
     inline iterator begin()
     {
-      // WARN: make sure you hold a lock to the mutex!
-      return container_.begin();
+    	lock_type lock(mtx_);
+    	return container_.begin();
     }
 
     inline const_iterator begin() const
     {
-      // WARN: make sure you hold a lock to the mutex!
-      return container_.begin();
+    	lock_type lock(mtx_);
+    	return container_.begin();
     }
 
     inline iterator end()
     {
-      // WARN: make sure you hold a lock to the mutex!
-      return container_.end();
+    	lock_type lock(mtx_);
+    	return container_.end();
     }
     inline const_iterator end() const
     {
-      // WARN: make sure you hold a lock to the mutex!
-      return container_.end();
+    	lock_type lock(mtx_);
+    	return container_.end();
     }
 
     inline void clear()
@@ -237,14 +253,23 @@ namespace sdpa { namespace daemon {
 
     friend class boost::serialization::access;
 
-    void print()
+    void print(const std::string& msg="")
     {
     	lock_type lock(mtx_);
     	unsigned int k = 0;
+    	std::ostringstream oss;
+    	if(!msg.empty())
+    		oss<<msg;
+    	oss<<"{";
     	for( iterator it = begin(); it!= end(); it++, k++)
     	{
-          DMLOG (TRACE, "   element "<<k<<": \""<<*it<<"\"");
+    		oss<<it->str();
+    		if(boost::next(it) != end())
+    			oss<<",";
     	}
+    	oss<<"}";
+
+    	LOG(TRACE, oss.str());
     }
 
   private:

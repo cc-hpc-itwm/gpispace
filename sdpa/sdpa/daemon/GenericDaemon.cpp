@@ -605,7 +605,24 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
 }
 
-void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
+/*
+std::ostream& operator<<(std::ostream& os, sdpa::worker_id_list_t& worker_list)
+{
+	os<<"(";
+	for(sdpa::worker_id_list_t::iterator it=worker_list.begin(); it!=worker_list.end(); it++)
+	{
+		os<<*it;
+		if( boost::next(it) != worker_list.end() )
+			os<<",";
+		else
+			os<<")";
+	}
+
+	return os;
+}
+*/
+
+void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
 {
   //take a job from the workers' queue and serve it
 
@@ -613,7 +630,8 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
     // you should consume from the  worker's pending list; put the job into the worker's submitted list
     //sdpa::job_id_t jobId = scheduler()->getNextJob(worker_id, last_job_id);
 	//check first if the worker exist
-	Worker::ptr_t ptrWorker(findWorker(worker_id));
+	//Worker::ptr_t ptrWorker(findWorker(worker_id));
+
     DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
 
     const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
@@ -621,12 +639,17 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
     DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
     // create a SubmitJobEvent for the job job_id serialize and attach description
-    DMLOG(TRACE, "sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
-    SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), ""));
+    sdpa::worker_id_list_t worker_list( scheduler()->getListAllocatedWorkers(jobId));
+    LOG(TRACE, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id);
+    LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
+    SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), "", worker_list));
 
     // Post a SubmitJobEvent to the slave who made the request
     sendEventToSlave(pSubmitEvt);
-    scheduler()->setLastTimeServed(worker_id, sdpa::util::now());
+
+    // if everything was fine up to here, mark the job as submitted
+    Worker::ptr_t pWorker(findWorker(worker_id));
+    pWorker->submit(jobId);
   }
   catch(const NoJobScheduledException&)
   {
@@ -674,7 +697,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
   //take a job from the workers' queue? and serve it
 
   //To do: replace this with schedule
-  Worker::worker_id_t worker_id = e.from();
+  /*Worker::worker_id_t worker_id = e.from();
   try {
 	  sdpa::job_id_t jobId = scheduler()->assignNewJob(worker_id,  e.last_job_id());
 	  serveJob( worker_id, jobId );
@@ -690,7 +713,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
      // the worker should register first, before posting a job request
      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
      sendEventToSlave(pErrorEvt);
-  }
+  }*/
 }
 
 bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
@@ -1063,19 +1086,12 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     }
     case ErrorEvent::SDPA_EPERM:
     {
-      DMLOG (WARN, "Got error from "<<error.from()<<". Reason: "<<error.reason());
-      if( error.job_id() != sdpa::job_id_t::invalid_job_id() )
-      {
-        // check if there were any jobs submitted and not acknowledged to that worker
-        // if this is the case, move the submitted jobs back into the pending queue
-        // don't forget to update the state machine
-        sdpa::job_id_t jobId(error.job_id());
-        sdpa::worker_id_t worker_id(error.from());
-        DMLOG (TRACE, "The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Re-assign it now!");
+    	sdpa::job_id_t jobId(error.job_id());
+    	sdpa::worker_id_t worker_id(error.from());
+    	DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Reschedule it now!");
 
-        scheduler()->reassign(worker_id, jobId);
-      }
-       break;
+    	scheduler()->reschedule(worker_id, jobId);
+    	break;
     }
     default:
     {
@@ -1094,7 +1110,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
  */
 void GenericDaemon::submit( const id_type& activityId
                           , const encoded_type& desc
-                          , const job_requirements_t& job_req_list
+                          , const requirement_list_t& req_list
                           , const we::type::schedule_data& schedule_data
                           )
 {
@@ -1102,6 +1118,7 @@ void GenericDaemon::submit( const id_type& activityId
   // set the parent_id to ?
   // add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
   // schedule the new job to some worker
+  job_requirements_t jobReqs(req_list, schedule_data);
 
   try {
     DMLOG(TRACE, "workflow engine submitted "<<activityId);
@@ -1109,7 +1126,7 @@ void GenericDaemon::submit( const id_type& activityId
     job_id_t job_id(activityId);
     job_id_t parent_id("WE"); // is this really needed?
 
-    jobManager()->addJobRequirements(job_id, job_req_list);
+    jobManager()->addJobRequirements(job_id, jobReqs);
 
     // WORK HERE: limit number of maximum parallel jobs
     jobManager()->waitForFreeSlot ();
@@ -1923,4 +1940,53 @@ void GenericDaemon::reScheduleAllMasterJobs()
     DMLOG (TRACE, "Re-schedule the job"<<jobId);
     reschedule(jobId);
   }
+}
+
+void GenericDaemon::backup( std::ostream& ofs )
+{
+	try {
+		//std::string strArchiveName(name()+".bkp");
+		//SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
+
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<JobManager*>(NULL));
+		oa.register_type(static_cast<JobImpl*>(NULL));
+		oa.register_type(static_cast<JobFSM*>(NULL));
+		backupJobManager(oa);
+
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		backupScheduler(oa);
+
+		/*oa.register_type(static_cast<T*>(NULL));
+    	oa << ptr_workflow_engine_;*/
+		oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
+	}
+	catch(exception &e) {
+		cout <<"Exception occurred: "<< e.what() << endl;
+	}
+}
+
+void GenericDaemon::recover( std::istream& ifs )
+{
+	try {
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<JobManager*>(NULL));
+		ia.register_type(static_cast<JobImpl*>(NULL));
+		ia.register_type(static_cast<JobFSM*>(NULL));
+		recoverJobManager(ia);
+
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		recoverScheduler(ia);
+
+		// should ignore the workflow engine,
+		// since it is not always possible to recover it
+
+		/*ia.register_type(static_cast<T*>(NULL));
+    	ia >> ptr_workflow_engine_;*/
+		ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
+		SDPA_LOG_INFO("The list of recoverd masters is: ");
+	}
+	catch(exception &e) {
+		cout <<"Exception occurred: " << e.what() << endl;
+	}
 }
