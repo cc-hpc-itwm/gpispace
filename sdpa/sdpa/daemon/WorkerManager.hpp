@@ -29,7 +29,6 @@
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 
-namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
   class WorkerManager  {
@@ -40,7 +39,7 @@ namespace sdpa { namespace daemon {
     typedef boost::condition_variable_any condition_type;
 
     typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
-    typedef boost::unordered_map<sdpa::job_id_t, sdpa::job_pref_list_t> mapJob2PrefWorkersList_t;
+    typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
     WorkerManager();
     virtual ~WorkerManager();
@@ -66,12 +65,6 @@ namespace sdpa { namespace daemon {
     const sdpa::job_id_t stealWork(const Worker::ptr_t& ) throw (NoJobScheduledException);
 
     worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
-    Worker::ptr_t getBestMatchingWorker( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq, int& matching_degree, job_pref_list_t&) throw (NoWorkerFoundException);
-    /*Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
-													const job_requirements_t& listJobReq,
-													const worker_id_list_t& workerList,
-													int& matching_degree,
-													sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException) */
 
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
@@ -81,19 +74,18 @@ namespace sdpa { namespace daemon {
 
     size_t numberOfWorkers() { return worker_map_.size(); }
     void getWorkerList(sdpa::worker_id_list_t& workerList);
-    void getListWorkersNotFull(sdpa::worker_id_list_t& workerList);
+    void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
+    void getListWorkersNotReserved(sdpa::worker_id_list_t& workerList);
+
+    sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, sdpa::worker_id_list_t&) throw (NoWorkerFoundException);
 
     void balanceWorkers();
     void cancelWorkerJobs(sdpa::daemon::Scheduler*);
     void forceOldWorkerJobsTermination();
     virtual Worker::worker_id_t getWorkerId(unsigned int r);
-    void deteleJobPreferences(const sdpa::job_id_t& jobId);
+    void reserveWorker(const sdpa::worker_id_t&) throw (WorkerReservationFailed);
 
     bool has_job(const sdpa::job_id_t& job_id);
-
-    //only for testing purposes!
-    friend class sdpa::tests::DaemonFSMTest_SMC;
-    friend class sdpa::tests::DaemonFSMTest_BSC;
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)
@@ -134,7 +126,6 @@ protected:
     Worker::JobQueue common_queue_;
 
     mutable mutex_type mtx_;
-    mapJob2PrefWorkersList_t m_mapJob2PrefWorkersList;
   };
 
   template <typename TPtrWorker, typename TReqSet>
@@ -143,7 +134,8 @@ protected:
     int matchingDeg = 0;
 
     // for all job requirements
-    for( typename TReqSet::const_iterator it = job_req_set.req_list.begin(); it != job_req_set.req_list.end(); it++ )
+    const requirement_list_t& listR = job_req_set.getReqList();
+    for( typename TReqSet::const_iterator it = listR.begin(); it != listR.end(); it++ )
     {
       //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
       if( pWorker->hasCapability(it->value(), bOwn ) )
@@ -154,7 +146,7 @@ protected:
       else // if the worker doesn't have the capability
         if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
         {
-          // At least one mandatory requiremenet is not fulfilled
+          // At least one mandatory requirement is not fulfilled
           return -1;
         }
     }

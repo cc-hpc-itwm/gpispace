@@ -31,15 +31,20 @@
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <tests/sdpa/CreateDrtsWorker.hpp>
 
 #include "kvs_setup_fixture.hpp"
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
-const int MAX_CAP = 100;
+const int NWORKERS = 12;
+const int NJOBS    = 4;
+const int MAX_CAP  = 100;
 
-using namespace sdpa::tests;
+const std::string WORKER_CPBS[] = {"A", "B", "C"};
+
+
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
@@ -84,7 +89,7 @@ struct MyFixture
     std::string m_strWorkflow;
 };
 
-BOOST_AUTO_TEST_SUITE( test_SerializeAgents );
+BOOST_FIXTURE_TEST_SUITE( test_SerializeAgents, MyFixture );
 
 BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 {
@@ -140,472 +145,294 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 	std::cout<<std::endl<<"----------------End  testDummyWorkflowEngineSerialization----------------"<<std::endl;
 }
 
-/*
-BOOST_AUTO_TEST_CASE(testAgentSerialization)
+BOOST_AUTO_TEST_CASE(testAgentSerializationNoWfe)
 {
     std::cout<<std::endl<<"----------------Begin  testAgentSerialization----------------"<<std::endl;
     std::string filename = "testSerializeAgent.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-    Agent::ptr_t pAgg = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create(	"agent_0",
-    																						"127.0.0.1:7001",
-    																						sdpa::master_info_list_t(1,MasterInfo("orchestrator_0")),
-    																						MAX_CAP); //, "127.0.0.1:7000");
 
-    pAgg->setScheduler(new SchedulerImpl());
-    SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pAgg->scheduler().get());
+    LOG(INFO, "Test the co-allocation ...");
 
-    JobId id1("_1");
-    sdpa::daemon::Job::ptr_t  p1(new JobFSM(id1, "decsription 1"));
-    pAgg->jobManager()->addJob(id1, p1);
+	string addrAg = "127.0.0.1";
+	string strBackupOrch;
+	ostringstream oss;
 
-    JobId id2("_2");
-    sdpa::daemon::Job::ptr_t  p2(new JobFSM(id2, "decsription 2"));
-    pAgg->jobManager()->addJob(id2, p2);
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
-    JobId id3("_3");
-    sdpa::daemon::Job::ptr_t  p3(new JobFSM(id3, "decsription 3"));
-    pAgg->jobManager()->addJob(id3, p3);
+	pAgent-> createScheduler(false);
 
-    JobId id4("_4");
-    sdpa::daemon::Job::ptr_t  p4(new JobFSM(id4, "decsription 4"));
-    pAgg->jobManager()->addJob(id4, p4);
+	if(!pAgent->scheduler())
+		LOG(FATAL, "The scheduler was not properly initialized");
 
-    JobId id5("_5");
-    sdpa::daemon::Job::ptr_t  p5(new JobFSM(id5, "decsription 5"));
-    pAgg->jobManager()->addJob(id5, p5);
+	// add a couple of workers
+	for( int k=0; k<NWORKERS; k++ )
+	{
+		oss.str("");
+		oss<<k;
 
-    int nSchedQSize = 5;
-    for(int i=0; i<nSchedQSize; i++)
-    {
-      std::ostringstream ossJobId;;
-      ossJobId<<"Job_"<<i;
-      sdpa::job_id_t jobId(ossJobId.str());
-      pScheduler->schedule(jobId);
-    }
+		sdpa::worker_id_t workerId(oss.str());
+		std::string cpbName(WORKER_CPBS[k%3]);
+		sdpa::capability_t cpb(cpbName, "virtual", workerId);
+		sdpa::capabilities_set_t cpbSet;
+		cpbSet.insert(cpb);
+		pAgent->scheduler()->addWorker(workerId, 1, cpbSet);
+	}
 
-    int nWorkers=3;
-    for(int k=0; k<nWorkers; k++)
-    {
-      std::ostringstream ossWorkerId;;
-      ossWorkerId<<"Worker_"<<k;
-      Worker::worker_id_t workerId(ossWorkerId.str());
-      pScheduler->addWorker(workerId, k);
+	// create a number of jobs
+	const sdpa::job_id_t jobId0("Job0");
+	sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0"));
+	pAgent->jobManager()->addJob(jobId0, pJob0);
 
-      for( int l=0; l<3; l++)
-      {
-        std::ostringstream ossJobId;
-        ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
-        sdpa::job_id_t jobId(ossJobId.str());
+	const sdpa::job_id_t jobId1("Job1");
+	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+	pAgent->jobManager()->addJob(jobId1, pJob1);
 
-        pScheduler->schedule_to(jobId, workerId);
-        if(l>=1)
-        {
-          sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
-          if(l>=2)
-                  pScheduler->acknowledgeJob(workerId, jobToSubmit);
-        }
-      }
-    }
+	const sdpa::job_id_t jobId2("Job2");
+	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
+	pAgent->jobManager()->addJob(jobId2, pJob2);
 
-    try
-    {
-      std::cout<<"----------------The Agent<DummyWorkflowEngine>'s content before backup is:----------------"<<std::endl;
-      pAgg->print();
+	job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
+	pAgent->scheduler()->schedule_remotely(jobId0);
 
-      std::ofstream ofs(filename.c_str());
-      boost::archive::text_oarchive oa(ofs);
-      oa.register_type(static_cast<Agent*>(NULL));
-      oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-      oa.register_type(static_cast<DaemonFSM*>(NULL));
-      oa.register_type(static_cast<GenericDaemon*>(NULL));
-      oa.register_type(static_cast<SchedulerImpl*>(NULL));
-      oa.register_type(static_cast<JobFSM*>(NULL));
-      oa << pAgg;
-    }
-    catch(exception &e)
-    {
-      cout <<"Exception occurred: "<< e.what() << endl;
-      return;
-    }
+	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
+	pAgent->scheduler()->schedule_remotely(jobId1);
 
-    std::cout<<"----------------Try now to restore the Agent<DummyWorkflowEngine>:----------------"<<std::endl;
-    try
-    {
-      Agent::ptr_t pRestoredAgg;
-      std::ifstream ifs(filename.c_str());
-      boost::archive::text_iarchive ia(ifs);
-      ia.register_type(static_cast<Agent*>(NULL));
-      ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-      ia.register_type(static_cast<DaemonFSM*>(NULL));
-      ia.register_type(static_cast<GenericDaemon*>(NULL));
-      ia.register_type(static_cast<SchedulerImpl*>(NULL));
-      ia.register_type(static_cast<JobFSM*>(NULL));
-      ia >> pRestoredAgg;
+	job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
+	pAgent->scheduler()->schedule_remotely(jobId2);
 
-      std::cout<<std::endl<<"----------------The restored content of the Agent<DummyWorkflowEngine> is:----------------"<<std::endl;
-      pRestoredAgg->print();
-    }
-    catch(exception &e)
-    {
-        cout <<"Exception occurred: " << e.what() << endl;
-        return;
-    }
+	pAgent->scheduler()->assignJobsToWorkers();
+
+	std::filebuf fb;
+	fb.open (filename.c_str(),std::ios::out);
+    std::ostream bkpos(&fb);
+	pAgent->backup(bkpos);
+
+	sdpa::daemon::Agent::ptr_t pNewAgent = sdpa::daemon::AgentFactory<void>::create("agent_007_rec", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	std::ifstream is(filename.c_str());
+	pNewAgent->recover(is);
+	is.close();
+	std::cout<<"----------------The Agent's content after recovering is:----------------"<<std::endl;
+
+	//pNewAgent->print();
+    std::cout<<std::endl<<"----------------End  testAgentSerialization----------------"<<std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(testAgentSerializationEmptyWfe)
+{
+    std::cout<<std::endl<<"----------------Begin  testAgentSerialization----------------"<<std::endl;
+    std::string filename = "testSerializeAgent.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+
+    LOG(INFO, "Test the co-allocation ...");
+
+	string addrAg = "127.0.0.1";
+	string strBackupOrch;
+	ostringstream oss;
+
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	pAgent-> createScheduler(false);
+
+	if(!pAgent->scheduler())
+		LOG(FATAL, "The scheduler was not properly initialized");
+
+	// add a couple of workers
+	for( int k=0; k<NWORKERS; k++ )
+	{
+		oss.str("");
+		oss<<k;
+
+		sdpa::worker_id_t workerId(oss.str());
+		std::string cpbName(WORKER_CPBS[k%3]);
+		sdpa::capability_t cpb(cpbName, "virtual", workerId);
+		sdpa::capabilities_set_t cpbSet;
+		cpbSet.insert(cpb);
+		pAgent->scheduler()->addWorker(workerId, 1, cpbSet);
+	}
+
+	// create a number of jobs
+	const sdpa::job_id_t jobId0("Job0");
+	sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0"));
+	pAgent->jobManager()->addJob(jobId0, pJob0);
+
+	const sdpa::job_id_t jobId1("Job1");
+	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+	pAgent->jobManager()->addJob(jobId1, pJob1);
+
+	const sdpa::job_id_t jobId2("Job2");
+	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
+	pAgent->jobManager()->addJob(jobId2, pJob2);
+
+	job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
+	pAgent->scheduler()->schedule_remotely(jobId0);
+
+	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
+	pAgent->scheduler()->schedule_remotely(jobId1);
+
+	job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
+	pAgent->scheduler()->schedule_remotely(jobId2);
+
+	pAgent->scheduler()->assignJobsToWorkers();
+
+	std::filebuf fb;
+	fb.open (filename.c_str(),std::ios::out);
+    std::ostream bkpos(&fb);
+	pAgent->backup(bkpos);
+
+	sdpa::daemon::Agent::ptr_t pNewAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_007_rec", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	std::ifstream is(filename.c_str());
+	pNewAgent->recover(is);
+	is.close();
+	std::cout<<"----------------The Agent's content after recovering is:----------------"<<std::endl;
+
+	//pNewAgent->print();
+    std::cout<<std::endl<<"----------------End  testAgentSerialization----------------"<<std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(testAgentSerializationDummyWfe)
+{
+    std::cout<<std::endl<<"----------------Begin  testAgentSerialization----------------"<<std::endl;
+    std::string filename = "testSerializeAgent.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+
+    LOG(INFO, "Test the co-allocation ...");
+
+	string addrAg = "127.0.0.1";
+	string strBackupOrch;
+	ostringstream oss;
+
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	pAgent-> createScheduler(false);
+
+	if(!pAgent->scheduler())
+		LOG(FATAL, "The scheduler was not properly initialized");
+
+	// add a couple of workers
+	for( int k=0; k<NWORKERS; k++ )
+	{
+		oss.str("");
+		oss<<k;
+
+		sdpa::worker_id_t workerId(oss.str());
+		std::string cpbName(WORKER_CPBS[k%3]);
+		sdpa::capability_t cpb(cpbName, "virtual", workerId);
+		sdpa::capabilities_set_t cpbSet;
+		cpbSet.insert(cpb);
+		pAgent->scheduler()->addWorker(workerId, 1, cpbSet);
+	}
+
+	// create a number of jobs
+	const sdpa::job_id_t jobId0("Job0");
+	sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0"));
+	pAgent->jobManager()->addJob(jobId0, pJob0);
+
+	const sdpa::job_id_t jobId1("Job1");
+	sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+	pAgent->jobManager()->addJob(jobId1, pJob1);
+
+	const sdpa::job_id_t jobId2("Job2");
+	sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
+	pAgent->jobManager()->addJob(jobId2, pJob2);
+
+	job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
+	pAgent->scheduler()->schedule_remotely(jobId0);
+
+	job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
+	pAgent->scheduler()->schedule_remotely(jobId1);
+
+	job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
+	pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
+	pAgent->scheduler()->schedule_remotely(jobId2);
+
+	pAgent->scheduler()->assignJobsToWorkers();
+
+	std::filebuf fb;
+	fb.open (filename.c_str(),std::ios::out);
+    std::ostream bkpos(&fb);
+	pAgent->backup(bkpos);
+
+	sdpa::daemon::Agent::ptr_t pNewAgent = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create("agent_007_rec", addrAg, arrAgentMasterInfo,  MAX_CAP);
+
+	std::ifstream is(filename.c_str());
+	pNewAgent->recover(is);
+	is.close();
+	std::cout<<"----------------The Agent's content after recovering is:----------------"<<std::endl;
+
+	//pNewAgent->print();
 
     std::cout<<std::endl<<"----------------End  testAgentSerialization----------------"<<std::endl;
 }
 
-BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
-{
-    std::cout<<std::endl<<"----------------Begin  testOrchestratorSerialization----------------"<<std::endl;
-    std::string filename = "testSerializeOrchestrator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-    Orchestrator::ptr_t pOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create( "orchestrator_0", "127.0.0.1:6000", MAX_CAP);
-
-    pOrch->setScheduler(new SchedulerImpl());
-    SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pOrch->scheduler().get());
-
-    JobId id1("_1");
-    sdpa::daemon::Job::ptr_t  p1(new JobFSM(id1, "decsription 1"));
-    pOrch->jobManager()->addJob(id1, p1);
-
-    JobId id2("_2");
-    sdpa::daemon::Job::ptr_t  p2(new JobFSM(id2, "decsription 2"));
-    pOrch->jobManager()->addJob(id2, p2);
-
-    JobId id3("_3");
-    sdpa::daemon::Job::ptr_t  p3(new JobFSM(id3, "decsription 3"));
-    pOrch->jobManager()->addJob(id3, p3);
-
-    JobId id4("_4");
-    sdpa::daemon::Job::ptr_t  p4(new JobFSM(id4, "decsription 4"));
-    pOrch->jobManager()->addJob(id4, p4);
-
-    JobId id5("_5");
-    sdpa::daemon::Job::ptr_t  p5(new JobFSM(id5, "decsription 5"));
-    pOrch->jobManager()->addJob(id5, p5);
-
-    int nSchedQSize = 5;
-    for(int i=0; i<nSchedQSize; i++)
-    {
-      std::ostringstream ossJobId;;
-      ossJobId<<"Job_"<<i;
-      sdpa::job_id_t jobId(ossJobId.str());
-      pScheduler->schedule(jobId);
-    }
-
-    int nWorkers=3;
-    for(int k=0; k<nWorkers; k++)
-    {
-      std::ostringstream ossWorkerId;;
-      ossWorkerId<<"Worker_"<<k;
-      Worker::worker_id_t workerId(ossWorkerId.str());
-      pScheduler->addWorker(workerId, k);
-
-      for( int l=0; l<3; l++)
-      {
-          std::ostringstream ossJobId;
-          ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
-          sdpa::job_id_t jobId(ossJobId.str());
-
-          pScheduler->schedule_to(jobId, workerId);
-          if(l>=1)
-          {
-              sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
-              if(l>=2)
-                pScheduler->acknowledgeJob(workerId, jobToSubmit);
-          }
-        }
-    }
-
-    try
-    {
-        std::cout<<"----------------The Orchestrator's content before backup is:----------------"<<std::endl;
-        pOrch->print();
-
-        std::ofstream ofs(filename.c_str());
-        boost::archive::text_oarchive oa(ofs);
-        oa.register_type(static_cast<Orchestrator*>(NULL));
-        oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-        oa.register_type(static_cast<DaemonFSM*>(NULL));
-        oa.register_type(static_cast<GenericDaemon*>(NULL));
-        oa.register_type(static_cast<SchedulerImpl*>(NULL));
-        oa.register_type(static_cast<SchedulerOrch*>(NULL));
-        oa.register_type(static_cast<JobFSM*>(NULL));
-        oa << pOrch;
-    }
-    catch(exception &e)
-    {
-        cout <<"Exception occurred: "<< e.what() << endl;
-        return;
-    }
-
-    std::cout<<"----------------Try now to restore the orchestrator:----------------"<<std::endl;
-    try
-    {
-        Orchestrator::ptr_t pRestoredOrch;
-        std::ifstream ifs(filename.c_str());
-        boost::archive::text_iarchive ia(ifs);
-        ia.register_type(static_cast<Orchestrator*>(NULL));
-        ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-        ia.register_type(static_cast<DaemonFSM*>(NULL));
-        ia.register_type(static_cast<GenericDaemon*>(NULL));
-        ia.register_type(static_cast<SchedulerImpl*>(NULL));
-        ia.register_type(static_cast<SchedulerOrch*>(NULL));
-        ia.register_type(static_cast<JobFSM*>(NULL));
-        ia >> pRestoredOrch;
-
-        std::cout<<std::endl<<"----------------The restored content of the Orchestrator is:----------------"<<std::endl;
-        pRestoredOrch->print();
-    }
-    catch(exception &e)
-    {
-        cout <<"Exception occurred: " << e.what() << endl;
-        return;
-    }
-
-    std::cout<<std::endl<<"----------------End  testOrchestratorSerialization----------------"<<std::endl;
-}
-
-BOOST_AUTO_TEST_CASE(testDaemonSerializationWithFSMs)
-{
-  std::string filename = "testSerializeDaemons.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-  GenericDaemon::ptr_t pGenDaemon( new GenericDaemon( sdpa::daemon::ORCHESTRATOR ));
-
-  pGenDaemon->setScheduler( new SchedulerImpl() );
-  SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pGenDaemon->scheduler().get());
-
-  // First fill-in the JobManager ...
-  JobId id1("_1");
-  sdpa::daemon::Job::ptr_t  p1(new JobFSM(id1, "decsription 1"));
-  pGenDaemon->jobManager()->addJob(id1, p1);
-
-  JobId id2("_2");
-  sdpa::daemon::Job::ptr_t  p2(new JobFSM(id2, "decsription 2"));
-  pGenDaemon->jobManager()->addJob(id2, p2);
-
-  JobId id3("_3");
-  sdpa::daemon::Job::ptr_t  p3(new JobFSM(id3, "decsription 3"));
-  pGenDaemon->jobManager()->addJob(id3, p3);
-
-  JobId id4("_4");
-  sdpa::daemon::Job::ptr_t  p4(new JobFSM(id4, "decsription 4"));
-  pGenDaemon->jobManager()->addJob(id4, p4);
-
-  JobId id5("_5");
-  sdpa::daemon::Job::ptr_t  p5(new JobFSM(id5, "decsription 5"));
-  pGenDaemon->jobManager()->addJob(id5, p5);
-
-
-  /// And then, the scheduler
-  int nSchedQSize = 5;
-  for(int i=0; i<nSchedQSize; i++)
-  {
-      std::ostringstream ossJobId;;
-      ossJobId<<"Job_"<<i;
-      sdpa::job_id_t jobId(ossJobId.str());
-      pScheduler->schedule(jobId);
-  }
-
-  int nWorkers=3;
-  for(int k=0; k<nWorkers; k++)
-  {
-      std::ostringstream ossWorkerId;;
-      ossWorkerId<<"Worker_"<<k;
-      Worker::worker_id_t workerId(ossWorkerId.str());
-      pScheduler->addWorker(workerId, k);
-
-      for( int l=0; l<3; l++)
-      {
-          std::ostringstream ossJobId;
-          ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
-          sdpa::job_id_t jobId(ossJobId.str());
-
-          pScheduler->schedule_to(jobId, workerId);
-          if(l>=1)
-          {
-                  sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
-                  if(l>=2)
-                          pScheduler->acknowledgeJob(workerId, jobToSubmit);
-          }
-      }
-  }
-
-  try
-  {
-      std::cout<<"----------------The daemon's content before backup is:----------------"<<std::endl;
-      pGenDaemon->print();
-
-      std::ofstream ofs(filename.c_str());
-      boost::archive::text_oarchive oa(ofs);
-      oa.register_type(static_cast<SchedulerImpl*>(NULL));
-      oa.register_type(static_cast<JobFSM*>(NULL));
-      oa << pGenDaemon;
-  }
-  catch(exception &e)
-  {
-      cout <<"Exception occurred: "<< e.what() << endl;
-      return;
-  }
-
-  // de-serialize now the daemon
-  try
-  {
-      GenericDaemon::ptr_t pRestoredGenDaemon;
-      std::ifstream ifs(filename.c_str());
-      boost::archive::text_iarchive ia(ifs);
-      ia.register_type(static_cast<SchedulerImpl*>(NULL));
-      ia.register_type(static_cast<JobFSM*>(NULL));
-      ia >> pRestoredGenDaemon;
-
-      std::cout<<std::endl<<"----------------The restored content of the daemon is:----------------"<<std::endl;
-      pRestoredGenDaemon->print();
-  }
-  catch(exception &e)
-  {
-      cout <<"Exception occurred: " << e.what() << endl;
-      return;
-  }
-}
-
-BOOST_AUTO_TEST_CASE(testDaemonSerialization)
-{
-  std::string filename = "testSerializeDaemons.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-  GenericDaemon::ptr_t pGenDaemon( new GenericDaemon( sdpa::daemon::ORCHESTRATOR ));
-
-  pGenDaemon->setScheduler(new SchedulerImpl());
-  SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pGenDaemon->scheduler().get());
-
-  // First fill-in the JobManager ...
-  JobId id1("_1");
-  sdpa::daemon::Job::ptr_t  p1(new sdpa::daemon::JobImpl(id1, "decsription 1"));
-  pGenDaemon->jobManager()->addJob(id1, p1);
-
-  JobId id2("_2");
-  sdpa::daemon::Job::ptr_t  p2(new sdpa::daemon::JobImpl(id2, "decsription 2"));
-  pGenDaemon->jobManager()->addJob(id2, p2);
-
-  JobId id3("_3");
-  sdpa::daemon::Job::ptr_t  p3(new sdpa::daemon::JobImpl(id3, "decsription 3"));
-  pGenDaemon->jobManager()->addJob(id3, p3);
-
-  JobId id4("_4");
-  sdpa::daemon::Job::ptr_t  p4(new sdpa::daemon::JobImpl(id4, "decsription 4"));
-  pGenDaemon->jobManager()->addJob(id4, p4);
-
-  JobId id5("_5");
-  sdpa::daemon::Job::ptr_t  p5(new sdpa::daemon::JobImpl(id5, "decsription 5"));
-  pGenDaemon->jobManager()->addJob(id5, p5);
-
-
-  /// And then, the scheduler
-  int nSchedQSize = 5;
-  for(int i=0; i<nSchedQSize; i++)
-  {
-    std::ostringstream ossJobId;;
-    ossJobId<<"Job_"<<i;
-    sdpa::job_id_t jobId(ossJobId.str());
-    pScheduler->schedule(jobId);
-  }
-
-  int nWorkers=3;
-  for(int k=0; k<nWorkers; k++)
-  {
-    std::ostringstream ossWorkerId;;
-    ossWorkerId<<"Worker_"<<k;
-    Worker::worker_id_t workerId(ossWorkerId.str());
-    pScheduler->addWorker(workerId, k);
-
-    for( int l=0; l<3; l++)
-    {
-        std::ostringstream ossJobId;
-        ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
-        sdpa::job_id_t jobId(ossJobId.str());
-
-        pScheduler->schedule_to(jobId, workerId);
-        if(l>=1)
-        {
-                sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
-                if(l>=2)
-                        pScheduler->acknowledgeJob(workerId, jobToSubmit);
-        }
-    }
-  }
-
-  try
-  {
-      std::cout<<std::endl<<"----------------The daemon's content before backup is:----------------"<<std::endl;
-      pGenDaemon->print();
-
-      std::ofstream ofs(filename.c_str());
-      boost::archive::text_oarchive oa(ofs);
-      oa.register_type(static_cast<SchedulerImpl*>(NULL));
-      oa.register_type(static_cast<JobImpl*>(NULL));
-      oa << pGenDaemon;
-  }
-  catch(exception &e)
-  {
-      cout <<"Exception occurred: "<< e.what() << endl;
-      return;
-  }
-
-  // de-serialize now the daemon
-  try
-  {
-      GenericDaemon::ptr_t pRestoredGenDaemon;
-      std::ifstream ifs(filename.c_str());
-      boost::archive::text_iarchive ia(ifs);
-      ia.register_type(static_cast<SchedulerImpl*>(NULL));
-      ia.register_type(static_cast<JobImpl*>(NULL));
-      ia >> pRestoredGenDaemon;
-
-      std::cout<<"----------------The restored content of the daemon is:----------------"<<std::endl;
-      pRestoredGenDaemon->print();
-  }
-  catch(exception &e)
-  {
-      cout <<"Exception occurred: " << e.what() << endl;
-      return;
-  }
-}
-
 BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
 {
-  std::string filename = "testSerializeScheduler.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-  Scheduler::ptr_t pScheduler(new SchedulerImpl());
+	LOG(INFO, "Test the load-balancing when a worker joins later ...");
+	std::string filename = "testSerializeAgent.txt";
 
-  int nSchedQSize = 5;
-  for(int i=0; i<nSchedQSize; i++)
-  {
-      std::ostringstream ossJobId;;
-      ossJobId<<"Job_"<<i;
-      sdpa::job_id_t jobId(ossJobId.str());
-      dynamic_cast<SchedulerImpl*>(pScheduler.get())->schedule(jobId);
-  }
+	string addrAg = "127.0.0.1";
+	sdpa::master_info_list_t arrAgentMasterInfo;
+	sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
-  int nWorkers=3;
-  for(int k=0; k<nWorkers; k++)
-  {
-    std::ostringstream ossWorkerId;;
-    ossWorkerId<<"Worker_"<<k;
-    Worker::worker_id_t workerId(ossWorkerId.str());
-    pScheduler->addWorker(workerId, k);
+	ostringstream oss;
+	pAgent-> createScheduler(false);
 
-    for( int l=0; l<3; l++)
-    {
-        std::ostringstream ossJobId;
-        ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
-        sdpa::job_id_t jobId(ossJobId.str());
+	sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
 
-        pScheduler->schedule_to(jobId, workerId);
-        if(l>=1)
-        {
-                sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
-                if(l>=2)
-                        pScheduler->acknowledgeJob(workerId, jobToSubmit);
-        }
-    }
-  }
+	if(!ptrScheduler)
+		LOG(FATAL, "The scheduler was not properly initialized");
+
+
+	// number of workers
+	const int nWorkers = 10;
+	const int nJobs = 15;
+
+	// create a give number of workers with different capabilities:
+	std::ostringstream osstr;
+	std::vector<sdpa::worker_id_t> arrWorkerIds;
+	for(int k=0;k<nWorkers-1;k++)
+	{
+		osstr<<"worker_"<<k;
+		sdpa::worker_id_t workerId(osstr.str());
+		osstr.str("");
+		arrWorkerIds.push_back(workerId);
+		std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+		sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
+		ptrScheduler->addWorker(workerId, 1, cpbSet);
+	}
+
+	// submit a bunch of jobs now
+	std::vector<sdpa::job_id_t> arrJobIds;
+	for(int i=0;i<nJobs;i++)
+	{
+		osstr<<"job_"<<i;
+		sdpa::job_id_t jobId(osstr.str());
+		arrJobIds.push_back(jobId);
+		osstr.str("");
+		sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
+		pAgent->jobManager()->addJob(jobId, pJob);
+		pAgent->jobManager()->addJobRequirements(jobId, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+	}
+
+	// schedule all jobs now
+	BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
+	{
+		ptrScheduler->schedule_remotely(jobId);
+	}
+
+	ptrScheduler->assignJobsToWorkers();
 
   std::cout<<"Scheduler dump before serialzation: "<<std::endl;
-  pScheduler->print();
+  ptrScheduler->print();
 
   // serialize now the job queue
   try
@@ -613,7 +440,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
      std::ofstream ofs(filename.c_str());
      boost::archive::text_oarchive oa(ofs);
      oa.register_type(static_cast<SchedulerImpl*>(NULL));
-     oa << pScheduler;
+     oa << ptrScheduler;
   }
   catch(exception &e)
   {
@@ -639,53 +466,6 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
       cout <<"Exception occurred: "<< e.what() << endl;
       return;
   }
-}
-
-BOOST_AUTO_TEST_CASE(testWorkerSerialization)
-{
-
-    std::string filename = "testSerializeWorker.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-
-    Worker testWorker("testWorker");
-
-    for( int k=0; k<6; k++)
-    {
-        std::ostringstream ossJobId;;
-        ossJobId<<"Job_"<<k;
-        sdpa::job_id_t jobId(ossJobId.str());
-        testWorker.dispatch(jobId);
-        if(k>=2)
-        {
-            sdpa::job_id_t jobToSubmit = testWorker.get_next_job("");
-            if(k>=4)
-              testWorker.acknowledge(jobToSubmit);
-        }
-    }
-
-    cout<<"Worker job ids to serialize:"<<std::endl;
-    testWorker.print();
-
-    // serialize now the job queue
-    {
-       std::ofstream ofs(filename.c_str());
-       boost::archive::text_oarchive oa(ofs);
-       //oa.register_type(static_cast<Derived *>(NULL));
-       oa << testWorker;
-    }
-
-    // restore state to one equivalent to the original
-    {
-            Worker workerRestored("restoredWorker");
-       // open the archive
-       std::ifstream ifs(filename.c_str());
-       boost::archive::text_iarchive ia(ifs);
-       //ia.register_type(static_cast<Derived *>(NULL));
-       // restore the schedule from the archive
-       ia >> workerRestored;
-
-       cout<<"Restored worker values:"<<std::endl;
-       workerRestored.print();
-    }
 }
 
 BOOST_AUTO_TEST_CASE(testSynchQueueSerialization)
@@ -728,6 +508,5 @@ BOOST_AUTO_TEST_CASE(testSynchQueueSerialization)
         cout<<jobIdRestored.str()<<std::endl;
     }
 }
-*/
 
 BOOST_AUTO_TEST_SUITE_END()

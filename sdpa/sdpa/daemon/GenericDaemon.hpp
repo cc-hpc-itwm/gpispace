@@ -70,11 +70,6 @@
 #include <boost/utility.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 
-inline const job_requirements_t& empty_req_list()
-{
-  static job_requirements_t e_req_list;
-  return e_req_list;
-}
 
 namespace sdpa {
   namespace daemon {
@@ -130,7 +125,8 @@ namespace sdpa {
       // WE interface
       virtual void submit( const id_type & id
                          , const encoded_type&
-                         , const job_requirements_t& = empty_req_list()
+                         //, const job_requirements_t& = empty_req_list()
+                         , const requirement_list_t& = requirement_list_t()
                          , const we::type::schedule_data& = we::type::schedule_data()
                          );
       virtual bool cancel(const id_type & id, const reason_type& reason);
@@ -291,7 +287,7 @@ namespace sdpa {
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
     protected:
-      virtual void createScheduler(bool bUseReqModel) = 0;
+      virtual void createScheduler(bool bUseReqModel) {} // = 0;
       virtual void schedule(const sdpa::job_id_t& job);
       virtual void reschedule(const sdpa::job_id_t& job);
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
@@ -315,6 +311,9 @@ namespace sdpa {
 
       void backupScheduler(boost::archive::text_oarchive& oa) { oa << ptr_scheduler_;}
       void recoverScheduler(boost::archive::text_iarchive& ia) { ia >> ptr_scheduler_;}
+
+      void backup( std::ostream& );
+      void recover( std::istream& );
 
       // data members
     protected:
@@ -416,5 +415,7 @@ namespace sdpa {
 
   }
 }
+
+//BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::GenericDaemon )
 
 #endif

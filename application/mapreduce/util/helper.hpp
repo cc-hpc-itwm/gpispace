@@ -34,16 +34,42 @@
 #include <fstream>
 #include <stdlib.h>
 
-const int US = 1000000;
-const int MS = 1000;
-const int KEY_MAX_SIZE = 50;
-#define KEY_LENGTH 2
+#ifndef US
+#define US 1000000
+#endif
 
+#ifndef MS
+#define MS 1000
+#endif
+
+#ifndef KEY_MAX_SIZE
+#define KEY_MAX_SIZE 50
+#endif
+
+#ifndef KEY_LENGTH
+#define KEY_LENGTH 2
+#endif
+
+#ifndef SHRPCH
 #define SHRPCH '#'
+#endif
+
+#ifndef PAIRSEP
 #define PAIRSEP '@'
+#endif
+
+#ifndef ITEMSEP
 #define ITEMSEP 7
+#endif
+
+#ifndef EXTSEP
 #define EXTSEP ' '
+#endif
+
+#ifndef NLCH
 #define NLCH '\n'
+#endif
+
 char INTERNAL_DELIMITERS[] = {ITEMSEP, NLCH, '\0'};
 char EXTERNAL_DELIMITERS[] = {EXTSEP, NLCH, '\0'};
 

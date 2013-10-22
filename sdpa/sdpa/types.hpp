@@ -31,7 +31,7 @@ namespace sdpa {
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
 	typedef std::list<worker_job_pair_t> cancellation_list_t;
 
-	typedef std::list<std::pair<sdpa::worker_id_t, int> > job_pref_list_t;
+	typedef std::list<std::pair<sdpa::worker_id_t, int> > list_match_workers_t;
 
 	typedef std::map<sdpa::worker_id_t, int> map_degs_t;
 
@@ -70,6 +70,21 @@ namespace sdpa {
 	};
 
 	typedef std::vector<MasterInfo> master_info_list_t;
+}
+
+inline std::ostream& operator<<(std::ostream& os, sdpa::worker_id_list_t& worker_list)
+{
+	os<<"(";
+	for(sdpa::worker_id_list_t::iterator it=worker_list.begin(); it!=worker_list.end(); it++)
+	{
+		os<<*it;
+		if( boost::next(it) != worker_list.end() )
+			os<<",";
+		else
+			os<<")";
+	}
+
+	return os;
 }
 
 #endif

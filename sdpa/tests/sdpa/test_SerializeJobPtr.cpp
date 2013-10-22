@@ -44,7 +44,6 @@
 using namespace sdpa;
 
 using namespace std;
-//using namespace sdpa::tests;
 
 namespace sdpa {
         namespace unit_test {

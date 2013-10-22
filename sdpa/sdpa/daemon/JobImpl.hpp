@@ -78,6 +78,7 @@ namespace sdpa {
       virtual sdpa::worker_id_t owner() { return m_owner; }
 
       virtual bool completed() { return false; }
+      virtual bool is_running() { return false;};
 
       virtual unsigned long &walltime() { return walltime_;}
 

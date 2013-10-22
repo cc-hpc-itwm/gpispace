@@ -268,15 +268,6 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::ptr_t& pThiefWorker)
   throw NoJobScheduledException(pThiefWorker->name());
 }
 
-
-void WorkerManager::deteleJobPreferences(const sdpa::job_id_t& jobId)
-{
-  mapJob2PrefWorkersList_t::iterator it(m_mapJob2PrefWorkersList.find(jobId));
-  if( it != m_mapJob2PrefWorkersList.end() )
-    m_mapJob2PrefWorkersList.erase(it);
-}
-
-
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
@@ -327,7 +318,7 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
     throw WorkerNotFoundException(workerId);
 
   worker_map_.erase (w);
-  MLOG (TRACE, "worker " << workerId << " removed");
+  DMLOG (TRACE, "worker " << workerId << " removed");
 }
 
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
@@ -389,13 +380,27 @@ private:
   sdpa::daemon::WorkerManager* m_ptrWorkerMan;
 };
 
-void WorkerManager::getListWorkersNotFull(sdpa::worker_id_list_t& workerList)
+void WorkerManager::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
 {
   lock_type lock(mtx_);
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
   {
     Worker::ptr_t ptrWorker = iter->second;
     if( ptrWorker->nbAllocatedJobs()<ptrWorker->capacity() )
+    	workerList.push_back(ptrWorker->name());
+  }
+
+  CComparator comparator(this);
+  sort(workerList.begin(), workerList.end(), comparator);
+}
+
+void WorkerManager::getListWorkersNotReserved(sdpa::worker_id_list_t& workerList)
+{
+  lock_type lock(mtx_);
+  for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+  {
+    Worker::ptr_t ptrWorker = iter->second;
+    if( !ptrWorker->isReserved() )
     	workerList.push_back(ptrWorker->name());
   }
 
@@ -454,7 +459,7 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
   }
 }
 
-bool compare_degrees( sdpa::job_pref_list_t::value_type left, sdpa::job_pref_list_t::value_type right )
+bool compare_degrees( sdpa::list_match_workers_t::value_type left, sdpa::list_match_workers_t::value_type right )
 {
   if( left.second > right.second )
     return true;
@@ -462,10 +467,11 @@ bool compare_degrees( sdpa::job_pref_list_t::value_type left, sdpa::job_pref_lis
     return false;
 }
 
-size_t numberOfMandReqs( const job_requirements_t& listJobReq )
+size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 {
 	size_t count = 0;
-	BOOST_FOREACH(const requirement_t& req, listJobReq.req_list)
+	requirement_list_t listR = listJobReq.getReqList();
+	BOOST_FOREACH(const requirement_t& req, listR)
 	{
 		count+=(int)req.is_mandatory();
 	}
@@ -473,16 +479,16 @@ size_t numberOfMandReqs( const job_requirements_t& listJobReq )
 	return count;
 }
 
-// add here a
-Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq, int& matching_degree, sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)
+sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t& listJobReq, sdpa::worker_id_list_t& workerList ) throw (NoWorkerFoundException)
 {
   lock_type lock(mtx_);
   if( worker_map_.empty() )
     throw NoWorkerFoundException();
 
+  sdpa::list_match_workers_t listJobPrefs;
+
   sdpa::util::time_type last_schedule_time = sdpa::util::now();
-  size_t least_load = numeric_limits<int>::max();
-  size_t nMaxMandReq =  numeric_limits<int>::max();
+  size_t nMaxMandReq = numeric_limits<int>::max();
 
   // the worker id of the worker that fulfills most of the requirements
   // a matching degree 0 means that either at least a mandatory requirement
@@ -490,56 +496,45 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
   worker_id_t bestMatchingWorkerId;
   int maxMatchingDeg = -1;
 
-  BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
+  BOOST_FOREACH( sdpa::worker_id_t& workerId, workerList )
   {
-    Worker::ptr_t pWorker = pair.second;
+	  // assert if the node is reallly reserved!!!!!
+
+    Worker::ptr_t pWorker = worker_map_[workerId];
     if (pWorker->disconnected())
     	continue;
 
-    int matchingDeg = matchRequirements( pair.second, listJobReq, false ); // only proper capabilities of the worker
+    int matchingDeg = matchRequirements( pWorker, listJobReq, false ); // only proper capabilities of the worker
 
-    DLOG(TRACE, "matching_degree(" << pair.first << ") = " << matchingDeg);
+    DLOG(TRACE, "matching_degree(" << workerId << ") = " << matchingDeg);
     if (matchingDeg == -1 )
       continue;
     else
-      listJobPrefs.push_back(sdpa::job_pref_list_t::value_type(pair.first, matchingDeg));
+      listJobPrefs.push_back(sdpa::list_match_workers_t::value_type(workerId, matchingDeg));
 
     if( matchingDeg < maxMatchingDeg)
       continue;
 
     if (matchingDeg == maxMatchingDeg)
     {
-    	if(numberOfMandReqs(listJobReq)<nMaxMandReq)
+    	if(numberOfMandatoryReqs(listJobReq)<nMaxMandReq)
     		continue;
 
-    	if (pWorker->nbAllocatedJobs() > least_load)
-    		continue;
-
-    	if (pWorker->nbAllocatedJobs() == least_load && pWorker->lastScheduleTime() >= last_schedule_time)
+    	if (pWorker->lastScheduleTime() >= last_schedule_time)
     		continue;
     }
 
-    DLOG(TRACE, "worker " << pair.first << " (" << matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
+    DLOG(TRACE, "worker " << workerId << " (" << matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
     maxMatchingDeg = matchingDeg;
-    nMaxMandReq = numberOfMandReqs(listJobReq);
-    bestMatchingWorkerId = pair.first;
+    nMaxMandReq = numberOfMandatoryReqs(listJobReq);
+    bestMatchingWorkerId = workerId;
     last_schedule_time = pWorker->lastScheduleTime();
-    least_load = pWorker->nbAllocatedJobs();
   }
 
   if(maxMatchingDeg != -1)
   {
     assert (bestMatchingWorkerId != worker_id_t());
-    matching_degree = maxMatchingDeg;
-    listJobPrefs.sort(compare_degrees);
-
-    // should update the map structure that associates to jobId listPreferredWorkers
-    // this list should be used later for work stealing, eventually.
-    deteleJobPreferences(jobId);
-    if(!listJobPrefs.empty())
-      m_mapJob2PrefWorkersList.insert( mapJob2PrefWorkersList_t::value_type(jobId, listJobPrefs) );
-
-    return worker_map_[bestMatchingWorkerId];
+    return bestMatchingWorkerId;
   }
   else
   {
@@ -547,94 +542,6 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
   }
 }
 
-/*
-Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId, const job_requirements_t& listJobReq, int& matching_degree, sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)
-{
-	worker_id_list_t workerList;
-	getWorkerList(workerList);
-
-	return getBestMatchingWorker( jobId, listJobReq, workerList, matching_degree, listJobPrefs );
-}
-
-Worker::ptr_t WorkerManager::getBestMatchingWorker( const sdpa::job_id_t& jobId,
-													const job_requirements_t& listJobReq,
-													const worker_id_list_t& workerList,
-													int& matching_degree,
-													sdpa::job_pref_list_t& listJobPrefs ) throw (NoWorkerFoundException)
-{
-  lock_type lock(mtx_);
-  if( workerList.empty() )
-    throw NoWorkerFoundException();
-
-  sdpa::util::time_type last_schedule_time = sdpa::util::now();
-  size_t least_load = numeric_limits<int>::max();
-
-  // the worker id of the worker that fulfills most of the requirements
-  // a matching degree 0 means that either at least a mandatory requirement
-  // is not fulfilled or the worker does not have at all that capability
-  worker_id_t bestMatchingWorkerId;
-  int maxMatchingDeg = -1;
-
-  BOOST_FOREACH( const worker_id_t& workerId, workerList )
-  {
-	try{
-		Worker::ptr_t pWorker = findWorker(workerId);
-		if (pWorker->disconnected())
-			continue;
-
-		int matchingDeg = matchRequirements( pair.second, listJobReq, false ); // only proper capabilities of the worker
-
-		DLOG(TRACE, "matching_degree(" << pair.first << ") = " << matchingDeg);
-		if (matchingDeg == -1 )
-		  continue;
-		else
-		  listJobPrefs.push_back(sdpa::job_pref_list_t::value_type(pair.first, matchingDeg));
-
-		if( matchingDeg < maxMatchingDeg)
-		  continue;
-
-		if (matchingDeg == maxMatchingDeg)
-		{
-		  if (pWorker->nbAllocatedJobs() > least_load)
-			continue;
-
-		  if (pWorker->nbAllocatedJobs() == least_load && pWorker->lastScheduleTime() >= last_schedule_time)
-			continue;
-		}
-
-		DLOG(TRACE, "worker " << workerId << " (" << matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
-		maxMatchingDeg = matchingDeg;
-		bestMatchingWorkerId = workerId;
-		last_schedule_time = pWorker->lastScheduleTime();
-		least_load = pWorker->nbAllocatedJobs();
-	}
-	catch(const WorkerNotFoundException& exc)
-	{
-	  DLOG(WARN, "The worker "<<workerId<<" doesn't exist anymore!");
-	  continue;
-	}
-  }
-
-  if(maxMatchingDeg != -1)
-  {
-    assert (bestMatchingWorkerId != worker_id_t());
-    matching_degree = maxMatchingDeg;
-    listJobPrefs.sort(compare_degrees);
-
-    // should update the map structure that associates to jobId listPreferredWorkers
-    // this list should be used later for work stealing, eventually.
-    deteleJobPreferences(jobId);
-    if(!listJobPrefs.empty())
-      m_mapJob2PrefWorkersList.insert( mapJob2PrefWorkersList_t::value_type(jobId, listJobPrefs) );
-
-    return worker_map_[bestMatchingWorkerId];
-  }
-  else
-  {
-	  throw NoWorkerFoundException();
-  }
-}
-*/
 void WorkerManager::cancelWorkerJobs(sdpa::daemon::Scheduler* ptrSched)
 {
 	lock_type lock(mtx_);
@@ -680,4 +587,16 @@ void WorkerManager::removeWorkers()
 	lock_type lock(mtx_);
 	common_queue_.clear();
 	worker_map_.clear();
+}
+
+void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id) throw (WorkerReservationFailed)
+{
+	lock_type lock(mtx_);
+	worker_map_t::iterator it = worker_map_.find(worker_id);
+	if( it != worker_map_.end() )
+	{
+		  it->second->reserve();
+	}
+	else
+		throw WorkerReservationFailed(worker_id);
 }

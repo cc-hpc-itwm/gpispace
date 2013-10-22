@@ -32,7 +32,6 @@ static int testNb = 0;
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace sdpa::tests;
 
 #define NO_GUI ""
 
@@ -159,12 +158,11 @@ void MyFixture::run_client()
 		nTrials = 0;
 
 		try {
-				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-				ptrCli->retrieveResults(job_id_user);
+			LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+			ptrCli->retrieveResults(job_id_user);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-
 			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();

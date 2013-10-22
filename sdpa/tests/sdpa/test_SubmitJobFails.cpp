@@ -9,7 +9,6 @@
 #include <tests/sdpa/CreateDrtsWorker.hpp>
 #include "kvs_setup_fixture.hpp"
 
-using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
@@ -223,7 +222,7 @@ void MyFixture::run_client_cancel_failed_job()
 	nTrials = 0;
 
 	try {
-			LOG( DEBUG, "Cancel the the job "<<job_id_user);
+			LOG( DEBUG, "Cancel the job "<<job_id_user);
 			ptrCli->cancelJob(job_id_user);
 			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 	}

@@ -32,7 +32,6 @@ static int testNb = 0;
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace sdpa::tests;
 
 #define NO_GUI ""
 
@@ -304,6 +303,5 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 
 	LOG( INFO, "The test case Test2 terminated!");
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()

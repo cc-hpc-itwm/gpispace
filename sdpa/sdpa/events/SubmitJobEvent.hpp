@@ -39,19 +39,26 @@ namespace sdpa { namespace events {
           , const address_t& a_to
           , const sdpa::job_id_t& a_job_id
           , const job_desc_t& a_description
-          , const sdpa::job_id_t& a_parent_id)
-        : sdpa::events::JobEvent( a_from, a_to, a_job_id ), desc_(a_description), parent_(a_parent_id)
+          , const sdpa::job_id_t& a_parent_id
+          , const sdpa::worker_id_list_t& worker_list = sdpa::worker_id_list_t() )
+        : sdpa::events::JobEvent( a_from, a_to, a_job_id ),
+          desc_(a_description),
+          parent_(a_parent_id),
+          worker_list_(worker_list)
         { }
 
       virtual ~SubmitJobEvent() { }
 
     std::string str() const { return "SubmitJobEvent(" + job_id ().str () + ")"; }
 
-      const sdpa::job_desc_t & description() const {return desc_;}
-      sdpa::job_desc_t & description() {return desc_;}
+      const sdpa::job_desc_t& description() const {return desc_;}
+      sdpa::job_desc_t& description() {return desc_;}
 
-      const sdpa::job_id_t &parent_id() const { return parent_; }
-      sdpa::job_id_t &parent_id() { return parent_; }
+      const sdpa::job_id_t& parent_id() const { return parent_; }
+      sdpa::job_id_t& parent_id() { return parent_; }
+
+      const sdpa::worker_id_list_t& worker_list() const { return worker_list_; }
+      sdpa::worker_id_list_t& worker_list() { return worker_list_; }
 
       virtual void handleBy(EventHandler *handler)
       {
@@ -60,6 +67,7 @@ namespace sdpa { namespace events {
     private:
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;
+      sdpa::worker_id_list_t worker_list_;
   };
 }}
 

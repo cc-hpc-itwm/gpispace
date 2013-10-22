@@ -148,6 +148,7 @@ namespace boost { namespace serialization {
 	  ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
 	  ar & e.description();
 	  ar & e.parent_id();
+	  ar & e.worker_list();
   }
   template <class Archive>
   void serialize(Archive & ar, sdpa::events::SubmitJobAckEvent & e, unsigned int /* version */)
