@@ -454,59 +454,45 @@ void printMatchingWorkers(const sdpa::job_id_t& jobId, const sdpa::list_match_wo
 
 void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
 {
-	/*if( !numberOfWorkers() )
+	try {
+		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+
+		ptr_worker_man_->dispatchJob(jobId);
+		// put the job into the running state
+		pJob->Dispatch();
+		cond_feed_workers.notify_one();
+	}
+	catch(const JobNotFoundException& ex)
 	{
-		DLOG(TRACE, "No worker found! Put the job "<<jobId.str()<<" into the common queue");
-		// do so as when no preferences were set, just ignore them right now
-		lock_type lock(mtx_);
-		cond_workers_registered.wait(lock);
-	}*/
+		sdpa::job_result_t result(ex.what());
 
-	/*DLOG(TRACE, "No worker matching the requirements of the job "<<jobId.str()<<" was found!");
-	// do so as when no preferences were set, just ignore them right now
-	ptr_worker_man_->dispatchJob(jobId);
-	cond_feed_workers.notify_one();*/
+		JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent( ptr_comm_handler_->name()
+						 	 	 	 	 	 	 	 	 	 , ptr_comm_handler_->name()
+						 	 	 	 	 	 	 	 	 	 , jobId
+						 	 	 	 	 	 	 	 	 	 , result
+						 	 	 	 	 	 	 	 	 	 )
+										);
+		pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
+		pEvtJobFailed->error_message() = "job could not be found";
 
-	 try {
-	    const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	}
+	catch (std::exception const & ex)
+	{
+		//send a JobFailed event
+		sdpa::job_result_t result(ex.what());
 
-	    ptr_worker_man_->dispatchJob(jobId);
-	    // put the job into the running state
-	    pJob->Dispatch();
-	    cond_feed_workers.notify_one();
-	  }
-	  catch(const JobNotFoundException& ex)
-	  {
-	    sdpa::job_result_t result(ex.what());
+		JobFailedEvent::Ptr pEvtJobFailed
+			(new JobFailedEvent(  ptr_comm_handler_->name()
+								, ptr_comm_handler_->name()
+								, jobId
+								, result
+						 	 	 ));
 
-	    JobFailedEvent::Ptr pEvtJobFailed
-	      (new JobFailedEvent( ptr_comm_handler_->name()
-	                         , ptr_comm_handler_->name()
-	                         , jobId
-	                         , result
-	                         )
-	      );
-	    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-	    pEvtJobFailed->error_message() = "job could not be found";
-
-	    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-	  }
-	  catch (std::exception const & ex)
-	  {
-	    //send a JobFailed event
-	    sdpa::job_result_t result(ex.what());
-
-	    JobFailedEvent::Ptr pEvtJobFailed
-	      (new JobFailedEvent( ptr_comm_handler_->name()
-	                         , ptr_comm_handler_->name()
-	                         , jobId
-	                         , result
-	                         )
-	      );
-	    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-	    pEvtJobFailed->error_message() = ex.what();
-	    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-	  }
+		pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
+		pEvtJobFailed->error_message() = ex.what();
+		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	}
 }
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
