@@ -125,7 +125,6 @@ namespace sdpa {
       // WE interface
       virtual void submit( const id_type & id
                          , const encoded_type&
-                         //, const job_requirements_t& = empty_req_list()
                          , const requirement_list_t& = requirement_list_t()
                          , const we::type::schedule_data& = we::type::schedule_data()
                          );
