@@ -499,7 +499,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
   BOOST_FOREACH( sdpa::worker_id_t& workerId, workerList )
   {
 	  // assert if the node is reallly reserved!!!!!
-
     Worker::ptr_t pWorker = worker_map_[workerId];
     if (pWorker->disconnected())
     	continue;
