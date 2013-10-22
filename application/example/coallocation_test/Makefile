@@ -20,7 +20,7 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 PUT_PORT += n_tasks_A=10L
 PUT_PORT += n_workers_A=2L
 PUT_PORT += n_tasks_B=10L
-PUT_PORT += n_workers_B=3L
+PUT_PORT += n_workers_B=6L
 -include example.mk
 
 ###############################################################################
