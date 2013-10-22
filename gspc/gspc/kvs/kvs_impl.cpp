@@ -14,7 +14,7 @@ namespace gspc
   {
     kvs_t::~kvs_t () {}
 
-    int kvs_t::get (key_type const &key, value_type &val) const
+    int kvs_t::do_get (key_type const &key, value_type &val) const
     {
       purge_expired_keys ();
 
@@ -22,13 +22,13 @@ namespace gspc
 
       value_map_t::const_iterator it = m_values.find (key);
       if (it == m_values.end ())
-        return -ESRCH;
+        return -ENOKEY;
 
       if (it->second->is_expired ())
       {
         unique_lock expired_lock (m_expired_entries_mutex);
         m_expired_entries.push_back (it->first);
-        return -ESRCH;
+        return -EKEYEXPIRED;
       }
       else
       {
@@ -38,46 +38,41 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::put (key_type const &key, value_type const &val)
-    {
-      purge_expired_keys ();
-
-      {
-        unique_lock lock (m_mutex);
-        value_map_t::iterator it = m_values.find (key);
-        if (it == m_values.end ())
-        {
-          m_values.insert
-            (std::make_pair ( key
-                            , entry_ptr_t (new entry_t (val))
-                            )
-            );
-        }
-        else
-        {
-          it->second->set_value (val);
-        }
-      }
-
-      onChange (key);
-
-      return 0;
-    }
-
-    int kvs_t::put (std::list<std::pair<key_type, value_type> > const &values)
+    int kvs_t::do_put (std::list<std::pair<key_type, value_type> > const &values)
     {
       purge_expired_keys ();
 
       typedef std::pair<key_type, value_type> kv_pair_t;
+      {
+        unique_lock lock (m_mutex);
+
+        BOOST_FOREACH (kv_pair_t const &kp, values)
+        {
+          value_map_t::iterator it = m_values.find (kp.first);
+          if (it == m_values.end ())
+          {
+            m_values.insert
+              (std::make_pair ( kp.first
+                              , entry_ptr_t (new entry_t (kp.second))
+                              )
+              );
+          }
+          else
+          {
+            it->second->set_value (kp.second);
+          }
+        }
+      }
+
       BOOST_FOREACH (kv_pair_t const &kp, values)
       {
-        put (kp.first, kp.second);
+        onChange (kp.first);
       }
 
       return 0;
     }
 
-    int kvs_t::get_regex ( std::string const &r
+    int kvs_t::do_get_regex ( std::string const &r
                          , std::list<std::pair<key_type, value_type> > &values
                          ) const
     {
@@ -112,7 +107,7 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::del (key_type const &key)
+    int kvs_t::do_del (key_type const &key)
     {
       purge_expired_keys ();
 
@@ -121,7 +116,7 @@ namespace gspc
 
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
-          return -ESRCH;
+          return -ENOKEY;
 
         m_values.erase (it);
       }
@@ -131,7 +126,7 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::del_regex (std::string const &r)
+    int kvs_t::do_del_regex (std::string const &r)
     {
       purge_expired_keys ();
 
@@ -283,7 +278,7 @@ namespace gspc
       return -EINVAL;
     }
 
-    int kvs_t::set_ttl (key_type const &key, int ttl)
+    int kvs_t::do_set_ttl (key_type const &key, int ttl)
     {
       purge_expired_keys ();
 
@@ -291,14 +286,14 @@ namespace gspc
 
       value_map_t::iterator it = m_values.find (key);
       if (it == m_values.end ())
-        return -ESRCH;
+        return -ENOKEY;
 
       it->second->expires_in (ttl);
 
       return 0;
     }
 
-    int kvs_t::set_ttl_regex (std::string const &r, int ttl)
+    int kvs_t::do_set_ttl_regex (std::string const &r, int ttl)
     {
       purge_expired_keys ();
 
@@ -322,7 +317,7 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::push (key_type const &key, value_type const &val)
+    int kvs_t::do_push (key_type const &key, value_type const &val)
     {
       purge_expired_keys ();
 
@@ -351,7 +346,7 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::pop (key_type const &key, value_type &val)
+    int kvs_t::do_pop (key_type const &key, value_type &val)
     {
       purge_expired_keys ();
 
@@ -361,7 +356,7 @@ namespace gspc
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
         {
-          return -ESRCH;
+          return -ENOKEY;
         }
 
         entry_ptr_t e = it->second;
@@ -377,7 +372,7 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::try_pop (key_type const &key, value_type &val)
+    int kvs_t::do_try_pop (key_type const &key, value_type &val)
     {
       purge_expired_keys ();
 
@@ -387,7 +382,7 @@ namespace gspc
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
         {
-          return -ESRCH;
+          return -ENOKEY;
         }
 
         int rc = it->second->try_pop (val);
@@ -400,7 +395,7 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::counter_reset (key_type const &key, int val)
+    int kvs_t::do_counter_reset (key_type const &key, int val)
     {
       purge_expired_keys ();
 
@@ -427,12 +422,7 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::counter_increment (key_type const &key, int &val)
-    {
-      return counter_increment (key, val, 1);
-    }
-
-    int kvs_t::counter_increment (key_type const &key, int &val, int delta)
+    int kvs_t::do_counter_change (key_type const &key, int &val, int delta)
     {
       purge_expired_keys ();
 
@@ -442,7 +432,7 @@ namespace gspc
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
         {
-          return -ESRCH;
+          return -ENOKEY;
         }
 
         int *cur = boost::get<int>(&it->second->get_value ());
@@ -460,16 +450,6 @@ namespace gspc
       onChange (key);
 
       return 0;
-    }
-
-    int kvs_t::counter_decrement (key_type const &key, int &val)
-    {
-      return counter_decrement (key, val, 1);
-    }
-
-    int kvs_t::counter_decrement (key_type const &key, int &val, int delta)
-    {
-      return counter_increment (key, val, -delta);
     }
 
     void kvs_t::purge_expired_keys () const

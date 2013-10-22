@@ -22,32 +22,27 @@ namespace gspc
 
       boost::signal<void (key_type const &)> onChange;
 
-      int put (key_type const &key, value_type const &val);
-      int put (std::list<std::pair<key_type, value_type> > const &);
-
-      int get (key_type const &key, value_type &val) const;
-      int get_regex ( std::string const &regex
-                    , std::list<std::pair<key_type, value_type> > &
-                    ) const;
-
-      int del (key_type const &key);
-      int del_regex (std::string const &regex);
-
-      int set_ttl (key_type const &key, int ttl);
-      int set_ttl_regex (std::string const &regex, int ttl);
-
-      int push (key_type const &key, value_type const &val);
-      int pop (key_type const &, value_type &val);
-      int try_pop (key_type const &, value_type &val);
-
-      int counter_reset     (key_type const &key, int  val);
-
-      int counter_increment (key_type const &key, int &val, int delta);
-      int counter_increment (key_type const &key, int &val);
-
-      int counter_decrement (key_type const &key, int &val, int delta);
-      int counter_decrement (key_type const &key, int &val);
     private:
+      int do_put (std::list<std::pair<key_type, value_type> > const &);
+
+      int do_get (key_type const &key, value_type &val) const;
+      int do_get_regex ( std::string const &regex
+                       , std::list<std::pair<key_type, value_type> > &
+                       ) const;
+
+      int do_del (key_type const &key);
+      int do_del_regex (std::string const &regex);
+
+      int do_set_ttl (key_type const &key, int ttl);
+      int do_set_ttl_regex (std::string const &regex, int ttl);
+
+      int do_push (key_type const &key, value_type const &val);
+      int do_pop (key_type const &, value_type &val);
+      int do_try_pop (key_type const &, value_type &val);
+
+      int do_counter_reset (key_type const &key, int val);
+      int do_counter_change (key_type const &key, int &val, int delta);
+
       typedef boost::shared_mutex mutex_type;
 
       class entry_t

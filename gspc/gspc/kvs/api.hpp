@@ -20,31 +20,52 @@ namespace gspc
       typedef std::string                   key_type;
       typedef pnet::type::value::value_type value_type;
 
-      virtual int put (key_type const &key, value_type const &val) = 0;
-      virtual int put (std::list<std::pair<key_type, value_type> > const &) = 0;
+      int put (key_type const &key, value_type const &val);
+      int put (std::list<std::pair<key_type, value_type> > const &lst);
 
-      virtual int get (key_type const &key, value_type &val) const = 0;
-      virtual int get_regex ( std::string const &regex
-                            , std::list<std::pair<key_type, value_type> > &
-                            ) const = 0;
+      int get (key_type const &key, value_type &val) const;
+      int get_regex ( std::string const &
+                    , std::list<std::pair<key_type, value_type> > &
+                    ) const;
 
-      virtual int del (key_type const &key) = 0;
-      virtual int del_regex (std::string const &regex) = 0;
+      int del (key_type const &key);
+      int del_regex (std::string const &regex);
 
-      virtual int set_ttl (key_type const &key, int ttl) = 0;
-      virtual int set_ttl_regex (std::string const &regex, int ttl) = 0;
+      int set_ttl (key_type const &key, int ttl);
+      int set_ttl_regex (std::string const &regex, int ttl);
 
-      virtual int push (key_type const &key, value_type const &val) = 0;
-      virtual int pop (key_type const &, value_type &val) = 0;
-      virtual int try_pop (key_type const &, value_type &val) = 0;
+      int push (key_type const &key, value_type const &val);
+      int pop (key_type const &, value_type &val);
+      int try_pop (key_type const &, value_type &val);
 
-      virtual int counter_reset     (key_type const &key, int  val) = 0;
+      int counter_reset     (key_type const &key, int  val);
 
-      virtual int counter_increment (key_type const &key, int &val, int delta) = 0;
-      virtual int counter_increment (key_type const &key, int &val) = 0;
+      int counter_increment (key_type const &key, int &val, int delta);
+      int counter_increment (key_type const &key, int &val);
 
-      virtual int counter_decrement (key_type const &key, int &val, int delta) = 0;
-      virtual int counter_decrement (key_type const &key, int &val) = 0;
+      int counter_decrement (key_type const &key, int &val, int delta);
+      int counter_decrement (key_type const &key, int &val);
+    private:
+      bool is_key_valid (key_type const &) const;
+
+      virtual int do_put (std::list<std::pair<key_type, value_type> > const &lst) = 0;
+      virtual int do_get (key_type const &key, value_type &val) const = 0;
+      virtual int do_get_regex ( std::string const &regex
+                               , std::list<std::pair<key_type, value_type> > &vals
+                               ) const = 0;
+
+      virtual int do_del (key_type const &key) = 0;
+      virtual int do_del_regex (std::string const &regex) = 0;
+
+      virtual int do_set_ttl (key_type const &key, int ttl) = 0;
+      virtual int do_set_ttl_regex (std::string const &regex, int ttl) = 0;
+
+      virtual int do_push (key_type const &key, value_type const &val) = 0;
+      virtual int do_pop (key_type const &, value_type &val) = 0;
+      virtual int do_try_pop (key_type const &, value_type &val) = 0;
+
+      virtual int do_counter_reset  (key_type const &key, int  val) = 0;
+      virtual int do_counter_change (key_type const &key, int &val, int delta) = 0;
     };
   }
 }

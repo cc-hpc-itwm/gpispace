@@ -6,6 +6,16 @@
 #include <algorithm>    // std::sort
 #include <gspc/kvs/kvs_impl.hpp>
 
+BOOST_AUTO_TEST_CASE (test_kvs_impl_invalid_key)
+{
+  int rc;
+  gspc::kvs::kvs_t kvs;
+  gspc::kvs::api_t::value_type val;
+
+  rc = kvs.get ("foo bar", val);
+  BOOST_REQUIRE_EQUAL (rc, -EKEYREJECTED);
+}
+
 BOOST_AUTO_TEST_CASE (test_kvs_impl_put_get_del)
 {
   int rc;
@@ -14,7 +24,7 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_put_get_del)
 
   rc = kvs.get ("foo", val);
 
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
   rc = kvs.put ("foo", 42);
 
@@ -41,11 +51,11 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_put_get_del)
 
   rc = kvs.del ("foo");
 
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
   rc = kvs.get ("foo", val);
 
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 }
 
 BOOST_AUTO_TEST_CASE (test_kvs_impl_push_try_pop)
@@ -55,7 +65,7 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_push_try_pop)
   gspc::kvs::api_t::value_type val;
 
   rc = kvs.try_pop ("foo", val);
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
   rc = kvs.put ("foo", 42);
   rc = kvs.try_pop ("foo", val);
@@ -120,10 +130,10 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_reset_inc_dec)
   int val;
 
   rc = kvs.counter_increment ("foo", val);
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
   rc = kvs.counter_decrement ("foo", val);
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
   rc = kvs.counter_reset ("foo", 0);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -204,11 +214,11 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_del_regex)
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   rc = kvs.get ("foo.1", val);
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
   rc = kvs.get ("foo.2", val);
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
   rc = kvs.get ("foo.3", val);
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
   rc = kvs.get ("foo.bar", val);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -227,5 +237,5 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_expiry)
   sleep (1);
 
   rc = kvs.get ("foo.1", val);
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (rc, -EKEYEXPIRED);
 }

@@ -38,6 +38,7 @@ set (gspc_src
   net/auth/simple.cpp
   net/auth/default_auth.cpp
 
+  kvs/api.cpp
   kvs/kvs_impl.cpp
 
   rif/util.cpp
