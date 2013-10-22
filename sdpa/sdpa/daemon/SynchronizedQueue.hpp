@@ -253,14 +253,23 @@ namespace sdpa { namespace daemon {
 
     friend class boost::serialization::access;
 
-    void print()
+    void print(const std::string& msg="")
     {
     	lock_type lock(mtx_);
     	unsigned int k = 0;
+    	std::ostringstream oss;
+    	if(!msg.empty())
+    		oss<<msg;
+    	oss<<"{";
     	for( iterator it = begin(); it!= end(); it++, k++)
     	{
-          DMLOG (TRACE, "   element "<<k<<": \""<<*it<<"\"");
+    		oss<<it->str();
+    		if(boost::next(it) != end())
+    			oss<<",";
     	}
+    	oss<<"}";
+
+    	LOG(TRACE, oss.str());
     }
 
   private:
