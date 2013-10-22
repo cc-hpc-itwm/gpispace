@@ -1,6 +1,6 @@
 include(pnet_macros)
 
-pnet_compile(capabilities capabilities.xml
+pnet_compile(capabilities capabilities.xpnet
   OUTPUT capabilities.pnet
   GENERATE capabilities
   INSTALL ${SDPA_APPS_DIR}/capabilities
