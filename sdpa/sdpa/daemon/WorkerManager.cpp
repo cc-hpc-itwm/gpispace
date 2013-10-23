@@ -125,68 +125,6 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     iter_last_worker_ = worker_map_.begin();
 }
 
-void WorkerManager::balanceWorkers()
-{
-  lock_type lock(mtx_);
-  typedef boost::unordered_map<Worker::worker_id_t, unsigned int> load_map_t;
-  typedef pair<Worker::worker_id_t, unsigned int> loadPair;
-  load_map_t loadVector;
-
-  size_t loadBal = 0;
-  size_t N = worker_map_.size();
-
-  if( N==0 )
-    return;
-
-  for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
-    loadBal += it->second->pending().size();
-
-  loadBal = loadBal%N?loadBal/N:loadBal/N + 1;
-
-  bool bFinished = false;
-
-  while( !bFinished )
-  {
-    bFinished = true;;
-    for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++ )
-    {
-      size_t loadCurrNode = it->second->pending().size();
-
-      if( loadCurrNode > loadBal )
-      {
-        for( worker_map_t::iterator itNb = worker_map_.begin(); itNb!=worker_map_.end(); itNb++)
-        {
-          size_t loadNb = itNb->second->pending().size();
-          if( loadCurrNode > loadNb )
-          {
-            // transfer load = (loadCurrNode - loadNb)/N from the current node to the neighboring node
-            size_t delta = (loadCurrNode - loadNb)/N;
-            if(delta)
-            {
-              bFinished = false;
-              for( size_t k=0; k<delta; k++)
-              {
-                // look for nodes who prefer the neighboring worker
-                // if there are any, move them first and then, the nodes
-                // for which no preference was expressed
-                sdpa::job_id_t jobId = it->second->pending().pop();
-                itNb->second->pending().push(jobId);
-              }
-            }
-            else if( loadCurrNode - loadNb > 1 ) //still unbalanced
-            {
-              bFinished = false;
-              loadCurrNode--;
-              // move just one job
-              sdpa::job_id_t jobId = it->second->pending().pop();
-              itNb->second->pending().push(jobId);
-            }
-          }
-        }
-      }
-    }
-  }
-}
 
 /**
  * get next worker to be served (Round-Robin scheduling)
@@ -569,4 +507,25 @@ void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id) throw (Wor
 	}
 	else
 		throw WorkerReservationFailed(worker_id);
+}
+
+void addToList(Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)
+{
+	while( !pQueue->empty() )
+	{
+		sdpa::job_id_t jobId = pQueue->pop();
+		jobList.push_back(jobId);
+	}
+}
+
+sdpa::job_id_list_t WorkerManager::getJobListAndCleanQueues(const Worker::ptr_t& pWorker)
+{
+	lock_type lock(mtx_);
+	sdpa::job_id_list_t listAssignedJobs;
+
+	addToList(&pWorker->pending(), listAssignedJobs);
+	addToList(&pWorker->submitted(), listAssignedJobs);
+	addToList(&pWorker->acknowledged(), listAssignedJobs);
+
+	return listAssignedJobs;
 }
