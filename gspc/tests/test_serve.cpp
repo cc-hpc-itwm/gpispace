@@ -10,6 +10,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <fhg/util/now.hpp>
+
 #include <gspc/net.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/error.hpp>
@@ -230,7 +232,7 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 {
   gspc::net::initialize ();
 
-  static const std::size_t NUM_MSGS_TO_SEND = 10000;
+  static const std::size_t NUM_MSGS_TO_SEND = 1 << 16;
   using namespace gspc::net::tests;
 
   gspc::net::server::queue_manager_t qmgr;
@@ -244,6 +246,8 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
   gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
   BOOST_REQUIRE (client);
 
+  double duration = -fhg::util::now ();
+
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
   {
     BOOST_REQUIRE (0 == client->send ("/test/send", "hello world!"));
@@ -251,8 +255,14 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 
   while (subscriber.frames.size () != NUM_MSGS_TO_SEND)
   {
-    usleep (100);
+    usleep (50);
   }
+
+  duration += fhg::util::now ();
+
+  std::cerr << "UNIX send of " << NUM_MSGS_TO_SEND << " took " << duration << " sec"
+            << " => " << (NUM_MSGS_TO_SEND / duration) << " msgs/sec"
+            << std::endl;
 
   BOOST_REQUIRE_EQUAL ( subscriber.frames.size ()
                       , NUM_MSGS_TO_SEND
@@ -301,7 +311,7 @@ BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 {
   gspc::net::initialize ();
 
-  static const std::size_t NUM_MSGS_TO_SEND = 10000;
+  static const std::size_t NUM_MSGS_TO_SEND = 1 << 16;
   using namespace gspc::net::tests;
 
   gspc::net::server::queue_manager_t qmgr;
@@ -315,13 +325,23 @@ BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
   gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
   BOOST_REQUIRE (client);
 
+  double duration = -fhg::util::now ();
+
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
-    client->send ("/test/send", "hello world!");
+  {
+    BOOST_REQUIRE (0 == client->send ("/test/send", "hello world!"));
+  }
 
   while (subscriber.frames.size () != NUM_MSGS_TO_SEND)
   {
-    usleep (100);
+    usleep (50);
   }
+
+  duration += fhg::util::now ();
+
+  std::cerr << "TCP send of " << NUM_MSGS_TO_SEND << " took " << duration << " sec"
+            << " => " << (NUM_MSGS_TO_SEND / duration) << " msgs/sec"
+            << std::endl;
 
   BOOST_REQUIRE_EQUAL ( subscriber.frames.size ()
                       , NUM_MSGS_TO_SEND
