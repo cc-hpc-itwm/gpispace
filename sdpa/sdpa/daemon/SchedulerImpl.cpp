@@ -82,32 +82,6 @@ void SchedulerImpl::addWorker(  const Worker::worker_id_t& workerId,
   }
 }
 
-void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue )
-{
-  assert (pQueue);
-
-  while( !pQueue->empty() )
-  {
-    sdpa::job_id_t jobId = pQueue->pop();
-    SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
-
-    if( ptr_comm_handler_ )
-    {
-      Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
-      ptr_comm_handler_->activityFailed( worker_id
-                                       , jobId
-                                       , pJob->result()
-                                       , fhg::error::WORKER_TIMEDOUT
-                                       , "Worker timeout detected!"
-                                       );
-    }
-    else
-    {
-      SDPA_LOG_ERROR("Invalid communication handler!");
-    }
-  }
-}
-
 void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
 {
 	if(bStopRequested)
@@ -1181,3 +1155,30 @@ sdpa::job_id_t SchedulerImpl::getNextJobToSchedule()
 	return jobId;
 }
 
+/*
+void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue )
+{
+  assert (pQueue);
+
+  while( !pQueue->empty() )
+  {
+    sdpa::job_id_t jobId = pQueue->pop();
+    SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
+
+    if( ptr_comm_handler_ )
+    {
+      Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
+      ptr_comm_handler_->activityFailed( worker_id
+                                       , jobId
+                                       , pJob->result()
+                                       , fhg::error::WORKER_TIMEDOUT
+                                       , "Worker timeout detected!"
+                                       );
+    }
+    else
+    {
+      SDPA_LOG_ERROR("Invalid communication handler!");
+    }
+  }
+}
+*/
