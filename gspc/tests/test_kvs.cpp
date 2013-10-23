@@ -4,7 +4,7 @@
 #include <errno.h>
 
 #include <algorithm>    // std::sort
-#include <gspc/kvs/kvs_impl.hpp>
+#include <gspc/kvs/impl/kvs_impl.hpp>
 
 BOOST_AUTO_TEST_CASE (test_kvs_impl_invalid_key)
 {
