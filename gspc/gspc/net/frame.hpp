@@ -17,8 +17,8 @@ namespace gspc
     public:
       typedef std::string                        key_type;
       typedef std::string                        value_type;
-      typedef std::vector<char>                  body_type;
       typedef std::list<std::pair<std::string, value_type> >  header_type;
+      typedef std::string                        body_type;
       typedef boost::optional<value_type>        header_value;
 
       frame () {}
@@ -69,10 +69,9 @@ namespace gspc
        */
       bool has_header (std::string const &key) const;
 
-      frame & set_body (std::string const & body);
-      frame & set_body (const char *buf, std::size_t len);
       frame & set_body (body_type const & body);
-      frame & add_body (std::string const & body);
+      frame & set_body (const char *buf, std::size_t len);
+      frame & add_body (body_type const & body);
       frame & add_body (const char *buf, std::size_t len);
 
       body_type const & get_body () const { return m_body; }

@@ -132,13 +132,6 @@ namespace gspc
       return update_content_length ();
     }
 
-    frame & frame::set_body (std::string const &body)
-    {
-      m_body.assign (body.begin (), body.end ());
-
-      return update_content_length ();
-    }
-
     frame & frame::add_body (std::string const &body)
     {
       m_body.insert ( m_body.end ()
@@ -159,7 +152,7 @@ namespace gspc
 
     std::string frame::get_body_as_string () const
     {
-      return std::string (m_body.begin (), m_body.end ());
+      return m_body;
     }
 
     static const char EOL = '\n';
@@ -183,7 +176,7 @@ namespace gspc
           os << kvp.first << ":" << kvp.second << EOL;
         }
         os << EOL;
-        os << get_body_as_string ();
+        os << get_body ();
         os << NUL;
       }
 
