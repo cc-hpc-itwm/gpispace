@@ -90,8 +90,8 @@ namespace we { namespace mgmt {
        *          post-conditions: the net is registered is with id "id"
        *
        */
-      void submit (const external_id_type&, const encoded_type&);
-      void submit (const external_id_type&, const we::mgmt::type::activity_t&);
+      void submit (const external_id_type&, const encoded_type&, const we::type::user_data &);
+      void submit (const external_id_type&, const we::mgmt::type::activity_t&, const we::type::user_data &);
 
       /**
        * Inform the management layer to cancel a previously submitted net
@@ -217,6 +217,7 @@ namespace we { namespace mgmt {
                            , encoded_type const &
                            , const std::list<we::type::requirement_t>&
                            , const we::type::schedule_data&
+                           , const we::type::user_data &
                            )> ext_submit;
       boost::function<bool ( external_id_type const &
                            , reason_type const &
@@ -329,7 +330,7 @@ namespace we { namespace mgmt {
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
       {
-        ext_submit = (boost::bind (& E::submit, exec_layer, _1, _2, _3, _4));
+        ext_submit = (boost::bind (& E::submit, exec_layer, _1, _2, _3, _4, _5));
         ext_cancel = (boost::bind (& E::cancel, exec_layer, _1, _2));
         ext_finished = (boost::bind (& E::finished, exec_layer, _1, _2));
         ext_failed = (boost::bind (& E::failed, exec_layer, _1, _2, _3, _4));
@@ -573,6 +574,7 @@ namespace we { namespace mgmt {
                    , ext_act.to_string()
                    , ext_act.transition().requirements()
                    , schedule_data
+                   , desc->get_user_data ()
                    );
       }
 
@@ -667,6 +669,7 @@ namespace we { namespace mgmt {
             {
               descriptor_ptr child (new detail::descriptor(desc->extract(generate_internal_id())));
               child->inject_input ();
+              child->set_user_data (desc->get_user_data ());
 
               DLOG (TRACE, "extractor: extracted from (" << desc->name() << ")-" << desc->id()
                   << ": (" << child->name() << ")-" << child->id());

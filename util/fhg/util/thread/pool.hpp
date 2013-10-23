@@ -27,6 +27,9 @@ namespace fhg
       void execute (work_t f);
       void execute (work_t f, callback_t cb);
     private:
+      typedef boost::mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> unique_lock;
+
       pool_t (const pool_t &);
       pool_t & operator=(const pool_t &);
 
@@ -36,6 +39,7 @@ namespace fhg
       typedef std::pair<work_t, callback_t>   work_item_t;
       typedef fhg::thread::queue<work_item_t, std::list> work_queue_t;
 
+      mutable mutex_type m_mutex;
       bool          m_stop;
       std::size_t   m_nthread;
       std::string   m_pool_name;

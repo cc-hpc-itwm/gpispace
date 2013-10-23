@@ -8,6 +8,7 @@
 
 #include <boost/thread.hpp>
 
+#include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhg/plugin/core/plugin.hpp>
@@ -128,6 +129,7 @@ namespace fhg
 
       void stop ();
       void reset ();
+      void wait_until_stopped ();
 
       void add_search_path (std::string const &);
       void clear_search_path ();
@@ -201,8 +203,6 @@ namespace fhg
       mutable mutex_type m_mtx_pending_tasks;
       mutable condition_type m_task_eligible;
       mutable mutex_type m_mtx_config;
-      mutable mutex_type m_mtx_stop;
-      mutable condition_type m_stopped;
 
       std::string m_state_path;
       time_t m_tick_time;
@@ -223,6 +223,8 @@ namespace fhg
       std::string m_name;
       search_path_t m_search_path;
       search_path_t m_failed_path_cache;
+
+      fhg::util::thread::event<int> m_stopped;
     };
   }
 }

@@ -1,16 +1,22 @@
 <defun name="workerlist">
   <in  name="trigger" type="control" place="trigger_in"/>
-  <out name="workers" type="string" place="workers"/>
+  <out name="workers" type="list" place="workers"/>
+
+  <struct name="worker_info">
+    <field name="workers" type="list" />
+  </struct>
 
   <net>
     <place name="trigger_in" type="control"/>
-    <place name="workers" type="string"/>
+    <place name="workers" type="list"/>
+
+    <place name="worker_info" type="worker_info" />
 
     <transition name="run">
       <defun>
         <in  name="trigger" type="control"/>
-        <out name="workers" type="string"/>
-        <module name="workerlist" function="run (workers)">
+        <out name="worker_info" type="worker_info"/>
+        <module name="workerlist" function="run (worker_info)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fhg/util/join.hpp"/>
           <cinclude href="fhg/plugins/drts_info.hpp"/>
@@ -26,12 +32,14 @@
             }
             else
             {
-              workers = fhg::util::join ( wlist.begin ()
-                                        , wlist.end ()
-                                        , ", "
-                                        );
+              worker_info.workers.assign (wlist.begin(), wlist.end());
 
-              MLOG (INFO, "running on: " << workers);
+              std::string worker_names = fhg::util::join ( wlist.begin ()
+                                                         , wlist.end ()
+                                                         , ", "
+                                                         );
+
+              MLOG (INFO, "running on: " << worker_names);
 
               MLOG ( INFO
                    , "hostname of first worker: "
@@ -44,7 +52,20 @@
         </module>
       </defun>
       <connect-in  port="trigger" place="trigger_in"/>
-      <connect-out port="workers" place="workers"/>
+      <connect-out port="worker_info" place="worker_info"/>
+    </transition>
+
+    <transition name="extract_worker_list">
+      <defun>
+        <in name="worker_info" type="worker_info" />
+        <out name="workers" type="list" />
+
+        <expression>
+          ${workers} := ${worker_info.workers};
+        </expression>
+      </defun>
+      <connect-in port="worker_info" place="worker_info" />
+      <connect-out port="workers" place="workers" />
     </transition>
   </net>
 </defun>

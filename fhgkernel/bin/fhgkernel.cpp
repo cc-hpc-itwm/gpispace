@@ -25,6 +25,7 @@
 #include <fhg/util/setproctitle.h>
 #include <fhg/util/get_home_dir.hpp>
 #include <fhg/util/program_info.h>
+#include <fhg/util/thread/pool.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
@@ -540,16 +541,21 @@ int main(int ac, char **av)
     }
   }
 
+  fhg::thread::global_pool ().start ();
+
   atexit(&shutdown_kernel);
 
   int rc = kernel->run_and_unload (false);
+
+  fhg::thread::global_pool ().stop ();
 
   DMLOG (TRACE, "shutting down... (" << rc << ")");
 
   kernel->unload_all();
 
-  delete kernel;
+  fhg::core::kernel_t *tmp_kernel = kernel;
   kernel = 0;
+  delete tmp_kernel;
 
   return rc;
 }

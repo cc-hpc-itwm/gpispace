@@ -33,4 +33,4 @@ measured "run" run_with_eval_plugin                         || die $EX_ERR_RUN
 
 workers=$(pnetget -p workers < "${OUT}")
 
-test "${workers}" = "\"worker-localhost-1\""                || die $EX_ERR_RES
+test "${workers}" = "List (\"worker-localhost-1\")"         || die $EX_ERR_RES

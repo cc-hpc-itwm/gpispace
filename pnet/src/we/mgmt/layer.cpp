@@ -8,18 +8,21 @@ namespace we
   {
     void layer::submit ( const external_id_type& id
                        , const encoded_type& bytes
+                       , const we::type::user_data & data
                        )
     {
       DLOG (TRACE, "submit (" << id << ", ...)");
 
-      return submit (id, we::mgmt::type::activity_t (bytes));
+      return submit (id, we::mgmt::type::activity_t (bytes), data);
     }
     void layer::submit ( const external_id_type& id
                        , const we::mgmt::type::activity_t& act
+                       , const we::type::user_data & data
                        )
     {
       descriptor_ptr desc
         (new detail::descriptor (generate_internal_id(), act));
+      desc->set_user_data (data);
       desc->came_from_external_as (id);
       desc->inject_input ();
 

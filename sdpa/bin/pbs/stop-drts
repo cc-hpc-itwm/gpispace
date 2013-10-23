@@ -72,14 +72,14 @@ function term_drts ()
     alive=true
     if signal_drts TERM $pid "$name"
     then
-        for ((i=0 ; i < $timeout ; ++i))
+        for ((i=0 ; i < $((5 * timeout)) ; ++i))
         do
-            sleep 1
             if ! signal_drts 0 $pid "$name"
             then
                 alive=false
                 break
             fi
+            sleep 0.2
         done
     else
         alive=false
@@ -138,9 +138,9 @@ for p in $still_running ; do
     if echo "$name" | grep -q "^${pattern}$" ; then
         debug "drts matches pattern '^${pattern}\$'"
         if [ "$signal" = "TERM" -o "$signal" = "15" ] ; then
-            term_drts "$p" "$name"
+            term_drts "$p" "$name" &
         else
-            signal_drts "$signal" "$p" "$name"
+            signal_drts "$signal" "$p" "$name" &
         fi
     fi
 done

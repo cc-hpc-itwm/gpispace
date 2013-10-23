@@ -56,6 +56,7 @@
 #include <sdpa/types.hpp>
 
 #include <we/type/schedule_data.hpp>
+#include <we/type/user_data.hpp>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
@@ -127,6 +128,7 @@ namespace sdpa {
                          , const encoded_type&
                          , const requirement_list_t& = requirement_list_t()
                          , const we::type::schedule_data& = we::type::schedule_data()
+                         , const we::type::user_data & = we::type::user_data ()
                          );
       virtual bool cancel(const id_type & id, const reason_type& reason);
       virtual bool finished(const id_type & id, const result_type& result);

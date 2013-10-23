@@ -43,6 +43,7 @@ struct daemon_t
               , const std::string &enc
               , requirement_list_t req_list = requirement_list_t()
               , const we::type::schedule_data& = we::type::schedule_data()
+              , const we::type::user_data& = we::type::user_data ()
               )
   {
     layer.print_statistics (std::cerr);
@@ -87,7 +88,7 @@ int main ()
       , we::type::module_call_t ("m", "f")
       );
     we::mgmt::type::activity_t act (mod_call);
-    layer.submit (generate_id(), act);
+    layer.submit (generate_id(), act, we::type::user_data ());
 
     sleep (1);
     layer.print_statistics (std::cerr);
@@ -98,7 +99,7 @@ int main ()
                           , we::type::expression_t ("${out} := 3L")
                           );
     we::mgmt::type::activity_t act (expr);
-    layer.submit (generate_id(), act);
+    layer.submit (generate_id(), act, we::type::user_data ());
 
     sleep (1);
     layer.print_statistics (std::cerr);
