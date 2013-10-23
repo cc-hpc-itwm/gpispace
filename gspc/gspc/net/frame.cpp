@@ -40,7 +40,25 @@ namespace gspc
                               , std::string const & val
                               )
     {
-      m_header [key] = val;
+      bool updated = false;
+      header_type::iterator it = m_header.begin ();
+      const header_type::iterator end = m_header.end ();
+      while (it != end)
+      {
+        if (it->first == key)
+        {
+          it->second = val;
+          updated = true;
+        }
+
+        ++it;
+      }
+
+      if (it == end && not updated)
+      {
+        m_header.push_back (header_type::value_type (key, val));
+      }
+
       return *this;
     }
 
@@ -49,16 +67,31 @@ namespace gspc
                               )
     {
       if (val)
-        m_header [key] = *val;
+      {
+        return set_header (key, *val);
+      }
       else
-        m_header.erase (key);
-      return *this;
+      {
+        return del_header (key);
+      }
     }
 
-    frame & frame::del_header ( std::string const & key
-                              )
+    frame & frame::del_header (std::string const & key)
     {
-      m_header.erase (key);
+      header_type::iterator it = m_header.begin ();
+      const header_type::iterator end = m_header.end ();
+      while (it != end)
+      {
+        if (it->first == key)
+        {
+          it = m_header.erase (it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
       return *this;
     }
 
@@ -71,15 +104,25 @@ namespace gspc
     frame::header_value
     frame::get_header (std::string const & key) const
     {
-      header_type::const_iterator it = m_header.find (key);
+      frame::header_value val;
 
-      if (it != m_header.end ()) return it->second;
-      else                       return boost::none;
+      header_type::const_reverse_iterator it = m_header.rbegin ();
+      const header_type::const_reverse_iterator end = m_header.rend ();
+      while (it != end)
+      {
+        if (it->first == key)
+        {
+          return it->second;
+        }
+        ++it;
+      }
+
+      return boost::none;
     }
 
     bool frame::has_header (std::string const & key) const
     {
-      return m_header.find (key) != m_header.end ();
+      return get_header (key) != boost::none;
     }
 
     frame & frame::set_body (frame::body_type const & body)

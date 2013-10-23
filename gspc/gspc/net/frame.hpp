@@ -1,7 +1,7 @@
 #ifndef GSPC_NET_FRAME_HPP
 #define GSPC_NET_FRAME_HPP
 
-#include <map>
+#include <list>
 #include <vector>
 #include <string>
 #include <iosfwd>
@@ -17,8 +17,8 @@ namespace gspc
     public:
       typedef std::string                        key_type;
       typedef std::string                        value_type;
-      typedef std::map<std::string, value_type>  header_type;
       typedef std::vector<char>                  body_type;
+      typedef std::list<std::pair<std::string, value_type> >  header_type;
       typedef boost::optional<value_type>        header_value;
 
       frame () {}
