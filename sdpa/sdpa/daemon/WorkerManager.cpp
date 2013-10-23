@@ -239,35 +239,6 @@ sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundExce
   return it->first;
 }
 
-// simple work-stealing
-const sdpa::job_id_t WorkerManager::stealWork(const Worker::ptr_t& pThiefWorker) throw (NoJobScheduledException)
-{
-  lock_type lock(mtx_);
-
-  // scan the pending queues of other workers
-  worker_id_t workerIdThief = pThiefWorker->name();
-
-  BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
-  {
-    worker_id_t wid = pair.first;
-    Worker::ptr_t& pWorker = pair.second;
-
-    if( wid != workerIdThief && !pWorker->pending().empty() )
-    {
-    	Worker::ptr_t& pWorker = pair.second;
-    	//check if pThiefWorker has similar capabilities
-        if(pThiefWorker->hasSimilarCapabilites(pWorker))
-        {
-        	sdpa::job_id_t jobId = pWorker->pending().pop_back();
-        	return jobId;
-        }
-    }
-  }
-
-  // erase the job from
-  throw NoJobScheduledException(pThiefWorker->name());
-}
-
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
@@ -324,7 +295,7 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
-  if( common_queue_.find(job_id) != common_queue_.end() )
+  if( common_queue_.has_item(job_id) )
   {
     SDPA_LOG_DEBUG( "The job " << job_id<<" is in the common queue" );
     return true;
