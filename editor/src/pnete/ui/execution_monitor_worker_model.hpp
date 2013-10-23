@@ -51,6 +51,8 @@ namespace fhg
         virtual QModelIndex parent (const QModelIndex&) const;
 
         void clear();
+        virtual bool removeRows
+          (int row, int count, const QModelIndex& parent = QModelIndex());
 
         typedef long timestamp_type;
         typedef long duration_type;
