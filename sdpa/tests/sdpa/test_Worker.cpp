@@ -43,38 +43,6 @@ struct MyFixture
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_Worker, MyFixture )
-
-BOOST_AUTO_TEST_CASE(testDispatch) {
-  Worker worker("w0", 100);
-  BOOST_CHECK(worker.pending().empty());
-
-  job_id_t jobId("1");
-  worker.dispatch(jobId);
-
-  BOOST_CHECK(!worker.pending().empty());
-  BOOST_CHECK( *worker.pending().begin() == jobId );
-  worker.pending().clear();
-}
-
-/*BOOST_AUTO_TEST_CASE(testAcknowledge)
-{
-  Worker worker("w0", 100);
-
-  job_id_t jobId("1");
-  worker.dispatch(jobId);
-
-  BOOST_CHECK(! worker.pending().empty());
-
-  job_id_t jobIdNext = worker.get_next_job(sdpa::job_id_t::invalid_job_id());
-  BOOST_CHECK(worker.pending().empty()); // pending is empty
-  BOOST_CHECK(! worker.submitted().empty()); // submitted is not empty anymore
-
-  bool ackResult = worker.acknowledge(jobIdNext);
-  BOOST_CHECK(ackResult);
-  BOOST_CHECK(worker.pending().empty()); // pending still empty
-  BOOST_CHECK(worker.submitted().empty()); // submitted is now empty
-  BOOST_CHECK(!worker.acknowledged().empty()); // added to acknowledged
-}*/
   
 BOOST_AUTO_TEST_CASE(testQueue)
 {
