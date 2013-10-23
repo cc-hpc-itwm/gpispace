@@ -61,7 +61,7 @@ namespace sdpa {
 
          bool has_job(const sdpa::job_id_t& job_id)
          {
-			if( pending_jobs_queue_.find(job_id) != pending_jobs_queue_.end() )
+			if( pending_jobs_queue_.has_item(job_id) )
 			{
 				SDPA_LOG_INFO("The job "<<job_id<<" is still in the jobs_to_be_scheduled queue!");
 				return true;

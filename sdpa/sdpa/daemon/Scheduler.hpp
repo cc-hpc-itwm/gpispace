@@ -56,9 +56,6 @@ namespace daemon {
 
 	 virtual size_t numberOfWorkers() = 0;
 	 virtual void feedWorkers()= 0;
-
-	 //virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& ) = 0;
-	 virtual void removeRecoveryInconsistencies() = 0;
 	 virtual void removeWorkers() = 0;
 
 	 virtual void cancelWorkerJobs() = 0;

@@ -657,6 +657,9 @@ void SchedulerImpl::assignJobsToWorkers()
 	 lock_type lock(mtx_);
 	 sdpa::worker_id_list_t listAvailWorkers;
 
+	 if(ptr_worker_man_->common_queue_.empty())
+		 return;
+
 	 // replace this with the list of workers not reserved
 	 //getListNotFullWorkers(listAvailWorkers);
 	 getListNotAllocatedWorkers(listAvailWorkers);
@@ -668,7 +671,7 @@ void SchedulerImpl::assignJobsToWorkers()
 	 // iterate over all jobs and see if there is one that prefers
 	 while(!ptr_worker_man_->common_queue_.empty() && !listAvailWorkers.empty())
 	 {
-		sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.front());
+		sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.pop());
 
 		int nReqWorkers(1); // default number of required workers is 1
 		sdpa::worker_id_t matchingWorkerId;
@@ -697,12 +700,12 @@ void SchedulerImpl::assignJobsToWorkers()
 			{
 				sdpa::job_id_t headWorker(allocation_table_[jobId][0]);
 				ptr_comm_handler_->serveJob(headWorker, jobId);
-				ptr_worker_man_->common_queue_.pop();
 			}
+			else
+				ptr_worker_man_->common_queue_.push_front(jobId);
 		}
 		else // put it back into the common queue
 		{
-			ptr_worker_man_->common_queue_.pop();
 			nonmatching_jobs_queue.push(jobId);
 		}
 	 }
@@ -1016,12 +1019,7 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
 
 bool SchedulerImpl::has_job(const sdpa::job_id_t& job_id)
 {
-  if( pending_jobs_queue_.find(job_id) != pending_jobs_queue_.end() )
-  {
-    return true;
-  }
-
-  return ptr_worker_man_->has_job(job_id);
+	return pending_jobs_queue_.has_item(job_id)|| ptr_worker_man_->has_job(job_id);
 }
 
 void SchedulerImpl::getWorkerList(sdpa::worker_id_list_t& workerList)
@@ -1075,29 +1073,6 @@ void SchedulerImpl::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sd
 	{
 		SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
 		cpbset = sdpa::capabilities_set_t();
-	}
-}
-
-void SchedulerImpl::removeRecoveryInconsistencies()
-{
-	SDPA_LOG_INFO("Remove recovery inconsistencies!");
-	std::list<JobQueue::iterator> listDirtyJobs;
-	for(JobQueue::iterator it = pending_jobs_queue_.begin(); it != pending_jobs_queue_.end(); it++ )
-	{
-		try {
-			ptr_comm_handler_->findJob(*it);
-		}
-		catch(const JobNotFoundException& ex)
-		{
-			listDirtyJobs.push_back(it);
-		}
-	}
-
-	while(!listDirtyJobs.empty())
-	{
-		SDPA_LOG_INFO("Removing the job id "<<*listDirtyJobs.front()<<" from the scheduler's queue ...");
-		pending_jobs_queue_.erase(listDirtyJobs.front());
-		listDirtyJobs.pop_front();
 	}
 }
 
