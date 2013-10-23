@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE (test_heartbeat_frame)
 
   BOOST_CHECK_EQUAL (frame.get_command (), "");
   BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
-  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
+  BOOST_CHECK_EQUAL (frame.get_body (), "");
 }
 
 BOOST_AUTO_TEST_CASE (test_heartbeat_crlf_frame)
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE (test_empty_header_empty_body_crlf)
 
   BOOST_CHECK_EQUAL (frame.get_command (), "CONNECT");
   BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
-  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
+  BOOST_CHECK_EQUAL (frame.get_body (), "");
 }
 
 BOOST_AUTO_TEST_CASE (test_header)
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE (test_header)
   BOOST_CHECK_EQUAL (*frame.get_header ("foo"), "bar");
   BOOST_REQUIRE (frame.has_header ("baz"));
   BOOST_CHECK_EQUAL (*frame.get_header ("baz"), "bam");
-  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
+  BOOST_CHECK_EQUAL (frame.get_body (), "");
 }
 
 BOOST_AUTO_TEST_CASE (test_invalid_header)
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE (test_content_length)
   BOOST_REQUIRE (result.consumed > 0);
   BOOST_REQUIRE (result.consumed == sizeof (input) - 5);
 
-  BOOST_REQUIRE_EQUAL (frame.get_body_as_string (), "12345");
+  BOOST_REQUIRE_EQUAL (frame.get_body (), "12345");
 }
 
 BOOST_AUTO_TEST_CASE (test_content_length_body_too_long)

@@ -150,11 +150,6 @@ namespace gspc
       return update_content_length ();
     }
 
-    std::string frame::get_body_as_string () const
-    {
-      return m_body;
-    }
-
     static const char EOL = '\n';
     static const char NUL = '\0';
 

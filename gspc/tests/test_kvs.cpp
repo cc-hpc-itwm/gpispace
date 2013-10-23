@@ -4,7 +4,14 @@
 #include <errno.h>
 
 #include <algorithm>    // std::sort
+
+#include <fhg/util/now.hpp>
+#include <we/type/value/show.hpp>
+
+#include <gspc/net.hpp>
 #include <gspc/kvs/impl/kvs_impl.hpp>
+#include <gspc/kvs/impl/kvs_net_service.hpp>
+#include <gspc/kvs/impl/kvs_net_frontend.hpp>
 
 BOOST_AUTO_TEST_CASE (test_kvs_impl_invalid_key)
 {
@@ -238,4 +245,53 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_expiry)
 
   rc = kvs.get ("foo.1", val);
   BOOST_REQUIRE_EQUAL (rc, -EKEYEXPIRED);
+}
+
+BOOST_AUTO_TEST_CASE (test_kvs_net_put_get)
+{
+  gspc::net::initialize ();
+
+  int rc;
+  gspc::kvs::api_t::value_type val;
+
+  // setup server
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*"));
+  gspc::kvs::service_t service;
+  gspc::net::handle ("/service/kvs", boost::ref (service));
+
+  std::cerr << "server running on: " << server->url () << std::endl;
+
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=1000");
+
+  try
+  {
+    static const size_t NUM = 1 << 15;
+
+    {
+      double duration = -fhg::util::now ();
+      for (size_t i = 0 ; i < NUM; ++i)
+      {
+        rc = kvs.put ("foo", std::string ("bar"));
+        BOOST_REQUIRE_EQUAL (rc, 0);
+
+        rc = kvs.get ("foo", val);
+        BOOST_REQUIRE_EQUAL (rc, 0);
+      }
+      duration += fhg::util::now ();
+
+      std::cerr << "put/get of " << NUM << " elements took: "
+                << duration << " sec"
+                << " => " << 2*(NUM / duration) << " ops/sec"
+                << std::endl;
+    }
+  }
+  catch (...)
+  {
+    server->stop ();
+    gspc::net::shutdown ();
+    throw;
+  }
+
+  server->stop ();
+  gspc::net::shutdown ();
 }

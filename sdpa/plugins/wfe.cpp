@@ -420,7 +420,7 @@ private:
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     {
-      std::string search_path (rqst.get_body_as_string ());
+      std::string search_path (rqst.get_body ());
 
       search_path_appender appender(*m_loader);
       lock_type lock (m_mutex);

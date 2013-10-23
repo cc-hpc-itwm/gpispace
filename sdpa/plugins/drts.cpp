@@ -1052,7 +1052,7 @@ private:
   {
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
-    std::string virtual_capabilities (rqst.get_body_as_string ());
+    std::string virtual_capabilities (rqst.get_body ());
     std::list<std::string> capability_list;
     fhg::util::split( virtual_capabilities
                     , ","
@@ -1089,7 +1089,7 @@ private:
   {
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
-    std::string virtual_capabilities (rqst.get_body_as_string ());
+    std::string virtual_capabilities (rqst.get_body ());
     std::list<std::string> capability_list;
     fhg::util::split( virtual_capabilities
                     , ","

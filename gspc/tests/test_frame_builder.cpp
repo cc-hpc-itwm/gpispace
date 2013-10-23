@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE (test_error_frame)
   BOOST_REQUIRE_EQUAL (f.get_command (), "ERROR");
   BOOST_REQUIRE_EQUAL (*f.get_header ("code"), "500");
   BOOST_REQUIRE_EQUAL (*f.get_header ("message"), "internal error");
-  BOOST_REQUIRE_EQUAL (f.get_body_as_string (), "test error");
+  BOOST_REQUIRE_EQUAL (f.get_body (), "test error");
 }
 
 BOOST_AUTO_TEST_CASE (test_receipt_frame)
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE (test_message_frame)
   BOOST_REQUIRE_EQUAL (*f.get_header ("my-header-2"), "2");
   BOOST_REQUIRE_EQUAL (*f.get_header ("my-header-3"), "3");
   BOOST_REQUIRE_EQUAL (f.get_body ().size (), 5);
-  BOOST_REQUIRE_EQUAL (f.get_body_as_string (), "12345");
+  BOOST_REQUIRE_EQUAL (f.get_body (), "12345");
 }
 
 BOOST_AUTO_TEST_CASE (test_subscribe_frame)

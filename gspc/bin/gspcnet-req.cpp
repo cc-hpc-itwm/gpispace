@@ -44,7 +44,7 @@ public:
     }
     else
     {
-      std::cout << f.get_body_as_string () << std::endl;
+      std::cout << f.get_body () << std::endl;
     }
 
     end = boost::posix_time::microsec_clock::universal_time ();
@@ -210,13 +210,13 @@ int main (int argc, char *argv[])
                 << ": "
                 << gspc::net::header::get (rply, "message", std::string ())
                 << ": "
-                << rply.get_body_as_string ()
+                << rply.get_body ()
                 << std::endl
         ;
     }
     else
     {
-      const std::string result_body = rply.get_body_as_string ();
+      const std::string result_body = rply.get_body ();
       if (output_file == "-")
       {
         std::cout << result_body;

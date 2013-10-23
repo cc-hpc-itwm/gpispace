@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE (test_request_success)
                              , boost::posix_time::seconds (1)
                              );
     BOOST_REQUIRE_EQUAL (rc, 0);
-    BOOST_REQUIRE_EQUAL (rply.get_body_as_string (), "hello world!");
+    BOOST_REQUIRE_EQUAL (rply.get_body (), "hello world!");
   }
 
   client->stop ();

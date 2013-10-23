@@ -75,7 +75,6 @@ namespace gspc
       frame & add_body (const char *buf, std::size_t len);
 
       body_type const & get_body () const { return m_body; }
-      std::string get_body_as_string () const;
 
       std::string to_string () const;
       std::string to_hex () const;
