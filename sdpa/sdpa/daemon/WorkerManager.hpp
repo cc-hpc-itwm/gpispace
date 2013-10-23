@@ -62,8 +62,6 @@ namespace sdpa { namespace daemon {
     virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
     const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-    const sdpa::job_id_t stealWork(const Worker::ptr_t& ) throw (NoJobScheduledException);
-
     worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
 
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
@@ -73,13 +71,13 @@ namespace sdpa { namespace daemon {
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
     size_t numberOfWorkers() { return worker_map_.size(); }
+    sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
     void getWorkerList(sdpa::worker_id_list_t& workerList);
     void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
     void getListWorkersNotReserved(sdpa::worker_id_list_t& workerList);
 
     sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, sdpa::worker_id_list_t&) throw (NoWorkerFoundException);
 
-    void balanceWorkers();
     void cancelWorkerJobs(sdpa::daemon::Scheduler*);
     void forceOldWorkerJobsTermination();
     virtual Worker::worker_id_t getWorkerId(unsigned int r);
