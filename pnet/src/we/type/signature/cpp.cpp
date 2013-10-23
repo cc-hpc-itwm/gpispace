@@ -95,7 +95,7 @@ namespace pnet
                             , const int
                             )
             {
-              os << indent << complete (type) << " " << name <<  ";";
+              os << indent << complete (type) << ' ' << name <<  ';';
             }
           };
 
@@ -236,7 +236,7 @@ namespace pnet
                             ) const
             {
               os << fhg::util::deeper (indent)
-                  << (first ? ':' : ',') << " " << name <<  "()";
+                  << (first ? ':' : ',') << ' ' << name <<  "()";
 
               first = false;
             }
@@ -261,7 +261,7 @@ namespace pnet
             void _field (const std::pair<std::string, std::string>& f) const
             {
               _os << fhg::util::deeper (_indent)
-                  << (_first ? ':' : ',') << " " << f.first
+                  << (_first ? ':' : ',') << ' ' << f.first
                   <<  " ("
                   << "pnet::field";
 
@@ -282,7 +282,7 @@ namespace pnet
             void _field_struct (const std::pair<std::string, structure_type>& s) const
             {
               _os << fhg::util::deeper (_indent)
-                  << (_first ? ':' : ',') << " " << s.first
+                  << (_first ? ':' : ',') << ' ' << s.first
                   <<  " ("
                   << "pnet::field"
                   << " ("
