@@ -42,7 +42,6 @@ namespace sdpa { namespace daemon {
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 
-    // TODO: to be replaced by a real class (synchronization!)
     typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
     /**
@@ -185,7 +184,7 @@ namespace sdpa { namespace daemon {
 
     void print();
 
-    // methods relatesd to reservation
+    // methods related to reservation
     bool isReserved();
     void reserve();
     void free();
