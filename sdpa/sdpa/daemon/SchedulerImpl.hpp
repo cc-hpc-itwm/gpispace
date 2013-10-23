@@ -127,7 +127,6 @@ namespace sdpa {
 	    friend class boost::serialization::access;
 
 	    virtual void print();
-	    virtual void removeRecoveryInconsistencies();
         void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 
         void printPendingJobs() { pending_jobs_queue_.print(); }

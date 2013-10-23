@@ -32,24 +32,13 @@ Worker::Worker(	const worker_id_t& name,
 bool Worker::has_job( const sdpa::job_id_t& job_id )
 {
 	lock_type lock(mtx_);
-	if( pending_.find(job_id) != pending_.end() )
-		return true;
-	if( submitted_.find(job_id) != submitted_.end() )
-		return true;
-	if( acknowledged_.find(job_id) != acknowledged_.end() )
-		return true;
-	return false;
+	return pending_.has_item(job_id) ||  submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
 }
 
 bool Worker::isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id )
 {
   lock_type lock(mtx_);
-  if( submitted_.find(job_id) != submitted_.end() )
-    return true;
-
-  if( acknowledged_.find(job_id) != acknowledged_.end() )
-    return true;
-
+  return submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
   return false;
 }
 
@@ -197,24 +186,6 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 			LOG(WARN, "The worker "<<name()<<" doesn't possess capability: " <<*it);
 		}*/
 	}
-}
-
-bool Worker::hasSimilarCapabilites(const Worker::ptr_t& ptrWorker)
-{
-	BOOST_FOREACH(sdpa::capability_t cpb, ptrWorker->capabilities())
-	{
-		bool hasSimilarCpb = false;
-		for(sdpa::capabilities_set_t::iterator it = capabilities_.begin(); it != capabilities_.end(); it++ )
-		{
-			if( cpb.name()==it->name() && cpb.type() == it->type() )
-				hasSimilarCpb = true;
-		}
-
-		if(!hasSimilarCpb)
-			return false;
-	}
-
-	return true;
 }
 
 bool Worker::hasCapability(const std::string& cpbName, bool bOwn)
