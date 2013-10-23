@@ -88,7 +88,7 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
 
   while( !pQueue->empty() )
   {
-    sdpa::job_id_t jobId = pQueue->pop_and_wait();
+    sdpa::job_id_t jobId = pQueue->pop();
     SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
 
     if( ptr_comm_handler_ )
@@ -184,22 +184,21 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 	reschedule(job_id);
 }
 
-void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::JobQueue* pQueue )
+void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
 {
 	if(!bStopRequested)
 	{
-		assert (pQueue);
-
-		while( !pQueue->empty() )
+		while( !workerJobList.empty() )
 		{
-			sdpa::job_id_t jobId = pQueue->pop_and_wait();
+			sdpa::job_id_t jobId = workerJobList.front();
 			DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
 			reschedule(worker_id, jobId);
+			workerJobList.pop_front();
 		}
 	}
 	else
         {
-		SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
+			SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
         }
 }
 
@@ -211,30 +210,15 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 		return;
 	}
 
-	// first re-schedule the work:
-	// inspect all queues and re-schedule each job
 	try {
 		const Worker::ptr_t& pWorker = findWorker(worker_id);
 
 		// The jobs submitted by the WE should have set a property
 		// which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
-
-		// for each job in the queue, either re-schedule it, if is allowed
-		// re_schedule( &pWorker->acknowledged() );
-		// re_schedule( &pWorker->submitted() );
-		// or declare it failed
 		pWorker->set_disconnected();
 
-		// declare the submitted jobs failed
-		//declare_jobs_failed( worker_id, &pWorker->submitted() );
-		reschedule(worker_id, &pWorker->submitted() );
-
-		// declare the acknowledged jobs failed
-		//declare_jobs_failed( worker_id, &pWorker->acknowledged() );
-		reschedule(worker_id, &pWorker->acknowledged() );
-
-		// re-schedule the pending jobs
-		reschedule(worker_id, &pWorker->pending() );
+		sdpa::job_id_list_t workerJobList(ptr_worker_man_->getJobListAndCleanQueues(pWorker));
+		reschedule(worker_id, workerJobList);
 
 		// put the jobs back into the central queue and don't forget
 		// to reset the status
@@ -253,25 +237,14 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 
     // mark the worker dirty -> don't take it in consideration for re-scheduling
     const Worker::ptr_t& pWorker = findWorker(worker_id);
-
     pWorker->set_disconnected(true);
 
     reschedule(worker_id);
-    if( !pWorker->pending().empty() )
-    {
-      SDPA_LOG_WARN( "The worker " << worker_id << " has still pending jobs!");
-      pWorker->print();
-    }
+    sdpa::job_id_list_t workerJobList(ptr_worker_man_->getJobListAndCleanQueues(pWorker));
 
-    if( !pWorker->submitted().empty() )
+    if( !workerJobList.empty() )
     {
-      SDPA_LOG_WARN( "The worker " << worker_id << " has still submitted jobs and not acknowledged!");
-      pWorker->print();
-    }
-
-    if( !pWorker->acknowledged().empty() )
-    {
-      SDPA_LOG_WARN( "The worker " << worker_id << " has still acknowledged jobs and not finished!");
+      SDPA_LOG_WARN( "The worker " << worker_id << " has still has assigned jobs!");
       pWorker->print();
     }
 
@@ -919,8 +892,6 @@ void SchedulerImpl::print()
 
   ptr_worker_man_->print();
 }
-
-
 
 void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw( WorkerNotFoundException, JobNotFoundException)
 {
