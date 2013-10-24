@@ -68,7 +68,7 @@ namespace sdpa { namespace daemon {
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
     void dispatchJob(const sdpa::job_id_t& jobId);
-    void delete_job(const sdpa::job_id_t& jobId);
+    void deleteJob(const sdpa::job_id_t& jobId);
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
     size_t numberOfWorkers() { return worker_map_.size(); }
