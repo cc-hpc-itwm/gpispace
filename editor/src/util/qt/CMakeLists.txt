@@ -12,6 +12,7 @@ qt4_wrap_cpp (moc_util_qt
   mvc/multiplicated_column_proxy.hpp
   no_undoredo_lineedit.hpp
   restricted_tree_column_sorter.hpp
+  treeview_with_delete.hpp
   OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
 add_library (fhg_util_qt
@@ -29,6 +30,7 @@ add_library (fhg_util_qt
   no_undoredo_lineedit.cpp
   restricted_tree_column_sorter.cpp
   scoped_disconnect.cpp
+  treeview_with_delete.cpp
   ${moc_util_qt})
 
 target_link_libraries (fhg_util_qt ${QT_LIBRARIES})
