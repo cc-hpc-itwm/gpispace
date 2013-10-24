@@ -226,25 +226,46 @@ namespace fhg
 
       namespace
       {
+        QTableWidgetItem* create_item()
+        {
+          QTableWidgetItem* i (new QTableWidgetItem);
+          i->setFlags (Qt::NoItemFlags);
+          return i;
+        }
+        QTableWidgetItem* create_item (QString content)
+        {
+          QTableWidgetItem* i (create_item());
+          i->setText (content);
+          return i;
+        }
+        QTableWidgetItem* create_item (QIcon icon, QString content)
+        {
+          QTableWidgetItem* i (create_item (content));
+          i->setIcon (icon);
+          return i;
+        }
+
         void append (log_widget* wid, QStyle::StandardPixmap icon, QString host, QString message, QStringList additional_rows)
         {
           const int first_row (wid->rowCount());
           wid->insertRow (first_row);
           wid->setItem ( first_row
                        , 0
-                       , new QTableWidgetItem
-                         ( QApplication::style()->standardIcon (icon)
+                       , create_item
+                         ( wid->style()->standardIcon (icon)
                          , QDateTime::currentDateTime().toString ("hh:mm:ss")
                          )
                        );
-          wid->setItem (first_row, 1, new QTableWidgetItem (host));
-          wid->setItem (first_row, 2, new QTableWidgetItem (message));
+          wid->setItem (first_row, 1, create_item (host));
+          wid->setItem (first_row, 2, create_item (message));
           BOOST_FOREACH (QString additional, additional_rows)
           {
             const int row (wid->rowCount());
             wid->insertRow (row);
-            QTableWidgetItem* item (new QTableWidgetItem (additional));
+            QTableWidgetItem* item (create_item (additional));
             item->setForeground (QBrush (Qt::gray));
+            wid->setItem (row, 0, create_item());
+            wid->setItem (row, 1, create_item());
             wid->setItem (row, 2, item);
           }
         }
