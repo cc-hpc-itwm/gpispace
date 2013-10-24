@@ -611,11 +611,8 @@ public:
                                 , drts::Job::Owner(e->from())
                                 )
                   );
-    //    job->worker_list (e->worker_list ());
 
-    std::list<std::string> worker_list;
-    worker_list.push_back (m_my_name);
-    job->worker_list (worker_list);
+    job->worker_list (e->worker_list ());
 
     {
       lock_type job_map_lock(m_job_map_mutex);
