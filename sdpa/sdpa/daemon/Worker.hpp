@@ -148,15 +148,15 @@ namespace sdpa { namespace daemon {
     unsigned int nbAllocatedJobs();
 
     template <class Archive>
-	void serialize(Archive& ar, const unsigned int)
-	{
+    void serialize(Archive& ar, const unsigned int)
+    {
     	ar & name_;
         ar & rank_;
         ar & location_;
     	ar & tstamp_;
     	ar & last_time_served_;
     	ar & last_schedule_time_;
-	}
+    }
 
     friend class boost::serialization::access;
 
