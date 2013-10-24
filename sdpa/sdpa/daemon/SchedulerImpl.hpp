@@ -52,11 +52,10 @@ namespace sdpa {
 	    bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
 	    bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
 
-	    void reschedule( const sdpa::job_id_t& job );
-	    //void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
-	    void reschedule( const Worker::worker_id_t& worker_id, sdpa::job_id_list_t& workerJobList );
-	    void reschedule( const Worker::worker_id_t& worker_id );
-	    void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
+	    void reschedule( const sdpa::job_id_t& );
+	    void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
+	    void reschedule( const Worker::worker_id_t&);
+	    void reschedule( const Worker::worker_id_t&, const sdpa::job_id_t&);
 
 	    virtual bool has_job(const sdpa::job_id_t&);
 
@@ -70,7 +69,8 @@ namespace sdpa {
 			                    const unsigned int& agent_rank = 0,
 			                    const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
 
-	    virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+	    virtual void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+	    void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
 	    virtual void getWorkerList(sdpa::worker_id_list_t&);
 	    void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
@@ -98,8 +98,8 @@ namespace sdpa {
 	    virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
 	    virtual void execute(const sdpa::job_id_t& jobId); //just for testing
-	    virtual void check_post_request();
-	    virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
+	    virtual void checkRequestPosted();
+	    virtual bool postRequest(const MasterInfo& masterInfo, bool force = false);
 
 	    virtual void feedWorkers();
 
