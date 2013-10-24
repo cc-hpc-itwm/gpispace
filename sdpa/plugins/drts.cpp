@@ -634,7 +634,7 @@ public:
       else
       {
     	sdpa::worker_id_list_t workerList(e->worker_list());
-    	MLOG( INFO, "Worker "<<m_my_name<<": received from "
+    	DLOG( INFO, "Worker "<<m_my_name<<": received from "
     			             <<e->from()<<" the job " << job->id()
     	   			  	     <<", assigned to "<<workerList );
 

@@ -15,13 +15,6 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/identity.hpp>
-#include <boost/multi_index/member.hpp>
-
-using namespace ::boost::multi_index;
-
 namespace sdpa { namespace daemon {
 
   /**
@@ -33,6 +26,7 @@ namespace sdpa { namespace daemon {
 
   class Worker {
   public:
+
     typedef sdpa::shared_ptr<Worker> ptr_t;
 
     typedef sdpa::location_t location_t;
@@ -42,7 +36,6 @@ namespace sdpa { namespace daemon {
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 
-    // TODO: to be replaced by a real class (synchronization!)
     typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
     /**
@@ -185,7 +178,7 @@ namespace sdpa { namespace daemon {
 
     void print();
 
-    // methods relatesd to reservation
+    // methods related to reservation
     bool isReserved();
     void reserve();
     void free();

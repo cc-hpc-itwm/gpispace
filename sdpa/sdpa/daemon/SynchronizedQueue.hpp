@@ -76,15 +76,6 @@ namespace sdpa { namespace daemon {
     SynchronizedQueue() : stopped_(false) {}
     ~SynchronizedQueue() { }
 
-    inline value_type front()
-    {
-    	lock_type lock(mtx_);
-    	if (container_.empty()) throw QueueEmpty();
-
-    	value_type item = container_.front();
-    	return item;
-    }
-
     inline value_type pop()
     {
       lock_type lock(mtx_);
@@ -172,38 +163,26 @@ namespace sdpa { namespace daemon {
       return container_.empty();
     }
 
-    inline iterator find(const value_type& item)
+    inline bool has_item (const value_type& item)
     {
-    	lock_type lock(mtx_);
-    	for( iterator iter=begin(); iter!=end(); iter++ )
-    		if( *iter==item )
-    			return iter;
+       	lock_type lock(mtx_);
+       	for( iterator iter=container_.begin(); iter!=container_.end(); iter++ )
+       		if( *iter==item )
+       			return true;
 
-    	return end();
-    }
-
-    inline iterator erase(iterator first, iterator last)
-    {
-      lock_type lock(mtx_);
-      return container_.erase(first, last);
-    }
-
-    inline iterator erase(iterator pos)
-    {
-      lock_type lock(mtx_);
-      return container_.erase(pos);
+       	return false;
     }
 
     inline size_t erase(const value_type& item)
     {
     	lock_type lock(mtx_);
         size_t count(0);
-        iterator iter (begin());
-        while (iter != end())
+        iterator iter (container_.begin());
+        while (iter != container_.end())
         {
           if( item == *iter )
           {
-            iter = erase(iter);
+            iter = container_.erase(iter);
             ++count;
           }
           else
@@ -214,36 +193,11 @@ namespace sdpa { namespace daemon {
         return count;
     }
 
-    inline iterator begin()
-    {
-    	lock_type lock(mtx_);
-    	return container_.begin();
-    }
-
-    inline const_iterator begin() const
-    {
-    	lock_type lock(mtx_);
-    	return container_.begin();
-    }
-
-    inline iterator end()
-    {
-    	lock_type lock(mtx_);
-    	return container_.end();
-    }
-    inline const_iterator end() const
-    {
-    	lock_type lock(mtx_);
-    	return container_.end();
-    }
-
     inline void clear()
     {
       lock_type lock(mtx_);
       container_.clear();
     }
-
-    mutex_type &mutex() { return mtx_; }
 
     template <class Archive>
   	void serialize(Archive& ar, const unsigned int)
@@ -256,16 +210,19 @@ namespace sdpa { namespace daemon {
     void print(const std::string& msg="")
     {
     	lock_type lock(mtx_);
-    	unsigned int k = 0;
     	std::ostringstream oss;
     	if(!msg.empty())
     		oss<<msg;
     	oss<<"{";
-    	for( iterator it = begin(); it!= end(); it++, k++)
+    	bool bFirst = true;
+    	for(const_iterator it = container_.begin(); it != container_.end(); it++)
     	{
-    		oss<<it->str();
-    		if(boost::next(it) != end())
+    		if(bFirst)
+    			bFirst=false;
+    		else
     			oss<<",";
+
+    		oss<<it->str();
     	}
     	oss<<"}";
 

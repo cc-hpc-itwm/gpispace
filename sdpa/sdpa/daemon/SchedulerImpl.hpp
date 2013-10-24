@@ -53,7 +53,8 @@ namespace sdpa {
 	    bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
 
 	    void reschedule( const sdpa::job_id_t& job );
-	    void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
+	    //void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
+	    void reschedule( const Worker::worker_id_t& worker_id, sdpa::job_id_list_t& workerJobList );
 	    void reschedule( const Worker::worker_id_t& worker_id );
 	    void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 
@@ -70,7 +71,6 @@ namespace sdpa {
 			                    const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
 
 	    virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
-	    void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
 	    virtual void getWorkerList(sdpa::worker_id_list_t&);
 	    void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
@@ -127,7 +127,6 @@ namespace sdpa {
 	    friend class boost::serialization::access;
 
 	    virtual void print();
-	    virtual void removeRecoveryInconsistencies();
         void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 
         void printPendingJobs() { pending_jobs_queue_.print(); }
