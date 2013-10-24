@@ -143,7 +143,7 @@ namespace fhg
           }
 
           //! \note Leaf
-          index_tree_item (const QModelIndex& index, index_tree_item* parent)
+          index_tree_item (const QPersistentModelIndex& index, index_tree_item* parent)
             : _parent (parent)
             , _data (index)
           {
@@ -180,7 +180,7 @@ namespace fhg
             fhg_assert (is_branch(), "name() only to be called on branch");
             return boost::get<name_and_child_type> (_data).first;
           }
-          const QModelIndex& index() const
+          const QPersistentModelIndex& index() const
           {
             fhg_assert (is_leaf(), "index() only to be called on leaf");
             return boost::get<index_type> (_data);
@@ -238,7 +238,7 @@ namespace fhg
           index_tree_item* _parent;
 
           typedef std::pair<QString, QVector<index_tree_item*> > name_and_child_type;
-          typedef QModelIndex index_type;
+          typedef QPersistentModelIndex index_type;
 
           boost::variant<name_and_child_type, index_type> _data;
         };
@@ -564,7 +564,7 @@ namespace fhg
         {
           index_tree_item* item (item_for (index));
           return _source->columnCount ( item->is_leaf()
-                                      ? item->index()
+                                      ? QModelIndex (item->index())
                                       : QModelIndex()
                                       );
         }
