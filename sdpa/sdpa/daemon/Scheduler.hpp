@@ -47,7 +47,7 @@ namespace daemon {
                                    const unsigned int& agent_rank = 0,
                                    const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException) = 0;
 
-    virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException) = 0;
+    virtual void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException) = 0;
 
     virtual void getWorkerList(worker_id_list_t&) = 0;
     virtual Worker::worker_id_t getWorkerId(unsigned int rank) = 0;
