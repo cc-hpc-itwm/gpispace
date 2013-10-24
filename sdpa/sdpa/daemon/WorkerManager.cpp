@@ -298,7 +298,7 @@ void WorkerManager::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
   }
 
   CComparator comparator(this);
-  sort(workerList.begin(), workerList.end(), comparator);
+  workerList.sort (comparator);
 }
 
 void WorkerManager::getListWorkersNotReserved(sdpa::worker_id_list_t& workerList)
@@ -312,7 +312,7 @@ void WorkerManager::getListWorkersNotReserved(sdpa::worker_id_list_t& workerList
   }
 
   CComparator comparator(this);
-  sort(workerList.begin(), workerList.end(), comparator);
+  workerList.sort (comparator);
 }
 
 bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbSet)

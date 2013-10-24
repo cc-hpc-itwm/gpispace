@@ -611,11 +611,8 @@ public:
                                 , drts::Job::Owner(e->from())
                                 )
                   );
-    //    job->worker_list (e->worker_list ());
 
-    std::list<std::string> worker_list;
-    worker_list.push_back (m_my_name);
-    job->worker_list (worker_list);
+    job->worker_list (e->worker_list ());
 
     {
       lock_type job_map_lock(m_job_map_mutex);
@@ -1052,7 +1049,7 @@ private:
   {
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
-    std::string virtual_capabilities (rqst.get_body_as_string ());
+    std::string virtual_capabilities (rqst.get_body ());
     std::list<std::string> capability_list;
     fhg::util::split( virtual_capabilities
                     , ","
@@ -1089,7 +1086,7 @@ private:
   {
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
-    std::string virtual_capabilities (rqst.get_body_as_string ());
+    std::string virtual_capabilities (rqst.get_body ());
     std::list<std::string> capability_list;
     fhg::util::split( virtual_capabilities
                     , ","

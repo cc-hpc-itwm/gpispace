@@ -12,6 +12,9 @@ namespace gspc
 {
   namespace kvs
   {
+    kvs_t::kvs_t () {}
+    kvs_t::kvs_t (std::string const &) {}
+
     kvs_t::~kvs_t () {}
 
     int kvs_t::do_get (key_type const &key, value_type &val) const

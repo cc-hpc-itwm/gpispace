@@ -51,7 +51,7 @@ namespace gspc
       private:
         typedef boost::lock_guard<boost::mutex> unique_lock;
 
-        typedef std::deque<std::string>  buffer_list_t;
+        typedef std::deque<frame>  frame_list_t;
 
         void handle_read ( const boost::system::error_code &
                          , std::size_t transferred
@@ -59,7 +59,7 @@ namespace gspc
         void handle_write (const boost::system::error_code &);
 
         mutable boost::mutex     m_shutting_down_mutex;
-        mutable boost::mutex     m_frame_list_mutex;
+        mutable boost::mutex     m_pending_mutex;
 
         frame_handler_t &m_frame_handler;
 
@@ -70,7 +70,7 @@ namespace gspc
 
         parse::parser m_parser;
         frame         m_frame;
-        buffer_list_t m_buffer_list;
+        frame_list_t  m_pending;
 
         bool   m_shutting_down;
         size_t m_max_queue_length;

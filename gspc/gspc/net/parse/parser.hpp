@@ -49,26 +49,7 @@ namespace gspc
         result_t parse ( InputIterator begin
                        , InputIterator end
                        , gspc::net::frame & frame
-                       )
-        {
-          size_t consumed = 0;
-
-          while (begin != end)
-          {
-            state_t state = consume (frame, *begin++);
-            ++consumed;
-
-            if (state == PARSE_FINISHED)
-              return result_t (consumed, state, E_OK);
-            else if (state == PARSE_FAILED)
-              return result_t (consumed, state, m_error);
-          }
-
-          return result_t ( consumed
-                          , PARSE_NEED_MORE_DATA
-                          , m_error
-                          );
-        }
+                       );
       private:
         enum frame_state
           {

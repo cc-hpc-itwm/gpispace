@@ -1,5 +1,5 @@
-#ifndef GSPC_KVS_KVS_HPP
-#define GSPC_KVS_KVS_HPP
+#ifndef GSPC_KVS_KVS_IMPL_HPP
+#define GSPC_KVS_KVS_IMPL_HPP
 
 #include <map>
 
@@ -18,6 +18,11 @@ namespace gspc
     class kvs_t : public api_t
     {
     public:
+      kvs_t ();
+
+      explicit
+      kvs_t (std::string const &url);
+
       virtual ~kvs_t ();
 
       boost::signal<void (key_type const &)> onChange;

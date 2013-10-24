@@ -270,7 +270,7 @@ void s_handle_rif ( std::string const &dst
                   , gspc::net::user_ptr user
                   )
 {
-  std::string cmd = rqst.get_body_as_string ();
+  std::string cmd = rqst.get_body ();
 
   std::vector<std::string> argv;
   size_t consumed;

@@ -1,7 +1,7 @@
 #ifndef GSPC_NET_FRAME_HPP
 #define GSPC_NET_FRAME_HPP
 
-#include <map>
+#include <list>
 #include <vector>
 #include <string>
 #include <iosfwd>
@@ -17,8 +17,8 @@ namespace gspc
     public:
       typedef std::string                        key_type;
       typedef std::string                        value_type;
-      typedef std::map<std::string, value_type>  header_type;
-      typedef std::vector<char>                  body_type;
+      typedef std::list<std::pair<std::string, value_type> >  header_type;
+      typedef std::string                        body_type;
       typedef boost::optional<value_type>        header_value;
 
       frame () {}
@@ -69,23 +69,25 @@ namespace gspc
        */
       bool has_header (std::string const &key) const;
 
-      frame & set_body (std::string const & body);
-      frame & set_body (const char *buf, std::size_t len);
       frame & set_body (body_type const & body);
-      frame & add_body (std::string const & body);
+      frame & set_body (const char *buf, std::size_t len);
+      frame & add_body (body_type const & body);
       frame & add_body (const char *buf, std::size_t len);
 
       body_type const & get_body () const { return m_body; }
-      std::string get_body_as_string () const;
 
-      std::string to_string () const;
-      std::string to_hex () const;
+      std::string const &to_string () const;
+      std::string const &to_hex () const;
     private:
       frame & update_content_length ();
+      void invalidate_cache ();
 
       std::string       m_command;
       header_type       m_header;
       body_type         m_body;
+
+      mutable boost::optional<std::string> m_to_string_cache;
+      mutable boost::optional<std::string> m_to_hex_cache;
     };
   }
 }

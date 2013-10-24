@@ -20,14 +20,14 @@ namespace gspc
                                               , boost::asio::io_service &service
                                               , frame_handler_t & frame_handler
                                               )
-        : m_frame_list_mutex ()
+        : m_pending_mutex ()
         , m_frame_handler (frame_handler)
         , m_strand (service)
         , m_socket (service)
         , m_buffer ()
         , m_parser ()
         , m_frame ()
-        , m_buffer_list ()
+        , m_pending ()
         , m_shutting_down (false)
         , m_max_queue_length (0)
         , m_id (id)
@@ -99,19 +99,19 @@ namespace gspc
             return -ESHUTDOWN;
         }
 
-        unique_lock lock (m_frame_list_mutex);
+        unique_lock lock (m_pending_mutex);
 
-        if (m_max_queue_length && m_buffer_list.size () >= m_max_queue_length)
+        if (m_max_queue_length && m_pending.size () >= m_max_queue_length)
           return -ENOBUFS;
 
-        const bool write_in_progress = not m_buffer_list.empty ();
-        m_buffer_list.push_back (f.to_string ());
+        const bool write_in_progress = not m_pending.empty ();
+        m_pending.push_back (f);
 
         if (not write_in_progress)
         {
           boost::asio::async_write
             ( m_socket
-            , boost::asio::buffer (m_buffer_list.front ())
+            , boost::asio::buffer (m_pending.front ().to_string ())
             , boost::bind ( &base_connection<Proto>::handle_write
                           , this->shared_from_this ()
                           , boost::asio::placeholders::error
@@ -193,14 +193,14 @@ namespace gspc
       {
         if (not ec)
         {
-          unique_lock lock (m_frame_list_mutex);
-          m_buffer_list.pop_front ();
+          unique_lock lock (m_pending_mutex);
+          m_pending.pop_front ();
 
-          if (not m_buffer_list.empty ())
+          if (not m_pending.empty ())
           {
             boost::asio::async_write
               ( m_socket
-              , boost::asio::buffer (m_buffer_list.front ())
+              , boost::asio::buffer (m_pending.front ().to_string ())
               , boost::bind ( &base_connection<Proto>::handle_write
                             , this->shared_from_this ()
                             , boost::asio::placeholders::error

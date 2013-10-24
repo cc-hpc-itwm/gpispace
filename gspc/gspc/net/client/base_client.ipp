@@ -262,7 +262,7 @@ namespace gspc
         {
           if (receipt->get_reply ())
           {
-            frame rply = *receipt->get_reply ();
+            frame const & rply = *receipt->get_reply ();
             if (rply.get_command () == "RECEIPT")
             {
               rc = 0;
