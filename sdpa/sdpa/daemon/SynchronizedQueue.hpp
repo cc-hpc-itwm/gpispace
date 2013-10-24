@@ -211,17 +211,12 @@ namespace sdpa { namespace daemon {
     {
     	lock_type lock(mtx_);
     	std::ostringstream oss;
-    	if(!msg.empty())
-    		oss<<msg;
+   		oss<<!msg.empty()?msg:"";
     	oss<<"{";
     	bool bFirst = true;
     	for(const_iterator it = container_.begin(); it != container_.end(); it++)
     	{
-    		if(bFirst)
-    			bFirst=false;
-    		else
-    			oss<<",";
-
+    		bFirst?bFirst=false:oss<<",";
     		oss<<it->str();
     	}
     	oss<<"}";
