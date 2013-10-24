@@ -919,12 +919,21 @@ void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
 		ptr_comm_handler_->sendEventToSlave(pEvtCancelJob);
     }
 
-	BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table_[jobId])
-	{
-		lock_type lock_worker;
-		Worker::ptr_t ptrWorker = findWorker(workerId);
-		ptrWorker->free();
-	}
+  {
+    lock_type lock_worker (mtx_);
+
+    BOOST_FOREACH (sdpa::worker_id_t const& workerId, allocation_table_[jobId])
+    {
+      try
+      {
+        findWorker(workerId)->free();
+      }
+      catch (std::exception const&)
+      {
+        // worker already disappered
+      }
+    }
+  }
 
 	allocation_table_.erase(jobId);
 }
