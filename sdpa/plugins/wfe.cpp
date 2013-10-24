@@ -226,13 +226,14 @@ public:
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
 
-      emit(task_event_t( job_id
-                       , task.name
-                       , task_event_t::ENQUEUED
-                       , job_description
-                       , task.meta
-             )
-          );
+      emit ( task_event_t ( job_id
+                          , task.name
+                          , task_event_t::ENQUEUED
+                          , job_description
+                          , task.meta
+                          , task.workers
+                          )
+           );
 
       task.enqueue_time = boost::posix_time::microsec_clock::universal_time();
 
@@ -272,6 +273,7 @@ public:
                          , task_event_t::FINISHED
                          , task.result
                          , task.meta
+                         , task.workers
                          )
             );
       }
@@ -287,6 +289,7 @@ public:
                          , task_event_t::CANCELED
                          , task.result
                          , task.meta
+                         , task.workers
                          )
             );
       }
@@ -302,6 +305,7 @@ public:
                          , task_event_t::FAILED
                          , task.result
                          , task.meta
+                         , task.workers
                          )
             );
       }
@@ -318,6 +322,7 @@ public:
                        , task_event_t::FAILED
                        , task.result
                        , task.meta
+                       , task.workers
                        )
           );
     }
@@ -453,6 +458,7 @@ private:
                        , task_event_t::DEQUEUED
                        , task->activity.to_string()
                        , task->meta
+                       , task->workers
                        )
           );
 
