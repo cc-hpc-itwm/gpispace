@@ -44,6 +44,7 @@ namespace fhg
 
         private slots:
           void rebuild_transformation_tree();
+          void rebuild_source_to_tree();
           void rows_inserted (QModelIndex parent, int from, int to);
 
           void source_dataChanged (const QModelIndex&, const QModelIndex&);

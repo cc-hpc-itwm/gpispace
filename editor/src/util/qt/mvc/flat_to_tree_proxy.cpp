@@ -210,6 +210,13 @@ namespace fhg
             return NULL;
           }
 
+          void remove_child (int index)
+          {
+            fhg_assert (is_branch(), "remove_child() only to be called on branch");
+
+            boost::get<name_and_child_type> (_data).second.remove (index);
+          }
+
         private:
           void register_in_parent()
           {
@@ -308,7 +315,7 @@ namespace fhg
                   );
           connect ( source
                   , SIGNAL (rowsRemoved (QModelIndex, int, int))
-                  , SLOT (rebuild_transformation_tree())
+                  , SLOT (rebuild_source_to_tree())
                   );
 
 
@@ -522,6 +529,32 @@ namespace fhg
             {
               _source_to_tree[_source->index (row, col, QModelIndex())]
                 = index_for (leaf, col);
+            }
+          }
+        }
+
+        void flat_to_tree_proxy::rebuild_source_to_tree()
+        {
+          _source_to_tree.clear();
+
+          BOOST_FOREACH ( index_tree_item* item
+                        , _invisible_root->all_leafs_below()
+                        )
+          {
+            if (!item->index().isValid())
+            {
+              int row (item->parent()->children().indexOf (item));
+              beginRemoveRows (index_for (item->parent(), 0), row, row);
+              item->parent()->remove_child (row);
+              endRemoveRows();
+            }
+            else
+            {
+              for (int col (0), col_count (_source->columnCount()); col < col_count; ++col)
+              {
+                _source_to_tree[item->index().sibling (item->index().row(), col)]
+                  = index_for (item, col);
+              }
             }
           }
         }
