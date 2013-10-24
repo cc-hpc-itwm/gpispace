@@ -192,8 +192,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       BOOST_CHECK(listJobAssignedWorkers.size() <= 1);
       if(!listJobAssignedWorkers.empty())
       {
-              // delete the job
-              pAgent->scheduler()->deleteWorkerJob(listJobAssignedWorkers[0], jobId);
+          // delete the job
+          pAgent->scheduler()->deleteWorkerJob(listJobAssignedWorkers.front(), jobId);
       }
   }
 
