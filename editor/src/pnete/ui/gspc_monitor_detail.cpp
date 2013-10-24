@@ -220,6 +220,8 @@ namespace fhg
         verticalHeader()->setVisible (false);
         horizontalHeader()->setStretchLastSection (true);
         verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+        setHorizontalHeaderLabels
+          (QStringList() << tr ("time") << tr ("node") << tr ("message"));
       }
 
       namespace
