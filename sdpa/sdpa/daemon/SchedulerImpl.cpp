@@ -583,7 +583,7 @@ void SchedulerImpl::assignJobsToWorkers()
     catch( const NoJobRequirements& ex ) // no requirements are specified
     {
       // we have an empty list of requirements then!
-      matchingWorkerId = listAvailWorkers[0];
+      matchingWorkerId = listAvailWorkers.front();
       listAvailWorkers.erase(listAvailWorkers.begin());
     }
 
@@ -596,7 +596,7 @@ void SchedulerImpl::assignJobsToWorkers()
       // if all the required resources were acquired, mark the job as submitted
       if( allocation_table_[jobId].size() == (size_t)nReqWorkers )
       {
-          sdpa::job_id_t headWorker(allocation_table_[jobId][0]);
+          sdpa::job_id_t headWorker(allocation_table_[jobId].front());
           ptr_comm_handler_->serveJob(headWorker, jobId);
       }
       else
@@ -853,7 +853,7 @@ void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
 
   if(pJob->is_running())
   {
-      sdpa::worker_id_t head_worker_id(allocation_table_[jobId][0]);
+      sdpa::worker_id_t head_worker_id(allocation_table_[jobId].front());
       SDPA_LOG_INFO("Tell the worker "<<head_worker_id<<" to cancel the job "<<jobId);
       Worker::ptr_t pWorker = findWorker(head_worker_id);
       CancelJobEvent::Ptr pEvtCancelJob (new CancelJobEvent(  ptr_comm_handler_->name()
