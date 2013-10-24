@@ -191,9 +191,9 @@ namespace fhg
             return _parent;
           }
 
-          QSet<const index_tree_item*> all_leafs_below() const
+          QSet<index_tree_item*> all_leafs_below()
           {
-            QSet<const index_tree_item*> result;
+            QSet<index_tree_item*> result;
             all_leafs_below (result);
             return result;
           }
@@ -220,7 +220,7 @@ namespace fhg
             }
           }
 
-          void all_leafs_below (QSet<const index_tree_item*>& above) const
+          void all_leafs_below (QSet<index_tree_item*>& above)
           {
             if (is_leaf())
             {
