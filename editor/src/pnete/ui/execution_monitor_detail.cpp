@@ -392,34 +392,6 @@ namespace fhg
         }
       }
 
-      namespace
-      {
-        template<typename T> T sorted (T t) { qSort (t); return t; }
-
-        bool intersects_or_touches (const QRectF& lhs, const QRectF& rhs)
-        {
-          return lhs.right() >= rhs.left() && rhs.right() >= lhs.left();
-        }
-
-        qreal right_plus (const QRectF& rect, qreal add)
-        {
-          return rect.right() + add;
-        }
-
-        QRectF shrunken_by_pen (QRectF rect, QPen pen)
-        {
-          const qreal by (pen.width() == 0 ? 1.0 : pen.widthF());
-          return rect.adjusted (0.0, 0.0, -by, -by);
-        }
-
-        void widen (QRectF* rect, qreal by)
-        {
-          rect->setWidth (rect->width() + by);
-        }
-
-        const bool do_antialiasing (false);
-      }
-
       execution_monitor_delegate::execution_monitor_delegate
         ( boost::function<void (QString)> set_filter
         , boost::function<QString()> get_filter
@@ -450,7 +422,18 @@ namespace fhg
       {
         struct paint_description
         {
-          QHash<worker_model::state_type, QVector<QRectF> > rects;
+          struct block
+          {
+            QRectF rect;
+            QVector<QString> subranges;
+            block (QRectF r, QString range)
+              : rect (r)
+            {
+              subranges.push_back (range);
+            }
+            block() {}
+          };
+          QHash<worker_model::state_type, QVector<block> > blocks;
           bool distribute_vertically;
           qreal height;
 
@@ -459,6 +442,45 @@ namespace fhg
             , height (h)
           {}
         };
+
+        template<typename T> T sorted (T t) { qSort (t); return t; }
+
+        bool intersects_or_touches (const QRectF& lhs, const QRectF& rhs)
+        {
+          return lhs.right() >= rhs.left() && rhs.right() >= lhs.left();
+        }
+
+        bool overlaps ( const paint_description::block& block
+                      , const QRectF& rect
+                      , qreal threshold
+                      )
+        {
+          return block.rect.right() + threshold < rect.left();
+        }
+
+        QRectF shrunken_by_pen (QRectF rect, QPen pen)
+        {
+          const qreal by (pen.width() == 0 ? 1.0 : pen.widthF());
+          return rect.adjusted (0.0, 0.0, -by, -by);
+        }
+
+        struct temporarily_widen
+        {
+          temporarily_widen (QRectF* rect, qreal by)
+            : _rect (rect)
+            , _by (by)
+          {
+            _rect->setWidth (_rect->width() + _by);
+          }
+          ~temporarily_widen()
+          {
+            _rect->setWidth (_rect->width() - _by);
+          }
+          QRectF* _rect;
+          qreal _by;
+        };
+
+        const bool do_antialiasing (false);
 
         paint_description prepare_gantt_row ( QModelIndex index
                                             , QRect rect
@@ -504,57 +526,62 @@ namespace fhg
               )
             {
               const qreal left (std::max (visible_range.from, data.timestamp()));
-              QRectF range_rect
-                ( qreal (rect.x())
-                + (left - visible_range.from) * horizontal_scale
-                , rect.top()
-                , ( ( data.duration()
-                    ? std::min ( visible_range.to
-                               , data.timestamp() + *data.duration()
-                               )
-                    : visible_range.to
-                    )
-                  - left
-                  ) * horizontal_scale
-                , descr.height
+              paint_description::block block
+                ( QRectF ( qreal (rect.x())
+                         + (left - visible_range.from) * horizontal_scale
+                         , rect.top()
+                         , ( ( data.duration()
+                             ? std::min ( visible_range.to
+                                        , data.timestamp() + *data.duration()
+                                        )
+                             : visible_range.to
+                             )
+                           - left
+                           ) * horizontal_scale
+                         , descr.height
+                         )
+                , data.id()
                 );
 
-              QVector<QRectF>& rects_in_state (descr.rects[data.state()]);
+              QVector<paint_description::block>& blocks_in_state
+                (descr.blocks[data.state()]);
 
               static const qreal merge_threshold (2.0);
 
               if (merge_away_small_intervals)
               {
-                QVector<QRectF>::iterator inter
+                QVector<paint_description::block>::iterator inter
                   ( std::lower_bound
-                    ( rects_in_state.begin(), rects_in_state.end()
-                    , range_rect
-                    , boost::bind (right_plus, _1, merge_threshold)
-                    < boost::bind (&QRectF::left, _2)
+                    ( blocks_in_state.begin(), blocks_in_state.end()
+                    , block.rect
+                    , boost::bind (&overlaps, _1, _2, merge_threshold)
                     )
                   );
 
-                while (inter != rects_in_state.end())
+                while (inter != blocks_in_state.end())
                 {
-                  widen (&*inter, merge_threshold);
-                  if (!intersects_or_touches (*inter, range_rect))
                   {
-                    widen (&*inter, -merge_threshold);
-                    break;
+                    temporarily_widen _ (&inter->rect, merge_threshold);
+                    if (!intersects_or_touches (inter->rect, block.rect))
+                    {
+                      break;
+                    }
                   }
-                  widen (&*inter, -merge_threshold);
 
-                  range_rect.setRight (qMax (range_rect.right(), inter->right()));
-                  range_rect.setLeft (qMin (range_rect.left(), inter->left()));
+                  block.rect.setRight
+                    (std::max (block.rect.right(), inter->rect.right()));
+                  block.rect.setLeft
+                    (std::min (block.rect.left(), inter->rect.left()));
+                  block.subranges += inter->subranges;
 
-                  inter = rects_in_state.erase (inter);
+                  inter = blocks_in_state.erase (inter);
                 }
 
-                rects_in_state.insert (inter, shrunken_by_pen (range_rect, pen));
+                blocks_in_state.insert (inter, block);
               }
               else
               {
-                rects_in_state.push_back (shrunken_by_pen (range_rect, pen));
+                blocks_in_state.push_back (block);
               }
             }
           }
@@ -599,12 +626,16 @@ namespace fhg
               (prepare_gantt_row (index, option.rect, painter->pen()));
 
             BOOST_FOREACH ( const worker_model::state_type state
-                          , sorted (descr.rects.keys())
+                          , sorted (descr.blocks.keys())
                           )
             {
               painter->setBrush (color_for_state (state));
 
-              painter->drawRects (descr.rects[state]);
+              BOOST_FOREACH
+                (const paint_description::block& block, descr.blocks[state])
+              {
+                painter->drawRect (shrunken_by_pen (block.rect, painter->pen()));
+              }
 
               if (descr.distribute_vertically)
               {
