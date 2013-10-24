@@ -662,6 +662,28 @@ namespace fhg
         {
           return _source->headerData (section, orientation, role);
         }
+
+        bool flat_to_tree_proxy::removeRows
+          (int row, int count, const QModelIndex& parent)
+        {
+          for (const int max (row + count); row < max; ++row)
+          {
+            QSet<QPersistentModelIndex> indices;
+
+            BOOST_FOREACH ( const index_tree_item* const item
+                          , item_for (parent)->children()[row]->all_leafs_below()
+                          )
+            {
+              indices.insert (item->index());
+            }
+            BOOST_FOREACH (QPersistentModelIndex index, indices)
+            {
+              _source->removeRow (index.row(), index.parent());
+            }
+          }
+
+          return true;
+        }
       }
     }
   }

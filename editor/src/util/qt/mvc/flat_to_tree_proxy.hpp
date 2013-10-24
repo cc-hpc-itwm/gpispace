@@ -41,6 +41,7 @@ namespace fhg
           virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const;
           virtual QVariant headerData
             (int section, Qt::Orientation, int role = Qt::DisplayRole) const;
+          virtual bool removeRows (int from, int n, const QModelIndex& = QModelIndex());
 
         private slots:
           void rebuild_transformation_tree();
