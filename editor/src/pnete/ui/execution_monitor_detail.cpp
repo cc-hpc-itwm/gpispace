@@ -504,7 +504,6 @@ namespace fhg
               );
 
             QHash<worker_model::state_type, QVector<QRectF> > paint_descriptions;
-            QHash<worker_model::state_type, QVector<QLineF> > merge_lines;
 
             const bool merge_away_small_intervals (true || distribute_vertically);
 
@@ -556,20 +555,6 @@ namespace fhg
                     }
                     widen (&*inter, -merge_threshold);
 
-                    //! \note if not actually intersecting, add line
-                    if (rect.right() <= inter->left())
-                    {
-                      const qreal x ((rect.right() + inter->left()) / 2.0);
-                      merge_lines[data.state()]
-                        << QLineF (x, y_pos, x, y_pos + height);
-                    }
-                    else if (inter->right() <= rect.left())
-                    {
-                      const qreal x ((inter->right() + rect.left()) / 2.0);
-                      merge_lines[data.state()]
-                        << QLineF (x, y_pos, x, y_pos + height);
-                    }
-
                     rect.setRight (qMax (rect.right(), inter->right()));
                     rect.setLeft (qMin (rect.left(), inter->left()));
 
@@ -592,7 +577,6 @@ namespace fhg
               painter->setBrush (color_for_state (state));
 
               painter->drawRects (paint_descriptions[state]);
-              painter->drawLines (merge_lines[state]);
 
               if (distribute_vertically)
               {
