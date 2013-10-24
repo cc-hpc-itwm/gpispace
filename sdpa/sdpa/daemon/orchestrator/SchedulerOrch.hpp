@@ -46,9 +46,8 @@ namespace sdpa {
 			}
          }
 
-         bool post_request( bool ) { return false; }
-         void send_life_sign() { /*do nothing*/ }
-         void check_post_request() { /*do nothing*/ }
+         bool postRequest( bool ) { return false; }
+         void checkRequestPosted() { /*do nothing*/ }
 
          template <class Archive>
          void serialize(Archive& ar, const unsigned int)

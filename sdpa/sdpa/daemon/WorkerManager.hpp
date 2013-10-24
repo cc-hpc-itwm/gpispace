@@ -55,7 +55,7 @@ namespace sdpa { namespace daemon {
                 const unsigned int& agent_rank = 0,
                 const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
 
-    void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+    void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
     void removeWorkers();
 
     bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
@@ -68,7 +68,7 @@ namespace sdpa { namespace daemon {
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
     void dispatchJob(const sdpa::job_id_t& jobId);
-    void delete_job(const sdpa::job_id_t& jobId);
+    void deleteJob(const sdpa::job_id_t& jobId);
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
     size_t numberOfWorkers() { return worker_map_.size(); }
