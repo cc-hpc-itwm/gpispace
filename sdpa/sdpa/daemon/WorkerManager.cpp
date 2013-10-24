@@ -216,7 +216,7 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
   }
 }
 
-void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
+void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
 {
   lock_type lock(mtx_);
   worker_map_t::iterator w (worker_map_.find (workerId));

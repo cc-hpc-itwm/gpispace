@@ -55,7 +55,7 @@ namespace sdpa { namespace daemon {
                 const unsigned int& agent_rank = 0,
                 const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
 
-    void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+    void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
     void removeWorkers();
 
     bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
