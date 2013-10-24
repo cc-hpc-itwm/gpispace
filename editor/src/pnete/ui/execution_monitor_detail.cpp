@@ -446,6 +446,122 @@ namespace fhg
         emit color_for_state_changed (state, color);
       }
 
+      namespace
+      {
+        struct paint_description
+        {
+          QHash<worker_model::state_type, QVector<QRectF> > rects;
+          bool distribute_vertically;
+          qreal height;
+
+          paint_description (bool distr, qreal h)
+            : distribute_vertically (distr)
+            , height (h)
+          {}
+        };
+
+        paint_description prepare_gantt_row ( QModelIndex index
+                                            , QRect rect
+                                            , QPen pen
+                                            )
+        {
+          const util::qt::mvc::section_index section_index
+            (index, Qt::Horizontal);
+
+          const QList<worker_model::subrange_getter_type> subrange_getters
+            ( util::qt::collect<worker_model::subrange_getter_type>
+              (index.data (worker_model::range_getter_role))
+            );
+          fhg_assert (!subrange_getters.empty(), "gantt requires at least one subrange getter");
+
+          const execution_monitor_proxy::visible_range_type visible_range
+            ( util::qt::value<execution_monitor_proxy::visible_range_type>
+              (section_index.data (execution_monitor_proxy::visible_range_role))
+            );
+
+          const bool distribute_vertically (subrange_getters.size() > 1);
+
+          paint_description descr
+            ( distribute_vertically
+            , distribute_vertically
+            ? rect.height()
+            / qreal (sdpa::daemon::NotificationEvent::STATE_MAX + 1)
+            : rect.height()
+            );
+
+          const bool merge_away_small_intervals
+            (true || descr.distribute_vertically);
+
+          const qreal horizontal_scale
+            (qreal (rect.width()) / qreal (visible_range.length()));
+
+          BOOST_FOREACH
+            (worker_model::subrange_getter_type range, subrange_getters)
+          {
+            BOOST_FOREACH
+              ( const worker_model::value_type& data
+              , range (visible_range.from, visible_range.to)
+              )
+            {
+              const qreal left (std::max (visible_range.from, data.timestamp()));
+              QRectF range_rect
+                ( qreal (rect.x())
+                + (left - visible_range.from) * horizontal_scale
+                , rect.top()
+                , ( ( data.duration()
+                    ? std::min ( visible_range.to
+                               , data.timestamp() + *data.duration()
+                               )
+                    : visible_range.to
+                    )
+                  - left
+                  ) * horizontal_scale
+                , descr.height
+                );
+
+              QVector<QRectF>& rects_in_state (descr.rects[data.state()]);
+
+              static const qreal merge_threshold (2.0);
+
+              if (merge_away_small_intervals)
+              {
+                QVector<QRectF>::iterator inter
+                  ( std::lower_bound
+                    ( rects_in_state.begin(), rects_in_state.end()
+                    , range_rect
+                    , boost::bind (right_plus, _1, merge_threshold)
+                    < boost::bind (&QRectF::left, _2)
+                    )
+                  );
+
+                while (inter != rects_in_state.end())
+                {
+                  widen (&*inter, merge_threshold);
+                  if (!intersects_or_touches (*inter, range_rect))
+                  {
+                    widen (&*inter, -merge_threshold);
+                    break;
+                  }
+                  widen (&*inter, -merge_threshold);
+
+                  range_rect.setRight (qMax (range_rect.right(), inter->right()));
+                  range_rect.setLeft (qMin (range_rect.left(), inter->left()));
+
+                  inter = rects_in_state.erase (inter);
+                }
+
+                rects_in_state.insert (inter, shrunken_by_pen (range_rect, pen));
+              }
+              else
+              {
+                rects_in_state.push_back (shrunken_by_pen (range_rect, pen));
+              }
+            }
+          }
+          return descr;
+        }
+      }
+
       void execution_monitor_delegate::paint ( QPainter* painter
                                              , const QStyleOptionViewItem& option
                                              , const QModelIndex& index
@@ -464,21 +580,8 @@ namespace fhg
 
         case execution_monitor_proxy::gantt_column:
           {
-            const QList<worker_model::subrange_getter_type> subrange_getters
-              ( util::qt::collect<worker_model::subrange_getter_type>
-                (index.data (worker_model::range_getter_role))
-              );
-            fhg_assert (!subrange_getters.empty(), "gantt requires at least one subrange getter");
-
             const util::qt::painter_state_saver state_saver (painter);
             painter->setClipRect (option.rect);
-
-            const execution_monitor_proxy::visible_range_type visible_range
-              ( util::qt::value<execution_monitor_proxy::visible_range_type>
-                (section_index.data (execution_monitor_proxy::visible_range_role))
-              );
-
-            const bool distribute_vertically (subrange_getters.size() > 1);
 
             painter->setRenderHint (QPainter::Antialiasing, do_antialiasing);
             painter->setRenderHint (QPainter::TextAntialiasing, true);
@@ -487,100 +590,25 @@ namespace fhg
             {
               painter->fillRect (option.rect, option.palette.highlight());
             }
-
             painter->setPen ( option.state & QStyle::State_Selected
                             ? option.palette.highlightedText().color()
                             : option.palette.text().color()
                             );
 
-            const qreal horizontal_scale
-              (qreal (option.rect.width()) / qreal (visible_range.length()));
-            const qreal y_pos (option.rect.top());
-            const qreal height
-              ( distribute_vertically
-              ? option.rect.height()
-              / qreal (sdpa::daemon::NotificationEvent::STATE_MAX + 1)
-              : option.rect.height()
-              );
-
-            QHash<worker_model::state_type, QVector<QRectF> > paint_descriptions;
-
-            const bool merge_away_small_intervals (true || distribute_vertically);
-
-            BOOST_FOREACH
-              (worker_model::subrange_getter_type range, subrange_getters)
-            {
-              BOOST_FOREACH
-                ( const worker_model::value_type& data
-                , range (visible_range.from, visible_range.to)
-                )
-              {
-                const qreal left (std::max (visible_range.from, data.timestamp()));
-                QRectF rect ( qreal (option.rect.x())
-                            + (left - visible_range.from) * horizontal_scale
-                            , y_pos
-                            , ( ( data.duration()
-                                ? std::min ( visible_range.to
-                                           , data.timestamp() + *data.duration()
-                                           )
-                                : visible_range.to
-                                )
-                              - left
-                              ) * horizontal_scale
-                            , height
-                            );
-
-                QVector<QRectF>& descr (paint_descriptions[data.state()]);
-
-                static const qreal merge_threshold (2.0);
-
-                if (merge_away_small_intervals)
-                {
-                  QVector<QRectF>::iterator inter
-                    ( std::lower_bound
-                      ( descr.begin(), descr.end()
-                      , rect
-                      , boost::bind (right_plus, _1, merge_threshold)
-                      < boost::bind (&QRectF::left, _2)
-                      )
-                    );
-
-                  while (inter != descr.end())
-                  {
-                    widen (&*inter, merge_threshold);
-                    if (!intersects_or_touches (*inter, rect))
-                    {
-                      widen (&*inter, -merge_threshold);
-                      break;
-                    }
-                    widen (&*inter, -merge_threshold);
-
-                    rect.setRight (qMax (rect.right(), inter->right()));
-                    rect.setLeft (qMin (rect.left(), inter->left()));
-
-                    inter = descr.erase (inter);
-                  }
-
-                  descr.insert (inter, shrunken_by_pen (rect, painter->pen()));
-                }
-                else
-                {
-                  descr.push_back (shrunken_by_pen (rect, painter->pen()));
-                }
-              }
-            }
+            paint_description descr
+              (prepare_gantt_row (index, option.rect, painter->pen()));
 
             BOOST_FOREACH ( const worker_model::state_type state
-                          , sorted (paint_descriptions.keys())
+                          , sorted (descr.rects.keys())
                           )
             {
               painter->setBrush (color_for_state (state));
 
-              painter->drawRects (paint_descriptions[state]);
+              painter->drawRects (descr.rects[state]);
 
-              if (distribute_vertically)
+              if (descr.distribute_vertically)
               {
-                painter->translate (0.0, height);
+                painter->translate (0.0, descr.height);
               }
             }
           }
