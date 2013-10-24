@@ -32,14 +32,13 @@ Worker::Worker(	const worker_id_t& name,
 bool Worker::has_job( const sdpa::job_id_t& job_id )
 {
   lock_type lock(mtx_);
-  return /*pending_.has_item(job_id) ||*/  submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
+  return submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
 }
 
 bool Worker::isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id )
 {
   lock_type lock(mtx_);
   return submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
-  return false;
 }
 
 void Worker::update()
