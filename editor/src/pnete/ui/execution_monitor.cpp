@@ -11,6 +11,7 @@
 #include <util/qt/mvc/filter_ignoring_branch_nodes_proxy.hpp>
 #include <util/qt/mvc/flat_to_tree_proxy.hpp>
 #include <util/qt/restricted_tree_column_sorter.hpp>
+#include <util/qt/treeview_with_delete.hpp>
 #include <util/qt/variant.hpp>
 
 #include <boost/foreach.hpp>
@@ -309,7 +310,8 @@ namespace fhg
         alphanum_sorted->setDynamicSortFilter (true);
 
 
-        QTreeView* tree (new QTreeView (this));
+        util::qt::treeview_with_delete* tree
+          (new util::qt::treeview_with_delete (this));
         tree->setModel (next);
 
         execution_monitor_delegate* delegate

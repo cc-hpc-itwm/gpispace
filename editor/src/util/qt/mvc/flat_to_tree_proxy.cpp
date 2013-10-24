@@ -143,7 +143,7 @@ namespace fhg
           }
 
           //! \note Leaf
-          index_tree_item (const QModelIndex& index, index_tree_item* parent)
+          index_tree_item (const QPersistentModelIndex& index, index_tree_item* parent)
             : _parent (parent)
             , _data (index)
           {
@@ -180,7 +180,7 @@ namespace fhg
             fhg_assert (is_branch(), "name() only to be called on branch");
             return boost::get<name_and_child_type> (_data).first;
           }
-          const QModelIndex& index() const
+          const QPersistentModelIndex& index() const
           {
             fhg_assert (is_leaf(), "index() only to be called on leaf");
             return boost::get<index_type> (_data);
@@ -191,9 +191,9 @@ namespace fhg
             return _parent;
           }
 
-          QSet<const index_tree_item*> all_leafs_below() const
+          QSet<index_tree_item*> all_leafs_below()
           {
-            QSet<const index_tree_item*> result;
+            QSet<index_tree_item*> result;
             all_leafs_below (result);
             return result;
           }
@@ -210,6 +210,13 @@ namespace fhg
             return NULL;
           }
 
+          void remove_child (int index)
+          {
+            fhg_assert (is_branch(), "remove_child() only to be called on branch");
+
+            boost::get<name_and_child_type> (_data).second.remove (index);
+          }
+
         private:
           void register_in_parent()
           {
@@ -220,7 +227,7 @@ namespace fhg
             }
           }
 
-          void all_leafs_below (QSet<const index_tree_item*>& above) const
+          void all_leafs_below (QSet<index_tree_item*>& above)
           {
             if (is_leaf())
             {
@@ -238,7 +245,7 @@ namespace fhg
           index_tree_item* _parent;
 
           typedef std::pair<QString, QVector<index_tree_item*> > name_and_child_type;
-          typedef QModelIndex index_type;
+          typedef QPersistentModelIndex index_type;
 
           boost::variant<name_and_child_type, index_type> _data;
         };
@@ -308,7 +315,7 @@ namespace fhg
                   );
           connect ( source
                   , SIGNAL (rowsRemoved (QModelIndex, int, int))
-                  , SLOT (rebuild_transformation_tree())
+                  , SLOT (rebuild_source_to_tree())
                   );
 
 
@@ -445,52 +452,19 @@ namespace fhg
               ("<<invisible root, you should never see this>>", NULL)
             );
 
-          const QList<boost::shared_ptr<transform_functions_model::transform_function> > transform_functions
-            ( value_of_all_rows<boost::shared_ptr<transform_functions_model::transform_function> >
-              ( _transform_functions
-              , transform_functions_model::function_role
-              , 0
-              )
-            );
-
-          for (int row (0); row < _source->rowCount(); ++row)
-          {
-            const QModelIndex index (_source->index (row, 0, QModelIndex()));
-
-            QStringList path;
-            BOOST_FOREACH
-              ( const boost::shared_ptr<transform_functions_model::transform_function>& fun
-              , transform_functions
-              )
-            {
-              path.prepend ((*fun) (index));
-            }
-
-            index_tree_item* last_item (_invisible_root.get());
-            QModelIndex last_parent;
-            BOOST_FOREACH (const QString& segment, path)
-            {
-              index_tree_item* branch (last_item->find_branch (segment));
-              last_item = branch
-                        ? branch
-                        : new index_tree_item (segment, last_item);
-              last_parent = index_for (last_item, 0);
-            }
-
-            index_tree_item* leaf (new index_tree_item (index, last_item));
-
-            for (int col (0), col_count (_source->columnCount()); col < col_count; ++col)
-            {
-              _source_to_tree[_source->index (row, col, QModelIndex())]
-                = index_for (leaf, col);
-            }
-          }
+          insert_from_source (0, _source->rowCount(), QModelIndex(), false);
 
           endResetModel();
         }
 
         void flat_to_tree_proxy::rows_inserted
           (QModelIndex parent, int from, int to)
+        {
+          insert_from_source (from, to + 1, parent, true);
+        }
+
+        void flat_to_tree_proxy::insert_from_source
+          (int begin, int end, QModelIndex parent, bool emit_per_row)
         {
           const QList<boost::shared_ptr<transform_functions_model::transform_function> > transform_functions
             ( value_of_all_rows<boost::shared_ptr<transform_functions_model::transform_function> >
@@ -500,7 +474,7 @@ namespace fhg
               )
             );
 
-          for (int row (from); row <= to; ++row)
+          for (int row (begin); row < end; ++row)
           {
             const QModelIndex index (_source->index (row, 0, parent));
 
@@ -520,10 +494,16 @@ namespace fhg
               index_tree_item* branch (last_item->find_branch (segment));
               if (!branch)
               {
-                const int rows (rowCount (last_parent));
-                beginInsertRows (last_parent, rows, rows);
+                if (emit_per_row)
+                {
+                  const int rows (rowCount (last_parent));
+                  beginInsertRows (last_parent, rows, rows);
+                }
                 last_item = new index_tree_item (segment, last_item);
-                endInsertRows();
+                if (emit_per_row)
+                {
+                  endInsertRows();
+                }
               }
               else
               {
@@ -533,16 +513,48 @@ namespace fhg
             }
 
             const int leaf_parent_rows (rowCount (last_parent));
-            beginInsertRows (last_parent, leaf_parent_rows, leaf_parent_rows);
+            if (emit_per_row)
+            {
+              beginInsertRows (last_parent, leaf_parent_rows, leaf_parent_rows);
+            }
 
             index_tree_item* leaf (new index_tree_item (index, last_item));
 
-            endInsertRows();
+            if (emit_per_row)
+            {
+              endInsertRows();
+            }
 
             for (int col (0), col_count (_source->columnCount()); col < col_count; ++col)
             {
               _source_to_tree[_source->index (row, col, QModelIndex())]
                 = index_for (leaf, col);
+            }
+          }
+        }
+
+        void flat_to_tree_proxy::rebuild_source_to_tree()
+        {
+          _source_to_tree.clear();
+
+          BOOST_FOREACH ( index_tree_item* item
+                        , _invisible_root->all_leafs_below()
+                        )
+          {
+            if (!item->index().isValid())
+            {
+              int row (item->parent()->children().indexOf (item));
+              beginRemoveRows (index_for (item->parent(), 0), row, row);
+              item->parent()->remove_child (row);
+              endRemoveRows();
+            }
+            else
+            {
+              for (int col (0), col_count (_source->columnCount()); col < col_count; ++col)
+              {
+                _source_to_tree[item->index().sibling (item->index().row(), col)]
+                  = index_for (item, col);
+              }
             }
           }
         }
@@ -564,7 +576,7 @@ namespace fhg
         {
           index_tree_item* item (item_for (index));
           return _source->columnCount ( item->is_leaf()
-                                      ? item->index()
+                                      ? QModelIndex (item->index())
                                       : QModelIndex()
                                       );
         }
@@ -649,6 +661,28 @@ namespace fhg
           (int section, Qt::Orientation orientation, int role) const
         {
           return _source->headerData (section, orientation, role);
+        }
+
+        bool flat_to_tree_proxy::removeRows
+          (int row, int count, const QModelIndex& parent)
+        {
+          for (const int max (row + count); row < max; ++row)
+          {
+            QSet<QPersistentModelIndex> indices;
+
+            BOOST_FOREACH ( const index_tree_item* const item
+                          , item_for (parent)->children()[row]->all_leafs_below()
+                          )
+            {
+              indices.insert (item->index());
+            }
+            BOOST_FOREACH (QPersistentModelIndex index, indices)
+            {
+              _source->removeRow (index.row(), index.parent());
+            }
+          }
+
+          return true;
         }
       }
     }
