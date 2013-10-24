@@ -80,12 +80,12 @@ namespace sdpa { namespace daemon {
 
     /**
       Return the name of the worker.
-      */
+    */
     const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
 
     /**
       Return the location of this worker.
-      */
+     */
     const location_t &location() const { lock_type lock(mtx_); return location_; }
 
     /**
@@ -174,7 +174,7 @@ namespace sdpa { namespace daemon {
     unsigned int capacity_;
     sdpa::capabilities_set_t capabilities_;
     unsigned int rank_;
-	sdpa::worker_id_t agent_uuid_;
+    sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
     sdpa::util::time_type last_time_served_; //! time of last message received
