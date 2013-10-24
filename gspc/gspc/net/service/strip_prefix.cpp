@@ -20,15 +20,15 @@ namespace gspc
                                     , user_ptr user
                                     )
       {
-        std::string new_dst (dst);
-
-        std::size_t found = dst.find (m_prefix);
-        if (found == 0)
+        const std::size_t pos = dst.find (m_prefix);
+        if (0 == pos)
         {
-          new_dst.replace (0, m_prefix.size (), "");
+          return m_next (dst.substr (m_prefix.size ()), rqst, user);
         }
-
-        m_next (new_dst, rqst, user);
+        else
+        {
+          return m_next (dst, rqst, user);
+        }
       }
     }
   }
