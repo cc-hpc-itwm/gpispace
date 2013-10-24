@@ -895,7 +895,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
     	  // mark the worker as disconnected
     	  pWorker->set_disconnected();
     	  DMLOG (TRACE, "Reschedule the jobs of the worker "<<worker_id<<" and, afterwards, delete it!" );
-    	  scheduler()->delWorker(worker_id);
+    	  scheduler()->deleteWorker(worker_id);
       }
       catch (const WorkerNotFoundException& ex)
       {
@@ -1018,7 +1018,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
           scheduler()->reschedule(worker_id);
-          scheduler()->delWorker(worker_id); // do a re-scheduling here
+          scheduler()->deleteWorker(worker_id); // do a re-scheduling here
         }
       }
       catch (WorkerNotFoundException const& /*ignored*/)
