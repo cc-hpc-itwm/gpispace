@@ -445,52 +445,19 @@ namespace fhg
               ("<<invisible root, you should never see this>>", NULL)
             );
 
-          const QList<boost::shared_ptr<transform_functions_model::transform_function> > transform_functions
-            ( value_of_all_rows<boost::shared_ptr<transform_functions_model::transform_function> >
-              ( _transform_functions
-              , transform_functions_model::function_role
-              , 0
-              )
-            );
-
-          for (int row (0); row < _source->rowCount(); ++row)
-          {
-            const QModelIndex index (_source->index (row, 0, QModelIndex()));
-
-            QStringList path;
-            BOOST_FOREACH
-              ( const boost::shared_ptr<transform_functions_model::transform_function>& fun
-              , transform_functions
-              )
-            {
-              path.prepend ((*fun) (index));
-            }
-
-            index_tree_item* last_item (_invisible_root.get());
-            QModelIndex last_parent;
-            BOOST_FOREACH (const QString& segment, path)
-            {
-              index_tree_item* branch (last_item->find_branch (segment));
-              last_item = branch
-                        ? branch
-                        : new index_tree_item (segment, last_item);
-              last_parent = index_for (last_item, 0);
-            }
-
-            index_tree_item* leaf (new index_tree_item (index, last_item));
-
-            for (int col (0), col_count (_source->columnCount()); col < col_count; ++col)
-            {
-              _source_to_tree[_source->index (row, col, QModelIndex())]
-                = index_for (leaf, col);
-            }
-          }
+          insert_from_source (0, _source->rowCount(), QModelIndex(), false);
 
           endResetModel();
         }
 
         void flat_to_tree_proxy::rows_inserted
           (QModelIndex parent, int from, int to)
+        {
+          insert_from_source (from, to + 1, parent, true);
+        }
+
+        void flat_to_tree_proxy::insert_from_source
+          (int begin, int end, QModelIndex parent, bool emit_per_row)
         {
           const QList<boost::shared_ptr<transform_functions_model::transform_function> > transform_functions
             ( value_of_all_rows<boost::shared_ptr<transform_functions_model::transform_function> >
@@ -500,7 +467,7 @@ namespace fhg
               )
             );
 
-          for (int row (from); row <= to; ++row)
+          for (int row (begin); row < end; ++row)
           {
             const QModelIndex index (_source->index (row, 0, parent));
 
@@ -520,10 +487,16 @@ namespace fhg
               index_tree_item* branch (last_item->find_branch (segment));
               if (!branch)
               {
-                const int rows (rowCount (last_parent));
-                beginInsertRows (last_parent, rows, rows);
+                if (emit_per_row)
+                {
+                  const int rows (rowCount (last_parent));
+                  beginInsertRows (last_parent, rows, rows);
+                }
                 last_item = new index_tree_item (segment, last_item);
-                endInsertRows();
+                if (emit_per_row)
+                {
+                  endInsertRows();
+                }
               }
               else
               {
@@ -533,11 +506,17 @@ namespace fhg
             }
 
             const int leaf_parent_rows (rowCount (last_parent));
-            beginInsertRows (last_parent, leaf_parent_rows, leaf_parent_rows);
+            if (emit_per_row)
+            {
+              beginInsertRows (last_parent, leaf_parent_rows, leaf_parent_rows);
+            }
 
             index_tree_item* leaf (new index_tree_item (index, last_item));
 
-            endInsertRows();
+            if (emit_per_row)
+            {
+              endInsertRows();
+            }
 
             for (int col (0), col_count (_source->columnCount()); col < col_count; ++col)
             {

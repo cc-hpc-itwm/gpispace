@@ -55,6 +55,9 @@ namespace fhg
           QModelIndex index_for (index_tree_item*, int column) const;
           QModelIndex index_for (const QModelIndex& source) const;
 
+          void insert_from_source
+            (int begin, int end, QModelIndex parent, bool emit_per_row);
+
           QAbstractItemModel* _source;
 
           transform_functions_model* _transform_functions;
