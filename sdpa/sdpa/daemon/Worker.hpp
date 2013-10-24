@@ -60,13 +60,6 @@ namespace sdpa { namespace daemon {
       */
     void update();
 
-    /**
-      Add a new job to the pending queue of this worker.
-      Move it to the pending_ queue.
-      */
-    void dispatch(const sdpa::job_id_t&);
-
-
     void submit(const sdpa::job_id_t&);
 
     /**
@@ -132,16 +125,7 @@ namespace sdpa { namespace daemon {
 	  a second flag is needed in the case the job is canceled (in order to look into the other queues, as well)
 	  @param last_job_id the id of the last sucessfully submitted job
 	  */
-    void delete_job(const sdpa::job_id_t &job_id );
-
-    /**
-      Provide access to the pending queue.
-
-      We are required to have access to the pending queue of a worker because
-      we might need to reschedule tasks.
-      */
-    JobQueue& pending() { lock_type lock(mtx_); return pending_; }
-    const JobQueue& pending() const { lock_type lock(mtx_); return pending_; }
+    void deleteJob(const sdpa::job_id_t &job_id );
 
     /**
       Provide access to the submitted queue.
@@ -196,7 +180,6 @@ namespace sdpa { namespace daemon {
     sdpa::util::time_type last_time_served_; //! time of last message received
     sdpa::util::time_type last_schedule_time_;
 
-    JobQueue pending_; //! the queue of jobs assigned to this worker (not yet submitted)
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
