@@ -774,36 +774,39 @@ namespace fhg
         , const QModelIndex& index
         )
       {
-        const util::qt::mvc::section_index section_index
-          (index, Qt::Horizontal);
-
-        if ( util::qt::value<execution_monitor_proxy::column_type>
-             (section_index.data (execution_monitor_proxy::column_type_role))
-           ==  execution_monitor_proxy::gantt_column
-           )
+        if (index.isValid() && event->type() == QEvent::ToolTip)
         {
-          paint_description descr
-            (prepare_gantt_row (index, option.rect, QPen()));
+          const util::qt::mvc::section_index section_index
+            (index, Qt::Horizontal);
 
-          if (descr.distribute_vertically)
+          if ( util::qt::value<execution_monitor_proxy::column_type>
+               (section_index.data (execution_monitor_proxy::column_type_role))
+             ==  execution_monitor_proxy::gantt_column
+             )
           {
-            if ( maybe_show_tooltip
-                 ( descr.blocks.keys().at
-                   ((event->pos().y() - option.rect.top()) / descr.height)
-                 , descr, event, view
+            paint_description descr
+              (prepare_gantt_row (index, option.rect, QPen()));
+
+            if (descr.distribute_vertically)
+            {
+              if ( maybe_show_tooltip
+                   ( descr.blocks.keys().at
+                     ((event->pos().y() - option.rect.top()) / descr.height)
+                   , descr, event, view
+                   )
                  )
-               )
-            {
-              return true;
-            }
-          }
-          else
-          {
-            BOOST_FOREACH (worker_model::state_type state, descr.blocks.keys())
-            {
-              if (maybe_show_tooltip (state, descr, event, view))
               {
                 return true;
+              }
+            }
+            else
+            {
+              BOOST_FOREACH (worker_model::state_type state, descr.blocks.keys())
+              {
+                if (maybe_show_tooltip (state, descr, event, view))
+                {
+                  return true;
+                }
               }
             }
           }
