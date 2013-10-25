@@ -752,9 +752,13 @@ namespace fhg
              && event->pos().x() <= block.rect.right()
              )
           {
+            const QString ranges ( block.subranges.size() > 20
+                                 ? QStringList (block.subranges.mid (0, 20)).join (", ") + "..."
+                                 : block.subranges.join (", ")
+                                 );
             QToolTip::showText
               ( event->globalPos()
-              , to_string (state) + ": " + block.subranges.join (", ")
+              , to_string (state) + ": " + ranges
               , view
               );
             return true;
