@@ -16,11 +16,13 @@
 #include <QCheckBox>
 #include <QDateTimeEdit>
 #include <QHBoxLayout>
+#include <QHelpEvent>
 #include <QLineEdit>
 #include <QMenu>
 #include <QPainter>
 #include <QScrollBar>
 #include <QTimer>
+#include <QToolTip>
 
 namespace fhg
 {
@@ -714,31 +716,90 @@ namespace fhg
         }
       }
 
-      bool execution_monitor_delegate::helpEvent ( QHelpEvent *event
-                                                 , QAbstractItemView *view
-                                                 , const QStyleOptionViewItem& option
-                                                 , const QModelIndex& index
-                                                 )
+      namespace
       {
-        //! \todo Implement tooltips showing information.
-        return QAbstractItemDelegate::helpEvent(event, view, option, index);
+        QString to_string (worker_model::state_type state)
+        {
+          typedef sdpa::daemon::NotificationEvent event;
 
-        // if (!event || !view)
-        // {
-        //   return false;
-        // }
+          switch (state)
+          {
+          case event::STATE_CREATED: return "created";
+          case event::STATE_STARTED: return "started";
+          case event::STATE_FINISHED: return "finished";
+          case event::STATE_FAILED: return "failed";
+          case event::STATE_CANCELLED: return "cancelled";
+          }
+        }
+      }
 
-        // if (event->type() == QEvent::ToolTip)
-        // {
-        //   QHelpEvent *he (static_cast<QHelpEvent*> (event));
-        //   he->pos() - option.rect.topLeft();
-        //   QVariant tooltip (index.data (Qt::ToolTipRole));
-        //   if (util::qt::stores<QString> (tooltip))
-        //   {
-        //     QToolTip::showText (he->globalPos(), tooltip.toString(), view);
-        //     return true;
-        //   }
-        // }
+      bool maybe_show_tooltip
+        ( const worker_model::state_type state
+        , const paint_description& descr
+        , QHelpEvent* event
+        , QAbstractItemView* view
+        )
+      {
+        BOOST_FOREACH (const paint_description::block& block, descr.blocks[state])
+        {
+          if ( block.rect.left() <= event->pos().x()
+             && event->pos().x() <= block.rect.right()
+             )
+          {
+            QToolTip::showText
+              ( event->globalPos()
+              , to_string (state) + ": " + block.subranges.join (", ")
+              , view
+              );
+            return true;
+          }
+        }
+        return false;
+      }
+
+      bool execution_monitor_delegate::helpEvent
+        ( QHelpEvent* event
+        , QAbstractItemView* view
+        , const QStyleOptionViewItem& option
+        , const QModelIndex& index
+        )
+      {
+        const util::qt::mvc::section_index section_index
+          (index, Qt::Horizontal);
+
+        if ( util::qt::value<execution_monitor_proxy::column_type>
+             (section_index.data (execution_monitor_proxy::column_type_role))
+           ==  execution_monitor_proxy::gantt_column
+           )
+        {
+          paint_description descr
+            (prepare_gantt_row (index, option.rect, QPen()));
+
+          if (descr.distribute_vertically)
+          {
+            if ( maybe_show_tooltip
+                 ( descr.blocks.keys().at
+                   ((event->pos().y() - option.rect.top()) / descr.height)
+                 , descr, event, view
+                 )
+               )
+            {
+              return true;
+            }
+          }
+          else
+          {
+            BOOST_FOREACH (worker_model::state_type state, descr.blocks.keys())
+            {
+              if (maybe_show_tooltip (state, descr, event, view))
+              {
+                return true;
+              }
+            }
+          }
+        }
+
+        return QAbstractItemDelegate::helpEvent (event, view, option, index);
       }
 
       execution_monitor_editor::execution_monitor_editor
