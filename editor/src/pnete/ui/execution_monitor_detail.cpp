@@ -425,7 +425,7 @@ namespace fhg
           struct block
           {
             QRectF rect;
-            QVector<QString> subranges;
+            QStringList subranges;
             block (QRectF r, QString range)
               : rect (r)
             {
