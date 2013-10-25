@@ -5,7 +5,7 @@
 
 #include <gspc/kvs/api.hpp>
 
-#include <boost/signal.hpp>
+#include <boost/signals2/signal.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -25,7 +25,7 @@ namespace gspc
 
       virtual ~kvs_t ();
 
-      boost::signal<void (key_type const &)> onChange;
+      boost::signals2::signal<void (key_type const &)> onChange;
 
     private:
       int do_put (std::list<std::pair<key_type, value_type> > const &);
