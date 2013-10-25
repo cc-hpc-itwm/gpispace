@@ -10,7 +10,7 @@ namespace fhg
   namespace util
   {
     template<typename IT>
-    inline bool
+      inline boost::optional<IT>
     generic_starts_with ( IT pos_p, const IT end_p
                         , IT pos_x, const IT end_x
                         )
@@ -19,7 +19,7 @@ namespace fhg
         {
           if (*pos_p != *pos_x)
             {
-              return false;
+              return boost::none;
             }
 
           ++pos_p;
@@ -28,10 +28,24 @@ namespace fhg
 
       if (pos_p == end_p)
         {
-          return true;
+          return pos_x;
         }
 
-      return false;
+      return boost::none;
+    }
+
+    inline std::string
+      remove_prefix (std::string const& p, std::string const &x)
+    {
+      boost::optional<std::string::const_iterator> const pos
+        (generic_starts_with (p.begin(), p.end(), x.begin(), x.end()));
+
+      if (pos)
+      {
+        return std::string (*pos, x.end());
+      }
+
+      return x;
     }
 
     inline bool
