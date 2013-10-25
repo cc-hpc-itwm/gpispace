@@ -910,6 +910,7 @@ namespace fhg
           _scrollbar->setValue (visible_range.to);
           _scrollbar->setPageStep
             (std::min (static_cast<int> (visible_range.length()), _scrollbar->maximum()));
+          _scrollbar->setSingleStep (_scrollbar->pageStep() / 20);
         }
 
         {
