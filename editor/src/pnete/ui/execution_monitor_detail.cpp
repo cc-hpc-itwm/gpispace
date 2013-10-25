@@ -822,8 +822,8 @@ namespace fhg
         update_maximum();
         update();
 
-        _lower->setDisplayFormat ("dd.MM.yyyy hh:mm:ss.zzz");
-        _upper->setDisplayFormat ("dd.MM.yyyy hh:mm:ss.zzz");
+        _lower->setDisplayFormat ("dd.MM.yyyy hh:mm:ss");
+        _upper->setDisplayFormat ("dd.MM.yyyy hh:mm:ss");
 
 
         util::qt::boost_connect<void (int)>
