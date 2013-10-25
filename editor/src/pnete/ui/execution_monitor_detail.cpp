@@ -908,8 +908,8 @@ namespace fhg
         {
           util::qt::scoped_signal_block block (_scrollbar);
           _scrollbar->setValue (visible_range.to);
-          _scrollbar->setMinimum (visible_range.length());
-          _scrollbar->setPageStep (visible_range.length());
+          _scrollbar->setPageStep
+            (std::min (static_cast<int> (visible_range.length()), _scrollbar->maximum()));
         }
 
         {
