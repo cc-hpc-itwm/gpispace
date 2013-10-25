@@ -442,7 +442,13 @@ namespace fhg
           paint_description (bool distr, qreal h)
             : distribute_vertically (distr)
             , height (h)
-          {}
+          {
+            blocks[sdpa::daemon::NotificationEvent::STATE_CREATED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_STARTED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_FINISHED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_FAILED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_CANCELLED];
+          }
         };
 
         template<typename T> T sorted (T t) { qSort (t); return t; }
