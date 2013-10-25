@@ -49,6 +49,8 @@ namespace gspc
             return "not implemented";
           case E_SERVICE_FAILED:          // 503
             return "service failed";
+          case E_SERVICE_NO_SUCH_RPC:     // 504
+            return "service does not provide this RPC";
           case E_VERSION_NOT_SUPPORTED:   // 505
             return "version not supported";
           case E_PERMISSION_DENIED:       // 550

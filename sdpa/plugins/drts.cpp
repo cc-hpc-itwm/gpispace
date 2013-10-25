@@ -131,15 +131,27 @@ public:
       {
         if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
         {
-          DMLOG(TRACE, "adding virtual capability: " << cap);
+          std::pair<std::string, std::string> capability_and_type
+            = fhg::util::split_string (cap, "-");
+          if (capability_and_type.second.empty ())
+            capability_and_type.second = "virtual";
+
+          const std::string & cap_name = capability_and_type.first;
+          const std::string & cap_type = capability_and_type.second;
+
+          DMLOG ( TRACE
+                , "adding capability: " << cap_name
+                << " of type: " << cap_type
+                );
+
           m_virtual_capabilities.insert
             (std::make_pair ( cap
-                            , std::make_pair ( sdpa::Capability (cap
-                                                                , "virtual"
-                                                               , m_my_name
+                            , std::make_pair ( sdpa::Capability ( cap_name
+                                                                , cap_type
+                                                                , m_my_name
                                                                 )
-                                             , new fhg::plugin::Capability( cap
-                                                                          , "virtual"
+                                             , new fhg::plugin::Capability( cap_name
+                                                                          , cap_type
                                                                           )
                                              )
                             )

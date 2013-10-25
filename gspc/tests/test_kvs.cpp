@@ -257,7 +257,11 @@ BOOST_AUTO_TEST_CASE (test_kvs_net_put_get)
   // setup server
   gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*"));
   gspc::kvs::service_t service;
-  gspc::net::handle ("/service/kvs", boost::ref (service));
+  gspc::net::handle ( "/service/kvs"
+                    , gspc::net::service::strip_prefix ( "/service/kvs/"
+                                                       , boost::ref (service)
+                                                       )
+                    );
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
