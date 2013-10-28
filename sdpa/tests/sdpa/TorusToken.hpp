@@ -70,35 +70,6 @@ public:
 	{
 	}
 
-	Token(const Token& t)
-	{
-		m_col  = t.color();
-		m_owner = t.owner();
-		m_rankOwner = t.rankOwner() ;
-		m_block_1 = t.block_1();
-		m_block_2 = t.block_2();
-		m_activityId = t.activityId();
-		m_workflowId = t.workflowId();
-		m_nVisitedNodes = t.nVisitedNodes();
-	}
-
-	Token& operator=(const Token& t)
-	{
-		if(this!=&t)
-		{
-			m_col  = t.color();
-			m_owner = t.owner();
-			m_rankOwner = t.rankOwner() ;
-			m_block_1 = t.block_1();
-			m_block_2 = t.block_2();
-			m_activityId = t.activityId();
-			m_workflowId = t.workflowId();
-			m_nVisitedNodes = t.nVisitedNodes();
-		}
-
-		return *this;
-	}
-
 	template <class Archive>
 	void serialize(Archive& ar, const unsigned int)
 	{
