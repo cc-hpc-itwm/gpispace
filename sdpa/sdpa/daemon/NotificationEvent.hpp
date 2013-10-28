@@ -40,8 +40,7 @@ namespace sdpa
     public:
       enum state_t
       {
-        STATE_CREATED
-      , STATE_STARTED
+        STATE_STARTED
       , STATE_FINISHED
       , STATE_FAILED
       , STATE_CANCELLED

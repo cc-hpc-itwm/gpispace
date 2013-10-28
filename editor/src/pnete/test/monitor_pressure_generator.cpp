@@ -18,7 +18,7 @@ struct activity
   activity (const std::string& worker)
     : _id (++id_counter)
     , _worker (worker)
-    , _state (NotificationEvent::STATE_CREATED)
+    , _state (NotificationEvent::STATE_STARTED)
   { }
 
   void send_out_notification ( NotificationService* service_a
@@ -36,28 +36,22 @@ struct activity
 
   bool next_state()
   {
-    switch (_state)
+    if (_state != NotificationEvent::STATE_STARTED)
     {
-    case NotificationEvent::STATE_CREATED:
-      _state = NotificationEvent::STATE_STARTED;
-      break;
-
-    case NotificationEvent::STATE_STARTED:
-      switch (lrand48() % 3)
-      {
-      case 0:
-        _state = NotificationEvent::STATE_FINISHED;
-        break;
-      case 1:
-        _state = NotificationEvent::STATE_FAILED;
-        break;
-      case 2:
-        _state = NotificationEvent::STATE_CANCELLED;
-        break;
-      }
-      break;
-    default:
       return false;
+    }
+
+    switch (lrand48() % 3)
+    {
+    case 0:
+      _state = NotificationEvent::STATE_FINISHED;
+      break;
+    case 1:
+      _state = NotificationEvent::STATE_FAILED;
+      break;
+    case 2:
+      _state = NotificationEvent::STATE_CANCELLED;
+      break;
     }
 
     return true;
@@ -106,17 +100,14 @@ int main(int ac, char **av)
   for (;;)
   {
     const std::string worker (worker_names[lrand48() % worker_names.size()]);
+
     if (!workers[worker])
     {
       workers[worker] = activity (worker);
-      workers[worker]->send_out_notification (&service_a, &service_b);
-      if (!workers[worker]->next_state())
-      {
-        workers[worker] = boost::none;
-      }
     }
 
     workers[worker]->send_out_notification (&service_a, &service_b);
+
     if (!workers[worker]->next_state())
     {
       workers[worker] = boost::none;

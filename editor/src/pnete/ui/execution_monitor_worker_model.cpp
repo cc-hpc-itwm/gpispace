@@ -21,7 +21,7 @@ namespace fhg
           , _duration (d)
           , _id (id)
           , _name (name)
-          , _state (sdpa::daemon::NotificationEvent::STATE_CREATED)
+          , _state (sdpa::daemon::NotificationEvent::STATE_STARTED)
       {
         state (state_, t);
       }
@@ -58,10 +58,10 @@ namespace fhg
         case sdpa::daemon::NotificationEvent::STATE_FAILED:
         case sdpa::daemon::NotificationEvent::STATE_FINISHED:
           duration (now - timestamp());
+          break;
 
-        case sdpa::daemon::NotificationEvent::STATE_CREATED:
         case sdpa::daemon::NotificationEvent::STATE_STARTED:
-          ;
+          break;
         }
 
         _state = state_;

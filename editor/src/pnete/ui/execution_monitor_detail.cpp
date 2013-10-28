@@ -443,7 +443,6 @@ namespace fhg
             : distribute_vertically (distr)
             , height (h)
           {
-            blocks[sdpa::daemon::NotificationEvent::STATE_CREATED];
             blocks[sdpa::daemon::NotificationEvent::STATE_STARTED];
             blocks[sdpa::daemon::NotificationEvent::STATE_FINISHED];
             blocks[sdpa::daemon::NotificationEvent::STATE_FAILED];
@@ -730,7 +729,6 @@ namespace fhg
 
           switch (state)
           {
-          case event::STATE_CREATED: return "created";
           case event::STATE_STARTED: return "started";
           case event::STATE_FINISHED: return "finished";
           case event::STATE_FAILED: return "failed";

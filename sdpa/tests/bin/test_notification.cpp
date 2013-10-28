@@ -42,10 +42,6 @@ class TestObservable : public sdpa::daemon::Observable
     {
       notifyObservers(NotificationEvent(m_name, id, name, NotificationEvent::STATE_STARTED));
     }
-    void activityCreated(const std::string &id, const std::string &name)
-    {
-      notifyObservers(NotificationEvent(m_name, id, name, NotificationEvent::STATE_CREATED));
-    }
 private:
   std::string m_name;
 };
@@ -71,7 +67,6 @@ int main(int ac, char **av)
     ostr << "activity-" << i;
     const std::string aid(ostr.str());
 
-    daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_CREATED);
     daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_STARTED);
 
     int random_outcome = (int)(round(3 * drand48()));
