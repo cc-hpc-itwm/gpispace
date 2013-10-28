@@ -17,7 +17,6 @@ namespace bytearray
     void push_back (char c);
 
     type();
-    type (const type&);
     type (const char* const, const std::size_t);
     std::size_t copy (char* const buf, const std::size_t size) const;
 
@@ -43,8 +42,6 @@ namespace bytearray
     friend std::size_t hash_value (const type&);
     friend bool operator== (const type&, const type&);
     friend bool operator< (const type&, const type&);
-
-    type& operator= (const type& other);
 
     template<typename T>
     type& operator= (const T& other)
