@@ -7,6 +7,7 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/utility.hpp>
 
 namespace gpi
 {
@@ -91,7 +92,7 @@ namespace gpi
         handler_t * m_hdl;
       };
 
-      struct scoped_connection_t : public connection_t
+      struct scoped_connection_t : public connection_t, boost::noncopyable
       {
         explicit
         scoped_connection_t (const connection_t & c)
@@ -102,11 +103,6 @@ namespace gpi
         {
           disconnect ();
         }
-
-      private:
-        scoped_connection_t ();
-        scoped_connection_t (const scoped_connection_t &);
-        scoped_connection_t & operator=(const scoped_connection_t &);
       };
 
       static handler_t & get ();
