@@ -35,12 +35,12 @@ namespace gspc
       struct waiting_to_pop_t
       {
         gspc::kvs::api_t::key_type key;
-        gspc::net::frame request;
+        gspc::net::frame rqst;
       };
 
       typedef boost::function< boost::optional<gspc::net::frame> (gspc::net::frame const &)> rpc_t;
       typedef std::map<std::string, rpc_t> rpc_table_t;
-      typedef std::map<gspc::kvs::api_t::key_type, waiting_to_pop_t> waiting_to_pop_map_t;
+      typedef std::list<waiting_to_pop_t> waiting_to_pop_list_t;
 
       void setup_rpc_handler ();
 
@@ -95,7 +95,9 @@ namespace gspc
       rpc_table_t m_rpc_table;
 
       mutable boost::shared_mutex m_waiting_to_pop_mtx;
-      waiting_to_pop_map_t m_waiting_to_pop;
+      waiting_to_pop_list_t m_waiting_to_pop;
+
+      boost::signals2::connection m_on_change_connection;
     };
   }
 }

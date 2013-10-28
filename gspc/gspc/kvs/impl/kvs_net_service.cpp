@@ -12,7 +12,11 @@
 
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
+
+#include <boost/signals2.hpp>
 #include <boost/optional.hpp>
+
+#include <gspc/net/server/default_queue_manager.hpp>
 
 namespace gspc
 {
@@ -21,18 +25,23 @@ namespace gspc
     service_t::service_t ()
       : m_kvs (gspc::kvs::create ("inproc://"))
     {
-      m_kvs->onChange.connect (boost::bind (&service_t::on_change, this, _1));
+      m_on_change_connection =
+        m_kvs->onChange.connect (boost::bind (&service_t::on_change, this, _1));
       setup_rpc_handler ();
     }
 
     service_t::service_t (std::string const &url)
       : m_kvs (gspc::kvs::create (url))
     {
+      m_on_change_connection =
+        m_kvs->onChange.connect (boost::bind (&service_t::on_change, this, _1));
       setup_rpc_handler ();
     }
 
     service_t::~service_t ()
-    {}
+    {
+      m_on_change_connection.disconnect ();
+    }
 
     void service_t::setup_rpc_handler ()
     {
@@ -199,6 +208,13 @@ namespace gspc
       int rc = m_kvs->try_pop (rqst.get_body (), val);
       if (rc == -EAGAIN)
       {
+        waiting_to_pop_t wtp;
+        wtp.key = rqst.get_body ();
+        wtp.rqst = rqst;
+
+        boost::unique_lock<boost::shared_mutex> lock (m_waiting_to_pop_mtx);
+        m_waiting_to_pop.push_back (wtp);
+
         // must be handled specially:
         //    put rqst & user in 'waiting for change on key'
         //    try_pop -> if ok return
@@ -333,6 +349,38 @@ namespace gspc
     }
 
     void service_t::on_change (api_t::key_type const &key)
-    {}
+    {
+      boost::unique_lock<boost::shared_mutex> lock (m_waiting_to_pop_mtx);
+      waiting_to_pop_list_t::iterator it = m_waiting_to_pop.begin ();
+      const waiting_to_pop_list_t::iterator end = m_waiting_to_pop.end ();
+
+      while (it != end)
+      {
+        if (it->key == key)
+        {
+          int rc;
+          api_t::value_type val;
+
+          {
+            boost::signals2::shared_connection_block blocker
+              (m_on_change_connection);
+            rc = m_kvs->try_pop (key, val);
+          }
+
+          if (rc == 0)
+          {
+            gspc::net::frame rply = encode_error_code (it->rqst, rc);
+            gspc::net::stream (rply) << pnet::type::value::show (val) << std::endl;
+
+            gspc::net::server::default_queue_manager ().deliver (rply);
+            it = m_waiting_to_pop.erase (it);
+
+            continue;
+          }
+        }
+
+        ++it;
+      }
+    }
   }
 }
