@@ -5,6 +5,7 @@
 #include <we/loader/exceptions.hpp>
 
 #include <boost/unordered_map.hpp>
+#include <boost/utility.hpp>
 
 #include <iostream>
 #include <string>
@@ -17,7 +18,7 @@ namespace we
   {
     class loader;
 
-    class Module : public IModule
+    class Module : public IModule, boost::noncopyable
     {
     public:
       Module ( const std::string& name
@@ -46,9 +47,6 @@ namespace we
     private:
       void open (const std::string&, int);
       void close();
-
-      Module (const Module&);
-      Module& operator= (const Module &);
 
       std::string name_;
       std::string path_;
