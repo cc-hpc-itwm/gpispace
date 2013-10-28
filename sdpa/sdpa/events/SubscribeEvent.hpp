@@ -41,8 +41,6 @@ namespace sdpa { namespace events {
 		    listJobIds_(listJobIds)
       { }
 
-    virtual ~SubscribeEvent() { }
-
     std::string str() const { return "SubscribeEvent"; }
 
     const sdpa::agent_id_t& subscriber() const { return subscriber_;}

@@ -47,8 +47,6 @@ namespace sdpa { namespace events {
 		    agent_uuid_(agent_uuid)
       { }
 
-    virtual ~WorkerRegistrationEvent() { }
-
     std::string str() const { return "WorkerRegistrationEvent"; }
 
     const unsigned int& capacity() const { return capacity_; }

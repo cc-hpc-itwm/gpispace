@@ -36,8 +36,6 @@ namespace sdpa { namespace events {
           :  sdpa::events::JobEvent( from, to, job_id ) {
                 }
 
-                virtual ~DeleteJobEvent() {
-                }
 
       std::string str() const
       {

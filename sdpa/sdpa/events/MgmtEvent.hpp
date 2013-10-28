@@ -33,7 +33,6 @@ namespace sdpa { namespace events {
       {}
       MgmtEvent(const address_t &a_from, const address_t &a_to)
         : SDPAEvent(a_from, a_to) {}
-      ~MgmtEvent() {}
 
       int priority() const { return 1; }
 

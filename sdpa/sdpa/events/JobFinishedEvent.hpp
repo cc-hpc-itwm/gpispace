@@ -40,8 +40,6 @@ namespace sdpa { namespace events {
         , result_(job_result)
       { }
 
-      virtual ~JobFinishedEvent() { }
-
     std::string str() const { return "JobFinishedEvent(" + job_id ().str () + ")"; }
 
       virtual void handleBy(EventHandler *handler)
