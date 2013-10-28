@@ -44,9 +44,6 @@ namespace we {
 	typedef typename container_type::value_type value_type;
 	typedef typename boost::call_traits<value_type>::param_type param_type;
 
-        set()
-        {}
-
 	void put (param_type item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
@@ -112,9 +109,6 @@ namespace we {
 	typedef typename container_type::size_type size_type;
 	typedef typename container_type::value_type value_type;
 	typedef typename boost::call_traits<value_type>::param_type param_type;
-
-        set()
-        {}
 
 	void put (param_type item)
 	{
