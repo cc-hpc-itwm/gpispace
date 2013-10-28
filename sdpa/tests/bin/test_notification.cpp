@@ -33,8 +33,6 @@ class TestObservable : public sdpa::daemon::Observable
     m_names.push_back ("test-observable");
   }
 
-    virtual ~TestObservable() {}
-
     void activityStateUpdate(const std::string &id, const std::string &name, NotificationEvent::state_t s)
     {
       notifyObservers(NotificationEvent(m_names, id, name, s));
