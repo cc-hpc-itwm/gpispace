@@ -23,9 +23,8 @@ namespace pnet
         class visitor_calculate : public boost::static_visitor<signature_type>
         {
         public:
-          visitor_calculate
-            (const pnet::type::signature::resolver_type& resolve)
-              : _resolve (resolve)
+          visitor_calculate (const resolver_type& resolve)
+            : _resolve (resolve)
           {}
 
           signature_type
@@ -36,7 +35,7 @@ namespace pnet
           signature_type
             operator() (const std::list<std::string>& path) const
           {
-            return std::string ("void");
+            return _resolve (path);
           }
           signature_type
             operator() (const ::expr::parse::node::unary_t& u) const
@@ -54,9 +53,9 @@ namespace pnet
             switch (b.token)
             {
             case ::expr::token::_substr:
-              if (not (l == signature_type (std::string ("std::string"))
+              if (not ( l == signature_type (std::string ("string"))
                       and
-                      r == signature_type (std::string ("long"))
+                        r == signature_type (std::string ("long"))
                       )
                  )
               {
@@ -68,7 +67,9 @@ namespace pnet
                     ).str()
                   );
               }
-              break;
+
+              return std::string ("string");
+
             case ::expr::token::_bitset_insert:
             case ::expr::token::_bitset_delete:
             case ::expr::token::_bitset_is_element:
@@ -110,12 +111,12 @@ namespace pnet
           }
 
         private:
-          const pnet::type::signature::resolver_type& _resolve;
+          const resolver_type& _resolve;
         };
       }
 
       signature_type
-        calculate ( const pnet::type::signature::resolver_type& resolve
+        calculate ( const resolver_type& resolve
                   , const ::expr::parse::node::type& nd
                   )
       {
