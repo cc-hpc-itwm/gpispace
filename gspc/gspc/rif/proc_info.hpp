@@ -14,7 +14,6 @@ namespace gspc
     {
     public:
       proc_info_t ();
-      ~proc_info_t () {}
 
       pid_t pid () const { return m_pid; }
       proc_t id () const { return m_proc; }
