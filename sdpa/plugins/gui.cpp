@@ -121,10 +121,18 @@ private:
 
       try
       {
-        BOOST_FOREACH (std::string const& worker, t.worker_list)
-        {
-          m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t, worker)));
-        }
+        m_destination->append
+          ( FHGLOG_MKEVENT_HERE ( INFO
+                                , sdpa::daemon::NotificationEvent
+                                  ( t.worker_list
+                                  , t.id
+                                  , t.name
+                                  , t.state
+                                  , t.activity
+                                  , t.meta
+                                  ).encoded()
+                                )
+          );
       }
       catch (std::exception const & ex)
       {
@@ -139,20 +147,6 @@ private:
   //   o->del_observer(this);
   //   m_observed.remove(o);
   // }
-
-  static inline std::string encode ( const task_event_t & e
-                                   , std::string const& worker
-                                   )
-  {
-    return sdpa::daemon::NotificationEvent
-      ( worker
-      , e.id
-      , e.name
-      , e.state
-      , e.activity
-      , e.meta
-      ).encoded();
-  }
 
   std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
