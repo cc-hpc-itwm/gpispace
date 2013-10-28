@@ -5,9 +5,12 @@
 #include <seda/common.hpp>
 #include <seda/AccumulateStrategy.hpp>
 
+#include <boost/utility.hpp>
+
 namespace seda {
   namespace tests {
-    class AccumulateStrategyTest : public CppUnit::TestFixture {
+    class AccumulateStrategyTest : public CppUnit::TestFixture
+                                 , boost::noncopyable {
         typedef seda::shared_ptr<AccumulateStrategyTest> Ptr;
         CPPUNIT_TEST_SUITE( seda::tests::AccumulateStrategyTest );
         CPPUNIT_TEST( testAddRemoveEvents );
@@ -27,8 +30,6 @@ namespace seda {
         void testIterator();
         void testCheckSequence();
       private:
-        AccumulateStrategyTest (const AccumulateStrategyTest& original);
-        AccumulateStrategyTest& operator= (const AccumulateStrategyTest& rhs);
         seda::AccumulateStrategy::Ptr _accumulate;
 
     };
@@ -36,4 +37,3 @@ namespace seda {
 }
 
 #endif /* ___TESTS_SEDA_ACCUMULATESTRATEGYTEST_HPP */
-
