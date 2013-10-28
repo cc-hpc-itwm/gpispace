@@ -23,23 +23,21 @@ public:
   {
     m_thread = 0;
 
-    m_url = fhg_kernel()->get("url", "");
+    const std::string url (fhg_kernel()->get ("url", ""));
 
-    if (not m_url.empty ())
+    if (not url.empty ())
     {
       try
       {
         m_destination.reset (new fhg::log::ThreadedAppender
                             (fhg::log::Appender::ptr_t
-                            (new fhg::log::remote::RemoteAppender( "gui"
-                                                                 , m_url
-                                                                 )
+                            (new fhg::log::remote::RemoteAppender("gui", url)
                             )));
-        DMLOG (TRACE, "GUI sending events to " << m_url);
+        DMLOG (TRACE, "GUI sending events to " << url);
       }
       catch (std::exception const &ex)
       {
-        MLOG(ERROR, "could not start appender to url: " << m_url << ": " << ex.what());
+        MLOG(ERROR, "could not start appender to url: " << url << ": " << ex.what());
       }
     }
 
@@ -136,7 +134,6 @@ private:
   //   m_observed.remove(o);
   // }
 
-  std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
 
   event_channel_t m_events;
