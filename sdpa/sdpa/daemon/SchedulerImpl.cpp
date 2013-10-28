@@ -102,11 +102,10 @@ void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
   {
       Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
       if(!pJob->completed()) {
-          pJob->Reschedule(); // put the job back into the pending state
           // clear the allocation table
           releaseAllocatedWorkers(job_id);
 
-          schedule(job_id);
+          pJob->Reschedule(ptr_comm_handler_); // put the job back into the pending state
         }
   }
   catch(JobNotFoundException const &ex)
