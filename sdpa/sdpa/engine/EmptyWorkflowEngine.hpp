@@ -71,7 +71,6 @@ public:
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)
     {
-      ar & boost::serialization::base_object<we::mgmt::basic_layer>(*this);
       ar & jobId;
       ar & status;
       ar & result;
