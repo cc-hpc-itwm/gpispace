@@ -1,5 +1,7 @@
 #define BOOST_TEST_MODULE GspcKvsTests
 #include <boost/test/unit_test.hpp>
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 
 #include <errno.h>
 
@@ -408,6 +410,66 @@ BOOST_AUTO_TEST_CASE (test_kvs_net_put_get)
                 << " => " << 2*(NUM / duration) << " ops/sec"
                 << std::endl;
     }
+  }
+  catch (...)
+  {
+    server->stop ();
+    gspc::net::shutdown ();
+    throw;
+  }
+
+  server->stop ();
+  gspc::net::shutdown ();
+}
+
+static void s_net_pop_thread ( gspc::kvs::api_t *kvs
+                             , gspc::kvs::api_t::key_type const &key
+                             , gspc::kvs::api_t::value_type & value
+                             , int & rc
+                             )
+{
+  rc = kvs->pop (key, value);
+}
+
+BOOST_AUTO_TEST_CASE (test_kvs_net_pop_push)
+{
+  gspc::net::initialize ();
+
+  int rc;
+  int thread_rc;
+  gspc::kvs::api_t::value_type val;
+  gspc::kvs::api_t::key_type key ("foo");
+
+  // setup server
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*"));
+  gspc::kvs::service_t service;
+  gspc::net::handle ( "/service/kvs"
+                    , gspc::net::service::strip_prefix ( "/service/kvs/"
+                                                       , boost::ref (service)
+                                                       )
+                    );
+
+  std::cerr << "server running on: " << server->url () << std::endl;
+
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=1000");
+
+  try
+  {
+    boost::thread thread (boost::bind ( s_net_pop_thread
+                                      , &kvs
+                                      , key
+                                      , boost::ref (val)
+                                      , boost::ref (thread_rc)
+                                      )
+                         );
+    usleep (500);
+
+    rc = kvs.push (key, std::string ("bar"));
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    thread.join ();
+    BOOST_REQUIRE_EQUAL (thread_rc, 0);
+    BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), std::string ("bar"));
   }
   catch (...)
   {
