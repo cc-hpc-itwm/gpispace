@@ -50,8 +50,6 @@ namespace sdpa {
     */
     bool operator<(const JobId& rhs) const;
 
-    ~JobId();
-
     const std::string &str() const { return id_; }
     std::string &str() { return id_; }
 

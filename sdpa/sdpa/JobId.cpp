@@ -42,7 +42,3 @@ bool JobId::operator==(const JobId &rhs) const
 {
 	return id_ == rhs.id_;
 }
-
-JobId::~JobId()
-{
-}
