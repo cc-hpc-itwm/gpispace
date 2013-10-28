@@ -29,7 +29,6 @@ namespace seda {
   class StrategyDecorator : public seda::Strategy {
   public:
     StrategyDecorator(const std::string& name, const seda::Strategy::Ptr& s);
-    virtual ~StrategyDecorator();
     virtual void perform(const IEvent::Ptr&);
 
     virtual void onStageStart(const std::string &s)

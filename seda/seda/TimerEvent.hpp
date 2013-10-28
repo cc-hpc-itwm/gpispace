@@ -36,8 +36,7 @@ namespace seda {
 
         const std::string& tag() const { return _tag; }
         std::string str() const { return "timer-event."+tag(); }
-    
-        virtual ~TimerEvent() {}
+
     private:
         std::string _tag;
     };

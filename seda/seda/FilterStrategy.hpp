@@ -34,7 +34,6 @@ namespace seda {
                 FilterStrategy(const Strategy::Ptr& s)
                 : StrategyDecorator(s->name()+".filter", s)
                 {}
-            ~FilterStrategy() {}
 
             void perform(const IEvent::Ptr& e) {
                 if (dynamic_cast<C*>(e.get()) != NULL) {
