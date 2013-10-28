@@ -204,11 +204,13 @@ namespace sdpa {
         	ptr_comm->sendEventToMaster(pResReply);
         }
 
-        void Reschedule()
+        void Reschedule(sdpa::daemon::IAgent*  pAgent)
         {
-        	MSMRescheduleEvent ReschedEvt;
-            lock_type lock(mtx_);
-            process_event(ReschedEvt);
+          assert (ptr_comm);
+          MSMRescheduleEvent ReschedEvt;
+          lock_type lock(mtx_);
+          process_event(ReschedEvt);
+          pAgent->schedule(id());
         }
 
         void Dispatch()
