@@ -456,7 +456,7 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
   //    retrieve values maybe from kvs?
   //    no spaces
 
-  // Read these values from a configuration file !!!!!!!!
+  // Read these values from a configuration file !
   // if this does not exist, use default values
 
   // set default configuration
@@ -522,10 +522,10 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 {
   DMLOG (TRACE, "Call 'action_interrupt'");
   // save the current state of the system .i.e serialize the daemon's state
-  // the following code shoud be executed on action action_interrupt!!
+  // the following code shoud be executed on action action_interrupt!
 
    // save the current state of the system .i.e serialize the daemon's state
-   // the following code shoud be executed on action action_interrupt!!
+   // the following code shoud be executed on action action_interrupt!
    lock_type lock(mtx_stop_);
    setRequestsAllowed(false);
    //m_bStarted 	= false;
@@ -1076,7 +1076,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
       }
       catch(WorkerNotFoundException const &)
       {
-        DMLOG (WARN, "job re-submission could not be acknowledged: worker " << worker_id << " not found!!");
+        DMLOG (WARN, "job re-submission could not be acknowledged: worker " << worker_id << " not found!");
       }
       catch(std::exception const &ex)
       {
@@ -1600,7 +1600,7 @@ bool GenericDaemon::requestsAllowed()
 
   if(!m_bRequestsAllowed)
   {
-    DMLOG (TRACE, "The flag \"m_bRequestsAllowed\" is set on false!!!!!!!!!!!!!!!!!!!!!!!!! ");
+    DMLOG (TRACE, "The flag \"m_bRequestsAllowed\" is set on false!");
     return false;
   }
 
