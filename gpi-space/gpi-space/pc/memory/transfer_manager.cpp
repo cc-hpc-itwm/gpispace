@@ -32,12 +32,6 @@ namespace gpi
         }
       }
 
-      transfer_manager_t::transfer_manager_t ()
-      {}
-
-      transfer_manager_t::~transfer_manager_t()
-      {}
-
       void
       transfer_manager_t::start ( const std::size_t number_of_queues
                                 , const std::size_t memcpy_pool_size

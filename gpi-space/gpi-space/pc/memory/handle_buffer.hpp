@@ -25,8 +25,6 @@ namespace gpi
           , m_used (0)
         {}
 
-        ~handle_buffer_t () {}
-
         inline void *data ()        { return m_data; }
         inline size_t size () const { return m_size; }
         inline size_t used () const { return m_used; }

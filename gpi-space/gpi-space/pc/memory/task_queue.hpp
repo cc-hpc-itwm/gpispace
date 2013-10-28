@@ -21,7 +21,6 @@ namespace gpi
         typedef std::deque<task_ptr> container_type;
         typedef container_type::size_type size_type;
 
-        task_queue_t();
         ~task_queue_t();
 
         void     push(task_ptr);
