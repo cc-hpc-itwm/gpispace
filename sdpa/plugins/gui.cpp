@@ -12,9 +12,8 @@
 
 #include "observable.hpp"
 #include "observer.hpp"
-#include "task_event.hpp"
 
-typedef fhg::thread::channel<task_event_t> event_channel_t;
+typedef fhg::thread::channel<sdpa::daemon::NotificationEvent> event_channel_t;
 
 class GuiObserverPlugin : FHG_PLUGIN
                         , public observe::Observer
@@ -95,7 +94,7 @@ public:
   {
     try
     {
-      m_events << boost::any_cast<task_event_t>(evt);
+      m_events << boost::any_cast<sdpa::daemon::NotificationEvent>(evt);
     }
     catch (boost::bad_any_cast const &ex)
     {
@@ -110,29 +109,18 @@ private:
   {
     for (;;)
     {
-      task_event_t t = m_events.get ();
+      sdpa::daemon::NotificationEvent t = m_events.get ();
 
       DMLOG ( TRACE
             , "*** TASK EVENT:"
-            << " id := " << t.id
-            << " name := " << t.name
-            << " state := " << t.state
+            << " id := " << t.activity_id()
+            << " name := " << t.activity_name()
+            << " state := " << t.activity_state()
             );
 
       try
       {
-        m_destination->append
-          ( FHGLOG_MKEVENT_HERE ( INFO
-                                , sdpa::daemon::NotificationEvent
-                                  ( t.worker_list
-                                  , t.id
-                                  , t.name
-                                  , t.state
-                                  , t.activity
-                                  , t.meta
-                                  ).encoded()
-                                )
-          );
+        m_destination->append (FHGLOG_MKEVENT_HERE (INFO, t.encoded()));
       }
       catch (std::exception const & ex)
       {

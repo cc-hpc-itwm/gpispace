@@ -2,9 +2,10 @@
 #include "wfe_task.hpp"
 #include "wfe_context.hpp"
 #include "observable.hpp"
-#include "task_event.hpp"
 #include "drts_info_impl.hpp"
 #include <errno.h>
+
+#include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <list>
 
@@ -198,8 +199,8 @@ public:
                  , sdpa::daemon::NotificationEvent::state_t state
                  )
   {
-    emit ( task_event_t
-           (task.id, task.name, state, task.result, task.meta, task.workers)
+    emit ( sdpa::daemon::NotificationEvent
+           (task.workers, task.id, task.name, state, task.result, task.meta)
          );
   }
 
