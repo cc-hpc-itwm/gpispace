@@ -86,10 +86,14 @@ namespace gspc
     }
     int api_t::pop (key_type const &key, value_type &val)
     {
+      return this->pop (key, val, -1);
+    }
+    int api_t::pop (key_type const &key, value_type &val, int timeout)
+    {
       if (not is_key_valid (key))
         return -EKEYREJECTED;
 
-      return this->do_pop (key, val);
+      return this->do_pop (key, val, timeout);
     }
     int api_t::try_pop (key_type const &key, value_type &val)
     {

@@ -38,7 +38,7 @@ namespace gspc
       int do_set_ttl_regex (std::string const &regex, int ttl);
 
       int do_push (key_type const &key, value_type const &val);
-      int do_pop (key_type const &, value_type &val);
+      int do_pop (key_type const &, value_type &val, int timeout);
       int do_try_pop (key_type const &, value_type &val);
 
       int do_counter_reset (key_type const &key, int val);
@@ -63,6 +63,7 @@ namespace gspc
         value_type const & get_value () const;
 
         int pop (value_type &);
+        int pop (value_type &, int timeout);
         int try_pop (value_type &);
         int push (value_type const &);
       private:

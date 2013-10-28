@@ -21,6 +21,7 @@ namespace gspc
     service_t::service_t ()
       : m_kvs (gspc::kvs::create ("inproc://"))
     {
+      m_kvs->onChange.connect (boost::bind (&service_t::on_change, this, _1));
       setup_rpc_handler ();
     }
 
@@ -29,6 +30,9 @@ namespace gspc
     {
       setup_rpc_handler ();
     }
+
+    service_t::~service_t ()
+    {}
 
     void service_t::setup_rpc_handler ()
     {
@@ -191,12 +195,25 @@ namespace gspc
     boost::optional<gspc::net::frame>
     service_t::rpc_pop (gspc::net::frame const &rqst)
     {
-      // must be handled specially:
-      //    put rqst & user in 'waiting for change on key'
-      //    try_pop -> if ok return
-      //    otherwise return nothing
-
-      return rpc_try_pop (rqst);
+      api_t::value_type val;
+      int rc = m_kvs->try_pop (rqst.get_body (), val);
+      if (rc == -EAGAIN)
+      {
+        // must be handled specially:
+        //    put rqst & user in 'waiting for change on key'
+        //    try_pop -> if ok return
+        //    otherwise return nothing
+        return boost::none;
+      }
+      else
+      {
+        gspc::net::frame rply = encode_error_code (rqst, rc);
+        if (0 == rc)
+        {
+          gspc::net::stream (rply) << pnet::type::value::show (val) << std::endl;
+        }
+        return rply;
+      }
     }
 
     boost::optional<gspc::net::frame>
@@ -316,8 +333,6 @@ namespace gspc
     }
 
     void service_t::on_change (api_t::key_type const &key)
-    {
-      std::cerr << "key changed: " << key << std::endl;
-    }
+    {}
   }
 }

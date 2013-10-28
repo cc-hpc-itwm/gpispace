@@ -41,6 +41,7 @@ namespace gspc
       int push (key_type const &key, const char *val);
       int push (key_type const &key, value_type const &val);
       int pop (key_type const &, value_type &val);
+      int pop (key_type const &, value_type &val, int timeout_in_ms);
       int try_pop (key_type const &, value_type &val);
 
       int counter_reset  (key_type const &key, int  val);
@@ -63,7 +64,7 @@ namespace gspc
       virtual int do_set_ttl_regex (std::string const &regex, int ttl) = 0;
 
       virtual int do_push (key_type const &key, value_type const &val) = 0;
-      virtual int do_pop (key_type const &, value_type &val) = 0;
+      virtual int do_pop (key_type const &, value_type &val, int timeout_in_ms) = 0;
       virtual int do_try_pop (key_type const &, value_type &val) = 0;
 
       virtual int do_counter_reset  (key_type const &key, int  val) = 0;

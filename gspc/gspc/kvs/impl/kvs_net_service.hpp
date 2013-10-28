@@ -1,7 +1,10 @@
 #ifndef GSPC_KVS_SERVICE_HPP
 #define GSPC_KVS_SERVICE_HPP
 
+#include <map>
+
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <gspc/kvs/api.hpp>
 #include <gspc/net/service/handler.hpp>
@@ -19,6 +22,7 @@ namespace gspc
       }
 
       service_t ();
+      virtual ~service_t ();
 
       explicit
       service_t (std::string const &url);
@@ -28,8 +32,15 @@ namespace gspc
                        , gspc::net::user_ptr user
                        );
     private:
+      struct waiting_to_pop_t
+      {
+        gspc::kvs::api_t::key_type key;
+        gspc::net::frame request;
+      };
+
       typedef boost::function< boost::optional<gspc::net::frame> (gspc::net::frame const &)> rpc_t;
       typedef std::map<std::string, rpc_t> rpc_table_t;
+      typedef std::map<gspc::kvs::api_t::key_type, waiting_to_pop_t> waiting_to_pop_map_t;
 
       void setup_rpc_handler ();
 
@@ -82,6 +93,9 @@ namespace gspc
 
       boost::shared_ptr<api_t> m_kvs;
       rpc_table_t m_rpc_table;
+
+      mutable boost::shared_mutex m_waiting_to_pop_mtx;
+      waiting_to_pop_map_t m_waiting_to_pop;
     };
   }
 }

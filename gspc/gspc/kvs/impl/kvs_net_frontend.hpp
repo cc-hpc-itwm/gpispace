@@ -20,6 +20,7 @@ namespace gspc
       int request ( std::string const &rpc
                   , std::string const &rqst
                   , std::string &rply
+                  , size_t timeout = (size_t)0
                   ) const;
 
       int do_put (std::list<std::pair<key_type, value_type> > const &);
@@ -36,7 +37,7 @@ namespace gspc
       int do_set_ttl_regex (std::string const &regex, int ttl);
 
       int do_push (key_type const &key, value_type const &val);
-      int do_pop (key_type const &, value_type &val);
+      int do_pop (key_type const &, value_type &val, int timeout);
       int do_try_pop (key_type const &, value_type &val);
 
       int do_counter_reset (key_type const &key, int val);

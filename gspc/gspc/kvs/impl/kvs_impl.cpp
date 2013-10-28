@@ -221,6 +221,42 @@ namespace gspc
       }
     }
 
+    int kvs_t::entry_t::pop (value_type &val, int timeout)
+    {
+      if (-1 == timeout)
+        return this->pop (val);
+
+      boost::system_time const deadline =
+        boost::get_system_time() + boost::posix_time::milliseconds (timeout);
+
+      boost::unique_lock<boost::recursive_mutex> lock (mutex);
+
+      int rc = is_value_available ();
+
+      while (rc == -EAGAIN)
+      {
+        if (not value_changed.timed_wait (lock, deadline))
+        {
+          rc = is_value_available ();
+          if (rc == -EAGAIN)
+            return -ETIME;
+        }
+        else
+        {
+          rc = is_value_available ();
+        }
+      }
+
+      if (rc == 0)
+      {
+        return try_pop (val);
+      }
+      else
+      {
+        return rc;
+      }
+    }
+
     int kvs_t::entry_t::try_pop (value_type &val)
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex);
@@ -349,7 +385,7 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::do_pop (key_type const &key, value_type &val)
+    int kvs_t::do_pop (key_type const &key, value_type &val, int timeout)
     {
       purge_expired_keys ();
 
@@ -359,13 +395,19 @@ namespace gspc
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
         {
-          return -ENOKEY;
+          std::list<value_type> alist;
+
+          it = m_values.insert
+            (std::make_pair ( key
+                            , entry_ptr_t (new entry_t (alist))
+                            )
+            ).first;
         }
 
         entry_ptr_t e = it->second;
         lock.unlock ();
 
-        int rc = e->pop (val);
+        int rc = e->pop (val, timeout);
         if (rc != 0)
           return rc;
       }
@@ -385,7 +427,7 @@ namespace gspc
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
         {
-          return -ENOKEY;
+          return -EAGAIN;
         }
 
         int rc = it->second->try_pop (val);

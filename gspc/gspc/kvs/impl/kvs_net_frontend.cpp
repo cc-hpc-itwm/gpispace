@@ -57,6 +57,7 @@ namespace gspc
     int kvs_net_frontend_t::request ( std::string const &rpc
                                     , std::string const &rqst_body
                                     , std::string &rply_body
+                                    , size_t timeout
                                     ) const
     {
       using namespace gspc::net;
@@ -68,7 +69,19 @@ namespace gspc
       rqst.set_header ("destination", KVS_SERVICE + "/" + rpc);
       rqst.set_body (rqst_body);
 
-      rc = m_client->request (rqst, rply);
+      if ((size_t)-1 == timeout)
+      {
+        rc = m_client->request (rqst, rply, boost::posix_time::pos_infin);
+      }
+      else if (0 < timeout)
+      {
+        rc = m_client->request (rqst, rply, boost::posix_time::milliseconds (timeout));
+      }
+      else
+      {
+        rc = m_client->request (rqst, rply);
+      }
+
       if (rc != 0)
         return rc;
 
@@ -236,10 +249,10 @@ namespace gspc
       return fhg::util::read<int> (rply);
     }
 
-    int kvs_net_frontend_t::do_pop (key_type const &key, value_type &val)
+    int kvs_net_frontend_t::do_pop (key_type const &key, value_type &val, int timeout)
     {
       std::string rply;
-      int rc = request ("pop", key, rply);
+      int rc = request ("pop", key, rply, timeout);
 
       if (rc != 0)
         return rc;
