@@ -67,20 +67,6 @@ namespace gpi
           , m_hdl (&h)
         {}
 
-        connection_t (const connection_t & other)
-          : m_sig (other.m_sig)
-          , m_id (other.m_id)
-          , m_hdl (other.m_hdl)
-        {}
-
-        connection_t & operator= (const connection_t & other)
-        {
-          m_sig = other.m_sig;
-          m_id = other.m_id;
-          m_hdl =other.m_hdl;
-          return *this;
-        }
-
         void disconnect ()
         {
           if (m_hdl)
