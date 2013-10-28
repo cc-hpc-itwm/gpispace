@@ -151,6 +151,7 @@ private:
       , e.name
       , e.state
       , e.activity
+      , e.meta
       ).encoded();
   }
 

@@ -3,6 +3,8 @@
 #ifndef SDPA_DAEMON_NOTIFICATION_EVENT_HPP
 #define SDPA_DAEMON_NOTIFICATION_EVENT_HPP
 
+#include <plugins/wfe.hpp>
+
 #include <boost/serialization/utility.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -53,6 +55,7 @@ namespace sdpa
         , const std::string &activity_name
         , const state_t &activity_state
         , const boost::optional<std::string>& activity_encoded = boost::none
+        , const wfe::meta_data_t& meta_data = wfe::meta_data_t()
         )
           : m_component (source)
           , a_id_(activity_id)
@@ -61,6 +64,7 @@ namespace sdpa
                     : activity_name
                     )
           , a_state_(activity_state)
+          , _meta_data (meta_data)
       {}
 
       NotificationEvent (const std::string encoded)
@@ -71,6 +75,7 @@ namespace sdpa
         archive & a_id_;
         archive & a_name_;
         archive & a_state_;
+        archive & _meta_data;
       }
       std::string encoded() const
       {
@@ -80,6 +85,7 @@ namespace sdpa
         archive & a_id_;
         archive & a_name_;
         archive & a_state_;
+        archive & _meta_data;
         return stream.str();
       }
 
@@ -87,12 +93,14 @@ namespace sdpa
       const std::string &activity_id() const   { return a_id_; }
       const std::string &activity_name() const { return a_name_; }
       const state_t &activity_state() const      { return a_state_; }
+      const wfe::meta_data_t& meta_data() const { return _meta_data; }
 
     private:
       std::string m_component;
       std::string a_id_;
       std::string a_name_;
       state_t     a_state_;
+      wfe::meta_data_t _meta_data;
     };
   }
 }
