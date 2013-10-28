@@ -47,8 +47,8 @@ namespace pnet
           signature_type
             operator() (const ::expr::parse::node::binary_t& b) const
           {
-            signature_type l (boost::apply_visitor (*this, b.l));
-            signature_type r (boost::apply_visitor (*this, b.r));
+            signature_type const l (boost::apply_visitor (*this, b.l));
+            signature_type const r (boost::apply_visitor (*this, b.r));
 
             switch (b.token)
             {
@@ -72,10 +72,9 @@ namespace pnet
 
             case ::expr::token::_bitset_insert:
             case ::expr::token::_bitset_delete:
-            case ::expr::token::_bitset_is_element:
-              if (not (l == signature_type (std::string ("bitset"))
+              if (not ( l == signature_type (std::string ("bitset"))
                       and
-                      r == signature_type (std::string ("long"))
+                        r == signature_type (std::string ("long"))
                       )
                  )
               {
@@ -87,7 +86,27 @@ namespace pnet
                     ).str()
                   );
               }
-              break;
+
+              return std::string ("bitset");
+
+            case ::expr::token::_bitset_is_element:
+              if (not ( l == signature_type (std::string ("bitset"))
+                      and
+                        r == signature_type (std::string ("long"))
+                      )
+                 )
+              {
+                throw pnet::exception::type_error
+                  ( ( boost::format ("%1% for types '%2%' and '%3%'")
+                    % ::expr::token::show (b.token)
+                    % pnet::type::signature::show (l)
+                    % pnet::type::signature::show (r)
+                    ).str()
+                  );
+              }
+
+              return std::string ("bool");
+
             default:
               if (not (l == r))
               {
