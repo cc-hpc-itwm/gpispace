@@ -50,14 +50,14 @@ namespace sdpa
       };
 
       NotificationEvent
-        ( const std::string &source
+        ( const std::list<std::string>& sources
         , const std::string &activity_id
         , const std::string &activity_name
         , const state_t &activity_state
         , const boost::optional<std::string>& activity_encoded = boost::none
         , const wfe::meta_data_t& meta_data = wfe::meta_data_t()
         )
-          : m_component (source)
+          : _components (sources)
           , a_id_(activity_id)
           , a_name_ ( activity_encoded
                     ? nice_name (*activity_encoded).get_value_or (activity_name)
@@ -66,12 +66,32 @@ namespace sdpa
           , a_state_(activity_state)
           , _meta_data (meta_data)
       {}
+      //! \todo C++11 delegating ctor or eliminate
+      NotificationEvent
+        ( const std::string& source
+        , const std::string &activity_id
+        , const std::string &activity_name
+        , const state_t &activity_state
+        , const boost::optional<std::string>& activity_encoded = boost::none
+        , const wfe::meta_data_t& meta_data = wfe::meta_data_t()
+        )
+          : _components()
+          , a_id_(activity_id)
+          , a_name_ ( activity_encoded
+                    ? nice_name (*activity_encoded).get_value_or (activity_name)
+                    : activity_name
+                    )
+          , a_state_(activity_state)
+          , _meta_data (meta_data)
+      {
+        _components.push_back (source);
+      }
 
       NotificationEvent (const std::string encoded)
       {
         std::istringstream stream (encoded);
         boost::archive::text_iarchive archive (stream);
-        archive & m_component;
+        archive & _components;
         archive & a_id_;
         archive & a_name_;
         archive & a_state_;
@@ -81,7 +101,7 @@ namespace sdpa
       {
         std::ostringstream stream;
         boost::archive::text_oarchive archive (stream);
-        archive & m_component;
+        archive & _components;
         archive & a_id_;
         archive & a_name_;
         archive & a_state_;
@@ -89,14 +109,14 @@ namespace sdpa
         return stream.str();
       }
 
-      const std::string &component() const { return m_component; }
+      const std::list<std::string>& components() const { return _components; }
       const std::string &activity_id() const   { return a_id_; }
       const std::string &activity_name() const { return a_name_; }
       const state_t &activity_state() const      { return a_state_; }
       const wfe::meta_data_t& meta_data() const { return _meta_data; }
 
     private:
-      std::string m_component;
+      std::list<std::string> _components;
       std::string a_id_;
       std::string a_name_;
       state_t     a_state_;
