@@ -73,9 +73,6 @@ namespace seda { namespace comm {
 		return *this;
 	  }
 
-	  ~msg_info()
-	  { }
-
 	  message_id_type msg_id;			//! the corresponding message id
 	  message_type msg;				//! the message that must be acknowledged
 	  size_type retry_counter;		//! how often should the message be resent
