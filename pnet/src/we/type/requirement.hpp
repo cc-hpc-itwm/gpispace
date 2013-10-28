@@ -25,8 +25,6 @@ namespace we
         , mandatory_(_mandatory)
       {}
 
-      ~requirement_t () {}
-
       bool is_mandatory (void) const
       {
         return mandatory_;
