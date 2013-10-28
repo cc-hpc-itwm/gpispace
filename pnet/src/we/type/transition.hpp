@@ -313,8 +313,6 @@ namespace we { namespace type {
         return _requirements;
       }
 
-      ~transition_t () { }
-
       void connect_outer_to_inner ( const petri_net::place_id_type& pid
                                   , const petri_net::port_id_type& port
                                   , const we::type::property::type & prop
