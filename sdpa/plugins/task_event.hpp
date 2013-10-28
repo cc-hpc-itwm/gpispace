@@ -6,22 +6,16 @@
 #include <list>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <sdpa/daemon/NotificationEvent.hpp>
+
 struct task_event_t
 {
   typedef boost::posix_time::ptime time_type;
   typedef std::map<std::string, std::string> meta_data_t;
 
-  enum state_t
-    {
-      DEQUEUED
-    , FINISHED
-    , CANCELED
-    , FAILED
-    };
-
   task_event_t ( std::string const & _id
                , std::string const & _name
-               , const state_t _state
+               , const sdpa::daemon::NotificationEvent::state_t _state
                , std::string const & _activity
                , meta_data_t const & _meta
                , std::list<std::string> const& _worker_list
@@ -37,7 +31,7 @@ struct task_event_t
 
   std::string id;
   std::string name;
-  state_t state;
+  sdpa::daemon::NotificationEvent::state_t state;
 
   std::string activity;
   meta_data_t meta;

@@ -261,7 +261,7 @@ public:
 
         emit(task_event_t( job_id
                          , task.name
-                         , task_event_t::FINISHED
+                         , sdpa::daemon::NotificationEvent::STATE_FINISHED
                          , task.result
                          , task.meta
                          , task.workers
@@ -277,7 +277,7 @@ public:
 
         emit(task_event_t( job_id
                          , task.name
-                         , task_event_t::CANCELED
+                         , sdpa::daemon::NotificationEvent::STATE_CANCELLED
                          , task.result
                          , task.meta
                          , task.workers
@@ -293,7 +293,7 @@ public:
 
         emit(task_event_t( job_id
                          , task.name
-                         , task_event_t::FAILED
+                         , sdpa::daemon::NotificationEvent::STATE_FAILED
                          , task.result
                          , task.meta
                          , task.workers
@@ -310,7 +310,7 @@ public:
 
       emit(task_event_t( job_id
                        , "n/a"
-                       , task_event_t::FAILED
+                       , sdpa::daemon::NotificationEvent::STATE_FAILED
                        , task.result
                        , task.meta
                        , task.workers
@@ -446,7 +446,7 @@ private:
 
       emit(task_event_t( task->id
                        , task->name
-                       , task_event_t::DEQUEUED
+                       , sdpa::daemon::NotificationEvent::STATE_STARTED
                        , task->activity.to_string()
                        , task->meta
                        , task->workers
