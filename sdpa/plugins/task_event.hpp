@@ -4,13 +4,11 @@
 #include <map>
 #include <string>
 #include <list>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 struct task_event_t
 {
-  typedef boost::posix_time::ptime time_type;
   typedef std::map<std::string, std::string> meta_data_t;
 
   task_event_t ( std::string const & _id
@@ -26,7 +24,6 @@ struct task_event_t
     , activity(_activity)
     , meta(_meta)
     , worker_list (_worker_list)
-    , tstamp (boost::posix_time::microsec_clock::universal_time())
   {}
 
   std::string id;
@@ -36,8 +33,6 @@ struct task_event_t
   std::string activity;
   meta_data_t meta;
   std::list<std::string> worker_list;
-
-  time_type tstamp;
 };
 
 #endif

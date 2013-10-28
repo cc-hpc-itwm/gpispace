@@ -117,7 +117,6 @@ private:
             << " id := " << t.id
             << " name := " << t.name
             << " state := " << t.state
-            << " time := " << t.tstamp
             );
 
       try
