@@ -23,8 +23,6 @@ namespace fhg
       public:
         ComboBoxItemDelegate(const QStringList& types, QObject *parent = 0);
 
-        virtual ~ComboBoxItemDelegate() {};
-
         virtual QWidget* createEditor ( QWidget *parent
                                       , const QStyleOptionViewItem &option
                                       , const QModelIndex &index
