@@ -50,29 +50,6 @@ namespace seda { namespace comm {
 	  {
 	  }
 
-	  msg_info(const msg_info &other)
-		: msg_id(other.msg_id)
-		, msg(other.msg)
-		, retry_counter(other.retry_counter)
-		, tstamp_of_last_send(other.tstamp_of_last_send)
-		, timeout(other.timeout)
-		, destination(other.destination)
-	  { }
-
-	  msg_info &operator=(const msg_info &rhs)
-	  {
-		if (this != &rhs)
-		{
-		  msg_id = rhs.msg_id;
-		  msg = rhs.msg;
-		  retry_counter = rhs.retry_counter;
-		  tstamp_of_last_send = rhs.tstamp_of_last_send;
-		  timeout = rhs.timeout;
-		  destination = rhs.destination;
-		}
-		return *this;
-	  }
-
 	  message_id_type msg_id;			//! the corresponding message id
 	  message_type msg;				//! the message that must be acknowledged
 	  size_type retry_counter;		//! how often should the message be resent
