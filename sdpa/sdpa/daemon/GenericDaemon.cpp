@@ -809,8 +809,9 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       pJob->setType(Job::MASTER);
 
       {
+        std::list<std::string> workers; workers.push_back (name());
         const sdpa::daemon::NotificationEvent evt
-          ( name ()
+          ( workers
           , pJob->id().str()
           , "unknown"
           , NotificationEvent::STATE_STARTED

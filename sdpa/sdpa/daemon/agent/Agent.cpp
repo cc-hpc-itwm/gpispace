@@ -195,8 +195,9 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
     }
 
     {
+      std::list<std::string> workers; workers.push_back (name());
       const sdpa::daemon::NotificationEvent evt
-        ( name ()
+        ( workers
         , pJob->id().str()
         , "unknown"
         , NotificationEvent::STATE_FINISHED
@@ -493,8 +494,9 @@ bool Agent::failed( const id_type& wfid
       sendEventToMaster(pEvtJobFailed);
 
     {
+      std::list<std::string> workers; workers.push_back (name());
       const sdpa::daemon::NotificationEvent evt
-        ( name ()
+        ( workers
         , pJob->id().str()
         , "unknown"
         , NotificationEvent::STATE_FINISHED

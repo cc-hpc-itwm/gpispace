@@ -17,15 +17,17 @@ struct activity
 {
   activity (const std::string& worker)
     : _id (++id_counter)
-    , _worker (worker)
+    , _workers()
     , _state (NotificationEvent::STATE_STARTED)
-  { }
+  {
+    _workers.push_back (worker);
+  }
 
   void send_out_notification ( NotificationService* service_a
                              , NotificationService* service_b
                              ) const
   {
-    const NotificationEvent event ( _worker
+    const NotificationEvent event ( _workers
                                   , (boost::format ("%1%") % _id).str()
                                   , (boost::format ("activity-%1%") % _id).str()
                                   , _state
@@ -58,7 +60,7 @@ struct activity
   }
 
   uint64_t _id;
-  std::string _worker;
+  std::list<std::string> _workers;
   sdpa::daemon::NotificationEvent::state_t _state;
 };
 

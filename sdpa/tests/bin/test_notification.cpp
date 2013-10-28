@@ -28,18 +28,20 @@ class TestObservable : public sdpa::daemon::Observable
 {
   public:
   TestObservable ()
-    : m_name ("test-observable")
-  {}
+    : m_names()
+  {
+    m_names.push_back ("test-observable");
+  }
 
     virtual ~TestObservable() {}
 
     void activityStateUpdate(const std::string &id, const std::string &name, NotificationEvent::state_t s)
     {
-      notifyObservers(NotificationEvent(m_name, id, name, s));
+      notifyObservers(NotificationEvent(m_names, id, name, s));
     }
 
 private:
-  std::string m_name;
+  std::list<std::string> m_names;
 };
 
 int main(int ac, char **av)
