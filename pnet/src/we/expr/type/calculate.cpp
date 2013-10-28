@@ -16,49 +16,47 @@ namespace pnet
   {
     namespace type
     {
+      using pnet::type::signature::signature_type;
+
       namespace
       {
-        class visitor_calculate
-          : public boost::static_visitor<pnet::type::signature::signature_type>
+        class visitor_calculate : public boost::static_visitor<signature_type>
         {
         public:
           visitor_calculate
-          (const pnet::type::signature::resolver_type& resolve)
-            : _resolve (resolve)
+            (const pnet::type::signature::resolver_type& resolve)
+              : _resolve (resolve)
           {}
 
-          pnet::type::signature::signature_type
-          operator() (const pnet::type::value::value_type& v) const
+          signature_type
+            operator() (const pnet::type::value::value_type& v) const
           {
             return pnet::signature_of (v);
           }
-          pnet::type::signature::signature_type
-          operator() (const std::list<std::string>& path) const
+          signature_type
+            operator() (const std::list<std::string>& path) const
           {
             return std::string ("void");
           }
-          pnet::type::signature::signature_type
-          operator() (const ::expr::parse::node::unary_t& u) const
+          signature_type
+            operator() (const ::expr::parse::node::unary_t& u) const
           {
-            pnet::type::signature::signature_type s0
-              (boost::apply_visitor (*this, u.child));
+            signature_type s0 (boost::apply_visitor (*this, u.child));
 
             return std::string ("void");
           }
-          pnet::type::signature::signature_type
-          operator() (const ::expr::parse::node::binary_t& b) const
+          signature_type
+            operator() (const ::expr::parse::node::binary_t& b) const
           {
-            pnet::type::signature::signature_type l
-              (boost::apply_visitor (*this, b.l));
-            pnet::type::signature::signature_type r
-              (boost::apply_visitor (*this, b.r));
+            signature_type l (boost::apply_visitor (*this, b.l));
+            signature_type r (boost::apply_visitor (*this, b.r));
 
             switch (b.token)
             {
             case ::expr::token::_substr:
-              if (not (l == pnet::type::signature::signature_type (std::string ("std::string"))
+              if (not (l == signature_type (std::string ("std::string"))
                       and
-                       r == pnet::type::signature::signature_type (std::string ("long"))
+                      r == signature_type (std::string ("long"))
                       )
                  )
               {
@@ -74,9 +72,9 @@ namespace pnet
             case ::expr::token::_bitset_insert:
             case ::expr::token::_bitset_delete:
             case ::expr::token::_bitset_is_element:
-              if (not (l == pnet::type::signature::signature_type (std::string ("bitset"))
+              if (not (l == signature_type (std::string ("bitset"))
                       and
-                       r == pnet::type::signature::signature_type (std::string ("long"))
+                      r == signature_type (std::string ("long"))
                       )
                  )
               {
@@ -105,8 +103,8 @@ namespace pnet
 
             return std::string ("void");
           }
-          pnet::type::signature::signature_type
-          operator() (const ::expr::parse::node::ternary_t& t) const
+          signature_type
+            operator() (const ::expr::parse::node::ternary_t& t) const
           {
             return std::string ("void");
           }
@@ -116,10 +114,10 @@ namespace pnet
         };
       }
 
-      pnet::type::signature::signature_type
-      calculate ( const pnet::type::signature::resolver_type& resolve
-                , const ::expr::parse::node::type& nd
-                )
+      signature_type
+        calculate ( const pnet::type::signature::resolver_type& resolve
+                  , const ::expr::parse::node::type& nd
+                  )
       {
         return boost::apply_visitor (visitor_calculate (resolve), nd);
       }
