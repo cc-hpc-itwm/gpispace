@@ -9,17 +9,6 @@
 
 namespace po = boost::program_options;
 
-struct F
-{
-  F()
-  {}
-
-  ~F ()
-  {}
-};
-
-BOOST_FIXTURE_TEST_SUITE( suite, F )
-
 BOOST_AUTO_TEST_CASE ( test_string_vector_pos_args )
 {
   typedef std::vector<std::string> str_list_t;
@@ -72,5 +61,3 @@ BOOST_AUTO_TEST_CASE ( test_string_vector_pos_args )
   }
   BOOST_REQUIRE_EQUAL (args.size (), 4u);
 }
-
-BOOST_AUTO_TEST_SUITE_END()
