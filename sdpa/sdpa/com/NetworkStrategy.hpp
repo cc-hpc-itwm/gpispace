@@ -24,7 +24,6 @@ namespace sdpa
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
                       );
-      virtual ~NetworkStrategy ();
 
       void perform (seda::IEvent::Ptr const & to_send);
 

@@ -36,8 +36,6 @@ namespace
     , uuid_(uuid)
     {}
 
-    ~Capability () {}
-
     std::string name() const { return name_;}
     void setName(const std::string& name) { name_ = name;}
 
