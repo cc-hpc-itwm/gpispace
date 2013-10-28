@@ -22,10 +22,6 @@ namespace seda
             : value (v)
           { }
 
-          option (derived_type const & other)
-            : value (other.value)
-          { }
-
           operator T () const
           {
             return value;
@@ -41,12 +37,6 @@ namespace seda
             value = v;
           }
 
-          // doesn't work as I expected ;-(
-          // derived_type & operator=(T rhs)
-          // {
-          //    this->value = rhs;
-          //    return static_cast<derived_type&>(*this);
-          // }
         protected:
           T value;
         };
