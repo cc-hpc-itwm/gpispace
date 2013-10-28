@@ -27,13 +27,14 @@
 #include <boost/call_traits.hpp>
 #include <boost/progress.hpp>
 #include <boost/bind.hpp>
+#include <boost/utility.hpp>
 
 namespace we {
   namespace mgmt {
     namespace detail {
 
       template <typename T, unsigned long long CAPACITY>
-      class set
+      class set : boost::noncopyable
       {
       public:
         typedef set<T, CAPACITY> this_type;
@@ -92,9 +93,6 @@ namespace we {
         }
 
       private:
-	set(set const &);
-	set & operator=(set const &);
-
 	inline bool is_not_empty() const { return container_.size() > 0; }
 	inline bool is_not_full() const { return container_.size() < CAPACITY; }
 
@@ -105,7 +103,7 @@ namespace we {
       };
 
       template <typename T>
-      class set<T, 0>
+      class set<T, 0> : boost::noncopyable
       {
       public:
         typedef set<T, 0> this_type;
@@ -157,9 +155,6 @@ namespace we {
         }
 
       private:
-	set(set const &);
-	set & operator=(set const &);
-
 	inline bool is_not_empty() const { return container_.size() > 0; }
 	inline bool is_not_full() const { return true; }
 
