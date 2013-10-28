@@ -22,14 +22,6 @@ using namespace seda::comm::tests;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( UDPConnectionTest );
 
-UDPConnectionTest::UDPConnectionTest()
-{
-}
-
-UDPConnectionTest::~UDPConnectionTest()
-{
-}
-
 void
 UDPConnectionTest::setUp() {
 }

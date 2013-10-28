@@ -13,9 +13,6 @@ AccumulateStrategyTest::AccumulateStrategyTest()
   _accumulate = seda::AccumulateStrategy::Ptr(new seda::AccumulateStrategy(discard));
   }
 
-AccumulateStrategyTest::~AccumulateStrategyTest() {
-}
-
 void AccumulateStrategyTest::setUp() {
 }
 

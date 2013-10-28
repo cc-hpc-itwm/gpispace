@@ -20,7 +20,6 @@ namespace seda {
 
       public:
         AccumulateStrategyTest ();
-        virtual ~AccumulateStrategyTest();
         void setUp();
         void tearDown();
 
