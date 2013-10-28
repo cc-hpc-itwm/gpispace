@@ -226,15 +226,6 @@ public:
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
 
-      emit ( task_event_t ( job_id
-                          , task.name
-                          , task_event_t::ENQUEUED
-                          , job_description
-                          , task.meta
-                          , task.workers
-                          )
-           );
-
       task.enqueue_time = boost::posix_time::microsec_clock::universal_time();
 
       m_tasks.put(&task);

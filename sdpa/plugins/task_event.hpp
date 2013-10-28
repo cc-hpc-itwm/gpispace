@@ -13,8 +13,7 @@ struct task_event_t
 
   enum state_t
     {
-      ENQUEUED
-    , DEQUEUED
+      DEQUEUED
     , FINISHED
     , CANCELED
     , FAILED
