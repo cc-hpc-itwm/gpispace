@@ -194,6 +194,16 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
+  void emit_task ( const wfe_task_t& task
+                 , sdpa::daemon::NotificationEvent::state_t state
+                 )
+  {
+    emit ( task_event_t
+           (task.id, task.name, state, task.result, task.meta, task.workers)
+         );
+  }
+
+
   int execute ( std::string const &job_id
               , std::string const &job_description
               , wfe::capabilities_t const & capabilities
@@ -211,6 +221,7 @@ public:
     task.capabilities = capabilities;
     task.meta = meta_data;
     task.workers = worker_list;
+    task.name = "n/a";
 
     {
       lock_type task_map_lock(m_mutex);
@@ -259,14 +270,7 @@ public:
         task.state = wfe_task_t::FINISHED;
         error_message = task.error_message;
 
-        emit(task_event_t( job_id
-                         , task.name
-                         , sdpa::daemon::NotificationEvent::STATE_FINISHED
-                         , task.result
-                         , task.meta
-                         , task.workers
-                         )
-            );
+        emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
       }
       else if (fhg::error::EXECUTION_CANCELLED == ec)
       {
@@ -275,14 +279,7 @@ public:
         result = task.result;
         error_message = task.error_message;
 
-        emit(task_event_t( job_id
-                         , task.name
-                         , sdpa::daemon::NotificationEvent::STATE_CANCELLED
-                         , task.result
-                         , task.meta
-                         , task.workers
-                         )
-            );
+        emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELLED);
       }
       else
       {
@@ -291,14 +288,7 @@ public:
         result = task.result;
         error_message = task.error_message;
 
-        emit(task_event_t( job_id
-                         , task.name
-                         , sdpa::daemon::NotificationEvent::STATE_FAILED
-                         , task.result
-                         , task.meta
-                         , task.workers
-                         )
-            );
+        emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
       }
     }
     catch (std::exception const & ex)
@@ -308,14 +298,7 @@ public:
       ec = fhg::error::INVALID_JOB_DESCRIPTION;
       error_message = ex.what();
 
-      emit(task_event_t( job_id
-                       , "n/a"
-                       , sdpa::daemon::NotificationEvent::STATE_FAILED
-                       , task.result
-                       , task.meta
-                       , task.workers
-                       )
-          );
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
     }
 
     {
@@ -444,14 +427,7 @@ private:
         m_current_task = task;
       }
 
-      emit(task_event_t( task->id
-                       , task->name
-                       , sdpa::daemon::NotificationEvent::STATE_STARTED
-                       , task->activity.to_string()
-                       , task->meta
-                       , task->workers
-                       )
-          );
+      emit_task (*task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
       if (task->state != wfe_task_t::PENDING)
       {
