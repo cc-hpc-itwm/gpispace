@@ -13,8 +13,6 @@
 #include "observable.hpp"
 #include "observer.hpp"
 
-typedef fhg::thread::channel<sdpa::daemon::NotificationEvent> event_channel_t;
-
 class GuiObserverPlugin : FHG_PLUGIN
                         , public observe::Observer
 {
@@ -136,7 +134,7 @@ private:
 
   fhg::log::Appender::ptr_t m_destination;
 
-  event_channel_t m_events;
+  fhg::thread::channel<sdpa::daemon::NotificationEvent> m_events;
   boost::thread *m_thread;
 };
 
