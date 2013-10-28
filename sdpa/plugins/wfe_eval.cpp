@@ -11,8 +11,6 @@
 class WfeEvalPluginImpl : FHG_PLUGIN
 {
 public:
-  virtual ~WfeEvalPluginImpl() {}
-
   FHG_PLUGIN_START()
   {
     wfe::WFE * wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");

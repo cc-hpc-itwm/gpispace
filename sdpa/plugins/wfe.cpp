@@ -90,7 +90,6 @@ class WFEImpl : FHG_PLUGIN
                             > task_list_t;
   typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
-  virtual ~WFEImpl() {}
 
   FHG_PLUGIN_START()
   {

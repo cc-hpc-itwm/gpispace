@@ -28,7 +28,6 @@ namespace drts
       };
 
     explicit Master(std::string const& name);
-    ~Master () {}
 
     inline bool is_connected () const
     {
