@@ -66,26 +66,6 @@ public:
 
     }
 
-    we_result_t(const we_result_t& res  )
-    {
-      jobId  = res.jobId;
-      status = res.status;
-      result = res.result;
-
-    }
-
-    we_result_t& operator=(const we_result_t& res  )
-    {
-      if( &res != this)
-      {
-              jobId  = res.jobId;
-              status = res.status;
-              result = res.result;
-      }
-
-      return *this;
-    }
-
     friend class EmptyWorkflowEngine;
 
     template <class Archive>
