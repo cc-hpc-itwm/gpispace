@@ -5,6 +5,7 @@
 #include <utility>
 #include <string>
 #include <we/type/value.hpp>
+#include <boost/signals2/signal.hpp>
 
 namespace gspc
 {
@@ -19,6 +20,8 @@ namespace gspc
 
       typedef std::string                   key_type;
       typedef pnet::type::value::value_type value_type;
+
+      boost::signals2::signal<void (key_type const &)> onChange;
 
       int put (key_type const &key, const char *val);
       int put (key_type const &key, value_type const &val);
