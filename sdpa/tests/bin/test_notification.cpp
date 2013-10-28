@@ -38,10 +38,6 @@ class TestObservable : public sdpa::daemon::Observable
       notifyObservers(NotificationEvent(m_name, id, name, s));
     }
 
-    void activityStarted(const std::string &id, const std::string &name)
-    {
-      notifyObservers(NotificationEvent(m_name, id, name, NotificationEvent::STATE_STARTED));
-    }
 private:
   std::string m_name;
 };
