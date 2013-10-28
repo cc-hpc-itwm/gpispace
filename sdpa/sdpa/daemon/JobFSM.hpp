@@ -206,7 +206,6 @@ namespace sdpa {
 
         void Reschedule(sdpa::daemon::IAgent*  pAgent)
         {
-          assert (ptr_comm);
           MSMRescheduleEvent ReschedEvt;
           lock_type lock(mtx_);
           process_event(ReschedEvt);
