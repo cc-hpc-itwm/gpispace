@@ -46,7 +46,6 @@ namespace fhg { namespace log {
                     , std::string const & fmt
                     , ColorMode color_mode = COLOR_AUTO
                     );
-      ~StreamAppender() {}
 
       void append(const LogEvent &evt);
       void flush (void);

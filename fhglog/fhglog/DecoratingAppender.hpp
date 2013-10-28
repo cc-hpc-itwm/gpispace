@@ -39,8 +39,6 @@ namespace fhg { namespace log {
       {
       }
 
-      virtual ~DecoratingAppender() {}
-
       virtual void append(const LogEvent &evt)
       {
         real_appender_->append(evt);

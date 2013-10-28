@@ -34,8 +34,6 @@ namespace fhg { namespace log {
         : DecoratingAppender(real_appender, "-filtered")
         , filter_(a_filter) { }
 
-      virtual ~FilteringAppender() {}
-
       virtual void append(const LogEvent &evt)
       {
         if (! (*filter_)(evt))
