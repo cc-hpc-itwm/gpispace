@@ -9,10 +9,11 @@
 
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/utility.hpp>
 
 namespace drts
 {
-  class Master
+  class Master : boost::noncopyable
   {
     typedef boost::mutex mutex_type;
     typedef boost::condition_variable condition_type;
@@ -62,10 +63,6 @@ namespace drts
     void decrease_poll_rate();
   private:
     mutable mutex_type m_stats_mutex;
-
-    // disallow copy construction
-    Master(Master const & other);
-    Master & operator=(Master const & other);
 
     std::string m_name;
     state_code m_state;
