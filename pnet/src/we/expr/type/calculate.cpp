@@ -20,6 +20,29 @@ namespace pnet
 
       namespace
       {
+        signature_type require
+          ( std::string const& sig_l
+          , std::string const& sig_r
+          , ::expr::token::type const& token
+          , signature_type const& l
+          , signature_type const& r
+          , std::string const& sig
+          )
+        {
+          if (!(l == signature_type (sig_l) && r == signature_type (sig_r)))
+          {
+            throw pnet::exception::type_error
+              ( ( boost::format ("%1% for types '%2%' and '%3%'")
+                % ::expr::token::show (token)
+                % pnet::type::signature::show (l)
+                % pnet::type::signature::show (r)
+                ).str()
+              );
+          }
+
+          return sig;
+        }
+
         class visitor_calculate : public boost::static_visitor<signature_type>
         {
         public:
@@ -53,59 +76,14 @@ namespace pnet
             switch (b.token)
             {
             case ::expr::token::_substr:
-              if (not ( l == signature_type (std::string ("string"))
-                      and
-                        r == signature_type (std::string ("long"))
-                      )
-                 )
-              {
-                throw pnet::exception::type_error
-                  ( ( boost::format ("%1% for types '%2%' and '%3%'")
-                    % ::expr::token::show (b.token)
-                    % pnet::type::signature::show (l)
-                    % pnet::type::signature::show (r)
-                    ).str()
-                  );
-              }
-
-              return std::string ("string");
+              return require ("string", "long", b.token, l, r, "string");
 
             case ::expr::token::_bitset_insert:
             case ::expr::token::_bitset_delete:
-              if (not ( l == signature_type (std::string ("bitset"))
-                      and
-                        r == signature_type (std::string ("long"))
-                      )
-                 )
-              {
-                throw pnet::exception::type_error
-                  ( ( boost::format ("%1% for types '%2%' and '%3%'")
-                    % ::expr::token::show (b.token)
-                    % pnet::type::signature::show (l)
-                    % pnet::type::signature::show (r)
-                    ).str()
-                  );
-              }
-
-              return std::string ("bitset");
+              return require ("bitset", "long", b.token, l, r, "bitset");
 
             case ::expr::token::_bitset_is_element:
-              if (not ( l == signature_type (std::string ("bitset"))
-                      and
-                        r == signature_type (std::string ("long"))
-                      )
-                 )
-              {
-                throw pnet::exception::type_error
-                  ( ( boost::format ("%1% for types '%2%' and '%3%'")
-                    % ::expr::token::show (b.token)
-                    % pnet::type::signature::show (l)
-                    % pnet::type::signature::show (r)
-                    ).str()
-                  );
-              }
-
-              return std::string ("bool");
+              return require ("bitset", "long", b.token, l, r, "bool");
 
             default:
               if (not (l == r))
