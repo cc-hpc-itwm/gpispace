@@ -16,9 +16,6 @@ struct SetupLogging
     FHGLOG_SETUP();
     BOOST_TEST_MESSAGE ("setup logging");
   }
-
-  ~SetupLogging()
-  {}
 };
 
 BOOST_GLOBAL_FIXTURE( SetupLogging );
