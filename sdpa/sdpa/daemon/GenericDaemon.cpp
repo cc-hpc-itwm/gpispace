@@ -109,9 +109,6 @@ GenericDaemon::GenericDaemon( const std::string name,
   }
 }
 
-GenericDaemon::~GenericDaemon()
-{}
-
 /**
  * Start an agent
  * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model

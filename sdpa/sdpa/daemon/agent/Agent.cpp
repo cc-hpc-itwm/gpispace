@@ -24,10 +24,6 @@
 namespace sdpa {
   namespace daemon {
 
-Agent::~Agent()
-{
-}
-
 void Agent::action_configure(const StartUpEvent &se)
 {
   GenericDaemon::action_configure (se);
