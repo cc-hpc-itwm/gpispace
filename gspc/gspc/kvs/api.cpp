@@ -99,19 +99,12 @@ namespace gspc
       return this->do_try_pop (key, val);
     }
 
-    int api_t::counter_reset     (key_type const &key, int  val)
+    int api_t::counter_reset (key_type const &key, int  val)
     {
       if (not is_key_valid (key))
         return -EKEYREJECTED;
 
       return this->do_counter_reset (key, val);
-    }
-    int api_t::counter_increment (key_type const &key, int &val, int delta)
-    {
-      if (not is_key_valid (key))
-        return -EKEYREJECTED;
-
-      return this->do_counter_change (key, val, delta < 0 ? -delta : delta);
     }
     int api_t::counter_increment (key_type const &key, int &val)
     {
@@ -120,20 +113,19 @@ namespace gspc
 
       return this->do_counter_change (key, val, 1);
     }
-
-    int api_t::counter_decrement (key_type const &key, int &val, int delta)
-    {
-      if (not is_key_valid (key))
-        return -EKEYREJECTED;
-
-      return this->do_counter_change (key, val, delta > 0 ? -delta : delta);
-    }
     int api_t::counter_decrement (key_type const &key, int &val)
     {
       if (not is_key_valid (key))
         return -EKEYREJECTED;
 
       return this->do_counter_change (key, val, -1);
+    }
+    int api_t::counter_change (key_type const &key, int &val, int delta)
+    {
+      if (not is_key_valid (key))
+        return -EKEYREJECTED;
+
+      return this->do_counter_change (key, val, delta);
     }
   }
 }

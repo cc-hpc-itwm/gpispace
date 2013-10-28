@@ -40,12 +40,9 @@ namespace gspc
       int pop (key_type const &, value_type &val);
       int try_pop (key_type const &, value_type &val);
 
-      int counter_reset     (key_type const &key, int  val);
-
-      int counter_increment (key_type const &key, int &val, int delta);
+      int counter_reset  (key_type const &key, int  val);
+      int counter_change (key_type const &key, int &val, int delta);
       int counter_increment (key_type const &key, int &val);
-
-      int counter_decrement (key_type const &key, int &val, int delta);
       int counter_decrement (key_type const &key, int &val);
     private:
       bool is_key_valid (key_type const &) const;
