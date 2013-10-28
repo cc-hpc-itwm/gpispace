@@ -271,19 +271,6 @@ namespace we { namespace type {
         , _requirements()
       { }
 
-      transition_t (const transition_t &other)
-        : name_(other.name_)
-        , data_(other.data_)
-        , internal_ (other.internal_)
-        , condition_( other.condition_.expression())
-        , outer_to_inner_(other.outer_to_inner_)
-        , inner_to_outer_(other.inner_to_outer_)
-        , ports_(other.ports_)
-        , port_id_counter_(other.port_id_counter_)
-        , prop_ (other.prop_)
-        , _requirements (other._requirements)
-      { }
-
       boost::optional<const expression_t&> expression() const;
 
       const condition::type & condition() const
@@ -324,24 +311,6 @@ namespace we { namespace type {
       requirements_t const & requirements (void) const
       {
         return _requirements;
-      }
-
-      transition_t & operator=(const transition_t & other)
-      {
-        if (this != &other)
-        {
-          name_ = other.name_;
-          internal_ = other.internal_;
-          outer_to_inner_ = other.outer_to_inner_;
-          inner_to_outer_ = other.inner_to_outer_;
-          ports_ = other.ports_;
-          data_ = other.data_;
-          port_id_counter_ = other.port_id_counter_;
-          condition_ = condition::type (other.condition_.expression());
-          prop_ = other.prop_;
-          _requirements = other._requirements;
-        }
-        return *this;
       }
 
       ~transition_t () { }
