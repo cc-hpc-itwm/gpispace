@@ -39,8 +39,6 @@ namespace sdpa { namespace events {
       : seda::StrategyDecorator(a_name + "-encode", decorated)
     {}
 
-    virtual ~EncodeStrategy() {}
-
     virtual void perform(const seda::IEvent::Ptr &e)
     {
       if (SDPAEvent * sdpa_evt = dynamic_cast<SDPAEvent*>(e.get()))
@@ -72,8 +70,6 @@ namespace sdpa { namespace events {
                 ,  const seda::Strategy::Ptr &decorated)
       : seda::StrategyDecorator(a_name + "-decode", decorated)
     {}
-
-    virtual ~DecodeStrategy() {}
 
     virtual void perform(const seda::IEvent::Ptr &e)
     {

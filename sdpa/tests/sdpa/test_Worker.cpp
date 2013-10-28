@@ -15,7 +15,6 @@ using namespace sdpa;
 struct MyFixture
 {
 	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testWorker"){}
-	~MyFixture(){}
 	 SDPA_DECLARE_LOGGER();
 
 	 typedef SynchronizedQueue<std::list<int> > queue_type;

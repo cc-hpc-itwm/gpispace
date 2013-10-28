@@ -32,7 +32,6 @@ namespace fhg { namespace log { namespace remote {
     LogServer(const fhg::log::Appender::ptr_t &appender
             , boost::asio::io_service &io_service
             , unsigned short port);
-    ~LogServer() {}
 
     void handle_receive_from(const boost::system::error_code &error
                            , size_t bytes_recv);

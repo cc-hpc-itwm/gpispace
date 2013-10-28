@@ -19,27 +19,9 @@ struct SetupLogging
     FHGLOG_SETUP();
     BOOST_TEST_MESSAGE ("setup logging");
   }
-
-  ~SetupLogging()
-  {}
 };
 
 BOOST_GLOBAL_FIXTURE( SetupLogging );
-
-struct F
-{
-  F()
-  {
-    BOOST_TEST_MESSAGE ("fixture setup");
-  }
-
-  ~F ()
-  {
-    BOOST_TEST_MESSAGE ("fixture teardown");
-  }
-};
-
-BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE ( segment_descriptor_test )
 {
@@ -91,5 +73,3 @@ BOOST_AUTO_TEST_CASE ( proto_message_test )
 {
   using namespace gpi::pc;
 }
-
-BOOST_AUTO_TEST_SUITE_END()

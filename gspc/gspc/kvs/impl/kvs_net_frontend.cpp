@@ -29,9 +29,6 @@ namespace gspc
       }
     }
 
-    kvs_net_frontend_t::~kvs_net_frontend_t ()
-    {}
-
     static void throw_if_error ( std::string const &service
                                , gspc::net::frame const &f
                                )

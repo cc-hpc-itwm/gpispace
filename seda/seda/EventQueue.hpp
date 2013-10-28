@@ -46,7 +46,6 @@ namespace seda {
                 : SEDA_INIT_LOGGER("seda.queue."+a_name),
                 _name(a_name),
                 _maxQueueSize(a_maxQueueSize) {}
-            virtual ~EventQueue() {}
 
             const std::string& name() { return _name; }
 

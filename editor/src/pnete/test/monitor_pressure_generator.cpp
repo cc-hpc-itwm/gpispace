@@ -17,15 +17,17 @@ struct activity
 {
   activity (const std::string& worker)
     : _id (++id_counter)
-    , _worker (worker)
-    , _state (NotificationEvent::STATE_CREATED)
-  { }
+    , _workers()
+    , _state (NotificationEvent::STATE_STARTED)
+  {
+    _workers.push_back (worker);
+  }
 
   void send_out_notification ( NotificationService* service_a
                              , NotificationService* service_b
                              ) const
   {
-    const NotificationEvent event ( _worker
+    const NotificationEvent event ( _workers
                                   , (boost::format ("%1%") % _id).str()
                                   , (boost::format ("activity-%1%") % _id).str()
                                   , _state
@@ -36,35 +38,29 @@ struct activity
 
   bool next_state()
   {
-    switch (_state)
+    if (_state != NotificationEvent::STATE_STARTED)
     {
-    case NotificationEvent::STATE_CREATED:
-      _state = NotificationEvent::STATE_STARTED;
-      break;
-
-    case NotificationEvent::STATE_STARTED:
-      switch (lrand48() % 3)
-      {
-      case 0:
-        _state = NotificationEvent::STATE_FINISHED;
-        break;
-      case 1:
-        _state = NotificationEvent::STATE_FAILED;
-        break;
-      case 2:
-        _state = NotificationEvent::STATE_CANCELLED;
-        break;
-      }
-      break;
-    default:
       return false;
+    }
+
+    switch (lrand48() % 3)
+    {
+    case 0:
+      _state = NotificationEvent::STATE_FINISHED;
+      break;
+    case 1:
+      _state = NotificationEvent::STATE_FAILED;
+      break;
+    case 2:
+      _state = NotificationEvent::STATE_CANCELLED;
+      break;
     }
 
     return true;
   }
 
   uint64_t _id;
-  std::string _worker;
+  std::list<std::string> _workers;
   sdpa::daemon::NotificationEvent::state_t _state;
 };
 
@@ -79,14 +75,17 @@ std::string worker_gen()
 
 int main(int ac, char **av)
 {
-  if (ac != 3)
+  if (ac < 3)
   {
-    std::cerr << av[0] << " port_a port_b\n";
+    std::cerr << av[0]
+              << " port_a port_b <worker_count=1> <notification_per_second<=1000=1>\n";
     return -1;
   }
 
   const int port_a (atoi (av[1]));
   const int port_b (atoi (av[2]));
+  const int worker_count (ac >= 4 ? atoi (av[3]) : 1);
+  const int duration (ac >= 5 ? 1000 / atoi (av[4]) : 1);
 
   NotificationService service_a
     ("service_a", (boost::format ("localhost:%1%") % port_a).str());
@@ -95,7 +94,7 @@ int main(int ac, char **av)
   service_a.open();
   service_b.open();
 
-  std::vector<std::string> worker_names (2000);
+  std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);
 
   std::map<std::string, boost::optional<activity> > workers;
@@ -103,23 +102,20 @@ int main(int ac, char **av)
   for (;;)
   {
     const std::string worker (worker_names[lrand48() % worker_names.size()]);
+
     if (!workers[worker])
     {
       workers[worker] = activity (worker);
-      workers[worker]->send_out_notification (&service_a, &service_b);
-      if (!workers[worker]->next_state())
-      {
-        workers[worker] = boost::none;
-      }
     }
 
     workers[worker]->send_out_notification (&service_a, &service_b);
+
     if (!workers[worker]->next_state())
     {
       workers[worker] = boost::none;
     }
 
-    boost::this_thread::sleep (boost::posix_time::milliseconds (2));
+    boost::this_thread::sleep (boost::posix_time::milliseconds (duration));
   }
 
   //! \note Wait for remote logger being done.

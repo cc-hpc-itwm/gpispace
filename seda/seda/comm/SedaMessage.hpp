@@ -66,26 +66,6 @@ namespace seda {
 		  , message_id_(a_message_id)
         {}
 
-        SedaMessage(const SedaMessage &other)
-          : UserEvent()
-          , from_(other.from())
-          , to_(other.to())
-          , payload_(other.payload())
-		  , message_id_(other.id())
-        {}
-
-        virtual ~SedaMessage() {}
-
-        SedaMessage &operator=(const SedaMessage &rhs) {
-          if (this != &rhs) {
-            from_ = rhs.from();
-            to_ = rhs.to();
-            payload_ = rhs.payload();
-            message_id_ = rhs.id();
-          }
-          return *this;
-        }
-
         std::string str() const;
 
         const address_type & from() const { return from_; }

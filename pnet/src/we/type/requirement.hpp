@@ -25,20 +25,6 @@ namespace we
         , mandatory_(_mandatory)
       {}
 
-      requirement_t (requirement_t const &other)
-        : value_(other.value_)
-        , mandatory_(other.mandatory_)
-      {}
-
-      requirement_t& operator=(requirement_t const & rhs)
-      {
-        this->value_ = rhs.value_;
-        this->mandatory_ = rhs.mandatory_;
-        return *this;
-      }
-
-      ~requirement_t () {}
-
       bool is_mandatory (void) const
       {
         return mandatory_;

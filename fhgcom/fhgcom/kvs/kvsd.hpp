@@ -216,18 +216,6 @@ namespace fhg
               , m_expiry (exp)
             {}
 
-            entry_t (entry_t const &other)
-              : m_value (other.m_value)
-              , m_expiry (other.m_expiry)
-            {}
-
-            entry_t & operator= (entry_t const &rhs)
-            {
-              m_value = rhs.m_value;
-              m_expiry = rhs.m_expiry;
-              return *this;
-            }
-
             bool is_expired () const
             {
               if (m_expiry > boost::posix_time::min_date_time)

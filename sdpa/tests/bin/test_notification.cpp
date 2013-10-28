@@ -28,26 +28,18 @@ class TestObservable : public sdpa::daemon::Observable
 {
   public:
   TestObservable ()
-    : m_name ("test-observable")
-  {}
-
-    virtual ~TestObservable() {}
+    : m_names()
+  {
+    m_names.push_back ("test-observable");
+  }
 
     void activityStateUpdate(const std::string &id, const std::string &name, NotificationEvent::state_t s)
     {
-      notifyObservers(NotificationEvent(m_name, id, name, s));
+      notifyObservers(NotificationEvent(m_names, id, name, s));
     }
 
-    void activityStarted(const std::string &id, const std::string &name)
-    {
-      notifyObservers(NotificationEvent(m_name, id, name, NotificationEvent::STATE_STARTED));
-    }
-    void activityCreated(const std::string &id, const std::string &name)
-    {
-      notifyObservers(NotificationEvent(m_name, id, name, NotificationEvent::STATE_CREATED));
-    }
 private:
-  std::string m_name;
+  std::list<std::string> m_names;
 };
 
 int main(int ac, char **av)
@@ -71,7 +63,6 @@ int main(int ac, char **av)
     ostr << "activity-" << i;
     const std::string aid(ostr.str());
 
-    daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_CREATED);
     daemon.activityStateUpdate(aid, "function placeholder", NotificationEvent::STATE_STARTED);
 
     int random_outcome = (int)(round(3 * drand48()));

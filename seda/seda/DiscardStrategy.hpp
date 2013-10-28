@@ -33,7 +33,6 @@ namespace seda {
             explicit
                 DiscardStrategy(const std::string &a_name = "discard")
                 : Strategy(a_name) {}
-            ~DiscardStrategy() {}
 
             void perform(const IEvent::Ptr& e) {
                 SEDA_LOG_DEBUG("discarding: " << e->str());

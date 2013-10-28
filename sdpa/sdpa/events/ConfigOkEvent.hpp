@@ -30,8 +30,6 @@ namespace sdpa { namespace events {
 
         ConfigOkEvent(const address_t& a_from="", const address_t& a_to="") : MgmtEvent(a_from, a_to) { }
 
-    	virtual ~ConfigOkEvent() { } 
-
     	std::string str() const { return "ConfigOkEvent"; }
 
         virtual void handleBy(EventHandler *handler)

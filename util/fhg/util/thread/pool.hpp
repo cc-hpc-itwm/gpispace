@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
+#include <boost/utility.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
@@ -12,7 +13,7 @@ namespace fhg
 {
   namespace thread
   {
-    class pool_t
+    class pool_t : boost::noncopyable
     {
     public:
       typedef boost::function<void (void)> work_t;
@@ -29,9 +30,6 @@ namespace fhg
     private:
       typedef boost::mutex mutex_type;
       typedef boost::unique_lock<mutex_type> unique_lock;
-
-      pool_t (const pool_t &);
-      pool_t & operator=(const pool_t &);
 
       void worker (size_t rank);
 

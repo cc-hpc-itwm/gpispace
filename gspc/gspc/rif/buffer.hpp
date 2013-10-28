@@ -15,7 +15,6 @@ namespace gspc
     public:
       explicit
       buffer_t (size_t bytes);
-      ~buffer_t ();
 
       ssize_t read  (char *dst, size_t len);
       ssize_t write (const char *src, size_t len);

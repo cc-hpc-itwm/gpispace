@@ -42,7 +42,6 @@ namespace seda {
                 : StrategyDecorator(s->name()+".accumulate", s),
         _accumulator() {}
 
-      ~AccumulateStrategy() {}
       void perform(const IEvent::Ptr&);
       std::size_t size() { return _accumulator.size(); }
       void clear() { _accumulator.clear(); }

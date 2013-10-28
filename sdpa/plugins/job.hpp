@@ -61,8 +61,6 @@ namespace drts
        , Job::Owner const &owner
        );
 
-    ~Job() {}
-
     inline state_t state () const { lock_type lck(m_mutex); return m_state; }
     state_t cmp_and_swp_state( state_t expected
                              , state_t newstate

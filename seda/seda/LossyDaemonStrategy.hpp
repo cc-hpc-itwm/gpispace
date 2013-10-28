@@ -34,7 +34,6 @@ namespace seda {
 
             explicit
             LossyDaemonStrategy(const Strategy::Ptr &s, double probability=0.1, unsigned int seed=1);
-            ~LossyDaemonStrategy() {}
 
             void set_probability (double p)
             {

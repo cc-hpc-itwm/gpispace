@@ -70,8 +70,6 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
         SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
-    virtual ~DummyWorkflowEngine() {}
-
     void connect(sdpa::daemon::GenericDaemon* pIAgent )
     {
         pIAgent_ = pIAgent;

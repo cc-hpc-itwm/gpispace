@@ -442,7 +442,12 @@ namespace fhg
           paint_description (bool distr, qreal h)
             : distribute_vertically (distr)
             , height (h)
-          {}
+          {
+            blocks[sdpa::daemon::NotificationEvent::STATE_STARTED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_FINISHED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_FAILED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_CANCELLED];
+          }
         };
 
         template<typename T> T sorted (T t) { qSort (t); return t; }
@@ -724,7 +729,6 @@ namespace fhg
 
           switch (state)
           {
-          case event::STATE_CREATED: return "created";
           case event::STATE_STARTED: return "started";
           case event::STATE_FINISHED: return "finished";
           case event::STATE_FAILED: return "failed";
@@ -746,9 +750,13 @@ namespace fhg
              && event->pos().x() <= block.rect.right()
              )
           {
+            const QString ranges ( block.subranges.size() > 20
+                                 ? QStringList (block.subranges.mid (0, 20)).join (", ") + "..."
+                                 : block.subranges.join (", ")
+                                 );
             QToolTip::showText
               ( event->globalPos()
-              , to_string (state) + ": " + block.subranges.join (", ")
+              , to_string (state) + ": " + ranges
               , view
               );
             return true;
@@ -764,36 +772,39 @@ namespace fhg
         , const QModelIndex& index
         )
       {
-        const util::qt::mvc::section_index section_index
-          (index, Qt::Horizontal);
-
-        if ( util::qt::value<execution_monitor_proxy::column_type>
-             (section_index.data (execution_monitor_proxy::column_type_role))
-           ==  execution_monitor_proxy::gantt_column
-           )
+        if (index.isValid() && event->type() == QEvent::ToolTip)
         {
-          paint_description descr
-            (prepare_gantt_row (index, option.rect, QPen()));
+          const util::qt::mvc::section_index section_index
+            (index, Qt::Horizontal);
 
-          if (descr.distribute_vertically)
+          if ( util::qt::value<execution_monitor_proxy::column_type>
+               (section_index.data (execution_monitor_proxy::column_type_role))
+             ==  execution_monitor_proxy::gantt_column
+             )
           {
-            if ( maybe_show_tooltip
-                 ( descr.blocks.keys().at
-                   ((event->pos().y() - option.rect.top()) / descr.height)
-                 , descr, event, view
+            paint_description descr
+              (prepare_gantt_row (index, option.rect, QPen()));
+
+            if (descr.distribute_vertically)
+            {
+              if ( maybe_show_tooltip
+                   ( descr.blocks.keys().at
+                     ((event->pos().y() - option.rect.top()) / descr.height)
+                   , descr, event, view
+                   )
                  )
-               )
-            {
-              return true;
-            }
-          }
-          else
-          {
-            BOOST_FOREACH (worker_model::state_type state, descr.blocks.keys())
-            {
-              if (maybe_show_tooltip (state, descr, event, view))
               {
                 return true;
+              }
+            }
+            else
+            {
+              BOOST_FOREACH (worker_model::state_type state, descr.blocks.keys())
+              {
+                if (maybe_show_tooltip (state, descr, event, view))
+                {
+                  return true;
+                }
               }
             }
           }

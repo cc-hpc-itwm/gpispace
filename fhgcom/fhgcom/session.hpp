@@ -39,10 +39,6 @@ namespace fhg
         return socket_;
       }
 
-      ~session ()
-      {
-      }
-
       boost::asio::ip::tcp::endpoint remote_endpoint () const
       {
         return socket_.remote_endpoint();

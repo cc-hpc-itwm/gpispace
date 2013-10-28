@@ -93,8 +93,6 @@ namespace sdpa {
                    , const std::string& guiUrl = ""
                    );
 
-      virtual ~GenericDaemon();
-
       SDPA_DECLARE_LOGGER();
 
       const std::string& name() const { return Strategy::name(); }
