@@ -36,28 +36,6 @@ namespace
     , uuid_(uuid)
     {}
 
-    Capability(const Capability& cpb)
-    {
-      name_  = cpb.name();
-      type_  = cpb.type();
-      depth_ = cpb.depth();
-      owner_ = cpb.owner();
-      uuid_  = cpb.uuid();
-    }
-
-    Capability& operator=(const Capability& cpb)
-    {
-      if(this!=&cpb) {
-          name_  = cpb.name();
-          type_  = cpb.type();
-          depth_ = cpb.depth();
-          owner_ = cpb.owner();
-          uuid_  = cpb.uuid();
-      }
-
-      return *this;
-    }
-
     ~Capability () {}
 
     std::string name() const { return name_;}
