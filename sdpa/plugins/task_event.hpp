@@ -17,7 +17,6 @@ struct task_event_t
     , FINISHED
     , CANCELED
     , FAILED
-    , UNKNOWN
     };
 
   task_event_t ( std::string const & _id
