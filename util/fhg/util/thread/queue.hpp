@@ -2,8 +2,9 @@
 #define FHG_UTIL_THREAD_QUEUE_HPP
 
 #include <boost/bind.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/utility.hpp>
 
 #include <fhg/util/thread/pollable.hpp>
 
@@ -26,7 +27,7 @@ namespace fhg
                         > class Container
              , typename Allocator = std::allocator<T>
              >
-    class queue : public virtual pollable
+    class queue : public virtual pollable, boost::noncopyable
     {
     public:
       typedef queue<T, Container, Allocator> this_type;
@@ -189,9 +190,6 @@ namespace fhg
       // expose mutex
       mutex & get_mutex () { return m_mtx; }
     private:
-      queue (queue const &);
-      queue & operator= (queue const &);
-
       T _get_impl ()
       {
         T t (m_container.front()); m_container.pop_front();
