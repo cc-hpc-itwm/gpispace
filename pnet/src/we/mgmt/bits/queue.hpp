@@ -27,6 +27,7 @@
 #include <boost/call_traits.hpp>
 #include <boost/progress.hpp>
 #include <boost/bind.hpp>
+#include <boost/utility.hpp>
 
 namespace we
 {
@@ -35,7 +36,7 @@ namespace we
     namespace detail
     {
       template <typename T, unsigned long long CAPACITY>
-      class queue
+      class queue : boost::noncopyable
       {
         typedef queue<T, CAPACITY> this_type;
       public:
@@ -85,9 +86,6 @@ namespace we
         }
 
       private:
-	queue(queue const &);
-	queue & operator=(queue const &);
-
 	inline bool is_not_empty() const { return unread_ > 0; }
 	inline bool is_not_full() const { return unread_ < CAPACITY; }
 
@@ -99,7 +97,7 @@ namespace we
       };
 
       template <typename T>
-      class queue<T, 0>
+      class queue<T, 0> : boost::noncopyable
       {
       private:
         typedef queue<T, 0> this_type;
@@ -144,9 +142,6 @@ namespace we
         }
 
       private:
-	queue(queue const &);
-	queue & operator=(queue const &);
-
 	inline bool is_not_empty() const { return ! container_.empty(); }
 	inline bool is_not_full() const { return true; }
 
