@@ -12,6 +12,11 @@ namespace gspc
       return true;
     }
 
+    int api_t::put (key_type const &key, const char *val)
+    {
+      return this->put (key, std::string (val));
+    }
+
     int api_t::put (key_type const &key, value_type const &val)
     {
       if (not is_key_valid (key))
@@ -68,6 +73,10 @@ namespace gspc
       return this->do_set_ttl_regex (regex, ttl);
     }
 
+    int api_t::push (key_type const &key, const char *val)
+    {
+      return this->push (key, std::string (val));
+    }
     int api_t::push (key_type const &key, value_type const &val)
     {
       if (not is_key_valid (key))

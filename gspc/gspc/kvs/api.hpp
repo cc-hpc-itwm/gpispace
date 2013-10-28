@@ -20,6 +20,7 @@ namespace gspc
       typedef std::string                   key_type;
       typedef pnet::type::value::value_type value_type;
 
+      int put (key_type const &key, const char *val);
       int put (key_type const &key, value_type const &val);
       int put (std::list<std::pair<key_type, value_type> > const &lst);
 
@@ -34,6 +35,7 @@ namespace gspc
       int set_ttl (key_type const &key, int ttl);
       int set_ttl_regex (std::string const &regex, int ttl);
 
+      int push (key_type const &key, const char *val);
       int push (key_type const &key, value_type const &val);
       int pop (key_type const &, value_type &val);
       int try_pop (key_type const &, value_type &val);
