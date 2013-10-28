@@ -1,7 +1,7 @@
 #ifndef GSPC_CTL_CONFIG_HPP
 #define GSPC_CTL_CONFIG_HPP
 
-#include <json_spirit_value.h>
+#include "json_spirit/json_spirit_value.h"
 
 #include <iostream>
 #include <fstream>
