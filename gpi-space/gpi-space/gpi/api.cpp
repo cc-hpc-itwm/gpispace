@@ -58,8 +58,5 @@ namespace gpi
         instance.reset();
       }
     }
-
-    gpi_api_t::~gpi_api_t ()
-    {}
   }
 }
