@@ -17,6 +17,11 @@ namespace gspc
       virtual ~kvs_net_frontend_t ();
 
     private:
+      int request ( std::string const &rpc
+                  , std::string const &rqst
+                  , std::string &rply
+                  ) const;
+
       int do_put (std::list<std::pair<key_type, value_type> > const &);
 
       int do_get (key_type const &key, value_type &val) const;

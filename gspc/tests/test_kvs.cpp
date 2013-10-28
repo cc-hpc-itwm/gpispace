@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_reset_inc_dec)
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (val, 1);
 
-  rc = kvs.counter_increment ("foo", val, 2);
+  rc = kvs.counter_change ("foo", val, 2);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (val, 3);
 
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_reset_inc_dec)
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (val, 2);
 
-  rc = kvs.counter_decrement ("foo", val, 2);
+  rc = kvs.counter_change ("foo", val, -2);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (val, 0);
 
@@ -245,6 +245,126 @@ BOOST_AUTO_TEST_CASE (test_kvs_impl_expiry)
 
   rc = kvs.get ("foo.1", val);
   BOOST_REQUIRE_EQUAL (rc, -EKEYEXPIRED);
+}
+
+BOOST_AUTO_TEST_CASE (test_kvs_net_get_nokey)
+{
+  gspc::net::initialize ();
+
+  int rc;
+  gspc::kvs::api_t::value_type val;
+
+  // setup server
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*"));
+  gspc::kvs::service_t service;
+  gspc::net::handle ( "/service/kvs"
+                    , gspc::net::service::strip_prefix ( "/service/kvs/"
+                                                       , boost::ref (service)
+                                                       )
+                    );
+
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=1000");
+
+  try
+  {
+    rc = kvs.get ("foo", val);
+    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+  }
+  catch (std::exception const &)
+  {
+    server->stop ();
+    gspc::net::shutdown ();
+    throw;
+  }
+
+  server->stop ();
+  gspc::net::shutdown ();
+}
+
+
+BOOST_AUTO_TEST_CASE (test_kvs_net_api)
+{
+  gspc::net::initialize ();
+
+  int rc;
+  gspc::kvs::api_t::value_type val;
+
+  // setup server
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*"));
+  gspc::kvs::service_t service;
+  gspc::net::handle ( "/service/kvs"
+                    , gspc::net::service::strip_prefix ( "/service/kvs/"
+                                                       , boost::ref (service)
+                                                       )
+                    );
+
+  std::cerr << "server running on: " << server->url () << std::endl;
+
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=1000");
+
+  try
+  {
+    rc = kvs.get ("foo", val);
+    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+
+    rc = kvs.put ("foo", "bar");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = kvs.get ("foo", val);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
+
+    rc = kvs.set_ttl ("foo", 60);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = kvs.set_ttl_regex ("foo", 60);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = kvs.push ("bar", "foo");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = kvs.pop ("bar", val);
+    BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "foo");
+
+    rc = kvs.try_pop ("bar", val);
+    BOOST_REQUIRE_EQUAL (rc, -EAGAIN);
+
+    rc = kvs.try_pop ("bar", val);
+    BOOST_REQUIRE_EQUAL (rc, -EAGAIN);
+
+    int cnt;
+    rc = kvs.counter_reset ("cnt", 0);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = kvs.counter_change ("cnt", cnt, +1);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (cnt, 1);
+
+    rc = kvs.counter_change ("cnt", cnt, -1);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (cnt, 0);
+
+    rc = kvs.del_regex (".*");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = kvs.get ("bar", val);
+    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+
+    rc = kvs.del ("cnt");
+    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+
+    rc = kvs.del ("foo");
+    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+  }
+  catch (...)
+  {
+    server->stop ();
+    gspc::net::shutdown ();
+    throw;
+  }
+
+  server->stop ();
+  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_kvs_net_put_get)
