@@ -124,7 +124,8 @@ void MyFixture::run_client()
   std::string job_status = ptrCli->queryJob(job_id_user);
   LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-  boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+  // wait for a while ..
+  boost::this_thread::sleep(boost::posix_time::seconds(1));
   ptrCli->cancelJob(job_id_user);
 
   nTrials = 0;
@@ -191,6 +192,52 @@ void MyFixture::run_client()
 
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
+
+BOOST_AUTO_TEST_CASE( TestCancelCoallocation )
+{
+  // topology:
+  // O
+  // |
+  // A
+  // |
+  // drts
+
+  LOG( INFO, "Begin Test1");
+  //guiUrl
+  string guiUrl         = "";
+  string workerUrl      = "127.0.0.1:5500";
+  string addrOrch       = "127.0.0.1";
+  string addrAgent      = "127.0.0.1";
+
+  m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  ptrAg0->start_agent(false);
+
+  sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
+  boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+  threadClient.join();
+  LOG( INFO, "The client thread joined the main thread°!" );
+
+  drts_0->stop();
+  if(drts_0_thread.joinable())
+          drts_0_thread.join();
+
+  ptrAg0->shutdown();
+  LOG( INFO, "The agent "<<ptrAg0->name()<<" was successfully shut down°!" );
+
+  ptrOrch->shutdown();
+  LOG( INFO, "The orchestrator "<<ptrOrch->name()<<" was successfully shut down°!" );
+
+  LOG( INFO, "End Test2");
+}
 
 BOOST_AUTO_TEST_CASE( Test1 )
 {
@@ -285,6 +332,52 @@ BOOST_AUTO_TEST_CASE( Test2 )
   drts_1->stop();
   if(drts_1_thread.joinable())
     drts_1_thread.join();
+
+  ptrAg0->shutdown();
+  LOG( INFO, "The agent "<<ptrAg0->name()<<" was successfully shut down°!" );
+
+  ptrOrch->shutdown();
+  LOG( INFO, "The orchestrator "<<ptrOrch->name()<<" was successfully shut down°!" );
+
+  LOG( INFO, "End Test2");
+}
+
+BOOST_AUTO_TEST_CASE( TestCancelCoalloc )
+{
+  // topology:
+  // O
+  // |
+  // A
+  // |
+  // drts
+
+  LOG( INFO, "Begin Test1");
+  //guiUrl
+  string guiUrl         = "";
+  string workerUrl      = "127.0.0.1:5500";
+  string addrOrch       = "127.0.0.1";
+  string addrAgent      = "127.0.0.1";
+
+  m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
+
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+  ptrOrch->start_agent(false);
+
+  sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  ptrAg0->start_agent(false);
+
+  sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
+  boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
+
+  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+  threadClient.join();
+  LOG( INFO, "The client thread joined the main thread°!" );
+
+  drts_0->stop();
+  if(drts_0_thread.joinable())
+          drts_0_thread.join();
 
   ptrAg0->shutdown();
   LOG( INFO, "The agent "<<ptrAg0->name()<<" was successfully shut down°!" );
