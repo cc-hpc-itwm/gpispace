@@ -15,25 +15,11 @@ namespace fhg
         : v (b)
       {}
 
-      bool_t (bool_t const &other)
-        : v (other.v)
-      {}
-
       operator bool() const
       {
         return v;
       }
 
-      bool_t & operator= (const bool_t &rhs)
-      {
-        v = rhs.v;
-        return *this;
-      }
-      bool_t & operator= (const bool rhs)
-      {
-        v = rhs;
-        return *this;
-      }
     private:
       bool v;
     };
