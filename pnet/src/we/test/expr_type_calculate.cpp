@@ -71,32 +71,115 @@ namespace
     }
     catch (Ex const& e)
     {
-      BOOST_CHECK_EQUAL  (e.what(), what);
+      BOOST_CHECK_EQUAL (e.what(), what);
     }
+  }
+
+  template<typename Ex>
+    void CHECK_EXCEPTION ( resolver_map_type const& m
+                         , std::string const& p
+                         , std::string const& name
+                         , std::string const& what
+                         )
+  {
+    CHECK_EXCEPTION<Ex> (m, ::expr::parse::parser (p), name, what);
+  }
+
+  void CHECK_OKAY  ( resolver_map_type const& m
+                   , std::string const& p
+                   , pnet::type::signature::signature_type const& s
+                   )
+  {
+    BOOST_CHECK
+      ( s ==  pnet::expr::type::calculate ( resolver (m)
+                                          , ::expr::parse::parser (p).front()
+                                          )
+      );
   }
 }
 
 BOOST_AUTO_TEST_CASE (substr)
 {
-  ::expr::parse::parser p ("substr (\"\", ${a})");
-
   resolver_map_type m;
 
   CHECK_EXCEPTION<std::runtime_error>
-    (m, p, "std::runtime_error", "Could not resolve 'a'");
+    ( m
+    , "substr (\"\", ${a})"
+    , "std::runtime_error"
+    , "Could not resolve 'a'"
+    );
 
   m[path ("a")] = std::string ("FOO");
 
   CHECK_EXCEPTION<pnet::exception::type_error>
-    ( m, p, "pnet::exception::type_error"
+    ( m
+    , "substr (\"\", ${a})"
+    , "pnet::exception::type_error"
     , "type error: substr for types 'string' and 'FOO'"
     );
 
   m[path ("a")] = std::string ("long");
 
-  BOOST_CHECK
-    (  pnet::expr::type::calculate (resolver (m), p.front())
-    == pnet::type::signature::signature_type (std::string ("string"))
-    )
-    ;
+  CHECK_OKAY (m, "substr (\"\", ${a})", std::string ("string"));
+
+  CHECK_EXCEPTION<pnet::exception::type_error>
+    ( m
+    , "substr (1L, ${a})"
+    , "pnet::exception::type_error"
+    , "type error: substr for types 'long' and 'long'"
+    );
+}
+
+BOOST_AUTO_TEST_CASE (bitset_insert)
+{
+  resolver_map_type m;
+
+  m[path ("a")] = std::string ("FOO");
+
+  CHECK_EXCEPTION<pnet::exception::type_error>
+    ( m
+    , "bitset_insert ({}, ${a})"
+    , "pnet::exception::type_error"
+    , "type error: bitset_insert for types 'bitset' and 'FOO'"
+    );
+
+  m[path ("a")] = std::string ("long");
+
+  CHECK_OKAY (m, "bitset_insert ({}, ${a})", std::string ("bitset"));
+}
+
+BOOST_AUTO_TEST_CASE (bitset_delete)
+{
+  resolver_map_type m;
+
+  m[path ("a")] = std::string ("FOO");
+
+  CHECK_EXCEPTION<pnet::exception::type_error>
+    ( m
+    , "bitset_delete ({}, ${a})"
+    , "pnet::exception::type_error"
+    , "type error: bitset_delete for types 'bitset' and 'FOO'"
+    );
+
+  m[path ("a")] = std::string ("long");
+
+  CHECK_OKAY (m, "bitset_delete ({}, ${a})", std::string ("bitset"));
+}
+
+BOOST_AUTO_TEST_CASE (bitset_is_element)
+{
+  resolver_map_type m;
+
+  m[path ("a")] = std::string ("FOO");
+
+  CHECK_EXCEPTION<pnet::exception::type_error>
+    ( m
+    , "bitset_is_element ({}, ${a})"
+    , "pnet::exception::type_error"
+    , "type error: bitset_is_element for types 'bitset' and 'FOO'"
+    );
+
+  m[path ("a")] = std::string ("long");
+
+  CHECK_OKAY (m, "bitset_is_element ({}, ${a})", std::string ("bool"));
 }
