@@ -107,9 +107,6 @@ namespace we
 	typedef typename container_type::value_type value_type;
 	typedef typename boost::call_traits<value_type>::param_type param_type;
 
-	queue()
-        { }
-
 	void put (param_type item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
