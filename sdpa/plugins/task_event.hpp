@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <list>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 struct task_event_t
@@ -25,12 +26,14 @@ struct task_event_t
                , const state_t _state
                , std::string const & _activity
                , meta_data_t const & _meta
+               , std::list<std::string> const& _worker_list
                )
     : id(_id)
     , name(_name)
     , state(_state)
     , activity(_activity)
     , meta(_meta)
+    , worker_list (_worker_list)
     , tstamp (boost::posix_time::microsec_clock::universal_time())
   {}
 
@@ -40,6 +43,7 @@ struct task_event_t
 
   std::string activity;
   meta_data_t meta;
+  std::list<std::string> worker_list;
 
   time_type tstamp;
 };

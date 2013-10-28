@@ -327,6 +327,22 @@ namespace fhg
 
         endResetModel();
       }
+      bool worker_model::removeRows
+        (int row, int count, const QModelIndex& parent)
+      {
+        beginRemoveRows (parent, row, row + count - 1);
+        while (count --> 0)
+        {
+          _worker_containers.remove (_workers[row]);
+          _workers.removeAt (row);
+        }
+        if (_workers.empty())
+        {
+          _base_time = QDateTime::currentDateTime();
+        }
+        endRemoveRows();
+        return true;
+      }
     }
   }
 }

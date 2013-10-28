@@ -26,6 +26,4 @@ add_subdirectory(libexec)
 add_subdirectory(scripts)
 add_subdirectory(doc)
 
-if (BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
+add_subdirectory(tests)

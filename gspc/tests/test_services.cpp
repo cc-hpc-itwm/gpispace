@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (test_echo_service)
   gspc::net::frame & rply_frame = user.frames.back ();
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
-  BOOST_CHECK_EQUAL (rply_frame.get_body_as_string (), "Hello echo!");
+  BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
   BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE (test_strip_prefix)
   gspc::net::frame & rply_frame = user.frames.back ();
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
-  BOOST_CHECK_EQUAL (rply_frame.get_body_as_string (), "Hello echo!");
+  BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
   BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }

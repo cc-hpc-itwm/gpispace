@@ -226,7 +226,6 @@ set (tests
   test_Worker.cpp
   test_JobId.cpp
   test_Scheduler.cpp
-  test_LoadBalancer.cpp
   test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp

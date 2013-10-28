@@ -48,9 +48,46 @@ namespace gspc
         return c == 0;
       }
 
-      state_t parser::consume ( gspc::net::frame & frame
-                              , const char c
-                              )
+      template <>
+      result_t parser::parse ( const char *begin
+                             , const char *end
+                             , gspc::net::frame & frame
+                             )
+      {
+        size_t consumed = 0;
+
+        while (begin != end)
+        {
+          state_t state = consume (frame, *begin++);
+          ++consumed;
+
+          if (state == PARSE_FINISHED)
+            return result_t (consumed, state, E_OK);
+          else if (state == PARSE_FAILED)
+            return result_t (consumed, state, m_error);
+        }
+
+        return result_t ( consumed
+                        , PARSE_NEED_MORE_DATA
+                        , m_error
+                        );
+      }
+
+      template <>
+      result_t parser::parse ( char *begin
+                             , char *end
+                             , gspc::net::frame & frame
+                             )
+      {
+        return parse ( static_cast<const char*>(begin)
+                     , static_cast<const char*>(end)
+                     , frame
+                     );
+      }
+
+      inline state_t parser::consume ( gspc::net::frame & frame
+                                     , const char c
+                                     )
       {
         using namespace gspc::net::limits;
 

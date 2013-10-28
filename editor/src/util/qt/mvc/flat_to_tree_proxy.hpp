@@ -41,9 +41,11 @@ namespace fhg
           virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const;
           virtual QVariant headerData
             (int section, Qt::Orientation, int role = Qt::DisplayRole) const;
+          virtual bool removeRows (int from, int n, const QModelIndex& = QModelIndex());
 
         private slots:
           void rebuild_transformation_tree();
+          void rebuild_source_to_tree();
           void rows_inserted (QModelIndex parent, int from, int to);
 
           void source_dataChanged (const QModelIndex&, const QModelIndex&);
@@ -54,6 +56,9 @@ namespace fhg
           index_tree_item* item_for (const QModelIndex&) const;
           QModelIndex index_for (index_tree_item*, int column) const;
           QModelIndex index_for (const QModelIndex& source) const;
+
+          void insert_from_source
+            (int begin, int end, QModelIndex parent, bool emit_per_row);
 
           QAbstractItemModel* _source;
 

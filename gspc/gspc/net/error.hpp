@@ -22,6 +22,7 @@ namespace gspc
       , E_INTERNAL_ERROR          = 500
       , E_NOT_IMPLEMENTED         = 501
       , E_SERVICE_FAILED          = 503
+      , E_SERVICE_NO_SUCH_RPC     = 504
       , E_VERSION_NOT_SUPPORTED   = 505
       , E_PERMISSION_DENIED       = 550
       };

@@ -83,7 +83,7 @@ namespace sdpa {
     virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IAgent* );
     virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*);
     virtual void Dispatch();
-    virtual void Reschedule();
+    virtual void Reschedule(sdpa::daemon::IAgent*);
     virtual void Pause();
 
     virtual void setResult(const sdpa::job_result_t& ) =0;

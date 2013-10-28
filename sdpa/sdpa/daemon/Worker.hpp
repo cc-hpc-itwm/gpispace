@@ -15,13 +15,6 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/identity.hpp>
-#include <boost/multi_index/member.hpp>
-
-using namespace ::boost::multi_index;
-
 namespace sdpa { namespace daemon {
 
   /**
@@ -33,6 +26,7 @@ namespace sdpa { namespace daemon {
 
   class Worker {
   public:
+
     typedef sdpa::shared_ptr<Worker> ptr_t;
 
     typedef sdpa::location_t location_t;
@@ -42,7 +36,6 @@ namespace sdpa { namespace daemon {
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 
-    // TODO: to be replaced by a real class (synchronization!)
     typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
     /**
@@ -67,13 +60,6 @@ namespace sdpa { namespace daemon {
       */
     void update();
 
-    /**
-      Add a new job to the pending queue of this worker.
-      Move it to the pending_ queue.
-      */
-    void dispatch(const sdpa::job_id_t&);
-
-
     void submit(const sdpa::job_id_t&);
 
     /**
@@ -94,12 +80,12 @@ namespace sdpa { namespace daemon {
 
     /**
       Return the name of the worker.
-      */
+    */
     const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
 
     /**
       Return the location of this worker.
-      */
+     */
     const location_t &location() const { lock_type lock(mtx_); return location_; }
 
     /**
@@ -134,21 +120,12 @@ namespace sdpa { namespace daemon {
     void set_disconnected(bool bValue = true) { lock_type lock(mtx_); disconnected_ = bValue; }
 
     /**
-	  Remove a job that was finished or failed from the acknowledged_ queue
+      Remove a job that was finished or failed from the acknowledged_ queue
 
-	  a second flag is needed in the case the job is canceled (in order to look into the other queues, as well)
-	  @param last_job_id the id of the last sucessfully submitted job
-	  */
-    void delete_job(const sdpa::job_id_t &job_id );
-
-    /**
-      Provide access to the pending queue.
-
-      We are required to have access to the pending queue of a worker because
-      we might need to reschedule tasks.
-      */
-    JobQueue& pending() { lock_type lock(mtx_); return pending_; }
-    const JobQueue& pending() const { lock_type lock(mtx_); return pending_; }
+      a second flag is needed in the case the job is canceled (in order to look into the other queues, as well)
+      @param last_job_id the id of the last sucessfully submitted job
+    */
+    void deleteJob(const sdpa::job_id_t &job_id );
 
     /**
       Provide access to the submitted queue.
@@ -171,21 +148,21 @@ namespace sdpa { namespace daemon {
     unsigned int nbAllocatedJobs();
 
     template <class Archive>
-	void serialize(Archive& ar, const unsigned int)
-	{
+    void serialize(Archive& ar, const unsigned int)
+    {
     	ar & name_;
         ar & rank_;
         ar & location_;
     	ar & tstamp_;
     	ar & last_time_served_;
     	ar & last_schedule_time_;
-	}
+    }
 
     friend class boost::serialization::access;
 
     void print();
 
-    // methods relatesd to reservation
+    // methods related to reservation
     bool isReserved();
     void reserve();
     void free();
@@ -197,13 +174,12 @@ namespace sdpa { namespace daemon {
     unsigned int capacity_;
     sdpa::capabilities_set_t capabilities_;
     unsigned int rank_;
-	sdpa::worker_id_t agent_uuid_;
+    sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
     sdpa::util::time_type last_time_served_; //! time of last message received
     sdpa::util::time_type last_schedule_time_;
 
-    JobQueue pending_; //! the queue of jobs assigned to this worker (not yet submitted)
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 

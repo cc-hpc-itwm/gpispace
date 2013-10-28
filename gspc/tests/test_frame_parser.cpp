@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 
+#include <fhg/util/now.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/frame_io.hpp>
@@ -105,7 +106,7 @@ BOOST_AUTO_TEST_CASE (test_heartbeat_frame)
 
   BOOST_CHECK_EQUAL (frame.get_command (), "");
   BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
-  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
+  BOOST_CHECK_EQUAL (frame.get_body (), "");
 }
 
 BOOST_AUTO_TEST_CASE (test_heartbeat_crlf_frame)
@@ -184,7 +185,7 @@ BOOST_AUTO_TEST_CASE (test_empty_header_empty_body_crlf)
 
   BOOST_CHECK_EQUAL (frame.get_command (), "CONNECT");
   BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
-  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
+  BOOST_CHECK_EQUAL (frame.get_body (), "");
 }
 
 BOOST_AUTO_TEST_CASE (test_header)
@@ -209,7 +210,7 @@ BOOST_AUTO_TEST_CASE (test_header)
   BOOST_CHECK_EQUAL (*frame.get_header ("foo"), "bar");
   BOOST_REQUIRE (frame.has_header ("baz"));
   BOOST_CHECK_EQUAL (*frame.get_header ("baz"), "bam");
-  BOOST_CHECK_EQUAL (frame.get_body_as_string (), "");
+  BOOST_CHECK_EQUAL (frame.get_body (), "");
 }
 
 BOOST_AUTO_TEST_CASE (test_invalid_header)
@@ -306,7 +307,7 @@ BOOST_AUTO_TEST_CASE (test_content_length)
   BOOST_REQUIRE (result.consumed > 0);
   BOOST_REQUIRE (result.consumed == sizeof (input) - 5);
 
-  BOOST_REQUIRE_EQUAL (frame.get_body_as_string (), "12345");
+  BOOST_REQUIRE_EQUAL (frame.get_body (), "12345");
 }
 
 BOOST_AUTO_TEST_CASE (test_content_length_body_too_long)
@@ -400,4 +401,36 @@ BOOST_AUTO_TEST_CASE (test_nul_in_sstream)
   BOOST_REQUIRE_EQUAL (result [5], '\1');
   BOOST_REQUIRE_EQUAL (result [6], '\2');
   BOOST_REQUIRE_EQUAL (result [7], '\3');
+}
+
+BOOST_AUTO_TEST_CASE (test_parse_performance)
+{
+  gspc::net::parse::result_t result;
+  gspc::net::parse::parser parser;
+  gspc::net::frame frame ("SEND");
+  frame.set_header ("destination", "foo");
+  frame.set_body ("test 0 1 2 3 4 5 6 7 8 9");
+  const std::string bytes = frame.to_string ();
+
+  const std::size_t NUM = 1 << 20;
+
+  double duration = -fhg::util::now ();
+  for (std::size_t i = 0 ; i < NUM ; ++i)
+  {
+    gspc::net::frame f;
+    result = parser.parse ( bytes.c_str ()
+                          , bytes.c_str () + bytes.size ()
+                          , f
+                          );
+    BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
+    BOOST_CHECK (result.consumed == bytes.size ());
+    parser.reset ();
+  }
+  duration += fhg::util::now ();
+
+  std::cerr << "parsing " << (NUM*bytes.size ()/(1<<10)) << " KiB took: " << duration << " sec"
+            << " => " << ((NUM*bytes.size ()/(1<<10)) / duration) << " KiB/sec"
+            << " => " << (NUM / duration) << " frames/sec"
+            << std::endl
+    ;
 }

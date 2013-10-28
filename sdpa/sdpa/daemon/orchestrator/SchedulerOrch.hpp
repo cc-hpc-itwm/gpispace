@@ -46,9 +46,8 @@ namespace sdpa {
 			}
          }
 
-         bool post_request( bool ) { return false; }
-         void send_life_sign() { /*do nothing*/ }
-         void check_post_request() { /*do nothing*/ }
+         bool postRequest( bool ) { return false; }
+         void checkRequestPosted() { /*do nothing*/ }
 
          template <class Archive>
          void serialize(Archive& ar, const unsigned int)
@@ -61,7 +60,7 @@ namespace sdpa {
 
          bool has_job(const sdpa::job_id_t& job_id)
          {
-			if( pending_jobs_queue_.find(job_id) != pending_jobs_queue_.end() )
+			if( pending_jobs_queue_.has_item(job_id) )
 			{
 				SDPA_LOG_INFO("The job "<<job_id<<" is still in the jobs_to_be_scheduled queue!");
 				return true;

@@ -131,15 +131,27 @@ public:
       {
         if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
         {
-          DMLOG(TRACE, "adding virtual capability: " << cap);
+          std::pair<std::string, std::string> capability_and_type
+            = fhg::util::split_string (cap, "-");
+          if (capability_and_type.second.empty ())
+            capability_and_type.second = "virtual";
+
+          const std::string & cap_name = capability_and_type.first;
+          const std::string & cap_type = capability_and_type.second;
+
+          DMLOG ( TRACE
+                , "adding capability: " << cap_name
+                << " of type: " << cap_type
+                );
+
           m_virtual_capabilities.insert
             (std::make_pair ( cap
-                            , std::make_pair ( sdpa::Capability (cap
-                                                                , "virtual"
-                                                               , m_my_name
+                            , std::make_pair ( sdpa::Capability ( cap_name
+                                                                , cap_type
+                                                                , m_my_name
                                                                 )
-                                             , new fhg::plugin::Capability( cap
-                                                                          , "virtual"
+                                             , new fhg::plugin::Capability( cap_name
+                                                                          , cap_type
                                                                           )
                                              )
                             )
@@ -611,11 +623,8 @@ public:
                                 , drts::Job::Owner(e->from())
                                 )
                   );
-    //    job->worker_list (e->worker_list ());
 
-    std::list<std::string> worker_list;
-    worker_list.push_back (m_my_name);
-    job->worker_list (worker_list);
+    job->worker_list (e->worker_list ());
 
     {
       lock_type job_map_lock(m_job_map_mutex);
@@ -1052,7 +1061,7 @@ private:
   {
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
-    std::string virtual_capabilities (rqst.get_body_as_string ());
+    std::string virtual_capabilities (rqst.get_body ());
     std::list<std::string> capability_list;
     fhg::util::split( virtual_capabilities
                     , ","
@@ -1089,7 +1098,7 @@ private:
   {
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
-    std::string virtual_capabilities (rqst.get_body_as_string ());
+    std::string virtual_capabilities (rqst.get_body ());
     std::list<std::string> capability_list;
     fhg::util::split( virtual_capabilities
                     , ","

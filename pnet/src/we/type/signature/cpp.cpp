@@ -95,11 +95,31 @@ namespace pnet
                             , const int
                             )
             {
-              os << indent << complete (type) << " " << name <<  ";";
+              os << indent << complete (type) << ' ' << name <<  ';';
             }
           };
 
           typedef printer_for_field<field_decl> print_field_decl;
+
+          class field_param
+          {
+          public:
+            void operator() ( std::ostream& os
+                            , fhg::util::indenter& indent
+                            , const std::string& name
+                            , const std::string& type
+                            , bool& first
+                            )
+            {
+              os << fhg::util::deeper (indent)
+                 << (first ? '(' : ',') << ' '
+                 << complete (type) << " const& _" << name;
+
+              first = false;
+            }
+          };
+
+          typedef printer_for_field<field_param, bool&> print_field_param;
 
           class print_header : public printer
           {
@@ -122,6 +142,7 @@ namespace pnet
               traverse (print_field_decl (_os, _indent), s);
 
               ctor_default (s.first);
+              ctor (s);
               ctor_value (s.first);
 
               _os << structure::close (_indent);
@@ -143,6 +164,16 @@ namespace pnet
             void ctor_default (const std::string& name) const
             {
               _os << _indent << name << "();";
+            }
+            void ctor (const std::pair<std::string, structure_type>& s) const
+            {
+              bool first (true);
+
+              _os << _indent << "explicit " << s.first;
+
+              traverse (print_field_param (_os, _indent, first), s);
+
+              _os << fhg::util::deeper (_indent) << ");";
             }
             void ctor_value (const std::string& name) const
             {
@@ -236,13 +267,32 @@ namespace pnet
                             ) const
             {
               os << fhg::util::deeper (indent)
-                  << (first ? ':' : ',') << " " << name <<  "()";
+                  << (first ? ':' : ',') << ' ' << name <<  "()";
 
               first = false;
             }
           };
 
           typedef printer_for_field<impl_ctor_default, bool&> print_ctor_default;
+
+          class impl_ctor
+          {
+          public:
+            void operator() ( std::ostream& os
+                            , fhg::util::indenter& indent
+                            , const std::string& name
+                            , const std::string& type
+                            , bool& first
+                            ) const
+            {
+              os << fhg::util::deeper (indent)
+                 << (first ? ':' : ',') << ' ' << name << " (_" << name << ')';
+
+              first = false;
+            }
+          };
+
+          typedef printer_for_field<impl_ctor, bool&> print_ctor;
 
           class print_ctor_value : public printer
           {
@@ -261,7 +311,7 @@ namespace pnet
             void _field (const std::pair<std::string, std::string>& f) const
             {
               _os << fhg::util::deeper (_indent)
-                  << (_first ? ':' : ',') << " " << f.first
+                  << (_first ? ':' : ',') << ' ' << f.first
                   <<  " ("
                   << "pnet::field";
 
@@ -282,7 +332,7 @@ namespace pnet
             void _field_struct (const std::pair<std::string, structure_type>& s) const
             {
               _os << fhg::util::deeper (_indent)
-                  << (_first ? ':' : ',') << " " << s.first
+                  << (_first ? ':' : ',') << ' ' << s.first
                   <<  " ("
                   << "pnet::field"
                   << " ("
@@ -346,6 +396,7 @@ namespace pnet
               traverse_fields (*this, s);
 
               ctor_default (s);
+              ctor (s);
               ctor_value (s);
               from_value (s);
               show (s.first);
@@ -367,6 +418,22 @@ namespace pnet
               _os << _indent << s.first << "::" << s.first << "()";
 
               traverse (print_ctor_default (_os, _indent, first), s);
+
+              _os << _indent << "{}";
+            }
+            void ctor (const std::pair<std::string, structure_type>& s) const
+            {
+              bool first (true);
+
+              _os << _indent << s.first << "::" << s.first;
+
+              traverse (print_field_param (_os, _indent, first), s);
+
+              _os << fhg::util::deeper (_indent) << ')';
+
+              first = true;
+
+              traverse (print_ctor (_os, _indent, first), s);
 
               _os << _indent << "{}";
             }

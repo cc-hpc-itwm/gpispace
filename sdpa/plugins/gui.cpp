@@ -122,7 +122,10 @@ private:
 
       try
       {
-        m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t)));
+        BOOST_FOREACH (std::string const& worker, t.worker_list)
+        {
+          m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t, worker)));
+        }
       }
       catch (std::exception const & ex)
       {
@@ -138,12 +141,12 @@ private:
   //   m_observed.remove(o);
   // }
 
-  static inline std::string encode (const task_event_t & e)
+  static inline std::string encode ( const task_event_t & e
+                                   , std::string const& worker
+                                   )
   {
     return sdpa::daemon::NotificationEvent
-      ( e.meta.find("agent.name") != e.meta.end()
-      ? e.meta.find("agent.name")->second
-      : "unknown"
+      ( worker
       , e.id
       , e.name
       , e.state == task_event_t::ENQUEUED ? sdpa::daemon::NotificationEvent::STATE_CREATED

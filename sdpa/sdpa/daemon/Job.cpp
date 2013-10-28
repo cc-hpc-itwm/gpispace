@@ -10,5 +10,5 @@ void Job::JobFinished(const sdpa::events::JobFinishedEvent*) { }
 void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IAgent* ) { }
 void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*) { }
 void Job::Dispatch() { }
-void Job::Reschedule() {};
+void Job::Reschedule(sdpa::daemon::IAgent*) {};
 void Job::Pause() {};
