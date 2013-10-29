@@ -43,6 +43,8 @@ namespace gspc
       int do_counter_reset (key_type const &key, int val);
       int do_counter_change (key_type const &key, int &val, int delta);
 
+      int do_wait_for_change (key_type const &key, int timeout_in_ms) const;
+
       std::string m_url;
       gspc::net::client_ptr_t m_client;
     };

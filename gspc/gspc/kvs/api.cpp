@@ -143,5 +143,17 @@ namespace gspc
 
       return this->do_counter_change (key, val, delta);
     }
+
+    int api_t::wait_for_change (key_type const &key) const
+    {
+      return wait_for_change (key, -1);
+    }
+    int api_t::wait_for_change (key_type const &key, int timeout) const
+    {
+      if (not is_key_valid (key))
+        return -EKEYREJECTED;
+
+      return this->do_wait_for_change (key, timeout);
+    }
   }
 }

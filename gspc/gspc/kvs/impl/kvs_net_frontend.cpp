@@ -329,5 +329,12 @@ namespace gspc
 
       return rc;
     }
+
+    int kvs_net_frontend_t::do_wait_for_change ( key_type const &key
+                                               , int timeout_in_ms
+                                               ) const
+    {
+      return -ENOTSUP;
+    }
   }
 }

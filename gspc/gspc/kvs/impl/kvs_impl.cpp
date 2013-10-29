@@ -497,6 +497,11 @@ namespace gspc
       return 0;
     }
 
+    int kvs_t::do_wait_for_change (key_type const &key, int timeout_in_ms) const
+    {
+      return -ENOTSUP;
+    }
+
     void kvs_t::purge_expired_keys () const
     {
       if (not m_expired_entries.empty ())

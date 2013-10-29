@@ -48,6 +48,9 @@ namespace gspc
       int counter_change (key_type const &key, int &val, int delta);
       int counter_increment (key_type const &key, int &val);
       int counter_decrement (key_type const &key, int &val);
+
+      int wait_for_change (key_type const &key) const;
+      int wait_for_change (key_type const &key, int timeout_in_ms) const;
     private:
       bool is_key_valid (key_type const &) const;
 
@@ -69,6 +72,8 @@ namespace gspc
 
       virtual int do_counter_reset  (key_type const &key, int  val) = 0;
       virtual int do_counter_change (key_type const &key, int &val, int delta) = 0;
+
+      virtual int do_wait_for_change (key_type const &key, int timeout_in_ms) const = 0;
     };
   }
 }
