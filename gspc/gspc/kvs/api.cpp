@@ -7,7 +7,7 @@ namespace gspc
   {
     bool api_t::is_key_valid (key_type const &k) const
     {
-      if (k.empty () || k.find (' ') != key_type::npos)
+      if (k.empty () || (k.find (' ') != key_type::npos))
         return false;
       return true;
     }
