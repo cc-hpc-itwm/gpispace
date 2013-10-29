@@ -24,11 +24,23 @@ namespace gspc
 
       std::list<std::pair<key_type, value_type> > kv_pairs;
       kv_pairs.push_back (std::list<std::pair<key_type, value_type> >::value_type (key,val));
-      return this->do_put (kv_pairs);
+      return this->put (kv_pairs);
     }
 
     int api_t::put (std::list<std::pair<key_type, value_type> > const &lst)
     {
+      typedef std::list<std::pair<key_type, value_type> > kv_list_t;
+
+      kv_list_t::const_iterator it = lst.begin ();
+      const kv_list_t::const_iterator end = lst.end ();
+      while (it != end)
+      {
+        if (not is_key_valid (it->first))
+          return -EKEYREJECTED;
+
+        ++it;
+      }
+
       return this->do_put (lst);
     }
 
