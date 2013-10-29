@@ -1,6 +1,4 @@
 #include "wfe.hpp"
-#include "wfe_task.hpp"
-#include "wfe_context.hpp"
 #include "observable.hpp"
 #include "drts_info_impl.hpp"
 #include <errno.h>
@@ -8,6 +6,8 @@
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <list>
+#include <map>
+#include <string>
 
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
@@ -30,11 +30,114 @@
 
 #include <gspc/net.hpp>
 
+#include <we/loader/loader.hpp>
+#include <we/loader/module_call.hpp>
+#include <we/mgmt/context.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/module_call.hpp>
 //! \todo eliminate this include (that completes the type transition_t::data)
 #include <we/type/net.hpp>
 
 namespace
 {
+  struct wfe_task_t
+  {
+    typedef boost::posix_time::ptime time_type;
+    typedef std::map<std::string, fhg::plugin::Capability*> capabilities_t;
+    typedef std::map<std::string, std::string> meta_data_t;
+    typedef std::list<std::string> worker_list_t;
+
+    enum state_t
+    {
+      PENDING
+    , CANCELED
+    , FINISHED
+    , FAILED
+    };
+
+    std::string id;
+    std::string name;
+    int        state;
+    int        errc;
+    we::mgmt::type::activity_t activity;
+    capabilities_t capabilities;
+    fhg::util::thread::event<int> done;
+    meta_data_t meta;
+    worker_list_t workers;
+    std::string error_message;
+
+    time_type enqueue_time;
+    time_type dequeue_time;
+    time_type finished_time;
+  };
+
+  struct wfe_exec_context : public we::mgmt::context
+  {
+    wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
+      : loader (module_loader)
+      , task (target)
+    {}
+
+    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
+    {
+      act.inject_input();
+
+      while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
+      {
+        we::mgmt::type::activity_t sub (act.extract());
+        sub.inject_input();
+        sub.execute (this);
+        act.inject (sub);
+      }
+
+      act.collect_output();
+
+      return 0;
+    }
+
+    virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+    {
+      try
+      {
+        module::call (loader, act, mod);
+      }
+      catch (std::exception const &ex)
+      {
+        throw std::runtime_error
+          ( "call to '" + mod.module() + "::" + mod.function() + "'"
+          + " failed: " + ex.what()
+          );
+      }
+
+      return 0;
+    }
+
+    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
+    {
+      return 0;
+    }
+
+    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+    {
+      return handle_internally (act, n);
+    }
+
+    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& module_call)
+    {
+      return handle_internally (act, module_call);
+    }
+
+    virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+    {
+      return handle_internally (act, e);
+    }
+
+  private:
+    we::loader::loader& loader;
+    wfe_task_t& task;
+  };
+
   static
   boost::optional<std::string>
   nice_name (we::mgmt::type::activity_t const &act)
