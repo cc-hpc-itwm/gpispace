@@ -130,21 +130,6 @@ namespace
     we::loader::loader& loader;
     wfe_task_t& task;
   };
-
-  static
-  boost::optional<std::string>
-  nice_name (we::mgmt::type::activity_t const &act)
-    try
-    {
-      const we::type::module_call_t mod_call
-        (boost::get<we::type::module_call_t> (act.transition().data()));
-
-      return mod_call.module() + ":" + mod_call.function();
-    }
-    catch (boost::bad_get const &)
-    {
-      return boost::none;
-    }
 }
 
 struct search_path_appender
