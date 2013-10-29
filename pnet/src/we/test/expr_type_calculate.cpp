@@ -406,6 +406,27 @@ BOOST_AUTO_TEST_CASE (ne)
     . check();
 }
 
+BOOST_AUTO_TEST_CASE (eq)
+{
+  std::string const exp ("${a} :eq: ${b}");
+
+  BIN_EQUAL (exp, " == ");
+
+  BINEQ_ONE_OF (exp, " == ")
+    . allow ("bool")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . allow ("char")
+    . allow ("string")
+    . allow ("bitsetofint")
+    . allow ("bytearray")
+    . check();
+}
+
 BOOST_AUTO_TEST_CASE (min)
 {
   std::string const exp ("min (${a}, ${b})");
