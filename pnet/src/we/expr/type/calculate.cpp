@@ -73,12 +73,13 @@ namespace pnet
           std::ostringstream _expected;
         };
 
-        void require ( std::string const& sig_l
-                     , std::string const& sig_r
-                     , ::expr::token::type const& token
-                     , signature_type const& l
-                     , signature_type const& r
-                     )
+        signature_type require ( std::string const& sig_l
+                               , std::string const& sig_r
+                               , ::expr::token::type const& token
+                               , signature_type const& l
+                               , signature_type const& r
+                               , std::string const& sig
+                               )
         {
           if (!(l == signature_type (sig_l) && r == signature_type (sig_r)))
           {
@@ -94,6 +95,8 @@ namespace pnet
                 ).str()
               );
           }
+
+          return signature_type (sig);
         }
 
         void equal ( ::expr::token::type const& token
@@ -147,8 +150,7 @@ namespace pnet
             {
             case ::expr::token::_or:
             case ::expr::token::_and:
-              require ("bool", "bool", b.token, l, r);
-              return std::string ("bool");
+              return require ("bool", "bool", b.token, l, r, "bool");
 
             case ::expr::token::min:
             case ::expr::token::max:
@@ -166,17 +168,14 @@ namespace pnet
                 . check();
 
             case ::expr::token::_substr:
-              require ("string", "long", b.token, l, r);
-              return std::string ("string");
+              return require ("string", "long", b.token, l, r, "string");
 
             case ::expr::token::_bitset_insert:
             case ::expr::token::_bitset_delete:
-              require ("bitset", "long", b.token, l, r);
-              return std::string ("bitset");
+              return require ("bitset", "long", b.token, l, r, "bitset");
 
             case ::expr::token::_bitset_is_element:
-              require ("bitset", "long", b.token, l, r);
-              return std::string ("bool");
+              return require ("bitset", "long", b.token, l, r, "bool");
 
             default:
               break;
