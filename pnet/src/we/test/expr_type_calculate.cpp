@@ -91,28 +91,6 @@ namespace
       (s == pnet::expr::type::calculate (m, ::expr::parse::parser (p).front()));
   }
 
-  void CHECK_BINEQ_OKAY ( pnet::expr::type::resolver_map_type& m
-                        , std::string const& exp
-                        , std::string const& t
-                        )
-  {
-    m[path ("a")] = std::string (t);
-    m[path ("b")] = std::string (t);
-
-    OKAY (m, exp, std::string (t));
-  }
-  void CHECK_BINEQ_WRONG ( pnet::expr::type::resolver_map_type& m
-                         , std::string const& exp
-                         , std::string const& t
-                         , std::string const& expected
-                         )
-  {
-    m[path ("a")] = std::string (t);
-    m[path ("b")] = std::string (t);
-
-    TYPE_ERROR (m, exp, (boost::format (expected) % t).str());
-  }
-
   void BIN_REQUIRE ( std::string const& exp
                    , std::string const& okay_l
                    , std::string const& okay_r
@@ -169,6 +147,67 @@ namespace
       }
     }
   }
+
+  class BINEQ_ONE_OF
+  {
+  public:
+    BINEQ_ONE_OF (std::string const& exp, std::string const& token)
+      : _exp (exp)
+      , _token (token)
+      , _count (0)
+      , _allowed()
+      , _expected()
+    {}
+    BINEQ_ONE_OF& allow (std::string const& t)
+    {
+      _allowed.insert (t);
+
+      if (_count > 0)
+      {
+        _expected << ", ";
+      }
+      _expected << "'" << t << "'";
+
+      ++_count;
+
+      return *this;
+    }
+    void check() const
+    {
+      pnet::expr::type::resolver_map_type m;
+
+      BOOST_FOREACH (std::string const& t, tnames())
+      {
+        m[path ("a")] = t;
+        m[path ("b")] = t;
+
+        if (_allowed.count (t))
+        {
+          OKAY (m, _exp, t);
+        }
+        else
+        {
+          TYPE_ERROR
+            ( m
+            , _exp
+            , ( boost::format ("'%1%' for type '%2%', expected %3%%4%")
+              % _token
+              % t
+              % ((_count > 1) ? "one of " : "")
+              % _expected.str()
+              ).str()
+            );
+        }
+      }
+    }
+
+  private:
+    std::string const& _exp;
+    std::string const& _token;
+    unsigned int _count;
+    std::set<std::string> _allowed;
+    std::ostringstream _expected;
+  };
 }
 
 BOOST_AUTO_TEST_CASE (lookup)
@@ -278,35 +317,17 @@ BOOST_AUTO_TEST_CASE (min)
 
   BIN_REQUIRE_EQUAL (exp, "min");
 
-  std::string const
-    expected ("'min' for type '%1%'"
-              ", expected one of 'bool', 'char', 'string', 'int'"
-              ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
-             );
-
-  pnet::expr::type::resolver_map_type m;
-
-  m[path ("a")] = std::string ("A");
-  m[path ("b")] = std::string ("A");
-
-  TYPE_ERROR (m, exp, (boost::format (expected) % "A").str());
-
-  CHECK_BINEQ_OKAY (m, exp, "bool");
-  CHECK_BINEQ_OKAY (m, exp, "char");
-  CHECK_BINEQ_OKAY (m, exp, "string");
-  CHECK_BINEQ_OKAY (m, exp, "int");
-  CHECK_BINEQ_OKAY (m, exp, "unsigned int");
-  CHECK_BINEQ_OKAY (m, exp, "long");
-  CHECK_BINEQ_OKAY (m, exp, "unsigned long");
-  CHECK_BINEQ_OKAY (m, exp, "float");
-  CHECK_BINEQ_OKAY (m, exp, "double");
-
-  CHECK_BINEQ_WRONG (m, exp, "control", expected);
-  CHECK_BINEQ_WRONG (m, exp, "bitset", expected);
-  CHECK_BINEQ_WRONG (m, exp, "bytearray", expected);
-  CHECK_BINEQ_WRONG (m, exp, "list", expected);
-  CHECK_BINEQ_WRONG (m, exp, "set", expected);
-  CHECK_BINEQ_WRONG (m, exp, "map", expected);
+  BINEQ_ONE_OF (exp, "min")
+    . allow ("bool")
+    . allow ("char")
+    . allow ("string")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . check();
 }
 
 BOOST_AUTO_TEST_CASE (max)
@@ -315,33 +336,15 @@ BOOST_AUTO_TEST_CASE (max)
 
   BIN_REQUIRE_EQUAL (exp, "max");
 
-  std::string const
-    expected ("'max' for type '%1%'"
-              ", expected one of 'bool', 'char', 'string', 'int'"
-              ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
-             );
-
-  pnet::expr::type::resolver_map_type m;
-
-  m[path ("a")] = std::string ("A");
-  m[path ("b")] = std::string ("A");
-
-  TYPE_ERROR (m, exp, (boost::format (expected) % "A").str());
-
-  CHECK_BINEQ_OKAY (m, exp, "bool");
-  CHECK_BINEQ_OKAY (m, exp, "char");
-  CHECK_BINEQ_OKAY (m, exp, "string");
-  CHECK_BINEQ_OKAY (m, exp, "int");
-  CHECK_BINEQ_OKAY (m, exp, "unsigned int");
-  CHECK_BINEQ_OKAY (m, exp, "long");
-  CHECK_BINEQ_OKAY (m, exp, "unsigned long");
-  CHECK_BINEQ_OKAY (m, exp, "float");
-  CHECK_BINEQ_OKAY (m, exp, "double");
-
-  CHECK_BINEQ_WRONG (m, exp, "control", expected);
-  CHECK_BINEQ_WRONG (m, exp, "bitset", expected);
-  CHECK_BINEQ_WRONG (m, exp, "bytearray", expected);
-  CHECK_BINEQ_WRONG (m, exp, "list", expected);
-  CHECK_BINEQ_WRONG (m, exp, "set", expected);
-  CHECK_BINEQ_WRONG (m, exp, "map", expected);
+  BINEQ_ONE_OF (exp, "max")
+    . allow ("bool")
+    . allow ("char")
+    . allow ("string")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . check();
 }
