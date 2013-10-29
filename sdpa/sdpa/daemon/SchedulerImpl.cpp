@@ -530,7 +530,7 @@ void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worke
   // allocate this worker to the job with the jobId
 
   lock_type lock_table(mtx_alloc_table_);
-  allocation_table_[jobId].push_back(matchingWorkerId);
+  allocation_table_[jobId].addWorker(matchingWorkerId);
 }
 
 sdpa::worker_id_t SchedulerImpl::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
@@ -595,7 +595,7 @@ void SchedulerImpl::assignJobsToWorkers()
       // if all the required resources were acquired, mark the job as submitted
       if( allocation_table_[jobId].size() == (size_t)nReqWorkers )
       {
-          sdpa::job_id_t headWorker(allocation_table_[jobId].front());
+          sdpa::job_id_t headWorker(allocation_table_[jobId].headWorker());
           ptr_comm_handler_->serveJob(headWorker, jobId);
       }
       else
@@ -665,8 +665,8 @@ void SchedulerImpl::run()
                     pending_jobs_queue_.push(jobId);
                     lock_type lock(mtx_);
                     cond_workers_registered.wait(lock);
-              }
-              else
+                }
+                else
                 execute(jobId);
             }
         } // else fail
@@ -852,7 +852,7 @@ void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
 
   if(pJob->is_running())
   {
-      sdpa::worker_id_t head_worker_id(allocation_table_[jobId].front());
+      sdpa::worker_id_t head_worker_id(allocation_table_[jobId].headWorker());
       SDPA_LOG_INFO("Tell the worker "<<head_worker_id<<" to cancel the job "<<jobId);
       Worker::ptr_t pWorker = findWorker(head_worker_id);
       CancelJobEvent::Ptr pEvtCancelJob (new CancelJobEvent(  ptr_comm_handler_->name()
@@ -865,8 +865,8 @@ void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
 
   {
     lock_type lock_worker (mtx_);
-
-    BOOST_FOREACH (sdpa::worker_id_t const& workerId, allocation_table_[jobId])
+    worker_id_list_t listWorkers(allocation_table_[jobId].getWorkerList());
+    BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
     {
       try
       {
@@ -917,13 +917,13 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
 
 bool SchedulerImpl::has_job(const sdpa::job_id_t& job_id)
 {
-	return pending_jobs_queue_.has_item(job_id)|| ptr_worker_man_->has_job(job_id);
+  return pending_jobs_queue_.has_item(job_id)|| ptr_worker_man_->has_job(job_id);
 }
 
 void SchedulerImpl::getWorkerList(sdpa::worker_id_list_t& workerList)
 {
-	workerList.clear();
-	ptr_worker_man_->getWorkerList(workerList);
+  workerList.clear();
+  ptr_worker_man_->getWorkerList(workerList);
 }
 
 bool SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
@@ -947,11 +947,10 @@ bool SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sd
 
 void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
 {
-  if(bStopRequested)
-    {
-	SDPA_LOG_DEBUG("The scheduler is requested to stop, no need to remove capabilities ...");
-	return;
-    }
+  if(bStopRequested) {
+      SDPA_LOG_DEBUG("The scheduler is requested to stop, no need to remove capabilities ...");
+      return;
+  }
 
   ptr_worker_man_->removeCapabilities(worker_id, cpbset);
 }
@@ -1037,7 +1036,8 @@ void SchedulerImpl::printAllocationTable()
   BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table_)
   {
     oss<<pairJLW.first<<" : ";
-    BOOST_FOREACH(const sdpa::worker_id_t& wid, pairJLW.second)
+    worker_id_list_t workerList(pairJLW.second.getWorkerList());
+    BOOST_FOREACH(const sdpa::worker_id_t& wid, workerList)
       oss<<wid<<" ";
     oss<<endl;
   }
@@ -1048,11 +1048,11 @@ void SchedulerImpl::printAllocationTable()
 sdpa::job_id_t SchedulerImpl::getAssignedJob(const sdpa::worker_id_t& wid)
 {
   lock_type lock(mtx_alloc_table_);
+
   allocation_table_t::iterator it = allocation_table_.begin();
   while(it != allocation_table_.end())
   {
-      sdpa::worker_id_list_t::iterator itw = std::find(it->second.begin(), it->second.end(), wid);
-      if(itw != it->second.end())
+      if(it->second.hasWorker(wid))
         return it->first;
       else
         it++;
@@ -1076,7 +1076,8 @@ void SchedulerImpl::checkAllocations()
 
   BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table_)
   {
-    BOOST_FOREACH(const sdpa::worker_id_t& wid, pairJLW.second)
+    worker_id_list_t workerList(pairJLW.second.getWorkerList());
+    BOOST_FOREACH(const sdpa::worker_id_t& wid, workerList)
     {
       worker_cnt_map[wid]++;
       if(worker_cnt_map[wid]>1)

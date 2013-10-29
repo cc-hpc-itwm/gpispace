@@ -28,6 +28,7 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <sdpa/daemon/Reservation.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -36,7 +37,8 @@ namespace sdpa {
     public:
       typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
       typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
-      typedef boost::unordered_map<sdpa::job_id_t, sdpa::worker_id_list_t> allocation_table_t;
+      //typedef boost::unordered_map<sdpa::job_id_t, sdpa::worker_id_list_t> allocation_table_t;
+      typedef boost::unordered_map<sdpa::job_id_t, Reservation> allocation_table_t;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
@@ -77,7 +79,7 @@ namespace sdpa {
       void getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList);
       virtual Worker::worker_id_t getWorkerId(unsigned int rank);
       sdpa::job_id_t getAssignedJob(const sdpa::worker_id_t&);
-      sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId) { return allocation_table_[jobId]; }
+      sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId) { return allocation_table_[jobId].getWorkerList(); }
       sdpa::job_id_t getNextJobToSchedule();
       void assignJobsToWorkers();
 
