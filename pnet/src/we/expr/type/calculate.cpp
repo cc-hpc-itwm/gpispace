@@ -8,6 +8,8 @@
 #include <we/signature_of.hpp>
 #include <we/exception.hpp>
 
+#include <fhg/util/join.hpp>
+
 #include <boost/format.hpp>
 
 namespace pnet
@@ -46,8 +48,8 @@ namespace pnet
         class visitor_calculate : public boost::static_visitor<signature_type>
         {
         public:
-          visitor_calculate (const resolver_type& resolve)
-            : _resolve (resolve)
+          visitor_calculate (resolver_map_type& resolver_map)
+            : _resolver_map (resolver_map)
           {}
 
           signature_type
@@ -58,7 +60,7 @@ namespace pnet
           signature_type
             operator() (const std::list<std::string>& path) const
           {
-            return _resolve (path);
+            return resolve (path);
           }
           signature_type
             operator() (const ::expr::parse::node::unary_t& u) const
@@ -108,16 +110,33 @@ namespace pnet
           }
 
         private:
-          const resolver_type& _resolve;
+          resolver_map_type& _resolver_map;
+
+          signature_type resolve (std::list<std::string> const& path) const
+          {
+            resolver_map_type::const_iterator const
+              pos (_resolver_map.find (path));
+
+            if (pos == _resolver_map.end())
+            {
+              throw std::runtime_error
+                ( ( boost::format ("Could not resolve '%1%'")
+                  % fhg::util::join (path, ".")
+                  ).str()
+                );
+            }
+
+            return pos->second;
+          }
         };
       }
 
       signature_type
-        calculate ( const resolver_type& resolve
+        calculate ( resolver_map_type& resolver_map
                   , const ::expr::parse::node::type& nd
                   )
       {
-        return boost::apply_visitor (visitor_calculate (resolve), nd);
+        return boost::apply_visitor (visitor_calculate (resolver_map), nd);
       }
     }
   }

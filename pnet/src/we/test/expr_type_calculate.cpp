@@ -8,7 +8,6 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/exception.hpp>
 
-#include <fhg/util/join.hpp>
 #include <fhg/util/split.hpp>
 
 #include <boost/format.hpp>
@@ -25,39 +24,10 @@ namespace
                            > (s, '.');
   }
 
-  typedef boost::unordered_map< std::list<std::string>
-                              , pnet::type::signature::signature_type
-                              > resolver_map_type;
-  class resolver
-  {
-  public:
-    resolver (resolver_map_type const& m)
-      : _m (m)
-    {}
-
-    pnet::type::signature::signature_type const&
-      operator() (std::list<std::string> const& path) const
-    {
-      resolver_map_type::const_iterator const pos (_m.find (path));
-
-      if (pos == _m.end())
-      {
-        throw std::runtime_error
-          ( ( boost::format ("Could not resolve '%1%'")
-            % fhg::util::join (path, ".")
-            ).str()
-          );
-      }
-
-      return pos->second;
-    }
-
-  private:
-    resolver_map_type const& _m;
-  };
+  using pnet::expr::type::resolver_map_type;
 
   template<typename Ex>
-    void CHECK_EXCEPTION ( resolver_map_type const& m
+    void CHECK_EXCEPTION ( resolver_map_type& m
                          , ::expr::parse::parser const& p
                          , std::string const& name
                          , std::string const& what
@@ -65,7 +35,7 @@ namespace
   {
     try
     {
-      pnet::expr::type::calculate (resolver (m), p.front());
+      pnet::expr::type::calculate (m, p.front());
 
       BOOST_FAIL (boost::format ("missing exception '%1%'") % name);
     }
@@ -76,7 +46,7 @@ namespace
   }
 
   template<typename Ex>
-    void CHECK_EXCEPTION ( resolver_map_type const& m
+    void CHECK_EXCEPTION ( resolver_map_type& m
                          , std::string const& p
                          , std::string const& name
                          , std::string const& what
@@ -85,29 +55,56 @@ namespace
     CHECK_EXCEPTION<Ex> (m, ::expr::parse::parser (p), name, what);
   }
 
-  void CHECK_OKAY  ( resolver_map_type const& m
+  void CHECK_OKAY  ( resolver_map_type& m
                    , std::string const& p
                    , pnet::type::signature::signature_type const& s
                    )
   {
     BOOST_CHECK
-      ( s ==  pnet::expr::type::calculate ( resolver (m)
-                                          , ::expr::parse::parser (p).front()
-                                          )
-      );
+      (s == pnet::expr::type::calculate (m, ::expr::parse::parser (p).front()));
   }
 }
 
-BOOST_AUTO_TEST_CASE (substr)
+BOOST_AUTO_TEST_CASE (lookup)
 {
   resolver_map_type m;
 
   CHECK_EXCEPTION<std::runtime_error>
     ( m
-    , "substr (\"\", ${a})"
+    , "${a}"
     , "std::runtime_error"
     , "Could not resolve 'a'"
     );
+
+  m[path ("a")] = std::string ("Foo");
+
+  CHECK_OKAY (m, "${a}", std::string ("Foo"));
+
+  CHECK_EXCEPTION<std::runtime_error>
+    ( m
+    , "${a.a}"
+    , "std::runtime_error"
+    , "Could not resolve 'a.a'"
+    );
+
+  m[path ("a.a")] = std::string ("Bar");
+
+  CHECK_OKAY (m, "${a.a}", std::string ("Bar"));
+
+  BOOST_CHECK_EQUAL (m.size(), 2);
+  BOOST_CHECK (m.find (path ("a")) != m.end());
+  BOOST_CHECK (m.find (path ("a.a")) != m.end());
+  BOOST_CHECK (  m.at (path ("a"))
+              == pnet::type::signature::signature_type (std::string ("Foo"))
+              );
+  BOOST_CHECK (  m.at (path ("a.a"))
+              == pnet::type::signature::signature_type (std::string ("Bar"))
+              );
+}
+
+BOOST_AUTO_TEST_CASE (substr)
+{
+  resolver_map_type m;
 
   m[path ("a")] = std::string ("FOO");
 

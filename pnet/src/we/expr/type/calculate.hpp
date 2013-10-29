@@ -7,7 +7,7 @@
 
 #include <we/expr/parse/node.hpp>
 
-#include <boost/function.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace pnet
 {
@@ -15,12 +15,12 @@ namespace pnet
   {
     namespace type
     {
-      typedef boost::function
-        < pnet::type::signature::signature_type (const std::list<std::string>&)
-        > resolver_type;
+      typedef boost::unordered_map< std::list<std::string>
+                                  , pnet::type::signature::signature_type
+                                  > resolver_map_type;
 
       pnet::type::signature::signature_type
-        calculate (const resolver_type&, const ::expr::parse::node::type&);
+        calculate (resolver_map_type&, const ::expr::parse::node::type&);
     }
   }
 }
