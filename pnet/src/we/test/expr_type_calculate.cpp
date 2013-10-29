@@ -226,21 +226,37 @@ BOOST_AUTO_TEST_CASE (_and)
 
 namespace
 {
-  void CHECK_BINEQ ( resolver_map_type& m
-                   , std::string const& exp
-                   , std::string const& t
-                   )
+  void CHECK_BINEQ_OKAY ( resolver_map_type& m
+                        , std::string const& exp
+                        , std::string const& t
+                        )
   {
     m[path ("a")] = std::string (t);
     m[path ("b")] = std::string (t);
 
     OKAY (m, exp, std::string (t));
   }
+  void CHECK_BINEQ_WRONG ( resolver_map_type& m
+                         , std::string const& exp
+                         , std::string const& t
+                         , std::string const& expected
+                         )
+  {
+    m[path ("a")] = std::string (t);
+    m[path ("b")] = std::string (t);
+
+    TYPE_ERROR (m, exp, (boost::format (expected) % t).str());
+  }
 }
 
 BOOST_AUTO_TEST_CASE (min)
 {
   std::string const exp ("min (${a}, ${b})");
+  std::string const
+    expected ("'min' for type '%1%'"
+              ", expected one of 'bool', 'char', 'string', 'int'"
+              ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
+             );
 
   resolver_map_type m;
 
@@ -251,18 +267,22 @@ BOOST_AUTO_TEST_CASE (min)
 
   m[path ("b")] = std::string ("A");
 
-  TYPE_ERROR ( m
-             , exp
-             , "'min' for type 'A', expected one of 'bool', 'char', 'string', 'int', 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
-             );
+  TYPE_ERROR (m, exp, (boost::format (expected) % "A").str());
 
-  CHECK_BINEQ (m, exp, "bool");
-  CHECK_BINEQ (m, exp, "char");
-  CHECK_BINEQ (m, exp, "string");
-  CHECK_BINEQ (m, exp, "int");
-  CHECK_BINEQ (m, exp, "unsigned int");
-  CHECK_BINEQ (m, exp, "long");
-  CHECK_BINEQ (m, exp, "unsigned long");
-  CHECK_BINEQ (m, exp, "float");
-  CHECK_BINEQ (m, exp, "double");
+  CHECK_BINEQ_OKAY (m, exp, "bool");
+  CHECK_BINEQ_OKAY (m, exp, "char");
+  CHECK_BINEQ_OKAY (m, exp, "string");
+  CHECK_BINEQ_OKAY (m, exp, "int");
+  CHECK_BINEQ_OKAY (m, exp, "unsigned int");
+  CHECK_BINEQ_OKAY (m, exp, "long");
+  CHECK_BINEQ_OKAY (m, exp, "unsigned long");
+  CHECK_BINEQ_OKAY (m, exp, "float");
+  CHECK_BINEQ_OKAY (m, exp, "double");
+
+  CHECK_BINEQ_WRONG (m, exp, "control", expected);
+  CHECK_BINEQ_WRONG (m, exp, "bitset", expected);
+  CHECK_BINEQ_WRONG (m, exp, "bytearray", expected);
+  CHECK_BINEQ_WRONG (m, exp, "list", expected);
+  CHECK_BINEQ_WRONG (m, exp, "set", expected);
+  CHECK_BINEQ_WRONG (m, exp, "map", expected);
 }
