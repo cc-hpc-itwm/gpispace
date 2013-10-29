@@ -224,6 +224,20 @@ BOOST_AUTO_TEST_CASE (_and)
   OKAY (m, "${a} && ${b}", std::string ("bool"));
 }
 
+namespace
+{
+  void CHECK_BINEQ ( resolver_map_type& m
+                   , std::string const& exp
+                   , std::string const& t
+                   )
+  {
+    m[path ("a")] = std::string (t);
+    m[path ("b")] = std::string (t);
+
+    OKAY (m, exp, std::string (t));
+  }
+}
+
 BOOST_AUTO_TEST_CASE (min)
 {
   std::string const exp ("min (${a}, ${b})");
@@ -242,48 +256,13 @@ BOOST_AUTO_TEST_CASE (min)
              , "'min' for type 'A', expected one of 'bool', 'char', 'string', 'int', 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
              );
 
-  m[path ("a")] = std::string ("bool");
-  m[path ("b")] = std::string ("bool");
-
-  OKAY (m, exp, std::string ("bool"));
-
-  m[path ("a")] = std::string ("char");
-  m[path ("b")] = std::string ("char");
-
-  OKAY (m, exp, std::string ("char"));
-
-  m[path ("a")] = std::string ("string");
-  m[path ("b")] = std::string ("string");
-
-  OKAY (m, exp, std::string ("string"));
-
-  m[path ("a")] = std::string ("int");
-  m[path ("b")] = std::string ("int");
-
-  OKAY (m, exp, std::string ("int"));
-
-  m[path ("a")] = std::string ("unsigned int");
-  m[path ("b")] = std::string ("unsigned int");
-
-  OKAY (m, exp, std::string ("unsigned int"));
-
-  m[path ("a")] = std::string ("long");
-  m[path ("b")] = std::string ("long");
-
-  OKAY (m, exp, std::string ("long"));
-
-  m[path ("a")] = std::string ("unsigned long");
-  m[path ("b")] = std::string ("unsigned long");
-
-  OKAY (m, exp, std::string ("unsigned long"));
-
-  m[path ("a")] = std::string ("float");
-  m[path ("b")] = std::string ("float");
-
-  OKAY (m, exp, std::string ("float"));
-
-  m[path ("a")] = std::string ("double");
-  m[path ("b")] = std::string ("double");
-
-  OKAY (m, exp, std::string ("double"));
+  CHECK_BINEQ (m, exp, "bool");
+  CHECK_BINEQ (m, exp, "char");
+  CHECK_BINEQ (m, exp, "string");
+  CHECK_BINEQ (m, exp, "int");
+  CHECK_BINEQ (m, exp, "unsigned int");
+  CHECK_BINEQ (m, exp, "long");
+  CHECK_BINEQ (m, exp, "unsigned long");
+  CHECK_BINEQ (m, exp, "float");
+  CHECK_BINEQ (m, exp, "double");
 }
