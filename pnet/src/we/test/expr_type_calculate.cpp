@@ -319,14 +319,14 @@ BOOST_AUTO_TEST_CASE (lt)
 
   BINEQ_ONE_OF (exp, " < ")
     . allow ("bool")
-    . allow ("char")
-    . allow ("string")
     . allow ("int")
     . allow ("unsigned int")
     . allow ("long")
     . allow ("unsigned long")
     . allow ("float")
     . allow ("double")
+    . allow ("char")
+    . allow ("string")
     . check();
 }
 
@@ -338,14 +338,14 @@ BOOST_AUTO_TEST_CASE (le)
 
   BINEQ_ONE_OF (exp, " <= ")
     . allow ("bool")
-    . allow ("char")
-    . allow ("string")
     . allow ("int")
     . allow ("unsigned int")
     . allow ("long")
     . allow ("unsigned long")
     . allow ("float")
     . allow ("double")
+    . allow ("char")
+    . allow ("string")
     . check();
 }
 
@@ -357,14 +357,14 @@ BOOST_AUTO_TEST_CASE (gt)
 
   BINEQ_ONE_OF (exp, " > ")
     . allow ("bool")
-    . allow ("char")
-    . allow ("string")
     . allow ("int")
     . allow ("unsigned int")
     . allow ("long")
     . allow ("unsigned long")
     . allow ("float")
     . allow ("double")
+    . allow ("char")
+    . allow ("string")
     . check();
 }
 
@@ -376,14 +376,14 @@ BOOST_AUTO_TEST_CASE (ge)
 
   BINEQ_ONE_OF (exp, " >= ")
     . allow ("bool")
-    . allow ("char")
-    . allow ("string")
     . allow ("int")
     . allow ("unsigned int")
     . allow ("long")
     . allow ("unsigned long")
     . allow ("float")
     . allow ("double")
+    . allow ("char")
+    . allow ("string")
     . check();
 }
 
@@ -395,14 +395,14 @@ BOOST_AUTO_TEST_CASE (ne)
 
   BINEQ_ONE_OF (exp, " != ")
     . allow ("bool")
-    . allow ("char")
-    . allow ("string")
     . allow ("int")
     . allow ("unsigned int")
     . allow ("long")
     . allow ("unsigned long")
     . allow ("float")
     . allow ("double")
+    . allow ("char")
+    . allow ("string")
     . check();
 }
 
@@ -414,14 +414,14 @@ BOOST_AUTO_TEST_CASE (min)
 
   BINEQ_ONE_OF (exp, "min")
     . allow ("bool")
-    . allow ("char")
-    . allow ("string")
     . allow ("int")
     . allow ("unsigned int")
     . allow ("long")
     . allow ("unsigned long")
     . allow ("float")
     . allow ("double")
+    . allow ("char")
+    . allow ("string")
     . check();
 }
 
@@ -433,13 +433,13 @@ BOOST_AUTO_TEST_CASE (max)
 
   BINEQ_ONE_OF (exp, "max")
     . allow ("bool")
-    . allow ("char")
-    . allow ("string")
     . allow ("int")
     . allow ("unsigned int")
     . allow ("long")
     . allow ("unsigned long")
     . allow ("float")
     . allow ("double")
+    . allow ("char")
+    . allow ("string")
     . check();
 }

@@ -162,14 +162,14 @@ namespace pnet
               equal (b.token, l, r);
               return one_of (b.token, l)
                 . allow ("bool")
-                . allow ("char")
-                . allow ("string")
                 . allow ("int")
                 . allow ("unsigned int")
                 . allow ("long")
                 . allow ("unsigned long")
                 . allow ("float")
                 . allow ("double")
+                . allow ("char")
+                . allow ("string")
                 . check();
 
             case ::expr::token::_substr:
