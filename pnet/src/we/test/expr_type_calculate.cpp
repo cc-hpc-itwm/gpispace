@@ -275,13 +275,14 @@ BOOST_AUTO_TEST_CASE (_and)
 BOOST_AUTO_TEST_CASE (min)
 {
   std::string const exp ("min (${a}, ${b})");
+
+  BIN_REQUIRE_EQUAL (exp, "min");
+
   std::string const
     expected ("'min' for type '%1%'"
               ", expected one of 'bool', 'char', 'string', 'int'"
               ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
              );
-
-  BIN_REQUIRE_EQUAL (exp, "min");
 
   pnet::expr::type::resolver_map_type m;
 
@@ -311,13 +312,14 @@ BOOST_AUTO_TEST_CASE (min)
 BOOST_AUTO_TEST_CASE (max)
 {
   std::string const exp ("max (${a}, ${b})");
+
+  BIN_REQUIRE_EQUAL (exp, "max");
+
   std::string const
     expected ("'max' for type '%1%'"
               ", expected one of 'bool', 'char', 'string', 'int'"
               ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
              );
-
-  BIN_REQUIRE_EQUAL (exp, "max");
 
   pnet::expr::type::resolver_map_type m;
 
