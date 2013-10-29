@@ -280,15 +280,15 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   // add a couple of workers
   for( int k=0; k<NWORKERS; k++ )
   {
-      oss.str("");
-      oss<<k;
+    oss.str("");
+    oss<<k;
 
-      sdpa::worker_id_t workerId(oss.str());
-      std::string cpbName(WORKER_CPBS[k%3]);
-      sdpa::capability_t cpb(cpbName, "virtual", workerId);
-      sdpa::capabilities_set_t cpbSet;
-      cpbSet.insert(cpb);
-      pAgent->scheduler()->addWorker(workerId, 1, cpbSet);
+    sdpa::worker_id_t workerId(oss.str());
+    std::string cpbName(WORKER_CPBS[k%3]);
+    sdpa::capability_t cpb(cpbName, "virtual", workerId);
+    sdpa::capabilities_set_t cpbSet;
+    cpbSet.insert(cpb);
+    pAgent->scheduler()->addWorker(workerId, 1, cpbSet);
   }
 
   // create a number of jobs
@@ -362,25 +362,28 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   sdpa::worker_id_list_t listFreeWorkers(pAgent->scheduler()->getListAllocatedWorkers(jobId4));
   BOOST_CHECK(listFreeWorkers.empty());
 
-  reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
+  //reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
 
   // Now report that jobId0 has finished and try to assign again resources to the job 4
   pAgent->scheduler()->releaseAllocatedWorkers(jobId0);
-  listFreeWorkers.clear();
+
+  //listFreeWorkers.clear();
   pAgent->scheduler()->assignJobsToWorkers();
+
   listFreeWorkers = pAgent->scheduler()->getListAllocatedWorkers(jobId4);
   BOOST_CHECK(!listFreeWorkers.empty());
 
   int w0 = boost::lexical_cast<int>(listFreeWorkers.front());
   BOOST_CHECK(w0==0 || w0 == 3  || w0 == 6|| w0 == 9);
 
+  /*
   int w1 = boost::lexical_cast<int>(*(boost::next(listFreeWorkers.begin())));
   BOOST_CHECK(w1==0 || w1 == 3  || w1 == 6|| w1 == 9);
-  reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
+  */
 }
 
-  BOOST_AUTO_TEST_CASE( testCoallocationWorkflow )
-  {
+BOOST_AUTO_TEST_CASE( testCoallocationWorkflow )
+{
   LOG( INFO, "***** Test capabilities *****"<<std::endl);
 
   const int NWORKERS=5;
