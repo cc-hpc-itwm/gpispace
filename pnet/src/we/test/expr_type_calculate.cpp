@@ -111,6 +111,7 @@ BOOST_AUTO_TEST_CASE (substr)
     , "substr (\"\", ${a})"
     , "pnet::exception::type_error"
     , "type error: 'substr' for types 'string' and 'FOO'"
+      ", expected are types 'string' and 'long'"
     );
 
   m[path ("a")] = std::string ("long");
@@ -122,6 +123,7 @@ BOOST_AUTO_TEST_CASE (substr)
     , "substr (1L, ${a})"
     , "pnet::exception::type_error"
     , "type error: 'substr' for types 'long' and 'long'"
+      ", expected are types 'string' and 'long'"
     );
 }
 
@@ -136,6 +138,7 @@ BOOST_AUTO_TEST_CASE (bitset_insert)
     , "bitset_insert ({}, ${a})"
     , "pnet::exception::type_error"
     , "type error: 'bitset_insert' for types 'bitset' and 'FOO'"
+      ", expected are types 'bitset' and 'long'"
     );
 
   m[path ("a")] = std::string ("long");
@@ -154,6 +157,7 @@ BOOST_AUTO_TEST_CASE (bitset_delete)
     , "bitset_delete ({}, ${a})"
     , "pnet::exception::type_error"
     , "type error: 'bitset_delete' for types 'bitset' and 'FOO'"
+      ", expected are types 'bitset' and 'long'"
     );
 
   m[path ("a")] = std::string ("long");
@@ -172,6 +176,7 @@ BOOST_AUTO_TEST_CASE (bitset_is_element)
     , "bitset_is_element ({}, ${a})"
     , "pnet::exception::type_error"
     , "type error: 'bitset_is_element' for types 'bitset' and 'FOO'"
+      ", expected are types 'bitset' and 'long'"
     );
 
   m[path ("a")] = std::string ("long");
@@ -191,6 +196,7 @@ BOOST_AUTO_TEST_CASE (_or)
     , "${a} || ${b}"
     , "pnet::exception::type_error"
     , "type error: ' || ' for types 'FOO' and 'BAR'"
+      ", expected are types 'bool' and 'bool'"
     );
 
   m[path ("a")] = std::string ("bool");
@@ -211,6 +217,7 @@ BOOST_AUTO_TEST_CASE (_and)
     , "${a} && ${b}"
     , "pnet::exception::type_error"
     , "type error: ' && ' for types 'FOO' and 'BAR'"
+      ", expected are types 'bool' and 'bool'"
     );
 
   m[path ("a")] = std::string ("bool");
