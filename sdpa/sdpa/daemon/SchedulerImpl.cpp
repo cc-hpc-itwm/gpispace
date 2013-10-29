@@ -524,12 +524,19 @@ void SchedulerImpl::getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerLis
   ptr_worker_man_->getListWorkersNotReserved(workerList);
 }
 
-void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId) throw( WorkerReservationFailed)
+void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap) throw( WorkerReservationFailed)
 {
   ptr_worker_man_->reserveWorker(matchingWorkerId);
   // allocate this worker to the job with the jobId
 
   lock_type lock_table(mtx_alloc_table_);
+  allocation_table_t::iterator it(allocation_table_.find(jobId));
+  if(it==allocation_table_.end()) {
+      Reservation reservation(cap);
+      allocation_table_t::value_type pairJobRes(jobId, reservation);
+      allocation_table_.insert(pairJobRes);
+  }
+
   allocation_table_[jobId].addWorker(matchingWorkerId);
 }
 
@@ -570,11 +577,11 @@ void SchedulerImpl::assignJobsToWorkers()
   {
     sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.pop());
 
-    int nReqWorkers(1); // default number of required workers is 1
+    size_t nReqWorkers(1); // default number of required workers is 1
     sdpa::worker_id_t matchingWorkerId;
 
     try {
-      job_requirements_t job_reqs = ptr_comm_handler_->getJobRequirements(jobId);
+      job_requirements_t job_reqs(ptr_comm_handler_->getJobRequirements(jobId));
 
       nReqWorkers = job_reqs.numWorkers();
       matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
@@ -588,15 +595,23 @@ void SchedulerImpl::assignJobsToWorkers()
 
     if( !matchingWorkerId.empty() ) // matching found
     {
-      reserveWorker(jobId, matchingWorkerId);
+      reserveWorker(jobId, matchingWorkerId, nReqWorkers);
 
-       lock_type lock(mtx_alloc_table_);
+      lock_type lock(mtx_alloc_table_);
       // attention: what to do if job_reqs.n_workers_req > total number of registered workers?
       // if all the required resources were acquired, mark the job as submitted
-      if( allocation_table_[jobId].size() == (size_t)nReqWorkers )
-      {
-          sdpa::job_id_t headWorker(allocation_table_[jobId].headWorker());
-          ptr_comm_handler_->serveJob(headWorker, jobId);
+      Reservation& reservation(allocation_table_[jobId]);
+      /*LOG(INFO, "The actual reservation for the job "<<jobId<<" contains "
+                  <<reservation.size()<<" workers and has the capaccity "
+                  <<reservation.capacity());
+      */
+
+      if( reservation.acquired() ) {
+        LOG(INFO, "The reservation has been acquired!");
+        sdpa::job_id_t headWorker(reservation.headWorker());
+
+        // serve a job to all workers, not only to the head worker!!!
+        ptr_comm_handler_->serveJob(headWorker, jobId);
       }
       else
         ptr_worker_man_->common_queue_.push_front(jobId);
