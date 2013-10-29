@@ -601,10 +601,6 @@ void SchedulerImpl::assignJobsToWorkers()
       // attention: what to do if job_reqs.n_workers_req > total number of registered workers?
       // if all the required resources were acquired, mark the job as submitted
       Reservation& reservation(allocation_table_[jobId]);
-      /*LOG(INFO, "The actual reservation for the job "<<jobId<<" contains "
-                  <<reservation.size()<<" workers and has the capaccity "
-                  <<reservation.capacity());
-      */
 
       if( reservation.acquired() ) {
         LOG(INFO, "The reservation has been acquired!");
