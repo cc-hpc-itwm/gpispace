@@ -532,7 +532,7 @@ void SchedulerImpl::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worke
   lock_type lock_table(mtx_alloc_table_);
   allocation_table_t::iterator it(allocation_table_.find(jobId));
   if(it==allocation_table_.end()) {
-      Reservation reservation(cap);
+      Reservation reservation(jobId, cap);
       allocation_table_t::value_type pairJobRes(jobId, reservation);
       allocation_table_.insert(pairJobRes);
   }
@@ -603,11 +603,14 @@ void SchedulerImpl::assignJobsToWorkers()
       Reservation& reservation(allocation_table_[jobId]);
 
       if( reservation.acquired() ) {
-        LOG(INFO, "The reservation has been acquired!");
+        LOG(INFO, "A resource reservation for the job "<<jobId<<" has been acquired!");
         sdpa::job_id_t headWorker(reservation.headWorker());
 
         // serve a job to all workers, not only to the head worker!!!
-        ptr_comm_handler_->serveJob(headWorker, jobId);
+        //ptr_comm_handler_->serveJob(headWorker, jobId);
+
+        // serve the same job to all reserved workers!!!!
+        ptr_comm_handler_->serveJob(reservation);
       }
       else
         ptr_worker_man_->common_queue_.push_front(jobId);
@@ -852,45 +855,49 @@ void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
   lock_type lock_table(mtx_alloc_table_);
   // should first kill/cancel the job
 
-  allocation_table_t::const_iterator it = allocation_table_.find(jobId);
-
-  // if there are allocated resources
-  if(it==allocation_table_.end())
-    return;
-
   // if the status is not terminal
-  Job::ptr_t pJob(ptr_comm_handler_->findJob(jobId));
+  try {
+      Job::ptr_t pJob(ptr_comm_handler_->findJob(jobId));
+      allocation_table_t::const_iterator it = allocation_table_.find(jobId);
 
-  if(pJob->is_running())
-  {
-      sdpa::worker_id_t head_worker_id(allocation_table_[jobId].headWorker());
-      SDPA_LOG_INFO("Tell the worker "<<head_worker_id<<" to cancel the job "<<jobId);
-      Worker::ptr_t pWorker = findWorker(head_worker_id);
-      CancelJobEvent::Ptr pEvtCancelJob (new CancelJobEvent(  ptr_comm_handler_->name()
-                                                              , head_worker_id
-                                                              , jobId
-                                                              , "The master recovered after a crash!") );
-
-      ptr_comm_handler_->sendEventToSlave(pEvtCancelJob);
-    }
-
-  {
-    lock_type lock_worker (mtx_);
-    worker_id_list_t listWorkers(allocation_table_[jobId].getWorkerList());
-    BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
-    {
-      try
-      {
-        findWorker(workerId)->free();
+      // if there are allocated resources
+      if(it==allocation_table_.end()) {
+          LOG(WARN, "No reservation was found for the job "<<jobId);
+          return;
       }
-      catch (std::exception const&)
-      {
-        // worker already disappered
+
+      if(pJob->is_running()) {
+          sdpa::worker_id_t head_worker_id(allocation_table_[jobId].headWorker());
+          SDPA_LOG_INFO("Tell the worker "<<head_worker_id<<" to cancel the job "<<jobId);
+          Worker::ptr_t pWorker = findWorker(head_worker_id);
+          CancelJobEvent::Ptr pEvtCancelJob (new CancelJobEvent(  ptr_comm_handler_->name()
+                                                                , head_worker_id
+                                                                , jobId
+                                                                , "The master recovered after a crash!") );
+
+          ptr_comm_handler_->sendEventToSlave(pEvtCancelJob);
       }
-    }
+
+      lock_type lock_worker (mtx_);
+      worker_id_list_t listWorkers(allocation_table_[jobId].getWorkerList());
+      BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
+      {
+        try
+        {
+          findWorker(workerId)->free();
+        }
+        catch (WorkerNotFoundException const& ex)
+        {
+          LOG(WARN, "The worker "<<workerId<<" was not found, it was already released!");
+        }
+      }
+
+      allocation_table_.erase(jobId);
   }
-
-  allocation_table_.erase(jobId);
+  catch(JobNotFoundException const& ex2)
+  {
+      LOG(WARN, "The job "<<jobId<<" was not found!");
+  }
 }
 
 void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId ) throw (JobNotDeletedException, WorkerNotFoundException)
