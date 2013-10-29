@@ -151,6 +151,7 @@ namespace pnet
               return std::string ("bool");
 
             case ::expr::token::min:
+            case ::expr::token::max:
               equal (b.token, l, r);
               return one_of (b.token, l)
                 . allow ("bool")

@@ -286,3 +286,41 @@ BOOST_AUTO_TEST_CASE (min)
   CHECK_BINEQ_WRONG (m, exp, "set", expected);
   CHECK_BINEQ_WRONG (m, exp, "map", expected);
 }
+
+BOOST_AUTO_TEST_CASE (max)
+{
+  std::string const exp ("max (${a}, ${b})");
+  std::string const
+    expected ("'max' for type '%1%'"
+              ", expected one of 'bool', 'char', 'string', 'int'"
+              ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
+             );
+
+  resolver_map_type m;
+
+  m[path ("a")] = std::string ("A");
+  m[path ("b")] = std::string ("B");
+
+  TYPE_ERROR (m, exp, "'max' for unequal types 'A' and 'B'");
+
+  m[path ("b")] = std::string ("A");
+
+  TYPE_ERROR (m, exp, (boost::format (expected) % "A").str());
+
+  CHECK_BINEQ_OKAY (m, exp, "bool");
+  CHECK_BINEQ_OKAY (m, exp, "char");
+  CHECK_BINEQ_OKAY (m, exp, "string");
+  CHECK_BINEQ_OKAY (m, exp, "int");
+  CHECK_BINEQ_OKAY (m, exp, "unsigned int");
+  CHECK_BINEQ_OKAY (m, exp, "long");
+  CHECK_BINEQ_OKAY (m, exp, "unsigned long");
+  CHECK_BINEQ_OKAY (m, exp, "float");
+  CHECK_BINEQ_OKAY (m, exp, "double");
+
+  CHECK_BINEQ_WRONG (m, exp, "control", expected);
+  CHECK_BINEQ_WRONG (m, exp, "bitset", expected);
+  CHECK_BINEQ_WRONG (m, exp, "bytearray", expected);
+  CHECK_BINEQ_WRONG (m, exp, "list", expected);
+  CHECK_BINEQ_WRONG (m, exp, "set", expected);
+  CHECK_BINEQ_WRONG (m, exp, "map", expected);
+}
