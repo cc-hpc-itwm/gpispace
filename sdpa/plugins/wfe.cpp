@@ -199,7 +199,7 @@ public:
                  )
   {
     emit ( sdpa::daemon::NotificationEvent
-           (task.workers, task.id, task.name, state, task.result, task.meta)
+           (task.workers, task.id, task.name, state, task.activity.to_string(), task.meta)
          );
   }
 
@@ -262,7 +262,7 @@ public:
       }
 
       task.finished_time = boost::posix_time::microsec_clock::universal_time();
-      result = task.result;
+      result = task.activity.to_string();
 
       if (fhg::error::NO_ERROR == ec)
       {
@@ -276,7 +276,7 @@ public:
       {
         DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
-        result = task.result;
+        result = task.activity.to_string();
         error_message = task.error_message;
 
         emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELLED);
@@ -285,7 +285,7 @@ public:
       {
         MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::FAILED;
-        result = task.result;
+        result = task.activity.to_string();
         error_message = task.error_message;
 
         emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
@@ -481,7 +481,6 @@ private:
         }
       }
 
-      task->result = task->activity.to_string();
       task->done.notify(task->errc);
     }
   }

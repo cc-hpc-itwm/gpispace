@@ -32,7 +32,6 @@ struct wfe_task_t
   int        errc;
   we::mgmt::type::activity_t activity;
   capabilities_t capabilities;
-  std::string result;
   fhg::util::thread::event<int> done;
   meta_data_t meta;
   worker_list_t workers;
