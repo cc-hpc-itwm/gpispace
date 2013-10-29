@@ -140,6 +140,35 @@ namespace
       }
     }
   }
+
+  void BIN_REQUIRE_EQUAL ( std::string const& exp
+                         , std::string const& token
+                         )
+  {
+    pnet::expr::type::resolver_map_type m;
+
+    BOOST_FOREACH (std::string const& l, tnames())
+    {
+      BOOST_FOREACH (std::string const& r, tnames())
+      {
+        if (l != r)
+        {
+          m[path ("a")] = l;
+          m[path ("b")] = r;
+
+          TYPE_ERROR
+            ( m
+            , exp
+            , ( boost::format ("'%1%' for unequal types '%2%' and '%3%'")
+              % token
+              % l
+              % r
+              ).str()
+            );
+        }
+      }
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE (lookup)
@@ -252,13 +281,11 @@ BOOST_AUTO_TEST_CASE (min)
               ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
              );
 
+  BIN_REQUIRE_EQUAL (exp, "min");
+
   pnet::expr::type::resolver_map_type m;
 
   m[path ("a")] = std::string ("A");
-  m[path ("b")] = std::string ("B");
-
-  TYPE_ERROR (m, exp, "'min' for unequal types 'A' and 'B'");
-
   m[path ("b")] = std::string ("A");
 
   TYPE_ERROR (m, exp, (boost::format (expected) % "A").str());
@@ -290,13 +317,11 @@ BOOST_AUTO_TEST_CASE (max)
               ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
              );
 
+  BIN_REQUIRE_EQUAL (exp, "max");
+
   pnet::expr::type::resolver_map_type m;
 
   m[path ("a")] = std::string ("A");
-  m[path ("b")] = std::string ("B");
-
-  TYPE_ERROR (m, exp, "'max' for unequal types 'A' and 'B'");
-
   m[path ("b")] = std::string ("A");
 
   TYPE_ERROR (m, exp, (boost::format (expected) % "A").str());
