@@ -9,6 +9,9 @@
 #include <sdpa/daemon/Observable.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/transition.hpp>
+
 using namespace sdpa::daemon;
 
 static uint64_t id_counter;
@@ -16,9 +19,10 @@ static uint64_t id_counter;
 struct activity
 {
   activity (const std::string& worker)
-    : _id (++id_counter)
+    : _id ((boost::format ("%1%") % ++id_counter).str())
     , _workers()
     , _state (NotificationEvent::STATE_STARTED)
+    , _act (we::type::transition_t ("activity-" + _id, we::type::expression_t()))
   {
     _workers.push_back (worker);
   }
@@ -27,11 +31,7 @@ struct activity
                              , NotificationService* service_b
                              ) const
   {
-    const NotificationEvent event ( _workers
-                                  , (boost::format ("%1%") % _id).str()
-                                  , (boost::format ("activity-%1%") % _id).str()
-                                  , _state
-                                  );
+    const NotificationEvent event (_workers, _id, _state, _act);
     service_a->update (event);
     service_b->update (event);
   }
@@ -59,9 +59,10 @@ struct activity
     return true;
   }
 
-  uint64_t _id;
+  std::string _id;
   std::list<std::string> _workers;
   sdpa::daemon::NotificationEvent::state_t _state;
+  we::mgmt::type::activity_t _act;
 };
 
 std::string worker_gen()

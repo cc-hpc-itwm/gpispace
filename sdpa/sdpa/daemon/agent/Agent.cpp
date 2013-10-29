@@ -192,12 +192,12 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 
     {
       std::list<std::string> workers; workers.push_back (name());
+      const we::mgmt::type::activity_t act (pJob->description());
       const sdpa::daemon::NotificationEvent evt
         ( workers
         , pJob->id().str()
-        , "unknown"
         , NotificationEvent::STATE_FINISHED
-        , pJob->description()
+        , act
         );
 
       gui_service()->notify (evt);
@@ -491,12 +491,12 @@ bool Agent::failed( const id_type& wfid
 
     {
       std::list<std::string> workers; workers.push_back (name());
+      const we::mgmt::type::activity_t act (pJob->description());
       const sdpa::daemon::NotificationEvent evt
         ( workers
         , pJob->id().str()
-        , "unknown"
         , NotificationEvent::STATE_FINISHED
-        , pJob->description()
+        , act
         );
 
       gui_service()->notify (evt);

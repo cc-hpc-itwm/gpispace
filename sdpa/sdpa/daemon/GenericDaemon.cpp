@@ -807,12 +807,12 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
       {
         std::list<std::string> workers; workers.push_back (name());
+        const we::mgmt::type::activity_t act (pJob->description());
         const sdpa::daemon::NotificationEvent evt
           ( workers
           , pJob->id().str()
-          , "unknown"
           , NotificationEvent::STATE_STARTED
-          , pJob->description()
+          , act
           );
 
         gui_service()->notify (evt);
