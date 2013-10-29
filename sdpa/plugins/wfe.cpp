@@ -130,34 +130,33 @@ namespace
     we::loader::loader& loader;
     wfe_task_t& task;
   };
+
+  struct search_path_appender
+  {
+    explicit search_path_appender(we::loader::loader& ld)
+      : loader (ld)
+    {}
+
+    search_path_appender& operator = (std::string const& p)
+    {
+      if (not p.empty ())
+        loader.append_search_path (p);
+      return *this;
+    }
+
+    search_path_appender& operator* ()
+    {
+      return *this;
+    }
+
+    search_path_appender& operator++(int)
+    {
+      return *this;
+    }
+
+    we::loader::loader & loader;
+  };
 }
-
-struct search_path_appender
-{
-  explicit
-  search_path_appender(we::loader::loader& ld)
-    : loader (ld)
-  {}
-
-  search_path_appender & operator = (std::string const &p)
-  {
-    if (not p.empty ())
-      loader.append_search_path (p);
-    return *this;
-  }
-
-  search_path_appender & operator* ()
-  {
-    return *this;
-  }
-
-  search_path_appender & operator++(int)
-  {
-    return *this;
-  }
-
-  we::loader::loader & loader;
-};
 
 class WFEImpl : FHG_PLUGIN
               , public wfe::WFE
