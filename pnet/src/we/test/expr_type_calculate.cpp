@@ -225,3 +225,74 @@ BOOST_AUTO_TEST_CASE (_and)
 
   OKAY (m, "${a} && ${b}", std::string ("bool"));
 }
+
+BOOST_AUTO_TEST_CASE (min)
+{
+  std::string const exp ("min (${a}, ${b})");
+
+  resolver_map_type m;
+
+  m[path ("a")] = std::string ("A");
+  m[path ("b")] = std::string ("B");
+
+  EXCEPTION<pnet::exception::type_error>
+    ( m
+    , exp
+    , "pnet::exception::type_error"
+    , "type error: 'min' for unequal types 'A' and 'B'"
+    );
+
+  m[path ("b")] = std::string ("A");
+
+  EXCEPTION<pnet::exception::type_error>
+    ( m
+    , exp
+    , "pnet::exception::type_error"
+    , "type error: 'min' for type 'A', expected one of 'bool', 'char', 'string', 'int', 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
+    );
+
+  m[path ("a")] = std::string ("bool");
+  m[path ("b")] = std::string ("bool");
+
+  OKAY (m, exp, std::string ("bool"));
+
+  m[path ("a")] = std::string ("char");
+  m[path ("b")] = std::string ("char");
+
+  OKAY (m, exp, std::string ("char"));
+
+  m[path ("a")] = std::string ("string");
+  m[path ("b")] = std::string ("string");
+
+  OKAY (m, exp, std::string ("string"));
+
+  m[path ("a")] = std::string ("int");
+  m[path ("b")] = std::string ("int");
+
+  OKAY (m, exp, std::string ("int"));
+
+  m[path ("a")] = std::string ("unsigned int");
+  m[path ("b")] = std::string ("unsigned int");
+
+  OKAY (m, exp, std::string ("unsigned int"));
+
+  m[path ("a")] = std::string ("long");
+  m[path ("b")] = std::string ("long");
+
+  OKAY (m, exp, std::string ("long"));
+
+  m[path ("a")] = std::string ("unsigned long");
+  m[path ("b")] = std::string ("unsigned long");
+
+  OKAY (m, exp, std::string ("unsigned long"));
+
+  m[path ("a")] = std::string ("float");
+  m[path ("b")] = std::string ("float");
+
+  OKAY (m, exp, std::string ("float"));
+
+  m[path ("a")] = std::string ("double");
+  m[path ("b")] = std::string ("double");
+
+  OKAY (m, exp, std::string ("double"));
+}

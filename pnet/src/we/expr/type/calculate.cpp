@@ -13,6 +13,7 @@
 #include <boost/format.hpp>
 
 #include <stdexcept>
+#include <sstream>
 
 namespace pnet
 {
@@ -24,6 +25,54 @@ namespace pnet
 
       namespace
       {
+        class one_of
+        {
+        public:
+          one_of (::expr::token::type const& token, signature_type const& sig)
+            : _token (token)
+            , _sig (sig)
+            , _okay (false)
+            , _count (0)
+            , _expected()
+          {}
+          one_of& allow (std::string const& t)
+          {
+            _okay |= (_sig == signature_type (t));
+
+            if (_count > 0)
+            {
+              _expected << ", ";
+            }
+            _expected << "'" << t << "'";
+
+            ++_count;
+
+            return *this;
+          }
+          signature_type const& check() const
+          {
+            if (!_okay)
+            {
+              throw pnet::exception::type_error
+                ( ( boost::format ("'%1%' for type '%2%', expected %3%%4%")
+                  % _token
+                  % pnet::type::signature::show (_sig)
+                  % ((_count > 1) ? "one of " : "")
+                  % _expected.str()
+                  ).str()
+                );
+            }
+
+            return _sig;
+          }
+        private:
+          ::expr::token::type const& _token;
+          signature_type const& _sig;
+          bool _okay;
+          unsigned int _count;
+          std::ostringstream _expected;
+        };
+
         void require ( std::string const& sig_l
                      , std::string const& sig_r
                      , ::expr::token::type const& token
@@ -42,6 +91,23 @@ namespace pnet
                 % pnet::type::signature::show (r)
                 % sig_l
                 % sig_r
+                ).str()
+              );
+          }
+        }
+
+        void equal ( ::expr::token::type const& token
+                   , signature_type const& l
+                   , signature_type const& r
+                   )
+        {
+          if (!(l == r))
+          {
+            throw pnet::exception::type_error
+              ( ( boost::format ("'%1%' for unequal types '%2%' and '%3%'")
+                % ::expr::token::show (token)
+                % pnet::type::signature::show (l)
+                % pnet::type::signature::show (r)
                 ).str()
               );
           }
@@ -83,6 +149,20 @@ namespace pnet
             case ::expr::token::_and:
               require ("bool", "bool", b.token, l, r);
               return std::string ("bool");
+
+            case ::expr::token::min:
+              equal (b.token, l, r);
+              return one_of (b.token, l)
+                . allow ("bool")
+                . allow ("char")
+                . allow ("string")
+                . allow ("int")
+                . allow ("unsigned int")
+                . allow ("long")
+                . allow ("unsigned long")
+                . allow ("float")
+                . allow ("double")
+                . check();
 
             case ::expr::token::_substr:
               require ("string", "long", b.token, l, r);
