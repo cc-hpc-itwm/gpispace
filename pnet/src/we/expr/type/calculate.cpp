@@ -36,7 +36,7 @@ namespace pnet
           if (!(l == signature_type (sig_l) && r == signature_type (sig_r)))
           {
             throw pnet::exception::type_error
-              ( ( boost::format ("%1% for types '%2%' and '%3%'")
+              ( ( boost::format ("'%1%' for types '%2%' and '%3%'")
                 % ::expr::token::show (token)
                 % pnet::type::signature::show (l)
                 % pnet::type::signature::show (r)
