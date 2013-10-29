@@ -135,6 +135,8 @@ namespace we
 
         std::ostream& print (std::ostream&, const token_on_port_list_t&) const;
 
+        std::string nice_name() const;
+
       private:
         void lock();
         void unlock();

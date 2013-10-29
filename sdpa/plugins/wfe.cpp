@@ -452,10 +452,7 @@ private:
       lock_type lock (m_current_task_mutex);
       if (m_current_task)
       {
-        rply.set_body
-          ( nice_name (m_current_task->activity)
-          .get_value_or (m_current_task->activity.transition().name())
-          );
+        rply.set_body (m_current_task->activity.nice_name());
       }
     }
 
