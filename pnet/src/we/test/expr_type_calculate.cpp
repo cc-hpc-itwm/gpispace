@@ -119,9 +119,9 @@ namespace
     }
   }
 
-  void BIN_REQUIRE_EQUAL ( std::string const& exp
-                         , std::string const& token
-                         )
+  void BIN_EQUAL ( std::string const& exp
+                 , std::string const& token
+                 )
   {
     pnet::expr::type::resolver_map_type m;
 
@@ -315,7 +315,7 @@ BOOST_AUTO_TEST_CASE (min)
 {
   std::string const exp ("min (${a}, ${b})");
 
-  BIN_REQUIRE_EQUAL (exp, "min");
+  BIN_EQUAL (exp, "min");
 
   BINEQ_ONE_OF (exp, "min")
     . allow ("bool")
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE (max)
 {
   std::string const exp ("max (${a}, ${b})");
 
-  BIN_REQUIRE_EQUAL (exp, "max");
+  BIN_EQUAL (exp, "max");
 
   BINEQ_ONE_OF (exp, "max")
     . allow ("bool")
