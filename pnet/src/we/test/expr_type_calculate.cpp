@@ -27,11 +27,11 @@ namespace
   using pnet::expr::type::resolver_map_type;
 
   template<typename Ex>
-    void CHECK_EXCEPTION ( resolver_map_type& m
-                         , ::expr::parse::parser const& p
-                         , std::string const& name
-                         , std::string const& what
-                         )
+    void EXCEPTION ( resolver_map_type& m
+                   , ::expr::parse::parser const& p
+                   , std::string const& name
+                   , std::string const& what
+                   )
   {
     try
     {
@@ -46,19 +46,19 @@ namespace
   }
 
   template<typename Ex>
-    void CHECK_EXCEPTION ( resolver_map_type& m
-                         , std::string const& p
-                         , std::string const& name
-                         , std::string const& what
-                         )
+    void EXCEPTION ( resolver_map_type& m
+                   , std::string const& p
+                   , std::string const& name
+                   , std::string const& what
+                   )
   {
-    CHECK_EXCEPTION<Ex> (m, ::expr::parse::parser (p), name, what);
+    EXCEPTION<Ex> (m, ::expr::parse::parser (p), name, what);
   }
 
-  void CHECK_OKAY  ( resolver_map_type& m
-                   , std::string const& p
-                   , pnet::type::signature::signature_type const& s
-                   )
+  void OKAY  ( resolver_map_type& m
+             , std::string const& p
+             , pnet::type::signature::signature_type const& s
+             )
   {
     BOOST_CHECK
       (s == pnet::expr::type::calculate (m, ::expr::parse::parser (p).front()));
@@ -69,27 +69,25 @@ BOOST_AUTO_TEST_CASE (lookup)
 {
   resolver_map_type m;
 
-  CHECK_EXCEPTION<std::runtime_error>
-    ( m
-    , "${a}"
-    , "std::runtime_error"
-    , "Could not resolve 'a'"
-    );
+  EXCEPTION<std::runtime_error> ( m
+                                , "${a}"
+                                , "std::runtime_error"
+                                , "Could not resolve 'a'"
+                                );
 
   m[path ("a")] = std::string ("Foo");
 
-  CHECK_OKAY (m, "${a}", std::string ("Foo"));
+  OKAY (m, "${a}", std::string ("Foo"));
 
-  CHECK_EXCEPTION<std::runtime_error>
-    ( m
-    , "${a.a}"
-    , "std::runtime_error"
-    , "Could not resolve 'a.a'"
-    );
+  EXCEPTION<std::runtime_error> ( m
+                                , "${a.a}"
+                                , "std::runtime_error"
+                                , "Could not resolve 'a.a'"
+                                );
 
   m[path ("a.a")] = std::string ("Bar");
 
-  CHECK_OKAY (m, "${a.a}", std::string ("Bar"));
+  OKAY (m, "${a.a}", std::string ("Bar"));
 
   BOOST_CHECK_EQUAL (m.size(), 2);
   BOOST_CHECK (m.find (path ("a")) != m.end());
@@ -108,7 +106,7 @@ BOOST_AUTO_TEST_CASE (substr)
 
   m[path ("a")] = std::string ("FOO");
 
-  CHECK_EXCEPTION<pnet::exception::type_error>
+  EXCEPTION<pnet::exception::type_error>
     ( m
     , "substr (\"\", ${a})"
     , "pnet::exception::type_error"
@@ -117,9 +115,9 @@ BOOST_AUTO_TEST_CASE (substr)
 
   m[path ("a")] = std::string ("long");
 
-  CHECK_OKAY (m, "substr (\"\", ${a})", std::string ("string"));
+  OKAY (m, "substr (\"\", ${a})", std::string ("string"));
 
-  CHECK_EXCEPTION<pnet::exception::type_error>
+  EXCEPTION<pnet::exception::type_error>
     ( m
     , "substr (1L, ${a})"
     , "pnet::exception::type_error"
@@ -133,7 +131,7 @@ BOOST_AUTO_TEST_CASE (bitset_insert)
 
   m[path ("a")] = std::string ("FOO");
 
-  CHECK_EXCEPTION<pnet::exception::type_error>
+  EXCEPTION<pnet::exception::type_error>
     ( m
     , "bitset_insert ({}, ${a})"
     , "pnet::exception::type_error"
@@ -142,7 +140,7 @@ BOOST_AUTO_TEST_CASE (bitset_insert)
 
   m[path ("a")] = std::string ("long");
 
-  CHECK_OKAY (m, "bitset_insert ({}, ${a})", std::string ("bitset"));
+  OKAY (m, "bitset_insert ({}, ${a})", std::string ("bitset"));
 }
 
 BOOST_AUTO_TEST_CASE (bitset_delete)
@@ -151,7 +149,7 @@ BOOST_AUTO_TEST_CASE (bitset_delete)
 
   m[path ("a")] = std::string ("FOO");
 
-  CHECK_EXCEPTION<pnet::exception::type_error>
+  EXCEPTION<pnet::exception::type_error>
     ( m
     , "bitset_delete ({}, ${a})"
     , "pnet::exception::type_error"
@@ -160,7 +158,7 @@ BOOST_AUTO_TEST_CASE (bitset_delete)
 
   m[path ("a")] = std::string ("long");
 
-  CHECK_OKAY (m, "bitset_delete ({}, ${a})", std::string ("bitset"));
+  OKAY (m, "bitset_delete ({}, ${a})", std::string ("bitset"));
 }
 
 BOOST_AUTO_TEST_CASE (bitset_is_element)
@@ -169,7 +167,7 @@ BOOST_AUTO_TEST_CASE (bitset_is_element)
 
   m[path ("a")] = std::string ("FOO");
 
-  CHECK_EXCEPTION<pnet::exception::type_error>
+  EXCEPTION<pnet::exception::type_error>
     ( m
     , "bitset_is_element ({}, ${a})"
     , "pnet::exception::type_error"
@@ -178,7 +176,7 @@ BOOST_AUTO_TEST_CASE (bitset_is_element)
 
   m[path ("a")] = std::string ("long");
 
-  CHECK_OKAY (m, "bitset_is_element ({}, ${a})", std::string ("bool"));
+  OKAY (m, "bitset_is_element ({}, ${a})", std::string ("bool"));
 }
 
 BOOST_AUTO_TEST_CASE (_or)
@@ -188,7 +186,7 @@ BOOST_AUTO_TEST_CASE (_or)
   m[path ("a")] = std::string ("FOO");
   m[path ("b")] = std::string ("BAR");
 
-  CHECK_EXCEPTION<pnet::exception::type_error>
+  EXCEPTION<pnet::exception::type_error>
     ( m
     , "${a} || ${b}"
     , "pnet::exception::type_error"
@@ -198,7 +196,7 @@ BOOST_AUTO_TEST_CASE (_or)
   m[path ("a")] = std::string ("bool");
   m[path ("b")] = std::string ("bool");
 
-  CHECK_OKAY (m, "${a} || ${b}", std::string ("bool"));
+  OKAY (m, "${a} || ${b}", std::string ("bool"));
 }
 
 BOOST_AUTO_TEST_CASE (_and)
@@ -208,7 +206,7 @@ BOOST_AUTO_TEST_CASE (_and)
   m[path ("a")] = std::string ("FOO");
   m[path ("b")] = std::string ("BAR");
 
-  CHECK_EXCEPTION<pnet::exception::type_error>
+  EXCEPTION<pnet::exception::type_error>
     ( m
     , "${a} && ${b}"
     , "pnet::exception::type_error"
@@ -218,5 +216,5 @@ BOOST_AUTO_TEST_CASE (_and)
   m[path ("a")] = std::string ("bool");
   m[path ("b")] = std::string ("bool");
 
-  CHECK_OKAY (m, "${a} && ${b}", std::string ("bool"));
+  OKAY (m, "${a} && ${b}", std::string ("bool"));
 }
