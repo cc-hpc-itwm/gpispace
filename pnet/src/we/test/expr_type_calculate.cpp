@@ -113,12 +113,12 @@ namespace
     TYPE_ERROR (m, exp, (boost::format (expected) % t).str());
   }
 
-  void CHECK_BIN ( std::string const& exp
-                 , std::string const& okay_l
-                 , std::string const& okay_r
-                 , std::string const& result
-                 , std::string const& error
-                 )
+  void BIN_REQUIRE ( std::string const& exp
+                   , std::string const& okay_l
+                   , std::string const& okay_r
+                   , std::string const& result
+                   , std::string const& error
+                   )
   {
     pnet::expr::type::resolver_map_type m;
 
@@ -179,68 +179,68 @@ BOOST_AUTO_TEST_CASE (lookup)
 
 BOOST_AUTO_TEST_CASE (substr)
 {
-  CHECK_BIN ( "substr (${a}, ${b})"
-            , "string"
-            , "long"
-            , "string"
-            , "'substr' for types '%1%' and '%2%'"
+  BIN_REQUIRE ( "substr (${a}, ${b})"
+              , "string"
+              , "long"
+              , "string"
+              , "'substr' for types '%1%' and '%2%'"
               ", expected are types 'string' and 'long'"
-            );
+              );
 }
 
 BOOST_AUTO_TEST_CASE (bitset_insert)
 {
-  CHECK_BIN ( "bitset_insert (${a}, ${b})"
-            , "bitset"
-            , "long"
-            , "bitset"
-            , "'bitset_insert' for types '%1%' and '%2%'"
-              ", expected are types 'bitset' and 'long'"
-            );
+  BIN_REQUIRE ( "bitset_insert (${a}, ${b})"
+              , "bitset"
+              , "long"
+              , "bitset"
+              , "'bitset_insert' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'long'"
+              );
 }
 
 BOOST_AUTO_TEST_CASE (bitset_delete)
 {
-  CHECK_BIN ( "bitset_delete (${a}, ${b})"
-            , "bitset"
-            , "long"
-            , "bitset"
-            , "'bitset_delete' for types '%1%' and '%2%'"
-              ", expected are types 'bitset' and 'long'"
-            );
+  BIN_REQUIRE ( "bitset_delete (${a}, ${b})"
+              , "bitset"
+              , "long"
+              , "bitset"
+              , "'bitset_delete' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'long'"
+              );
 }
 
 BOOST_AUTO_TEST_CASE (bitset_is_element)
 {
-  CHECK_BIN ( "bitset_is_element (${a}, ${b})"
-            , "bitset"
-            , "long"
-            , "bool"
-            , "'bitset_is_element' for types '%1%' and '%2%'"
-              ", expected are types 'bitset' and 'long'"
-            );
+  BIN_REQUIRE ( "bitset_is_element (${a}, ${b})"
+              , "bitset"
+              , "long"
+              , "bool"
+              , "'bitset_is_element' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'long'"
+              );
 }
 
 BOOST_AUTO_TEST_CASE (_or)
 {
-  CHECK_BIN ( "${a} || ${b}"
-            , "bool"
-            , "bool"
-            , "bool"
-            , "' || ' for types '%1%' and '%2%'"
-              ", expected are types 'bool' and 'bool'"
-            );
+  BIN_REQUIRE ( "${a} || ${b}"
+              , "bool"
+              , "bool"
+              , "bool"
+              , "' || ' for types '%1%' and '%2%'"
+                ", expected are types 'bool' and 'bool'"
+              );
 }
 
 BOOST_AUTO_TEST_CASE (_and)
 {
-  CHECK_BIN ( "${a} && ${b}"
-            , "bool"
-            , "bool"
-            , "bool"
-            , "' && ' for types '%1%' and '%2%'"
-              ", expected are types 'bool' and 'bool'"
-            );
+  BIN_REQUIRE ( "${a} && ${b}"
+              , "bool"
+              , "bool"
+              , "bool"
+              , "' && ' for types '%1%' and '%2%'"
+                ", expected are types 'bool' and 'bool'"
+              );
 }
 
 BOOST_AUTO_TEST_CASE (min)
