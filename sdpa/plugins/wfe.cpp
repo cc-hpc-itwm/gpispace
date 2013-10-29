@@ -56,7 +56,6 @@ namespace
     };
 
     std::string id;
-    std::string name;
     int        state;
     int        errc;
     we::mgmt::type::activity_t activity;
@@ -296,7 +295,7 @@ public:
                  )
   {
     emit ( sdpa::daemon::NotificationEvent
-           (task.workers, task.id, task.name, state, task.activity.to_string(), task.meta)
+           (task.workers, task.id, "n/a", state, task.activity.to_string(), task.meta)
          );
   }
 
@@ -317,7 +316,6 @@ public:
     task.id = job_id;
     task.meta = meta_data;
     task.workers = worker_list;
-    task.name = "n/a";
 
     {
       lock_type task_map_lock(m_mutex);
@@ -327,8 +325,6 @@ public:
     try
     {
       task.activity = we::mgmt::type::activity_t (job_description);
-      task.name =
-        nice_name (task.activity).get_value_or (task.activity.transition().name());
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
@@ -456,7 +452,10 @@ private:
       lock_type lock (m_current_task_mutex);
       if (m_current_task)
       {
-        rply.set_body (m_current_task->name);
+        rply.set_body
+          ( nice_name (m_current_task->activity)
+          .get_value_or (m_current_task->activity.transition().name())
+          );
       }
     }
 
