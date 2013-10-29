@@ -66,10 +66,6 @@ namespace
     meta_data_t meta;
     worker_list_t workers;
     std::string error_message;
-
-    time_type enqueue_time;
-    time_type dequeue_time;
-    time_type finished_time;
   };
 
   struct wfe_exec_context : public we::mgmt::context
@@ -340,8 +336,6 @@ public:
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
 
-      task.enqueue_time = boost::posix_time::microsec_clock::universal_time();
-
       m_tasks.put(&task);
 
       if (walltime > boost::posix_time::seconds(0))
@@ -364,7 +358,6 @@ public:
         task.done.wait(ec);
       }
 
-      task.finished_time = boost::posix_time::microsec_clock::universal_time();
       result = task.activity.to_string();
 
       if (fhg::error::NO_ERROR == ec)
@@ -523,7 +516,6 @@ private:
       }
 
       wfe_task_t *task = m_tasks.get();
-      task->dequeue_time = boost::posix_time::microsec_clock::universal_time();
 
       {
         lock_type lock (m_current_task_mutex);
