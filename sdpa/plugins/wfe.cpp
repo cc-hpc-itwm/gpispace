@@ -349,7 +349,6 @@ public:
       {
         DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
-        result = task.activity.to_string();
         error_message = task.error_message;
 
         emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELLED);
@@ -358,7 +357,6 @@ public:
       {
         MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::FAILED;
-        result = task.activity.to_string();
         error_message = task.error_message;
 
         emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
