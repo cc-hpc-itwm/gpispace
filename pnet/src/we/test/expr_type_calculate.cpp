@@ -180,3 +180,43 @@ BOOST_AUTO_TEST_CASE (bitset_is_element)
 
   CHECK_OKAY (m, "bitset_is_element ({}, ${a})", std::string ("bool"));
 }
+
+BOOST_AUTO_TEST_CASE (_or)
+{
+  resolver_map_type m;
+
+  m[path ("a")] = std::string ("FOO");
+  m[path ("b")] = std::string ("BAR");
+
+  CHECK_EXCEPTION<pnet::exception::type_error>
+    ( m
+    , "${a} || ${b}"
+    , "pnet::exception::type_error"
+    , "type error:  ||  for types 'FOO' and 'BAR'"
+    );
+
+  m[path ("a")] = std::string ("bool");
+  m[path ("b")] = std::string ("bool");
+
+  CHECK_OKAY (m, "${a} || ${b}", std::string ("bool"));
+}
+
+BOOST_AUTO_TEST_CASE (_and)
+{
+  resolver_map_type m;
+
+  m[path ("a")] = std::string ("FOO");
+  m[path ("b")] = std::string ("BAR");
+
+  CHECK_EXCEPTION<pnet::exception::type_error>
+    ( m
+    , "${a} && ${b}"
+    , "pnet::exception::type_error"
+    , "type error:  &&  for types 'FOO' and 'BAR'"
+    );
+
+  m[path ("a")] = std::string ("bool");
+  m[path ("b")] = std::string ("bool");
+
+  CHECK_OKAY (m, "${a} && ${b}", std::string ("bool"));
+}

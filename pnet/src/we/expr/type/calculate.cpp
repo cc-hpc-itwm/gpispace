@@ -79,6 +79,10 @@ namespace pnet
 
             switch (b.token)
             {
+            case ::expr::token::_or:
+            case ::expr::token::_and:
+              return require ("bool", "bool", b.token, l, r, "bool");
+
             case ::expr::token::_substr:
               return require ("string", "long", b.token, l, r, "string");
 
