@@ -6,17 +6,34 @@
 #include <we/expr/type/calculate.hpp>
 
 #include <we/expr/parse/parser.hpp>
+#include <we/type/value/name.hpp>
 #include <we/exception.hpp>
 
 #include <fhg/util/split.hpp>
 
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <stdexcept>
 
 namespace
 {
+  std::list<std::string> init_tnames()
+  {
+    std::list<std::string> tn (pnet::type::value::type_names());
+
+    tn.push_back ("UNKNOWN_TYPE");
+
+    return tn;
+  }
+  std::list<std::string> tnames()
+  {
+    static std::list<std::string> tn (init_tnames());
+
+    return tn;
+  }
+
   std::list<std::string> path (std::string const& s)
   {
     return fhg::util::split< std::string
@@ -24,10 +41,8 @@ namespace
                            > (s, '.');
   }
 
-  using pnet::expr::type::resolver_map_type;
-
   template<typename Ex>
-    void EXCEPTION ( resolver_map_type& m
+    void EXCEPTION ( pnet::expr::type::resolver_map_type& m
                    , ::expr::parse::parser const& p
                    , std::string const& name
                    , std::string const& what
@@ -46,7 +61,7 @@ namespace
   }
 
   template<typename Ex>
-    void EXCEPTION ( resolver_map_type& m
+    void EXCEPTION ( pnet::expr::type::resolver_map_type& m
                    , std::string const& p
                    , std::string const& name
                    , std::string const& what
@@ -55,7 +70,7 @@ namespace
     EXCEPTION<Ex> (m, ::expr::parse::parser (p), name, what);
   }
 
-  void TYPE_ERROR ( resolver_map_type& m
+  void TYPE_ERROR ( pnet::expr::type::resolver_map_type& m
                   , std::string const& p
                   , std::string const& what
                   )
@@ -67,7 +82,7 @@ namespace
                                            );
   }
 
-  void OKAY  ( resolver_map_type& m
+  void OKAY  ( pnet::expr::type::resolver_map_type& m
              , std::string const& p
              , pnet::type::signature::signature_type const& s
              )
@@ -75,11 +90,61 @@ namespace
     BOOST_CHECK
       (s == pnet::expr::type::calculate (m, ::expr::parse::parser (p).front()));
   }
+
+  void CHECK_BINEQ_OKAY ( pnet::expr::type::resolver_map_type& m
+                        , std::string const& exp
+                        , std::string const& t
+                        )
+  {
+    m[path ("a")] = std::string (t);
+    m[path ("b")] = std::string (t);
+
+    OKAY (m, exp, std::string (t));
+  }
+  void CHECK_BINEQ_WRONG ( pnet::expr::type::resolver_map_type& m
+                         , std::string const& exp
+                         , std::string const& t
+                         , std::string const& expected
+                         )
+  {
+    m[path ("a")] = std::string (t);
+    m[path ("b")] = std::string (t);
+
+    TYPE_ERROR (m, exp, (boost::format (expected) % t).str());
+  }
+
+  void CHECK_BIN ( std::string const& exp
+                 , std::string const& okay_l
+                 , std::string const& okay_r
+                 , std::string const& result
+                 , std::string const& error
+                 )
+  {
+    pnet::expr::type::resolver_map_type m;
+
+    BOOST_FOREACH (std::string const& l, tnames())
+    {
+      BOOST_FOREACH (std::string const& r, tnames())
+      {
+        m[path ("a")] = l;
+        m[path ("b")] = r;
+
+        if (l == okay_l && r == okay_r)
+        {
+          OKAY (m, exp, result);
+        }
+        else
+        {
+          TYPE_ERROR (m, exp, (boost::format (error) % l % r).str());
+        }
+      }
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE (lookup)
 {
-  resolver_map_type m;
+  pnet::expr::type::resolver_map_type m;
 
   EXCEPTION<std::runtime_error> ( m
                                 , "${a}"
@@ -114,139 +179,68 @@ BOOST_AUTO_TEST_CASE (lookup)
 
 BOOST_AUTO_TEST_CASE (substr)
 {
-  resolver_map_type m;
-
-  m[path ("a")] = std::string ("FOO");
-
-  TYPE_ERROR ( m
-             , "substr (\"\", ${a})"
-             , "'substr' for types 'string' and 'FOO'"
-               ", expected are types 'string' and 'long'"
-             );
-
-  m[path ("a")] = std::string ("long");
-
-  OKAY (m, "substr (\"\", ${a})", std::string ("string"));
-
-  TYPE_ERROR ( m
-             , "substr (1L, ${a})"
-             , "'substr' for types 'long' and 'long'"
-               ", expected are types 'string' and 'long'"
-             );
+  CHECK_BIN ( "substr (${a}, ${b})"
+            , "string"
+            , "long"
+            , "string"
+            , "'substr' for types '%1%' and '%2%'"
+              ", expected are types 'string' and 'long'"
+            );
 }
 
 BOOST_AUTO_TEST_CASE (bitset_insert)
 {
-  resolver_map_type m;
-
-  m[path ("a")] = std::string ("FOO");
-
-  TYPE_ERROR ( m
-             , "bitset_insert ({}, ${a})"
-             , "'bitset_insert' for types 'bitset' and 'FOO'"
-               ", expected are types 'bitset' and 'long'"
-             );
-
-  m[path ("a")] = std::string ("long");
-
-  OKAY (m, "bitset_insert ({}, ${a})", std::string ("bitset"));
+  CHECK_BIN ( "bitset_insert (${a}, ${b})"
+            , "bitset"
+            , "long"
+            , "bitset"
+            , "'bitset_insert' for types '%1%' and '%2%'"
+              ", expected are types 'bitset' and 'long'"
+            );
 }
 
 BOOST_AUTO_TEST_CASE (bitset_delete)
 {
-  resolver_map_type m;
-
-  m[path ("a")] = std::string ("FOO");
-
-  TYPE_ERROR ( m
-             , "bitset_delete ({}, ${a})"
-             , "'bitset_delete' for types 'bitset' and 'FOO'"
-               ", expected are types 'bitset' and 'long'"
-             );
-
-  m[path ("a")] = std::string ("long");
-
-  OKAY (m, "bitset_delete ({}, ${a})", std::string ("bitset"));
+  CHECK_BIN ( "bitset_delete (${a}, ${b})"
+            , "bitset"
+            , "long"
+            , "bitset"
+            , "'bitset_delete' for types '%1%' and '%2%'"
+              ", expected are types 'bitset' and 'long'"
+            );
 }
 
 BOOST_AUTO_TEST_CASE (bitset_is_element)
 {
-  resolver_map_type m;
-
-  m[path ("a")] = std::string ("FOO");
-
-  TYPE_ERROR ( m
-             , "bitset_is_element ({}, ${a})"
-             , "'bitset_is_element' for types 'bitset' and 'FOO'"
-               ", expected are types 'bitset' and 'long'"
-             );
-
-  m[path ("a")] = std::string ("long");
-
-  OKAY (m, "bitset_is_element ({}, ${a})", std::string ("bool"));
+  CHECK_BIN ( "bitset_is_element (${a}, ${b})"
+            , "bitset"
+            , "long"
+            , "bool"
+            , "'bitset_is_element' for types '%1%' and '%2%'"
+              ", expected are types 'bitset' and 'long'"
+            );
 }
 
 BOOST_AUTO_TEST_CASE (_or)
 {
-  resolver_map_type m;
-
-  m[path ("a")] = std::string ("FOO");
-  m[path ("b")] = std::string ("BAR");
-
-  TYPE_ERROR ( m
-             , "${a} || ${b}"
-             , "' || ' for types 'FOO' and 'BAR'"
-               ", expected are types 'bool' and 'bool'"
-             );
-
-  m[path ("a")] = std::string ("bool");
-  m[path ("b")] = std::string ("bool");
-
-  OKAY (m, "${a} || ${b}", std::string ("bool"));
+  CHECK_BIN ( "${a} || ${b}"
+            , "bool"
+            , "bool"
+            , "bool"
+            , "' || ' for types '%1%' and '%2%'"
+              ", expected are types 'bool' and 'bool'"
+            );
 }
 
 BOOST_AUTO_TEST_CASE (_and)
 {
-  resolver_map_type m;
-
-  m[path ("a")] = std::string ("FOO");
-  m[path ("b")] = std::string ("BAR");
-
-  TYPE_ERROR ( m
-             , "${a} && ${b}"
-             , "' && ' for types 'FOO' and 'BAR'"
-               ", expected are types 'bool' and 'bool'"
-             );
-
-  m[path ("a")] = std::string ("bool");
-  m[path ("b")] = std::string ("bool");
-
-  OKAY (m, "${a} && ${b}", std::string ("bool"));
-}
-
-namespace
-{
-  void CHECK_BINEQ_OKAY ( resolver_map_type& m
-                        , std::string const& exp
-                        , std::string const& t
-                        )
-  {
-    m[path ("a")] = std::string (t);
-    m[path ("b")] = std::string (t);
-
-    OKAY (m, exp, std::string (t));
-  }
-  void CHECK_BINEQ_WRONG ( resolver_map_type& m
-                         , std::string const& exp
-                         , std::string const& t
-                         , std::string const& expected
-                         )
-  {
-    m[path ("a")] = std::string (t);
-    m[path ("b")] = std::string (t);
-
-    TYPE_ERROR (m, exp, (boost::format (expected) % t).str());
-  }
+  CHECK_BIN ( "${a} && ${b}"
+            , "bool"
+            , "bool"
+            , "bool"
+            , "' && ' for types '%1%' and '%2%'"
+              ", expected are types 'bool' and 'bool'"
+            );
 }
 
 BOOST_AUTO_TEST_CASE (min)
@@ -258,7 +252,7 @@ BOOST_AUTO_TEST_CASE (min)
               ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
              );
 
-  resolver_map_type m;
+  pnet::expr::type::resolver_map_type m;
 
   m[path ("a")] = std::string ("A");
   m[path ("b")] = std::string ("B");
@@ -296,7 +290,7 @@ BOOST_AUTO_TEST_CASE (max)
               ", 'unsigned int', 'long', 'unsigned long', 'float', 'double'"
              );
 
-  resolver_map_type m;
+  pnet::expr::type::resolver_map_type m;
 
   m[path ("a")] = std::string ("A");
   m[path ("b")] = std::string ("B");
