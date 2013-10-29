@@ -24,14 +24,12 @@ namespace pnet
 
       namespace
       {
-        signature_type require
-          ( std::string const& sig_l
-          , std::string const& sig_r
-          , ::expr::token::type const& token
-          , signature_type const& l
-          , signature_type const& r
-          , std::string const& sig
-          )
+        void require ( std::string const& sig_l
+                     , std::string const& sig_r
+                     , ::expr::token::type const& token
+                     , signature_type const& l
+                     , signature_type const& r
+                     )
         {
           if (!(l == signature_type (sig_l) && r == signature_type (sig_r)))
           {
@@ -43,8 +41,6 @@ namespace pnet
                 ).str()
               );
           }
-
-          return sig;
         }
 
         class visitor_calculate : public boost::static_visitor<signature_type>
@@ -81,17 +77,21 @@ namespace pnet
             {
             case ::expr::token::_or:
             case ::expr::token::_and:
-              return require ("bool", "bool", b.token, l, r, "bool");
+              require ("bool", "bool", b.token, l, r);
+              return std::string ("bool");
 
             case ::expr::token::_substr:
-              return require ("string", "long", b.token, l, r, "string");
+              require ("string", "long", b.token, l, r);
+              return std::string ("string");
 
             case ::expr::token::_bitset_insert:
             case ::expr::token::_bitset_delete:
-              return require ("bitset", "long", b.token, l, r, "bitset");
+              require ("bitset", "long", b.token, l, r);
+              return std::string ("bitset");
 
             case ::expr::token::_bitset_is_element:
-              return require ("bitset", "long", b.token, l, r, "bool");
+              require ("bitset", "long", b.token, l, r);
+              return std::string ("bool");
 
             default:
               break;
