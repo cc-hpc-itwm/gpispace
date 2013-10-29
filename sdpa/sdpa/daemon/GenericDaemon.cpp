@@ -605,23 +605,6 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
 }
 
-/*
-std::ostream& operator<<(std::ostream& os, sdpa::worker_id_list_t& worker_list)
-{
-	os<<"(";
-	for(sdpa::worker_id_list_t::iterator it=worker_list.begin(); it!=worker_list.end(); it++)
-	{
-		os<<*it;
-		if( boost::next(it) != worker_list.end() )
-			os<<",";
-		else
-			os<<")";
-	}
-
-	return os;
-}
-*/
-
 void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
 {
   //take a job from the workers' queue and serve it
@@ -661,6 +644,63 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
     // the worker should register first, before posting a job request
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
     sendEventToSlave(pErrorEvt);
+  }
+  catch(const QueueFull&)
+  {
+    DMLOG (WARN, "Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
+  }
+  catch(const seda::StageNotFound&)
+  {
+    DMLOG (WARN, "Could not lookup stage: " << ptr_to_slave_stage_->name());
+  }
+  catch(const std::exception &ex)
+  {
+    DMLOG (WARN, "Error during request-job handling: " << ex.what());
+  }
+  catch(...)
+  {
+    DMLOG (WARN, "Unknown error during request-job handling!");
+  }
+}
+
+
+void GenericDaemon::serveJob(Reservation& reservation)
+{
+  //take a job from the workers' queue and serve it
+
+  try {
+    const Job::ptr_t& ptrJob = jobManager()->findJob(reservation.jobId());
+
+    DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
+
+    // create a SubmitJobEvent for the job job_id serialize and attach description
+    sdpa::worker_id_list_t worker_list( scheduler()->getListAllocatedWorkers(reservation.jobId()));
+    //LOG(TRACE, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id);
+    LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
+
+    BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
+    {
+      SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), "", worker_list));
+
+      // Post a SubmitJobEvent to the slave who made the request
+      sendEventToSlave(pSubmitEvt);
+
+      // if everything was fine up to here, mark the job as submitted
+      try {
+          Worker::ptr_t pWorker(findWorker(worker_id));
+          pWorker->submit(ptrJob->id());
+      }
+      catch(const WorkerNotFoundException&) {
+          DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending a notification ...");
+
+          // the worker should register first, before posting a job request
+          ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
+          sendEventToSlave(pErrorEvt);
+      }
+    }
+  }
+  catch(const NoJobScheduledException&)
+  {
   }
   catch(const QueueFull&)
   {

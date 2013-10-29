@@ -30,6 +30,7 @@
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/JobId.hpp>
+#include <sdpa/daemon/Reservation.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 namespace sdpa {
@@ -79,7 +80,8 @@ namespace sdpa {
     virtual void updateLastRequestTime() = 0;
     virtual bool requestsAllowed() = 0;
 
-    virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& job_id) = 0;
+    virtual void serveJob(const Worker::worker_id_t&, const job_id_t&) = 0;
+    virtual void serveJob(Reservation&) = 0;
 
     virtual void schedule(const sdpa::job_id_t& job) = 0;
     virtual bool hasWorkflowEngine() = 0;
