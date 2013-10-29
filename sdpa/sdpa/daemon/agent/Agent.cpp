@@ -158,7 +158,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   }
 }
 
-bool Agent::finished(const id_type & wfid, const result_type & result)
+bool Agent::finished(const id_type& wfid, const result_type & result)
 {
   //put the job into the state Finished
   JobId id(wfid);
@@ -216,81 +216,6 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
         sendEventToMaster(ptrEvt);
       }
     }
-  }
-  catch(QueueFull const &)
-  {
-    SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFinishedEvent");
-    return false;
-  }
-  catch(seda::StageNotFound const &)
-  {
-    SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
-    return false;
-  }
-  catch(std::exception const & ex)
-  {
-    SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-    return false;
-  }
-  catch(...)
-  {
-    SDPA_LOG_FATAL("Unexpected exception occurred!");
-    return false;
-  }
-
-  return true;
-}
-
-bool Agent::finished(const id_type& wfid, const result_type& result, const id_type& forward_to)
-{
-  //put the job into the state Finished
-  JobId job_id(wfid);
-  DMLOG ( TRACE,
-        "The workflow engine has notified the agent "<<name()<<" that the job "<<job_id.str()<<" finished!"
-        );
-
-  Job::ptr_t pJob;
-  try {
-    pJob = jobManager()->findJob(job_id);
-  }
-  catch(JobNotFoundException const &)
-  {
-    SDPA_LOG_WARN( "got finished message for old/unknown Job "<<job_id.str());
-    return false;
-  }
-
-  try {
-    // forward it up
-    JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
-                                                                , forward_to
-                                                                , job_id
-                                                                , result ));
-
-    // send the event to the master
-    // sendEventToMaster(pEvtJobFinished);
-    pJob->JobFinished(pEvtJobFinished.get());
-
-    if( !isSubscriber(pJob->owner()) )
-      sendEventToMaster(pEvtJobFinished);
-
-    //publishEvent(*pEvtJobFinished);
-    BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-    {
-      if( subscribedFor( pair_subscr_joblist.first, job_id) )
-      {
-        sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
-        ptrEvt->from() = name();
-        ptrEvt->to()   = pair_subscr_joblist.first;
-        sendEventToMaster(ptrEvt);
-      }
-    }
-
-    // delete the job here -> send self a FinishedJobAck
-    JobFinishedAckEvent::Ptr pEvtJobFinishedAck(new JobFinishedAckEvent( name(), name(), job_id ));
-    sendEventToSelf(pEvtJobFinishedAck);
-    // catch exceptions in the case when forward_to does not exist
-    SubmitJobEvent::Ptr pSubJobEvt(new SubmitJobEvent(name(), forward_to, job_id, result, ""));
-    sendEventToSlave(pSubJobEvt);
   }
   catch(QueueFull const &)
   {

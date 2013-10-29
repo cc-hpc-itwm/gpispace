@@ -68,7 +68,6 @@ namespace sdpa {
         void cancelPendingJob (const sdpa::events::CancelJobEvent& evt);
 
         bool finished(const id_type & id, const result_type & result);
-        bool finished(const id_type & id, const result_type & result, const id_type& );
         bool failed( const id_type& workflowId, const result_type& result, int error_code, std::string const& reason);
 
         const std::string url() const {return url_;}
