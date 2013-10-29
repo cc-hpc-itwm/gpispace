@@ -19,24 +19,6 @@ namespace sdpa
 {
   namespace daemon
   {
-    namespace
-    {
-      boost::optional<std::string> nice_name (const std::string& act)
-      try
-      {
-        const we::mgmt::type::activity_t activity (act);
-
-        const we::type::module_call_t mod_call
-          (boost::get<we::type::module_call_t> (activity.transition().data()));
-
-        return mod_call.module() + ":" + mod_call.function();
-      }
-      catch (boost::bad_get const &)
-      {
-        return boost::none;
-      }
-    }
-
     class NotificationEvent
     {
     public:
@@ -52,17 +34,13 @@ namespace sdpa
       NotificationEvent
         ( const std::list<std::string>& sources
         , const std::string &activity_id
-        , const std::string &activity_name
         , const state_t &activity_state
-        , const boost::optional<std::string>& activity_encoded = boost::none
+        , const we::mgmt::type::activity_t& activity
         , const wfe::meta_data_t& meta_data = wfe::meta_data_t()
         )
           : _components (sources)
           , a_id_(activity_id)
-          , a_name_ ( activity_encoded
-                    ? nice_name (*activity_encoded).get_value_or (activity_name)
-                    : activity_name
-                    )
+          , a_name_ (activity.nice_name())
           , a_state_(activity_state)
           , _meta_data (meta_data)
       {}

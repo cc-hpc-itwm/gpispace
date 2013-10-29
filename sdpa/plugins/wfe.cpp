@@ -279,7 +279,7 @@ public:
                  )
   {
     emit ( sdpa::daemon::NotificationEvent
-           (task.workers, task.id, "n/a", state, task.activity.to_string(), task.meta)
+           (task.workers, task.id, state, task.activity, task.meta)
          );
   }
 
