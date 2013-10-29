@@ -40,21 +40,21 @@ using namespace sdpa::daemon;
 static const std::size_t MAX_PARALLEL_JOBS = 1024;
 
 JobManager::JobManager(const std::string& name)
-	: SDPA_INIT_LOGGER(name)
+  : SDPA_INIT_LOGGER(name)
 {}
 
 JobManager::~JobManager()
 {
-	if (job_map_.size())
-	{
-          DMLOG (WARN, "there are still entries left in the job-map: " << job_map_.size() );
-          print();
-	}
+  if (job_map_.size())
+  {
+    DMLOG (WARN, "there are still entries left in the job-map: " << job_map_.size() );
+    print();
+  }
 
-	if (job_requirements_.size() )
-        {
-          DMLOG (TRACE, "there are still entries left in the requirements map: " << job_requirements_.size() );
-        }
+  if (job_requirements_.size() )
+  {
+    DMLOG (TRACE, "there are still entries left in the requirements map: " << job_requirements_.size() );
+  }
 }
 
 //helpers
@@ -153,7 +153,7 @@ void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requ
 
 bool JobManager::slotAvailable () const
 {
-	return getNumberOfJobs () < MAX_PARALLEL_JOBS;
+  return getNumberOfJobs () < MAX_PARALLEL_JOBS;
 }
 
 void JobManager::waitForFreeSlot ()
@@ -174,48 +174,48 @@ void JobManager::resubmitResults(IAgent* pComm)
     if( pJob->isMasterJob() )
     {
     	DLOG(TRACE, "Re-submit to the master "<<pJob->owner()<<" the status of the job"<<pJob->id()<<" ("<<job_status<<" )");
-		if( job_status.find("Finished") != std::string::npos )
-		{
-		  // create jobFinishedEvent
-		  sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
-																								  pJob->owner(),
-																								  pJob->id(),
-																								  pJob->result() ));
+        if( job_status.find("Finished") != std::string::npos )
+        {
+          // create jobFinishedEvent
+          sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
+                                                                                                  pJob->owner(),
+                                                                                                  pJob->id(),
+                                                                                                  pJob->result() ));
 
-		  // send it to the master
-		  pComm->sendEventToMaster(pEvtJobFinished);
-		}
-		else if( job_status.find("Failed") != std::string::npos )
-		{
-		  // create jobFailedEvent
-		  sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
-																							pJob->owner(),
-																							pJob->id(),
-																							pJob->result() ));
+          // send it to the master
+          pComm->sendEventToMaster(pEvtJobFinished);
+        }
+        else if( job_status.find("Failed") != std::string::npos )
+        {
+          // create jobFailedEvent
+          sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
+                                                                                            pJob->owner(),
+                                                                                            pJob->id(),
+                                                                                            pJob->result() ));
 
-		  // send it to the master
-		  pComm->sendEventToMaster(pEvtJobFailed);
-		}
-		else if( job_status.find("Cancelled") != std::string::npos)
-		{
-		  // create jobCancelledEvent
-		  sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
-																									  pJob->owner(),
-																									  pJob->id()));
+          // send it to the master
+          pComm->sendEventToMaster(pEvtJobFailed);
+        }
+        else if( job_status.find("Cancelled") != std::string::npos)
+        {
+          // create jobCancelledEvent
+          sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
+                                                                                                      pJob->owner(),
+                                                                                                      pJob->id()));
 
-		  // send it to the master
-		  pComm->sendEventToMaster(pEvtJobCancelled);
-		}
-		else if( job_status.find("Pending") != std::string::npos )
-		{
-		  sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
-																									pJob->owner(),
-																									pJob->id(),
-																									""));
+          // send it to the master
+          pComm->sendEventToMaster(pEvtJobCancelled);
+        }
+        else if( job_status.find("Pending") != std::string::npos )
+        {
+          sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
+                                                                                                    pJob->owner(),
+                                                                                                    pJob->id(),
+                                                                                                    ""));
 
-		  // There is a problem with this if uncommented
-		  pComm->sendEventToMaster(pSubmitJobAckEvt);
-		}
+          // There is a problem with this if uncommented
+          pComm->sendEventToMaster(pSubmitJobAckEvt);
+        }
     }
   }
 }
@@ -223,45 +223,45 @@ void JobManager::resubmitResults(IAgent* pComm)
 sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 {
   lock_type lock(mtx_);
-	sdpa::job_id_list_t listJobsNotCompleted;
+  sdpa::job_id_list_t listJobsNotCompleted;
 
-	for ( job_map_t::iterator it = job_map_.begin(); it != job_map_.end(); ++it )
-	{
-		sdpa::job_id_t jobId = it->first;
-		Job::ptr_t pJob = it->second;
+  for ( job_map_t::iterator it = job_map_.begin(); it != job_map_.end(); ++it )
+  {
+    sdpa::job_id_t jobId = it->first;
+    Job::ptr_t pJob = it->second;
 
-		if( (bHasWfe && pJob->isMasterJob()) || !bHasWfe )
-		{
-			std::string status = pJob->getStatus();
+    if( (bHasWfe && pJob->isMasterJob()) || !bHasWfe )
+    {
+      std::string status = pJob->getStatus();
 
-			// the job is not in a terminal state
-			if(	status.find("Finished") 	== std::string::npos
-				&& status.find("Failed") 	== std::string::npos
-				&& status.find("Cancelled") == std::string::npos )
-			{
-				listJobsNotCompleted.push_back(jobId);
-			}
-		}
-	}
+      // the job is not in a terminal state
+      if( status.find("Finished")     == std::string::npos
+          && status.find("Failed")    == std::string::npos
+          && status.find("Cancelled") == std::string::npos )
+      {
+          listJobsNotCompleted.push_back(jobId);
+      }
+    }
+  }
 
-	return listJobsNotCompleted;
+  return listJobsNotCompleted;
 }
 
 size_t JobManager::countMasterJobs() const
 {
-	lock_type lock(mtx_);
-	size_t nMasterJobs = 0;
-	BOOST_FOREACH(const job_map_t::value_type& job_pair, job_map_ )
-	{
-		if( job_pair.second->isMasterJob() )
-			nMasterJobs++;
-	}
+  lock_type lock(mtx_);
+  size_t nMasterJobs = 0;
+  BOOST_FOREACH(const job_map_t::value_type& job_pair, job_map_ )
+  {
+    if( job_pair.second->isMasterJob() )
+      nMasterJobs++;
+  }
 
-	return nMasterJobs;
+  return nMasterJobs;
 }
 
 size_t JobManager::getNumberOfJobs() const
 {
-	lock_type lock(mtx_);
-	return job_map_.size();
+  lock_type lock(mtx_);
+  return job_map_.size();
 }
