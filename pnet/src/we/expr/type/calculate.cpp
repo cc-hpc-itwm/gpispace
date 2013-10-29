@@ -152,6 +152,11 @@ namespace pnet
             case ::expr::token::_and:
               return require ("bool", "bool", b.token, l, r, "bool");
 
+            case ::expr::token::lt:
+            case ::expr::token::le:
+            case ::expr::token::gt:
+            case ::expr::token::ge:
+            case ::expr::token::ne:
             case ::expr::token::min:
             case ::expr::token::max:
               equal (b.token, l, r);

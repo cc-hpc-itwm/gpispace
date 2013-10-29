@@ -311,6 +311,101 @@ BOOST_AUTO_TEST_CASE (_and)
               );
 }
 
+BOOST_AUTO_TEST_CASE (lt)
+{
+  std::string const exp ("${a} :lt: ${b}");
+
+  BIN_EQUAL (exp, " < ");
+
+  BINEQ_ONE_OF (exp, " < ")
+    . allow ("bool")
+    . allow ("char")
+    . allow ("string")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . check();
+}
+
+BOOST_AUTO_TEST_CASE (le)
+{
+  std::string const exp ("${a} :le: ${b}");
+
+  BIN_EQUAL (exp, " <= ");
+
+  BINEQ_ONE_OF (exp, " <= ")
+    . allow ("bool")
+    . allow ("char")
+    . allow ("string")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . check();
+}
+
+BOOST_AUTO_TEST_CASE (gt)
+{
+  std::string const exp ("${a} :gt: ${b}");
+
+  BIN_EQUAL (exp, " > ");
+
+  BINEQ_ONE_OF (exp, " > ")
+    . allow ("bool")
+    . allow ("char")
+    . allow ("string")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . check();
+}
+
+BOOST_AUTO_TEST_CASE (ge)
+{
+  std::string const exp ("${a} :ge: ${b}");
+
+  BIN_EQUAL (exp, " >= ");
+
+  BINEQ_ONE_OF (exp, " >= ")
+    . allow ("bool")
+    . allow ("char")
+    . allow ("string")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . check();
+}
+
+BOOST_AUTO_TEST_CASE (ne)
+{
+  std::string const exp ("${a} :ne: ${b}");
+
+  BIN_EQUAL (exp, " != ");
+
+  BINEQ_ONE_OF (exp, " != ")
+    . allow ("bool")
+    . allow ("char")
+    . allow ("string")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . check();
+}
+
 BOOST_AUTO_TEST_CASE (min)
 {
   std::string const exp ("min (${a}, ${b})");
