@@ -3,9 +3,10 @@
 #ifndef PNET_SRC_WE_TYPE_VALUE_SIGNATURE_NAME_HPP
 #define PNET_SRC_WE_TYPE_VALUE_SIGNATURE_NAME_HPP
 
-#include <string>
-#include <set>
 #include <iosfwd>
+#include <list>
+#include <set>
+#include <string>
 
 namespace pnet
 {
@@ -33,6 +34,8 @@ namespace pnet
       NAME (STRUCT);
 
 #undef NAME
+
+      std::list<std::string> type_names();
     }
   }
 }
