@@ -14,6 +14,7 @@
 namespace sdpa {
     using std::tr1::shared_ptr;
     using std::tr1::weak_ptr;
+  using std::tr1::enable_shared_from_this;
 }
 
 #endif
