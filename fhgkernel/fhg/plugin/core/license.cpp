@@ -1,5 +1,7 @@
 #include "license.hpp"
 
+#ifdef FHG_ENABLE_LICENSE_CHECK
+
 #include <crypto_box.h>
 #include <crypto_hash.h>
 
@@ -39,8 +41,16 @@ namespace fhg
         return LICENSE_NOT_VERIFYABLE;
       }
 
-      std::string hash =
-        fhg::util::to_hex (crypto_hash (fhg::util::read_file (buf)));
+      std::string hash;
+
+      try
+      {
+        hash = fhg::util::to_hex (crypto_hash (fhg::util::read_file (buf)));
+      }
+      catch (std::exception const &)
+      {
+        return LICENSE_NOT_VERIFYABLE;
+      }
 
       if (hash.size () != license_t::HASH_SIZE)
       {
@@ -85,7 +95,34 @@ namespace fhg
 
     int check_license_file (std::string const &path)
     {
-      return check_license (fhg::util::read_file (path));
+      try
+      {
+        return check_license (fhg::util::read_file (path));
+      }
+      catch (std::exception const &)
+      {
+        return LICENSE_NOT_VERIFYABLE;
+      }
     }
   }
 }
+
+#else
+
+namespace fhg
+{
+  namespace plugin
+  {
+    int check_license (std::string const &license)
+    {
+      return LICENSE_VALID;
+    }
+
+    int check_license_file (std::string const &path)
+    {
+      return LICENSE_VALID;
+    }
+  }
+}
+
+#endif
