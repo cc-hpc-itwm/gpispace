@@ -10,6 +10,7 @@ namespace sdpa {
       typedef enum {FINISHED, FAILED, CANCELED} result_type;
       typedef std::map<worker_id_t, result_type> map_worker_result_t;
 
+      Reservation(const size_t& n=1) : m_capacity(n) {}
       ~Reservation() { m_list_workers.clear(); m_map_worker_result.clear(); }
 
       size_t size() { return m_list_workers.size(); }
@@ -24,12 +25,18 @@ namespace sdpa {
       }
 
       bool allWorkersTerminated() const { return m_map_worker_result.size() == m_list_workers.size(); }
-      bool isEmpty() const { return m_map_worker_result.empty(); }
+
+      bool isEmpty() const { return m_list_workers.empty(); }
+      bool acquired() { return (size()==capacity()); }
+
       worker_id_t headWorker() const { return m_list_workers.front(); }
       bool hasWorker(const worker_id_t& wid) const { return find(m_list_workers.begin(), m_list_workers.end(), wid)!=m_list_workers.end(); }
       worker_id_list_t getWorkerList() const { return m_list_workers; }
 
+      size_t capacity() const { return m_capacity; }
+
     private:
+      size_t m_capacity;
       job_id_t m_group_job_id;
       worker_id_list_t m_list_workers;
       map_worker_result_t m_map_worker_result;
