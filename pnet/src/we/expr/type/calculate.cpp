@@ -12,6 +12,8 @@
 
 #include <boost/format.hpp>
 
+#include <stdexcept>
+
 namespace pnet
 {
   namespace expr
@@ -88,20 +90,16 @@ namespace pnet
               return require ("bitset", "long", b.token, l, r, "bool");
 
             default:
-              if (not (l == r))
-              {
-                throw pnet::exception::type_error
-                  ( ( boost::format ("%1% for types '%2%' and '%3%'")
-                    % ::expr::token::show (b.token)
-                    % pnet::type::signature::show (l)
-                    % pnet::type::signature::show (r)
-                    ).str()
-                  );
-              }
               break;
             }
 
-            return std::string ("void");
+            throw std::runtime_error
+              ( ( boost::format ("Strange: Unknown token '%1%'"
+                                " during calculation of expression type"
+                                )
+                % ::expr::token::show (b.token)
+                ).str()
+              );
           }
           signature_type
             operator() (const ::expr::parse::node::ternary_t& t) const
