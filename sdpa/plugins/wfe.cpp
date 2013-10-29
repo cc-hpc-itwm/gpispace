@@ -44,7 +44,6 @@ namespace
   struct wfe_task_t
   {
     typedef boost::posix_time::ptime time_type;
-    typedef std::map<std::string, fhg::plugin::Capability*> capabilities_t;
     typedef std::map<std::string, std::string> meta_data_t;
     typedef std::list<std::string> worker_list_t;
 
@@ -61,7 +60,6 @@ namespace
     int        state;
     int        errc;
     we::mgmt::type::activity_t activity;
-    capabilities_t capabilities;
     fhg::util::thread::event<int> done;
     meta_data_t meta;
     worker_list_t workers;
@@ -305,7 +303,7 @@ public:
 
   int execute ( std::string const &job_id
               , std::string const &job_description
-              , wfe::capabilities_t const & capabilities
+              , wfe::capabilities_t const&
               , std::string & result
               , std::string & error_message
               , std::list<std::string> const & worker_list
@@ -317,7 +315,6 @@ public:
     wfe_task_t task;
     task.state = wfe_task_t::PENDING;
     task.id = job_id;
-    task.capabilities = capabilities;
     task.meta = meta_data;
     task.workers = worker_list;
     task.name = "n/a";
