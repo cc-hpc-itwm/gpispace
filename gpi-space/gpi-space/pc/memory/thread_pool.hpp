@@ -12,7 +12,6 @@ namespace gpi
     class thread_pool_t
     {
     public:
-      thread_pool_t ();
       ~thread_pool_t();
 
       template <typename Fun>

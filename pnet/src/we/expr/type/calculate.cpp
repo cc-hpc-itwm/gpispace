@@ -8,7 +8,12 @@
 #include <we/signature_of.hpp>
 #include <we/exception.hpp>
 
+#include <fhg/util/join.hpp>
+
 #include <boost/format.hpp>
+
+#include <stdexcept>
+#include <sstream>
 
 namespace pnet
 {
@@ -16,112 +21,229 @@ namespace pnet
   {
     namespace type
     {
+      using pnet::type::signature::signature_type;
+
       namespace
       {
-        class visitor_calculate
-          : public boost::static_visitor<pnet::type::signature::signature_type>
+        class one_of
         {
         public:
-          visitor_calculate
-          (const pnet::type::signature::resolver_type& resolve)
-            : _resolve (resolve)
+          one_of (::expr::token::type const& token, signature_type const& sig)
+            : _token (token)
+            , _sig (sig)
+            , _okay (false)
+            , _count (0)
+            , _expected()
+          {}
+          one_of& allow (std::string const& t)
+          {
+            _okay |= (_sig == signature_type (t));
+
+            if (_count > 0)
+            {
+              _expected << ", ";
+            }
+            _expected << "'" << t << "'";
+
+            ++_count;
+
+            return *this;
+          }
+          signature_type const& check() const
+          {
+            if (!_okay)
+            {
+              throw pnet::exception::type_error
+                ( ( boost::format ("'%1%' for type '%2%', expected %3%%4%")
+                  % _token
+                  % pnet::type::signature::show (_sig)
+                  % ((_count > 1) ? "one of " : "")
+                  % _expected.str()
+                  ).str()
+                );
+            }
+
+            return _sig;
+          }
+        private:
+          ::expr::token::type const& _token;
+          signature_type const& _sig;
+          bool _okay;
+          unsigned int _count;
+          std::ostringstream _expected;
+        };
+
+        signature_type require ( std::string const& sig_l
+                               , std::string const& sig_r
+                               , ::expr::token::type const& token
+                               , signature_type const& l
+                               , signature_type const& r
+                               , std::string const& sig
+                               )
+        {
+          if (!(l == signature_type (sig_l) && r == signature_type (sig_r)))
+          {
+            throw pnet::exception::type_error
+              ( ( boost::format ("'%1%' for types '%2%' and '%3%'"
+                                ", expected are types '%4%' and '%5%'"
+                                )
+                % ::expr::token::show (token)
+                % pnet::type::signature::show (l)
+                % pnet::type::signature::show (r)
+                % sig_l
+                % sig_r
+                ).str()
+              );
+          }
+
+          return signature_type (sig);
+        }
+
+        void equal ( ::expr::token::type const& token
+                   , signature_type const& l
+                   , signature_type const& r
+                   )
+        {
+          if (!(l == r))
+          {
+            throw pnet::exception::type_error
+              ( ( boost::format ("'%1%' for unequal types '%2%' and '%3%'")
+                % ::expr::token::show (token)
+                % pnet::type::signature::show (l)
+                % pnet::type::signature::show (r)
+                ).str()
+              );
+          }
+        }
+
+        class visitor_calculate : public boost::static_visitor<signature_type>
+        {
+        public:
+          visitor_calculate (resolver_map_type& resolver_map)
+            : _resolver_map (resolver_map)
           {}
 
-          pnet::type::signature::signature_type
-          operator() (const pnet::type::value::value_type& v) const
+          signature_type
+            operator() (const pnet::type::value::value_type& v) const
           {
             return pnet::signature_of (v);
           }
-          pnet::type::signature::signature_type
-          operator() (const std::list<std::string>& path) const
+          signature_type
+            operator() (const std::list<std::string>& path) const
           {
-            return std::string ("void");
+            return resolve (path);
           }
-          pnet::type::signature::signature_type
-          operator() (const ::expr::parse::node::unary_t& u) const
+          signature_type
+            operator() (const ::expr::parse::node::unary_t& u) const
           {
-            pnet::type::signature::signature_type s0
-              (boost::apply_visitor (*this, u.child));
+            signature_type s0 (boost::apply_visitor (*this, u.child));
 
             return std::string ("void");
           }
-          pnet::type::signature::signature_type
-          operator() (const ::expr::parse::node::binary_t& b) const
+          signature_type
+            operator() (const ::expr::parse::node::binary_t& b) const
           {
-            pnet::type::signature::signature_type l
-              (boost::apply_visitor (*this, b.l));
-            pnet::type::signature::signature_type r
-              (boost::apply_visitor (*this, b.r));
+            signature_type const l (boost::apply_visitor (*this, b.l));
+            signature_type const r (boost::apply_visitor (*this, b.r));
 
             switch (b.token)
             {
+            case ::expr::token::_or:
+            case ::expr::token::_and:
+              return require ("bool", "bool", b.token, l, r, "bool");
+
+            case ::expr::token::lt:
+            case ::expr::token::le:
+            case ::expr::token::gt:
+            case ::expr::token::ge:
+            case ::expr::token::ne:
+            case ::expr::token::min:
+            case ::expr::token::max:
+              equal (b.token, l, r);
+              return one_of (b.token, l)
+                . allow ("bool")
+                . allow ("int")
+                . allow ("unsigned int")
+                . allow ("long")
+                . allow ("unsigned long")
+                . allow ("float")
+                . allow ("double")
+                . allow ("char")
+                . allow ("string")
+                . check();
+
+            case ::expr::token::eq:
+              equal (b.token, l, r);
+              return one_of (b.token, l)
+                . allow ("bool")
+                . allow ("int")
+                . allow ("unsigned int")
+                . allow ("long")
+                . allow ("unsigned long")
+                . allow ("float")
+                . allow ("double")
+                . allow ("char")
+                . allow ("string")
+                . allow ("bitsetofint")
+                . allow ("bytearray")
+                . check();
+
             case ::expr::token::_substr:
-              if (not (l == pnet::type::signature::signature_type (std::string ("std::string"))
-                      and
-                       r == pnet::type::signature::signature_type (std::string ("long"))
-                      )
-                 )
-              {
-                throw pnet::exception::type_error
-                  ( ( boost::format ("%1% for types '%2%' and '%3%'")
-                    % ::expr::token::show (b.token)
-                    % pnet::type::signature::show (l)
-                    % pnet::type::signature::show (r)
-                    ).str()
-                  );
-              }
-              break;
+              return require ("string", "long", b.token, l, r, "string");
+
             case ::expr::token::_bitset_insert:
             case ::expr::token::_bitset_delete:
+              return require ("bitset", "long", b.token, l, r, "bitset");
+
             case ::expr::token::_bitset_is_element:
-              if (not (l == pnet::type::signature::signature_type (std::string ("bitset"))
-                      and
-                       r == pnet::type::signature::signature_type (std::string ("long"))
-                      )
-                 )
-              {
-                throw pnet::exception::type_error
-                  ( ( boost::format ("%1% for types '%2%' and '%3%'")
-                    % ::expr::token::show (b.token)
-                    % pnet::type::signature::show (l)
-                    % pnet::type::signature::show (r)
-                    ).str()
-                  );
-              }
-              break;
+              return require ("bitset", "long", b.token, l, r, "bool");
+
             default:
-              if (not (l == r))
-              {
-                throw pnet::exception::type_error
-                  ( ( boost::format ("%1% for types '%2%' and '%3%'")
-                    % ::expr::token::show (b.token)
-                    % pnet::type::signature::show (l)
-                    % pnet::type::signature::show (r)
-                    ).str()
-                  );
-              }
               break;
             }
 
-            return std::string ("void");
+            throw std::runtime_error
+              ( ( boost::format ("Strange: Unknown token '%1%'"
+                                " during calculation of expression type"
+                                )
+                % ::expr::token::show (b.token)
+                ).str()
+              );
           }
-          pnet::type::signature::signature_type
-          operator() (const ::expr::parse::node::ternary_t& t) const
+          signature_type
+            operator() (const ::expr::parse::node::ternary_t& t) const
           {
             return std::string ("void");
           }
 
         private:
-          const pnet::type::signature::resolver_type& _resolve;
+          resolver_map_type& _resolver_map;
+
+          signature_type resolve (std::list<std::string> const& path) const
+          {
+            resolver_map_type::const_iterator const
+              pos (_resolver_map.find (path));
+
+            if (pos == _resolver_map.end())
+            {
+              throw std::runtime_error
+                ( ( boost::format ("Could not resolve '%1%'")
+                  % fhg::util::join (path, ".")
+                  ).str()
+                );
+            }
+
+            return pos->second;
+          }
         };
       }
 
-      pnet::type::signature::signature_type
-      calculate ( const pnet::type::signature::resolver_type& resolve
-                , const ::expr::parse::node::type& nd
-                )
+      signature_type
+        calculate ( resolver_map_type& resolver_map
+                  , const ::expr::parse::node::type& nd
+                  )
       {
-        return boost::apply_visitor (visitor_calculate (resolve), nd);
+        return boost::apply_visitor (visitor_calculate (resolver_map), nd);
       }
     }
   }

@@ -106,6 +106,7 @@ fhg_add_test(test_supervisor.cpp
                  fhg-util
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SIGNALS_SHARED_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
   DESCRIPTION "GSPCRif - process supervisor tests"

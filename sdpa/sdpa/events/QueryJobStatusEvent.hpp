@@ -38,8 +38,6 @@ namespace sdpa { namespace events {
       {
       }
 
-      virtual ~QueryJobStatusEvent() { }
-
       std::string str() const
       {
         return "QueryJobStatusEvent(" + job_id ().str () + ")";

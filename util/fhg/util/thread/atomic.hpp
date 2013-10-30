@@ -89,6 +89,7 @@ namespace fhg
         return atomic<value_type> (old);
       }
     private:
+      //! \note Can't use boost::noncopyable, as there is an operator=<T>.
       atomic (const atomic &);
       atomic & operator=(const atomic &);
 

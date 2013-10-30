@@ -15,9 +15,6 @@ namespace gspc
         : m_cookie (cookie)
       {}
 
-      simple_auth_t::~simple_auth_t ()
-      {}
-
       bool simple_auth_t::is_authorized (std::string const &cookie) const
       {
         if (m_cookie.empty ())

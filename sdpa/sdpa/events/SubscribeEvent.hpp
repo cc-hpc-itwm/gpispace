@@ -41,27 +41,6 @@ namespace sdpa { namespace events {
 		    listJobIds_(listJobIds)
       { }
 
-      SubscribeEvent( const SubscribeEvent& subscribeEvt )
-        : MgmtEvent (subscribeEvt)
-      {
-    	  subscriber_ = subscribeEvt.subscriber_;
-    	  listJobIds_ = subscribeEvt.listJobIds_;
-	  }
-
-    SubscribeEvent& operator=( const SubscribeEvent& subscribeEvt )
-    {
-    	if(this != &subscribeEvt)
-    	{
-    		*((MgmtEvent*)(this)) = (MgmtEvent&)(subscribeEvt);
-    		subscriber_ = subscribeEvt.subscriber_;
-    		listJobIds_ = subscribeEvt.listJobIds_;
-    	}
-
-    	return *this;
-    }
-
-    virtual ~SubscribeEvent() { }
-
     std::string str() const { return "SubscribeEvent"; }
 
     const sdpa::agent_id_t& subscriber() const { return subscriber_;}

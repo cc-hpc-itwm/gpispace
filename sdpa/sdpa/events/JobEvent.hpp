@@ -42,8 +42,6 @@ namespace events {
         {
         }
 
-        ~JobEvent() {}
-
         const sdpa::job_id_t & job_id() const { return job_id_; }
         sdpa::job_id_t & job_id() { return job_id_; }
 

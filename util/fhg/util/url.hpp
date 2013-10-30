@@ -26,23 +26,6 @@ namespace fhg
         *this = parse (u);
       }
 
-      url_t (const url_t &o)
-        : m_type (o.m_type)
-        , m_path (o.m_path)
-        , m_args (o.m_args)
-      {}
-
-      url_t & operator= (url_t const & o)
-      {
-        if (this != &o)
-        {
-          m_type = o.m_type;
-          m_path = o.m_path;
-          m_args = o.m_args;
-        }
-        return *this;
-      }
-
       std::string const & type () const { return m_type; }
       std::string const & path () const { return m_path; }
       arg_map_t const &   args () const { return m_args; }

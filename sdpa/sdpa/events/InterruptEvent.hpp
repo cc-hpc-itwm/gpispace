@@ -31,8 +31,6 @@ namespace sdpa { namespace events {
 
     InterruptEvent(const address_t& a_from, const address_t& a_to) : MgmtEvent(a_from, a_to) { }
 
-    virtual ~InterruptEvent() { }
-
     std::string str() const { return "InterruptEvent"; }
 
     virtual void handleBy(EventHandler *handler)

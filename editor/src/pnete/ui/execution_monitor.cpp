@@ -178,7 +178,6 @@ namespace fhg
 
           switch (state)
           {
-          case event::STATE_CREATED: return "created";
           case event::STATE_STARTED: return "started";
           case event::STATE_FINISHED: return "finished";
           case event::STATE_FAILED: return "failed";
@@ -212,7 +211,6 @@ namespace fhg
             = get_or_set_with_default                                   \
               (settings, to_string (event:: STATE_ ## enummed), dflt)
 
-          INIT (CREATED, QColor (128, 128, 128));
           INIT (STARTED, QColor (255, 255, 0));
           INIT (FINISHED, QColor (0, 200, 0));
           INIT (FAILED, QColor (255, 0, 0));
@@ -408,7 +406,6 @@ namespace fhg
 
           static const QList<worker_model::state_type> all_states
             ( QList<worker_model::state_type>()
-            << sdpa::daemon::NotificationEvent::STATE_CREATED
             << sdpa::daemon::NotificationEvent::STATE_STARTED
             << sdpa::daemon::NotificationEvent::STATE_FINISHED
             << sdpa::daemon::NotificationEvent::STATE_FAILED

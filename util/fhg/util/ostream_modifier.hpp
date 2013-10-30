@@ -15,7 +15,7 @@ namespace fhg
       {
       public:
         virtual std::ostream& operator() (std::ostream&) const = 0;
-        virtual ~modifier();
+        virtual ~modifier() {}
       };
       std::ostream& operator<< (std::ostream&, const modifier&);
     }

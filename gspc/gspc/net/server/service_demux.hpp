@@ -8,6 +8,7 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/utility.hpp>
 
 #include <gspc/net/service/handler.hpp>
 
@@ -17,7 +18,7 @@ namespace gspc
   {
     namespace server
     {
-      class service_demux_t
+      class service_demux_t : boost::noncopyable
       {
       public:
         service_demux_t ();
@@ -32,9 +33,6 @@ namespace gspc
                            , user_ptr user
                            );
       private:
-        service_demux_t (service_demux_t const &);
-        service_demux_t & operator= (service_demux_t const &);
-
         void do_service_help ( std::string const &dst
                              , gspc::net::frame const &rqst
                              , gspc::net::user_ptr user

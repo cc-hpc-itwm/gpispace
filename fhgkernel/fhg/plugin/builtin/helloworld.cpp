@@ -40,7 +40,6 @@ public:
     : m_hello (0)
     , m_world(0)
   {}
-  ~HelloWorldImpl () {}
 
   FHG_PLUGIN_START()
   {

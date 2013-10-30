@@ -40,8 +40,6 @@ namespace sdpa {
         url_(url)
       {}
 
-      virtual ~Orchestrator();
-
       void action_configure( const sdpa::events::StartUpEvent& );
       void action_config_ok( const sdpa::events::ConfigOkEvent& );
 

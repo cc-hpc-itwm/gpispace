@@ -17,6 +17,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/thread.hpp>
+#include <boost/utility.hpp>
 
 namespace fhg
 {
@@ -458,7 +459,7 @@ namespace fhg
         }
       }
 
-      struct scoped_entry_t
+      struct scoped_entry_t : boost::noncopyable
       {
       public:
         template <typename Val>
@@ -476,8 +477,6 @@ namespace fhg
         }
 
       private:
-        scoped_entry_t (const scoped_entry_t &);
-        scoped_entry_t & operator=(const scoped_entry_t&);
         const std::string key;
       };
     }

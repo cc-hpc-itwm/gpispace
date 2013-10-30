@@ -38,7 +38,6 @@ set (hdrs
   )
 
 set (srcs
-  ErrorEvent.cpp
   SDPAEvent.cpp
   )
 

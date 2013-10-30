@@ -21,8 +21,6 @@ namespace gspc
 
       explicit
       kvs_t (std::string const &url);
-
-      virtual ~kvs_t ();
     private:
       int do_put (std::list<std::pair<key_type, value_type> > const &);
 

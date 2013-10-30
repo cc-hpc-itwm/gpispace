@@ -9,6 +9,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
+#include <boost/utility.hpp>
 
 #include <fhg/util/thread/atomic.hpp>
 
@@ -26,6 +27,7 @@ namespace gspc
     {
       class queue_manager_t : public frame_handler_t
                             , public user_t
+                            , boost::noncopyable
       {
       public:
         queue_manager_t ();
@@ -76,10 +78,6 @@ namespace gspc
         */
         int ack (user_ptr u, frame const &);
       private:
-        // disallow copy
-        queue_manager_t (queue_manager_t const &);
-        queue_manager_t & operator=(queue_manager_t const &);
-
         typedef boost::shared_lock<boost::shared_mutex> shared_lock;
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
 

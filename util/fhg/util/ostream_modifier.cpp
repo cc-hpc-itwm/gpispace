@@ -10,8 +10,6 @@ namespace fhg
   {
     namespace ostream
     {
-      modifier::~modifier() {}
-
       std::ostream& operator<< (std::ostream& os, const modifier& m)
       {
         return m (os);

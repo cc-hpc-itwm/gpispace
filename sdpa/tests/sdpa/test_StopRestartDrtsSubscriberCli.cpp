@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
     	threadClient.join();
     MLOG (INFO, "The client thread joined the main thread");
 
-    // and stop!!!
+    // and stop!
     MLOG (INFO, "Stopping drts_1");
     drts_1->stop();
     if(drts_1_thread.joinable())

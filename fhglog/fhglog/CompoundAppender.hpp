@@ -35,8 +35,6 @@ namespace fhg { namespace log {
         : Appender(name_tag)
       { }
 
-      virtual ~CompoundAppender() {}
-
       virtual void append(const LogEvent &evt)
       {
 		for (appender_list::iterator a(appenders_.begin()); a != appenders_.end(); ++a)

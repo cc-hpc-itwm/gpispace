@@ -31,24 +31,6 @@ namespace fhg
         : data(begin, end)
       {}
 
-      message_t (const message_t & other)
-        : header(other.header)
-        , data(other.data)
-      {}
-
-      ~message_t ()
-      {}
-
-      message_t & operator= (const message_t & rhs)
-      {
-        if (this != &rhs)
-        {
-          header = rhs.header;
-          data = rhs.data;
-        }
-        return *this;
-      }
-
       void resize (const std::size_t n)
       {
         data.resize (n);

@@ -600,6 +600,37 @@ namespace we
         return os;
       }
 
+      namespace
+      {
+        class visitor_nice_name
+          : public boost::static_visitor<boost::optional<std::string> >
+        {
+        public:
+          boost::optional<std::string>
+            operator() (const petri_net::net&) const
+          {
+            return boost::none;
+          }
+          boost::optional<std::string>
+            operator() (const we::type::module_call_t& mod_call) const
+          {
+            return mod_call.module() + ":" + mod_call.function();
+          }
+          boost::optional<std::string>
+            operator() (const we::type::expression_t&) const
+          {
+            return boost::none;
+          }
+        };
+      }
+
+      std::string activity_t::nice_name() const
+      {
+        shared_lock_t lock (_mutex);
+        return boost::apply_visitor (visitor_nice_name(), transition().data())
+          .get_value_or (transition().name());
+      }
+
       bool operator== (const activity_t& a, const activity_t& b)
       {
         return a.id() == b.id();

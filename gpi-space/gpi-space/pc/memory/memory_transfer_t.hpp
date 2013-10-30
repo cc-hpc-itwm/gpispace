@@ -43,33 +43,6 @@ namespace gpi
           , status (PENDING)
         {}
 
-        memory_transfer_t (const memory_transfer_t &o)
-          : pid (o.pid)
-          , dst_area (o.dst_area)
-          , dst_location (o.dst_location)
-          , src_area (o.src_area)
-          , src_location (o.src_location)
-          , amount (o.amount)
-          , queue (o.queue)
-          , status (o.status)
-        {}
-
-        memory_transfer_t & operator=(const memory_transfer_t &o)
-        {
-          if (this != &o)
-          {
-            pid = o.pid;
-            dst_area = o.dst_area;
-            dst_location = o.dst_location;
-            src_area = o.src_area;
-            src_location = o.src_location;
-            amount = o.amount;
-            queue = o.queue;
-            status = o.status;
-          }
-          return *this;
-        }
-
         typedef boost::shared_ptr<gpi::pc::memory::area_t> area_ptr;
         gpi::pc::type::process_id_t pid;
 

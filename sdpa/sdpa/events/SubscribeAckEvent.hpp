@@ -39,24 +39,6 @@ namespace sdpa { namespace events {
 	  	    listJobIds_(listJobIds)
       { }
 
-      SubscribeAckEvent( const SubscribeAckEvent& subscribeEvt )
-             : MgmtEvent (subscribeEvt)
-      {
-		  listJobIds_ = subscribeEvt.listJobIds_;
-	  }
-
-      SubscribeAckEvent& operator=( const SubscribeAckEvent& subscribeEvt )
-      {
-    	  if(this != &subscribeEvt)
-    	  {
-    		  listJobIds_ = subscribeEvt.listJobIds_;
-    	  }
-
-    	  return *this;
-      }
-
-      virtual ~SubscribeAckEvent() { }
-
       const sdpa::job_id_list_t& listJobIds() const { return listJobIds_;}
       sdpa::job_id_list_t& listJobIds() { return listJobIds_;}
 

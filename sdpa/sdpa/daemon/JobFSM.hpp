@@ -181,7 +181,7 @@ namespace sdpa {
         	lock_type lock(mtx_);
         	process_event(*pEvt);
 
-        	//LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
+        	//LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!");
         	sdpa::status_t status = getStatus();
         	sdpa::events::JobStatusReplyEvent::Ptr pStatReply(new sdpa::events::JobStatusReplyEvent(pEvt->to(),
         																							pEvt->from(),
@@ -204,11 +204,12 @@ namespace sdpa {
         	ptr_comm->sendEventToMaster(pResReply);
         }
 
-        void Reschedule()
+        void Reschedule(sdpa::daemon::IAgent*  pAgent)
         {
-        	MSMRescheduleEvent ReschedEvt;
-            lock_type lock(mtx_);
-            process_event(ReschedEvt);
+          MSMRescheduleEvent ReschedEvt;
+          lock_type lock(mtx_);
+          process_event(ReschedEvt);
+          pAgent->schedule(id());
         }
 
         void Dispatch()

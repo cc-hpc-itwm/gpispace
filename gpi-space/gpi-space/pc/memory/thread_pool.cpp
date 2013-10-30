@@ -5,9 +5,6 @@ namespace gpi
 {
   namespace pc
   {
-    thread_pool_t::thread_pool_t()
-    {}
-
     thread_pool_t::~thread_pool_t()
     {
       clear ();

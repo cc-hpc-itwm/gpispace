@@ -28,8 +28,6 @@ namespace gspc
 
           typedef std::list<frame> frame_list_t;
 
-          virtual ~user () {}
-
           virtual int deliver (frame const & f)
           {
             boost::lock_guard<boost::mutex> lock (m_mutex);

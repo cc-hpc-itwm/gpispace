@@ -32,7 +32,6 @@ namespace seda {
     typedef seda::shared_ptr<CompositeStrategy> Ptr;
 
     CompositeStrategy(const std::string& name);
-    ~CompositeStrategy() {}
 
     void add(const seda::Strategy::Ptr&);
     void remove(const seda::Strategy::Ptr&);

@@ -132,10 +132,6 @@ namespace gpi
       public:
         static const size_t DEF_BUFFER_SIZE = 4194304;
 
-        explicit
-        transfer_manager_t ();
-        ~transfer_manager_t();
-
         void start ( const std::size_t number_of_queues
                    , const std::size_t memcpy_pool_size = 2
                    );

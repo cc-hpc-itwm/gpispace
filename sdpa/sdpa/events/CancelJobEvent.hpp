@@ -45,8 +45,6 @@ namespace sdpa { namespace events {
         , m_reason (a_reason)
       {}
 
-      virtual ~CancelJobEvent() {}
-
       std::string str() const
       {
         return "CancelJobEvent(" + job_id ().str () + ")";

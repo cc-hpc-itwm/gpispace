@@ -23,8 +23,6 @@ namespace fhg
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
-      virtual ~session_manager () {}
-
       void add_session (session_ptr session)
       {
         try

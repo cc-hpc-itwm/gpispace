@@ -37,8 +37,6 @@ namespace seda {
                 : StrategyDecorator(s->name()+".count", s),
                 _count(0) {}
 
-            ~EventCountStrategy() {}
-
             void perform(const IEvent::Ptr& e) {
                 inc();
                 SEDA_LOG_DEBUG("event counted");

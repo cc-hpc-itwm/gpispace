@@ -102,11 +102,10 @@ void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
   {
       Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
       if(!pJob->completed()) {
-          pJob->Reschedule(); // put the job back into the pending state
           // clear the allocation table
           releaseAllocatedWorkers(job_id);
 
-          schedule(job_id);
+          pJob->Reschedule(ptr_comm_handler_); // put the job back into the pending state
         }
   }
   catch(JobNotFoundException const &ex)
@@ -128,7 +127,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
       return;
   }
 
-  ostringstream os;
   if(!ptr_comm_handler_)
   {
       SDPA_LOG_ERROR("Invalid communication handler. ");
@@ -158,21 +156,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
   reschedule(job_id);
 }
 
-void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
-{
-  if(!bStopRequested) {
-      while( !workerJobList.empty() ) {
-          sdpa::job_id_t jobId = workerJobList.front();
-	  DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
-	  reschedule(worker_id, jobId);
-	  workerJobList.pop_front();
-      }
-  }
-  else {
-      SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
-  }
-}
-
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 {
   if(bStopRequested)
@@ -188,8 +171,12 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
       // which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
       pWorker->set_disconnected();
 
-      sdpa::job_id_list_t workerJobList(ptr_worker_man_->getJobListAndCleanQueues(pWorker));
-      reschedule(worker_id, workerJobList);
+      BOOST_FOREACH ( const sdpa::job_id_t& job_id
+                    , ptr_worker_man_->getJobListAndCleanQueues (pWorker)
+                    )
+      {
+        reschedule (worker_id, job_id);
+      }
 
       // put the jobs back into the central queue and don't forget
       // to reset the status
@@ -256,7 +243,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
     if(pJob->description().empty() )
     {
-    	SDPA_LOG_ERROR("Empty Workflow!!!!");
+    	SDPA_LOG_ERROR("Empty Workflow!");
         // declare job as failed
     	JobFailedEvent::Ptr pEvtJobFailed
     	      (new JobFailedEvent( sdpa::daemon::WE
@@ -275,7 +262,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
   }
   catch(const NoWorkflowEngine& ex)
   {
-    SDPA_LOG_ERROR("No workflow engine!!!");
+    SDPA_LOG_ERROR("No workflow engine!");
     sdpa::job_result_t result(ex.what());
 
     JobFailedEvent::Ptr pEvtJobFailed
@@ -649,7 +636,7 @@ void SchedulerImpl::run()
 
       if( !pJob->isMasterJob() ) {
         // if it's an NRE just execute it!
-        // Attention!: an NRE has no WorkerManager!!!!
+        // Attention!: an NRE has no WorkerManager!
         // or has an Worker Manager and the workers are threads
         if( numberOfWorkers()>0 ) {
             schedule_remotely(jobId);
@@ -715,7 +702,7 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
   id_type act_id = pJob->id().str();
 
   execution_result_t result;
-  encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
+  encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!
 
   if( !ptr_comm_handler_ )
   {
@@ -890,7 +877,7 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
 
     ///jobs_to_be_scheduled.erase( job_id );
     // check if there is an allocation list for this job
-    // (assert that the head of this list id worker_id!!!!!!)
+    // (assert that the head of this list id worker_id!)
     // free all the workers in this list, i.e. mark them as not reserved
     ptr_worker_man_->deleteWorkerJob(worker_id, jobId);
 
@@ -1098,41 +1085,12 @@ void SchedulerImpl::checkAllocations()
 
 sdpa::job_id_t SchedulerImpl::getNextJobToSchedule()
 {
-  sdpa::job_id_t jobId;
-  try {
-      jobId = pending_jobs_queue_.pop();
-  }
-  catch( QueueEmpty& ex)
+  try
   {
-      LOG(WARN, "there is no job to be scheduled");
+    return pending_jobs_queue_.pop();
   }
-  return jobId;
-}
-
-/*
-void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue )
-{
-  assert (pQueue);
-
-  while( !pQueue->empty() )
+  catch (QueueEmpty const&)
   {
-    sdpa::job_id_t jobId = pQueue->pop();
-    SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
-
-    if( ptr_comm_handler_ )
-    {
-      Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
-      ptr_comm_handler_->activityFailed( worker_id
-                                       , jobId
-                                       , pJob->result()
-                                       , fhg::error::WORKER_TIMEDOUT
-                                       , "Worker timeout detected!"
-                                       );
-    }
-    else
-    {
-      SDPA_LOG_ERROR("Invalid communication handler!");
-    }
+    return sdpa::job_id_t();
   }
 }
-*/

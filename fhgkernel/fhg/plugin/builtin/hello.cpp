@@ -10,9 +10,6 @@ class HelloImpl : FHG_PLUGIN
                 , public example::Hello
 {
 public:
-  HelloImpl () {}
-  ~HelloImpl () {}
-
   FHG_PLUGIN_START()
   {
     m_text = fhg_kernel()->get("text", "Hello");
