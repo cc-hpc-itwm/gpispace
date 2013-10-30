@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  SDPAEvent.hpp
- *
- *    Description:  SDPAEvent
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #ifndef SDPA_EVENT_HPP
 #define SDPA_EVENT_HPP 1
 

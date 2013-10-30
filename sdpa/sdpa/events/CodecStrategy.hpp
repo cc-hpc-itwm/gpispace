@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  CodecStrategy.hpp
- *
- *    Description:  encodes / decodes events
- *
- *        Version:  1.0
- *        Created:  10/28/2009 01:20:37 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #ifndef SDPA_EVENTS_CODEC_STRATEGY_HPP
 #define SDPA_EVENTS_CODEC_STRATEGY_HPP 1
 

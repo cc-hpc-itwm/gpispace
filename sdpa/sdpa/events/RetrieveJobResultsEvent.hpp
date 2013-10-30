@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  RetrieveJobResultsEvent.hpp
- *
- *    Description:  RetrieveJobResultsEvent
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #ifndef SDPA_RETRIEVEJOBRESULTSEVENT_HPP
 #define SDPA_RETRIEVEJOBRESULTSEVENT_HPP 1
 

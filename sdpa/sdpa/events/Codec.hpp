@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  Codec.hpp
- *
- *    Description:  encoding and decoding of events
- *
- *        Version:  1.0
- *        Created:  10/30/2009 01:24:05 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #ifndef SDPA_EVENTS_CODEC_HPP
 #define SDPA_EVENTS_CODEC_HPP 1
 

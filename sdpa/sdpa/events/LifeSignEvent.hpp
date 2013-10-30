@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  LifeSignEvent.hpp
- *
- *    Description:  LifeSignEvent
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #ifndef SDPA_LIFESIGNEVENT_HPP
 #define SDPA_LIFESIGNEVENT_HPP 1
 

@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  ErrorEvent.hpp
- *
- *    Description:  ErrorEvent
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #ifndef SDPA_ERROREVENT_HPP
 #define SDPA_ERROREVENT_HPP 1
 

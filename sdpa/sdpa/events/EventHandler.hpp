@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  EventHandler.hpp
- *
- *    Description:  EventHandler
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Tiberiu Rotaru
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #ifndef SDPA_EVENT_HANDLER_HPP
 #define SDPA_EVENT_HANDLER_HPP 1
 
