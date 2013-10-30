@@ -935,6 +935,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
           {
             // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
             masterInfo.set_registered(false);
+            masterInfo.incConsecRegAttempts();
 
             if(masterInfo.getConsecRegAttempts()< cfg().get<unsigned int>("max_consecutive_reg_attempts", 360) )
             {
