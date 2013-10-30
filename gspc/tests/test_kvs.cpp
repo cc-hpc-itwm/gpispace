@@ -342,10 +342,10 @@ BOOST_AUTO_TEST_CASE (test_net_get_nokey)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=1000");
-
   try
   {
+    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+
     rc = kvs.get ("foo", val);
     BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
   }
@@ -359,7 +359,6 @@ BOOST_AUTO_TEST_CASE (test_net_get_nokey)
   server->stop ();
   gspc::net::shutdown ();
 }
-
 
 BOOST_AUTO_TEST_CASE (test_net_api)
 {
@@ -379,10 +378,10 @@ BOOST_AUTO_TEST_CASE (test_net_api)
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=1000");
-
   try
   {
+    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+
     rc = kvs.get ("foo", val);
     BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
@@ -464,10 +463,10 @@ BOOST_AUTO_TEST_CASE (test_net_put_get)
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=1000");
-
   try
   {
+    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+
     static const size_t NUM = 1 << 15;
 
     {
