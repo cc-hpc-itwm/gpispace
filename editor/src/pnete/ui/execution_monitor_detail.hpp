@@ -29,7 +29,6 @@ namespace fhg
         {
           //! \note worker_model has first three
           visible_range_role = Qt::UserRole + 100,
-          visible_range_from_role,
           visible_range_to_role,
           automatically_move_role,
           elapsed_time_role,
@@ -171,7 +170,6 @@ namespace fhg
 
       private:
         QScrollBar* _scrollbar;
-        QDateTimeEdit* _lower;
         QDateTimeEdit* _upper;
         QCheckBox* _automove;
 

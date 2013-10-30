@@ -234,10 +234,6 @@ namespace fhg
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           return QVariant::fromValue (_visible_ranges[index]);
 
-        case visible_range_from_role:
-          fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-          return QVariant::fromValue (_visible_ranges[index].from());
-
         case visible_range_to_role:
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           return QVariant::fromValue (_visible_ranges[index].to());
@@ -274,20 +270,6 @@ namespace fhg
         {
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           _visible_ranges[index] = util::qt::value<visible_range_type> (variant);
-        }
-        else if (role == visible_range_from_role)
-        {
-          fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-
-          _visible_ranges[index].from ( util::qt::stores<QDateTime> (variant)
-                                      ? ( util::qt::value<QDateTime> (variant)
-                                        .toMSecsSinceEpoch()
-                                        - util::qt::value<QDateTime>
-                                        (index.data (worker_model::base_time_role))
-                                        .toMSecsSinceEpoch()
-                                        )
-                                      : util::qt::value<long> (variant)
-                                      );
         }
         else if (role == visible_range_to_role)
         {
@@ -808,7 +790,6 @@ namespace fhg
         )
           : QWidget (parent)
           , _scrollbar (new QScrollBar (Qt::Horizontal, this))
-          , _lower (new QDateTimeEdit (this))
           , _upper (new QDateTimeEdit (this))
           , _automove (new QCheckBox (tr ("end = now()"), this))
           , _index (index)
@@ -816,12 +797,10 @@ namespace fhg
         const QDateTime base_time
           (util::qt::value<QDateTime> (index.data (worker_model::base_time_role)));
 
-        _lower->setMinimumDateTime (base_time);
         _upper->setMinimumDateTime (base_time);
         update_maximum();
         update();
 
-        _lower->setDisplayFormat ("dd.MM.yyyy hh:mm:ss");
         _upper->setDisplayFormat ("dd.MM.yyyy hh:mm:ss");
 
 
@@ -839,15 +818,6 @@ namespace fhg
                                   )
           );
 
-
-        util::qt::boost_connect<void (QDateTime)>
-          ( _lower, SIGNAL (dateTimeChanged (QDateTime))
-          , delegate, boost::bind ( &util::qt::mvc::section_index::data
-                                  , _index
-                                  , _1
-                                  , execution_monitor_proxy::visible_range_from_role
-                                  )
-          );
 
         util::qt::boost_connect<void (QDateTime)>
           ( _upper, SIGNAL (dateTimeChanged (QDateTime))
@@ -872,14 +842,12 @@ namespace fhg
         new QHBoxLayout (this);
         layout()->addWidget (_scrollbar);
         layout()->addWidget (_automove);
-        layout()->addWidget (_lower);
         layout()->addWidget (_upper);
       }
 
       void execution_monitor_editor::update_maximum()
       {
         const QDateTime now (QDateTime::currentDateTime());
-        _lower->setMaximumDateTime (now);
         _upper->setMaximumDateTime (now);
         _scrollbar->setMaximum
           (util::qt::value<long> (_index.data (execution_monitor_proxy::elapsed_time_role)));
@@ -892,12 +860,6 @@ namespace fhg
         const execution_monitor_proxy::visible_range_type visible_range
           (util::qt::value<execution_monitor_proxy::visible_range_type> (_index.data (execution_monitor_proxy::visible_range_role)));
 
-        {
-          util::qt::scoped_signal_block block (_lower);
-          _lower->setDateTime ( QDateTime::fromMSecsSinceEpoch
-                                (base_time.toMSecsSinceEpoch() + visible_range.from())
-                              );
-        }
         {
           util::qt::scoped_signal_block block (_upper);
           _upper->setDateTime ( QDateTime::fromMSecsSinceEpoch
