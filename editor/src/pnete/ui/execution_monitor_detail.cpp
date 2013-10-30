@@ -282,7 +282,7 @@ namespace fhg
                                       (index.data (worker_model::base_time_role))
                                       .toMSecsSinceEpoch()
                                       )
-                                    : util::qt::value<long> (variant)
+                                    : util::qt::value<int> (variant)
                                     );
         }
         else if (role == automatically_move_role)
@@ -337,30 +337,13 @@ namespace fhg
         return true;
       }
 
-      namespace
-      {
-        void move_with_constant_range
-          (util::qt::mvc::section_index index, long t)
-        {
-          const execution_monitor_proxy::visible_range_type r
-            ( util::qt::value<execution_monitor_proxy::visible_range_type>
-              (index.data (execution_monitor_proxy::visible_range_role))
-            );
-
-          index.data
-            ( QVariant::fromValue
-              (execution_monitor_proxy::visible_range_type (t - r.length(), t))
-            , execution_monitor_proxy::visible_range_role
-            );
-        }
-      }
-
       void execution_monitor_proxy::move_tick()
       {
         BOOST_FOREACH (const util::qt::mvc::section_index& index, _auto_moving)
         {
-          move_with_constant_range
-            (index, util::qt::value<long> (index.data (execution_monitor_proxy::elapsed_time_role)));
+          index.data ( QDateTime::currentDateTime()
+                     , execution_monitor_proxy::visible_range_to_role
+                     );
         }
       }
 
@@ -827,7 +810,11 @@ namespace fhg
 
         util::qt::boost_connect<void (int)>
           ( _scrollbar, SIGNAL (valueChanged (int))
-          , delegate, boost::bind (move_with_constant_range, _index, _1)
+          , delegate, boost::bind ( &util::qt::mvc::section_index::data
+                                  , _index
+                                  , _1
+                                  , execution_monitor_proxy::visible_range_to_role
+                                  )
           );
 
 

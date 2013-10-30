@@ -56,9 +56,9 @@ namespace fhg
             : _to (t)
             , _length (1)
           { }
-          visible_range_type (long f, long t)
+          visible_range_type (long t, long length)
             : _to (t)
-            , _length (t - f)
+            , _length (length)
           { }
         };
 
