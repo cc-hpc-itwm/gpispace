@@ -63,7 +63,7 @@ namespace gspc
       m_rpc_table ["set_ttl"]  = boost::bind (&service_t::rpc_set_ttl, this, _1);
       m_rpc_table ["set_ttl_regex"]  = boost::bind (&service_t::rpc_set_ttl_regex, this, _1);
       m_rpc_table ["push"]  = boost::bind (&service_t::rpc_push, this, _1);
-      m_rpc_table ["pop"]  = boost::bind (&service_t::rpc_pop, this, _1);
+      m_rpc_table ["wait"]  = boost::bind (&service_t::rpc_wait, this, _1);
       m_rpc_table ["try_pop"]  = boost::bind (&service_t::rpc_try_pop, this, _1);
       m_rpc_table ["counter_reset"]  = boost::bind (&service_t::rpc_counter_reset, this, _1);
       m_rpc_table ["counter_change"]  = boost::bind (&service_t::rpc_counter_change, this, _1);
@@ -212,34 +212,33 @@ namespace gspc
     }
 
     boost::optional<gspc::net::frame>
-    service_t::rpc_pop (gspc::net::frame const &rqst)
+    service_t::rpc_wait (gspc::net::frame const &rqst)
     {
-      api_t::value_type val;
-      int rc = m_kvs->try_pop (rqst.get_body (), val);
-      if (rc == -EAGAIN)
-      {
-        waiting_to_pop_t wtp;
-        wtp.key = rqst.get_body ();
-        wtp.rqst = rqst;
+      fhg::util::parse::position_string pos (rqst.get_body ());
 
-        boost::unique_lock<boost::shared_mutex> lock (m_waiting_to_pop_mtx);
-        m_waiting_to_pop.push_back (wtp);
+      if (pos.end ())
+        return gspc::net::make::error_frame
+          ( rqst
+          , gspc::net::E_SERVICE_FAILED
+          , "empty body"
+          );
 
-        // must be handled specially:
-        //    put rqst & user in 'waiting for change on key'
-        //    try_pop -> if ok return
-        //    otherwise return nothing
-        return boost::none;
-      }
-      else
-      {
-        gspc::net::frame rply = encode_error_code (rqst, rc);
-        if (0 == rc)
-        {
-          gspc::net::stream (rply) << pnet::type::value::show (val) << std::endl;
-        }
-        return rply;
-      }
+      int events = fhg::util::read<int>
+        (fhg::util::parse::require::plain_string (pos, ' '));
+
+      api_t::key_type key =
+        fhg::util::parse::require::plain_string (pos, '\n');
+
+      waiting_t wobject;
+      wobject.rqst = rqst;
+      wobject.key = key;
+      wobject.mask = events;
+      wobject.events = 0;
+
+      boost::unique_lock<boost::shared_mutex> lock (m_waiting_mtx);
+      m_waiting.push_back (wobject);
+
+      return boost::none;
     }
 
     boost::optional<gspc::net::frame>
@@ -360,36 +359,23 @@ namespace gspc
 
     void service_t::on_change (api_t::key_type const &key, int events)
     {
-      boost::unique_lock<boost::shared_mutex> lock (m_waiting_to_pop_mtx);
-      waiting_to_pop_list_t::iterator it = m_waiting_to_pop.begin ();
-      const waiting_to_pop_list_t::iterator end = m_waiting_to_pop.end ();
+      boost::unique_lock<boost::shared_mutex> lock (m_waiting_mtx);
+      waiting_list_t::iterator it = m_waiting.begin ();
+      const waiting_list_t::iterator end = m_waiting.end ();
 
       while (it != end)
       {
-        if (it->key == key)
+        if (it->key == key && it->mask & events)
         {
-          int rc;
-          api_t::value_type val;
+          gspc::net::frame rply = encode_error_code (it->rqst, events);
+          gspc::net::server::default_queue_manager ().deliver (rply);
 
-          {
-            boost::signals2::shared_connection_block blocker
-              (m_on_change_connection);
-            rc = m_kvs->try_pop (key, val);
-          }
-
-          if (rc == 0)
-          {
-            gspc::net::frame rply = encode_error_code (it->rqst, rc);
-            gspc::net::stream (rply) << pnet::type::value::show (val) << std::endl;
-
-            gspc::net::server::default_queue_manager ().deliver (rply);
-            it = m_waiting_to_pop.erase (it);
-
-            continue;
-          }
+          it = m_waiting.erase (it);
         }
-
-        ++it;
+        else
+        {
+          ++it;
+        }
       }
     }
   }

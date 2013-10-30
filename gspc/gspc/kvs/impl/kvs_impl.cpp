@@ -188,7 +188,6 @@ namespace gspc
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex);
       value = val;
-      value_changed.notify_all ();
     }
 
     kvs_t::value_type & kvs_t::entry_t::get_value ()
@@ -199,64 +198,6 @@ namespace gspc
     kvs_t::value_type const & kvs_t::entry_t::get_value () const
     {
       return value;
-    }
-
-    int kvs_t::entry_t::pop (value_type &val)
-    {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex);
-
-      int rc = is_value_available ();
-
-      while (rc == -EAGAIN)
-      {
-        value_changed.wait (lock);
-        rc = is_value_available ();
-      }
-
-      if (rc == 0)
-      {
-        return try_pop (val);
-      }
-      else
-      {
-        return rc;
-      }
-    }
-
-    int kvs_t::entry_t::pop (value_type &val, int timeout)
-    {
-      if (-1 == timeout)
-        return this->pop (val);
-
-      boost::system_time const deadline =
-        boost::get_system_time() + boost::posix_time::milliseconds (timeout);
-
-      boost::unique_lock<boost::recursive_mutex> lock (mutex);
-
-      int rc = is_value_available ();
-
-      while (rc == -EAGAIN)
-      {
-        if (not value_changed.timed_wait (lock, deadline))
-        {
-          rc = is_value_available ();
-          if (rc == -EAGAIN)
-            return -ETIME;
-        }
-        else
-        {
-          rc = is_value_available ();
-        }
-      }
-
-      if (rc == 0)
-      {
-        return try_pop (val);
-      }
-      else
-      {
-        return rc;
-      }
     }
 
     int kvs_t::entry_t::try_pop (value_type &val)
@@ -294,29 +235,12 @@ namespace gspc
       if (alist)
       {
         alist->push_back (val);
-        value_changed.notify_one ();
         return 0;
       }
       else
       {
         return -EINVAL;
       }
-    }
-
-    int kvs_t::entry_t::is_value_available () const
-    {
-      const std::list<value_type> *alist =
-        boost::get<std::list<value_type> >(&value);
-
-      if (alist)
-      {
-        if (not alist->empty ())
-          return 0;
-        else
-          return -EAGAIN;
-      }
-
-      return -EINVAL;
     }
 
     int kvs_t::do_set_ttl (key_type const &key, int ttl)
@@ -387,38 +311,6 @@ namespace gspc
       return 0;
     }
 
-    int kvs_t::do_pop (key_type const &key, value_type &val, int timeout)
-    {
-      purge_expired_keys ();
-
-      {
-        unique_lock lock (m_mutex);
-
-        value_map_t::iterator it = m_values.find (key);
-        if (it == m_values.end ())
-        {
-          std::list<value_type> alist;
-
-          it = m_values.insert
-            (std::make_pair ( key
-                            , entry_ptr_t (new entry_t (alist))
-                            )
-            ).first;
-        }
-
-        entry_ptr_t e = it->second;
-        lock.unlock ();
-
-        int rc = e->pop (val, timeout);
-        if (rc != 0)
-          return rc;
-      }
-
-      notify (key, E_POP);
-
-      return 0;
-    }
-
     int kvs_t::do_try_pop (key_type const &key, value_type &val)
     {
       purge_expired_keys ();
@@ -479,14 +371,18 @@ namespace gspc
         value_map_t::iterator it = m_values.find (key);
         if (it == m_values.end ())
         {
-          return -ENOKEY;
+          it = m_values.insert
+            (std::make_pair ( key
+                            , entry_ptr_t (new entry_t (0))
+                            )
+            ).first;
         }
 
         int *cur = boost::get<int>(&it->second->get_value ());
         if (cur)
         {
-          *cur += delta;
           val = *cur;
+          *cur += delta;
         }
         else
         {

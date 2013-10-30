@@ -22,18 +22,10 @@ namespace gspc
       , m_client ()
     {
       boost::system::error_code ec;
-      for (int i = 0 ; i < 5 ; ++i)
+      m_client = gspc::net::dial (m_url, ec);
+      if (not m_client || ec)
       {
-        m_client = gspc::net::dial (m_url, ec);
-        if ( (not m_client || ec) && i != 4)
-        {
-          std::cerr << "ec " << ec << std::endl;
-          throw boost::system::system_error (ec);
-        }
-        else
-        {
-          break;
-        }
+        throw boost::system::system_error (ec);
       }
     }
 
@@ -254,27 +246,6 @@ namespace gspc
       return fhg::util::read<int> (rply);
     }
 
-    int kvs_net_frontend_t::do_pop (key_type const &key, value_type &val, int timeout)
-    {
-      std::string rply;
-      int rc = request ("pop", key, rply, timeout);
-
-      if (rc != 0)
-        return rc;
-
-      fhg::util::parse::position_string pos (rply);
-
-      rc = fhg::util::read<int>
-        (fhg::util::parse::require::plain_string (pos, '\n'));
-
-      if (0 == rc)
-      {
-        val = pnet::type::value::read (pos);
-      }
-
-      return rc;
-    }
-
     int kvs_net_frontend_t::do_try_pop (key_type const &key, value_type &val)
     {
       std::string rply;
@@ -337,10 +308,25 @@ namespace gspc
 
     int kvs_net_frontend_t::do_wait ( key_type const &key
                                     , int mask
-                                    , int timeout_in_ms
+                                    , int timeout
                                     ) const
     {
-      return -ENOTSUP;
+      int rc;
+      std::ostringstream rqst;
+      rqst << mask << " " << key << std::endl;
+
+      std::string rply;
+      rc = request ("wait", rqst.str (), rply, timeout);
+
+      if (rc != 0)
+        return rc;
+
+      fhg::util::parse::position_string pos (rply);
+
+      rc = fhg::util::read<int>
+        (fhg::util::parse::require::plain_string (pos, '\n'));
+
+      return rc;
     }
   }
 }

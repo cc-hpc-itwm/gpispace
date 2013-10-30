@@ -187,27 +187,33 @@ BOOST_AUTO_TEST_CASE (test_impl_reset_inc_dec)
   int val;
 
   rc = kvs.counter_increment ("foo", val);
-  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (val, 0);
 
   rc = kvs.counter_decrement ("foo", val);
-  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (val, 1);
 
   rc = kvs.counter_reset ("foo", 0);
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   rc = kvs.counter_increment ("foo", val);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 1);
+  BOOST_REQUIRE_EQUAL (val, 0);
 
   rc = kvs.counter_change ("foo", val, 2);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 3);
+  BOOST_REQUIRE_EQUAL (val, 1);
 
   rc = kvs.counter_decrement ("foo", val);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 2);
+  BOOST_REQUIRE_EQUAL (val, 3);
 
   rc = kvs.counter_change ("foo", val, -2);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (val, 2);
+
+  rc = kvs.counter_change ("foo", val, 0);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (val, 0);
 
@@ -441,11 +447,11 @@ BOOST_AUTO_TEST_CASE (test_net_api)
 
     rc = kvs.counter_change ("cnt", cnt, +1);
     BOOST_REQUIRE_EQUAL (rc, 0);
-    BOOST_REQUIRE_EQUAL (cnt, 1);
+    BOOST_REQUIRE_EQUAL (cnt, 0);
 
     rc = kvs.counter_change ("cnt", cnt, -1);
     BOOST_REQUIRE_EQUAL (rc, 0);
-    BOOST_REQUIRE_EQUAL (cnt, 0);
+    BOOST_REQUIRE_EQUAL (cnt, 1);
 
     rc = kvs.del_regex (".*");
     BOOST_REQUIRE_EQUAL (rc, 0);
@@ -553,6 +559,9 @@ BOOST_AUTO_TEST_CASE (test_net_wait)
     boost::thread pusher (boost::bind (&s_push_value, &kvs, "foo", val_to_push));
 
     rc = kvs.wait ("foo", gspc::kvs::api_t::E_PUSH, 2000);
+    if (rc < 0)
+      std::cerr << "wait returned: " << strerror (-rc) << std::endl;
+
     BOOST_REQUIRE_EQUAL (rc, gspc::kvs::api_t::E_PUSH);
 
     pusher.join ();

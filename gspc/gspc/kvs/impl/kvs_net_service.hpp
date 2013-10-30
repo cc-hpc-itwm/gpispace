@@ -32,15 +32,17 @@ namespace gspc
                        , gspc::net::user_ptr user
                        );
     private:
-      struct waiting_to_pop_t
+      struct waiting_t
       {
         gspc::kvs::api_t::key_type key;
+        int mask;
+        int events;
         gspc::net::frame rqst;
       };
 
       typedef boost::function< boost::optional<gspc::net::frame> (gspc::net::frame const &)> rpc_t;
       typedef std::map<std::string, rpc_t> rpc_table_t;
-      typedef std::list<waiting_to_pop_t> waiting_to_pop_list_t;
+      typedef std::list<waiting_t> waiting_list_t;
 
       void setup_rpc_handler ();
 
@@ -71,7 +73,7 @@ namespace gspc
       rpc_push (gspc::net::frame const &);
 
       boost::optional<gspc::net::frame>
-      rpc_pop (gspc::net::frame const &);
+      rpc_wait (gspc::net::frame const &);
 
       boost::optional<gspc::net::frame>
       rpc_try_pop (gspc::net::frame const &);
@@ -94,8 +96,8 @@ namespace gspc
       boost::shared_ptr<api_t> m_kvs;
       rpc_table_t m_rpc_table;
 
-      mutable boost::shared_mutex m_waiting_to_pop_mtx;
-      waiting_to_pop_list_t m_waiting_to_pop;
+      mutable boost::shared_mutex m_waiting_mtx;
+      waiting_list_t m_waiting;
 
       boost::signals2::connection m_on_change_connection;
     };

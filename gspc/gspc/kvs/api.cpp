@@ -105,7 +105,17 @@ namespace gspc
       if (not is_key_valid (key))
         return -EKEYREJECTED;
 
-      return this->do_pop (key, val, timeout);
+      int rc = -EAGAIN;
+      while (rc == -EAGAIN || rc == -ENOKEY || rc > 0)
+      {
+        rc = this->do_try_pop (key, val);
+        if (0 == rc)
+          break;
+
+        rc = this->do_wait (key, E_ANY, timeout);
+      }
+
+      return rc;
     }
     int api_t::try_pop (key_type const &key, value_type &val)
     {
