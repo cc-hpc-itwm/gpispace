@@ -272,6 +272,60 @@ BOOST_AUTO_TEST_CASE (test_impl_expiry)
   BOOST_REQUIRE_EQUAL (rc, -EKEYEXPIRED);
 }
 
+BOOST_AUTO_TEST_CASE (test_net_start_stop)
+{
+  gspc::net::initialize ();
+
+  int rc;
+  gspc::kvs::api_t::value_type val;
+
+  gspc::net::server_ptr_t server;
+  size_t i;
+  try
+  {
+    for (i = 0 ; i < 10 ; ++i)
+    {
+      // setup server
+      server = gspc::net::serve ("tcp://localhost:*");
+      gspc::kvs::service_t service;
+      gspc::net::handle ( "/service/kvs"
+                        , gspc::net::service::strip_prefix ( "/service/kvs/"
+                                                           , boost::ref (service)
+                                                           )
+                        );
+
+      gspc::kvs::kvs_net_frontend_t kvs (server->url ());
+
+      rc = kvs.put ("foo", "bar");
+      if (rc != 0)
+      {
+        std::cerr << "failed to put: " << strerror (-rc) << std::endl;
+      }
+      BOOST_CHECK_EQUAL (rc, 0);
+
+      rc = kvs.get ("foo", val);
+      if (rc != 0)
+      {
+        std::cerr << "failed to put: " << strerror (-rc) << std::endl;
+      }
+      BOOST_CHECK_EQUAL (rc, 0);
+    }
+  }
+  catch (std::exception const &ex)
+  {
+    std::cerr << "failed in iteration " << i << ": " << ex.what ()
+              << std::endl;
+
+    server->stop ();
+    gspc::net::shutdown ();
+
+    throw;
+  }
+
+  server->stop ();
+  gspc::net::shutdown ();
+}
+
 BOOST_AUTO_TEST_CASE (test_net_get_nokey)
 {
   gspc::net::initialize ();
