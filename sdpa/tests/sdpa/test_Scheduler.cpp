@@ -195,6 +195,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
           // delete the job
           pAgent->scheduler()->deleteWorkerJob(listJobAssignedWorkers.front(), jobId);
       }
+
+      pAgent->scheduler()->releaseReservation(jobId);
   }
 
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
