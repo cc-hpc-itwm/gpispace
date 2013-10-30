@@ -48,7 +48,6 @@ namespace fhg
             return _to - _length;
           }
           void to (long t) { _length += (t - _to); _to = t; }
-          void from (long f) { _length = _to - f; }
           long length() const
           {
             return _length;
