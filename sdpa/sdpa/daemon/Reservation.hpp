@@ -24,7 +24,28 @@ namespace sdpa {
         }
       }
 
-      bool allWorkersTerminated() const { return m_map_worker_result.size() == m_list_workers.size(); }
+      void workerFinished(const worker_id_t& wid) {
+        storeWorkerResult(wid, FINISHED);
+      }
+
+      void workerFailed(const worker_id_t& wid) {
+        storeWorkerResult(wid, FAILED);
+      }
+
+      void workerCanceled(const worker_id_t& wid) {
+        storeWorkerResult(wid, CANCELED);
+      }
+
+      // should protect this!!!!
+      bool allWorkersTerminated() const { return m_map_worker_result.size() == capacity(); }
+
+      bool groupFinished()
+      {
+        for(map_worker_result_t::iterator it(m_map_worker_result.begin()); it!=m_map_worker_result.end(); it++)
+          if(it->second!=FINISHED)
+            return false;
+        return true;
+      }
 
       bool isEmpty() const { return m_list_workers.empty(); }
       bool acquired() { return (size()==capacity()); }
