@@ -8,46 +8,61 @@
 
 #include <boost/serialization/base_object.hpp>
 
-namespace sdpa { namespace events {
-        class CancelJobAckEvent : public JobEvent
+namespace sdpa
+{
+  namespace events
+  {
+    class CancelJobAckEvent : public JobEvent
     {
     public:
       typedef sdpa::shared_ptr<CancelJobAckEvent> Ptr;
 
-      CancelJobAckEvent() : JobEvent("", "", "") {}
+      CancelJobAckEvent()
+        : JobEvent ("", "", "")
+      {}
 
-      CancelJobAckEvent(const address_t &a_from, const address_t &a_to, const sdpa::job_id_t& a_job_id)
-      :  sdpa::events::JobEvent( a_from, a_to, a_job_id) {}
+      CancelJobAckEvent ( const address_t& a_from
+                        , const address_t& a_to
+                        , const sdpa::job_id_t& a_job_id
+                        )
+        :  sdpa::events::JobEvent (a_from, a_to, a_job_id)
+      {}
 
       std::string str() const
       {
         return "CancelJobAckEvent(" + job_id ().str () + ")";
       }
-
-      virtual void handleBy(EventHandler *handler)
+      std::string const& result() const
       {
-        handler->handleCancelJobAckEvent(this);
+        return _result;
+      }
+      std::string& result()
+      {
+        return _result;
+      }
+      virtual void handleBy (EventHandler* handler)
+      {
+        handler->handleCancelJobAckEvent (this);
       }
 
-      std::string const & result() const { return m_result; }
-      std::string & result() { return m_result; }
-
-      CancelJobAckEvent * set_result(std::string const &r)
+      CancelJobAckEvent* set_result (std::string const &r)
       {
-        m_result = r;
+        _result = r;
         return this;
       }
+
     private:
-      std::string m_result;
+      std::string _result;
 
       friend class boost::serialization::access;
       template <typename Archive>
       void serialize (Archive& ar, const unsigned int)
       {
         ar & boost::serialization::base_object<JobEvent> (*this);
-        ar & m_result;
+        ar & _result;
       }
     };
-}}
+  }
+}
 
 #endif
