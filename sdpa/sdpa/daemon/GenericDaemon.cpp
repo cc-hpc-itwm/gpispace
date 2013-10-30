@@ -310,61 +310,33 @@ void GenericDaemon::shutdown( )
 /**
  * Configure the network
  */
-void GenericDaemon::configure_network( const std::string& daemonUrl /*, const std::string& masterName*/ )
+void GenericDaemon::configure_network (const std::string& url)
 {
-  DMLOG (TRACE, "configuring network components...");
+  const boost::tokenizer<boost::char_separator<char> > tok
+    (url, boost::char_separator<char> (":"));
 
-  typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+  const std::vector<std::string> vec (tok.begin(), tok.end());
 
-  boost::char_separator<char> sep(":");
-  tokenizer tok(daemonUrl, sep);
-
-  vector< string > vec;
-  vec.assign(tok.begin(),tok.end());
-
-  if( vec.empty() || vec.size() > 2 )
+  if (vec.empty() || vec.size() > 2)
   {
-    LOG(ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
-    return;
+    LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
+    throw std::runtime_error ("configuration of network failed: invalid url");
   }
-  else
-  {
-    std::string bind_addr = vec[0];
-    std::string bind_port("0");
 
-    if( vec.size() == 2)
-    bind_port = vec[1];
+  sdpa::com::NetworkStrategy::ptr_t net
+    ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
+                                     , name() /*name for peer*/
+                                     , fhg::com::host_t (vec[0])
+                                     , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
+                                     )
+    );
 
-    DMLOG (TRACE, "Host: "<<bind_addr<<", port: "<<bind_port);
+  seda::Stage::Ptr network_stage
+    (new seda::Stage (m_to_master_stage_name_, net));
 
-    try
-    {
-      sdpa::com::NetworkStrategy::ptr_t net
-        (new sdpa::com::NetworkStrategy( /*daemon_stage_->*/name()
-                                        , name()
-                                        , fhg::com::host_t (bind_addr)
-                                        , fhg::com::port_t (bind_port)
-                                        ) );
+  seda::StageRegistry::instance().insert (network_stage);
 
-      /*int maxQueueSize = 5000;
-      seda::IEventQueue::Ptr ptrEvtPrioQueue( new seda::EventPrioQueue("network.stage."+name()+".queue", maxQueueSize) );
-      seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, ptrEvtPrioQueue, net, 1));*/
-
-      seda::Stage::Ptr network_stage (new seda::Stage( m_to_master_stage_name_
-    		  	  	  	  	  	  	  	  	  	  	  	, net
-    		  	  	  	  	  	  	  	  	  	  	  	, 1
-      	  	  	  	  	  	  	  	  	  	  	  	  )
-      	  	  	  	  	  	  	  	  );
-
-      seda::StageRegistry::instance().insert (network_stage);
-      ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-    }
-    catch (std::exception const &ex)
-    {
-      LOG(ERROR, "could not configure network component: " << ex.what());
-      throw;
-    }
-  }
+  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 }
 
 /**
@@ -406,11 +378,8 @@ void GenericDaemon::stop()
   seda::StageRegistry::instance().lookup(name())->stop();
   seda::StageRegistry::instance().remove(name());
 
-  if( hasWorkflowEngine() )
-  {
-     delete ptr_workflow_engine_;
-     ptr_workflow_engine_ = NULL;
-  }
+  delete ptr_workflow_engine_;
+  ptr_workflow_engine_ = NULL;
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -1290,17 +1259,17 @@ const job_requirements_t GenericDaemon::getJobRequirements(const sdpa::job_id_t&
 
 void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
 {
-  if(!ptr_workflow_engine_)
+  if(!hasWorkflowEngine())
     throw NoWorkflowEngine();
 
-  ptr_workflow_engine_->submit (wf_id, desc, we::type::user_data ());
+  workflowEngine()->submit (wf_id, desc, we::type::user_data ());
 }
 
 void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string& reason)
 {
   if (hasWorkflowEngine())
   {
-    ptr_workflow_engine_->cancel(workflowId, reason);
+    workflowEngine()->cancel(workflowId, reason);
   }
   else
   {

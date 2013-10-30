@@ -56,7 +56,7 @@ namespace
     };
 
     std::string id;
-    int        state;
+    state_t state;
     int        errc;
     we::mgmt::type::activity_t activity;
     fhg::util::thread::event<int> done;
