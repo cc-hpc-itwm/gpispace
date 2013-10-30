@@ -33,6 +33,7 @@ namespace gspc
         {
           if (not m_work)
           {
+            m_io_service.reset ();
             m_work.reset (new boost::asio::io_service::work (m_io_service));
 
             for (size_t i = 0 ; i < nthread ; ++i)
@@ -65,13 +66,14 @@ namespace gspc
           if (m_work)
           {
             m_work.reset ();
+            m_io_service.stop ();
 
             BOOST_FOREACH (thread_ptr_t thrd, m_threads)
             {
+              thrd->interrupt ();
               thrd->join ();
             }
             m_threads.clear ();
-            m_io_service.reset ();
           }
         }
 
