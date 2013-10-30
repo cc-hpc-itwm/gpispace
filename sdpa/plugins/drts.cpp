@@ -709,13 +709,13 @@ public:
          )
       {
         MLOG(TRACE, "cancelling pending job: " << e->job_id());
-        sdpa::events::CancelJobAckEvent *event
+        send_event
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job_it->second->owner()
                                                , job_it->second->id()
+                                               , job_it->second->result()
                                                )
           );
-        send_event(event->set_result (job_it->second->result()));
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
@@ -1291,14 +1291,13 @@ private:
       break;
     case drts::Job::CANCELED:
       {
-        sdpa::events::CancelJobAckEvent *event
+        return send_event
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job->owner()
                                                , job->id()
+                                               , job->result()
                                                )
           );
-
-        return send_event(event->set_result (job->result()));
       }
       break;
     default:

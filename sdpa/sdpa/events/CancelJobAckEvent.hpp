@@ -19,13 +19,16 @@ namespace sdpa
 
       CancelJobAckEvent()
         : JobEvent ("", "", "")
+        , _result ("unknown_result")
       {}
 
       CancelJobAckEvent ( const address_t& a_from
                         , const address_t& a_to
                         , const sdpa::job_id_t& a_job_id
+                        , std::string const& result = "unknown_result"
                         )
         :  sdpa::events::JobEvent (a_from, a_to, a_job_id)
+        , _result (result)
       {}
 
       std::string str() const
@@ -39,12 +42,6 @@ namespace sdpa
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleCancelJobAckEvent (this);
-      }
-
-      CancelJobAckEvent* set_result (std::string const &r)
-      {
-        _result = r;
-        return this;
       }
 
     private:
