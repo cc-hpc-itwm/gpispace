@@ -45,7 +45,6 @@ namespace sdpa { namespace events {
       }
 
       const sdpa::job_id_t & last_job_id() const { return last_job_id_; }
-      sdpa::job_id_t & last_job_id() { return last_job_id_; }
 
       std::string str() const
       {
