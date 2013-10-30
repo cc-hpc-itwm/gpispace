@@ -63,7 +63,6 @@ namespace sdpa
         , id_()
       {}
 
-      SDPAEvent (const SDPAEvent& other);
       SDPAEvent (const address_t& from, const address_t& to);
       SDPAEvent ( const address_t& from
                 , const address_t& to
