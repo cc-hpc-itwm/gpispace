@@ -236,11 +236,11 @@ namespace fhg
 
         case visible_range_from_role:
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-          return QVariant::fromValue (_visible_ranges[index].from);
+          return QVariant::fromValue (_visible_ranges[index].from());
 
         case visible_range_to_role:
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-          return QVariant::fromValue (_visible_ranges[index].to);
+          return QVariant::fromValue (_visible_ranges[index].to());
 
         case automatically_move_role:
           fhg_assert (_column_types[index] == gantt_column, "automatically moving only defined for gantt columns");
@@ -275,45 +275,33 @@ namespace fhg
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           _visible_ranges[index] = util::qt::value<visible_range_type> (variant);
         }
-        else if (role == visible_range_from_role || role == visible_range_to_role)
+        else if (role == visible_range_from_role)
         {
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-          if (util::qt::stores<QDateTime> (variant))
-          {
-            const long val ( util::qt::value<QDateTime> (variant)
-                           .toMSecsSinceEpoch()
-                           - util::qt::value<QDateTime>
-                             (index.data (worker_model::base_time_role))
-                           .toMSecsSinceEpoch()
-                           );
 
-            if (_visible_ranges.contains (index))
-            {
-              ( role == visible_range_from_role
-              ? _visible_ranges[index].from
-              : _visible_ranges[index].to
-              ) = val;
-            }
-            else
-            {
-              _visible_ranges[index] = visible_range_type (val);
-            }
-          }
-          else
-          {
-            if (_visible_ranges.contains (index))
-            {
-              ( role == visible_range_from_role
-              ? _visible_ranges[index].from
-              : _visible_ranges[index].to
-              ) = util::qt::value<long> (variant);
-            }
-            else
-            {
-              _visible_ranges[index] =
-                visible_range_type (util::qt::value<long> (variant));
-            }
-          }
+          _visible_ranges[index].from ( util::qt::stores<QDateTime> (variant)
+                                      ? ( util::qt::value<QDateTime> (variant)
+                                        .toMSecsSinceEpoch()
+                                        - util::qt::value<QDateTime>
+                                        (index.data (worker_model::base_time_role))
+                                        .toMSecsSinceEpoch()
+                                        )
+                                      : util::qt::value<long> (variant)
+                                      );
+        }
+        else if (role == visible_range_to_role)
+        {
+          fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
+
+          _visible_ranges[index].to ( util::qt::stores<QDateTime> (variant)
+                                    ? ( util::qt::value<QDateTime> (variant)
+                                      .toMSecsSinceEpoch()
+                                      - util::qt::value<QDateTime>
+                                      (index.data (worker_model::base_time_role))
+                                      .toMSecsSinceEpoch()
+                                      )
+                                    : util::qt::value<long> (variant)
+                                    );
         }
         else if (role == automatically_move_role)
         {
@@ -529,19 +517,19 @@ namespace fhg
           {
             BOOST_FOREACH
               ( const worker_model::value_type& data
-              , range (visible_range.from, visible_range.to)
+              , range (visible_range.from(), visible_range.to())
               )
             {
-              const qreal left (std::max (visible_range.from, data.timestamp()));
+              const qreal left (std::max (visible_range.from(), data.timestamp()));
               paint_description::block block
                 ( QRectF ( qreal (rect.x())
-                         + (left - visible_range.from) * horizontal_scale
+                         + (left - visible_range.from()) * horizontal_scale
                          , rect.top()
                          , ( ( data.duration()
-                             ? std::min ( visible_range.to
+                             ? std::min ( visible_range.to()
                                         , data.timestamp() + *data.duration()
                                         )
-                             : visible_range.to
+                             : visible_range.to()
                              )
                            - left
                            ) * horizontal_scale
@@ -907,18 +895,18 @@ namespace fhg
         {
           util::qt::scoped_signal_block block (_lower);
           _lower->setDateTime ( QDateTime::fromMSecsSinceEpoch
-                                (base_time.toMSecsSinceEpoch() + visible_range.from)
+                                (base_time.toMSecsSinceEpoch() + visible_range.from())
                               );
         }
         {
           util::qt::scoped_signal_block block (_upper);
           _upper->setDateTime ( QDateTime::fromMSecsSinceEpoch
-                                (base_time.toMSecsSinceEpoch() + visible_range.to)
+                                (base_time.toMSecsSinceEpoch() + visible_range.to())
                               );
         }
         {
           util::qt::scoped_signal_block block (_scrollbar);
-          _scrollbar->setValue (visible_range.to);
+          _scrollbar->setValue (visible_range.to());
           _scrollbar->setPageStep
             (std::min (static_cast<int> (visible_range.length()), _scrollbar->maximum()));
           _scrollbar->setSingleStep (_scrollbar->pageStep() / 20);
@@ -1046,8 +1034,8 @@ namespace fhg
             painter->setRenderHint (QPainter::Antialiasing, do_antialiasing);
             painter->setRenderHint (QPainter::TextAntialiasing, true);
 
-            const long& from (range.from);
-            const long& to (range.to);
+            const long from (range.from());
+            const long to (range.to());
             const long visible_range (range.length());
 
             const qreal scale (qreal (rect.width()) / (to - from));

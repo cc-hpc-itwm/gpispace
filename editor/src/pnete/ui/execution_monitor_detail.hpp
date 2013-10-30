@@ -38,19 +38,29 @@ namespace fhg
 
         struct visible_range_type
         {
-          long from;
-          long to;
+          long _to;
+          long _length;
+          long to() const
+          {
+            return _to;
+          }
+          long from() const
+          {
+            return _to - _length;
+          }
+          void to (long t) { _length += (t - _to); _to = t; }
+          void from (long f) { _length = _to - f; }
           long length() const
           {
-            return to - from;
+            return _length;
           }
           visible_range_type (long t = 0)
-            : from (t - 1)
-            , to (t)
+            : _to (t)
+            , _length (1)
           { }
           visible_range_type (long f, long t)
-            : from (f)
-            , to (t)
+            : _to (t)
+            , _length (t - f)
           { }
         };
 
