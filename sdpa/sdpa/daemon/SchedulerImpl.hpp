@@ -78,7 +78,10 @@ namespace sdpa {
       virtual Worker::worker_id_t getWorkerId(unsigned int rank);
       sdpa::job_id_t getAssignedJob(const sdpa::worker_id_t&);
       sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId) { return allocation_table_[jobId]; }
+
+      //! \todo Eliminate that function, is used in a test only
       sdpa::job_id_t getNextJobToSchedule();
+
       void assignJobsToWorkers();
 
       virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
