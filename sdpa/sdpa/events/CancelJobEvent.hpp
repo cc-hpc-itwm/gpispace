@@ -22,6 +22,8 @@
 
 #include <sdpa/events/JobEvent.hpp>
 
+#include <boost/serialization/base_object.hpp>
+
 namespace sdpa { namespace events {
     class CancelJobEvent : public JobEvent
     {
@@ -63,6 +65,14 @@ namespace sdpa { namespace events {
       }
     private:
       std::string m_reason;
+
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<JobEvent> (*this);
+        ar & m_reason;
+      }
     };
   }}
 
