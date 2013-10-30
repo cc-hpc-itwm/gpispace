@@ -122,5 +122,5 @@ fhg_add_test(test_kvs.cpp
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
                  ${CMAKE_DL_LIBS}
-  DESCRIPTION "GSPCRif - process supervisor tests"
+  DESCRIPTION "GSPCKvs - KVS related tests"
 )
