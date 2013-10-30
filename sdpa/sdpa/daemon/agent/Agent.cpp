@@ -348,21 +348,29 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
       // FSM callback routine.
 
       // update the status of the reservation
-      //scheduler()->workerFailed(worker_id, actId);
-      // bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
 
-
-      workflowEngine()->failed( actId
-                                  , pEvt->result()
-                                  , pEvt->error_code()
-                                  , pEvt->error_message()
-                                );
-
+      scheduler()->workerFailed(worker_id, actId);
       bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
+
+      if(bTaskGroupComputed) {
+          workflowEngine()->failed( actId
+                                    , pEvt->result()
+                                    , pEvt->error_code()
+                                    , pEvt->error_message()
+                                  );
+
+          // cancel the other jobs assigned to the workers which are
+          // in the reservation list
+      }
 
       try {
         DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
         scheduler()->deleteWorkerJob( worker_id, pJob->id() );
+
+        // if all partial results were collected, release the reservation
+        if(bTaskGroupComputed) {
+            scheduler()->releaseReservation(pJob->id());
+        }
       }
       catch(WorkerNotFoundException const &)
       {
@@ -379,7 +387,9 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
         try {
           //delete it also from job_map_
           DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-          jobManager()->deleteJob(pEvt->job_id());
+          if(bTaskGroupComputed) {
+              jobManager()->deleteJob(pEvt->job_id());
+          }
         }
         catch(JobNotDeletedException const &ex)
         {
@@ -682,20 +692,29 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   else // acknowledgment comes from a worker -> inform WE that the activity was canceled
   {
     LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
+    id_type actId = pEvt->job_id();
+    Worker::worker_id_t worker_id = pEvt->from();
+
+    scheduler()->workerCanceled(worker_id, actId);
+    bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
 
     try {
-      workflowEngine()->cancelled(pEvt->job_id());
+        if(bTaskGroupComputed) {
+            workflowEngine()->cancelled(pEvt->job_id());
+        }
     }
     catch (std::exception const & ex)
     {
       LOG(ERROR, "could not cancel job on the workflow engine: " << ex.what());
     }
 
-    // delete the worker job
-    Worker::worker_id_t worker_id = pEvt->from();
     try {
       LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
       scheduler()->deleteWorkerJob(worker_id, pEvt->job_id());
+
+      if(bTaskGroupComputed) {
+          scheduler()->releaseReservation(pEvt->job_id());
+       }
     }
     catch (const WorkerNotFoundException&)
     {
@@ -715,7 +734,9 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     // delete the job completely from the job manager
     try
     {
-      jobManager()->deleteJob(pEvt->job_id());
+        if(bTaskGroupComputed) {
+          jobManager()->deleteJob(pEvt->job_id());
+        }
     }
     catch(const JobNotDeletedException&)
     {
@@ -774,6 +795,4 @@ void Agent::recover( std::istream& ifs )
     cout <<"Exception occurred: " << e.what() << endl;
   }
 }
-
-  }
-}
+}}
