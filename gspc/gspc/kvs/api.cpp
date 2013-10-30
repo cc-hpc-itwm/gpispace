@@ -156,7 +156,7 @@ namespace gspc
 
     int api_t::wait (key_type const &key) const
     {
-      return wait (key, E_ANY, -1);
+      return wait (key, E_EXIST, -1);
     }
     int api_t::wait (key_type const &key, int mask) const
     {

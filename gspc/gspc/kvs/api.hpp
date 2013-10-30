@@ -25,8 +25,6 @@ namespace gspc
         , E_POP     = 0x08
         , E_EXIST   = 0x10
         , E_POPABLE = 0x20
-
-        , E_ANY = E_PUT | E_DEL | E_PUSH | E_POP
         };
 
       virtual ~api_t () {}

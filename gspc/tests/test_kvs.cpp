@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE (test_impl_wait)
   gspc::kvs::kvs_t kvs;
   gspc::kvs::api_t::value_type val;
 
-  rc = kvs.wait ("foo", gspc::kvs::api_t::E_ANY, 500);
+  rc = kvs.wait ("foo", gspc::kvs::api_t::E_EXIST, 500);
   BOOST_REQUIRE_EQUAL (rc, -ETIME);
 
   // fire up a thread to push
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE (test_impl_wait)
   boost::thread pusher (boost::bind (&s_push_value, &kvs, "foo", val_to_push));
 
   rc = kvs.wait ("foo", gspc::kvs::api_t::E_PUSH, 2000);
-  BOOST_REQUIRE_EQUAL (rc, gspc::kvs::api_t::E_PUSH);
+  BOOST_REQUIRE (rc & gspc::kvs::api_t::E_PUSH);
 
   pusher.join ();
 
@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_CASE (test_net_wait)
   {
     gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
 
-    rc = kvs.wait ("foo", gspc::kvs::api_t::E_ANY, 500);
+    rc = kvs.wait ("foo", gspc::kvs::api_t::E_EXIST, 500);
     BOOST_REQUIRE_EQUAL (rc, -ETIME);
 
     // fire up a thread to push
@@ -562,7 +562,7 @@ BOOST_AUTO_TEST_CASE (test_net_wait)
     if (rc < 0)
       std::cerr << "wait returned: " << strerror (-rc) << std::endl;
 
-    BOOST_REQUIRE_EQUAL (rc, gspc::kvs::api_t::E_PUSH);
+    BOOST_REQUIRE (rc & gspc::kvs::api_t::E_PUSH);
 
     pusher.join ();
 

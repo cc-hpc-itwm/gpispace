@@ -181,12 +181,10 @@ int main (int argc, char *argv [], char *envp [])
         std::cout << gspc::kvs::api_t::E_DEL << std::endl;
       else if (mask == "exist")
         std::cout << gspc::kvs::api_t::E_EXIST << std::endl;
-      else if (mask == "any")
-        std::cout << gspc::kvs::api_t::E_ANY << std::endl;
       else
       {
         std::cerr << "kvs: invalid event mask: " << mask << std::endl;
-        std::cerr << "kvs: must be one of: push, popable, pop, exist, del, put, any"
+        std::cerr << "kvs: must be one of: push, popable, pop, exist, del, put"
                   << std::endl;
         return EX_DATAERR;
       }
@@ -507,8 +505,6 @@ int main (int argc, char *argv [], char *envp [])
           mask = gspc::kvs::api_t::E_PUT;
         else if (mask_string == "exist")
           mask = gspc::kvs::api_t::E_EXIST;
-        else if (mask_string == "any")
-          mask = gspc::kvs::api_t::E_ANY;
         else
         {
           std::cerr << "kvs: invalid event-mask: " << mask_string << std::endl;
