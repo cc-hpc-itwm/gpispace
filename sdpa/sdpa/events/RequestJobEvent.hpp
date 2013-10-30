@@ -23,6 +23,8 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 
+#include <boost/serialization/base_object.hpp>
+
 namespace sdpa { namespace events {
   class RequestJobEvent : public MgmtEvent
   {
@@ -56,6 +58,14 @@ namespace sdpa { namespace events {
       }
     private:
       sdpa::job_id_t last_job_id_;
+
+    friend class boost::serialization::access;
+    template <typename Archive>
+    void serialize (Archive& ar, const unsigned int)
+    {
+      ar & boost::serialization::base_object<MgmtEvent> (*this);
+      ar & last_job_id_;
+    }
   };
 }}
 
