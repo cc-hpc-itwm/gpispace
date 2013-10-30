@@ -59,6 +59,7 @@ namespace gspc
           , expiry (-1)
         {}
 
+        int  is_popable () const;
         bool is_expired () const;
         void expires_in (int ttl);
 

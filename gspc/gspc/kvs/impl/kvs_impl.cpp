@@ -71,7 +71,7 @@ namespace gspc
 
       BOOST_FOREACH (kv_pair_t const &kp, values)
       {
-        notify (kp.first, E_PUT);
+        notify (kp.first, E_PUT | E_EXIST);
       }
 
       return 0;
@@ -166,6 +166,30 @@ namespace gspc
       }
 
       return 0;
+    }
+
+    int kvs_t::entry_t::is_popable () const
+    {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex);
+
+      const std::list<value_type> *alist =
+        boost::get<std::list<value_type> >(&value);
+
+      if (alist)
+      {
+        if (alist->empty ())
+        {
+          return -EAGAIN;
+        }
+        else
+        {
+          return 0;
+        }
+      }
+      else
+      {
+        return -EINVAL;
+      }
     }
 
     bool kvs_t::entry_t::is_expired () const
@@ -306,7 +330,7 @@ namespace gspc
           return rc;
       }
 
-      notify (key, E_PUSH);
+      notify (key, E_PUSH | E_EXIST | E_POPABLE);
 
       return 0;
     }
@@ -356,7 +380,7 @@ namespace gspc
         }
       }
 
-      notify (key, E_PUT);
+      notify (key, E_PUT | E_EXIST);
 
       return 0;
     }
@@ -390,7 +414,7 @@ namespace gspc
         }
       }
 
-      notify (key, E_PUT);
+      notify (key, E_PUT | E_EXIST);
 
       return 0;
     }
@@ -444,6 +468,36 @@ namespace gspc
                        , int timeout_in_ms
                        ) const
     {
+      purge_expired_keys ();
+
+      if (mask & (E_POPABLE | E_EXIST | E_DEL))
+      {
+        shared_lock lock (m_mutex);
+        value_map_t::const_iterator it = m_values.find (key);
+
+        if (it != m_values.end ())
+        {
+          if (mask & E_POPABLE)
+          {
+            if (0 == it->second->is_popable ())
+            {
+              return E_POPABLE;
+            }
+          }
+          if (mask & E_EXIST)
+          {
+            return E_EXIST;
+          }
+        }
+        else
+        {
+          if (mask & E_DEL)
+          {
+            return E_DEL;
+          }
+        }
+      }
+
       waiting_t wobject (key, mask);
 
       {

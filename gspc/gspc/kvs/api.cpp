@@ -112,7 +112,7 @@ namespace gspc
         if (0 == rc)
           break;
 
-        rc = this->do_wait (key, E_ANY, timeout);
+        rc = this->do_wait (key, E_PUSH | E_POPABLE, timeout);
       }
 
       return rc;

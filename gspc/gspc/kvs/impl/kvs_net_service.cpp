@@ -229,16 +229,24 @@ namespace gspc
       api_t::key_type key =
         fhg::util::parse::require::plain_string (pos, '\n');
 
-      waiting_t wobject;
-      wobject.rqst = rqst;
-      wobject.key = key;
-      wobject.mask = events;
-      wobject.events = 0;
+      int rc = m_kvs->wait (key, events, 0);
+      if (rc > 0)
+      {
+        return encode_error_code (rqst, rc);
+      }
+      else
+      {
+        waiting_t wobject;
+        wobject.rqst = rqst;
+        wobject.key = key;
+        wobject.mask = events;
+        wobject.events = 0;
 
-      boost::unique_lock<boost::shared_mutex> lock (m_waiting_mtx);
-      m_waiting.push_back (wobject);
+        boost::unique_lock<boost::shared_mutex> lock (m_waiting_mtx);
+        m_waiting.push_back (wobject);
 
-      return boost::none;
+        return boost::none;
+      }
     }
 
     boost::optional<gspc::net::frame>
