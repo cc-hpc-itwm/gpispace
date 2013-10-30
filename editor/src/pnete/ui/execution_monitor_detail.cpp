@@ -477,6 +477,8 @@ namespace fhg
             ( util::qt::value<execution_monitor_proxy::visible_range_type>
               (section_index.data (execution_monitor_proxy::visible_range_role))
             );
+          const long from (visible_range.from());
+          const long to (visible_range.to());
 
           const bool distribute_vertically (subrange_getters.size() > 1);
 
@@ -497,21 +499,16 @@ namespace fhg
           BOOST_FOREACH
             (worker_model::subrange_getter_type range, subrange_getters)
           {
-            BOOST_FOREACH
-              ( const worker_model::value_type& data
-              , range (visible_range.from(), visible_range.to())
-              )
+            BOOST_FOREACH (const worker_model::value_type& data, range (from, to))
             {
-              const qreal left (std::max (visible_range.from(), data.timestamp()));
+              const qreal left (std::max (from, data.timestamp()));
               paint_description::block block
                 ( QRectF ( qreal (rect.x())
-                         + (left - visible_range.from()) * horizontal_scale
+                         + (left - from) * horizontal_scale
                          , rect.top()
                          , ( ( data.duration()
-                             ? std::min ( visible_range.to()
-                                        , data.timestamp() + *data.duration()
-                                        )
-                             : visible_range.to()
+                             ? std::min (to, data.timestamp() + *data.duration())
+                             : to
                              )
                            - left
                            ) * horizontal_scale
