@@ -159,8 +159,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile, co
     }
 
     scheduler()->cancelWorkerJobs();
-    ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
-    notifyWorkers(pErrEvt);
+    eworknotreg();
   }
   else
   {
@@ -218,8 +217,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
     }
 
     scheduler()->cancelWorkerJobs();
-    ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
-    notifyWorkers(pErrEvt);
+    eworknotreg();
   }
   else
   {
@@ -229,6 +227,36 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
 
   reScheduleAllMasterJobs();
 
+}
+
+void GenericDaemon::eworknotreg()
+{
+  sdpa::worker_id_list_t workerList;
+  scheduler()->getWorkerList (workerList);
+
+  if (workerList.empty())
+  {
+    DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
+    return;
+  }
+
+  BOOST_FOREACH (const worker_id_t& workerId, workerList)
+  {
+    SDPA_LOG_INFO("Send notification to the worker "<<workerId);
+
+    ErrorEvent::Ptr const pErrEvt
+      (new ErrorEvent ( name()
+                      , ""
+                      , ErrorEvent::SDPA_EWORKERNOTREG
+                      ,  "worker notification"
+                      )
+      );
+
+    sendEventToMaster (pErrEvt);
+  }
+
+  // remove workers
+  scheduler()->removeWorkers();
 }
 
 /**
@@ -266,8 +294,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
     DMLOG (TRACE, "Notify the workers that I'm up again and they should re-register!");
 
     scheduler()->cancelWorkerJobs();
-    ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
-    notifyWorkers(pErrEvt);
+    eworknotreg();
   }
   else
   {
