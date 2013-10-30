@@ -36,10 +36,6 @@ namespace sdpa
       {
         return _result;
       }
-      std::string& result()
-      {
-        return _result;
-      }
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleCancelJobAckEvent (this);
