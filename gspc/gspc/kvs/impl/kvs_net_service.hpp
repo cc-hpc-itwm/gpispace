@@ -44,7 +44,7 @@ namespace gspc
 
       void setup_rpc_handler ();
 
-      void on_change (api_t::key_type const &);
+      void on_change (api_t::key_type const &, int events);
 
       boost::optional<gspc::net::frame>
       rpc_put (gspc::net::frame const &);

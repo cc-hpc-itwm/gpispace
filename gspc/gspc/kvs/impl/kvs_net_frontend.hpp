@@ -13,9 +13,6 @@ namespace gspc
     public:
       explicit
       kvs_net_frontend_t (std::string const &url);
-
-      virtual ~kvs_net_frontend_t ();
-
     private:
       int request ( std::string const &rpc
                   , std::string const &rqst
@@ -43,7 +40,7 @@ namespace gspc
       int do_counter_reset (key_type const &key, int val);
       int do_counter_change (key_type const &key, int &val, int delta);
 
-      int do_wait_for_change (key_type const &key, int timeout_in_ms) const;
+      int do_wait (key_type const &key, int mask, int timeout_in_ms) const;
 
       std::string m_url;
       gspc::net::client_ptr_t m_client;

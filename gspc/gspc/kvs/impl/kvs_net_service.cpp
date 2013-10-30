@@ -26,7 +26,12 @@ namespace gspc
       : m_kvs (gspc::kvs::create ("inproc://"))
     {
       m_on_change_connection =
-        m_kvs->onChange.connect (boost::bind (&service_t::on_change, this, _1));
+        m_kvs->onChange.connect (boost::bind ( &service_t::on_change
+                                             , this
+                                             , _1
+                                             , _2
+                                             )
+                                );
       setup_rpc_handler ();
     }
 
@@ -34,7 +39,12 @@ namespace gspc
       : m_kvs (gspc::kvs::create (url))
     {
       m_on_change_connection =
-        m_kvs->onChange.connect (boost::bind (&service_t::on_change, this, _1));
+        m_kvs->onChange.connect (boost::bind ( &service_t::on_change
+                                             , this
+                                             , _1
+                                             , _2
+                                             )
+                                );
       setup_rpc_handler ();
     }
 
@@ -348,7 +358,7 @@ namespace gspc
       }
     }
 
-    void service_t::on_change (api_t::key_type const &key)
+    void service_t::on_change (api_t::key_type const &key, int events)
     {
       boost::unique_lock<boost::shared_mutex> lock (m_waiting_to_pop_mtx);
       waiting_to_pop_list_t::iterator it = m_waiting_to_pop.begin ();

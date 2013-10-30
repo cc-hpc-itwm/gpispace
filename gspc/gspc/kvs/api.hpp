@@ -16,12 +16,22 @@ namespace gspc
     public:
       static const int EXPIRES_NEVER = -1;
 
+      // event flags the wait_for_change() call can return
+      enum event_t
+        {
+          E_PUT  = 0x01
+        , E_DEL  = 0x02
+        , E_PUSH = 0x04
+        , E_POP  = 0x08
+        , E_ANY  = E_PUT | E_DEL | E_PUSH | E_POP
+        };
+
       virtual ~api_t () {}
 
       typedef std::string                   key_type;
       typedef pnet::type::value::value_type value_type;
 
-      boost::signals2::signal<void (key_type const &)> onChange;
+      boost::signals2::signal<void (key_type const &, int events)> onChange;
 
       int put (key_type const &key, const char *val);
       int put (key_type const &key, value_type const &val);
@@ -49,8 +59,9 @@ namespace gspc
       int counter_increment (key_type const &key, int &val);
       int counter_decrement (key_type const &key, int &val);
 
-      int wait_for_change (key_type const &key) const;
-      int wait_for_change (key_type const &key, int timeout_in_ms) const;
+      int wait (key_type const &key) const;
+      int wait (key_type const &key, int mask) const;
+      int wait (key_type const &key, int mask, int timeout_in_ms) const;
     private:
       bool is_key_valid (key_type const &) const;
 
@@ -73,7 +84,10 @@ namespace gspc
       virtual int do_counter_reset  (key_type const &key, int  val) = 0;
       virtual int do_counter_change (key_type const &key, int &val, int delta) = 0;
 
-      virtual int do_wait_for_change (key_type const &key, int timeout_in_ms) const = 0;
+      virtual int do_wait ( key_type const &key
+                          , int mask
+                          , int timeout_in_ms
+                          ) const = 0;
     };
   }
 }

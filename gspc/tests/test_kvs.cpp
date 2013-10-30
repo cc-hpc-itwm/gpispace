@@ -12,6 +12,8 @@
 #include <we/type/value/show.hpp>
 
 #include <gspc/net.hpp>
+
+#include <gspc/kvs/api.hpp>
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
@@ -153,6 +155,29 @@ BOOST_AUTO_TEST_CASE (test_impl_push_pop)
   BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
 
   pusher.join ();
+}
+
+BOOST_AUTO_TEST_CASE (test_impl_wait)
+{
+  int rc;
+  gspc::kvs::kvs_t kvs;
+  gspc::kvs::api_t::value_type val;
+
+  rc = kvs.wait ("foo", gspc::kvs::api_t::E_ANY, 500);
+  BOOST_REQUIRE_EQUAL (rc, -ETIME);
+
+  // fire up a thread to push
+  gspc::kvs::api_t::value_type val_to_push (std::string ("bar"));
+  boost::thread pusher (boost::bind (&s_push_value, &kvs, "foo", val_to_push));
+
+  rc = kvs.wait ("foo", gspc::kvs::api_t::E_PUSH, 2000);
+  BOOST_REQUIRE_EQUAL (rc, gspc::kvs::api_t::E_PUSH);
+
+  pusher.join ();
+
+  rc = kvs.pop ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
 }
 
 BOOST_AUTO_TEST_CASE (test_impl_reset_inc_dec)
@@ -498,6 +523,55 @@ BOOST_AUTO_TEST_CASE (test_net_put_get)
   gspc::net::shutdown ();
 }
 
+BOOST_AUTO_TEST_CASE (test_net_wait)
+{
+  gspc::net::initialize ();
+
+  int rc;
+  gspc::kvs::api_t::value_type val;
+
+  // setup server
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*"));
+  gspc::kvs::service_t service;
+  gspc::net::handle ( "/service/kvs"
+                    , gspc::net::service::strip_prefix ( "/service/kvs/"
+                                                       , boost::ref (service)
+                                                       )
+                    );
+
+  std::cerr << "server running on: " << server->url () << std::endl;
+
+  try
+  {
+    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+
+    rc = kvs.wait ("foo", gspc::kvs::api_t::E_ANY, 500);
+    BOOST_REQUIRE_EQUAL (rc, -ETIME);
+
+    // fire up a thread to push
+    gspc::kvs::api_t::value_type val_to_push (std::string ("bar"));
+    boost::thread pusher (boost::bind (&s_push_value, &kvs, "foo", val_to_push));
+
+    rc = kvs.wait ("foo", gspc::kvs::api_t::E_PUSH, 2000);
+    BOOST_REQUIRE_EQUAL (rc, gspc::kvs::api_t::E_PUSH);
+
+    pusher.join ();
+
+    rc = kvs.pop ("foo", val);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
+  }
+  catch (...)
+  {
+    server->stop ();
+    gspc::net::shutdown ();
+    throw;
+  }
+
+  server->stop ();
+  gspc::net::shutdown ();
+}
+
 BOOST_AUTO_TEST_CASE (test_net_push_pop)
 {
   gspc::net::initialize ();
@@ -516,10 +590,10 @@ BOOST_AUTO_TEST_CASE (test_net_push_pop)
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=1000");
-
   try
   {
+    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+
     // fire up a thread to push
     gspc::kvs::api_t::value_type val_to_push (std::string ("bar"));
     boost::thread pusher (boost::bind ( &s_push_value
@@ -530,6 +604,10 @@ BOOST_AUTO_TEST_CASE (test_net_push_pop)
                          );
 
     rc = kvs.pop ("foo", val, 1500);
+    if (rc != 0)
+    {
+      std::cerr << "pop failed: " << strerror (-rc) << std::endl;
+    }
     BOOST_REQUIRE_EQUAL (rc, 0);
     BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
 

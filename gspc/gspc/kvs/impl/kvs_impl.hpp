@@ -44,7 +44,10 @@ namespace gspc
       int do_counter_reset (key_type const &key, int val);
       int do_counter_change (key_type const &key, int &val, int delta);
 
-      int do_wait_for_change (key_type const &key, int timeout_in_ms) const;
+      int do_wait ( key_type const &key
+                  , int mask
+                  , int timeout_in_ms
+                  ) const;
 
       typedef boost::shared_mutex mutex_type;
 
@@ -77,16 +80,46 @@ namespace gspc
         int        expiry;
       };
 
+      class waiting_t
+      {
+      public:
+        explicit
+        waiting_t (key_type const &key, int mask)
+          : m_mutex ()
+          , m_cond ()
+          , m_key (key)
+          , m_mask (mask)
+          , m_notified (0)
+        {}
+
+        key_type const & key () const { return m_key; }
+
+        int wait ();
+        int wait (int timeout);
+
+        void notify (int events);
+      private:
+        mutable boost::mutex m_mutex;
+        boost::condition_variable m_cond;
+        const key_type m_key;
+        const int m_mask;
+        int m_notified;
+      };
+
       typedef boost::shared_ptr<entry_t> entry_ptr_t;
       typedef std::map<key_type, entry_ptr_t> value_map_t;
 
       void purge_expired_keys () const;
+      void notify (key_type const &, int events) const;
 
       mutable mutex_type  m_mutex;
       value_map_t         m_values;
 
       mutable mutex_type  m_expired_entries_mutex;
       mutable std::list<key_type> m_expired_entries;
+
+      mutable mutex_type  m_waiting_mutex;
+      mutable std::list<waiting_t *> m_waiting;
     };
   }
 }

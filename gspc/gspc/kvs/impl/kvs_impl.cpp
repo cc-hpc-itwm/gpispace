@@ -5,6 +5,8 @@
 #include <boost/foreach.hpp>
 #include <boost/thread/locks.hpp>
 
+#include <iomanip>
+
 typedef boost::shared_lock<boost::shared_mutex> shared_lock;
 typedef boost::unique_lock<boost::shared_mutex> unique_lock;
 
@@ -69,7 +71,7 @@ namespace gspc
 
       BOOST_FOREACH (kv_pair_t const &kp, values)
       {
-        onChange (kp.first);
+        notify (kp.first, E_PUT);
       }
 
       return 0;
@@ -124,7 +126,7 @@ namespace gspc
         m_values.erase (it);
       }
 
-      onChange (key);
+      notify (key, E_DEL);
 
       return 0;
     }
@@ -160,7 +162,7 @@ namespace gspc
 
       BOOST_FOREACH (key_type const &key, deleted)
       {
-        onChange (key);
+        notify (key, E_DEL);
       }
 
       return 0;
@@ -380,7 +382,7 @@ namespace gspc
           return rc;
       }
 
-      onChange (key);
+      notify (key, E_PUSH);
 
       return 0;
     }
@@ -412,7 +414,7 @@ namespace gspc
           return rc;
       }
 
-      onChange (key);
+      notify (key, E_POP);
 
       return 0;
     }
@@ -435,7 +437,7 @@ namespace gspc
           return rc;
       }
 
-      onChange (key);
+      notify (key, E_POP);
 
       return 0;
     }
@@ -462,7 +464,7 @@ namespace gspc
         }
       }
 
-      onChange (key);
+      notify (key, E_PUT);
 
       return 0;
     }
@@ -492,14 +494,93 @@ namespace gspc
         }
       }
 
-      onChange (key);
+      notify (key, E_PUT);
 
       return 0;
     }
 
-    int kvs_t::do_wait_for_change (key_type const &key, int timeout_in_ms) const
+    int kvs_t::waiting_t::wait ()
     {
-      return -ENOTSUP;
+      boost::unique_lock<boost::mutex> lock (m_mutex);
+
+      while (m_notified == 0)
+      {
+        m_cond.wait (lock);
+      }
+
+      return m_notified;
+    }
+
+    int kvs_t::waiting_t::wait (int timeout)
+    {
+      if (timeout == -1)
+        return this->wait ();
+
+      boost::system_time const deadline =
+        boost::get_system_time() + boost::posix_time::milliseconds (timeout);
+
+      boost::unique_lock<boost::mutex> lock (m_mutex);
+
+      while (m_notified == 0)
+      {
+        if (not m_cond.timed_wait (lock, deadline))
+        {
+          if (0 == m_notified)
+            return -ETIME;
+        }
+      }
+
+      return m_notified;
+    }
+
+    void kvs_t::waiting_t::notify (int events)
+    {
+      if ((events & m_mask))
+      {
+        boost::unique_lock<boost::mutex> lock (m_mutex);
+        m_notified |= events;
+        m_cond.notify_one ();
+      }
+    }
+
+    int kvs_t::do_wait ( key_type const &key
+                       , int mask
+                       , int timeout_in_ms
+                       ) const
+    {
+      waiting_t wobject (key, mask);
+
+      {
+        unique_lock lock (m_waiting_mutex);
+        m_waiting.push_back (&wobject);
+      }
+
+      int rc = wobject.wait (timeout_in_ms);
+
+      {
+        unique_lock lock (m_waiting_mutex);
+        m_waiting.remove (&wobject);
+      }
+
+      return rc;
+    }
+
+    void kvs_t::notify (key_type const &key, int events) const
+    {
+      onChange (key, events);
+
+      shared_lock lock (m_waiting_mutex);
+      std::list<waiting_t *>::const_iterator it = m_waiting.begin ();
+      const std::list<waiting_t *>::const_iterator end = m_waiting.end ();
+
+      while (it != end)
+      {
+        if ((*it)->key () == key)
+        {
+          (*it)->notify (events);
+        }
+        ++it;
+      }
     }
 
     void kvs_t::purge_expired_keys () const

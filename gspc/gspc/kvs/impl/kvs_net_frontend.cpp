@@ -22,15 +22,20 @@ namespace gspc
       , m_client ()
     {
       boost::system::error_code ec;
-      m_client = gspc::net::dial (m_url, ec);
-      if (not m_client)
+      for (int i = 0 ; i < 5 ; ++i)
       {
-        throw boost::system::system_error (ec);
+        m_client = gspc::net::dial (m_url, ec);
+        if ( (not m_client || ec) && i != 4)
+        {
+          std::cerr << "ec " << ec << std::endl;
+          throw boost::system::system_error (ec);
+        }
+        else
+        {
+          break;
+        }
       }
     }
-
-    kvs_net_frontend_t::~kvs_net_frontend_t ()
-    {}
 
     static void throw_if_error ( std::string const &service
                                , gspc::net::frame const &f
@@ -330,9 +335,10 @@ namespace gspc
       return rc;
     }
 
-    int kvs_net_frontend_t::do_wait_for_change ( key_type const &key
-                                               , int timeout_in_ms
-                                               ) const
+    int kvs_net_frontend_t::do_wait ( key_type const &key
+                                    , int mask
+                                    , int timeout_in_ms
+                                    ) const
     {
       return -ENOTSUP;
     }
