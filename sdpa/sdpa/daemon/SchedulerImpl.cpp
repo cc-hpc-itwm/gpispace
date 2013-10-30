@@ -1097,15 +1097,14 @@ void SchedulerImpl::checkAllocations()
 
 sdpa::job_id_t SchedulerImpl::getNextJobToSchedule()
 {
-  sdpa::job_id_t jobId;
-  try {
-      jobId = pending_jobs_queue_.pop();
-  }
-  catch( QueueEmpty& ex)
+  try
   {
-      LOG(WARN, "there is no job to be scheduled");
+    return pending_jobs_queue_.pop();
   }
-  return jobId;
+  catch (QueueEmpty const&)
+  {
+    return sdpa::job_id_t();
+  }
 }
 
 /*
