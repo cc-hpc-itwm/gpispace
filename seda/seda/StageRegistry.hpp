@@ -28,13 +28,15 @@
 #include <seda/StageAlreadyRegistered.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/utility.hpp>
 #include <list>
 
 namespace seda {
     /**
      * TODO: make this class thread-safe!
      */
-    class StageRegistry {
+    class StageRegistry : boost::noncopyable
+    {
     public:
         ~StageRegistry();
 
@@ -99,8 +101,6 @@ namespace seda {
         typedef std::list<std::string> stage_names_t;
 
         StageRegistry();
-        StageRegistry(const StageRegistry&);
-        void operator=(const StageRegistry&);
 
         SEDA_DECLARE_LOGGER();
         stage_map_t _stages;

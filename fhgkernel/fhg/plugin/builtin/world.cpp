@@ -10,9 +10,6 @@ class WorldImpl : FHG_PLUGIN
                 , public example::World
 {
 public:
-  WorldImpl () {}
-  ~WorldImpl () {}
-
   FHG_PLUGIN_START()
   {
     m_text = fhg_kernel()->get("text", "World");

@@ -17,9 +17,6 @@ class ProgressImpl : FHG_PLUGIN
                    , public progress::Progress
 {
 public:
-  ProgressImpl () {}
-  ~ProgressImpl () {}
-
   FHG_PLUGIN_START()
   {
     m_kvs = fhg_kernel()->acquire<kvs::KeyValueStore>("kvs");

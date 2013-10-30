@@ -6,9 +6,6 @@ namespace gpi
   {
     namespace memory
     {
-      task_t::~task_t ()
-      {}
-
       void
       task_t::execute ()
       {

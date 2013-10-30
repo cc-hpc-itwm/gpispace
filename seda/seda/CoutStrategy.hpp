@@ -31,7 +31,6 @@ namespace seda {
   class CoutStrategy : public Strategy {
   public:
     CoutStrategy(std::ostream& out=std::cout) : Strategy("cout"), _os(out) {}
-    ~CoutStrategy() {}
 
     void perform(const IEvent::Ptr&);
   private:

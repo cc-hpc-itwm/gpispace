@@ -93,8 +93,6 @@ namespace sdpa {
                    , const std::string& guiUrl = ""
                    );
 
-      virtual ~GenericDaemon();
-
       SDPA_DECLARE_LOGGER();
 
       const std::string& name() const { return Strategy::name(); }
@@ -237,15 +235,12 @@ namespace sdpa {
 
       // workflow engine
       virtual we::mgmt::basic_layer* workflowEngine() const { return ptr_workflow_engine_; }
-      virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
+      virtual bool hasWorkflowEngine() { return ptr_workflow_engine_;}
 
       template <typename T>
-      T* createWorkflowEngine()
+        void createWorkflowEngine()
       {
-    	  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-    	  assert (pWfE);
-    	  ptr_workflow_engine_ = pWfE;
-    	  return pWfE;
+    	  ptr_workflow_engine_ = new T(this, boost::bind(&GenericDaemon::gen_id, this));
       }
 
       // workflow engine notifications

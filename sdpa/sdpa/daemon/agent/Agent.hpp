@@ -54,8 +54,6 @@ namespace sdpa {
           }
         }
 
-        virtual ~Agent();
-
         void action_configure( const sdpa::events::StartUpEvent& );
         void action_config_ok( const sdpa::events::ConfigOkEvent& );
 

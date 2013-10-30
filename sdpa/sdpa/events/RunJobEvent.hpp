@@ -34,8 +34,6 @@ namespace sdpa { namespace events {
       RunJobEvent(const address_t &a_from, const address_t& a_to, const sdpa::job_id_t& a_job_id = sdpa::job_id_t())
         : JobEvent(a_from, a_to, a_job_id) { }
 
-      virtual ~RunJobEvent() { }
-
       std::string str() const { return "RunJobEvent"; }
   };
 }}

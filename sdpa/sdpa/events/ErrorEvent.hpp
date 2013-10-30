@@ -63,8 +63,6 @@ namespace sdpa { namespace events {
       	, job_id_ (jobId)
       {}
 
-      ~ErrorEvent() {}
-
       const std::string &reason() const { return reason_; }
       std::string &reason() { return reason_; }
 

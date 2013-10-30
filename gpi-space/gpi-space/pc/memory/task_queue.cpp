@@ -6,9 +6,6 @@ namespace gpi
   {
     namespace memory
     {
-      task_queue_t::task_queue_t ()
-      {}
-
       task_queue_t::~task_queue_t ()
       {
         clear();

@@ -31,11 +31,7 @@ struct table
 
     BOOST_FOREACH (semaphore * fork, m_fork)
     {
-      if (fork->count() != 1)
-      {
-        std::cerr << "STRANGE! there is still a philosopher dining!!!" << std::endl;
-        throw std::runtime_error ("BUMMER!");
-      }
+      BOOST_REQUIRE_EQUAL (fork->count(), 1);
       delete fork; fork = 0;
     }
   }

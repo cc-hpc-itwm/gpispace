@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
   sdpa::job_id_t oldJobId(jobId);
 
-  // and now simply delete the last worker !!!!
+  // and now simply delete the last worker !
   LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
   ptrScheduler->reschedule(lastWorkerId, jobId);
   LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");

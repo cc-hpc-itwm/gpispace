@@ -17,9 +17,6 @@ namespace bytearray
   type::type()
     : _v()
   {}
-  type::type (const type& other)
-    : _v (other._v)
-  {}
   type::type (const char* const buf, const std::size_t size)
     : _v()
   {
@@ -36,15 +33,6 @@ namespace bytearray
   std::string type::to_string() const
   {
     return std::string (&_v[0], _v.size());
-  }
-  type& type::operator= (const type& other)
-  {
-    if (this != &other)
-    {
-      _v = other._v;
-    }
-
-    return *this;
   }
 
   std::ostream& operator<< (std::ostream& s, const type& t)

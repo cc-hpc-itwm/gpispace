@@ -36,9 +36,6 @@ namespace sdpa { namespace events {
           :  sdpa::events::JobEvent( a_from, a_to, a_job_id ) {
                 }
 
-                virtual ~JobFinishedAckEvent() {
-                }
-
       std::string str() const { return "JobFinishedAckEvent(" + job_id ().str () + ")"; }
 
         virtual void handleBy(EventHandler *handler)

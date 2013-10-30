@@ -109,9 +109,6 @@ GenericDaemon::GenericDaemon( const std::string name,
   }
 }
 
-GenericDaemon::~GenericDaemon()
-{}
-
 /**
  * Start an agent
  * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
@@ -313,61 +310,33 @@ void GenericDaemon::shutdown( )
 /**
  * Configure the network
  */
-void GenericDaemon::configure_network( const std::string& daemonUrl /*, const std::string& masterName*/ )
+void GenericDaemon::configure_network (const std::string& url)
 {
-  DMLOG (TRACE, "configuring network components...");
+  const boost::tokenizer<boost::char_separator<char> > tok
+    (url, boost::char_separator<char> (":"));
 
-  typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+  const std::vector<std::string> vec (tok.begin(), tok.end());
 
-  boost::char_separator<char> sep(":");
-  tokenizer tok(daemonUrl, sep);
-
-  vector< string > vec;
-  vec.assign(tok.begin(),tok.end());
-
-  if( vec.empty() || vec.size() > 2 )
+  if (vec.empty() || vec.size() > 2)
   {
-    LOG(ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
-    return;
+    LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
+    throw std::runtime_error ("configuration of network failed: invalid url");
   }
-  else
-  {
-    std::string bind_addr = vec[0];
-    std::string bind_port("0");
 
-    if( vec.size() == 2)
-    bind_port = vec[1];
+  sdpa::com::NetworkStrategy::ptr_t net
+    ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
+                                     , name() /*name for peer*/
+                                     , fhg::com::host_t (vec[0])
+                                     , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
+                                     )
+    );
 
-    DMLOG (TRACE, "Host: "<<bind_addr<<", port: "<<bind_port);
+  seda::Stage::Ptr network_stage
+    (new seda::Stage (m_to_master_stage_name_, net));
 
-    try
-    {
-      sdpa::com::NetworkStrategy::ptr_t net
-        (new sdpa::com::NetworkStrategy( /*daemon_stage_->*/name()
-                                        , name()
-                                        , fhg::com::host_t (bind_addr)
-                                        , fhg::com::port_t (bind_port)
-                                        ) );
+  seda::StageRegistry::instance().insert (network_stage);
 
-      /*int maxQueueSize = 5000;
-      seda::IEventQueue::Ptr ptrEvtPrioQueue( new seda::EventPrioQueue("network.stage."+name()+".queue", maxQueueSize) );
-      seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, ptrEvtPrioQueue, net, 1));*/
-
-      seda::Stage::Ptr network_stage (new seda::Stage( m_to_master_stage_name_
-    		  	  	  	  	  	  	  	  	  	  	  	, net
-    		  	  	  	  	  	  	  	  	  	  	  	, 1
-      	  	  	  	  	  	  	  	  	  	  	  	  )
-      	  	  	  	  	  	  	  	  );
-
-      seda::StageRegistry::instance().insert (network_stage);
-      ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-    }
-    catch (std::exception const &ex)
-    {
-      LOG(ERROR, "could not configure network component: " << ex.what());
-      throw;
-    }
-  }
+  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 }
 
 /**
@@ -409,11 +378,8 @@ void GenericDaemon::stop()
   seda::StageRegistry::instance().lookup(name())->stop();
   seda::StageRegistry::instance().remove(name());
 
-  if( hasWorkflowEngine() )
-  {
-     delete ptr_workflow_engine_;
-     ptr_workflow_engine_ = NULL;
-  }
+  delete ptr_workflow_engine_;
+  ptr_workflow_engine_ = NULL;
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -456,7 +422,7 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
   //    retrieve values maybe from kvs?
   //    no spaces
 
-  // Read these values from a configuration file !!!!!!!!
+  // Read these values from a configuration file !
   // if this does not exist, use default values
 
   // set default configuration
@@ -522,10 +488,10 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 {
   DMLOG (TRACE, "Call 'action_interrupt'");
   // save the current state of the system .i.e serialize the daemon's state
-  // the following code shoud be executed on action action_interrupt!!
+  // the following code shoud be executed on action action_interrupt!
 
    // save the current state of the system .i.e serialize the daemon's state
-   // the following code shoud be executed on action action_interrupt!!
+   // the following code shoud be executed on action action_interrupt!
    lock_type lock(mtx_stop_);
    setRequestsAllowed(false);
    //m_bStarted 	= false;
@@ -849,12 +815,13 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       pJob->setType(Job::MASTER);
 
       {
+        std::list<std::string> workers; workers.push_back (name());
+        const we::mgmt::type::activity_t act (pJob->description());
         const sdpa::daemon::NotificationEvent evt
-          ( name ()
+          ( workers
           , pJob->id().str()
-          , "unknown"
           , NotificationEvent::STATE_STARTED
-          , pJob->description()
+          , act
           );
 
         gui_service()->notify (evt);
@@ -1115,7 +1082,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
       }
       catch(WorkerNotFoundException const &)
       {
-        DMLOG (WARN, "job re-submission could not be acknowledged: worker " << worker_id << " not found!!");
+        DMLOG (WARN, "job re-submission could not be acknowledged: worker " << worker_id << " not found!");
       }
       catch(std::exception const &ex)
       {
@@ -1332,17 +1299,17 @@ const job_requirements_t GenericDaemon::getJobRequirements(const sdpa::job_id_t&
 
 void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
 {
-  if(!ptr_workflow_engine_)
+  if(!hasWorkflowEngine())
     throw NoWorkflowEngine();
 
-  ptr_workflow_engine_->submit (wf_id, desc, we::type::user_data ());
+  workflowEngine()->submit (wf_id, desc, we::type::user_data ());
 }
 
 void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string& reason)
 {
   if (hasWorkflowEngine())
   {
-    ptr_workflow_engine_->cancel(workflowId, reason);
+    workflowEngine()->cancel(workflowId, reason);
   }
   else
   {
@@ -1639,7 +1606,7 @@ bool GenericDaemon::requestsAllowed()
 
   if(!m_bRequestsAllowed)
   {
-    DMLOG (TRACE, "The flag \"m_bRequestsAllowed\" is set on false!!!!!!!!!!!!!!!!!!!!!!!!! ");
+    DMLOG (TRACE, "The flag \"m_bRequestsAllowed\" is set on false!");
     return false;
   }
 

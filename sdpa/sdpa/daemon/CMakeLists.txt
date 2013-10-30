@@ -8,7 +8,6 @@ set (srcs
   JobImpl.cpp
   JobManager.cpp
   SchedulerImpl.cpp
-  SynchronizedQueue.cpp
   Worker.cpp
   WorkerManager.cpp
 

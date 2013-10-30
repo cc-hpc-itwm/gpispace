@@ -51,9 +51,6 @@ namespace fhg
       return m_plugin->stop();
     }
 
-    PluginKernelMediator::~PluginKernelMediator()
-    {}
-
     fhg::plugin::Plugin * PluginKernelMediator::acquire(std::string const & name)
     {
       fhg::core::plugin_t::ptr_t p = m_kernel->lookup_plugin(name);

@@ -24,10 +24,6 @@
 namespace sdpa {
   namespace daemon {
 
-Agent::~Agent()
-{
-}
-
 void Agent::action_configure(const StartUpEvent &se)
 {
   GenericDaemon::action_configure (se);
@@ -214,12 +210,13 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
     }
 
     {
+      std::list<std::string> workers; workers.push_back (name());
+      const we::mgmt::type::activity_t act (pJob->description());
       const sdpa::daemon::NotificationEvent evt
-        ( name ()
+        ( workers
         , pJob->id().str()
-        , "unknown"
         , NotificationEvent::STATE_FINISHED
-        , pJob->description()
+        , act
         );
 
       gui_service()->notify (evt);
@@ -442,12 +439,13 @@ bool Agent::failed( const id_type& wfid
       sendEventToMaster(pEvtJobFailed);
 
     {
+      std::list<std::string> workers; workers.push_back (name());
+      const we::mgmt::type::activity_t act (pJob->description());
       const sdpa::daemon::NotificationEvent evt
-        ( name ()
+        ( workers
         , pJob->id().str()
-        , "unknown"
         , NotificationEvent::STATE_FINISHED
-        , pJob->description()
+        , act
         );
 
       gui_service()->notify (evt);

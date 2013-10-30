@@ -47,31 +47,6 @@ namespace sdpa { namespace events {
 		    agent_uuid_(agent_uuid)
       { }
 
-      WorkerRegistrationEvent( const WorkerRegistrationEvent& regEvt )
-        : MgmtEvent (regEvt)
-      {
-    	  capacity_ 	 = regEvt.capacity_;
-    	  cpbset_ 		 = regEvt.cpbset_;
-    	  rank_			 = regEvt.rank_,
-    	  agent_uuid_ 	 = regEvt.agent_uuid_;
-	  }
-
-    WorkerRegistrationEvent& operator=( const WorkerRegistrationEvent& regEvt )
-    {
-    	if(this != &regEvt)
-    	{
-    		*((MgmtEvent*)(this)) = (MgmtEvent&)(regEvt);
-    		capacity_ 	 		  = regEvt.capacity_;
-    		cpbset_ 			  = regEvt.cpbset_;
-    		rank_			 	  = regEvt.rank_,
-    		agent_uuid_ 		  = regEvt.agent_uuid_;
-    	}
-
-    	return *this;
-    }
-
-    virtual ~WorkerRegistrationEvent() { }
-
     std::string str() const { return "WorkerRegistrationEvent"; }
 
     const unsigned int& capacity() const { return capacity_; }

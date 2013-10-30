@@ -40,8 +40,6 @@ namespace sdpa { namespace events {
           , last_job_id_(the_last_job)
         {}
 
-		virtual ~LifeSignEvent() { }
-
 		const sdpa::job_id_t & last_job_id() const { return last_job_id_; }
 		sdpa::job_id_t & last_job_id() { return last_job_id_; }
 

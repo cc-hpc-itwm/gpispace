@@ -15,8 +15,6 @@ namespace observe
 
     typedef std::list<Observer*> observer_list_t;
   public:
-    ~Observable() {}
-
     void emit (boost::any const &);
 
     void add_observer(Observer *);

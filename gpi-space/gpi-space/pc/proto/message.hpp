@@ -33,15 +33,6 @@ namespace gpi
           , checksum (0)
         {}
 
-        header_t (const header_t &o)
-          : length(o.length)
-          , version(o.version)
-          , flags(o.flags)
-          , seq(o.seq)
-          , ack(o.ack)
-          , checksum(o.checksum)
-        {}
-
         uint32_t     length;
         uint8_t     version;
         uint8_t       flags;
@@ -60,21 +51,6 @@ namespace gpi
       {
         header_t header;
         message_t  payload;
-
-        complete_message_t & operator=(const complete_message_t &o)
-        {
-          if (this != &o)
-          {
-            header = o.header;
-            payload = o.payload;
-          }
-          return *this;
-        }
-
-        complete_message_t (const complete_message_t &o)
-          : header(o.header)
-          , payload(o.payload)
-        {}
       };
     }
   }

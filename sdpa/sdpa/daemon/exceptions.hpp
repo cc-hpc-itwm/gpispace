@@ -10,7 +10,7 @@ namespace daemon {
 	class NoWorkflowEngine : public sdpa::SDPAException {
 	public:
 		NoWorkflowEngine()
-			: sdpa::SDPAException("No workflow engine!!!") {}
+			: sdpa::SDPAException("No workflow engine!") {}
 
 		virtual ~NoWorkflowEngine() throw() {}
 	};
@@ -73,7 +73,7 @@ namespace daemon {
 	{
 		public:
 		AllWorkersFullException( )
-			: WorkerException("All workers are full!!", "") {}
+			: WorkerException("All workers are full!", "") {}
 		virtual ~AllWorkersFullException() throw() {}
 	};
 

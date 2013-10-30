@@ -32,7 +32,6 @@ namespace seda {
     LoggingStrategy(const Strategy::Ptr& s)
       : StrategyDecorator(s->name()+".logging", s)
     {}
-    ~LoggingStrategy() {}
 
     void perform(const IEvent::Ptr& e) {
       SEDA_LOG_DEBUG(e->str());

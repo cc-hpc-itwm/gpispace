@@ -30,10 +30,6 @@ using namespace sdpa::events;
 namespace sdpa {
   namespace daemon {
 
-Orchestrator::~Orchestrator()
-{
-}
-
 void Orchestrator::action_configure(const StartUpEvent &se)
 {
   GenericDaemon::action_configure (se);

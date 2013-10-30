@@ -21,7 +21,7 @@ namespace fhg
           , _duration (d)
           , _id (id)
           , _name (name)
-          , _state (sdpa::daemon::NotificationEvent::STATE_CREATED)
+          , _state (sdpa::daemon::NotificationEvent::STATE_STARTED)
       {
         state (state_, t);
       }
@@ -58,10 +58,10 @@ namespace fhg
         case sdpa::daemon::NotificationEvent::STATE_FAILED:
         case sdpa::daemon::NotificationEvent::STATE_FINISHED:
           duration (now - timestamp());
+          break;
 
-        case sdpa::daemon::NotificationEvent::STATE_CREATED:
         case sdpa::daemon::NotificationEvent::STATE_STARTED:
-          ;
+          break;
         }
 
         _state = state_;
@@ -155,71 +155,75 @@ namespace fhg
 
           const QString activity_id
             (QString::fromStdString (event.activity_id()));
-          const QString worker (QString::fromStdString (event.component()));
 
-          const bool is_new_worker (!_workers.contains (worker));
-          const int row
-            (is_new_worker ? _workers.size() : _workers.indexOf (worker));
-          if (is_new_worker)
+          BOOST_FOREACH (const std::string worker_std, event.components())
           {
-            beginInsertRows (QModelIndex(), row, row);
-            _workers << worker;
-            endInsertRows();
-          }
+            const QString worker (QString::fromStdString (worker_std));
 
-          std::vector<value_type>& container (_worker_containers[worker]);
-
-          //! \note We assume that there are no message reorderings,
-          //! thus the message always is for the current or a new
-          //! activity. This may be wrong due to UDP, but hopefully
-          //! is not.  Receiving back-dated messages currently leads
-          //! to inserting a new activity where timestamp <
-          //! current.timestamp, which will throw or result in other
-          //! weird behaviour.
-          if (container.empty() || container.back().id() != activity_id)
-          {
-            fhg_assert ( std::find_if
-                         ( container.begin()
-                         , container.end()
-                         , boost::bind (&value_type::id, _1) == activity_id
-                         ) == container.end()
-                       , "no previous interval shall have the same id as a new one"
-                       );
-
-            if (!container.empty())
+            const bool is_new_worker (!_workers.contains (worker));
+            const int row
+              (is_new_worker ? _workers.size() : _workers.indexOf (worker));
+            if (is_new_worker)
             {
-              value_type& current (container.back());
-
-              fhg_assert ( current.timestamp() <= time
-                         , "only appending: current is after inserted"
-                         );
-
-              fhg_assert ( !current.duration()
-                         || current.timestamp() + *current.duration() <= time
-                         , "only appending: interval of current intersects new"
-                         );
-
-              if (!current.duration())
-              {
-                current.state (sdpa::daemon::NotificationEvent::STATE_FAILED, time);
-              }
+              beginInsertRows (QModelIndex(), row, row);
+              _workers << worker;
+              endInsertRows();
             }
 
-            container.push_back
-              ( value_type ( time
-                           , boost::none
-                           , activity_id
-                           , QString::fromStdString (event.activity_name())
-                           , event.activity_state()
-                           )
-              );
-          }
-          else
-          {
-            container.back().state (event.activity_state(), time);
-          }
+            std::vector<value_type>& container (_worker_containers[worker]);
 
-          (ul ? br : ul) = index (row, 0);
+            //! \note We assume that there are no message reorderings,
+            //! thus the message always is for the current or a new
+            //! activity. This may be wrong due to UDP, but hopefully
+            //! is not.  Receiving back-dated messages currently leads
+            //! to inserting a new activity where timestamp <
+            //! current.timestamp, which will throw or result in other
+            //! weird behaviour.
+            if (container.empty() || container.back().id() != activity_id)
+            {
+              fhg_assert ( std::find_if
+                           ( container.begin()
+                           , container.end()
+                           , boost::bind (&value_type::id, _1) == activity_id
+                           ) == container.end()
+                         , "no previous interval shall have the same id as a new one"
+                         );
+
+              if (!container.empty())
+              {
+                value_type& current (container.back());
+
+                fhg_assert ( current.timestamp() <= time
+                           , "only appending: current is after inserted"
+                           );
+
+                fhg_assert ( !current.duration()
+                           || current.timestamp() + *current.duration() <= time
+                           , "only appending: interval of current intersects new"
+                           );
+
+                if (!current.duration())
+                {
+                  current.state (sdpa::daemon::NotificationEvent::STATE_FAILED, time);
+                }
+              }
+
+              container.push_back
+                ( value_type ( time
+                             , boost::none
+                             , activity_id
+                             , QString::fromStdString (event.activity_name())
+                             , event.activity_state()
+                             )
+                );
+            }
+            else
+            {
+              container.back().state (event.activity_state(), time);
+            }
+
+            (ul ? br : ul) = index (row, 0);
+          }
         }
 
         if (ul)

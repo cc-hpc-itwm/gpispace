@@ -35,8 +35,6 @@ namespace sdpa { namespace events {
       typedef std::string address_t;
 	  typedef std::string message_id_type;
 
-      virtual ~SDPAEvent() {}
-
       const address_t & from() const { return from_; }
       address_t & from() { return from_; }
       const address_t & to() const { return to_; }

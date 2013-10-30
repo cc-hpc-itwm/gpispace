@@ -37,8 +37,6 @@ namespace events {
           : MgmtEvent(from, to)
         {}
 
-    	virtual ~ConfigRequestEvent() { }
-
     	std::string str() const { return "ConfigRequestEvent"; }
 
         virtual void handleBy(EventHandler *handler)

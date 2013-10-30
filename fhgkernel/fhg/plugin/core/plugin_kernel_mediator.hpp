@@ -20,8 +20,6 @@ namespace fhg
                            , bool privileged = false
                            );
 
-      ~PluginKernelMediator();
-
       virtual fhg::plugin::Plugin * acquire(std::string const & name);
       virtual void release(std::string const &name);
 

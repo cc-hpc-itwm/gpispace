@@ -15,7 +15,6 @@ namespace gspc
         simple_auth_t ();
         explicit
         simple_auth_t (std::string const &);
-        ~simple_auth_t ();
 
         bool is_authorized (std::string const &cookie) const;
 

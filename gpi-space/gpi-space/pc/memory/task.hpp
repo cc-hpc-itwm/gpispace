@@ -36,8 +36,6 @@ namespace gpi
           , m_eta (eta)
         {}
 
-        ~task_t ();
-
         void execute ();
         void cancel ();
         void reset ();

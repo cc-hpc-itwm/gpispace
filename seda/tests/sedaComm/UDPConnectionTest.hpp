@@ -20,8 +20,6 @@ namespace seda { namespace comm { namespace tests {
 
     private:
     public:
-    UDPConnectionTest();
-    ~UDPConnectionTest();
     void setUp();
     void tearDown();
 

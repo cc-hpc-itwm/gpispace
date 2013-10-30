@@ -36,9 +36,6 @@ namespace sdpa { namespace events {
           :  sdpa::events::JobEvent( a_from, a_to, a_job_id ) {
                 }
 
-                virtual ~JobFailedAckEvent() {
-                }
-
       std::string str() const
       {
         return "JobFailedAckEvent(" + job_id ().str () + ")";

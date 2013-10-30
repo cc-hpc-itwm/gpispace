@@ -43,8 +43,6 @@ namespace sdpa { namespace events {
         : sdpa::events::JobEvent(a_from, a_to, a_job_id), result_(a_result)
       { }
 
-      virtual ~JobResultsReplyEvent() { }
-
       std::string str() const
       {
         return "JobResultsReplyEvent(" + job_id ().str () + ")";
