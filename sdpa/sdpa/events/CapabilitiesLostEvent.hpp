@@ -42,8 +42,6 @@ namespace sdpa { namespace events {
       capabilities_.insert (cap);
     }
 
-		virtual ~CapabilitiesLostEvent() { }
-
 		const sdpa::capabilities_set_t& capabilities() const { return capabilities_; }
 		sdpa::capabilities_set_t& capabilities() { return capabilities_; }
 

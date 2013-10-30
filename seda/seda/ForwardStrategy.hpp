@@ -35,7 +35,6 @@ namespace seda {
 
         ForwardStrategy(const std::string& a_name, const std::string& a_next)
             : Strategy(a_name), _next(a_next) {}
-        virtual ~ForwardStrategy() {}
 
         virtual void perform(const IEvent::Ptr&);
 

@@ -48,7 +48,6 @@ namespace xbe {
   class EventFactory {
   public:
     static const EventFactory& instance();
-    ~EventFactory();
 
     seda::IEvent::Ptr newEvent(const cms::Message*) const throw(UnknownConversion);
     seda::IEvent::Ptr newEvent(const cms::TextMessage*) const;

@@ -55,16 +55,6 @@ namespace fhg { namespace log {
       explicit
       LogLevel(const std::string &level_name);
 
-      LogLevel(const LogLevel &other)
-        : lvl_(other.lvl_) {}
-
-      LogLevel &operator=(const LogLevel &other) {
-        if (this != &other) {
-          lvl_ = other.lvl_;
-        }
-        return *this;
-      }
-
       const std::string &str() const;
 
       inline const Level &lvl() const { return lvl_; }

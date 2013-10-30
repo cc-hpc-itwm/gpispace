@@ -74,7 +74,6 @@ namespace sdpa { namespace daemon {
     typedef boost::condition_variable_any condition_type;
 
     SynchronizedQueue() : stopped_(false) {}
-    ~SynchronizedQueue() { }
 
     inline value_type pop()
     {

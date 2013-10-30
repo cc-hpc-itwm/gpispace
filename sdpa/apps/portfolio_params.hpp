@@ -54,35 +54,6 @@ public:
 		m_nLBUs = nLBUs;
 	}
 
-	common_parameters_t(const common_parameters_t& other)
-	{
-		m_dS = other.m_dS;
-		m_dr = other.m_dr;
-		m_dd = other.m_dd;
-		m_nn = other.m_nn;
-		m_dSigma = other.m_dSigma;
-		m_nFirstFixing = other.m_nFirstFixing;
-		m_nAnzahlderDividende = other.m_nAnzahlderDividende;
-		m_nLBUs = other.m_nLBUs;
-	}
-
-	common_parameters_t& operator=(const common_parameters_t& other)
-	{
-		if( this != &other )
-		{
-			m_dS = other.m_dS;
-			m_dr = other.m_dr;
-			m_dd = other.m_dd;
-			m_nn = other.m_nn;
-			m_dSigma = other.m_dSigma;
-			m_nFirstFixing = other.m_nFirstFixing;
-			m_nAnzahlderDividende = other.m_nAnzahlderDividende;
-			m_nLBUs = other.m_nLBUs;
-		}
-
-		return *this;
-	}
-
 	double SpotPrice() { return m_dS; }
 	void   setSpotPrice(const double& d) { m_dS =d; }
 
@@ -157,27 +128,6 @@ public:
 		m_dFixingsProJahr = dFixingsProJahr;
 	}
 
-	row_parameters_t(const row_parameters_t& other)
-	{
-		m_rowId = other.m_rowId;
-		m_dT = other.m_dT;
-		m_dK = other.m_dK;
-		m_dFixingsProJahr = other.m_dFixingsProJahr;
-	}
-
-	row_parameters_t& operator=(const row_parameters_t& other)
-	{
-		if( this != &other )
-		{
-			m_rowId = other.m_rowId;
-			m_dT = other.m_dT;
-			m_dK = other.m_dK;
-			m_dFixingsProJahr = other.m_dFixingsProJahr;
-		}
-
-		return *this;
-	}
-
 	double& operator()(const int& i)
 	{
           switch(i)
@@ -240,31 +190,6 @@ public:
 		m_dDelta = dDelta;
 		m_dGamma = dGamma;
 		m_dVega  = dVega;
-	}
-
-	simulation_result_t(const simulation_result_t& other)
-	{
-		m_rowId  = other.m_rowId;
-		m_dSum1  = other.m_dSum1;
-		m_dSum2  = other.m_dSum2;
-		m_dDelta = other.m_dDelta;
-		m_dGamma = other.m_dGamma;
-		m_dVega  = other.m_dVega;
-	}
-
-	simulation_result_t& operator=(const simulation_result_t& other)
-	{
-		if( this != &other )
-		{
-			m_rowId  = other.m_rowId;
-			m_dSum1  = other.m_dSum1;
-			m_dSum2  = other.m_dSum2;
-			m_dDelta = other.m_dDelta;
-			m_dGamma = other.m_dGamma;
-			m_dVega  = other.m_dVega;
-		}
-
-		return *this;
 	}
 
 	// PV, STDDEV, DELTA, GAMMA, VEGA

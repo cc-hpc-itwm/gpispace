@@ -30,9 +30,6 @@ namespace sdpa
       , m_shutting_down (false)
     {}
 
-    NetworkStrategy::~NetworkStrategy ()
-    {}
-
     void NetworkStrategy::perform (seda::IEvent::Ptr const & e)
     {
       static sdpa::events::Codec codec;

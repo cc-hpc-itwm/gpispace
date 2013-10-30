@@ -21,7 +21,6 @@ namespace gpi
 
         static area_ptr_t create (std::string const &url);
 
-        ~gpi_area_t ();
       protected:
         gpi_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & name

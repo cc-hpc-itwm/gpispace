@@ -37,7 +37,6 @@ namespace seda {
             _busy(false),
             _stopped(false)
         { }
-        ~StageWorker() {}
 
         void stop() { _stopped = true; }
         void operator()() { run(); }

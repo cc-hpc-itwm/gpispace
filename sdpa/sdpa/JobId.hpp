@@ -31,26 +31,6 @@ namespace sdpa {
     JobId(const char *s);
 
     /**
-      Copy-construct a jobid
-    */
-    JobId(const JobId &other);
-
-    /**
-      Assign a jobid to this one.
-    */
-    JobId &operator=(const JobId &rhs);
-
-    /**
-      Assign a string to this one.
-    */
-    JobId &operator=(const std::string &rhs);
-
-    /**
-      Assign a const char* to this one.
-    */
-    JobId &operator=(const char *rhs);
-
-    /**
       Auto convert the jobid back to a std::string
     */
     operator std::string() const { return id_; }
@@ -69,8 +49,6 @@ namespace sdpa {
       Strict less than operator.
     */
     bool operator<(const JobId& rhs) const;
-
-    ~JobId();
 
     const std::string &str() const { return id_; }
     std::string &str() { return id_; }

@@ -28,9 +28,6 @@ class StatisticsImpl : FHG_PLUGIN
   typedef boost::unique_lock<mutex_type> lock_type;
   typedef boost::condition_variable_any condition_type;
 public:
-  StatisticsImpl () {}
-  ~StatisticsImpl (){}
-
   FHG_PLUGIN_START()
   {
     fhg_kernel()->storage()->load("counter", m_counter);

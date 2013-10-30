@@ -5,8 +5,10 @@
 #include <fhglog/fhglog.hpp>
 #include <sdpa/client/Client.hpp>
 
+#include <boost/utility.hpp>
+
 namespace sdpa { namespace client {
-  class ClientApi {
+  class ClientApi : boost::noncopyable {
   public:
     typedef sdpa::shared_ptr<ClientApi> ptr_t;
 
@@ -110,9 +112,6 @@ namespace sdpa { namespace client {
       : pimpl(c)
     {
     }
-
-    ClientApi(const ClientApi&);
-    const ClientApi& operator=(const ClientApi&);
 
     Client::ptr_t pimpl;
   };

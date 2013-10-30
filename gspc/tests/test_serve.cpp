@@ -53,10 +53,6 @@ struct SetRLimits
 
     std::cerr << "max_open_files := " << max_open_files << std::endl;
   }
-
-  ~SetRLimits ()
-  {
-  }
 };
 size_t SetRLimits::max_open_files = 0;
 

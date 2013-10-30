@@ -51,26 +51,6 @@ namespace sdpa { namespace util {
         typedef map_t::const_iterator const_iterator;
         typedef map_t::iterator iterator;
 
-        Properties()
-          : properties_()
-        {
-        }
-        virtual ~Properties() {}
-
-        Properties(const Properties &other)
-          : properties_(other.properties_)
-        {
-        }
-
-        Properties &operator=(const Properties &rhs)
-        {
-          if (this != &rhs)
-          {
-            properties_ = rhs.properties_;
-          }
-          return *this;
-        }
-
         void put(const std::string &key, const std::string &val)
         {
           del(key);

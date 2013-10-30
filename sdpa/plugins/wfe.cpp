@@ -1,12 +1,13 @@
 #include "wfe.hpp"
-#include "wfe_task.hpp"
-#include "wfe_context.hpp"
 #include "observable.hpp"
-#include "task_event.hpp"
 #include "drts_info_impl.hpp"
 #include <errno.h>
 
+#include <sdpa/daemon/NotificationEvent.hpp>
+
 #include <list>
+#include <map>
+#include <string>
 
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
@@ -29,53 +30,133 @@
 
 #include <gspc/net.hpp>
 
+#include <we/loader/loader.hpp>
+#include <we/loader/module_call.hpp>
+#include <we/mgmt/context.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/module_call.hpp>
 //! \todo eliminate this include (that completes the type transition_t::data)
 #include <we/type/net.hpp>
 
 namespace
 {
-  static
-  boost::optional<std::string>
-  nice_name (we::mgmt::type::activity_t const &act)
-    try
-    {
-      const we::type::module_call_t mod_call
-        (boost::get<we::type::module_call_t> (act.transition().data()));
+  struct wfe_task_t
+  {
+    typedef boost::posix_time::ptime time_type;
+    typedef std::map<std::string, std::string> meta_data_t;
+    typedef std::list<std::string> worker_list_t;
 
-      return mod_call.module() + ":" + mod_call.function();
-    }
-    catch (boost::bad_get const &)
+    enum state_t
     {
-      return boost::none;
+      PENDING
+    , CANCELED
+    , FINISHED
+    , FAILED
+    };
+
+    std::string id;
+    int        state;
+    int        errc;
+    we::mgmt::type::activity_t activity;
+    fhg::util::thread::event<int> done;
+    meta_data_t meta;
+    worker_list_t workers;
+    std::string error_message;
+  };
+
+  struct wfe_exec_context : public we::mgmt::context
+  {
+    wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
+      : loader (module_loader)
+      , task (target)
+    {}
+
+    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
+    {
+      act.inject_input();
+
+      while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
+      {
+        we::mgmt::type::activity_t sub (act.extract());
+        sub.inject_input();
+        sub.execute (this);
+        act.inject (sub);
+      }
+
+      act.collect_output();
+
+      return 0;
     }
+
+    virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+    {
+      try
+      {
+        module::call (loader, act, mod);
+      }
+      catch (std::exception const &ex)
+      {
+        throw std::runtime_error
+          ( "call to '" + mod.module() + "::" + mod.function() + "'"
+          + " failed: " + ex.what()
+          );
+      }
+
+      return 0;
+    }
+
+    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
+    {
+      return 0;
+    }
+
+    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+    {
+      return handle_internally (act, n);
+    }
+
+    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& module_call)
+    {
+      return handle_internally (act, module_call);
+    }
+
+    virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+    {
+      return handle_internally (act, e);
+    }
+
+  private:
+    we::loader::loader& loader;
+    wfe_task_t& task;
+  };
+
+  struct search_path_appender
+  {
+    explicit search_path_appender(we::loader::loader& ld)
+      : loader (ld)
+    {}
+
+    search_path_appender& operator = (std::string const& p)
+    {
+      if (not p.empty ())
+        loader.append_search_path (p);
+      return *this;
+    }
+
+    search_path_appender& operator* ()
+    {
+      return *this;
+    }
+
+    search_path_appender& operator++(int)
+    {
+      return *this;
+    }
+
+    we::loader::loader & loader;
+  };
 }
-
-struct search_path_appender
-{
-  explicit
-  search_path_appender(we::loader::loader& ld)
-    : loader (ld)
-  {}
-
-  search_path_appender & operator = (std::string const &p)
-  {
-    if (not p.empty ())
-      loader.append_search_path (p);
-    return *this;
-  }
-
-  search_path_appender & operator* ()
-  {
-    return *this;
-  }
-
-  search_path_appender & operator++(int)
-  {
-    return *this;
-  }
-
-  we::loader::loader & loader;
-};
 
 class WFEImpl : FHG_PLUGIN
               , public wfe::WFE
@@ -89,7 +170,6 @@ class WFEImpl : FHG_PLUGIN
                             > task_list_t;
   typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
-  virtual ~WFEImpl() {}
 
   FHG_PLUGIN_START()
   {
@@ -194,9 +274,19 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
+  void emit_task ( const wfe_task_t& task
+                 , sdpa::daemon::NotificationEvent::state_t state
+                 )
+  {
+    emit ( sdpa::daemon::NotificationEvent
+           (task.workers, task.id, state, task.activity, task.meta)
+         );
+  }
+
+
   int execute ( std::string const &job_id
               , std::string const &job_description
-              , wfe::capabilities_t const & capabilities
+              , wfe::capabilities_t const&
               , std::string & result
               , std::string & error_message
               , std::list<std::string> const & worker_list
@@ -208,7 +298,6 @@ public:
     wfe_task_t task;
     task.state = wfe_task_t::PENDING;
     task.id = job_id;
-    task.capabilities = capabilities;
     task.meta = meta_data;
     task.workers = worker_list;
 
@@ -220,22 +309,9 @@ public:
     try
     {
       task.activity = we::mgmt::type::activity_t (job_description);
-      task.name =
-        nice_name (task.activity).get_value_or (task.activity.transition().name());
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
-
-      emit ( task_event_t ( job_id
-                          , task.name
-                          , task_event_t::ENQUEUED
-                          , job_description
-                          , task.meta
-                          , task.workers
-                          )
-           );
-
-      task.enqueue_time = boost::posix_time::microsec_clock::universal_time();
 
       m_tasks.put(&task);
 
@@ -259,8 +335,7 @@ public:
         task.done.wait(ec);
       }
 
-      task.finished_time = boost::posix_time::microsec_clock::universal_time();
-      result = task.result;
+      result = task.activity.to_string();
 
       if (fhg::error::NO_ERROR == ec)
       {
@@ -268,46 +343,23 @@ public:
         task.state = wfe_task_t::FINISHED;
         error_message = task.error_message;
 
-        emit(task_event_t( job_id
-                         , task.name
-                         , task_event_t::FINISHED
-                         , task.result
-                         , task.meta
-                         , task.workers
-                         )
-            );
+        emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
       }
       else if (fhg::error::EXECUTION_CANCELLED == ec)
       {
         DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
-        result = task.result;
         error_message = task.error_message;
 
-        emit(task_event_t( job_id
-                         , task.name
-                         , task_event_t::CANCELED
-                         , task.result
-                         , task.meta
-                         , task.workers
-                         )
-            );
+        emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELLED);
       }
       else
       {
         MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::FAILED;
-        result = task.result;
         error_message = task.error_message;
 
-        emit(task_event_t( job_id
-                         , task.name
-                         , task_event_t::FAILED
-                         , task.result
-                         , task.meta
-                         , task.workers
-                         )
-            );
+        emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
       }
     }
     catch (std::exception const & ex)
@@ -317,14 +369,7 @@ public:
       ec = fhg::error::INVALID_JOB_DESCRIPTION;
       error_message = ex.what();
 
-      emit(task_event_t( job_id
-                       , "n/a"
-                       , task_event_t::FAILED
-                       , task.result
-                       , task.meta
-                       , task.workers
-                       )
-          );
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
     }
 
     {
@@ -389,7 +434,7 @@ private:
       lock_type lock (m_current_task_mutex);
       if (m_current_task)
       {
-        rply.set_body (m_current_task->name);
+        rply.set_body (m_current_task->activity.nice_name());
       }
     }
 
@@ -446,21 +491,13 @@ private:
       }
 
       wfe_task_t *task = m_tasks.get();
-      task->dequeue_time = boost::posix_time::microsec_clock::universal_time();
 
       {
         lock_type lock (m_current_task_mutex);
         m_current_task = task;
       }
 
-      emit(task_event_t( task->id
-                       , task->name
-                       , task_event_t::DEQUEUED
-                       , task->activity.to_string()
-                       , task->meta
-                       , task->workers
-                       )
-          );
+      emit_task (*task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
       if (task->state != wfe_task_t::PENDING)
       {
@@ -514,7 +551,6 @@ private:
         }
       }
 
-      task->result = task->activity.to_string();
       task->done.notify(task->errc);
     }
   }

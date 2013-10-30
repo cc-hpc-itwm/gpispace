@@ -92,23 +92,6 @@ namespace seda { namespace comm {
       }
     }
 
-    Location(const Location &other)
-      : name_(other.name())
-      , host_(other.host())
-      , port_(other.port())
-    {}
-
-    Location &operator=(const Location &rhs)
-    {
-      if (this != &rhs)
-      {
-        name_ = rhs.name();
-        host_ = rhs.host();
-        port_ = rhs.port();
-      }
-      return *this;
-    }
-
     const std::string &name() const { return name_; }
     std::string &name() { return name_; }
 

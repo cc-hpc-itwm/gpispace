@@ -50,7 +50,6 @@ namespace fhg
           };
 
           base_item (base_item* parent = NULL);
-          virtual ~base_item() { }
 
           scene_type* scene() const;
 

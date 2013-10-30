@@ -31,7 +31,7 @@ namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
 char const* const state_names[] = {     "SDPA::Pending"
-                                        , "SDPA::Stalled"
+										, "SDPA::Stalled"
                                         , "SDPA::Running"
                                         , "SDPA::Finished"
                                         , "SDPA::Failed"
@@ -76,31 +76,31 @@ namespace sdpa {
 
         struct transition_table : mpl::vector
         <
-        //      Start           Event                                       Next        		Action                Guard
+        //      Start       Event                                       Next        		Action                Guard
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
-        _row<   Pending,    	MSMDispatchEvent,           		    Running >,
-        a_row<  Pending,    	sdpa::events::CancelJobEvent, 		    Cancelled,          &sm::action_cancel_job_from_pending >,
+        _row<   Pending,    	MSMDispatchEvent,           				Running >,
+        a_row<  Pending,    	sdpa::events::CancelJobEvent, 				Cancelled,          &sm::action_cancel_job_from_pending >,
         //a_row<  Pending,  	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished >,
         //a_row<  Pending,  	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Stalled,	MSMDispatchEvent,        		    Running >,
-        _row<   Stalled,    	MSMRescheduleEvent,                 	    Pending >,
+        _row<   Stalled,	    MSMDispatchEvent,        					Running >,
+        _row<   Stalled,    	MSMRescheduleEvent,                 		Pending >,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,    	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
         a_row<  Running,    	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        a_row<  Running,    	sdpa::events::CancelJobEvent,       	    Cancelling, 	&sm::action_cancel_job >,
-        _row<   Running,    	MSMRescheduleEvent,                 	    Pending >,
-        _row<   Running,	MSMStalledEvent,        		    Stalled >,
+        a_row<  Running,    	sdpa::events::CancelJobEvent,       		Cancelling, 		&sm::action_cancel_job >,
+        _row<   Running,    	MSMRescheduleEvent,                 		Pending >,
+        _row<   Running,	    MSMStalledEvent,        					Stalled >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
         a_irow< Finished,   	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Failed,     	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
-        a_irow< Failed,     	sdpa::events::RetrieveJobResultsEvent,                  	&sm::action_retrieve_job_results >,
+        a_irow< Failed,     	sdpa::events::RetrieveJobResultsEvent,                  		&sm::action_retrieve_job_results >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_row<  Cancelling, 	sdpa::events::CancelJobAckEvent,     	    Cancelled, 		&sm::action_cancel_job_ack>,
-        a_row<  Cancelling, 	sdpa::events::JobFinishedEvent,      	    Cancelled, 		&sm::action_job_finished>,
-        a_row<  Cancelling, 	sdpa::events::JobFailedEvent,               Cancelled, 		&sm::action_job_failed>,
+        a_row<  Cancelling, 	sdpa::events::CancelJobAckEvent,     		Cancelled, 			&sm::action_cancel_job_ack>,
+        a_row<  Cancelling, 	sdpa::events::JobFinishedEvent,      		Cancelled, 			&sm::action_job_finished>,
+        a_row<  Cancelling, 	sdpa::events::JobFailedEvent,               Cancelled, 			&sm::action_job_failed>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Cancelled,  	sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
         a_irow< Cancelled,  	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >
@@ -134,12 +134,12 @@ namespace sdpa {
           : JobImpl(id, desc, pHandler, parent)
           , SDPA_INIT_LOGGER("sdpa.fsm.bmsm.JobFSM")
         {
-          DLOG(TRACE, "State machine created: " << id);
+        	DLOG(TRACE, "State machine created: " << id);
         }
 
         virtual ~JobFSM()
         {
-          DLOG(TRACE, "State machine destroyed");
+        	DLOG(TRACE, "State machine destroyed");
         }
 
         void start_fsm() { start(); }
@@ -148,16 +148,16 @@ namespace sdpa {
         void CancelJob(const sdpa::events::CancelJobEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
         void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
         {
-          lock_type lock(mtx_);
-          process_event(*pEvt);
-          /*BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
-          {
-            lock_type lock_worker;
-            Worker::ptr_t ptrWorker = findWorker(workerId);
-            ptrWorker->free();
-          }
+        	lock_type lock(mtx_);
+        	process_event(*pEvt);
+        	/*BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
+        		{
+        			lock_type lock_worker;
+        			Worker::ptr_t ptrWorker = findWorker(workerId);
+        			ptrWorker->free();
+        		}
 
-          allocation_table.erase(jobId);*/
+        		allocation_table.erase(jobId);*/
         }
 
         void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm)
@@ -176,35 +176,36 @@ namespace sdpa {
 
         void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
         {
-          assert (pDaemon);
-          // attention, no action called!
-          lock_type lock(mtx_);
-          process_event(*pEvt);
+        	assert (pDaemon);
+        	// attention, no action called!
+        	lock_type lock(mtx_);
+        	process_event(*pEvt);
 
-          //LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
-          sdpa::status_t status = getStatus();
-          sdpa::events::JobStatusReplyEvent::Ptr pStatReply(new sdpa::events::JobStatusReplyEvent(pEvt->to(),
-        																							pEvt->from(),        																							status));
-          pStatReply->error_code() = error_code();
-          pStatReply->error_message() = error_message();
+        	//LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!");
+        	sdpa::status_t status = getStatus();
+        	sdpa::events::JobStatusReplyEvent::Ptr pStatReply(new sdpa::events::JobStatusReplyEvent(pEvt->to(),
+        																							pEvt->from(),
+        																							id(),
+        																							status));
+        	pStatReply->error_code() = error_code();
+        	pStatReply->error_message() = error_message();
 
-          pDaemon->sendEventToMaster(pStatReply);
+        	pDaemon->sendEventToMaster(pStatReply);
         }
 
         void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
         {
-          assert (ptr_comm);
-          lock_type lock(mtx_);
-          process_event(*pEvt);
-          const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
+        	assert (ptr_comm);
+        	lock_type lock(mtx_);
+        	process_event(*pEvt);
+        	const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
 
-          // reply the results to master
-          ptr_comm->sendEventToMaster(pResReply);
+        	// reply the results to master
+        	ptr_comm->sendEventToMaster(pResReply);
         }
 
         void Reschedule(sdpa::daemon::IAgent*  pAgent)
         {
-          assert (ptr_comm);
           MSMRescheduleEvent ReschedEvt;
           lock_type lock(mtx_);
           process_event(ReschedEvt);
@@ -213,16 +214,16 @@ namespace sdpa {
 
         void Dispatch()
         {
-          MSMDispatchEvent DispEvt;
-          lock_type lock(mtx_);
-          process_event(DispEvt);
+            MSMDispatchEvent DispEvt;
+            lock_type lock(mtx_);
+            process_event(DispEvt);
         }
 
         void Pause()
         {
-          MSMStalledEvent StalledEvt;
-          lock_type lock(mtx_);
-          process_event(StalledEvt);
+        	MSMStalledEvent StalledEvt;
+        	lock_type lock(mtx_);
+        	process_event(StalledEvt);
         }
 
         // actions
@@ -259,27 +260,30 @@ namespace sdpa {
 
         sdpa::status_t getStatus()
         {
-          DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
+        	DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
 
-          if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names))) {
-              LOG(ERROR, "state id out of range!");
-              return "unknown";
-          }
-          else {
-              return state_names[*current_state()];
-          }
+			if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
+			{
+				LOG(ERROR, "state id out of range!");
+				return "unknown";
+			}
+			else
+			{
+				return state_names[*current_state()];
+			}
         }
 
         bool completed()
         {
-          sdpa::status_t status = getStatus();
-          return status=="SDPA::Finished" || status=="SDPA::Failed" || status=="SDPA::Canceled";
+        	sdpa::status_t status = getStatus();
+        	return status=="SDPA::Finished" || status=="SDPA::Failed" || status=="SDPA::Canceled";
         }
+
 
         bool is_running()
         {
-          sdpa::status_t status = getStatus();
-          return status=="SDPA::Running";
+        	sdpa::status_t status = getStatus();
+        	return status=="SDPA::Running";
         }
 
         template <class Archive>

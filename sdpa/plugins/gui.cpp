@@ -12,9 +12,6 @@
 
 #include "observable.hpp"
 #include "observer.hpp"
-#include "task_event.hpp"
-
-typedef fhg::thread::channel<task_event_t> event_channel_t;
 
 class GuiObserverPlugin : FHG_PLUGIN
                         , public observe::Observer
@@ -24,23 +21,21 @@ public:
   {
     m_thread = 0;
 
-    m_url = fhg_kernel()->get("url", "");
+    const std::string url (fhg_kernel()->get ("url", ""));
 
-    if (not m_url.empty ())
+    if (not url.empty ())
     {
       try
       {
         m_destination.reset (new fhg::log::ThreadedAppender
                             (fhg::log::Appender::ptr_t
-                            (new fhg::log::remote::RemoteAppender( "gui"
-                                                                 , m_url
-                                                                 )
+                            (new fhg::log::remote::RemoteAppender("gui", url)
                             )));
-        DMLOG (TRACE, "GUI sending events to " << m_url);
+        DMLOG (TRACE, "GUI sending events to " << url);
       }
       catch (std::exception const &ex)
       {
-        MLOG(ERROR, "could not start appender to url: " << m_url << ": " << ex.what());
+        MLOG(ERROR, "could not start appender to url: " << url << ": " << ex.what());
       }
     }
 
@@ -95,7 +90,7 @@ public:
   {
     try
     {
-      m_events << boost::any_cast<task_event_t>(evt);
+      m_events << boost::any_cast<sdpa::daemon::NotificationEvent>(evt);
     }
     catch (boost::bad_any_cast const &ex)
     {
@@ -110,22 +105,18 @@ private:
   {
     for (;;)
     {
-      task_event_t t = m_events.get ();
+      sdpa::daemon::NotificationEvent t = m_events.get ();
 
       DMLOG ( TRACE
             , "*** TASK EVENT:"
-            << " id := " << t.id
-            << " name := " << t.name
-            << " state := " << t.state
-            << " time := " << t.tstamp
+            << " id := " << t.activity_id()
+            << " name := " << t.activity_name()
+            << " state := " << t.activity_state()
             );
 
       try
       {
-        BOOST_FOREACH (std::string const& worker, t.worker_list)
-        {
-          m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t, worker)));
-        }
+        m_destination->append (FHGLOG_MKEVENT_HERE (INFO, t.encoded()));
       }
       catch (std::exception const & ex)
       {
@@ -141,28 +132,9 @@ private:
   //   m_observed.remove(o);
   // }
 
-  static inline std::string encode ( const task_event_t & e
-                                   , std::string const& worker
-                                   )
-  {
-    return sdpa::daemon::NotificationEvent
-      ( worker
-      , e.id
-      , e.name
-      , e.state == task_event_t::ENQUEUED ? sdpa::daemon::NotificationEvent::STATE_CREATED
-      : e.state == task_event_t::DEQUEUED ? sdpa::daemon::NotificationEvent::STATE_STARTED
-      : e.state == task_event_t::FINISHED ? sdpa::daemon::NotificationEvent::STATE_FINISHED
-      : e.state == task_event_t::FAILED ? sdpa::daemon::NotificationEvent::STATE_FAILED
-      : e.state == task_event_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELLED
-      : throw std::runtime_error ("gui: encode: invalid task_event::state")
-      , e.activity
-      ).encoded();
-  }
-
-  std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
 
-  event_channel_t m_events;
+  fhg::thread::channel<sdpa::daemon::NotificationEvent> m_events;
   boost::thread *m_thread;
 };
 

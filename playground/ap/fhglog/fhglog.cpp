@@ -67,16 +67,6 @@ struct nul_stream : public std::ostringstream
 {
   typedef nul_stream this_type;
 
-  nul_stream ()
-  {}
-  nul_stream (nul_stream const & other)
-  {}
-
-  nul_stream & operator=(nul_stream const &)
-  {
-    return *this;
-  }
-
   static this_type get()
   {
     static this_type nil;

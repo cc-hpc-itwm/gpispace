@@ -33,8 +33,6 @@ namespace sdpa { namespace events {
       {}
       WorkerRegistrationAckEvent(const address_t& a_from, const address_t& a_to) : MgmtEvent(a_from, a_to) { }
 
-      virtual ~WorkerRegistrationAckEvent() { }
-
       virtual void handleBy(EventHandler *handler)
       {
       	  handler->handleWorkerRegistrationAckEvent(this);

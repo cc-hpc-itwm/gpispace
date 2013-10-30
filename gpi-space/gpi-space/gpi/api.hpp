@@ -54,7 +54,7 @@ namespace gpi
       static gpi_api_t & get ();
       static void destroy ();
 
-      virtual ~gpi_api_t();
+      virtual ~gpi_api_t() { }
 
       // wrapped C function calls
       virtual void set_binary_path (const char *) = 0;

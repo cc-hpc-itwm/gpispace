@@ -19,15 +19,6 @@ struct SetupLogging
 
 BOOST_GLOBAL_FIXTURE( SetupLogging );
 
-struct F
-{
-  F()
-  {}
-
-  ~F()
-  {}
-};
-
 static void task_executed (int *i)
 {
   (*i)++;
@@ -37,8 +28,6 @@ static void task_erroneous ()
 {
   throw std::runtime_error ("function failed");
 }
-
-BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE ( simple_task )
 {
@@ -113,5 +102,3 @@ BOOST_AUTO_TEST_CASE ( task_queue )
   BOOST_CHECK_EQUAL (q.size(),  0u);
   BOOST_CHECK_EQUAL (executed, count);
 }
-
-BOOST_AUTO_TEST_SUITE_END()

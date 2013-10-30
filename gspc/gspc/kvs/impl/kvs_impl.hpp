@@ -23,8 +23,6 @@ namespace gspc
       explicit
       kvs_t (std::string const &url);
 
-      virtual ~kvs_t ();
-
       boost::signal<void (key_type const &)> onChange;
 
     private:

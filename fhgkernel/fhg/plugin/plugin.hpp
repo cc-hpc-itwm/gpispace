@@ -100,7 +100,6 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
     {                                                                   \
       fhgRegisterStaticPlugin(fhg_query_plugin_descriptor_##name, fhg_get_plugin_instance_##name); \
     }                                                                   \
-    ~fhgStatic_##name##_initializer_t () {}                             \
   };                                                                    \
   static fhgStatic_##name##_initializer_t __fhgStatic_initializer_##name
 

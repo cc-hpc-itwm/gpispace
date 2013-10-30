@@ -116,9 +116,6 @@ namespace gpi
         }
       }
 
-      gpi_area_t::~gpi_area_t ()
-      {}
-
       area_t::grow_direction_t
       gpi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {

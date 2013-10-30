@@ -14,8 +14,6 @@ namespace gspc
       explicit
       kvs_net_frontend_t (std::string const &url);
 
-      virtual ~kvs_net_frontend_t ();
-
     private:
       int do_put (std::list<std::pair<key_type, value_type> > const &);
 

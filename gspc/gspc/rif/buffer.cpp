@@ -12,9 +12,6 @@ namespace gspc
       m_data.reserve (len);
     }
 
-    buffer_t::~buffer_t ()
-    {}
-
     ssize_t buffer_t::read (char *dst, size_t len)
     {
       unique_lock lock (m_mutex);

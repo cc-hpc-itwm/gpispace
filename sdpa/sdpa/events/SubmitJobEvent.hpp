@@ -47,8 +47,6 @@ namespace sdpa { namespace events {
           worker_list_(worker_list)
         { }
 
-      virtual ~SubmitJobEvent() { }
-
     std::string str() const { return "SubmitJobEvent(" + job_id ().str () + ")"; }
 
       const sdpa::job_desc_t& description() const {return desc_;}

@@ -36,8 +36,6 @@ namespace sdpa { namespace events {
           : MgmtEvent(from, to)
         {}
 
-    	virtual ~ConfigReplyEvent() { }
-
     	std::string str() const { return "ConfigReplyEvent"; }
 
         virtual void handleBy(EventHandler *handler)

@@ -104,8 +104,6 @@ namespace seda { namespace comm {
       }
     }
 
-    ~ConnectionParameters() {}
-
     class ParameterNotFound : public std::runtime_error
     {
     public:

@@ -255,7 +255,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
     if(pJob->description().empty() )
     {
-    	SDPA_LOG_ERROR("Empty Workflow!!!!");
+    	SDPA_LOG_ERROR("Empty Workflow!");
         // declare job as failed
     	JobFailedEvent::Ptr pEvtJobFailed
     	      (new JobFailedEvent( sdpa::daemon::WE
@@ -274,7 +274,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
   }
   catch(const NoWorkflowEngine& ex)
   {
-    SDPA_LOG_ERROR("No workflow engine!!!");
+    SDPA_LOG_ERROR("No workflow engine!");
     sdpa::job_result_t result(ex.what());
 
     JobFailedEvent::Ptr pEvtJobFailed
@@ -648,7 +648,7 @@ void SchedulerImpl::run()
 
       if( !pJob->isMasterJob() ) {
         // if it's an NRE just execute it!
-        // Attention!: an NRE has no WorkerManager!!!!
+        // Attention!: an NRE has no WorkerManager!
         // or has an Worker Manager and the workers are threads
         if( numberOfWorkers()>0 ) {
             schedule_remotely(jobId);
@@ -714,7 +714,7 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
   id_type act_id = pJob->id().str();
 
   execution_result_t result;
-  encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
+  encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!
 
   if( !ptr_comm_handler_ )
   {
@@ -889,7 +889,7 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
 
     ///jobs_to_be_scheduled.erase( job_id );
     // check if there is an allocation list for this job
-    // (assert that the head of this list id worker_id!!!!!!)
+    // (assert that the head of this list id worker_id!)
     // free all the workers in this list, i.e. mark them as not reserved
     ptr_worker_man_->deleteWorkerJob(worker_id, jobId);
 
