@@ -127,7 +127,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
       return;
   }
 
-  ostringstream os;
   if(!ptr_comm_handler_)
   {
       SDPA_LOG_ERROR("Invalid communication handler. ");
