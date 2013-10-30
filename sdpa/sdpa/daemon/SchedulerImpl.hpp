@@ -94,7 +94,7 @@ namespace sdpa {
       virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
       sdpa::worker_id_t findSuitableWorker(const job_requirements_t&, sdpa::worker_id_list_t&);
-      void releaseAllocatedWorkers(const sdpa::job_id_t& jobId);
+      void releaseReservation(const sdpa::job_id_t& jobId);
       void reserveWorker(const sdpa::job_id_t&, const sdpa::worker_id_t&, const size_t&) throw (WorkerReservationFailed);
 
       virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
@@ -127,6 +127,12 @@ namespace sdpa {
       friend class boost::serialization::access;
       virtual void print();
       void removeWorkers() { ptr_worker_man_->removeWorkers(); }
+
+      void workerFinished(const worker_id_t& wid, const job_id_t& jid) {  lock_type lock_table(mtx_alloc_table_); allocation_table_[jid].workerFinished(wid); }
+      void workerFailed(const worker_id_t& wid, const job_id_t& jid) {  lock_type lock_table(mtx_alloc_table_); allocation_table_[jid].workerFailed(wid); }
+      void workerCanceled(const worker_id_t& wid, const job_id_t& jid) {  lock_type lock_table(mtx_alloc_table_); allocation_table_[jid].workerCanceled(wid); }
+      bool allPartialResultsCollected(const job_id_t& jid) {  lock_type lock_table(mtx_alloc_table_); return allocation_table_[jid].allWorkersTerminated(); }
+      bool groupFinished(const sdpa::job_id_t&) ;
 
       void printPendingJobs() { pending_jobs_queue_.print(); }
       void printAllocationTable();

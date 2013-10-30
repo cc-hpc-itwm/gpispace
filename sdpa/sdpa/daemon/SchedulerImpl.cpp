@@ -103,7 +103,10 @@ void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
       Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
       if(!pJob->completed()) {
           // clear the allocation table
-          releaseAllocatedWorkers(job_id);
+
+          // cancel running jobs
+
+          releaseReservation(job_id);
 
           pJob->Reschedule(ptr_comm_handler_); // put the job back into the pending state
         }
@@ -850,7 +853,7 @@ void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
 }
 
-void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
+void SchedulerImpl::releaseReservation(const sdpa::job_id_t& jobId)
 {
   lock_type lock_table(mtx_alloc_table_);
   // should first kill/cancel the job
@@ -866,7 +869,7 @@ void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
           return;
       }
 
-      if(pJob->is_running()) {
+      /*if(pJob->is_running()) {
           sdpa::worker_id_t head_worker_id(allocation_table_[jobId].headWorker());
           SDPA_LOG_INFO("Tell the worker "<<head_worker_id<<" to cancel the job "<<jobId);
           Worker::ptr_t pWorker = findWorker(head_worker_id);
@@ -876,7 +879,7 @@ void SchedulerImpl::releaseAllocatedWorkers(const sdpa::job_id_t& jobId)
                                                                 , "The master recovered after a crash!") );
 
           ptr_comm_handler_->sendEventToSlave(pEvtCancelJob);
-      }
+      }*/
 
       lock_type lock_worker (mtx_);
       worker_id_list_t listWorkers(allocation_table_[jobId].getWorkerList());
@@ -912,7 +915,7 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
     ptr_worker_man_->deleteWorkerJob(worker_id, jobId);
 
     // free the allocated resources for this job
-    releaseAllocatedWorkers(jobId);
+    // releaseAllocatedWorkers(jobId);
 
     cond_feed_workers.notify_one();
   }
@@ -1125,6 +1128,15 @@ sdpa::job_id_t SchedulerImpl::getNextJobToSchedule()
       LOG(WARN, "there is no job to be scheduled");
   }
   return jobId;
+}
+
+bool SchedulerImpl::groupFinished(const sdpa::job_id_t& jid)
+{
+  lock_type lock(mtx_alloc_table_);
+  bool bFinished(false);
+
+  Reservation reservation(allocation_table_[jid]);
+  return reservation.groupFinished();
 }
 
 /*
