@@ -18,6 +18,8 @@
 #ifndef SDPA_BACKUP_SERVICE_HPP
 #define SDPA_BACKUP_SERVICE_HPP 1
 
+#include <fhg/assert.hpp>
+
 #include <iostream>
 #include <boost/thread.hpp>
 #include <sdpa/daemon/IAgent.hpp>
@@ -41,19 +43,15 @@ namespace daemon
 			, m_backupFile("")
 			, m_backup_interval(1000000)
 			, m_bStarted(false)
-		{	}
+		{
+      fhg_assert (m_ptrDaemon_, "daemon pointer has to exist");
+    }
 
 		~BackupService(){ stop(); }
 
 		// thread related functions
 		void start()
 		{
-			if(!m_ptrDaemon_)
-			{
-				SDPA_LOG_ERROR( "The backup service cannot be started. Invalid communication handler. ");
-				return;
-			}
-
 			SDPA_LOG_INFO( "Starting the backup service ... ");
 			m_thread = boost::thread( boost::bind( &BackupService::backup2string, this ));
 		}
@@ -62,12 +60,6 @@ namespace daemon
 		void start(const bfs::path& backupFile)
 		{
 			m_backupFile = backupFile;
-
-			if(!m_ptrDaemon_)
-			{
-				SDPA_LOG_ERROR( "The backup service cannot be started. Invalid communication handler. ");
-				return;
-			}
 
 			SDPA_LOG_INFO( "Starting the backup service ... ");
 			m_thread = boost::thread( boost::bind( &BackupService::backup2file, this ));
@@ -86,13 +78,7 @@ namespace daemon
 
 		void backup2string()
 		{
-			if(!m_ptrDaemon_)
-			{
-				SDPA_LOG_ERROR( "The backup service cannot be started. Invalid daemon!");
-				return;
-			}
-
-                        m_bStarted = true;
+      m_bStarted = true;
 			while(!m_bStopRequested)
 			{
 				try
@@ -121,12 +107,6 @@ namespace daemon
 
 		void backup2file()
 		{
-			if(!m_ptrDaemon_)
-			{
-				SDPA_LOG_ERROR( "The backup service cannot be started. Invalid daemon!");
-				return;
-			}
-
 			m_bStarted = true;
 			bfs::path tmpBakFile = m_backupFile.string()+".tmp";
 			while(!m_bStopRequested)
@@ -169,7 +149,7 @@ namespace daemon
 
 	private:
 		SDPA_DECLARE_LOGGER();
-		mutable sdpa::daemon::IAgent* m_ptrDaemon_;
+		sdpa::daemon::IAgent* m_ptrDaemon_;
 		bool m_bStopRequested;
 		boost::thread m_thread;
 		std::string m_strBackupDaemon;
