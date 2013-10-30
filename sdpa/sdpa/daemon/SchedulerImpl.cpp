@@ -156,21 +156,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
   reschedule(job_id);
 }
 
-void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
-{
-  if(!bStopRequested) {
-      while( !workerJobList.empty() ) {
-          sdpa::job_id_t jobId = workerJobList.front();
-	  DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
-	  reschedule(worker_id, jobId);
-	  workerJobList.pop_front();
-      }
-  }
-  else {
-      SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
-  }
-}
-
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 {
   if(bStopRequested)
@@ -186,8 +171,12 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
       // which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
       pWorker->set_disconnected();
 
-      sdpa::job_id_list_t workerJobList(ptr_worker_man_->getJobListAndCleanQueues(pWorker));
-      reschedule(worker_id, workerJobList);
+      BOOST_FOREACH ( const sdpa::job_id_t& job_id
+                    , ptr_worker_man_->getJobListAndCleanQueues (pWorker)
+                    )
+      {
+        reschedule (worker_id, job_id);
+      }
 
       // put the jobs back into the central queue and don't forget
       // to reset the status
