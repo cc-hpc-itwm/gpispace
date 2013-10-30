@@ -238,12 +238,9 @@ namespace sdpa {
       virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
 
       template <typename T>
-      T* createWorkflowEngine()
+        void createWorkflowEngine()
       {
-    	  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-    	  assert (pWfE);
-    	  ptr_workflow_engine_ = pWfE;
-    	  return pWfE;
+    	  ptr_workflow_engine_ = new T(this, boost::bind(&GenericDaemon::gen_id, this));
       }
 
       // workflow engine notifications
