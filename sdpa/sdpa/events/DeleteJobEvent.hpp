@@ -34,6 +34,14 @@ namespace sdpa
       {
         handler->handleDeleteJobEvent (this);
       }
+
+    private:
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<JobEvent> (*this);
+      }
     };
   }
 }

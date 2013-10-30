@@ -59,6 +59,14 @@ namespace sdpa
 
    private:
      sdpa::capabilities_set_t capabilities_;
+
+     friend class boost::serialization::access;
+     template <class Archive>
+     void serialize (Archive & ar, unsigned int)
+     {
+       ar & boost::serialization::base_object<MgmtEvent> (*this);
+       ar & capabilities_;
+     }
    };
  }
 }

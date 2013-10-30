@@ -4,8 +4,8 @@
 #include <sdpa/sdpa-config.hpp>
 
 #include <sdpa/events/MgmtEvent.hpp>
+
 #include <boost/serialization/base_object.hpp>
-#include <boost/serialization/assume_abstract.hpp>
 
 namespace sdpa
 {
@@ -49,6 +49,14 @@ namespace sdpa
 
     private:
       sdpa::job_id_list_t listJobIds_;
+
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<MgmtEvent> (*this);
+        ar & listJobIds_;
+      }
     };
   }
 }

@@ -6,6 +6,8 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
 
+#include <boost/serialization/base_object.hpp>
+
 namespace sdpa
 {
   namespace events
@@ -58,6 +60,14 @@ namespace sdpa
 
     private:
       sdpa::capabilities_set_t capabilities_;
+
+      friend class boost::serialization::access;
+      template <class Archive>
+      void serialize (Archive & ar, unsigned int)
+      {
+        ar & boost::serialization::base_object<MgmtEvent> (*this);
+        ar & capabilities_;
+      }
     };
   }
 }

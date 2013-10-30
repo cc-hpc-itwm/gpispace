@@ -77,6 +77,16 @@ namespace sdpa
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;
       sdpa::worker_id_list_t worker_list_;
+
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<JobEvent> (*this);
+        ar & desc_;
+        ar & parent_;
+        ar & worker_list_;
+      }
     };
   }
 }

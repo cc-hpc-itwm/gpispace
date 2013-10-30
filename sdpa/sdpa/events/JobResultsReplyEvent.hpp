@@ -49,6 +49,14 @@ namespace sdpa
 
     private:
       job_result_t result_;
+
+      friend class boost::serialization::access;
+      template <class Archive>
+      void serialize (Archive & ar, unsigned int)
+      {
+        ar & boost::serialization::base_object<JobEvent> (*this);
+        ar & result_;
+      }
     };
   }
 }

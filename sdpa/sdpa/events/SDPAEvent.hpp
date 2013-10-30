@@ -9,6 +9,8 @@
 #include <sdpa/events/EventHandler.hpp>
 
 #include <boost/system/error_code.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/assume_abstract.hpp>
 
 namespace sdpa
 {
@@ -73,6 +75,15 @@ namespace sdpa
       address_t from_;
       address_t to_;
       message_id_type id_;
+
+      friend class boost::serialization::access;
+      template <class Archive>
+      void serialize (Archive & ar, unsigned int)
+      {
+        ar & from_;
+        ar & to_;
+        ar & id_;
+      }
     };
   }
 }

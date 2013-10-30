@@ -53,6 +53,14 @@ namespace sdpa
 
     private:
       sdpa::job_id_t job_id_;
+
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<SDPAEvent> (*this);
+        ar & job_id_;
+      }
     };
   }
 }

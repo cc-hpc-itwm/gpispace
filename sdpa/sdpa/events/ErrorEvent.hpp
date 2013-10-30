@@ -6,6 +6,8 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 
+#include <boost/serialization/base_object.hpp>
+
 namespace sdpa
 {
   namespace events
@@ -95,6 +97,16 @@ namespace sdpa
       error_code_t error_code_;
       std::string reason_;
       sdpa::job_id_t job_id_;
+
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<MgmtEvent> (*this);
+        ar & error_code_;
+        ar & reason_;
+        ar & job_id_;
+      }
     };
   }
 }

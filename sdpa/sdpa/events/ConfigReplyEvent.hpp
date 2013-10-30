@@ -5,6 +5,8 @@
 
 #include <sdpa/events/MgmtEvent.hpp>
 
+#include <boost/serialization/base_object.hpp>
+
 namespace sdpa
 {
   namespace events
@@ -32,6 +34,14 @@ namespace sdpa
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleConfigReplyEvent (this);
+      }
+
+    private:
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<MgmtEvent> (*this);
       }
     };
   }

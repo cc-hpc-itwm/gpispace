@@ -6,6 +6,8 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
 
+#include <boost/serialization/base_object.hpp>
+
 namespace sdpa
 {
   namespace events
@@ -76,19 +78,6 @@ namespace sdpa
         return agent_uuid_;
       }
 
-
-      template <class Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-    	ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(*this);
-        ar & capacity_;
-        ar & cpbset_;
-        ar & rank_;
-        ar & agent_uuid_;
-      }
-
-      friend class boost::serialization::access;
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleWorkerRegistrationEvent (this);
@@ -99,6 +88,17 @@ namespace sdpa
       capabilities_set_t cpbset_;
       unsigned int rank_;
       sdpa::worker_id_t agent_uuid_;
+
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<MgmtEvent> (*this);
+        ar & capacity_;
+        ar & cpbset_;
+        ar & rank_;
+        ar & agent_uuid_;
+      }
     };
   }
 }

@@ -6,6 +6,8 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
+#include <boost/serialization/base_object.hpp>
+
 namespace sdpa
 {
   namespace events
@@ -28,6 +30,14 @@ namespace sdpa
       }
 
       virtual std::string str() const = 0;
+
+    private:
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<SDPAEvent> (*this);
+      }
     };
   }
 }

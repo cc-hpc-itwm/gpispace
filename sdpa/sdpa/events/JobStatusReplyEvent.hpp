@@ -70,6 +70,16 @@ namespace sdpa
       status_t status_;
       int m_error_code;
       std::string m_error_message;
+
+      friend class boost::serialization::access;
+      template <class Archive>
+      void serialize (Archive & ar, unsigned int)
+      {
+        ar & boost::serialization::base_object<JobEvent> (*this);
+        ar & status_;
+        ar & m_error_code;
+        ar & m_error_message;
+      }
     };
   }
 }
