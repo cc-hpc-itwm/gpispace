@@ -66,11 +66,10 @@ struct MyFixture
     ostringstream os;
     os.str("");
 
-    BOOST_REQUIRE (f.is_open());
-
     char c;
     while (f.get(c))
-            os<<c;
+      os<<c;
+
     f.close();
     return os.str();
   }
@@ -365,7 +364,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   //reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
 
   // Now report that jobId0 has finished and try to assign again resources to the job 4
-  pAgent->scheduler()->releaseAllocatedWorkers(jobId0);
+  pAgent->scheduler()->releaseReservation(jobId0);
 
   //listFreeWorkers.clear();
   pAgent->scheduler()->assignJobsToWorkers();
