@@ -235,7 +235,7 @@ namespace sdpa {
 
       // workflow engine
       virtual we::mgmt::basic_layer* workflowEngine() const { return ptr_workflow_engine_; }
-      virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
+      virtual bool hasWorkflowEngine() { return ptr_workflow_engine_;}
 
       template <typename T>
         void createWorkflowEngine()
