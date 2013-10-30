@@ -715,8 +715,7 @@ public:
                                                , job_it->second->id()
                                                )
           );
-        event->result() = job_it->second->result();
-        send_event(event);
+        send_event(event->set_result (job_it->second->result()));
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
@@ -1298,9 +1297,8 @@ private:
                                                , job->id()
                                                )
           );
-        event->result() = job->result();
 
-        return send_event(event);
+        return send_event(event->set_result (job->result()));
       }
       break;
     default:
