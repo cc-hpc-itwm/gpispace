@@ -7,56 +7,58 @@
 
 #include <boost/serialization/base_object.hpp>
 
-namespace sdpa { namespace events {
+namespace sdpa
+{
+  namespace events
+  {
     class CancelJobEvent : public JobEvent
     {
     public:
       typedef sdpa::shared_ptr<CancelJobEvent> Ptr;
 
       CancelJobEvent()
-        : JobEvent("", "", "")
-        , m_reason ("unknown")
+        : JobEvent ("", "", "")
+        , _reason ("unknown")
       {}
 
-      CancelJobEvent( const address_t& a_from
-                    , const address_t& a_to
-                    , const sdpa::job_id_t& a_job_id
-                    , const std::string & a_reason
-                    )
-        : sdpa::events::JobEvent( a_from
-                                , a_to
-                                , a_job_id
-                                )
-        , m_reason (a_reason)
+      CancelJobEvent ( const address_t& a_from
+                     , const address_t& a_to
+                     , const sdpa::job_id_t& a_job_id
+                     , const std::string& a_reason
+                     )
+        : sdpa::events::JobEvent (a_from, a_to, a_job_id)
+        , _reason (a_reason)
       {}
 
       std::string str() const
       {
         return "CancelJobEvent(" + job_id ().str () + ")";
       }
-
-      std::string const & reason () const
+      std::string const& reason() const
       {
-        return m_reason;
+        return _reason;
+      }
+      int priority() const
+      {
+        return 1;
+      }
+      virtual void handleBy (EventHandler* handler)
+      {
+        handler->handleCancelJobEvent (this);
       }
 
-      int priority() const { return 1; }
-
-      virtual void handleBy(EventHandler *handler)
-      {
-        handler->handleCancelJobEvent(this);
-      }
     private:
-      std::string m_reason;
+      std::string _reason;
 
       friend class boost::serialization::access;
       template <typename Archive>
       void serialize (Archive& ar, const unsigned int)
       {
         ar & boost::serialization::base_object<JobEvent> (*this);
-        ar & m_reason;
+        ar & _reason;
       }
     };
-  }}
+  }
+}
 
 #endif
