@@ -10,8 +10,8 @@ namespace fhg
     public:
       virtual ~Numa () {}
 
-      virtual size_t socket () const;
-      virtual unsigned long cpuset () const;
+      virtual size_t socket () const = 0;
+      virtual unsigned long cpuset () const = 0;
     };
 
     size_t get_socket ();
