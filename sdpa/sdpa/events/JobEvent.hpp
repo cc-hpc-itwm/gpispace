@@ -7,35 +7,54 @@
 #include <sdpa/types.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
-namespace sdpa {
-namespace events {
-    class JobEvent : public sdpa::events::SDPAEvent {
+namespace sdpa
+{
+  namespace events
+  {
+    class JobEvent : public sdpa::events::SDPAEvent
+    {
     public:
-        typedef sdpa::shared_ptr<JobEvent> Ptr;
+      typedef sdpa::shared_ptr<JobEvent> Ptr;
 
-        JobEvent(const address_t &a_from, const address_t &a_to, const sdpa::job_id_t &a_job_id)
-          : SDPAEvent(a_from, a_to)
-          , job_id_(a_job_id)
-        {
-        }
+      JobEvent ( const address_t& a_from
+               , const address_t& a_to
+               , const sdpa::job_id_t& a_job_id
+               )
+        : SDPAEvent (a_from, a_to)
+        , job_id_ (a_job_id)
+      {}
 
-        JobEvent(const address_t &a_from, const address_t &a_to, const sdpa::job_id_t &a_job_id, const message_id_type &mid)
-          : SDPAEvent(a_from, a_to, mid)
-          , job_id_(a_job_id)
-        {
-        }
+      JobEvent ( const address_t& a_from
+               , const address_t& a_to
+               , const sdpa::job_id_t& a_job_id
+               , const message_id_type& mid
+               )
+        : SDPAEvent (a_from, a_to, mid)
+        , job_id_ (a_job_id)
+      {}
 
-        const sdpa::job_id_t & job_id() const { return job_id_; }
-        sdpa::job_id_t & job_id() { return job_id_; }
+      const sdpa::job_id_t& job_id() const
+      {
+        return job_id_;
+      }
+      sdpa::job_id_t& job_id()
+      {
+        return job_id_;
+      }
 
-        virtual std::string str() const = 0;
+      virtual std::string str() const = 0;
 
-        int priority() const { return 1; }
+      int priority() const
+      {
+        return 1;
+      }
 
-        virtual void handleBy(EventHandler *handler) = 0;
+      virtual void handleBy (EventHandler* handler) = 0;
+
     private:
-        sdpa::job_id_t job_id_;
+      sdpa::job_id_t job_id_;
     };
-}}
+  }
+}
 
-#endif // SDPA_JOB_EVENT_HPP
+#endif

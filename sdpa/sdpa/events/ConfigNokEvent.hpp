@@ -7,20 +7,32 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/memory.hpp>
 
-namespace sdpa { namespace events {
-    class ConfigNokEvent : public sdpa::events::MgmtEvent {
+namespace sdpa
+{
+  namespace events
+  {
+    class ConfigNokEvent : public sdpa::events::MgmtEvent
+    {
     public:
-        typedef sdpa::shared_ptr<ConfigNokEvent> Ptr;
+      typedef sdpa::shared_ptr<ConfigNokEvent> Ptr;
 
-        ConfigNokEvent(const address_t& a_from="", const address_t& a_to="") : MgmtEvent(a_from, a_to) { }
+      ConfigNokEvent ( const address_t& a_from = ""
+                     , const address_t& a_to = ""
+                     )
+        : MgmtEvent (a_from, a_to)
+      {}
 
-    	std::string str() const { return "ConfigNokEvent"; }
+      std::string str() const
+      {
+        return "ConfigNokEvent";
+      }
 
-        virtual void handleBy(EventHandler *handler)
-        {
-          handler->handleConfigNokEvent(this);
-        }
+      virtual void handleBy (EventHandler* handler)
+      {
+        handler->handleConfigNokEvent (this);
+      }
     };
-}}
+  }
+}
 
 #endif

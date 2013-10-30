@@ -5,30 +5,37 @@
 
 #include <sdpa/events/JobEvent.hpp>
 
-namespace sdpa { namespace events {
-        class JobFailedAckEvent : public JobEvent
+namespace sdpa
+{
+  namespace events
+  {
+    class JobFailedAckEvent : public JobEvent
     {
-        public:
-                typedef sdpa::shared_ptr<JobFailedAckEvent> Ptr;
+    public:
+      typedef sdpa::shared_ptr<JobFailedAckEvent> Ptr;
 
-        JobFailedAckEvent()
-          : JobEvent("", "", "" )
-        {}
+      JobFailedAckEvent()
+        : JobEvent ("", "", "")
+      {}
 
-                JobFailedAckEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t& a_job_id )
-          :  sdpa::events::JobEvent( a_from, a_to, a_job_id ) {
-                }
+      JobFailedAckEvent ( const address_t& a_from
+                        , const address_t& a_to
+                        , const sdpa::job_id_t& a_job_id
+                        )
+        :  sdpa::events::JobEvent (a_from, a_to, a_job_id)
+      {}
 
       std::string str() const
       {
         return "JobFailedAckEvent(" + job_id ().str () + ")";
       }
 
-        virtual void handleBy(EventHandler *handler)
-        {
-          handler->handleJobFailedAckEvent(this);
-        }
-        };
-}}
+      virtual void handleBy (EventHandler* handler)
+      {
+        handler->handleJobFailedAckEvent (this);
+      }
+    };
+  }
+}
 
 #endif
