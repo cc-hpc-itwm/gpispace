@@ -1276,17 +1276,15 @@ private:
       break;
     case drts::Job::FAILED:
       {
-        sdpa::events::JobFailedEvent *event
+        return send_event
           (new sdpa::events::JobFailedEvent ( m_my_name
                                             , job->owner()
                                             , job->id()
                                             , job->result()
+                                            , job->result_code()
+                                            , job->message()
                                             )
           );
-        event->error_code() = job->result_code();
-        event->error_message() = job->message();
-
-        return send_event (event); // send_event takes ownership
       }
       break;
     case drts::Job::CANCELED:

@@ -178,19 +178,20 @@ namespace sdpa {
         {
         	assert (pDaemon);
         	// attention, no action called!
-        	lock_type lock(mtx_);
-        	process_event(*pEvt);
+        	lock_type const _ (mtx_);
+        	process_event (*pEvt);
 
-        	//LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!");
-        	sdpa::status_t status = getStatus();
-        	sdpa::events::JobStatusReplyEvent::Ptr pStatReply(new sdpa::events::JobStatusReplyEvent(pEvt->to(),
-        																							pEvt->from(),
-        																							id(),
-        																							status));
-        	pStatReply->error_code() = error_code();
-        	pStatReply->error_message() = error_message();
+                sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
+                  (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
+                                                         , pEvt->from()
+                                                         , id()
+                                                         , getStatus()
+                                                         , error_code()
+                                                         , error_message()
+                                                         )
+                  );
 
-        	pDaemon->sendEventToMaster(pStatReply);
+        	pDaemon->sendEventToMaster (pStatReply);
         }
 
         void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)

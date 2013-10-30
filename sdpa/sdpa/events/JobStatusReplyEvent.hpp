@@ -6,6 +6,8 @@
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/types.hpp>
 
+#include <fhg/error_codes.hpp>
+
 namespace sdpa
 {
   namespace events
@@ -25,9 +27,13 @@ namespace sdpa
                           , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
                           , const status_t &a_status = status_t()
+                          , int const error_code = fhg::error::UNASSIGNED_ERROR
+                          , std::string const& error_message = std::string()
                           )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
         , status_ (a_status)
+        , m_error_code (error_code)
+        , m_error_message (error_message)
       { }
 
       std::string str() const
@@ -39,24 +45,11 @@ namespace sdpa
       {
         return status_;
       }
-      status_t& status()
-      {
-        return status_;
-      }
-
       int error_code() const
       {
         return m_error_code;
       }
-      int&  error_code()
-      {
-        return m_error_code;
-      }
       std::string const& error_message() const
-      {
-        return m_error_message;
-      }
-      std::string&  error_message()
       {
         return m_error_message;
       }

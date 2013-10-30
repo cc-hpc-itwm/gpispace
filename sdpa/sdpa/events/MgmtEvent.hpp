@@ -23,6 +23,12 @@ namespace sdpa
       MgmtEvent (const address_t &a_from, const address_t &a_to)
         : SDPAEvent (a_from, a_to)
       {}
+      MgmtEvent ( const address_t &a_from
+                , const address_t &a_to
+                , SDPAEvent::message_id_type const& id
+                )
+        : SDPAEvent (a_from, a_to, id)
+      {}
 
       int priority() const
       {

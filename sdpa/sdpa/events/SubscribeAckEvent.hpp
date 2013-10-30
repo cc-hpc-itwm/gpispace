@@ -32,10 +32,6 @@ namespace sdpa
       {
         return listJobIds_;
       }
-      sdpa::job_id_list_t& listJobIds()
-      {
-        return listJobIds_;
-      }
 
       virtual void handleBy (EventHandler* handler)
       {

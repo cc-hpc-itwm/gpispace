@@ -24,6 +24,12 @@ namespace sdpa
                                  )
         : MgmtEvent (a_from, a_to)
       {}
+      WorkerRegistrationAckEvent ( const address_t& a_from
+                                 , const address_t& a_to
+                                 , SDPAEvent::message_id_type const& id
+                                 )
+        : MgmtEvent (a_from, a_to, id)
+      {}
 
       virtual void handleBy (EventHandler* handler)
       {

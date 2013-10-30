@@ -23,11 +23,13 @@ namespace sdpa
                      , const address_t& a_to
                      , const sdpa::job_id_t& a_job_id
                      , const job_result_t &job_result
+                     , int error_code = fhg::error::UNASSIGNED_ERROR
+                     , std::string error_message = std::string()
                      )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
         , result_ (job_result)
-        , m_error_code (fhg::error::UNASSIGNED_ERROR)
-        , m_error_message()
+        , m_error_code (error_code)
+        , m_error_message (error_message)
       {}
 
       std::string str() const
@@ -44,25 +46,11 @@ namespace sdpa
       {
         return result_;
       }
-      job_result_t& result()
-      {
-        return result_;
-      }
-
       int error_code() const
       {
         return m_error_code;
       }
-      int& error_code()
-      {
-        return m_error_code;
-      }
-
       std::string const& error_message() const
-      {
-        return m_error_message;
-      }
-      std::string& error_message()
       {
         return m_error_message;
       }

@@ -905,9 +905,13 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
       // just answer back with an acknowledgment
       DMLOG (TRACE, "Send registration ack to the agent " << worker_id );
-      WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
+      WorkerRegistrationAckEvent::Ptr const pWorkerRegAckEvt
+        (new WorkerRegistrationAckEvent ( name()
+                                        , evtRegWorker.from()
+                                        , evtRegWorker.id()
+                                        )
+        );
 
-      pWorkerRegAckEvt->id() = evtRegWorker.id();
       sendEventToSlave(pWorkerRegAckEvt);
     }
   }
@@ -1244,9 +1248,14 @@ bool GenericDaemon::failed( const id_type& workflowId
   job_id_t job_id(workflowId);
 
   JobFailedEvent::Ptr pEvtJobFailed
-    ( new JobFailedEvent( sdpa::daemon::WE, name(), job_id, result ));
-  pEvtJobFailed->error_code() = error_code;
-  pEvtJobFailed->error_message() = reason;
+    (new JobFailedEvent ( sdpa::daemon::WE
+                        , name()
+                        , job_id
+                        , result
+                        , error_code
+                        , reason
+                        )
+    );
 
   sendEventToSelf(pEvtJobFailed);
 
@@ -1643,9 +1652,15 @@ void GenericDaemon::activityFailed( const Worker::worker_id_t& worker_id
   {
     DLOG(TRACE, "Send JobFailedEvent to self for the job"<<jobId);
     JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent(worker_id, name(), jobId, reason));
-    pEvtJobFailed->error_code() = error_code;
-    pEvtJobFailed->error_message() = reason;
+      (new JobFailedEvent ( worker_id
+                          , name()
+                          , jobId
+                          , reason
+                          , error_code
+                          , reason
+                          )
+      );
+
     sendEventToSelf(pEvtJobFailed);
   }
 }
@@ -1880,14 +1895,15 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 		else if(jobStatus.find("Failed") != std::string::npos)
 		{
 			JobFailedEvent::Ptr pEvtJobFailed
-				(new JobFailedEvent( name()
-									, subscriber
-									, pJob->id()
-									, pJob->result()
-					 ));
+                          (new JobFailedEvent( name()
+                                             , subscriber
+                                             , pJob->id()
+                                             , pJob->result()
+                                             , fhg::error::UNASSIGNED_ERROR
+                                             , "TODO: take the error message from the job pointer somehow"
+                                             )
+                          );
 
-			pEvtJobFailed->error_code() = fhg::error::UNASSIGNED_ERROR;
-			pEvtJobFailed->error_message() = "TODO: take the error message from the job pointer somehow";
 			sendEventToMaster(pEvtJobFailed);
 		}
 		else if( jobStatus.find("Cancelled") != std::string::npos)

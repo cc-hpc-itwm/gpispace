@@ -46,34 +46,15 @@ namespace sdpa
       {
         return capacity_;
       }
-      unsigned int& capacity()
-      {
-        return capacity_;
-      }
-
       const unsigned int& rank() const
       {
         return rank_;
       }
-      unsigned int& rank()
-      {
-        return rank_;
-      }
-
       const capabilities_set_t& capabilities() const
       {
         return cpbset_;
       }
-      capabilities_set_t& capabilities()
-      {
-        return cpbset_;
-      }
-
       const sdpa::worker_id_t& agent_uuid() const
-      {
-        return agent_uuid_;
-      }
-      sdpa::worker_id_t& agent_uuid()
       {
         return agent_uuid_;
       }

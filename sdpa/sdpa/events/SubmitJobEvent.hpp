@@ -45,25 +45,11 @@ namespace sdpa
       {
         return desc_;
       }
-      sdpa::job_desc_t& description()
-      {
-        return desc_;
-      }
-
       const sdpa::job_id_t& parent_id() const
       {
         return parent_;
       }
-      sdpa::job_id_t& parent_id()
-      {
-        return parent_;
-      }
-
       const sdpa::worker_id_list_t& worker_list() const
-      {
-        return worker_list_;
-      }
-      sdpa::worker_id_list_t& worker_list()
       {
         return worker_list_;
       }

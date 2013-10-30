@@ -39,16 +39,7 @@ namespace sdpa
       {
         return subscriber_;
       }
-      sdpa::agent_id_t& subscriber()
-      {
-        return subscriber_;
-      }
-
       const sdpa::job_id_list_t& listJobIds() const
-      {
-        return listJobIds_;
-      }
-      sdpa::job_id_list_t& listJobIds()
       {
         return listJobIds_;
       }

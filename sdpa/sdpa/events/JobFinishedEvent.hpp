@@ -41,10 +41,6 @@ namespace sdpa
       {
         return result_;
       }
-      job_result_t& result()
-      {
-        return result_;
-      }
 
     private:
       job_result_t result_;

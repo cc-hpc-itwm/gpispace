@@ -28,23 +28,16 @@ namespace sdpa
       {
         return from_;
       }
-      address_t& from()
-      {
-        return from_;
-      }
       const address_t& to() const
       {
         return to_;
       }
+      //! \todo eliminate, used in Orchestrator::notifySubscriber
       address_t& to()
       {
         return to_;
       }
       const message_id_type& id() const
-      {
-        return id_;
-      }
-      message_id_type& id()
       {
         return id_;
       }

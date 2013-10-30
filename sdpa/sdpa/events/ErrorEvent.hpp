@@ -57,23 +57,11 @@ namespace sdpa
       {
         return reason_;
       }
-      std::string &reason()
-      {
-        return reason_;
-      }
       const error_code_t &error_code() const
       {
         return error_code_;
       }
-      error_code_t& error_code()
-      {
-        return error_code_;
-      }
       const sdpa::job_id_t& job_id() const
-      {
-        return job_id_;
-      }
-      sdpa::job_id_t& job_id()
       {
         return job_id_;
       }

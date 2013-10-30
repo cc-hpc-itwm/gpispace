@@ -250,11 +250,11 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
     	                         , ptr_comm_handler_->name()
     	                         , jobId
     	                         , ""
+                                 , fhg::error::UNEXPECTED_ERROR
+                                 , "The job has an empty workflow attached!"
     	                         )
     	      );
 
-    	pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    	pEvtJobFailed->error_message() = "The job has an empty workflow attached!";
     	ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
     }
 
@@ -270,10 +270,10 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
                          , ptr_comm_handler_->name()
                          , jobId
                          , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , "no workflow engine attached!"
                          )
       );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "no workflow engine attached!";
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
   catch(const JobNotFoundException& ex)
@@ -286,10 +286,10 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
                          , ptr_comm_handler_->name()
                          , jobId
                          , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , "job could not be found"
                          )
       );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "job could not be found";
 
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
@@ -305,10 +305,10 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
                          , ptr_comm_handler_->name()
                          , jobId
                          , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , ex.what()
                          )
       );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = ex.what();
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
 }
@@ -356,10 +356,9 @@ void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
                                                          , ptr_comm_handler_->name()
                                                          , jobId
                                                          , result
+                                                         , fhg::error::UNEXPECTED_ERROR
+                                                         , "job could not be found"
                                                          ));
-
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "job could not be found";
 
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
@@ -373,10 +372,10 @@ void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
                                 , ptr_comm_handler_->name()
                                 , jobId
                                 , result
+                             , fhg::error::UNEXPECTED_ERROR
+                             , ex.what()
                                  ));
 
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = ex.what();
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
 }

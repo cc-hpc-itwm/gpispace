@@ -44,10 +44,6 @@ namespace sdpa
       {
         return capabilities_;
       }
-      sdpa::capabilities_set_t& capabilities()
-      {
-        return capabilities_;
-      }
       std::string str() const
       {
         return "CapabilitiesLostEvent";
