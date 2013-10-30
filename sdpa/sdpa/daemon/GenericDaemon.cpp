@@ -406,11 +406,8 @@ void GenericDaemon::stop()
   seda::StageRegistry::instance().lookup(name())->stop();
   seda::StageRegistry::instance().remove(name());
 
-  if( hasWorkflowEngine() )
-  {
-     delete ptr_workflow_engine_;
-     ptr_workflow_engine_ = NULL;
-  }
+  delete ptr_workflow_engine_;
+  ptr_workflow_engine_ = NULL;
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
