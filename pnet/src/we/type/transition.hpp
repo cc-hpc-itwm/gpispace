@@ -78,8 +78,6 @@ namespace we { namespace type {
 
     struct transition_t
     {
-      typedef transition_t this_type;
-
     private:
       typedef boost::variant< module_call_t
                             , expression_t
