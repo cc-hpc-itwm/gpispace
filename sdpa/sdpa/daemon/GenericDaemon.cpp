@@ -391,8 +391,9 @@ void GenericDaemon::stop()
   shutdown_network();
   scheduler()->stop();
   m_threadBkpService.stop();
-  InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
-  handleInterruptEvent(pEvtInterrupt.get());
+
+  InterruptEvent evt;
+  handleInterruptEvent (&evt);
 
   // wait to be stopped
   {
