@@ -53,19 +53,6 @@
 
 namespace we { namespace type {
     namespace exception {
-      struct port_undefined : std::runtime_error
-      {
-        explicit port_undefined (const std::string & msg, const std::string & port_name)
-          : std::runtime_error (msg)
-          , port(port_name)
-        {}
-
-        ~port_undefined () throw ()
-        {}
-
-        const std::string port;
-      };
-
       template <typename From>
       struct not_connected : std::runtime_error
       {
