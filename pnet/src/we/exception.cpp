@@ -113,5 +113,24 @@ namespace pnet
       , _type (type)
       , _path (path)
     {}
+
+    namespace port
+    {
+      duplicated::duplicated ( const std::string& tag
+                             , const std::string& transition_name
+                             , const std::string& port_name
+                             )
+        : std::runtime_error
+          ( ( boost::format ("in transiton '%1%': duplicated %2%-port '%3%'")
+            % transition_name
+            % tag
+            % port_name
+            ).str()
+          )
+        , _tag (tag)
+        , _transition_name (transition_name)
+        , _port_name (port_name)
+      {}
+    }
   }
 }
