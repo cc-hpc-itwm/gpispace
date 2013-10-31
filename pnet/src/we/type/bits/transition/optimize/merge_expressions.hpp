@@ -16,6 +16,8 @@
 #include <stack>
 
 #include <boost/optional.hpp>
+#include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace we { namespace type {
     namespace optimize { namespace merge_expressions
@@ -80,20 +82,19 @@ namespace we { namespace type {
         name_set_type names_in;
         name_set_type names_out;
 
-        for ( transition_t::port_map_t::const_iterator p (trans.ports_begin())
-            ; p != trans.ports_end()
-            ; ++p
-            )
+        BOOST_FOREACH ( we::type::port_t const& port
+                      , trans.ports() | boost::adaptors::map_values
+                      )
+        {
+          if (port.is_input())
           {
-            if (p->second.is_input())
-              {
-                names_in.insert (p->second.name());
-              }
-            else
-              {
-                names_out.insert (p->second.name());
-              }
+            names_in.insert (port.name());
           }
+          else
+          {
+            names_out.insert (port.name());
+          }
+        }
 
         for ( name_set_type::const_iterator n (names_in.begin())
             ; n != names_in.end()
@@ -287,29 +288,28 @@ namespace we { namespace type {
 
         boost::unordered_set<std::string> other_names;
 
-        for ( transition_t::port_map_t::const_iterator p (other.ports_begin())
-            ; p != other.ports_end()
-            ; ++p
-            )
-          {
-            other_names.insert (p->second.name());
-          }
+        BOOST_FOREACH ( we::type::port_t const& port
+                      , other.ports() | boost::adaptors::map_values
+                      )
+        {
+          other_names.insert (port.name());
+        }
 
         const std::string prefix (rewrite::mk_prefix (trans.name()));
 
         expression_t & expression (boost::get<expression_t &> (trans.data()));
 
-        for (transition_t::port_map_t::iterator p (trans.ports_begin()); p != trans.ports_end(); ++p)
+        BOOST_FOREACH ( we::type::port_t& port
+                      , trans.ports() | boost::adaptors::map_values
+                      )
+        {
+          if (other_names.find (port.name()) != other_names.end())
           {
-            port_t & port (p->second);
+            expression.rename (port.name(), prefix + port.name());
 
-            if (other_names.find (port.name()) != other_names.end())
-              {
-                expression.rename (port.name(), prefix + port.name());
-
-                port.name() = prefix + port.name();
-              }
+            port.name() = prefix + port.name();
           }
+        }
       }
 
       // ******************************************************************* //
@@ -325,16 +325,16 @@ namespace we { namespace type {
       {
         typedef petri_net::connection_t connection_t;
 
-        for ( transition_t::port_map_t::const_iterator p (trans.ports_begin())
-            ; p != trans.ports_end()
-            ; ++p
-            )
+        BOOST_FOREACH
+          ( we::type::transition_t::port_map_t::value_type const& p
+          , trans.ports()
+          )
           {
-            if (p->second.is_output())
+            if (p.second.is_output())
               {
-                pred.add_port (p->second);
+                pred.add_port (p.second);
 
-                const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
+                const petri_net::place_id_type pid (trans.inner_to_outer (p.first));
 
                 connection_t connection (net.get_connection_out (tid_trans, pid));
 
@@ -344,22 +344,20 @@ namespace we { namespace type {
 
                 net.add_connection (connection);
 
-                pred.add_connection
-                  (p->second.name(), pid, p->second.property())
-                  ;
+                pred.add_connection (p.second.name(), pid, p.second.property());
               }
             else
               {
                 try
                   {
                     const petri_net::place_id_type pid
-                      (trans.input_pid_by_port_id (p->first));
+                      (trans.input_pid_by_port_id (p.first));
 
                     if (pid_read.find (pid) != pid_read.end())
                       {
                         if (not input_port_by_pid (pred, pid))
                           {
-                            pred.add_port (p->second);
+                            pred.add_port (p.second);
 
                             connection_t connection (net.get_connection_in (tid_trans, pid));
 
@@ -370,7 +368,7 @@ namespace we { namespace type {
                             net.add_connection (connection);
 
                             pred.add_connection
-                              (pid, p->second.name(), p->second.property())
+                              (pid, p.second.name(), p.second.property())
                               ;
                           }
                       }
@@ -395,31 +393,30 @@ namespace we { namespace type {
         typedef std::pair<petri_net::port_id_type, petri_net::place_id_type> pair_type;
         std::stack<pair_type> to_erase;
 
-        for ( transition_t::port_map_t::const_iterator p (trans.ports_begin())
-            ; p != trans.ports_end()
-            ; ++p
-            )
+        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                      , trans.ports()
+                      )
+        {
+          if (p.second.is_output())
           {
-            if (p->second.is_output())
-              {
-                const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
+            const petri_net::place_id_type pid (trans.inner_to_outer (p.first));
 
-                namespace prop = we::type::property::traverse;
+            namespace prop = we::type::property::traverse;
 
-                //! \todo eliminate the hack that stores the real
-                //! place in the properties
-                prop::stack_type stack
-                  (prop::dfs (net.get_place(pid).property(), "real"));
+            //! \todo eliminate the hack that stores the real
+            //! place in the properties
+            prop::stack_type stack
+              (prop::dfs (net.get_place(pid).property(), "real"));
 
-                if (  net.out_of_place (pid).empty()
-                   && stack.empty()
-                   && !is_associated (trans_parent, pid)
-                   )
-                  {
-                    to_erase.push (pair_type (p->first, pid));
-                  }
-              }
+            if (  net.out_of_place (pid).empty()
+               && stack.empty()
+               && !is_associated (trans_parent, pid)
+               )
+            {
+              to_erase.push (pair_type (p.first, pid));
+            }
           }
+        }
 
         while (!to_erase.empty())
           {

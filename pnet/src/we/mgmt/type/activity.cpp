@@ -273,39 +273,40 @@ namespace we
 
           void operator() (petri_net::net& net) const
           {
-            for ( we::type::transition_t::port_map_t::const_iterator port_it (_activity.transition().ports_begin())
-                ; port_it != _activity.transition().ports_end()
-                ; ++port_it
-                )
+            BOOST_FOREACH
+              ( we::type::transition_t::port_map_t::value_type const& p
+              , _activity.transition().ports()
+              )
+            {
+              if (p.second.is_output())
               {
-                if (port_it->second.is_output())
+                if (p.second.has_associated_place())
+                {
+                  const petri_net::port_id_type& port_id (p.first);
+                  const petri_net::place_id_type& pid
+                    (p.second.associated_place());
+
+                  BOOST_FOREACH ( const pnet::type::value::value_type& token
+                                , net.get_token (pid)
+                                )
                   {
-                    if (port_it->second.has_associated_place())
-                      {
-                        const petri_net::port_id_type port_id (port_it->first);
-                        const petri_net::place_id_type pid (port_it->second.associated_place());
-
-                        BOOST_FOREACH ( const pnet::type::value::value_type& token
-                                      , net.get_token (pid)
-                                      )
-                          {
-                            _activity.add_output
-                              (activity_t::output_t::value_type (token, port_id));
-                          }
-
-                        net.delete_all_token (pid);
-                      }
-                    else
-                      {
-                        throw std::runtime_error
-                          ( "output port ("
-                          + fhg::util::show (port_it->first)
-                          + ", " + fhg::util::show (port_it->second) + ") "
-                          + "is not associated with any place!"
-                          );
-                      }
+                    _activity.add_output
+                      (activity_t::output_t::value_type (token, port_id));
                   }
+
+                  net.delete_all_token (pid);
+                }
+                else
+                {
+                  throw std::runtime_error
+                    ( "output port ("
+                    + fhg::util::show (p.first)
+                    + ", " + fhg::util::show (p.second) + ") "
+                    + "is not associated with any place!"
+                    );
+                }
               }
+            }
           }
 
           template<typename T>
@@ -435,26 +436,25 @@ namespace we
             FHG_UTIL_STAT_STOP ("expr-eval " + expr.expression());
             FHG_UTIL_STAT_START ("expr-put " + expr.expression());
 
-            for ( we::type::transition_t::port_map_t::const_iterator port_it
-                    (_activity.transition().ports_begin())
-                ; port_it != _activity.transition().ports_end()
-                ; ++port_it
-                )
+            BOOST_FOREACH
+              ( we::type::transition_t::port_map_t::value_type const& p
+              , _activity.transition().ports()
+              )
+            {
+              if (p.second.is_output())
               {
-                if (port_it->second.is_output())
-                  {
-                    _activity.add_output
-                      ( type::activity_t::output_t::value_type
-                        ( pnet::require_type
-                          ( context.value (port_it->second.name())
-                          , port_it->second.signature()
-                          , port_it->second.name()
-                          )
-                        , port_it->first
-                        )
-                      );
-                  }
+                _activity.add_output
+                  ( type::activity_t::output_t::value_type
+                    ( pnet::require_type
+                      ( context.value (p.second.name())
+                      , p.second.signature()
+                      , p.second.name()
+                      )
+                    , p.first
+                    )
+                  );
               }
+            }
 
             FHG_UTIL_STAT_STOP ("expr-put " + expr.expression());
             FHG_UTIL_STAT_STOP ("expr " + expr.expression());

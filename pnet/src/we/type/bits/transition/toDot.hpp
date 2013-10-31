@@ -695,46 +695,44 @@ namespace we { namespace type {
                   )
           ;
 
-        for ( typename trans_t::port_map_t::const_iterator p (t.ports_begin())
-            ; p != t.ports_end()
-            ; ++p
-            )
-          {
-            level (s, l + 1)
-              << name (id_trans, "port_" + fhg::util::show(p->first))
-              << node ( shape::port (p->second)
-                      , with_signature ( p->second.name()
-                                       , p->second.signature()
-                                       , opts
-                                       )
+        BOOST_FOREACH ( typename trans_t::port_map_t::value_type const& p
+                      , t.ports()
                       )
-              ;
-          }
+        {
+          level (s, l + 1)
+            << name (id_trans, "port_" + fhg::util::show (p.first))
+            << node ( shape::port (p.second)
+                    , with_signature ( p.second.name()
+                                     , p.second.signature()
+                                     , opts
+                                     )
+                    )
+            ;
+        }
 
         if (opts.predicate (t))
           {
             s << boost::apply_visitor
                  (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
 
-            for ( typename trans_t::port_map_t::const_iterator p (t.ports_begin())
-                ; p != t.ports_end()
-                ; ++p
-                )
+            BOOST_FOREACH ( typename trans_t::port_map_t::value_type const& p
+                          , t.ports()
+                          )
+            {
+              if (p.second.has_associated_place())
               {
-                if (p->second.has_associated_place())
-                  {
-                    level (s, l + 1)
-                      << name (id_trans, "port_" + fhg::util::show (p->first))
-                      << arrow
-                      << name (id_trans
-                              , "place_"
-                              + fhg::util::show (p->second.associated_place())
-                              )
-                      << association()
-                      << std::endl
-                      ;
-                  }
+                level (s, l + 1)
+                  << name (id_trans, "port_" + fhg::util::show (p.first))
+                  << arrow
+                  << name (id_trans
+                          , "place_"
+                          + fhg::util::show (p.second.associated_place())
+                          )
+                  << association()
+                  << std::endl
+                  ;
               }
+            }
           }
 
         switch (boost::apply_visitor (content::visitor (), t.data()))

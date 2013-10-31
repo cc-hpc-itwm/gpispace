@@ -34,6 +34,7 @@
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace we { namespace type {
     namespace exception {
@@ -500,13 +501,15 @@ namespace we { namespace type {
       {
         port_names_t names;
 
-        for (port_map_t::const_iterator port (ports_begin()); port != ports_end(); ++port)
+        BOOST_FOREACH ( we::type::port_t const& port
+                      , ports_ | boost::adaptors::map_values
+                      )
+        {
+          if (d == port.direction())
           {
-            if (d == port->second.direction())
-              {
-                names.insert (port->second.name());
-              }
+            names.insert (port.name());
           }
+        }
 
         return names;
       }
