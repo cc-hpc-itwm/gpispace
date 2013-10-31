@@ -421,15 +421,7 @@ namespace we { namespace type {
 
       port_t& get_port (const petri_net::port_id_type& port_id)
       {
-        try
-        {
-          return ports_[port_id];
-        }
-        catch (const std::out_of_range &)
-        {
-          const std::string port_name (fhg::util::show (port_id) );
-          throw pnet::exception::port::unknown (name(), port_name);
-        }
+        return ports_[port_id];
       }
 
       const port_t& get_port_by_associated_pid (const petri_net::place_id_type& pid) const
