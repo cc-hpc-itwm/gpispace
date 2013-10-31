@@ -220,6 +220,8 @@ namespace pnet
               return bin_require ("list", "list", b.token, l, r, "list");
 
             case ::expr::token::_stack_push:
+              //! \note: the right side could be anything, implement
+              //! homogenous types!
               return one_of (b.token, l)
                 . allow ("list")
                 . check();
