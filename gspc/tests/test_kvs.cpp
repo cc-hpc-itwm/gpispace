@@ -18,6 +18,7 @@
 #include <gspc/net.hpp>
 
 #include <gspc/kvs/api.hpp>
+#include <gspc/kvs/util.hpp>
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
@@ -313,48 +314,39 @@ static void s_wfh_client_thread ( const size_t rank
                                 , const std::string &queue
                                 )
 {
-  srand (rank);
-
   int rc;
   const std::string my_queue ((boost::format ("thread-%1%") % rank).str ());
+
   for (size_t i = 0 ; i < nmsg ; ++i)
   {
-    pnet::type::value::value_type val
+    pnet::type::value::value_type rqst
       = pnet::type::value::read
       ((boost::format ( "Struct [from := \"%1%\", msg := %2%]"
                       ) % my_queue % i
        ).str ());
+    pnet::type::value::value_type rply;
 
-    rc = kvs->push (queue, val);
+    rc = gspc::kvs::query ( *kvs
+                          , queue
+                          , rqst
+                          , my_queue
+                          , rply
+                          , 10 * 1000
+                          );
     if (rc != 0)
     {
       std::cerr << "thread[" << rank << "]: "
-                << "could not push #" << i << " to '" << queue << "': "
+                << "could not query #" << i << " from '" << queue << "': "
                 << strerror (-rc)
                 << std::endl
         ;
-      break;
-    }
-
-    rc = kvs->pop (my_queue, val, 10 * 1000);
-    if (rc != 0)
-    {
-      std::cerr << "thread[" << rank << "]: "
-                << "could not pop #" << i << " from '" << my_queue << "': "
-                << strerror (-rc)
-                << std::endl
-        ;
-
-      kvs->get (my_queue, val);
+      kvs->get (my_queue, rply);
       std::cerr << "thread[" << rank << "]: queue content: "
-                << pnet::type::value::show (val)
+                << pnet::type::value::show (rply)
                 << std::endl
         ;
-
       break;
     }
-
-    usleep (rand () % 100);
   }
 }
 
