@@ -211,10 +211,10 @@ namespace sdpa {
     	  cond_can_start_.notify_one();
       }
 
-      void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
+      void DaemonFSM::handleInterruptEvent()
       {
         lock_type lock(mtx_);
-        process_event(*pEvent);
+        process_event(InterruptEvent());
       }
 
       void DaemonFSM::handleWorkerRegistrationEvent(const WorkerRegistrationEvent* pEvent)

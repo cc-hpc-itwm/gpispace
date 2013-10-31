@@ -336,8 +336,7 @@ void GenericDaemon::shutdown( )
     scheduler()->stop();
     m_threadBkpService.stop();
 
-    InterruptEvent evt;
-    handleInterruptEvent (&evt);
+    handleInterruptEvent();
 
     setStopped();
 

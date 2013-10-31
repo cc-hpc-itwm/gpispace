@@ -123,7 +123,7 @@ namespace sdpa {
         void handleStartUpEvent(const sdpa::events::StartUpEvent* );
         void handleConfigOkEvent(const sdpa::events::ConfigOkEvent* );
         void handleConfigNokEvent(const sdpa::events::ConfigNokEvent* );
-        void handleInterruptEvent(const sdpa::events::InterruptEvent* );
+        void handleInterruptEvent();
         void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
         void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
         void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );

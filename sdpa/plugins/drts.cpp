@@ -825,7 +825,6 @@ public:
   virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent *) {}
   virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent *) {}
   virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *) {}
-  virtual void handleInterruptEvent(const sdpa::events::InterruptEvent *){}
   virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent *) {}
   virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent *) {}
   virtual void handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *) {}

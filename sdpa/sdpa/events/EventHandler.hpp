@@ -50,7 +50,6 @@ namespace sdpa
       virtual void handleDeleteJobAckEvent (const sdpa::events::DeleteJobAckEvent *) {}
       virtual void handleDeleteJobEvent (const sdpa::events::DeleteJobEvent *) {}
       virtual void handleErrorEvent (const sdpa::events::ErrorEvent *) {}
-      virtual void handleInterruptEvent (const sdpa::events::InterruptEvent *){}
       virtual void handleJobFailedAckEvent (const sdpa::events::JobFailedAckEvent *){}
       virtual void handleJobFailedEvent (const sdpa::events::JobFailedEvent *) {}
       virtual void handleJobFinishedAckEvent (const sdpa::events::JobFinishedAckEvent *) {}
