@@ -30,6 +30,8 @@
 
 #include <we/type/net.fwd.hpp>
 
+#include <we/exception.hpp>
+
 #include <fhg/util/show.hpp>
 
 #include <boost/bind.hpp>
@@ -524,7 +526,8 @@ namespace we { namespace type {
         {
           if ((p->second.is_input()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined("trans: " + name() + ": input port " + port_name + " already defined", port_name);
+            throw pnet::exception::port::duplicated
+              ("input", name(), port_name);
           }
         }
         const port_t port (port_name, PORT_IN, signature, prop);
@@ -543,8 +546,8 @@ namespace we { namespace type {
         {
           if ((p->second.is_input()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined
-              ("trans: " + name() + ": input port " + port_name + " already defined", port_name);
+            throw pnet::exception::port::duplicated
+              ("input", name(), port_name);
           }
         }
         const port_t port (port_name, PORT_IN, signature, associated_place, prop);
@@ -562,7 +565,8 @@ namespace we { namespace type {
         {
           if ((p->second.is_output()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
+            throw pnet::exception::port::duplicated
+              ("output", name(), port_name);
           }
         }
         const port_t port (port_name, PORT_OUT, signature, prop);
@@ -581,7 +585,8 @@ namespace we { namespace type {
           {
             if (p.second.is_tunnel() && p.second.name() == port_name)
               {
-                throw exception::port_already_defined ("trans: " + name() + ": tunnel " + port_name + " already defined", port_name);
+                throw pnet::exception::port::duplicated
+                  ("tunnel", name(), port_name);
               }
           }
 
@@ -600,7 +605,8 @@ namespace we { namespace type {
           {
             if (p.second.is_tunnel() && p.second.name() == port_name)
               {
-                throw exception::port_already_defined("trans: " + name() + ": tunnel " + port_name + " already defined", port_name);
+                throw pnet::exception::port::duplicated
+                  ("tunnel", name(), port_name);
               }
           }
         const port_t port (port_name, PORT_OUT, signature, prop);
@@ -619,7 +625,8 @@ namespace we { namespace type {
         {
           if ((p->second.is_output()) && p->second.name() == port_name)
           {
-            throw exception::port_already_defined("trans: " + name() + ": output port " + port_name + " already defined", port_name);
+            throw pnet::exception::port::duplicated
+              ("output", name(), port_name);
           }
         }
         const port_t port (port_name, PORT_OUT, signature, associated_place, prop);
