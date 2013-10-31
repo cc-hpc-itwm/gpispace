@@ -515,3 +515,14 @@ BOOST_AUTO_TEST_CASE (add)
     . allow ("string")
     . check();
 }
+
+BOOST_AUTO_TEST_CASE (stack_join)
+{
+  BIN_REQUIRE ( "stack_join (${a}, ${b})"
+              , "list"
+              , "list"
+              , "list"
+              , "'stack_join' for types '%1%' and '%2%'"
+                ", expected are types 'list' and 'list'"
+              );
+}

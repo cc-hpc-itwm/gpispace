@@ -216,6 +216,9 @@ namespace pnet
             case ::expr::token::_bitset_xor:
               return require ("bitset", "bitset", b.token, l, r, "bitset");
 
+            case ::expr::token::_stack_join:
+              return require ("list", "list", b.token, l, r, "list");
+
             default:
               break;
             }
