@@ -68,15 +68,6 @@ namespace we { namespace type {
 
         const from_type from;
       };
-
-      struct already_connected : std::runtime_error
-      {
-        explicit already_connected (const std::string& msg)
-          : std::runtime_error (msg)
-        {}
-        ~already_connected () throw ()
-        {}
-      };
     }
 
     namespace detail
@@ -294,19 +285,8 @@ namespace we { namespace type {
                                   , const we::type::property::type & prop
                                   )
       {
-        if (outer_to_inner_.find (pid) != outer_to_inner_.end())
-        {
-          throw exception::already_connected
-            ( (boost::format ("already connected: place %1% -> port %2%")
-                             % pid % port
-              ).str()
-            );
-        }
-        else
-        {
-          outer_to_inner_.insert
-            (outer_to_inner_t::value_type (pid, std::make_pair(port, prop)));
-        }
+        outer_to_inner_.insert
+          (outer_to_inner_t::value_type (pid, std::make_pair(port, prop)));
       }
 
       void connect_inner_to_outer ( const petri_net::port_id_type& port
@@ -314,47 +294,8 @@ namespace we { namespace type {
                                   , const we::type::property::type & prop
                                   )
       {
-        if (inner_to_outer_.find (port) != inner_to_outer_.end())
-        {
-          throw exception::already_connected
-            ( (boost::format ("already connected: port %1% -> place %2%")
-                             % port % pid
-              ).str()
-            );
-        }
-        else
-        {
-          inner_to_outer_.insert
-            (inner_to_outer_t::value_type (port, std::make_pair(pid, prop)));
-        }
-      }
-
-      void disconnect_outer_from_inner (const petri_net::place_id_type& pid)
-      {
-        outer_to_inner_t::iterator i (outer_to_inner_.find (pid));
-
-        if (i == outer_to_inner_.end())
-        {
-          throw exception::not_connected<petri_net::place_id_type>("pid already disconnected", pid);
-        }
-        else
-        {
-          outer_to_inner_.erase (i);
-        }
-      }
-
-      void disconnect_inner_from_outer (const petri_net::port_id_type& port)
-      {
-        inner_to_outer_t::iterator i (inner_to_outer_.find (port));
-
-        if (i == inner_to_outer_.end())
-        {
-          throw exception::not_connected<petri_net::port_id_type> ("port already disconnected", port);
-        }
-        else
-        {
-          inner_to_outer_.erase (i);
-        }
+        inner_to_outer_.insert
+          (inner_to_outer_t::value_type (port, std::make_pair(pid, prop)));
       }
 
       void re_connect_inner_to_outer ( const petri_net::port_id_type& port
@@ -496,14 +437,6 @@ namespace we { namespace type {
                           , const we::type::property::type & prop
                           )
       {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
-        {
-          if ((p->second.is_input()) && p->second.name() == port_name)
-          {
-            throw pnet::exception::port::duplicated
-              ("input", name(), port_name);
-          }
-        }
         const port_t port (port_name, PORT_IN, signature, prop);
         const petri_net::port_id_type port_id (port_id_counter_++);
 
@@ -516,14 +449,6 @@ namespace we { namespace type {
                           , const we::type::property::type & prop
                           )
       {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
-        {
-          if ((p->second.is_input()) && p->second.name() == port_name)
-          {
-            throw pnet::exception::port::duplicated
-              ("input", name(), port_name);
-          }
-        }
         const port_t port (port_name, PORT_IN, signature, associated_place, prop);
         const petri_net::port_id_type port_id (port_id_counter_++);
 
@@ -535,14 +460,6 @@ namespace we { namespace type {
                            , const we::type::property::type & prop
                            )
       {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
-        {
-          if ((p->second.is_output()) && p->second.name() == port_name)
-          {
-            throw pnet::exception::port::duplicated
-              ("output", name(), port_name);
-          }
-        }
         const port_t port (port_name, PORT_OUT, signature, prop);
         const petri_net::port_id_type port_id (port_id_counter_++);
 
@@ -555,15 +472,6 @@ namespace we { namespace type {
                       , const we::type::property::type & prop
                       )
       {
-        BOOST_FOREACH (const port_map_t::value_type& p, ports_)
-          {
-            if (p.second.is_tunnel() && p.second.name() == port_name)
-              {
-                throw pnet::exception::port::duplicated
-                  ("tunnel", name(), port_name);
-              }
-          }
-
         const port_t port (port_name, PORT_TUNNEL, signature, associated_place, prop);
         const petri_net::port_id_type port_id (port_id_counter_++);
 
@@ -575,14 +483,6 @@ namespace we { namespace type {
                       , const we::type::property::type & prop
                       )
       {
-        BOOST_FOREACH (const port_map_t::value_type& p, ports_)
-          {
-            if (p.second.is_tunnel() && p.second.name() == port_name)
-              {
-                throw pnet::exception::port::duplicated
-                  ("tunnel", name(), port_name);
-              }
-          }
         const port_t port (port_name, PORT_OUT, signature, prop);
         const petri_net::port_id_type port_id (port_id_counter_++);
 
@@ -595,14 +495,6 @@ namespace we { namespace type {
                            , const we::type::property::type & prop
                            )
       {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
-        {
-          if ((p->second.is_output()) && p->second.name() == port_name)
-          {
-            throw pnet::exception::port::duplicated
-              ("output", name(), port_name);
-          }
-        }
         const port_t port (port_name, PORT_OUT, signature, associated_place, prop);
         const petri_net::port_id_type port_id (port_id_counter_++);
 

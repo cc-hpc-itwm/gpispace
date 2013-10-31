@@ -103,20 +103,6 @@ namespace pnet
 
     namespace port
     {
-      class duplicated : public std::runtime_error
-      {
-      public:
-        duplicated ( const std::string& tag
-                   , const std::string& transition_name
-                   , const std::string& port_name
-                   );
-        ~duplicated() throw() {}
-
-        MEMBER (tag, std::string);
-        MEMBER (transition_name, std::string);
-        MEMBER (port_name, std::string);
-      };
-
       class unknown : public std::runtime_error
       {
       public:
