@@ -675,11 +675,13 @@ namespace xml
         {
           BOOST_FOREACH (const port_type& port, ports.values())
             {
-              trans.add_port ( port.name()
-                             , port.signature_or_throw()
-                             , port.direction()
-                             , port.properties()
-                             );
+              trans.add_port
+                ( we::type::port_t ( port.name()
+                                   , port.direction()
+                                   , port.signature_or_throw()
+                                   , port.properties()
+                                   )
+                );
             }
         }
 
@@ -702,11 +704,13 @@ namespace xml
             {
               if (not port.place)
                 {
-                  trans.add_port ( port.name()
-                                 , port.signature_or_throw()
-                                 , port.direction()
-                                 , port.properties()
-                                 );
+                  trans.add_port
+                    ( we::type::port_t ( port.name()
+                                       , port.direction()
+                                       , port.signature_or_throw()
+                                       , port.properties()
+                                       )
+                    );
                 }
               else
                 {
@@ -714,13 +718,14 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  trans.add_port ( port.name()
-                                 , port.signature_or_throw()
-                                 , port.direction()
-                                 , get_pid (pid_of_place, *port.place)
-                                 , port.properties()
-                                 )
-                    ;
+                  trans.add_port
+                    ( we::type::port_t ( port.name()
+                                       , port.direction()
+                                       , port.signature_or_throw()
+                                       , get_pid (pid_of_place, *port.place)
+                                       , port.properties()
+                                       )
+                    );
                 }
             }
         }

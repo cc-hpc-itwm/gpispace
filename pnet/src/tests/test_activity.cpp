@@ -6,6 +6,7 @@
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
 #include <we/type/value.hpp>
+#include <we/type/port.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
@@ -108,14 +109,13 @@ int main (int, char **)
   petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 
   trans_inner.add_port
-    ("vid",std::string("long"),we::type::PORT_IN);
+    (we::type::port_t ("vid",we::type::PORT_IN,std::string("long")));
   trans_inner.add_port
-    ("store",sig_store,we::type::PORT_OUT);
+    (we::type::port_t ("store",we::type::PORT_OUT,sig_store));
   trans_inner.add_port
-    ("store",sig_store,we::type::PORT_IN);
+    (we::type::port_t ("store",we::type::PORT_IN,sig_store));
   trans_inner.add_port
-    ("pair",sig_pair,we::type::PORT_OUT)
-    ;
+    (we::type::port_t ("pair",we::type::PORT_OUT,sig_pair));
 
   trans_inner.add_connection
     (pid_vid,"vid");
@@ -159,14 +159,13 @@ int main (int, char **)
 
   transition_t tnet ("tnet", net);
   tnet.add_port
-    ("vid", std::string("long"), we::type::PORT_IN, pid_vid);
+    (we::type::port_t ("vid", we::type::PORT_IN, std::string("long"), pid_vid));
   tnet.add_port
-    ("store", sig_store, we::type::PORT_IN, pid_store);
+    (we::type::port_t ("store", we::type::PORT_IN, sig_store, pid_store));
   tnet.add_port
-    ("store", sig_store, we::type::PORT_OUT, pid_store);
+    (we::type::port_t ("store", we::type::PORT_OUT, sig_store, pid_store));
   tnet.add_port
-    ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
-    ;
+    (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair));
 
   activity_t act ( tnet );
 
