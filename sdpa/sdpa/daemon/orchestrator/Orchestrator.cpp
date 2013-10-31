@@ -59,8 +59,9 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
     for( sdpa::job_id_list_t::iterator it = listSubscrJobs.begin(); it != listSubscrJobs.end(); it++ )
     if( *it == jobId )
     {
+      //! \todo eliminate, do not use non-const getter
       ptrEvt->to() = pair_subscr_joblist.first;
-      sendEventToMaster(ptrEvt);
+      sendEventToMaster (ptrEvt);
 
       SDPA_LOG_DEBUG ("Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;

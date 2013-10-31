@@ -207,9 +207,14 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
     {
       if(subscribedFor(pair_subscr_joblist.first, id))
       {
-        sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
-        ptrEvt->from() = name();
-        ptrEvt->to()   = pair_subscr_joblist.first;
+        sdpa::events::SDPAEvent::Ptr ptrEvt
+          ( new JobFinishedEvent ( name()
+                                 , pair_subscr_joblist.first
+                                 , pEvtJobFinished->job_id()
+                                 , pEvtJobFinished->result()
+                                 )
+          );
+
         sendEventToMaster(ptrEvt);
       }
     }
@@ -271,13 +276,17 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
       sendEventToMaster(pEvtJobFinished);
 
     //publishEvent(*pEvtJobFinished);
-    BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+    BOOST_FOREACH (const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
     {
       if( subscribedFor( pair_subscr_joblist.first, job_id) )
       {
-        sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
-        ptrEvt->from() = name();
-        ptrEvt->to()   = pair_subscr_joblist.first;
+        sdpa::events::SDPAEvent::Ptr ptrEvt
+          (new JobFinishedEvent ( name()
+                                , pair_subscr_joblist.first
+                                , pEvtJobFinished->job_id()
+                                , pEvtJobFinished->result()
+                                )
+          );
         sendEventToMaster(ptrEvt);
       }
     }
@@ -359,13 +368,14 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   {
 	  try {
       // forward it up
-      JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(  name()
-                                                              , pJob->owner()
-                                                              , pEvt->job_id()
-                                                              , pEvt->result() ));
-
-      pEvtJobFailed->error_code() = pEvt->error_code();
-      pEvtJobFailed->error_message() = pEvt->error_message();
+      JobFailedEvent::Ptr pEvtJobFailed
+        (new JobFailedEvent ( name()
+                            , pJob->owner()
+                            , pEvt->job_id()
+                            , pEvt->result()
+                            , pEvt->error_code()
+                            , pEvt->error_message()
+                            ));
 
       // send the event to the master
       sendEventToMaster(pEvtJobFailed);
@@ -475,13 +485,15 @@ bool Agent::failed( const id_type& wfid
 
   try {
     // forward it up
-    JobFailedEvent::Ptr pEvtJobFailed(  new JobFailedEvent( name()
-                                        , pJob->owner()
-                                        , id
-                                        , result ));
-
-    pEvtJobFailed->error_code() = error_code;
-    pEvtJobFailed->error_message() = reason;
+    JobFailedEvent::Ptr pEvtJobFailed
+      (new JobFailedEvent ( name()
+                          , pJob->owner()
+                          , id
+                          , result
+                          , error_code
+                          , reason
+                          )
+      );
 
     // send the event to the master
     pJob->JobFailed(pEvtJobFailed.get());
@@ -506,12 +518,15 @@ bool Agent::failed( const id_type& wfid
     {
       if(subscribedFor(pair_subscr_joblist.first, id))
       {
-        JobFailedEvent::Ptr ptrEvt( new JobFailedEvent(*pEvtJobFailed) );
-        ptrEvt->from() = name();
-        ptrEvt->to() = pair_subscr_joblist.first;
-        ptrEvt->error_code() = error_code;
-        ptrEvt->error_message() = reason;
-
+        JobFailedEvent::Ptr ptrEvt
+          ( new JobFailedEvent ( name()
+                               , pair_subscr_joblist.first
+                               , pEvtJobFailed->job_id()
+                               , pEvtJobFailed->result()
+                               , error_code
+                               , reason
+                               )
+          );
         sendEventToMaster(ptrEvt);
       }
     }

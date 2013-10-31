@@ -449,7 +449,22 @@ namespace fhg
         sidebar_layout->addWidget (list_builder);
         sidebar_layout->addWidget (legend_box);
 
-        add_column->trigger();
+
+        const int current_count (next->columnCount());
+        next->insertColumns (current_count, 2);
+
+        next->setHeaderData
+          ( current_count + 0
+          , Qt::Horizontal
+          , QVariant::fromValue (execution_monitor_proxy::current_states_column)
+          , execution_monitor_proxy::column_type_role
+          );
+        next->setHeaderData
+          ( current_count + 1
+          , Qt::Horizontal
+          , QVariant::fromValue (execution_monitor_proxy::gantt_column)
+          , execution_monitor_proxy::column_type_role
+          );
       }
     }
   }

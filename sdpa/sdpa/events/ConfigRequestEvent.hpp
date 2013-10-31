@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  ConfigRequestEvent.hpp
- *
- *    Description:  ConfigRequestEvent
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #ifndef SDPA_CONFIGREQUESTEVENT_HPP
 #define SDPA_CONFIGREQUESTEVENT_HPP 1
 
@@ -22,28 +5,46 @@
 
 #include <sdpa/events/MgmtEvent.hpp>
 
-namespace sdpa {
-namespace events {
-    class ConfigRequestEvent : public MgmtEvent {
+#include <boost/serialization/base_object.hpp>
+
+namespace sdpa
+{
+  namespace events
+  {
+    class ConfigRequestEvent : public MgmtEvent
+    {
     public:
-        typedef sdpa::shared_ptr<ConfigRequestEvent> Ptr;
+      typedef sdpa::shared_ptr<ConfigRequestEvent> Ptr;
 
-        ConfigRequestEvent()
-          : MgmtEvent()
-        {}
+      ConfigRequestEvent()
+        : MgmtEvent()
+      {}
 
-        ConfigRequestEvent(const address_t& from
-                         , const address_t& to)
-          : MgmtEvent(from, to)
-        {}
+      ConfigRequestEvent ( const address_t& from
+                         , const address_t& to
+                         )
+        : MgmtEvent (from, to)
+      {}
 
-    	std::string str() const { return "ConfigRequestEvent"; }
+      std::string str() const
+      {
+        return "ConfigRequestEvent";
+      }
 
-        virtual void handleBy(EventHandler *handler)
-        {
-          handler->handleConfigRequestEvent(this);
-        }
+      virtual void handleBy (EventHandler* handler)
+      {
+        handler->handleConfigRequestEvent (this);
+      }
+
+    private:
+      friend class boost::serialization::access;
+      template <typename Archive>
+      void serialize (Archive& ar, const unsigned int)
+      {
+        ar & boost::serialization::base_object<MgmtEvent> (*this);
+      }
     };
-}}
+  }
+}
 
 #endif
