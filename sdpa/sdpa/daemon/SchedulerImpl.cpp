@@ -607,11 +607,6 @@ void SchedulerImpl::assignJobsToWorkers()
 
       if( reservation.acquired() ) {
         LOG(INFO, "A resource reservation for the job "<<jobId<<" has been acquired!");
-        sdpa::job_id_t headWorker(reservation.headWorker());
-
-        // serve a job to all workers, not only to the head worker!!!
-        //ptr_comm_handler_->serveJob(headWorker, jobId);
-
         // serve the same job to all reserved workers!!!!
         ptr_comm_handler_->serveJob(reservation);
       }
