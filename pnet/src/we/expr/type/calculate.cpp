@@ -224,6 +224,9 @@ namespace pnet
                 . allow ("list")
                 . check();
 
+            case ::expr::token::_set_is_subset:
+              return bin_require ("set", "set", b.token, l, r, "bool");
+
             default:
               break;
             }

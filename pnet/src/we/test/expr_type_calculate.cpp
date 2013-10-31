@@ -535,3 +535,14 @@ BOOST_AUTO_TEST_CASE (stack_push)
     . allow ("list")
     . check();
 }
+
+BOOST_AUTO_TEST_CASE (set_is_subset)
+{
+  BIN_REQUIRE ( "set_is_subset (${a}, ${b})"
+              , "set"
+              , "set"
+              , "bool"
+              , "'set_is_subset' for types '%1%' and '%2%'"
+                ", expected are types 'set' and 'set'"
+              );
+}
