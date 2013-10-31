@@ -44,11 +44,6 @@ namespace sdpa {
     	  DLOG(TRACE, "DaemonFSM_::action_config_nok");
       }
 
-      void DaemonFSM_::action_interrupt(const InterruptEvent& )
-      {
-    	  DLOG(TRACE, "DaemonFSM_::action_interrupt");
-      }
-
       void DaemonFSM_::action_delete_job(const DeleteJobEvent& )
       {
     	  DLOG(TRACE, "DaemonFSM_::action_delete_job");
@@ -111,12 +106,6 @@ namespace sdpa {
       {
     	  DLOG(TRACE, "DaemonFSM::action_config_nok");
     	  GenericDaemon::action_config_nok(e);
-      }
-
-      void DaemonFSM::action_interrupt(const InterruptEvent& e)
-      {
-    	  DLOG(TRACE, "DaemonFSM::action_interrupt");
-    	  GenericDaemon::action_interrupt(e);
       }
 
       void DaemonFSM::action_delete_job(const DeleteJobEvent& e)

@@ -53,7 +53,6 @@ namespace sdpa {
         virtual void action_configure(const sdpa::events::StartUpEvent&);
         virtual void action_config_ok(const sdpa::events::ConfigOkEvent&);
         virtual void action_config_nok(const sdpa::events::ConfigNokEvent&);
-        virtual void action_interrupt(const sdpa::events::InterruptEvent& );
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent& );
         virtual void action_request_job(const sdpa::events::RequestJobEvent& );
         virtual void action_submit_job(const sdpa::events::SubmitJobEvent& );
@@ -73,7 +72,7 @@ namespace sdpa {
         a_row<  Configuring,  sdpa::events::ConfigNokEvent,           Down,           &agentFSM::action_config_nok >,
         _irow<  Configuring,  sdpa::events::ErrorEvent >,
         //      +------------+-----------------------+----------------+--------------+-----
-        a_row<  Up,           sdpa::events::InterruptEvent,           Down,           &agentFSM::action_interrupt >,
+        _row<   Up,           sdpa::events::InterruptEvent,           Down>,
         a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &agentFSM::action_register_worker>,
         a_irow< Up,           sdpa::events::DeleteJobEvent,                           &agentFSM::action_delete_job>,
         a_irow< Up,           sdpa::events::SubmitJobEvent,                           &agentFSM::action_submit_job>,
@@ -111,7 +110,6 @@ namespace sdpa {
         void action_configure(const sdpa::events::StartUpEvent& );
         void action_config_ok(const sdpa::events::ConfigOkEvent& );
         void action_config_nok(const sdpa::events::ConfigNokEvent& );
-        void action_interrupt(const sdpa::events::InterruptEvent& );
         void action_delete_job(const sdpa::events::DeleteJobEvent& );
         void action_request_job(const sdpa::events::RequestJobEvent& );
         void action_submit_job(const sdpa::events::SubmitJobEvent& );
