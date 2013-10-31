@@ -58,6 +58,7 @@ namespace sdpa {
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
       void reschedule( const Worker::worker_id_t&);
       void reschedule( const Worker::worker_id_t&, const sdpa::job_id_t&);
+      void reschedule(JobQueue& queue);
 
       virtual bool has_job(const sdpa::job_id_t&);
 
@@ -136,6 +137,9 @@ namespace sdpa {
       void printPendingJobs() { pending_jobs_queue_.print(); }
       void printAllocationTable();
       void checkAllocations();
+
+      bool schedulingAllowed() { return !ptr_worker_man_->common_queue_.empty(); }
+      job_id_t nextJobToSchedule() { return ptr_worker_man_->common_queue_.pop(); }
 
     protected:
       JobQueue pending_jobs_queue_;
