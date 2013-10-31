@@ -791,8 +791,7 @@ namespace xml
             we::type::transition_t trans_in
               ( prefix + "IN"
               , we::type::expression_t()
-              , we::type::transition_t::preparsed_cond_type
-                (cond_in, parsed_condition_in)
+              , condition::type (cond_in, parsed_condition_in)
               , true
               , properties
               );
@@ -884,8 +883,7 @@ namespace xml
             we::type::transition_t trans_out
               ( prefix + "OUT"
               , we::type::expression_t()
-              , we::type::transition_t::preparsed_cond_type
-                (cond_out, parsed_condition_out)
+              , condition::type (cond_out, parsed_condition_out)
               , true
               , properties
               );

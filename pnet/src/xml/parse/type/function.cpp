@@ -661,7 +661,7 @@ namespace xml
         typedef petri_net::net we_net_type;
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
-        typedef we_transition_type::preparsed_cond_type we_cond_type;
+        typedef condition::type we_cond_type;
 
         typedef we_transition_type::requirement_t we_requirement_type;
 

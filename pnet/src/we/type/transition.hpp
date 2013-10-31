@@ -89,36 +89,10 @@ namespace we { namespace type {
       {
         static const bool value = false;
       };
-
-      //! \todo eliminate this class and use we::type::condition instead
-      struct preparsed_condition
-      {
-        // should correspond!
-        explicit preparsed_condition ( const std::string& _expr
-                                     , const expr::parse::parser& _parser
-                                     )
-          : expr(_expr)
-          , parser(_parser)
-        { }
-
-        operator std::string const & () const
-        {
-          return expr;
-        }
-
-        operator expr::parse::parser const & () const
-        {
-          return parser;
-        }
-
-        const std::string expr;
-        const expr::parse::parser parser;
-      };
     }
 
     struct transition_t
     {
-      typedef detail::preparsed_condition preparsed_cond_type;
       typedef transition_t this_type;
 
     private:
@@ -186,12 +160,12 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string & name
                    , Type const & typ
-                   , preparsed_cond_type const & _condition
+                   , condition::type const & _condition
                    )
         : name_ (name)
         , data_ (typ)
         , internal_ (detail::is_internal<Type>::value)
-        , condition_(_condition, _condition)
+        , condition_ (_condition)
         , outer_to_inner_()
         , inner_to_outer_()
         , ports_()
@@ -221,7 +195,7 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string & name
                    , Type const & typ
-                   , preparsed_cond_type const & _condition
+                   , condition::type const & _condition
                    , bool intern
                    , const we::type::property::type & prop
                    = we::type::property::type()
@@ -229,7 +203,7 @@ namespace we { namespace type {
         : name_ (name)
         , data_ (typ)
         , internal_ (intern)
-        , condition_(_condition, _condition)
+        , condition_ (_condition)
         , outer_to_inner_()
         , inner_to_outer_()
         , ports_()
@@ -702,7 +676,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
-        ar & boost::serialization::make_nvp("condition", condition_.expression());
+        ar & BOOST_SERIALIZATION_NVP(condition_);
         ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
@@ -717,9 +691,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
-        std::string cond_expr;
-        ar & boost::serialization::make_nvp("condition", cond_expr);
-        condition_ = condition::type (cond_expr);
+        ar & BOOST_SERIALIZATION_NVP(condition_);
         ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
