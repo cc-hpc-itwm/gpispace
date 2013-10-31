@@ -44,8 +44,7 @@ static void long_usage (int lvl)
     << "    example:"                                               << std::endl
     << "       --try-pop <key> --or --wait <key> push --pop <key>"  << std::endl
     << ""                                                           << std::endl
-    << "   --put key value        put some value into the kvs"      << std::endl
-    << "                          can be specified multiple times"  << std::endl
+    << "   --put key value...     put key-value pairs into the kvs" << std::endl
     << "   --get key              get some key from the kvs"        << std::endl
     << "   --get-regex regex      get matching entries from the kvs"<< std::endl
     << "   --del key              delete the key from the kvs"      << std::endl
@@ -271,32 +270,45 @@ int main (int argc, char *argv [], char *envp [])
     }
     else if (arg ==  "--put")
     {
-      if (i == argc)
+      std::list<std::pair< gspc::kvs::api_t::key_type
+                         , gspc::kvs::api_t::value_type
+                         >
+               > kv_list;
+
+      while (i < argc)
       {
-        std::cerr << "kvs: missing key to --put" << std::endl;
+        if (argv [i][0] == '-')
+          break;
+
+        gspc::kvs::api_t::key_type key (argv [i++]);
+
+        if (i == argc)
+        {
+          std::cerr << "kvs: missing val to --put <key>" << std::endl;
+          return EX_USAGE;
+        }
+
+        gspc::kvs::api_t::value_type val;
+        try
+        {
+          val = pnet::type::value::read (argv [i++]);
+        }
+        catch (std::exception const &ex)
+        {
+          std::cerr << "kvs: invalid value: " << ex.what () << std::endl;
+          return EX_DATAERR;
+        }
+
+        kv_list.push_back (std::make_pair (key, val));
+      }
+
+      if (kv_list.empty ())
+      {
+        std::cerr << "kvs: put: nothing to put!" << std::endl;
         return EX_USAGE;
       }
 
-      gspc::kvs::api_t::key_type key (argv [i++]);
-
-      if (i == argc)
-      {
-        std::cerr << "kvs: missing val to --put <key>" << std::endl;
-        return EX_USAGE;
-      }
-
-      gspc::kvs::api_t::value_type val;
-      try
-      {
-        val = pnet::type::value::read (argv [i++]);
-      }
-      catch (std::exception const &ex)
-      {
-        std::cerr << "kvs: invalid value: " << ex.what () << std::endl;
-        return EX_DATAERR;
-      }
-
-      rc = kvs->put (key, val);
+      rc = kvs->put (kv_list);
       if (rc != 0 && verbose > 0)
       {
         std::cerr << "kvs: put failed: " << strerror (-rc) << std::endl;
