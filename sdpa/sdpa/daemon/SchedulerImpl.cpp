@@ -860,7 +860,6 @@ void SchedulerImpl::releaseReservation(const sdpa::job_id_t& jobId)
 
   // if the status is not terminal
   try {
-      Job::ptr_t pJob(ptr_comm_handler_->findJob(jobId));
       allocation_table_t::const_iterator it = allocation_table_.find(jobId);
 
       // if there are allocated resources
@@ -869,7 +868,9 @@ void SchedulerImpl::releaseReservation(const sdpa::job_id_t& jobId)
           return;
       }
 
-      /*if(pJob->is_running()) {
+      /*
+       Job::ptr_t pJob(ptr_comm_handler_->findJob(jobId));
+       if(pJob->is_running()) {
           sdpa::worker_id_t head_worker_id(allocation_table_[jobId].headWorker());
           SDPA_LOG_INFO("Tell the worker "<<head_worker_id<<" to cancel the job "<<jobId);
           Worker::ptr_t pWorker = findWorker(head_worker_id);
@@ -1133,36 +1134,6 @@ sdpa::job_id_t SchedulerImpl::getNextJobToSchedule()
 bool SchedulerImpl::groupFinished(const sdpa::job_id_t& jid)
 {
   lock_type lock(mtx_alloc_table_);
-  bool bFinished(false);
-
   Reservation reservation(allocation_table_[jid]);
   return reservation.groupFinished();
 }
-
-/*
-void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue )
-{
-  assert (pQueue);
-
-  while( !pQueue->empty() )
-  {
-    sdpa::job_id_t jobId = pQueue->pop();
-    SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
-
-    if( ptr_comm_handler_ )
-    {
-      Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
-      ptr_comm_handler_->activityFailed( worker_id
-                                       , jobId
-                                       , pJob->result()
-                                       , fhg::error::WORKER_TIMEDOUT
-                                       , "Worker timeout detected!"
-                                       );
-    }
-    else
-    {
-      SDPA_LOG_ERROR("Invalid communication handler!");
-    }
-  }
-}
-*/
