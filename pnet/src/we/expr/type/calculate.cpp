@@ -73,13 +73,13 @@ namespace pnet
           std::ostringstream _expected;
         };
 
-        signature_type require ( std::string const& sig_l
-                               , std::string const& sig_r
-                               , ::expr::token::type const& token
-                               , signature_type const& l
-                               , signature_type const& r
-                               , std::string const& sig
-                               )
+        signature_type bin_require ( std::string const& sig_l
+                                   , std::string const& sig_r
+                                   , ::expr::token::type const& token
+                                   , signature_type const& l
+                                   , signature_type const& r
+                                   , std::string const& sig
+                                   )
         {
           if (!(l == signature_type (sig_l) && r == signature_type (sig_r)))
           {
@@ -150,7 +150,7 @@ namespace pnet
             {
             case ::expr::token::_or:
             case ::expr::token::_and:
-              return require ("bool", "bool", b.token, l, r, "bool");
+              return bin_require ("bool", "bool", b.token, l, r, "bool");
 
             case ::expr::token::lt:
             case ::expr::token::le:
@@ -202,22 +202,22 @@ namespace pnet
                 . check();
 
             case ::expr::token::_substr:
-              return require ("string", "long", b.token, l, r, "string");
+              return bin_require ("string", "long", b.token, l, r, "string");
 
             case ::expr::token::_bitset_insert:
             case ::expr::token::_bitset_delete:
-              return require ("bitset", "long", b.token, l, r, "bitset");
+              return bin_require ("bitset", "long", b.token, l, r, "bitset");
 
             case ::expr::token::_bitset_is_element:
-              return require ("bitset", "long", b.token, l, r, "bool");
+              return bin_require ("bitset", "long", b.token, l, r, "bool");
 
             case ::expr::token::_bitset_or:
             case ::expr::token::_bitset_and:
             case ::expr::token::_bitset_xor:
-              return require ("bitset", "bitset", b.token, l, r, "bitset");
+              return bin_require ("bitset", "bitset", b.token, l, r, "bitset");
 
             case ::expr::token::_stack_join:
-              return require ("list", "list", b.token, l, r, "list");
+              return bin_require ("list", "list", b.token, l, r, "list");
 
             default:
               break;
