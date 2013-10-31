@@ -494,6 +494,7 @@ namespace we { namespace type {
       const we::type::property::type& prop (void) const { return prop_; }
 
       const port_map_t& ports() const { return ports_; }
+      port_map_t& ports() { return ports_; }
 
       port_names_t port_names (const we::type::PortDirection& d) const
       {
