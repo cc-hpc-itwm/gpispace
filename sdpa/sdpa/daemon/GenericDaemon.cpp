@@ -336,7 +336,7 @@ void GenericDaemon::shutdown( )
       // save the current state of the system .i.e serialize the daemon's state
 
       lock_type lock(mtx_stop_);
-      setRequestsAllowed(false);
+      m_bRequestsAllowed = false;
       //m_bStarted 	= false;
       m_bStopped 	= true;
 
@@ -509,7 +509,7 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
   // check if the system should be recovered
   // should be overriden by the orchestrator, aggregator and NRE
-  setRequestsAllowed(true);
+  m_bRequestsAllowed = true;
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
