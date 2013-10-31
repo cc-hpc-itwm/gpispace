@@ -310,7 +310,6 @@ namespace sdpa {
       // data members
     protected:
       mutex_type mtx_;
-      condition_type cond_can_stop_;
       condition_type cond_can_start_;
 
       sdpa::master_info_list_t m_arrMasterInfo;
@@ -344,7 +343,6 @@ namespace sdpa {
       mutex_type mtx_subscriber_;
       mutex_type mtx_master_;
       mutex_type mtx_cpb_;
-      mutex_type mtx_stop_;
 
       BackupService m_threadBkpService;
       sdpa::capabilities_set_t m_capabilities;

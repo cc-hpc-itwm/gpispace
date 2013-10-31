@@ -335,25 +335,12 @@ void GenericDaemon::shutdown( )
       //! \todo OLD COMMENT, STILL VALID? TODO?
       // save the current state of the system .i.e serialize the daemon's state
 
-      lock_type lock(mtx_stop_);
       m_bRequestsAllowed = false;
       //m_bStarted 	= false;
       m_bStopped 	= true;
-
-      cond_can_stop_.notify_one();
     }
 
     handleInterruptEvent();
-
-    m_bStopped = true;
-
-    cond_can_stop_.notify_one();
-
-    {
-      lock_type lock(mtx_stop_);
-      while(!m_bStopped)
-        cond_can_stop_.wait(lock);
-    }
 
     seda::StageRegistry::instance().lookup(name())->stop();
     seda::StageRegistry::instance().remove(name());
