@@ -111,6 +111,8 @@ namespace gspc
         rc = this->do_try_pop (key, val);
         if (0 == rc)
           break;
+        if (-EINVAL == rc)
+          break;
 
         rc = this->do_wait (key, E_PUSH | E_POPABLE, timeout);
       }
