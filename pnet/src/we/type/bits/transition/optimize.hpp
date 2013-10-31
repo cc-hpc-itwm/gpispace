@@ -12,6 +12,7 @@
 
 #include <stack>
 
+#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 #include <boost/variant.hpp>
 
@@ -28,11 +29,11 @@ namespace we
         class simplify_expression_sequences : public boost::static_visitor<bool>
         {
         private:
-          typedef transition_t::port_names_t port_names_t;
-          port_names_t _outport_names;
+          boost::unordered_set<std::string> _outport_names;
 
         public:
-          simplify_expression_sequences (const port_names_t & outport_names)
+          simplify_expression_sequences
+            (const boost::unordered_set<std::string>& outport_names)
             : _outport_names (outport_names)
           {}
 
@@ -42,17 +43,14 @@ namespace we
           {
             expr::parse::util::name_set_t needed_bindings;
 
-            for ( port_names_t::const_iterator name (_outport_names.begin())
-                ; name != _outport_names.end()
-                ; ++name
-                )
-              {
-                expr::parse::util::name_set_t::value_type val;
+            BOOST_FOREACH (std::string const& name, _outport_names)
+            {
+              expr::parse::util::name_set_t::value_type val;
 
-                val.push_back (*name);
+              val.push_back (name);
 
-                needed_bindings.insert (val);
-              }
+              needed_bindings.insert (val);
+            }
 
             return expr.simplify(needed_bindings);
           }

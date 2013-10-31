@@ -100,7 +100,6 @@ namespace we { namespace type {
                                   > inner_to_outer_t;
 
       typedef boost::unordered_map<petri_net::port_id_type, port_t> port_map_t;
-      typedef boost::unordered_set<std::string> port_names_t;
 
       transition_t ()
         : name_ ("<<transition unknown>>")
@@ -488,9 +487,10 @@ namespace we { namespace type {
       const port_map_t& ports() const { return ports_; }
       port_map_t& ports() { return ports_; }
 
-      port_names_t port_names (const we::type::PortDirection& d) const
+      boost::unordered_set<std::string> port_names
+        (const we::type::PortDirection& d) const
       {
-        port_names_t names;
+        boost::unordered_set<std::string> names;
 
         BOOST_FOREACH ( we::type::port_t const& port
                       , ports_ | boost::adaptors::map_values
