@@ -464,3 +464,21 @@ BOOST_AUTO_TEST_CASE (max)
     . allow ("string")
     . check();
 }
+
+BOOST_AUTO_TEST_CASE (add)
+{
+  std::string const exp ("${a} + ${b}");
+
+  BIN_EQUAL (exp, " + ");
+
+  BINEQ_ONE_OF (exp, " + ")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . allow ("char")
+    . allow ("string")
+    . check();
+}

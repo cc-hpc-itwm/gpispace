@@ -188,6 +188,19 @@ namespace pnet
                 . allow ("bytearray")
                 . check();
 
+            case ::expr::token::add:
+              equal (b.token, l, r);
+              return one_of (b.token, l)
+                . allow ("int")
+                . allow ("unsigned int")
+                . allow ("long")
+                . allow ("unsigned long")
+                . allow ("float")
+                . allow ("double")
+                . allow ("char")
+                . allow ("string")
+                . check();
+
             case ::expr::token::_substr:
               return require ("string", "long", b.token, l, r, "string");
 
