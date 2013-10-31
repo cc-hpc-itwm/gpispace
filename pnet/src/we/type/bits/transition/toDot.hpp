@@ -695,7 +695,7 @@ namespace we { namespace type {
                   )
           ;
 
-        for ( typename trans_t::const_iterator p (t.ports_begin())
+        for ( typename trans_t::port_map_t::const_iterator p (t.ports_begin())
             ; p != t.ports_end()
             ; ++p
             )
@@ -716,7 +716,7 @@ namespace we { namespace type {
             s << boost::apply_visitor
                  (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
 
-            for ( typename trans_t::const_iterator p (t.ports_begin())
+            for ( typename trans_t::port_map_t::const_iterator p (t.ports_begin())
                 ; p != t.ports_end()
                 ; ++p
                 )

@@ -273,9 +273,7 @@ namespace we
 
           void operator() (petri_net::net& net) const
           {
-            typedef we::type::transition_t::const_iterator port_iterator;
-
-            for ( port_iterator port_it (_activity.transition().ports_begin())
+            for ( we::type::transition_t::port_map_t::const_iterator port_it (_activity.transition().ports_begin())
                 ; port_it != _activity.transition().ports_end()
                 ; ++port_it
                 )
@@ -437,7 +435,7 @@ namespace we
             FHG_UTIL_STAT_STOP ("expr-eval " + expr.expression());
             FHG_UTIL_STAT_START ("expr-put " + expr.expression());
 
-            for ( we::type::transition_t::const_iterator port_it
+            for ( we::type::transition_t::port_map_t::const_iterator port_it
                     (_activity.transition().ports_begin())
                 ; port_it != _activity.transition().ports_end()
                 ; ++port_it

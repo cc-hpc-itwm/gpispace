@@ -64,7 +64,6 @@ namespace we { namespace type {
       {
         typedef petri_net::net pnet_t;
         typedef petri_net::connection_t connection_t;
-        typedef transition_t::const_iterator const_iterator;
         typedef trans_info::pid_set_type pid_set_type;
 
         typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
@@ -81,7 +80,7 @@ namespace we { namespace type {
         name_set_type names_in;
         name_set_type names_out;
 
-        for ( const_iterator p (trans.ports_begin())
+        for ( transition_t::port_map_t::const_iterator p (trans.ports_begin())
             ; p != trans.ports_end()
             ; ++p
             )
@@ -284,13 +283,11 @@ namespace we { namespace type {
       )
       {
         typedef transition_t transition_t;
-        typedef transition_t::port_iterator port_iterator;
-        typedef transition_t::const_iterator const_iterator;
         typedef we::type::port_t port_t;
 
         boost::unordered_set<std::string> other_names;
 
-        for ( const_iterator p (other.ports_begin())
+        for ( transition_t::port_map_t::const_iterator p (other.ports_begin())
             ; p != other.ports_end()
             ; ++p
             )
@@ -302,7 +299,7 @@ namespace we { namespace type {
 
         expression_t & expression (boost::get<expression_t &> (trans.data()));
 
-        for (port_iterator p (trans.ports_begin()); p != trans.ports_end(); ++p)
+        for (transition_t::port_map_t::iterator p (trans.ports_begin()); p != trans.ports_end(); ++p)
           {
             port_t & port (p->second);
 
@@ -326,10 +323,9 @@ namespace we { namespace type {
       , const trans_info::pid_set_type pid_read
       )
       {
-        typedef transition_t::const_iterator const_iterator;
         typedef petri_net::connection_t connection_t;
 
-        for ( const_iterator p (trans.ports_begin())
+        for ( transition_t::port_map_t::const_iterator p (trans.ports_begin())
             ; p != trans.ports_end()
             ; ++p
             )
@@ -396,12 +392,10 @@ namespace we { namespace type {
       , petri_net::net & net
       )
       {
-        typedef transition_t::const_iterator const_iterator;
-
         typedef std::pair<petri_net::port_id_type, petri_net::place_id_type> pair_type;
         std::stack<pair_type> to_erase;
 
-        for ( const_iterator p (trans.ports_begin())
+        for ( transition_t::port_map_t::const_iterator p (trans.ports_begin())
             ; p != trans.ports_end()
             ; ++p
             )

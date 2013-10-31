@@ -101,8 +101,6 @@ namespace we { namespace type {
                                   > inner_to_outer_t;
 
       typedef boost::unordered_map<petri_net::port_id_type, port_t> port_map_t;
-      typedef port_map_t::const_iterator const_iterator;
-      typedef port_map_t::iterator port_iterator;
       typedef boost::unordered_set<std::string> port_names_t;
 
       transition_t ()
@@ -453,7 +451,7 @@ namespace we { namespace type {
 
       const port_t& get_port_by_associated_pid (const petri_net::place_id_type& pid) const
       {
-        for ( const_iterator port (ports_.begin())
+        for ( port_map_t::const_iterator port (ports_.begin())
             ; port != ports_.end()
             ; ++port
             )
@@ -471,7 +469,7 @@ namespace we { namespace type {
                                     , const petri_net::place_id_type& pid_new
                                     )
       {
-        for ( port_iterator port (ports_.begin())
+        for ( port_map_t::iterator port (ports_.begin())
             ; port != ports_.end()
             ; ++port
             )
@@ -487,21 +485,21 @@ namespace we { namespace type {
       }
 
       // TODO implement port accessor iterator
-      const_iterator ports_begin() const { return ports_.begin(); }
-      const_iterator ports_end() const { return ports_.end(); }
+      port_map_t::const_iterator ports_begin() const { return ports_.begin(); }
+      port_map_t::const_iterator ports_end() const { return ports_.end(); }
 
-      port_iterator ports_begin() { return ports_.begin(); }
-      port_iterator ports_end() { return ports_.end(); }
+      port_map_t::iterator ports_begin() { return ports_.begin(); }
+      port_map_t::iterator ports_end() { return ports_.end(); }
 
       const we::type::property::type& prop (void) const { return prop_; }
 
-      const port_map_t& ports () const { return ports_; }
+      const port_map_t& ports() const { return ports_; }
 
       port_names_t port_names (const we::type::PortDirection& d) const
       {
         port_names_t names;
 
-        for (const_iterator port (ports_begin()); port != ports_end(); ++port)
+        for (port_map_t::const_iterator port (ports_begin()); port != ports_end(); ++port)
           {
             if (d == port->second.direction())
               {
