@@ -19,7 +19,6 @@
 #define SDPA_AGENT_HPP 1
 
 #include <sdpa/daemon/DaemonFSM.hpp>
-#include <sdpa/daemon/agent/AgentScheduler.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -92,9 +91,7 @@ namespace sdpa {
 
         void createScheduler(bool bUseReqModel)
         {
-          DLOG(TRACE, "creating agent scheduler...");
-          Scheduler::ptr_t ptrSched( new AgentScheduler(this, bUseReqModel) );
-          ptr_scheduler_ = ptrSched;
+          ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this, bUseReqModel));
         }
 
       private:

@@ -22,6 +22,7 @@
 #include <fhg/assert.hpp>
 
 namespace sdpa {
+  using namespace events;
   namespace daemon {
 
 void Agent::action_configure(const StartUpEvent &se)
@@ -802,7 +803,6 @@ void Agent::backup( std::ostream& ofs )
     oa.register_type(static_cast<JobFSM*>(NULL));
     backupJobManager(oa);
 
-    oa.register_type(static_cast<AgentScheduler*>(NULL));
     oa.register_type(static_cast<SchedulerImpl*>(NULL));
     backupScheduler(oa);
 
@@ -810,8 +810,8 @@ void Agent::backup( std::ostream& ofs )
     oa << ptr_workflow_engine_;*/
     oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
   }
-  catch(exception &e) {
-    cout <<"Exception occurred: "<< e.what() << endl;
+  catch(std::exception &e) {
+    std::cout <<"Exception occurred: "<< e.what() << std::endl;
   }
 }
 
@@ -824,7 +824,6 @@ void Agent::recover( std::istream& ifs )
     ia.register_type(static_cast<JobFSM*>(NULL));
     recoverJobManager(ia);
 
-    ia.register_type(static_cast<AgentScheduler*>(NULL));
     ia.register_type(static_cast<SchedulerImpl*>(NULL));
     recoverScheduler(ia);
 
@@ -836,8 +835,8 @@ void Agent::recover( std::istream& ifs )
     ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
     SDPA_LOG_INFO("The list of recoverd masters is: ");
   }
-  catch(exception &e) {
-    cout <<"Exception occurred: " << e.what() << endl;
+  catch(std::exception &e) {
+    std::cout <<"Exception occurred: " << e.what() << std::endl;
   }
 }
 
