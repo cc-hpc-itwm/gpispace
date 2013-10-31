@@ -111,8 +111,6 @@ namespace sdpa {
       void shutdown( const bfs::path& backup_path );
       void shutdown();
 
-      void stop();
-
       void addMaster(const agent_id_t& );
       void addMasters(const agent_id_list_t& );
       void removeMaster(const agent_id_t& masterId);

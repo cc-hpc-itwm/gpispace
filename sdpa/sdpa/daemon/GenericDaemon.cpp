@@ -329,7 +329,30 @@ void GenericDaemon::shutdown( )
 {
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
 	if( !isStopped() )
-		stop();
+  {
+    DMLOG (TRACE, "Stopping the agent "<<name());
+
+    shutdown_network();
+    scheduler()->stop();
+    m_threadBkpService.stop();
+
+    InterruptEvent evt;
+    handleInterruptEvent (&evt);
+
+    // wait to be stopped
+    {
+      lock_type lock(mtx_stop_);
+      while(!m_bStopped)
+        cond_can_stop_.wait(lock);
+    }
+
+    // stop the daemon stage
+    seda::StageRegistry::instance().lookup(name())->stop();
+    seda::StageRegistry::instance().remove(name());
+
+    delete ptr_workflow_engine_;
+    ptr_workflow_engine_ = NULL;
+  }
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
@@ -382,32 +405,6 @@ void GenericDaemon::shutdown_network()
 
   DMLOG (TRACE, "Removing the network stage...");
   seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-}
-
-void GenericDaemon::stop()
-{
-  DMLOG (TRACE, "Stopping the agent "<<name());
-
-  shutdown_network();
-  scheduler()->stop();
-  m_threadBkpService.stop();
-
-  InterruptEvent evt;
-  handleInterruptEvent (&evt);
-
-  // wait to be stopped
-  {
-	  lock_type lock(mtx_stop_);
-	  while(!m_bStopped)
-		  cond_can_stop_.wait(lock);
-  }
-
-  // stop the daemon stage
-  seda::StageRegistry::instance().lookup(name())->stop();
-  seda::StageRegistry::instance().remove(name());
-
-  delete ptr_workflow_engine_;
-  ptr_workflow_engine_ = NULL;
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
