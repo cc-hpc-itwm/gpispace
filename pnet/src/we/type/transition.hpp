@@ -58,7 +58,7 @@ namespace we { namespace type {
       {
         typedef From from_type;
 
-        explicit not_connected(const std::string & msg, const from_type from_)
+        explicit not_connected(const std::string& msg, const from_type from_)
           : std::runtime_error (msg)
           , from(from_)
         {}
@@ -141,8 +141,8 @@ namespace we { namespace type {
       {}
 
       template <typename Type>
-      transition_t ( const std::string & name
-                   , Type const & typ
+      transition_t ( const std::string& name
+                   , Type const& typ
                    , const std::string& _condition = "true"
                    )
         : name_ (name)
@@ -158,9 +158,9 @@ namespace we { namespace type {
       { }
 
       template <typename Type>
-      transition_t ( const std::string & name
-                   , Type const & typ
-                   , condition::type const & _condition
+      transition_t ( const std::string& name
+                   , Type const& typ
+                   , condition::type const& _condition
                    )
         : name_ (name)
         , data_ (typ)
@@ -175,8 +175,8 @@ namespace we { namespace type {
       { }
 
       template <typename Type>
-      transition_t ( const std::string & name
-                   , Type const & typ
+      transition_t ( const std::string& name
+                   , Type const& typ
                    , const std::string& _condition
                    , bool intern
                    )
@@ -193,11 +193,11 @@ namespace we { namespace type {
       { }
 
       template <typename Type>
-      transition_t ( const std::string & name
-                   , Type const & typ
-                   , condition::type const & _condition
+      transition_t ( const std::string& name
+                   , Type const& typ
+                   , condition::type const& _condition
                    , bool intern
-                   , const we::type::property::type & prop
+                   , const we::type::property::type& prop
                    = we::type::property::type()
                    )
         : name_ (name)
@@ -214,12 +214,12 @@ namespace we { namespace type {
 
       boost::optional<const expression_t&> expression() const;
 
-      const condition::type & condition() const
+      const condition::type& condition() const
       {
         return condition_;
       }
 
-      const std::string & name (void) const
+      const std::string& name (void) const
       {
         return name_;
       }
@@ -234,24 +234,24 @@ namespace we { namespace type {
         internal_ = x;
       }
 
-      const data_type & data (void) const
+      const data_type& data (void) const
       {
         return data_;
       }
 
-      data_type & data (void)
+      data_type& data (void)
       {
         return data_;
       }
 
-      requirements_t const & requirements (void) const
+      requirements_t const& requirements (void) const
       {
         return _requirements;
       }
 
       void connect_outer_to_inner ( const petri_net::place_id_type& pid
                                   , const petri_net::port_id_type& port
-                                  , const we::type::property::type & prop
+                                  , const we::type::property::type& prop
                                   )
       {
         outer_to_inner_.insert
@@ -260,7 +260,7 @@ namespace we { namespace type {
 
       void connect_inner_to_outer ( const petri_net::port_id_type& port
                                   , const petri_net::place_id_type& pid
-                                  , const we::type::property::type & prop
+                                  , const we::type::property::type& prop
                                   )
       {
         inner_to_outer_.insert
@@ -269,7 +269,7 @@ namespace we { namespace type {
 
       void re_connect_inner_to_outer ( const petri_net::port_id_type& port
                                      , const petri_net::place_id_type& pid
-                                     , const we::type::property::type & prop
+                                     , const we::type::property::type& prop
                                      )
       {
         inner_to_outer_.erase (port);
@@ -280,7 +280,7 @@ namespace we { namespace type {
       void re_connect_outer_to_inner ( const petri_net::place_id_type& pid_old
                                      , const petri_net::place_id_type& pid_new
                                      , const petri_net::port_id_type& port
-                                     , const we::type::property::type & prop
+                                     , const we::type::property::type& prop
                                      )
       {
         outer_to_inner_.erase (pid_old);
@@ -359,13 +359,13 @@ namespace we { namespace type {
         ports_.insert (std::make_pair (port_id_counter_++, port));
       }
 
-      void erase_port (const petri_net::port_id_type & port_id)
+      void erase_port (const petri_net::port_id_type& port_id)
       {
         ports_.erase (port_id);
         inner_to_outer_.erase (port_id);
       }
 
-      petri_net::port_id_type input_port_by_name (const std::string & port_name) const
+      petri_net::port_id_type input_port_by_name (const std::string& port_name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -377,7 +377,7 @@ namespace we { namespace type {
         throw pnet::exception::port::unknown (name(), port_name);
       }
 
-      const petri_net::port_id_type& output_port_by_name (const std::string & port_name) const
+      const petri_net::port_id_type& output_port_by_name (const std::string& port_name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
         {
@@ -389,7 +389,7 @@ namespace we { namespace type {
         throw pnet::exception::port::unknown (name(), port_name);
       }
 
-      const port_id_with_prop_t& input_port_by_pid (const petri_net::place_id_type & pid) const
+      const port_id_with_prop_t& input_port_by_pid (const petri_net::place_id_type& pid) const
       {
         for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
             ; p != outer_to_inner_.end()
@@ -405,7 +405,7 @@ namespace we { namespace type {
         throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
-      const petri_net::place_id_type& input_pid_by_port_id (const petri_net::port_id_type & port_id) const
+      const petri_net::place_id_type& input_pid_by_port_id (const petri_net::port_id_type& port_id) const
       {
         for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
             ; p != outer_to_inner_.end()
@@ -421,7 +421,7 @@ namespace we { namespace type {
         throw exception::not_connected<petri_net::port_id_type>("trans: "+name()+": pid not connected by port_id: "+ fhg::util::show (port_id), port_id);
       }
 
-      port_id_with_prop_t output_port_by_pid (const petri_net::place_id_type & pid) const
+      port_id_with_prop_t output_port_by_pid (const petri_net::place_id_type& pid) const
       {
         for ( inner_to_outer_t::const_iterator p (inner_to_outer_.begin())
             ; p != inner_to_outer_.end()
@@ -473,7 +473,7 @@ namespace we { namespace type {
         }
       }
 
-      const port_t & get_port_by_associated_pid (const petri_net::place_id_type & pid) const
+      const port_t& get_port_by_associated_pid (const petri_net::place_id_type& pid) const
       {
         for ( const_iterator port (ports_.begin())
             ; port != ports_.end()
@@ -489,8 +489,8 @@ namespace we { namespace type {
       }
 
       // UNSAFE: does not check for multiple connections! Use with care!
-      void UNSAFE_re_associate_port ( const petri_net::place_id_type & pid_old
-                                    , const petri_net::place_id_type & pid_new
+      void UNSAFE_re_associate_port ( const petri_net::place_id_type& pid_old
+                                    , const petri_net::place_id_type& pid_new
                                     )
       {
         for ( port_iterator port (ports_.begin())
@@ -515,11 +515,11 @@ namespace we { namespace type {
       port_iterator ports_begin() { return ports_.begin(); }
       port_iterator ports_end() { return ports_.end(); }
 
-      const we::type::property::type & prop (void) const { return prop_; }
+      const we::type::property::type& prop (void) const { return prop_; }
 
-      const port_map_t & ports () const { return ports_; }
+      const port_map_t& ports () const { return ports_; }
 
-      port_names_t port_names (const we::type::PortDirection & d) const
+      port_names_t port_names (const we::type::PortDirection& d) const
       {
         port_names_t names;
 
@@ -534,12 +534,12 @@ namespace we { namespace type {
         return names;
       }
 
-      void add_requirement ( requirement_t const & r )
+      void add_requirement ( requirement_t const& r )
       {
         _requirements.push_back (r);
       }
 
-      void del_requirement ( requirement_t const & r )
+      void del_requirement ( requirement_t const& r )
       {
         _requirements.remove (r);
       }
@@ -560,13 +560,13 @@ namespace we { namespace type {
       requirements_t _requirements;
 
     private:
-      friend std::ostream & operator<< ( std::ostream &
+      friend std::ostream& operator<< ( std::ostream &
                                        , const transition_t &
                                        );
 
       friend class boost::serialization::access;
       template <typename Archive>
-      void save(Archive & ar, const unsigned int) const
+      void save(Archive& ar, const unsigned int) const
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
@@ -601,11 +601,11 @@ namespace we { namespace type {
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
 
-    inline bool operator==(const transition_t & a, const transition_t & b)
+    inline bool operator==(const transition_t& a, const transition_t& b)
     {
       return a.name() == b.name();
     }
-    inline std::size_t hash_value(transition_t const & t)
+    inline std::size_t hash_value(transition_t const& t)
     {
       boost::hash<std::string> hasher;
       return hasher(t.name());
@@ -640,12 +640,12 @@ namespace we { namespace type {
         }
       };
 
-      inline bool is_expression (const transition_t & t)
+      inline bool is_expression (const transition_t& t)
       {
         return boost::apply_visitor (visitor(), t.data()) == expression;
       }
 
-      inline bool is_subnet (const transition_t & t)
+      inline bool is_subnet (const transition_t& t)
       {
         return boost::apply_visitor (visitor(), t.data()) == subnet;
       }
