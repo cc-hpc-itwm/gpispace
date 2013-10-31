@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  transition.hpp
- *
- *    Description:  generic transition implementation
- *
- *        Version:  1.0
- *        Created:  04/09/2010 01:21:44 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// {petry, rahn}@itwm.fhg.de
 
 #ifndef WE_TYPE_TRANSITION_HPP
 #define WE_TYPE_TRANSITION_HPP 1
