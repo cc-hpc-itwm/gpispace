@@ -1305,18 +1305,6 @@ void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& des
   workflowEngine()->submit (wf_id, desc, we::type::user_data ());
 }
 
-void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string& reason)
-{
-  if (hasWorkflowEngine())
-  {
-    workflowEngine()->cancel(workflowId, reason);
-  }
-  else
-  {
-    LOG(WARN, "would cancel " << workflowId << " on myself");
-  }
-}
-
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
   std::string masterName = pRegAckEvt->from();

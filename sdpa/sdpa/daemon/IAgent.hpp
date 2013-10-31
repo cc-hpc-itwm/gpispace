@@ -58,7 +58,6 @@ namespace sdpa {
     virtual const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
 
     virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
-    virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;
 
     virtual void activityFailed( const Worker::worker_id_t& worker_id
                                  , const job_id_t& jobId

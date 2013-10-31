@@ -126,7 +126,10 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
           if(scheduler()->groupFinished(actId))
             workflowEngine()->finished(actId, output);
           else
-            workflowEngine()->failed(actId, output, sdpa::events::ErrorEvent::SDPA_EUNKNOWN, "One of tasks of the group failed with the actual reservation!");
+            workflowEngine()->failed( actId,
+                                      output,
+                                      sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
+                                      "One of tasks of the group failed with the actual reservation!");
       }
 
       try {
@@ -639,7 +642,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     id_type workflowId = pEvt->job_id();
     reason_type reason("No reason");
     DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
-    cancelWorkflow(workflowId, reason);
+    workflowEngine()->cancel(workflowId, reason);
     pJob->CancelJob(pEvt);
     DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
   }
