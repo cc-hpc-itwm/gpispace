@@ -108,9 +108,6 @@ namespace we { namespace type {
       typedef we::type::requirement_t requirement_t;
       typedef std::list<requirement_t> requirements_t;
 
-      const static bool internal = true;
-      const static bool external = false;
-
       transition_t ()
         : name_ ("<<transition unknown>>")
         , data_ (expression_t())
