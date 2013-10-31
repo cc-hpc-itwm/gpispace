@@ -564,7 +564,7 @@ void SchedulerImpl::assignJobsToWorkers()
   lock_type lock(mtx_);
   sdpa::worker_id_list_t listAvailWorkers;
 
-  if(ptr_worker_man_->common_queue_.empty())
+  if(!schedulingAllowed())
     return;
 
   // replace this with the list of workers not reserved
@@ -576,9 +576,9 @@ void SchedulerImpl::assignJobsToWorkers()
   JobQueue nonmatching_jobs_queue;
 
   // iterate over all jobs and see if there is one that prefers
-  while(!ptr_worker_man_->common_queue_.empty() && !listAvailWorkers.empty())
+  while(schedulingAllowed() && !listAvailWorkers.empty())
   {
-    sdpa::job_id_t jobId(ptr_worker_man_->common_queue_.pop());
+    sdpa::job_id_t jobId(nextJobToSchedule());
 
     size_t nReqWorkers(1); // default number of required workers is 1
     sdpa::worker_id_t matchingWorkerId;
@@ -619,10 +619,7 @@ void SchedulerImpl::assignJobsToWorkers()
     }
   }
 
-  // nonmatching_jobs_queue.print("The list of non-matching jobs: ");
-  while(!nonmatching_jobs_queue.empty())
-    ptr_worker_man_->common_queue_.push_front(nonmatching_jobs_queue.pop_back());
-
+  reschedule(nonmatching_jobs_queue);
 }
 
 void SchedulerImpl::feedWorkers()
@@ -1131,4 +1128,10 @@ bool SchedulerImpl::groupFinished(const sdpa::job_id_t& jid)
   lock_type lock(mtx_alloc_table_);
   Reservation reservation(allocation_table_[jid]);
   return reservation.groupFinished();
+}
+
+void SchedulerImpl::reschedule(JobQueue& queue)
+{
+  while(!queue.empty())
+    ptr_worker_man_->common_queue_.push_front(queue.pop_back());
 }
