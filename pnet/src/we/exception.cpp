@@ -131,6 +131,18 @@ namespace pnet
         , _transition_name (transition_name)
         , _port_name (port_name)
       {}
+      unknown::unknown ( const std::string& transition_name
+                       , const std::string& port_name
+                       )
+        : std::runtime_error
+          ( ( boost::format ("in transiton '%1%': unknown port '%2%'")
+            % transition_name
+            % port_name
+            ).str()
+          )
+        , _transition_name (transition_name)
+        , _port_name (port_name)
+      {}
     }
   }
 }

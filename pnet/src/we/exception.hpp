@@ -116,6 +116,18 @@ namespace pnet
         MEMBER (transition_name, std::string);
         MEMBER (port_name, std::string);
       };
+
+      class unknown : public std::runtime_error
+      {
+      public:
+        unknown ( const std::string& transition_name
+                , const std::string& port_name
+                );
+        ~unknown() throw() {}
+
+        MEMBER (transition_name, std::string);
+        MEMBER (port_name, std::string);
+      };
     }
 
 #undef MEMBER
