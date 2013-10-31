@@ -485,13 +485,6 @@ namespace we { namespace type {
         throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), pid_old);
       }
 
-      // TODO implement port accessor iterator
-      port_map_t::const_iterator ports_begin() const { return ports_.begin(); }
-      port_map_t::const_iterator ports_end() const { return ports_.end(); }
-
-      port_map_t::iterator ports_begin() { return ports_.begin(); }
-      port_map_t::iterator ports_end() { return ports_.end(); }
-
       const we::type::property::type& prop (void) const { return prop_; }
 
       const port_map_t& ports() const { return ports_; }
