@@ -58,8 +58,12 @@ namespace gspc
       int base_client<Proto>::start (const boost::posix_time::time_duration timeout)
       {
         boost::system::error_code ec;
-        m_connection.reset (new connection_type (0, m_io_service, *this));
-        m_connection->socket ().connect (m_endpoint, ec);
+
+        {
+          unique_lock _ (m_mutex);
+          m_connection.reset (new connection_type (0, m_io_service, *this));
+          m_connection->socket ().connect (m_endpoint, ec);
+        }
 
         if (not ec)
         {
@@ -75,6 +79,8 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::stop ()
       {
+        unique_lock _ (m_mutex);
+
         if (m_connection)
         {
           m_connection->stop ();
@@ -87,6 +93,7 @@ namespace gspc
       bool
       base_client<Proto>::is_connected () const
       {
+        shared_lock _ (m_mutex);
         return this->m_state == CONNECTED;
       }
 
@@ -141,7 +148,10 @@ namespace gspc
 
         if (rc != 0)
         {
-          m_state = FAILED;
+          {
+            unique_lock _ (m_mutex);
+            m_state = FAILED;
+          }
 
           m_connection.reset ();
 
@@ -159,7 +169,11 @@ namespace gspc
             % getpid ()
             ).str ();
 
-          m_state = CONNECTED;
+
+          {
+            unique_lock _ (m_mutex);
+            m_state = CONNECTED;
+          }
 
           subscribe (m_priv_queue, m_priv_queue);
 
@@ -167,12 +181,18 @@ namespace gspc
         }
         else if (rply.get_command () == "ERROR")
         {
-          m_state = FAILED;
+          {
+            unique_lock _ (m_mutex);
+            m_state = FAILED;
+          }
           return header::get (rply, "code", -EPERM);
         }
         else
         {
-          m_state = FAILED;
+          {
+            unique_lock _ (m_mutex);
+            m_state = FAILED;
+          }
           return -EPROTO;
         }
       }
@@ -455,7 +475,10 @@ namespace gspc
                                            , boost::system::error_code const &ec
                                            )
       {
-        m_state = FAILED;
+        {
+          unique_lock _ (m_mutex);
+          m_state = FAILED;
+        }
 
         if (0 == abort_all_responses (ec))
         {
