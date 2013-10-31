@@ -8,6 +8,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <limits>
+
 #include <cmath>
 
 namespace pnet
@@ -18,9 +20,6 @@ namespace pnet
     {
       namespace
       {
-        bool is_zero (const float& x) { return fabsf (x) < 1e-6; }
-        bool is_zero (const double& x) { return fabsf (x) < 1e-8; }
-
         class visitor_unary : public boost::static_visitor<value_type>
         {
         public:
@@ -62,7 +61,6 @@ namespace pnet
 
             switch (_token)
             {
-            case expr::token::_not: return is_zero (x);
             case expr::token::neg: return -x;
             case expr::token::abs: return (x < 0) ? (-x) : x;
             case expr::token::_sin: return sinf (x);
@@ -89,7 +87,6 @@ namespace pnet
 
             switch (_token)
             {
-            case expr::token::_not: return is_zero (x);
             case expr::token::neg: return -x;
             case expr::token::abs: return (x < 0) ? (-x) : x;
             case expr::token::_sin: return sin (x);
@@ -497,17 +494,18 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::lt: return is_zero (l-r) ? false : (l < r);
-            case expr::token::le: return is_zero (l-r) ? true : (l < r);
-            case expr::token::gt: return is_zero (l-r) ? false : (l > r);
-            case expr::token::ge: return is_zero (l-r) ? true : (l > r);
-            case expr::token::ne: return !is_zero (l-r);
-            case expr::token::eq: return is_zero (l-r);
+            case expr::token::lt: return l < r;
+            case expr::token::le: return l <= r;
+            case expr::token::gt: return l > r;
+            case expr::token::ge: return l >= r;
             case expr::token::add: return l + r;
             case expr::token::sub: return l - r;
             case expr::token::mul: return l * r;
             case expr::token::div:
-              if (is_zero (r)) throw expr::exception::eval::divide_by_zero();
+              if (std::abs (r) < std::numeric_limits<T>::min())
+              {
+                throw expr::exception::eval::divide_by_zero();
+              }
               return l / r;
             case expr::token::_pow: return pow (l, r);
             case expr::token::min: return std::min (l,r);

@@ -33,7 +33,7 @@ public:
 
     m_url = fhg_kernel()->get ("url", "tcp://*");
 
-    m_server = gspc::net::serve (m_url, m_qmgr);
+    m_server = gspc::net::serve (m_url);
 
     m_listen_url = m_server->url ();
 
@@ -95,7 +95,6 @@ private:
   std::string             m_url;
   std::string             m_listen_url;
 
-  gspc::net::server::queue_manager_t m_qmgr;
   gspc::net::server_ptr_t m_server;
 };
 

@@ -5,7 +5,7 @@
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/frame_handler_fwd.hpp>
 
-#include <boost/signal.hpp>
+#include <boost/signals2/signal.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace gspc
@@ -17,8 +17,8 @@ namespace gspc
     public:
       virtual ~client_t () {}
 
-      boost::signal<void (boost::system::error_code const &)> onError;
-      boost::signal<void (frame const &)>                     onFrame;
+      boost::signals2::signal<void (boost::system::error_code const &)> onError;
+      boost::signals2::signal<void (frame const &)>                     onFrame;
 
       virtual int start () = 0;
       virtual int start (const boost::posix_time::time_duration) = 0;

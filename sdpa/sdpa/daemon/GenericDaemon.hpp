@@ -269,8 +269,7 @@ namespace sdpa {
                               const unsigned int& rank = 0,
                               const sdpa::worker_id_t& agent_uuid  = "");
 
-      template <typename T>
-      void notifyWorkers(const T&);
+      void eworknotreg();
 
       // jobs
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
@@ -380,35 +379,6 @@ namespace sdpa {
         }
       }
     }
-
-    /**
-     * Send a notification of type T to the workers
-     * @param[in] ptrNotEvt: Event to be sent to the workers
-     */
-    template <typename T>
-    void GenericDaemon::notifyWorkers(const T& ptrNotEvt)
-    {
-      sdpa::worker_id_list_t workerList;
-      scheduler()->getWorkerList(workerList);
-
-      if(workerList.empty())
-      {
-        DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
-        return;
-      }
-
-      //for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
-      BOOST_FOREACH(const worker_id_t& workerId, workerList)
-      {
-        ptrNotEvt->to() = workerId;
-        SDPA_LOG_INFO("Send notification to the worker "<<workerId);
-        sendEventToMaster(ptrNotEvt);
-      }
-
-      // remove workers
-      scheduler()->removeWorkers();
-    }
-
   }
 }
 

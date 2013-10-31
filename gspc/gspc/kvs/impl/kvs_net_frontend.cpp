@@ -23,7 +23,7 @@ namespace gspc
     {
       boost::system::error_code ec;
       m_client = gspc::net::dial (m_url, ec);
-      if (not m_client)
+      if (not m_client || ec)
       {
         throw boost::system::system_error (ec);
       }
@@ -51,7 +51,11 @@ namespace gspc
       }
     }
 
-    int kvs_net_frontend_t::do_put (std::list<std::pair<key_type, value_type> > const &vals)
+    int kvs_net_frontend_t::request ( std::string const &rpc
+                                    , std::string const &rqst_body
+                                    , std::string &rply_body
+                                    , size_t timeout
+                                    ) const
     {
       using namespace gspc::net;
 
@@ -59,110 +63,270 @@ namespace gspc
       frame rply;
       frame rqst;
 
-      rqst.set_header ("destination", KVS_SERVICE + "/put");
+      rqst.set_header ("destination", KVS_SERVICE + "/" + rpc);
+      rqst.set_body (rqst_body);
 
+      if ((size_t)-1 == timeout)
+      {
+        rc = m_client->request (rqst, rply, boost::posix_time::pos_infin);
+      }
+      else if (0 < timeout)
+      {
+        rc = m_client->request (rqst, rply, boost::posix_time::milliseconds (timeout));
+      }
+      else
+      {
+        rc = m_client->request (rqst, rply);
+      }
+
+      if (rc != 0)
+        return rc;
+
+      throw_if_error (rpc, rply);
+
+      rply_body = rply.get_body ();
+
+      return rc;
+    }
+
+    int kvs_net_frontend_t::do_put (std::list<std::pair<key_type, value_type> > const &vals)
+    {
       typedef std::list<std::pair<key_type, value_type> > kv_list_t;
       kv_list_t::const_iterator it = vals.begin ();
       const kv_list_t::const_iterator end = vals.end ();
 
+      std::ostringstream sstr;
       for (; it != end ; ++it)
       {
-        stream (rqst)
-          << it->first
-          << " "
-          << pnet::type::value::show (it->second)
-          << std::endl
+        sstr << it->first
+             << " "
+             << pnet::type::value::show (it->second)
+             << std::endl
           ;
       }
 
-      rc = m_client->request (rqst, rply);
+      std::string rply;
+      int rc = request ("put", sstr.str (), rply);
       if (rc != 0)
         return rc;
 
-      throw_if_error ("put", rply);
-
-      return 0;
+      return fhg::util::read<int> (rply);
     }
 
     int kvs_net_frontend_t::do_get (key_type const &key, value_type &val) const
     {
-      int rc;
+      std::string rply;
+      int rc = request ("get", key, rply);
 
-      using namespace gspc::net;
-
-      frame rply;
-      frame rqst;
-
-      rqst.set_header ("destination", KVS_SERVICE + "/get");
-
-      stream (rqst) << key << std::endl;
-
-      rc = m_client->request (rqst, rply);
       if (rc != 0)
         return rc;
 
-      throw_if_error ("get", rply);
+      fhg::util::parse::position_string pos (rply);
 
-      fhg::util::parse::position_string pos (rply.get_body ());
+      rc = fhg::util::read<int>
+        (fhg::util::parse::require::plain_string (pos, '\n'));
 
-      const int return_code =
-        fhg::util::read<int>
-        (fhg::util::parse::require::plain_string (pos, ' '));
-
-      if (0 == return_code)
+      if (0 == rc)
       {
         val = pnet::type::value::read (pos);
       }
 
-      return return_code;
+      return rc;
     }
 
     int kvs_net_frontend_t::do_get_regex ( std::string const &regex
-                                         , std::list<std::pair<key_type, value_type> > &
+                                         , std::list<std::pair<key_type, value_type> > &values
                                          ) const
     {
-      return -ENOTSUP;
+      std::string rply;
+      int rc;
+
+      rc = request ("get_regex", regex, rply);
+
+      if (rc != 0)
+        return rc;
+
+      fhg::util::parse::position_string pos (rply);
+      rc = fhg::util::read<int>
+        (fhg::util::parse::require::plain_string (pos, '\n'));
+
+      if (rc != 0)
+        return rc;
+
+      while (not pos.end ())
+      {
+        if (*pos == '\n')
+        {
+          ++pos;
+          continue;
+        }
+
+        const key_type key =
+          fhg::util::parse::require::plain_string (pos, ' ');
+        const value_type val =
+          pnet::type::value::read (pos);
+        values.push_back (std::make_pair (key, val));
+      }
+
+      return rc;
     }
 
     int kvs_net_frontend_t::do_del (key_type const &key)
     {
-      return -ENOTSUP;
+      std::string rply;
+      int rc;
+
+      rc = request ("del", key, rply);
+
+      if (rc != 0)
+        return rc;
+
+      rc = fhg::util::read<int> (rply);
+      return rc;
     }
+
     int kvs_net_frontend_t::do_del_regex (std::string const &regex)
     {
-      return -ENOTSUP;
+      std::string rply;
+      int rc;
+
+      rc = request ("del_regex", regex, rply);
+
+      if (rc != 0)
+        return rc;
+
+      rc = fhg::util::read<int> (rply);
+      return rc;
     }
 
     int kvs_net_frontend_t::do_set_ttl (key_type const &key, int ttl)
     {
-      return -ENOTSUP;
+      std::string rply;
+      int rc;
+
+      std::ostringstream sstr;
+      sstr << ttl << " " << key << std::endl;
+
+      rc = request ("set_ttl", sstr.str (), rply);
+
+      if (rc != 0)
+        return rc;
+
+      rc = fhg::util::read<int> (rply);
+      return rc;
     }
+
     int kvs_net_frontend_t::do_set_ttl_regex (std::string const &regex, int ttl)
     {
-      return -ENOTSUP;
+      std::string rply;
+      int rc;
+
+      std::ostringstream sstr;
+      sstr << ttl << ' ' << '"' << regex << '"' << std::endl;
+
+      rc = request ("set_ttl_regex", sstr.str (), rply);
+
+      if (rc != 0)
+        return rc;
+
+      rc = fhg::util::read<int> (rply);
+      return rc;
     }
 
     int kvs_net_frontend_t::do_push (key_type const &key, value_type const &val)
     {
-      return -ENOTSUP;
+      std::ostringstream sstr;
+      sstr << key << " " << pnet::type::value::show (val) << std::endl;
+
+      std::string rply;
+      int rc = request ("push", sstr.str (), rply);
+      if (rc != 0)
+        return rc;
+
+      return fhg::util::read<int> (rply);
     }
-    int kvs_net_frontend_t::do_pop (key_type const &, value_type &val)
+
+    int kvs_net_frontend_t::do_try_pop (key_type const &key, value_type &val)
     {
-      return -ENOTSUP;
-    }
-    int kvs_net_frontend_t::do_try_pop (key_type const &, value_type &val)
-    {
-      return -ENOTSUP;
+      std::string rply;
+      int rc = request ("try_pop", key, rply);
+
+      if (rc != 0)
+        return rc;
+
+      fhg::util::parse::position_string pos (rply);
+
+      rc = fhg::util::read<int>
+        (fhg::util::parse::require::plain_string (pos, '\n'));
+
+      if (0 == rc)
+      {
+        val = pnet::type::value::read (pos);
+      }
+
+      return rc;
     }
 
     int kvs_net_frontend_t::do_counter_reset (key_type const &key, int  val)
     {
-      return -ENOTSUP;
+      std::ostringstream sstr;
+      sstr << val << " " << key << std::endl;
+
+      std::string rply;
+      int rc = request ("counter_reset", sstr.str (), rply);
+
+      if (rc != 0)
+        return rc;
+
+      return fhg::util::read<int> (rply);
     }
 
     int kvs_net_frontend_t::do_counter_change (key_type const &key, int &val, int delta)
     {
-      return -ENOTSUP;
+      std::ostringstream sstr;
+      sstr << delta << " " << key << std::endl;
+
+      std::string rply;
+      int rc = request ("counter_change", sstr.str (), rply);
+
+      if (rc != 0)
+        return rc;
+
+      std::istringstream isstr (rply);
+      isstr >> rc;
+      if (rc != 0)
+        return rc;
+
+      isstr >> val;
+      if (isstr.bad ())
+      {
+        return -EBADMSG;
+      }
+
+      return rc;
+    }
+
+    int kvs_net_frontend_t::do_wait ( key_type const &key
+                                    , int mask
+                                    , int timeout
+                                    ) const
+    {
+      int rc;
+      std::ostringstream rqst;
+      rqst << mask << " " << key << std::endl;
+
+      std::string rply;
+      rc = request ("wait", rqst.str (), rply, timeout);
+
+      if (rc != 0)
+        return rc;
+
+      fhg::util::parse::position_string pos (rply);
+
+      rc = fhg::util::read<int>
+        (fhg::util::parse::require::plain_string (pos, '\n'));
+
+      return rc;
     }
   }
 }

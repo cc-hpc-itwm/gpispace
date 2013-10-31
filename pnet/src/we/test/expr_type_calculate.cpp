@@ -289,6 +289,39 @@ BOOST_AUTO_TEST_CASE (bitset_is_element)
               );
 }
 
+BOOST_AUTO_TEST_CASE (bitset_or)
+{
+  BIN_REQUIRE ( "bitset_or (${a}, ${b})"
+              , "bitset"
+              , "bitset"
+              , "bitset"
+              , "'bitset_or' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'bitset'"
+              );
+}
+
+BOOST_AUTO_TEST_CASE (bitset_and)
+{
+  BIN_REQUIRE ( "bitset_and (${a}, ${b})"
+              , "bitset"
+              , "bitset"
+              , "bitset"
+              , "'bitset_and' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'bitset'"
+              );
+}
+
+BOOST_AUTO_TEST_CASE (bitset_xor)
+{
+  BIN_REQUIRE ( "bitset_xor (${a}, ${b})"
+              , "bitset"
+              , "bitset"
+              , "bitset"
+              , "'bitset_xor' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'bitset'"
+              );
+}
+
 BOOST_AUTO_TEST_CASE (_or)
 {
   BIN_REQUIRE ( "${a} || ${b}"
@@ -463,4 +496,53 @@ BOOST_AUTO_TEST_CASE (max)
     . allow ("char")
     . allow ("string")
     . check();
+}
+
+BOOST_AUTO_TEST_CASE (add)
+{
+  std::string const exp ("${a} + ${b}");
+
+  BIN_EQUAL (exp, " + ");
+
+  BINEQ_ONE_OF (exp, " + ")
+    . allow ("int")
+    . allow ("unsigned int")
+    . allow ("long")
+    . allow ("unsigned long")
+    . allow ("float")
+    . allow ("double")
+    . allow ("char")
+    . allow ("string")
+    . check();
+}
+
+BOOST_AUTO_TEST_CASE (stack_join)
+{
+  BIN_REQUIRE ( "stack_join (${a}, ${b})"
+              , "list"
+              , "list"
+              , "list"
+              , "'stack_join' for types '%1%' and '%2%'"
+                ", expected are types 'list' and 'list'"
+              );
+}
+
+BOOST_AUTO_TEST_CASE (stack_push)
+{
+  std::string const exp ("stack_push (${a}, ${b})");
+
+  BINEQ_ONE_OF (exp, "stack_push")
+    . allow ("list")
+    . check();
+}
+
+BOOST_AUTO_TEST_CASE (set_is_subset)
+{
+  BIN_REQUIRE ( "set_is_subset (${a}, ${b})"
+              , "set"
+              , "set"
+              , "bool"
+              , "'set_is_subset' for types '%1%' and '%2%'"
+                ", expected are types 'set' and 'set'"
+              );
 }

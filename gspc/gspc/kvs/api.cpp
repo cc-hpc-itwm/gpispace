@@ -7,9 +7,14 @@ namespace gspc
   {
     bool api_t::is_key_valid (key_type const &k) const
     {
-      if (k.empty () || k.find (' ') != key_type::npos)
+      if (k.empty () || (k.find (' ') != key_type::npos))
         return false;
       return true;
+    }
+
+    int api_t::put (key_type const &key, const char *val)
+    {
+      return this->put (key, std::string (val));
     }
 
     int api_t::put (key_type const &key, value_type const &val)
@@ -19,11 +24,23 @@ namespace gspc
 
       std::list<std::pair<key_type, value_type> > kv_pairs;
       kv_pairs.push_back (std::list<std::pair<key_type, value_type> >::value_type (key,val));
-      return this->do_put (kv_pairs);
+      return this->put (kv_pairs);
     }
 
     int api_t::put (std::list<std::pair<key_type, value_type> > const &lst)
     {
+      typedef std::list<std::pair<key_type, value_type> > kv_list_t;
+
+      kv_list_t::const_iterator it = lst.begin ();
+      const kv_list_t::const_iterator end = lst.end ();
+      while (it != end)
+      {
+        if (not is_key_valid (it->first))
+          return -EKEYREJECTED;
+
+        ++it;
+      }
+
       return this->do_put (lst);
     }
 
@@ -68,6 +85,10 @@ namespace gspc
       return this->do_set_ttl_regex (regex, ttl);
     }
 
+    int api_t::push (key_type const &key, const char *val)
+    {
+      return this->push (key, std::string (val));
+    }
     int api_t::push (key_type const &key, value_type const &val)
     {
       if (not is_key_valid (key))
@@ -77,10 +98,24 @@ namespace gspc
     }
     int api_t::pop (key_type const &key, value_type &val)
     {
+      return this->pop (key, val, -1);
+    }
+    int api_t::pop (key_type const &key, value_type &val, int timeout)
+    {
       if (not is_key_valid (key))
         return -EKEYREJECTED;
 
-      return this->do_pop (key, val);
+      int rc = -EAGAIN;
+      while (rc == -EAGAIN || rc == -ENOKEY || rc > 0)
+      {
+        rc = this->do_try_pop (key, val);
+        if (0 == rc)
+          break;
+
+        rc = this->do_wait (key, E_PUSH | E_POPABLE, timeout);
+      }
+
+      return rc;
     }
     int api_t::try_pop (key_type const &key, value_type &val)
     {
@@ -90,19 +125,12 @@ namespace gspc
       return this->do_try_pop (key, val);
     }
 
-    int api_t::counter_reset     (key_type const &key, int  val)
+    int api_t::counter_reset (key_type const &key, int  val)
     {
       if (not is_key_valid (key))
         return -EKEYREJECTED;
 
       return this->do_counter_reset (key, val);
-    }
-    int api_t::counter_increment (key_type const &key, int &val, int delta)
-    {
-      if (not is_key_valid (key))
-        return -EKEYREJECTED;
-
-      return this->do_counter_change (key, val, delta < 0 ? -delta : delta);
     }
     int api_t::counter_increment (key_type const &key, int &val)
     {
@@ -111,20 +139,35 @@ namespace gspc
 
       return this->do_counter_change (key, val, 1);
     }
-
-    int api_t::counter_decrement (key_type const &key, int &val, int delta)
-    {
-      if (not is_key_valid (key))
-        return -EKEYREJECTED;
-
-      return this->do_counter_change (key, val, delta > 0 ? -delta : delta);
-    }
     int api_t::counter_decrement (key_type const &key, int &val)
     {
       if (not is_key_valid (key))
         return -EKEYREJECTED;
 
       return this->do_counter_change (key, val, -1);
+    }
+    int api_t::counter_change (key_type const &key, int &val, int delta)
+    {
+      if (not is_key_valid (key))
+        return -EKEYREJECTED;
+
+      return this->do_counter_change (key, val, delta);
+    }
+
+    int api_t::wait (key_type const &key) const
+    {
+      return wait (key, E_EXIST, -1);
+    }
+    int api_t::wait (key_type const &key, int mask) const
+    {
+      return wait (key, mask, -1);
+    }
+    int api_t::wait (key_type const &key, int mask, int timeout) const
+    {
+      if (not is_key_valid (key))
+        return -EKEYREJECTED;
+
+      return this->do_wait (key, mask, timeout);
     }
   }
 }
