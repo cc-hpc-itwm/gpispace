@@ -35,11 +35,11 @@ namespace fhg
         return m_value;
       }
 
-      atomic<value_type> & operator++ ()
+      value_type operator++ ()
       {
         lock_type lock (m_mutex);
         ++m_value;
-        return *this;
+        return m_value;
       }
 
       atomic<value_type> operator++ (int)
