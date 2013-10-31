@@ -986,11 +986,11 @@ namespace fhg
             const long to (range.to());
             const long visible_range (range.length());
 
-            const qreal scale (qreal (rect.width()) / (to - from));
+            const qreal scale (qreal (rect.width()) / visible_range);
             const long available_pixels (rect.width());
             const long minimum_pixels_per_tick (15);
             const long maximum_ticks (available_pixels / minimum_pixels_per_tick);
-            const long small_tick_interval (visible_range / maximum_ticks / 10 * 10);
+            const long small_tick_interval (std::max (3L, visible_range / maximum_ticks / 10 * 10));
             const long large_tick_interval (small_tick_interval * 10);
 
             const QString& format (format_for_distance (large_tick_interval));
