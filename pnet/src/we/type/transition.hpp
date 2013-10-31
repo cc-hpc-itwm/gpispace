@@ -365,27 +365,6 @@ namespace we { namespace type {
         inner_to_outer_.erase (port_id);
       }
 
-      void add_port ( const std::string & name
-                    , pnet::type::signature::signature_type const & sig
-                    , const we::type::PortDirection& direction
-                    , const we::type::property::type & prop
-                      = we::type::property::type()
-                    )
-      {
-        add_port (port_t (name, direction, sig, prop));
-      }
-
-      void add_port ( const std::string & name
-                    , pnet::type::signature::signature_type const & sig
-                    , const we::type::PortDirection& direction
-                    , const petri_net::place_id_type& pid
-                    , const we::type::property::type & prop
-                      = we::type::property::type()
-                    )
-      {
-        add_port (port_t (name, direction, sig, pid, prop));
-      }
-
       petri_net::port_id_type input_port_by_name (const std::string & port_name) const
       {
         for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
