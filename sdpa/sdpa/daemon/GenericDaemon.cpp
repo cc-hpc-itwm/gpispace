@@ -338,7 +338,7 @@ void GenericDaemon::shutdown( )
 
     handleInterruptEvent();
 
-    setStopped();
+    m_bStopped = true;
 
     cond_can_stop_.notify_one();
 
