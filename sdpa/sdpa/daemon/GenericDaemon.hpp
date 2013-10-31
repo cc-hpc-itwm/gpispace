@@ -175,8 +175,6 @@ namespace sdpa {
       virtual bool requestsAllowed();
       void interrupt();
 
-      virtual sdpa::status_t getCurrentState() { throw std::runtime_error("not implemented by the generic daemon!"); }
-
       bool isOwnCapability(const sdpa::capability_t& cpb)
       {
     	  return (cpb.owner()==name());

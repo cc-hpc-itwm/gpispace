@@ -247,14 +247,6 @@ namespace sdpa {
     	  //SDPA_LOG_DEBUG("Process ErrorEvent");
     	  process_event(*pEvent);
       }
-
-      sdpa::status_t DaemonFSM::getCurrentState()
-      {
-    	  //SDPA_LOG_INFO("Look for the status of the job "<<id());
-    	  sdpa::status_t status(agent_state_names[*current_state()]);
-    	  //SDPA_LOG_INFO("The current status of the agent is "<<status);
-    	  return status;
-      }
     }
   }
 }

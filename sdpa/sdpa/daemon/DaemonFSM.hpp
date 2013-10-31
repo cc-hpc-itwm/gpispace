@@ -32,8 +32,6 @@
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
-char const* const agent_state_names[] = { "Down", "Configuring", "Up" };
-
 namespace sdpa {
   namespace fsm {
     namespace bmsm {
