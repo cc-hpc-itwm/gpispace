@@ -354,14 +354,9 @@ namespace we { namespace type {
         connect_inner_to_outer (output_port_by_name (name), pid, prop);
       }
 
-      // UNSAFE: does not check for already existing port, use with care
-      petri_net::port_id_type UNSAFE_add_port (const port_t & port)
+      void add_port (port_t const& port)
       {
-        petri_net::port_id_type port_id = port_id_counter_++;
-
-        ports_.insert (std::make_pair (port_id, port));
-
-        return port_id;
+        ports_.insert (std::make_pair (port_id_counter_++, port));
       }
 
       void erase_port (const petri_net::port_id_type & port_id)
@@ -377,12 +372,7 @@ namespace we { namespace type {
                       = we::type::property::type()
                     )
       {
-        switch (direction)
-          {
-          case PORT_IN: this->add_input_port (name, sig, prop); break;
-          case PORT_OUT: this->add_output_port (name, sig, prop); break;
-          case PORT_TUNNEL: this->add_tunnel (name, sig, prop); break;
-          }
+        add_port (port_t (name, direction, sig, prop));
       }
 
       void add_port ( const std::string & name
@@ -393,81 +383,7 @@ namespace we { namespace type {
                       = we::type::property::type()
                     )
       {
-        switch (direction)
-          {
-          case PORT_IN: this->add_input_port (name, sig, pid, prop); break;
-          case PORT_OUT: this->add_output_port (name, sig, pid, prop); break;
-          case PORT_TUNNEL: this->add_tunnel (name, sig, pid, prop); break;
-          }
-      }
-
-      void add_input_port ( const std::string & port_name
-                          , const pnet::type::signature::signature_type & signature
-                          , const we::type::property::type & prop
-                          )
-      {
-        const port_t port (port_name, PORT_IN, signature, prop);
-        const petri_net::port_id_type port_id (port_id_counter_++);
-
-        ports_.insert (std::make_pair (port_id, port));
-      }
-
-      void add_input_port ( const std::string & port_name
-                          , const pnet::type::signature::signature_type & signature
-                          , const petri_net::place_id_type& associated_place
-                          , const we::type::property::type & prop
-                          )
-      {
-        const port_t port (port_name, PORT_IN, signature, associated_place, prop);
-        const petri_net::port_id_type port_id (port_id_counter_++);
-
-        ports_.insert (std::make_pair (port_id, port));
-      }
-
-      void add_output_port ( const std::string & port_name
-                           , const pnet::type::signature::signature_type & signature
-                           , const we::type::property::type & prop
-                           )
-      {
-        const port_t port (port_name, PORT_OUT, signature, prop);
-        const petri_net::port_id_type port_id (port_id_counter_++);
-
-        ports_.insert (std::make_pair (port_id, port));
-      }
-
-      void add_tunnel ( const std::string & port_name
-                      , const pnet::type::signature::signature_type & signature
-                      , const petri_net::place_id_type& associated_place
-                      , const we::type::property::type & prop
-                      )
-      {
-        const port_t port (port_name, PORT_TUNNEL, signature, associated_place, prop);
-        const petri_net::port_id_type port_id (port_id_counter_++);
-
-        ports_.insert (std::make_pair (port_id, port));
-      }
-
-      void add_tunnel ( const std::string & port_name
-                      , const pnet::type::signature::signature_type & signature
-                      , const we::type::property::type & prop
-                      )
-      {
-        const port_t port (port_name, PORT_OUT, signature, prop);
-        const petri_net::port_id_type port_id (port_id_counter_++);
-
-        ports_.insert (std::make_pair (port_id, port));
-      }
-
-      void add_output_port ( const std::string & port_name
-                           , const pnet::type::signature::signature_type & signature
-                           , const petri_net::place_id_type& associated_place
-                           , const we::type::property::type & prop
-                           )
-      {
-        const port_t port (port_name, PORT_OUT, signature, associated_place, prop);
-        const petri_net::port_id_type port_id (port_id_counter_++);
-
-        ports_.insert (std::make_pair (port_id, port));
+        add_port (port_t (name, direction, sig, pid, prop));
       }
 
       petri_net::port_id_type input_port_by_name (const std::string & port_name) const

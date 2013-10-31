@@ -336,7 +336,7 @@ namespace we { namespace type {
           {
             if (p->second.is_output())
               {
-                pred.UNSAFE_add_port (p->second);
+                pred.add_port (p->second);
 
                 const petri_net::place_id_type pid (trans.inner_to_outer (p->first));
 
@@ -363,7 +363,7 @@ namespace we { namespace type {
                       {
                         if (not input_port_by_pid (pred, pid))
                           {
-                            pred.UNSAFE_add_port (p->second);
+                            pred.add_port (p->second);
 
                             connection_t connection (net.get_connection_in (tid_trans, pid));
 
