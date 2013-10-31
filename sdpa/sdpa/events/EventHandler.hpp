@@ -14,7 +14,6 @@ namespace sdpa
     class DeleteJobAckEvent;
     class DeleteJobEvent;
     class ErrorEvent;
-    class InterruptEvent;
     class JobFailedAckEvent;
     class JobFailedEvent;
     class JobFinishedAckEvent;

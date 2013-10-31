@@ -10,7 +10,6 @@
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/InterruptEvent.hpp>
 #include <sdpa/events/JobFailedAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
