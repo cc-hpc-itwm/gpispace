@@ -897,9 +897,11 @@ namespace fhg
 
         case execution_monitor_proxy::gantt_column:
           return new execution_monitor_editor (this, index, parent);
-        }
 
-        //! \note Is asserted above.
+        case execution_monitor_proxy::current_states_column:
+          //! \note asserted above, but throwing a warning in release builds
+          throw std::runtime_error ("can't create editor for non-editable section");
+        }
       }
 
       void execution_monitor_delegate::release_editor
