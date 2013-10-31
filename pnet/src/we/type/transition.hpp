@@ -286,28 +286,13 @@ namespace we { namespace type {
         }
       }
 
-      inner_to_outer_t::const_iterator
-      inner_to_outer_begin (void) const
+      inner_to_outer_t const& inner_to_outer() const
       {
-        return inner_to_outer_.begin();
+        return inner_to_outer_;
       }
-
-      inner_to_outer_t::const_iterator
-      inner_to_outer_end (void) const
+      outer_to_inner_t const& outer_to_inner() const
       {
-        return inner_to_outer_.end();
-      }
-
-      outer_to_inner_t::const_iterator
-      outer_to_inner_begin (void) const
-      {
-        return outer_to_inner_.begin();
-      }
-
-      outer_to_inner_t::const_iterator
-      outer_to_inner_end (void) const
-      {
-        return outer_to_inner_.end();
+        return outer_to_inner_;
       }
 
       void add_connection ( const petri_net::place_id_type& pid
