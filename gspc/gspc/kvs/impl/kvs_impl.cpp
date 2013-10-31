@@ -468,9 +468,10 @@ namespace gspc
     {
       purge_expired_keys ();
 
+      shared_lock glock (m_mutex);
+
       if (mask & (E_POPABLE | E_EXIST | E_DEL))
       {
-        shared_lock lock (m_mutex);
         value_map_t::const_iterator it = m_values.find (key);
 
         if (it != m_values.end ())
@@ -499,14 +500,16 @@ namespace gspc
       waiting_t wobject (key, mask);
 
       {
-        unique_lock lock (m_waiting_mutex);
+        unique_lock wlock (m_waiting_mutex);
         m_waiting.push_back (&wobject);
       }
+
+      glock.unlock ();
 
       int rc = wobject.wait (timeout_in_ms);
 
       {
-        unique_lock lock (m_waiting_mutex);
+        unique_lock wlock (m_waiting_mutex);
         m_waiting.remove (&wobject);
       }
 
