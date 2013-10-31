@@ -219,6 +219,11 @@ namespace pnet
             case ::expr::token::_stack_join:
               return bin_require ("list", "list", b.token, l, r, "list");
 
+            case ::expr::token::_stack_push:
+              return one_of (b.token, l)
+                . allow ("list")
+                . check();
+
             default:
               break;
             }

@@ -526,3 +526,12 @@ BOOST_AUTO_TEST_CASE (stack_join)
                 ", expected are types 'list' and 'list'"
               );
 }
+
+BOOST_AUTO_TEST_CASE (stack_push)
+{
+  std::string const exp ("stack_push (${a}, ${b})");
+
+  BINEQ_ONE_OF (exp, "stack_push")
+    . allow ("list")
+    . check();
+}
