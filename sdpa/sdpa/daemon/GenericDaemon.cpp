@@ -321,28 +321,20 @@ void GenericDaemon::shutdown(std::string& strBackup )
 
 /**
  * Shutdown an agent
- * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] bkpFile Backup file for the agent
- * @param[in] cfgFile Configuration file of the agent
  */
 void GenericDaemon::shutdown( )
 {
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
 	if( !isStopped() )
   {
-    DMLOG (TRACE, "Stopping the agent "<<name());
-
     shutdown_network();
     scheduler()->stop();
     m_threadBkpService.stop();
 
     {
-      DMLOG (TRACE, "Call 'action_interrupt'");
+      //! \todo OLD COMMENT, STILL VALID? TODO?
       // save the current state of the system .i.e serialize the daemon's state
-      // the following code shoud be executed on action action_interrupt!
 
-      // save the current state of the system .i.e serialize the daemon's state
-      // the following code shoud be executed on action action_interrupt!
       lock_type lock(mtx_stop_);
       setRequestsAllowed(false);
       //m_bStarted 	= false;
@@ -357,14 +349,12 @@ void GenericDaemon::shutdown( )
 
     cond_can_stop_.notify_one();
 
-    // wait to be stopped
     {
       lock_type lock(mtx_stop_);
       while(!m_bStopped)
         cond_can_stop_.wait(lock);
     }
 
-    // stop the daemon stage
     seda::StageRegistry::instance().lookup(name())->stop();
     seda::StageRegistry::instance().remove(name());
 
