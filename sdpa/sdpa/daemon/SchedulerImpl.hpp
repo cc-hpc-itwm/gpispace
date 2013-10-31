@@ -72,7 +72,6 @@ namespace sdpa {
 			      const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
 
       virtual void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
-      void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
       virtual void getWorkerList(sdpa::worker_id_list_t&);
       void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
