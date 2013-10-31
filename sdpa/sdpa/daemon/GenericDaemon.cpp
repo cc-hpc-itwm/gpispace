@@ -331,14 +331,11 @@ void GenericDaemon::shutdown( )
     scheduler()->stop();
     m_threadBkpService.stop();
 
-    {
-      //! \todo OLD COMMENT, STILL VALID? TODO?
-      // save the current state of the system .i.e serialize the daemon's state
+    //! \todo OLD COMMENT, STILL VALID? TODO?
+    // save the current state of the system .i.e serialize the daemon's state
 
-      m_bRequestsAllowed = false;
-      //m_bStarted 	= false;
-      m_bStopped 	= true;
-    }
+    m_bRequestsAllowed = false;
+    m_bStopped 	= true;
 
     handleInterruptEvent();
 
