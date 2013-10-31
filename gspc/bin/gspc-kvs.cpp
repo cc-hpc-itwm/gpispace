@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include <boost/foreach.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <fhg/util/read.hpp>
 #include <we/type/value.hpp>
@@ -201,7 +202,7 @@ int main (int argc, char *argv [], char *envp [])
 
       try
       {
-        kvs = gspc::kvs::create (argv [i++]);
+        kvs.reset (gspc::kvs::create (argv [i++]));
       }
       catch (std::exception const &ex)
       {
