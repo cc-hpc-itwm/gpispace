@@ -276,7 +276,7 @@ namespace sdpa {
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
     protected:
-      virtual void createScheduler(bool bUseReqModel) {} // = 0;
+      virtual void createScheduler(bool bUseReqModel) = 0;
       virtual void schedule(const sdpa::job_id_t& job);
       virtual void reschedule(const sdpa::job_id_t& job);
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
