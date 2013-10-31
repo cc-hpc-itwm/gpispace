@@ -336,7 +336,21 @@ void GenericDaemon::shutdown( )
     scheduler()->stop();
     m_threadBkpService.stop();
 
-    action_interrupt();
+    {
+      DMLOG (TRACE, "Call 'action_interrupt'");
+      // save the current state of the system .i.e serialize the daemon's state
+      // the following code shoud be executed on action action_interrupt!
+
+      // save the current state of the system .i.e serialize the daemon's state
+      // the following code shoud be executed on action action_interrupt!
+      lock_type lock(mtx_stop_);
+      setRequestsAllowed(false);
+      //m_bStarted 	= false;
+      m_bStopped 	= true;
+
+      cond_can_stop_.notify_one();
+    }
+
     handleInterruptEvent();
 
     m_bStopped = true;
@@ -511,22 +525,6 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
 {
   DMLOG (TRACE, "the configuration phase failed!");
-}
-
-void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
-{
-  DMLOG (TRACE, "Call 'action_interrupt'");
-  // save the current state of the system .i.e serialize the daemon's state
-  // the following code shoud be executed on action action_interrupt!
-
-   // save the current state of the system .i.e serialize the daemon's state
-   // the following code shoud be executed on action action_interrupt!
-   lock_type lock(mtx_stop_);
-   setRequestsAllowed(false);
-   //m_bStarted 	= false;
-   m_bStopped 	= true;
-
-   cond_can_stop_.notify_one();
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )

@@ -214,7 +214,6 @@ namespace sdpa {
       virtual void action_configure( const sdpa::events::StartUpEvent& );
       virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
       virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
-      virtual void action_interrupt( const sdpa::events::InterruptEvent& );
       virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
       virtual void action_request_job( const sdpa::events::RequestJobEvent& );
       virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
