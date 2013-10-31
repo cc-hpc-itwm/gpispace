@@ -59,8 +59,8 @@ namespace sdpa {
       job_id_t const jobId() { return m_job_id; }
 
     private:
-      size_t m_capacity;
       job_id_t m_job_id;
+      size_t m_capacity;
       worker_id_list_t m_list_workers;
       map_worker_result_t m_map_worker_result;
     };
