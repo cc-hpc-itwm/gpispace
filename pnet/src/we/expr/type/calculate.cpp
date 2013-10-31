@@ -211,6 +211,11 @@ namespace pnet
             case ::expr::token::_bitset_is_element:
               return require ("bitset", "long", b.token, l, r, "bool");
 
+            case ::expr::token::_bitset_or:
+            case ::expr::token::_bitset_and:
+            case ::expr::token::_bitset_xor:
+              return require ("bitset", "bitset", b.token, l, r, "bitset");
+
             default:
               break;
             }

@@ -289,6 +289,39 @@ BOOST_AUTO_TEST_CASE (bitset_is_element)
               );
 }
 
+BOOST_AUTO_TEST_CASE (bitset_or)
+{
+  BIN_REQUIRE ( "bitset_or (${a}, ${b})"
+              , "bitset"
+              , "bitset"
+              , "bitset"
+              , "'bitset_or' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'bitset'"
+              );
+}
+
+BOOST_AUTO_TEST_CASE (bitset_and)
+{
+  BIN_REQUIRE ( "bitset_and (${a}, ${b})"
+              , "bitset"
+              , "bitset"
+              , "bitset"
+              , "'bitset_and' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'bitset'"
+              );
+}
+
+BOOST_AUTO_TEST_CASE (bitset_xor)
+{
+  BIN_REQUIRE ( "bitset_xor (${a}, ${b})"
+              , "bitset"
+              , "bitset"
+              , "bitset"
+              , "'bitset_xor' for types '%1%' and '%2%'"
+                ", expected are types 'bitset' and 'bitset'"
+              );
+}
+
 BOOST_AUTO_TEST_CASE (_or)
 {
   BIN_REQUIRE ( "${a} || ${b}"
