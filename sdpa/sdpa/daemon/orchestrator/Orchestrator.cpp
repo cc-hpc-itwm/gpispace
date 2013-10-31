@@ -107,31 +107,14 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   {
     Worker::worker_id_t worker_id = pEvt->from();
     id_type act_id = pEvt->job_id();
-    bool bTaskGroupComputed(false);
 
     try {
       result_type output = pEvt->result();
 
       if( hasWorkflowEngine() )
       {
-          // update the status of the reservation
-          scheduler()->workerFinished(worker_id, act_id);
-          bTaskGroupComputed = scheduler()->allPartialResultsCollected(act_id);
-
-          // if all the partial results were collected, notify the workflow engine
-          // about the status of the job (either finished, or failed
-          // the group is finished when all the partial results are "finished"
-          if(bTaskGroupComputed) {
-              DLOG(TRACE, "Inform WE that the activity "<<act_id<<" finished");
-              if(scheduler()->groupFinished(act_id))
-                workflowEngine()->finished(act_id, output);
-              else
-                workflowEngine()->failed( act_id,
-                                          output,
-                                          sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
-                                          "One of tasks of the group failed with the actual reservation!");
-          }
-
+          SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<act_id<<" finished");
+          workflowEngine()->finished(act_id, output);
       }
       else
       {
@@ -143,9 +126,6 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       try {
           DMLOG (TRACE, "Remove job "<<act_id<<" from the worker "<<worker_id);
           scheduler()->deleteWorkerJob ( worker_id, act_id );
-          if(bTaskGroupComputed) {
-              scheduler()->releaseReservation(pJob->id());
-          }
       }
       catch(WorkerNotFoundException const &)
       {
@@ -164,8 +144,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       {
           try {
               //delete it also from job_map_
-              if(bTaskGroupComputed)
-                jobManager()->deleteJob(act_id);
+            jobManager()->deleteJob(act_id);
           }
           catch(JobNotDeletedException const &)
           {
@@ -221,7 +200,6 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
       return;
   }
 
-  bool bTaskGroupComputed(false);
   // It's an worker who has sent the message
   if( (pEvt->from() != sdpa::daemon::WE) )
   {
@@ -234,19 +212,11 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         if( hasWorkflowEngine() )
         {
             SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" failed");
-            scheduler()->workerFailed(worker_id, actId);
-            bTaskGroupComputed = scheduler()->allPartialResultsCollected(actId);
-
-            // if all the partial results were collected, notify the workflow engine
-            // about the status of the job (either finished, or failed
-            // the group is finished when all the partial results are "finished"
-            if(bTaskGroupComputed) {
-                workflowEngine()->failed( actId
-                                          , output
-                                          , pEvt->error_code()
-                                          , pEvt->error_message()
+            workflowEngine()->failed( actId
+                                    , output
+                                    , pEvt->error_code()
+                                    , pEvt->error_message()
                                     );
-            }
         }
         else
         {
@@ -258,9 +228,6 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         try {
             SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker "<<worker_id<<"'s queues");
             scheduler()->deleteWorkerJob(worker_id, pJob->id());
-            if(bTaskGroupComputed)
-              scheduler()->releaseReservation(pJob->id());
-
         }
         catch(const WorkerNotFoundException&)
         {
@@ -275,8 +242,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         {
           try {
               //delete it also from job_map_
-              if(bTaskGroupComputed)
-                jobManager()->deleteJob(pEvt->job_id());
+              jobManager()->deleteJob(pEvt->job_id());
           }
           catch(const JobNotDeletedException&)
           {
@@ -311,10 +277,8 @@ void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 
     try
     {
-      if(hasWorkflowEngine()) {
+      if(hasWorkflowEngine())
         workflowEngine()->cancelled(jobId);
-        scheduler()->releaseReservation(jobId);
-      }
 
       if(!isTop())
         jobManager()->deleteJob(jobId);
@@ -482,7 +446,6 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
         LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
         scheduler()->deleteWorkerJob(worker_id, pEvt->job_id());
-        scheduler()->releaseReservation(pEvt->job_id());
     }
     catch (const WorkerNotFoundException&)
     {
