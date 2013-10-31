@@ -57,7 +57,6 @@ namespace module
     typedef activity_t::input_t input_t;
     typedef activity_t::output_t output_t;
     typedef we::type::port_t port_t;
-    typedef we::type::transition_t::const_iterator port_iterator;
 
     context_t context;
     for ( input_t::const_iterator top (act.input().begin())

@@ -559,69 +559,67 @@ namespace we { namespace type {
                     }
                 }
 
-              for ( typename transition_t::inner_to_outer_t::const_iterator
-                      connection (trans.inner_to_outer_begin())
-                  ; connection != trans.inner_to_outer_end()
-                  ; ++connection
-                  )
+              BOOST_FOREACH
+                ( typename transition_t::inner_to_outer_t::value_type const& c
+                , trans.inner_to_outer()
+                )
+              {
+                level (s, l + 1)
+                  << name ( id_trans
+                          , "port_" + fhg::util::show (c.first)
+                          )
+                  << arrow
+                  << name ( id_net
+                          , "place_" + fhg::util::show (c.second.first)
+                          )
+                  << std::endl
+                  ;
+              }
+
+              BOOST_FOREACH
+                ( typename transition_t::outer_to_inner_t::value_type const& c
+                , trans.outer_to_inner()
+                )
+              {
+                bool found (false);
+                bool is_read (false);
+
+                BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                              , net.in_to_transition (trans_id)
+                              | boost::adaptors::map_keys
+                              )
                 {
-                  level (s, l + 1)
-                    << name ( id_trans
-                            , "port_" + fhg::util::show (connection->first)
-                            )
-                    << arrow
-                    << name ( id_net
-                            , "place_" + fhg::util::show (connection->second.first)
-                            )
-                    << std::endl
-                    ;
+                  if (place_id == c.first)
+                  {
+                    found = true;
+
+                    is_read = net.is_read_connection (trans_id, place_id);
+
+                    break;
+                  }
                 }
 
-              for ( typename transition_t::outer_to_inner_t::const_iterator
-                      connection (trans.outer_to_inner_begin())
-                  ; connection != trans.outer_to_inner_end()
-                  ; ++connection
-                  )
+                if (!found)
                 {
-                  bool found (false);
-                  bool is_read (false);
-
-                  BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                                , net.in_to_transition (trans_id)
-                                | boost::adaptors::map_keys
-                                )
-                    {
-                      if (place_id == connection->first)
-                        {
-                          found = true;
-
-                          is_read = net.is_read_connection (trans_id, place_id);
-
-                          break;
-                        }
-                    }
-
-                  if (!found)
-                    {
-                      throw std::runtime_error
-                         ("STRANGE! Connected in port but not in net!");
-                    }
-
-                  level (s, l + 1)
-                    << name ( id_net
-                            , "place_" + fhg::util::show (connection->first)
-                            )
-                    << arrow
-                    << name ( id_trans
-                            , "port_" + fhg::util::show (connection->second.first)
-                            )
-                    << ( is_read
-                       ? brackets (keyval ("style", style::read_connection))
-                       : ""
-                       )
-                    << std::endl
-                    ;
+                  throw std::runtime_error
+                    ("STRANGE! Connected in port but not in net!");
                 }
+
+                level (s, l + 1)
+                  << name ( id_net
+                          , "place_" + fhg::util::show (c.first)
+                          )
+                  << arrow
+                  << name ( id_trans
+                          , "port_" + fhg::util::show (c.second.first)
+                          )
+                  << ( is_read
+                     ? brackets (keyval ("style", style::read_connection))
+                     : ""
+                     )
+                  << std::endl
+                  ;
+              }
             }
 
           level (s, l + 1) << bgcolor (color::internal);
@@ -695,46 +693,44 @@ namespace we { namespace type {
                   )
           ;
 
-        for ( typename trans_t::const_iterator p (t.ports_begin())
-            ; p != t.ports_end()
-            ; ++p
-            )
-          {
-            level (s, l + 1)
-              << name (id_trans, "port_" + fhg::util::show(p->first))
-              << node ( shape::port (p->second)
-                      , with_signature ( p->second.name()
-                                       , p->second.signature()
-                                       , opts
-                                       )
+        BOOST_FOREACH ( typename trans_t::port_map_t::value_type const& p
+                      , t.ports()
                       )
-              ;
-          }
+        {
+          level (s, l + 1)
+            << name (id_trans, "port_" + fhg::util::show (p.first))
+            << node ( shape::port (p.second)
+                    , with_signature ( p.second.name()
+                                     , p.second.signature()
+                                     , opts
+                                     )
+                    )
+            ;
+        }
 
         if (opts.predicate (t))
           {
             s << boost::apply_visitor
                  (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
 
-            for ( typename trans_t::const_iterator p (t.ports_begin())
-                ; p != t.ports_end()
-                ; ++p
-                )
+            BOOST_FOREACH ( typename trans_t::port_map_t::value_type const& p
+                          , t.ports()
+                          )
+            {
+              if (p.second.has_associated_place())
               {
-                if (p->second.has_associated_place())
-                  {
-                    level (s, l + 1)
-                      << name (id_trans, "port_" + fhg::util::show (p->first))
-                      << arrow
-                      << name (id_trans
-                              , "place_"
-                              + fhg::util::show (p->second.associated_place())
-                              )
-                      << association()
-                      << std::endl
-                      ;
-                  }
+                level (s, l + 1)
+                  << name (id_trans, "port_" + fhg::util::show (p.first))
+                  << arrow
+                  << name (id_trans
+                          , "place_"
+                          + fhg::util::show (p.second.associated_place())
+                          )
+                  << association()
+                  << std::endl
+                  ;
               }
+            }
           }
 
         switch (boost::apply_visitor (content::visitor (), t.data()))
