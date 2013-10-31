@@ -238,6 +238,10 @@ namespace fhg
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           return QVariant::fromValue (_visible_ranges[index].to());
 
+        case visible_range_length_role:
+          fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
+          return QVariant::fromValue (_visible_ranges[index].length());
+
         case automatically_move_role:
           fhg_assert (_column_types[index] == gantt_column, "automatically moving only defined for gantt columns");
           return _auto_moving.contains (index);
@@ -274,7 +278,6 @@ namespace fhg
         else if (role == visible_range_to_role)
         {
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-
           _visible_ranges[index].to ( util::qt::stores<QDateTime> (variant)
                                     ? ( util::qt::value<QDateTime> (variant)
                                       .toMSecsSinceEpoch()
@@ -284,6 +287,11 @@ namespace fhg
                                       )
                                     : util::qt::value<int> (variant)
                                     );
+        }
+        else if (role == visible_range_length_role)
+        {
+          fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
+          _visible_ranges[index].length (util::qt::value<int> (variant));
         }
         else if (role == automatically_move_role)
         {

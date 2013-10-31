@@ -30,6 +30,7 @@ namespace fhg
           //! \note worker_model has first three
           visible_range_role = Qt::UserRole + 100,
           visible_range_to_role,
+          visible_range_length_role,
           automatically_move_role,
           elapsed_time_role,
           column_type_role
@@ -52,6 +53,7 @@ namespace fhg
           {
             return _length;
           }
+          void length (long l) { _length = l; }
           visible_range_type (long t = 0)
             : _to (t)
             , _length (1)
