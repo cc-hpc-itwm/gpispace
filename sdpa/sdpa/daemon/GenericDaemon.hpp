@@ -135,7 +135,7 @@ namespace sdpa {
 
       NotificationService* gui_service() { return &m_guiService; }
 
-      virtual void handleInterruptEvent();
+      virtual void handleInterruptEvent() = 0;
 
     protected:
 
