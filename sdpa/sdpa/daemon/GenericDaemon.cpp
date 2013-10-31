@@ -325,7 +325,7 @@ void GenericDaemon::shutdown(std::string& strBackup )
 void GenericDaemon::shutdown( )
 {
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
-	if( !isStopped() )
+  if (!m_bStopped)
   {
     shutdown_network();
     scheduler()->stop();

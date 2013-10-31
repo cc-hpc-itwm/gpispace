@@ -168,7 +168,6 @@ namespace sdpa {
       bool isConfigured(){ return m_bConfigOk; }
       void setConfigured(bool bVal = true) { m_bConfigOk = bVal; }
 
-      bool isStopped(){ return m_bStopped;  }
       void setStopped(bool bVal = true) { m_bStopped = bVal; }
 
       void setRequestsAllowed(bool bVal = true) { m_bRequestsAllowed = bVal; }
