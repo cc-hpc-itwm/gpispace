@@ -70,7 +70,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     ptr_job_man_(new JobManager(name)),
     ptr_scheduler_(),
     ptr_workflow_engine_(NULL),
-
     m_nRank(rank),
     m_nCap(cap),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
@@ -81,8 +80,8 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_bConfigOk(false),
     m_bStopped(false),
     m_threadBkpService(this),
-    m_last_request_time(0)
- , m_guiService ("GSPC", guiUrl)
+    m_last_request_time(0),
+    m_guiService ("GSPC", guiUrl)
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
