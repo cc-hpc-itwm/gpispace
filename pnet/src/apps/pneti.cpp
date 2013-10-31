@@ -18,26 +18,24 @@
 
 // ************************************************************************* //
 
-typedef we::type::transition_t::requirements_t requirements_t;
-typedef requirements_t::value_type requirement_t;
-
-std::ostream & operator<<( std::ostream & os
-                         , const requirement_t & req
-                         )
+std::ostream & operator<<
+  ( std::ostream & os
+  , const we::type::requirement_t & req
+  )
 {
-  os << req.value() << " := " << (req.is_mandatory() ? "true" : "false")
-    ;
-  return os;
+  return os << req.value() << " := " << (req.is_mandatory() ? "true" : "false");
 }
 
-std::ostream & operator<<( std::ostream & os
-                         , const requirements_t & requirements
-                         )
+std::ostream & operator<<
+  ( std::ostream & os
+  , const std::list<we::type::requirement_t>& requirements
+  )
 {
-  BOOST_FOREACH(requirement_t const & req, requirements)
+  BOOST_FOREACH (we::type::requirement_t const & req, requirements)
   {
     os << req << std::endl;
   }
+
   return os;
 }
 

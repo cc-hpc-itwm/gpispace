@@ -105,9 +105,6 @@ namespace we { namespace type {
       typedef port_map_t::iterator port_iterator;
       typedef boost::unordered_set<std::string> port_names_t;
 
-      typedef we::type::requirement_t requirement_t;
-      typedef std::list<requirement_t> requirements_t;
-
       transition_t ()
         : name_ ("<<transition unknown>>")
         , data_ (expression_t())
@@ -225,7 +222,7 @@ namespace we { namespace type {
         return data_;
       }
 
-      requirements_t const& requirements (void) const
+      std::list<we::type::requirement_t> const& requirements (void) const
       {
         return _requirements;
       }
@@ -515,12 +512,12 @@ namespace we { namespace type {
         return names;
       }
 
-      void add_requirement ( requirement_t const& r )
+      void add_requirement (we::type::requirement_t const& r)
       {
         _requirements.push_back (r);
       }
 
-      void del_requirement ( requirement_t const& r )
+      void del_requirement (we::type::requirement_t const& r)
       {
         _requirements.remove (r);
       }
@@ -538,7 +535,7 @@ namespace we { namespace type {
 
       we::type::property::type prop_;
 
-      requirements_t _requirements;
+      std::list<we::type::requirement_t> _requirements;
 
     private:
       friend std::ostream& operator<< ( std::ostream &

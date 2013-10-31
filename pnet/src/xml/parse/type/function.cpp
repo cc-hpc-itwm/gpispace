@@ -663,8 +663,6 @@ namespace xml
         typedef we::type::expression_t we_expr_type;
         typedef condition::type we_cond_type;
 
-        typedef we_transition_type::requirement_t we_requirement_type;
-
         typedef boost::unordered_map< std::string
                                     , petri_net::place_id_type
                                     > pid_of_place_type;
@@ -740,7 +738,8 @@ namespace xml
               ; ++r
               )
           {
-            trans.add_requirement (we_requirement_type (r->first, r->second));
+            trans.add_requirement
+              (we::type::requirement_t (r->first, r->second));
           }
         }
 
