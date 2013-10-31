@@ -250,11 +250,6 @@ namespace we { namespace type {
         return name_;
       }
 
-      void set_name (const std::string &name)
-      {
-        name_ = name;
-      }
-
       bool is_internal (void) const
       {
         return internal_;
