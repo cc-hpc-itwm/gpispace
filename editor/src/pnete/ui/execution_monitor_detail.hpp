@@ -11,8 +11,8 @@
 
 #include <QStyledItemDelegate>
 
-class QDateTimeEdit;
 class QCheckBox;
+class QSpinBox;
 
 namespace fhg
 {
@@ -171,7 +171,7 @@ namespace fhg
 
       private:
         QScrollBar* _scrollbar;
-        QDateTimeEdit* _upper;
+        QSpinBox* _visible_range_length;
         QCheckBox* _automove;
 
         util::qt::mvc::section_index _index;

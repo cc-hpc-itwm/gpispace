@@ -14,13 +14,13 @@
 #include <fhg/util/backtracing_exception.hpp>
 
 #include <QCheckBox>
-#include <QDateTimeEdit>
 #include <QHBoxLayout>
 #include <QHelpEvent>
 #include <QLineEdit>
 #include <QMenu>
 #include <QPainter>
 #include <QScrollBar>
+#include <QSpinBox>
 #include <QTimer>
 #include <QToolTip>
 
@@ -778,18 +778,18 @@ namespace fhg
         )
           : QWidget (parent)
           , _scrollbar (new QScrollBar (Qt::Horizontal, this))
-          , _upper (new QDateTimeEdit (this))
+          , _visible_range_length (new QSpinBox (this))
           , _automove (new QCheckBox (tr ("end = now()"), this))
           , _index (index)
       {
         const QDateTime base_time
           (util::qt::value<QDateTime> (index.data (worker_model::base_time_role)));
 
-        _upper->setMinimumDateTime (base_time);
+        _visible_range_length->setMinimum (5000);
+        _visible_range_length->setMaximum (INT_MAX);
+        _visible_range_length->setSuffix (" msec");
         update_maximum();
         update();
-
-        _upper->setDisplayFormat ("dd.MM.yyyy hh:mm:ss");
 
 
         util::qt::boost_connect<void (int)>
@@ -807,12 +807,12 @@ namespace fhg
           );
 
 
-        util::qt::boost_connect<void (QDateTime)>
-          ( _upper, SIGNAL (dateTimeChanged (QDateTime))
+        util::qt::boost_connect<void (int)>
+          ( _visible_range_length, SIGNAL (valueChanged (int))
           , delegate, boost::bind ( &util::qt::mvc::section_index::data
                                   , _index
                                   , _1
-                                  , execution_monitor_proxy::visible_range_to_role
+                                  , execution_monitor_proxy::visible_range_length_role
                                   )
           );
 
@@ -834,13 +834,11 @@ namespace fhg
         new QHBoxLayout (this);
         layout()->addWidget (_scrollbar);
         layout()->addWidget (_automove);
-        layout()->addWidget (_upper);
+        layout()->addWidget (_visible_range_length);
       }
 
       void execution_monitor_editor::update_maximum()
       {
-        const QDateTime now (QDateTime::currentDateTime());
-        _upper->setMaximumDateTime (now);
         _scrollbar->setMaximum
           (util::qt::value<long> (_index.data (execution_monitor_proxy::elapsed_time_role)));
       }
@@ -853,10 +851,8 @@ namespace fhg
           (util::qt::value<execution_monitor_proxy::visible_range_type> (_index.data (execution_monitor_proxy::visible_range_role)));
 
         {
-          util::qt::scoped_signal_block block (_upper);
-          _upper->setDateTime ( QDateTime::fromMSecsSinceEpoch
-                                (base_time.toMSecsSinceEpoch() + visible_range.to())
-                              );
+          util::qt::scoped_signal_block block (_visible_range_length);
+          _visible_range_length->setValue (visible_range.length());
         }
         {
           util::qt::scoped_signal_block block (_scrollbar);
