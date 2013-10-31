@@ -771,3 +771,113 @@ BOOST_AUTO_TEST_CASE (test_net_push_pop)
   server->stop ();
   gspc::net::shutdown ();
 }
+
+BOOST_AUTO_TEST_CASE (test_net_many_push_pop)
+{
+  int rc;
+  gspc::kvs::api_t::value_type val;
+  const std::string queue ("wfh");
+
+  static const size_t NUM = 10;
+  static const size_t NTHREAD = 15;
+
+  // setup server
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*"));
+  gspc::kvs::service_t service;
+  gspc::net::handle ( "/service/kvs"
+                    , gspc::net::service::strip_prefix ( "/service/kvs/"
+                                                       , boost::ref (service)
+                                                       )
+                    );
+
+  std::cerr << "server running on: " << server->url () << std::endl;
+
+  try
+  {
+    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=10000");
+
+    std::vector<boost::shared_ptr<boost::thread> >
+      threads;
+
+    for (size_t i = 0 ; i < NTHREAD ; ++i)
+    {
+      threads.push_back
+        (boost::shared_ptr<boost::thread>
+        (new boost::thread (boost::bind ( &s_wfh_client_thread
+                                        , i
+                                        , &kvs
+                                        , NUM
+                                        , queue
+                                        )
+                           )
+        ));
+    }
+
+    for (size_t i = 0 ; i < NTHREAD*NUM ; ++i)
+    {
+      rc = kvs.pop (queue, val, 1000);
+      if (rc != 0)
+      {
+        std::cerr << "wfh: could not pop #" << i << " from '" << queue << "': "
+                  << strerror (-rc)
+                  << std::endl
+          ;
+
+        kvs.get (queue, val);
+        std::cerr << "wfh: queue content: "
+                  << pnet::type::value::show (val)
+                  << std::endl
+          ;
+
+        break;
+      }
+
+      std::string from =
+        boost::get<std::string>(*pnet::type::value::peek ("from", val));
+      int msg =
+        boost::get<int>(*pnet::type::value::peek ("msg", val));
+
+      rc = kvs.push (from, msg);
+      if (rc != 0)
+      {
+        std::cerr << "wfh: could not push #" << msg << " to '" << from << "': "
+                  << strerror (-rc)
+                  << std::endl
+          ;
+        break;
+      }
+
+      std::cerr << "wfh: sent reply " << i+1 << "/" << NTHREAD*NUM
+                << " for request #" << msg
+                << " to '" << from << "'"
+                << std::endl
+        ;
+    }
+
+    if (0 == rc)
+    {
+      std::cerr << "wfh: everything done" << std::endl;
+    }
+    else
+    {
+      std::cerr << "wfh: failed: " << strerror (-rc) << std::endl;
+    }
+
+    for (size_t i = 0 ; i < NTHREAD ; ++i)
+    {
+      threads [i]->join ();
+    }
+  }
+  catch (std::exception const &ex)
+  {
+    server->stop ();
+    gspc::net::shutdown ();
+
+    throw;
+  }
+
+  server->stop ();
+  gspc::net::shutdown ();
+
+  BOOST_REQUIRE_EQUAL (rc, 0);
+}
