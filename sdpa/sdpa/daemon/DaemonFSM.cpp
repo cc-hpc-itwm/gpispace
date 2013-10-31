@@ -213,14 +213,8 @@ namespace sdpa {
 
       void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
       {
-    	  //SDPA_LOG_DEBUG("Process InterruptEvent");
-    	  {
-    		  lock_type lock(mtx_);
-    		  process_event(*pEvent);
-    		  setStopped();
-    	  }
-
-    	  cond_can_stop_.notify_one();
+        lock_type lock(mtx_);
+        process_event(*pEvent);
       }
 
       void DaemonFSM::handleWorkerRegistrationEvent(const WorkerRegistrationEvent* pEvent)

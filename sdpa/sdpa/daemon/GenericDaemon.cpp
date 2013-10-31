@@ -339,6 +339,10 @@ void GenericDaemon::shutdown( )
     InterruptEvent evt;
     handleInterruptEvent (&evt);
 
+    setStopped();
+
+    cond_can_stop_.notify_one();
+
     // wait to be stopped
     {
       lock_type lock(mtx_stop_);
