@@ -326,11 +326,11 @@ namespace we { namespace type {
 
       petri_net::port_id_type input_port_by_name (const std::string& port_name) const
       {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        BOOST_FOREACH (port_map_t::value_type const& p, ports_)
         {
-          if ((p->second.is_input()) && p->second.name() == port_name)
+          if ((p.second.is_input()) && p.second.name() == port_name)
           {
-            return p->first;
+            return p.first;
           }
         }
         throw pnet::exception::port::unknown (name(), port_name);
@@ -338,11 +338,11 @@ namespace we { namespace type {
 
       const petri_net::port_id_type& output_port_by_name (const std::string& port_name) const
       {
-        for (port_map_t::const_iterator p = ports_.begin(); p != ports_.end(); ++p)
+        BOOST_FOREACH (port_map_t::value_type const& p, ports_)
         {
-          if ((p->second.is_output()) && p->second.name() == port_name)
+          if ((p.second.is_output()) && p.second.name() == port_name)
           {
-            return p->first;
+            return p.first;
           }
         }
         throw pnet::exception::port::unknown (name(), port_name);
@@ -350,14 +350,11 @@ namespace we { namespace type {
 
       const port_id_with_prop_t& input_port_by_pid (const petri_net::place_id_type& pid) const
       {
-        for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
-            ; p != outer_to_inner_.end()
-            ; ++p
-            )
+        BOOST_FOREACH (outer_to_inner_t::value_type const& p, outer_to_inner_)
         {
-          if (p->first == pid)
+          if (p.first == pid)
           {
-            return p->second;
+            return p.second;
           }
         }
 
@@ -366,14 +363,11 @@ namespace we { namespace type {
 
       const petri_net::place_id_type& input_pid_by_port_id (const petri_net::port_id_type& port_id) const
       {
-        for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
-            ; p != outer_to_inner_.end()
-            ; ++p
-            )
+        BOOST_FOREACH (outer_to_inner_t::value_type const& p, outer_to_inner_)
         {
-          if (p->second.first == port_id)
+          if (p.second.first == port_id)
           {
-            return p->first;
+            return p.first;
           }
         }
 
@@ -382,14 +376,11 @@ namespace we { namespace type {
 
       port_id_with_prop_t output_port_by_pid (const petri_net::place_id_type& pid) const
       {
-        for ( inner_to_outer_t::const_iterator p (inner_to_outer_.begin())
-            ; p != inner_to_outer_.end()
-            ; ++p
-            )
+        BOOST_FOREACH (inner_to_outer_t::value_type const& p, inner_to_outer_)
         {
-          if (p->second.first == pid)
+          if (p.second.first == pid)
           {
-            return std::make_pair (p->first, p->second.second);
+            return std::make_pair (p.first, p.second.second);
           }
         }
 
@@ -426,16 +417,16 @@ namespace we { namespace type {
 
       const port_t& get_port_by_associated_pid (const petri_net::place_id_type& pid) const
       {
-        for ( port_map_t::const_iterator port (ports_.begin())
-            ; port != ports_.end()
-            ; ++port
-            )
+        BOOST_FOREACH ( we::type::port_t const& port
+                      , ports_ | boost::adaptors::map_values
+                      )
+        {
+          if (port.associated_place() == pid)
           {
-            if (port->second.associated_place() == pid)
-              {
-                return port->second;
-              }
+            return port;
           }
+        }
+
         throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": port not associated with:"+fhg::util::show(pid), pid);
       }
 
@@ -444,18 +435,18 @@ namespace we { namespace type {
                                     , const petri_net::place_id_type& pid_new
                                     )
       {
-        for ( port_map_t::iterator port (ports_.begin())
-            ; port != ports_.end()
-            ; ++port
-            )
+        BOOST_FOREACH ( we::type::port_t& port
+                      , ports_ | boost::adaptors::map_values
+                      )
           {
-            if (port->second.associated_place() == pid_old)
-              {
-                port->second.associated_place() = pid_new;
+            if (port.associated_place() == pid_old)
+            {
+              port.associated_place() = pid_new;
 
-                return;
-              }
+              return;
+            }
           }
+
         throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), pid_old);
       }
 
