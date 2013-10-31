@@ -171,7 +171,6 @@ namespace sdpa {
       bool isStopped(){ return m_bStopped;  }
       void setStopped(bool bVal = true) { m_bStopped = bVal; }
 
-      bool reuestsAllowed() { return m_bRequestsAllowed; }
       void setRequestsAllowed(bool bVal = true) { m_bRequestsAllowed = bVal; }
       virtual void updateLastRequestTime();
       virtual bool requestsAllowed();
