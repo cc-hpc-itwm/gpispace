@@ -631,7 +631,7 @@ namespace we { namespace type {
             return p->first;
           }
         }
-        throw exception::port_undefined("trans: "+name()+": input port not defined:"+port_name, port_name);
+        throw pnet::exception::port::unknown (name(), port_name);
       }
 
       const petri_net::port_id_type& output_port_by_name (const std::string & port_name) const
@@ -643,7 +643,7 @@ namespace we { namespace type {
             return p->first;
           }
         }
-        throw exception::port_undefined("trans: "+name()+": output port not defined:"+port_name, port_name);
+        throw pnet::exception::port::unknown (name(), port_name);
       }
 
       const port_id_with_prop_t& input_port_by_pid (const petri_net::place_id_type & pid) const
@@ -713,7 +713,7 @@ namespace we { namespace type {
         catch (const std::out_of_range &)
         {
           const std::string port_name (fhg::util::show (port_id) );
-          throw exception::port_undefined("trans: "+name()+": port not defined:"+port_name, port_name);
+          throw pnet::exception::port::unknown (name(), port_name);
         }
       }
 
@@ -726,7 +726,7 @@ namespace we { namespace type {
         catch (const std::out_of_range &)
         {
           const std::string port_name (fhg::util::show (port_id) );
-          throw exception::port_undefined("trans: "+name()+": port not defined:"+port_name, port_name);
+          throw pnet::exception::port::unknown (name(), port_name);
         }
       }
 
