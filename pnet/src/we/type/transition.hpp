@@ -53,19 +53,6 @@
 
 namespace we { namespace type {
     namespace exception {
-      struct port_already_defined : std::runtime_error
-      {
-        explicit port_already_defined (const std::string & msg, const std::string & port_name)
-          : std::runtime_error (msg)
-          , port (port_name)
-        {}
-
-        ~port_already_defined () throw ()
-        {}
-
-        const std::string port;
-      };
-
       struct port_undefined : std::runtime_error
       {
         explicit port_undefined (const std::string & msg, const std::string & port_name)
