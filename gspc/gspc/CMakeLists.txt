@@ -40,6 +40,7 @@ set (gspc_src
 
   kvs/api.cpp
   kvs/kvs.cpp
+  kvs/util.cpp
   kvs/impl/kvs_impl.cpp
   kvs/impl/kvs_net_frontend.cpp
   kvs/impl/kvs_net_service.cpp

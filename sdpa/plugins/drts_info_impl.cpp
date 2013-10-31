@@ -1,5 +1,7 @@
 #include "drts_info.hpp"
 #include "drts_info_impl.hpp"
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 namespace gspc
 {
@@ -7,15 +9,35 @@ namespace gspc
   {
     namespace info
     {
-      static std::list<std::string> &s_get_worker_list ()
+      struct drts_info_t
       {
-        static std::list<std::string> worker_list;
-        return worker_list;
+      public:
+        void set_worker_list (std::list<std::string> const &wl)
+        {
+          boost::unique_lock<boost::shared_mutex> lock (m_mutex);
+          m_worker_list = wl;
+        }
+
+        std::list<std::string> get_worker_list () const
+        {
+          boost::shared_lock<boost::shared_mutex> lock (m_mutex);
+          return m_worker_list;
+        }
+      private:
+        mutable boost::shared_mutex m_mutex;
+
+        std::list<std::string> m_worker_list;
+      };
+
+      static drts_info_t & s_get_drts_info ()
+      {
+        static drts_info_t di;
+        return di;
       }
 
-      std::list<std::string> const &worker_list ()
+      std::list<std::string> worker_list ()
       {
-        return s_get_worker_list ();
+        return s_get_drts_info ().get_worker_list ();
       }
 
       std::string worker_to_hostname (std::string const &w)
@@ -34,7 +56,7 @@ namespace gspc
 
       void set_worker_list (std::list<std::string> const &new_worker_list)
       {
-        s_get_worker_list () = new_worker_list;
+        s_get_drts_info ().set_worker_list (new_worker_list);
       }
     }
   }
