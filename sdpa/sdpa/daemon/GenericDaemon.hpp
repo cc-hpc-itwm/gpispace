@@ -165,8 +165,6 @@ namespace sdpa {
       virtual void shutdown_network();
 
       // agent info and properties
-      bool isStarted(){ return m_bStarted;  }
-
       virtual void updateLastRequestTime();
       virtual bool requestsAllowed();
       void interrupt();

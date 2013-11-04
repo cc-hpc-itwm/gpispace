@@ -194,7 +194,7 @@ void GenericDaemon::startup_step2()
   cond_can_start_.notify_one();
 
   lock_type lock(mtx_);
-  while( !isStarted() )
+  while (!m_bStarted)
     cond_can_start_.wait(lock);
 
   if (!m_bConfigOk)
