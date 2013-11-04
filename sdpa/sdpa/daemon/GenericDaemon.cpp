@@ -305,6 +305,11 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
   reScheduleAllMasterJobs();
 }
 
+std::string GenericDaemon::last_backup() const
+{
+	return m_threadBkpService.getLastBackup();
+}
+
 /**
  * Shutdown an agent
  * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
