@@ -48,6 +48,8 @@ namespace sdpa {
         // events
         struct InterruptEvent {};
         struct StartUpEvent {};
+        struct ConfigOkEvent {};
+        struct ConfigNokEvent {};
 
         // the initial state of the DaemonFSM SM. Must be defined
         typedef Down initial_state;
@@ -67,8 +69,8 @@ namespace sdpa {
         _row<   Down,         StartUpEvent,                           Configuring>,
         _irow<  Down,         sdpa::events::ErrorEvent >,
         //      +-------------+-----------------------+---------------+---------------+-----
-        _row<   Configuring,  sdpa::events::ConfigOkEvent,            Up>,
-        _row<   Configuring,  sdpa::events::ConfigNokEvent,           Down>,
+        _row<   Configuring,  ConfigOkEvent,                          Up>,
+        _row<   Configuring,  ConfigNokEvent,                         Down>,
         _irow<  Configuring,  sdpa::events::ErrorEvent >,
         //      +------------+-----------------------+----------------+--------------+-----
         _row<   Up,           InterruptEvent,                         Down>,

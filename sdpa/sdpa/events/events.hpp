@@ -3,8 +3,6 @@
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/ConfigNokEvent.hpp>
-#include <sdpa/events/ConfigOkEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>

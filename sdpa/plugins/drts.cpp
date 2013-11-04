@@ -550,10 +550,6 @@ public:
   {
   }
 
-  virtual void handleConfigNokEvent(const sdpa::events::ConfigNokEvent *)
-  {
-  }
-
   virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent *)
   {
   }
@@ -821,7 +817,6 @@ public:
 
   // not implemented events
   virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *){}
-  virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent *) {}
   virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent *) {}
   virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent *) {}
   virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *) {}

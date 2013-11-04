@@ -6,8 +6,6 @@ set (hdrs
   CancelJobEvent.hpp
   Codec.hpp
   CodecStrategy.hpp
-  ConfigNokEvent.hpp
-  ConfigOkEvent.hpp
   ConfigReplyEvent.hpp
   ConfigRequestEvent.hpp
   DeleteJobAckEvent.hpp

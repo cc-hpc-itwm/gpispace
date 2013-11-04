@@ -31,8 +31,6 @@
 #include <sdpa/daemon/BackupService.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
-#include <sdpa/events/ConfigNokEvent.hpp>
-#include <sdpa/events/ConfigOkEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 #include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>

@@ -7,8 +7,6 @@ namespace sdpa
   {
     class CancelJobAckEvent;
     class CancelJobEvent;
-    class ConfigNokEvent;
-    class ConfigOkEvent;
     class ConfigReplyEvent;
     class ConfigRequestEvent;
     class DeleteJobAckEvent;
@@ -41,8 +39,6 @@ namespace sdpa
 
       virtual void handleCancelJobAckEvent (const sdpa::events::CancelJobAckEvent *) {}
       virtual void handleCancelJobEvent (const sdpa::events::CancelJobEvent *) {}
-      virtual void handleConfigNokEvent (const sdpa::events::ConfigNokEvent *) {}
-      virtual void handleConfigOkEvent (const sdpa::events::ConfigOkEvent *) {}
       virtual void handleConfigReplyEvent  (const sdpa::events::ConfigReplyEvent *) {}
       virtual void handleConfigRequestEvent (const sdpa::events::ConfigRequestEvent *) {}
       virtual void handleDeleteJobAckEvent (const sdpa::events::DeleteJobAckEvent *) {}
