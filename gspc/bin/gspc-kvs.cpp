@@ -141,6 +141,9 @@ int main (int argc, char *argv [], char *envp [])
           case 'h':
             ++help;
             break;
+          case 'o':
+            omit_key = true;
+            break;
           default:
             std::cerr << "kvs: invalid flag: " << *flag << std::endl;
             return EX_USAGE;
