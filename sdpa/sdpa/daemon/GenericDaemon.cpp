@@ -165,8 +165,6 @@ void GenericDaemon::startup_step2()
 {
   ptr_daemon_stage_.lock()->start();
 
-  perform_StartUpEvent();
-
   try
   {
     action_configure();

@@ -42,12 +42,10 @@ namespace sdpa {
 
         // The list of FSM states
         struct Down : public msm::front::state<>{};
-        struct Configuring : public msm::front::state<>{};
         struct Up : public msm::front::state<>{};
 
         // events
         struct InterruptEvent {};
-        struct StartUpEvent {};
         struct ConfigOkEvent {};
         struct ConfigNokEvent {};
 
@@ -66,12 +64,9 @@ namespace sdpa {
         struct transition_table : mpl::vector<
         //      Start         Event         		                      Next            Action                Guard
         //      +-------------+---------------------------------------+---------------+---------------------+-----
-        _row<   Down,         StartUpEvent,                           Configuring>,
+        _row<   Down,         ConfigOkEvent,                          Up>,
+        _irow<  Down,         ConfigNokEvent>,
         _irow<  Down,         sdpa::events::ErrorEvent >,
-        //      +-------------+-----------------------+---------------+---------------+-----
-        _row<   Configuring,  ConfigOkEvent,                          Up>,
-        _row<   Configuring,  ConfigNokEvent,                         Down>,
-        _irow<  Configuring,  sdpa::events::ErrorEvent >,
         //      +------------+-----------------------+----------------+--------------+-----
         _row<   Up,           InterruptEvent,                         Down>,
         a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &agentFSM::action_register_worker>,
@@ -108,7 +103,6 @@ namespace sdpa {
 
         void start_fsm() { start(); }
 
-        void perform_StartUpEvent();
         void perform_ConfigOkEvent();
         void perform_ConfigNokEvent();
 

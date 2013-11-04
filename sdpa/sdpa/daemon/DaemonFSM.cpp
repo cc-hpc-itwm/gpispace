@@ -110,11 +110,6 @@ namespace sdpa {
     	  GenericDaemon::action_error_event(e);
       }
 
-      void DaemonFSM::perform_StartUpEvent()
-      {
-        lock_type lock (mtx_);
-        process_event (StartUpEvent());
-      }
       void DaemonFSM::perform_ConfigOkEvent()
       {
         lock_type lock (mtx_);
