@@ -97,8 +97,6 @@ namespace sdpa {
                  , const std::string& guiUrl = ""
                  );
 
-        virtual ~DaemonFSM();
-
         void start_fsm() { start(); }
 
         void perform_ConfigOkEvent();
