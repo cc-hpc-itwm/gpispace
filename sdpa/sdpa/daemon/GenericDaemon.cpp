@@ -169,7 +169,7 @@ void GenericDaemon::startup_step2()
 {
   ptr_daemon_stage_.lock()->start();
 
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
+  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
   sendEventToSelf(pEvtStartUp);
   lock_type lock(mtx_);
   while( !isStarted() )
@@ -354,32 +354,6 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
   // overwrite the default vaules
 
   setDefaultConfiguration();
-
-  if(!evt.cfgFile().empty())
-  {
-    DMLOG (TRACE, "Read the configuration file daemon_config.txt ... ");
-
-    bfs::path cfgPath(evt.cfgFile());
-
-    if(!bfs::exists(cfgPath))
-    {
-      DMLOG (WARN, "Could not find the configuration file "<<evt.cfgFile()<<"!");
-      m_bConfigOk = false;
-      return;
-    }
-
-    try {
-      cfg().read(evt.cfgFile());
-    }
-    catch (const sdpa::util::InvalidConfiguration& ex )
-    {
-      DMLOG (WARN, "Error when parsing the ini file. "<<ex.what());
-    }
-  }
-  else
-  {
-    DMLOG (TRACE, "No configuration file was specified. Using the default configuration.");
-  }
 
   m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
   m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
