@@ -97,8 +97,6 @@ namespace sdpa {
                  , const std::string& guiUrl = ""
                  );
 
-        void start_fsm() { start(); }
-
         void perform_ConfigOkEvent();
         void perform_ConfigNokEvent();
 
@@ -115,8 +113,6 @@ namespace sdpa {
         void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
         void handleRequestJobEvent(const sdpa::events::RequestJobEvent* );
         void handleErrorEvent(const sdpa::events::ErrorEvent* );
-
-        sdpa::status_t getCurrentState();
 
         template <class Archive>
         void serialize(Archive& ar, const unsigned int)
