@@ -163,7 +163,6 @@ namespace sdpa {
       // agent info and properties
       virtual void updateLastRequestTime();
       virtual bool requestsAllowed();
-      void interrupt();
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
       {
