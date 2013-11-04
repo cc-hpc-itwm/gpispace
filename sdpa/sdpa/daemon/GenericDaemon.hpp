@@ -106,6 +106,12 @@ namespace sdpa {
       void start_agent( bool bUseReqModel, std::string strBackup);
       void start_agent( bool bUseReqModel); // no recovery
 
+    private:
+      void startup_step1 (bool bUseReqModel);
+      void startup_step2();
+      void startup_step3();
+
+    public:
       std::string last_backup() const;
       void shutdown();
 

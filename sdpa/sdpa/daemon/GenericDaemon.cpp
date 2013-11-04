@@ -109,116 +109,64 @@ GenericDaemon::GenericDaemon( const std::string name,
   }
 }
 
-/**
- * Start an agent
- * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] bkpFile Backup file for the agent
- * @param[in] cfgFile Configuration file of the agent
- */
 void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile)
 {
-  if(!scheduler())
-  {
-    createScheduler(bUseReqModel);
-  }
-
-
   bfs::ifstream ifs (bkpFile);
   if (!ifs)
   {
     throw std::runtime_error ("backup file does not exist");
   }
 
-  DMLOG (TRACE, "Recover the agent "<<name()<<" from the backup file "<<bkpFile);
-  recover(ifs);
+  startup_step1 (bUseReqModel);
 
+  recover (ifs);
 
-  ptr_daemon_stage_.lock()->start();
-
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
-  sendEventToSelf(pEvtStartUp);
-  lock_type lock(mtx_);
-  while( !isStarted() )
-    cond_can_start_.wait(lock);
-  if (!isConfigured())
-  {
-    throw std::runtime_error ("Daemon could not be configured");
-  }
+  startup_step2();
 
   m_threadBkpService.start(bkpFile);
 
-  if (!isTop())
-  {
-    requestRegistration();
-  }
-
-  scheduler()->cancelWorkerJobs();
-  eworknotreg();
-
-  reScheduleAllMasterJobs();
+  startup_step3();
 }
 
-/**
- * Start an agent
- * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] bkpFile Backup string for the agent
- * @param[in] cfgFile Configuration file of the agent
- */
 void GenericDaemon::start_agent( bool bUseReqModel, std::string strBackup)
 {
-  if(!scheduler())
-  {
-    createScheduler(bUseReqModel);
-  }
-
-
   if (strBackup.empty())
   {
     throw std::runtime_error ("backup string is empty");
   }
-
   std::stringstream iostr(strBackup);
-  recover(iostr);
 
+  startup_step1 (bUseReqModel);
 
-  ptr_daemon_stage_.lock()->start();
+  recover (iostr);
 
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
-  sendEventToSelf(pEvtStartUp);
-  lock_type lock(mtx_);
-  while( !isStarted() )
-    cond_can_start_.wait(lock);
-  if (!isConfigured())
-  {
-    throw std::runtime_error ("Daemon could not be configured");
-  }
+  startup_step2();
 
   m_threadBkpService.start();
 
-  if (!isTop())
-  {
-    requestRegistration();
-  }
-
-  scheduler()->cancelWorkerJobs();
-  eworknotreg();
-
-  reScheduleAllMasterJobs();
+  startup_step3();
 }
 
-/**
- * Start an agent
- * @param[in] bUseReqModel: When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] cfgFile: Configuration file of the agent
- */
 void GenericDaemon::start_agent(bool bUseReqModel)
+{
+  startup_step1 (bUseReqModel);
+
+  startup_step2();
+
+  m_threadBkpService.start();
+
+  startup_step3();
+}
+
+void GenericDaemon::startup_step1 (bool bUseReqModel)
 {
   if(!scheduler())
   {
     createScheduler(bUseReqModel);
   }
-
-
+}
+void GenericDaemon::startup_step2()
+{
   ptr_daemon_stage_.lock()->start();
 
   StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
@@ -230,11 +178,13 @@ void GenericDaemon::start_agent(bool bUseReqModel)
   {
     throw std::runtime_error ("Daemon could not be configured");
   }
-
-  m_threadBkpService.start();
-
-  if( !isTop() )
+}
+void GenericDaemon::startup_step3()
+{
+  if (!isTop())
+  {
     requestRegistration();
+  }
 
   scheduler()->cancelWorkerJobs();
   eworknotreg();
