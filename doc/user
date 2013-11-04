@@ -1,44 +1,67 @@
 GPI-Space -- a system to develop and execute cluster applications
+=================================================================
+:Author: Mirko Rahn
+:Email: rahn@itwm.fhg.de
 
-User documentation
+== Overview
 
-Content:
+GPI-Space is a system to develop and execute cluster applications. It
+consists of three main components:
 
-- Overview
-- Installation
-- Distributed runtime system
-  - Start and Stop
-  - Observe, Gantt-Viewer
-  - Advanced: fhglog*
-  - Advanced: kvs
-  - Advanced: fhgcfg
-  - Advanced: gspc*
-- Workflows
-  - Small example (predefined)
-  - Submit
-  - Extract results
-  - Workflow description language
-    - Place, Token, Transition, Port, Type
-    - Simple networks
-    - Expressions
-    - Conditions
-    - Hierarchies
-    - External modules
-    - Advanced: Virtual Places
-    - Advanced: Templates
-    - Advanced: Complete XML language description
-    - Advanced: Complete expression language description
-    - Advanced: Make
-    - Advanced: Verify (pnetv)
-  - Compile, pnetc
-    - Wrapper
-  - Display, pnet2dot
-  - Big example (superbinning)
-  - Library
-  - Editor
-  - Advanced: Execute (we-exec)
-- Virtual memory
-  - Start and Stop
-  - Interface
-  - Example
-  - Advanced: gpish
+* a distributed runtime system,
+* a workflow engine and
+* a virtual memory layer.
+
+This manual is written for users that want to implement applications
+within GPI-Space.
+
+== Installation
+
+To install GPI-Space unpack the distribution file
+
+[source,shell]
+tar xvzf gpispace.tgz
+
+and set the Environment variable `GSPC_HOME`
+
+[source,shell]
+export GSPC_HOME=<path_where_you_extracted_the_distribution>
+
+== Distributed runtime system
+=== Start and Stop
+=== Observe, Gantt-Viewer
+=== Advanced: fhglog*
+=== Advanced: kvs
+=== Advanced: fhgcfg
+=== Advanced: gspc*
+
+== Workflows
+=== Small example (predefined)
+=== Submit
+=== Extract results
+=== Workflow description language
+==== Place, Token, Transition, Port, Type
+==== Simple networks
+==== Expressions
+==== Conditions
+==== Hierarchies
+==== External modules
+==== Advanced: Virtual Places
+==== Advanced: Templates
+==== Advanced: Complete XML language description
+==== Advanced: Complete expression language description
+==== Advanced: Make
+==== Advanced: Verify (pnetv)
+=== Compile, pnetc
+==== Wrapper
+=== Display, pnet2dot
+=== Big example (superbinning)
+=== Library
+=== Editor
+=== Advanced: Execute (we-exec)
+
+== Virtual memory
+=== Start and Stop
+=== Interface
+=== Example
+=== Advanced: gpish
