@@ -219,7 +219,8 @@ BOOST_AUTO_TEST_CASE( Test1)
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
-	ptrAgent0->shutdown(strBackupAgent0);
+  const std::string strBackupAgent0 (ptrAgent0->last_backup());
+  ptrAgent0->shutdown();
 	LOG( INFO, "Shutdown agent \"agent_0\". The recovery string is "<<strBackupAgent0);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -264,7 +265,8 @@ BOOST_AUTO_TEST_CASE( Test2)
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
-	ptrAgent->shutdown(strBackupAgent);
+  const std::string strBackupAgent (ptrAgent->last_backup());
+  ptrAgent->shutdown();
 	LOG( INFO, "Shutdown the agent \"agent_0\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
@@ -311,7 +313,8 @@ BOOST_AUTO_TEST_CASE( Test3)
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
-	ptrAgent->shutdown(strBackupAgent);
+  const std::string strBackupAgent (ptrAgent->last_backup());
+  ptrAgent->shutdown();
 	LOG( INFO, "Shutdown the agent \"agent_0\". The recovery string is "<<strBackupAgent);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));

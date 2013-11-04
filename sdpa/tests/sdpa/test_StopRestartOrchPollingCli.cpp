@@ -203,7 +203,8 @@ BOOST_AUTO_TEST_CASE( Test1)
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	boost::this_thread::sleep(boost::posix_time::seconds(1));
-	ptrOrch->shutdown(strBackupOrch);
+  const std::string strBackupOrch (ptrOrch->last_backup());
+  ptrOrch->shutdown();
 	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
@@ -255,7 +256,8 @@ BOOST_AUTO_TEST_CASE( Test2 )
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	boost::this_thread::sleep(boost::posix_time::seconds(1));
-	ptrOrch->shutdown(strBackupOrch);
+  const std::string strBackupOrch (ptrOrch->last_backup());
+  ptrOrch->shutdown();
 	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));

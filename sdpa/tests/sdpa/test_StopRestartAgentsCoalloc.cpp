@@ -403,7 +403,8 @@ BOOST_AUTO_TEST_CASE( TestStopRestarAgentCoallocRealWfe )
 
 	sleep(2);
 	LOG( INFO, "Shutdown the agent");
-	ptrAgent->shutdown(strBackupAgent);
+  const std::string strBackupAgent (ptrAgent->last_backup());
+  ptrAgent->shutdown();
 	ptrAgent.reset();
 
 	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
