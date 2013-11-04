@@ -108,7 +108,6 @@ namespace sdpa {
       void start_agent( bool bUseReqModel = true, const std::string& cfgFile = "" ); // no recovery
 
       std::string last_backup() const;
-      void shutdown(std::string&); // no backup
       void shutdown();
 
       void addMaster(const agent_id_t& );

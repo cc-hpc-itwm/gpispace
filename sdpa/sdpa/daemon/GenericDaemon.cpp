@@ -309,21 +309,6 @@ std::string GenericDaemon::last_backup() const
 {
 	return m_threadBkpService.getLastBackup();
 }
-
-/**
- * Shutdown an agent
- * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] bkpFile Backup file for the agent
- * @param[in] cfgFile Configuration file of the agent
- */
-void GenericDaemon::shutdown(std::string& strBackup )
-{
-	shutdown();
-
-	DMLOG (TRACE, "Get the last backup of the daemon "<<name());
-	strBackup = m_threadBkpService.getLastBackup();
-}
-
 /**
  * Shutdown an agent
  */
