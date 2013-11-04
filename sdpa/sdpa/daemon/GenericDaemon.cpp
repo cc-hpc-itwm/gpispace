@@ -169,8 +169,30 @@ void GenericDaemon::startup_step2()
 {
   ptr_daemon_stage_.lock()->start();
 
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
-  sendEventToSelf(pEvtStartUp);
+  perform_StartUpEvent();
+
+  if( isConfigured() )
+  {
+    DMLOG (TRACE, "Starting the scheduler...");
+    scheduler()->start(this);
+
+    // start the network stage
+    to_master_stage()->start();
+
+    setRequestsAllowed(true);
+
+    // if the configuration step was ok send a ConfigOkEvent
+    ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
+    sendEventToSelf(pEvtConfigOk);
+  }
+  else //if not
+  {
+    setRequestsAllowed(false);
+    // if the configuration step was ok send a ConfigOkEvent
+    ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
+    sendEventToSelf(pEvtConfigNok);
+  }
+
   lock_type lock(mtx_);
   while( !isStarted() )
     cond_can_start_.wait(lock);
@@ -327,7 +349,7 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 }
 
 //actions
-void GenericDaemon::action_configure(const StartUpEvent& evt)
+void GenericDaemon::action_configure(const StartUpEvent&)
 {
   DMLOG (TRACE, "Configuring myself (generic)...");
 

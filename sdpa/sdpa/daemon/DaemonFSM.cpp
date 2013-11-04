@@ -143,36 +143,13 @@ namespace sdpa {
     	  GenericDaemon::action_error_event(e);
       }
 
-      // event handlers
-      void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
+      void DaemonFSM::perform_StartUpEvent()
       {
-    	  lock_type lock(mtx_);
-    	  //SDPA_LOG_DEBUG("Process StartUpEvent");
-    	  process_event(*pEvent);
-
-    	  if( isConfigured() )
-    	  {
-                  DMLOG (TRACE, "Starting the scheduler...");
-    		  scheduler()->start(this);
-
-    		  // start the network stage
-    		  to_master_stage()->start();
-
-    		  setRequestsAllowed(true);
-
-    		  // if the configuration step was ok send a ConfigOkEvent
-    		  ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
-    		  sendEventToSelf(pEvtConfigOk);
-    	  }
-    	  else //if not
-    	  {
-    		  setRequestsAllowed(false);
-    		  // if the configuration step was ok send a ConfigOkEvent
-    		  ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
-    		  sendEventToSelf(pEvtConfigNok);
-    	  }
+        lock_type lock (mtx_);
+        process_event (StartUpEvent());
       }
 
+      // event handlers
       void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)
       {
     	  //SDPA_LOG_DEBUG("Process ConfigOkEvent");

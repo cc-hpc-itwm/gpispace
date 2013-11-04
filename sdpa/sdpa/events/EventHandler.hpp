@@ -25,7 +25,6 @@ namespace sdpa
     class RequestJobEvent;
     class RetrieveJobResultsEvent;
     class RunJobEvent;
-    class StartUpEvent;
     class SubmitJobAckEvent;
     class SubmitJobEvent;
     class WorkerRegistrationAckEvent;
@@ -60,7 +59,6 @@ namespace sdpa
       virtual void handleRequestJobEvent (const sdpa::events::RequestJobEvent *) {}
       virtual void handleRetrieveJobResultsEvent (const sdpa::events::RetrieveJobResultsEvent *) {}
       virtual void handleRunJobEvent (const sdpa::events::RunJobEvent *) {}
-      virtual void handleStartUpEvent (const sdpa::events::StartUpEvent *) {}
       virtual void handleSubmitJobAckEvent (const sdpa::events::SubmitJobAckEvent *) {}
       virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent *) {}
       virtual void handleWorkerRegistrationAckEvent (const sdpa::events::WorkerRegistrationAckEvent *) {}
