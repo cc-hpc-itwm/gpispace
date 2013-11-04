@@ -171,11 +171,10 @@ void GenericDaemon::startup_step2()
 
   action_configure();
 
-  m_bRequestsAllowed = isConfigured();
+  m_bRequestsAllowed = m_bConfigOk;
   m_bStarted = true;
-  m_bConfigOk = isConfigured();
 
-  if( isConfigured() )
+  if(m_bConfigOk)
   {
     DMLOG (TRACE, "Starting the scheduler...");
     scheduler()->start(this);
@@ -197,7 +196,8 @@ void GenericDaemon::startup_step2()
   lock_type lock(mtx_);
   while( !isStarted() )
     cond_can_start_.wait(lock);
-  if (!isConfigured())
+
+  if (!m_bConfigOk)
   {
     throw std::runtime_error ("Daemon could not be configured");
   }
