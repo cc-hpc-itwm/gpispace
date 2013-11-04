@@ -103,9 +103,9 @@ namespace sdpa {
       unsigned int& capacity() { return m_nCap; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
-      void start_agent( bool bUseReqModel, const bfs::path& bkpFile, const std::string& cfgFile = ""  ); // from cfg file!
-      void start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile = ""  );
-      void start_agent( bool bUseReqModel = true, const std::string& cfgFile = "" ); // no recovery
+      void start_agent( bool bUseReqModel, const bfs::path& bkpFile); // from cfg file!
+      void start_agent( bool bUseReqModel, std::string& strBackup);
+      void start_agent( bool bUseReqModel = true); // no recovery
 
       std::string last_backup() const;
       void shutdown();

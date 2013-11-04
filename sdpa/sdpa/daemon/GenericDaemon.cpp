@@ -115,7 +115,7 @@ GenericDaemon::GenericDaemon( const std::string name,
  * @param[in] bkpFile Backup file for the agent
  * @param[in] cfgFile Configuration file of the agent
  */
-void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile, const std::string& cfgFile )
+void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile)
 {
   if(!scheduler())
   {
@@ -140,7 +140,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile, co
   ptr_daemon_stage_.lock()->start();
 
   //start-up the the daemon
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
+  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
   sendEventToSelf(pEvtStartUp);
 
   lock_type lock(mtx_);
@@ -176,7 +176,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile, co
  * @param[in] bkpFile Backup string for the agent
  * @param[in] cfgFile Configuration file of the agent
  */
-void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile )
+void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup)
 {
   if(!scheduler())
   {
@@ -199,7 +199,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
   ptr_daemon_stage_.lock()->start();
 
   //start-up the the daemon
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
+  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
   sendEventToSelf(pEvtStartUp);
 
   lock_type lock(mtx_);
@@ -264,7 +264,7 @@ void GenericDaemon::eworknotreg()
  * @param[in] bUseReqModel: When set on true, the agent uses the request model, otherwise it uses the push model
  * @param[in] cfgFile: Configuration file of the agent
  */
-void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
+void GenericDaemon::start_agent(bool bUseReqModel)
 {
   if(!scheduler())
   {
@@ -277,7 +277,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 
   //start-up the the daemon
   DMLOG (TRACE, "Trigger StartUpEvent...");
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
+  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
   sendEventToSelf(pEvtStartUp);
 
   lock_type lock(mtx_);
