@@ -109,6 +109,8 @@ namespace sdpa {
         void start_fsm() { start(); }
 
         void perform_StartUpEvent();
+        void perform_ConfigOkEvent();
+        void perform_ConfigNokEvent();
 
         void action_config_ok(const sdpa::events::ConfigOkEvent& );
         void action_config_nok(const sdpa::events::ConfigNokEvent& );
@@ -120,8 +122,6 @@ namespace sdpa {
         void action_error_event(const sdpa::events::ErrorEvent& );
 
         // event handlers
-        void handleConfigOkEvent(const sdpa::events::ConfigOkEvent* );
-        void handleConfigNokEvent(const sdpa::events::ConfigNokEvent* );
         void handleInterruptEvent();
         void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
         void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );

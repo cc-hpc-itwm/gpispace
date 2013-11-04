@@ -182,17 +182,23 @@ void GenericDaemon::startup_step2()
 
     setRequestsAllowed(true);
 
-    // if the configuration step was ok send a ConfigOkEvent
-    ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
-    sendEventToSelf(pEvtConfigOk);
+    perform_ConfigOkEvent();
+
+    setStarted();
+    setConfigured (true);
   }
   else //if not
   {
     setRequestsAllowed(false);
-    // if the configuration step was ok send a ConfigOkEvent
-    ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
-    sendEventToSelf(pEvtConfigNok);
+
+    perform_ConfigNokEvent();
+
+    setStarted();
+    setConfigured(false);
+    setStopped();
   }
+
+  cond_can_start_.notify_one();
 
   lock_type lock(mtx_);
   while( !isStarted() )

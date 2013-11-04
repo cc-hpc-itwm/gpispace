@@ -141,6 +141,8 @@ namespace sdpa {
 
       virtual void handleInterruptEvent() = 0;
       virtual void perform_StartUpEvent() = 0;
+      virtual void perform_ConfigOkEvent() = 0;
+      virtual void perform_ConfigNokEvent() = 0;
 
     protected:
 

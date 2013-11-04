@@ -137,33 +137,15 @@ namespace sdpa {
         lock_type lock (mtx_);
         process_event (StartUpEvent());
       }
-
-      // event handlers
-      void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)
+      void DaemonFSM::perform_ConfigOkEvent()
       {
-    	  //SDPA_LOG_DEBUG("Process ConfigOkEvent");
-    	  {
-    		  lock_type lock(mtx_);
-    		  process_event(*pEvent);
-    		  setStarted();
-    		  setConfigured(true);
-    	  }
-
-    	  cond_can_start_.notify_one();
+        lock_type lock (mtx_);
+        process_event (ConfigOkEvent());
       }
-
-      void DaemonFSM::handleConfigNokEvent(const ConfigNokEvent* pEvent)
+      void DaemonFSM::perform_ConfigNokEvent()
       {
-    	  //SDPA_LOG_DEBUG("Process ConfigNokEvent");
-    	  {
-    		  lock_type lock(mtx_);
-    		  process_event(*pEvent);
-    		  setStarted();
-    		  setConfigured(false);
-    		  setStopped();
-    	  }
-
-    	  cond_can_start_.notify_one();
+        lock_type lock (mtx_);
+        process_event (ConfigNokEvent());
       }
 
       void DaemonFSM::handleInterruptEvent()
