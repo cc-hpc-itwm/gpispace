@@ -167,36 +167,28 @@ void GenericDaemon::startup_step2()
 
   perform_StartUpEvent();
 
-  bool config_ok (true);
   try
   {
     action_configure();
   }
-  catch(...)
-  {
-    config_ok = false;
-  }
-
-  if (config_ok)
-  {
-    DMLOG (TRACE, "Starting the scheduler...");
-    scheduler()->start(this);
-
-    // start the network stage
-    to_master_stage()->start();
-
-    perform_ConfigOkEvent();
-
-    m_bRequestsAllowed = true;
-  }
-  else
+  catch (...)
   {
     perform_ConfigNokEvent();
 
     m_bStopped = true;
 
-    throw std::runtime_error ("Daemon could not be configured");
+    throw;
   }
+
+  DMLOG (TRACE, "Starting the scheduler...");
+  scheduler()->start(this);
+
+  // start the network stage
+  to_master_stage()->start();
+
+  perform_ConfigOkEvent();
+
+  m_bRequestsAllowed = true;
 }
 void GenericDaemon::startup_step3()
 {
