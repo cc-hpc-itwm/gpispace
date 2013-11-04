@@ -75,9 +75,6 @@ struct MyFixture
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
-	std::string strBackupOrch;
-	std::string strBackupAgent;
-
 	boost::thread m_threadClient;
 };
 
@@ -199,9 +196,6 @@ BOOST_AUTO_TEST_CASE( Test1)
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent0 	= "127.0.0.1";
 	string addrAgent1	= "127.0.0.1";
-
-	std::string strBackupAgent0;
-	std::string strBackupAgent1;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);

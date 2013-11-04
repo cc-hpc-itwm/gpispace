@@ -77,9 +77,6 @@ struct MyFixture
 	int m_sleep_interval ;
     std::string m_strWorkflow;
 
-	std::string strBackupOrch;
-	std::string strBackupAgent;
-
 	boost::thread m_threadClient;
 };
 
@@ -355,8 +352,6 @@ BOOST_AUTO_TEST_CASE( TestStopRestarAgentCoallocRealWfe )
 	string addrAgent 	= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
-	std::string strBackupAgent;
-
 	m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
 	ostringstream osstr;

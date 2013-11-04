@@ -73,9 +73,6 @@ struct MyFixture
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
-	std::string strBackupOrch;
-	std::string strBackupAgent;
-
 	boost::thread m_threadClient;
 };
 
