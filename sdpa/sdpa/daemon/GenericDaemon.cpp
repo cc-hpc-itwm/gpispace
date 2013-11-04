@@ -188,7 +188,7 @@ void GenericDaemon::startup_step2()
     setStarted();
     setConfigured (true);
   }
-  else //if not
+  else
   {
     setRequestsAllowed(false);
 
