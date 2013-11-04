@@ -32,16 +32,6 @@ void Agent::action_configure()
   cfg().put("nmax_ext_job_req", 10U);
 }
 
-void Agent::action_config_ok(const ConfigOkEvent& e)
-{
-  GenericDaemon::action_config_ok (e);
-
-  // should be overriden by the orchestrator, aggregator and NRE
-  DMLOG (TRACE, "Configuration (aggregator) was ok");
-
-  cfg().print();
-}
-
 void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
   assert (pEvt);
