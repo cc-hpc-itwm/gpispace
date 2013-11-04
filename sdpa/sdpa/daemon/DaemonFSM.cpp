@@ -29,16 +29,6 @@ namespace sdpa {
   namespace fsm {
     namespace bmsm {
 
-      void DaemonFSM_::action_config_ok(const ConfigOkEvent&)
-      {
-    	  DLOG(TRACE, "DaemonFSM_::action_config_ok");
-      }
-
-      void DaemonFSM_::action_config_nok(const ConfigNokEvent&)
-      {
-    	  DLOG(TRACE, "DaemonFSM_::action_config_nok");
-      }
-
       void DaemonFSM_::action_delete_job(const DeleteJobEvent& )
       {
     	  DLOG(TRACE, "DaemonFSM_::action_delete_job");
@@ -83,18 +73,6 @@ namespace sdpa {
       DaemonFSM::~DaemonFSM()
       {
     	  DLOG(TRACE, "Daemon State machine destroyed");
-      }
-
-      void DaemonFSM::action_config_ok(const ConfigOkEvent& e)
-      {
-    	  DLOG(TRACE, "DaemonFSM::action_config_ok");
-    	  GenericDaemon::action_config_ok(e);
-      }
-
-      void DaemonFSM::action_config_nok(const ConfigNokEvent& e)
-      {
-    	  DLOG(TRACE, "DaemonFSM::action_config_nok");
-    	  GenericDaemon::action_config_nok(e);
       }
 
       void DaemonFSM::action_delete_job(const DeleteJobEvent& e)

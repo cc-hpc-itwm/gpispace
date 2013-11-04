@@ -213,8 +213,8 @@ namespace sdpa {
 
       // agent fsm (actions)
       virtual void action_configure();
-      virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
-      virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
+      virtual void action_config_ok();
+      virtual void action_config_nok();
       virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
       virtual void action_request_job( const sdpa::events::RequestJobEvent& );
       virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );

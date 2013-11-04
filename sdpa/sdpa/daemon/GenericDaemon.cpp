@@ -183,6 +183,7 @@ void GenericDaemon::startup_step2()
     setRequestsAllowed(true);
 
     perform_ConfigOkEvent();
+    action_config_ok();
 
     setStarted();
     setConfigured (true);
@@ -192,6 +193,7 @@ void GenericDaemon::startup_step2()
     setRequestsAllowed(false);
 
     perform_ConfigNokEvent();
+    action_config_nok();
 
     setStarted();
     setConfigured(false);
@@ -388,14 +390,14 @@ void GenericDaemon::action_configure()
   }
 }
 
-void GenericDaemon::action_config_ok(const ConfigOkEvent&)
+void GenericDaemon::action_config_ok()
 {
   // check if the system should be recovered
   // should be overriden by the orchestrator, aggregator and NRE
   m_bRequestsAllowed = true;
 }
 
-void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
+void GenericDaemon::action_config_nok()
 {
   DMLOG (TRACE, "the configuration phase failed!");
 }
