@@ -171,6 +171,10 @@ void GenericDaemon::startup_step2()
 
   action_configure();
 
+  m_bRequestsAllowed = isConfigured();
+  m_bStarted = true;
+  m_bConfigOk = isConfigured();
+
   if( isConfigured() )
   {
     DMLOG (TRACE, "Starting the scheduler...");
@@ -179,24 +183,13 @@ void GenericDaemon::startup_step2()
     // start the network stage
     to_master_stage()->start();
 
-    setRequestsAllowed(true);
-
     perform_ConfigOkEvent();
-
-    m_bRequestsAllowed = true;
-
-    setStarted();
-    setConfigured (true);
   }
   else
   {
-    setRequestsAllowed(false);
-
     perform_ConfigNokEvent();
 
-    setStarted();
-    setConfigured(false);
-    setStopped();
+    m_bStopped = true;
   }
 
   cond_can_start_.notify_one();

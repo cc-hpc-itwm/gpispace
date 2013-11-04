@@ -166,14 +166,9 @@ namespace sdpa {
 
       // agent info and properties
       bool isStarted(){ return m_bStarted;  }
-      void setStarted(bool bVal = true){ m_bStarted = bVal; }
 
       bool isConfigured(){ return m_bConfigOk; }
-      void setConfigured(bool bVal = true) { m_bConfigOk = bVal; }
 
-      void setStopped(bool bVal = true) { m_bStopped = bVal; }
-
-      void setRequestsAllowed(bool bVal = true) { m_bRequestsAllowed = bVal; }
       virtual void updateLastRequestTime();
       virtual bool requestsAllowed();
       void interrupt();
