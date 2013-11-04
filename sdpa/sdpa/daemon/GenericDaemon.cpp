@@ -191,12 +191,6 @@ void GenericDaemon::startup_step2()
   m_bRequestsAllowed = m_bConfigOk;
   m_bStarted = true;
 
-  cond_can_start_.notify_one();
-
-  lock_type lock(mtx_);
-  while (!m_bStarted)
-    cond_can_start_.wait(lock);
-
   if (!m_bConfigOk)
   {
     throw std::runtime_error ("Daemon could not be configured");

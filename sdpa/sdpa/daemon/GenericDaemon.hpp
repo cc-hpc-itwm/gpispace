@@ -299,7 +299,6 @@ namespace sdpa {
       // data members
     protected:
       mutex_type mtx_;
-      condition_type cond_can_start_;
 
       sdpa::master_info_list_t m_arrMasterInfo;
       sdpa::subscriber_map_t m_listSubscribers;
