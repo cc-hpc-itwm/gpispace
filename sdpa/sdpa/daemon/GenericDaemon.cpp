@@ -229,36 +229,6 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string strBackup)
 
 }
 
-void GenericDaemon::eworknotreg()
-{
-  sdpa::worker_id_list_t workerList;
-  scheduler()->getWorkerList (workerList);
-
-  if (workerList.empty())
-  {
-    DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
-    return;
-  }
-
-  BOOST_FOREACH (const worker_id_t& workerId, workerList)
-  {
-    SDPA_LOG_INFO("Send notification to the worker "<<workerId);
-
-    ErrorEvent::Ptr const pErrEvt
-      (new ErrorEvent ( name()
-                      , ""
-                      , ErrorEvent::SDPA_EWORKERNOTREG
-                      ,  "worker notification"
-                      )
-      );
-
-    sendEventToMaster (pErrEvt);
-  }
-
-  // remove workers
-  scheduler()->removeWorkers();
-}
-
 /**
  * Start an agent
  * @param[in] bUseReqModel: When set on true, the agent uses the request model, otherwise it uses the push model
@@ -303,6 +273,36 @@ void GenericDaemon::start_agent(bool bUseReqModel)
   }
 
   reScheduleAllMasterJobs();
+}
+
+void GenericDaemon::eworknotreg()
+{
+  sdpa::worker_id_list_t workerList;
+  scheduler()->getWorkerList (workerList);
+
+  if (workerList.empty())
+  {
+    DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
+    return;
+  }
+
+  BOOST_FOREACH (const worker_id_t& workerId, workerList)
+  {
+    SDPA_LOG_INFO("Send notification to the worker "<<workerId);
+
+    ErrorEvent::Ptr const pErrEvt
+      (new ErrorEvent ( name()
+                      , ""
+                      , ErrorEvent::SDPA_EWORKERNOTREG
+                      ,  "worker notification"
+                      )
+      );
+
+    sendEventToMaster (pErrEvt);
+  }
+
+  // remove workers
+  scheduler()->removeWorkers();
 }
 
 std::string GenericDaemon::last_backup() const
