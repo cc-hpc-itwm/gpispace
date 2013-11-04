@@ -279,37 +279,6 @@ void GenericDaemon::shutdown( )
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
 
-/**
- * Configure the network
- */
-void GenericDaemon::configure_network (const std::string& url)
-{
-  const boost::tokenizer<boost::char_separator<char> > tok
-    (url, boost::char_separator<char> (":"));
-
-  const std::vector<std::string> vec (tok.begin(), tok.end());
-
-  if (vec.empty() || vec.size() > 2)
-  {
-    LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
-    throw std::runtime_error ("configuration of network failed: invalid url");
-  }
-
-  sdpa::com::NetworkStrategy::ptr_t net
-    ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
-                                     , name() /*name for peer*/
-                                     , fhg::com::host_t (vec[0])
-                                     , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
-                                     )
-    );
-
-  seda::Stage::Ptr network_stage
-    (new seda::Stage (m_to_master_stage_name_, net));
-
-  seda::StageRegistry::instance().insert (network_stage);
-
-  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-}
 
 /**
  * Shutdown the network
@@ -376,7 +345,34 @@ void GenericDaemon::action_configure()
 
   try {
     DMLOG (TRACE, "Try to configure the network now ... ");
-    configure_network( url() /*, masterName()*/ );
+    {
+      const boost::tokenizer<boost::char_separator<char> > tok
+        (url(), boost::char_separator<char> (":"));
+
+      const std::vector<std::string> vec (tok.begin(), tok.end());
+
+      if (vec.empty() || vec.size() > 2)
+      {
+        LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
+        throw std::runtime_error ("configuration of network failed: invalid url");
+      }
+
+      sdpa::com::NetworkStrategy::ptr_t net
+        ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
+                                         , name() /*name for peer*/
+                                         , fhg::com::host_t (vec[0])
+                                         , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
+                                         )
+        );
+
+      seda::Stage::Ptr network_stage
+        (new seda::Stage (m_to_master_stage_name_, net));
+
+      seda::StageRegistry::instance().insert (network_stage);
+
+      ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
+    }
+
     m_bConfigOk = true;
   }
   catch (std::exception const &ex)

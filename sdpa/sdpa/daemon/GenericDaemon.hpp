@@ -162,7 +162,6 @@ namespace sdpa {
 
       // configuration
       sdpa::util::Config& cfg() { return daemon_cfg_;}
-      virtual void configure_network( const std::string& daemonUrl/*, const std::string& masterName = ""*/ );
       virtual void shutdown_network();
 
       // agent info and properties
