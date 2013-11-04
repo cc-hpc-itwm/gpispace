@@ -151,62 +151,6 @@ int main(int, char **)
   }
 
   {
-    std::clog << "testing ConfigRequestEvent...";
-    ConfigRequestEvent e("foo", "bar");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
-
-    if (ConfigRequestEvent *e2 = dynamic_cast<ConfigRequestEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a ConfigRequestEvent!" << std::endl;
-    }
-  }
-
-  {
-    std::clog << "testing ConfigReplyEvent...";
-    ConfigReplyEvent e("foo", "bar");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
-
-    if (ConfigReplyEvent *e2 = dynamic_cast<ConfigReplyEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a ConfigReplyEvent!" << std::endl;
-    }
-  }
-
-  {
     std::clog << "testing DeleteJobEvent...";
     DeleteJobEvent e("foo", "bar", "job-id-1");
     const std::string encoded = codec.encode(&e);

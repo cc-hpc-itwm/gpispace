@@ -39,8 +39,6 @@ namespace sdpa
       {
         ar.register_type (static_cast<CancelJobAckEvent*>(NULL));
         ar.register_type (static_cast<CancelJobEvent*>(NULL));
-        ar.register_type (static_cast<ConfigReplyEvent*>(NULL));
-        ar.register_type (static_cast<ConfigRequestEvent*>(NULL));
         ar.register_type (static_cast<DeleteJobAckEvent*>(NULL));
         ar.register_type (static_cast<DeleteJobEvent*>(NULL));
         ar.register_type (static_cast<ErrorEvent*>(NULL));

@@ -44,11 +44,6 @@ namespace sdpa {
     	  DLOG(TRACE, "DaemonFSM_::action_submit_job");
       }
 
-      void DaemonFSM_::action_config_request(const ConfigRequestEvent& )
-      {
-    	  DLOG(TRACE, "DaemonFSM_::action_config_request");
-      }
-
       void DaemonFSM_::action_register_worker(const WorkerRegistrationEvent& )
       {
     	  DLOG(TRACE, "DaemonFSM_::action_register_worker");
@@ -90,12 +85,6 @@ namespace sdpa {
       {
     	  DLOG(TRACE, "DaemonFSM::action_submit_job");
     	  GenericDaemon::action_submit_job(e);
-      }
-
-      void DaemonFSM::action_config_request(const ConfigRequestEvent& e)
-      {
-    	  DLOG(TRACE, "DaemonFSM::action_config_request");
-    	  GenericDaemon::action_config_request(e);
       }
 
       void DaemonFSM::action_register_worker(const WorkerRegistrationEvent& e)
@@ -152,13 +141,6 @@ namespace sdpa {
       {
     	  lock_type lock(mtx_);
     	  //SDPA_LOG_DEBUG("Process RequestJobEvent");
-    	  process_event(*pEvent);
-      }
-
-      void DaemonFSM::handleConfigRequestEvent(const ConfigRequestEvent* pEvent)
-      {
-    	  lock_type lock(mtx_);
-    	  //SDPA_LOG_DEBUG("Process ConfigRequestEvent");
     	  process_event(*pEvent);
       }
 

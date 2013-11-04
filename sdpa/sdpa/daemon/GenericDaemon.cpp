@@ -23,7 +23,6 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/events/ConfigReplyEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
@@ -685,18 +684,6 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   }
 }
 
-void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
-{
-  /*
-  * on startup the aggregator tries to retrieve a configuration from its orchestrator
-  * post ConfigReplyEvent/message that contains the configuration data for the requesting aggregator
-  * TODO: what is contained into the Configuration?
-  */
-
-  ConfigReplyEvent::Ptr pCfgReplyEvt( new ConfigReplyEvent( name(), e.from()) );
-  sendEventToSlave(pCfgReplyEvt);
-}
-
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
   worker_id_t worker_id (evtRegWorker.from());
@@ -1165,11 +1152,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 
   if(!isTop())
     jobManager()->resubmitResults(this);
-}
-
-void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
-{
-  DMLOG (TRACE, "Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
 }
 
 void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)

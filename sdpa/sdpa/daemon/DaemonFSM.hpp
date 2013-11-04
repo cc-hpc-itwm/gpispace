@@ -55,7 +55,6 @@ namespace sdpa {
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent& );
         virtual void action_request_job(const sdpa::events::RequestJobEvent& );
         virtual void action_submit_job(const sdpa::events::SubmitJobEvent& );
-        virtual void action_config_request(const sdpa::events::ConfigRequestEvent& );
         virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
         virtual void action_error_event(const sdpa::events::ErrorEvent& );
 
@@ -73,7 +72,6 @@ namespace sdpa {
         a_irow< Up,           sdpa::events::DeleteJobEvent,                           &agentFSM::action_delete_job>,
         a_irow< Up,           sdpa::events::SubmitJobEvent,                           &agentFSM::action_submit_job>,
         a_irow< Up,           sdpa::events::RequestJobEvent,                          &agentFSM::action_request_job>,
-        a_irow< Up,           sdpa::events::ConfigRequestEvent,                       &agentFSM::action_config_request>,
         a_irow< Up,           sdpa::events::ErrorEvent,                               &agentFSM::action_error_event>
         >{};
 
@@ -109,7 +107,6 @@ namespace sdpa {
         void action_delete_job(const sdpa::events::DeleteJobEvent& );
         void action_request_job(const sdpa::events::RequestJobEvent& );
         void action_submit_job(const sdpa::events::SubmitJobEvent& );
-        void action_config_request(const sdpa::events::ConfigRequestEvent& );
         void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
         void action_error_event(const sdpa::events::ErrorEvent& );
 
@@ -119,7 +116,6 @@ namespace sdpa {
         void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
         void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
         void handleRequestJobEvent(const sdpa::events::RequestJobEvent* );
-        void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent* );
         void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
         sdpa::status_t getCurrentState();

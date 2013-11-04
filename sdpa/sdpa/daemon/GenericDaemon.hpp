@@ -31,8 +31,6 @@
 #include <sdpa/daemon/BackupService.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
-#include <sdpa/events/ConfigReplyEvent.hpp>
-#include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -185,7 +183,6 @@ namespace sdpa {
       // event handlers
       virtual void perform(const seda::IEvent::Ptr&);
       virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
-      virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*);
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
       virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
       virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
@@ -204,7 +201,6 @@ namespace sdpa {
       virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
       virtual void action_request_job( const sdpa::events::RequestJobEvent& );
       virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
-      virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
       virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
       virtual void action_error_event(const sdpa::events::ErrorEvent& );
 
