@@ -75,7 +75,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nExternalJobs(0),
     m_ullPollingInterval(100000),
     m_bRequestsAllowed(false),
-    m_bConfigOk(false),
     m_bStopped(false),
     m_threadBkpService(this),
     m_last_request_time(0)
@@ -168,9 +167,17 @@ void GenericDaemon::startup_step2()
 
   perform_StartUpEvent();
 
-  action_configure();
+  bool config_ok (true);
+  try
+  {
+    action_configure();
+  }
+  catch(...)
+  {
+    config_ok = false;
+  }
 
-  if (m_bConfigOk)
+  if (config_ok)
   {
     DMLOG (TRACE, "Starting the scheduler...");
     scheduler()->start(this);
@@ -187,9 +194,9 @@ void GenericDaemon::startup_step2()
     m_bStopped = true;
   }
 
-  m_bRequestsAllowed = m_bConfigOk;
+  m_bRequestsAllowed = config_ok;
 
-  if (!m_bConfigOk)
+  if (!config_ok)
   {
     throw std::runtime_error ("Daemon could not be configured");
   }
@@ -335,43 +342,33 @@ void GenericDaemon::action_configure()
   m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
   m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
 
-  try {
-    DMLOG (TRACE, "Try to configure the network now ... ");
-    {
-      const boost::tokenizer<boost::char_separator<char> > tok
-        (url(), boost::char_separator<char> (":"));
+  DMLOG (TRACE, "Try to configure the network now ... ");
 
-      const std::vector<std::string> vec (tok.begin(), tok.end());
+  const boost::tokenizer<boost::char_separator<char> > tok
+    (url(), boost::char_separator<char> (":"));
 
-      if (vec.empty() || vec.size() > 2)
-      {
-        LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
-        throw std::runtime_error ("configuration of network failed: invalid url");
-      }
+  const std::vector<std::string> vec (tok.begin(), tok.end());
 
-      sdpa::com::NetworkStrategy::ptr_t net
-        ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
-                                         , name() /*name for peer*/
-                                         , fhg::com::host_t (vec[0])
-                                         , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
-                                         )
-        );
-
-      seda::Stage::Ptr network_stage
-        (new seda::Stage (m_to_master_stage_name_, net));
-
-      seda::StageRegistry::instance().insert (network_stage);
-
-      ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-    }
-
-    m_bConfigOk = true;
-  }
-  catch (std::exception const &ex)
+  if (vec.empty() || vec.size() > 2)
   {
-    MLOG (ERROR, "Exception occurred while trying to configure the network " << ex.what());
-    m_bConfigOk = false;
+    LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
+    throw std::runtime_error ("configuration of network failed: invalid url");
   }
+
+  sdpa::com::NetworkStrategy::ptr_t net
+    ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
+                                     , name() /*name for peer*/
+                                     , fhg::com::host_t (vec[0])
+                                     , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
+                                     )
+    );
+
+  seda::Stage::Ptr network_stage
+    (new seda::Stage (m_to_master_stage_name_, net));
+
+  seda::StageRegistry::instance().insert (network_stage);
+
+  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )

@@ -325,7 +325,6 @@ namespace sdpa {
       sdpa::util::time_type m_ullPollingInterval;
 
       bool m_bRequestsAllowed;
-      bool m_bConfigOk;
       bool m_bStopped;
       mutex_type mtx_subscriber_;
       mutex_type mtx_master_;
