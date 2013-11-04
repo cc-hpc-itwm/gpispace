@@ -159,7 +159,6 @@ namespace sdpa {
 
       // configuration
       sdpa::util::Config& cfg() { return daemon_cfg_;}
-      virtual void shutdown_network();
 
       // agent info and properties
       virtual void updateLastRequestTime();

@@ -242,7 +242,16 @@ void GenericDaemon::shutdown( )
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
   if (!m_bStopped)
   {
-    shutdown_network();
+    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
+    {
+      if( !masterInfo.name().empty() && masterInfo.is_registered() )
+        sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
+    }
+
+    DMLOG (TRACE, "Stopping the network stage "<<m_to_master_stage_name_);
+    seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+    seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+
     scheduler()->stop();
     m_threadBkpService.stop();
 
@@ -264,24 +273,6 @@ void GenericDaemon::shutdown( )
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
 
-
-/**
- * Shutdown the network
- */
-void GenericDaemon::shutdown_network()
-{
-  BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
-  {
-    if( !masterInfo.name().empty() && masterInfo.is_registered() )
-      sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
-  }
-
-  DMLOG (TRACE, "Stopping the network stage "<<m_to_master_stage_name_);
-  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-
-  DMLOG (TRACE, "Removing the network stage...");
-  seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-}
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
