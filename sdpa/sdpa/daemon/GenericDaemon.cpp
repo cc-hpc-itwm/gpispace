@@ -122,50 +122,38 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile)
     createScheduler(bUseReqModel);
   }
 
+
   bfs::ifstream ifs (bkpFile);
-  if (ifs)
+  if (!ifs)
   {
-    DMLOG (TRACE, "Recover the agent "<<name()<<" from the backup file "<<bkpFile);
-
-    recover(ifs);
-  }
-  else
-  {
-    DMLOG (WARN, "Can't find the backup file "<<bkpFile);
+    throw std::runtime_error ("backup file does not exist");
   }
 
-  scheduler()->setUseRequestModel(bUseReqModel);
+  DMLOG (TRACE, "Recover the agent "<<name()<<" from the backup file "<<bkpFile);
+  recover(ifs);
 
-  // The stage uses 2 threads
+
   ptr_daemon_stage_.lock()->start();
 
-  //start-up the the daemon
   StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
   sendEventToSelf(pEvtStartUp);
-
   lock_type lock(mtx_);
   while( !isStarted() )
     cond_can_start_.wait(lock);
-
-  if( isConfigured() )  // can register now
+  if (!isConfigured())
   {
-    m_threadBkpService.start(bkpFile);
-
-    DMLOG (TRACE, "Agent " << name() << " was successfully configured!");
-
-    if (!isTop())
-    {
-      requestRegistration();
-    }
-
-    scheduler()->cancelWorkerJobs();
-    eworknotreg();
+    throw std::runtime_error ("Daemon could not be configured");
   }
-  else
+
+  m_threadBkpService.start(bkpFile);
+
+  if (!isTop())
   {
-    DMLOG (TRACE, "Agent "<<name()<<" could not configure. Giving up now!");
-    //! \todo: give up now
+    requestRegistration();
   }
+
+  scheduler()->cancelWorkerJobs();
+  eworknotreg();
 
   reScheduleAllMasterJobs();
 }
@@ -183,50 +171,39 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string strBackup)
     createScheduler(bUseReqModel);
   }
 
-  if( !strBackup.empty() )
+
+  if (strBackup.empty())
   {
-    std::stringstream iostr(strBackup);
-    recover(iostr);
-  }
-  else
-  {
-    DMLOG (TRACE, "The backup file is empty! No recovery operation carried out for the daemon "<<name());
+    throw std::runtime_error ("backup string is empty");
   }
 
-  scheduler()->setUseRequestModel(bUseReqModel);
+  std::stringstream iostr(strBackup);
+  recover(iostr);
 
-  // The stage uses 2 threads
+
   ptr_daemon_stage_.lock()->start();
 
-  //start-up the the daemon
   StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
   sendEventToSelf(pEvtStartUp);
-
   lock_type lock(mtx_);
   while( !isStarted() )
     cond_can_start_.wait(lock);
-
-  if( isConfigured() )
+  if (!isConfigured())
   {
-    m_threadBkpService.start();
-
-    DMLOG (TRACE, "Agent " << name() << " was successfully configured!");
-    if (!isTop())
-    {
-      requestRegistration();
-    }
-
-    scheduler()->cancelWorkerJobs();
-    eworknotreg();
+    throw std::runtime_error ("Daemon could not be configured");
   }
-  else
+
+  m_threadBkpService.start();
+
+  if (!isTop())
   {
-    DMLOG (TRACE, "Agent "<<name()<<" could not configure. Giving up now!");
-    //! \todo give up now
+    requestRegistration();
   }
+
+  scheduler()->cancelWorkerJobs();
+  eworknotreg();
 
   reScheduleAllMasterJobs();
-
 }
 
 /**
@@ -238,39 +215,29 @@ void GenericDaemon::start_agent(bool bUseReqModel)
 {
   if(!scheduler())
   {
-    DMLOG (TRACE, "Create the scheduler...");
     createScheduler(bUseReqModel);
   }
 
-  // The stage uses 2 threads
+
   ptr_daemon_stage_.lock()->start();
 
-  //start-up the the daemon
-  DMLOG (TRACE, "Trigger StartUpEvent...");
   StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), ""));
   sendEventToSelf(pEvtStartUp);
-
   lock_type lock(mtx_);
   while( !isStarted() )
     cond_can_start_.wait(lock);
-
-  if( isConfigured() )
+  if (!isConfigured())
   {
-    // no backup, if a backup file was not specified!
-    DMLOG (TRACE, "Agent " << name() << " was successfully configured!");
-    if( !isTop() )
-      requestRegistration();
-
-    DMLOG (TRACE, "Notify the workers that I'm up again and they should re-register!");
-
-    scheduler()->cancelWorkerJobs();
-    eworknotreg();
+    throw std::runtime_error ("Daemon could not be configured");
   }
-  else
-  {
-    DMLOG (TRACE, "Agent "<<name()<<" could not configure. Giving up now!");
-    //! \todo give up now
-  }
+
+  m_threadBkpService.start();
+
+  if( !isTop() )
+    requestRegistration();
+
+  scheduler()->cancelWorkerJobs();
+  eworknotreg();
 
   reScheduleAllMasterJobs();
 }
