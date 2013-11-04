@@ -45,7 +45,6 @@
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
-#include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
@@ -212,7 +211,7 @@ namespace sdpa {
       virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
 
       // agent fsm (actions)
-      virtual void action_configure( const sdpa::events::StartUpEvent& );
+      virtual void action_configure();
       virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
       virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
       virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );

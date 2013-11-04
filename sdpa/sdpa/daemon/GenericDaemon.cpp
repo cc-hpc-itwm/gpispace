@@ -24,7 +24,6 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
-#include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/ConfigOkEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
@@ -170,6 +169,8 @@ void GenericDaemon::startup_step2()
   ptr_daemon_stage_.lock()->start();
 
   perform_StartUpEvent();
+
+  action_configure();
 
   if( isConfigured() )
   {
@@ -349,10 +350,8 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 }
 
 //actions
-void GenericDaemon::action_configure(const StartUpEvent&)
+void GenericDaemon::action_configure()
 {
-  DMLOG (TRACE, "Configuring myself (generic)...");
-
   // use for now as below, later read from config file
   // TODO: move this to "property" style:
   //    dot separated

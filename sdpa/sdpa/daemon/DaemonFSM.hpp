@@ -51,7 +51,6 @@ namespace sdpa {
         // the initial state of the DaemonFSM SM. Must be defined
         typedef Down initial_state;
 
-        virtual void action_configure(const sdpa::events::StartUpEvent&);
         virtual void action_config_ok(const sdpa::events::ConfigOkEvent&);
         virtual void action_config_nok(const sdpa::events::ConfigNokEvent&);
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent& );
@@ -66,7 +65,7 @@ namespace sdpa {
         struct transition_table : mpl::vector<
         //      Start         Event         		                      Next            Action                Guard
         //      +-------------+---------------------------------------+---------------+---------------------+-----
-        a_row<  Down,         sdpa::events::StartUpEvent,             Configuring,    &agentFSM::action_configure>,
+        _row<   Down,         sdpa::events::StartUpEvent,             Configuring>,
         _irow<  Down,         sdpa::events::ErrorEvent >,
         //      +-------------+-----------------------+---------------+---------------+-----
         a_row<  Configuring,  sdpa::events::ConfigOkEvent,            Up,             &agentFSM::action_config_ok>,
@@ -110,7 +109,6 @@ namespace sdpa {
 
         void perform_StartUpEvent();
 
-        void action_configure(const sdpa::events::StartUpEvent& );
         void action_config_ok(const sdpa::events::ConfigOkEvent& );
         void action_config_nok(const sdpa::events::ConfigNokEvent& );
         void action_delete_job(const sdpa::events::DeleteJobEvent& );

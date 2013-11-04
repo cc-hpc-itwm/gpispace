@@ -25,13 +25,11 @@ namespace sdpa {
   using namespace events;
   namespace daemon {
 
-void Agent::action_configure(const StartUpEvent &se)
+void Agent::action_configure()
 {
-  GenericDaemon::action_configure (se);
+  GenericDaemon::action_configure();
 
-  // should be overriden by the orchestrator, aggregator and NRE
   cfg().put("nmax_ext_job_req", 10U);
-  MLOG (TRACE, "Configuring myself (agent)...");
 }
 
 void Agent::action_config_ok(const ConfigOkEvent& e)

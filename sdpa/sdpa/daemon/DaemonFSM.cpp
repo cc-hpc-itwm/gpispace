@@ -29,11 +29,6 @@ namespace sdpa {
   namespace fsm {
     namespace bmsm {
 
-      void DaemonFSM_::action_configure(const StartUpEvent&)
-      {
-    	  DLOG(TRACE, "DaemonFSM_::action_configure");
-      }
-
       void DaemonFSM_::action_config_ok(const ConfigOkEvent&)
       {
     	  DLOG(TRACE, "DaemonFSM_::action_config_ok");
@@ -88,12 +83,6 @@ namespace sdpa {
       DaemonFSM::~DaemonFSM()
       {
     	  DLOG(TRACE, "Daemon State machine destroyed");
-      }
-
-      void DaemonFSM::action_configure(const StartUpEvent& e)
-      {
-    	  DLOG(TRACE, "DaemonFSM::action_configure");
-    	  GenericDaemon::action_configure(e);
       }
 
       void DaemonFSM::action_config_ok(const ConfigOkEvent& e)

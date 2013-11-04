@@ -53,7 +53,7 @@ namespace sdpa {
           }
         }
 
-        void action_configure( const sdpa::events::StartUpEvent& );
+        void action_configure();
         void action_config_ok( const sdpa::events::ConfigOkEvent& );
 
         void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
