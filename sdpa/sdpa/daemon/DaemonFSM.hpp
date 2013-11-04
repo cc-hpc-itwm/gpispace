@@ -45,6 +45,9 @@ namespace sdpa {
         struct Configuring : public msm::front::state<>{};
         struct Up : public msm::front::state<>{};
 
+        // events
+        struct InterruptEvent {};
+
         // the initial state of the DaemonFSM SM. Must be defined
         typedef Down initial_state;
 
@@ -70,7 +73,7 @@ namespace sdpa {
         a_row<  Configuring,  sdpa::events::ConfigNokEvent,           Down,           &agentFSM::action_config_nok >,
         _irow<  Configuring,  sdpa::events::ErrorEvent >,
         //      +------------+-----------------------+----------------+--------------+-----
-        _row<   Up,           sdpa::events::InterruptEvent,           Down>,
+        _row<   Up,           InterruptEvent,                         Down>,
         a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &agentFSM::action_register_worker>,
         a_irow< Up,           sdpa::events::DeleteJobEvent,                           &agentFSM::action_delete_job>,
         a_irow< Up,           sdpa::events::SubmitJobEvent,                           &agentFSM::action_submit_job>,

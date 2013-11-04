@@ -14,7 +14,6 @@ set (hdrs
   DeleteJobEvent.hpp
   ErrorEvent.hpp
   EventHandler.hpp
-  InterruptEvent.hpp
   JobEvent.hpp
   JobFailedAckEvent.hpp
   JobFailedEvent.hpp
