@@ -75,7 +75,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nExternalJobs(0),
     m_ullPollingInterval(100000),
     m_bRequestsAllowed(false),
-    m_bStarted(false),
     m_bConfigOk(false),
     m_bStopped(false),
     m_threadBkpService(this),
@@ -189,7 +188,6 @@ void GenericDaemon::startup_step2()
   }
 
   m_bRequestsAllowed = m_bConfigOk;
-  m_bStarted = true;
 
   if (!m_bConfigOk)
   {
