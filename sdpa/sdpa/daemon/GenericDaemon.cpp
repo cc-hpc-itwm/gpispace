@@ -171,10 +171,7 @@ void GenericDaemon::startup_step2()
 
   action_configure();
 
-  m_bRequestsAllowed = m_bConfigOk;
-  m_bStarted = true;
-
-  if(m_bConfigOk)
+  if (m_bConfigOk)
   {
     DMLOG (TRACE, "Starting the scheduler...");
     scheduler()->start(this);
@@ -190,6 +187,9 @@ void GenericDaemon::startup_step2()
 
     m_bStopped = true;
   }
+
+  m_bRequestsAllowed = m_bConfigOk;
+  m_bStarted = true;
 
   cond_can_start_.notify_one();
 
