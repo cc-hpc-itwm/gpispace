@@ -278,15 +278,15 @@ BOOST_AUTO_TEST_CASE( Test1 )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
+	ptrOrch->start_agent(false);
 
 	sdpa::master_info_list_t arrAgent0MasterInfo(1, MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
-	ptrAgent0->start_agent(false, strBackupAgent0);
+	ptrAgent0->start_agent(false);
 
 	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo, MAX_CAP, true );
-	ptrAgent1->start_agent(false, strBackupAgent1);
+	ptrAgent1->start_agent(false);
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
 
@@ -325,11 +325,11 @@ BOOST_AUTO_TEST_CASE( Test2 )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
+	ptrOrch->start_agent(false);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false, strBackupAgent);
+	ptrAgent->start_agent(false);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
