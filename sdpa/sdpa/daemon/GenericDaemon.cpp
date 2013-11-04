@@ -176,7 +176,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile)
  * @param[in] bkpFile Backup string for the agent
  * @param[in] cfgFile Configuration file of the agent
  */
-void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup)
+void GenericDaemon::start_agent( bool bUseReqModel, std::string strBackup)
 {
   if(!scheduler())
   {
