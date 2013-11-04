@@ -29,7 +29,6 @@ set (hdrs
   RunJobEvent.hpp
   SDPAEvent.hpp
   Serialization.hpp
-  StartUpEvent.hpp
   SubmitJobAckEvent.hpp
   SubmitJobEvent.hpp
   WorkerRegistrationAckEvent.hpp

@@ -47,6 +47,7 @@ namespace sdpa {
 
         // events
         struct InterruptEvent {};
+        struct StartUpEvent {};
 
         // the initial state of the DaemonFSM SM. Must be defined
         typedef Down initial_state;
@@ -65,7 +66,7 @@ namespace sdpa {
         struct transition_table : mpl::vector<
         //      Start         Event         		                      Next            Action                Guard
         //      +-------------+---------------------------------------+---------------+---------------------+-----
-        _row<   Down,         sdpa::events::StartUpEvent,             Configuring>,
+        _row<   Down,         StartUpEvent,                           Configuring>,
         _irow<  Down,         sdpa::events::ErrorEvent >,
         //      +-------------+-----------------------+---------------+---------------+-----
         a_row<  Configuring,  sdpa::events::ConfigOkEvent,            Up,             &agentFSM::action_config_ok>,

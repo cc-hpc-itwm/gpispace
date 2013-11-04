@@ -21,7 +21,6 @@
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/RunJobEvent.hpp>
-#include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
