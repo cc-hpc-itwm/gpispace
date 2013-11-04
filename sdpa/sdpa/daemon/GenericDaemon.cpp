@@ -186,18 +186,15 @@ void GenericDaemon::startup_step2()
     to_master_stage()->start();
 
     perform_ConfigOkEvent();
+
+    m_bRequestsAllowed = true;
   }
   else
   {
     perform_ConfigNokEvent();
 
     m_bStopped = true;
-  }
 
-  m_bRequestsAllowed = config_ok;
-
-  if (!config_ok)
-  {
     throw std::runtime_error ("Daemon could not be configured");
   }
 }
