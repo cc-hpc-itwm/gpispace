@@ -326,14 +326,6 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
   }
 }
 
-void GenericDaemon::setDefaultConfiguration()
-{
-  cfg().put("polling interval",             1 * 1000 * 1000);
-  cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
-  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
-  cfg().put("backup_interval",              5 * 1000 * 1000); // 3s*/
-}
-
 //actions
 void GenericDaemon::action_configure(const StartUpEvent& evt)
 {
@@ -353,7 +345,10 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
   // id StartUpEvent contains a configuration file, read the config file and
   // overwrite the default vaules
 
-  setDefaultConfiguration();
+  cfg().put("polling interval",             1 * 1000 * 1000);
+  cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
+  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
+  cfg().put("backup_interval",              5 * 1000 * 1000); // 3s*/
 
   m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
   m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
