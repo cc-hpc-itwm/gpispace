@@ -244,31 +244,7 @@ namespace sdpa {
 
       std::string getStatus()
       {
-        DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
-
-        //! \note This table refers to the order in which states are
-        //! first seen in the state machine definition. This is hacky
-        //! and should be removed / done via visitors.
-        static char const* const state_names[] = { "SDPA::Pending"
-                                                 , "SDPA::Stalled"
-                                                 , "SDPA::Running"
-                                                 , "SDPA::Finished"
-                                                 , "SDPA::Failed"
-                                                 , "SDPA::Canceling"
-                                                 , "SDPA::Canceled"
-                                                 };
-
-        if ( *current_state() < 0
-          || *current_state() > (int)(sizeof(state_names)/sizeof(*state_names))
-           )
-        {
-          LOG(ERROR, "state id out of range!");
-          return "unknown";
-        }
-        else
-        {
-          return state_names[*current_state()];
-        }
+        return sdpa::status::show (state_code (*current_state()));
       }
 
     protected:
