@@ -68,7 +68,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_to_slave_stage_name_ (name+".net"),
 
     ptr_job_man_(new JobManager(name)),
-    ptr_scheduler_(),
+    //ptr_scheduler_(),
     ptr_workflow_engine_(NULL),
     m_nRank(rank),
     m_nCap(cap),
@@ -587,7 +587,7 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
     DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
     // create a SubmitJobEvent for the job job_id serialize and attach description
-    sdpa::worker_id_list_t worker_list( scheduler()->getListAllocatedWorkers(jobId));
+    sdpa::worker_id_list_t worker_list(1,worker_id);
     LOG(TRACE, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id);
     LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
     SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), "", worker_list));
@@ -639,7 +639,7 @@ void GenericDaemon::serveJob(Reservation& reservation)
     DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
     // create a SubmitJobEvent for the job job_id serialize and attach description
-    sdpa::worker_id_list_t worker_list( scheduler()->getListAllocatedWorkers(reservation.jobId()));
+    sdpa::worker_id_list_t worker_list(reservation.getWorkerList()); // scheduler()->getListAllocatedWorkers(reservation.jobId()));
     //LOG(TRACE, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id);
     LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
 
@@ -957,7 +957,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
       sdpa::worker_id_t worker_id(error.from());
       DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Reschedule it now!");
 
-      scheduler()->reschedule(worker_id, jobId);
+      scheduler()->rescheduleWorkerJob(worker_id, jobId);
       break;
     }
     case ErrorEvent::SDPA_EWORKERNOTREG:
@@ -1023,7 +1023,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
-          scheduler()->reschedule(worker_id);
+          //scheduler()->reschedule(worker_id);
           scheduler()->deleteWorker(worker_id); // do a re-scheduling here
         }
       }
@@ -1096,7 +1096,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	sdpa::worker_id_t worker_id(error.from());
     	DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Reschedule it now!");
 
-    	scheduler()->reschedule(worker_id, jobId);
+    	scheduler()->rescheduleWorkerJob(worker_id, jobId);
     	break;
     }
     default:
@@ -1748,7 +1748,7 @@ void GenericDaemon::reschedule(const sdpa::job_id_t& jobId)
 {
   if( scheduler() )
   {
-    scheduler()->reschedule(jobId);
+    scheduler()->rescheduleJob(jobId);
     return;
   }
 
@@ -1949,7 +1949,7 @@ void GenericDaemon::backup( std::ostream& ofs )
 		oa.register_type(static_cast<JobFSM*>(NULL));
 		backupJobManager(oa);
 
-		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		//oa.register_type(static_cast<SchedulerImpl*>(NULL));
 		backupScheduler(oa);
 
 		/*oa.register_type(static_cast<T*>(NULL));
@@ -1970,7 +1970,7 @@ void GenericDaemon::recover( std::istream& ifs )
 		ia.register_type(static_cast<JobFSM*>(NULL));
 		recoverJobManager(ia);
 
-		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		//ia.register_type(static_cast<SchedulerImpl*>(NULL));
 		recoverScheduler(ia);
 
 		// should ignore the workflow engine,
