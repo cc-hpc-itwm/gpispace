@@ -11,18 +11,8 @@
 #include <sstream>
 #include <string>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include "boost/serialization/map.hpp"
 #include <sdpa/daemon/JobManager.hpp>
 
-#include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
