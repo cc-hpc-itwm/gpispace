@@ -97,17 +97,9 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
         try {
             result_type output = pEvt->result();
 
-            if( false )
-            {
-                SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<act_id<<" finished");
-                workflowEngine()->finished(act_id, output);
-            }
-            else
-            {
-                DMLOG (TRACE, "Notify the subscribers that the job "<<act_id<<" finished");
-                JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
-                notifySubscribers(ptrEvtJobFinished);
-            }
+            DMLOG (TRACE, "Notify the subscribers that the job "<<act_id<<" finished");
+            JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
+            notifySubscribers(ptrEvtJobFinished);
 
             try {
                 DMLOG (TRACE, "Remove job "<<act_id<<" from the worker "<<worker_id);
@@ -125,19 +117,6 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
                                                            << "queues: "
                                                            << ex.what() );
             }
-
-            if( false )
-            {
-                try {
-                    //delete it also from job_map_
-                  jobManager()->deleteJob(act_id);
-                }
-                catch(JobNotDeletedException const &)
-                {
-                  SDPA_LOG_WARN("The JobManager could not delete the job "<< act_id);
-                }
-            }
-
         }catch(...) {
             SDPA_LOG_ERROR("Unexpected exception occurred!");
         }
@@ -195,21 +174,9 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         try {
             result_type output = pEvt->result();
 
-            if( false )
-            {
-                SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" failed");
-                workflowEngine()->failed( actId
-                                        , output
-                                        , pEvt->error_code()
-                                        , pEvt->error_message()
-                                        );
-            }
-            else
-            {
-                JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
-                SDPA_LOG_DEBUG("Notify the subscribers that the job "<<actId<<" has failed");
-                notifySubscribers(ptrEvtJobFailed);
-            }
+            JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
+            SDPA_LOG_DEBUG("Notify the subscribers that the job "<<actId<<" has failed");
+            notifySubscribers(ptrEvtJobFailed);
 
             try {
                 SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker "<<worker_id<<"'s queues");
@@ -222,18 +189,6 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
             catch(const JobNotDeletedException&)
             {
                 SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
-            }
-
-            if( false )
-            {
-                try {
-                    //delete it also from job_map_
-                    jobManager()->deleteJob(pEvt->job_id());
-                }
-                catch(const JobNotDeletedException&)
-                {
-                    SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
-                }
             }
         }
         catch(...) {
@@ -260,16 +215,6 @@ void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
     sdpa::events::CancelJobEvent cae;
     pJob->CancelJob(&cae);
     ptr_scheduler_->delete_job (jobId);
-
-    try
-    {
-      if(false)
-        workflowEngine()->cancelled(jobId);
-    }
-    catch (std::exception const & ex)
-    {
-      SDPA_LOG_WARN( "the workflow engine could not cancel the jobId "<<jobId<<"! Reason: "<< ex.what());
-    }
   }
   catch(const JobNotFoundException &ex1)
   {
