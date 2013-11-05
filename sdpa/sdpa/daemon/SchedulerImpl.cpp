@@ -130,7 +130,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
       return;
   }
 
-  ostringstream os;
   if(!ptr_comm_handler_)
   {
       SDPA_LOG_ERROR("Invalid communication handler. ");
@@ -160,21 +159,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
   reschedule(job_id);
 }
 
-void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
-{
-  if(!bStopRequested) {
-      while( !workerJobList.empty() ) {
-          sdpa::job_id_t jobId = workerJobList.front();
-	  DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
-	  reschedule(worker_id, jobId);
-	  workerJobList.pop_front();
-      }
-  }
-  else {
-      SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
-  }
-}
-
 void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
 {
   if(bStopRequested)
@@ -190,8 +174,12 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id )
       // which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
       pWorker->set_disconnected();
 
-      sdpa::job_id_list_t workerJobList(ptr_worker_man_->getJobListAndCleanQueues(pWorker));
-      reschedule(worker_id, workerJobList);
+      BOOST_FOREACH ( const sdpa::job_id_t& job_id
+                    , ptr_worker_man_->getJobListAndCleanQueues (pWorker)
+                    )
+      {
+        reschedule (worker_id, job_id);
+      }
 
       // put the jobs back into the central queue and don't forget
       // to reset the status
@@ -265,11 +253,11 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
     	                         , ptr_comm_handler_->name()
     	                         , jobId
     	                         , ""
+                                 , fhg::error::UNEXPECTED_ERROR
+                                 , "The job has an empty workflow attached!"
     	                         )
     	      );
 
-    	pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    	pEvtJobFailed->error_message() = "The job has an empty workflow attached!";
     	ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
     }
 
@@ -285,10 +273,10 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
                          , ptr_comm_handler_->name()
                          , jobId
                          , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , "no workflow engine attached!"
                          )
       );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "no workflow engine attached!";
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
   catch(const JobNotFoundException& ex)
@@ -301,10 +289,10 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
                          , ptr_comm_handler_->name()
                          , jobId
                          , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , "job could not be found"
                          )
       );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "job could not be found";
 
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
@@ -320,10 +308,10 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
                          , ptr_comm_handler_->name()
                          , jobId
                          , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , ex.what()
                          )
       );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = ex.what();
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
 }
@@ -371,10 +359,9 @@ void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
                                                          , ptr_comm_handler_->name()
                                                          , jobId
                                                          , result
+                                                         , fhg::error::UNEXPECTED_ERROR
+                                                         , "job could not be found"
                                                          ));
-
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "job could not be found";
 
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
@@ -388,10 +375,10 @@ void SchedulerImpl::schedule_remotely(const sdpa::job_id_t& jobId)
                                 , ptr_comm_handler_->name()
                                 , jobId
                                 , result
+                             , fhg::error::UNEXPECTED_ERROR
+                             , ex.what()
                                  ));
 
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = ex.what();
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
 }
@@ -1119,15 +1106,14 @@ void SchedulerImpl::checkAllocations()
 
 sdpa::job_id_t SchedulerImpl::getNextJobToSchedule()
 {
-  sdpa::job_id_t jobId;
-  try {
-      jobId = pending_jobs_queue_.pop();
-  }
-  catch( QueueEmpty& ex)
+  try
   {
-      LOG(WARN, "there is no job to be scheduled");
+    return pending_jobs_queue_.pop();
   }
-  return jobId;
+  catch (QueueEmpty const&)
+  {
+    return sdpa::job_id_t();
+  }
 }
 
 bool SchedulerImpl::groupFinished(const sdpa::job_id_t& jid)
@@ -1138,31 +1124,3 @@ bool SchedulerImpl::groupFinished(const sdpa::job_id_t& jid)
   Reservation reservation(allocation_table_[jid]);
   return reservation.groupFinished();
 }
-
-/*
-void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue )
-{
-  assert (pQueue);
-
-  while( !pQueue->empty() )
-  {
-    sdpa::job_id_t jobId = pQueue->pop();
-    SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
-
-    if( ptr_comm_handler_ )
-    {
-      Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
-      ptr_comm_handler_->activityFailed( worker_id
-                                       , jobId
-                                       , pJob->result()
-                                       , fhg::error::WORKER_TIMEDOUT
-                                       , "Worker timeout detected!"
-                                       );
-    }
-    else
-    {
-      SDPA_LOG_ERROR("Invalid communication handler!");
-    }
-  }
-}
-*/

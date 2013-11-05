@@ -22,6 +22,7 @@
 #include <we/type/expression.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/place.hpp>
+#include <we/type/port.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/id.hpp>
 
@@ -90,13 +91,13 @@ int main (int, char **)
   petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 
   trans_inner.add_port
-    ("vid",std::string("long"),we::type::PORT_IN);
+    (we::type::port_t ("vid",we::type::PORT_IN,std::string("long")));
   trans_inner.add_port
-    ("store",sig_store,we::type::PORT_IN);
+    (we::type::port_t ("store",we::type::PORT_IN,sig_store));
   trans_inner.add_port
-    ("store",sig_store,we::type::PORT_OUT);
+    (we::type::port_t ("store",we::type::PORT_OUT,sig_store));
   trans_inner.add_port
-    ("pair",sig_pair,we::type::PORT_OUT)
+    (we::type::port_t ("pair",we::type::PORT_OUT,sig_pair))
     ;
 
   trans_inner.add_connection
@@ -130,14 +131,13 @@ int main (int, char **)
 
   transition_t tnet ("tnet", net);
   tnet.add_port
-    ("vid", std::string ("long"), we::type::PORT_IN, pid_vid);
+    (we::type::port_t ("vid", we::type::PORT_IN, std::string ("long"), pid_vid));
   tnet.add_port
-    ("store", sig_store, we::type::PORT_IN, pid_store);
+    (we::type::port_t ("store", we::type::PORT_IN, sig_store, pid_store));
   tnet.add_port
-    ("store", sig_store, we::type::PORT_OUT, pid_store);
+    (we::type::port_t ("store", we::type::PORT_OUT, sig_store, pid_store));
   tnet.add_port
-    ("pair", sig_pair, we::type::PORT_OUT, pid_pair)
-  ;
+    (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair));
 
   {
     std::ostringstream oss;
@@ -160,12 +160,11 @@ int main (int, char **)
   transition_t t1 ("t1", we::type::module_call_t ("m", "f"));
 
   t1.add_port
-    ("i", std::string ("long"), we::type::PORT_IN);
+    (we::type::port_t ("i", we::type::PORT_IN, std::string ("long")));
   t1.add_port
-    ("i", std::string ("long"), we::type::PORT_OUT);
+    (we::type::port_t ("i", we::type::PORT_OUT, std::string ("long")));
   t1.add_port
-    ("max", std::string ("long"), we::type::PORT_IN)
-  ;
+    (we::type::port_t ("max", we::type::PORT_IN, std::string ("long")));
 
   t1.add_connection
     (petri_net::place_id_type(0), "i");
@@ -182,12 +181,11 @@ int main (int, char **)
 
   transition_t t2 ("t2", we::type::expression_t ("true"));
   t2.add_port
-    ("i", std::string ("long"), we::type::PORT_IN);
+    (we::type::port_t ("i", we::type::PORT_IN, std::string ("long")));
   t2.add_port
-    ("sum", std::string ("long"), we::type::PORT_OUT);
+    (we::type::port_t ("sum", we::type::PORT_OUT, std::string ("long")));
   t2.add_port
-    ("sum", std::string ("long"), we::type::PORT_IN)
-  ;
+    (we::type::port_t ("sum", we::type::PORT_IN, std::string ("long")));
 
   {
     std::ostringstream oss;

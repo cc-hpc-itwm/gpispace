@@ -60,12 +60,6 @@ namespace sdpa { namespace util {
     	  DMLOG(TRACE, "The daemon was configured with the following parameters: \n\n" << sstr.str());
       }
 
-      /*Config& load_defaults();*
-      Config& parse_env() { return *this; }
-      Config& parse_file(const boost::filesystem::path & ) { return *this; }
-      Config& parse(const std::string & ) { return *this; }
-      Config& parse(int , char **) { return *this; }
-      */
     //private:
       Config();
   };

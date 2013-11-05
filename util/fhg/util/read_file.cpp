@@ -1,6 +1,7 @@
 #include "read_file.hpp"
 
 #include <fstream>
+#include <stdexcept>
 
 namespace fhg
 {
@@ -9,6 +10,11 @@ namespace fhg
     std::string read_file (std::string const &path)
     {
       std::ifstream ifs (path.c_str (), std::ifstream::binary);
+      if (not ifs)
+      {
+        throw std::runtime_error ("could not open: " + path);
+      }
+
       std::filebuf *pbuf = ifs.rdbuf ();
 
       std::size_t fsize = pbuf->pubseekoff (0, ifs.end, ifs.in);
@@ -27,7 +33,7 @@ namespace fhg
       }
       else
       {
-        return "";
+        throw std::runtime_error ("could not determine file-size: " + path);
       }
     }
   }

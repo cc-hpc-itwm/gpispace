@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  JobFinishedAckEvent.hpp
- *
- *    Description:  JobFinishedAckEvent
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #ifndef SDPA_JOB_FINISHED_ACK_EVENT_HPP
 #define SDPA_JOB_FINISHED_ACK_EVENT_HPP 1
 
@@ -22,27 +5,45 @@
 
 #include <sdpa/events/JobEvent.hpp>
 
-namespace sdpa { namespace events {
-        class JobFinishedAckEvent : public JobEvent
+namespace sdpa
+{
+  namespace events
+  {
+    class JobFinishedAckEvent : public JobEvent
     {
-        public:
-                typedef sdpa::shared_ptr<JobFinishedAckEvent> Ptr;
+    public:
+      typedef sdpa::shared_ptr<JobFinishedAckEvent> Ptr;
 
-        JobFinishedAckEvent()
-          : JobEvent("", "", "")
-        {}
+      JobFinishedAckEvent()
+        : JobEvent ("", "", "")
+      {}
 
-                JobFinishedAckEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t& a_job_id)
-          :  sdpa::events::JobEvent( a_from, a_to, a_job_id ) {
-                }
+      JobFinishedAckEvent ( const address_t& a_from
+                          , const address_t& a_to
+                          , const sdpa::job_id_t& a_job_id
+                          )
+        : sdpa::events::JobEvent (a_from, a_to, a_job_id)
+      {}
 
-      std::string str() const { return "JobFinishedAckEvent(" + job_id ().str () + ")"; }
+      std::string str() const
+      {
+        return "JobFinishedAckEvent(" + job_id ().str () + ")";
+      }
 
-        virtual void handleBy(EventHandler *handler)
-        {
-          handler->handleJobFinishedAckEvent(this);
-        }
-        };
-}}
+      virtual void handleBy (EventHandler* handler)
+      {
+        handler->handleJobFinishedAckEvent (this);
+      }
+
+    private:
+      friend class boost::serialization::access;
+      template <class Archive>
+      void serialize (Archive & ar, unsigned int)
+      {
+        ar & boost::serialization::base_object<JobEvent> (*this);
+      }
+    };
+  }
+}
 
 #endif

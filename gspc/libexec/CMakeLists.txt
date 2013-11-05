@@ -23,3 +23,18 @@ fhg_add_plugin(rif rif.cpp
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
+
+fhg_add_plugin(kvsd2 kvsd.cpp
+  EXPORTS KVSD
+  LINK_LIBRARIES libgspc.shared
+                 ${FhgLog_LIBRARY_SHARED}
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SIGNALS_SHARED_LIBRARY}
+                 ${Boost_REGEX_SHARED_LIBRARY}
+                 ${Boost_DATE_TIME_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
+  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
+  COMPONENT plugins
+)

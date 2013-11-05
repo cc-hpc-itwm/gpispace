@@ -77,6 +77,8 @@ namespace gspc
         f.set_header ("destination", send_frame.get_header ("reply-to"));
         f.del_header ("content-length");
         f.del_header ("content-type");
+        f.del_header ("message-id");
+        f.del_header ("reply-to");
 
         if (frame::header_value h = send_frame.get_header ("receipt"))
         {

@@ -48,6 +48,7 @@ install (TARGETS gspcnetd gspcnetc gspcnet-ping gspcnet-req
   DESTINATION bin
   COMPONENT runtime
 )
+
 add_executable (gspc gspc.cpp)
 target_link_libraries (gspc
   libgspc
@@ -66,3 +67,19 @@ target_link_libraries (gspc
 #  DESTINATION bin
 #  COMPONENT runtime
 #)
+
+add_executable (gspc-kvs gspc-kvs.cpp)
+target_link_libraries (gspc-kvs
+  libgspc
+  fhg-util
+  we-dev
+  ${UTIL_LIBRARIES}
+  ${FhgLog_LIBRARY}
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_REGEX_LIBRARY}
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_SIGNALS_LIBRARY}
+  ${Boost_SERIALIZATION_LIBRARY} # fhglog
+  ${Boost_SYSTEM_LIBRARY}
+  dl
+)

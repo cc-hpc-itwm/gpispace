@@ -1,0 +1,196 @@
+GPI-Space -- a system to develop and execute cluster applications
+=================================================================
+:Author: Mirko Rahn
+:Email: rahn@itwm.fhg.de
+:doctype: book
+
+Overview
+--------
+
+GPI-Space is a system to develop and execute cluster applications. The
+main focus of GPI-Space is to separate communication and coordination.
+(see <<gelernter:1992>>)
+
+This manual is written for users that want to implement applications
+within GPI-Space.
+
+GPI-Space consists of three main components:
+
+* the ((distributed runtime system,DRTS)),
+* the ((workflow engine,WE)) and
+* the ((virtual memory layer,VM)).
+
+Installation
+------------
+
+To install GPI-Space just unpack the distribution file:
+
+[source,bash]
+cd $HOME
+tar xvzf gpispace.tgz
+
+and add `$HOME/gpispace/bin` to your serch path:
+
+[source,bash]
+export PATH=$HOME/gpispace/bin:$PATH
+
+To test the installation run
+
+[source,bash]
+gspc selftest
+
+When GPI-Space is installed correctly the output will be something
+like
+
+----
+GPI-Space selftest started...
+test FOO: OKAY
+test BAR: OKAY
+GPI-Space selftest completed: 0 error(s)
+----
+
+Distributed runtime system
+--------------------------
+
+Start and Stop
+~~~~~~~~~~~~~~
+
+Observe, Gantt-Viewer
+~~~~~~~~~~~~~~~~~~~~~
+
+Advanced: fhglog*
+~~~~~~~~~~~~~~~~~
+
+Advanced: kvs
+~~~~~~~~~~~~~
+
+Advanced: fhgcfg
+~~~~~~~~~~~~~~~~
+
+Advanced: gspc*
+~~~~~~~~~~~~~~~
+
+
+Workflows
+---------
+
+=== Small example (predefined)
+=== Submit
+=== Extract results
+=== Workflow description language
+==== Place, Token, Transition, Port, Type
+==== Simple networks
+==== Expressions
+==== Conditions
+
+Use conditions to make the activation of a transition depend on the
+input token(s). Conditions are boolean expressions that are evaluated until an
+avtivating combination of input tokens is found, that is a combination
+that evaluates to `true`.
+
+For example, the transition `collatz_even`
+
+[source,xml]
+<transition name="collatz_even">
+  <defun>
+    <in name="a" type="unsigned long"/>
+    <out name="f" type="unsigned long"/>
+    <expression>
+      ${f} := ${a} div 2UL
+    </expression>
+    <condition>
+      ${a} mod 2UL :eq: 0UL
+    </condition>
+  </defun>
+  <connect-in port="a" place="a"/>
+  <connect-out port="f" place="f"/>
+</transition>
+
+is activated only for even values on place `a`.
+
+NOTE: Let 'T' be a transition with input places 'p~1~,...,p~n~' and
+let 'k~i~' be the number of tokens on the place 'p~i~'. Let 'c' be the
+condition attached to 'T'. Then 'c' gets evaluated at most
+'k~1~ · k~2~ ·...· k~n~' times, that is the product of the number of
+tokens on each input place.
+
+Conditions can be attached either to transitions or to functions. The
+code above is equivalent to
+
+[source,xml]
+----
+<defun name="half">
+  <in name="a" type="unsigned long"/>
+  <out name="f" type="unsigned long"/>
+  <expression>
+    ${f} := ${a} div 2UL
+  </expression>
+</defun>
+
+<transition name="collatz_even">
+  <use name="half"/>
+  <condition>
+    ${a} mod 2UL :eq: 0UL
+  </condition>
+  <connect-in port="a" place="a"/>
+  <connect-out port="f" place="f"/>
+</transition>
+----
+
+==== Hierarchies
+==== External modules
+==== Advanced: Virtual Places
+==== Advanced: Templates
+==== Advanced: Complete XML language description
+==== Advanced: Complete expression language description
+==== Advanced: Make
+==== Advanced: Verify (pnetv)
+
+=== Compile, pnetc
+==== Wrapper
+
+=== Display, pnet2dot
+=== Big example (superbinning)
+=== Library
+=== Editor
+=== Advanced: Execute (we-exec)
+
+
+Virtual memory
+--------------
+=== Start and Stop
+=== Interface
+=== Example
+=== Advanced: gpish
+
+Literature and links
+--------------------
+
+[bibliography]
+.Articles
+- [[[gelernter:1992]]] D. Gelernter, N. Carriero: 'Coordination
+languages and their significance.'  Commun. ACM 35(2), 1992.
+
+Glossary
+--------
+
+DRTS:: Distributed runtime system.
+
+Place:: In a Petri net: Placeholder for meta data, drawn as a
+  circle. Each place has a type and cannot contain token of another
+  type.
+
+Token:: In a Petri net: The representation of meta data, typically
+  drawn as a small circle. The meta data has a type.
+
+Transition:: In a Petri net: Placeholder for an action, drawn as a
+   rectangle. If all input places contain at least one token, then the
+   transition is 'enabled' and can 'fire'. A transition that fires
+   consumes one token from each input place and produces one token on
+   each output place.
+
+Petri net:: A bipartite directed graph. The members of the two node
+  sets are called places and transitions.
+
+Index
+-----

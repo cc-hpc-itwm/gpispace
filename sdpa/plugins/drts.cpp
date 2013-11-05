@@ -550,10 +550,6 @@ public:
   {
   }
 
-  virtual void handleConfigNokEvent(const sdpa::events::ConfigNokEvent *)
-  {
-  }
-
   virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent *)
   {
   }
@@ -709,14 +705,13 @@ public:
          )
       {
         MLOG(TRACE, "cancelling pending job: " << e->job_id());
-        sdpa::events::CancelJobAckEvent *event
+        send_event
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job_it->second->owner()
                                                , job_it->second->id()
+                                               , job_it->second->result()
                                                )
           );
-        event->result() = job_it->second->result();
-        send_event(event);
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
@@ -822,18 +817,13 @@ public:
 
   // not implemented events
   virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *){}
-  virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent *) {}
-  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent *) {}
-  virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent *) {}
   virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *) {}
-  virtual void handleInterruptEvent(const sdpa::events::InterruptEvent *){}
   virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent *) {}
   virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent *) {}
   virtual void handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *) {}
   virtual void handleJobStatusReplyEvent(const sdpa::events::JobStatusReplyEvent *) {}
   virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent *) {}
   virtual void handleRunJobEvent(const sdpa::events::RunJobEvent *) {}
-  virtual void handleStartUpEvent(const sdpa::events::StartUpEvent *) {}
   virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent *) {}
 private:
   // threads
@@ -1277,30 +1267,26 @@ private:
       break;
     case drts::Job::FAILED:
       {
-        sdpa::events::JobFailedEvent *event
+        return send_event
           (new sdpa::events::JobFailedEvent ( m_my_name
                                             , job->owner()
                                             , job->id()
                                             , job->result()
+                                            , job->result_code()
+                                            , job->message()
                                             )
           );
-        event->error_code() = job->result_code();
-        event->error_message() = job->message();
-
-        return send_event (event); // send_event takes ownership
       }
       break;
     case drts::Job::CANCELED:
       {
-        sdpa::events::CancelJobAckEvent *event
+        return send_event
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job->owner()
                                                , job->id()
+                                               , job->result()
                                                )
           );
-        event->result() = job->result();
-
-        return send_event(event);
       }
       break;
     default:

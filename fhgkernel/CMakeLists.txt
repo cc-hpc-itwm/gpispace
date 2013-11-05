@@ -40,9 +40,13 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package(HWLOC REQUIRED QUIET)
 include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
 
-if (ENABLE_LICENSE_CHECK)
-  find_package (NACL QUIET REQUIRED)
-  include_directories (${NACL_INCLUDE_DIR})
+find_package (NACL QUIET)
+if (NACL_FOUND)
+  if (ENABLE_LICENSE_CHECK)
+    include_directories (${NACL_INCLUDE_DIR})
+  endif()
+else()
+  set(ENABLE_LICENSE_CHECK CACHE BOOL OFF FORCE)
 endif()
 
 # Reflect the package structure

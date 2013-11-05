@@ -791,8 +791,7 @@ namespace xml
             we::type::transition_t trans_in
               ( prefix + "IN"
               , we::type::expression_t()
-              , we::type::transition_t::preparsed_cond_type
-                (cond_in, parsed_condition_in)
+              , condition::type (cond_in, parsed_condition_in)
               , true
               , properties
               );
@@ -801,16 +800,20 @@ namespace xml
             {
               if (port.direction() == we::type::PORT_IN)
               {
-                trans_in.add_port ( port.name()
-                                  , port.signature_or_throw()
-                                  , we::type::PORT_IN
-                                  , port.properties()
-                                  );
-                trans_in.add_port ( port.name()
-                                  , port.signature_or_throw()
-                                  , we::type::PORT_OUT
-                                  , port.properties()
-                                  );
+                trans_in.add_port
+                  ( we::type::port_t ( port.name()
+                                     , we::type::PORT_IN
+                                     , port.signature_or_throw()
+                                     , port.properties()
+                                     )
+                  );
+                trans_in.add_port
+                  ( we::type::port_t ( port.name()
+                                     , we::type::PORT_OUT
+                                     , port.signature_or_throw()
+                                     , port.properties()
+                                     )
+                  );
 
                 if (port.place)
                 {
@@ -884,8 +887,7 @@ namespace xml
             we::type::transition_t trans_out
               ( prefix + "OUT"
               , we::type::expression_t()
-              , we::type::transition_t::preparsed_cond_type
-                (cond_out, parsed_condition_out)
+              , condition::type (cond_out, parsed_condition_out)
               , true
               , properties
               );
@@ -894,16 +896,20 @@ namespace xml
             {
               if (port.direction() == we::type::PORT_OUT)
               {
-                trans_out.add_port ( port.name()
-                                   , port.signature_or_throw()
-                                   , we::type::PORT_IN
-                                   , port.properties()
-                                   );
-                trans_out.add_port ( port.name()
-                                   , port.signature_or_throw()
-                                   , we::type::PORT_OUT
-                                   , port.properties()
-                                   );
+                trans_out.add_port
+                  ( we::type::port_t ( port.name()
+                                     , we::type::PORT_IN
+                                     , port.signature_or_throw()
+                                     , port.properties()
+                                     )
+                  );
+                trans_out.add_port
+                  ( we::type::port_t ( port.name()
+                                     , we::type::PORT_OUT
+                                     , port.signature_or_throw()
+                                     , port.properties()
+                                     )
+                  );
 
                 if (port.place)
                 {

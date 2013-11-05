@@ -4,7 +4,7 @@
 #include <list>
 #include <string>
 
-#include <boost/signal.hpp>
+#include <boost/signals2/signal.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
@@ -102,11 +102,11 @@ namespace gspc
         mutable boost::shared_mutex mutex;
       };
 
-      boost::signal<void ()>                     onSupervisorStopped;
-      boost::signal<void ()>                     onSupervisorStarted;
-      boost::signal<void (child_info_t const &)> onChildFailed;
-      boost::signal<void (child_info_t const &)> onChildStarted;
-      boost::signal<void (child_info_t const &)> onChildTerminated;
+      boost::signals2::signal<void ()>                     onSupervisorStopped;
+      boost::signals2::signal<void ()>                     onSupervisorStarted;
+      boost::signals2::signal<void (child_info_t const &)> onChildFailed;
+      boost::signals2::signal<void (child_info_t const &)> onChildStarted;
+      boost::signals2::signal<void (child_info_t const &)> onChildTerminated;
 
       explicit
       supervisor_t ( manager_t & process_manager

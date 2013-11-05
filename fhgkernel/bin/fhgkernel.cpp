@@ -322,7 +322,6 @@ int main(int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-#ifndef FHG_DISABLE_LICENSE_CHECK
   {
     std::string gspc_home;
     {
@@ -356,33 +355,30 @@ int main(int ac, char **av)
     int rc = -1;
     BOOST_FOREACH (std::string const &licfile, files)
     {
-      if (boost::filesystem::exists (licfile))
+      rc = fhg::plugin::check_license_file (licfile);
+      if (rc == fhg::plugin::LICENSE_VALID)
       {
-        rc = fhg::plugin::check_license_file (licfile);
-        if (rc == fhg::plugin::LICENSE_VALID)
+        break;
+      }
+      else
+      {
+        switch (rc)
         {
+        case fhg::plugin::LICENSE_EXPIRED:
+          LOG (ERROR, "license '" << licfile << "' has expired");
           break;
-        }
-        else
-        {
-          switch (rc)
-          {
-          case fhg::plugin::LICENSE_EXPIRED:
-            LOG (ERROR, "license '" << licfile << "' has expired");
+        case fhg::plugin::LICENSE_CORRUPT:
+          LOG (ERROR, "license '" << licfile << "' is corrupt");
             break;
-          case fhg::plugin::LICENSE_CORRUPT:
-            LOG (ERROR, "license '" << licfile << "' is corrupt");
-            break;
-          case fhg::plugin::LICENSE_VERSION_MISMATCH:
-            LOG (ERROR, "license '" << licfile << "' has a different version");
-            break;
-          case fhg::plugin::LICENSE_NOT_VERIFYABLE:
-            LOG (ERROR, "license '" << licfile << "' is not verifyable");
-            break;
-          default:
-            LOG (ERROR, "license '" << licfile << "' is invalid");
-            break;
-          }
+        case fhg::plugin::LICENSE_VERSION_MISMATCH:
+          LOG (ERROR, "license '" << licfile << "' has a different version");
+          break;
+        case fhg::plugin::LICENSE_NOT_VERIFYABLE:
+          LOG (ERROR, "license '" << licfile << "' is not verifyable");
+          break;
+        default:
+          LOG (ERROR, "license '" << licfile << "' is invalid");
+          break;
         }
       }
     }
@@ -396,7 +392,6 @@ int main(int ac, char **av)
       return EXIT_FAILURE;
     }
   }
-#endif
 
   if (vm.count ("title"))
   {

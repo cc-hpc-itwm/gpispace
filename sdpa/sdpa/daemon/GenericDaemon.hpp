@@ -31,14 +31,9 @@
 #include <sdpa/daemon/BackupService.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
-#include <sdpa/events/ConfigNokEvent.hpp>
-#include <sdpa/events/ConfigOkEvent.hpp>
-#include <sdpa/events/ConfigReplyEvent.hpp>
-#include <sdpa/events/ConfigRequestEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
-#include <sdpa/events/InterruptEvent.hpp>
 #include <sdpa/events/JobFailedAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
@@ -46,7 +41,6 @@
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
-#include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
@@ -103,15 +97,18 @@ namespace sdpa {
       unsigned int& capacity() { return m_nCap; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
-      void start_agent( bool bUseReqModel, const bfs::path& bkpFile, const std::string& cfgFile = ""  ); // from cfg file!
-      void start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile = ""  );
-      void start_agent( bool bUseReqModel = true, const std::string& cfgFile = "" ); // no recovery
+      void start_agent( bool bUseReqModel, const bfs::path& bkpFile); // from cfg file!
+      void start_agent( bool bUseReqModel, std::string strBackup);
+      void start_agent( bool bUseReqModel); // no recovery
 
-      void shutdown(std::string&); // no backup
-      void shutdown( const bfs::path& backup_path );
+    private:
+      void startup_step1 (bool bUseReqModel);
+      void startup_step2();
+      void startup_step3();
+
+    public:
+      std::string last_backup() const;
       void shutdown();
-
-      void stop();
 
       void addMaster(const agent_id_t& );
       void addMasters(const agent_id_list_t& );
@@ -138,6 +135,10 @@ namespace sdpa {
 
       NotificationService* gui_service() { return &m_guiService; }
 
+      virtual void handleInterruptEvent() = 0;
+      virtual void perform_ConfigOkEvent() = 0;
+      virtual void perform_ConfigNokEvent() = 0;
+
     protected:
 
       // stages
@@ -158,27 +159,10 @@ namespace sdpa {
 
       // configuration
       sdpa::util::Config& cfg() { return daemon_cfg_;}
-      void setDefaultConfiguration();
-      virtual void configure_network( const std::string& daemonUrl/*, const std::string& masterName = ""*/ );
-      virtual void shutdown_network();
 
       // agent info and properties
-      bool isStarted(){ return m_bStarted;  }
-      void setStarted(bool bVal = true){ m_bStarted = bVal; }
-
-      bool isConfigured(){ return m_bConfigOk; }
-      void setConfigured(bool bVal = true) { m_bConfigOk = bVal; }
-
-      bool isStopped(){ return m_bStopped;  }
-      void setStopped(bool bVal = true) { m_bStopped = bVal; }
-
-      bool reuestsAllowed() { return m_bRequestsAllowed; }
-      void setRequestsAllowed(bool bVal = true) { m_bRequestsAllowed = bVal; }
       virtual void updateLastRequestTime();
       virtual bool requestsAllowed();
-      void interrupt();
-
-      virtual sdpa::status_t getCurrentState() { throw std::runtime_error("not implemented by the generic daemon!"); }
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
       {
@@ -197,7 +181,6 @@ namespace sdpa {
       // event handlers
       virtual void perform(const seda::IEvent::Ptr&);
       virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
-      virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*);
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
       virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
       virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
@@ -212,14 +195,10 @@ namespace sdpa {
       virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
 
       // agent fsm (actions)
-      virtual void action_configure( const sdpa::events::StartUpEvent& );
-      virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
-      virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
-      virtual void action_interrupt( const sdpa::events::InterruptEvent& );
+      virtual void action_configure();
       virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
       virtual void action_request_job( const sdpa::events::RequestJobEvent& );
       virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
-      virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
       virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
       virtual void action_error_event(const sdpa::events::ErrorEvent& );
 
@@ -270,8 +249,7 @@ namespace sdpa {
                               const unsigned int& rank = 0,
                               const sdpa::worker_id_t& agent_uuid  = "");
 
-      template <typename T>
-      void notifyWorkers(const T&);
+      void eworknotreg();
 
       // jobs
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
@@ -284,7 +262,7 @@ namespace sdpa {
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
     protected:
-      virtual void createScheduler(bool bUseReqModel) {} // = 0;
+      virtual void createScheduler(bool bUseReqModel) = 0;
       virtual void schedule(const sdpa::job_id_t& job);
       virtual void reschedule(const sdpa::job_id_t& job);
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
@@ -315,8 +293,6 @@ namespace sdpa {
       // data members
     protected:
       mutex_type mtx_;
-      condition_type cond_can_stop_;
-      condition_type cond_can_start_;
 
       sdpa::master_info_list_t m_arrMasterInfo;
       sdpa::subscriber_map_t m_listSubscribers;
@@ -343,13 +319,10 @@ namespace sdpa {
       sdpa::util::time_type m_ullPollingInterval;
 
       bool m_bRequestsAllowed;
-      bool m_bStarted;
-      bool m_bConfigOk;
       bool m_bStopped;
       mutex_type mtx_subscriber_;
       mutex_type mtx_master_;
       mutex_type mtx_cpb_;
-      mutex_type mtx_stop_;
 
       BackupService m_threadBkpService;
       sdpa::capabilities_set_t m_capabilities;
@@ -381,35 +354,6 @@ namespace sdpa {
         }
       }
     }
-
-    /**
-     * Send a notification of type T to the workers
-     * @param[in] ptrNotEvt: Event to be sent to the workers
-     */
-    template <typename T>
-    void GenericDaemon::notifyWorkers(const T& ptrNotEvt)
-    {
-      sdpa::worker_id_list_t workerList;
-      scheduler()->getWorkerList(workerList);
-
-      if(workerList.empty())
-      {
-        DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
-        return;
-      }
-
-      //for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
-      BOOST_FOREACH(const worker_id_t& workerId, workerList)
-      {
-        ptrNotEvt->to() = workerId;
-        SDPA_LOG_INFO("Send notification to the worker "<<workerId);
-        sendEventToMaster(ptrNotEvt);
-      }
-
-      // remove workers
-      scheduler()->removeWorkers();
-    }
-
   }
 }
 

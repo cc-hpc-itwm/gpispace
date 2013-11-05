@@ -51,10 +51,6 @@ foreach (target ${simple_targets})
   endif (ENABLE_STATIC_BINARIES)
 endforeach (target ${simple_targets})
 
-if (ENABLE_PNETOPT)
-  add_subdirectory(pnetopt)
-endif ()
-
 if (ENABLE_PNETV)
   add_subdirectory(pnetv)
 endif ()
