@@ -25,6 +25,16 @@ namespace sdpa
       , UNKNOWN
       };
 
+    bool is_running (code c)
+    {
+      return c == RUNNING;
+    }
+
+    bool is_terminal (code c)
+    {
+      return c == FINISHED || c == FAILED || c == CANCELED;
+    }
+
     typedef std::map<std::string, int> job_state_map_t;
 
     static job_state_map_t job_state_map()
