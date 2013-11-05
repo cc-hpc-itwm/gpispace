@@ -1629,7 +1629,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   {
 	  try {
 		  Job::ptr_t& pJob = findJob(jobId);
-		  std::string jobStatus = pJob->getStatus();
+      std::string jobStatus = sdpa::status::show (pJob->getStatus());
 
 		  if(jobStatus.find("Finished") != std::string::npos)
 		  {

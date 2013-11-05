@@ -162,7 +162,7 @@ void JobManager::resubmitResults(IAgent* pComm)
   for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
   {
     sdpa::daemon::Job::ptr_t pJob = it->second;
-    std::string job_status = pJob->getStatus();
+    std::string job_status = sdpa::status::show (pJob->getStatus());
 
     if( pJob->isMasterJob() )
     {
@@ -225,7 +225,7 @@ sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 
 		if( (bHasWfe && pJob->isMasterJob()) || !bHasWfe )
 		{
-			std::string status = pJob->getStatus();
+      std::string status = sdpa::status::show (pJob->getStatus());
 
 			// the job is not in a terminal state
 			if(	status.find("Finished") 	== std::string::npos

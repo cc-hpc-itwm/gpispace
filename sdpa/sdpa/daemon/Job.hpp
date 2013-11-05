@@ -188,14 +188,18 @@ namespace sdpa {
       void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
       sdpa::worker_id_t owner() { return m_owner; }
 
-      bool completed()
+      sdpa::status::code getStatus()
       {
-        return sdpa::status::is_terminal (state_code (*current_state()));
+        return state_code (*current_state());
       }
 
+      bool completed()
+      {
+        return sdpa::status::is_terminal (getStatus());
+      }
       bool is_running()
       {
-        return sdpa::status::is_running (state_code (*current_state()));
+        return sdpa::status::is_running (getStatus());
       }
 
       unsigned long &walltime() { return walltime_;}
@@ -239,11 +243,6 @@ namespace sdpa {
 
       void Dispatch();
       void Pause();
-
-      std::string getStatus()
-      {
-        return sdpa::status::show (state_code (*current_state()));
-      }
 
     protected:
       SDPA_DECLARE_LOGGER();
