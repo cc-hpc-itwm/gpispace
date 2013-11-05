@@ -37,8 +37,6 @@ namespace sdpa {
     public:
       typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
       typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
-      //typedef boost::unordered_map<sdpa::job_id_t, sdpa::worker_id_list_t> allocation_table_t;
-      typedef boost::unordered_map<sdpa::job_id_t, Reservation> allocation_table_t;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
@@ -53,13 +51,10 @@ namespace sdpa {
 
       bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
       bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
+      void schedule_first(const sdpa::job_id_t&);
 
-      void reschedule( const sdpa::job_id_t& );
+      void rescheduleWorkerJob( const Worker::worker_id_t&, const sdpa::job_id_t&);
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
-      void reschedule( const Worker::worker_id_t&);
-      void reschedule( const Worker::worker_id_t&, const sdpa::job_id_t&);
-      void reschedule(JobQueue& queue);
-
       virtual bool has_job(const sdpa::job_id_t&);
 
       virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
@@ -76,12 +71,8 @@ namespace sdpa {
 
       virtual void getWorkerList(sdpa::worker_id_list_t&);
       void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
-      void getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList);
       virtual Worker::worker_id_t getWorkerId(unsigned int rank);
-      sdpa::job_id_t getAssignedJob(const sdpa::worker_id_t&);
-      sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId) { return allocation_table_[jobId].getWorkerList(); }
       sdpa::job_id_t getNextJobToSchedule();
-      void assignJobsToWorkers();
 
       virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
       virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
@@ -94,8 +85,6 @@ namespace sdpa {
       virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
 
       sdpa::worker_id_t findSuitableWorker(const job_requirements_t&, sdpa::worker_id_list_t&);
-      void releaseReservation(const sdpa::job_id_t& jobId);
-      void reserveWorker(const sdpa::job_id_t&, const sdpa::worker_id_t&, const size_t&) throw (WorkerReservationFailed);
 
       virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
       virtual void execute(const sdpa::job_id_t& jobId); //just for testing
@@ -127,16 +116,7 @@ namespace sdpa {
       friend class boost::serialization::access;
       virtual void print();
       void removeWorkers() { ptr_worker_man_->removeWorkers(); }
-
-      void workerFinished(const worker_id_t& wid, const job_id_t& jid) {  lock_type lock_table(mtx_alloc_table_); allocation_table_[jid].workerFinished(wid); }
-      void workerFailed(const worker_id_t& wid, const job_id_t& jid) {  lock_type lock_table(mtx_alloc_table_); allocation_table_[jid].workerFailed(wid); }
-      void workerCanceled(const worker_id_t& wid, const job_id_t& jid) {  lock_type lock_table(mtx_alloc_table_); allocation_table_[jid].workerCanceled(wid); }
-      bool allPartialResultsCollected(const job_id_t& jid) {  lock_type lock_table(mtx_alloc_table_); return allocation_table_[jid].allWorkersTerminated(); }
-      bool groupFinished(const sdpa::job_id_t&) ;
-
       void printPendingJobs() { pending_jobs_queue_.print(); }
-      void printAllocationTable();
-      void checkAllocations();
 
       bool schedulingAllowed() { return !ptr_worker_man_->common_queue_.empty(); }
       job_id_t nextJobToSchedule() { return ptr_worker_man_->common_queue_.pop(); }
@@ -159,12 +139,10 @@ namespace sdpa {
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;
       condition_type cond_workers_registered;
-
-      mutable mutex_type mtx_alloc_table_;
-      allocation_table_t allocation_table_;
-
     };
   }
 }
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::SchedulerImpl )
 
 #endif
