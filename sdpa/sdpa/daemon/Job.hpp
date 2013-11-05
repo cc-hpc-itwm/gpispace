@@ -168,8 +168,17 @@ namespace sdpa {
       virtual void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
       virtual sdpa::worker_id_t owner() { return m_owner; }
 
-      virtual bool completed() = 0;
-      virtual bool is_running() = 0;
+      bool completed()
+      {
+        sdpa::status_t status = getStatus();
+        return status=="SDPA::Finished" || status=="SDPA::Failed" || status=="SDPA::Canceled";
+      }
+
+      bool is_running()
+      {
+        sdpa::status_t status = getStatus();
+        return status=="SDPA::Running";
+      }
 
       virtual unsigned long &walltime() { return walltime_;}
 
@@ -212,6 +221,8 @@ namespace sdpa {
     protected:
       SDPA_DECLARE_LOGGER();
 
+      mutex_type mtx_;
+
     private:
       sdpa::job_id_t id_;
       sdpa::job_desc_t desc_;
@@ -239,7 +250,6 @@ namespace sdpa {
                , const sdpa::job_id_t &parent
                )
           : Job(id, desc, parent)
-          , SDPA_INIT_LOGGER("sdpa.fsm.bmsm.JobFSM")
         {
         }
 
@@ -318,23 +328,6 @@ static char const* const state_names[] = {     "SDPA::Pending"
 			}
         }
 
-        bool completed()
-        {
-        	sdpa::status_t status = getStatus();
-        	return status=="SDPA::Finished" || status=="SDPA::Failed" || status=="SDPA::Canceled";
-        }
-
-
-        bool is_running()
-        {
-        	sdpa::status_t status = getStatus();
-        	return status=="SDPA::Running";
-        }
-
-      private:
-        mutex_type mtx_;
-
-        SDPA_DECLARE_LOGGER();
       };
 
 }}
