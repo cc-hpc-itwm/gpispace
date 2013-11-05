@@ -31,9 +31,9 @@ namespace sdpa {
 namespace daemon {
   class Scheduler {
   public:
-    virtual ~Scheduler() {}
-
     typedef sdpa::shared_ptr<Scheduler> ptr_t;
+
+    virtual ~Scheduler() {}
 
     virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException) = 0;
     virtual const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException) = 0;
@@ -71,21 +71,19 @@ namespace daemon {
     virtual void schedule_remotely(const sdpa::job_id_t &job) = 0;
     virtual void schedule_local(const sdpa::job_id_t &job) = 0;
 
-    virtual void reschedule(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job) = 0;
-    virtual void reschedule(const Worker::worker_id_t& ) = 0;
+    virtual void rescheduleWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job) = 0;
+    virtual void rescheduleJob(const sdpa::job_id_t&) = 0;
 
     virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
     virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
     virtual void assignJobsToWorkers() = 0;
-    virtual void checkAllocations() = 0;
-    virtual sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t&) = 0;
 
     virtual void workerFinished(const worker_id_t&, const job_id_t&) = 0;
     virtual void workerFailed(const worker_id_t&, const job_id_t&) = 0;
     virtual void workerCanceled(const worker_id_t&, const job_id_t&) = 0;
     virtual bool allPartialResultsCollected(const job_id_t&) = 0;
-    virtual void releaseReservation(const sdpa::job_id_t& jobId) = 0;
     virtual bool groupFinished(const sdpa::job_id_t&) = 0;
+    virtual void releaseReservation(const sdpa::job_id_t& jobId) = 0;
 
     virtual void start(IAgent*) = 0;
     virtual void stop() = 0;
