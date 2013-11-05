@@ -5,7 +5,6 @@ set (srcs
   GenericDaemon.cpp
   Job.cpp
   JobEventHandlers.cpp
-  JobImpl.cpp
   JobManager.cpp
   SchedulerImpl.cpp
   Worker.cpp

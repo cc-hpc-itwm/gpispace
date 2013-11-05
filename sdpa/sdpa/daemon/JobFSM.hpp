@@ -13,7 +13,7 @@
 
 #include <fhg/assert.hpp>
 #include <sdpa/daemon/IAgent.hpp>
-#include <sdpa/daemon/JobImpl.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/logging.hpp>
 #include <sdpa/types.hpp>
 #include <boost/thread.hpp>
@@ -119,7 +119,7 @@ namespace sdpa {
       };
 
       // Pick a back-end
-      class JobFSM : public msm::back::state_machine<JobFSM_>, public sdpa::daemon::JobImpl
+      class JobFSM : public msm::back::state_machine<JobFSM_>, public sdpa::daemon::Job
       {
       public:
         typedef sdpa::shared_ptr<JobFSM> Ptr;
@@ -130,7 +130,7 @@ namespace sdpa {
         		const sdpa::job_desc_t desc = "",
         		const sdpa::daemon::IAgent* pHandler = NULL,
         		const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id())
-          : JobImpl(id, desc, pHandler, parent)
+          : Job(id, desc, pHandler, parent)
           , SDPA_INIT_LOGGER("sdpa.fsm.bmsm.JobFSM")
         {
         	DLOG(TRACE, "State machine created: " << id);
@@ -228,34 +228,34 @@ namespace sdpa {
 
         // actions
         void action_run_job() {
-          sdpa::daemon::JobImpl::action_run_job();
+          sdpa::daemon::Job::action_run_job();
         }
 
         void action_cancel_job(const sdpa::events::CancelJobEvent& e) {
-          sdpa::daemon::JobImpl::action_cancel_job(e);
+          sdpa::daemon::Job::action_cancel_job(e);
         }
 
         void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent& e){
-          sdpa::daemon::JobImpl::action_cancel_job_from_pending(e);
+          sdpa::daemon::Job::action_cancel_job_from_pending(e);
         }
 
         void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e) {
-          sdpa::daemon::JobImpl::action_cancel_job_ack(e);
+          sdpa::daemon::Job::action_cancel_job_ack(e);
         }
 
         void action_delete_job(const sdpa::events::DeleteJobEvent& e){
-          sdpa::daemon::JobImpl::action_delete_job(e);
+          sdpa::daemon::Job::action_delete_job(e);
         }
 
         void action_job_failed(const sdpa::events::JobFailedEvent& e){
-          sdpa::daemon::JobImpl::action_job_failed(e);
+          sdpa::daemon::Job::action_job_failed(e);
         }
         void action_job_finished(const sdpa::events::JobFinishedEvent& e){
-          sdpa::daemon::JobImpl::action_job_finished(e);
+          sdpa::daemon::Job::action_job_finished(e);
         }
 
         void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e){
-          sdpa::daemon::JobImpl::action_retrieve_job_results(e);
+          sdpa::daemon::Job::action_retrieve_job_results(e);
         }
 
         sdpa::status_t getStatus()
