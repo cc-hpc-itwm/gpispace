@@ -19,6 +19,7 @@ namespace sdpa
       , PENDING
       , SUSPENDED
       , RUNNING
+      , STALLED
 
       , UNKNOWN
       };
@@ -36,6 +37,7 @@ namespace sdpa
       m["SDPA::Finished"]  = FINISHED;
       m["SDPA::Failed"]    = FAILED;
       m["SDPA::Canceled"]  = CANCELED;
+      m["SDPA::Stalled"]   = STALLED;
 
       return m;
     }
@@ -58,6 +60,8 @@ namespace sdpa
         return "SDPA::Canceled";
       case UNKNOWN:
         return "SDPA::Unknown";
+      case STALLED:
+        return "SDPA::Stalled";
       default:
         return "Strange job state";
       }
