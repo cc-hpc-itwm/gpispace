@@ -73,16 +73,16 @@ namespace sdpa {
     virtual sdpa::worker_id_t owner() = 0;
 
     //transitions
-    virtual void CancelJob(const sdpa::events::CancelJobEvent*);
-    virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*);
-    virtual void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IAgent*);
-    virtual void JobFailed(const sdpa::events::JobFailedEvent*);
-    virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
-    virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IAgent* );
-    virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*);
-    virtual void Dispatch();
-    virtual void Reschedule(sdpa::daemon::IAgent*);
-    virtual void Pause();
+    virtual void CancelJob(const sdpa::events::CancelJobEvent*) = 0;
+    virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*) = 0;
+    virtual void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IAgent*) = 0;
+    virtual void JobFailed(const sdpa::events::JobFailedEvent*) = 0;
+    virtual void JobFinished(const sdpa::events::JobFinishedEvent*) = 0;
+    virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IAgent* ) = 0;
+    virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*) = 0;
+    virtual void Dispatch() = 0;
+    virtual void Reschedule(sdpa::daemon::IAgent*) = 0;
+    virtual void Pause() = 0;
 
     virtual void setResult(const sdpa::job_result_t& ) =0;
     virtual sdpa::status_t getStatus() { return "Undefined"; }
