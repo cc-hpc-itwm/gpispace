@@ -60,9 +60,6 @@ namespace sdpa {
         return *this;
       }
 
-      virtual void set_icomm(IAgent* pArgComm) { pComm = pArgComm; }
-      virtual IAgent* icomm() { return pComm; }
-
       virtual bool is_marked_for_deletion();
       virtual bool mark_for_deletion();
 
@@ -121,8 +118,6 @@ namespace sdpa {
       unsigned long walltime_;
 
       sdpa::worker_id_t m_owner;
-    protected:
-      IAgent* pComm;
     };
 }}
 

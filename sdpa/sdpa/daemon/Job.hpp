@@ -52,9 +52,6 @@ namespace sdpa {
     virtual Job & error_code(int) = 0;
     virtual Job & error_message(std::string const &) = 0;
 
-    virtual void set_icomm(IAgent* pArgComm) = 0;
-    virtual IAgent* icomm() = 0;
-
     virtual bool is_running() = 0;
     virtual bool is_marked_for_deletion() = 0;
     virtual bool mark_for_deletion() = 0;
