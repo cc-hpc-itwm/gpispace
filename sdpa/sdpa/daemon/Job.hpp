@@ -204,17 +204,23 @@ namespace sdpa {
         return os.str();
       }
 
-      //transitions (implemented in JobFSM)
-      virtual void CancelJob(const sdpa::events::CancelJobEvent*) = 0;
-      virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*) = 0;
-      virtual void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IAgent*) = 0;
-      virtual void JobFailed(const sdpa::events::JobFailedEvent*) = 0;
-      virtual void JobFinished(const sdpa::events::JobFinishedEvent*) = 0;
-      virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IAgent* ) = 0;
-      virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*) = 0;
-      virtual void Dispatch() = 0;
-      virtual void Reschedule(sdpa::daemon::IAgent*) = 0;
-      virtual void Pause() = 0;
+      //transitions
+      void CancelJob(const sdpa::events::CancelJobEvent* pEvt)
+      {lock_type lock(mtx_); process_event(*pEvt);}
+      void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
+      {lock_type lock(mtx_); process_event(*pEvt);}
+      void JobFailed(const sdpa::events::JobFailedEvent* pEvt)
+      {lock_type lock(mtx_); process_event(*pEvt);}
+      void JobFinished(const sdpa::events::JobFinishedEvent* pEvt)
+      {lock_type lock(mtx_); process_event(*pEvt);}
+
+      void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm);
+      void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon );
+      void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm);
+      void Reschedule(sdpa::daemon::IAgent*  pAgent);
+
+      void Dispatch();
+      void Pause();
 
       sdpa::status_t getStatus()
       {
@@ -266,35 +272,12 @@ namespace sdpa {
       class JobFSM : public sdpa::daemon::Job
       {
       public:
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-
         JobFSM ( const sdpa::job_id_t id
                , const sdpa::job_desc_t desc
                , const sdpa::job_id_t &parent
                )
           : Job(id, desc, parent)
-        {
-          start();
-        }
-
-        //transitions
-        void CancelJob(const sdpa::events::CancelJobEvent* pEvt)
-        {lock_type lock(mtx_); process_event(*pEvt);}
-        void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
-        {lock_type lock(mtx_); process_event(*pEvt);}
-        void JobFailed(const sdpa::events::JobFailedEvent* pEvt)
-        {lock_type lock(mtx_); process_event(*pEvt);}
-        void JobFinished(const sdpa::events::JobFinishedEvent* pEvt)
-        {lock_type lock(mtx_); process_event(*pEvt);}
-
-        void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm);
-        void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon );
-        void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm);
-        void Reschedule(sdpa::daemon::IAgent*  pAgent);
-
-        void Dispatch();
-        void Pause();
+        {}
       };
 }}
 

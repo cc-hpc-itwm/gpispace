@@ -34,7 +34,9 @@ namespace sdpa {
         , m_error_code(0)
         , m_error_message()
         , walltime_(2592000) // walltime in seconds: one month by default
-    {}
+    {
+      start();
+    }
 
     const sdpa::job_id_t & Job::id() const {
         return id_;
@@ -82,7 +84,7 @@ namespace sdpa {
         error_message(evt.error_message());
     }
 
-    void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm)
+    void Job::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm)
     {
       assert (ptr_comm);
       lock_type lock(mtx_);
@@ -93,7 +95,7 @@ namespace sdpa {
       ptr_comm->sendEventToMaster(pDelJobReply);
     }
 
-    void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
+    void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
     {
       assert (pDaemon);
       // attention, no action called!
@@ -113,7 +115,7 @@ namespace sdpa {
       pDaemon->sendEventToMaster (pStatReply);
     }
 
-    void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
+    void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
     {
       assert (ptr_comm);
       lock_type lock(mtx_);
@@ -124,7 +126,7 @@ namespace sdpa {
       ptr_comm->sendEventToMaster(pResReply);
     }
 
-    void JobFSM::Reschedule(sdpa::daemon::IAgent*  pAgent)
+    void Job::Reschedule(sdpa::daemon::IAgent*  pAgent)
     {
       MSMRescheduleEvent ReschedEvt;
       lock_type lock(mtx_);
@@ -132,13 +134,13 @@ namespace sdpa {
       pAgent->schedule(id());
     }
 
-    void JobFSM::Dispatch()
+    void Job::Dispatch()
     {
       lock_type lock(mtx_);
       process_event (MSMDispatchEvent());
     }
 
-    void JobFSM::Pause()
+    void Job::Pause()
     {
       lock_type lock(mtx_);
       process_event (MSMStalledEvent());
