@@ -78,8 +78,8 @@ namespace sdpa {
       virtual void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
       virtual sdpa::worker_id_t owner() { return m_owner; }
 
-      virtual bool completed() { return false; }
-      virtual bool is_running() { return false;};
+      virtual bool completed() = 0;
+      virtual bool is_running() = 0;
 
       virtual unsigned long &walltime() { return walltime_;}
 
