@@ -81,8 +81,8 @@ namespace sdpa {
       }
 
       std::string url_;
-	  };
-	}
+    };
+  }
 }
 
 #endif //SDPA_ORCHESTRATORTOR_HPP
