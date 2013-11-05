@@ -207,9 +207,6 @@ void GenericDaemon::shutdown( )
 
     scheduler()->stop();
 
-    //! \todo OLD COMMENT, STILL VALID? TODO?
-    // save the current state of the system .i.e serialize the daemon's state
-
     m_bRequestsAllowed = false;
     m_bStopped 	= true;
 
