@@ -229,7 +229,9 @@ namespace sdpa {
                                                  , "SDPA::Canceled"
                                                  };
 
-        if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
+        if ( *current_state() < 0
+          || *current_state() > (int)(sizeof(state_names)/sizeof(*state_names))
+           )
         {
           LOG(ERROR, "state id out of range!");
           return "unknown";
