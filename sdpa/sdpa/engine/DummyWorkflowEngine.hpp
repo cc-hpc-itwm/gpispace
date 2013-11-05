@@ -33,12 +33,6 @@
 #include <map>
 #include <boost/thread.hpp>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <boost/function.hpp>
 
@@ -249,13 +243,6 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
       return true;
     }
 
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & boost::serialization::base_object<we::mgmt::basic_layer>(*this);
-      ar & map_Act2Wf_Ids_;
-    }
-
     void print() {
       for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
         std::cout<<it->second<<" -> "<<it->first<<std::endl;
@@ -273,32 +260,5 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
     mutex_type mtx_;
     Function_t fct_id_gen_;
 };
-
-
-namespace boost { namespace serialization {
-template<class Archive>
-inline void save_construct_data(
-    Archive & ar, const DummyWorkflowEngine* t, const unsigned int
-){
-    // save data required to construct instance
-    ar << t->pIAgent_;
-}
-
-template<class Archive>
-inline void load_construct_data(
-    Archive & ar, DummyWorkflowEngine* t, const unsigned int
-){
-    // retrieve data from archive required to construct new instance
-        sdpa::daemon::GenericDaemon *pIAgent;
-    ar >> pIAgent;
-
-    // invoke inplace constructor to initialize instance of my_class
-    ::new(t)DummyWorkflowEngine(pIAgent, id_gen_f);
-}
-}} // namespace ...
-
-
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(we::mgmt::basic_layer)
 
 #endif //DUMMY_WORKFLOW_ENGINE_HPP

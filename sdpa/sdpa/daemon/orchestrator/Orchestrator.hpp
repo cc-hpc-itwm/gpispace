@@ -55,15 +55,6 @@ namespace sdpa {
 
       void cancelPendingJob(const sdpa::events::CancelJobEvent& evt);
 
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<DaemonFSM>(*this);
-        ar & url_; //boost::serialization::make_nvp("url_", url_);
-      }
-
-      friend class boost::serialization::access;
-
       template <typename T>
       void notifySubscribers(const T& ptrEvt);
 

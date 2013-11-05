@@ -21,11 +21,6 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 
@@ -86,13 +81,6 @@ namespace sdpa { namespace daemon {
 
     bool has_job(const sdpa::job_id_t& job_id);
 
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & worker_map_;
-    }
-
-    friend class boost::serialization::access;
     friend class SchedulerImpl;
 
     void print()

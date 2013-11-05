@@ -7,12 +7,6 @@
 #include <set>
 #include <list>
 #include <map>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/assume_abstract.hpp>
 #include <iostream>
 #include <boost/foreach.hpp>
 
@@ -57,11 +51,6 @@ namespace sdpa {
 		void incConsecRegAttempts() { nConsecRegAttempts_++;}
 		void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
 
-		template <class Archive>
-		void serialize(Archive& ar, const unsigned int)
-		{
-			ar & name_;
-		}
 	private:
 		std::string name_;
 		bool registered_;

@@ -21,11 +21,6 @@
 #include <fstream>
 #include <string>
 
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/map.hpp>
-
 #include <sdpa/daemon/IAgent.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <boost/pointer_cast.hpp>

@@ -24,10 +24,6 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/IAgent.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -116,14 +112,6 @@ namespace sdpa {
       virtual void stop();
       virtual void run();
 
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<Scheduler>(*this);
-	ar & ptr_worker_man_;
-      }
-
-      friend class boost::serialization::access;
       virtual void print();
       void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 

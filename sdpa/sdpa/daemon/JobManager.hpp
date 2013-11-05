@@ -21,15 +21,8 @@
 #include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/exceptions.hpp>
-#include <sdpa/serialize/unordered_map.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/split_member.hpp>
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
 
@@ -65,14 +58,6 @@ namespace sdpa {
 	    sdpa::job_id_list_t getListNotCompletedMasterJobs(bool bHasWfe);
 
 	    std::string print() const;
-
-	    template <class Archive>
-	    void serialize(Archive& ar, const unsigned int)
-	    {
-		    ar & BOOST_SERIALIZATION_NVP(job_map_);
-	    }
-
-	    friend class boost::serialization::access;
 
   protected:
 	    SDPA_DECLARE_LOGGER();

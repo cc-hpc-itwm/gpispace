@@ -33,12 +33,6 @@
 #include <map>
 #include <boost/thread.hpp>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <boost/function.hpp>
@@ -67,15 +61,6 @@ public:
     }
 
     friend class EmptyWorkflowEngine;
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & jobId;
-      ar & status;
-      ar & result;
-    }
-
 
    public:
     sdpa::job_id_t jobId;
@@ -356,14 +341,6 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
       }
     }
 
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & boost::serialization::base_object<we::mgmt::basic_layer>(*this);
-      ar & map_Act2Wf_Ids_;
-      ar & qResults;
-    }
-
   public:
     mutable sdpa::daemon::GenericDaemon *pGenericDaemon_;
 
@@ -379,31 +356,5 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
     mutable mutex_type mtx_stop;
     boost::condition_variable_any cond_stop;
 };
-
-
-namespace boost { namespace serialization {
-template<class Archive>
-inline void save_construct_data(
-    Archive & ar, const EmptyWorkflowEngine* t, const unsigned int
-){
-    // save data required to construct instance
-    ar << t->pGenericDaemon_;
-}
-
-template<class Archive>
-inline void load_construct_data(
-    Archive & ar, EmptyWorkflowEngine* t, const unsigned int
-){
-    // retrieve data from archive required to construct new instance
-    sdpa::daemon::GenericDaemon *pGenericDaemon;
-    ar >> pGenericDaemon;
-
-    // invoke inplace constructor to initialize instance of my_class
-    ::new(t)EmptyWorkflowEngine(pGenericDaemon, id_gen);
-}
-}} // namespace ...
-
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(we::mgmt::basic_layer)
 
 #endif //EMPTY_WORKFLOW_ENGINE_HPP

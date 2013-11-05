@@ -23,10 +23,6 @@
 #include <boost/thread.hpp>
 
 #include <boost/unordered_map.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/version.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -109,23 +105,6 @@ namespace sdpa {
         return os.str();
       }
 
-      template <class Archive> void serialize( Archive& ar, const unsigned int version)
-      {
-        ar & boost::serialization::base_object<Job>(*this);
-        ar & id_;
-        ar & desc_;
-        ar & parent_;
-        ar & result_;
-        ar & walltime_;
-        ar & type_;
-        ar & m_owner;
-        if (version > 0)
-        {
-          ar & m_error_code;
-          ar & m_error_message;
-        }
-      }
-
     protected:
       SDPA_DECLARE_LOGGER();
 
@@ -139,7 +118,6 @@ namespace sdpa {
       sdpa::job_result_t result_;
       int m_error_code;
       std::string m_error_message;
-      friend class boost::serialization::access;
       unsigned long walltime_;
 
       sdpa::worker_id_t m_owner;

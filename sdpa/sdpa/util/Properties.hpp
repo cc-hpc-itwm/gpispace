@@ -7,13 +7,6 @@
 
 
 #include <boost/unordered_map.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-
 
 namespace sdpa { namespace util {
     class PropertyLookupFailed : public sdpa::SDPAException {
@@ -160,13 +153,6 @@ namespace sdpa { namespace util {
 
         const_iterator end() const { return properties_.end(); }
         iterator end() { return properties_.end(); }
-
-        friend class boost::serialization::access;
-        template <class Archive>
-        void serialize(Archive& ar, const unsigned int /* file_version */)
-      	{
-      		ar & properties_;
-      	}
 
     private:
         map_t properties_;

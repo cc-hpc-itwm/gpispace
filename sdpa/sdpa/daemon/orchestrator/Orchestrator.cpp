@@ -20,8 +20,6 @@
 
 #include <fhg/assert.hpp>
 #include <sdpa/daemon/JobFSM.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 #include <seda/StageRegistry.hpp>
 

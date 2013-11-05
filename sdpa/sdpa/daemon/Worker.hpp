@@ -9,11 +9,6 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/exceptions.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 
 namespace sdpa { namespace daemon {
 
@@ -146,19 +141,6 @@ namespace sdpa { namespace daemon {
     const JobQueue& acknowledged() const { lock_type lock(mtx_); return acknowledged_; }
 
     unsigned int nbAllocatedJobs();
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-    	ar & name_;
-        ar & rank_;
-        ar & location_;
-    	ar & tstamp_;
-    	ar & last_time_served_;
-    	ar & last_schedule_time_;
-    }
-
-    friend class boost::serialization::access;
 
     void print();
 

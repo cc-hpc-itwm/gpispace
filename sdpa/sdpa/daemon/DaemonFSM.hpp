@@ -26,7 +26,6 @@
 #include <boost/msm/front/state_machine_def.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <boost/serialization/access.hpp>
 #include <boost/thread.hpp>
 
 namespace msm = boost::msm;
@@ -113,15 +112,6 @@ namespace sdpa {
         void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
         void handleRequestJobEvent(const sdpa::events::RequestJobEvent* );
         void handleErrorEvent(const sdpa::events::ErrorEvent* );
-
-        template <class Archive>
-        void serialize(Archive& ar, const unsigned int)
-        {
-          ar & boost::serialization::base_object<GenericDaemon>(*this);
-          ar & boost::serialization::base_object<msm::back::state_machine<DaemonFSM_> >(*this);
-        }
-
-        friend class boost::serialization::access;
 
       private:
         mutex_type mtx_;

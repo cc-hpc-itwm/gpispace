@@ -22,8 +22,6 @@
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/types.hpp>
 
-#include <boost/serialization/access.hpp>
-
 namespace sdpa {
   namespace daemon {
 
@@ -89,13 +87,7 @@ namespace sdpa {
     virtual void setResult(const sdpa::job_result_t& ) =0;
     virtual sdpa::status_t getStatus() { return "Undefined"; }
     virtual bool completed() = 0;
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive&, const unsigned int /* file version */){}
   };
 }}
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
 
 #endif

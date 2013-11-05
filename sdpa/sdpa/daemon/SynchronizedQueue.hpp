@@ -23,11 +23,6 @@
 #include <sdpa/SDPAException.hpp>
 #include <iostream>
 #include <sdpa/logging.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-
 
 namespace sdpa { namespace daemon {
   class QueueException : public SDPAException
@@ -197,14 +192,6 @@ namespace sdpa { namespace daemon {
       lock_type lock(mtx_);
       container_.clear();
     }
-
-    template <class Archive>
-  	void serialize(Archive& ar, const unsigned int)
-  	{
-      	ar & container_;
-  	}
-
-    friend class boost::serialization::access;
 
     void print(const std::string& msg="")
     {

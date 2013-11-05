@@ -30,8 +30,6 @@
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 #include <sstream>

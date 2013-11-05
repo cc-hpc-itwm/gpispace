@@ -16,7 +16,6 @@
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/logging.hpp>
 #include <sdpa/types.hpp>
-#include <boost/serialization/access.hpp>
 #include <boost/thread.hpp>
 
 #include <sdpa/events/JobResultsReplyEvent.hpp>
@@ -286,19 +285,6 @@ namespace sdpa {
         	sdpa::status_t status = getStatus();
         	return status=="SDPA::Running";
         }
-
-        template <class Archive>
-        void serialize(Archive& ar, const unsigned int)
-        {
-          //ar.register_type(static_cast<sdpa::daemon::JobImpl*>(NULL));
-          //ar.register_type(static_cast<JobFSM_*>(NULL));
-
-          ar & boost::serialization::base_object<JobImpl>(*this);
-          ar & boost::serialization::base_object<msm::back::state_machine<JobFSM_> >(*this);
-          //ar & job_impl_;
-        }
-
-        friend class boost::serialization::access;
 
       private:
         mutex_type mtx_;

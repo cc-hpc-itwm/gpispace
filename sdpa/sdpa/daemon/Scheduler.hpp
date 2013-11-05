@@ -21,7 +21,6 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
-#include <boost/serialization/access.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
@@ -88,14 +87,7 @@ namespace daemon {
     virtual bool useRequestModel()=0;
 
     virtual void printPendingJobs() = 0;
-
-    friend class boost::serialization::access;
-    template<class Archive>
-          void serialize(Archive&, const unsigned int /* file version */){}
   };
 }}
-
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Scheduler )
 
 #endif

@@ -51,16 +51,6 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/user_data.hpp>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/weak_ptr.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
 #include <boost/utility.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 
@@ -263,19 +253,6 @@ namespace sdpa {
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
       void reScheduleAllMasterJobs();
 
-      // backup
-      friend class boost::serialization::access;
-
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int)
-      {
-    	  ar & ptr_job_man_;
-    	  ar & ptr_scheduler_;
-    	  ar & ptr_workflow_engine_;
-    	  ar & m_arrMasterInfo;
-    	  ar & m_listSubscribers;
-      }
-
       // data members
     protected:
       mutex_type mtx_;
@@ -341,7 +318,5 @@ namespace sdpa {
     }
   }
 }
-
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::GenericDaemon )
 
 #endif

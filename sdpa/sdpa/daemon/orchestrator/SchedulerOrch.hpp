@@ -19,14 +19,6 @@ namespace sdpa
 
       bool postRequest( bool ) { return false; }
       void checkRequestPosted() { /*do nothing*/ }
-
-      friend class boost::serialization::access;
-
-      template <class Archive>
-        void serialize(Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<SchedulerImpl>(*this);
-      }
     };
   }
 }

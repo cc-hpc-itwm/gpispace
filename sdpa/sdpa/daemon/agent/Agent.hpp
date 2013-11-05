@@ -69,17 +69,8 @@ namespace sdpa {
 
         const std::string url() const {return url_;}
 
-        template <class Archive>
-        void serialize(Archive& ar, const unsigned int)
-        {
-          ar & boost::serialization::base_object<DaemonFSM>(*this);
-          ar & url_; //boost::serialization::make_nvp("url_", url_);
-          ar & m_bCanRunTasksLocally;
-        }
-
         bool canRunTasksLocally() { return m_bCanRunTasksLocally; }
 
-        friend class boost::serialization::access;
         template <typename T> friend struct AgentFactory;
 
         template <typename T>
