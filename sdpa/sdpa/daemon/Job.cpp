@@ -131,4 +131,16 @@ namespace sdpa {
       process_event(ReschedEvt);
       pAgent->schedule(id());
     }
+
+    void JobFSM::Dispatch()
+    {
+      lock_type lock(mtx_);
+      process_event (MSMDispatchEvent());
+    }
+
+    void JobFSM::Pause()
+    {
+      lock_type lock(mtx_);
+      process_event (MSMStalledEvent());
+    }
 }}

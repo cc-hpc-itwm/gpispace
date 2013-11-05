@@ -293,19 +293,8 @@ namespace sdpa {
         void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm);
         void Reschedule(sdpa::daemon::IAgent*  pAgent);
 
-        void Dispatch()
-        {
-            MSMDispatchEvent DispEvt;
-            lock_type lock(mtx_);
-            process_event(DispEvt);
-        }
-
-        void Pause()
-        {
-        	MSMStalledEvent StalledEvt;
-        	lock_type lock(mtx_);
-        	process_event(StalledEvt);
-        }
+        void Dispatch();
+        void Pause();
       };
 }}
 
