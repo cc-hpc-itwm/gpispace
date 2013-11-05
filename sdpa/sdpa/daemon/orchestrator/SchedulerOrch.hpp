@@ -35,7 +35,7 @@ namespace sdpa {
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)
     {
-     ar & boost::serialization::base_object<SchedulerImpl>(*this);
+      ar & boost::serialization::base_object<SchedulerImpl>(*this);
     }
 
     // the orchestrator needs no reservation!
@@ -49,7 +49,6 @@ namespace sdpa {
 
       // get the list of workers that are not full
       getListNotFullWorkers(listAvailWorkers);
-      //getWorkerList(listAvailWorkers);
 
       // check if there are jobs that can already be scheduled on these workers
       JobQueue nonmatching_jobs_queue;
@@ -64,28 +63,66 @@ namespace sdpa {
           job_requirements_t job_reqs(ptr_comm_handler_->getJobRequirements(jobId));
           matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
         }
-        catch( const NoJobRequirements& ex ) // no requirements are specified
-        {
+        catch( const NoJobRequirements& ex ) { // no requirements are specified
           // we have an empty list of requirements then!
           matchingWorkerId = listAvailWorkers.front();
           listAvailWorkers.erase(listAvailWorkers.begin());
         }
 
-        if( !matchingWorkerId.empty() ) // matching found
-        {
+        if( !matchingWorkerId.empty() ) { // matching found
             LOG(INFO, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
 
             // serve the same job to all reserved workers!!!!
             ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
         }
-        else // put it back into the common queue
-        {
+        else { // put it back into the common queue
             nonmatching_jobs_queue.push(jobId);
         }
       }
 
-      reschedule(nonmatching_jobs_queue);
+      while(!nonmatching_jobs_queue.empty())
+          schedule_first(nonmatching_jobs_queue.pop_back());
     }
+
+    void rescheduleJob(const sdpa::job_id_t& job_id )
+    {
+      if(bStopRequested)
+      {
+          SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
+          return;
+      }
+
+      ostringstream os;
+      if(!ptr_comm_handler_)
+      {
+          SDPA_LOG_ERROR("Invalid communication handler. ");
+          stop();
+          return;
+      }
+
+      try {
+
+          Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
+          std::string status = pJob->getStatus();
+          if( !pJob->completed()) {
+              pJob->Reschedule(ptr_comm_handler_); // put the job back into the pending state
+          }
+      }
+      catch(JobNotFoundException const &ex)
+      {
+        SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
+      }
+      catch(const std::exception& ex) {
+        SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+      }
+    }
+
+    void releaseReservation(const sdpa::job_id_t& jobId) {LOG(WARN, "Not implemented!");}
+    void workerFinished(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
+    void workerFailed(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
+    void workerCanceled(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
+    bool allPartialResultsCollected(const job_id_t& jid) {LOG(WARN, "Not implemented!"); return false;}
+    bool groupFinished(const sdpa::job_id_t& jid) {LOG(WARN, "Not implemented!"); return false;}
 
     private:
       SDPA_DECLARE_LOGGER();
