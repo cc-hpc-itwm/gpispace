@@ -42,6 +42,7 @@ namespace xml
                                , const std::list<std::string>& ldflags
                                , const std::list<std::string>& cxxflags
                                , const std::list<link_type>& links
+                               , const boost::optional<bool> &pass_context
                                )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -56,6 +57,7 @@ namespace xml
         , _ldflags (ldflags)
         , _cxxflags (cxxflags)
         , _links (links)
+        , _pass_context (pass_context)
       {
         _id_mapper->put (_id, *this);
       }
@@ -100,6 +102,10 @@ namespace xml
       const std::list<link_type>& module_type::links() const
       {
         return _links;
+      }
+      bool module_type::pass_context () const
+      {
+        return _pass_context ? *_pass_context : false;
       }
 
       bool module_type::operator == (const module_type& other) const
@@ -170,6 +176,7 @@ namespace xml
           , _ldflags
           , _cxxflags
           , _links
+          , _pass_context
           ).make_reference_id();
       }
 

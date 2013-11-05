@@ -9,6 +9,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/ext/smc)
 include_directories (${${PROJECT_NAME}_SOURCE_DIR})
 include_directories (${CMAKE_INCLUDE_PATH})
+include_directories (${CMAKE_SOURCE_DIR}/gspc)
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 
 include (FindThreads)

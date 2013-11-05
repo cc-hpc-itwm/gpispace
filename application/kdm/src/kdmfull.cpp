@@ -84,7 +84,7 @@ static fvmAllocHandle_t alloc ( const long & size
 
 // ************************************************************************* //
 
-static void initialize (void *, const expr::eval::context & input, expr::eval::context & output)
+static void initialize (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const std::string& filename (boost::get<const std::string&> (input.value ("config_file")));
   long memsizeGPI (boost::get<long> (input.value ("memsizeGPI")));
@@ -332,7 +332,7 @@ static void initialize (void *, const expr::eval::context & input, expr::eval::c
 
 // ************************************************************************* //
 
-static void loadTT (void *, const expr::eval::context & input, expr::eval::context & output)
+static void loadTT (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const long& id (boost::get<const long&> (input.value ("id")));
@@ -387,7 +387,7 @@ static void loadTT (void *, const expr::eval::context & input, expr::eval::conte
 
 // ************************************************************************* //
 
-static void load (void *, const expr::eval::context & input, expr::eval::context & output)
+static void load (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& bunch (input.value ("bunch"));
@@ -422,7 +422,7 @@ static void load (void *, const expr::eval::context & input, expr::eval::context
 
 // ************************************************************************* //
 
-static void initialize_volume (void *, const expr::eval::context & input, expr::eval::context & output)
+static void initialize_volume (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -481,7 +481,7 @@ static void initialize_volume (void *, const expr::eval::context & input, expr::
 
 // ************************************************************************* //
 
-static void process (void *, const expr::eval::context & input, expr::eval::context & output)
+static void process (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -571,7 +571,7 @@ static void process (void *, const expr::eval::context & input, expr::eval::cont
 
 // ************************************************************************* //
 
-static void reduce (void *, const expr::eval::context & input, expr::eval::context & output)
+static void reduce (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value("config"));
   const pnet::type::value::value_type& pair (input.value ("pair"));
@@ -658,7 +658,7 @@ static void reduce (void *, const expr::eval::context & input, expr::eval::conte
 
 // ************************************************************************* //
 
-static void write (void *, const expr::eval::context & input, expr::eval::context & output)
+static void write (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -722,7 +722,7 @@ static void write (void *, const expr::eval::context & input, expr::eval::contex
 
 // ************************************************************************* //
 
-static void finalize (void *, const expr::eval::context & input, expr::eval::context & output)
+static void finalize (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value ("config"));
 

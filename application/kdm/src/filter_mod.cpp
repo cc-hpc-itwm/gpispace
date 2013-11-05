@@ -48,7 +48,7 @@ static void get_Job ( const pnet::type::value::value_type& config
   memcpy (&Job, fvmGetShmemPtr(), sizeofJob());
 }
 
-static void generic_filter ( void *
+static void generic_filter ( gspc::drts::context *
 			   , const expr::eval::context & input
 			   , expr::eval::context & output
 			   , void (*filter) (TraceBunch &)
@@ -74,7 +74,7 @@ static void generic_filter ( void *
 }
 
 static void
-generic_filter_with_float ( void *
+generic_filter_with_float ( gspc::drts::context *
 			  , const expr::eval::context & input
 			  , expr::eval::context & output
 			  , void (*filter) (TraceBunch &, const float &)
@@ -129,7 +129,7 @@ static void shrink_impl (TraceBunch & Bunch)
 }
 
 // the wrapper, uses the generic wrapper
-static void shrink ( void * state
+static void shrink ( gspc::drts::context * state
 		   , const expr::eval::context & input
 		   , expr::eval::context & output
 		   )
@@ -168,7 +168,7 @@ static void clip_impl (TraceBunch & Bunch, const float & c)
    }
 }
 
-static void clip ( void * state
+static void clip ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -202,7 +202,7 @@ static void trap_impl (TraceBunch & Bunch, const float & t)
    }
 }
 
-static void trap ( void * state
+static void trap ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -292,7 +292,7 @@ static void bandpass_impl ( TraceBunch & Bunch
 }
 
 static void
-bandpass ( void *
+bandpass ( gspc::drts::context *
 	 , const expr::eval::context & input
 	 , expr::eval::context & output
 	 )
@@ -376,7 +376,7 @@ static void frac_impl (TraceBunch & Bunch)
     delete[] filterarray;
 }
 
-static void frac ( void * state
+static void frac ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -427,7 +427,7 @@ static void tpow_impl (TraceBunch & Bunch,
     delete[] filterarray;
 }
 
-static void tpow ( void * state
+static void tpow ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )

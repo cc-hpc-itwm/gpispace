@@ -14,6 +14,7 @@
 namespace module
 {
   static void call ( we::loader::loader& loader
+                   , gspc::drts::context *context
                    , we::mgmt::type::activity_t& act
                    , const we::type::module_call_t& module_call
                    )
@@ -35,7 +36,7 @@ namespace module
                   );
     }
 
-    loader[module_call.module()].call (module_call.function(), in, out);
+    loader[module_call.module()].call (module_call.function(), context, in, out);
 
     BOOST_FOREACH ( const port_by_id_type& port_by_id
                   , act.transition().ports()

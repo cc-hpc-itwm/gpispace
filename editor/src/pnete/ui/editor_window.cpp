@@ -634,7 +634,8 @@ namespace fhg
 
           virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
           {
-            module::call (loader, act, mod);
+            //!\todo pass a real gspc::drts::context here
+            module::call (loader, 0, act, mod);
 
             return 0;
           }

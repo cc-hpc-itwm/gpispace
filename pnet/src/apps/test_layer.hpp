@@ -105,7 +105,8 @@ namespace test {
       {
         try
         {
-          module::call (daemon.loader(), act, mod);
+          //!\todo pass a real gspc::drts::context
+          module::call (daemon.loader(), 0, act, mod);
           daemon.layer().finished (id, act.to_string());
         }
         catch (std::exception const & ex)

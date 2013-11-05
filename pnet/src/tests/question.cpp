@@ -4,7 +4,7 @@
 
 #include "answer.hpp"
 
-static void question (void *, const expr::eval::context & input, expr::eval::context& output)
+static void question (gspc::drts::context *, const expr::eval::context & input, expr::eval::context& output)
 {
   std::cerr << "input := " << input << std::endl;
   output. bind ("out", pnet::type::value::value_type ((long)get_answer()));

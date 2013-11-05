@@ -108,6 +108,7 @@
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="function" type="xsd:string" use="required"/>
+    <xsd:attribute name="pass_context" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="type_map_type">

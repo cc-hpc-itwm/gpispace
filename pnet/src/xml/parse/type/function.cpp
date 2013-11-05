@@ -1793,6 +1793,11 @@ namespace xml
 
           fhg::util::first_then<std::string> sep (" ", ", ");
 
+          if (mod.pass_context ())
+          {
+            s << sep << "gspc::drts::context *_pnetc_context";
+          }
+
           BOOST_FOREACH (const port_with_type& port, ports_const)
           {
             s << sep << "const " << mk_type (port.type) << "& " << port.name
@@ -1838,7 +1843,7 @@ namespace xml
           s << ns::open (indent, mod.name());
 
           s << indent << "static void " << mod.function();
-          s << deeper (indent) << "( void *";
+          s << deeper (indent) << "( gspc::drts::context *_pnetc_context";
           s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
           s << deeper (indent) << ", expr::eval::context& _pnetc_output";
           s << deeper (indent) << ")";
@@ -1879,6 +1884,11 @@ namespace xml
             ;
 
           fhg::util::first_then<std::string> sep ("", ", ");
+
+          if (mod.pass_context ())
+          {
+            s << sep << "_pnetc_context";
+          }
 
           BOOST_FOREACH (const port_with_type& port, ports_const)
           {
@@ -2114,6 +2124,10 @@ namespace xml
               stream << cpp_util::include_guard::open
                 ("PNETC_OP_" + mod.name() + "_" + mod.function());
 
+              if (mod.pass_context ())
+              {
+                stream << cpp_util::include ("gspc/drts/context_fwd.hpp");
+              }
               BOOST_FOREACH (const std::string& tname, types)
               {
                 stream << include (tname);
@@ -2152,6 +2166,11 @@ namespace xml
 
               stream << cpp_util::include
                 ("pnetc/op/" + mod.name() + "/" + file_hpp);
+
+              if (mod.pass_context ())
+              {
+                stream << cpp_util::include ("gspc/drts/context.hpp");
+              }
 
               BOOST_FOREACH (const std::string& inc, mod.cincludes())
               {

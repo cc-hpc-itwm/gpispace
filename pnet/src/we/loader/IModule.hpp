@@ -6,6 +6,8 @@
 #include <we/expr/eval/context.hpp>
 #include <we/loader/api-guard.hpp>
 
+#include <gspc/drts/context_fwd.hpp>
+
 #include <list>
 #include <string>
 
@@ -13,7 +15,7 @@ namespace we
 {
   namespace loader
   {
-    typedef void (*WrapperFunction)( void*
+    typedef void (*WrapperFunction)( gspc::drts::context *
                                    , const expr::eval::context&
                                    , expr::eval::context&
                                    );
@@ -29,8 +31,6 @@ namespace we
 
       virtual void name (const std::string &name) = 0;
       virtual void add_function (const std::string&, WrapperFunction) = 0;
-      virtual void* state (void*) = 0;
-      virtual void* state (void) = 0;
     };
   }
 }
