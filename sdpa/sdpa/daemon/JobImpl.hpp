@@ -126,6 +126,4 @@ namespace sdpa {
     };
 }}
 
-BOOST_CLASS_VERSION(sdpa::daemon::JobImpl, 1);
-
 #endif
