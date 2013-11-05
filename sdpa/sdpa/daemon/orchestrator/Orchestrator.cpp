@@ -244,7 +244,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     return;
   }
 
-  if(pEvt->from() == sdpa::daemon::WE || !false)
+  if(true)
   {
     try
     {
@@ -306,7 +306,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     }
 
     // the acknowledgment comes from WE or from a slave and there is no WE
-    if( pEvt->from() == sdpa::daemon::WE || !false )
+    if(true )
     {
       // just send an acknowledgment to the master
       // send an acknowledgment to the component that requested the cancellation
