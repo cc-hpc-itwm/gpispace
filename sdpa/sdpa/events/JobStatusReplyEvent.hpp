@@ -20,7 +20,7 @@ namespace sdpa
 
       JobStatusReplyEvent()
         : JobEvent ("", "", "")
-        , status_ ("UNKNOWN")
+        , status_ (sdpa::status::UNKNOWN)
       {}
 
       JobStatusReplyEvent ( const address_t& a_from
@@ -31,7 +31,7 @@ namespace sdpa
                           , std::string const& error_message = std::string()
                           )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
-        , status_ (sdpa::status::show (a_status))
+        , status_ (a_status)
         , m_error_code (error_code)
         , m_error_message (error_message)
       { }
@@ -41,9 +41,9 @@ namespace sdpa
         return "JobStatusReplyEvent(" + job_id().str() + ")";
       }
 
-      const std::string& status() const
+      std::string status() const
       {
-        return status_;
+        return sdpa::status::show (status_);
       }
       int error_code() const
       {
@@ -60,7 +60,7 @@ namespace sdpa
       }
 
     private:
-      std::string status_;
+      sdpa::status::code status_;
       int m_error_code;
       std::string m_error_message;
 
