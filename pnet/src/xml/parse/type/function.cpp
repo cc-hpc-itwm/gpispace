@@ -1148,7 +1148,7 @@ namespace xml
         stream << "  $(warning !!! Try to set BOOST_ROOT in the environment!)"
                                                                    << std::endl;
         stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  BOOST_ROOT = /usr"                            << std::endl;
+        stream << "  BOOST_ROOT := /usr"                           << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CXX"                                     << std::endl;
@@ -1160,7 +1160,7 @@ namespace xml
         stream << "    $(error Neither SDPA_INCLUDE nor SDPA_HOME are set)"
                                                                    << std::endl;
         stream << "  else"                                         << std::endl;
-        stream << "    SDPA_INCLUDE = $(SDPA_HOME)/include"        << std::endl;
+        stream << "    SDPA_INCLUDE := $(SDPA_HOME)/include"       << std::endl;
         stream << "  endif"                                        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
@@ -1169,15 +1169,15 @@ namespace xml
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
-        stream << "  CP = $(shell which cp 2>/dev/null)"           << std::endl;
+        stream << "  CP := $(shell which cp 2>/dev/null)"          << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef MKDIR"                                   << std::endl;
-        stream << "  MKDIR = $(shell which mkdir 2>/dev/null)"     << std::endl;
+        stream << "  MKDIR := $(shell which mkdir 2>/dev/null)"    << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef RM"                                      << std::endl;
-        stream << "  RM = $(shell which rm 2>/dev/null) -f"        << std::endl;
+        stream << "  RM := $(shell which rm 2>/dev/null) -f"       << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
