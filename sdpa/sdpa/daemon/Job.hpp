@@ -45,6 +45,80 @@
 
 namespace sdpa {
   namespace daemon {
+
+    // front-end: define the FSM structure
+    struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
+    {
+      virtual ~JobFSM_() {}
+
+      // The list of FSM states
+      struct Pending :        public boost::msm::front::state<>{};
+      struct Stalled :        public boost::msm::front::state<>{};
+      struct Running :        public boost::msm::front::state<>{};
+      struct Finished :       public boost::msm::front::state<>{};
+      struct Failed :         public boost::msm::front::state<>{};
+      struct Cancelling : 	  public boost::msm::front::state<>{};
+      struct Cancelled :      public boost::msm::front::state<>{};
+
+      struct MSMDispatchEvent {};
+      struct MSMRescheduleEvent {};
+      struct MSMStalledEvent {};
+
+      // the initial state of the JobFSM SM. Must be defined
+      typedef Pending initial_state;
+
+      virtual void action_delete_job(const sdpa::events::DeleteJobEvent&){ DLOG(TRACE, "JobFSM_::action_delete_job"); }
+      virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ DLOG(TRACE, "JobFSM_::action_job_failed"); }
+      virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ DLOG(TRACE, "JobFSM_::action_job_finished"); }
+
+      typedef JobFSM_ sm; // makes transition table cleaner
+
+      struct transition_table : boost::mpl::vector
+        <
+        //      Start       Event                                       Next        		Action                Guard
+        //      +---------------+-------------------------------------------+------------------+---------------------+-----
+        _row<   Pending,    	MSMDispatchEvent,           				Running >,
+        _row<   Pending,    	sdpa::events::CancelJobEvent, 				Cancelled>,
+        //a_row<  Pending,  	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished >,
+        //a_row<  Pending,  	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        _row<   Stalled,	    MSMDispatchEvent,        					Running >,
+        _row<   Stalled,    	MSMRescheduleEvent,                 		Pending >,
+        //      +---------------+-------------------------------------------+------------------+---------------------+-----
+        a_row<  Running,    	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
+        a_row<  Running,    	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
+        _row<   Running,    	sdpa::events::CancelJobEvent,       		Cancelling>,
+        _row<   Running,    	MSMRescheduleEvent,                 		Pending >,
+        _row<   Running,	    MSMStalledEvent,        					Stalled >,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
+        _irow<  Finished,   	sdpa::events::RetrieveJobResultsEvent>,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Failed,     	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
+        _irow<  Failed,     	sdpa::events::RetrieveJobResultsEvent>,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        _row<   Cancelling, 	sdpa::events::CancelJobAckEvent,     		Cancelled>,
+        a_row<  Cancelling, 	sdpa::events::JobFinishedEvent,      		Cancelled, 			&sm::action_job_finished>,
+        a_row<  Cancelling, 	sdpa::events::JobFailedEvent,               Cancelled, 			&sm::action_job_failed>,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Cancelled,  	sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
+        _irow<  Cancelled,  	sdpa::events::RetrieveJobResultsEvent>
+        >{};
+
+      template <class FSM, class Event>
+        void no_transition(Event const& e, FSM&, int state)
+      {
+        //DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
+      }
+
+      template <class FSM>
+        void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
+      {
+        //DLOG(DEBUG, "process event QueryJobStatusEvent");
+      }
+    };
+
+
     class IAgent;
     class Job
     {
@@ -152,78 +226,6 @@ namespace sdpa {
 
       sdpa::worker_id_t m_owner;
     };
-
-      // front-end: define the FSM structure
-      struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
-      {
-        virtual ~JobFSM_() {}
-
-        // The list of FSM states
-        struct Pending :        public boost::msm::front::state<>{};
-        struct Stalled :        public boost::msm::front::state<>{};
-        struct Running :        public boost::msm::front::state<>{};
-        struct Finished :       public boost::msm::front::state<>{};
-        struct Failed :         public boost::msm::front::state<>{};
-        struct Cancelling : 	  public boost::msm::front::state<>{};
-        struct Cancelled :      public boost::msm::front::state<>{};
-
-        struct MSMDispatchEvent {};
-        struct MSMRescheduleEvent {};
-        struct MSMStalledEvent {};
-
-        // the initial state of the JobFSM SM. Must be defined
-        typedef Pending initial_state;
-
-        virtual void action_delete_job(const sdpa::events::DeleteJobEvent&){ DLOG(TRACE, "JobFSM_::action_delete_job"); }
-        virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ DLOG(TRACE, "JobFSM_::action_job_failed"); }
-        virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ DLOG(TRACE, "JobFSM_::action_job_finished"); }
-
-        typedef JobFSM_ sm; // makes transition table cleaner
-
-        struct transition_table : boost::mpl::vector
-        <
-        //      Start       Event                                       Next        		Action                Guard
-        //      +---------------+-------------------------------------------+------------------+---------------------+-----
-        _row<   Pending,    	MSMDispatchEvent,           				Running >,
-        _row<   Pending,    	sdpa::events::CancelJobEvent, 				Cancelled>,
-        //a_row<  Pending,  	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished >,
-        //a_row<  Pending,  	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Stalled,	    MSMDispatchEvent,        					Running >,
-        _row<   Stalled,    	MSMRescheduleEvent,                 		Pending >,
-        //      +---------------+-------------------------------------------+------------------+---------------------+-----
-        a_row<  Running,    	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
-        a_row<  Running,    	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        _row<   Running,    	sdpa::events::CancelJobEvent,       		Cancelling>,
-        _row<   Running,    	MSMRescheduleEvent,                 		Pending >,
-        _row<   Running,	    MSMStalledEvent,        					Stalled >,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
-        _irow<  Finished,   	sdpa::events::RetrieveJobResultsEvent>,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Failed,     	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
-        _irow<  Failed,     	sdpa::events::RetrieveJobResultsEvent>,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Cancelling, 	sdpa::events::CancelJobAckEvent,     		Cancelled>,
-        a_row<  Cancelling, 	sdpa::events::JobFinishedEvent,      		Cancelled, 			&sm::action_job_finished>,
-        a_row<  Cancelling, 	sdpa::events::JobFailedEvent,               Cancelled, 			&sm::action_job_failed>,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Cancelled,  	sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
-        _irow<  Cancelled,  	sdpa::events::RetrieveJobResultsEvent>
-        >{};
-
-        template <class FSM, class Event>
-        void no_transition(Event const& e, FSM&, int state)
-        {
-        	//DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
-        }
-
-        template <class FSM>
-        void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
-        {
-            //DLOG(DEBUG, "process event QueryJobStatusEvent");
-        }
-      };
 
       // Pick a back-end
       class JobFSM : public boost::msm::back::state_machine<JobFSM_>, public sdpa::daemon::Job
