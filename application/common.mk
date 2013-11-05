@@ -22,10 +22,6 @@ ifndef RM
   RM := $(shell which rm 2>/dev/null)
 endif
 
-ifndef TOUCH
-  TOUCH := $(shell which touch 2>/dev/null)
-endif
-
 ifndef XMLLINT
   XMLLINT := $(shell which xmllint 2>/dev/null)
 endif
@@ -351,19 +347,8 @@ endif
 
 ###############################################################################
 
-ifeq "$(TOUCH)" ""
-
-$(GEN): $(DEP_XML) $(XML) $(DEP)
-	$(warning Missing 'touch'. Most probably some timestamps will be wrong.)
-	$(PNETC) -i $(XML) -o /dev/null -g $@
-
-else
-
 $(GEN): $(DEP_XML) $(XML) $(DEP)
 	$(PNETC) -i $(XML) -o /dev/null -g $@
-	$(TOUCH) $@
-
-endif
 
 lib: $(GEN)
 	$(MAKE) -C $(GEN)
@@ -506,7 +491,6 @@ showconfig:
 	@echo "TEE     = $(TEE)"
 	@echo "CMD_DOT = $(CMD_DOT)"
 	@echo "RM      = $(RM)"
-	@echo "TOUCH   = $(TOUCH)"
 	@echo "XMLLINT = $(XMLLINT)"
 	@echo
 	@echo "*** GPI-Space paths and files:"
