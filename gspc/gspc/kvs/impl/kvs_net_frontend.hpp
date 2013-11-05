@@ -13,8 +13,13 @@ namespace gspc
     public:
       explicit
       kvs_net_frontend_t (std::string const &url);
-
     private:
+      int request ( std::string const &rpc
+                  , std::string const &rqst
+                  , std::string &rply
+                  , size_t timeout = (size_t)0
+                  ) const;
+
       int do_put (std::list<std::pair<key_type, value_type> > const &);
 
       int do_get (key_type const &key, value_type &val) const;
@@ -29,11 +34,12 @@ namespace gspc
       int do_set_ttl_regex (std::string const &regex, int ttl);
 
       int do_push (key_type const &key, value_type const &val);
-      int do_pop (key_type const &, value_type &val);
       int do_try_pop (key_type const &, value_type &val);
 
       int do_counter_reset (key_type const &key, int val);
       int do_counter_change (key_type const &key, int &val, int delta);
+
+      int do_wait (key_type const &key, int mask, int timeout_in_ms) const;
 
       std::string m_url;
       gspc::net::client_ptr_t m_client;

@@ -468,7 +468,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   // assign jobs to the workers
   ptrScheduler->printAllocationTable();
   sdpa::job_id_t jid(ptrScheduler->getNextJobToSchedule());
-  BOOST_ASSERT(jid.str().empty());
+  BOOST_REQUIRE (jid.str().empty());
   ptrScheduler->schedule_remotely(jid);
   ptrScheduler->assignJobsToWorkers();
   ptrScheduler->checkAllocations();

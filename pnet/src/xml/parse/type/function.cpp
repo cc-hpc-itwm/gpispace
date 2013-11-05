@@ -661,9 +661,7 @@ namespace xml
         typedef petri_net::net we_net_type;
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
-        typedef we_transition_type::preparsed_cond_type we_cond_type;
-
-        typedef we_transition_type::requirement_t we_requirement_type;
+        typedef condition::type we_cond_type;
 
         typedef boost::unordered_map< std::string
                                     , petri_net::place_id_type
@@ -675,11 +673,13 @@ namespace xml
         {
           BOOST_FOREACH (const port_type& port, ports.values())
             {
-              trans.add_port ( port.name()
-                             , port.signature_or_throw()
-                             , port.direction()
-                             , port.properties()
-                             );
+              trans.add_port
+                ( we::type::port_t ( port.name()
+                                   , port.direction()
+                                   , port.signature_or_throw()
+                                   , port.properties()
+                                   )
+                );
             }
         }
 
@@ -702,11 +702,13 @@ namespace xml
             {
               if (not port.place)
                 {
-                  trans.add_port ( port.name()
-                                 , port.signature_or_throw()
-                                 , port.direction()
-                                 , port.properties()
-                                 );
+                  trans.add_port
+                    ( we::type::port_t ( port.name()
+                                       , port.direction()
+                                       , port.signature_or_throw()
+                                       , port.properties()
+                                       )
+                    );
                 }
               else
                 {
@@ -714,13 +716,14 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  trans.add_port ( port.name()
-                                 , port.signature_or_throw()
-                                 , port.direction()
-                                 , get_pid (pid_of_place, *port.place)
-                                 , port.properties()
-                                 )
-                    ;
+                  trans.add_port
+                    ( we::type::port_t ( port.name()
+                                       , port.direction()
+                                       , port.signature_or_throw()
+                                       , get_pid (pid_of_place, *port.place)
+                                       , port.properties()
+                                       )
+                    );
                 }
             }
         }
@@ -735,7 +738,8 @@ namespace xml
               ; ++r
               )
           {
-            trans.add_requirement (we_requirement_type (r->first, r->second));
+            trans.add_requirement
+              (we::type::requirement_t (r->first, r->second));
           }
         }
 

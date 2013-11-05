@@ -22,25 +22,14 @@
 #include <fhg/assert.hpp>
 
 namespace sdpa {
+  using namespace events;
   namespace daemon {
 
-void Agent::action_configure(const StartUpEvent &se)
+void Agent::action_configure()
 {
-  GenericDaemon::action_configure (se);
+  GenericDaemon::action_configure();
 
-  // should be overriden by the orchestrator, aggregator and NRE
   cfg().put("nmax_ext_job_req", 10U);
-  MLOG (TRACE, "Configuring myself (agent)...");
-}
-
-void Agent::action_config_ok(const ConfigOkEvent& e)
-{
-  GenericDaemon::action_config_ok (e);
-
-  // should be overriden by the orchestrator, aggregator and NRE
-  DMLOG (TRACE, "Configuration (aggregator) was ok");
-
-  cfg().print();
 }
 
 void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
@@ -228,12 +217,96 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
     {
       if(subscribedFor(pair_subscr_joblist.first, id))
       {
-        sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
-        ptrEvt->from() = name();
-        ptrEvt->to()   = pair_subscr_joblist.first;
+        sdpa::events::SDPAEvent::Ptr ptrEvt
+          ( new JobFinishedEvent ( name()
+                                 , pair_subscr_joblist.first
+                                 , pEvtJobFinished->job_id()
+                                 , pEvtJobFinished->result()
+                                 )
+          );
+
         sendEventToMaster(ptrEvt);
       }
     }
+  }
+  catch(QueueFull const &)
+  {
+    SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFinishedEvent");
+    return false;
+  }
+  catch(seda::StageNotFound const &)
+  {
+    SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
+    return false;
+  }
+  catch(std::exception const & ex)
+  {
+    SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+    return false;
+  }
+  catch(...)
+  {
+    SDPA_LOG_FATAL("Unexpected exception occurred!");
+    return false;
+  }
+
+  return true;
+}
+
+bool Agent::finished(const id_type& wfid, const result_type& result, const id_type& forward_to)
+{
+  //put the job into the state Finished
+  JobId job_id(wfid);
+  DMLOG ( TRACE,
+        "The workflow engine has notified the agent "<<name()<<" that the job "<<job_id.str()<<" finished!"
+        );
+
+  Job::ptr_t pJob;
+  try {
+    pJob = jobManager()->findJob(job_id);
+  }
+  catch(JobNotFoundException const &)
+  {
+    SDPA_LOG_WARN( "got finished message for old/unknown Job "<<job_id.str());
+    return false;
+  }
+
+  try {
+    // forward it up
+    JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
+                                                                , forward_to
+                                                                , job_id
+                                                                , result ));
+
+    // send the event to the master
+    // sendEventToMaster(pEvtJobFinished);
+    pJob->JobFinished(pEvtJobFinished.get());
+
+    if( !isSubscriber(pJob->owner()) )
+      sendEventToMaster(pEvtJobFinished);
+
+    //publishEvent(*pEvtJobFinished);
+    BOOST_FOREACH (const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+    {
+      if( subscribedFor( pair_subscr_joblist.first, job_id) )
+      {
+        sdpa::events::SDPAEvent::Ptr ptrEvt
+          (new JobFinishedEvent ( name()
+                                , pair_subscr_joblist.first
+                                , pEvtJobFinished->job_id()
+                                , pEvtJobFinished->result()
+                                )
+          );
+        sendEventToMaster(ptrEvt);
+      }
+    }
+
+    // delete the job here -> send self a FinishedJobAck
+    JobFinishedAckEvent::Ptr pEvtJobFinishedAck(new JobFinishedAckEvent( name(), name(), job_id ));
+    sendEventToSelf(pEvtJobFinishedAck);
+    // catch exceptions in the case when forward_to does not exist
+    SubmitJobEvent::Ptr pSubJobEvt(new SubmitJobEvent(name(), forward_to, job_id, result, ""));
+    sendEventToSlave(pSubJobEvt);
   }
   catch(QueueFull const &)
   {
@@ -305,13 +378,14 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   {
       try {
       // forward it up
-      JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(  name()
-                                                              , pJob->owner()
-                                                              , pEvt->job_id()
-                                                              , pEvt->result() ));
-
-      pEvtJobFailed->error_code() = pEvt->error_code();
-      pEvtJobFailed->error_message() = pEvt->error_message();
+      JobFailedEvent::Ptr pEvtJobFailed
+        (new JobFailedEvent ( name()
+                            , pJob->owner()
+                            , pEvt->job_id()
+                            , pEvt->result()
+                            , pEvt->error_code()
+                            , pEvt->error_message()
+                            ));
 
       // send the event to the master
       sendEventToMaster(pEvtJobFailed);
@@ -435,13 +509,15 @@ bool Agent::failed( const id_type& wfid
 
   try {
     // forward it up
-    JobFailedEvent::Ptr pEvtJobFailed(  new JobFailedEvent( name()
-                                        , pJob->owner()
-                                        , id
-                                        , result ));
-
-    pEvtJobFailed->error_code() = error_code;
-    pEvtJobFailed->error_message() = reason;
+    JobFailedEvent::Ptr pEvtJobFailed
+      (new JobFailedEvent ( name()
+                          , pJob->owner()
+                          , id
+                          , result
+                          , error_code
+                          , reason
+                          )
+      );
 
     // send the event to the master
     pJob->JobFailed(pEvtJobFailed.get());
@@ -466,12 +542,15 @@ bool Agent::failed( const id_type& wfid
     {
       if(subscribedFor(pair_subscr_joblist.first, id))
       {
-        JobFailedEvent::Ptr ptrEvt( new JobFailedEvent(*pEvtJobFailed) );
-        ptrEvt->from() = name();
-        ptrEvt->to() = pair_subscr_joblist.first;
-        ptrEvt->error_code() = error_code;
-        ptrEvt->error_message() = reason;
-
+        JobFailedEvent::Ptr ptrEvt
+          ( new JobFailedEvent ( name()
+                               , pair_subscr_joblist.first
+                               , pEvtJobFailed->job_id()
+                               , pEvtJobFailed->result()
+                               , error_code
+                               , reason
+                               )
+          );
         sendEventToMaster(ptrEvt);
       }
     }
@@ -766,8 +845,8 @@ void Agent::backup( std::ostream& ofs )
     oa << ptr_workflow_engine_;*/
     oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
   }
-  catch(exception &e) {
-    cout <<"Exception occurred: "<< e.what() << endl;
+  catch(std::exception &e) {
+    std::cout <<"Exception occurred: "<< e.what() << std::endl;
   }
 }
 
@@ -792,8 +871,8 @@ void Agent::recover( std::istream& ifs )
     ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
     SDPA_LOG_INFO("The list of recoverd masters is: ");
   }
-  catch(exception &e) {
-    cout <<"Exception occurred: " << e.what() << endl;
+  catch(std::exception &e) {
+    std::cout <<"Exception occurred: " << e.what() << std::endl;
   }
 }
 }}

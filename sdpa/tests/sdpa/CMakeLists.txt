@@ -212,7 +212,7 @@ add_custom_command(OUTPUT ${__PNET_GEN_OUTPUTS}
                    COMMENT "putting tokens into transform_file workflow: ${command}"
                    APPEND
 )
-add_dependencies(pnet-transform_file-test-wf pnetput)
+add_dependencies(pnet-coallocation_test-wf pnetput)
 ################################################################################################
 set (tests
   test_Atomic.cpp

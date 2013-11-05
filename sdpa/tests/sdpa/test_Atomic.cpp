@@ -17,7 +17,6 @@
  */
 #define BOOST_TEST_MODULE testAtomic
 #include <boost/test/unit_test.hpp>
-#include <boost/assert.hpp>
 #include <boost/lexical_cast.hpp>
 #include "tests_config.hpp"
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>

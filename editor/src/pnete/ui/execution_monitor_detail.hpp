@@ -11,8 +11,8 @@
 
 #include <QStyledItemDelegate>
 
-class QDateTimeEdit;
 class QCheckBox;
+class QSpinBox;
 
 namespace fhg
 {
@@ -29,8 +29,8 @@ namespace fhg
         {
           //! \note worker_model has first three
           visible_range_role = Qt::UserRole + 100,
-          visible_range_from_role,
           visible_range_to_role,
+          visible_range_length_role,
           automatically_move_role,
           elapsed_time_role,
           column_type_role
@@ -38,19 +38,29 @@ namespace fhg
 
         struct visible_range_type
         {
-          long from;
-          long to;
+          long _to;
+          long _length;
+          long to() const
+          {
+            return _to;
+          }
+          long from() const
+          {
+            return _to - _length;
+          }
+          void to (long t) { _to = t; }
           long length() const
           {
-            return to - from;
+            return _length;
           }
+          void length (long l) { _length = l; }
           visible_range_type (long t = 0)
-            : from (t - 1)
-            , to (t)
+            : _to (t)
+            , _length (1)
           { }
-          visible_range_type (long f, long t)
-            : from (f)
-            , to (t)
+          visible_range_type (long t, long length)
+            : _to (t)
+            , _length (length)
           { }
         };
 
@@ -161,8 +171,7 @@ namespace fhg
 
       private:
         QScrollBar* _scrollbar;
-        QDateTimeEdit* _lower;
-        QDateTimeEdit* _upper;
+        QSpinBox* _visible_range_length;
         QCheckBox* _automove;
 
         util::qt::mvc::section_index _index;

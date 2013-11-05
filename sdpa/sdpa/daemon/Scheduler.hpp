@@ -91,7 +91,6 @@ namespace daemon {
     virtual void print() = 0;
 
     virtual bool useRequestModel()=0;
-    virtual void setUseRequestModel(bool) = 0;
 
     virtual void printPendingJobs() = 0;
 

@@ -66,9 +66,6 @@ struct MyFixture
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
-	std::string strBackupOrch;
-	std::string strBackupAgent;
-
 	boost::thread m_threadClient;
 };
 
@@ -320,24 +317,21 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 	string addrAgent0 	= "127.0.0.1";
 	string addrAgent1	= "127.0.0.1";
 
-	std::string strBackupAgent0;
-	std::string strBackupAgent1;
-
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
+	ptrOrch->start_agent(false);
 
 	sdpa::master_info_list_t arrAgent0MasterInfo(1, MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
-	ptrAgent0->start_agent(false, strBackupAgent0);
+	ptrAgent0->start_agent(false);
 
 	// create faulty agent
 	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
 	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo, MAX_CAP );
 
-	ptrAgent1->start_agent(false, strBackupAgent1);
+	ptrAgent1->start_agent(false);
 
 	ptrOrch->shutdown();
 	ptrAgent0->shutdown();
