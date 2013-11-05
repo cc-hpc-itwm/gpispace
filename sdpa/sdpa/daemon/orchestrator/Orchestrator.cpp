@@ -263,24 +263,10 @@ void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
     {
       if(hasWorkflowEngine())
         workflowEngine()->cancelled(jobId);
-
-      if(!true)
-        jobManager()->deleteJob(jobId);
     }
     catch (std::exception const & ex)
     {
       SDPA_LOG_WARN( "the workflow engine could not cancel the jobId "<<jobId<<"! Reason: "<< ex.what());
-
-      if(!true)
-      {
-        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the cancelled jobId "<<jobId<<"!");
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
-                                                  , evt.from()
-                                                  , ErrorEvent::SDPA_EUNKNOWN
-                                                  , ex.what()));
-
-        sendEventToMaster(pErrorEvt);
-      }
     }
   }
   catch(const JobNotFoundException &ex1)
@@ -296,16 +282,14 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   try
   {
     pJob = ptr_job_man_->findJob(pEvt->job_id());
-     if( true )
-    {
-      // send immediately an acknowledgment to the component that requested the cancellation
-      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
 
-      if(!isSubscriber(pJob->owner()))
-        sendEventToMaster(pCancelAckEvt);
+    // send immediately an acknowledgment to the component that requested the cancellation
+    CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
 
-      notifySubscribers(pCancelAckEvt);
-    }
+    if(!isSubscriber(pJob->owner()))
+      sendEventToMaster(pCancelAckEvt);
+
+    notifySubscribers(pCancelAckEvt);
   }
   catch(const JobNotFoundException &)
   {
@@ -341,17 +325,6 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     catch (std::exception const & ex)
     {
       SDPA_LOG_WARN( "the workflow engine could not cancel the job "<<pEvt->job_id()<<"! Reason: "<< ex.what());
-
-      if(!true)
-      {
-        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the cancelled job "<<pEvt->job_id()<<"!");
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
-                                                  , pEvt->from()
-                                                  , ErrorEvent::SDPA_EUNKNOWN
-                                                  , ex.what()));
-
-        sendEventToMaster(pErrorEvt);
-      }
     }
   }
   else // a Cancel message came from the upper level -> forward cancellation request to WE
@@ -392,24 +365,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
       // send an acknowledgment to the component that requested the cancellation
       CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
-      if(!true)
-      {
-        // only if the job was already submitted
-        sendEventToMaster(pCancelAckEvt);
-
-        try
-        {
-          jobManager()->deleteJob(pEvt->job_id());
-        }
-        catch(const JobNotDeletedException&)
-        {
-          LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
-        }
-      }
-      else
-      {
-        notifySubscribers(pCancelAckEvt);
-      }
+      notifySubscribers(pCancelAckEvt);
     }
     else // acknowledgment comes from a worker -> inform WE that the activity was canceled
     {
