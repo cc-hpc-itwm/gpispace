@@ -120,7 +120,7 @@ namespace sdpa {
 
 
     class IAgent;
-    class Job
+    class Job : public boost::msm::back::state_machine<JobFSM_>
     {
     public:
       typedef Job* ptr_t;
@@ -228,7 +228,7 @@ namespace sdpa {
     };
 
       // Pick a back-end
-      class JobFSM : public boost::msm::back::state_machine<JobFSM_>, public sdpa::daemon::Job
+      class JobFSM : public sdpa::daemon::Job
       {
       public:
         typedef sdpa::shared_ptr<JobFSM> Ptr;
