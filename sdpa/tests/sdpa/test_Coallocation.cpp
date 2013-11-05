@@ -273,7 +273,9 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   pAgent-> createScheduler(false);
 
-  if(!pAgent->scheduler())
+  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
+
+  if(!ptrScheduler)
   LOG(FATAL, "The scheduler was not properly initialized");
 
   // add a couple of workers
@@ -287,7 +289,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
     sdpa::capability_t cpb(cpbName, "virtual", workerId);
     sdpa::capabilities_set_t cpbSet;
     cpbSet.insert(cpb);
-    pAgent->scheduler()->addWorker(workerId, 1, cpbSet);
+    ptrScheduler->addWorker(workerId, 1, cpbSet);
   }
 
   // create a number of jobs
@@ -305,21 +307,21 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
   pAgent->jobManager()->addJobRequirements(jobId0, jobReqs_0);
-  pAgent->scheduler()->schedule_remotely(jobId0);
+  ptrScheduler->schedule_remotely(jobId0);
 
   job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
   pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
-  pAgent->scheduler()->schedule_remotely(jobId1);
+  ptrScheduler->schedule_remotely(jobId1);
 
   job_requirements_t jobReqs_2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
   pAgent->jobManager()->addJobRequirements(jobId2, jobReqs_2);
-  pAgent->scheduler()->schedule_remotely(jobId2);
+  ptrScheduler->schedule_remotely(jobId2);
 
-  pAgent->scheduler()->assignJobsToWorkers();
+  ptrScheduler->assignJobsToWorkers();
 
   ostringstream ossrw;int k=-1;
   ossrw<<std::setfill (' ')<<std::setw(2);
-  sdpa::worker_id_list_t listJobAssignedWorkers = pAgent->scheduler()->getListAllocatedWorkers(jobId0);
+  sdpa::worker_id_list_t listJobAssignedWorkers = ptrScheduler->getListAllocatedWorkers(jobId0);
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -329,7 +331,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   //LOG(INFO, "The job jobId0 has been allocated the workers "<<ossrw.str());
 
   ossrw.str(""); listJobAssignedWorkers.clear();
-  listJobAssignedWorkers = pAgent->scheduler()->getListAllocatedWorkers(jobId1);
+  listJobAssignedWorkers = ptrScheduler->getListAllocatedWorkers(jobId1);
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -339,7 +341,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   //LOG(INFO, "The job jobId1 has been allocated the workers "<<ossrw.str());
 
   ossrw.str(""); listJobAssignedWorkers.clear();
-  listJobAssignedWorkers = pAgent->scheduler()->getListAllocatedWorkers(jobId2);
+  listJobAssignedWorkers = ptrScheduler->getListAllocatedWorkers(jobId2);
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -355,21 +357,21 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   job_requirements_t jobReqs_5(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(2, 100));
   pAgent->jobManager()->addJobRequirements(jobId4, jobReqs_5);
-  pAgent->scheduler()->schedule_remotely(jobId4);
+  ptrScheduler->schedule_remotely(jobId4);
 
-  pAgent->scheduler()->assignJobsToWorkers();
-  sdpa::worker_id_list_t listFreeWorkers(pAgent->scheduler()->getListAllocatedWorkers(jobId4));
+  ptrScheduler->assignJobsToWorkers();
+  sdpa::worker_id_list_t listFreeWorkers(ptrScheduler->getListAllocatedWorkers(jobId4));
   BOOST_CHECK(listFreeWorkers.empty());
 
-  //reinterpret_cast<SchedulerImpl*>(pAgent->scheduler().get())->printAllocationTable();
+  //reinterpret_cast<SchedulerImpl*>(ptrScheduler.get())->printAllocationTable();
 
   // Now report that jobId0 has finished and try to assign again resources to the job 4
-  pAgent->scheduler()->releaseReservation(jobId0);
+  ptrScheduler->releaseReservation(jobId0);
 
   //listFreeWorkers.clear();
-  pAgent->scheduler()->assignJobsToWorkers();
+  ptrScheduler->assignJobsToWorkers();
 
-  listFreeWorkers = pAgent->scheduler()->getListAllocatedWorkers(jobId4);
+  listFreeWorkers = ptrScheduler->getListAllocatedWorkers(jobId4);
   BOOST_CHECK(!listFreeWorkers.empty());
 
   int w0 = boost::lexical_cast<int>(listFreeWorkers.front());
