@@ -494,7 +494,7 @@ help:
 .PHONY: showconfig
 
 showconfig:
-	@echo "*** Needed parameters:"
+	@echo "*** Necessary parameters:"
 	@echo
 	@echo "SDPA_HOME = $(SDPA_HOME)"
 	@echo
