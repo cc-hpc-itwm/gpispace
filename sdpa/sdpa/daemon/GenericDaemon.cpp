@@ -1629,36 +1629,41 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   {
 	  try {
 		  Job::ptr_t& pJob = findJob(jobId);
-      std::string jobStatus = sdpa::status::show (pJob->getStatus());
+      switch (pJob->getStatus())
+      {
+      case sdpa::status::FINISHED:
+        {
+          JobFinishedEvent::Ptr pEvtJobFinished
+            (new JobFinishedEvent( name()
+                                 , subscriber
+                                 , pJob->id()
+                                 , pJob->result()
+                                 ));
+          sendEventToMaster(pEvtJobFinished);
+        }
+        break;
 
-		  if(jobStatus.find("Finished") != std::string::npos)
-		  {
-			  JobFinishedEvent::Ptr pEvtJobFinished
-          (new JobFinishedEvent( name()
+      case sdpa::status::FAILED:
+        {
+          JobFailedEvent::Ptr pEvtJobFailed
+            (new JobFailedEvent( name()
                                , subscriber
                                , pJob->id()
                                , pJob->result()
-                               ));
-			  sendEventToMaster(pEvtJobFinished);
-      }
-      else if(jobStatus.find("Failed") != std::string::npos)
-      {
-        JobFailedEvent::Ptr pEvtJobFailed
-          (new JobFailedEvent( name()
-                             , subscriber
-                             , pJob->id()
-                             , pJob->result()
-                             , fhg::error::UNASSIGNED_ERROR
-                             , "TODO: take the error message from the job pointer somehow"
-                             )
-          );
+                               , fhg::error::UNASSIGNED_ERROR
+                               , "TODO: take the error message from the job pointer somehow"
+                               )
+            );
+          sendEventToMaster(pEvtJobFailed);
+        }
+        break;
 
-        sendEventToMaster(pEvtJobFailed);
-      }
-      else if( jobStatus.find("Cancelled") != std::string::npos)
-      {
-        CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
-        sendEventToMaster(pEvtCancelJobAck);
+      case sdpa::status::CANCELED:
+        {
+          CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
+          sendEventToMaster(pEvtCancelJobAck);
+        }
+        break;
       }
 	  }
 	  catch(JobNotFoundException const &)
