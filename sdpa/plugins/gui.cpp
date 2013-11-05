@@ -8,7 +8,6 @@
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <boost/thread.hpp>
-#include <boost/archive/text_oarchive.hpp>
 
 #include "observable.hpp"
 #include "observer.hpp"
