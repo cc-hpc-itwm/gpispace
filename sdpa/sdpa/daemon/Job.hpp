@@ -153,10 +153,6 @@ namespace sdpa {
       sdpa::worker_id_t m_owner;
     };
 
-      struct MSMDispatchEvent{};
-      struct MSMRescheduleEvent{};
-      struct MSMStalledEvent{};
-
       // front-end: define the FSM structure
       struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
       {
@@ -168,8 +164,12 @@ namespace sdpa {
         struct Running :        public boost::msm::front::state<>{};
         struct Finished :       public boost::msm::front::state<>{};
         struct Failed :         public boost::msm::front::state<>{};
-        struct Cancelling : 	public boost::msm::front::state<>{};
+        struct Cancelling : 	  public boost::msm::front::state<>{};
         struct Cancelled :      public boost::msm::front::state<>{};
+
+        struct MSMDispatchEvent {};
+        struct MSMRescheduleEvent {};
+        struct MSMStalledEvent {};
 
         // the initial state of the JobFSM SM. Must be defined
         typedef Pending initial_state;
