@@ -5,6 +5,7 @@
 
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/types.hpp>
+#include <sdpa/job_states.hpp>
 
 #include <fhg/error_codes.hpp>
 
@@ -25,12 +26,12 @@ namespace sdpa
       JobStatusReplyEvent ( const address_t& a_from
                           , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
-                          , const std::string &a_status = std::string()
+                          , const sdpa::status::code& a_status = sdpa::status::UNKNOWN
                           , int const error_code = fhg::error::UNASSIGNED_ERROR
                           , std::string const& error_message = std::string()
                           )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
-        , status_ (a_status)
+        , status_ (sdpa::status::show (a_status))
         , m_error_code (error_code)
         , m_error_message (error_message)
       { }

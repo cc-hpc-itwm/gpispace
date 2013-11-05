@@ -106,7 +106,7 @@ namespace sdpa {
         (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
                                                , pEvt->from()
                                                , id()
-                                               , sdpa::status::show (getStatus())
+                                               , getStatus()
                                                , error_code()
                                                , error_message()
                                                )
