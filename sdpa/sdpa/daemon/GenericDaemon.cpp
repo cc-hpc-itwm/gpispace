@@ -22,7 +22,7 @@
 #include <seda/EventPrioQueue.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/JobImpl.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 

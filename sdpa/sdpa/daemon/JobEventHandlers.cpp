@@ -21,7 +21,7 @@
 #include <seda/StageRegistry.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/JobImpl.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/JobFSM.hpp>
 
 #include <sdpa/daemon/exceptions.hpp>
