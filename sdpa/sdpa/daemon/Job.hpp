@@ -256,24 +256,16 @@ namespace sdpa {
         void start_fsm() { start(); }
 
         //transitions
-        void CancelJob(const sdpa::events::CancelJobEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
+        void CancelJob(const sdpa::events::CancelJobEvent* pEvt)
+        {lock_type lock(mtx_); process_event(*pEvt);}
         void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
-        {
-        	lock_type lock(mtx_);
-        	process_event(*pEvt);
-        	/*BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
-        		{
-        			lock_type lock_worker;
-        			Worker::ptr_t ptrWorker = findWorker(workerId);
-        			ptrWorker->free();
-        		}
-
-        		allocation_table.erase(jobId);*/
-        }
+        {lock_type lock(mtx_); process_event(*pEvt);}
+        void JobFailed(const sdpa::events::JobFailedEvent* pEvt)
+        {lock_type lock(mtx_); process_event(*pEvt);}
+        void JobFinished(const sdpa::events::JobFinishedEvent* pEvt)
+        {lock_type lock(mtx_); process_event(*pEvt);}
 
         void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm);
-        void JobFailed(const sdpa::events::JobFailedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
-        void JobFinished(const sdpa::events::JobFinishedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
         void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon );
         void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm);
         void Reschedule(sdpa::daemon::IAgent*  pAgent);
