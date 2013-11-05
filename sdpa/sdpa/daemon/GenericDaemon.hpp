@@ -28,7 +28,6 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sdpa/daemon/BackupService.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
@@ -97,9 +96,7 @@ namespace sdpa {
       unsigned int& capacity() { return m_nCap; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
-      void start_agent( bool bUseReqModel, const bfs::path& bkpFile); // from cfg file!
-      void start_agent( bool bUseReqModel, std::string strBackup);
-      void start_agent( bool bUseReqModel); // no recovery
+      void start_agent( bool bUseReqModel);
 
     private:
       void startup_step1 (bool bUseReqModel);
@@ -107,7 +104,6 @@ namespace sdpa {
       void startup_step3();
 
     public:
-      std::string last_backup() const;
       void shutdown();
 
       void addMaster(const agent_id_t& );
@@ -280,15 +276,6 @@ namespace sdpa {
     	  ar & m_listSubscribers;
       }
 
-      void backupJobManager(boost::archive::text_oarchive& oa) { oa << ptr_job_man_;}
-      void recoverJobManager(boost::archive::text_iarchive& ia) { ia >> ptr_job_man_; }
-
-      void backupScheduler(boost::archive::text_oarchive& oa) { oa << ptr_scheduler_;}
-      void recoverScheduler(boost::archive::text_iarchive& ia) { ia >> ptr_scheduler_;}
-
-      void backup( std::ostream& );
-      void recover( std::istream& );
-
       // data members
     protected:
       mutex_type mtx_;
@@ -323,7 +310,6 @@ namespace sdpa {
       mutex_type mtx_master_;
       mutex_type mtx_cpb_;
 
-      BackupService m_threadBkpService;
       sdpa::capabilities_set_t m_capabilities;
       sdpa::util::time_type m_last_request_time;
       NotificationService m_guiService;

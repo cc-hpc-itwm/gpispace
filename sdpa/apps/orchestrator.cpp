@@ -13,12 +13,13 @@
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+#include <boost/tokenizer.hpp>
+
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
-enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
 const unsigned int MAX_CAP = 10000;
 
 static const int EX_STILL_RUNNING = 4;
@@ -31,10 +32,6 @@ int main (int argc, char **argv)
     string pidfile;
     bool daemonize = false;
 
-    bool bDoBackup = false;
-    std::string backup_file;
-    std::string backup_folder;
-
     FHGLOG_SETUP();
 
     po::options_description desc("Allowed options");
@@ -42,8 +39,6 @@ int main (int argc, char **argv)
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-       ("backup_folder,d", po::value<std::string>(&backup_folder), "Orchestrator's backup folder")
-       ("backup_file,f", po::value<std::string>(&backup_file), "Orchestrator's backup file")
        ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
        ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
        ("daemonize", "daemonize after all checks were successful")
@@ -85,65 +80,8 @@ int main (int argc, char **argv)
       }
     }
 
-    int bkpOpt = NO_BKP;
-    if( vm.count("backup_file") )
-      bkpOpt *= FILE_DEF;
-
-    if( vm.count("backup_folder") )
-      bkpOpt *= FLD_DEF;
     if (vm.count ("daemonize"))
       daemonize = true;
-
-    bfs::path bkp_path(backup_folder);
-    boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
-
-    switch(bkpOpt)
-    {
-      case FLD_DEF:
-              backup_file = orchName + ".bak";
-              LOG( WARN, "Backup file not specified! Backup the orchestrator by default into "<<backup_file);
-              // check if the folder exists
-              if( !bfs::is_directory(st) )             // true - is directory
-              {
-                LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
-                bDoBackup = false;
-              }
-              else
-              {
-                LOG(INFO, "Backup the orchestrator into the file "<<backup_folder<<"/"<<backup_file );
-                bDoBackup = true;
-              }
-              break;
-
-      case FILE_DEF:
-              LOG( INFO, "Backup folder not specified! No backup file will be created!");
-              bDoBackup = false;
-              break;
-
-      case FLDANDFILE_DEF:
-              LOG(INFO, "The backup folder is set to "<<backup_folder );
-
-              // check if the folder exists
-              if( !bfs::is_directory(st) )             // true - is directory
-              {
-                LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
-                bDoBackup = false;
-              }
-              else
-              {
-                LOG(INFO, "Backup the orchestrator into the file "<<backup_folder<<"/"<<backup_file );
-                bDoBackup = true;
-              }
-              break;
-
-      case NO_BKP:
-              bDoBackup = false;
-              break;
-
-      default:
-              LOG(ERROR, "Bad luck, This should not happen!");
-              bDoBackup = false;
-    }
 
     int pidfile_fd = -1;
 
@@ -198,11 +136,7 @@ int main (int argc, char **argv)
       sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( orchName, orchUrl, MAX_CAP  );
 
       bool bUseRequestModel = false; //(vm.count("use-push-model") == 0);
-
-      if(bDoBackup)
-        ptrOrch->start_agent(bUseRequestModel, bkp_path/backup_file);
-      else
-        ptrOrch->start_agent(bUseRequestModel);
+      ptrOrch->start_agent(bUseRequestModel);
 
       DMLOG (TRACE, "waiting for signals...");
       sigset_t waitset;

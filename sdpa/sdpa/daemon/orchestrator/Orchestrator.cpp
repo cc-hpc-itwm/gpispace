@@ -314,64 +314,6 @@ void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* 
     }
 }
 
-//template <typename T>
-void Orchestrator::backup( std::ostream& os )
-{
-    try {
-        //std::string strArchiveName(name()+".bkp");
-        //SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
-
-        boost::archive::text_oarchive oa(os);
-        oa.register_type(static_cast<JobManager*>(NULL));
-        oa.register_type(static_cast<JobImpl*>(NULL));
-        oa.register_type(static_cast<JobFSM*>(NULL));
-        backupJobManager(oa);
-
-        oa.register_type(static_cast<SchedulerOrch*>(NULL));
-        oa.register_type(static_cast<SchedulerImpl*>(NULL));
-        backupScheduler(oa);
-
-        oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
-    }
-    catch(exception const &ex)
-    {
-      MLOG (ERROR, "could not backup orchestrator: " << ex.what ());
-      return;
-    }
-}
-
-//template <typename T>
-void Orchestrator::recover( std::istream& is )
-{
-  try {
-      boost::archive::text_iarchive ia(is);
-      ia.register_type(static_cast<JobManager*>(NULL));
-      ia.register_type(static_cast<JobImpl*>(NULL));
-      ia.register_type(static_cast<JobFSM*>(NULL));
-      // restore the schedule from the archive
-      recoverJobManager(ia);
-
-      ia.register_type(static_cast<SchedulerOrch*>(NULL));
-      ia.register_type(static_cast<SchedulerImpl*>(NULL));
-      recoverScheduler(ia);
-
-      // should ignore the workflow engine recovery,
-      // since it is not always possible to recover it
-
-      // re-schedule the master jobs
-      // for any master job in the job_map
-      // if the state is running -> go back to pending
-      // or simply create a new job with the same job id
-
-      /*ia.register_type(static_cast<T*>(NULL));
-      ia >> ptr_workflow_engine_;*/
-      ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
-  }
-  catch(exception const &ex)
-  {
-    MLOG (ERROR, "could not recover orchestrator: " << ex.what ());
-  }
-}
   }
 }
 

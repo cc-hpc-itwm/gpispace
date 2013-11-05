@@ -20,11 +20,12 @@
 
 #include <fhg/util/stat.hpp>
 
+#include <boost/tokenizer.hpp>
+
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 
-enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
 const unsigned int MAX_CAP = 10000;
 
 static const int EX_STILL_RUNNING = 4;
@@ -40,8 +41,6 @@ int main (int argc, char **argv)
   unsigned int agentRank;
   std::string pidfile;
 
-  std::string backup_file;
-  std::string backup_folder;
   std::string requestMode ("false");
 
   FHGLOG_SETUP();
@@ -54,8 +53,6 @@ int main (int argc, char **argv)
     //("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
     ("master,m", po::value<std::vector<std::string> >(&arrMasterNames)->multitoken(), "Agent's master list")
     ("rank,r", po::value<unsigned int>(&agentRank)->default_value(0), "Agent's rank")
-    ("backup_folder,d", po::value<std::string>(&backup_folder), "Agent's backup folder")
-    ("backup_file,f", po::value<std::string>(&backup_file), "Agent's backup file (stored into the backup folder)")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
     ("kvs_url,k",  po::value<std::string>(), "The kvs daemon's url")
     ("request-mode", po::value<std::string>(&requestMode)->default_value(requestMode), "send periodical job requests to master")
@@ -97,60 +94,6 @@ int main (int argc, char **argv)
       DMLOG(TRACE, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
       fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
     }
-  }
-
-  int bkpOpt = NO_BKP;
-  if( vm.count("backup_file") )
-    bkpOpt *= FILE_DEF;
-
-  if( vm.count("backup_folder") )
-    bkpOpt *= FLD_DEF;
-
-  bfs::path bkp_path(backup_folder);
-  boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
-
-  const bool do_backup (vm.count ("backup_folder") && bfs::is_directory (st));
-
-  switch(bkpOpt)
-  {
-  case FLD_DEF:
-    backup_file = agentName + ".bak";
-    LOG( INFO, "Backup file not specified! Backup the agent by default into "<<backup_file);
-    // check if the folder exists
-    if( !bfs::is_directory(st) )             // true - is directory
-    {
-      LOG(ERROR, "The path "<<backup_folder<<" does not represent a folder!" );
-    }
-    else
-    {
-      LOG(INFO, "Backup the agent into the file "<<backup_folder<<"/"<<backup_file );
-    }
-    break;
-
-  case FILE_DEF:
-    LOG( INFO, "Backup folder not specified! No backup file will be created!");
-    break;
-
-  case FLDANDFILE_DEF:
-    LOG(INFO, "The backup folder is set to "<<backup_folder );
-
-    // check if the folder exists
-    if( !bfs::is_directory(st) )             // true - is directory
-    {
-      LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
-    }
-    else
-    {
-      LOG(INFO, "Backup the agent into the file "<<backup_folder<<"/"<<backup_file );
-    }
-    break;
-
-  case NO_BKP:
-    DMLOG (TRACE, "No backup folder and no backup file were specified! No backup for the agent will be available!");
-    break;
-
-  default:
-    LOG(ERROR, "Bad luck, This should not happen!");
   }
 
   if( arrMasterNames.empty() )
@@ -250,11 +193,7 @@ int main (int argc, char **argv)
                                                                                              appGuiUrl ); //, orchUrl );
 
     bool bUseRequestModel(fhg::util::read_bool(requestMode));
-
-    if(do_backup)
-      ptrAgent->start_agent(bUseRequestModel, bkp_path/backup_file);
-    else
-      ptrAgent->start_agent(bUseRequestModel);
+    ptrAgent->start_agent(bUseRequestModel);
 
     sigset_t waitset;
     int sig(0);

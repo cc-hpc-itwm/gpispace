@@ -231,10 +231,6 @@ set (tests
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
   test_AgentsAndDrts.cpp
-  test_StopRestartOrchPollingCli.cpp
-  test_StopRestartOrchSubscriberCli.cpp
-  test_StopRestartAgentsSubscriberCli.cpp
-  test_StopRestartAgentsPollingCli.cpp
   test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
   test_MultipleMasters.cpp

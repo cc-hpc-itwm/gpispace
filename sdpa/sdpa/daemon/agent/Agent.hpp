@@ -78,8 +78,6 @@ namespace sdpa {
         }
 
         bool canRunTasksLocally() { return m_bCanRunTasksLocally; }
-        virtual void backup( std::ostream& );
-        virtual void recover( std::istream& );
 
         friend class boost::serialization::access;
         template <typename T> friend struct AgentFactory;

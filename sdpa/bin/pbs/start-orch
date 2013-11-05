@@ -46,7 +46,7 @@ while getopts ":hgn:l:d:k:DP:L:s:" opt; do
             config_file="$OPTARG"
             ;;
         h)
-            echo "usage: $0 [-h] [-g] [-l interface] [-n name] [-b backup-dir]" >&2
+            echo "usage: $0 [-h] [-g] [-l interface] [-n name]" >&2
             echo "    -h : print this help" >&2
             echo "    -l : address to listen on (default: $bind_addr)" >&2
             echo "    -n : name (default: $name)" >&2
@@ -95,11 +95,6 @@ log "Running $name on $(hostname)"
 
 argv="$SDPA_HOME/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
 stateful=$(fhgcfg -f "${config_file}" -g sdpa.stateful -v false)
-if [ x"$stateful" = x"true" ] ; then
-    bkp_dir="${state_dir}/orch"
-    mkdir -p "${bkp_dir}"
-    argv="$argv -d ${bkp_dir}"
-fi
 if $daemonize && ! $debug ; then
     argv="$argv --daemonize"
 fi

@@ -85,9 +85,6 @@ namespace sdpa {
     virtual bool hasWorkflowEngine() = 0;
     virtual bool isTop() = 0;
 
-    virtual void backup( std::ostream& ) = 0;
-    virtual void recover( std::istream& ) = 0;
-
     virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
 
     virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
