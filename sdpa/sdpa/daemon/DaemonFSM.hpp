@@ -32,8 +32,6 @@
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
-char const* const agent_state_names[] = { "Down", "Configuring", "Up" };
-
 namespace sdpa {
   namespace fsm {
     namespace bmsm {
@@ -44,20 +42,19 @@ namespace sdpa {
 
         // The list of FSM states
         struct Down : public msm::front::state<>{};
-        struct Configuring : public msm::front::state<>{};
         struct Up : public msm::front::state<>{};
+
+        // events
+        struct InterruptEvent {};
+        struct ConfigOkEvent {};
+        struct ConfigNokEvent {};
 
         // the initial state of the DaemonFSM SM. Must be defined
         typedef Down initial_state;
 
-        virtual void action_configure(const sdpa::events::StartUpEvent&);
-        virtual void action_config_ok(const sdpa::events::ConfigOkEvent&);
-        virtual void action_config_nok(const sdpa::events::ConfigNokEvent&);
-        virtual void action_interrupt(const sdpa::events::InterruptEvent& );
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent& );
         virtual void action_request_job(const sdpa::events::RequestJobEvent& );
         virtual void action_submit_job(const sdpa::events::SubmitJobEvent& );
-        virtual void action_config_request(const sdpa::events::ConfigRequestEvent& );
         virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
         virtual void action_error_event(const sdpa::events::ErrorEvent& );
 
@@ -66,19 +63,15 @@ namespace sdpa {
         struct transition_table : mpl::vector<
         //      Start         Event         		                      Next            Action                Guard
         //      +-------------+---------------------------------------+---------------+---------------------+-----
-        a_row<  Down,         sdpa::events::StartUpEvent,             Configuring,    &agentFSM::action_configure>,
+        _row<   Down,         ConfigOkEvent,                          Up>,
+        _irow<  Down,         ConfigNokEvent>,
         _irow<  Down,         sdpa::events::ErrorEvent >,
-        //      +-------------+-----------------------+---------------+---------------+-----
-        a_row<  Configuring,  sdpa::events::ConfigOkEvent,            Up,             &agentFSM::action_config_ok>,
-        a_row<  Configuring,  sdpa::events::ConfigNokEvent,           Down,           &agentFSM::action_config_nok >,
-        _irow<  Configuring,  sdpa::events::ErrorEvent >,
         //      +------------+-----------------------+----------------+--------------+-----
-        a_row<  Up,           sdpa::events::InterruptEvent,           Down,           &agentFSM::action_interrupt >,
+        _row<   Up,           InterruptEvent,                         Down>,
         a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &agentFSM::action_register_worker>,
         a_irow< Up,           sdpa::events::DeleteJobEvent,                           &agentFSM::action_delete_job>,
         a_irow< Up,           sdpa::events::SubmitJobEvent,                           &agentFSM::action_submit_job>,
         a_irow< Up,           sdpa::events::RequestJobEvent,                          &agentFSM::action_request_job>,
-        a_irow< Up,           sdpa::events::ConfigRequestEvent,                       &agentFSM::action_config_request>,
         a_irow< Up,           sdpa::events::ErrorEvent,                               &agentFSM::action_error_event>
         >{};
 
@@ -104,34 +97,22 @@ namespace sdpa {
                  , const std::string& guiUrl = ""
                  );
 
-        virtual ~DaemonFSM();
+        void perform_ConfigOkEvent();
+        void perform_ConfigNokEvent();
 
-        void start_fsm() { start(); }
-
-        void action_configure(const sdpa::events::StartUpEvent& );
-        void action_config_ok(const sdpa::events::ConfigOkEvent& );
-        void action_config_nok(const sdpa::events::ConfigNokEvent& );
-        void action_interrupt(const sdpa::events::InterruptEvent& );
         void action_delete_job(const sdpa::events::DeleteJobEvent& );
         void action_request_job(const sdpa::events::RequestJobEvent& );
         void action_submit_job(const sdpa::events::SubmitJobEvent& );
-        void action_config_request(const sdpa::events::ConfigRequestEvent& );
         void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
         void action_error_event(const sdpa::events::ErrorEvent& );
 
         // event handlers
-        void handleStartUpEvent(const sdpa::events::StartUpEvent* );
-        void handleConfigOkEvent(const sdpa::events::ConfigOkEvent* );
-        void handleConfigNokEvent(const sdpa::events::ConfigNokEvent* );
-        void handleInterruptEvent(const sdpa::events::InterruptEvent* );
+        void handleInterruptEvent();
         void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
         void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
         void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
         void handleRequestJobEvent(const sdpa::events::RequestJobEvent* );
-        void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent* );
         void handleErrorEvent(const sdpa::events::ErrorEvent* );
-
-        sdpa::status_t getCurrentState();
 
         template <class Archive>
         void serialize(Archive& ar, const unsigned int)

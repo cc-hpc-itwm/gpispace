@@ -108,7 +108,6 @@ namespace sdpa {
       virtual void forceOldWorkerJobsTermination();
 
       virtual bool useRequestModel() { return m_bUseRequestModel; }
-      void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
 
       void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 

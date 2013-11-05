@@ -515,10 +515,6 @@ public:
   {
   }
 
-  virtual void handleConfigNokEvent(const sdpa::events::ConfigNokEvent *)
-  {
-  }
-
   virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent *)
   {
   }
@@ -785,18 +781,13 @@ public:
 
   // not implemented events
   virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *){}
-  virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent *) {}
-  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent *) {}
-  virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent *) {}
   virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *) {}
-  virtual void handleInterruptEvent(const sdpa::events::InterruptEvent *){}
   virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent *) {}
   virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent *) {}
   virtual void handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *) {}
   virtual void handleJobStatusReplyEvent(const sdpa::events::JobStatusReplyEvent *) {}
   virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent *) {}
   virtual void handleRunJobEvent(const sdpa::events::RunJobEvent *) {}
-  virtual void handleStartUpEvent(const sdpa::events::StartUpEvent *) {}
   virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent *) {}
 private:
   // threads

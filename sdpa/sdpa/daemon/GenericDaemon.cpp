@@ -23,9 +23,6 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/events/ConfigReplyEvent.hpp>
-#include <sdpa/events/StartUpEvent.hpp>
-#include <sdpa/events/ConfigOkEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
@@ -77,8 +74,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nExternalJobs(0),
     m_ullPollingInterval(100000),
     m_bRequestsAllowed(false),
-    m_bStarted(false),
-    m_bConfigOk(false),
     m_bStopped(false),
     m_threadBkpService(this),
     m_last_request_time(0)
@@ -109,124 +104,100 @@ GenericDaemon::GenericDaemon( const std::string name,
   }
 }
 
-/**
- * Start an agent
- * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] bkpFile Backup file for the agent
- * @param[in] cfgFile Configuration file of the agent
- */
-void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile, const std::string& cfgFile )
+void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile)
 {
-  if(!scheduler())
-  {
-    createScheduler(bUseReqModel);
-  }
-
   bfs::ifstream ifs (bkpFile);
-  if (ifs)
+  if (!ifs)
   {
-    DMLOG (TRACE, "Recover the agent "<<name()<<" from the backup file "<<bkpFile);
-
-    recover(ifs);
-  }
-  else
-  {
-    DMLOG (WARN, "Can't find the backup file "<<bkpFile);
+    throw std::runtime_error ("backup file does not exist");
   }
 
-  scheduler()->setUseRequestModel(bUseReqModel);
+  startup_step1 (bUseReqModel);
 
-  // The stage uses 2 threads
-  ptr_daemon_stage_.lock()->start();
+  recover (ifs);
 
-  //start-up the the daemon
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
-  sendEventToSelf(pEvtStartUp);
+  startup_step2();
 
-  lock_type lock(mtx_);
-  while( !isStarted() )
-    cond_can_start_.wait(lock);
+  m_threadBkpService.start(bkpFile);
 
-  if( isConfigured() )  // can register now
-  {
-    m_threadBkpService.start(bkpFile);
-
-    DMLOG (TRACE, "Agent " << name() << " was successfully configured!");
-
-    if (!isTop())
-    {
-      requestRegistration();
-    }
-
-    scheduler()->cancelWorkerJobs();
-    eworknotreg();
-  }
-  else
-  {
-    DMLOG (TRACE, "Agent "<<name()<<" could not configure. Giving up now!");
-    //! \todo: give up now
-  }
-
-  reScheduleAllMasterJobs();
+  startup_step3();
 }
 
-/**
- * Start an agent
- * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] bkpFile Backup string for the agent
- * @param[in] cfgFile Configuration file of the agent
- */
-void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile )
+void GenericDaemon::start_agent( bool bUseReqModel, std::string strBackup)
+{
+  if (strBackup.empty())
+  {
+    throw std::runtime_error ("backup string is empty");
+  }
+  std::stringstream iostr(strBackup);
+
+  startup_step1 (bUseReqModel);
+
+  recover (iostr);
+
+  startup_step2();
+
+  m_threadBkpService.start();
+
+  startup_step3();
+}
+
+void GenericDaemon::start_agent(bool bUseReqModel)
+{
+  startup_step1 (bUseReqModel);
+
+  startup_step2();
+
+  m_threadBkpService.start();
+
+  startup_step3();
+}
+
+void GenericDaemon::startup_step1 (bool bUseReqModel)
 {
   if(!scheduler())
   {
     createScheduler(bUseReqModel);
   }
-
-  if( !strBackup.empty() )
-  {
-    std::stringstream iostr(strBackup);
-    recover(iostr);
-  }
-  else
-  {
-    DMLOG (TRACE, "The backup file is empty! No recovery operation carried out for the daemon "<<name());
-  }
-
-  scheduler()->setUseRequestModel(bUseReqModel);
-
-  // The stage uses 2 threads
+}
+void GenericDaemon::startup_step2()
+{
   ptr_daemon_stage_.lock()->start();
 
-  //start-up the the daemon
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
-  sendEventToSelf(pEvtStartUp);
-
-  lock_type lock(mtx_);
-  while( !isStarted() )
-    cond_can_start_.wait(lock);
-
-  if( isConfigured() )
+  try
   {
-    m_threadBkpService.start();
-
-    DMLOG (TRACE, "Agent " << name() << " was successfully configured!");
-    if (!isTop())
-    {
-      requestRegistration();
-    }
-
-    scheduler()->cancelWorkerJobs();
-    eworknotreg();
+    action_configure();
   }
-  else
+  catch (...)
   {
-    DMLOG (TRACE, "Agent "<<name()<<" could not configure. Giving up now!");
-    //! \todo give up now
+    perform_ConfigNokEvent();
+
+    m_bStopped = true;
+
+    throw;
   }
+
+  DMLOG (TRACE, "Starting the scheduler...");
+  scheduler()->start(this);
+
+  // start the network stage
+  to_master_stage()->start();
+
+  perform_ConfigOkEvent();
+
+  m_bRequestsAllowed = true;
+}
+void GenericDaemon::startup_step3()
+{
+  if (!isTop())
+  {
+    requestRegistration();
+  }
+
+  scheduler()->cancelWorkerJobs();
+  eworknotreg();
 
   reScheduleAllMasterJobs();
-
 }
 
 void GenericDaemon::eworknotreg()
@@ -259,88 +230,99 @@ void GenericDaemon::eworknotreg()
   scheduler()->removeWorkers();
 }
 
-/**
- * Start an agent
- * @param[in] bUseReqModel: When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] cfgFile: Configuration file of the agent
- */
-void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
+std::string GenericDaemon::last_backup() const
 {
-  if(!scheduler())
-  {
-    DMLOG (TRACE, "Create the scheduler...");
-    createScheduler(bUseReqModel);
-  }
-
-  // The stage uses 2 threads
-  ptr_daemon_stage_.lock()->start();
-
-  //start-up the the daemon
-  DMLOG (TRACE, "Trigger StartUpEvent...");
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
-  sendEventToSelf(pEvtStartUp);
-
-  lock_type lock(mtx_);
-  while( !isStarted() )
-    cond_can_start_.wait(lock);
-
-  if( isConfigured() )
-  {
-    // no backup, if a backup file was not specified!
-    DMLOG (TRACE, "Agent " << name() << " was successfully configured!");
-    if( !isTop() )
-      requestRegistration();
-
-    DMLOG (TRACE, "Notify the workers that I'm up again and they should re-register!");
-
-    scheduler()->cancelWorkerJobs();
-    eworknotreg();
-  }
-  else
-  {
-    DMLOG (TRACE, "Agent "<<name()<<" could not configure. Giving up now!");
-    //! \todo give up now
-  }
-
-  reScheduleAllMasterJobs();
+	return m_threadBkpService.getLastBackup();
 }
-
 /**
  * Shutdown an agent
- * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] bkpFile Backup file for the agent
- * @param[in] cfgFile Configuration file of the agent
- */
-void GenericDaemon::shutdown(std::string& strBackup )
-{
-	shutdown();
-
-	DMLOG (TRACE, "Get the last backup of the daemon "<<name());
-	strBackup = m_threadBkpService.getLastBackup();
-}
-
-/**
- * Shutdown an agent
- * @param[in] bUseReqModel When set on true, the agent uses the request model, otherwise it uses the push model
- * @param[in] bkpFile Backup file for the agent
- * @param[in] cfgFile Configuration file of the agent
  */
 void GenericDaemon::shutdown( )
 {
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
-	if( !isStopped() )
-		stop();
+  if (!m_bStopped)
+  {
+    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
+    {
+      if( !masterInfo.name().empty() && masterInfo.is_registered() )
+        sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
+    }
+
+    DMLOG (TRACE, "Stopping the network stage "<<m_to_master_stage_name_);
+    seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+    seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+
+    scheduler()->stop();
+    m_threadBkpService.stop();
+
+    //! \todo OLD COMMENT, STILL VALID? TODO?
+    // save the current state of the system .i.e serialize the daemon's state
+
+    m_bRequestsAllowed = false;
+    m_bStopped 	= true;
+
+    handleInterruptEvent();
+
+    seda::StageRegistry::instance().lookup(name())->stop();
+    seda::StageRegistry::instance().remove(name());
+
+    delete ptr_workflow_engine_;
+    ptr_workflow_engine_ = NULL;
+  }
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
 
-/**
- * Configure the network
- */
-void GenericDaemon::configure_network (const std::string& url)
+
+void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
+  if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
+  {
+    try
+    {
+      pSdpaEvt->handleBy(this);
+    }
+    catch (std::exception const & ex)
+    {
+      LOG( ERROR, "could not handle event "<< "\""  << pEvent->str() << "\""<< " : " << ex.what());
+    }
+  }
+  else
+  {
+    DMLOG (TRACE, "Received unexpected event " << pEvent->str()<<". Cannot handle it!");
+    //! \todo THROW
+  }
+}
+
+//actions
+void GenericDaemon::action_configure()
+{
+  // use for now as below, later read from config file
+  // TODO: move this to "property" style:
+  //    dot separated
+  //    hierarchies / categories
+  //    retrieve values maybe from kvs?
+  //    no spaces
+
+  // Read these values from a configuration file !
+  // if this does not exist, use default values
+
+  // set default configuration
+  // id StartUpEvent contains a configuration file, read the config file and
+  // overwrite the default vaules
+
+  cfg().put("polling interval",             1 * 1000 * 1000);
+  cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
+  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
+  cfg().put("backup_interval",              5 * 1000 * 1000); // 3s*/
+
+  m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
+  m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
+
+  DMLOG (TRACE, "Try to configure the network now ... ");
+
   const boost::tokenizer<boost::char_separator<char> > tok
-    (url, boost::char_separator<char> (":"));
+    (url(), boost::char_separator<char> (":"));
 
   const std::vector<std::string> vec (tok.begin(), tok.end());
 
@@ -364,167 +346,6 @@ void GenericDaemon::configure_network (const std::string& url)
   seda::StageRegistry::instance().insert (network_stage);
 
   ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-}
-
-/**
- * Shutdown the network
- */
-void GenericDaemon::shutdown_network()
-{
-  BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
-  {
-    if( !masterInfo.name().empty() && masterInfo.is_registered() )
-      sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
-  }
-
-  DMLOG (TRACE, "Stopping the network stage "<<m_to_master_stage_name_);
-  seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-
-  DMLOG (TRACE, "Removing the network stage...");
-  seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-}
-
-void GenericDaemon::stop()
-{
-  DMLOG (TRACE, "Stopping the agent "<<name());
-
-  shutdown_network();
-  scheduler()->stop();
-  m_threadBkpService.stop();
-  InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
-  handleInterruptEvent(pEvtInterrupt.get());
-
-  // wait to be stopped
-  {
-	  lock_type lock(mtx_stop_);
-	  while(!m_bStopped)
-		  cond_can_stop_.wait(lock);
-  }
-
-  // stop the daemon stage
-  seda::StageRegistry::instance().lookup(name())->stop();
-  seda::StageRegistry::instance().remove(name());
-
-  delete ptr_workflow_engine_;
-  ptr_workflow_engine_ = NULL;
-}
-
-void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
-{
-  if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
-  {
-    try
-    {
-      pSdpaEvt->handleBy(this);
-    }
-    catch (std::exception const & ex)
-    {
-      LOG( ERROR, "could not handle event "<< "\""  << pEvent->str() << "\""<< " : " << ex.what());
-    }
-  }
-  else
-  {
-    DMLOG (TRACE, "Received unexpected event " << pEvent->str()<<". Cannot handle it!");
-    //! \todo THROW
-  }
-}
-
-void GenericDaemon::setDefaultConfiguration()
-{
-  cfg().put("polling interval",             1 * 1000 * 1000);
-  cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
-  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
-  cfg().put("backup_interval",              5 * 1000 * 1000); // 3s*/
-}
-
-//actions
-void GenericDaemon::action_configure(const StartUpEvent& evt)
-{
-  DMLOG (TRACE, "Configuring myself (generic)...");
-
-  // use for now as below, later read from config file
-  // TODO: move this to "property" style:
-  //    dot separated
-  //    hierarchies / categories
-  //    retrieve values maybe from kvs?
-  //    no spaces
-
-  // Read these values from a configuration file !
-  // if this does not exist, use default values
-
-  // set default configuration
-  // id StartUpEvent contains a configuration file, read the config file and
-  // overwrite the default vaules
-
-  setDefaultConfiguration();
-
-  if(!evt.cfgFile().empty())
-  {
-    DMLOG (TRACE, "Read the configuration file daemon_config.txt ... ");
-
-    bfs::path cfgPath(evt.cfgFile());
-
-    if(!bfs::exists(cfgPath))
-    {
-      DMLOG (WARN, "Could not find the configuration file "<<evt.cfgFile()<<"!");
-      m_bConfigOk = false;
-      return;
-    }
-
-    try {
-      cfg().read(evt.cfgFile());
-    }
-    catch (const sdpa::util::InvalidConfiguration& ex )
-    {
-      DMLOG (WARN, "Error when parsing the ini file. "<<ex.what());
-    }
-  }
-  else
-  {
-    DMLOG (TRACE, "No configuration file was specified. Using the default configuration.");
-  }
-
-  m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
-  m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
-
-  try {
-    DMLOG (TRACE, "Try to configure the network now ... ");
-    configure_network( url() /*, masterName()*/ );
-    m_bConfigOk = true;
-  }
-  catch (std::exception const &ex)
-  {
-    MLOG (ERROR, "Exception occurred while trying to configure the network " << ex.what());
-    m_bConfigOk = false;
-  }
-}
-
-void GenericDaemon::action_config_ok(const ConfigOkEvent&)
-{
-  // check if the system should be recovered
-  // should be overriden by the orchestrator, aggregator and NRE
-  setRequestsAllowed(true);
-}
-
-void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
-{
-  DMLOG (TRACE, "the configuration phase failed!");
-}
-
-void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
-{
-  DMLOG (TRACE, "Call 'action_interrupt'");
-  // save the current state of the system .i.e serialize the daemon's state
-  // the following code shoud be executed on action action_interrupt!
-
-   // save the current state of the system .i.e serialize the daemon's state
-   // the following code shoud be executed on action action_interrupt!
-   lock_type lock(mtx_stop_);
-   setRequestsAllowed(false);
-   //m_bStarted 	= false;
-   m_bStopped 	= true;
-
-   cond_can_stop_.notify_one();
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
@@ -852,18 +673,6 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
     DMLOG (WARN, "Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
     throw;
   }
-}
-
-void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
-{
-  /*
-  * on startup the aggregator tries to retrieve a configuration from its orchestrator
-  * post ConfigReplyEvent/message that contains the configuration data for the requesting aggregator
-  * TODO: what is contained into the Configuration?
-  */
-
-  ConfigReplyEvent::Ptr pCfgReplyEvt( new ConfigReplyEvent( name(), e.from()) );
-  sendEventToSlave(pCfgReplyEvt);
 }
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
@@ -1334,11 +1143,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 
   if(!isTop())
     jobManager()->resubmitResults(this);
-}
-
-void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
-{
-  DMLOG (TRACE, "Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
 }
 
 void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
