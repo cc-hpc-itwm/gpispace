@@ -30,54 +30,45 @@ namespace orchestrator {
 }
 
 namespace sdpa {
-namespace daemon {
+  namespace daemon {
+    template <typename T>
+      struct OrchestratorFactory
+      {
+        static Orchestrator::ptr_t create(const std::string& name,
+                                          const std::string& url,
+			                  const unsigned int capacity )
+        {
+          LOG( DEBUG, "Create orchestrator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
+          Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
+          pOrch->createWorkflowEngine<T>();
 
-		template <typename T>
-		struct OrchestratorFactory
-		{
-			static Orchestrator::ptr_t create( const std::string& name,
-			                                   const std::string& url,
-			                                   const unsigned int capacity )
-			{
-				LOG( DEBUG, "Create orchestrator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
-				pOrch->createWorkflowEngine<T>();
+          seda::Stage::Ptr daemon_stage (new seda::Stage(name, pOrch, 1));
 
-//				seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", orchestrator::MAX_Q_SIZE));
-//				seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pOrch, 1) );
+          pOrch->setStage(daemon_stage);
+          seda::StageRegistry::instance().insert(daemon_stage);
 
-				seda::Stage::Ptr daemon_stage (new seda::Stage(name, pOrch, 1));
-
-				pOrch->setStage(daemon_stage);
-				seda::StageRegistry::instance().insert(daemon_stage);
-
-				return pOrch;
-			}
-		};
-
-		template <>
-		struct OrchestratorFactory<void>
-		{
-			static Orchestrator::ptr_t create( const std::string& name,
-											   const std::string& url,
-											   const unsigned int capacity )
-			{
-                          DMLOG (TRACE, "Create Orchestrator "<<name<<" with no workflow engine" );
-				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
-
-//				seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", orchestrator::MAX_Q_SIZE));
-//				seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pOrch, 1) );
-
-				seda::Stage::Ptr daemon_stage (new seda::Stage(name, pOrch, 1));
-
-				pOrch->setStage(daemon_stage);
-				seda::StageRegistry::instance().insert(daemon_stage);
-				return pOrch;
-			}
-		};
-
+          return pOrch;
 	}
-}
+      };
 
+    template <>
+    struct OrchestratorFactory<void>
+    {
+      static Orchestrator::ptr_t create(const std::string& name,
+                                        const std::string& url,
+					const unsigned int capacity )
+      {
+        DMLOG (TRACE, "Create Orchestrator "<<name<<" with no workflow engine" );
+        Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
+
+        seda::Stage::Ptr daemon_stage (new seda::Stage(name, pOrch, 1));
+
+        pOrch->setStage(daemon_stage);
+	seda::StageRegistry::instance().insert(daemon_stage);
+	return pOrch;
+      }
+    };
+  }
+}
 
 #endif //SDPA_ORCHESTRATORTOR_HPP
