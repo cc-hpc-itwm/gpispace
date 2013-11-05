@@ -284,18 +284,6 @@ namespace sdpa {
         	process_event(StalledEvt);
         }
 
-        // actions
-        void action_delete_job(const sdpa::events::DeleteJobEvent& e){
-          sdpa::daemon::Job::action_delete_job(e);
-        }
-
-        void action_job_failed(const sdpa::events::JobFailedEvent& e){
-          sdpa::daemon::Job::action_job_failed(e);
-        }
-        void action_job_finished(const sdpa::events::JobFinishedEvent& e){
-          sdpa::daemon::Job::action_job_finished(e);
-        }
-
         sdpa::status_t getStatus()
         {
         	DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
