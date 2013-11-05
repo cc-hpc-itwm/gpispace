@@ -62,14 +62,9 @@ namespace sdpa {
         // the initial state of the JobFSM SM. Must be defined
         typedef Pending initial_state;
 
-        virtual void action_run_job() { DLOG(TRACE, "JobFSM_::action_run_job"); }
-        virtual void action_cancel_job(const sdpa::events::CancelJobEvent&) { DLOG(TRACE, "JobFSM_::action_cancel_job"); }
-        virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&){ DLOG(TRACE, "JobFSM_::action_cancel_job_from_pending"); }
-        virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&){ DLOG(TRACE, "JobFSM_::action_cancel_job_ack"); }
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent&){ DLOG(TRACE, "JobFSM_::action_delete_job"); }
         virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ DLOG(TRACE, "JobFSM_::action_job_failed"); }
         virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ DLOG(TRACE, "JobFSM_::action_job_finished"); }
-        virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&){ DLOG(TRACE, "JobFSM_::action_retrieve_job_results\n"); }
 
         typedef JobFSM_ sm; // makes transition table cleaner
 
@@ -78,7 +73,7 @@ namespace sdpa {
         //      Start       Event                                       Next        		Action                Guard
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         _row<   Pending,    	MSMDispatchEvent,           				Running >,
-        a_row<  Pending,    	sdpa::events::CancelJobEvent, 				Cancelled,          &sm::action_cancel_job_from_pending >,
+        _row<   Pending,    	sdpa::events::CancelJobEvent, 				Cancelled>,
         //a_row<  Pending,  	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished >,
         //a_row<  Pending,  	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
@@ -87,22 +82,22 @@ namespace sdpa {
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,    	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
         a_row<  Running,    	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        a_row<  Running,    	sdpa::events::CancelJobEvent,       		Cancelling, 		&sm::action_cancel_job >,
+        _row<   Running,    	sdpa::events::CancelJobEvent,       		Cancelling>,
         _row<   Running,    	MSMRescheduleEvent,                 		Pending >,
         _row<   Running,	    MSMStalledEvent,        					Stalled >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
-        a_irow< Finished,   	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
+        _irow<  Finished,   	sdpa::events::RetrieveJobResultsEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Failed,     	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
-        a_irow< Failed,     	sdpa::events::RetrieveJobResultsEvent,                  		&sm::action_retrieve_job_results >,
+        _irow<  Failed,     	sdpa::events::RetrieveJobResultsEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_row<  Cancelling, 	sdpa::events::CancelJobAckEvent,     		Cancelled, 			&sm::action_cancel_job_ack>,
+        _row<   Cancelling, 	sdpa::events::CancelJobAckEvent,     		Cancelled>,
         a_row<  Cancelling, 	sdpa::events::JobFinishedEvent,      		Cancelled, 			&sm::action_job_finished>,
         a_row<  Cancelling, 	sdpa::events::JobFailedEvent,               Cancelled, 			&sm::action_job_failed>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Cancelled,  	sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
-        a_irow< Cancelled,  	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >
+        _irow<  Cancelled,  	sdpa::events::RetrieveJobResultsEvent>
         >{};
 
         template <class FSM, class Event>
@@ -227,22 +222,6 @@ namespace sdpa {
         }
 
         // actions
-        void action_run_job() {
-          sdpa::daemon::Job::action_run_job();
-        }
-
-        void action_cancel_job(const sdpa::events::CancelJobEvent& e) {
-          sdpa::daemon::Job::action_cancel_job(e);
-        }
-
-        void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent& e){
-          sdpa::daemon::Job::action_cancel_job_from_pending(e);
-        }
-
-        void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e) {
-          sdpa::daemon::Job::action_cancel_job_ack(e);
-        }
-
         void action_delete_job(const sdpa::events::DeleteJobEvent& e){
           sdpa::daemon::Job::action_delete_job(e);
         }
@@ -252,10 +231,6 @@ namespace sdpa {
         }
         void action_job_finished(const sdpa::events::JobFinishedEvent& e){
           sdpa::daemon::Job::action_job_finished(e);
-        }
-
-        void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e){
-          sdpa::daemon::Job::action_retrieve_job_results(e);
         }
 
         sdpa::status_t getStatus()

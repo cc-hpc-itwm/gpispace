@@ -84,14 +84,9 @@ namespace sdpa {
       virtual unsigned long &walltime() { return walltime_;}
 
       // job FSM actions
-      virtual void action_run_job() {}
-      virtual void action_cancel_job(const sdpa::events::CancelJobEvent&) {}
-      virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&) {}
-      virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&) {}
       virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
-      virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&) {}
 
       virtual void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
 
