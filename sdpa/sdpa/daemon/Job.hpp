@@ -216,7 +216,29 @@ namespace sdpa {
       virtual void Reschedule(sdpa::daemon::IAgent*) = 0;
       virtual void Pause() = 0;
 
-      virtual sdpa::status_t getStatus() = 0;
+      sdpa::status_t getStatus()
+      {
+        DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
+
+        static char const* const state_names[] = { "SDPA::Pending"
+                                                 , "SDPA::Stalled"
+                                                 , "SDPA::Running"
+                                                 , "SDPA::Finished"
+                                                 , "SDPA::Failed"
+                                                 , "SDPA::Canceling"
+                                                 , "SDPA::Canceled"
+                                                 };
+
+        if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
+        {
+          LOG(ERROR, "state id out of range!");
+          return "unknown";
+        }
+        else
+        {
+          return state_names[*current_state()];
+        }
+      }
 
     protected:
       SDPA_DECLARE_LOGGER();
@@ -283,33 +305,7 @@ namespace sdpa {
         	lock_type lock(mtx_);
         	process_event(StalledEvt);
         }
-
-        sdpa::status_t getStatus()
-        {
-        	DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
-
-static char const* const state_names[] = {     "SDPA::Pending"
-										, "SDPA::Stalled"
-                                        , "SDPA::Running"
-                                        , "SDPA::Finished"
-                                        , "SDPA::Failed"
-                                        , "SDPA::Canceling"
-                                        , "SDPA::Canceled"
-};
-
-			if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
-			{
-				LOG(ERROR, "state id out of range!");
-				return "unknown";
-			}
-			else
-			{
-				return state_names[*current_state()];
-			}
-        }
-
       };
-
 }}
 
 #endif
