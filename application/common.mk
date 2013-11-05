@@ -304,7 +304,7 @@ endif
 
 ###############################################################################
 
-$(DEP_XML): $(XML) $(BUILDDIR)
+$(DEP_XML): $(XML) | $(BUILDDIR)
 	$(PNETC) -i $(XML) -o /dev/null -MP -MT '$(DEP_XML)' -MM $@
 
 ifneq "$(wildcard $(DEP_XML))" ""
