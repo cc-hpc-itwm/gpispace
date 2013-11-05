@@ -232,7 +232,6 @@ set (tests
   test_MultipleMasters.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
-  #test_CannonOnTorus.cpp
   test_TransformFile.cpp
   test_wfe_plugin.cpp
 )
