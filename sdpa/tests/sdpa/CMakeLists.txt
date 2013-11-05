@@ -216,7 +216,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
 ################################################################################################
 set (tests
   test_Atomic.cpp
-  test_BackupRecover.cpp
   test_Capabilities.cpp
   test_Coallocation.cpp
   test_StopRestartAgentsCoalloc.cpp
@@ -228,7 +227,6 @@ set (tests
   test_Scheduler.cpp
   test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
-  test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
   test_AgentsAndDrts.cpp
   test_StopRestartDrtsSubscriberCli.cpp
