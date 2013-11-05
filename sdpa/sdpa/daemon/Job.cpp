@@ -82,4 +82,54 @@ namespace sdpa {
         error_code(evt.error_code());
         error_message(evt.error_message());
     }
+
+    void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm)
+    {
+      assert (ptr_comm);
+      lock_type lock(mtx_);
+      process_event(*pEvt);
+
+      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
+      //send ack to master
+      ptr_comm->sendEventToMaster(pDelJobReply);
+    }
+
+    void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
+    {
+      assert (pDaemon);
+      // attention, no action called!
+      lock_type const _ (mtx_);
+      process_event (*pEvt);
+
+      sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
+        (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
+                                               , pEvt->from()
+                                               , id()
+                                               , getStatus()
+                                               , error_code()
+                                               , error_message()
+                                               )
+        );
+
+      pDaemon->sendEventToMaster (pStatReply);
+    }
+
+    void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
+    {
+      assert (ptr_comm);
+      lock_type lock(mtx_);
+      process_event(*pEvt);
+      const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
+
+      // reply the results to master
+      ptr_comm->sendEventToMaster(pResReply);
+    }
+
+    void JobFSM::Reschedule(sdpa::daemon::IAgent*  pAgent)
+    {
+      MSMRescheduleEvent ReschedEvt;
+      lock_type lock(mtx_);
+      process_event(ReschedEvt);
+      pAgent->schedule(id());
+    }
 }}

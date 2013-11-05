@@ -27,8 +27,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
 
-#include <sdpa/daemon/JobFSM.hpp>
-
 using namespace std;
 using namespace sdpa::daemon;
 

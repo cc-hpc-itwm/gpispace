@@ -18,7 +18,7 @@
 
 #include <sdpa/daemon/agent/Agent.hpp>
 
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <fhg/assert.hpp>
 
 namespace sdpa {

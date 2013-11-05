@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/events/CodecStrategy.hpp>
 #include <seda/EventPrioQueue.hpp>

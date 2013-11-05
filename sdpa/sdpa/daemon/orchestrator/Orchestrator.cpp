@@ -19,7 +19,7 @@
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 
 #include <fhg/assert.hpp>
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 
 #include <seda/StageRegistry.hpp>
 

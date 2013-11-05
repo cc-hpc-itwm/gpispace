@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE TestMultipleMasters
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
