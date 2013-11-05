@@ -6,7 +6,7 @@
 
 namespace sdpa
 {
-  struct status
+  namespace status
   {
     enum code
       {
@@ -25,12 +25,12 @@ namespace sdpa
       , UNKNOWN
       };
 
-    bool is_running (code c)
+    inline bool is_running (code c)
     {
       return c == RUNNING;
     }
 
-    bool is_terminal (code c)
+    inline bool is_terminal (code c)
     {
       return c == FINISHED || c == FAILED || c == CANCELED;
     }
