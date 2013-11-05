@@ -67,9 +67,9 @@ namespace sdpa {
       // the initial state of the JobFSM SM. Must be defined
       typedef Pending initial_state;
 
-      virtual void action_delete_job(const sdpa::events::DeleteJobEvent&){ DLOG(TRACE, "JobFSM_::action_delete_job"); }
-      virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ DLOG(TRACE, "JobFSM_::action_job_failed"); }
-      virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ DLOG(TRACE, "JobFSM_::action_job_finished"); }
+      virtual void action_delete_job(const sdpa::events::DeleteJobEvent&) = 0;
+      virtual void action_job_failed(const sdpa::events::JobFailedEvent&) = 0;
+      virtual void action_job_finished(const sdpa::events::JobFinishedEvent&) = 0;
 
       typedef JobFSM_ sm; // makes transition table cleaner
 
