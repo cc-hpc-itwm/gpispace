@@ -4,14 +4,16 @@ ifndef BUILD_ROOT
   $(error Variable BUILD_ROOT is empty)
 endif
 
-THISDIR=$(notdir $(CURDIR))
-BUILDDIR=$(BUILD_ROOT)/$(THISDIR)
-CONFIG=$(BUILDDIR)/Makefile.def
+THISDIR       := $(notdir $(CURDIR))
+BUILDDIR      := $(BUILD_ROOT)/$(THISDIR)
+CONFIGURATION := $(BUILDDIR)/Makefile.configuration
 
--include $(CONFIG)
+ifneq "$(wildcard $(CONFIGURATION))" ""
+  include $(CONFIGURATION)
+endif
 
-ifndef ASCIIDOC_EXECUTABLE
-  ASCIIDOC_EXECUTABLE=$(shell which asciidoc)
+ifndef $(ASCIIDOC_EXECUTABLE)
+  ASCIIDOC_EXECUTABLE := $(shell which asciidoc)
 endif
 
 ifeq "$(ASCIIDOC_EXECUTABLE)" ""
@@ -19,12 +21,12 @@ ifeq "$(ASCIIDOC_EXECUTABLE)" ""
 endif
 
 ifndef ASCIIDOC_VERSION
-  ASCIIDOC_VERSION=$(word 2,$(shell $(ASCIIDOC_EXECUTABLE) --version))
-  ASCIIDOC_VERSION_MAJOR=$(word 1,$(subst ., ,$(ASCIIDOC_VERSION)))
-  ASCIIDOC_VERSION_MINOR=$(word 2,$(subst ., ,$(ASCIIDOC_VERSION)))
-  ASCIIDOC_VERSION_PATCH=$(word 3,$(subst ., ,$(ASCIIDOC_VERSION)))
-  ASCIIDOC_VERSION_NUM=$(shell echo $$((100 * $(ASCIIDOC_VERSION_MAJOR) + 10 * $(ASCIIDOC_VERSION_MINOR) + $(ASCIIDOC_VERSION_PATCH))))
-  ASCIIDOC_VERSION_OKAY=$(shell expr $(ASCIIDOC_VERSION_NUM) \>= 868)
+  ASCIIDOC_VERSION       := $(word 2,$(shell $(ASCIIDOC_EXECUTABLE) --version))
+  ASCIIDOC_VERSION_MAJOR := $(word 1,$(subst ., ,$(ASCIIDOC_VERSION)))
+  ASCIIDOC_VERSION_MINOR := $(word 2,$(subst ., ,$(ASCIIDOC_VERSION)))
+  ASCIIDOC_VERSION_PATCH := $(word 3,$(subst ., ,$(ASCIIDOC_VERSION)))
+  ASCIIDOC_VERSION_NUM   := $(shell echo $$((100 * $(ASCIIDOC_VERSION_MAJOR) + 10 * $(ASCIIDOC_VERSION_MINOR) + $(ASCIIDOC_VERSION_PATCH))))
+  ASCIIDOC_VERSION_OKAY  := $(shell expr $(ASCIIDOC_VERSION_NUM) \>= 867)
 endif
 
 ifeq "$(ASCIIDOC_VERSION_OKAY)" "0"
@@ -32,7 +34,7 @@ ifeq "$(ASCIIDOC_VERSION_OKAY)" "0"
 endif
 
 ifndef ASCIIDOC_BINDIR
-  ASCIIDOC_BINDIR=$(dir $(ASCIIDOC_EXECUTABLE))
+  ASCIIDOC_BINDIR := $(dir $(ASCIIDOC_EXECUTABLE))
 endif
 
 ifeq "$(ASCIIDOC_BINDIR)" ""
@@ -40,7 +42,7 @@ ifeq "$(ASCIIDOC_BINDIR)" ""
 endif
 
 ifndef A2X_EXECUTABLE
-  A2X_EXECUTABLE=$(shell which a2x)
+  A2X_EXECUTABLE := $(shell which a2x)
 endif
 
 ifeq "A2X_EXECUTABLE" ""
@@ -48,12 +50,12 @@ ifeq "A2X_EXECUTABLE" ""
 endif
 
 ifndef A2X_VERSION
-  A2X_VERSION=$(word 2,$(shell $(A2X_EXECUTABLE) --version))
-  A2X_VERSION_MAJOR=$(word 1,$(subst ., ,$(A2X_VERSION)))
-  A2X_VERSION_MINOR=$(word 2,$(subst ., ,$(A2X_VERSION)))
-  A2X_VERSION_PATCH=$(word 3,$(subst ., ,$(A2X_VERSION)))
-  A2X_VERSION_NUM=$(shell echo $$((100 * $(A2X_VERSION_MAJOR) + 10 * $(A2X_VERSION_MINOR) + $(A2X_VERSION_PATCH))))
-  A2X_VERSION_OKAY=$(shell expr $(A2X_VERSION_NUM) \>= 868)
+  A2X_VERSION       := $(word 2,$(shell $(A2X_EXECUTABLE) --version))
+  A2X_VERSION_MAJOR := $(word 1,$(subst ., ,$(A2X_VERSION)))
+  A2X_VERSION_MINOR := $(word 2,$(subst ., ,$(A2X_VERSION)))
+  A2X_VERSION_PATCH := $(word 3,$(subst ., ,$(A2X_VERSION)))
+  A2X_VERSION_NUM   := $(shell echo $$((100 * $(A2X_VERSION_MAJOR) + 10 * $(A2X_VERSION_MINOR) + $(A2X_VERSION_PATCH))))
+  A2X_VERSION_OKAY  := $(shell expr $(A2X_VERSION_NUM) \>= 867)
 endif
 
 ifeq "$(A2X_VERSION_OKAY)" "0"
@@ -61,7 +63,7 @@ ifeq "$(A2X_VERSION_OKAY)" "0"
 endif
 
 ifndef SOURCE_HIGHLITE_EXECUTABLE
-  SOURCE_HIGHLITE_EXECUTABLE=$(shell which source-highlight)
+  SOURCE_HIGHLITE_EXECUTABLE := $(shell which source-highlight)
 endif
 
 ifeq "$(SOURCE_HIGHLITE_EXECUTABLE)" ""
@@ -69,7 +71,7 @@ ifeq "$(SOURCE_HIGHLITE_EXECUTABLE)" ""
 endif
 
 ifndef SOURCE_HIGHLITE_BINDIR
-  SOURCE_HIGHLITE_BINDIR=$(dir $(SOURCE_HIGHLITE_EXECUTABLE))
+  SOURCE_HIGHLITE_BINDIR := $(dir $(SOURCE_HIGHLITE_EXECUTABLE))
 endif
 
 ifeq "$(SOURCE_HIGHLITE_BINDIR)" ""
@@ -88,7 +90,7 @@ $(BUILDDIR)/a2x:
 
 .PHONY: all
 
-all: $(CONFIG)                 \
+all: configuration.save        \
      $(BUILDDIR)/user.html     \
      $(BUILDDIR)/user.docbook  \
      $(BUILDDIR)/a2x/user.html \
@@ -96,14 +98,18 @@ all: $(CONFIG)                 \
 
 ###############################################################################
 
+INPUT += user.txt
+
+###############################################################################
+
 ASCIIDOC = PATH=$(SOURCE_HIGHLITE_BINDIR):${PATH} $(ASCIIDOC_EXECUTABLE) -b $(1)
 
 $(BUILDDIR)/user.html: | $(BUILDDIR)
-$(BUILDDIR)/user.html: user.txt
+$(BUILDDIR)/user.html: $(INPUT)
 	$(call ASCIIDOC,xhtml11) -o $@ $<
 
 $(BUILDDIR)/user.docbook: | $(BUILDDIR)
-$(BUILDDIR)/user.docbook: user.txt
+$(BUILDDIR)/user.docbook: $(INPUT)
 	$(call ASCIIDOC,docbook) -o $@ $<
 
 ###############################################################################
@@ -114,21 +120,22 @@ A2X_OPTS += --destination-dir=$(BUILDDIR)/a2x
 A2X = PATH=$(ASCIIDOC_BINDIR):${PATH} $(A2X_EXECUTABLE) $(A2X_OPTS) -f $(1)
 
 $(BUILDDIR)/a2x/user.html: | $(BUILDDIR)/a2x
-$(BUILDDIR)/a2x/user.html: user.txt
+$(BUILDDIR)/a2x/user.html: $(INPUT)
 	$(call A2X,xhtml) $<
 
 $(BUILDDIR)/a2x/user.pdf: | $(BUILDDIR)/a2x
-$(BUILDDIR)/a2x/user.pdf: user.txt
-	$(call A2X,pdf) --fop $<
+$(BUILDDIR)/a2x/user.pdf: $(INPUT)
+	$(call A2X,pdf) $<
 
 ###############################################################################
 
-.PHONY: config.show config.save config.remove
+.PHONY: configuration.show configuration.save configuration.remove
 
-config.show:
+configuration.show:
 	@echo "BUILD_ROOT = $(BUILD_ROOT)"
 	@echo "THISDIR = $(THISDIR)"
 	@echo "BUILDDIR = $(BUILDDIR)"
+	@echo "CONFIGURATION = $(CONFIGURATION)"
 	@echo "ASCIIDOC_EXECUTABLE = $(ASCIIDOC_EXECUTABLE)"
 	@echo "ASCIIDOC_VERSION = $(ASCIIDOC_VERSION)"
 	@echo "ASCIIDOC_VERSION_MAJOR = $(ASCIIDOC_VERSION_MAJOR)"
@@ -145,11 +152,11 @@ config.show:
 	@echo "SOURCE_HIGHLITE_EXECUTABLE = $(SOURCE_HIGHLITE_EXECUTABLE)"
 	@echo "SOURCE_HIGHLITE_BINDIR = $(SOURCE_HIGHLITE_BINDIR)"
 
-$(CONFIG): | $(BUILDDIR)
-$(CONFIG):
-	$(MAKE) config.show > $(CONFIG)
+$(CONFIGURATION): | $(BUILDDIR)
+$(CONFIGURATION):
+	$(MAKE) configuration.show > $(CONFIGURATION)
 
-config.save: $(CONFIG)
+configuration.save: $(CONFIGURATION)
 
-config.remove:
-	$(RM) $(CONFIG)
+configuration.remove:
+	$(RM) $(CONFIGURATION)
