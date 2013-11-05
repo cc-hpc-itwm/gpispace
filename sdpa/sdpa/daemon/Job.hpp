@@ -38,10 +38,13 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/logging.hpp>
 #include <sdpa/types.hpp>
+#include <sdpa/job_states.hpp>
 #include <boost/thread.hpp>
 
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
+
+#include <fhg/assert.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -105,6 +108,25 @@ namespace sdpa {
         _irow<  Cancelled,  	sdpa::events::RetrieveJobResultsEvent>
         >{};
 
+      //! \note This table refers to the order in which states are
+      //! first seen in the state machine definition. This is hacky
+      //! and should be removed / done via visitors.
+      sdpa::status::code state_code (size_t state)
+      {
+        static sdpa::status::code const state_codes[] =
+          { sdpa::status::PENDING
+          , sdpa::status::STALLED
+          , sdpa::status::RUNNING
+          , sdpa::status::FINISHED
+          , sdpa::status::FAILED
+          , sdpa::status::CANCELING
+          , sdpa::status::CANCELED
+          };
+        fhg_assert ( state < sizeof (state_codes) / sizeof (*state_codes)
+                   , "index shall be valid"
+                   );
+        return state_codes[state];
+      }
       template <class FSM, class Event>
         void no_transition(Event const& e, FSM&, int state)
       {
