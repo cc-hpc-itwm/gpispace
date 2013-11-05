@@ -267,18 +267,6 @@ namespace sdpa {
 
       sdpa::worker_id_t m_owner;
     };
-
-      // Pick a back-end
-      class JobFSM : public sdpa::daemon::Job
-      {
-      public:
-        JobFSM ( const sdpa::job_id_t id
-               , const sdpa::job_desc_t desc
-               , const sdpa::job_id_t &parent
-               )
-          : Job(id, desc, parent)
-        {}
-      };
 }}
 
 #endif
