@@ -136,12 +136,10 @@ namespace sdpa {
           , const sdpa::job_id_t &parent
           );
 
-      virtual ~Job() {}
-
-      virtual const sdpa::job_id_t& id() const;
-      virtual const sdpa::job_id_t& parent() const;
-      virtual const sdpa::job_desc_t& description() const;
-      virtual const sdpa::job_result_t& result() const { return result_; }
+      const sdpa::job_id_t& id() const;
+      const sdpa::job_id_t& parent() const;
+      const sdpa::job_desc_t& description() const;
+      const sdpa::job_result_t& result() const { return result_; }
 
       int error_code() const {return m_error_code;}
       std::string const & error_message () const { return m_error_message;}
@@ -158,15 +156,15 @@ namespace sdpa {
         return *this;
       }
 
-      virtual bool is_marked_for_deletion();
-      virtual bool mark_for_deletion();
+      bool is_marked_for_deletion();
+      bool mark_for_deletion();
 
       bool isMasterJob();
       void setType(const job_type& );
-      virtual job_type type() { return type_;}
+      job_type type() { return type_;}
 
-      virtual void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
-      virtual sdpa::worker_id_t owner() { return m_owner; }
+      void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
+      sdpa::worker_id_t owner() { return m_owner; }
 
       bool completed()
       {
@@ -180,16 +178,16 @@ namespace sdpa {
         return status=="SDPA::Running";
       }
 
-      virtual unsigned long &walltime() { return walltime_;}
+      unsigned long &walltime() { return walltime_;}
 
       // job FSM actions
       virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
 
-      virtual void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
+      void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
 
-      virtual std::string print_info()
+      std::string print_info()
       {
         std::ostringstream os;
         os<<std::endl;
