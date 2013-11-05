@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE TestSubmitJobFails
 #include <boost/test/unit_test.hpp>
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
@@ -280,7 +279,7 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure1 )
 	string addrAgg = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, 10);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, 10);
 	ptrOrch->start_agent(true);
 
 	sdpa::master_info_list_t arrAggMasterInfo(1, MasterInfo("orchestrator_0"));
@@ -315,7 +314,7 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure2 )
 	string addrAgg = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, 10);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, 10);
 	ptrOrch->start_agent(true);
 
 	sdpa::master_info_list_t arrAggMasterInfo(1, MasterInfo("orchestrator_0"));

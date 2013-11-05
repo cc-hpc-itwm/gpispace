@@ -19,7 +19,7 @@
 #include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   osstr<<"agent_"<<testNb;
   std::string agentName(osstr.str());
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create(orchName, addrOrch, MAX_CAP);
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(orchName, addrOrch, MAX_CAP);
   ptrOrch->start_agent(false);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));

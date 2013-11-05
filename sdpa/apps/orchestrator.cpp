@@ -9,7 +9,7 @@
 #include <sdpa/util/Config.hpp>
 
 #include <boost/program_options.hpp>
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
@@ -195,7 +195,7 @@ int main (int argc, char **argv)
     }
 
     try {
-      sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( orchName, orchUrl, MAX_CAP  );
+      sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( orchName, orchUrl, MAX_CAP  );
 
       bool bUseRequestModel = false; //(vm.count("use-push-model") == 0);
 

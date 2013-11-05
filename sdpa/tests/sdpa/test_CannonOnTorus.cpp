@@ -18,7 +18,6 @@
 #define BOOST_TEST_MODULE TestCannonOnTorus
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <TorusWorkflowEngineOrch.hpp>

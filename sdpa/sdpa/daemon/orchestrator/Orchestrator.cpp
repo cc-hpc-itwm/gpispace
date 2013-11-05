@@ -23,6 +23,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
+#include <seda/StageRegistry.hpp>
+
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
@@ -488,4 +490,18 @@ void Orchestrator::recover( std::istream& is )
   }
 }
   }
+}
+
+Orchestrator::ptr_t Orchestrator::create ( const std::string& name
+                                         , const std::string& url
+                                         , const unsigned int capacity
+                                         )
+{
+  Orchestrator::ptr_t pOrch (new Orchestrator (name, url, capacity));
+
+  seda::Stage::Ptr daemon_stage (new seda::Stage (name, pOrch, 1));
+  pOrch->setStage (daemon_stage);
+  seda::StageRegistry::instance().insert (daemon_stage);
+
+  return pOrch;
 }

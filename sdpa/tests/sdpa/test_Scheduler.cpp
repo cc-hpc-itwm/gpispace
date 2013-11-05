@@ -30,7 +30,6 @@
 #include <seda/StageRegistry.hpp>
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <boost/pointer_cast.hpp>

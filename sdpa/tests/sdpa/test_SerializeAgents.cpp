@@ -27,7 +27,6 @@
 #include <sdpa/daemon/JobManager.hpp>
 
 #include <boost/serialization/export.hpp>
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 

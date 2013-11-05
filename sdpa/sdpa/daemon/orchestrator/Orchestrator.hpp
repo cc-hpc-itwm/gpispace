@@ -23,9 +23,6 @@
 
 namespace sdpa {
   namespace daemon {
-
-    template <typename T> struct OrchestratorFactory;
-
     class Orchestrator : public sdpa::fsm::bmsm::DaemonFSM
     {
       public:
@@ -39,6 +36,11 @@ namespace sdpa {
         SDPA_INIT_LOGGER(name),
         url_(url)
       {}
+
+			static Orchestrator::ptr_t create ( const std::string& name
+                                        , const std::string& url
+                                        , const unsigned int capacity
+                                        );
 
       void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
       void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
@@ -64,7 +66,6 @@ namespace sdpa {
       virtual void recover( std::istream& );
 
       friend class boost::serialization::access;
-      template <typename T> friend struct OrchestratorFactory;
 
       template <typename T>
       void notifySubscribers(const T& ptrEvt);
