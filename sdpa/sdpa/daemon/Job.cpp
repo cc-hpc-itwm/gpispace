@@ -23,7 +23,6 @@ namespace sdpa {
   namespace daemon {
     Job::Job(const sdpa::job_id_t id,
                      const sdpa::job_desc_t desc,
-                     const sdpa::daemon::IAgent* pHandler,
                      const sdpa::job_id_t &parent)
         : SDPA_INIT_LOGGER("Job")
         , id_(id)

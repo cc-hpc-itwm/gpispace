@@ -133,7 +133,6 @@ namespace sdpa {
 
       Job ( const sdpa::job_id_t id
           , const sdpa::job_desc_t desc
-          , const sdpa::daemon::IAgent* pHandler
           , const sdpa::job_id_t &parent
           );
 
@@ -238,10 +237,9 @@ namespace sdpa {
 
         JobFSM ( const sdpa::job_id_t id
                , const sdpa::job_desc_t desc
-               , const sdpa::daemon::IAgent* pHandler
                , const sdpa::job_id_t &parent
                )
-          : Job(id, desc, pHandler, parent)
+          : Job(id, desc, parent)
           , SDPA_INIT_LOGGER("sdpa.fsm.bmsm.JobFSM")
         {
         }

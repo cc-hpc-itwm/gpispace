@@ -293,15 +293,15 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   // create a number of jobs
   const sdpa::job_id_t jobId0("Job0");
-  sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0", NULL, sdpa::job_id_t()));
+  sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0", sdpa::job_id_t()));
   pAgent->jobManager()->addJob(jobId0, pJob0);
 
   const sdpa::job_id_t jobId1("Job1");
-  sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1", NULL, sdpa::job_id_t()));
+  sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1", sdpa::job_id_t()));
   pAgent->jobManager()->addJob(jobId1, pJob1);
 
   const sdpa::job_id_t jobId2("Job2");
-  sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2", NULL, sdpa::job_id_t()));
+  sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2", sdpa::job_id_t()));
   pAgent->jobManager()->addJob(jobId2, pJob2);
 
   job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   // try now to schedule a job requiring 2 resources of type "A"
   const sdpa::job_id_t jobId4("Job4");
-  sdpa::daemon::Job::ptr_t pJob4(new JobFSM(jobId4, "description 4", NULL, sdpa::job_id_t()));
+  sdpa::daemon::Job::ptr_t pJob4(new JobFSM(jobId4, "description 4", sdpa::job_id_t()));
   pAgent->jobManager()->addJob(jobId4, pJob4);
 
   job_requirements_t jobReqs_5(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(2, 100));
