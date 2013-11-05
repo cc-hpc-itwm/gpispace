@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::Scheduler::ptr_t ptrScheduler = pAgent->scheduler();
+  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<AgentScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
     LOG(FATAL, "The scheduler was not properly initialized");
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
 
-  sdpa::worker_id_list_t listAssgnWks = pAgent->scheduler()->getListAllocatedWorkers(jobId1);
+  sdpa::worker_id_list_t listAssgnWks = ptrScheduler->getListAllocatedWorkers(jobId1);
   BOOST_CHECK(listAssgnWks.empty());
 
   if(listAssgnWks == sdpa::worker_id_list_t(1,worker_A))
@@ -111,9 +111,10 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   LOG(DEBUG, "The worker_A has now the following capabilities: ["<<cpbset<<"]");
 
   LOG(DEBUG, "Try to assign again jobs to the workers ...");
-  ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+  ptrScheduler->assignJobsToWorkers();
+  ptrScheduler->checkAllocations();
 
-  listAssgnWks = pAgent->scheduler()->getListAllocatedWorkers(jobId1);
+  listAssgnWks = ptrScheduler->getListAllocatedWorkers(jobId1);
   BOOST_CHECK(!listAssgnWks.empty());
 
   bool bOutcome = (listAssgnWks == sdpa::worker_id_list_t(1,worker_A));
@@ -133,7 +134,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
+  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
       LOG(FATAL, "The scheduler was not properly initialized");
@@ -187,16 +188,16 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-      sdpa::worker_id_list_t listJobAssignedWorkers = pAgent->scheduler()->getListAllocatedWorkers(jobId);
+      sdpa::worker_id_list_t listJobAssignedWorkers = ptrScheduler->getListAllocatedWorkers(jobId);
 
       BOOST_CHECK(listJobAssignedWorkers.size() <= 1);
       if(!listJobAssignedWorkers.empty())
       {
           // delete the job
-          pAgent->scheduler()->deleteWorkerJob(listJobAssignedWorkers.front(), jobId);
+          ptrScheduler->deleteWorkerJob(listJobAssignedWorkers.front(), jobId);
       }
 
-      pAgent->scheduler()->releaseReservation(jobId);
+      ptrScheduler->releaseReservation(jobId);
   }
 
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
@@ -219,7 +220,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
+  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
       LOG(FATAL, "The scheduler was not properly initialized");
@@ -302,7 +303,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
+  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
     LOG(FATAL, "The scheduler was not properly initialized");
@@ -316,19 +317,19 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
-  osstr<<"worker_"<<k;
-  sdpa::worker_id_t workerId(osstr.str());
-  osstr.str("");
-  arrWorkerIds.push_back(workerId);
+    osstr<<"worker_"<<k;
+    sdpa::worker_id_t workerId(osstr.str());
+    osstr.str("");
+    arrWorkerIds.push_back(workerId);
 
-  if( k<nWorkers-1 )
-  {
-      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
-      sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-      ptrScheduler->addWorker(workerId, 1, cpbSet);
-  }
-  else
-    ptrScheduler->addWorker(workerId, 1);
+    if( k<nWorkers-1 )
+    {
+        std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+        sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
+        ptrScheduler->addWorker(workerId, 1, cpbSet);
+    }
+    else
+      ptrScheduler->addWorker(workerId, 1);
   }
 
   // submit a bunch of jobs now
@@ -391,7 +392,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
+  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
     LOG(FATAL, "The scheduler was not properly initialized");
@@ -433,7 +434,8 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     ptrScheduler->schedule_remotely(jobId);
   }
 
-  ptrScheduler->assignJobsToWorkers();  ptrScheduler->checkAllocations();
+  ptrScheduler->assignJobsToWorkers();
+  ptrScheduler->checkAllocations();
 
   LOG(DEBUG, "Initial allocations ...");
   ptrScheduler->printAllocationTable();
@@ -450,7 +452,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   // and now simply delete the last worker !
   LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
-  ptrScheduler->reschedule(lastWorkerId, jobId);
+  ptrScheduler->rescheduleWorkerJob(lastWorkerId, jobId);
   LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
   ptrScheduler->deleteWorker(lastWorkerId);
   sdpa::worker_id_list_t listW = ptrScheduler->getListAllocatedWorkers(jobId);
