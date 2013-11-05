@@ -275,9 +275,8 @@ namespace sdpa {
                )
           : Job(id, desc, parent)
         {
+          start();
         }
-
-        void start_fsm() { start(); }
 
         //transitions
         void CancelJob(const sdpa::events::CancelJobEvent* pEvt)

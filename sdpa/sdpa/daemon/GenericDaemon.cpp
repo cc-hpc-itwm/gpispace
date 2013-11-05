@@ -555,7 +555,6 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
     // One should parse the workflow in order to be able to create a valid job
     // if the event comes from Gwes parent_id is the owner_workflow_id
     JobFSM* ptrFSM = new JobFSM(job_id, e.description(), e.parent_id());
-    ptrFSM->start_fsm();
     Job::ptr_t pJob(ptrFSM);
     pJob->set_owner(e.from());
 
