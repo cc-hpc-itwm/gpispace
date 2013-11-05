@@ -97,7 +97,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
         try {
             result_type output = pEvt->result();
 
-            if( hasWorkflowEngine() )
+            if( false )
             {
                 SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<act_id<<" finished");
                 workflowEngine()->finished(act_id, output);
@@ -126,7 +126,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
                                                            << ex.what() );
             }
 
-            if( hasWorkflowEngine() )
+            if( false )
             {
                 try {
                     //delete it also from job_map_
@@ -195,7 +195,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         try {
             result_type output = pEvt->result();
 
-            if( hasWorkflowEngine() )
+            if( false )
             {
                 SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" failed");
                 workflowEngine()->failed( actId
@@ -224,7 +224,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
                 SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
             }
 
-            if( hasWorkflowEngine() )
+            if( false )
             {
                 try {
                     //delete it also from job_map_
@@ -263,7 +263,7 @@ void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 
     try
     {
-      if(hasWorkflowEngine())
+      if(false)
         workflowEngine()->cancelled(jobId);
     }
     catch (std::exception const & ex)
@@ -299,7 +299,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     return;
   }
 
-  if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
+  if(pEvt->from() == sdpa::daemon::WE || !false)
   {
     try
     {
@@ -361,7 +361,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     }
 
     // the acknowledgment comes from WE or from a slave and there is no WE
-    if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
+    if( pEvt->from() == sdpa::daemon::WE || !false )
     {
       // just send an acknowledgment to the master
       // send an acknowledgment to the component that requested the cancellation
