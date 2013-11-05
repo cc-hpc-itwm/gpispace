@@ -131,10 +131,11 @@ namespace sdpa {
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
-      Job(const sdpa::job_id_t id = JobId(""),
-              const sdpa::job_desc_t desc = "",
-              const sdpa::daemon::IAgent* pHandler = NULL,
-              const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
+      Job ( const sdpa::job_id_t id
+          , const sdpa::job_desc_t desc
+          , const sdpa::daemon::IAgent* pHandler
+          , const sdpa::job_id_t &parent
+          );
 
       virtual ~Job() {}
 
@@ -235,10 +236,11 @@ namespace sdpa {
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
 
-        JobFSM( const sdpa::job_id_t id = sdpa::JobId(""),
-        		const sdpa::job_desc_t desc = "",
-        		const sdpa::daemon::IAgent* pHandler = NULL,
-        		const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id())
+        JobFSM ( const sdpa::job_id_t id
+               , const sdpa::job_desc_t desc
+               , const sdpa::daemon::IAgent* pHandler
+               , const sdpa::job_id_t &parent
+               )
           : Job(id, desc, pHandler, parent)
           , SDPA_INIT_LOGGER("sdpa.fsm.bmsm.JobFSM")
         {
