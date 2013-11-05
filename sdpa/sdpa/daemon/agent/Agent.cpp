@@ -134,12 +134,11 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
       try {
           DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
-          scheduler()->deleteWorkerJob( worker_id, pJob->id() );
-
           // if all partial results were collected, release the reservation
           if(bTaskGroupComputed) {
-              scheduler()->releaseReservation(pJob->id());
+             scheduler()->releaseReservation(pJob->id());
           }
+          scheduler()->deleteWorkerJob( worker_id, pJob->id() );
       }
       catch(WorkerNotFoundException const &)
       {
@@ -368,12 +367,11 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
 
       try {
         DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
-        scheduler()->deleteWorkerJob( worker_id, pJob->id() );
-
-        // if all partial results were collected, release the reservation
+        // if all the partial results were collected, release the reservation
         if(bTaskGroupComputed) {
-            scheduler()->releaseReservation(pJob->id());
+           scheduler()->releaseReservation(pJob->id());
         }
+        scheduler()->deleteWorkerJob( worker_id, pJob->id() );
       }
       catch(WorkerNotFoundException const &)
       {
@@ -712,12 +710,12 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     }
 
     try {
-      LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
-      scheduler()->deleteWorkerJob(worker_id, pEvt->job_id());
 
-      if(bTaskGroupComputed) {
-          scheduler()->releaseReservation(pEvt->job_id());
-       }
+        if(bTaskGroupComputed) {
+        scheduler()->releaseReservation(pEvt->job_id());
+        }
+        LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
+        scheduler()->deleteWorkerJob(worker_id, pEvt->job_id());
     }
     catch (const WorkerNotFoundException&)
     {
@@ -761,7 +759,7 @@ void Agent::backup( std::ostream& ofs )
     backupJobManager(oa);
 
     oa.register_type(static_cast<AgentScheduler*>(NULL));
-    oa.register_type(static_cast<SchedulerImpl*>(NULL));
+    //oa.register_type(static_cast<SchedulerImpl*>(NULL));
     backupScheduler(oa);
 
     /*oa.register_type(static_cast<T*>(NULL));
@@ -783,7 +781,7 @@ void Agent::recover( std::istream& ifs )
     recoverJobManager(ia);
 
     ia.register_type(static_cast<AgentScheduler*>(NULL));
-    ia.register_type(static_cast<SchedulerImpl*>(NULL));
+    //ia.register_type(static_cast<SchedulerImpl*>(NULL));
     recoverScheduler(ia);
 
     // should ignore the workflow engine,
