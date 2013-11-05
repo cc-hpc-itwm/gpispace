@@ -223,17 +223,9 @@ sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 		sdpa::job_id_t jobId = it->first;
 		Job::ptr_t pJob = it->second;
 
-		if( (bHasWfe && pJob->isMasterJob()) || !bHasWfe )
-		{
-      std::string status = sdpa::status::show (pJob->getStatus());
-
-			// the job is not in a terminal state
-			if(	status.find("Finished") 	== std::string::npos
-				&& status.find("Failed") 	== std::string::npos
-				&& status.find("Cancelled") == std::string::npos )
-			{
-				listJobsNotCompleted.push_back(jobId);
-			}
+		if( (bHasWfe && pJob->isMasterJob()) || !bHasWfe && !pJob->completed())
+    {
+      listJobsNotCompleted.push_back(jobId);
 		}
 	}
 
