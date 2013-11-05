@@ -227,7 +227,6 @@ set (tests
   test_Scheduler.cpp
   test_LostAgentRegistrationAck.cpp
   test_SerializeSharedPtr.cpp
-  test_SerializeAgents.cpp
   test_AgentsAndDrts.cpp
   test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
