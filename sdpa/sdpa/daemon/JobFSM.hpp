@@ -128,12 +128,6 @@ namespace sdpa {
           : Job(id, desc, pHandler, parent)
           , SDPA_INIT_LOGGER("sdpa.fsm.bmsm.JobFSM")
         {
-        	DLOG(TRACE, "State machine created: " << id);
-        }
-
-        virtual ~JobFSM()
-        {
-        	DLOG(TRACE, "State machine destroyed");
         }
 
         void start_fsm() { start(); }
