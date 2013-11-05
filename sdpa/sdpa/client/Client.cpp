@@ -336,8 +336,8 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
     // check event type
     if (se::JobStatusReplyEvent *status = dynamic_cast<se::JobStatusReplyEvent*>(reply.get()))
     {
-      DMLOG(DEBUG,"got status for " << status->job_id() << ": " << status->status());
-      return status->status();
+      DMLOG(DEBUG,"got status for " << status->job_id() << ": " << sdpa::status::show (status->status()));
+      return sdpa::status::show (status->status());
     }
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {
@@ -379,12 +379,12 @@ int Client::queryJob(const job_id_t &jid, job_info_t &info)
     {
       DMLOG( DEBUG
            ,"got status for " << status->job_id()
-           << ": " << status->status()
+           << ": " << sdpa::status::show (status->status())
            );
       info.error_code = status->error_code();
       info.error_message = status->error_message();
 
-      return sdpa::status::read(status->status());
+      return status->status();
     }
     else if (se::ErrorEvent *err
             = dynamic_cast<se::ErrorEvent*>(reply.get()))

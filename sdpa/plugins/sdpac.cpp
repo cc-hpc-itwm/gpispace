@@ -123,10 +123,9 @@ public:
     {
       if (JobStatusReplyEvent* job_status = dynamic_cast<JobStatusReplyEvent*>(rep.get()))
       {
-        int rc = sdpa::status::read (job_status->status());
         ec = job_status->error_code ();
         msg = job_status->error_message ();
-        return rc;
+        return job_status->status();
       }
       else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
       {

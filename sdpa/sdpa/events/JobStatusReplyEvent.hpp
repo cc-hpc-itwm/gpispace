@@ -41,9 +41,9 @@ namespace sdpa
         return "JobStatusReplyEvent(" + job_id().str() + ")";
       }
 
-      std::string status() const
+      sdpa::status::code status() const
       {
-        return sdpa::status::show (status_);
+        return status_;
       }
       int error_code() const
       {
