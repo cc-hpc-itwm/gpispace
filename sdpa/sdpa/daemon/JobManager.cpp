@@ -162,52 +162,51 @@ void JobManager::resubmitResults(IAgent* pComm)
   for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
   {
     sdpa::daemon::Job::ptr_t pJob = it->second;
-    std::string job_status = sdpa::status::show (pJob->getStatus());
 
     if( pJob->isMasterJob() )
     {
-    	DLOG(TRACE, "Re-submit to the master "<<pJob->owner()<<" the status of the job"<<pJob->id()<<" ("<<job_status<<" )");
-      if( job_status.find("Finished") != std::string::npos )
+      switch (pJob->getStatus())
       {
-        // create jobFinishedEvent
-        sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
-                                                                                               pJob->owner(),
-                                                                                               pJob->id(),
-                                                                                               pJob->result() ));
-
-        // send it to the master
-        pComm->sendEventToMaster(pEvtJobFinished);
-      }
-      else if( job_status.find("Failed") != std::string::npos )
-      {
-        // create jobFailedEvent
-        sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
-                                                                                         pJob->owner(),
-                                                                                         pJob->id(),
-                                                                                         pJob->result() ));
-
-        // send it to the master
-        pComm->sendEventToMaster(pEvtJobFailed);
-      }
-      else if( job_status.find("Cancelled") != std::string::npos)
-      {
-        // create jobCancelledEvent
-        sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
-                                                                                                  pJob->owner(),
-                                                                                                  pJob->id()));
-
-        // send it to the master
-        pComm->sendEventToMaster(pEvtJobCancelled);
-      }
-      else if( job_status.find("Pending") != std::string::npos )
-      {
-        sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
+      case sdpa::status::FINISHED:
+        {
+          sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
                                                                                                  pJob->owner(),
                                                                                                  pJob->id(),
-                                                                                                 ""));
+                                                                                                 pJob->result() ));
+          pComm->sendEventToMaster(pEvtJobFinished);
+        }
+        break;
 
-        // There is a problem with this if uncommented
-        pComm->sendEventToMaster(pSubmitJobAckEvt);
+      case sdpa::status::FAILED:
+        {
+          sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
+                                                                                           pJob->owner(),
+                                                                                           pJob->id(),
+                                                                                           pJob->result() ));
+          pComm->sendEventToMaster(pEvtJobFailed);
+        }
+        break;
+
+      case sdpa::status::CANCELED:
+        {
+          sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
+                                                                                                    pJob->owner(),
+                                                                                                    pJob->id()));
+
+          pComm->sendEventToMaster(pEvtJobCancelled);
+        }
+        break;
+
+      case sdpa::status::PENDING:
+        {
+          sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
+                                                                                                   pJob->owner(),
+                                                                                                   pJob->id(),
+                                                                                                   ""));
+          // There is a problem with this if uncommented
+          pComm->sendEventToMaster(pSubmitJobAckEvt);
+        }
+        break;
       }
     }
   }
