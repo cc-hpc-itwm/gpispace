@@ -20,6 +20,7 @@ namespace sdpa
       , SUSPENDED
       , RUNNING
       , STALLED
+      , CANCELING
 
       , UNKNOWN
       };
@@ -37,6 +38,7 @@ namespace sdpa
       m["SDPA::Finished"]  = FINISHED;
       m["SDPA::Failed"]    = FAILED;
       m["SDPA::Canceled"]  = CANCELED;
+      m["SDPA::Canceling"] = CANCELING;
       m["SDPA::Stalled"]   = STALLED;
 
       return m;
@@ -58,6 +60,8 @@ namespace sdpa
         return "SDPA::Failed";
       case CANCELED:
         return "SDPA::Canceled";
+      case CANCELING:
+        return "SDPA::Canceling";
       case UNKNOWN:
         return "SDPA::Unknown";
       case STALLED:
