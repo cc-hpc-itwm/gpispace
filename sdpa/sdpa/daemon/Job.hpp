@@ -190,14 +190,12 @@ namespace sdpa {
 
       bool completed()
       {
-        std::string status = getStatus();
-        return status=="SDPA::Finished" || status=="SDPA::Failed" || status=="SDPA::Canceled";
+        return sdpa::status::is_terminal (state_code (*current_state()));
       }
 
       bool is_running()
       {
-        std::string status = getStatus();
-        return status=="SDPA::Running";
+        return sdpa::status::is_running (state_code (*current_state()));
       }
 
       unsigned long &walltime() { return walltime_;}
