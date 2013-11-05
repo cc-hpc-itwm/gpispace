@@ -168,13 +168,13 @@ namespace sdpa {
 
       bool completed()
       {
-        sdpa::status_t status = getStatus();
+        std::string status = getStatus();
         return status=="SDPA::Finished" || status=="SDPA::Failed" || status=="SDPA::Canceled";
       }
 
       bool is_running()
       {
-        sdpa::status_t status = getStatus();
+        std::string status = getStatus();
         return status=="SDPA::Running";
       }
 
@@ -220,7 +220,7 @@ namespace sdpa {
       void Dispatch();
       void Pause();
 
-      sdpa::status_t getStatus()
+      std::string getStatus()
       {
         DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
 

@@ -17,7 +17,6 @@ namespace sdpa {
 	typedef std::string location_t;
 	typedef std::string worker_id_t;
 	typedef worker_id_t agent_id_t;
-	typedef std::string status_t;
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
 	typedef worker_id_list_t agent_id_list_t;

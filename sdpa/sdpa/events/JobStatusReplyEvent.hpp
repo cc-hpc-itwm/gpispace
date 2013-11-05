@@ -16,7 +16,6 @@ namespace sdpa
     {
     public:
       typedef sdpa::shared_ptr<JobStatusReplyEvent> Ptr;
-      typedef sdpa::status_t status_t;
 
       JobStatusReplyEvent()
         : JobEvent ("", "", "")
@@ -26,7 +25,7 @@ namespace sdpa
       JobStatusReplyEvent ( const address_t& a_from
                           , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
-                          , const status_t &a_status = status_t()
+                          , const std::string &a_status = std::string()
                           , int const error_code = fhg::error::UNASSIGNED_ERROR
                           , std::string const& error_message = std::string()
                           )
@@ -41,7 +40,7 @@ namespace sdpa
         return "JobStatusReplyEvent(" + job_id().str() + ")";
       }
 
-      const status_t& status() const
+      const std::string& status() const
       {
         return status_;
       }
@@ -60,7 +59,7 @@ namespace sdpa
       }
 
     private:
-      status_t status_;
+      std::string status_;
       int m_error_code;
       std::string m_error_message;
 
