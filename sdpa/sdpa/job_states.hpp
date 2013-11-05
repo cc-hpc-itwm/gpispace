@@ -37,7 +37,7 @@ namespace sdpa
 
     typedef std::map<std::string, int> job_state_map_t;
 
-    static job_state_map_t job_state_map()
+    inline job_state_map_t job_state_map()
     {
       job_state_map_t m;
 
@@ -54,7 +54,7 @@ namespace sdpa
       return m;
     }
 
-    static std::string show(int code)
+    inline std::string show(int code)
     {
       switch (code)
       {
@@ -81,7 +81,7 @@ namespace sdpa
       }
     }
 
-    static int read(std::string const &state)
+    inline int read(std::string const &state)
     {
       static const job_state_map_t m(job_state_map());
       job_state_map_t::const_iterator it;
