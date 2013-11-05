@@ -46,10 +46,8 @@ namespace drts
     time_type last_send() const { return m_last_send; }
     time_type last_recv() const { return m_last_recv; }
     time_type last_job_recv() const { return m_last_job_recv; }
-    time_type last_job_rqst() const { return m_last_job_rqst; }
 
     void job_received();
-    void job_requested();
   private:
     mutable mutex_type m_stats_mutex;
 
@@ -58,12 +56,10 @@ namespace drts
     time_type m_last_recv;
     time_type m_last_send;
     time_type m_last_job_recv;
-    time_type m_last_job_rqst;
 
     size_t m_num_send;
     size_t m_num_recv;
     size_t m_num_jobs_recv;
-    size_t m_num_jobs_rqst;
   };
 }
 
