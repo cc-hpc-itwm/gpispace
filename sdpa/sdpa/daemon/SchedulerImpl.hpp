@@ -103,7 +103,7 @@ namespace sdpa {
       void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);
       virtual void forceOldWorkerJobsTermination();
 
-      virtual bool useRequestModel() { return m_bUseRequestModel; }
+      virtual bool useRequestModel() { return false; }
 
       void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
