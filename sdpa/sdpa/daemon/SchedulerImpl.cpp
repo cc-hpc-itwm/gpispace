@@ -447,18 +447,6 @@ void SchedulerImpl::stop()
 
 void SchedulerImpl::checkRequestPosted()
 {
-  BOOST_FOREACH(sdpa::MasterInfo masterInfo, ptr_comm_handler_->getListMasterInfo())
-  {
-    if( !masterInfo.is_registered() )
-    {
-      MLOG (TRACE, "I am not registered yet...");
-
-      const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-      boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-      ptr_comm_handler_->requestRegistration(masterInfo);
-    }
-  }
 }
 
 void SchedulerImpl::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
