@@ -84,8 +84,6 @@ namespace daemon {
     virtual void run() = 0;
     virtual void print() = 0;
 
-    virtual bool useRequestModel()=0;
-
     virtual void printPendingJobs() = 0;
   };
 }}
