@@ -1324,13 +1324,6 @@ void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
   scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
 }
 
-void GenericDaemon::updateLastRequestTime()
-{
-    sdpa::util::time_type current_time = sdpa::util::now();
-    sdpa::util::time_type difftime = current_time - m_last_request_time;
-    m_last_request_time = difftime;
-}
-
 bool GenericDaemon::requestsAllowed()
 {
   // if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval

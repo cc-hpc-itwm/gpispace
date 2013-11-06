@@ -141,7 +141,6 @@ namespace sdpa {
       sdpa::util::Config& cfg() { return daemon_cfg_;}
 
       // agent info and properties
-      virtual void updateLastRequestTime();
       virtual bool requestsAllowed();
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
