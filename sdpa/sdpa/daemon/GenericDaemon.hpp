@@ -88,12 +88,6 @@ namespace sdpa {
 
       void start_agent( bool bUseReqModel);
 
-    private:
-      void startup_step1 (bool bUseReqModel);
-      void startup_step2();
-      void startup_step3();
-
-    public:
       void shutdown();
 
       void addMaster(const agent_id_t& );

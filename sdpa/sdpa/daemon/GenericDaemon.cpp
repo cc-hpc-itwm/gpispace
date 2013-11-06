@@ -103,22 +103,11 @@ GenericDaemon::GenericDaemon( const std::string name,
 
 void GenericDaemon::start_agent(bool bUseReqModel)
 {
-  startup_step1 (bUseReqModel);
-
-  startup_step2();
-
-  startup_step3();
-}
-
-void GenericDaemon::startup_step1 (bool bUseReqModel)
-{
   if(!scheduler())
   {
     createScheduler(bUseReqModel);
   }
-}
-void GenericDaemon::startup_step2()
-{
+
   ptr_daemon_stage_.lock()->start();
 
   try
@@ -143,9 +132,7 @@ void GenericDaemon::startup_step2()
   perform_ConfigOkEvent();
 
   m_bRequestsAllowed = true;
-}
-void GenericDaemon::startup_step3()
-{
+
   if (!isTop())
   {
     requestRegistration();
