@@ -75,8 +75,6 @@ namespace sdpa {
     virtual unsigned int& rank() = 0;
     virtual const sdpa::worker_id_t& agent_uuid() = 0;
 
-    virtual bool requestsAllowed() = 0;
-
     virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& job_id) = 0;
 
     virtual void schedule(const sdpa::job_id_t& job) = 0;

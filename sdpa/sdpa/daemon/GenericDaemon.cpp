@@ -1324,28 +1324,6 @@ void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
   scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
 }
 
-bool GenericDaemon::requestsAllowed()
-{
-  // if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval
-  // reset it to the value specified by config first time when m_nExternalJobs becomes positive
-  // don't forget to decrement m_nExternalJobs when the job is finished !
-
-  if(!m_bRequestsAllowed)
-  {
-    DMLOG (TRACE, "The flag \"m_bRequestsAllowed\" is set on false!");
-    return false;
-  }
-
-  if( jobManager()->countMasterJobs() == 0 )
-    if( m_ullPollingInterval < cfg().get<unsigned int>("upper bound polling interval") )
-       m_ullPollingInterval = m_ullPollingInterval + 100 * 1000; //0.1s
-
-  sdpa::util::time_type current_time = sdpa::util::now();
-  sdpa::util::time_type diff_time    = current_time - m_last_request_time;
-
-  return ( diff_time > m_ullPollingInterval ) && ( jobManager()->countMasterJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
-}
-
 void GenericDaemon::activityFailed( const Worker::worker_id_t& worker_id
                                   , const job_id_t& jobId
                                   , const std::string& result
