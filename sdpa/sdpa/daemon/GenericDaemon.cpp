@@ -70,7 +70,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nCap(cap),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_nExternalJobs(0),
-    m_ullPollingInterval(100000),
     m_bStopped(false),
     m_guiService ("GSPC", guiUrl)
 {
@@ -245,8 +244,6 @@ void GenericDaemon::action_configure()
   cfg().put("polling interval",             1 * 1000 * 1000);
   cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
   cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
-
-  m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
 
   DMLOG (TRACE, "Try to configure the network now ... ");
 
