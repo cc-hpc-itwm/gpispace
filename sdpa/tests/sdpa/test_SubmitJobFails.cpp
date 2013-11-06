@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE TestSubmitJobFails
 #include <boost/test/unit_test.hpp>
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include "tests_config.hpp"
