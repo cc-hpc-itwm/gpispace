@@ -241,8 +241,6 @@ void GenericDaemon::action_configure()
   // id StartUpEvent contains a configuration file, read the config file and
   // overwrite the default vaules
 
-  cfg().put("polling interval",             1 * 1000 * 1000);
-  cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
   cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
 
   DMLOG (TRACE, "Try to configure the network now ... ");
