@@ -1,6 +1,3 @@
-#include <fhg/util/program_info.h>
-#include <fhg/revision.hpp>
-
 #include <unistd.h>   // exit
 #include <errno.h>    // errno
 #include <string.h>   // strerror
