@@ -488,12 +488,6 @@ void SchedulerImpl::checkRequestPosted()
 
       ptr_comm_handler_->requestRegistration(masterInfo);
     }
-    else
-    {
-      // post job request if number_of_jobs() < #registered workers +1
-      if (false)
-        postRequest(masterInfo);
-    }
   }
 }
 
