@@ -445,36 +445,6 @@ void SchedulerImpl::stop()
   ptr_worker_man_->removeWorkers();
 }
 
-bool SchedulerImpl::postRequest(const MasterInfo& masterInfo, bool force)
-{
-  if(!ptr_comm_handler_)
-  {
-    SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-    stop();
-    return false;
-  }
-
-  bool bReqPosted = false;
-
-  if(force || ( !ptr_comm_handler_->isTop()  &&  masterInfo.is_registered() ) )
-  {
-    bool bReqAllowed = ptr_comm_handler_->requestsAllowed();
-    if(!bReqAllowed)
-    {
-      SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" is not allowed to post job requests!");
-    }
-
-    if( force || bReqAllowed )
-    {
-      ptr_comm_handler_->requestJob(masterInfo);
-      //SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
-      bReqPosted = true;
-    }
-  }
-
-  return bReqPosted;
-}
-
 void SchedulerImpl::checkRequestPosted()
 {
   BOOST_FOREACH(sdpa::MasterInfo masterInfo, ptr_comm_handler_->getListMasterInfo())
