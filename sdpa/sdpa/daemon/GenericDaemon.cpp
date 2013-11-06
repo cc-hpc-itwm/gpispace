@@ -1445,17 +1445,6 @@ void GenericDaemon::activityCancelled(const Worker::worker_id_t& worker_id, cons
   }
 }
 
-void GenericDaemon::requestJob(const MasterInfo& masterInfo)
-{
-  if( masterInfo.is_registered() )
-  {
-    RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), masterInfo.name() ) );
-    sendEventToMaster(pEvtReq);
-  }
-
-  updateLastRequestTime();
-}
-
 void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
   if( !masterInfo.is_registered() )

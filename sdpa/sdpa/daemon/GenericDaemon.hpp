@@ -221,7 +221,6 @@ namespace sdpa {
       const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) const;
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
       virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId );
-      virtual void requestJob(const MasterInfo& masterInfo);
       virtual void addWorker( const Worker::worker_id_t& workerId,
                               unsigned int cap,
                               const capabilities_set_t& cpbset,
