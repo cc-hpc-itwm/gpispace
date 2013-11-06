@@ -273,7 +273,6 @@ namespace sdpa {
       unsigned int m_nRank;
       unsigned int m_nCap; // maximum number of external jobs
       sdpa::worker_id_t m_strAgentUID;
-      unsigned int m_nExternalJobs;
 
       bool m_bStopped;
       mutex_type mtx_subscriber_;

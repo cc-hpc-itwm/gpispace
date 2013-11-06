@@ -69,7 +69,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nRank(rank),
     m_nCap(cap),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
-    m_nExternalJobs(0),
     m_bStopped(false),
     m_guiService ("GSPC", guiUrl)
 {
