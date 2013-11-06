@@ -283,7 +283,6 @@ namespace sdpa {
       mutex_type mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
-      sdpa::util::time_type m_last_request_time;
       NotificationService m_guiService;
     };
 
