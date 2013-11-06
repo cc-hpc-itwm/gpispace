@@ -130,8 +130,6 @@ BOOST_AUTO_TEST_CASE (signature_dump)
 #undef CHECK
 }
 
-#include <fstream>
-
 BOOST_AUTO_TEST_CASE (signature_cpp)
 {
 #define CHECK_HEADER(_expected,_sig...)                 \
@@ -154,9 +152,6 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
     oss << impl (structured_type (_sig));               \
                                                         \
     BOOST_CHECK_EQUAL (oss.str(), _expected);           \
-    {std::ofstream f ("/u/r/rahn/out.oss"); f << oss.str();}    \
-    {std::ofstream f ("/u/r/rahn/out.exp"); f << _expected;}    \
-                                                        \
   }
 
   using pnet::type::signature::structured_type;
