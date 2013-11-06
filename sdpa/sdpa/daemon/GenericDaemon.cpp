@@ -71,7 +71,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_nExternalJobs(0),
     m_ullPollingInterval(100000),
-    m_bRequestsAllowed(false),
     m_bStopped(false),
     m_guiService ("GSPC", guiUrl)
 {
@@ -129,8 +128,6 @@ void GenericDaemon::start_agent()
   to_master_stage()->start();
 
   perform_ConfigOkEvent();
-
-  m_bRequestsAllowed = true;
 
   if (!isTop())
   {
@@ -193,7 +190,6 @@ void GenericDaemon::shutdown( )
 
     scheduler()->stop();
 
-    m_bRequestsAllowed = false;
     m_bStopped 	= true;
 
     handleInterruptEvent();
