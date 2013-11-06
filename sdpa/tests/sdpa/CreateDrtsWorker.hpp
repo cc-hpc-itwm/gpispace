@@ -26,7 +26,6 @@ sdpa::shared_ptr<fhg::core::kernel_t> createDRTSWorker(	const std::string& drtsN
 	kernel->put("plugin.drts.name", drtsName);
 	kernel->put("plugin.drts.master", masterName);
 	kernel->put("plugin.drts.backlog", "2");
-	kernel->put("plugin.drts.request-mode", "false");
 
 	if(!cpbList.empty())
 		kernel->put("plugin.drts.capabilities", cpbList);
