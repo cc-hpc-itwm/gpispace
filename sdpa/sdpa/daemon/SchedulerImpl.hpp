@@ -37,7 +37,7 @@ namespace sdpa {
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      SchedulerImpl(sdpa::daemon::IAgent* pHandler = NULL, bool bUseRequestModel = true );
+      SchedulerImpl(sdpa::daemon::IAgent* pHandler = NULL);
       virtual ~SchedulerImpl();
 
       virtual void schedule(const sdpa::job_id_t&);

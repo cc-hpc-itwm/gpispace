@@ -14,7 +14,7 @@ namespace sdpa
     {
     public:
       SchedulerOrch(sdpa::daemon::IAgent* pCommHandler = NULL)
-        : SchedulerImpl(pCommHandler, false)
+        : SchedulerImpl(pCommHandler)
       {}
 
       bool postRequest( bool ) { return false; }

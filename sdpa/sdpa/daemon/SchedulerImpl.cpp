@@ -34,13 +34,13 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::daemon::IAgent* pCommHandler, bool bUseRequestModel )
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IAgent* pCommHandler)
   : ptr_worker_man_(new WorkerManager())
   , bStopRequested(false)
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
-  , m_bUseRequestModel(bUseRequestModel)
+  , m_bUseRequestModel(false)
 
 {
 }

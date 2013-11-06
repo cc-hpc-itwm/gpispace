@@ -79,7 +79,7 @@ namespace sdpa {
 
         void createScheduler()
         {
-          ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this, false));
+          ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this));
         }
 
       private:
