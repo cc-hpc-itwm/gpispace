@@ -19,7 +19,7 @@
 #define SDPA_ORCHESTRATORTOR_HPP 1
 
 #include <sdpa/daemon/DaemonFSM.hpp>
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
+#include <sdpa/daemon/SchedulerImpl.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -62,7 +62,7 @@ namespace sdpa {
       void createScheduler()
       {
         DLOG(TRACE, "creating orchestrator scheduler...");
-        Scheduler::ptr_t ptrSched( new SchedulerOrch(this) );
+        Scheduler::ptr_t ptrSched( new SchedulerImpl(this) );
         ptr_scheduler_ = ptrSched;
       }
 
