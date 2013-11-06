@@ -11,9 +11,9 @@
 
     <struct name="intervals">
       <field name="interval" type="interval"/>
-      <field name="sizes" type="stack"/>
-      <field name="useds" type="stack"/>
-      <field name="ids" type="stack"/>
+      <field name="sizes" type="list"/>
+      <field name="useds" type="list"/>
+      <field name="ids" type="list"/>
     </struct>
 
     <transition name="split">
