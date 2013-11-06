@@ -324,39 +324,8 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 
 std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
 {
-        clear_reply();
-        MLOG(DEBUG,"querying status of job: " << jid);
-        client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
-                                                                 , orchestrator_
-                                                                 , jid)));
-  DMLOG(TRACE,"waiting for a reply");
-  try
-  {
-    seda::IEvent::Ptr reply(wait_for_reply());
-    // check event type
-    if (se::JobStatusReplyEvent *status = dynamic_cast<se::JobStatusReplyEvent*>(reply.get()))
-    {
-      DMLOG(DEBUG,"got status for " << status->job_id() << ": " << sdpa::status::show (status->status()));
-      return sdpa::status::show (status->status());
-    }
-    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
-    {
-      throw ClientException( "error during query: reason := "
-                           + err->reason()
-                           + " code := "
-                           + boost::lexical_cast<std::string>(err->error_code())
-                           );
-    }
-    else
-    {
-      MLOG(ERROR, "unexpected reply: " << reply->str());
-      throw ClientException("got an unexpected reply to QueryJob: " + reply->str());
-    }
-  }
-  catch (const Timedout &)
-  {
-    throw ApiCallFailed("queryJob");
-  }
+  job_info_t info;
+  return sdpa::status::show (queryJob (jid, info));
 }
 
 int Client::queryJob(const job_id_t &jid, job_info_t &info)
