@@ -105,7 +105,7 @@ void GenericDaemon::start_agent()
 {
   if(!scheduler())
   {
-    createScheduler (false);
+    createScheduler();
   }
 
   ptr_daemon_stage_.lock()->start();

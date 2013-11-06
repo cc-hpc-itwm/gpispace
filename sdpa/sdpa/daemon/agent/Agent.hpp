@@ -77,9 +77,9 @@ namespace sdpa {
         void notifySubscribers(const T& ptrEvt);
 
 
-        void createScheduler(bool bUseReqModel)
+        void createScheduler()
         {
-          ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this, bUseReqModel));
+          ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this, false));
         }
 
       private:

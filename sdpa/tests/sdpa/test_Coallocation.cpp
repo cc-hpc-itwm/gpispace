@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   sdpa::master_info_list_t arrAgentMasterInfo;
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
-  pAgent-> createScheduler(false);
+  pAgent->createScheduler();
 
   if(!pAgent->scheduler())
   LOG(FATAL, "The scheduler was not properly initialized");

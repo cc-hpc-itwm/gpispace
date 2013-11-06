@@ -59,10 +59,10 @@ namespace sdpa {
       void notifySubscribers(const T& ptrEvt);
 
       private:
-      void createScheduler(bool bUseReqModel)
+      void createScheduler()
       {
         DLOG(TRACE, "creating orchestrator scheduler...");
-        Scheduler::ptr_t ptrSched( new SchedulerOrch(this, bUseReqModel) );
+        Scheduler::ptr_t ptrSched( new SchedulerOrch(this, false) );
         ptr_scheduler_ = ptrSched;
       }
 

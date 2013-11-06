@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
   ostringstream oss;
-  pAgent-> createScheduler(false);
+  pAgent->createScheduler();
 
   sdpa::daemon::Scheduler::ptr_t ptrScheduler = pAgent->scheduler();
 
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
   ostringstream oss;
-  pAgent-> createScheduler(false);
+  pAgent->createScheduler();
 
   sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
 
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
   ostringstream oss;
-  pAgent-> createScheduler(false);
+  pAgent->createScheduler();
 
   sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
 
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
   ostringstream oss;
-  pAgent-> createScheduler(false);
+  pAgent->createScheduler();
 
   sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
 
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
 
   ostringstream oss;
-  pAgent-> createScheduler(false);
+  pAgent->createScheduler();
 
   sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
 
