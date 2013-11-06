@@ -35,25 +35,6 @@ namespace sdpa
       return c == FINISHED || c == FAILED || c == CANCELED;
     }
 
-    typedef std::map<std::string, int> job_state_map_t;
-
-    inline job_state_map_t job_state_map()
-    {
-      job_state_map_t m;
-
-      m["SDPA::Unknown"]   = UNKNOWN;
-      m["SDPA::Pending"]   = PENDING;
-      m["SDPA::Suspended"] = SUSPENDED;
-      m["SDPA::Running"]   = RUNNING;
-      m["SDPA::Finished"]  = FINISHED;
-      m["SDPA::Failed"]    = FAILED;
-      m["SDPA::Canceled"]  = CANCELED;
-      m["SDPA::Canceling"] = CANCELING;
-      m["SDPA::Stalled"]   = STALLED;
-
-      return m;
-    }
-
     inline std::string show(int code)
     {
       switch (code)
