@@ -491,7 +491,7 @@ void SchedulerImpl::checkRequestPosted()
     else
     {
       // post job request if number_of_jobs() < #registered workers +1
-      if( useRequestModel() )
+      if (false)
         postRequest(masterInfo);
     }
   }
