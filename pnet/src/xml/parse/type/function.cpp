@@ -1630,9 +1630,12 @@ namespace xml
           class include : public fhg::util::ostream::modifier
           {
           public:
-            include (const std::string& tname)
+            include ( const std::string& tname
+                    , std::string const& suffix
+                    )
               : _tname (tname)
               , _inc()
+              , _suffix (suffix)
             {
               namespace value = pnet::type::value;
 
@@ -1652,7 +1655,7 @@ namespace xml
             {
               if (!pnet::type::signature::is_literal (_tname))
               {
-                os << fhg::util::cpp::include ("pnetc/type/" + _tname + ".hpp");
+                os << fhg::util::cpp::include ("pnetc/type/" + _tname + _suffix);
               }
               else
               {
@@ -1678,6 +1681,7 @@ namespace xml
             boost::unordered_map< std::string
                                 , std::set<std::string>
                                 > _inc;
+            std::string const _suffix;
           };
         };
 
@@ -2130,7 +2134,7 @@ namespace xml
               }
               BOOST_FOREACH (const std::string& tname, types)
               {
-                stream << include (tname);
+                stream << include (tname, ".hpp");
               }
 
               stream << ns::open (indent, "pnetc");
@@ -2284,13 +2288,10 @@ namespace xml
               const boost::unordered_set<std::string> names
                 (pnet::type::signature::names (sig));
 
+
               BOOST_FOREACH (const std::string& tname, names)
               {
-                if (!pnet::type::signature::is_literal (tname))
-                {
-                  stream <<
-                    fhg::util::cpp::include ("pnetc/type/" + tname + ".hpp");
-                }
+                stream << include (tname, ".hpp");
               }
 
               stream << pnet::type::signature::cpp::header_signature (sig)
