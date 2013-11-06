@@ -101,6 +101,7 @@ $(BUILDDIR)/a2x:
 ###############################################################################
 
 ifneq "$(ASCIIDOC_EXECUTABLE)" ""
+ifeq "$(ASCII_VERSION_OKAY)" "1"
 ifneq "$(SOURCE_HIGHLITE_BINDIR)" ""
 
 ASCIIDOC = PATH=$(SOURCE_HIGHLITE_BINDIR):${PATH} $(ASCIIDOC_EXECUTABLE) -b $(1)
@@ -122,6 +123,7 @@ endif
 ###############################################################################
 
 ifneq "$(A2X_EXECUTABLE)" ""
+ifeq "$(A2X_VERSION_OKAY)" "1"
 ifneq "$(ASCIIDOC_BINDIR)" ""
 
 A2X_OPTS += --no-xmllint
