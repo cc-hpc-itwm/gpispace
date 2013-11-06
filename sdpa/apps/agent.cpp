@@ -189,7 +189,7 @@ int main (int argc, char **argv)
                                                                                              agentRank,
                                                                                              appGuiUrl ); //, orchUrl );
 
-    ptrAgent->start_agent (false);
+    ptrAgent->start_agent();
 
     sigset_t waitset;
     int sig(0);

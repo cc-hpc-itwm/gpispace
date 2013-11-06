@@ -134,7 +134,7 @@ int main (int argc, char **argv)
     try {
       sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( orchName, orchUrl, MAX_CAP  );
 
-      ptrOrch->start_agent (false);
+      ptrOrch->start_agent();
 
       DMLOG (TRACE, "waiting for signals...");
       sigset_t waitset;

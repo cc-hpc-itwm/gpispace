@@ -86,7 +86,7 @@ namespace sdpa {
       unsigned int& capacity() { return m_nCap; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
-      void start_agent( bool bUseReqModel);
+      void start_agent();
 
       void shutdown();
 

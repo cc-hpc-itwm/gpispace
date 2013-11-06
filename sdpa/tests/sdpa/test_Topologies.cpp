@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 
 	//LOG( DEBUG, "Create Orchestrator with an Dummy workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Agent ...");
 	boost::shared_array<sdpa::daemon::Agent::ptr_t> arrAgents( new sdpa::daemon::Agent::ptr_t[NAGENTS] );
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 	}
 
 	for(int k=0; k<NAGENTS; k++)
-		arrAgents[k]->start_agent(false);
+		arrAgents[k]->start_agent();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", strMaster, "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 
 	//LOG( DEBUG, "Create Orchestrator with an Dummy workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Agent ...");
 	//sdpa::daemon::Agent::ptr_t arrAgents[NAGENTS];
@@ -447,7 +447,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 	}
 
 	for(int k=0; k<NAGENTS; k++)
-		arrAgents[k]->start_agent(false);
+		arrAgents[k]->start_agent();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", ossDrtsMasterInfo.str(), "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);

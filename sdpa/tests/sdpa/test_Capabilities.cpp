@@ -210,11 +210,11 @@ BOOST_AUTO_TEST_CASE( Test1 )
 	m_strWorkflow = read_workflow("workflows/capabilities.pnet");
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false);
+	ptrAgent->start_agent();
 
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH, kvs_host(), kvs_port()) );
@@ -264,11 +264,11 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 	m_strWorkflow = read_workflow("workflows/capabilities_no_mandatory.pnet");
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_1", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false);
+	ptrAgent->start_agent();
 
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_1", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );

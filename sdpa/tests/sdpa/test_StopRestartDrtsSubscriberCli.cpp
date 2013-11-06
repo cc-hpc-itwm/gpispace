@@ -272,11 +272,11 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
     //LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
     sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
-    ptrOrch->start_agent(false);
+    ptrOrch->start_agent();
 
     sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
     sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-    ptrAgent->start_agent(false);
+    ptrAgent->start_agent();
 
     sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
     boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);

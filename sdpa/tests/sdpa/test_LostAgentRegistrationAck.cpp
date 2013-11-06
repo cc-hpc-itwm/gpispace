@@ -321,17 +321,17 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgent0MasterInfo(1, MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
-	ptrAgent0->start_agent(false);
+	ptrAgent0->start_agent();
 
 	// create faulty agent
 	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
 	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo, MAX_CAP );
 
-	ptrAgent1->start_agent(false);
+	ptrAgent1->start_agent();
 
 	ptrOrch->shutdown();
 	ptrAgent0->shutdown();

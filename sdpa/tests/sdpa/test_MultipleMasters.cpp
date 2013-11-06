@@ -211,20 +211,20 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	ptrOrch->start_agent();
 
 	LOG( INFO, "Create the Agent ...");
 	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgg_0, m_arrAggMasterInfo, 100);
-	ptrAgent0->start_agent(false);
+	ptrAgent0->start_agent();
 
 	LOG( INFO, "Create the Agent ...");
 	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgg_1, m_arrAggMasterInfo, 100);
-	ptrAgent1->start_agent(false);
+	ptrAgent1->start_agent();
 
 	LOG( INFO, "Create the Agent ...");
 	sdpa::master_info_list_t arrAgent00MasterInfo;
 	sdpa::daemon::Agent::ptr_t ptrAgent00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_00", addrAgg_00, arrAgent00MasterInfo, 100);
-	ptrAgent00->start_agent(false);
+	ptrAgent00->start_agent();
 
 	ptrAgent00->addMaster("agent_0");
 	ptrAgent00->addMaster("agent_1");

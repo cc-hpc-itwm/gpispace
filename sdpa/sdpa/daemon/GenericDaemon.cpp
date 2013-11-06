@@ -101,11 +101,11 @@ GenericDaemon::GenericDaemon( const std::string name,
   }
 }
 
-void GenericDaemon::start_agent(bool bUseReqModel)
+void GenericDaemon::start_agent()
 {
   if(!scheduler())
   {
-    createScheduler(bUseReqModel);
+    createScheduler (false);
   }
 
   ptr_daemon_stage_.lock()->start();
