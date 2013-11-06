@@ -32,15 +32,6 @@
     ++errcount;                                                         \
   }
 
-#define CHECK_STR_TO_STATUS(s, txt)                                     \
-  if (sdpa::status::read ((txt)) != s)                                  \
-  {                                                                     \
-    std::cerr << "E: status check for: " << TOSTR(s) << " failed" << std::endl; \
-    std::cerr << "     expected: " << s << std::endl;                 \
-    std::cerr << "          got: " << sdpa::status::read ((txt)) << std::endl; \
-    ++errcount;                                                         \
-  }
-
 int main(int, char **)
 {
   int errcount;
@@ -55,15 +46,6 @@ int main(int, char **)
   CHECK_STATUS_TO_STR (sdpa::status::CANCELED, "SDPA::Canceled");
   CHECK_STATUS_TO_STR (sdpa::status::UNKNOWN, "SDPA::Unknown");
   CHECK_STATUS_TO_STR (42, "Strange job state");
-
-  CHECK_STR_TO_STATUS (sdpa::status::PENDING,  "SDPA::Pending");
-  CHECK_STR_TO_STATUS (sdpa::status::SUSPENDED, "SDPA::Suspended");
-  CHECK_STR_TO_STATUS (sdpa::status::RUNNING, "SDPA::Running");
-  CHECK_STR_TO_STATUS (sdpa::status::FINISHED, "SDPA::Finished");
-  CHECK_STR_TO_STATUS (sdpa::status::FAILED, "SDPA::Failed");
-  CHECK_STR_TO_STATUS (sdpa::status::CANCELED, "SDPA::Canceled");
-  CHECK_STR_TO_STATUS (sdpa::status::UNKNOWN, "SDPA::Unknown");
-  CHECK_STR_TO_STATUS (sdpa::status::UNKNOWN, "invalid state");
 
   return errcount;
 }

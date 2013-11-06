@@ -80,16 +80,6 @@ namespace sdpa
         return "Strange job state";
       }
     }
-
-    inline int read(std::string const &state)
-    {
-      static const job_state_map_t m(job_state_map());
-      job_state_map_t::const_iterator it;
-
-      it = m.find(state);
-      if (it == m.end()) return UNKNOWN;
-      else               return it->second;
-    }
   };
 }
 
