@@ -16,8 +16,6 @@ namespace sdpa
       SchedulerOrch(sdpa::daemon::IAgent* pCommHandler = NULL)
         : SchedulerImpl(pCommHandler)
       {}
-
-      void checkRequestPosted() { /*do nothing*/ }
     };
   }
 }

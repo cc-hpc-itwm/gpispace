@@ -445,10 +445,6 @@ void SchedulerImpl::stop()
   ptr_worker_man_->removeWorkers();
 }
 
-void SchedulerImpl::checkRequestPosted()
-{
-}
-
 void SchedulerImpl::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
 {
   workerList.clear();
@@ -575,8 +571,6 @@ void SchedulerImpl::run()
   {
     try
     {
-      checkRequestPosted(); // eventually, post a request to the master
-
       if( numberOfWorkers()>0 )
         forceOldWorkerJobsTermination();
 
