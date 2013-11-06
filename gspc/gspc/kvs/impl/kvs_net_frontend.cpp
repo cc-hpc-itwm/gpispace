@@ -23,7 +23,7 @@ namespace gspc
     {
       boost::system::error_code ec;
       m_client = gspc::net::dial (m_url, ec);
-      if (not m_client || ec)
+      if (not m_client)
       {
         throw boost::system::system_error (ec);
       }
@@ -62,6 +62,13 @@ namespace gspc
       int rc;
       frame rply;
       frame rqst;
+
+      if (not m_client->is_connected ())
+      {
+        rc = m_client->start ();
+        if (rc != 0)
+          return rc;
+      }
 
       rqst.set_header ("destination", KVS_SERVICE + "/" + rpc);
       rqst.set_body (rqst_body);

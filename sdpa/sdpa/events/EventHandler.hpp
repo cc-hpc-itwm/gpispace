@@ -7,14 +7,9 @@ namespace sdpa
   {
     class CancelJobAckEvent;
     class CancelJobEvent;
-    class ConfigNokEvent;
-    class ConfigOkEvent;
-    class ConfigReplyEvent;
-    class ConfigRequestEvent;
     class DeleteJobAckEvent;
     class DeleteJobEvent;
     class ErrorEvent;
-    class InterruptEvent;
     class JobFailedAckEvent;
     class JobFailedEvent;
     class JobFinishedAckEvent;
@@ -26,7 +21,6 @@ namespace sdpa
     class RequestJobEvent;
     class RetrieveJobResultsEvent;
     class RunJobEvent;
-    class StartUpEvent;
     class SubmitJobAckEvent;
     class SubmitJobEvent;
     class WorkerRegistrationAckEvent;
@@ -43,14 +37,9 @@ namespace sdpa
 
       virtual void handleCancelJobAckEvent (const sdpa::events::CancelJobAckEvent *) {}
       virtual void handleCancelJobEvent (const sdpa::events::CancelJobEvent *) {}
-      virtual void handleConfigNokEvent (const sdpa::events::ConfigNokEvent *) {}
-      virtual void handleConfigOkEvent (const sdpa::events::ConfigOkEvent *) {}
-      virtual void handleConfigReplyEvent  (const sdpa::events::ConfigReplyEvent *) {}
-      virtual void handleConfigRequestEvent (const sdpa::events::ConfigRequestEvent *) {}
       virtual void handleDeleteJobAckEvent (const sdpa::events::DeleteJobAckEvent *) {}
       virtual void handleDeleteJobEvent (const sdpa::events::DeleteJobEvent *) {}
       virtual void handleErrorEvent (const sdpa::events::ErrorEvent *) {}
-      virtual void handleInterruptEvent (const sdpa::events::InterruptEvent *){}
       virtual void handleJobFailedAckEvent (const sdpa::events::JobFailedAckEvent *){}
       virtual void handleJobFailedEvent (const sdpa::events::JobFailedEvent *) {}
       virtual void handleJobFinishedAckEvent (const sdpa::events::JobFinishedAckEvent *) {}
@@ -62,7 +51,6 @@ namespace sdpa
       virtual void handleRequestJobEvent (const sdpa::events::RequestJobEvent *) {}
       virtual void handleRetrieveJobResultsEvent (const sdpa::events::RetrieveJobResultsEvent *) {}
       virtual void handleRunJobEvent (const sdpa::events::RunJobEvent *) {}
-      virtual void handleStartUpEvent (const sdpa::events::StartUpEvent *) {}
       virtual void handleSubmitJobAckEvent (const sdpa::events::SubmitJobAckEvent *) {}
       virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent *) {}
       virtual void handleWorkerRegistrationAckEvent (const sdpa::events::WorkerRegistrationAckEvent *) {}

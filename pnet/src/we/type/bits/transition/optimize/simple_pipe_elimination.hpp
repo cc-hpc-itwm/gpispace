@@ -77,37 +77,33 @@ namespace we { namespace type {
         typedef we::type::port_t port_t;
         typedef std::string name_type;
         typedef petri_net::connection_t connection_t;
-        typedef transition_t::outer_to_inner_t outer_to_inner;
-        typedef transition_t::inner_to_outer_t inner_to_outer;
         typedef boost::unordered_map<name_type, petri_net::place_id_type> map_type;
         typedef boost::unordered_set<petri_net::transition_id_type> tid_set_type;
 
         map_type map_in;
         map_type map_out;
 
-        for ( outer_to_inner::const_iterator
-                oi (trans.outer_to_inner_begin())
-            ; oi != trans.outer_to_inner_end()
-            ; ++oi
-            )
-          {
-            const port_t port (trans.get_port (oi->second.first));
-            const petri_net::place_id_type pid (oi->first);
+        BOOST_FOREACH
+          ( we::type::transition_t::outer_to_inner_t::value_type const& oi
+          , trans.outer_to_inner()
+          )
+        {
+          const port_t& port (trans.get_port (oi.second.first));
+          const petri_net::place_id_type& pid (oi.first);
 
-            map_in[port.name()] = pid;
-          }
+          map_in[port.name()] = pid;
+        }
 
-        for ( inner_to_outer::const_iterator
-                io (trans.inner_to_outer_begin())
-            ; io != trans.inner_to_outer_end()
-            ; ++io
-            )
-          {
-            const port_t port (trans.get_port (io->first));
-            const petri_net::place_id_type pid (io->second.first);
+        BOOST_FOREACH
+          ( we::type::transition_t::inner_to_outer_t::value_type const& io
+          , trans.inner_to_outer()
+          )
+        {
+          const port_t& port (trans.get_port (io.first));
+          const petri_net::place_id_type& pid (io.second.first);
 
-            map_out[port.name()] = pid;
-          }
+          map_out[port.name()] = pid;
+        }
 
         if (map_in.size() != map_out.size())
           {

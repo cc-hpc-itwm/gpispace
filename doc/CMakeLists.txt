@@ -1,0 +1,4 @@
+add_custom_target (user-doc
+  COMMAND make BUILD_ROOT=${CMAKE_BINARY_DIR} all
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)

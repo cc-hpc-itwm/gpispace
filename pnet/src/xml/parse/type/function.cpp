@@ -661,9 +661,7 @@ namespace xml
         typedef petri_net::net we_net_type;
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
-        typedef we_transition_type::preparsed_cond_type we_cond_type;
-
-        typedef we_transition_type::requirement_t we_requirement_type;
+        typedef condition::type we_cond_type;
 
         typedef boost::unordered_map< std::string
                                     , petri_net::place_id_type
@@ -675,11 +673,13 @@ namespace xml
         {
           BOOST_FOREACH (const port_type& port, ports.values())
             {
-              trans.add_port ( port.name()
-                             , port.signature_or_throw()
-                             , port.direction()
-                             , port.properties()
-                             );
+              trans.add_port
+                ( we::type::port_t ( port.name()
+                                   , port.direction()
+                                   , port.signature_or_throw()
+                                   , port.properties()
+                                   )
+                );
             }
         }
 
@@ -702,11 +702,13 @@ namespace xml
             {
               if (not port.place)
                 {
-                  trans.add_port ( port.name()
-                                 , port.signature_or_throw()
-                                 , port.direction()
-                                 , port.properties()
-                                 );
+                  trans.add_port
+                    ( we::type::port_t ( port.name()
+                                       , port.direction()
+                                       , port.signature_or_throw()
+                                       , port.properties()
+                                       )
+                    );
                 }
               else
                 {
@@ -714,13 +716,14 @@ namespace xml
                   // the existence and type safety of the place to
                   // connect to
 
-                  trans.add_port ( port.name()
-                                 , port.signature_or_throw()
-                                 , port.direction()
-                                 , get_pid (pid_of_place, *port.place)
-                                 , port.properties()
-                                 )
-                    ;
+                  trans.add_port
+                    ( we::type::port_t ( port.name()
+                                       , port.direction()
+                                       , port.signature_or_throw()
+                                       , get_pid (pid_of_place, *port.place)
+                                       , port.properties()
+                                       )
+                    );
                 }
             }
         }
@@ -735,7 +738,8 @@ namespace xml
               ; ++r
               )
           {
-            trans.add_requirement (we_requirement_type (r->first, r->second));
+            trans.add_requirement
+              (we::type::requirement_t (r->first, r->second));
           }
         }
 
@@ -1144,7 +1148,7 @@ namespace xml
         stream << "  $(warning !!! Try to set BOOST_ROOT in the environment!)"
                                                                    << std::endl;
         stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  BOOST_ROOT = /usr"                            << std::endl;
+        stream << "  BOOST_ROOT := /usr"                           << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CXX"                                     << std::endl;
@@ -1156,7 +1160,7 @@ namespace xml
         stream << "    $(error Neither SDPA_INCLUDE nor SDPA_HOME are set)"
                                                                    << std::endl;
         stream << "  else"                                         << std::endl;
-        stream << "    SDPA_INCLUDE = $(SDPA_HOME)/include"        << std::endl;
+        stream << "    SDPA_INCLUDE := $(SDPA_HOME)/include"       << std::endl;
         stream << "  endif"                                        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
@@ -1165,15 +1169,15 @@ namespace xml
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
-        stream << "  CP = $(shell which cp 2>/dev/null)"           << std::endl;
+        stream << "  CP := $(shell which cp 2>/dev/null)"          << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef MKDIR"                                   << std::endl;
-        stream << "  MKDIR = $(shell which mkdir 2>/dev/null)"     << std::endl;
+        stream << "  MKDIR := $(shell which mkdir 2>/dev/null)"    << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef RM"                                      << std::endl;
-        stream << "  RM = $(shell which rm 2>/dev/null) -f"        << std::endl;
+        stream << "  RM := $(shell which rm 2>/dev/null) -f"       << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
@@ -1789,6 +1793,11 @@ namespace xml
 
           fhg::util::first_then<std::string> sep (" ", ", ");
 
+          if (mod.pass_context ())
+          {
+            s << sep << "gspc::drts::context *_pnetc_context";
+          }
+
           BOOST_FOREACH (const port_with_type& port, ports_const)
           {
             s << sep << "const " << mk_type (port.type) << "& " << port.name
@@ -1834,7 +1843,7 @@ namespace xml
           s << ns::open (indent, mod.name());
 
           s << indent << "static void " << mod.function();
-          s << deeper (indent) << "( void *";
+          s << deeper (indent) << "( gspc::drts::context *_pnetc_context";
           s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
           s << deeper (indent) << ", expr::eval::context& _pnetc_output";
           s << deeper (indent) << ")";
@@ -1875,6 +1884,11 @@ namespace xml
             ;
 
           fhg::util::first_then<std::string> sep ("", ", ");
+
+          if (mod.pass_context ())
+          {
+            s << sep << "_pnetc_context";
+          }
 
           BOOST_FOREACH (const port_with_type& port, ports_const)
           {
@@ -2110,6 +2124,10 @@ namespace xml
               stream << cpp_util::include_guard::open
                 ("PNETC_OP_" + mod.name() + "_" + mod.function());
 
+              if (mod.pass_context ())
+              {
+                stream << cpp_util::include ("gspc/drts/context_fwd.hpp");
+              }
               BOOST_FOREACH (const std::string& tname, types)
               {
                 stream << include (tname);
@@ -2148,6 +2166,11 @@ namespace xml
 
               stream << cpp_util::include
                 ("pnetc/op/" + mod.name() + "/" + file_hpp);
+
+              if (mod.pass_context ())
+              {
+                stream << cpp_util::include ("gspc/drts/context.hpp");
+              }
 
               BOOST_FOREACH (const std::string& inc, mod.cincludes())
               {

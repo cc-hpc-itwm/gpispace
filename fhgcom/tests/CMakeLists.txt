@@ -1,11 +1,4 @@
-fhg_add_application_test (kvs_pressure
-  SCRIPT test_kvs_pressure
-)
-
 set (tests
-  test_store.cpp
-  test_kvs_message.cpp
-  test_global_kvs.cpp
   test_peer.cpp
   test_message.cpp
   test_connection.cpp

@@ -2,13 +2,16 @@
 #define GSPC_KVS_KVS_HPP
 
 #include <gspc/kvs/api.hpp>
-#include <boost/shared_ptr.hpp>
 
 namespace gspc
 {
   namespace kvs
   {
-    boost::shared_ptr<api_t> create (std::string const&);
+    api_t *create (std::string const&);
+
+    int     initialize (std::string const &url);
+    int     shutdown ();
+    api_t & get ();
   }
 }
 

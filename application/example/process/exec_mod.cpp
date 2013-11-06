@@ -20,7 +20,7 @@
 
 // ************************************************************************* //
 
-static void exec_wrapper ( void *
+static void exec_wrapper ( gspc::drts::context *
 			 , const expr::eval::context & input
 			 , expr::eval::context & output
 			 )
@@ -37,7 +37,7 @@ static void exec_wrapper ( void *
 
 // ************************************************************************* //
 
-static void selftest ( void *
+static void selftest ( gspc::drts::context *
 		     , const expr::eval::context &
 		     , expr::eval::context &
 		     )

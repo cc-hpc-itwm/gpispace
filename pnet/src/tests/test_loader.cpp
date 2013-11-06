@@ -17,10 +17,10 @@ int main (int ac, char **argv)
 
   expr::eval::context out;
 
-  loader["answer"].call ("answer", expr::eval::context(), out);
+  loader["answer"].call ("answer", 0, expr::eval::context(), out);
 
-  loader["question"].call ("question", expr::eval::context(), out);
-  loader["answer"].call ("answer", expr::eval::context(), out);
+  loader["question"].call ("question", 0, expr::eval::context(), out);
+  loader["answer"].call ("answer", 0, expr::eval::context(), out);
 
   return EXIT_SUCCESS;
 }

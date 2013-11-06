@@ -5,6 +5,7 @@
 
 #include <fhg/util/ostream_modifier.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 #include <iostream>

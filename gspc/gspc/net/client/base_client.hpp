@@ -102,6 +102,7 @@ namespace gspc
         typedef boost::shared_ptr<response_t> response_ptr;
         typedef std::map<std::string, response_ptr> response_map_t;
 
+        mutable boost::shared_mutex     m_mutex;
         boost::asio::io_service        &m_io_service;
         endpoint_type                   m_endpoint;
         int                             m_state;

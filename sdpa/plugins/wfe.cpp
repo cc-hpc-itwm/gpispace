@@ -1,6 +1,5 @@
 #include "wfe.hpp"
 #include "observable.hpp"
-#include "drts_info_impl.hpp"
 #include <errno.h>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
@@ -29,6 +28,7 @@
 #include <fhg/plugin/capability.hpp>
 
 #include <gspc/net.hpp>
+#include <gspc/drts.hpp>
 
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
@@ -70,6 +70,7 @@ namespace
     wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
       : loader (module_loader)
       , task (target)
+      , context (task.workers)
     {}
 
     virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
@@ -93,7 +94,7 @@ namespace
     {
       try
       {
-        module::call (loader, act, mod);
+        module::call (loader, &context, act, mod);
       }
       catch (std::exception const &ex)
       {
@@ -129,6 +130,7 @@ namespace
   private:
     we::loader::loader& loader;
     wfe_task_t& task;
+    gspc::drts::context context;
   };
 
   struct search_path_appender
@@ -509,8 +511,6 @@ private:
         try
         {
           wfe_exec_context ctxt (*m_loader, *task);
-
-          gspc::drts::info::set_worker_list (task->workers);
 
           task->activity.inject_input();
           task->activity.execute (&ctxt);

@@ -30,23 +30,6 @@ using namespace sdpa::events;
 namespace sdpa {
   namespace daemon {
 
-void Orchestrator::action_configure(const StartUpEvent &se)
-{
-  GenericDaemon::action_configure (se);
-
-  // should be overriden by the orchestrator, aggregator and NRE
-  DMLOG (TRACE, "Configuring myself (orchestrator)...");
-}
-
-void Orchestrator::action_config_ok(const ConfigOkEvent& e)
-{
-	// should be overriden by the orchestrator, aggregator and NRE
-	GenericDaemon::action_config_ok (e);
-	DMLOG (TRACE, "Configuration (orchestrator) was ok");
-
-	cfg().print();
-}
-
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {

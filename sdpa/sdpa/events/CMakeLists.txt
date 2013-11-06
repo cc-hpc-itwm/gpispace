@@ -6,15 +6,10 @@ set (hdrs
   CancelJobEvent.hpp
   Codec.hpp
   CodecStrategy.hpp
-  ConfigNokEvent.hpp
-  ConfigOkEvent.hpp
-  ConfigReplyEvent.hpp
-  ConfigRequestEvent.hpp
   DeleteJobAckEvent.hpp
   DeleteJobEvent.hpp
   ErrorEvent.hpp
   EventHandler.hpp
-  InterruptEvent.hpp
   JobEvent.hpp
   JobFailedAckEvent.hpp
   JobFailedEvent.hpp
@@ -30,7 +25,6 @@ set (hdrs
   RunJobEvent.hpp
   SDPAEvent.hpp
   Serialization.hpp
-  StartUpEvent.hpp
   SubmitJobAckEvent.hpp
   SubmitJobEvent.hpp
   WorkerRegistrationAckEvent.hpp

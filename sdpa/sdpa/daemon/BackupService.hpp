@@ -145,7 +145,7 @@ namespace daemon
 
 		void setBackupInterval(const sdpa::util::time_type& backup_interval) { m_backup_interval = backup_interval; }
 
-		std::string getLastBackup() { return m_strBackupDaemon; }
+		std::string getLastBackup() const { return m_strBackupDaemon; }
 
 	private:
 		SDPA_DECLARE_LOGGER();

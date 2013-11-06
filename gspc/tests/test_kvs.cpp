@@ -9,11 +9,16 @@
 #include <algorithm>    // std::sort
 
 #include <fhg/util/now.hpp>
+#include <boost/format.hpp>
+
+#include <we/type/value/peek.hpp>
+#include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
 #include <gspc/net.hpp>
 
 #include <gspc/kvs/api.hpp>
+#include <gspc/kvs/util.hpp>
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
@@ -301,6 +306,162 @@ BOOST_AUTO_TEST_CASE (test_impl_expiry)
 
   rc = kvs.get ("foo.1", val);
   BOOST_REQUIRE_EQUAL (rc, -EKEYEXPIRED);
+}
+
+static void s_wfh_client_thread ( const size_t rank
+                                , gspc::kvs::api_t *kvs
+                                , const size_t nmsg
+                                , const std::string &queue
+                                )
+{
+  int rc;
+  const std::string my_queue ((boost::format ("thread-%1%") % rank).str ());
+
+  for (size_t i = 0 ; i < nmsg ; ++i)
+  {
+    pnet::type::value::value_type rqst
+      = pnet::type::value::read
+      ((boost::format ( "Struct [from := \"%1%\", msg := %2%]"
+                      ) % my_queue % i
+       ).str ());
+    pnet::type::value::value_type rply;
+
+    rc = gspc::kvs::query ( *kvs
+                          , queue
+                          , rqst
+                          , my_queue
+                          , rply
+                          , 10 * 1000
+                          );
+    if (rc != 0)
+    {
+      std::cerr << "thread[" << rank << "]: "
+                << "could not query #" << i << " from '" << queue << "': "
+                << strerror (-rc)
+                << std::endl
+        ;
+      kvs->get (my_queue, rply);
+      std::cerr << "thread[" << rank << "]: queue content: "
+                << pnet::type::value::show (rply)
+                << std::endl
+        ;
+      break;
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (test_impl_many_push_pop)
+{
+  int rc;
+  gspc::kvs::kvs_t kvs;
+  gspc::kvs::api_t::value_type val;
+  const std::string queue ("wfh");
+
+  static const size_t NUM = 10;
+  static const size_t NTHREAD = 15;
+
+  std::vector<boost::shared_ptr<boost::thread> >
+    threads;
+
+  for (size_t i = 0 ; i < NTHREAD ; ++i)
+  {
+    threads.push_back
+      (boost::shared_ptr<boost::thread>
+      (new boost::thread (boost::bind ( &s_wfh_client_thread
+                                      , i
+                                      , &kvs
+                                      , NUM
+                                      , queue
+                                      )
+                         )
+      ));
+  }
+
+  for (size_t i = 0 ; i < NTHREAD*NUM ; ++i)
+  {
+    rc = kvs.pop (queue, val, 1000);
+    if (rc != 0)
+    {
+      std::cerr << "wfh: could not pop #" << i << " from '" << queue << "': "
+                << strerror (-rc)
+                << std::endl
+        ;
+
+      kvs.get (queue, val);
+      std::cerr << "wfh: queue content: "
+                << pnet::type::value::show (val)
+                << std::endl
+        ;
+
+      break;
+    }
+
+    std::string from =
+      boost::get<std::string>(*pnet::type::value::peek ("from", val));
+    int msg =
+      boost::get<int>(*pnet::type::value::peek ("msg", val));
+
+    rc = kvs.push (from, msg);
+    if (rc != 0)
+    {
+      std::cerr << "wfh: could not push #" << msg << " to '" << from << "': "
+                << strerror (-rc)
+                << std::endl
+        ;
+      break;
+    }
+
+    std::cerr << "wfh: sent reply " << i+1 << "/" << NTHREAD*NUM
+              << " to '" << from << "'"
+              << std::endl
+      ;
+  }
+
+  if (0 == rc)
+  {
+    std::cerr << "wfh: everything done" << std::endl;
+  }
+  else
+  {
+    std::cerr << "wfh: failed: " << strerror (-rc) << std::endl;
+  }
+
+  for (size_t i = 0 ; i < NTHREAD ; ++i)
+  {
+    threads [i]->join ();
+  }
+
+  BOOST_REQUIRE_EQUAL (rc, 0);
+}
+
+BOOST_AUTO_TEST_CASE (test_global_kvs)
+{
+  static const size_t NUM = 50;
+
+  int rc;
+  gspc::kvs::api_t::value_type val;
+
+  for (size_t i = 0 ; i < NUM ; ++i)
+  {
+    rc = gspc::kvs::initialize ("inproc://");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = gspc::kvs::get ().get ("foo", val);
+    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+
+    rc = gspc::kvs::get ().put ("foo", "bar");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = gspc::kvs::get ().get ("foo", val);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL ("bar", boost::get<std::string>(val));
+
+    rc = gspc::kvs::get ().del ("foo");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = gspc::kvs::shutdown ();
+    BOOST_REQUIRE_EQUAL (rc, 0);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (test_net_start_stop)
@@ -631,4 +792,114 @@ BOOST_AUTO_TEST_CASE (test_net_push_pop)
 
   server->stop ();
   gspc::net::shutdown ();
+}
+
+BOOST_AUTO_TEST_CASE (test_net_many_push_pop)
+{
+  int rc;
+  gspc::kvs::api_t::value_type val;
+  const std::string queue ("wfh");
+
+  static const size_t NUM = 10;
+  static const size_t NTHREAD = 15;
+
+  // setup server
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*"));
+  gspc::kvs::service_t service;
+  gspc::net::handle ( "/service/kvs"
+                    , gspc::net::service::strip_prefix ( "/service/kvs/"
+                                                       , boost::ref (service)
+                                                       )
+                    );
+
+  std::cerr << "server running on: " << server->url () << std::endl;
+
+  try
+  {
+    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=10000");
+
+    std::vector<boost::shared_ptr<boost::thread> >
+      threads;
+
+    for (size_t i = 0 ; i < NTHREAD ; ++i)
+    {
+      threads.push_back
+        (boost::shared_ptr<boost::thread>
+        (new boost::thread (boost::bind ( &s_wfh_client_thread
+                                        , i
+                                        , &kvs
+                                        , NUM
+                                        , queue
+                                        )
+                           )
+        ));
+    }
+
+    for (size_t i = 0 ; i < NTHREAD*NUM ; ++i)
+    {
+      rc = kvs.pop (queue, val, 1000);
+      if (rc != 0)
+      {
+        std::cerr << "wfh: could not pop #" << i << " from '" << queue << "': "
+                  << strerror (-rc)
+                  << std::endl
+          ;
+
+        kvs.get (queue, val);
+        std::cerr << "wfh: queue content: "
+                  << pnet::type::value::show (val)
+                  << std::endl
+          ;
+
+        break;
+      }
+
+      std::string from =
+        boost::get<std::string>(*pnet::type::value::peek ("from", val));
+      int msg =
+        boost::get<int>(*pnet::type::value::peek ("msg", val));
+
+      rc = kvs.push (from, msg);
+      if (rc != 0)
+      {
+        std::cerr << "wfh: could not push #" << msg << " to '" << from << "': "
+                  << strerror (-rc)
+                  << std::endl
+          ;
+        break;
+      }
+
+      std::cerr << "wfh: sent reply " << i+1 << "/" << NTHREAD*NUM
+                << " for request #" << msg
+                << " to '" << from << "'"
+                << std::endl
+        ;
+    }
+
+    if (0 == rc)
+    {
+      std::cerr << "wfh: everything done" << std::endl;
+    }
+    else
+    {
+      std::cerr << "wfh: failed: " << strerror (-rc) << std::endl;
+    }
+
+    for (size_t i = 0 ; i < NTHREAD ; ++i)
+    {
+      threads [i]->join ();
+    }
+  }
+  catch (std::exception const &ex)
+  {
+    server->stop ();
+    gspc::net::shutdown ();
+
+    throw;
+  }
+
+  server->stop ();
+  gspc::net::shutdown ();
+
+  BOOST_REQUIRE_EQUAL (rc, 0);
 }

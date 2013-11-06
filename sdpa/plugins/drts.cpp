@@ -211,8 +211,6 @@ public:
 
     start_receiver();
 
-    bool have_master_with_polling (false);
-
     {
       const std::string master_names (fhg_kernel()->get("master", ""));
 
@@ -221,45 +219,27 @@ public:
 
       BOOST_FOREACH (std::string const & master, master_list)
       {
-        try
+        if (m_masters.find (master) == m_masters.end ())
         {
-          master_ptr m (create_master(master));
-
-          if (m_masters.find(m->name()) == m_masters.end())
-          {
-            DMLOG(TRACE, "adding master \"" << m->name() << "\"");
-            m_masters.insert (std::make_pair(m->name(), m));
-
-            have_master_with_polling |= m->is_polling();
-          }
-          else
-          {
-            MLOG( WARN
-                , "master already specified, ignoring new one: " << master
-                );
-          }
+          DMLOG(TRACE, "adding master \"" << master << "\"");
+          m_masters.insert (std::make_pair(master, create_master(master)));
         }
-        catch (std::exception const & ex)
+        else
         {
-          MLOG(WARN, "could not add master: " << ex.what());
+          MLOG( WARN
+              , "master already specified, ignoring new one: " << master
+              );
         }
       }
+    }
 
-      if (m_masters.empty())
-      {
-        MLOG(ERROR, "no masters specified, giving up");
-        FHG_PLUGIN_FAILED(EINVAL);
-      }
+    if (m_masters.empty())
+    {
+      MLOG(ERROR, "no masters specified, giving up");
+      FHG_PLUGIN_FAILED(EINVAL);
     }
 
     restore_jobs ();
-
-    if (have_master_with_polling)
-    {
-      m_request_thread.reset
-        (new boost::thread(&DRTSImpl::job_requestor_thread, this));
-      fhg::util::set_threadname (*m_request_thread, "[drts-requests]");
-    }
 
     m_execution_thread.reset
       (new boost::thread(&DRTSImpl::job_execution_thread, this));
@@ -292,14 +272,6 @@ public:
     gspc::net::unhandle ("/service/drts/capability/get");
 
     m_shutting_down = true;
-
-    if (m_request_thread)
-    {
-      m_request_thread->interrupt();
-      if (m_request_thread->joinable ())
-        m_request_thread->join();
-      m_request_thread.reset();
-    }
 
     if (m_execution_thread)
     {
@@ -509,18 +481,11 @@ public:
       {
         DMLOG(TRACE, "successfully connected to " << master_it->second->name());
         master_it->second->is_connected(true);
-        master_it->second->reset_poll_rate();
 
         notify_capabilities_to_master (master_it->second);
         resend_outstanding_events (master_it->second);
 
         m_connected_event.notify(master_it->second->name());
-
-        // simulate a new job to wake up requestor thread if necessary
-        {
-          lock_type lock(m_job_arrived_mutex);
-          m_job_arrived.notify_all();
-        }
       }
 
       {
@@ -547,10 +512,6 @@ public:
   }
 
   virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*)
-  {
-  }
-
-  virtual void handleConfigNokEvent(const sdpa::events::ConfigNokEvent *)
   {
   }
 
@@ -656,7 +617,6 @@ public:
                                                        , "empty-message-id"
                                                        )
                    );
-        master->second->reset_poll_rate();
         m_jobs.insert (std::make_pair(job->id(), job));
 
         job->entered(boost::posix_time::microsec_clock::universal_time());
@@ -821,18 +781,13 @@ public:
 
   // not implemented events
   virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *){}
-  virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent *) {}
-  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent *) {}
-  virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent *) {}
   virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *) {}
-  virtual void handleInterruptEvent(const sdpa::events::InterruptEvent *){}
   virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent *) {}
   virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent *) {}
   virtual void handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *) {}
   virtual void handleJobStatusReplyEvent(const sdpa::events::JobStatusReplyEvent *) {}
   virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent *) {}
   virtual void handleRunJobEvent(const sdpa::events::RunJobEvent *) {}
-  virtual void handleStartUpEvent(const sdpa::events::StartUpEvent *) {}
   virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent *) {}
 private:
   // threads
@@ -859,84 +814,6 @@ private:
       catch (std::exception const & ex)
       {
         MLOG(WARN, "event could not be handled: " << ex.what());
-      }
-    }
-  }
-
-  void job_requestor_thread ()
-  {
-    for (;;)
-    {
-      {
-        lock_type lock(m_job_computed_mutex);
-        while (m_backlog_size && (m_pending_jobs.size() >= m_backlog_size))
-        {
-          MLOG( TRACE
-              , "job requestor waits until job queue frees up some slots"
-              );
-          m_job_computed.wait(lock);
-        }
-      }
-
-      bool at_least_one_connected = false;
-      boost::posix_time::time_duration min_sleep_time
-        (boost::posix_time::minutes(5));
-
-      const boost::posix_time::ptime now
-        (boost::posix_time::microsec_clock::universal_time());
-
-      for ( map_of_masters_t::const_iterator master_it (m_masters.begin())
-          ; master_it != m_masters.end()
-          ; ++master_it
-          )
-      {
-        boost::this_thread::interruption_point();
-
-        master_ptr master (master_it->second);
-        if (master->is_connected() && master->is_polling())
-        {
-          at_least_one_connected = true;
-
-          const boost::posix_time::ptime time_of_next_request
-            (master->last_job_rqst() + master->cur_poll_interval());
-
-          if (now >= time_of_next_request)
-          {
-            DMLOG(TRACE, "requesting job from " << master->name());
-
-            send_event(new sdpa::events::RequestJobEvent( m_my_name
-                                                        , master->name()
-                                                        )
-                      );
-
-            master->job_requested();
-            master->update_send();
-          }
-
-          boost::posix_time::time_duration delta_to_next_request
-            (time_of_next_request - now);
-          if (delta_to_next_request < min_sleep_time )
-          {
-            min_sleep_time = delta_to_next_request;
-          }
-        }
-      }
-
-      if (! at_least_one_connected)
-      {
-        std::string m;
-        MLOG(INFO, "no body is connected, going to sleep...");
-        m_connected_event.wait(m);
-        MLOG(INFO, "starting to request jobs...");
-      }
-      else
-      {
-        // job arrived and computed?
-        lock_type lock(m_job_arrived_mutex);
-        m_job_arrived.timed_wait ( lock
-                                 , now + min_sleep_time
-                                 )
-                                 ;
       }
     }
   }
@@ -1310,25 +1187,12 @@ private:
       throw std::runtime_error ("empty master specified!");
     }
 
-    bool polling (false);
-    if (master[0] == '+')
-    {
-      polling = true;
-      master = master.substr(1);
-    }
-
-    if (master.empty())
-    {
-      throw std::runtime_error ("polling master with empty name specified!");
-    }
-
     if (master == m_my_name)
     {
       throw std::runtime_error ("cannot be my own master!");
     }
-    master_ptr m (new drts::Master(master));
-    m->set_is_polling (polling);
-    return m;
+
+    return master_ptr (new drts::Master (master));
   }
 
   void start_connect ()
@@ -1516,7 +1380,6 @@ private:
 
   event_queue_t m_event_queue;
   boost::shared_ptr<boost::thread>    m_event_thread;
-  boost::shared_ptr<boost::thread>    m_request_thread;
   boost::shared_ptr<boost::thread>    m_execution_thread;
 
   mutable mutex_type m_job_map_mutex;

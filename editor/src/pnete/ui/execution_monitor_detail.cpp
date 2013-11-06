@@ -14,13 +14,13 @@
 #include <fhg/util/backtracing_exception.hpp>
 
 #include <QCheckBox>
-#include <QDateTimeEdit>
 #include <QHBoxLayout>
 #include <QHelpEvent>
 #include <QLineEdit>
 #include <QMenu>
 #include <QPainter>
 #include <QScrollBar>
+#include <QSpinBox>
 #include <QTimer>
 #include <QToolTip>
 
@@ -234,13 +234,13 @@ namespace fhg
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           return QVariant::fromValue (_visible_ranges[index]);
 
-        case visible_range_from_role:
-          fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-          return QVariant::fromValue (_visible_ranges[index].from);
-
         case visible_range_to_role:
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-          return QVariant::fromValue (_visible_ranges[index].to);
+          return QVariant::fromValue (_visible_ranges[index].to());
+
+        case visible_range_length_role:
+          fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
+          return QVariant::fromValue (_visible_ranges[index].length());
 
         case automatically_move_role:
           fhg_assert (_column_types[index] == gantt_column, "automatically moving only defined for gantt columns");
@@ -275,45 +275,23 @@ namespace fhg
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
           _visible_ranges[index] = util::qt::value<visible_range_type> (variant);
         }
-        else if (role == visible_range_from_role || role == visible_range_to_role)
+        else if (role == visible_range_to_role)
         {
           fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
-          if (util::qt::stores<QDateTime> (variant))
-          {
-            const long val ( util::qt::value<QDateTime> (variant)
-                           .toMSecsSinceEpoch()
-                           - util::qt::value<QDateTime>
-                             (index.data (worker_model::base_time_role))
-                           .toMSecsSinceEpoch()
-                           );
-
-            if (_visible_ranges.contains (index))
-            {
-              ( role == visible_range_from_role
-              ? _visible_ranges[index].from
-              : _visible_ranges[index].to
-              ) = val;
-            }
-            else
-            {
-              _visible_ranges[index] = visible_range_type (val);
-            }
-          }
-          else
-          {
-            if (_visible_ranges.contains (index))
-            {
-              ( role == visible_range_from_role
-              ? _visible_ranges[index].from
-              : _visible_ranges[index].to
-              ) = util::qt::value<long> (variant);
-            }
-            else
-            {
-              _visible_ranges[index] =
-                visible_range_type (util::qt::value<long> (variant));
-            }
-          }
+          _visible_ranges[index].to ( util::qt::stores<QDateTime> (variant)
+                                    ? ( util::qt::value<QDateTime> (variant)
+                                      .toMSecsSinceEpoch()
+                                      - util::qt::value<QDateTime>
+                                      (index.data (worker_model::base_time_role))
+                                      .toMSecsSinceEpoch()
+                                      )
+                                    : util::qt::value<int> (variant)
+                                    );
+        }
+        else if (role == visible_range_length_role)
+        {
+          fhg_assert (_column_types[index] == gantt_column, "visible range only defined for gantt columns");
+          _visible_ranges[index].length (util::qt::value<int> (variant));
         }
         else if (role == automatically_move_role)
         {
@@ -367,30 +345,13 @@ namespace fhg
         return true;
       }
 
-      namespace
-      {
-        void move_with_constant_range
-          (util::qt::mvc::section_index index, long t)
-        {
-          const execution_monitor_proxy::visible_range_type r
-            ( util::qt::value<execution_monitor_proxy::visible_range_type>
-              (index.data (execution_monitor_proxy::visible_range_role))
-            );
-
-          index.data
-            ( QVariant::fromValue
-              (execution_monitor_proxy::visible_range_type (t - r.length(), t))
-            , execution_monitor_proxy::visible_range_role
-            );
-        }
-      }
-
       void execution_monitor_proxy::move_tick()
       {
         BOOST_FOREACH (const util::qt::mvc::section_index& index, _auto_moving)
         {
-          move_with_constant_range
-            (index, util::qt::value<long> (index.data (execution_monitor_proxy::elapsed_time_role)));
+          index.data ( QDateTime::currentDateTime()
+                     , execution_monitor_proxy::visible_range_to_role
+                     );
         }
       }
 
@@ -507,6 +468,8 @@ namespace fhg
             ( util::qt::value<execution_monitor_proxy::visible_range_type>
               (section_index.data (execution_monitor_proxy::visible_range_role))
             );
+          const long from (visible_range.from());
+          const long to (visible_range.to());
 
           const bool distribute_vertically (subrange_getters.size() > 1);
 
@@ -527,21 +490,16 @@ namespace fhg
           BOOST_FOREACH
             (worker_model::subrange_getter_type range, subrange_getters)
           {
-            BOOST_FOREACH
-              ( const worker_model::value_type& data
-              , range (visible_range.from, visible_range.to)
-              )
+            BOOST_FOREACH (const worker_model::value_type& data, range (from, to))
             {
-              const qreal left (std::max (visible_range.from, data.timestamp()));
+              const qreal left (std::max (from, data.timestamp()));
               paint_description::block block
                 ( QRectF ( qreal (rect.x())
-                         + (left - visible_range.from) * horizontal_scale
+                         + (left - from) * horizontal_scale
                          , rect.top()
                          , ( ( data.duration()
-                             ? std::min ( visible_range.to
-                                        , data.timestamp() + *data.duration()
-                                        )
-                             : visible_range.to
+                             ? std::min (to, data.timestamp() + *data.duration())
+                             : to
                              )
                            - left
                            ) * horizontal_scale
@@ -820,21 +778,18 @@ namespace fhg
         )
           : QWidget (parent)
           , _scrollbar (new QScrollBar (Qt::Horizontal, this))
-          , _lower (new QDateTimeEdit (this))
-          , _upper (new QDateTimeEdit (this))
+          , _visible_range_length (new QSpinBox (this))
           , _automove (new QCheckBox (tr ("end = now()"), this))
           , _index (index)
       {
         const QDateTime base_time
           (util::qt::value<QDateTime> (index.data (worker_model::base_time_role)));
 
-        _lower->setMinimumDateTime (base_time);
-        _upper->setMinimumDateTime (base_time);
+        _visible_range_length->setMinimum (5000);
+        _visible_range_length->setMaximum (INT_MAX);
+        _visible_range_length->setSuffix (" msec");
         update_maximum();
         update();
-
-        _lower->setDisplayFormat ("dd.MM.yyyy hh:mm:ss");
-        _upper->setDisplayFormat ("dd.MM.yyyy hh:mm:ss");
 
 
         util::qt::boost_connect<void (int)>
@@ -852,27 +807,22 @@ namespace fhg
           );
 
 
-        util::qt::boost_connect<void (QDateTime)>
-          ( _lower, SIGNAL (dateTimeChanged (QDateTime))
+        util::qt::boost_connect<void (int)>
+          ( _visible_range_length, SIGNAL (valueChanged (int))
           , delegate, boost::bind ( &util::qt::mvc::section_index::data
                                   , _index
                                   , _1
-                                  , execution_monitor_proxy::visible_range_from_role
-                                  )
-          );
-
-        util::qt::boost_connect<void (QDateTime)>
-          ( _upper, SIGNAL (dateTimeChanged (QDateTime))
-          , delegate, boost::bind ( &util::qt::mvc::section_index::data
-                                  , _index
-                                  , _1
-                                  , execution_monitor_proxy::visible_range_to_role
+                                  , execution_monitor_proxy::visible_range_length_role
                                   )
           );
 
         util::qt::boost_connect<void (int)>
           ( _scrollbar, SIGNAL (valueChanged (int))
-          , delegate, boost::bind (move_with_constant_range, _index, _1)
+          , delegate, boost::bind ( &util::qt::mvc::section_index::data
+                                  , _index
+                                  , _1
+                                  , execution_monitor_proxy::visible_range_to_role
+                                  )
           );
 
 
@@ -884,15 +834,11 @@ namespace fhg
         new QHBoxLayout (this);
         layout()->addWidget (_scrollbar);
         layout()->addWidget (_automove);
-        layout()->addWidget (_lower);
-        layout()->addWidget (_upper);
+        layout()->addWidget (_visible_range_length);
       }
 
       void execution_monitor_editor::update_maximum()
       {
-        const QDateTime now (QDateTime::currentDateTime());
-        _lower->setMaximumDateTime (now);
-        _upper->setMaximumDateTime (now);
         _scrollbar->setMaximum
           (util::qt::value<long> (_index.data (execution_monitor_proxy::elapsed_time_role)));
       }
@@ -905,20 +851,12 @@ namespace fhg
           (util::qt::value<execution_monitor_proxy::visible_range_type> (_index.data (execution_monitor_proxy::visible_range_role)));
 
         {
-          util::qt::scoped_signal_block block (_lower);
-          _lower->setDateTime ( QDateTime::fromMSecsSinceEpoch
-                                (base_time.toMSecsSinceEpoch() + visible_range.from)
-                              );
-        }
-        {
-          util::qt::scoped_signal_block block (_upper);
-          _upper->setDateTime ( QDateTime::fromMSecsSinceEpoch
-                                (base_time.toMSecsSinceEpoch() + visible_range.to)
-                              );
+          util::qt::scoped_signal_block block (_visible_range_length);
+          _visible_range_length->setValue (visible_range.length());
         }
         {
           util::qt::scoped_signal_block block (_scrollbar);
-          _scrollbar->setValue (visible_range.to);
+          _scrollbar->setValue (visible_range.to());
           _scrollbar->setPageStep
             (std::min (static_cast<int> (visible_range.length()), _scrollbar->maximum()));
           _scrollbar->setSingleStep (_scrollbar->pageStep() / 20);
@@ -963,9 +901,11 @@ namespace fhg
 
         case execution_monitor_proxy::gantt_column:
           return new execution_monitor_editor (this, index, parent);
-        }
 
-        //! \note Is asserted above.
+        case execution_monitor_proxy::current_states_column:
+          //! \note asserted above, but throwing a warning in release builds
+          throw std::runtime_error ("can't create editor for non-editable section");
+        }
       }
 
       void execution_monitor_delegate::release_editor
@@ -1046,15 +986,15 @@ namespace fhg
             painter->setRenderHint (QPainter::Antialiasing, do_antialiasing);
             painter->setRenderHint (QPainter::TextAntialiasing, true);
 
-            const long& from (range.from);
-            const long& to (range.to);
+            const long from (range.from());
+            const long to (range.to());
             const long visible_range (range.length());
 
-            const qreal scale (qreal (rect.width()) / (to - from));
+            const qreal scale (qreal (rect.width()) / visible_range);
             const long available_pixels (rect.width());
             const long minimum_pixels_per_tick (15);
             const long maximum_ticks (available_pixels / minimum_pixels_per_tick);
-            const long small_tick_interval (visible_range / maximum_ticks / 10 * 10);
+            const long small_tick_interval (std::max (3L, visible_range / maximum_ticks / 10 * 10));
             const long large_tick_interval (small_tick_interval * 10);
 
             const QString& format (format_for_distance (large_tick_interval));
