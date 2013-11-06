@@ -17,7 +17,6 @@ namespace sdpa
         : SchedulerImpl(pCommHandler)
       {}
 
-      bool postRequest( bool ) { return false; }
       void checkRequestPosted() { /*do nothing*/ }
     };
   }
