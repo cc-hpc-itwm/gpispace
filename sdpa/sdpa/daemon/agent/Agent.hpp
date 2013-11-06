@@ -76,12 +76,6 @@ namespace sdpa {
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
-
-        void createScheduler()
-        {
-          ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this));
-        }
-
       private:
         std::string url_;
 

@@ -240,8 +240,12 @@ namespace sdpa {
       // scheduler
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
+      void createScheduler()
+      {
+        ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this));
+      }
+
     protected:
-      virtual void createScheduler() = 0;
       virtual void schedule(const sdpa::job_id_t& job);
       virtual void reschedule(const sdpa::job_id_t& job);
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
