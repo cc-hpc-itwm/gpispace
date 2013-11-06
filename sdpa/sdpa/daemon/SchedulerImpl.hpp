@@ -131,7 +131,6 @@ namespace sdpa {
       SDPA_DECLARE_LOGGER();
       boost::posix_time::time_duration m_timeout;
 
-      bool m_bUseRequestModel; // true -> request model, false -> push model
       sdpa::cancellation_list_t cancellation_list_;
 
       mutable mutex_type mtx_;

@@ -40,8 +40,6 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IAgent* pCommHandler)
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
-  , m_bUseRequestModel(false)
-
 {
 }
 
