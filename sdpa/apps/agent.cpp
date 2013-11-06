@@ -41,8 +41,6 @@ int main (int argc, char **argv)
   unsigned int agentRank;
   std::string pidfile;
 
-  std::string requestMode ("false");
-
   FHGLOG_SETUP();
 
   po::options_description desc("Allowed options");
@@ -55,7 +53,6 @@ int main (int argc, char **argv)
     ("rank,r", po::value<unsigned int>(&agentRank)->default_value(0), "Agent's rank")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
     ("kvs_url,k",  po::value<std::string>(), "The kvs daemon's url")
-    ("request-mode", po::value<std::string>(&requestMode)->default_value(requestMode), "send periodical job requests to master")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
     ;
@@ -192,8 +189,7 @@ int main (int argc, char **argv)
                                                                                              agentRank,
                                                                                              appGuiUrl ); //, orchUrl );
 
-    bool bUseRequestModel(fhg::util::read_bool(requestMode));
-    ptrAgent->start_agent(bUseRequestModel);
+    ptrAgent->start_agent (false);
 
     sigset_t waitset;
     int sig(0);

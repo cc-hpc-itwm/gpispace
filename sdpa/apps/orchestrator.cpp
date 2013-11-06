@@ -42,7 +42,6 @@ int main (int argc, char **argv)
        ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
        ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
        ("daemonize", "daemonize after all checks were successful")
-       //("use-push-model", "use push model instead of request model")
        ;
 
     po::variables_map vm;
@@ -135,8 +134,7 @@ int main (int argc, char **argv)
     try {
       sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( orchName, orchUrl, MAX_CAP  );
 
-      bool bUseRequestModel = false; //(vm.count("use-push-model") == 0);
-      ptrOrch->start_agent(bUseRequestModel);
+      ptrOrch->start_agent (false);
 
       DMLOG (TRACE, "waiting for signals...");
       sigset_t waitset;
