@@ -119,6 +119,7 @@ TARGETS += $(BUILDDIR)/user.docbook
 
 endif
 endif
+endif
 
 ###############################################################################
 
@@ -142,6 +143,7 @@ $(BUILDDIR)/a2x/user.pdf: $(INPUT)
 TARGETS += $(BUILDDIR)/a2x/user.html
 TARGETS += $(BUILDDIR)/a2x/user.pdf
 
+endif
 endif
 endif
 
