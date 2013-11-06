@@ -65,11 +65,26 @@ BOOST_AUTO_TEST_CASE (signature_show)
 
 #undef CHECK
 
-  boost::unordered_set<std::string> n (pnet::type::signature::names (line2D));
+  {
+    boost::unordered_set<std::string> n (pnet::type::signature::names (line2D));
 
-  BOOST_REQUIRE_EQUAL (n.size(), 2);
-  BOOST_REQUIRE_EQUAL (n.count("point2D"), 1);
-  BOOST_REQUIRE_EQUAL (n.count("float"), 1);
+    BOOST_REQUIRE_EQUAL (n.size(), 2);
+    BOOST_REQUIRE_EQUAL (n.count("point2D"), 1);
+    BOOST_REQUIRE_EQUAL (n.count("float"), 1);
+  }
+
+  ps.push_back (std::make_pair (std::string ("l"), std::string ("list")));
+
+  {
+    signature_type s (structured_type (std::make_pair ("s", ps)));
+
+    boost::unordered_set<std::string> n (pnet::type::signature::names (s));
+
+    BOOST_REQUIRE_EQUAL (n.size(), 3);
+    BOOST_REQUIRE_EQUAL (n.count("point2D"), 1);
+    BOOST_REQUIRE_EQUAL (n.count("float"), 1);
+    BOOST_REQUIRE_EQUAL (n.count("list"), 1);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (signature_dump)
@@ -141,7 +156,16 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
     oss << header (structured_type (_sig));             \
                                                         \
     BOOST_CHECK_EQUAL (oss.str(), _expected);           \
+  }
+#define CHECK_HEADER_OP(_expected,_sig...)              \
+  {                                                     \
+    using pnet::type::signature::cpp::header_op;        \
                                                         \
+    std::ostringstream oss;                             \
+                                                        \
+    oss << header_op (structured_type (_sig));          \
+                                                        \
+    BOOST_CHECK_EQUAL (oss.str(), _expected);           \
   }
 #define CHECK_IMPL(_expected,_sig...)                   \
   {                                                     \
@@ -163,9 +187,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
   f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
 
   CHECK_HEADER
-    ("#include <we/type/value.hpp>\n"
-     "#include <iosfwd>\n"
-     "\n"
+    ("\n"
      "namespace pnetc\n"
      "{\n"
      "  namespace type\n"
@@ -176,14 +198,36 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
      "      {\n"
      "        float x;\n"
      "        float y;\n"
-     "        point2D();\n"
+     "        point2D()\n"
+     "          : x()\n"
+     "          , y()\n"
+     "        {}\n"
      "        explicit point2D\n"
      "          ( float const& _x\n"
      "          , float const& _y\n"
-     "          );\n"
-     "        explicit point2D (const pnet::type::value::value_type&);\n"
+     "          )\n"
+     "          : x (_x)\n"
+     "          , y (_y)\n"
+     "        {}\n"
      "      };\n"
-     "      pnet::type::value::value_type value (const point2D&);\n"
+     "    }\n"
+     "  }\n"
+     "}"
+     , std::make_pair ("point2D", f)
+    );
+
+  CHECK_HEADER_OP
+    ("#include <we/type/value.hpp>\n"
+     "#include <iosfwd>\n"
+     "\n"
+     "namespace pnetc\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace point2D\n"
+     "    {\n"
+     "      point2D from_value (const pnet::type::value::value_type&);\n"
+     "      pnet::type::value::value_type to_value (const point2D&);\n"
      "      std::ostream& operator<< (std::ostream&, const point2D&);\n"
      "    }\n"
      "  }\n"
@@ -204,22 +248,14 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
      "  {\n"
      "    namespace point2D\n"
      "    {\n"
-     "      point2D::point2D()\n"
-     "        : x()\n"
-     "        , y()\n"
-     "      {}\n"
-     "      point2D::point2D\n"
-     "        ( float const& _x\n"
-     "        , float const& _y\n"
-     "        )\n"
-     "        : x (_x)\n"
-     "        , y (_y)\n"
-     "      {}\n"
-     "      point2D::point2D (const pnet::type::value::value_type& v)\n"
-     "        : x (pnet::field_as< float > (\"x\", v, std::string(\"float\")))\n"
-     "        , y (pnet::field_as< float > (\"y\", v, std::string(\"float\")))\n"
-     "      {}\n"
-     "      pnet::type::value::value_type value (const point2D& x)\n"
+     "      point2D from_value (const pnet::type::value::value_type& v)\n"
+     "      {\n"
+     "        return point2D\n"
+     "          ( pnet::field_as< float > (\"x\", v, std::string(\"float\"))\n"
+     "          , pnet::field_as< float > (\"y\", v, std::string(\"float\"))\n"
+     "          );\n"
+     "      }\n"
+     "      pnet::type::value::value_type to_value (const point2D& x)\n"
      "      {\n"
      "        pnet::type::value::value_type v;\n"
      "        pnet::type::value::poke (\"x\", v, x.x);\n"
@@ -228,7 +264,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
      "      }\n"
      "      std::ostream& operator<< (std::ostream& os, const point2D& x)\n"
      "      {\n"
-     "        return os << pnet::type::value::show (value (x));\n"
+     "        return os << pnet::type::value::show (to_value (x));\n"
      "      }\n"
      "    }\n"
      "  }\n"
@@ -245,9 +281,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
     c.push_back (structured_type (std::make_pair ("b", b)));
 
     CHECK_HEADER
-      ("#include <we/type/value.hpp>\n"
-       "#include <iosfwd>\n"
-       "\n"
+      ("\n"
        "namespace pnetc\n"
        "{\n"
        "  namespace type\n"
@@ -261,37 +295,71 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
        "          struct a\n"
        "          {\n"
        "            int i;\n"
-       "            a();\n"
+       "            a()\n"
+       "              : i()\n"
+       "            {}\n"
        "            explicit a\n"
        "              ( int const& _i\n"
-       "              );\n"
-       "            explicit a (const pnet::type::value::value_type&);\n"
+       "              )\n"
+       "              : i (_i)\n"
+       "            {}\n"
        "          };\n"
-       "          pnet::type::value::value_type value (const a&);\n"
-       "          std::ostream& operator<< (std::ostream&, const a&);\n"
        "        }\n"
        "        struct b\n"
        "        {\n"
        "          a::a a;\n"
-       "          b();\n"
+       "          b()\n"
+       "            : a()\n"
+       "          {}\n"
        "          explicit b\n"
        "            ( a::a const& _a\n"
-       "            );\n"
-       "          explicit b (const pnet::type::value::value_type&);\n"
+       "            )\n"
+       "            : a (_a)\n"
+       "          {}\n"
        "        };\n"
-       "        pnet::type::value::value_type value (const b&);\n"
-       "        std::ostream& operator<< (std::ostream&, const b&);\n"
        "      }\n"
        "      struct c\n"
        "      {\n"
        "        b::b b;\n"
-       "        c();\n"
+       "        c()\n"
+       "          : b()\n"
+       "        {}\n"
        "        explicit c\n"
        "          ( b::b const& _b\n"
-       "          );\n"
-       "        explicit c (const pnet::type::value::value_type&);\n"
+       "          )\n"
+       "          : b (_b)\n"
+       "        {}\n"
        "      };\n"
-       "      pnet::type::value::value_type value (const c&);\n"
+       "    }\n"
+       "  }\n"
+       "}"
+      , std::make_pair ("c", c)
+      );
+
+    CHECK_HEADER_OP
+      ("#include <we/type/value.hpp>\n"
+       "#include <iosfwd>\n"
+       "\n"
+       "namespace pnetc\n"
+       "{\n"
+       "  namespace type\n"
+       "  {\n"
+       "    namespace c\n"
+       "    {\n"
+       "      namespace b\n"
+       "      {\n"
+       "        namespace a\n"
+       "        {\n"
+       "          a from_value (const pnet::type::value::value_type&);\n"
+       "          pnet::type::value::value_type to_value (const a&);\n"
+       "          std::ostream& operator<< (std::ostream&, const a&);\n"
+       "        }\n"
+       "        b from_value (const pnet::type::value::value_type&);\n"
+       "        pnet::type::value::value_type to_value (const b&);\n"
+       "        std::ostream& operator<< (std::ostream&, const b&);\n"
+       "      }\n"
+       "      c from_value (const pnet::type::value::value_type&);\n"
+       "      pnet::type::value::value_type to_value (const c&);\n"
        "      std::ostream& operator<< (std::ostream&, const c&);\n"
        "    }\n"
        "  }\n"
@@ -316,18 +384,13 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
        "      {\n"
        "        namespace a\n"
        "        {\n"
-       "          a::a()\n"
-       "            : i()\n"
-       "          {}\n"
-       "          a::a\n"
-       "            ( int const& _i\n"
-       "            )\n"
-       "            : i (_i)\n"
-       "          {}\n"
-       "          a::a (const pnet::type::value::value_type& v)\n"
-       "            : i (pnet::field_as< int > (\"i\", v, std::string(\"int\")))\n"
-       "          {}\n"
-       "          pnet::type::value::value_type value (const a& x)\n"
+       "          a from_value (const pnet::type::value::value_type& v)\n"
+       "          {\n"
+       "            return a\n"
+       "              ( pnet::field_as< int > (\"i\", v, std::string(\"int\"))\n"
+       "              );\n"
+       "          }\n"
+       "          pnet::type::value::value_type to_value (const a& x)\n"
        "          {\n"
        "            pnet::type::value::value_type v;\n"
        "            pnet::type::value::poke (\"i\", v, x.i);\n"
@@ -335,51 +398,41 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
        "          }\n"
        "          std::ostream& operator<< (std::ostream& os, const a& x)\n"
        "          {\n"
-       "            return os << pnet::type::value::show (value (x));\n"
+       "            return os << pnet::type::value::show (to_value (x));\n"
        "          }\n"
        "        }\n"
-       "        b::b()\n"
-       "          : a()\n"
-       "        {}\n"
-       "        b::b\n"
-       "          ( a::a const& _a\n"
-       "          )\n"
-       "          : a (_a)\n"
-       "        {}\n"
-       "        b::b (const pnet::type::value::value_type& v)\n"
-       "          : a (pnet::field (\"a\", v, pnet::signature_of (a::value (a::a()))))\n"
-       "        {}\n"
-       "        pnet::type::value::value_type value (const b& x)\n"
+       "        b from_value (const pnet::type::value::value_type& v)\n"
+       "        {\n"
+       "          return b\n"
+       "            ( a::from_value (pnet::field (\"a\", v, pnet::signature_of (a::to_value (a::a()))))\n"
+       "            );\n"
+       "        }\n"
+       "        pnet::type::value::value_type to_value (const b& x)\n"
        "        {\n"
        "          pnet::type::value::value_type v;\n"
-       "          pnet::type::value::poke (\"a\", v, a::value (x.a));\n"
+       "          pnet::type::value::poke (\"a\", v, a::to_value (x.a));\n"
        "          return v;\n"
        "        }\n"
        "        std::ostream& operator<< (std::ostream& os, const b& x)\n"
        "        {\n"
-       "          return os << pnet::type::value::show (value (x));\n"
+       "          return os << pnet::type::value::show (to_value (x));\n"
        "        }\n"
        "      }\n"
-       "      c::c()\n"
-       "        : b()\n"
-       "      {}\n"
-       "      c::c\n"
-       "        ( b::b const& _b\n"
-       "        )\n"
-       "        : b (_b)\n"
-       "      {}\n"
-       "      c::c (const pnet::type::value::value_type& v)\n"
-       "        : b (pnet::field (\"b\", v, pnet::signature_of (b::value (b::b()))))\n"
-       "      {}\n"
-       "      pnet::type::value::value_type value (const c& x)\n"
+       "      c from_value (const pnet::type::value::value_type& v)\n"
+       "      {\n"
+       "        return c\n"
+       "          ( b::from_value (pnet::field (\"b\", v, pnet::signature_of (b::to_value (b::b()))))\n"
+       "          );\n"
+       "      }\n"
+       "      pnet::type::value::value_type to_value (const c& x)\n"
        "      {\n"
        "        pnet::type::value::value_type v;\n"
-       "        pnet::type::value::poke (\"b\", v, b::value (x.b));\n"
+       "        pnet::type::value::poke (\"b\", v, b::to_value (x.b));\n"
        "        return v;\n"
        "      }\n"
        "      std::ostream& operator<< (std::ostream& os, const c& x)\n"
        "      {\n"
-       "        return os << pnet::type::value::show (value (x));\n"
+       "        return os << pnet::type::value::show (to_value (x));\n"
        "      }\n"
        "    }\n"
        "  }\n"

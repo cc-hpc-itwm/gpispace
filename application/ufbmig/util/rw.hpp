@@ -32,8 +32,7 @@ namespace ufbmig
         f << x;
       }
 
-      template<typename T>
-      inline void read (const std::string & filename, T & x)
+      inline pnet::type::value::value_type read (const std::string & filename)
       {
         std::ifstream f (filename.c_str());
 
@@ -46,12 +45,11 @@ namespace ufbmig
             throw std::runtime_error (oss.str());
           }
 
-        x = T ( pnet::type::value::read
-                ( std::string ( std::istream_iterator<char> (f)
-                              , std::istream_iterator<char>()
-                              )
-                )
-              );
+        return pnet::type::value::read
+          ( std::string ( std::istream_iterator<char> (f)
+                        , std::istream_iterator<char>()
+                        )
+          );
       }
     }
   }
