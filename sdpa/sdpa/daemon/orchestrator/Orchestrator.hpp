@@ -62,7 +62,7 @@ namespace sdpa {
       void createScheduler()
       {
         DLOG(TRACE, "creating orchestrator scheduler...");
-        Scheduler::ptr_t ptrSched( new SchedulerOrch(this, false) );
+        Scheduler::ptr_t ptrSched( new SchedulerOrch(this) );
         ptr_scheduler_ = ptrSched;
       }
 

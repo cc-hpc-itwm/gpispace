@@ -13,8 +13,8 @@ namespace sdpa
     class SchedulerOrch : public SchedulerImpl
     {
     public:
-      SchedulerOrch(sdpa::daemon::IAgent* pCommHandler = NULL,  bool bUseReqModel = true)
-        : SchedulerImpl(pCommHandler, bUseReqModel)
+      SchedulerOrch(sdpa::daemon::IAgent* pCommHandler = NULL)
+        : SchedulerImpl(pCommHandler, false)
       {}
 
       bool postRequest( bool ) { return false; }
