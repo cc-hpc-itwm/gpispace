@@ -31,7 +31,7 @@ namespace sdpa {
 
       Orchestrator( const std::string &name = ""
                     , const std::string& url = "")
-      : DaemonFSM( name, sdpa::master_info_list_t(), 10000 /*, NULL*/),
+      : DaemonFSM( name, sdpa::master_info_list_t() /*, NULL*/),
         SDPA_INIT_LOGGER(name),
         url_(url)
       {}

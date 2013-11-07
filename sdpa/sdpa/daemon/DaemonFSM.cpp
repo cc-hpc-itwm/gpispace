@@ -30,11 +30,10 @@ namespace sdpa
     {
       DaemonFSM::DaemonFSM ( const std::string &name
                            , const sdpa::master_info_list_t& arrMasterNames
-                           , unsigned int cap
                            , unsigned int rank
                            , std::string const &guiUrl
                            )
-        : GenericDaemon (name, arrMasterNames, cap, rank, guiUrl)
+        : GenericDaemon (name, arrMasterNames, 10000, rank, guiUrl)
       {}
 
 #define DFLT_IMPL(METHOD,EVENT_TYPE)                                  \
