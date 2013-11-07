@@ -1,6 +1,5 @@
 set (hdrs
   Config.hpp
-  Properties.hpp
   util.hpp
   )
 
