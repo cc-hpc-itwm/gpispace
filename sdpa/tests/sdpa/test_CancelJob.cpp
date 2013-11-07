@@ -200,8 +200,6 @@ BOOST_AUTO_TEST_CASE( TestCancelCoallocation )
   // drts
 
   LOG( INFO, "Begin Test1");
-  //guiUrl
-  string guiUrl         = "";
   string workerUrl      = "127.0.0.1:5500";
   string addrOrch       = "127.0.0.1";
   string addrAgent      = "127.0.0.1";
@@ -247,8 +245,6 @@ BOOST_AUTO_TEST_CASE( Test1 )
 
 
   LOG( INFO, "Begin Test1");
-  //guiUrl
-  string guiUrl   	= "";
   string workerUrl 	= "127.0.0.1:5500";
   string addrOrch 	= "127.0.0.1";
   string addrAgent 	= "127.0.0.1";
@@ -296,8 +292,6 @@ BOOST_AUTO_TEST_CASE( Test2 )
 
 
   LOG( INFO, "Begin Test2");
-  //guiUrl
-  string guiUrl   	= "";
   string workerUrl 	= "127.0.0.1:5500";
   string addrOrch 	= "127.0.0.1";
   string addrAgent 	= "127.0.0.1";
@@ -349,8 +343,6 @@ BOOST_AUTO_TEST_CASE( TestCancelCoalloc )
   // drts
 
   LOG( INFO, "Begin Test1");
-  //guiUrl
-  string guiUrl         = "";
   string workerUrl      = "127.0.0.1:5500";
   string addrOrch       = "127.0.0.1";
   string addrAgent      = "127.0.0.1";

@@ -196,8 +196,6 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 BOOST_AUTO_TEST_CASE( Test1 )
 {
 	LOG( INFO, "***** Test capabilities *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
@@ -250,8 +248,6 @@ BOOST_AUTO_TEST_CASE( Test1 )
 BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 {
 	LOG( DEBUG, "***** Test capabilities (no mandatory) *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";

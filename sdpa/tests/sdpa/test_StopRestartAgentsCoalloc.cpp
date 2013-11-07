@@ -258,8 +258,6 @@ BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoallocCommonCpb )
 
 	const int NWORKERS=5;
 
-	//guiUrl
-	string guiUrl   	= "";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 

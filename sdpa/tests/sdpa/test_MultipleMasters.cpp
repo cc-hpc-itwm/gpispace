@@ -197,8 +197,6 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 {
 	LOG( INFO, "testMultipleMastersEmptyWEPush");
 
-	//string strAppGuiUrl   	= "";
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgg_0 	= "127.0.0.1:7700";

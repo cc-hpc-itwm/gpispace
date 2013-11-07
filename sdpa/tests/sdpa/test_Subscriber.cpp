@@ -257,8 +257,6 @@ BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 BOOST_AUTO_TEST_CASE( Test1)
 {
 	LOG( INFO, "Test1");
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
@@ -298,8 +296,6 @@ BOOST_AUTO_TEST_CASE( Test1)
 BOOST_AUTO_TEST_CASE( Test2)
 {
 	LOG( INFO, "Test2");
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";

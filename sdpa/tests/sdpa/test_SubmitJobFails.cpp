@@ -271,7 +271,6 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure1 )
 {
 	LOG( INFO, "***** testSubmitJobFailure1 *****"<<std::endl);
 
-	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
@@ -306,7 +305,6 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure2 )
 {
 	LOG( INFO, "***** testSubmitJobFailure2 *****"<<std::endl);
 
-	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";

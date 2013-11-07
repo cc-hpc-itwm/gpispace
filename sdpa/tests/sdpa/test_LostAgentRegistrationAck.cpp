@@ -305,8 +305,6 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 {
 	LOG( DEBUG, "testLostRegAck");
 
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent0 	= "127.0.0.1";

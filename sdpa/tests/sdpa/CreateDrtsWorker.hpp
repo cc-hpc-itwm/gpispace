@@ -20,8 +20,6 @@ sdpa::shared_ptr<fhg::core::kernel_t> createDRTSWorker(	const std::string& drtsN
 	kernel->put("plugin.kvs.port", kvsPort);
 
 	//see ~/.sdpa/configs/sdpa.rc
-	std::string guiUrl("localhost:6408");
-	//kernel->put("plugin.gui.url", guiUrl);
 
 	kernel->put("plugin.drts.name", drtsName);
 	kernel->put("plugin.drts.master", masterName);
