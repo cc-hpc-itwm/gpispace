@@ -65,8 +65,6 @@ namespace sdpa {
 
         const std::string url() const {return url_;}
 
-        bool canRunTasksLocally() { return false; }
-
         template <typename T> friend struct AgentFactory;
 
         template <typename T>
