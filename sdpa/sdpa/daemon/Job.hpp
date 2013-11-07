@@ -8,7 +8,6 @@
 
 #include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
-#include <sdpa/util/Properties.hpp>
 
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>

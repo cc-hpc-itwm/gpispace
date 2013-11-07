@@ -51,16 +51,56 @@
 #include <we/type/user_data.hpp>
 
 #include <boost/utility.hpp>
-#include <sdpa/daemon/NotificationService.hpp>
+#include <boost/msm/back/state_machine.hpp>
+#include <boost/msm/front/state_machine_def.hpp>
+#include <boost/thread.hpp>
 
+
+#include <sdpa/daemon/NotificationService.hpp>
 
 namespace sdpa {
   namespace daemon {
+    namespace detail
+    {
+      struct DaemonFSM_ : public boost::msm::front::state_machine_def<DaemonFSM_>
+      {
+        virtual ~DaemonFSM_ () {}
+
+        struct Down : public boost::msm::front::state<>{};
+        struct Up : public boost::msm::front::state<>{};
+
+        struct InterruptEvent {};
+        struct ConfigOkEvent {};
+        struct ConfigNokEvent {};
+
+        virtual void action_delete_job(const sdpa::events::DeleteJobEvent& ) = 0;
+        virtual void action_submit_job(const sdpa::events::SubmitJobEvent& ) = 0;
+        virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
+        virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
+
+        typedef Down initial_state;
+
+        struct transition_table : boost::mpl::vector<
+        //      Start         Event         		                      Next            Action                Guard
+        //      +-------------+---------------------------------------+---------------+---------------------+-----
+        _row<   Down,         ConfigOkEvent,                          Up>,
+        _irow<  Down,         ConfigNokEvent>,
+        _irow<  Down,         sdpa::events::ErrorEvent >,
+        //      +------------+-----------------------+----------------+--------------+-----
+        _row<   Up,           InterruptEvent,                         Down>,
+        a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &DaemonFSM_::action_register_worker>,
+        a_irow< Up,           sdpa::events::DeleteJobEvent,                           &DaemonFSM_::action_delete_job>,
+        a_irow< Up,           sdpa::events::SubmitJobEvent,                           &DaemonFSM_::action_submit_job>,
+        a_irow< Up,           sdpa::events::ErrorEvent,                               &DaemonFSM_::action_error_event>
+        >{};
+      };
+    }
 
     class GenericDaemon : public sdpa::daemon::IAgent,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
+                        , public boost::msm::back::state_machine<detail::DaemonFSM_>
     {
     public:
       typedef boost::recursive_mutex mutex_type;
@@ -111,9 +151,10 @@ namespace sdpa {
 
       NotificationService* gui_service() { return &m_guiService; }
 
-      virtual void handleInterruptEvent() = 0;
-      virtual void perform_ConfigOkEvent() = 0;
-      virtual void perform_ConfigNokEvent() = 0;
+      virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
+      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
+      virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
+      virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
     protected:
 
@@ -124,9 +165,6 @@ namespace sdpa {
 
       // masters and subscribers
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
-
-      template <typename T>
-      void notifyMasters(const T&);
 
       void unsubscribe(const sdpa::agent_id_t&);
       void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
@@ -262,6 +300,8 @@ namespace sdpa {
       Scheduler::ptr_t ptr_scheduler_;
       we::mgmt::basic_layer* ptr_workflow_engine_;
 
+      mutex_type _state_machine_mutex;
+
     private:
 
       unsigned int m_nRank;
@@ -275,31 +315,6 @@ namespace sdpa {
       sdpa::capabilities_set_t m_capabilities;
       NotificationService m_guiService;
     };
-
-     /**
-     * Send a notification of type T to the masters
-     * @param[in] ptrNotEvt: Event to be sent to the master
-     */
-    template <typename T>
-    void GenericDaemon::notifyMasters(const T& ptrNotEvt)
-    {
-      lock_type lock(mtx_master_);
-      if(m_arrMasterInfo.empty())
-      {
-        SDPA_LOG_INFO("The master list is empty. No master to be notified exist!");
-        return;
-      }
-
-      BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-      {
-        if( masterInfo.is_registered() )
-        {
-          ptrNotEvt->to() = masterInfo.name();
-          SDPA_LOG_INFO("Send notification to the master "<<masterInfo.name());
-          sendEventToMaster(ptrNotEvt);
-        }
-      }
-    }
   }
 }
 

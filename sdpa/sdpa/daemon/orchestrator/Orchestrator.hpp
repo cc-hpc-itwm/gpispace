@@ -18,12 +18,12 @@
 #ifndef SDPA_ORCHESTRATORTOR_HPP
 #define SDPA_ORCHESTRATORTOR_HPP 1
 
-#include <sdpa/daemon/DaemonFSM.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 
 namespace sdpa {
   namespace daemon {
-    class Orchestrator : public sdpa::fsm::bmsm::DaemonFSM
+    class Orchestrator : public GenericDaemon
     {
       public:
       typedef sdpa::shared_ptr<Orchestrator> ptr_t;
@@ -31,7 +31,7 @@ namespace sdpa {
 
       Orchestrator( const std::string &name = ""
                     , const std::string& url = "")
-      : DaemonFSM( name, sdpa::master_info_list_t() /*, NULL*/),
+      : GenericDaemon ( name, sdpa::master_info_list_t() /*, NULL*/),
         SDPA_INIT_LOGGER(name),
         url_(url)
       {}

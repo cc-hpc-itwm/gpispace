@@ -126,7 +126,10 @@ void GenericDaemon::start_agent()
 
   if (vec.empty() || vec.size() > 2)
   {
-    perform_ConfigNokEvent();
+    {
+      lock_type lock (_state_machine_mutex);
+      process_event (ConfigNokEvent());
+    }
 
     m_bStopped = true;
 
@@ -153,7 +156,10 @@ void GenericDaemon::start_agent()
   }
   catch (...)
   {
-    perform_ConfigNokEvent();
+    {
+      lock_type lock (_state_machine_mutex);
+      process_event (ConfigNokEvent());
+    }
 
     m_bStopped = true;
 
@@ -166,7 +172,10 @@ void GenericDaemon::start_agent()
   // start the network stage
   to_master_stage()->start();
 
-  perform_ConfigOkEvent();
+  {
+    lock_type lock (_state_machine_mutex);
+    process_event (ConfigOkEvent());
+  }
 
   if (!isTop())
   {
@@ -231,7 +240,10 @@ void GenericDaemon::shutdown( )
 
     m_bStopped 	= true;
 
-    handleInterruptEvent();
+    {
+      lock_type lock (_state_machine_mutex);
+      process_event (InterruptEvent());
+    }
 
     seda::StageRegistry::instance().lookup(name())->stop();
     seda::StageRegistry::instance().remove(name());
@@ -1562,3 +1574,17 @@ void GenericDaemon::reScheduleAllMasterJobs()
     reschedule(jobId);
   }
 }
+
+#define PERFORM_FORWARD(METHOD,EVENT_TYPE)                \
+      void GenericDaemon::METHOD(const EVENT_TYPE* evt)   \
+      {                                                   \
+        lock_type lock (_state_machine_mutex);            \
+        process_event (*evt);                             \
+      }
+
+      PERFORM_FORWARD (handleWorkerRegistrationEvent, WorkerRegistrationEvent)
+      PERFORM_FORWARD (handleDeleteJobEvent, DeleteJobEvent)
+      PERFORM_FORWARD (handleSubmitJobEvent, SubmitJobEvent)
+      PERFORM_FORWARD (handleErrorEvent, ErrorEvent)
+
+#undef PERFORM_FORWARD

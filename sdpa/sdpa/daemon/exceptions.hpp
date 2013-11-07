@@ -69,14 +69,6 @@ namespace daemon {
 	};
 
 
-	class AllWorkersFullException : public WorkerException
-	{
-		public:
-		AllWorkersFullException( )
-			: WorkerException("All workers are full!", "") {}
-		virtual ~AllWorkersFullException() throw() {}
-	};
-
 	class WorkerAlreadyExistException : public WorkerException {
 		public:
 		WorkerAlreadyExistException( const sdpa::worker_id_t& worker_id, const sdpa::worker_id_t& agent_uuid )

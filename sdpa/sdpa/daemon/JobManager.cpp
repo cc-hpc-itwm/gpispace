@@ -222,7 +222,7 @@ sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 		sdpa::job_id_t jobId = it->first;
 		Job::ptr_t pJob = it->second;
 
-		if( (bHasWfe && pJob->isMasterJob()) || !bHasWfe && !pJob->completed())
+		if( ((bHasWfe && pJob->isMasterJob()) || !bHasWfe) && !pJob->completed())
     {
       listJobsNotCompleted.push_back(jobId);
 		}
