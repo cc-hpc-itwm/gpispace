@@ -150,8 +150,6 @@ namespace sdpa {
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
-      NotificationService* gui_service() { return &*m_guiService; }
-
       virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
       virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );

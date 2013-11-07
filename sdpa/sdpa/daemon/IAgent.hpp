@@ -31,7 +31,6 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/JobId.hpp>
 
-#include <sdpa/daemon/NotificationService.hpp>
 namespace sdpa {
   namespace daemon {
   const std::string WE("WE");
@@ -87,8 +86,6 @@ namespace sdpa {
     virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
     virtual void addCapability(const capability_t&) = 0;
     virtual bool canRunTasksLocally() { return false; }
-
-    virtual NotificationService* gui_service() = 0;
   };
 
 }}
