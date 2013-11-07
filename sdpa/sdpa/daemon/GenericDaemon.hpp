@@ -80,7 +80,6 @@ namespace sdpa {
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
       virtual const std::string url() const {return std::string();}
-      unsigned int capacity() const { return 10000; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
       void start_agent();

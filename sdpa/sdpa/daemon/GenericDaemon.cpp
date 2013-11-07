@@ -424,23 +424,6 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   }
   lock.unlock();
 
-  //if my capacity is reached, refuse to take any external job until at least one of my
-  //assigned jobs completes
-  if( e.from() != sdpa::daemon::WE  && jobManager()->countMasterJobs() > capacity() )
-  {
-    //generate a reject event
-    DMLOG (WARN, "Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
-    //send job rejected error event back to the master
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name(),
-                                              e.from(),
-                                              ErrorEvent::SDPA_EJOBREJECTED,
-                                              "Capacity exceeded! Cannot take further jobs",
-                                              e.job_id()) );
-    sendEventToMaster(pErrorEvt);
-
-    return;
-  }
-
   static const JobId job_id_empty ("");
 
   // First, check if the job 'job_id' wasn't already submitted!
@@ -1351,7 +1334,6 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
   {
     DMLOG (TRACE, "The agent \"" << name()
                << "\" is sending a registration event to master \"" << masterInfo.name()
-               << "\", capacity = "<<capacity()
           );
 
     capabilities_set_t cpbSet;
@@ -1359,7 +1341,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 
     //std::cout<<cpbSet;
 
-    WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), cpbSet,  rank(), agent_uuid()));
+    WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank(), agent_uuid()));
     sendEventToMaster(pEvtWorkerReg);
   }
 }
