@@ -22,9 +22,14 @@ namespace sdpa
                           )
         : service_(service)
         , m_destination_location (destination_location)
-      {
-        open();
-      }
+        , destination_ ( new fhg::log::ThreadedAppender
+                         ( fhg::log::Appender::ptr_t
+                           ( new fhg::log::remote::RemoteAppender
+                             (service_, m_destination_location)
+                           )
+                         )
+                       )
+      {}
 
       virtual void update (const boost::any& arg)
       {
@@ -43,17 +48,6 @@ namespace sdpa
         {
           destination_->append (FHGLOG_MKEVENT_HERE (TRACE, evt.encoded()));
         }
-      }
-
-      void open()
-      {
-        destination_.reset ( new fhg::log::ThreadedAppender
-                             ( fhg::log::Appender::ptr_t
-                               ( new fhg::log::remote::RemoteAppender
-                                 (service_, m_destination_location)
-                               )
-                             )
-                           );
       }
 
       std::string location() const
