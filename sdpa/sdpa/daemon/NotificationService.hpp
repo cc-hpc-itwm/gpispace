@@ -17,13 +17,11 @@ namespace sdpa
     class NotificationService : public Observer
     {
     public:
-      NotificationService ( const std::string& service
-                          , const std::string& destination_location
-                          )
+      NotificationService (const std::string& destination_location)
         : destination_ ( new fhg::log::ThreadedAppender
                          ( fhg::log::Appender::ptr_t
                            ( new fhg::log::remote::RemoteAppender
-                             (service, destination_location)
+                             ("NotificationService", destination_location)
                            )
                          )
                        )

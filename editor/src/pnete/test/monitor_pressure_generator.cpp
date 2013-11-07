@@ -89,9 +89,9 @@ int main(int ac, char **av)
   const int duration (ac >= 5 ? 1000 / atoi (av[4]) : 1);
 
   NotificationService service_a
-    ("service_a", (boost::format ("localhost:%1%") % port_a).str());
+    ((boost::format ("localhost:%1%") % port_a).str());
   NotificationService service_b
-    ("service_b", (boost::format ("localhost:%1%") % port_b).str());
+    ((boost::format ("localhost:%1%") % port_b).str());
 
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);

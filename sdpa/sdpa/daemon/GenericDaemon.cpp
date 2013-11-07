@@ -70,7 +70,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_bStopped(false),
     m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
-                   (NotificationService ("GSPC", *guiUrl))
+                   (NotificationService (*guiUrl))
                  : boost::none
                  )
 {
