@@ -68,7 +68,11 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_bStopped(false),
-    m_guiService (NotificationService ("GSPC", guiUrl.get_value_or ("")))
+    m_guiService ( guiUrl && !guiUrl->empty()
+                 ? boost::optional<NotificationService>
+                   (NotificationService ("GSPC", *guiUrl))
+                 : boost::none
+                 )
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
