@@ -18,11 +18,10 @@ namespace gspc
     static std::string KVS_SERVICE = "/service/kvs";
 
     kvs_net_frontend_t::kvs_net_frontend_t (std::string const &url)
-      : m_url (url)
-      , m_client ()
+      : m_client ()
     {
       boost::system::error_code ec;
-      m_client = gspc::net::dial (m_url, ec);
+      m_client = gspc::net::dial (url, ec);
       if (not m_client)
       {
         throw boost::system::system_error (ec);
