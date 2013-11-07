@@ -1577,32 +1577,6 @@ namespace sdpa
         : GenericDaemon (name, arrMasterNames, rank, guiUrl)
       {}
 
-#define DFLT_IMPL(METHOD,EVENT_TYPE)                                  \
-      void DaemonFSM_::METHOD(const EVENT_TYPE&)                      \
-      {                                                               \
-        throw "NO IMPLEMENTATION FOR ACTION PROVIDED. PURE VIRTUAL";  \
-      }
-
-      DFLT_IMPL (action_delete_job, DeleteJobEvent)
-      DFLT_IMPL (action_submit_job, SubmitJobEvent)
-      DFLT_IMPL (action_register_worker, WorkerRegistrationEvent)
-      DFLT_IMPL (action_error_event, ErrorEvent)
-
-#undef DFLT_IMPL
-
-#define FORWARD(METHOD,EVENT_TYPE)                \
-      void DaemonFSM::METHOD(const EVENT_TYPE& e) \
-      {                                           \
-    	  GenericDaemon::METHOD (e);                \
-      }
-
-      FORWARD (action_delete_job, DeleteJobEvent)
-      FORWARD (action_submit_job, SubmitJobEvent)
-      FORWARD (action_register_worker, WorkerRegistrationEvent)
-      FORWARD (action_error_event, ErrorEvent)
-
-#undef FORWARD
-
 #define PERFORM(METHOD,EVENT_TYPE)                \
       void DaemonFSM::METHOD()                    \
       {                                           \

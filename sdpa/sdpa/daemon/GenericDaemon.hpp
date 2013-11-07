@@ -81,10 +81,10 @@ namespace sdpa {
         // the initial state of the DaemonFSM SM. Must be defined
         typedef Down initial_state;
 
-        virtual void action_delete_job(const sdpa::events::DeleteJobEvent& );
-        virtual void action_submit_job(const sdpa::events::SubmitJobEvent& );
-        virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
-        virtual void action_error_event(const sdpa::events::ErrorEvent& );
+        virtual void action_delete_job(const sdpa::events::DeleteJobEvent& ) = 0;
+        virtual void action_submit_job(const sdpa::events::SubmitJobEvent& ) = 0;
+        virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
+        virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
 
         typedef DaemonFSM_ agentFSM; // makes transition table cleaner
 
@@ -381,11 +381,6 @@ namespace sdpa {
 
         void perform_ConfigOkEvent();
         void perform_ConfigNokEvent();
-
-        void action_delete_job(const sdpa::events::DeleteJobEvent& );
-        void action_submit_job(const sdpa::events::SubmitJobEvent& );
-        void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
-        void action_error_event(const sdpa::events::ErrorEvent& );
 
         // event handlers
         void handleInterruptEvent();
