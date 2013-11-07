@@ -6,7 +6,6 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 
-#include <sdpa/daemon/Observable.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 
 #include <we/mgmt/type/activity.hpp>
