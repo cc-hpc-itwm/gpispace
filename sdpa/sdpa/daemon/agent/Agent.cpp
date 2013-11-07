@@ -28,8 +28,6 @@ namespace sdpa {
 void Agent::action_configure()
 {
   GenericDaemon::action_configure();
-
-  cfg().put("nmax_ext_job_req", 10U);
 }
 
 void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
