@@ -41,7 +41,7 @@ namespace daemon {
                                 const sdpa::master_info_list_t& arrMasterNames,
                                 bool  bCanRunTasksLocally = false,
                                 const unsigned int rank = 0,
-                                const std::string& appGuiUrl = "" )
+                                const boost::optional<std::string>& appGuiUrl = boost::none )
     {
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, bCanRunTasksLocally, rank, appGuiUrl ) );
       pAgent->createWorkflowEngine<T>();
@@ -69,7 +69,7 @@ namespace daemon {
                                 const sdpa::master_info_list_t& arrMasterNames,
                                 bool  bCanRunTasksLocally = false,
                                 const unsigned int rank = 0,
-                                const std::string& appGuiUrl = "" )
+                                const boost::optional<std::string>& appGuiUrl = boost::none )
     {
       LOG( DEBUG, "Create Agent "<<name<<" with no workflow engine" );
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, bCanRunTasksLocally, rank, appGuiUrl ) );

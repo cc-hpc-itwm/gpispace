@@ -36,7 +36,7 @@ namespace sdpa {
               const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
               bool bCanRunTasksLocally = false,
               int rank = -1,
-              const std::string& guiUrl = "")
+              const boost::optional<std::string>& guiUrl = boost::none)
           : GenericDaemon( name, arrMasterNames, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
           url_(url),
