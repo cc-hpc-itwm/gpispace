@@ -18,7 +18,7 @@
 #define BOOST_TEST_MODULE TestCancelJob
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -27,7 +27,6 @@
 #include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 
 namespace po = boost::program_options;
 
@@ -211,12 +210,12 @@ BOOST_AUTO_TEST_CASE( TestCancelCoallocation )
 
   m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
+  ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
+  ptrAg0->start_agent();
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -258,12 +257,12 @@ BOOST_AUTO_TEST_CASE( Test1 )
 
   m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
+  ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
+  ptrAg0->start_agent();
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -307,12 +306,12 @@ BOOST_AUTO_TEST_CASE( Test2 )
 
   m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
+  ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
+  ptrAg0->start_agent();
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -360,12 +359,12 @@ BOOST_AUTO_TEST_CASE( TestCancelCoalloc )
 
   m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
-  ptrOrch->start_agent(false);
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
+  ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAg0->start_agent(false);
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
+  ptrAg0->start_agent();
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );

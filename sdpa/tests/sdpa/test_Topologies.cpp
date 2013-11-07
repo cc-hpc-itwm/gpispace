@@ -18,7 +18,7 @@
 #define BOOST_TEST_MODULE TestTopologies
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
@@ -27,7 +27,6 @@
 #include <boost/shared_array.hpp>
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 const int NAGENTS = 1;
 
 const int BUNCH_SIZE = 1;
@@ -351,8 +350,8 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create Orchestrator with an Dummy workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Agent ...");
 	boost::shared_array<sdpa::daemon::Agent::ptr_t> arrAgents( new sdpa::daemon::Agent::ptr_t[NAGENTS] );
@@ -365,15 +364,14 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 
 		arrAgents[k] = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create( oss.str(),
 																			  	addrAgent,
-																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)),
-																			  	MAX_CAP );
+																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)));
 
 		// the master is the previous created agent
 		strMaster = oss.str();
 	}
 
 	for(int k=0; k<NAGENTS; k++)
-		arrAgents[k]->start_agent(false);
+		arrAgents[k]->start_agent();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", strMaster, "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
@@ -421,8 +419,8 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create Orchestrator with an Dummy workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Agent ...");
 	//sdpa::daemon::Agent::ptr_t arrAgents[NAGENTS];
@@ -441,13 +439,12 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 
 		arrAgents[k] = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create( oss.str(),
 																			  	addrAgent,
-																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)),
-																			  	MAX_CAP );
+																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)));
 
 	}
 
 	for(int k=0; k<NAGENTS; k++)
-		arrAgents[k]->start_agent(false);
+		arrAgents[k]->start_agent();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", ossDrtsMasterInfo.str(), "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);

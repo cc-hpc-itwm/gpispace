@@ -50,7 +50,6 @@ namespace sdpa
         ar.register_type (static_cast<JobStatusReplyEvent*>(NULL));
         ar.register_type (static_cast<LifeSignEvent*>(NULL));
         ar.register_type (static_cast<QueryJobStatusEvent*>(NULL));
-        ar.register_type (static_cast<RequestJobEvent*>(NULL));
         ar.register_type (static_cast<RetrieveJobResultsEvent*>(NULL));
         ar.register_type (static_cast<SubmitJobAckEvent*>(NULL));
         ar.register_type (static_cast<SubmitJobEvent*>(NULL));

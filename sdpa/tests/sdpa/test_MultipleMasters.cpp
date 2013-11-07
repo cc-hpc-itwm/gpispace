@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE TestMultipleMasters
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
@@ -11,19 +11,9 @@
 #include <sstream>
 #include <string>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/nvp.hpp>
-#include "boost/serialization/map.hpp"
 #include <sdpa/daemon/JobManager.hpp>
 
-#include <boost/serialization/export.hpp>
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 
@@ -43,7 +33,6 @@ using namespace seda;
 
 const int NMAXTRIALS = 10000;
 const int NMAXTHRDS = 3;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;
@@ -220,21 +209,21 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
+	ptrOrch->start_agent();
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgg_0, m_arrAggMasterInfo, 100);
-	ptrAgent0->start_agent(false);
+	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgg_0, m_arrAggMasterInfo);
+	ptrAgent0->start_agent();
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgg_1, m_arrAggMasterInfo, 100);
-	ptrAgent1->start_agent(false);
+	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgg_1, m_arrAggMasterInfo);
+	ptrAgent1->start_agent();
 
 	LOG( INFO, "Create the Agent ...");
 	sdpa::master_info_list_t arrAgent00MasterInfo;
-	sdpa::daemon::Agent::ptr_t ptrAgent00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_00", addrAgg_00, arrAgent00MasterInfo, 100);
-	ptrAgent00->start_agent(false);
+	sdpa::daemon::Agent::ptr_t ptrAgent00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_00", addrAgg_00, arrAgent00MasterInfo);
+	ptrAgent00->start_agent();
 
 	ptrAgent00->addMaster("agent_0");
 	ptrAgent00->addMaster("agent_1");

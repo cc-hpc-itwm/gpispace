@@ -18,10 +18,9 @@
 
 #include <fhg/assert.hpp>
 
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
-#include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <boost/tokenizer.hpp>
 
@@ -34,14 +33,12 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::daemon::IAgent* pCommHandler, bool bUseRequestModel )
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IAgent* pCommHandler)
   : ptr_worker_man_(new WorkerManager())
   , bStopRequested(false)
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
-  , m_bUseRequestModel(bUseRequestModel)
-
 {
 }
 
@@ -66,20 +63,14 @@ SchedulerImpl::~SchedulerImpl()
 }
 
 void SchedulerImpl::addWorker(  const Worker::worker_id_t& workerId,
-                                const unsigned int& capacity,
+                                const boost::optional<unsigned int>& capacity,
                                 const capabilities_set_t& cpbset,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
-  try {
-    ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
-    cond_workers_registered.notify_all();
-    cond_feed_workers.notify_one();
-  }
-  catch( const WorkerAlreadyExistException& ex)
-  {
-    throw ex;
-  }
+  ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
+  cond_workers_registered.notify_all();
+  cond_feed_workers.notify_one();
 }
 
 void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
@@ -447,58 +438,6 @@ void SchedulerImpl::stop()
   ptr_worker_man_->removeWorkers();
 }
 
-bool SchedulerImpl::postRequest(const MasterInfo& masterInfo, bool force)
-{
-  if(!ptr_comm_handler_)
-  {
-    SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-    stop();
-    return false;
-  }
-
-  bool bReqPosted = false;
-
-  if(force || ( !ptr_comm_handler_->isTop()  &&  masterInfo.is_registered() ) )
-  {
-    bool bReqAllowed = ptr_comm_handler_->requestsAllowed();
-    if(!bReqAllowed)
-    {
-      SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" is not allowed to post job requests!");
-    }
-
-    if( force || bReqAllowed )
-    {
-      ptr_comm_handler_->requestJob(masterInfo);
-      //SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
-      bReqPosted = true;
-    }
-  }
-
-  return bReqPosted;
-}
-
-void SchedulerImpl::checkRequestPosted()
-{
-  BOOST_FOREACH(sdpa::MasterInfo masterInfo, ptr_comm_handler_->getListMasterInfo())
-  {
-    if( !masterInfo.is_registered() )
-    {
-      MLOG (TRACE, "I am not registered yet...");
-
-      const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-      boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-      ptr_comm_handler_->requestRegistration(masterInfo);
-    }
-    else
-    {
-      // post job request if number_of_jobs() < #registered workers +1
-      if( useRequestModel() )
-        postRequest(masterInfo);
-    }
-  }
-}
-
 void SchedulerImpl::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
 {
   workerList.clear();
@@ -625,8 +564,6 @@ void SchedulerImpl::run()
   {
     try
     {
-      checkRequestPosted(); // eventually, post a request to the master
-
       if( numberOfWorkers()>0 )
         forceOldWorkerJobsTermination();
 

@@ -121,6 +121,44 @@ namespace pnet
 
           typedef printer_for_field<field_param, bool&> print_field_param;
 
+          class impl_ctor
+          {
+          public:
+            void operator() ( std::ostream& os
+                            , fhg::util::indenter& indent
+                            , const std::string& name
+                            , const std::string& type
+                            , bool& first
+                            ) const
+            {
+              os << fhg::util::deeper (indent)
+                 << (first ? ':' : ',') << ' ' << name << " (_" << name << ')';
+
+              first = false;
+            }
+          };
+
+          typedef printer_for_field<impl_ctor, bool&> print_ctor;
+
+          class impl_ctor_default
+          {
+          public:
+            void operator() ( std::ostream& os
+                            , fhg::util::indenter& indent
+                            , const std::string& name
+                            , const std::string& type
+                            , bool& first
+                            ) const
+            {
+              os << fhg::util::deeper (indent)
+                  << (first ? ':' : ',') << ' ' << name <<  "()";
+
+              first = false;
+            }
+          };
+
+          typedef printer_for_field<impl_ctor_default, bool&> print_ctor_default;
+
           class print_header : public printer
           {
           public:
@@ -141,14 +179,10 @@ namespace pnet
 
               traverse (print_field_decl (_os, _indent), s);
 
-              ctor_default (s.first);
+              ctor_default (s);
               ctor (s);
-              ctor_value (s.first);
 
               _os << structure::close (_indent);
-
-              to_value (s.first);
-              show (s.first);
 
               _os << ns::close (_indent);
             }
@@ -161,9 +195,16 @@ namespace pnet
             }
 
           private:
-            void ctor_default (const std::string& name) const
+            void ctor_default
+              (const std::pair<std::string, structure_type>& s) const
             {
-              _os << _indent << name << "();";
+              bool first (true);
+
+              _os << _indent << s.first << "()";
+
+              traverse (print_ctor_default (_os, _indent, first), s);
+
+              _os << _indent << "{}";
             }
             void ctor (const std::pair<std::string, structure_type>& s) const
             {
@@ -173,23 +214,14 @@ namespace pnet
 
               traverse (print_field_param (_os, _indent, first), s);
 
-              _os << fhg::util::deeper (_indent) << ");";
-            }
-            void ctor_value (const std::string& name) const
-            {
-              _os << _indent
-                  << "explicit " << name
-                  << " (const pnet::type::value::value_type&);";
-            }
-            void to_value (const std::string& name) const
-            {
-              _os << _indent
-                  << "pnet::type::value::value_type value (const " << name << "&);";
-            }
-            void show (const std::string& name) const
-            {
-              _os << _indent
-                  << "std::ostream& operator<< (std::ostream&, const " << name << "&);";
+              _os << fhg::util::deeper (_indent) << ")";
+
+              first = true;
+
+              traverse (print_ctor (_os, _indent, first), s);
+
+              _os << _indent << "{}";
+
             }
           };
         }
@@ -200,9 +232,6 @@ namespace pnet
         std::ostream& header::operator() (std::ostream& os) const
         {
           fhg::util::indenter indent;
-
-          os << fhg::util::cpp::include ("we/type/value.hpp");
-          os << fhg::util::cpp::include ("iosfwd");
 
           os << fhg::util::cpp::ns::open (indent, "pnetc");
           os << fhg::util::cpp::ns::open (indent, "type");
@@ -253,51 +282,111 @@ namespace pnet
           return h (os);
         }
 
+        namespace
+        {
+          class print_header_op : public printer
+          {
+          public:
+            print_header_op (std::ostream& os, fhg::util::indenter& indent)
+              : printer (os, indent)
+            {}
+
+            void _struct (const std::pair<std::string, structure_type>& s) const
+            {
+              _os << fhg::util::cpp::ns::open (_indent, s.first);
+
+              traverse_fields (*this, s);
+
+              _os << _indent
+                  << s.first
+                  << " from_value (const pnet::type::value::value_type&);";
+
+              _os << _indent
+                  << "pnet::type::value::value_type to_value (const "
+                  << s.first << "&);";
+
+              _os << _indent
+                  << "std::ostream& operator<< (std::ostream&, const "
+                  << s.first
+                  << "&);";
+
+              _os << fhg::util::cpp::ns::close (_indent);
+            }
+            void _field (const std::pair<std::string, std::string>&) const
+            {}
+            void _field_struct
+              (const std::pair<std::string, structure_type>& s) const
+            {
+              traverse (*this, s);
+            }
+          };
+        }
+
+        header_op::header_op (const structured_type& structured)
+          : _structured (structured)
+        {}
+        std::ostream& header_op::operator() (std::ostream& os) const
+        {
+          fhg::util::indenter indent;
+
+          os << fhg::util::cpp::include ("we/type/value.hpp");
+          os << fhg::util::cpp::include ("iosfwd");
+
+          os << fhg::util::cpp::ns::open (indent, "pnetc");
+          os << fhg::util::cpp::ns::open (indent, "type");
+
+          traverse (print_header_op (os, indent), _structured);
+
+          os << fhg::util::cpp::ns::close (indent);
+          os << fhg::util::cpp::ns::close (indent);
+
+          return os;
+        }
+        std::ostream& operator<< (std::ostream& os, const header_op& h)
+        {
+          return h (os);
+        }
 
         namespace
         {
-          class impl_ctor_default
+          class print_header_op_signature
+            : public boost::static_visitor<std::ostream&>
           {
           public:
-            void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
-                            , const std::string& name
-                            , const std::string& type
-                            , bool& first
-                            ) const
+            print_header_op_signature (std::ostream& os)
+              : _os (os)
+            {}
+            std::ostream& operator() (const std::string& s) const
             {
-              os << fhg::util::deeper (indent)
-                  << (first ? ':' : ',') << ' ' << name <<  "()";
-
-              first = false;
+              return _os << "//" << s;
             }
-          };
-
-          typedef printer_for_field<impl_ctor_default, bool&> print_ctor_default;
-
-          class impl_ctor
-          {
-          public:
-            void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
-                            , const std::string& name
-                            , const std::string& type
-                            , bool& first
-                            ) const
+            std::ostream& operator() (const structured_type& s) const
             {
-              os << fhg::util::deeper (indent)
-                 << (first ? ':' : ',') << ' ' << name << " (_" << name << ')';
-
-              first = false;
+              return _os << header_op (s);
             }
+          private:
+            std::ostream& _os;
           };
+        }
 
-          typedef printer_for_field<impl_ctor, bool&> print_ctor;
+        header_op_signature::header_op_signature (const signature_type& signature)
+          : _signature (signature)
+        {}
+        std::ostream& header_op_signature::operator() (std::ostream& os) const
+        {
+          return boost::apply_visitor (print_header_op_signature (os), _signature);
+        }
+        std::ostream& operator<< (std::ostream& os, const header_op_signature& h)
+        {
+          return h (os);
+        }
 
-          class print_ctor_value : public printer
+        namespace
+        {
+          class print_from_value : public printer
           {
           public:
-            print_ctor_value ( std::ostream& os
+            print_from_value ( std::ostream& os
                              , fhg::util::indenter& indent
                              , bool& first
                              )
@@ -310,36 +399,40 @@ namespace pnet
             }
             void _field (const std::pair<std::string, std::string>& f) const
             {
-              _os << fhg::util::deeper (_indent)
-                  << (_first ? ':' : ',') << ' ' << f.first
-                  <<  " ("
-                  << "pnet::field";
+              _os << fhg::util::deeper (_indent) << (_first ? '(' : ',') << ' ';
 
-              if (is_literal (f.second))
+              if (!is_literal (f.second))
               {
-                _os << "_as< " << complete (f.second) << " >";
+                _os << f.second << "::from_value (pnet::field";
+              }
+              else
+              {
+                _os << "pnet::field_as< " << complete (f.second) << " >";
               }
 
               _os << " ("
                   << "\"" << f.first << "\""
                   << ", v"
                   << ", std::string(\"" << f.second << "\")"
-                  << ")"
                   << ")";
+
+              if (!is_literal (f.second))
+              {
+                _os << ")";
+              }
 
               _first = false;
             }
             void _field_struct (const std::pair<std::string, structure_type>& s) const
             {
               _os << fhg::util::deeper (_indent)
-                  << (_first ? ':' : ',') << ' ' << s.first
-                  <<  " ("
-                  << "pnet::field"
+                  << (_first ? '(' : ',') << ' '
+                  << s.first << "::from_value (pnet::field"
                   << " ("
                   << "\"" << s.first << "\""
                   << ", v"
                   << ", pnet::signature_of ("
-                  << s.first << "::value (" << s.first << "::" << s.first << "())"
+                  << s.first << "::to_value (" << s.first << "::" << s.first << "())"
                   << ")"
                   << ")"
                   << ")";
@@ -371,7 +464,7 @@ namespace pnet
               }
               else
               {
-                os << type << "::value (" << "x." << name << ")";
+                os << type << "::to_value (" << "x." << name << ")";
               }
 
               os << ");";
@@ -395,10 +488,8 @@ namespace pnet
 
               traverse_fields (*this, s);
 
-              ctor_default (s);
-              ctor (s);
-              ctor_value (s);
               from_value (s);
+              to_value (s);
               show (s.first);
 
               _os << ns::close (_indent);
@@ -410,55 +501,32 @@ namespace pnet
               traverse (*this, s);
             }
           private:
-            void ctor_default
-              (const std::pair<std::string, structure_type>& s) const
-            {
-              bool first (true);
-
-              _os << _indent << s.first << "::" << s.first << "()";
-
-              traverse (print_ctor_default (_os, _indent, first), s);
-
-              _os << _indent << "{}";
-            }
-            void ctor (const std::pair<std::string, structure_type>& s) const
-            {
-              bool first (true);
-
-              _os << _indent << s.first << "::" << s.first;
-
-              traverse (print_field_param (_os, _indent, first), s);
-
-              _os << fhg::util::deeper (_indent) << ')';
-
-              first = true;
-
-              traverse (print_ctor (_os, _indent, first), s);
-
-              _os << _indent << "{}";
-            }
-
-            void ctor_value
-              (const std::pair<std::string, structure_type>& s) const
-            {
-              bool first (true);
-
-              _os << _indent
-                  << s.first << "::" << s.first
-                  << " (const pnet::type::value::value_type& v)";
-
-              traverse (print_ctor_value (_os, _indent, first), s);
-
-              _os << _indent << "{}";
-            }
-
             void from_value
               (const std::pair<std::string, structure_type>& s) const
             {
               namespace block = fhg::util::cpp::block;
 
               _os << _indent
-                  << "pnet::type::value::value_type value (const " << s.first << "& x)"
+                  << s.first << " from_value "
+                  << "(const pnet::type::value::value_type& v)"
+                  << block::open (_indent)
+                  << _indent << "return " << s.first;
+
+              bool first (true);
+
+              traverse (print_from_value (_os, _indent, first), s);
+
+              _os << fhg::util::deeper (_indent) << ");";
+
+              _os << block::close (_indent);
+            }
+            void to_value
+              (const std::pair<std::string, structure_type>& s) const
+            {
+              namespace block = fhg::util::cpp::block;
+
+              _os << _indent
+                  << "pnet::type::value::value_type to_value (const " << s.first << "& x)"
                   << block::open (_indent)
                   << _indent << "pnet::type::value::value_type v;";
 
@@ -467,7 +535,6 @@ namespace pnet
               _os << _indent << "return v;"
                   << block::close (_indent);
             }
-
             void show (const std::string& name) const
             {
               namespace block = fhg::util::cpp::block;
@@ -476,7 +543,7 @@ namespace pnet
                   << "std::ostream& operator<< (std::ostream& os, const " << name << "& x)"
                   << block::open (_indent)
                   << _indent
-                  << "return os << pnet::type::value::show (value (x));"
+                  << "return os << pnet::type::value::show (to_value (x));"
                   << block::close (_indent)
                 ;
             }

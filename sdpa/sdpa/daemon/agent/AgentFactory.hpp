@@ -39,12 +39,11 @@ namespace daemon {
     static Agent::ptr_t create( const std::string& name,
                                 const std::string& url,
                                 const sdpa::master_info_list_t& arrMasterNames,
-                                const unsigned int capacity,
                                 bool  bCanRunTasksLocally = false,
                                 const unsigned int rank = 0,
                                 const std::string& appGuiUrl = "" )
     {
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, bCanRunTasksLocally, rank, appGuiUrl ) );
       pAgent->createWorkflowEngine<T>();
 
 //      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
@@ -68,13 +67,12 @@ namespace daemon {
     static Agent::ptr_t create( const std::string& name,
                                 const std::string& url,
                                 const sdpa::master_info_list_t& arrMasterNames,
-                                const unsigned int capacity,
                                 bool  bCanRunTasksLocally = false,
                                 const unsigned int rank = 0,
                                 const std::string& appGuiUrl = "" )
     {
       LOG( DEBUG, "Create Agent "<<name<<" with no workflow engine" );
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, bCanRunTasksLocally, rank, appGuiUrl ) );
 
 //      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
 //      seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );

@@ -18,7 +18,7 @@
 #define BOOST_TEST_MODULE testCapabilities
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
@@ -26,7 +26,6 @@
 #include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;
@@ -209,12 +208,12 @@ BOOST_AUTO_TEST_CASE( Test1 )
 
 	m_strWorkflow = read_workflow("workflows/capabilities.pnet");
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
+	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false);
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo);
+	ptrAgent->start_agent();
 
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH, kvs_host(), kvs_port()) );
@@ -263,12 +262,12 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 
 	m_strWorkflow = read_workflow("workflows/capabilities_no_mandatory.pnet");
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
+	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_1", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false);
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_1", addrAgent, arrAgentMasterInfo);
+	ptrAgent->start_agent();
 
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_1", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );

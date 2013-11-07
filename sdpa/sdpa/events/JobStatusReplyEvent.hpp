@@ -5,6 +5,7 @@
 
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/types.hpp>
+#include <sdpa/job_states.hpp>
 
 #include <fhg/error_codes.hpp>
 
@@ -16,17 +17,16 @@ namespace sdpa
     {
     public:
       typedef sdpa::shared_ptr<JobStatusReplyEvent> Ptr;
-      typedef sdpa::status_t status_t;
 
       JobStatusReplyEvent()
         : JobEvent ("", "", "")
-        , status_ ("UNKNOWN")
+        , status_ (sdpa::status::UNKNOWN)
       {}
 
       JobStatusReplyEvent ( const address_t& a_from
                           , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
-                          , const status_t &a_status = status_t()
+                          , const sdpa::status::code& a_status = sdpa::status::UNKNOWN
                           , int const error_code = fhg::error::UNASSIGNED_ERROR
                           , std::string const& error_message = std::string()
                           )
@@ -41,7 +41,7 @@ namespace sdpa
         return "JobStatusReplyEvent(" + job_id().str() + ")";
       }
 
-      const status_t& status() const
+      sdpa::status::code status() const
       {
         return status_;
       }
@@ -60,7 +60,7 @@ namespace sdpa
       }
 
     private:
-      status_t status_;
+      sdpa::status::code status_;
       int m_error_code;
       std::string m_error_message;
 

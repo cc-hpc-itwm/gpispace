@@ -16,13 +16,13 @@
  * =====================================================================================
  */
 
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/events/CodecStrategy.hpp>
 #include <seda/EventPrioQueue.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/JobImpl.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
@@ -30,8 +30,6 @@
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 #include <sstream>
@@ -55,7 +53,6 @@ using namespace sdpa::events;
 //constructor
 GenericDaemon::GenericDaemon( const std::string name,
                               const master_info_list_t arrMasterInfo,
-                              unsigned int cap,
                               unsigned int rank
                             , std::string const &guiUrl)
   : Strategy(name),
@@ -69,15 +66,9 @@ GenericDaemon::GenericDaemon( const std::string name,
     ptr_workflow_engine_(NULL),
 
     m_nRank(rank),
-    m_nCap(cap),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
-    m_nExternalJobs(0),
-    m_ullPollingInterval(100000),
-    m_bRequestsAllowed(false),
     m_bStopped(false),
-    m_threadBkpService(this),
-    m_last_request_time(0)
- , m_guiService ("GSPC", guiUrl)
+    m_guiService ("GSPC", guiUrl)
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -104,73 +95,71 @@ GenericDaemon::GenericDaemon( const std::string name,
   }
 }
 
-void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkpFile)
-{
-  bfs::ifstream ifs (bkpFile);
-  if (!ifs)
-  {
-    throw std::runtime_error ("backup file does not exist");
-  }
-
-  startup_step1 (bUseReqModel);
-
-  recover (ifs);
-
-  startup_step2();
-
-  m_threadBkpService.start(bkpFile);
-
-  startup_step3();
-}
-
-void GenericDaemon::start_agent( bool bUseReqModel, std::string strBackup)
-{
-  if (strBackup.empty())
-  {
-    throw std::runtime_error ("backup string is empty");
-  }
-  std::stringstream iostr(strBackup);
-
-  startup_step1 (bUseReqModel);
-
-  recover (iostr);
-
-  startup_step2();
-
-  m_threadBkpService.start();
-
-  startup_step3();
-}
-
-void GenericDaemon::start_agent(bool bUseReqModel)
-{
-  startup_step1 (bUseReqModel);
-
-  startup_step2();
-
-  m_threadBkpService.start();
-
-  startup_step3();
-}
-
-void GenericDaemon::startup_step1 (bool bUseReqModel)
+void GenericDaemon::start_agent()
 {
   if(!scheduler())
   {
-    createScheduler(bUseReqModel);
+    createScheduler();
   }
-}
-void GenericDaemon::startup_step2()
-{
+
   ptr_daemon_stage_.lock()->start();
+
+  // use for now as below, later read from config file
+  // TODO: move this to "property" style:
+  //    dot separated
+  //    hierarchies / categories
+  //    retrieve values maybe from kvs?
+  //    no spaces
+
+  // Read these values from a configuration file !
+  // if this does not exist, use default values
+
+  // set default configuration
+  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
+
+  DMLOG (TRACE, "Try to configure the network now ... ");
+
+  const boost::tokenizer<boost::char_separator<char> > tok
+    (url(), boost::char_separator<char> (":"));
+
+  const std::vector<std::string> vec (tok.begin(), tok.end());
+
+  if (vec.empty() || vec.size() > 2)
+  {
+    {
+      lock_type lock (_state_machine_mutex);
+      process_event (ConfigNokEvent());
+    }
+
+    m_bStopped = true;
+
+    LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
+    throw std::runtime_error ("configuration of network failed: invalid url");
+  }
 
   try
   {
-    action_configure();
+    sdpa::com::NetworkStrategy::ptr_t net
+      ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
+                                       , name() /*name for peer*/
+                                       , fhg::com::host_t (vec[0])
+                                       , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
+                                       )
+      );
+
+    seda::Stage::Ptr network_stage
+      (new seda::Stage (m_to_master_stage_name_, net));
+
+    seda::StageRegistry::instance().insert (network_stage);
+
+    ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
   }
   catch (...)
   {
-    perform_ConfigNokEvent();
+    {
+      lock_type lock (_state_machine_mutex);
+      process_event (ConfigNokEvent());
+    }
 
     m_bStopped = true;
 
@@ -183,12 +172,11 @@ void GenericDaemon::startup_step2()
   // start the network stage
   to_master_stage()->start();
 
-  perform_ConfigOkEvent();
+  {
+    lock_type lock (_state_machine_mutex);
+    process_event (ConfigOkEvent());
+  }
 
-  m_bRequestsAllowed = true;
-}
-void GenericDaemon::startup_step3()
-{
   if (!isTop())
   {
     requestRegistration();
@@ -230,10 +218,6 @@ void GenericDaemon::eworknotreg()
   scheduler()->removeWorkers();
 }
 
-std::string GenericDaemon::last_backup() const
-{
-	return m_threadBkpService.getLastBackup();
-}
 /**
  * Shutdown an agent
  */
@@ -253,15 +237,13 @@ void GenericDaemon::shutdown( )
     seda::StageRegistry::instance().remove(m_to_master_stage_name_);
 
     scheduler()->stop();
-    m_threadBkpService.stop();
 
-    //! \todo OLD COMMENT, STILL VALID? TODO?
-    // save the current state of the system .i.e serialize the daemon's state
-
-    m_bRequestsAllowed = false;
     m_bStopped 	= true;
 
-    handleInterruptEvent();
+    {
+      lock_type lock (_state_machine_mutex);
+      process_event (InterruptEvent());
+    }
 
     seda::StageRegistry::instance().lookup(name())->stop();
     seda::StageRegistry::instance().remove(name());
@@ -292,60 +274,6 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
     DMLOG (TRACE, "Received unexpected event " << pEvent->str()<<". Cannot handle it!");
     //! \todo THROW
   }
-}
-
-//actions
-void GenericDaemon::action_configure()
-{
-  // use for now as below, later read from config file
-  // TODO: move this to "property" style:
-  //    dot separated
-  //    hierarchies / categories
-  //    retrieve values maybe from kvs?
-  //    no spaces
-
-  // Read these values from a configuration file !
-  // if this does not exist, use default values
-
-  // set default configuration
-  // id StartUpEvent contains a configuration file, read the config file and
-  // overwrite the default vaules
-
-  cfg().put("polling interval",             1 * 1000 * 1000);
-  cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
-  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
-  cfg().put("backup_interval",              5 * 1000 * 1000); // 3s*/
-
-  m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
-  m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
-
-  DMLOG (TRACE, "Try to configure the network now ... ");
-
-  const boost::tokenizer<boost::char_separator<char> > tok
-    (url(), boost::char_separator<char> (":"));
-
-  const std::vector<std::string> vec (tok.begin(), tok.end());
-
-  if (vec.empty() || vec.size() > 2)
-  {
-    LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
-    throw std::runtime_error ("configuration of network failed: invalid url");
-  }
-
-  sdpa::com::NetworkStrategy::ptr_t net
-    ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
-                                     , name() /*name for peer*/
-                                     , fhg::com::host_t (vec[0])
-                                     , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
-                                     )
-    );
-
-  seda::Stage::Ptr network_stage
-    (new seda::Stage (m_to_master_stage_name_, net));
-
-  seda::StageRegistry::instance().insert (network_stage);
-
-  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 }
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
@@ -419,23 +347,6 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
 }
 
-/*
-std::ostream& operator<<(std::ostream& os, sdpa::worker_id_list_t& worker_list)
-{
-	os<<"(";
-	for(sdpa::worker_id_list_t::iterator it=worker_list.begin(); it!=worker_list.end(); it++)
-	{
-		os<<*it;
-		if( boost::next(it) != worker_list.end() )
-			os<<",";
-		else
-			os<<")";
-	}
-
-	return os;
-}
-*/
-
 void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
 {
   //take a job from the workers' queue and serve it
@@ -465,9 +376,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
     Worker::ptr_t pWorker(findWorker(worker_id));
     pWorker->submit(jobId);
   }
-  catch(const NoJobScheduledException&)
-  {
-  }
   catch(const WorkerNotFoundException&)
   {
     DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
@@ -492,42 +400,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
   {
     DMLOG (WARN, "Unknown error during request-job handling!");
   }
-}
-
-void GenericDaemon::action_request_job(const RequestJobEvent& e)
-{
-  /*
-  the slave(aggregator) requests new executable jobs
-  this message is sent in regular frequencies depending on the load of the slave(aggregator)
-  this message can be seen as the trigger for a submitJob
-  it contains the id of the last job that has been received
-  the orchestrator answers to this message with a submitJob
-  */
-
-  // ATTENTION: you should submit/schedule only jobs that are in Pending state
-  // A job received from the user should be automatically put into the Running state
-  // after submitting the corresponding workflow to WFE
-
-  //take a job from the workers' queue? and serve it
-
-  //To do: replace this with schedule
-  /*Worker::worker_id_t worker_id = e.from();
-  try {
-	  sdpa::job_id_t jobId = scheduler()->assignNewJob(worker_id,  e.last_job_id());
-	  serveJob( worker_id, jobId );
-  }
-  catch(const NoJobScheduledException&)
-  {
-	  DMLOG (TRACE, "There is no job to be served to the worker "<<worker_id);
-  }
-  catch(const WorkerNotFoundException&)
-  {
-     DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
-
-     // the worker should register first, before posting a job request
-     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-     sendEventToSlave(pErrorEvt);
-  }*/
 }
 
 bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
@@ -561,23 +433,6 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   }
   lock.unlock();
 
-  //if my capacity is reached, refuse to take any external job until at least one of my
-  //assigned jobs completes
-  if( e.from() != sdpa::daemon::WE  && jobManager()->countMasterJobs() > capacity() )
-  {
-    //generate a reject event
-    DMLOG (WARN, "Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
-    //send job rejected error event back to the master
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name(),
-                                              e.from(),
-                                              ErrorEvent::SDPA_EJOBREJECTED,
-                                              "Capacity exceeded! Cannot take further jobs",
-                                              e.job_id()) );
-    sendEventToMaster(pErrorEvt);
-
-    return;
-  }
-
   static const JobId job_id_empty ("");
 
   // First, check if the job 'job_id' wasn't already submitted!
@@ -607,9 +462,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   try {
     // One should parse the workflow in order to be able to create a valid job
     // if the event comes from Gwes parent_id is the owner_workflow_id
-    JobFSM* ptrFSM = new JobFSM(job_id, e.description(), this, e.parent_id());
-    ptrFSM->start_fsm();
-    Job::ptr_t pJob(ptrFSM);
+    Job::ptr_t pJob(new Job(job_id, e.description(), e.parent_id()));
     pJob->set_owner(e.from());
 
     // the job job_id is in the Pending state now!
@@ -1384,41 +1237,12 @@ const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_i
 }
 
 void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
-                                unsigned int cap,
+                                boost::optional<unsigned int> cap,
                                 const capabilities_set_t& cpbset,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid )
 {
   scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
-}
-
-void GenericDaemon::updateLastRequestTime()
-{
-    sdpa::util::time_type current_time = sdpa::util::now();
-    sdpa::util::time_type difftime = current_time - m_last_request_time;
-    m_last_request_time = difftime;
-}
-
-bool GenericDaemon::requestsAllowed()
-{
-  // if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval
-  // reset it to the value specified by config first time when m_nExternalJobs becomes positive
-  // don't forget to decrement m_nExternalJobs when the job is finished !
-
-  if(!m_bRequestsAllowed)
-  {
-    DMLOG (TRACE, "The flag \"m_bRequestsAllowed\" is set on false!");
-    return false;
-  }
-
-  if( jobManager()->countMasterJobs() == 0 )
-    if( m_ullPollingInterval < cfg().get<unsigned int>("upper bound polling interval") )
-       m_ullPollingInterval = m_ullPollingInterval + 100 * 1000; //0.1s
-
-  sdpa::util::time_type current_time = sdpa::util::now();
-  sdpa::util::time_type diff_time    = current_time - m_last_request_time;
-
-  return ( diff_time > m_ullPollingInterval ) && ( jobManager()->countMasterJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
 }
 
 void GenericDaemon::activityFailed( const Worker::worker_id_t& worker_id
@@ -1513,24 +1337,12 @@ void GenericDaemon::activityCancelled(const Worker::worker_id_t& worker_id, cons
   }
 }
 
-void GenericDaemon::requestJob(const MasterInfo& masterInfo)
-{
-  if( masterInfo.is_registered() )
-  {
-    RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), masterInfo.name() ) );
-    sendEventToMaster(pEvtReq);
-  }
-
-  updateLastRequestTime();
-}
-
 void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
   if( !masterInfo.is_registered() )
   {
     DMLOG (TRACE, "The agent \"" << name()
                << "\" is sending a registration event to master \"" << masterInfo.name()
-               << "\", capacity = "<<capacity()
           );
 
     capabilities_set_t cpbSet;
@@ -1538,7 +1350,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 
     //std::cout<<cpbSet;
 
-    WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), cpbSet,  rank(), agent_uuid()));
+    WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank(), agent_uuid()));
     sendEventToMaster(pEvtWorkerReg);
   }
 }
@@ -1684,37 +1496,42 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   {
 	  try {
 		  Job::ptr_t& pJob = findJob(jobId);
-		  sdpa::status_t jobStatus = pJob->getStatus();
+      switch (pJob->getStatus())
+      {
+      case sdpa::status::FINISHED:
+        {
+          JobFinishedEvent::Ptr pEvtJobFinished
+            (new JobFinishedEvent( name()
+                                 , subscriber
+                                 , pJob->id()
+                                 , pJob->result()
+                                 ));
+          sendEventToMaster(pEvtJobFinished);
+        }
+        break;
 
-		  if(jobStatus.find("Finished") != std::string::npos)
-		  {
-			  JobFinishedEvent::Ptr pEvtJobFinished
-			  	  (new JobFinishedEvent( name()
-					  	  	  	  	  , subscriber
-					  	  	  	  	  , pJob->id()
-					  	  	  	  	  , pJob->result()
-							));
-			  sendEventToMaster(pEvtJobFinished);
-		}
-		else if(jobStatus.find("Failed") != std::string::npos)
-		{
-			JobFailedEvent::Ptr pEvtJobFailed
-                          (new JobFailedEvent( name()
-                                             , subscriber
-                                             , pJob->id()
-                                             , pJob->result()
-                                             , fhg::error::UNASSIGNED_ERROR
-                                             , "TODO: take the error message from the job pointer somehow"
-                                             )
-                          );
+      case sdpa::status::FAILED:
+        {
+          JobFailedEvent::Ptr pEvtJobFailed
+            (new JobFailedEvent( name()
+                               , subscriber
+                               , pJob->id()
+                               , pJob->result()
+                               , fhg::error::UNASSIGNED_ERROR
+                               , "TODO: take the error message from the job pointer somehow"
+                               )
+            );
+          sendEventToMaster(pEvtJobFailed);
+        }
+        break;
 
-			sendEventToMaster(pEvtJobFailed);
-		}
-		else if( jobStatus.find("Cancelled") != std::string::npos)
-		{
-			CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
-			sendEventToMaster(pEvtCancelJobAck);
-		}
+      case sdpa::status::CANCELED:
+        {
+          CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
+          sendEventToMaster(pEvtCancelJobAck);
+        }
+        break;
+      }
 	  }
 	  catch(JobNotFoundException const &)
 	  {
@@ -1758,51 +1575,16 @@ void GenericDaemon::reScheduleAllMasterJobs()
   }
 }
 
-void GenericDaemon::backup( std::ostream& ofs )
-{
-	try {
-		//std::string strArchiveName(name()+".bkp");
-		//SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
+#define PERFORM_FORWARD(METHOD,EVENT_TYPE)                \
+      void GenericDaemon::METHOD(const EVENT_TYPE* evt)   \
+      {                                                   \
+        lock_type lock (_state_machine_mutex);            \
+        process_event (*evt);                             \
+      }
 
-		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<JobManager*>(NULL));
-		oa.register_type(static_cast<JobImpl*>(NULL));
-		oa.register_type(static_cast<JobFSM*>(NULL));
-		backupJobManager(oa);
+      PERFORM_FORWARD (handleWorkerRegistrationEvent, WorkerRegistrationEvent)
+      PERFORM_FORWARD (handleDeleteJobEvent, DeleteJobEvent)
+      PERFORM_FORWARD (handleSubmitJobEvent, SubmitJobEvent)
+      PERFORM_FORWARD (handleErrorEvent, ErrorEvent)
 
-		oa.register_type(static_cast<SchedulerImpl*>(NULL));
-		backupScheduler(oa);
-
-		/*oa.register_type(static_cast<T*>(NULL));
-    	oa << ptr_workflow_engine_;*/
-		oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
-	}
-	catch(exception &e) {
-		cout <<"Exception occurred: "<< e.what() << endl;
-	}
-}
-
-void GenericDaemon::recover( std::istream& ifs )
-{
-	try {
-		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<JobManager*>(NULL));
-		ia.register_type(static_cast<JobImpl*>(NULL));
-		ia.register_type(static_cast<JobFSM*>(NULL));
-		recoverJobManager(ia);
-
-		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		recoverScheduler(ia);
-
-		// should ignore the workflow engine,
-		// since it is not always possible to recover it
-
-		/*ia.register_type(static_cast<T*>(NULL));
-    	ia >> ptr_workflow_engine_;*/
-		ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
-		SDPA_LOG_INFO("The list of recoverd masters is: ");
-	}
-	catch(exception &e) {
-		cout <<"Exception occurred: " << e.what() << endl;
-	}
-}
+#undef PERFORM_FORWARD

@@ -1026,21 +1026,6 @@ function cleanup ()
     echo "  * logs" >&2
     clear-logs -f -a -x
 
-    echo "  * backup files" >&2
-    for f in "$HOME"/*.bkp *.bkp ; do
-        if [ -e "$f" ] ; then
-            read -t 5 -n 1 -p "    remove $f? [y/N] " do_rm
-            case "$do_rm" in
-                y|Y|j|J)
-                    echo
-                    rm -f "$f"
-                    ;;
-                *)
-                    echo
-                    ;;
-            esac
-        fi
-    done
     return 0
 }
 

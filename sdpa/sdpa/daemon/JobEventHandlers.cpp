@@ -21,8 +21,7 @@
 #include <seda/StageRegistry.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -91,60 +90,6 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
                     );
 
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-}
-
-void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* /* pEvt */)
-{
-  SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
-}
-
-void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* /* pEvt */ )
-{
-  SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
-}
-
-void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* /* pEvt */ )
-{
-  SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
-}
-
-void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
-{
-  SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
-
-  ostringstream os;
-  Worker::worker_id_t worker_id = pEvt->from();
-
-  try {
-    jobManager()->findJob(pEvt->job_id());
-    // delete it from the map when you receive a CancelJobAckEvent!
-    jobManager()->deleteJob(pEvt->job_id());
-  }
-  catch(JobNotFoundException const &ex0)
-  {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, ex0.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-  catch(JobNotDeletedException const & ex1)
-  {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-  catch(std::exception const &ex2)
-  {
-    SDPA_LOG_ERROR( "Unexpected exception during "
-                    << " handleCancelJobAckEvent("<< pEvt->job_id() << ")"
-                    << ": "
-                    << ex2.what()
-                   );
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
     sendEventToMaster(pErrorEvt);
   }
 }

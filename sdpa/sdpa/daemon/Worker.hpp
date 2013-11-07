@@ -9,11 +9,8 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/exceptions.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
+
+#include <boost/optional.hpp>
 
 namespace sdpa { namespace daemon {
 
@@ -49,7 +46,7 @@ namespace sdpa { namespace daemon {
       @param location how to reach that worker (might be the same as the former)
       */
     explicit Worker( 	const worker_id_t& name = worker_id_t(""),
-    					const unsigned int& cap = 10000,
+    					const boost::optional<unsigned int>& cap = boost::none,
     					const unsigned int& rank = 0,
     					const sdpa::worker_id_t& agent_uuid = "",
     					const location_t &location = "" );
@@ -91,7 +88,7 @@ namespace sdpa { namespace daemon {
     /**
          Return the rank of the worker.
      */
-    unsigned int capacity() const { lock_type lock(mtx_); return capacity_; }
+    boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
     unsigned int rank() const { lock_type lock(mtx_); return rank_; }
     const sdpa::worker_id_t& agent_uuid() const { lock_type lock(mtx_); return agent_uuid_; }
 
@@ -147,19 +144,6 @@ namespace sdpa { namespace daemon {
 
     unsigned int nbAllocatedJobs();
 
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-    	ar & name_;
-        ar & rank_;
-        ar & location_;
-    	ar & tstamp_;
-    	ar & last_time_served_;
-    	ar & last_schedule_time_;
-    }
-
-    friend class boost::serialization::access;
-
     void print();
 
     // methods related to reservation
@@ -171,7 +155,7 @@ namespace sdpa { namespace daemon {
     SDPA_DECLARE_LOGGER();
 
     worker_id_t name_; //! name of the worker
-    unsigned int capacity_;
+    boost::optional<unsigned int> capacity_;
     sdpa::capabilities_set_t capabilities_;
     unsigned int rank_;
     sdpa::worker_id_t agent_uuid_;

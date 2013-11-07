@@ -16,10 +16,10 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testCoallocation
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -28,7 +28,6 @@
 #include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;
@@ -270,9 +269,9 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   ostringstream oss;
 
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
 
-  pAgent-> createScheduler(false);
+  pAgent->createScheduler();
 
   if(!pAgent->scheduler())
   LOG(FATAL, "The scheduler was not properly initialized");
@@ -293,15 +292,15 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   // create a number of jobs
   const sdpa::job_id_t jobId0("Job0");
-  sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0"));
+  sdpa::daemon::Job::ptr_t pJob0(new Job(jobId0, "description 0", sdpa::job_id_t()));
   pAgent->jobManager()->addJob(jobId0, pJob0);
 
   const sdpa::job_id_t jobId1("Job1");
-  sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+  sdpa::daemon::Job::ptr_t pJob1(new Job(jobId1, "description 1", sdpa::job_id_t()));
   pAgent->jobManager()->addJob(jobId1, pJob1);
 
   const sdpa::job_id_t jobId2("Job2");
-  sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
+  sdpa::daemon::Job::ptr_t pJob2(new Job(jobId2, "description 2", sdpa::job_id_t()));
   pAgent->jobManager()->addJob(jobId2, pJob2);
 
   job_requirements_t jobReqs_0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
@@ -351,7 +350,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   // try now to schedule a job requiring 2 resources of type "A"
   const sdpa::job_id_t jobId4("Job4");
-  sdpa::daemon::Job::ptr_t pJob4(new JobFSM(jobId4, "description 4"));
+  sdpa::daemon::Job::ptr_t pJob4(new Job(jobId4, "description 4", sdpa::job_id_t()));
   pAgent->jobManager()->addJob(jobId4, pJob4);
 
   job_requirements_t jobReqs_5(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(2, 100));
@@ -407,12 +406,12 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   osstr<<"agent_"<<testNb;
   std::string agentName(osstr.str());
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create(orchName, addrOrch, MAX_CAP);
-  ptrOrch->start_agent(false);
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(orchName, addrOrch);
+  ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
-  sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAgent->start_agent(false);
+  sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo);
+  ptrAgent->start_agent();
 
   boost::thread drts_thread[NWORKERS];
   sdpa::shared_ptr<fhg::core::kernel_t> drts[NWORKERS];

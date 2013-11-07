@@ -1,7 +1,5 @@
 #define BOOST_TEST_MODULE TestSubmitJobFails
 #include <boost/test/unit_test.hpp>
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include "tests_config.hpp"
@@ -280,12 +278,12 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure1 )
 	string addrAgg = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, 10);
-	ptrOrch->start_agent(true);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
+	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAggMasterInfo(1, MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgg, arrAggMasterInfo, 100 );
-	ptrAgg->start_agent(true);
+	ptrAgg->start_agent();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
@@ -315,12 +313,12 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure2 )
 	string addrAgg = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, 10);
-	ptrOrch->start_agent(true);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
+	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAggMasterInfo(1, MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgg, arrAggMasterInfo, 100 );
-	ptrAgg->start_agent(true);
+	ptrAgg->start_agent();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);

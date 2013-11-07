@@ -1,8 +1,8 @@
 #define BOOST_TEST_MODULE test_LostRegistrationAck
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include "tests_config.hpp"
@@ -17,7 +17,6 @@ using namespace std;
 using namespace seda;
 
 const int NMAXTRIALS = 5;
-const int MAX_CAP 	 = 100;
 static int testNb 	 = 0;
 
 namespace po = boost::program_options;
@@ -200,10 +199,9 @@ public:
 	FaultyAgent(const std::string& name = "",
 		  const std::string& url = "",
 		  const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
-		  unsigned int cap = 10000,
 		  bool bCanRunTasksLocally = false,
 		  std::string strWorkflow = "")
-	: Agent(name, url, arrMasterNames, cap, bCanRunTasksLocally)
+	: Agent(name, url, arrMasterNames, bCanRunTasksLocally)
 	, nSuccFailures_(0)
 	, strWorkflow_(strWorkflow)
 	, bForceExit_(false)
@@ -287,11 +285,10 @@ class FaultyAgentFactory
 public:
    static FaultyAgent::ptr_t create( const std::string& name,
 							   const std::string& url,
-							   const sdpa::master_info_list_t& arrMasterNames,
-							   const unsigned int capacity )
+							   const sdpa::master_info_list_t& arrMasterNames)
    {
 	   LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-	   FaultyAgent::ptr_t pAgent( new FaultyAgent( name, url, arrMasterNames, capacity ) );
+	   FaultyAgent::ptr_t pAgent( new FaultyAgent( name, url, arrMasterNames) );
 	   pAgent->createWorkflowEngine<T>();
 
 	   seda::IEventQueue::Ptr ptrEvtQueue(new seda::EventQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
@@ -320,18 +317,18 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
+	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgent0MasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo, MAX_CAP );
-	ptrAgent0->start_agent(false);
+	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo);
+	ptrAgent0->start_agent();
 
 	// create faulty agent
 	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo, MAX_CAP );
+	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo);
 
-	ptrAgent1->start_agent(false);
+	ptrAgent1->start_agent();
 
 	ptrOrch->shutdown();
 	ptrAgent0->shutdown();

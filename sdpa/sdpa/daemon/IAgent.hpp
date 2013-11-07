@@ -46,7 +46,6 @@ namespace sdpa {
     virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e) = 0;
     virtual void requestRegistration() = 0;
     virtual void requestRegistration(const MasterInfo& masterInfo) = 0;
-    virtual void requestJob(const MasterInfo& masterInfo) = 0;
 
     virtual JobManager::ptr_t jobManager() const = 0;
 
@@ -76,17 +75,11 @@ namespace sdpa {
     virtual unsigned int& rank() = 0;
     virtual const sdpa::worker_id_t& agent_uuid() = 0;
 
-    virtual void updateLastRequestTime() = 0;
-    virtual bool requestsAllowed() = 0;
-
     virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& job_id) = 0;
 
     virtual void schedule(const sdpa::job_id_t& job) = 0;
     virtual bool hasWorkflowEngine() = 0;
     virtual bool isTop() = 0;
-
-    virtual void backup( std::ostream& ) = 0;
-    virtual void recover( std::istream& ) = 0;
 
     virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
 

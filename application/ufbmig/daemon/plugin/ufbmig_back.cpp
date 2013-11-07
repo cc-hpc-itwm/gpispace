@@ -25,6 +25,7 @@
 #include <we/type/net.hpp>
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
+#include <pnetc/type/config/op.hpp>
 
 #include <we/type/value.hpp>
 
@@ -845,7 +846,7 @@ private:
       we::util::token::list_t output (we::util::token::get (result, "config"));
       if (output.empty())
         throw std::runtime_error("empty list");
-      config = pnetc::type::config::config (output.front());
+      config = pnetc::type::config::from_value (output.front());
       MLOG(INFO, "got config: " << config);
     }
     catch (std::exception const & ex)

@@ -24,10 +24,8 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/IAgent.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
+
+#include <boost/optional.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -41,7 +39,7 @@ namespace sdpa {
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      SchedulerImpl(sdpa::daemon::IAgent* pHandler = NULL, bool bUseRequestModel = true );
+      SchedulerImpl(sdpa::daemon::IAgent* pHandler = NULL);
       virtual ~SchedulerImpl();
 
       virtual void schedule(const sdpa::job_id_t&);
@@ -63,7 +61,7 @@ namespace sdpa {
       virtual const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
       virtual void addWorker( const Worker::worker_id_t& workerId,
-                              const unsigned int& capacity = 10000,
+                              const boost::optional<unsigned int>& capacity = boost::none,
 			      const capabilities_set_t& cpbset = capabilities_set_t(),
 			      const unsigned int& agent_rank = 0,
 			      const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
@@ -99,15 +97,11 @@ namespace sdpa {
 
       virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
       virtual void execute(const sdpa::job_id_t& jobId); //just for testing
-      virtual void checkRequestPosted();
-      virtual bool postRequest(const MasterInfo& masterInfo, bool force = false);
 
       virtual void feedWorkers();
       void cancelWorkerJobs();
       void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);
       virtual void forceOldWorkerJobsTermination();
-
-      virtual bool useRequestModel() { return m_bUseRequestModel; }
 
       void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
@@ -116,14 +110,6 @@ namespace sdpa {
       virtual void stop();
       virtual void run();
 
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<Scheduler>(*this);
-	ar & ptr_worker_man_;
-      }
-
-      friend class boost::serialization::access;
       virtual void print();
       void removeWorkers() { ptr_worker_man_->removeWorkers(); }
 
@@ -143,7 +129,6 @@ namespace sdpa {
       SDPA_DECLARE_LOGGER();
       boost::posix_time::time_duration m_timeout;
 
-      bool m_bUseRequestModel; // true -> request model, false -> push model
       sdpa::cancellation_list_t cancellation_list_;
 
       mutable mutex_type mtx_;

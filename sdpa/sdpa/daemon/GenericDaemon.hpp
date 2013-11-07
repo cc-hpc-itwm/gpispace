@@ -28,7 +28,6 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sdpa/daemon/BackupService.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
@@ -40,7 +39,6 @@
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
-#include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
@@ -52,27 +50,57 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/user_data.hpp>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/weak_ptr.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
 #include <boost/utility.hpp>
-#include <sdpa/daemon/NotificationService.hpp>
+#include <boost/msm/back/state_machine.hpp>
+#include <boost/msm/front/state_machine_def.hpp>
+#include <boost/thread.hpp>
 
+
+#include <sdpa/daemon/NotificationService.hpp>
 
 namespace sdpa {
   namespace daemon {
+    namespace detail
+    {
+      struct DaemonFSM_ : public boost::msm::front::state_machine_def<DaemonFSM_>
+      {
+        virtual ~DaemonFSM_ () {}
+
+        struct Down : public boost::msm::front::state<>{};
+        struct Up : public boost::msm::front::state<>{};
+
+        struct InterruptEvent {};
+        struct ConfigOkEvent {};
+        struct ConfigNokEvent {};
+
+        virtual void action_delete_job(const sdpa::events::DeleteJobEvent& ) = 0;
+        virtual void action_submit_job(const sdpa::events::SubmitJobEvent& ) = 0;
+        virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
+        virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
+
+        typedef Down initial_state;
+
+        struct transition_table : boost::mpl::vector<
+        //      Start         Event         		                      Next            Action                Guard
+        //      +-------------+---------------------------------------+---------------+---------------------+-----
+        _row<   Down,         ConfigOkEvent,                          Up>,
+        _irow<  Down,         ConfigNokEvent>,
+        _irow<  Down,         sdpa::events::ErrorEvent >,
+        //      +------------+-----------------------+----------------+--------------+-----
+        _row<   Up,           InterruptEvent,                         Down>,
+        a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &DaemonFSM_::action_register_worker>,
+        a_irow< Up,           sdpa::events::DeleteJobEvent,                           &DaemonFSM_::action_delete_job>,
+        a_irow< Up,           sdpa::events::SubmitJobEvent,                           &DaemonFSM_::action_submit_job>,
+        a_irow< Up,           sdpa::events::ErrorEvent,                               &DaemonFSM_::action_error_event>
+        >{};
+      };
+    }
 
     class GenericDaemon : public sdpa::daemon::IAgent,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
+                        , public boost::msm::back::state_machine<detail::DaemonFSM_>
     {
     public:
       typedef boost::recursive_mutex mutex_type;
@@ -82,7 +110,6 @@ namespace sdpa {
 
       GenericDaemon(const std::string name = "orchestrator_0",
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
-                    unsigned int cap = 10000,
                     unsigned int rank = 0
                    , const std::string& guiUrl = ""
                    );
@@ -93,21 +120,10 @@ namespace sdpa {
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
       virtual const std::string url() const {return std::string();}
-      const unsigned int& capacity() const { return m_nCap; }
-      unsigned int& capacity() { return m_nCap; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
-      void start_agent( bool bUseReqModel, const bfs::path& bkpFile); // from cfg file!
-      void start_agent( bool bUseReqModel, std::string strBackup);
-      void start_agent( bool bUseReqModel); // no recovery
+      void start_agent();
 
-    private:
-      void startup_step1 (bool bUseReqModel);
-      void startup_step2();
-      void startup_step3();
-
-    public:
-      std::string last_backup() const;
       void shutdown();
 
       void addMaster(const agent_id_t& );
@@ -135,9 +151,10 @@ namespace sdpa {
 
       NotificationService* gui_service() { return &m_guiService; }
 
-      virtual void handleInterruptEvent() = 0;
-      virtual void perform_ConfigOkEvent() = 0;
-      virtual void perform_ConfigNokEvent() = 0;
+      virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
+      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
+      virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
+      virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
     protected:
 
@@ -149,9 +166,6 @@ namespace sdpa {
       // masters and subscribers
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
 
-      template <typename T>
-      void notifyMasters(const T&);
-
       void unsubscribe(const sdpa::agent_id_t&);
       void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
       bool isSubscriber(const sdpa::agent_id_t&);
@@ -161,8 +175,6 @@ namespace sdpa {
       sdpa::util::Config& cfg() { return daemon_cfg_;}
 
       // agent info and properties
-      virtual void updateLastRequestTime();
-      virtual bool requestsAllowed();
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
       {
@@ -182,10 +194,10 @@ namespace sdpa {
       virtual void perform(const seda::IEvent::Ptr&);
       virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
-      virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
-      virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
-      virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
-      virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+      virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
+      virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* ) = 0;
+      virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* ) = 0;
+      virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* ) = 0;
       virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
       virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
       virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
@@ -195,9 +207,7 @@ namespace sdpa {
       virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
 
       // agent fsm (actions)
-      virtual void action_configure();
       virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
-      virtual void action_request_job( const sdpa::events::RequestJobEvent& );
       virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
       virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
       virtual void action_error_event(const sdpa::events::ErrorEvent& );
@@ -241,9 +251,8 @@ namespace sdpa {
       const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) const;
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
       virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId );
-      virtual void requestJob(const MasterInfo& masterInfo);
       virtual void addWorker( const Worker::worker_id_t& workerId,
-                              unsigned int cap,
+                              boost::optional<unsigned int> cap,
                               const capabilities_set_t& cpbset,
                               const unsigned int& rank = 0,
                               const sdpa::worker_id_t& agent_uuid  = "");
@@ -260,34 +269,16 @@ namespace sdpa {
       // scheduler
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
+      void createScheduler()
+      {
+        ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this));
+      }
+
     protected:
-      virtual void createScheduler(bool bUseReqModel) = 0;
       virtual void schedule(const sdpa::job_id_t& job);
       virtual void reschedule(const sdpa::job_id_t& job);
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
       void reScheduleAllMasterJobs();
-
-      // backup
-      friend class boost::serialization::access;
-
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int)
-      {
-    	  ar & ptr_job_man_;
-    	  ar & ptr_scheduler_;
-    	  ar & ptr_workflow_engine_;
-    	  ar & m_arrMasterInfo;
-    	  ar & m_listSubscribers;
-      }
-
-      void backupJobManager(boost::archive::text_oarchive& oa) { oa << ptr_job_man_;}
-      void recoverJobManager(boost::archive::text_iarchive& ia) { ia >> ptr_job_man_; }
-
-      void backupScheduler(boost::archive::text_oarchive& oa) { oa << ptr_scheduler_;}
-      void recoverScheduler(boost::archive::text_iarchive& ia) { ia >> ptr_scheduler_;}
-
-      void backup( std::ostream& );
-      void recover( std::istream& );
 
       // data members
     protected:
@@ -309,53 +300,22 @@ namespace sdpa {
       Scheduler::ptr_t ptr_scheduler_;
       we::mgmt::basic_layer* ptr_workflow_engine_;
 
+      mutex_type _state_machine_mutex;
+
     private:
 
       unsigned int m_nRank;
-      unsigned int m_nCap; // maximum number of external jobs
       sdpa::worker_id_t m_strAgentUID;
-      unsigned int m_nExternalJobs;
-      sdpa::util::time_type m_ullPollingInterval;
 
-      bool m_bRequestsAllowed;
       bool m_bStopped;
       mutex_type mtx_subscriber_;
       mutex_type mtx_master_;
       mutex_type mtx_cpb_;
 
-      BackupService m_threadBkpService;
       sdpa::capabilities_set_t m_capabilities;
-      sdpa::util::time_type m_last_request_time;
       NotificationService m_guiService;
     };
-
-     /**
-     * Send a notification of type T to the masters
-     * @param[in] ptrNotEvt: Event to be sent to the master
-     */
-    template <typename T>
-    void GenericDaemon::notifyMasters(const T& ptrNotEvt)
-    {
-      lock_type lock(mtx_master_);
-      if(m_arrMasterInfo.empty())
-      {
-        SDPA_LOG_INFO("The master list is empty. No master to be notified exist!");
-        return;
-      }
-
-      BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-      {
-        if( masterInfo.is_registered() )
-        {
-          ptrNotEvt->to() = masterInfo.name();
-          SDPA_LOG_INFO("Send notification to the master "<<masterInfo.name());
-          sendEventToMaster(ptrNotEvt);
-        }
-      }
-    }
   }
 }
-
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::GenericDaemon )
 
 #endif

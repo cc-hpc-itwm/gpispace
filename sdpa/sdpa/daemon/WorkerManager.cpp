@@ -95,7 +95,7 @@ const Worker::worker_id_t& WorkerManager::findSubmOrAckWorker(const sdpa::job_id
  * add new worker
  */
 void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
-                                unsigned int capacity,
+                                boost::optional<unsigned int> capacity,
                                 const capabilities_set_t& cpbSet,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
@@ -119,7 +119,14 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
-  DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<pWorker->capacity() );
+  if (pWorker->capacity())
+  {
+    DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<*pWorker->capacity());
+  }
+  else
+  {
+    DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and unlimited capacity");
+  }
 
   if(worker_map_.size() == 1)
     iter_last_worker_ = worker_map_.begin();
@@ -143,36 +150,6 @@ const Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundExceptio
   iter_last_worker_++;
 
   return iter->second;
-}
-
-/**
- * compare the workers
- */
-struct compare_workers
-{
-  typedef WorkerManager::worker_map_t::value_type T;
-  bool operator()( T const& a, T const& b)
-  {
-    return a.second->nbAllocatedJobs() < b.second->nbAllocatedJobs();
-  }
-};
-
-/**
- * get the least loaded worker
- */
-sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException)
-{
-  lock_type lock(mtx_);
-
-  if( worker_map_.empty() )
-    throw NoWorkerFoundException();
-
-  worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end(), compare_workers());
-
-  if( it->second->nbAllocatedJobs() >= it->second->capacity() )
-    throw AllWorkersFullException();
-
-  return it->first;
 }
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
@@ -293,7 +270,9 @@ void WorkerManager::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
   {
     Worker::ptr_t ptrWorker = iter->second;
-    if( ptrWorker->nbAllocatedJobs()<ptrWorker->capacity() )
+    if( !ptrWorker->capacity()
+     || ptrWorker->nbAllocatedJobs()<ptrWorker->capacity()
+      )
     	workerList.push_back(ptrWorker->name());
   }
 

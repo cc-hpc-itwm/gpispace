@@ -20,7 +20,8 @@
           <code><![CDATA[
           MLOG (INFO, "reading config from file " << filename);
 
-          ::ufbmig::util::serialize::read (filename, config);
+          config = ::pnetc::type::config::from_value
+            (::ufbmig::util::serialize::read (filename));
           ]]></code>
         </module>
       </defun>
