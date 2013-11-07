@@ -48,7 +48,6 @@ namespace sdpa {
 	    void addJobRequirements( const sdpa::job_id_t&, const job_requirements_t& ) throw (JobNotFoundException);
 	    const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
 
-	    size_t countMasterJobs() const;
 	    size_t getNumberOfJobs() const;
 
 	    void waitForFreeSlot();

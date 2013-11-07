@@ -231,19 +231,6 @@ sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
 	return listJobsNotCompleted;
 }
 
-size_t JobManager::countMasterJobs() const
-{
-	lock_type lock(mtx_);
-	size_t nMasterJobs = 0;
-	BOOST_FOREACH(const job_map_t::value_type& job_pair, job_map_ )
-	{
-		if( job_pair.second->isMasterJob() )
-			nMasterJobs++;
-	}
-
-	return nMasterJobs;
-}
-
 size_t JobManager::getNumberOfJobs() const
 {
 	lock_type lock(mtx_);
