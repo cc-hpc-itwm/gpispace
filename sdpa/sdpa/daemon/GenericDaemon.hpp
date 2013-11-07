@@ -369,23 +369,4 @@ namespace sdpa {
   }
 }
 
-namespace sdpa {
-  namespace fsm {
-    namespace bmsm {
-      // Pick a back-end
-      class DaemonFSM : public sdpa::daemon::GenericDaemon
-      {
-      public:
-        typedef sdpa::shared_ptr<DaemonFSM> Ptr;
-
-        DaemonFSM(const std::string &name = "",
-                  const sdpa::master_info_list_t& arrMasterNames = sdpa::master_info_list_t(),
-                  unsigned int rank = 0
-                 , const std::string& guiUrl = ""
-                 );
-      };
-    }
-  }
-}
-
 #endif

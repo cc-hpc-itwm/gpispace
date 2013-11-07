@@ -25,7 +25,7 @@ namespace sdpa {
 
     template <typename T> struct AgentFactory;
 
-    class Agent : public sdpa::fsm::bmsm::DaemonFSM
+    class Agent : public GenericDaemon
     {
       public:
         typedef sdpa::shared_ptr<Agent > ptr_t;
@@ -37,7 +37,7 @@ namespace sdpa {
               bool bCanRunTasksLocally = false,
               int rank = -1,
               const std::string& guiUrl = "")
-          : DaemonFSM( name, arrMasterNames, rank, guiUrl),
+          : GenericDaemon( name, arrMasterNames, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
           url_(url),
           m_bCanRunTasksLocally(bCanRunTasksLocally)

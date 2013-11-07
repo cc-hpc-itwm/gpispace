@@ -1589,20 +1589,3 @@ void GenericDaemon::reScheduleAllMasterJobs()
       PERFORM_FORWARD (handleErrorEvent, ErrorEvent)
 
 #undef PERFORM_FORWARD
-
-namespace sdpa
-{
-  namespace fsm
-  {
-    namespace bmsm
-    {
-      DaemonFSM::DaemonFSM ( const std::string &name
-                           , const sdpa::master_info_list_t& arrMasterNames
-                           , unsigned int rank
-                           , std::string const &guiUrl
-                           )
-        : GenericDaemon (name, arrMasterNames, rank, guiUrl)
-      {}
-    }
-  }
-}
