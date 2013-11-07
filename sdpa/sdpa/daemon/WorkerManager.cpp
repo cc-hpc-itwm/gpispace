@@ -119,7 +119,14 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
-  DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<pWorker->capacity() );
+  if (pWorker->capacity())
+  {
+    DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<*pWorker->capacity());
+  }
+  else
+  {
+    DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and unlimited capacity");
+  }
 
   if(worker_map_.size() == 1)
     iter_last_worker_ = worker_map_.begin();
@@ -177,7 +184,9 @@ sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundExce
   //! "all" workers are full, while the second worker may take one
   //! more job. Proposed fix: let compare_workers() also sort by
   //! capacity.
-  if( it->second->nbAllocatedJobs() >= it->second->capacity() )
+  if( it->second->capacity()
+   && it->second->nbAllocatedJobs() >= *it->second->capacity()
+    )
     throw AllWorkersFullException();
 
   return it->first;
@@ -301,7 +310,9 @@ void WorkerManager::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
   {
     Worker::ptr_t ptrWorker = iter->second;
-    if( ptrWorker->nbAllocatedJobs()<ptrWorker->capacity() )
+    if( !ptrWorker->capacity()
+     || ptrWorker->nbAllocatedJobs()<ptrWorker->capacity()
+      )
     	workerList.push_back(ptrWorker->name());
   }
 

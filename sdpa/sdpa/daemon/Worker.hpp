@@ -10,6 +10,8 @@
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
+#include <boost/optional.hpp>
+
 namespace sdpa { namespace daemon {
 
   /**
@@ -86,7 +88,7 @@ namespace sdpa { namespace daemon {
     /**
          Return the rank of the worker.
      */
-    unsigned int capacity() const { lock_type lock(mtx_); return capacity_; }
+    boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
     unsigned int rank() const { lock_type lock(mtx_); return rank_; }
     const sdpa::worker_id_t& agent_uuid() const { lock_type lock(mtx_); return agent_uuid_; }
 
