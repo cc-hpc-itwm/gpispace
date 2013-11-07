@@ -21,11 +21,10 @@ namespace sdpa
                           , const std::string& destination_location
                           )
         : service_(service)
-        , m_destination_location (destination_location)
         , destination_ ( new fhg::log::ThreadedAppender
                          ( fhg::log::Appender::ptr_t
                            ( new fhg::log::remote::RemoteAppender
-                             (service_, m_destination_location)
+                             (service_, destination_location)
                            )
                          )
                        )
@@ -40,14 +39,8 @@ namespace sdpa
         destination_->append (FHGLOG_MKEVENT_HERE (TRACE, evt.encoded()));
       }
 
-      std::string location() const
-      {
-        return m_destination_location;
-      }
-
     private:
       std::string service_;
-      std::string m_destination_location;
       fhg::log::Appender::ptr_t destination_;
     };
   }
