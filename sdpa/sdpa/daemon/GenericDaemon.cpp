@@ -119,9 +119,6 @@ void GenericDaemon::start_agent()
     // if this does not exist, use default values
 
     // set default configuration
-    // id StartUpEvent contains a configuration file, read the config file and
-    // overwrite the default vaules
-
     cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
 
     DMLOG (TRACE, "Try to configure the network now ... ");
