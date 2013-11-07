@@ -6,8 +6,10 @@
 #include <we/type/signature/name.hpp>
 #include <we/type/signature/traverse.hpp>
 #include <we/type/value/name.hpp>
+#include <we/type/value/path/append.hpp>
 
 #include <fhg/util/indenter.hpp>
+#include <fhg/util/join.hpp>
 #include <fhg/util/cpp/block.hpp>
 #include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/struct.hpp>
@@ -287,15 +289,31 @@ namespace pnet
           class print_header_op : public printer
           {
           public:
-            print_header_op (std::ostream& os, fhg::util::indenter& indent)
+            print_header_op ( std::ostream& os
+                            , fhg::util::indenter& indent
+                            , std::list<std::list<std::string> >& tnames
+                            , std::list<std::string>& tname
+                            )
               : printer (os, indent)
+              , _tnames (tnames)
+              , _tname (tname)
             {}
 
             void _struct (const std::pair<std::string, structure_type>& s) const
             {
+              using pnet::type::value::path::append;
+
               _os << fhg::util::cpp::ns::open (_indent, s.first);
 
-              traverse_fields (*this, s);
+              _tnames.push_front (append (append (_tname, s.first), s.first));
+
+              traverse_fields ( print_header_op ( _os
+                                                , _indent
+                                                , _tnames
+                                                , append (_tname, s.first)
+                                                )
+                              , s
+                              );
 
               _os << _indent
                   << s.first
@@ -319,6 +337,9 @@ namespace pnet
             {
               traverse (*this, s);
             }
+          private:
+            std::list<std::list<std::string> >& _tnames;
+            std::list<std::string>& _tname;
           };
         }
 
@@ -330,13 +351,49 @@ namespace pnet
           fhg::util::indenter indent;
 
           os << fhg::util::cpp::include ("we/type/value.hpp");
+          os << fhg::util::cpp::include ("we/type/value/to_value.hpp");
           os << fhg::util::cpp::include ("iosfwd");
 
           os << fhg::util::cpp::ns::open (indent, "pnetc");
           os << fhg::util::cpp::ns::open (indent, "type");
 
-          traverse (print_header_op (os, indent), _structured);
+          std::list<std::list<std::string> > tnames;
 
+          {
+            std::list<std::string> tname;
+            tname.push_back ("pnetc");
+            tname.push_back ("type");
+
+            traverse (print_header_op (os, indent, tnames, tname), _structured);
+          }
+
+          os << fhg::util::cpp::ns::close (indent);
+          os << fhg::util::cpp::ns::close (indent);
+
+          os << fhg::util::cpp::ns::open (indent, "pnet");
+          os << fhg::util::cpp::ns::open (indent, "type");
+          os << fhg::util::cpp::ns::open (indent, "value");
+
+          BOOST_FOREACH (std::list<std::string>& tname, tnames)
+          {
+            os << indent
+               << "template<>"
+               << fhg::util::deeper (indent)
+               << "inline value_type to_value<"
+               << fhg::util::join (tname, "::")
+               << "> (const "
+               << fhg::util::join (tname, "::")
+               << "& x)";
+
+            tname.pop_back();
+
+            os << fhg::util::cpp::block::open (indent)
+               << indent << "return "
+               << fhg::util::join (tname, "::") << "::to_value (x);"
+               << fhg::util::cpp::block::close (indent);
+          }
+
+          os << fhg::util::cpp::ns::close (indent);
           os << fhg::util::cpp::ns::close (indent);
           os << fhg::util::cpp::ns::close (indent);
 
