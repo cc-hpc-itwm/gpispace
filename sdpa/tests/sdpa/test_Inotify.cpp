@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE( testInotifyExecution )
 	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo);
 	ptrAgent->start_agent();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts( createDRTSWorker("drts_0", "agent_0", "", TESTS_EXAMPLE_INOTIFY_MODULES_PATH, kvs_host(), kvs_port()) );

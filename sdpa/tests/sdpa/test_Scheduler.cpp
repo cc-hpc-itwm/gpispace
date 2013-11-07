@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
 
   ostringstream oss;
   pAgent->createScheduler();
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
 
   ostringstream oss;
   pAgent->createScheduler();
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
 
   ostringstream oss;
   pAgent->createScheduler();
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
 
   ostringstream oss;
   pAgent->createScheduler();
@@ -383,7 +383,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
 
   ostringstream oss;
   pAgent->createScheduler();

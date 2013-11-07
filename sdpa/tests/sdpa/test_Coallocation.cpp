@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   ostringstream oss;
 
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
 
   pAgent->createScheduler();
 
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
-  sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
+  sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo);
   ptrAgent->start_agent();
 
   boost::thread drts_thread[NWORKERS];

@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( TestCancelCoallocation )
   ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
   ptrAg0->start_agent();
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE( Test1 )
   ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
   ptrAg0->start_agent();
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE( Test2 )
   ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
   ptrAg0->start_agent();
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE( TestCancelCoalloc )
   ptrOrch->start_agent();
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
   ptrAg0->start_agent();
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );

@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoallocCommonCpb )
 	osstr<<"agent_"<<testNb;
 	std::string agentName(osstr.str());
 
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo);
 	ptrAgent->start_agent();
 
 	boost::thread drts_thread[NWORKERS];

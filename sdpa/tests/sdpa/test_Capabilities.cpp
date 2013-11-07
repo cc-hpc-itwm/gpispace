@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE( Test1 )
 	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo);
 	ptrAgent->start_agent();
 
 
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_1", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_1", addrAgent, arrAgentMasterInfo);
 	ptrAgent->start_agent();
 
 

@@ -26,8 +26,6 @@ namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 
-const unsigned int MAX_CAP = 10000;
-
 static const int EX_STILL_RUNNING = 4;
 
 int main (int argc, char **argv)
@@ -184,7 +182,6 @@ int main (int argc, char **argv)
     sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(   agentName,
                                                                                              agentUrl,
                                                                                              listMasterInfo,
-                                                                                             MAX_CAP,
                                                                                              false,
                                                                                              agentRank,
                                                                                              appGuiUrl ); //, orchUrl );
