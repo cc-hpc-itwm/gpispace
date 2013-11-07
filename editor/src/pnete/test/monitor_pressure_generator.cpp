@@ -27,13 +27,13 @@ struct activity
     _workers.push_back (worker);
   }
 
-  void send_out_notification ( NotificationService* service_a
-                             , NotificationService* service_b
+  void send_out_notification ( const NotificationService* service_a
+                             , const NotificationService* service_b
                              ) const
   {
     const NotificationEvent event (_workers, _id, _state, _act);
-    service_a->update (event);
-    service_b->update (event);
+    service_a->notify (event);
+    service_b->notify (event);
   }
 
   bool next_state()
@@ -88,9 +88,9 @@ int main(int ac, char **av)
   const int worker_count (ac >= 4 ? atoi (av[3]) : 1);
   const int duration (ac >= 5 ? 1000 / atoi (av[4]) : 1);
 
-  NotificationService service_a
+  const NotificationService service_a
     ((boost::format ("localhost:%1%") % port_a).str());
-  NotificationService service_b
+  const NotificationService service_b
     ((boost::format ("localhost:%1%") % port_b).str());
 
   std::vector<std::string> worker_names (worker_count);
