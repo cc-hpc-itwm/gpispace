@@ -156,10 +156,10 @@ namespace sdpa {
       virtual void perform(const seda::IEvent::Ptr&);
       virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
-      virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
-      virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
-      virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
-      virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+      virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
+      virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* ) = 0;
+      virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* ) = 0;
+      virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* ) = 0;
       virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
       virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
       virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
