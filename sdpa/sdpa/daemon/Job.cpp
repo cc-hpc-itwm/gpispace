@@ -11,7 +11,6 @@
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
 
-#include <sdpa/util/Properties.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <limits>
