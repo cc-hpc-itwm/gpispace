@@ -70,7 +70,6 @@ namespace sdpa {
 
       GenericDaemon(const std::string name = "orchestrator_0",
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
-                    unsigned int cap = 10000,
                     unsigned int rank = 0
                    , const std::string& guiUrl = ""
                    );

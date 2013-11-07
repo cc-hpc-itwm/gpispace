@@ -53,7 +53,6 @@ using namespace sdpa::events;
 //constructor
 GenericDaemon::GenericDaemon( const std::string name,
                               const master_info_list_t arrMasterInfo,
-                              unsigned int cap,
                               unsigned int rank
                             , std::string const &guiUrl)
   : Strategy(name),
@@ -67,7 +66,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     ptr_workflow_engine_(NULL),
 
     m_nRank(rank),
-    m_nCap(cap),
+    m_nCap(10000),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_bStopped(false),
     m_guiService ("GSPC", guiUrl)

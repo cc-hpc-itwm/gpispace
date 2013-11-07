@@ -33,7 +33,7 @@ namespace sdpa
                            , unsigned int rank
                            , std::string const &guiUrl
                            )
-        : GenericDaemon (name, arrMasterNames, 10000, rank, guiUrl)
+        : GenericDaemon (name, arrMasterNames, rank, guiUrl)
       {}
 
 #define DFLT_IMPL(METHOD,EVENT_TYPE)                                  \
