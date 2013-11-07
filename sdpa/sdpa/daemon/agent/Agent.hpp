@@ -31,12 +31,13 @@ namespace sdpa {
         typedef sdpa::shared_ptr<Agent > ptr_t;
         SDPA_DECLARE_LOGGER();
 
-        Agent(const std::string& name = "",
-              const std::string& url = "",
-              const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
-              bool bCanRunTasksLocally = false,
-              int rank = -1,
-              const boost::optional<std::string>& guiUrl = boost::none)
+        Agent ( const std::string& name
+              , const std::string& url
+              , const sdpa::master_info_list_t arrMasterNames
+              , bool bCanRunTasksLocally
+              , int rank
+              , const boost::optional<std::string>& guiUrl
+              )
           : GenericDaemon( name, arrMasterNames, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
           url_(url),

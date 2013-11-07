@@ -201,7 +201,7 @@ public:
 		  const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
 		  bool bCanRunTasksLocally = false,
 		  std::string strWorkflow = "")
-	: Agent(name, url, arrMasterNames, bCanRunTasksLocally)
+  : Agent(name, url, arrMasterNames, bCanRunTasksLocally, -1, boost::none)
 	, nSuccFailures_(0)
 	, strWorkflow_(strWorkflow)
 	, bForceExit_(false)
