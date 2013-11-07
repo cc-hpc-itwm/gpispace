@@ -20,11 +20,10 @@ namespace sdpa
       NotificationService ( const std::string& service
                           , const std::string& destination_location
                           )
-        : service_(service)
-        , destination_ ( new fhg::log::ThreadedAppender
+        : destination_ ( new fhg::log::ThreadedAppender
                          ( fhg::log::Appender::ptr_t
                            ( new fhg::log::remote::RemoteAppender
-                             (service_, destination_location)
+                             (service, destination_location)
                            )
                          )
                        )
@@ -40,7 +39,6 @@ namespace sdpa
       }
 
     private:
-      std::string service_;
       fhg::log::Appender::ptr_t destination_;
     };
   }
