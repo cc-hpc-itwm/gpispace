@@ -112,40 +112,6 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* /* pEvt */ )
 void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
 {
   SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
-
-  ostringstream os;
-  Worker::worker_id_t worker_id = pEvt->from();
-
-  try {
-    jobManager()->findJob(pEvt->job_id());
-    // delete it from the map when you receive a CancelJobAckEvent!
-    jobManager()->deleteJob(pEvt->job_id());
-  }
-  catch(JobNotFoundException const &ex0)
-  {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, ex0.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-  catch(JobNotDeletedException const & ex1)
-  {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-  catch(std::exception const &ex2)
-  {
-    SDPA_LOG_ERROR( "Unexpected exception during "
-                    << " handleCancelJobAckEvent("<< pEvt->job_id() << ")"
-                    << ": "
-                    << ex2.what()
-                   );
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
-    sendEventToMaster(pErrorEvt);
-  }
 }
 
 // respond to a worker that the JobFinishedEvent was received
