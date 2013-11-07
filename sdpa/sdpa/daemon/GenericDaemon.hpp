@@ -170,10 +170,6 @@ namespace sdpa {
 
       NotificationService* gui_service() { return &m_guiService; }
 
-      virtual void handleInterruptEvent();
-      virtual void perform_ConfigOkEvent();
-      virtual void perform_ConfigNokEvent();
-
       virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
       virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
