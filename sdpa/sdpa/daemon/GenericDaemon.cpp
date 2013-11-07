@@ -106,34 +106,38 @@ void GenericDaemon::start_agent()
 
   ptr_daemon_stage_.lock()->start();
 
+  // use for now as below, later read from config file
+  // TODO: move this to "property" style:
+  //    dot separated
+  //    hierarchies / categories
+  //    retrieve values maybe from kvs?
+  //    no spaces
+
+  // Read these values from a configuration file !
+  // if this does not exist, use default values
+
+  // set default configuration
+  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
+
+  DMLOG (TRACE, "Try to configure the network now ... ");
+
+  const boost::tokenizer<boost::char_separator<char> > tok
+    (url(), boost::char_separator<char> (":"));
+
+  const std::vector<std::string> vec (tok.begin(), tok.end());
+
+  if (vec.empty() || vec.size() > 2)
+  {
+    perform_ConfigNokEvent();
+
+    m_bStopped = true;
+
+    LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
+    throw std::runtime_error ("configuration of network failed: invalid url");
+  }
+
   try
   {
-    // use for now as below, later read from config file
-    // TODO: move this to "property" style:
-    //    dot separated
-    //    hierarchies / categories
-    //    retrieve values maybe from kvs?
-    //    no spaces
-
-    // Read these values from a configuration file !
-    // if this does not exist, use default values
-
-    // set default configuration
-    cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
-
-    DMLOG (TRACE, "Try to configure the network now ... ");
-
-    const boost::tokenizer<boost::char_separator<char> > tok
-      (url(), boost::char_separator<char> (":"));
-
-    const std::vector<std::string> vec (tok.begin(), tok.end());
-
-    if (vec.empty() || vec.size() > 2)
-    {
-      LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
-      throw std::runtime_error ("configuration of network failed: invalid url");
-    }
-
     sdpa::com::NetworkStrategy::ptr_t net
       ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
                                        , name() /*name for peer*/
