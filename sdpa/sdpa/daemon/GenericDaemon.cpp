@@ -68,7 +68,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_bStopped(false),
-    m_guiService ("GSPC", guiUrl.get_value_or (""))
+    m_guiService (NotificationService ("GSPC", guiUrl.get_value_or ("")))
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -85,7 +85,7 @@ GenericDaemon::GenericDaemon( const std::string name,
   {
     try
     {
-      m_guiService.open ();
+      m_guiService->open ();
       DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
     }
     catch (std::exception const &ex)

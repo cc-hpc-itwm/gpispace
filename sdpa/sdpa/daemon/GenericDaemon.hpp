@@ -150,7 +150,7 @@ namespace sdpa {
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
-      NotificationService* gui_service() { return &m_guiService; }
+      NotificationService* gui_service() { return &*m_guiService; }
 
       virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
       virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
@@ -314,7 +314,7 @@ namespace sdpa {
       mutex_type mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
-      NotificationService m_guiService;
+      boost::optional<NotificationService> m_guiService;
     };
   }
 }
