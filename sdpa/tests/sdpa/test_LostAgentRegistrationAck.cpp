@@ -196,12 +196,10 @@ public:
 
 	FaultyAgent(const std::string& name = "",
 		  const std::string& url = "",
-		  const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
-		  bool bCanRunTasksLocally = false,
-		  std::string strWorkflow = "")
-  : Agent(name, url, arrMasterNames, bCanRunTasksLocally, -1, boost::none)
+		  const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t())
+  : Agent(name, url, arrMasterNames, false, -1, boost::none)
 	, nSuccFailures_(0)
-	, strWorkflow_(strWorkflow)
+	, strWorkflow_("")
 	, bForceExit_(false)
 	{
 		threadClient = boost::thread(boost::bind(&FaultyAgent::start_client, this));
