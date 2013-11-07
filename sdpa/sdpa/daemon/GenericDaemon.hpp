@@ -314,6 +314,8 @@ namespace sdpa {
       mutex_type mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
+
+    protected:
       boost::optional<NotificationService> m_guiService;
     };
   }
