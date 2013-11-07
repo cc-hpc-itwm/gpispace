@@ -82,7 +82,11 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   }
   catch(JobNotFoundException const &)
   {
-      SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
+      SDPA_LOG_WARN( "got finished message for old Job "<< pEvt->job_id());
+      // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
+      Job::ptr_t pJob(new JobFSM(pEvt->job_id()));
+      addJob(pEvt->job_id(), pJob);
+      pJob->JobFinished(pEvt);
       return;
   }
 
@@ -179,8 +183,11 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
   catch(const JobNotFoundException &)
   {
-      SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
-      // TODO: shouldn't we reply with an error here???
+      SDPA_LOG_WARN( "got failed message for old Job "<< pEvt->job_id());
+      // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
+      Job::ptr_t pJob(new JobFSM(pEvt->job_id()));
+      addJob(pEvt->job_id(), pJob);
+      pJob->JobFailed(pEvt);
       return;
   }
 
