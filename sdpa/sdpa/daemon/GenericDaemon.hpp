@@ -166,9 +166,6 @@ namespace sdpa {
       // masters and subscribers
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
 
-      template <typename T>
-      void notifyMasters(const T&);
-
       void unsubscribe(const sdpa::agent_id_t&);
       void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
       bool isSubscriber(const sdpa::agent_id_t&);
@@ -318,31 +315,6 @@ namespace sdpa {
       sdpa::capabilities_set_t m_capabilities;
       NotificationService m_guiService;
     };
-
-     /**
-     * Send a notification of type T to the masters
-     * @param[in] ptrNotEvt: Event to be sent to the master
-     */
-    template <typename T>
-    void GenericDaemon::notifyMasters(const T& ptrNotEvt)
-    {
-      lock_type lock(mtx_master_);
-      if(m_arrMasterInfo.empty())
-      {
-        SDPA_LOG_INFO("The master list is empty. No master to be notified exist!");
-        return;
-      }
-
-      BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-      {
-        if( masterInfo.is_registered() )
-        {
-          ptrNotEvt->to() = masterInfo.name();
-          SDPA_LOG_INFO("Send notification to the master "<<masterInfo.name());
-          sendEventToMaster(ptrNotEvt);
-        }
-      }
-    }
   }
 }
 
