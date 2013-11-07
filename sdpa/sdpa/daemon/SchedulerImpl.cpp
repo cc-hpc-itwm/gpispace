@@ -68,15 +68,9 @@ void SchedulerImpl::addWorker(  const Worker::worker_id_t& workerId,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
-  try {
-    ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
-    cond_workers_registered.notify_all();
-    cond_feed_workers.notify_one();
-  }
-  catch( const WorkerAlreadyExistException& ex)
-  {
-    throw ex;
-  }
+  ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
+  cond_workers_registered.notify_all();
+  cond_feed_workers.notify_one();
 }
 
 void SchedulerImpl::reschedule(const sdpa::job_id_t& job_id )
