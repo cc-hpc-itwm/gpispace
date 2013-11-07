@@ -297,21 +297,6 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
     notifySubscribers(pCancelAckEvt);
 }
-
-void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
-{
-    try {
-        Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
-        pJob->RetrieveJobResults(pEvt, this);
-    }
-    catch(const JobNotFoundException&)
-    {
-      MLOG (WARN, "The job "<<pEvt->job_id()<<" was not found by the JobManager");
-      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "no such job") );
-      sendEventToMaster(pErrorEvt);
-    }
-}
-
   }
 }
 

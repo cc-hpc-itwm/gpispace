@@ -45,8 +45,6 @@ namespace sdpa {
       void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
       void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
 
-      void handleRetrieveJobResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
-
       const std::string url() const {return url_;}
       bool isTop() { return true; }
 
