@@ -80,7 +80,7 @@ namespace sdpa {
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
       virtual const std::string url() const {return std::string();}
-      const unsigned int& capacity() const { return m_nCap; }
+      unsigned int capacity() const { return 10000; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
       void start_agent();
@@ -266,7 +266,6 @@ namespace sdpa {
     private:
 
       unsigned int m_nRank;
-      unsigned int m_nCap; // maximum number of external jobs
       sdpa::worker_id_t m_strAgentUID;
 
       bool m_bStopped;
