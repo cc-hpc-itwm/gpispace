@@ -475,6 +475,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
       pJob->setType(Job::MASTER);
 
+      if (m_guiService)
       {
         std::list<std::string> workers; workers.push_back (name());
         const we::mgmt::type::activity_t act (pJob->description());
@@ -485,7 +486,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
           , act
           );
 
-        gui_service()->notify (evt);
+        m_guiService->notify (evt);
       }
     }
 
