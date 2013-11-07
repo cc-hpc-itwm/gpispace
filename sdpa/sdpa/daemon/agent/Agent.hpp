@@ -34,11 +34,10 @@ namespace sdpa {
         Agent(const std::string& name = "",
               const std::string& url = "",
               const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
-              unsigned int cap = 10000,
               bool bCanRunTasksLocally = false,
               int rank = -1,
               const std::string& guiUrl = "")
-          : DaemonFSM( name, arrMasterNames, cap, rank, guiUrl),
+          : DaemonFSM( name, arrMasterNames, 10000, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
           url_(url),
           m_bCanRunTasksLocally(bCanRunTasksLocally)

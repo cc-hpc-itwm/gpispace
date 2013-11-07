@@ -43,7 +43,7 @@ namespace daemon {
                                 const unsigned int rank = 0,
                                 const std::string& appGuiUrl = "" )
     {
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, 10000, bCanRunTasksLocally, rank, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, bCanRunTasksLocally, rank, appGuiUrl ) );
       pAgent->createWorkflowEngine<T>();
 
 //      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
@@ -72,7 +72,7 @@ namespace daemon {
                                 const std::string& appGuiUrl = "" )
     {
       LOG( DEBUG, "Create Agent "<<name<<" with no workflow engine" );
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, 10000, bCanRunTasksLocally, rank, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, bCanRunTasksLocally, rank, appGuiUrl ) );
 
 //      seda::IEventQueue::Ptr ptrEvtPrioQueue(new seda::EventPrioQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
 //      seda::Stage::Ptr daemon_stage( new seda::Stage(name, ptrEvtPrioQueue, pAgent, 1) );
