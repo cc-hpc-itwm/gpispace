@@ -119,6 +119,7 @@ namespace sdpa {
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
+                        , public msm::back::state_machine<fsm::bmsm::DaemonFSM_>
     {
     public:
       typedef boost::recursive_mutex mutex_type;
@@ -365,7 +366,7 @@ namespace sdpa {
   namespace fsm {
     namespace bmsm {
       // Pick a back-end
-      class DaemonFSM : public msm::back::state_machine<DaemonFSM_>, public sdpa::daemon::GenericDaemon
+      class DaemonFSM : public sdpa::daemon::GenericDaemon
       {
       public:
         typedef sdpa::shared_ptr<DaemonFSM> Ptr;
