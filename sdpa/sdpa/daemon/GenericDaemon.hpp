@@ -62,9 +62,9 @@ namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
 namespace sdpa {
-  namespace fsm {
-    namespace bmsm {
-      // front-end: define the FSM structure
+  namespace daemon {
+    namespace detail
+    {
       struct DaemonFSM_ : public msm::front::state_machine_def<DaemonFSM_>
       {
         virtual ~DaemonFSM_ () {}
@@ -109,17 +109,12 @@ namespace sdpa {
         }
       };
     }
-  }
-}
-
-namespace sdpa {
-  namespace daemon {
 
     class GenericDaemon : public sdpa::daemon::IAgent,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
-                        , public msm::back::state_machine<fsm::bmsm::DaemonFSM_>
+                        , public msm::back::state_machine<detail::DaemonFSM_>
     {
     public:
       typedef boost::recursive_mutex mutex_type;
