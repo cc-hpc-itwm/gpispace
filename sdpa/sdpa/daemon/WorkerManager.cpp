@@ -152,46 +152,6 @@ const Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundExceptio
   return iter->second;
 }
 
-/**
- * compare the workers
- */
-struct compare_workers
-{
-  typedef WorkerManager::worker_map_t::value_type T;
-  bool operator()( T const& a, T const& b)
-  {
-    return a.second->nbAllocatedJobs() < b.second->nbAllocatedJobs();
-  }
-};
-
-/**
- * get the least loaded worker
- */
-sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException)
-{
-  lock_type lock(mtx_);
-
-  if( worker_map_.empty() )
-    throw NoWorkerFoundException();
-
-  worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end(), compare_workers());
-
-  //! \todo DISCUSS: No, not all workers are full at this point, only
-  //! the one with the least jobs has reached its capacity. This may
-  //! be the case with (given [allocated, capacity]) {[1, 1], [1, 2]},
-  //! where compare_workers() will return one of them randomly (or
-  //! always the first, sorted by id?), and if it returns the first,
-  //! "all" workers are full, while the second worker may take one
-  //! more job. Proposed fix: let compare_workers() also sort by
-  //! capacity.
-  if( it->second->capacity()
-   && it->second->nbAllocatedJobs() >= *it->second->capacity()
-    )
-    throw AllWorkersFullException();
-
-  return it->first;
-}
-
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);

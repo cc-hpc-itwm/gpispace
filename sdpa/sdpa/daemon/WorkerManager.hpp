@@ -59,7 +59,6 @@ namespace sdpa { namespace daemon {
     virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
     const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-    worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
 
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
