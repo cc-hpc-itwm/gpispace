@@ -77,13 +77,6 @@ namespace daemon {
 		virtual ~AllWorkersFullException() throw() {}
 	};
 
-	class NoJobScheduledException : public WorkerException {
-		public:
-	        NoJobScheduledException( const sdpa::worker_id_t& worker_id)
-			: WorkerException("No job was scheduled!", worker_id) {}
-		virtual ~NoJobScheduledException() throw() {}
-	};
-
 	class WorkerAlreadyExistException : public WorkerException {
 		public:
 		WorkerAlreadyExistException( const sdpa::worker_id_t& worker_id, const sdpa::worker_id_t& agent_uuid )

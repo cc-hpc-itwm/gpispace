@@ -364,9 +364,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
     Worker::ptr_t pWorker(findWorker(worker_id));
     pWorker->submit(jobId);
   }
-  catch(const NoJobScheduledException&)
-  {
-  }
   catch(const WorkerNotFoundException&)
   {
     DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
