@@ -1245,7 +1245,7 @@ const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_i
 }
 
 void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
-                                unsigned int cap,
+                                boost::optional<unsigned int> cap,
                                 const capabilities_set_t& cpbset,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid )

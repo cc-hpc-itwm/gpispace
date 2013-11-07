@@ -215,7 +215,7 @@ namespace sdpa {
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
       virtual void serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId );
       virtual void addWorker( const Worker::worker_id_t& workerId,
-                              unsigned int cap,
+                              boost::optional<unsigned int> cap,
                               const capabilities_set_t& cpbset,
                               const unsigned int& rank = 0,
                               const sdpa::worker_id_t& agent_uuid  = "");
