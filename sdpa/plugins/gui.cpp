@@ -1,11 +1,8 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
-#include <fhg/util/thread/channel.hpp>
-#include <fhglog/ThreadedAppender.hpp>
-#include <fhglog/remote/RemoteAppender.hpp>
-
 #include <sdpa/daemon/NotificationEvent.hpp>
+#include <sdpa/daemon/NotificationService.hpp>
 
 #include <boost/thread.hpp>
 
@@ -18,32 +15,13 @@ class GuiObserverPlugin : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
-    m_thread = 0;
+    _notification_service = boost::none;
 
     const std::string url (fhg_kernel()->get ("url", ""));
-
     if (not url.empty ())
     {
-      try
-      {
-        m_destination.reset (new fhg::log::ThreadedAppender
-                            (fhg::log::Appender::ptr_t
-                            (new fhg::log::remote::RemoteAppender("gui", url)
-                            )));
-        DMLOG (TRACE, "GUI sending events to " << url);
-      }
-      catch (std::exception const &ex)
-      {
-        MLOG(ERROR, "could not start appender to url: " << url << ": " << ex.what());
-      }
+      _notification_service = sdpa::daemon::NotificationService (url);
     }
-
-    m_thread =
-      new boost::thread
-      (boost::bind( &GuiObserverPlugin::event_handler
-                  , this
-                  )
-      );
 
     FHG_PLUGIN_STARTED();
   }
@@ -52,14 +30,8 @@ public:
   {
     observe::Observer::stop_to_observe();
 
-    if (m_thread)
-    {
-      m_thread->interrupt ();
-      m_thread->join ();
-      delete m_thread;
-    }
+    _notification_service = boost::none;
 
-    m_destination.reset();
     FHG_PLUGIN_STOPPED();
   }
 
@@ -89,7 +61,11 @@ public:
   {
     try
     {
-      m_events << boost::any_cast<sdpa::daemon::NotificationEvent>(evt);
+      if (_notification_service)
+      {
+        _notification_service->notify
+          (boost::any_cast<sdpa::daemon::NotificationEvent>(evt));
+      }
     }
     catch (boost::bad_any_cast const &ex)
     {
@@ -99,42 +75,9 @@ public:
       MLOG(ERROR, "could not notify event: " << ex.what());
     }
   }
+
 private:
-  void event_handler ()
-  {
-    for (;;)
-    {
-      sdpa::daemon::NotificationEvent t = m_events.get ();
-
-      DMLOG ( TRACE
-            , "*** TASK EVENT:"
-            << " id := " << t.activity_id()
-            << " name := " << t.activity_name()
-            << " state := " << t.activity_state()
-            );
-
-      try
-      {
-        m_destination->append (FHGLOG_MKEVENT_HERE (INFO, t.encoded()));
-      }
-      catch (std::exception const & ex)
-      {
-        MLOG(ERROR, "could not handle event: " << ex.what());
-      }
-    }
-  }
-
-  // void stop_to_observe(observe::Observable* o)
-  // {
-  //   MLOG(INFO, "stopping to observe: " << o);
-  //   o->del_observer(this);
-  //   m_observed.remove(o);
-  // }
-
-  fhg::log::Appender::ptr_t m_destination;
-
-  fhg::thread::channel<sdpa::daemon::NotificationEvent> m_events;
-  boost::thread *m_thread;
+  boost::optional<sdpa::daemon::NotificationService> _notification_service;
 };
 
 EXPORT_FHG_PLUGIN( gui
