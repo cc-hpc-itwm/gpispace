@@ -86,7 +86,6 @@ namespace sdpa
       PERFORM_FORWARD (handleWorkerRegistrationEvent, WorkerRegistrationEvent)
       PERFORM_FORWARD (handleDeleteJobEvent, DeleteJobEvent)
       PERFORM_FORWARD (handleSubmitJobEvent, SubmitJobEvent)
-      PERFORM_FORWARD (handleRequestJobEvent, RequestJobEvent)
       PERFORM_FORWARD (handleErrorEvent, ErrorEvent)
 
 #undef PERFORM_FORWARD

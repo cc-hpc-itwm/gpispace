@@ -69,7 +69,6 @@ namespace sdpa {
         a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &agentFSM::action_register_worker>,
         a_irow< Up,           sdpa::events::DeleteJobEvent,                           &agentFSM::action_delete_job>,
         a_irow< Up,           sdpa::events::SubmitJobEvent,                           &agentFSM::action_submit_job>,
-        _irow<  Up,           sdpa::events::RequestJobEvent>,
         a_irow< Up,           sdpa::events::ErrorEvent,                               &agentFSM::action_error_event>
         >{};
 
@@ -108,7 +107,7 @@ namespace sdpa {
         void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
         void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
         void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
-        void handleRequestJobEvent(const sdpa::events::RequestJobEvent* );
+        void handleRequestJobEvent(const sdpa::events::RequestJobEvent* ) {}
         void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
       private:
