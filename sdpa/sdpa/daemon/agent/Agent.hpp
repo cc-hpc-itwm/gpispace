@@ -53,8 +53,6 @@ namespace sdpa {
           }
         }
 
-        void action_configure();
-
         void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
         void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
 

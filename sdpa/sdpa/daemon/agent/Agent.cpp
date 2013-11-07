@@ -25,11 +25,6 @@ namespace sdpa {
   using namespace events;
   namespace daemon {
 
-void Agent::action_configure()
-{
-  GenericDaemon::action_configure();
-}
-
 void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
   assert (pEvt);
