@@ -6,15 +6,13 @@
 #include <fhglog/ThreadedAppender.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
-#include <sdpa/daemon/Observer.hpp>
-
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 namespace sdpa
 {
   namespace daemon
   {
-    class NotificationService : public Observer
+    class NotificationService
     {
     public:
       NotificationService (const std::string& destination_location)
@@ -27,10 +25,6 @@ namespace sdpa
                        )
       {}
 
-      virtual void update (const boost::any& arg)
-      {
-        notify (boost::any_cast<NotificationEvent> (arg));
-      }
       void notify (const NotificationEvent evt) const
       {
         destination_->append (FHGLOG_MKEVENT_HERE (TRACE, evt.encoded()));
