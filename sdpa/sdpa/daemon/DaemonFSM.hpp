@@ -109,7 +109,7 @@ namespace sdpa {
         void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
       private:
-        mutex_type mtx_;
+        mutex_type _state_machine_mutex;
       };
     }
   }

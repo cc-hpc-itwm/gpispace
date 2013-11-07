@@ -65,7 +65,7 @@ namespace sdpa
 #define PERFORM(METHOD,EVENT_TYPE)                \
       void DaemonFSM::METHOD()                    \
       {                                           \
-        lock_type lock (mtx_);                    \
+        lock_type lock (_state_machine_mutex);    \
         process_event (EVENT_TYPE());             \
       }
 
@@ -78,7 +78,7 @@ namespace sdpa
 #define PERFORM_FORWARD(METHOD,EVENT_TYPE)          \
       void DaemonFSM::METHOD(const EVENT_TYPE* evt) \
       {                                             \
-        lock_type lock (mtx_);                      \
+        lock_type lock (_state_machine_mutex);      \
         process_event (*evt);                       \
       }
 
