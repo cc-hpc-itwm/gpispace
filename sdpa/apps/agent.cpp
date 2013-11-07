@@ -182,7 +182,6 @@ int main (int argc, char **argv)
     sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(   agentName,
                                                                                              agentUrl,
                                                                                              listMasterInfo,
-                                                                                             false,
                                                                                              agentRank,
                                                                                              appGuiUrl ); //, orchUrl );
 
