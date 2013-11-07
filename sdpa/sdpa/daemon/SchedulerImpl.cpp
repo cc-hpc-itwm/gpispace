@@ -27,8 +27,6 @@
 #include <cassert>
 #include <sdpa/capability.hpp>
 
-#include <sdpa/daemon/NotificationService.hpp>
-
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
