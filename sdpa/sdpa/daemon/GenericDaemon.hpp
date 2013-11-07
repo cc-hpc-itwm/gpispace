@@ -58,19 +58,16 @@
 
 #include <sdpa/daemon/NotificationService.hpp>
 
-namespace msm = boost::msm;
-namespace mpl = boost::mpl;
-
 namespace sdpa {
   namespace daemon {
     namespace detail
     {
-      struct DaemonFSM_ : public msm::front::state_machine_def<DaemonFSM_>
+      struct DaemonFSM_ : public boost::msm::front::state_machine_def<DaemonFSM_>
       {
         virtual ~DaemonFSM_ () {}
 
-        struct Down : public msm::front::state<>{};
-        struct Up : public msm::front::state<>{};
+        struct Down : public boost::msm::front::state<>{};
+        struct Up : public boost::msm::front::state<>{};
 
         struct InterruptEvent {};
         struct ConfigOkEvent {};
@@ -83,7 +80,7 @@ namespace sdpa {
 
         typedef Down initial_state;
 
-        struct transition_table : mpl::vector<
+        struct transition_table : boost::mpl::vector<
         //      Start         Event         		                      Next            Action                Guard
         //      +-------------+---------------------------------------+---------------+---------------------+-----
         _row<   Down,         ConfigOkEvent,                          Up>,
@@ -109,7 +106,7 @@ namespace sdpa {
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
-                        , public msm::back::state_machine<detail::DaemonFSM_>
+                        , public boost::msm::back::state_machine<detail::DaemonFSM_>
     {
     public:
       typedef boost::recursive_mutex mutex_type;
