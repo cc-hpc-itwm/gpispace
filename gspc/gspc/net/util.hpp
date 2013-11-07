@@ -15,6 +15,8 @@ namespace gspc
                         , std::string const & port
                         , std::string & host_port
                         );
+
+    std::string const &hostname ();
   }
 }
 
