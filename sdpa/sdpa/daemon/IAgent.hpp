@@ -85,7 +85,6 @@ namespace sdpa {
     virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
     virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
     virtual void addCapability(const capability_t&) = 0;
-    virtual bool canRunTasksLocally() { return false; }
   };
 
 }}
