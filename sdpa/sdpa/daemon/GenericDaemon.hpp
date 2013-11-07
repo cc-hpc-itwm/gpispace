@@ -50,6 +50,7 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/user_data.hpp>
 
+#include <boost/optional.hpp>
 #include <boost/utility.hpp>
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
@@ -111,7 +112,7 @@ namespace sdpa {
       GenericDaemon(const std::string name = "orchestrator_0",
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
                     unsigned int rank = 0
-                   , const std::string& guiUrl = ""
+                   , const boost::optional<std::string>& guiUrl = boost::none
                    );
 
       SDPA_DECLARE_LOGGER();

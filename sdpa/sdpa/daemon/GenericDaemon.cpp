@@ -54,7 +54,7 @@ using namespace sdpa::events;
 GenericDaemon::GenericDaemon( const std::string name,
                               const master_info_list_t arrMasterInfo,
                               unsigned int rank
-                            , std::string const &guiUrl)
+                            , const boost::optional<std::string>& guiUrl)
   : Strategy(name),
     SDPA_INIT_LOGGER(name),
     m_arrMasterInfo(arrMasterInfo),
@@ -68,7 +68,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_bStopped(false),
-    m_guiService ("GSPC", guiUrl)
+    m_guiService ("GSPC", guiUrl.get_value_or (""))
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -81,16 +81,16 @@ GenericDaemon::GenericDaemon( const std::string name,
   //daemon_cfg_ = new sdpa::util::Config;
 
   // application gui service
-  if (not guiUrl.empty())
+  if (guiUrl && !guiUrl->empty())
   {
     try
     {
       m_guiService.open ();
-      DMLOG (TRACE, "Application GUI service at " << guiUrl << " attached...");
+      DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
     }
     catch (std::exception const &ex)
     {
-      MLOG (WARN, "could not attach GUI at " << guiUrl << ": " << ex.what ());
+      MLOG (WARN, "could not attach GUI at " << *guiUrl << ": " << ex.what ());
     }
   }
 }
