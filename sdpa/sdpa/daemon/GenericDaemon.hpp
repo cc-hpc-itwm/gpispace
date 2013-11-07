@@ -93,12 +93,6 @@ namespace sdpa {
         a_irow< Up,           sdpa::events::SubmitJobEvent,                           &DaemonFSM_::action_submit_job>,
         a_irow< Up,           sdpa::events::ErrorEvent,                               &DaemonFSM_::action_error_event>
         >{};
-
-        template <class FSM, class Event>
-        void no_transition(Event const& e, FSM&, int state)
-        {
-          LOG(DEBUG, "no transition from state "<< " on event " << typeid(e).name());
-        }
       };
     }
 
