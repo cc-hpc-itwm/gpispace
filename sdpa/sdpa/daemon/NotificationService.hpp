@@ -33,14 +33,7 @@ namespace sdpa
 
       virtual void update (const boost::any& arg)
       {
-        try
-        {
-          notify (boost::any_cast<NotificationEvent> (arg));
-        }
-        catch (const boost::bad_any_cast& ex)
-        {
-          DLOG(TRACE, "NotificationService: could not update: " << ex.what());
-        }
+        notify (boost::any_cast<NotificationEvent> (arg));
       }
       void notify (const NotificationEvent evt)
       {
