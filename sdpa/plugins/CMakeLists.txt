@@ -90,20 +90,6 @@ fhg_add_plugin(wfe_eval wfe_eval.cpp
   COMPONENT plugins
 )
 
-fhg_add_plugin(gui gui.cpp observable.cpp
-  EXPORTS GUI
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
-                 pnet
-                 fhg-util
-                 ${Boost_SERIALIZATION_SHARED_LIBRARY}
-                 ${Boost_THREAD_SHARED_LIBRARY}
-                 ${Boost_SYSTEM_SHARED_LIBRARY}
-  INSTALL
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
-  COMPONENT plugins
-)
-
 fhg_add_plugin(sdpac sdpac.cpp
   EXPORTS SDPAC
   LINK_LIBRARIES sdpa-events

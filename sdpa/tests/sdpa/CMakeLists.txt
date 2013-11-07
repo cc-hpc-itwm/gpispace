@@ -29,7 +29,6 @@ get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
-get_target_property(TESTS_GUI_PLUGIN_PATH gui-plugin LOCATION)
 get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
 get_target_property(TESTS_WFE_PLUGIN_PATH wfe-plugin LOCATION)
 
