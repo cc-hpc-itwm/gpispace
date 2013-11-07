@@ -93,7 +93,7 @@ namespace gspc
       gspc::net::frame
       encode_error_code (gspc::net::frame const &rqst, int rc);
 
-      boost::shared_ptr<api_t> m_kvs;
+      api_t *m_kvs;
       rpc_table_t m_rpc_table;
 
       mutable boost::shared_mutex m_waiting_mtx;

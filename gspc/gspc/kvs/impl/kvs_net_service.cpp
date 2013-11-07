@@ -51,6 +51,8 @@ namespace gspc
     service_t::~service_t ()
     {
       m_on_change_connection.disconnect ();
+      delete m_kvs;
+      m_kvs = 0;
     }
 
     void service_t::setup_rpc_handler ()
