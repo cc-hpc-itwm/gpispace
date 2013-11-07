@@ -44,10 +44,7 @@ namespace sdpa
       }
       void notify (const NotificationEvent evt)
       {
-        if (destination_)
-        {
-          destination_->append (FHGLOG_MKEVENT_HERE (TRACE, evt.encoded()));
-        }
+        destination_->append (FHGLOG_MKEVENT_HERE (TRACE, evt.encoded()));
       }
 
       std::string location() const
