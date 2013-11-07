@@ -365,8 +365,7 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 
 		arrAgents[k] = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create( oss.str(),
 																			  	addrAgent,
-																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)),
-																			  	MAX_CAP );
+																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)));
 
 		// the master is the previous created agent
 		strMaster = oss.str();
@@ -441,8 +440,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 
 		arrAgents[k] = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create( oss.str(),
 																			  	addrAgent,
-																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)),
-																			  	MAX_CAP );
+																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)));
 
 	}
 
