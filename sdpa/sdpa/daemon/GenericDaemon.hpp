@@ -69,16 +69,13 @@ namespace sdpa {
       {
         virtual ~DaemonFSM_ () {}
 
-        // The list of FSM states
         struct Down : public msm::front::state<>{};
         struct Up : public msm::front::state<>{};
 
-        // events
         struct InterruptEvent {};
         struct ConfigOkEvent {};
         struct ConfigNokEvent {};
 
-        // the initial state of the DaemonFSM SM. Must be defined
         typedef Down initial_state;
 
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent& ) = 0;
@@ -86,7 +83,7 @@ namespace sdpa {
         virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
         virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
 
-        typedef DaemonFSM_ agentFSM; // makes transition table cleaner
+        typedef DaemonFSM_ agentFSM;
 
         struct transition_table : mpl::vector<
         //      Start         Event         		                      Next            Action                Guard
