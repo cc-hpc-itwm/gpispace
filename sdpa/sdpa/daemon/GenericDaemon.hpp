@@ -321,6 +321,8 @@ namespace sdpa {
       Scheduler::ptr_t ptr_scheduler_;
       we::mgmt::basic_layer* ptr_workflow_engine_;
 
+      mutex_type _state_machine_mutex;
+
     private:
 
       unsigned int m_nRank;
@@ -370,8 +372,6 @@ namespace sdpa {
       {
       public:
         typedef sdpa::shared_ptr<DaemonFSM> Ptr;
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
 
         DaemonFSM(const std::string &name = "",
                   const sdpa::master_info_list_t& arrMasterNames = sdpa::master_info_list_t(),
@@ -390,7 +390,6 @@ namespace sdpa {
         void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
       private:
-        mutex_type _state_machine_mutex;
       };
     }
   }
