@@ -80,8 +80,8 @@ namespace sdpa {
         //      +---------------+---------------------------------------+----------------------+---------------------+-----
         _row<   Pending,    	MSMDispatchEvent,                       Running >,
         a_row<  Pending,    	sdpa::events::CancelJobEvent, 		Cancelled,              &sm::action_cancel_job_from_pending >,
-        //a_row<  Pending,  	sdpa::events::JobFinishedEvent,         Finished,       	&sm::action_job_finished >,
-        //a_row<  Pending,  	sdpa::events::JobFailedEvent,           Failed,         	&sm::action_job_failed >,
+        a_row<  Pending,  	sdpa::events::JobFinishedEvent,         Finished,       	&sm::action_job_finished >,
+        a_row<  Pending,  	sdpa::events::JobFailedEvent,           Failed,         	&sm::action_job_failed >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         _row<   Stalled,	MSMDispatchEvent,        		Running >,
         _row<   Stalled,    	MSMRescheduleEvent,                 	Pending >,
