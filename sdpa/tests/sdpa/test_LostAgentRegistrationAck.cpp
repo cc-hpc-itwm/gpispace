@@ -200,10 +200,9 @@ public:
 	FaultyAgent(const std::string& name = "",
 		  const std::string& url = "",
 		  const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
-		  unsigned int cap = 10000,
 		  bool bCanRunTasksLocally = false,
 		  std::string strWorkflow = "")
-	: Agent(name, url, arrMasterNames, cap, bCanRunTasksLocally)
+	: Agent(name, url, arrMasterNames, 10000, bCanRunTasksLocally)
 	, nSuccFailures_(0)
 	, strWorkflow_(strWorkflow)
 	, bForceExit_(false)
@@ -290,7 +289,7 @@ public:
 							   const sdpa::master_info_list_t& arrMasterNames)
    {
 	   LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-	   FaultyAgent::ptr_t pAgent( new FaultyAgent( name, url, arrMasterNames, 10000 ) );
+	   FaultyAgent::ptr_t pAgent( new FaultyAgent( name, url, arrMasterNames) );
 	   pAgent->createWorkflowEngine<T>();
 
 	   seda::IEventQueue::Ptr ptrEvtQueue(new seda::EventQueue("network.stage."+name+".queue", agent::MAX_Q_SIZE));
