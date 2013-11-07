@@ -31,6 +31,8 @@ namespace gspc
                        , gspc::net::frame const &rqst
                        , gspc::net::user_ptr user
                        );
+
+      api_t & api ();
     private:
       struct waiting_t
       {
