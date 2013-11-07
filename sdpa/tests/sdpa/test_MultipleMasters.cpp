@@ -33,7 +33,6 @@ using namespace seda;
 
 const int NMAXTRIALS = 10000;
 const int NMAXTHRDS = 3;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;

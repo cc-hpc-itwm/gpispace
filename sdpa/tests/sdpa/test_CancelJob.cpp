@@ -27,7 +27,6 @@
 #include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 
 namespace po = boost::program_options;
 

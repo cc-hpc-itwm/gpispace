@@ -27,7 +27,6 @@
 #include <boost/shared_array.hpp>
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 const int NAGENTS = 1;
 
 const int BUNCH_SIZE = 1;

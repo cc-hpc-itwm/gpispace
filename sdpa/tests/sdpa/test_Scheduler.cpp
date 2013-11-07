@@ -41,7 +41,6 @@ using namespace sdpa::daemon;
 
 const int NWORKERS = 12;
 const int NJOBS    = 4;
-const int MAX_CAP  = 100;
 
 const std::string WORKER_CPBS[] = {"A", "B", "C"};
 

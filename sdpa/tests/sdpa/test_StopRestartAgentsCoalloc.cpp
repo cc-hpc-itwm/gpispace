@@ -28,7 +28,6 @@
 
 const int NMAXTRIALS=5;
 const int NWORKERS=5;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;
