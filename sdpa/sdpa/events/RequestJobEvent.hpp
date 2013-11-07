@@ -41,7 +41,6 @@ namespace sdpa
       }
       virtual void handleBy (EventHandler* handler)
       {
-        handler->handleRequestJobEvent (this);
       }
 
     private:

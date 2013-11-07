@@ -107,7 +107,6 @@ namespace sdpa {
         void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
         void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
         void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
-        void handleRequestJobEvent(const sdpa::events::RequestJobEvent* ) {}
         void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
       private:

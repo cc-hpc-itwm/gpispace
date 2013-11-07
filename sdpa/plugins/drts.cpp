@@ -527,17 +527,6 @@ public:
   {
   }
 
-  virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent *e)
-  {
-    send_event
-      (new sdpa::events::ErrorEvent( m_my_name
-                                   , e->from()
-                                   , sdpa::events::ErrorEvent::SDPA_EPERM
-                                   , "you are not allowed to request jobs"
-                                   )
-      );
-  }
-
   virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent *)
   {
   }
