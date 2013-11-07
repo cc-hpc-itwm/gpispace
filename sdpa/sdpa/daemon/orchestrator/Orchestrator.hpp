@@ -30,9 +30,8 @@ namespace sdpa {
       SDPA_DECLARE_LOGGER();
 
       Orchestrator( const std::string &name = ""
-                    , const std::string& url = ""
-                    , unsigned int cap = 10000 )
-      : DaemonFSM( name, sdpa::master_info_list_t(), cap /*, NULL*/),
+                    , const std::string& url = "")
+      : DaemonFSM( name, sdpa::master_info_list_t(), 10000 /*, NULL*/),
         SDPA_INIT_LOGGER(name),
         url_(url)
       {}
