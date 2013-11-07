@@ -60,7 +60,6 @@ BOOST_AUTO_TEST_CASE (signature_show)
 
   signature_type line2D (structured_type (std::make_pair ("line2D", ps)));
 
-
   CHECK ("line2D :: [p :: point2D, q :: [x :: float, y :: float]]", line2D);
 
 #undef CHECK
