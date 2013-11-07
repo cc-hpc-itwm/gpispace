@@ -34,14 +34,13 @@ namespace sdpa {
         Agent ( const std::string& name
               , const std::string& url
               , const sdpa::master_info_list_t arrMasterNames
-              , bool bCanRunTasksLocally
               , int rank
               , const boost::optional<std::string>& guiUrl
               )
           : GenericDaemon( name, arrMasterNames, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
           url_(url),
-          m_bCanRunTasksLocally(bCanRunTasksLocally)
+          m_bCanRunTasksLocally(false)
         {
           if(rank>=0)
           {

@@ -197,7 +197,7 @@ public:
 	FaultyAgent(const std::string& name = "",
 		  const std::string& url = "",
 		  const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t())
-  : Agent(name, url, arrMasterNames, false, -1, boost::none)
+  : Agent(name, url, arrMasterNames, -1, boost::none)
 	, nSuccFailures_(0)
 	, strWorkflow_("")
 	, bForceExit_(false)
