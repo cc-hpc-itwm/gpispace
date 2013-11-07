@@ -576,21 +576,9 @@ void SchedulerImpl::run()
             schedule_remotely(jobId);
         }
         else {
-            // just for testing
-            if(false) {
-                DLOG(TRACE, "I have no workers, but I'm able to execute myself the job "<<jobId.str()<<" ...");
-                execute(jobId);
-            }
-            else {
-                //SDPA_LOG_DEBUG("no worker available, put the job back into the scheduler's queue!");
-                if( !false ) {
-                    pending_jobs_queue_.push(jobId);
-                    lock_type lock(mtx_);
-                    cond_workers_registered.wait(lock);
-              }
-              else
-                execute(jobId);
-            }
+          pending_jobs_queue_.push(jobId);
+          lock_type lock(mtx_);
+          cond_workers_registered.wait(lock);
         } // else fail
       }
       else // it's a master job
