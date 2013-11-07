@@ -33,7 +33,7 @@ namespace sdpa
       {
         notify (boost::any_cast<NotificationEvent> (arg));
       }
-      void notify (const NotificationEvent evt)
+      void notify (const NotificationEvent evt) const
       {
         destination_->append (FHGLOG_MKEVENT_HERE (TRACE, evt.encoded()));
       }
