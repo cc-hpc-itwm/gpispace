@@ -81,8 +81,6 @@ namespace sdpa {
         virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
         virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
 
-        typedef DaemonFSM_ agentFSM;
-
         typedef Down initial_state;
 
         struct transition_table : mpl::vector<
@@ -93,10 +91,10 @@ namespace sdpa {
         _irow<  Down,         sdpa::events::ErrorEvent >,
         //      +------------+-----------------------+----------------+--------------+-----
         _row<   Up,           InterruptEvent,                         Down>,
-        a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &agentFSM::action_register_worker>,
-        a_irow< Up,           sdpa::events::DeleteJobEvent,                           &agentFSM::action_delete_job>,
-        a_irow< Up,           sdpa::events::SubmitJobEvent,                           &agentFSM::action_submit_job>,
-        a_irow< Up,           sdpa::events::ErrorEvent,                               &agentFSM::action_error_event>
+        a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &DaemonFSM_::action_register_worker>,
+        a_irow< Up,           sdpa::events::DeleteJobEvent,                           &DaemonFSM_::action_delete_job>,
+        a_irow< Up,           sdpa::events::SubmitJobEvent,                           &DaemonFSM_::action_submit_job>,
+        a_irow< Up,           sdpa::events::ErrorEvent,                               &DaemonFSM_::action_error_event>
         >{};
 
         template <class FSM, class Event>
