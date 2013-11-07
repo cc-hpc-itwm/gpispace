@@ -1563,6 +1563,33 @@ void GenericDaemon::reScheduleAllMasterJobs()
   }
 }
 
+#define PERFORM(METHOD,EVENT_TYPE)                \
+      void GenericDaemon::METHOD()                \
+      {                                           \
+        lock_type lock (_state_machine_mutex);    \
+        process_event (EVENT_TYPE());             \
+      }
+
+      PERFORM (perform_ConfigOkEvent, ConfigOkEvent)
+      PERFORM (perform_ConfigNokEvent, ConfigNokEvent)
+      PERFORM (handleInterruptEvent, InterruptEvent)
+
+#undef PERFORM
+
+#define PERFORM_FORWARD(METHOD,EVENT_TYPE)                \
+      void GenericDaemon::METHOD(const EVENT_TYPE* evt)   \
+      {                                                   \
+        lock_type lock (_state_machine_mutex);            \
+        process_event (*evt);                             \
+      }
+
+      PERFORM_FORWARD (handleWorkerRegistrationEvent, WorkerRegistrationEvent)
+      PERFORM_FORWARD (handleDeleteJobEvent, DeleteJobEvent)
+      PERFORM_FORWARD (handleSubmitJobEvent, SubmitJobEvent)
+      PERFORM_FORWARD (handleErrorEvent, ErrorEvent)
+
+#undef PERFORM_FORWARD
+
 namespace sdpa
 {
   namespace fsm
@@ -1576,33 +1603,6 @@ namespace sdpa
                            )
         : GenericDaemon (name, arrMasterNames, rank, guiUrl)
       {}
-
-#define PERFORM(METHOD,EVENT_TYPE)                \
-      void DaemonFSM::METHOD()                    \
-      {                                           \
-        lock_type lock (_state_machine_mutex);    \
-        process_event (EVENT_TYPE());             \
-      }
-
-      PERFORM (perform_ConfigOkEvent, ConfigOkEvent)
-      PERFORM (perform_ConfigNokEvent, ConfigNokEvent)
-      PERFORM (handleInterruptEvent, InterruptEvent)
-
-#undef PERFORM
-
-#define PERFORM_FORWARD(METHOD,EVENT_TYPE)          \
-      void DaemonFSM::METHOD(const EVENT_TYPE* evt) \
-      {                                             \
-        lock_type lock (_state_machine_mutex);      \
-        process_event (*evt);                       \
-      }
-
-      PERFORM_FORWARD (handleWorkerRegistrationEvent, WorkerRegistrationEvent)
-      PERFORM_FORWARD (handleDeleteJobEvent, DeleteJobEvent)
-      PERFORM_FORWARD (handleSubmitJobEvent, SubmitJobEvent)
-      PERFORM_FORWARD (handleErrorEvent, ErrorEvent)
-
-#undef PERFORM_FORWARD
     }
   }
 }

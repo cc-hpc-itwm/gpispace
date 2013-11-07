@@ -170,9 +170,14 @@ namespace sdpa {
 
       NotificationService* gui_service() { return &m_guiService; }
 
-      virtual void handleInterruptEvent() = 0;
-      virtual void perform_ConfigOkEvent() = 0;
-      virtual void perform_ConfigNokEvent() = 0;
+      virtual void handleInterruptEvent();
+      virtual void perform_ConfigOkEvent();
+      virtual void perform_ConfigNokEvent();
+
+      virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
+      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
+      virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
+      virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
     protected:
 
@@ -378,18 +383,6 @@ namespace sdpa {
                   unsigned int rank = 0
                  , const std::string& guiUrl = ""
                  );
-
-        void perform_ConfigOkEvent();
-        void perform_ConfigNokEvent();
-
-        // event handlers
-        void handleInterruptEvent();
-        void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
-        void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
-        void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
-        void handleErrorEvent(const sdpa::events::ErrorEvent* );
-
-      private:
       };
     }
   }
