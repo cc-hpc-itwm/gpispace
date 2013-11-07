@@ -46,7 +46,7 @@ namespace sdpa { namespace daemon {
       @param location how to reach that worker (might be the same as the former)
       */
     explicit Worker( 	const worker_id_t& name = worker_id_t(""),
-    					const unsigned int& cap = 10000,
+    					const boost::optional<unsigned int>& cap = boost::none,
     					const unsigned int& rank = 0,
     					const sdpa::worker_id_t& agent_uuid = "",
     					const location_t &location = "" );
@@ -155,7 +155,7 @@ namespace sdpa { namespace daemon {
     SDPA_DECLARE_LOGGER();
 
     worker_id_t name_; //! name of the worker
-    unsigned int capacity_;
+    boost::optional<unsigned int> capacity_;
     sdpa::capabilities_set_t capabilities_;
     unsigned int rank_;
     sdpa::worker_id_t agent_uuid_;
