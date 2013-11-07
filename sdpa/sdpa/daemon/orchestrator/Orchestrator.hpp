@@ -37,10 +37,8 @@ namespace sdpa {
         url_(url)
       {}
 
-			static Orchestrator::ptr_t create ( const std::string& name
-                                        , const std::string& url
-                                        , const unsigned int capacity
-                                        );
+			static Orchestrator::ptr_t create
+        (const std::string& name, const std::string& url);
 
       void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
       void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );

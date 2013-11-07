@@ -317,10 +317,9 @@ void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* 
 
 Orchestrator::ptr_t Orchestrator::create ( const std::string& name
                                          , const std::string& url
-                                         , const unsigned int capacity
                                          )
 {
-  Orchestrator::ptr_t pOrch (new Orchestrator (name, url, capacity));
+  Orchestrator::ptr_t pOrch (new Orchestrator (name, url, 10000));
 
   seda::Stage::Ptr daemon_stage (new seda::Stage (name, pOrch, 1));
   pOrch->setStage (daemon_stage);

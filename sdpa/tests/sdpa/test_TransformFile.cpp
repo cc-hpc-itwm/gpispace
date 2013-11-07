@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE( testTransformFile1 )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( INFO, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
 	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));

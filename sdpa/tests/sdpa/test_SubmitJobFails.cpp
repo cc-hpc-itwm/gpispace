@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure1 )
 	string addrAgg = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, 10);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
 	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAggMasterInfo(1, MasterInfo("orchestrator_0"));
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure2 )
 	string addrAgg = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, 10);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
 	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAggMasterInfo(1, MasterInfo("orchestrator_0"));

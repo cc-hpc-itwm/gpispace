@@ -20,8 +20,6 @@ namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
-const unsigned int MAX_CAP = 10000;
-
 static const int EX_STILL_RUNNING = 4;
 
 int main (int argc, char **argv)
@@ -132,7 +130,7 @@ int main (int argc, char **argv)
     }
 
     try {
-      sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( orchName, orchUrl, MAX_CAP  );
+      sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( orchName, orchUrl);
 
       ptrOrch->start_agent();
 

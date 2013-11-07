@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
 	ptrOrch->start_agent();
 
 	LOG( INFO, "Create the Agent ...");

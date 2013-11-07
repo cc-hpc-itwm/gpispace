@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoallocCommonCpb )
 	osstr<<"client_"<<testNb;
 	std::string cliName(osstr.str());
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(orchName, addrOrch, MAX_CAP);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(orchName, addrOrch);
 	ptrOrch->start_agent();
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));

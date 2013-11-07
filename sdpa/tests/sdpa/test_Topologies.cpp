@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create Orchestrator with an Dummy workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Agent ...");
@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create Orchestrator with an Dummy workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch, MAX_CAP);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Agent ...");
