@@ -172,6 +172,7 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
       sendEventToMaster(pEvtJobFinished);
     }
 
+    if (m_guiService)
     {
       std::list<std::string> workers; workers.push_back (name());
       const we::mgmt::type::activity_t act (pJob->description());
@@ -182,7 +183,7 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
         , act
         );
 
-      gui_service()->notify (evt);
+      m_guiService->notify (evt);
     }
 
     BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
@@ -483,6 +484,7 @@ bool Agent::failed( const id_type& wfid
     if(!isSubscriber(pJob->owner()))
       sendEventToMaster(pEvtJobFailed);
 
+    if (m_guiService)
     {
       std::list<std::string> workers; workers.push_back (name());
       const we::mgmt::type::activity_t act (pJob->description());
@@ -493,7 +495,7 @@ bool Agent::failed( const id_type& wfid
         , act
         );
 
-      gui_service()->notify (evt);
+      m_guiService->notify (evt);
     }
 
     BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
