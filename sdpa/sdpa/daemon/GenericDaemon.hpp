@@ -174,7 +174,6 @@ namespace sdpa {
 
       // agent fsm (actions)
       virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
-      virtual void action_request_job( const sdpa::events::RequestJobEvent& );
       virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
       virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
       virtual void action_error_event(const sdpa::events::ErrorEvent& );

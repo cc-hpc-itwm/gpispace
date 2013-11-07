@@ -44,7 +44,6 @@ namespace sdpa
       }
 
       DFLT_IMPL (action_delete_job, DeleteJobEvent)
-      DFLT_IMPL (action_request_job, RequestJobEvent)
       DFLT_IMPL (action_submit_job, SubmitJobEvent)
       DFLT_IMPL (action_register_worker, WorkerRegistrationEvent)
       DFLT_IMPL (action_error_event, ErrorEvent)
@@ -58,7 +57,6 @@ namespace sdpa
       }
 
       FORWARD (action_delete_job, DeleteJobEvent)
-      FORWARD (action_request_job, RequestJobEvent)
       FORWARD (action_submit_job, SubmitJobEvent)
       FORWARD (action_register_worker, WorkerRegistrationEvent)
       FORWARD (action_error_event, ErrorEvent)

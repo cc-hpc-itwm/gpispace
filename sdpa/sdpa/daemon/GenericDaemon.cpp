@@ -395,10 +395,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
   }
 }
 
-void GenericDaemon::action_request_job(const RequestJobEvent& e)
-{
-}
-
 bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
 {
   return masterInfo.name() == name;

@@ -52,7 +52,6 @@ namespace sdpa {
         typedef Down initial_state;
 
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent& );
-        virtual void action_request_job(const sdpa::events::RequestJobEvent& );
         virtual void action_submit_job(const sdpa::events::SubmitJobEvent& );
         virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
         virtual void action_error_event(const sdpa::events::ErrorEvent& );
@@ -70,7 +69,7 @@ namespace sdpa {
         a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &agentFSM::action_register_worker>,
         a_irow< Up,           sdpa::events::DeleteJobEvent,                           &agentFSM::action_delete_job>,
         a_irow< Up,           sdpa::events::SubmitJobEvent,                           &agentFSM::action_submit_job>,
-        a_irow< Up,           sdpa::events::RequestJobEvent,                          &agentFSM::action_request_job>,
+        _irow<  Up,           sdpa::events::RequestJobEvent>,
         a_irow< Up,           sdpa::events::ErrorEvent,                               &agentFSM::action_error_event>
         >{};
 
@@ -100,7 +99,6 @@ namespace sdpa {
         void perform_ConfigNokEvent();
 
         void action_delete_job(const sdpa::events::DeleteJobEvent& );
-        void action_request_job(const sdpa::events::RequestJobEvent& );
         void action_submit_job(const sdpa::events::SubmitJobEvent& );
         void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
         void action_error_event(const sdpa::events::ErrorEvent& );
