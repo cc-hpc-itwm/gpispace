@@ -1,8 +1,8 @@
 #include "wfe.hpp"
-#include "observable.hpp"
 #include <errno.h>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
+#include <sdpa/daemon/NotificationService.hpp>
 
 #include <list>
 #include <map>
@@ -162,7 +162,6 @@ namespace
 
 class WFEImpl : FHG_PLUGIN
               , public wfe::WFE
-              , public observe::Observable
 {
   typedef boost::mutex mutex_type;
   typedef boost::lock_guard<mutex_type> lock_type;
@@ -230,11 +229,21 @@ public:
       , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
       );
 
+    _notification_service = boost::none;
+
+    const std::string url (fhg_kernel()->get ("url", ""));
+    if (not url.empty())
+    {
+      _notification_service = sdpa::daemon::NotificationService (url);
+    }
+
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
+    _notification_service = boost::none;
+
     gspc::net::unhandle ("/service/wfe/unload-modules");
     gspc::net::unhandle ("/service/wfe/current-job");
     gspc::net::unhandle ("/service/wfe/search-path/get");
@@ -280,9 +289,13 @@ public:
                  , sdpa::daemon::NotificationEvent::state_t state
                  )
   {
-    emit ( sdpa::daemon::NotificationEvent
+    if (_notification_service)
+    {
+      _notification_service->notify
+        ( sdpa::daemon::NotificationEvent
            (task.workers, task.id, state, task.activity, task.meta)
-         );
+        );
+    }
   }
 
 
@@ -566,6 +579,8 @@ private:
   boost::shared_ptr<boost::thread> m_worker;
 
   bool m_auto_unload;
+
+  boost::optional<sdpa::daemon::NotificationService> _notification_service;
 };
 
 EXPORT_FHG_PLUGIN( wfe
