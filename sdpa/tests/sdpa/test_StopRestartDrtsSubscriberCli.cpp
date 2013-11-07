@@ -25,8 +25,6 @@ static int testNb = 0;
 
 namespace po = boost::program_options;
 
-#define NO_GUI ""
-
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture

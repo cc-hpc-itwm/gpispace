@@ -36,7 +36,6 @@ const int NMAXTHRDS = 3;
 static int testNb = 0;
 
 namespace po = boost::program_options;
-#define NO_GUI ""
 
 struct MyFixture
 {

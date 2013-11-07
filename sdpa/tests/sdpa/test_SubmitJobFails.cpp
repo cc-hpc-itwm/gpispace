@@ -15,7 +15,6 @@ using namespace seda;
 const int NMAXTRIALS = 3;
 
 namespace po = boost::program_options;
-#define NO_GUI ""
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 

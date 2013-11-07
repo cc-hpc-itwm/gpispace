@@ -33,8 +33,6 @@ namespace po = boost::program_options;
 
 using namespace std;
 
-#define NO_GUI ""
-
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
