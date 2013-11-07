@@ -63,7 +63,7 @@ SchedulerImpl::~SchedulerImpl()
 }
 
 void SchedulerImpl::addWorker(  const Worker::worker_id_t& workerId,
-                                const unsigned int& capacity,
+                                const boost::optional<unsigned int>& capacity,
                                 const capabilities_set_t& cpbset,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
