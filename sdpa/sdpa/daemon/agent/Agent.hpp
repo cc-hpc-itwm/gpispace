@@ -39,8 +39,7 @@ namespace sdpa {
               )
           : GenericDaemon( name, arrMasterNames, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
-          url_(url),
-          m_bCanRunTasksLocally(false)
+          url_(url)
         {
           if(rank>=0)
           {
@@ -66,7 +65,7 @@ namespace sdpa {
 
         const std::string url() const {return url_;}
 
-        bool canRunTasksLocally() { return m_bCanRunTasksLocally; }
+        bool canRunTasksLocally() { return false; }
 
         template <typename T> friend struct AgentFactory;
 
@@ -75,8 +74,6 @@ namespace sdpa {
 
       private:
         std::string url_;
-
-        bool m_bCanRunTasksLocally;
       };
   }
 }
