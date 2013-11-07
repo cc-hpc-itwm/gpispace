@@ -24,6 +24,7 @@
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/Scheduler.hpp>
 
+#include <boost/optional.hpp>
 
 namespace sdpa { namespace daemon {
   class WorkerManager  {
@@ -45,7 +46,7 @@ namespace sdpa { namespace daemon {
     const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
     void addWorker( const Worker::worker_id_t& workerId,
-                unsigned int capacity,
+                boost::optional<unsigned int> capacity,
                 const capabilities_set_t& cpbset = capabilities_set_t(),
                 const unsigned int& agent_rank = 0,
                 const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);

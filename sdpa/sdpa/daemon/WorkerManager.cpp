@@ -95,7 +95,7 @@ const Worker::worker_id_t& WorkerManager::findSubmOrAckWorker(const sdpa::job_id
  * add new worker
  */
 void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
-                                unsigned int capacity,
+                                boost::optional<unsigned int> capacity,
                                 const capabilities_set_t& cpbSet,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
