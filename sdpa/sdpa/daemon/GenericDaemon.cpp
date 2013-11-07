@@ -397,38 +397,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 
 void GenericDaemon::action_request_job(const RequestJobEvent& e)
 {
-  /*
-  the slave(aggregator) requests new executable jobs
-  this message is sent in regular frequencies depending on the load of the slave(aggregator)
-  this message can be seen as the trigger for a submitJob
-  it contains the id of the last job that has been received
-  the orchestrator answers to this message with a submitJob
-  */
-
-  // ATTENTION: you should submit/schedule only jobs that are in Pending state
-  // A job received from the user should be automatically put into the Running state
-  // after submitting the corresponding workflow to WFE
-
-  //take a job from the workers' queue? and serve it
-
-  //To do: replace this with schedule
-  /*Worker::worker_id_t worker_id = e.from();
-  try {
-	  sdpa::job_id_t jobId = scheduler()->assignNewJob(worker_id,  e.last_job_id());
-	  serveJob( worker_id, jobId );
-  }
-  catch(const NoJobScheduledException&)
-  {
-	  DMLOG (TRACE, "There is no job to be served to the worker "<<worker_id);
-  }
-  catch(const WorkerNotFoundException&)
-  {
-     DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
-
-     // the worker should register first, before posting a job request
-     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-     sendEventToSlave(pErrorEvt);
-  }*/
 }
 
 bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
