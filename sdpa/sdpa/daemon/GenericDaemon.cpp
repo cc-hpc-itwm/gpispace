@@ -87,7 +87,6 @@ GenericDaemon::GenericDaemon( const std::string name,
   // application gui service
   if (guiUrl && !guiUrl->empty())
   {
-    m_guiService->open ();
     DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
 }

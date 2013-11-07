@@ -22,7 +22,9 @@ namespace sdpa
                           )
         : service_(service)
         , m_destination_location (destination_location)
-      {}
+      {
+        open();
+      }
 
       virtual void update (const boost::any& arg)
       {

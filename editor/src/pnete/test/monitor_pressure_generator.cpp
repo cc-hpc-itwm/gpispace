@@ -92,8 +92,6 @@ int main(int ac, char **av)
     ("service_a", (boost::format ("localhost:%1%") % port_a).str());
   NotificationService service_b
     ("service_b", (boost::format ("localhost:%1%") % port_b).str());
-  service_a.open();
-  service_b.open();
 
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);
