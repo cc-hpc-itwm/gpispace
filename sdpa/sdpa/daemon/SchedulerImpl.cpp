@@ -577,13 +577,13 @@ void SchedulerImpl::run()
         }
         else {
             // just for testing
-            if(ptr_comm_handler_->canRunTasksLocally()) {
+            if(false) {
                 DLOG(TRACE, "I have no workers, but I'm able to execute myself the job "<<jobId.str()<<" ...");
                 execute(jobId);
             }
             else {
                 //SDPA_LOG_DEBUG("no worker available, put the job back into the scheduler's queue!");
-                if( !ptr_comm_handler_->canRunTasksLocally() ) {
+                if( !false ) {
                     pending_jobs_queue_.push(jobId);
                     lock_type lock(mtx_);
                     cond_workers_registered.wait(lock);
