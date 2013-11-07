@@ -39,7 +39,6 @@
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
-#include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>

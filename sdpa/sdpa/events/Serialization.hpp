@@ -11,7 +11,6 @@
 
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
-#include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
 

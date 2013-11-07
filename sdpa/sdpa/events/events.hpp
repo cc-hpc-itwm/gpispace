@@ -14,7 +14,6 @@
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/RunJobEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
