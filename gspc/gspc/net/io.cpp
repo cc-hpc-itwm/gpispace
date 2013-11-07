@@ -19,7 +19,7 @@ namespace gspc
         typedef std::vector<thread_ptr_t>        thread_pool_t;
       public:
         global_io ()
-          : m_io_service ()
+          : m_io_service (0)
           , m_work ()
           , m_threads ()
         {}
@@ -31,10 +31,10 @@ namespace gspc
 
         void start (size_t nthread)
         {
-          if (not m_work)
+          if (not m_io_service)
           {
-            m_io_service.reset ();
-            m_work.reset (new boost::asio::io_service::work (m_io_service));
+            m_io_service = new boost::asio::io_service;
+            m_work.reset (new boost::asio::io_service::work (*m_io_service));
 
             for (size_t i = 0 ; i < nthread ; ++i)
             {
@@ -53,7 +53,7 @@ namespace gspc
         {
           try
           {
-            m_io_service.run ();
+            m_io_service->run ();
           }
           catch (std::exception const &ex)
           {
@@ -63,10 +63,10 @@ namespace gspc
 
         void stop ()
         {
-          if (m_work)
+          if (m_io_service)
           {
             m_work.reset ();
-            m_io_service.stop ();
+            m_io_service->stop ();
 
             BOOST_FOREACH (thread_ptr_t thrd, m_threads)
             {
@@ -74,15 +74,18 @@ namespace gspc
               thrd->join ();
             }
             m_threads.clear ();
+
+            delete m_io_service;
+            m_io_service = 0;
           }
         }
 
         boost::asio::io_service & service ()
         {
-          return m_io_service;
+          return *m_io_service;
         }
       private:
-        boost::asio::io_service                          m_io_service;
+        boost::asio::io_service                         *m_io_service;
         boost::shared_ptr<boost::asio::io_service::work> m_work;
         thread_pool_t                                    m_threads;
       };
