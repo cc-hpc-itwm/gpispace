@@ -22,7 +22,7 @@ namespace gspc
       }
 
       service_t ();
-      virtual ~service_t ();
+      ~service_t ();
 
       explicit
       service_t (std::string const &url);
