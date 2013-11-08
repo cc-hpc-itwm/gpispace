@@ -320,18 +320,14 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAgent0MasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo);
-	ptrAgent0->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_0", addrAgent0, arrAgent0MasterInfo);
 
 	// create faulty agent
 	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo);
-
-	ptrAgent1->start_agent();
+	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_1", addrAgent1, arrAgent1MasterInfo);
 
 	ptrOrch->shutdown();
 	ptrAgent0->shutdown();

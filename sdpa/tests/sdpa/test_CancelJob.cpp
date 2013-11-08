@@ -206,12 +206,10 @@ BOOST_AUTO_TEST_CASE( TestCancelCoallocation )
 
   m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-  ptrAg0->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -251,12 +249,10 @@ BOOST_AUTO_TEST_CASE( Test1 )
 
   m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-  ptrAg0->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -298,12 +294,10 @@ BOOST_AUTO_TEST_CASE( Test2 )
 
   m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-  ptrAg0->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -349,12 +343,10 @@ BOOST_AUTO_TEST_CASE( TestCancelCoalloc )
 
   m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-  ptrAg0->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );

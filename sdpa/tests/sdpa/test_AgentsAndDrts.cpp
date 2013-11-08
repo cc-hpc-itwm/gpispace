@@ -155,12 +155,10 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts1 )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo);
-	ptrAgent->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
@@ -192,16 +190,13 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts2 )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-	ptrAgent->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
 	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_00", addrAgent, arrAgMaster);
-	ptrAg00->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called( "agent_00", addrAgent, arrAgMaster);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( createDRTSWorker("drts_00", "agent_00", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_00_thread = boost::thread( &fhg::core::kernel_t::run, drts_00 );
@@ -235,19 +230,15 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts3 )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo);
-	ptrAgent->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
 
 	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_00", addrAgent, arrAgMaster);
-	ptrAg00->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_00", addrAgent, arrAgMaster);
 
-	sdpa::daemon::Agent::ptr_t ptrAg01 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_01", addrAgent, arrAgMaster);
-	ptrAg01->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAg01 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_01", addrAgent, arrAgMaster);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( createDRTSWorker("drts_00", "agent_00", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()));
 	boost::thread drts_00_thread = boost::thread(&fhg::core::kernel_t::run, drts_00);

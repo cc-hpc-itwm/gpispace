@@ -402,12 +402,10 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   osstr<<"agent_"<<testNb;
   std::string agentName(osstr.str());
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create(orchName, addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called(orchName, addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
-  sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo);
-  ptrAgent->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called(agentName, addrAgent, arrAgentMasterInfo);
 
   boost::thread drts_thread[NWORKERS];
   sdpa::shared_ptr<fhg::core::kernel_t> drts[NWORKERS];
