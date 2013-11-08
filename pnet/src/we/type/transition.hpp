@@ -411,24 +411,6 @@ namespace we { namespace type {
       const port_map_t& ports() const { return ports_; }
       port_map_t& ports() { return ports_; }
 
-      boost::unordered_set<std::string> port_names
-        (const we::type::PortDirection& d) const
-      {
-        boost::unordered_set<std::string> names;
-
-        BOOST_FOREACH ( we::type::port_t const& port
-                      , ports_ | boost::adaptors::map_values
-                      )
-        {
-          if (d == port.direction())
-          {
-            names.insert (port.name());
-          }
-        }
-
-        return names;
-      }
-
       void add_requirement (we::type::requirement_t const& r)
       {
         _requirements.push_back (r);
@@ -504,6 +486,9 @@ namespace we { namespace type {
 
     transition_t::port_id_with_prop_t const&
     input_port_by_pid (transition_t const&, const petri_net::place_id_type&);
+
+    boost::unordered_set<std::string>
+    port_names (transition_t const&, const we::type::PortDirection&);
 
     // ********************************************************************* //
 

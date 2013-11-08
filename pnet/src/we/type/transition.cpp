@@ -77,6 +77,23 @@ namespace we
         ("trans: "+trans.name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
     }
 
+    boost::unordered_set<std::string>
+    port_names (transition_t const& trans, const we::type::PortDirection& d)
+    {
+      boost::unordered_set<std::string> names;
+
+      BOOST_FOREACH ( we::type::port_t const& port
+                    , trans.ports() | boost::adaptors::map_values
+                    )
+      {
+        if (d == port.direction())
+        {
+          names.insert (port.name());
+        }
+      }
+
+      return names;
+    }
 
     // ********************************************************************* //
   }
