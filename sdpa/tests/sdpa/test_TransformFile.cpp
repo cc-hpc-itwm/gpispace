@@ -194,7 +194,6 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testTransformFile1 )
 {
-	LOG( DEBUG, "***** testTranformFile *****"<<std::endl);
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
@@ -202,7 +201,6 @@ BOOST_AUTO_TEST_CASE( testTransformFile1 )
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( INFO, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
 	ptrOrch->start_agent();
@@ -217,7 +215,6 @@ BOOST_AUTO_TEST_CASE( testTransformFile1 )
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
 	drts_0_thread.join();
@@ -227,8 +224,6 @@ BOOST_AUTO_TEST_CASE( testTransformFile1 )
 	ptrOrch->shutdown();
 
 	// tr [a-z] [A-Z] < in.txt > out.txt.expected
-
-	LOG( DEBUG, "The test case testTransformFile terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
