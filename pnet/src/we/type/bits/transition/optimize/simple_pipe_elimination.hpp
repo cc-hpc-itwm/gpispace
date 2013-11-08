@@ -7,7 +7,6 @@
 #include <we/type/id.hpp>
 
 #include <we/type/bits/transition/optimize/merge_places.hpp>
-#include <we/type/bits/transition/optimize/is_associated.hpp>
 
 #include <stack>
 #include <vector>

@@ -9,8 +9,6 @@
 
 #include <we/type/net.hpp>
 
-#include <we/type/bits/transition/optimize/is_associated.hpp>
-
 #include <rewrite/validprefix.hpp>
 
 #include <stack>
