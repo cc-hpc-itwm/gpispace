@@ -38,23 +38,6 @@ namespace we
         return act;
       }
 
-      /*
-
-        TODO: make this work.
-
-        see we/we.hpp for the to_value template
-
-      template <typename T>
-      mgmt::type::activity_t & put ( mgmt::type::activity_t & act
-                                   , std::string const & port
-                                   , T const & val
-                                   )
-      {
-        using namespace we::util::token;
-        return put( act, port, to_value(val) );
-      }
-      */
-
       // TODO:
       // try the following:
       //    generic templetized function that may be overridden: to_value/from_value
