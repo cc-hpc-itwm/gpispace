@@ -573,4 +573,4 @@ namespace petri_net
 
     return act;
   }
-} // namespace petri_net
+}
