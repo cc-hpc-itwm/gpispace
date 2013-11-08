@@ -180,7 +180,7 @@ namespace we
                     std::cerr << "W: transition generated output, but port is not connected:"
                               << " trans=\"" << _child.transition().name() << "\""
                               << " port="
-                              << _child.transition().name_of_port (top.second)
+                              << _child.transition().get_port (top.second).name()
                               << "(" << top.second << ")"
                               << " token=" << pnet::type::value::show (top.first)
                               << std::endl;
@@ -424,7 +424,7 @@ namespace we
                 )
               {
                 context.bind_ref
-                  ( _activity.transition().name_of_port (top->second)
+                  ( _activity.transition().get_port (top->second).name()
                   , top->first
                   );
               }
@@ -588,7 +588,7 @@ namespace we
                 os << ", ";
               }
 
-            os << transition().name_of_port (top.second)
+            os << transition().get_port (top.second).name()
                << "=(" << pnet::type::value::show (top.first)
                << ", " << top.second << ")";
           }

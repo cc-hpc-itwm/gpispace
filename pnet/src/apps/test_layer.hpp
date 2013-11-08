@@ -293,7 +293,7 @@ namespace test {
                       , act.output()
                       )
         {
-          std::cout << act.transition().name_of_port (top.second)
+          std::cout << act.transition().get_port (top.second).name()
                     << " => " << pnet::type::value::show (top.first) << std::endl;
         }
       }
