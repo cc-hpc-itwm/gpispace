@@ -40,7 +40,7 @@ struct MyFixture
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
 			, m_arrAggMasterInfo(1, sdpa::MasterInfo("orchestrator_0"))
-	{ //initialize and start_agent the finite state machine
+	{
 		LOG(DEBUG, "Fixture's constructor called ...");
 
 		m_strWorkflow = read_workflow("workflows/capabilities.pnet");
