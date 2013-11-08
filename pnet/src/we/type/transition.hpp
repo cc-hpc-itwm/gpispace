@@ -348,19 +348,6 @@ namespace we { namespace type {
         throw pnet::exception::port::unknown (name(), port_name);
       }
 
-      const port_id_with_prop_t& input_port_by_pid (const petri_net::place_id_type& pid) const
-      {
-        BOOST_FOREACH (outer_to_inner_t::value_type const& p, outer_to_inner_)
-        {
-          if (p.first == pid)
-          {
-            return p.second;
-          }
-        }
-
-        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
-      }
-
       const std::string& name_of_place (const petri_net::place_id_type& pid) const
       {
         return get_port (outer_to_inner (pid)).name();
@@ -514,6 +501,9 @@ namespace we { namespace type {
 
     transition_t::port_id_with_prop_t
     output_port_by_pid (transition_t const&, const petri_net::place_id_type&);
+
+    transition_t::port_id_with_prop_t const&
+    input_port_by_pid (transition_t const&, const petri_net::place_id_type&);
 
     // ********************************************************************* //
 
