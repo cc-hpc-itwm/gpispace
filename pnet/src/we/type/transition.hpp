@@ -262,18 +262,6 @@ namespace we { namespace type {
         connect_outer_to_inner (pid_new, port, prop);
       }
 
-      const petri_net::place_id_type& inner_to_outer (const petri_net::port_id_type& port) const
-      {
-        try
-        {
-          return inner_to_outer_.at (port).first;
-        }
-        catch (const std::out_of_range &)
-        {
-          throw exception::not_connected<petri_net::port_id_type> ("trans: " + name() + ": port not connected: " + fhg::util::show (port), port);
-        }
-      }
-
       inner_to_outer_t const& inner_to_outer() const
       {
         return inner_to_outer_;
