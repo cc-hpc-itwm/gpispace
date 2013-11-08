@@ -475,7 +475,7 @@ namespace we { namespace type {
     boost::unordered_set<std::string>
     port_names (transition_t const&, const we::type::PortDirection&);
 
-    const port_t&
+    boost::optional<const port_t&>
     get_port_by_associated_pid ( transition_t const&
                                , const petri_net::place_id_type&
                                );

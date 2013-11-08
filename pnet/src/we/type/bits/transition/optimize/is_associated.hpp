@@ -15,25 +15,22 @@ namespace we { namespace type {
                                 , we::type::port_t & port
                                 )
       {
-        try
-          {
-            port = get_port_by_associated_pid (trans, pid);
+        boost::optional<we::type::port_t const&> mport
+          (get_port_by_associated_pid (trans, pid));
 
-            return true;
-          }
-        catch (const exception::not_connected<petri_net::place_id_type> &)
-          {
-            return false;
-          }
+        if (mport)
+        {
+          port = *mport;
+        }
+
+        return mport;
       }
 
       inline bool is_associated ( const transition_t & trans
                                 , const petri_net::place_id_type & pid
                                 )
       {
-        we::type::port_t port;
-
-        return is_associated (trans, pid, port);
+        return get_port_by_associated_pid (trans, pid);
       }
     }
   }

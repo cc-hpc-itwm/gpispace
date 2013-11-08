@@ -95,7 +95,7 @@ namespace we
       return names;
     }
 
-    const port_t&
+    boost::optional<const port_t&>
     get_port_by_associated_pid ( transition_t const& trans
                                , const petri_net::place_id_type& pid
                                )
@@ -110,8 +110,7 @@ namespace we
         }
       }
 
-      throw exception::not_connected<petri_net::place_id_type>
-        ("trans: "+trans.name()+": port not associated with:"+fhg::util::show(pid), pid);
+      return boost::none;
     }
 
     // ********************************************************************* //
