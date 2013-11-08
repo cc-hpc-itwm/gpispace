@@ -377,13 +377,7 @@ void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 
 const Worker::ptr_t& SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
-  try {
-    return ptr_worker_man_->findWorker(worker_id);
-  }
-  catch(WorkerNotFoundException)
-  {
-    throw WorkerNotFoundException(worker_id);
-  }
+  return ptr_worker_man_->findWorker(worker_id);
 }
 
 const Worker::worker_id_t& SchedulerImpl::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
