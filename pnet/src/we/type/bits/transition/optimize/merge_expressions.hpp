@@ -366,37 +366,37 @@ namespace we { namespace type {
                 pred.add_connection (p.second.name(), pid, p.second.property());
               }
             else
+            {
+              try
               {
-                try
+                const petri_net::place_id_type pid
+                  (input_pid_by_port_id (trans, p.first));
+
+                if (pid_read.find (pid) != pid_read.end())
+                {
+                  if (not input_port_by_pid (pred, pid))
                   {
-                    const petri_net::place_id_type pid
-                      (input_pid_by_port_id (trans, p.first));
+                    pred.add_port (p.second);
 
-                    if (pid_read.find (pid) != pid_read.end())
-                      {
-                        if (not input_port_by_pid (pred, pid))
-                          {
-                            pred.add_port (p.second);
+                    connection_t connection (net.get_connection_in (tid_trans, pid));
 
-                            connection_t connection (net.get_connection_in (tid_trans, pid));
+                    net.delete_edge_in (tid_trans, pid);
 
-                            net.delete_edge_in (tid_trans, pid);
+                    connection.tid = tid_pred;
 
-                            connection.tid = tid_pred;
+                    net.add_connection (connection);
 
-                            net.add_connection (connection);
-
-                            pred.add_connection
-                              (pid, p.second.name(), p.second.property())
-                              ;
-                          }
-                      }
+                    pred.add_connection
+                      (pid, p.second.name(), p.second.property())
+                      ;
                   }
-                catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
-                  {
-                    // do nothing, the port was not connected
-                  }
+                }
               }
+              catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
+              {
+                // do nothing, the port was not connected
+              }
+            }
           }
       }
 
