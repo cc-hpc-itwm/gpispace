@@ -350,7 +350,8 @@ namespace we { namespace type {
               {
                 pred.add_port (p.second);
 
-                const petri_net::place_id_type pid (trans.inner_to_outer (p.first));
+                const petri_net::place_id_type pid
+                  (trans.inner_to_outer().at (p.first).first);
 
                 connection_t connection (net.get_connection_out (tid_trans, pid));
 
@@ -411,7 +412,8 @@ namespace we { namespace type {
         {
           if (p.second.is_output())
           {
-            const petri_net::place_id_type pid (trans.inner_to_outer (p.first));
+            const petri_net::place_id_type pid
+              (trans.inner_to_outer().at (p.first).first);
 
             namespace prop = we::type::property::traverse;
 
