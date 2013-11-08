@@ -1,11 +1,14 @@
 #include "system.hpp"
 
+#include <sys/types.h>
+#include <unistd.h> // getuid
 #include <errno.h>  // errno
 #include <stdlib.h> // getenv, abort
 #include <string.h> // strerror
 
 #include <iostream>
 
+#include <boost/format.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <fhg/util/program_info.h>
@@ -145,6 +148,13 @@ namespace gspc
     std::string const & system_config_file ()
     {
       static std::string s ("/etc/gspc.rc");
+      return s;
+    }
+
+    std::string const & session_directory ()
+    {
+      static std::string s
+        ((boost::format ("/tmp/gspcd-%1%") % getuid ()).str ());
       return s;
     }
   }

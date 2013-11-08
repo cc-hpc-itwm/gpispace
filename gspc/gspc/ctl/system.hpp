@@ -61,6 +61,11 @@ namespace gspc
        get the system config file, usually /etc/gspc.rc
      */
     std::string const & system_config_file ();
+
+    /**
+       get the default gspc session directory
+     */
+    std::string const & session_directory ();
   }
 }
 
