@@ -473,11 +473,6 @@ namespace we { namespace type {
         _requirements.push_back (r);
       }
 
-      void del_requirement (we::type::requirement_t const& r)
-      {
-        _requirements.remove (r);
-      }
-
     private:
       std::string name_;
       data_type data_;
