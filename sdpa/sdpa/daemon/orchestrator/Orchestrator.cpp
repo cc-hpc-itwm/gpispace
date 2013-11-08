@@ -312,3 +312,11 @@ Orchestrator::ptr_t Orchestrator::create ( const std::string& name
 
   return pOrch;
 }
+
+Orchestrator::ptr_t Orchestrator::create_with_start_called
+  (const std::string& name, const std::string& url)
+{
+  Orchestrator::ptr_t pOrch (create (name, url));
+  pOrch->start_agent();
+  return pOrch;
+}
