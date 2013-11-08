@@ -80,40 +80,6 @@ namespace we
 
         return tokens;
       }
-
-      marking_t get_input (we::mgmt::type::activity_t const & act)
-      {
-        typedef we::mgmt::type::activity_t::input_t input_t;
-
-        marking_t m;
-        for ( input_t::const_iterator in(act.input().begin()), end(act.input().end())
-            ; in != end
-            ; ++in
-            )
-        {
-          const std::string port_name (act.transition().get_port(in->second).name());
-          m[port_name].push_back (in->first);
-        }
-
-        return m;
-      }
-
-      marking_t get_output (we::mgmt::type::activity_t const & act)
-      {
-        typedef we::mgmt::type::activity_t::output_t output_t;
-
-        marking_t m;
-        for ( output_t::const_iterator out(act.output().begin()), end(act.output().end())
-            ; out != end
-            ; ++out
-            )
-        {
-          const std::string port_name (act.transition().get_port(out->second).name());
-          m[port_name].push_back (out->first);
-        }
-
-        return m;
-      }
     }
   }
 }
