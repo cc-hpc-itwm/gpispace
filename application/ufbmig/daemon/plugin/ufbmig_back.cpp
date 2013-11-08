@@ -34,6 +34,32 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
+namespace
+{
+  std::list<pnet::type::value::value_type>
+  get ( we::mgmt::type::activity_t const & act
+      , std::string const & port
+      )
+  {
+    typedef we::mgmt::type::activity_t::output_t output_t;
+
+    std::list<pnet::type::value::value_type> tokens;
+    const petri_net::port_id_type port_id
+      (act.transition().output_port_by_name (port));
+
+    for ( output_t::const_iterator out(act.output().begin())
+        ; out != act.output().end()
+        ; ++out
+        )
+      {
+        if (out->second == port_id)
+          tokens.push_back (out->first);
+      }
+
+    return tokens;
+  }
+}
+
 namespace fs = boost::filesystem;
 
 namespace job
@@ -843,11 +869,11 @@ private:
   {
     try
     {
-      we::util::token::list_t output (we::util::token::get (result, "config"));
+      std::list<pnet::type::value::value_type> output (get (result, "config"));
       if (output.empty())
         throw std::runtime_error("empty list");
       config = pnetc::type::config::from_value (output.front());
-      MLOG(INFO, "got config: " << config);
+      MLOG (INFO, "got config: " << config);
     }
     catch (std::exception const & ex)
     {

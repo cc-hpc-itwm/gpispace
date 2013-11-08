@@ -16,8 +16,6 @@ namespace we
   {
     namespace token
     {
-      typedef std::list<pnet::type::value::value_type> list_t;
-
       mgmt::type::activity_t & put ( mgmt::type::activity_t & act
                                    , std::string const & port
                                    , pnet::type::value::value_type const & value
@@ -35,32 +33,6 @@ namespace we
                         )
                       );
         return act;
-      }
-
-      // TODO:
-      // try the following:
-      //    generic templetized function that may be overridden: to_value/from_value
-      //    so that put/get can take any structs
-      // see: hash_value
-
-      list_t get ( we::mgmt::type::activity_t const & act
-                 , std::string const & port
-                 )
-      {
-        typedef we::mgmt::type::activity_t::output_t output_t;
-
-        list_t tokens;
-        const petri_net::port_id_type port_id (act.transition().output_port_by_name(port));
-        for ( output_t::const_iterator out(act.output().begin())
-            ; out != act.output().end()
-            ; ++out
-            )
-        {
-          if (out->second == port_id)
-            tokens.push_back (out->first);
-        }
-
-        return tokens;
       }
     }
   }
