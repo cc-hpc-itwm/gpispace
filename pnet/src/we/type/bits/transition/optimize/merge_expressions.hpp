@@ -24,7 +24,7 @@ namespace we { namespace type {
     {
       // ******************************************************************* //
 
-      inline const petri_net::place_id_type&
+      inline boost::optional<const petri_net::place_id_type&>
       input_pid_by_port_id ( const transition_t& trans
                            , const petri_net::port_id_type& port_id
                            )
@@ -39,8 +39,7 @@ namespace we { namespace type {
           }
         }
 
-        throw exception::not_connected<petri_net::port_id_type>
-          ("trans: "+trans.name()+": pid not connected by port_id: "+ fhg::util::show (port_id), port_id);
+        return boost::none;
       }
 
       inline boost::optional<const we::type::port_t>
@@ -367,34 +366,27 @@ namespace we { namespace type {
               }
             else
             {
-              try
-              {
-                const petri_net::place_id_type pid
-                  (input_pid_by_port_id (trans, p.first));
+              const boost::optional<const petri_net::place_id_type&> pid
+                (input_pid_by_port_id (trans, p.first));
 
-                if (pid_read.find (pid) != pid_read.end())
+              if (pid && pid_read.find (*pid) != pid_read.end())
+              {
+                if (not input_port_by_pid (pred, *pid))
                 {
-                  if (not input_port_by_pid (pred, pid))
-                  {
-                    pred.add_port (p.second);
+                  pred.add_port (p.second);
 
-                    connection_t connection (net.get_connection_in (tid_trans, pid));
+                  connection_t connection (net.get_connection_in (tid_trans, *pid));
 
-                    net.delete_edge_in (tid_trans, pid);
+                  net.delete_edge_in (tid_trans, *pid);
 
-                    connection.tid = tid_pred;
+                  connection.tid = tid_pred;
 
-                    net.add_connection (connection);
+                  net.add_connection (connection);
 
-                    pred.add_connection
-                      (pid, p.second.name(), p.second.property())
-                      ;
-                  }
+                  pred.add_connection
+                    (*pid, p.second.name(), p.second.property())
+                    ;
                 }
-              }
-              catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
-              {
-                // do nothing, the port was not connected
               }
             }
           }
