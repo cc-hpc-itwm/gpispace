@@ -179,13 +179,11 @@ int main (int argc, char **argv)
 
   try
   {
-    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(   agentName,
+    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called (   agentName,
                                                                                              agentUrl,
                                                                                              listMasterInfo,
                                                                                              agentRank,
                                                                                              appGuiUrl ); //, orchUrl );
-
-    ptrAgent->start_agent();
 
     sigset_t waitset;
     int sig(0);
