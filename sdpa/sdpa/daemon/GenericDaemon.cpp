@@ -963,7 +963,7 @@ void GenericDaemon::submit( const id_type& activityId
                           , const encoded_type& desc
                           , const requirement_list_t& req_list
                           , const we::type::schedule_data& schedule_data
-                          , const we::type::user_data & user_data
+                          , const we::type::user_data& user_data
                           )
 {
   // create new job with the job description = workflow (serialize it first)
@@ -976,7 +976,7 @@ void GenericDaemon::submit( const id_type& activityId
     DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
     job_id_t job_id(activityId);
-    job_id_t parent_id("WE"); // is this really needed?
+    job_id_t parent_id(user_data.get_user_job_identification());
 
     jobManager()->addJobRequirements(job_id, jobReqs);
 
