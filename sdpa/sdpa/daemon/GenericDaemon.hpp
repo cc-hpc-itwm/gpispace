@@ -232,15 +232,6 @@ namespace sdpa {
       }
 
       // workflow engine notifications
-      virtual void activityFailed( const Worker::worker_id_t& worker_id
-                                  , const job_id_t& jobId
-                                  , const std::string& result
-                                  , const int error_code
-                                  , const std::string& reason
-      );
-
-      virtual void activityFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result );
-      virtual void activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id);
       virtual void submitWorkflow(const id_type& id, const encoded_type& );
       virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason);
 
