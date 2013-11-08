@@ -168,23 +168,10 @@ namespace we
                           , _child.output()
                           )
               {
-                try
-                  {
-                    parent.put_value
-                      ( _child.transition().inner_to_outer (top.second)
-                      , top.first
-                      );
-                  }
-                catch (const we::type::exception::not_connected<petri_net::port_id_type>&)
-                  {
-                    std::cerr << "W: transition generated output, but port is not connected:"
-                              << " trans=\"" << _child.transition().name() << "\""
-                              << " port="
-                              << _child.transition().get_port (top.second).name()
-                              << "(" << top.second << ")"
-                              << " token=" << pnet::type::value::show (top.first)
-                              << std::endl;
-                  }
+                parent.put_value
+                  ( _child.transition().inner_to_outer().at (top.second).first
+                  , top.first
+                  );
               }
           }
 
