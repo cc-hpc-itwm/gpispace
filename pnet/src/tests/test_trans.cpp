@@ -71,7 +71,6 @@ int main (int, char **)
          ${pair.vid}   := ${vid}                                 "
       )
     , "!bitset_is_element (${store.seen}, ${vid})"
-    , true
     );
 
   pnet::type::signature::structure_type sig_pair_fields;
