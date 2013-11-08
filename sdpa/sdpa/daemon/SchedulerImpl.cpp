@@ -388,13 +388,7 @@ const Worker::ptr_t& SchedulerImpl::findWorker(const Worker::worker_id_t& worker
 
 const Worker::worker_id_t& SchedulerImpl::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
-  try {
-    return ptr_worker_man_->findWorker(job_id);
-  }
-  catch(const NoWorkerFoundException& ex)
-  {
-    throw ex;
-  }
+  return ptr_worker_man_->findWorker(job_id);
 }
 
 const Worker::worker_id_t& SchedulerImpl::findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
