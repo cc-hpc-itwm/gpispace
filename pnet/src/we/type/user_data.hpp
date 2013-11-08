@@ -17,7 +17,7 @@ namespace we
         m_user_job_identification = id;
       }
 
-      std::string const &get_user_job_identification ()
+      std::string const &get_user_job_identification () const
       {
         return m_user_job_identification;
       }
