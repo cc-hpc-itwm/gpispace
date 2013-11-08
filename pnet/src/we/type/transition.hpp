@@ -348,11 +348,6 @@ namespace we { namespace type {
         throw pnet::exception::port::unknown (name(), port_name);
       }
 
-      const std::string& name_of_place (const petri_net::place_id_type& pid) const
-      {
-        return get_port (outer_to_inner (pid)).name();
-      }
-
       const port_t& get_port (const petri_net::port_id_type& port_id) const
       {
         try
