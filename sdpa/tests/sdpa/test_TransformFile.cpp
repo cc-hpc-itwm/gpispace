@@ -197,8 +197,6 @@ BOOST_AUTO_TEST_CASE( testTransformFile1 )
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-	typedef void OrchWorkflowEngine;
-
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
