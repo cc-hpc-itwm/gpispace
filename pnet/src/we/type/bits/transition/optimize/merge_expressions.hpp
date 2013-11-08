@@ -43,9 +43,9 @@ namespace we { namespace type {
       }
 
       inline boost::optional<const we::type::port_t>
-      input_port_by_pid ( const transition_t & trans
-                        , const petri_net::place_id_type & pid
-                        )
+      minput_port_by_pid ( const transition_t & trans
+                         , const petri_net::place_id_type & pid
+                         )
       {
         try
           {
@@ -277,7 +277,7 @@ namespace we { namespace type {
             else
               {
                 const boost::optional<const port_t>
-                  maybe_pred_in (input_port_by_pid (pred, place_id));
+                  maybe_pred_in (minput_port_by_pid (pred, place_id));
 
                 if (maybe_pred_in)
                   {
@@ -371,7 +371,7 @@ namespace we { namespace type {
 
               if (pid && pid_read.find (*pid) != pid_read.end())
               {
-                if (not input_port_by_pid (pred, *pid))
+                if (not minput_port_by_pid (pred, *pid))
                 {
                   pred.add_port (p.second);
 
