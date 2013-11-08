@@ -424,7 +424,7 @@ namespace we { namespace type {
 
             if (  net.out_of_place (pid).empty()
                && stack.empty()
-               && !is_associated (trans_parent, pid)
+               && !get_port_by_associated_pid (trans_parent, pid)
                )
             {
               to_erase.push (pair_type (p.first, pid));

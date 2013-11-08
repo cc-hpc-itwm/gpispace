@@ -150,24 +150,23 @@ namespace we { namespace type {
                 return boost::none;
               }
 
-            port_t port_A;
-            port_t port_B;
+            boost::optional<port_t const&>
+              port_A (get_port_by_associated_pid (trans_parent, pid_A));
+            boost::optional<port_t const&>
+              port_B (get_port_by_associated_pid (trans_parent, pid_B));
 
-            const bool ass_A (is_associated (trans_parent, pid_A, port_A));
-            const bool ass_B (is_associated (trans_parent, pid_B, port_B));
-
-            if (  (ass_A && port_A.is_input()  && ass_B && port_B.is_input() )
-               || (ass_A && port_A.is_output() && ass_B && port_B.is_output())
+            if (  (port_A && port_A->is_input()  && port_B && port_B->is_input() )
+               || (port_A && port_A->is_output() && port_B && port_B->is_output())
                )
               {
                 return boost::none;
               }
 
             if (  (( net.out_of_place (pid_A).size()
-                   + ((ass_A && port_A.is_output()) ? 1 : 0)
+                   + ((port_A && port_A->is_output()) ? 1 : 0)
                    ) > 1
                   )
-               && (ass_B && port_B.is_output())
+               && (port_B && port_B->is_output())
                )
               {
                 return boost::none;
@@ -178,7 +177,7 @@ namespace we { namespace type {
                 ( pid_in_type ( pid_A
                               , net.is_read_connection (tid, pid_A)
                               )
-                , pid_out_type (pid_B, ass_B)
+                , pid_out_type (pid_B, port_B)
                 )
               );
           }
