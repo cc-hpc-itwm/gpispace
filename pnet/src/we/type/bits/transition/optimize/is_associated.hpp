@@ -17,7 +17,7 @@ namespace we { namespace type {
       {
         try
           {
-            port = trans.get_port_by_associated_pid (pid);
+            port = get_port_by_associated_pid (trans, pid);
 
             return true;
           }

@@ -371,21 +371,6 @@ namespace we { namespace type {
         return ports_[port_id];
       }
 
-      const port_t& get_port_by_associated_pid (const petri_net::place_id_type& pid) const
-      {
-        BOOST_FOREACH ( we::type::port_t const& port
-                      , ports_ | boost::adaptors::map_values
-                      )
-        {
-          if (port.associated_place() == pid)
-          {
-            return port;
-          }
-        }
-
-        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": port not associated with:"+fhg::util::show(pid), pid);
-      }
-
       // UNSAFE: does not check for multiple connections! Use with care!
       void UNSAFE_re_associate_port ( const petri_net::place_id_type& pid_old
                                     , const petri_net::place_id_type& pid_new
@@ -489,6 +474,11 @@ namespace we { namespace type {
 
     boost::unordered_set<std::string>
     port_names (transition_t const&, const we::type::PortDirection&);
+
+    const port_t&
+    get_port_by_associated_pid ( transition_t const&
+                               , const petri_net::place_id_type&
+                               );
 
     // ********************************************************************* //
 
