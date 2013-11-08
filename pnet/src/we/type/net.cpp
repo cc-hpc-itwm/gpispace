@@ -286,7 +286,6 @@ namespace petri_net
     {
       stack_out.push (std::make_pair (transition_id, pid));
       // TODO: get port and remove place from there
-      // transition_t::port_id_t portId = transition->transition().input_port_by_pid(place_.id()).first;
     }
 
     while (!stack_out.empty())
