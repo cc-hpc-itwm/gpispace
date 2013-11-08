@@ -44,7 +44,10 @@ namespace sdpa {
     namespace bmsm {
       struct MSMDispatchEvent{};
       struct MSMRescheduleEvent{};
-      struct MSMStalledEvent{};
+      struct MSMStalledEvent{
+        MSMStalledEvent(const sdpa::job_id_t& jobId) : m_jobId(jobId) {}
+        sdpa::job_id_t m_jobId;
+      };
 
       // front-end: define the FSM structure
       struct JobFSM_ : public msm::front::state_machine_def<JobFSM_>
@@ -71,6 +74,10 @@ namespace sdpa {
         virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ DLOG(TRACE, "JobFSM_::action_job_failed"); }
         virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ DLOG(TRACE, "JobFSM_::action_job_finished"); }
         virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&){ DLOG(TRACE, "JobFSM_::action_retrieve_job_results\n"); }
+        /*virtual void action_stalled_job()
+        {
+          DLOG(TRACE, "JobFSM_::action_stalled_job");
+        }*/
 
         typedef JobFSM_ sm; // makes transition table cleaner
 
@@ -90,7 +97,7 @@ namespace sdpa {
         a_row<  Running,    	sdpa::events::JobFailedEvent,           Failed,         	&sm::action_job_failed >,
         a_row<  Running,    	sdpa::events::CancelJobEvent,       	Cancelling, 		&sm::action_cancel_job >,
         _row<   Running,    	MSMRescheduleEvent,                 	Pending >,
-        _row<   Running,	MSMStalledEvent,        		Stalled >,
+        _row<  Running,	MSMStalledEvent,        		Stalled /*,                &sm::action_job_stalled*/ >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
         a_irow< Finished,   	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
@@ -174,6 +181,13 @@ namespace sdpa {
         void JobFailed(const sdpa::events::JobFailedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
         void JobFinished(const sdpa::events::JobFinishedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
 
+        void JobStalled(const sdpa::job_id_t& jobId)
+        {
+          MSMStalledEvent stalledEvt(jobId);
+          lock_type lock(mtx_);
+          process_event(stalledEvt);
+        }
+
         void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
         {
           assert (pDaemon);
@@ -219,13 +233,6 @@ namespace sdpa {
           MSMDispatchEvent DispEvt;
           lock_type lock(mtx_);
           process_event(DispEvt);
-        }
-
-        void Pause()
-        {
-          MSMStalledEvent StalledEvt;
-          lock_type lock(mtx_);
-          process_event(StalledEvt);
         }
 
         // actions
