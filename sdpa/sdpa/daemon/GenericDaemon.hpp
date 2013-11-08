@@ -234,6 +234,9 @@ namespace sdpa {
 
       virtual void activityFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result );
       virtual void activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id);
+
+      virtual void jobStalled(const job_id_t& id );
+
       virtual void submitWorkflow(const id_type& id, const encoded_type& );
 
       // workers

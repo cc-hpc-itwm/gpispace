@@ -1544,6 +1544,14 @@ void GenericDaemon::activityCancelled(const Worker::worker_id_t& worker_id, cons
   }
 }
 
+void GenericDaemon::jobStalled(const job_id_t& id )
+{
+  // generate an event of type stalled for the job state machine and trigger it
+  // on the action_job_stalled ->
+  // if it's not a master job invoke trigger the same event for its state machine
+  // else, if it's a master job notify the master that the job stalled
+}
+
 void GenericDaemon::requestJob(const MasterInfo& masterInfo)
 {
   if( masterInfo.is_registered() )

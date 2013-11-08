@@ -65,6 +65,7 @@ namespace sdpa {
 
     virtual void activityFinished(const sdpa::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
     virtual void activityCancelled(const sdpa::worker_id_t& worker_id, const job_id_t& id ) = 0;
+    virtual void jobStalled(const job_id_t& id ) = 0;
 
     virtual const std::string& name() const = 0;
     virtual sdpa::util::Config& cfg() = 0;

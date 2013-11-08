@@ -74,7 +74,10 @@ void CoallocationScheduler::assignJobsToWorkers()
             ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
         }
         else
+        {
           schedule_first(jobId);
+          ptr_comm_handler_->jobStalled (jobId);
+        }
     }
     else // put it back into the common queue
     {
