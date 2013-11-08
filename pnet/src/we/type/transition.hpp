@@ -361,19 +361,6 @@ namespace we { namespace type {
         throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
-      const petri_net::place_id_type& input_pid_by_port_id (const petri_net::port_id_type& port_id) const
-      {
-        BOOST_FOREACH (outer_to_inner_t::value_type const& p, outer_to_inner_)
-        {
-          if (p.second.first == port_id)
-          {
-            return p.first;
-          }
-        }
-
-        throw exception::not_connected<petri_net::port_id_type>("trans: "+name()+": pid not connected by port_id: "+ fhg::util::show (port_id), port_id);
-      }
-
       port_id_with_prop_t output_port_by_pid (const petri_net::place_id_type& pid) const
       {
         BOOST_FOREACH (inner_to_outer_t::value_type const& p, inner_to_outer_)
