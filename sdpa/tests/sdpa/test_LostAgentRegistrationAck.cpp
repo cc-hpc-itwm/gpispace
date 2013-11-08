@@ -295,6 +295,15 @@ public:
 
 	   return pAgent;
    }
+
+   static FaultyAgent::ptr_t create_with_start_called( const std::string& name,
+							   const std::string& url,
+							   const sdpa::master_info_list_t& arrMasterNames)
+  {
+    FaultyAgent::ptr_t pAgent (create (name, url, arrMasterNames));
+    pAgent->start_agent();
+    return pAgent;
+  }
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_LostRegistrationAck, MyFixture );
