@@ -16,10 +16,10 @@ namespace we
   {
     namespace token
     {
-      mgmt::type::activity_t & put ( mgmt::type::activity_t & act
-                                   , std::string const & port
-                                   , pnet::type::value::value_type const & value
-                                   )
+      void put ( mgmt::type::activity_t & act
+               , std::string const & port
+               , pnet::type::value::value_type const & value
+               )
       {
         const ::petri_net::port_id_type pid
           (act.transition().input_port_by_name (port));
@@ -32,7 +32,6 @@ namespace we
                         , pid
                         )
                       );
-        return act;
       }
     }
   }
