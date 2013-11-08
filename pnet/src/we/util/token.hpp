@@ -17,7 +17,6 @@ namespace we
     namespace token
     {
       typedef std::list<pnet::type::value::value_type> list_t;
-      typedef std::map<std::string, list_t> marking_t;
 
       mgmt::type::activity_t & put ( mgmt::type::activity_t & act
                                    , std::string const & port
