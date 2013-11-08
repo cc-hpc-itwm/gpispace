@@ -375,13 +375,16 @@ namespace we { namespace type {
                 {
                   pred.add_port (p.second);
 
-                  connection_t connection (net.get_connection_in (tid_trans, *pid));
+                  connection_t const connection
+                    (net.get_connection_in (tid_trans, *pid));
 
                   net.delete_edge_in (tid_trans, *pid);
 
-                  connection.tid = tid_pred;
-
-                  net.add_connection (connection);
+                  net.add_connection (connection_t ( connection.type
+                                                   , tid_pred
+                                                   , connection.pid
+                                                   )
+                                     );
 
                   pred.add_connection
                     (*pid, p.second.name(), p.second.property())
