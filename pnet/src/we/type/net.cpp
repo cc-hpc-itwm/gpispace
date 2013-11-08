@@ -548,10 +548,11 @@ namespace petri_net
       const std::list<pnet::type::value::value_type>::iterator&
         token (pos_and_distance.first);
 
-      act.add_input (std::make_pair ( *token
-                                    , transition.outer_to_inner (pid)
-                                    )
-                    );
+      act.add_input
+        (std::make_pair ( *token
+                        , transition.outer_to_inner().at (pid).first
+                        )
+        );
 
       if (!is_read_connection (tid, pid))
       {

@@ -101,7 +101,7 @@ namespace we
       {
         context.bind_ref
           ( transition
-          . get_port (transition.outer_to_inner (pits.first))
+          . get_port (transition.outer_to_inner().at (pits.first).first)
           . name()
           , *pits.second.pos_and_distance().first
           );
