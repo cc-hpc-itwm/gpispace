@@ -99,7 +99,7 @@ namespace we { namespace type {
             transition_t trans_in_B (net.get_transition (tid_trans_in_B));
 
             transition_t::port_id_with_prop_t port_id_with_prop
-              (trans_in_B.output_port_by_pid (pid_B));
+              (output_port_by_pid (trans_in_B, pid_B));
 
             trans_in_B.re_connect_inner_to_outer
               ( port_id_with_prop.first

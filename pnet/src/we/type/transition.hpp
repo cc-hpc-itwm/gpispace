@@ -361,19 +361,6 @@ namespace we { namespace type {
         throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
-      port_id_with_prop_t output_port_by_pid (const petri_net::place_id_type& pid) const
-      {
-        BOOST_FOREACH (inner_to_outer_t::value_type const& p, inner_to_outer_)
-        {
-          if (p.second.first == pid)
-          {
-            return std::make_pair (p.first, p.second.second);
-          }
-        }
-
-        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), pid);
-      }
-
       const std::string& name_of_place (const petri_net::place_id_type& pid) const
       {
         return get_port (outer_to_inner (pid)).name();
@@ -522,6 +509,11 @@ namespace we { namespace type {
       boost::hash<std::string> hasher;
       return hasher(t.name());
     }
+
+    // ********************************************************************* //
+
+    transition_t::port_id_with_prop_t
+    output_port_by_pid (transition_t const&, const petri_net::place_id_type&);
 
     // ********************************************************************* //
 
