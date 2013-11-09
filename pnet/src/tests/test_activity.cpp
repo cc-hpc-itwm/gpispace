@@ -88,7 +88,9 @@ int main (int, char **)
         "${pair.bid}   := ${store.bid}                         ;"
         "${pair.vid}   := ${vid}                               "
       )
-      , "!bitset_is_element (${store.seen}, ${vid})"
+    , condition::type ("!bitset_is_element (${store.seen}, ${vid})")
+    , true
+    , we::type::property::type()
     );
 
   pnet::type::signature::structure_type sig_pair_fields;
@@ -156,7 +158,10 @@ int main (int, char **)
 
   // ************************************ //
 
-  transition_t tnet ("tnet", net);
+  transition_t tnet ("tnet", net
+                    , condition::type ("true")
+                    , true, we::type::property::type()
+                    );
   tnet.add_port
     (we::type::port_t ("vid", we::type::PORT_IN, std::string("long"), pid_vid));
   tnet.add_port
