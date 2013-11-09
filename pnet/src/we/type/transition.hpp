@@ -55,27 +55,6 @@ namespace we { namespace type {
       };
     }
 
-    namespace detail
-    {
-      template <typename T>
-      struct is_internal
-      {
-        static const bool value = true;
-      };
-
-      template <>
-      struct is_internal<expression_t>
-      {
-        static const bool value = true;
-      };
-
-      template <>
-      struct is_internal<module_call_t>
-      {
-        static const bool value = false;
-      };
-    }
-
     struct transition_t
     {
     private:
