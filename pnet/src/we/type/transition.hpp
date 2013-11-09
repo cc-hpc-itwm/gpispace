@@ -137,7 +137,6 @@ namespace we { namespace type {
                    , condition::type const& _condition
                    , bool intern
                    , const we::type::property::type& prop
-                   = we::type::property::type()
                    )
         : name_ (name)
         , data_ (typ)
