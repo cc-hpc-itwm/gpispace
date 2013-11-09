@@ -117,23 +117,6 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string& name
                    , Type const& typ
-                   , const std::string& _condition = "true"
-                   )
-        : name_ (name)
-        , data_ (typ)
-        , internal_ (detail::is_internal<Type>::value)
-        , condition_(_condition)
-        , outer_to_inner_()
-        , inner_to_outer_()
-        , ports_()
-        , port_id_counter_ (0)
-        , prop_()
-        , _requirements()
-      { }
-
-      template <typename Type>
-      transition_t ( const std::string& name
-                   , Type const& typ
                    , condition::type const& _condition
                    , bool intern
                    , const we::type::property::type& prop
