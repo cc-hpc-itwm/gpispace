@@ -188,6 +188,7 @@ namespace we { namespace type {
         return _requirements;
       }
 
+    private:
       void connect_outer_to_inner ( const petri_net::place_id_type& pid
                                   , const petri_net::port_id_type& port
                                   , const we::type::property::type& prop
@@ -206,6 +207,7 @@ namespace we { namespace type {
           (inner_to_outer_t::value_type (port, std::make_pair(pid, prop)));
       }
 
+    public:
       void re_connect_inner_to_outer ( const petri_net::port_id_type& port
                                      , const petri_net::place_id_type& pid
                                      , const we::type::property::type& prop
