@@ -14,11 +14,11 @@ CoallocationScheduler::CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler,
 CoallocationScheduler::~CoallocationScheduler()
 {
   try {
-      LOG(TRACE, "destructing SchedulerAgg");
+      LOG(TRACE, "destructing CoallocationScheduler");
       stop();
   }
   catch (std::exception const & ex) {
-      LOG(ERROR, "could not stop SchedulerAgg: " << ex.what());
+      LOG(ERROR, "could not stop CoallocationScheduler: " << ex.what());
   }
 }
 
@@ -72,11 +72,12 @@ void CoallocationScheduler::assignJobsToWorkers()
             LOG(INFO, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<pReservation->getWorkerList());
             // serve the same job to all reserved workers!!!!
             ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
+            ptr_comm_handler_->resume(jobId);
         }
         else
         {
           schedule_first(jobId);
-          ptr_comm_handler_->jobStalled (jobId);
+          ptr_comm_handler_->pause(jobId);
         }
     }
     else // put it back into the common queue
