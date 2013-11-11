@@ -231,7 +231,7 @@ public:
 
     _notification_service = boost::none;
 
-    const std::string url (fhg_kernel()->get ("url", ""));
+    const std::string url (fhg_kernel()->get ("gui_url", ""));
     if (not url.empty())
     {
       _notification_service = sdpa::daemon::NotificationService (url);
