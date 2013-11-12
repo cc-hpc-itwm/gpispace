@@ -149,7 +149,7 @@ int main (int argc, char *argv[])
           ++force;
           break;
         default:
-          std::cerr << "kvsd: invalid flag: " << *flag << std::endl;
+          std::cerr << "gspcd: invalid flag: " << *flag << std::endl;
           return EX_USAGE;
         }
         ++flag;
@@ -171,7 +171,7 @@ int main (int argc, char *argv[])
     {
       if (i == argc)
       {
-        std::cerr << "kvsd: missing argument to --url" << std::endl;
+        std::cerr << "gspcd: missing argument to --url" << std::endl;
         return EX_USAGE;
       }
 
@@ -181,7 +181,7 @@ int main (int argc, char *argv[])
     {
       if (i == argc)
       {
-        std::cerr << "kvsd: missing argument to --session" << std::endl;
+        std::cerr << "gspcd: missing argument to --session" << std::endl;
         return EX_USAGE;
       }
 
@@ -213,7 +213,7 @@ int main (int argc, char *argv[])
     }
     else
     {
-      std::cerr << "kvsd: invalid option: " << arg << std::endl;
+      std::cerr << "gspcd: invalid option: " << arg << std::endl;
       return EX_USAGE;
     }
   }
