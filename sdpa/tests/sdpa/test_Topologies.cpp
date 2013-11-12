@@ -1,21 +1,7 @@
-///
- // =====================================================================================
- //
- //       Filename:  test_Topologies.cpp
- //
- //    Description:  test all components, each with a real gwes, using a real user client
- //
- //        Version:  1.0
- //        Created:
- //       Revision:  none
- //       Compiler:  gcc
- //
- //         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- //        Company:  Fraunhofer ITWM
- //
- // =====================================================================================
- ///
+//tiberiu.rotaru@itwm.fraunhofer.de
+
 #define BOOST_TEST_MODULE TestTopologies
+#include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>

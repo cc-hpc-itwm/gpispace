@@ -16,6 +16,7 @@
  // =====================================================================================
  ///
 #define BOOST_TEST_MODULE TestCannonOnTorus
+#include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>

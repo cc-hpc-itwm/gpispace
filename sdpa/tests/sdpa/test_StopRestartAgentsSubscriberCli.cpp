@@ -1,4 +1,5 @@
 #define BOOST_TEST_MODULE TestStopRestartAgentsSubscriberCli
+#include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>

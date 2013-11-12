@@ -19,6 +19,7 @@
  * =====================================================================================
  */
 
+#include <sdpa/daemon/mpl.hpp>
 #include <iostream>
 // back-end
 #include <boost/msm/back/state_machine.hpp>

@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testCoallocation
+#include <sdpa/daemon/mpl.hpp>
 #include <sdpa/daemon/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
