@@ -22,7 +22,7 @@ namespace gspc
         typedef std::vector<thread_ptr_t>        thread_pool_t;
       public:
         global_io ()
-          : m_io_service (0)
+          : m_io_service ()
           , m_work ()
           , m_threads ()
         {}
@@ -36,7 +36,7 @@ namespace gspc
         {
           if (not m_io_service)
           {
-            m_io_service = new boost::asio::io_service;
+            m_io_service.reset (new boost::asio::io_service);
             m_work.reset (new boost::asio::io_service::work (*m_io_service));
 
             for (size_t i = 0 ; i < nthread ; ++i)
@@ -81,8 +81,7 @@ namespace gspc
             }
             m_threads.clear ();
 
-            delete m_io_service;
-            m_io_service = 0;
+            m_io_service.reset ();
           }
         }
 
@@ -91,7 +90,7 @@ namespace gspc
           return *m_io_service;
         }
       private:
-        boost::asio::io_service                         *m_io_service;
+        boost::shared_ptr<boost::asio::io_service>       m_io_service;
         boost::shared_ptr<boost::asio::io_service::work> m_work;
         thread_pool_t                                    m_threads;
       };
