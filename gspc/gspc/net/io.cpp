@@ -1,9 +1,11 @@
 #include "io.hpp"
 
 #include <fhg/assert.hpp>
+#include <fhg/util/threadname.hpp>
 
 #include <vector>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
@@ -44,6 +46,9 @@ namespace gspc
                                                 )
                                    )
                 );
+
+              fhg::util::set_threadname
+                (*thrd, (boost::format ("io-%1%") % i).str ());
               m_threads.push_back (thrd);
             }
           }
