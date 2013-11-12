@@ -38,10 +38,8 @@ namespace gspc
           return -ec.value ();
         }
       }
-      else
-      {
-        return 0;
-      }
+
+      return 0;
     }
 
     static void throw_if_error ( std::string const &service
