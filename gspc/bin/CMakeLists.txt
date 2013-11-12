@@ -99,3 +99,8 @@ target_link_libraries (gspcd
   ${Boost_SYSTEM_LIBRARY}
   dl
 )
+
+install (TARGETS gspcd gspc-kvs
+  DESTINATION bin
+  COMPONENT runtime
+)
