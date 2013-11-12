@@ -174,7 +174,9 @@ endif (ENABLE_GPI_FUSE)
 if (ENABLE_APPLICATION)
   add_subdirectory (application)
 endif (ENABLE_APPLICATION)
-add_subdirectory (editor)
+if (ENABLE_PNET_EDITOR)
+  add_subdirectory (editor)
+endif()
 
 include (TargetDoc)
 
