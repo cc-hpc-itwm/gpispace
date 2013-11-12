@@ -42,7 +42,6 @@ char const* const state_names[] = {     "SDPA::Pending"
 namespace sdpa {
   namespace fsm {
     namespace bmsm {
-      struct MSMDispatchEvent{};
       struct MSMRescheduleEvent
       {
         MSMRescheduleEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& id)
@@ -111,8 +110,7 @@ namespace sdpa {
         {
           LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
           if(evt.ptrAgent()) {
-
-              // notify the master( the job owner) that the job has stalled
+              // notify the job owner that the job has subtasks that are stalling
           }
         }
 
@@ -120,7 +118,7 @@ namespace sdpa {
         {
           LOG(INFO, "The job "<<evt.jobId()<<" changed its status from STALLED to RUNNING");
           if(evt.ptrAgent()) {
-               // notify the master( the job owner) that the job has stalled
+              // notify the job owner that the job makes progress
            }
         }
 
@@ -130,10 +128,11 @@ namespace sdpa {
         <
         //      Start           Event                                   Next        		Action                Guard
         //      +---------------+---------------------------------------+----------------------+---------------------+-----
-        _row<   Pending,    	MSMDispatchEvent,                       Running >,
+        _row<   Pending,    	MSMResumeJobEvent,                      Running >,              // no action
         a_row<  Pending,    	sdpa::events::CancelJobEvent, 		Cancelled,              &sm::action_cancel_job_from_pending >,
         a_row<  Pending,  	sdpa::events::JobFinishedEvent,         Finished,       	&sm::action_job_finished >,
         a_row<  Pending,  	sdpa::events::JobFailedEvent,           Failed,         	&sm::action_job_failed >,
+        a_row<  Pending,        MSMStalledEvent,                        Stalled,                &sm::action_stalled_job >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_row<  Stalled,	MSMResumeJobEvent,        		Running,                &sm::action_resume_job >,
         a_row<  Stalled,    	MSMRescheduleEvent,                 	Pending,                &sm::action_reschedule_job >,
@@ -266,9 +265,9 @@ namespace sdpa {
 
         void Dispatch()
         {
-          MSMDispatchEvent DispEvt;
+          MSMResumeJobEvent evt(NULL, id());
           lock_type lock(mtx_);
-          process_event(DispEvt);
+          process_event(evt);
         }
 
         // actions
