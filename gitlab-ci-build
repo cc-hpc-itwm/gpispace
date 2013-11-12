@@ -14,6 +14,9 @@ case "$myhost" in
         export NACL_HOME=~/external_software/nacl/20110221
         export SMC_HOME=~/external_software/smc/5.0.0
         ;;
+    voyager)
+        makeflags+=(-j4)
+        ;;
 esac
 
 ./configure --prefix=$PWD/inst "${opts[@]}" && make "${makeflags[@]}" && make "${makeflags[@]}" install && cd build && ctest "${ctestflags[@]}"
