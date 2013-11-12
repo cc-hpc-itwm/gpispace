@@ -36,7 +36,6 @@ const int NMAXTHRDS = 3;
 static int testNb = 0;
 
 namespace po = boost::program_options;
-#define NO_GUI ""
 
 struct MyFixture
 {
@@ -198,8 +197,6 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 {
 	LOG( INFO, "testMultipleMastersEmptyWEPush");
 
-	//string strAppGuiUrl   	= "";
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgg_0 	= "127.0.0.1:7700";
@@ -209,21 +206,17 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgg_0, m_arrAggMasterInfo);
-	ptrAgent0->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_0", addrAgg_0, m_arrAggMasterInfo);
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgg_1, m_arrAggMasterInfo);
-	ptrAgent1->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_1", addrAgg_1, m_arrAggMasterInfo);
 
 	LOG( INFO, "Create the Agent ...");
 	sdpa::master_info_list_t arrAgent00MasterInfo;
-	sdpa::daemon::Agent::ptr_t ptrAgent00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_00", addrAgg_00, arrAgent00MasterInfo);
-	ptrAgent00->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_00", addrAgg_00, arrAgent00MasterInfo);
 
 	ptrAgent00->addMaster("agent_0");
 	ptrAgent00->addMaster("agent_1");

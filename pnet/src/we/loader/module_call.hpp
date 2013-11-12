@@ -31,7 +31,7 @@ namespace module
 
     BOOST_FOREACH (const token_on_port_type& token_on_port, act.input())
     {
-      in.bind_ref ( act.transition().name_of_port (token_on_port.second)
+      in.bind_ref ( act.transition().get_port (token_on_port.second).name()
                   , token_on_port.first
                   );
     }

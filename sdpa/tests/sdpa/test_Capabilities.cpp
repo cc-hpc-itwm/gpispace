@@ -32,8 +32,6 @@ namespace po = boost::program_options;
 
 using namespace std;
 
-#define NO_GUI ""
-
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
@@ -42,7 +40,7 @@ struct MyFixture
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
 			, m_arrAggMasterInfo(1, sdpa::MasterInfo("orchestrator_0"))
-	{ //initialize and start_agent the finite state machine
+	{
 		LOG(DEBUG, "Fixture's constructor called ...");
 
 		m_strWorkflow = read_workflow("workflows/capabilities.pnet");
@@ -198,8 +196,6 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 BOOST_AUTO_TEST_CASE( Test1 )
 {
 	LOG( INFO, "***** Test capabilities *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
@@ -208,12 +204,10 @@ BOOST_AUTO_TEST_CASE( Test1 )
 
 	m_strWorkflow = read_workflow("workflows/capabilities.pnet");
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo);
-	ptrAgent->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
 
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH, kvs_host(), kvs_port()) );
@@ -252,8 +246,6 @@ BOOST_AUTO_TEST_CASE( Test1 )
 BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 {
 	LOG( DEBUG, "***** Test capabilities (no mandatory) *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
@@ -262,12 +254,10 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 
 	m_strWorkflow = read_workflow("workflows/capabilities_no_mandatory.pnet");
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_1", addrAgent, arrAgentMasterInfo);
-	ptrAgent->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_1", addrAgent, arrAgentMasterInfo);
 
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_1", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );

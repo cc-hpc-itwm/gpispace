@@ -21,8 +21,6 @@ static int testNb 	 = 0;
 
 namespace po = boost::program_options;
 
-#define NO_GUI ""
-
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
@@ -198,12 +196,10 @@ public:
 
 	FaultyAgent(const std::string& name = "",
 		  const std::string& url = "",
-		  const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
-		  bool bCanRunTasksLocally = false,
-		  std::string strWorkflow = "")
-	: Agent(name, url, arrMasterNames, bCanRunTasksLocally)
+		  const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t())
+  : Agent(name, url, arrMasterNames, -1, boost::none)
 	, nSuccFailures_(0)
-	, strWorkflow_(strWorkflow)
+	, strWorkflow_("")
 	, bForceExit_(false)
 	{
 		threadClient = boost::thread(boost::bind(&FaultyAgent::start_client, this));
@@ -299,6 +295,15 @@ public:
 
 	   return pAgent;
    }
+
+   static FaultyAgent::ptr_t create_with_start_called( const std::string& name,
+							   const std::string& url,
+							   const sdpa::master_info_list_t& arrMasterNames)
+  {
+    FaultyAgent::ptr_t pAgent (create (name, url, arrMasterNames));
+    pAgent->start_agent();
+    return pAgent;
+  }
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_LostRegistrationAck, MyFixture );
@@ -307,8 +312,6 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 {
 	LOG( DEBUG, "testLostRegAck");
 
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent0 	= "127.0.0.1";
@@ -317,18 +320,14 @@ BOOST_AUTO_TEST_CASE( testLostRegAck)
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAgent0MasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent0, arrAgent0MasterInfo);
-	ptrAgent0->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_0", addrAgent0, arrAgent0MasterInfo);
 
 	// create faulty agent
 	sdpa::master_info_list_t arrAgent1MasterInfo(1, MasterInfo("agent_0"));
-	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo);
-
-	ptrAgent1->start_agent();
+	FaultyAgent::ptr_t ptrAgent1 = FaultyAgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_1", addrAgent1, arrAgent1MasterInfo);
 
 	ptrOrch->shutdown();
 	ptrAgent0->shutdown();

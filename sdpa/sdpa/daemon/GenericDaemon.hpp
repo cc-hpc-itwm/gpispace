@@ -50,6 +50,7 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/user_data.hpp>
 
+#include <boost/optional.hpp>
 #include <boost/utility.hpp>
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
@@ -111,7 +112,7 @@ namespace sdpa {
       GenericDaemon(const std::string name = "orchestrator_0",
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
                     unsigned int rank = 0
-                   , const std::string& guiUrl = ""
+                   , const boost::optional<std::string>& guiUrl = boost::none
                    );
 
       SDPA_DECLARE_LOGGER();
@@ -148,8 +149,6 @@ namespace sdpa {
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
-
-      NotificationService* gui_service() { return &m_guiService; }
 
       virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
       virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
@@ -233,15 +232,6 @@ namespace sdpa {
       }
 
       // workflow engine notifications
-      virtual void activityFailed( const Worker::worker_id_t& worker_id
-                                  , const job_id_t& jobId
-                                  , const std::string& result
-                                  , const int error_code
-                                  , const std::string& reason
-      );
-
-      virtual void activityFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result );
-      virtual void activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id);
       virtual void submitWorkflow(const id_type& id, const encoded_type& );
       virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason);
 
@@ -313,7 +303,9 @@ namespace sdpa {
       mutex_type mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
-      NotificationService m_guiService;
+
+    protected:
+      boost::optional<NotificationService> m_guiService;
     };
   }
 }

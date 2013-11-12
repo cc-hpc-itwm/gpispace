@@ -32,8 +32,6 @@ namespace po = boost::program_options;
 
 using namespace std;
 
-#define NO_GUI ""
-
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
@@ -41,7 +39,7 @@ struct MyFixture
   MyFixture() : m_nITER(1)
               , m_sleep_interval(1000000)
               , m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-  { //initialize and start_agent the finite state machine
+  {
 
     LOG(DEBUG, "Fixture's constructor called ...");
     m_strWorkflow = read_workflow("workflows/transform_file.pnet");
@@ -202,20 +200,16 @@ BOOST_AUTO_TEST_CASE( TestCancelCoallocation )
   // drts
 
   LOG( INFO, "Begin Test1");
-  //guiUrl
-  string guiUrl         = "";
   string workerUrl      = "127.0.0.1:5500";
   string addrOrch       = "127.0.0.1";
   string addrAgent      = "127.0.0.1";
 
   m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-  ptrAg0->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -249,20 +243,16 @@ BOOST_AUTO_TEST_CASE( Test1 )
 
 
   LOG( INFO, "Begin Test1");
-  //guiUrl
-  string guiUrl   	= "";
   string workerUrl 	= "127.0.0.1:5500";
   string addrOrch 	= "127.0.0.1";
   string addrAgent 	= "127.0.0.1";
 
   m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-  ptrAg0->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -298,20 +288,16 @@ BOOST_AUTO_TEST_CASE( Test2 )
 
 
   LOG( INFO, "Begin Test2");
-  //guiUrl
-  string guiUrl   	= "";
   string workerUrl 	= "127.0.0.1:5500";
   string addrOrch 	= "127.0.0.1";
   string addrAgent 	= "127.0.0.1";
 
   m_strWorkflow = read_workflow("workflows/transform_file.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-  ptrAg0->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
@@ -351,20 +337,16 @@ BOOST_AUTO_TEST_CASE( TestCancelCoalloc )
   // drts
 
   LOG( INFO, "Begin Test1");
-  //guiUrl
-  string guiUrl         = "";
   string workerUrl      = "127.0.0.1:5500";
   string addrOrch       = "127.0.0.1";
   string addrAgent      = "127.0.0.1";
 
   m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create( "orchestrator_0", addrOrch);
-  ptrOrch->start_agent();
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create( "agent_0", addrAgent, arrAgentMasterInfo);
-  ptrAg0->start_agent();
+  sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
 
   sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
   boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );

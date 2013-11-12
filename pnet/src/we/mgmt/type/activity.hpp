@@ -85,7 +85,7 @@ namespace we
               ; ++top
               )
           {
-            context.bind_ref ( _transition.name_of_port (top->second)
+            context.bind_ref ( _transition.get_port (top->second).name()
                              , top->first
                              );
           }

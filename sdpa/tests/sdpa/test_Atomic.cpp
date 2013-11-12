@@ -33,8 +33,6 @@ namespace po = boost::program_options;
 
 using namespace std;
 
-#define NO_GUI ""
-
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
@@ -43,7 +41,7 @@ struct MyFixture
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
 			, m_arrAggMasterInfo(1, sdpa::MasterInfo("orchestrator_0"))
-	{ //initialize and start_agent the finite state machine
+	{
 		m_strWorkflow = read_workflow("workflows/capabilities.pnet");
 	}
 
@@ -228,8 +226,6 @@ BOOST_AUTO_TEST_CASE( testModiFile )
 BOOST_AUTO_TEST_CASE( testAtomicExecution )
 {
 	LOG( DEBUG, "***** test_Atomic *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
@@ -247,12 +243,10 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
     ofs << nInitial << std::endl;
   }
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo);
-	ptrAgent->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "ATOMIC", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );

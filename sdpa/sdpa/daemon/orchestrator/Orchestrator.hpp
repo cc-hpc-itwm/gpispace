@@ -29,14 +29,15 @@ namespace sdpa {
       typedef sdpa::shared_ptr<Orchestrator> ptr_t;
       SDPA_DECLARE_LOGGER();
 
-      Orchestrator( const std::string &name = ""
-                    , const std::string& url = "")
+      Orchestrator (const std::string &name, const std::string& url)
       : GenericDaemon ( name, sdpa::master_info_list_t() /*, NULL*/),
         SDPA_INIT_LOGGER(name),
         url_(url)
       {}
 
 			static Orchestrator::ptr_t create
+        (const std::string& name, const std::string& url);
+			static Orchestrator::ptr_t create_with_start_called
         (const std::string& name, const std::string& url);
 
       void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );

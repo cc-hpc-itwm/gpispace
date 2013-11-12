@@ -31,16 +31,15 @@ namespace sdpa {
         typedef sdpa::shared_ptr<Agent > ptr_t;
         SDPA_DECLARE_LOGGER();
 
-        Agent(const std::string& name = "",
-              const std::string& url = "",
-              const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
-              bool bCanRunTasksLocally = false,
-              int rank = -1,
-              const std::string& guiUrl = "")
+        Agent ( const std::string& name
+              , const std::string& url
+              , const sdpa::master_info_list_t arrMasterNames
+              , int rank
+              , const boost::optional<std::string>& guiUrl
+              )
           : GenericDaemon( name, arrMasterNames, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
-          url_(url),
-          m_bCanRunTasksLocally(bCanRunTasksLocally)
+          url_(url)
         {
           if(rank>=0)
           {
@@ -66,8 +65,6 @@ namespace sdpa {
 
         const std::string url() const {return url_;}
 
-        bool canRunTasksLocally() { return m_bCanRunTasksLocally; }
-
         template <typename T> friend struct AgentFactory;
 
         template <typename T>
@@ -75,8 +72,6 @@ namespace sdpa {
 
       private:
         std::string url_;
-
-        bool m_bCanRunTasksLocally;
       };
   }
 }

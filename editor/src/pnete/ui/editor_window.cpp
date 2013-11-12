@@ -948,7 +948,9 @@ namespace fhg
         {
           BOOST_FOREACH
             ( const std::string& port_name
-            , activity_and_fun->first.transition().port_names (we::type::PORT_IN)
+            , we::type::port_names ( activity_and_fun->first.transition()
+                                   , we::type::PORT_IN
+                                   )
             )
           {
             bool retry (true);

@@ -32,8 +32,6 @@ namespace po = boost::program_options;
 
 using namespace std;
 
-#define NO_GUI ""
-
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 struct MyFixture
@@ -196,32 +194,39 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testTransformFile1 )
 {
-	LOG( DEBUG, "***** testTranformFile *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-	typedef void OrchWorkflowEngine;
-
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( INFO, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create("orchestrator_0", addrOrch);
-	ptrOrch->start_agent();
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch
+    ( sdpa::daemon::Orchestrator::create_with_start_called
+      ("orchestrator_0", addrOrch)
+    );
 
-	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo);
-	ptrAgent->start_agent();
+	sdpa::daemon::Agent::ptr_t ptrAgent
+    ( sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called
+      ( "agent_0"
+      , addrAgent
+      , sdpa::master_info_list_t (1, sdpa::MasterInfo("orchestrator_0"))
+      )
+    );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0
+    ( createDRTSWorker ( "drts_0"
+                       , "agent_0"
+                       , ""
+                       , TESTS_TRANSFORM_FILE_MODULES_PATH
+                       , kvs_host()
+                       , kvs_port()
+                       )
+    );
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread drts_0_thread (&fhg::core::kernel_t::run, drts_0);
+
+	boost::thread threadClient (boost::bind (&MyFixture::run_client, this));
 
 	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
 	drts_0_thread.join();
@@ -231,8 +236,6 @@ BOOST_AUTO_TEST_CASE( testTransformFile1 )
 	ptrOrch->shutdown();
 
 	// tr [a-z] [A-Z] < in.txt > out.txt.expected
-
-	LOG( DEBUG, "The test case testTransformFile terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

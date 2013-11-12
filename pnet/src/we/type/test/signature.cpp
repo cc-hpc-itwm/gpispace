@@ -60,7 +60,6 @@ BOOST_AUTO_TEST_CASE (signature_show)
 
   signature_type line2D (structured_type (std::make_pair ("line2D", ps)));
 
-
   CHECK ("line2D :: [p :: point2D, q :: [x :: float, y :: float]]", line2D);
 
 #undef CHECK
@@ -218,6 +217,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
 
   CHECK_HEADER_OP
     ("#include <we/type/value.hpp>\n"
+     "#include <we/type/value/to_value.hpp>\n"
      "#include <iosfwd>\n"
      "\n"
      "namespace pnetc\n"
@@ -229,6 +229,20 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
      "      point2D from_value (const pnet::type::value::value_type&);\n"
      "      pnet::type::value::value_type to_value (const point2D&);\n"
      "      std::ostream& operator<< (std::ostream&, const point2D&);\n"
+     "    }\n"
+     "  }\n"
+     "}\n"
+     "namespace pnet\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace value\n"
+     "    {\n"
+     "      template<>\n"
+     "        inline value_type to_value<pnetc::type::point2D::point2D> (const pnetc::type::point2D::point2D& x)\n"
+     "      {\n"
+     "        return pnetc::type::point2D::to_value (x);\n"
+     "      }\n"
      "    }\n"
      "  }\n"
      "}"
@@ -338,6 +352,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
 
     CHECK_HEADER_OP
       ("#include <we/type/value.hpp>\n"
+       "#include <we/type/value/to_value.hpp>\n"
        "#include <iosfwd>\n"
        "\n"
        "namespace pnetc\n"
@@ -361,6 +376,30 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
        "      c from_value (const pnet::type::value::value_type&);\n"
        "      pnet::type::value::value_type to_value (const c&);\n"
        "      std::ostream& operator<< (std::ostream&, const c&);\n"
+       "    }\n"
+       "  }\n"
+       "}\n"
+       "namespace pnet\n"
+       "{\n"
+       "  namespace type\n"
+       "  {\n"
+       "    namespace value\n"
+       "    {\n"
+       "      template<>\n"
+       "        inline value_type to_value<pnetc::type::c::b::a::a> (const pnetc::type::c::b::a::a& x)\n"
+       "      {\n"
+       "        return pnetc::type::c::b::a::to_value (x);\n"
+       "      }\n"
+       "      template<>\n"
+       "        inline value_type to_value<pnetc::type::c::b::b> (const pnetc::type::c::b::b& x)\n"
+       "      {\n"
+       "        return pnetc::type::c::b::to_value (x);\n"
+       "      }\n"
+       "      template<>\n"
+       "        inline value_type to_value<pnetc::type::c::c> (const pnetc::type::c::c& x)\n"
+       "      {\n"
+       "        return pnetc::type::c::to_value (x);\n"
+       "      }\n"
        "    }\n"
        "  }\n"
        "}"

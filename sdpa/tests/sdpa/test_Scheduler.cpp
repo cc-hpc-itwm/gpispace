@@ -64,8 +64,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-
-  ostringstream oss;
   pAgent->createScheduler();
 
   sdpa::daemon::Scheduler::ptr_t ptrScheduler = pAgent->scheduler();
@@ -127,8 +125,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-
-  ostringstream oss;
   pAgent->createScheduler();
 
   sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
@@ -211,8 +207,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-
-  ostringstream oss;
   pAgent->createScheduler();
 
   sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
@@ -294,8 +288,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-
-  ostringstream oss;
   pAgent->createScheduler();
 
   sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());
@@ -383,8 +375,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
   sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-
-  ostringstream oss;
   pAgent->createScheduler();
 
   sdpa::daemon::SchedulerImpl::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::SchedulerImpl>(pAgent->scheduler());

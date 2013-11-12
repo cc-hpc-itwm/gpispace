@@ -99,9 +99,12 @@ namespace we
 
       BOOST_FOREACH (const pits_type& pits, _m)
       {
-        context.bind_ref ( transition.name_of_place (pits.first)
-                         , *pits.second.pos_and_distance().first
-                         );
+        context.bind_ref
+          ( transition
+          . get_port (transition.outer_to_inner().at (pits.first).first)
+          . name()
+          , *pits.second.pos_and_distance().first
+          );
       }
 
       return transition.condition().parser().eval_all_bool (context);

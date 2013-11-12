@@ -54,7 +54,7 @@ using namespace sdpa::events;
 GenericDaemon::GenericDaemon( const std::string name,
                               const master_info_list_t arrMasterInfo,
                               unsigned int rank
-                            , std::string const &guiUrl)
+                            , const boost::optional<std::string>& guiUrl)
   : Strategy(name),
     SDPA_INIT_LOGGER(name),
     m_arrMasterInfo(arrMasterInfo),
@@ -68,7 +68,11 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_bStopped(false),
-    m_guiService ("GSPC", guiUrl)
+    m_guiService ( guiUrl && !guiUrl->empty()
+                 ? boost::optional<NotificationService>
+                   (NotificationService (*guiUrl))
+                 : boost::none
+                 )
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -81,17 +85,9 @@ GenericDaemon::GenericDaemon( const std::string name,
   //daemon_cfg_ = new sdpa::util::Config;
 
   // application gui service
-  if (not guiUrl.empty())
+  if (guiUrl && !guiUrl->empty())
   {
-    try
-    {
-      m_guiService.open ();
-      DMLOG (TRACE, "Application GUI service at " << guiUrl << " attached...");
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG (WARN, "could not attach GUI at " << guiUrl << ": " << ex.what ());
-    }
+    DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
 }
 
@@ -475,6 +471,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
       pJob->setType(Job::MASTER);
 
+      if (m_guiService)
       {
         std::list<std::string> workers; workers.push_back (name());
         const we::mgmt::type::activity_t act (pJob->description());
@@ -485,7 +482,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
           , act
           );
 
-        gui_service()->notify (evt);
+        m_guiService->notify (evt);
       }
     }
 
@@ -1243,98 +1240,6 @@ void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
                                 const sdpa::worker_id_t& agent_uuid )
 {
   scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
-}
-
-void GenericDaemon::activityFailed( const Worker::worker_id_t& worker_id
-                                  , const job_id_t& jobId
-                                  , const std::string& result
-                                  , const int error_code
-                                  , const std::string& reason
-                                  )
-{
-  if( hasWorkflowEngine() )
-  {
-    MLOG( WARN
-        , "job " << jobId
-        << " executed on " << worker_id
-        << " failed:" << " error := " << fhg::error::show(error_code)
-        << " (" << error_code << ")"
-        << " message := " << reason
-        );
-
-    workflowEngine()->failed( jobId.str()
-                            , result
-                            , error_code
-                            , reason
-                            );
-
-    try {
-      jobManager()->deleteJob(jobId);
-    }
-    catch(const JobNotDeletedException& ex)
-    {
-      DMLOG (WARN, "Could not find the job "<<jobId.str()<<" ...");
-    }
-  }
-  else
-  {
-    DLOG(TRACE, "Send JobFailedEvent to self for the job"<<jobId);
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent ( worker_id
-                          , name()
-                          , jobId
-                          , reason
-                          , error_code
-                          , reason
-                          )
-      );
-
-    sendEventToSelf(pEvtJobFailed);
-  }
-}
-
-void GenericDaemon::activityFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
-{
-  if( hasWorkflowEngine() )
-  {
-    DMLOG (TRACE, "worker job finished: " << jobId);
-    workflowEngine()->finished( jobId.str(), result );
-    try {
-      jobManager()->deleteJob(jobId);
-    }
-    catch(const JobNotDeletedException& ex)
-    {
-      DMLOG (WARN, "Could not find the job "<<jobId.str()<<" ...");
-    }
-  }
-  else
-  {
-    DMLOG (TRACE, "Sent self a jobFinishedEvent for the job"<<jobId);
-    JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(worker_id, name(), jobId, result));
-    sendEventToSelf(pEvtJobFinished);
-  }
-}
-
-void GenericDaemon::activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
-{
-  if( hasWorkflowEngine() )
-  {
-    DMLOG (TRACE, "worker job cancelled: " << jobId);
-    workflowEngine()->cancelled( jobId.str() );
-    try {
-      jobManager()->deleteJob(jobId);
-    }
-    catch(const JobNotDeletedException& ex)
-    {
-      DMLOG (WARN, "Could not find the job "<<jobId.str()<<" ...");
-    }
-  }
-  else
-  {
-    DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
-    CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId));
-    sendEventToSelf(pEvtCancelJobAck);
-  }
 }
 
 void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
