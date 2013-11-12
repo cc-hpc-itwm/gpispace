@@ -34,6 +34,8 @@ namespace gspc
 
         void start (size_t nthread)
         {
+          boost::unique_lock<boost::mutex> _ (m_mutex);
+
           if (not m_io_service)
           {
             m_io_service.reset (new boost::asio::io_service);
@@ -69,6 +71,8 @@ namespace gspc
 
         void stop ()
         {
+          boost::unique_lock<boost::mutex> _ (m_mutex);
+
           if (m_io_service)
           {
             m_work.reset ();
@@ -90,6 +94,8 @@ namespace gspc
           return *m_io_service;
         }
       private:
+        boost::mutex m_mutex;
+
         boost::shared_ptr<boost::asio::io_service>       m_io_service;
         boost::shared_ptr<boost::asio::io_service::work> m_work;
         thread_pool_t                                    m_threads;
