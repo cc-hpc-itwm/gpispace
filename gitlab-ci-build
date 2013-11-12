@@ -13,6 +13,7 @@ case "$myhost" in
         export BOOST_ROOT=~/external_software/boost/1.52/gcc/
         export NACL_HOME=~/external_software/nacl/20110221
         export SMC_HOME=~/external_software/smc/5.0.0
+        makeflags+=(-j2)
         ;;
     voyager)
         makeflags+=(-j4)
