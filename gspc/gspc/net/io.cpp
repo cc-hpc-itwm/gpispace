@@ -46,6 +46,7 @@ namespace gspc
               thread_ptr_t thrd
                 (new boost::thread (boost::bind ( &global_io::run
                                                 , this
+                                                , m_io_service
                                                 )
                                    )
                 );
@@ -57,11 +58,12 @@ namespace gspc
           }
         }
 
-        void run ()
+        void run (boost::shared_ptr<boost::asio::io_service> my_io)
         {
           try
           {
-            m_io_service->run ();
+            assert (my_io);
+            my_io->run ();
           }
           catch (std::exception const &ex)
           {
