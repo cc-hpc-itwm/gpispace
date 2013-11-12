@@ -21,7 +21,13 @@ struct activity
     : _id ((boost::format ("%1%") % ++id_counter).str())
     , _workers()
     , _state (NotificationEvent::STATE_STARTED)
-    , _act (we::type::transition_t ("activity-" + _id, we::type::expression_t()))
+    , _act (we::type::transition_t ( "activity-" + _id
+                                   , we::type::expression_t()
+                                   , condition::type ("true")
+                                   , true
+                                   , we::type::property::type()
+                                   )
+           )
   {
     _workers.push_back (worker);
   }
