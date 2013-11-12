@@ -68,6 +68,8 @@ namespace gspc
           catch (std::exception const &ex)
           {
             // handle error somehow
+            std::cerr << "gspc: global io error: " << ex.what () << std::endl;
+            throw;
           }
         }
 
