@@ -84,7 +84,6 @@ namespace gspc
 
             BOOST_FOREACH (thread_ptr_t thrd, m_threads)
             {
-              thrd->interrupt ();
               thrd->join ();
             }
             m_threads.clear ();
