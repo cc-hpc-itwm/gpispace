@@ -4,14 +4,14 @@ myhost=$(hostname)
 opts=()
 
 case "$myhost" in
-  build-*)
-	export HWLOC_HOME=/home/projects/sdpa/external_software/hwloc/1.4.2/gcc
-	export QTDIR=~/external_software/qt/4.8.5
-	export PATH=$QTDIR/bin:$PATH
-	export BOOST_ROOT=~/external_software/boost/1.52/gcc/
-	export NACL_HOME=~/external_software/nacl/20110221
-	export SMC_HOME=~/external_software/smc/5.0.0
-  ;;
+    build-*)
+        export HWLOC_HOME=/home/projects/sdpa/external_software/hwloc/1.4.2/gcc
+        export QTDIR=~/external_software/qt/4.8.5
+        export PATH=$QTDIR/bin:$PATH
+        export BOOST_ROOT=~/external_software/boost/1.52/gcc/
+        export NACL_HOME=~/external_software/nacl/20110221
+        export SMC_HOME=~/external_software/smc/5.0.0
+        ;;
 esac
 
 ./configure --prefix=$PWD/inst "${opts[@]}" && make && make install && cd build && ctest
