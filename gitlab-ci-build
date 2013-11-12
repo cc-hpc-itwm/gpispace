@@ -2,6 +2,8 @@
 myhost=$(hostname)
 
 opts=()
+makeflags=()
+ctestflags=()
 
 case "$myhost" in
     build-*)
@@ -14,4 +16,4 @@ case "$myhost" in
         ;;
 esac
 
-./configure --prefix=$PWD/inst "${opts[@]}" && make && make install && cd build && ctest
+./configure --prefix=$PWD/inst "${opts[@]}" && make "${makeflags[@]}" && make "${makeflags[@]}" install && cd build && ctest "${ctestflags[@]}"
