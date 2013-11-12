@@ -1,6 +1,7 @@
 #include "io.hpp"
 
 #include <fhg/assert.hpp>
+#include <fhg/util/get_cpucount.h>
 #include <fhg/util/threadname.hpp>
 
 #include <vector>
@@ -104,7 +105,10 @@ namespace gspc
 
     static size_t s_get_thread_count ()
     {
-      return 4;
+      int ncpu = fhg_get_cpucount ();
+      if (ncpu < 0)
+        ncpu = 1;
+      return ncpu;
     }
 
     void initialize ()
