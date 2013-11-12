@@ -28,6 +28,22 @@ namespace gspc
       }
     }
 
+    static int s_get_error (gspc::net::frame const &f)
+    {
+      if (f.get_command () == "ERROR")
+      {
+        boost::system::error_code ec = gspc::net::make_error_code (f);
+        if (ec)
+        {
+          return -ec.value ();
+        }
+      }
+      else
+      {
+        return 0;
+      }
+    }
+
     static void throw_if_error ( std::string const &service
                                , gspc::net::frame const &f
                                )
@@ -88,7 +104,9 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      throw_if_error (rpc, rply);
+      rc = s_get_error (rply);
+      if (rc != 0)
+        return rc;
 
       rply_body = rply.get_body ();
 
