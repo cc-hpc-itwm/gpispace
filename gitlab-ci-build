@@ -28,7 +28,7 @@ case "$myhost" in
         module load lib/hwloc
         module load lib/qt
         module load soft/graphviz
-        makeflags=+(-j24)
+        makeflags+=(-j24)
         ;;
     voyager)
         makeflags+=(-j4)
