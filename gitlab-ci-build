@@ -56,23 +56,28 @@ log_and_maybe_send_mail ()
     ci_url="http://gitlab-ci.hpc.devnet.itwm.fhg.de/projects/1/builds/${sha}"
     diff_url="http://gitlab.hpc.devnet.itwm.fhg.de/top/gpispace/commit/${sha}"
 
-    echo >&2 "${msg}"
+    header="Build report for commit ${short_sha} to ${branch} on host ${myhost}:"
+    header_length=$(echo -n "$header" | wc -c)
+    ruler=$(printf "%${header_length}s" | tr ' ' '=')
 
     if $send_mail
     then
-        mail -s "[CI] GPI-Space: commit ${short_sha} to ${CI_BUILD_REF_NAME}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${mailto}" <<EOF
-Build report:
-=============
+        mail -s "[CI] GPI-Space: commit ${short_sha} to ${branch}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${mailto}"
+    else
+        cat
+    fi <<EOF
+${header}
+${ruler}
 
      author: $(git log -n 1 --pretty="%aN")
      branch: ${branch}
-     commit: ${sha}
       state: ${msg}
+       host: ${myhost}
+     commit: ${sha}
    previous: ${previous}
     details: ${ci_url}
        diff: ${diff_url}
 EOF
-    fi
 }
 
 ./configure --prefix=$PWD/inst "${opts[@]}"
