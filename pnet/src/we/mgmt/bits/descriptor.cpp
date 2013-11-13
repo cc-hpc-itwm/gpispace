@@ -229,13 +229,13 @@ namespace we
         set_error_message(error_message);
       }
 
-      void descriptor::child_cancelled ( descriptor const& child
+      void descriptor::child_canceled ( descriptor const& child
                                        , std::string const& /*reason*/
                                        )
       {
         lock_t lock(mutex_);
         if (! is_child (child.id()))
-          throw std::runtime_error ( "Tried to notify child cancellation '"
+          throw std::runtime_error ( "Tried to notify child cancelation '"
                                    + boost::lexical_cast<std::string>(child)
                                    + "' to '"
                                    + boost::lexical_cast<std::string>(*this)
@@ -258,7 +258,7 @@ namespace we
       void descriptor::cancel (fun_t f)
       {
         lock_t lock(mutex_);
-        activity_.set_cancelling (true);
+        activity_.set_canceling (true);
         apply_to_children (f);
       }
 
@@ -285,11 +285,11 @@ namespace we
         ++failure_counter_;
       }
 
-      void descriptor::cancelled()
+      void descriptor::canceled()
       {
         lock_t lock(mutex_);
         activity_.collect_output();
-        activity_.set_cancelled (true);
+        activity_.set_canceled (true);
         activity_.set_finished (false);
       }
 

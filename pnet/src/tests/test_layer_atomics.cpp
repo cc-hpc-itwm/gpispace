@@ -69,7 +69,7 @@ struct daemon_t
     return false;
   }
 
-  bool cancelled (const id_type &)
+  bool canceled (const id_type &)
   {
     return false;
   }

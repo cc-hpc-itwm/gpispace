@@ -15,7 +15,7 @@ namespace fhg
       , MODULE_CALL_SEGFAULTED  = 11
       , MODULE_CALL_ABORTED     = 12
 
-      , EXECUTION_CANCELLED     = 30
+      , EXECUTION_CANCELED     = 30
       , WALLTIME_EXCEEDED       = 31
       , RESOURCE_LIMIT_EXCEEDED = 32
 
@@ -56,8 +56,8 @@ namespace fhg
       case MODULE_CALL_ABORTED:
         return "module call aborted";
 
-      case EXECUTION_CANCELLED:
-        return "execution cancelled";
+      case EXECUTION_CANCELED:
+        return "execution canceled";
       case WALLTIME_EXCEEDED:
         return "walltime exceeded";
       case RESOURCE_LIMIT_EXCEEDED:

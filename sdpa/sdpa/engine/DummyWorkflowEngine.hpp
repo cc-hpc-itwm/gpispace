@@ -69,12 +69,6 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
         pIAgent_ = pIAgent;
     }
 
- /* we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_submitted;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_finished;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_failed;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_cancelled;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_executing; */
-
     /**
      * Notify the GWES that an activity has failed
      * (state transition from "running" to "failed").
@@ -142,9 +136,9 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-    bool cancelled(const id_type& activityId)
+    bool canceled(const id_type& activityId)
     {
-      SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" was canceled!");
 
       /**
       * Notify the SDPA that a workflow has been canceled (state
@@ -164,9 +158,9 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
                 if( it->second == workflowId )
                         bAllActFinished = false;
 
-        // if no activity left, declare the workflow cancelled
+        // if no activity left, declare the workflow canceled
         if(bAllActFinished)
-                pIAgent_->cancelled(workflowId);
+                pIAgent_->canceled(workflowId);
 
         return true;
       }
@@ -219,8 +213,8 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
     * Cancel a workflow asynchronously.
     * This method is to be invoked by the SDPA.
     * The GWES will notifiy the SPDA about the
-    * completion of the cancelling process by calling the
-    * callback method Gwes2Sdpa::cancelled.
+    * completion of the canceling process by calling the
+    * callback method Gwes2Sdpa::canceled.
     */
     bool cancel(const id_type& wfid, const reason_type& /* reason */)
     {

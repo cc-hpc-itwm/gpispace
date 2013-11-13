@@ -181,7 +181,7 @@ namespace fhg
           case event::STATE_STARTED: return "started";
           case event::STATE_FINISHED: return "finished";
           case event::STATE_FAILED: return "failed";
-          case event::STATE_CANCELLED: return "cancelled";
+          case event::STATE_CANCELED: return "canceled";
           }
         }
 
@@ -214,7 +214,7 @@ namespace fhg
           INIT (STARTED, QColor (255, 255, 0));
           INIT (FINISHED, QColor (0, 200, 0));
           INIT (FAILED, QColor (255, 0, 0));
-          INIT (CANCELLED, QColor (165, 42, 42));
+          INIT (CANCELED, QColor (165, 42, 42));
 
 #undef INIT
 
@@ -409,7 +409,7 @@ namespace fhg
             << sdpa::daemon::NotificationEvent::STATE_STARTED
             << sdpa::daemon::NotificationEvent::STATE_FINISHED
             << sdpa::daemon::NotificationEvent::STATE_FAILED
-            << sdpa::daemon::NotificationEvent::STATE_CANCELLED
+            << sdpa::daemon::NotificationEvent::STATE_CANCELED
             );
 
           BOOST_FOREACH (const worker_model::state_type& state, all_states)

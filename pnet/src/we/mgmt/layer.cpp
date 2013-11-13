@@ -107,18 +107,18 @@ namespace we
         //          return false;
       }
     }
-    bool layer::cancelled (const external_id_type& id)
+    bool layer::canceled (const external_id_type& id)
     {
-      DLOG(TRACE, "cancelled (" << id << ")");
+      DLOG(TRACE, "canceled (" << id << ")");
 
       try
       {
-        post_cancelled_notification (map_to_internal (id));
+        post_canceled_notification (map_to_internal (id));
         return true;
       }
       catch (const std::exception&)
       {
-        DMLOG (WARN, "tried to notify cancelled for unknown activity " << id);
+        DMLOG (WARN, "tried to notify canceled for unknown activity " << id);
 
         return false;
       }

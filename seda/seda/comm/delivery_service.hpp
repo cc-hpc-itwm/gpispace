@@ -131,7 +131,7 @@ namespace seda { namespace comm {
 		  {
 			if (it->msg_id == message_id)
 			{
-			  DLOG(TRACE, "cancelled message: " << message_id);
+			  DLOG(TRACE, "canceled message: " << message_id);
 			  pending_messages_.erase(it);
 			  return true;
 			}
@@ -179,7 +179,7 @@ namespace seda { namespace comm {
 		  }
 		  else
 		  {
-			// cancelled
+			// canceled
 		  }
 		}
 

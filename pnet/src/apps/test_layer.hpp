@@ -265,7 +265,7 @@ namespace test {
         del_mapping (id);
 
         // inform layer
-        mgmt_layer_.cancelled (mapped_id);
+        mgmt_layer_.canceled (mapped_id);
         return true;
       }
       catch (std::exception const &ex)
@@ -327,7 +327,7 @@ namespace test {
       return true;
     }
 
-    bool cancelled(const id_type & id)
+    bool canceled(const id_type & id)
     {
       try
       {
@@ -335,11 +335,11 @@ namespace test {
         del_mapping (id);
 
         // inform layer
-        mgmt_layer_.cancelled (mapped_id);
+        mgmt_layer_.canceled (mapped_id);
       }
       catch (std::out_of_range const &)
       {
-        std::cout << "cancelled [" << id << "]" << std::endl;
+        std::cout << "canceled [" << id << "]" << std::endl;
       }
       return true;
     }

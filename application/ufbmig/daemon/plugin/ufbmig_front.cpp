@@ -824,7 +824,7 @@ private:
 
     if (request->state() == transfer::CANCELED)
     {
-      MLOG(WARN, "data transfer to GUI has been cancelled");
+      MLOG(WARN, "data transfer to GUI has been canceled");
     }
 
     m_backend->close (fd);

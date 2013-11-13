@@ -59,8 +59,8 @@ namespace sdpa {
       struct Running :        public boost::msm::front::state<>{};
       struct Finished :       public boost::msm::front::state<>{};
       struct Failed :         public boost::msm::front::state<>{};
-      struct Cancelling : 	  public boost::msm::front::state<>{};
-      struct Cancelled :      public boost::msm::front::state<>{};
+      struct Canceling : 	  public boost::msm::front::state<>{};
+      struct Canceled :      public boost::msm::front::state<>{};
 
       struct MSMDispatchEvent {};
       struct MSMRescheduleEvent {};
@@ -80,7 +80,7 @@ namespace sdpa {
         //      Start       Event                                       Next        		Action                Guard
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         _row<   Pending,    	MSMDispatchEvent,           				Running >,
-        _row<   Pending,    	sdpa::events::CancelJobEvent, 				Cancelled>,
+        _row<   Pending,    	sdpa::events::CancelJobEvent, 				Canceled>,
         //a_row<  Pending,  	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished >,
         //a_row<  Pending,  	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
@@ -89,7 +89,7 @@ namespace sdpa {
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,    	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
         a_row<  Running,    	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
-        _row<   Running,    	sdpa::events::CancelJobEvent,       		Cancelling>,
+        _row<   Running,    	sdpa::events::CancelJobEvent,       		Canceling>,
         _row<   Running,    	MSMRescheduleEvent,                 		Pending >,
         _row<   Running,	    MSMStalledEvent,        					Stalled >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
@@ -99,12 +99,12 @@ namespace sdpa {
         a_irow< Failed,     	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
         _irow<  Failed,     	sdpa::events::RetrieveJobResultsEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Cancelling, 	sdpa::events::CancelJobAckEvent,     		Cancelled>,
-        a_row<  Cancelling, 	sdpa::events::JobFinishedEvent,      		Cancelled, 			&sm::action_job_finished>,
-        a_row<  Cancelling, 	sdpa::events::JobFailedEvent,               Cancelled, 			&sm::action_job_failed>,
+        _row<   Canceling, 	sdpa::events::CancelJobAckEvent,     		Canceled>,
+        a_row<  Canceling, 	sdpa::events::JobFinishedEvent,      		Canceled, 			&sm::action_job_finished>,
+        a_row<  Canceling, 	sdpa::events::JobFailedEvent,               Canceled, 			&sm::action_job_failed>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Cancelled,  	sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
-        _irow<  Cancelled,  	sdpa::events::RetrieveJobResultsEvent>
+        a_irow< Canceled,  	sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
+        _irow<  Canceled,  	sdpa::events::RetrieveJobResultsEvent>
         >{};
 
       //! \note This table refers to the order in which states are

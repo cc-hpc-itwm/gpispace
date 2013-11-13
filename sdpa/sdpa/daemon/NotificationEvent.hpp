@@ -26,8 +26,8 @@ namespace sdpa
         STATE_STARTED
       , STATE_FINISHED
       , STATE_FAILED
-      , STATE_CANCELLED
-      , STATE_MAX = STATE_CANCELLED
+      , STATE_CANCELED
+      , STATE_MAX = STATE_CANCELED
       };
 
       NotificationEvent ( const std::list<std::string>& components

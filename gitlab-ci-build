@@ -6,7 +6,7 @@ makeflags=()
 ctestflags=()
 runtests=false
 send_mail=false
-mailto=petry@itwm.fhg.de
+mailto=sdpa-dev@itwm.fhg.de
 ec=0
 
 case "$myhost" in
@@ -39,28 +39,33 @@ case "$myhost" in
         ;;
 esac
 
-do_send_mail ()
+log_and_maybe_send_mail ()
 {
+    local ec="$1" ; shift
+
     if [ $ec -eq 0 ]
     then
-        state="SUCCESS"
+        msg="${@}"
     else
-        state="FAILED"
+        msg="${@} (ec=$ec)"
     fi
-    sha=$(git rev-parse --short HEAD)
-    mail -s "[CI] build of ${sha}: ${state}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${to}" </dev/null
-}
+    short_sha=$(git rev-parse --short HEAD)
+    sha=$(git rev-parse HEAD)
+    url="http://gitlab-ci.hpc.devnet.itwm.fhg.de/projects/1/builds/${sha}"
 
-if $send_mail
-then
-    trap do_send_mail EXIT
-fi
+    echo >&2 "${msg}"
+
+    if $send_mail
+    then
+        echo "for details visit: ${url}" | mail -s "[CI] GPI-Space: commit ${short_sha}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${mailto}"
+    fi
+}
 
 ./configure --prefix=$PWD/inst "${opts[@]}"
 ec=$?
 if [ $ec -ne 0 ]
 then
-    echo >&2 "CONFIGURE FAILED: ec=$ec"
+    log_and_maybe_send_mail $ec "CONFIGURE FAILED"
     exit $ec
 fi
 
@@ -68,7 +73,7 @@ make "${makeflags[@]}"
 ec=$?
 if [ $ec -ne 0 ]
 then
-    echo >&2 "MAKE FAILED: ec=$ec"
+    log_and_maybe_send_mail $ec "MAKE FAILED"
     exit $ec
 fi
 
@@ -76,7 +81,7 @@ make "${makeflags[@]}" install
 ec=$?
 if [ $ec -ne 0 ]
 then
-    echo >&2 "INSTALL FAILED: ec=$ec"
+    log_and_maybe_send_mail $ec "INSTALL FAILED"
     exit $ec
 fi
 
@@ -86,9 +91,9 @@ then
     ec=$?
     if [ $ec -ne 0 ]
     then
-        echo >&2 "TESTS FAILED: ec=$ec"
+        log_and_maybe_send_mail $ec "TESTS FAILED"
         exit $ec
     fi
 fi
 
-exit 0
+log_and_maybe_send_mail 0 "SUCCESS"

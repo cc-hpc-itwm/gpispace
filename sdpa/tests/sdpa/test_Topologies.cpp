@@ -277,7 +277,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 			}
 			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 			{
-				job_status="Cancelled";
+				job_status="Canceled";
 				exit_code = 2;
 			}
 			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
@@ -304,7 +304,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
   	if( job_status != std::string("Finished") &&
   		job_status != std::string("Failed")   &&
-  		job_status != std::string("Cancelled") )
+  		job_status != std::string("Canceled") )
   	{
   		LOG(ERROR, "Unexpected status, leave now ...");
   		return exit_code;

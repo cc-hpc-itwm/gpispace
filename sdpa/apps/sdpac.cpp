@@ -103,7 +103,7 @@ int command_poll_and_wait ( const std::string &job_id
     }
     else if (sdpa::status::CANCELED == status)
     {
-      std::cerr << "cancelled!" << std::endl;
+      std::cerr << "canceled!" << std::endl;
       break;
     }
     else

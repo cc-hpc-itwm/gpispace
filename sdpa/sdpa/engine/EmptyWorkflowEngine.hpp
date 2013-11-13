@@ -45,7 +45,7 @@ typedef map_t::value_type id_pair;
 typedef boost::function<id_type()> Function_t;
 static std::string id_gen() { return dflt_id_generator::instance().next(); }
 
-enum we_status { FINISHED, FAILED, CANCELLED };
+enum we_status { FINISHED, FAILED, CANCELED };
 
 class EmptyWorkflowEngine;
 
@@ -174,9 +174,9 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-    bool cancelled(const id_type& activityId)
+    bool canceled(const id_type& activityId)
     {
-      SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" was canceled!");
 
       /**
       * Notify the SDPA that a workflow has been canceled (state
@@ -196,12 +196,12 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
           if( it->second == workflowId )
             bAllActFinished = false;
 
-        // if no activity left, declare the workflow cancelled
+        // if no activity left, declare the workflow canceled
         if(bAllActFinished)
         {
-          //pGenericDaemon_->cancelled(workflowId);
+          //pGenericDaemon_->canceled(workflowId);
           result_type result;
-          const we_result_t resP(workflowId, result, CANCELLED);
+          const we_result_t resP(workflowId, result, CANCELED);
           qResults.push(resP);
         }
 
@@ -256,8 +256,8 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
      * Cancel a workflow asynchronously.
      * This method is to be invoked by the SDPA.
      * The GWES will notifiy the SPDA about the
-     * completion of the cancelling process by calling the
-     * callback method Gwes2Sdpa::cancelled.
+     * completion of the canceling process by calling the
+     * callback method Gwes2Sdpa::canceled.
      */
     bool cancel(const id_type& wfid, const reason_type& reason)
     {
@@ -330,9 +330,9 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
                                      );
               break;
 
-          case CANCELLED:
+          case CANCELED:
               SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" was canceled!");
-              pGenericDaemon_->cancelled(we_result.jobId);
+              pGenericDaemon_->canceled(we_result.jobId);
               break;
 
           default:

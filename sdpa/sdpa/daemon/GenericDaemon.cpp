@@ -925,10 +925,10 @@ bool GenericDaemon::failed( const id_type& workflowId
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-bool GenericDaemon::cancelled(const id_type& workflowId)
+bool GenericDaemon::canceled(const id_type& workflowId)
 {
-  DMLOG (TRACE, "activity cancelled: " << workflowId);
-  // generate a JobCancelledEvent for self!
+  DMLOG (TRACE, "activity canceled: " << workflowId);
+  // generate a JobCanceledEvent for self!
 
   job_id_t job_id(workflowId);
 

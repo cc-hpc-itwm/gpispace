@@ -348,8 +348,8 @@ namespace we
       }
 
       FLAG (suspended)
-      FLAG (cancelling)
-      FLAG (cancelled)
+      FLAG (canceling)
+      FLAG (canceled)
       FLAG (failed)
       FLAG (finished)
 #undef FLAG
