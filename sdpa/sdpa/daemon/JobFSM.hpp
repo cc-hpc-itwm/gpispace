@@ -19,6 +19,8 @@
 #include <boost/serialization/access.hpp>
 #include <boost/thread.hpp>
 
+#include <sdpa/events/JobRunningEvent.hpp>
+#include <sdpa/events/JobStalledEvent.hpp>
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 //#include <boost/msm/back/favor_compile_time.hpp>
@@ -55,24 +57,28 @@ namespace sdpa {
       };
 
       struct MSMStalledEvent{
-        MSMStalledEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId)
-          : m_pAgent(pAgent), m_jobId(jobId) {}
+        MSMStalledEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId, const sdpa::worker_id_t& jobOwner)
+          : m_pAgent(pAgent), m_jobId(jobId), m_jobOwner(jobOwner)  {}
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
         sdpa::job_id_t jobId() const { return m_jobId; }
+        sdpa::job_id_t jobOwner() const { return m_jobOwner; }
       private:
         sdpa::daemon::IAgent* m_pAgent;
         sdpa::job_id_t m_jobId;
+        sdpa::worker_id_t m_jobOwner;
       };
 
       struct MSMResumeJobEvent
       {
-        MSMResumeJobEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId)
-          : m_pAgent(pAgent), m_jobId(jobId) {}
+        MSMResumeJobEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId, const sdpa::worker_id_t& jobOwner)
+          : m_pAgent(pAgent), m_jobId(jobId), m_jobOwner(jobOwner) {}
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
         sdpa::job_id_t jobId() const { return m_jobId; }
+        sdpa::job_id_t jobOwner() const { return m_jobOwner; }
       private:
         sdpa::daemon::IAgent* m_pAgent;
         sdpa::job_id_t m_jobId;
+        sdpa::worker_id_t m_jobOwner;
       };
 
       // front-end: define the FSM structure
@@ -111,8 +117,8 @@ namespace sdpa {
           LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
           if(evt.ptrAgent()) {
               // notify the job owner that the job has subtasks that are stalling
-              // sdpa::events::JobIsStalledEvent::Ptr pEvt(new sdpa::events::JobIsStalledEvent();
-              // evt.ptrAgent()->sendEventToMaster(pEvt);
+              sdpa::events::JobStalledEvent::Ptr pEvt(new sdpa::events::JobStalledEvent(evt.ptrAgent()->name(), evt.jobOwner(), evt.jobId() ));
+              evt.ptrAgent()->sendEventToMaster(pEvt);
           }
         }
 
@@ -121,8 +127,10 @@ namespace sdpa {
           LOG(INFO, "The job "<<evt.jobId()<<" changed its status from STALLED to RUNNING");
           if(evt.ptrAgent()) {
               // notify the job owner that the job makes progress
-              // sdpa::events::JobIsRunningEvent::Ptr pEvt(new sdpa::events::JobIsRunningEvent());
-              // evt.ptrAgent()->sendEventToMaster(pEvt);
+              sdpa::events::JobRunningEvent::Ptr pEvt(new sdpa::events::JobRunningEvent(evt.ptrAgent()->name(),
+                                                                                        evt.jobOwner(),
+                                                                                        evt.jobId() ));
+              evt.ptrAgent()->sendEventToMaster(pEvt);
            }
         }
 
@@ -224,14 +232,14 @@ namespace sdpa {
 
         void Pause(sdpa::daemon::IAgent* pAgent)
         {
-          MSMStalledEvent stalledEvt(pAgent, id());
+          MSMStalledEvent stalledEvt(pAgent, id(), owner());
           lock_type lock(mtx_);
           process_event(stalledEvt);
         }
 
         void Resume(sdpa::daemon::IAgent* pAgent)
         {
-          MSMResumeJobEvent resumeEvt(pAgent, id());
+          MSMResumeJobEvent resumeEvt(pAgent, id(), owner());
           lock_type lock(mtx_);
           process_event(resumeEvt);
         }
@@ -269,7 +277,7 @@ namespace sdpa {
 
         void Dispatch()
         {
-          MSMResumeJobEvent evt(NULL, id());
+          MSMResumeJobEvent evt(NULL, id(), owner());
           lock_type lock(mtx_);
           process_event(evt);
         }
