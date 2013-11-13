@@ -21,6 +21,15 @@ case "$myhost" in
             export PATH="$HOME/external_software/ccache/3.1.9/lib:$PATH"
         fi
         ;;
+    lcs*)
+        module use /p/herc/itwm/hpc/soft/etc/modules
+        module laod soft/cmake
+        module load lib/boost
+        module load lib/hwloc
+        module load lib/qt
+        module load soft/graphviz
+        makeflags=+(-j24)
+        ;;
     voyager)
         makeflags+=(-j4)
         ;;
