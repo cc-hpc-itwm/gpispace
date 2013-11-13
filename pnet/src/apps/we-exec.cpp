@@ -87,7 +87,7 @@ void observe_failed (const layer_t *l, layer_id_type const & id, std::string con
     l->print_statistics(std::cerr);
 }
 static
-void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string const &s)
+void observe_canceled (const layer_t *l, layer_id_type const & id, std::string const &s)
 {
   {
     lock_t lock(mutex);
@@ -190,7 +190,7 @@ try
   mgmt_layer.sig_submitted.connect ( &observe_submitted );
   mgmt_layer.sig_finished.connect  ( &observe_finished );
   mgmt_layer.sig_failed.connect    ( &observe_failed );
-  mgmt_layer.sig_cancelled.connect ( &observe_cancelled );
+  mgmt_layer.sig_canceled.connect ( &observe_canceled );
 
   if (vm.count ("verbose"))
   {

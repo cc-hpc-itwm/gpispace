@@ -542,7 +542,7 @@ bool Agent::failed( const id_type& wfid
 void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
   if(hasWorkflowEngine())
-    workflowEngine()->cancelled(evt.job_id ());
+    workflowEngine()->canceled(evt.job_id ());
 
   try
   {
@@ -627,7 +627,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
     if (pEvt->from () == sdpa::daemon::WE)
     {
-      workflowEngine()->cancelled (pEvt->job_id ());
+      workflowEngine()->canceled (pEvt->job_id ());
     }
 
     return;
@@ -703,7 +703,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   {
     LOG(WARN, "could not find job: " << ex.what());
 
-    workflowEngine()->cancelled (pEvt->job_id ());
+    workflowEngine()->canceled (pEvt->job_id ());
 
     return;
   }
@@ -734,7 +734,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
 
     try {
-      workflowEngine()->cancelled(pEvt->job_id());
+      workflowEngine()->canceled(pEvt->job_id());
     }
     catch (std::exception const & ex)
     {

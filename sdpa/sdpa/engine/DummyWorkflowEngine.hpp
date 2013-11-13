@@ -136,7 +136,7 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-    bool cancelled(const id_type& activityId)
+    bool canceled(const id_type& activityId)
     {
       SDPA_LOG_DEBUG("The activity " << activityId<<" was canceled!");
 

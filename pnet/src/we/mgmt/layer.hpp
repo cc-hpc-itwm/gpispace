@@ -76,7 +76,7 @@ namespace we { namespace mgmt {
       util::signal<void (const layer *, internal_id_type const &)> sig_submitted;
       util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_finished;
       util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_failed;
-      util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_cancelled;
+      util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_canceled;
       util::signal<void (const layer *, internal_id_type const &)> sig_executing;
 
       /**
@@ -167,7 +167,7 @@ namespace we { namespace mgmt {
        *          post-conditions:
        *                  - the node belonging to this activity is removed
        **/
-      bool cancelled (const external_id_type&);
+      bool canceled (const external_id_type&);
 
       // END: EXTERNAL API
 
@@ -230,7 +230,7 @@ namespace we { namespace mgmt {
                            , const int error_code
                            , std::string const & reason
                            )>  ext_failed;
-      boost::function<bool (external_id_type const &)>                       ext_cancelled;
+      boost::function<bool (external_id_type const &)>                       ext_canceled;
 
       void submit (const descriptor_ptr & desc)
       {
@@ -313,7 +313,7 @@ namespace we { namespace mgmt {
         : sig_submitted("sig_submitted")
         , sig_finished("sig_finished")
         , sig_failed("sig_failed")
-        , sig_cancelled("sig_canceled")
+        , sig_canceled("sig_canceled")
         , sig_executing("sig_executing")
         , internal_id_gen_(&petri_net::activity_id_generate)
       {
@@ -325,7 +325,7 @@ namespace we { namespace mgmt {
         : sig_submitted("sig_submitted")
         , sig_finished("sig_finished")
         , sig_failed("sig_failed")
-        , sig_cancelled("sig_canceled")
+        , sig_canceled("sig_canceled")
         , sig_executing("sig_executing")
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
@@ -334,7 +334,7 @@ namespace we { namespace mgmt {
         ext_cancel = (boost::bind (& E::cancel, exec_layer, _1, _2));
         ext_finished = (boost::bind (& E::finished, exec_layer, _1, _2));
         ext_failed = (boost::bind (& E::failed, exec_layer, _1, _2, _3, _4));
-        ext_cancelled = (boost::bind (& E::cancelled, exec_layer, _1));
+        ext_canceled = (boost::bind (& E::canceled, exec_layer, _1));
 
         start();
       }
@@ -511,11 +511,11 @@ namespace we { namespace mgmt {
       }
 
       inline
-      void post_cancelled_notification (const internal_id_type & id)
+      void post_canceled_notification (const internal_id_type & id)
       {
         if (is_valid(id))
         {
-          cmd_q_.put(make_cmd("activity_canceled", id, boost::bind(&layer::activity_cancelled, this, _1)));
+          cmd_q_.put(make_cmd("activity_canceled", id, boost::bind(&layer::activity_canceled, this, _1)));
         }
         else
         {
@@ -602,7 +602,7 @@ namespace we { namespace mgmt {
             {
               if (!desc->has_children())
               {
-                post_cancelled_notification (active_id);
+                post_canceled_notification (active_id);
               }
 
               continue;
@@ -811,7 +811,7 @@ namespace we { namespace mgmt {
                  , "canceled (" << desc->name() << ")-" << desc->id()
                  << " external-id := " << desc->from_external_id()
                  );
-            ext_cancelled (desc->from_external_id());
+            ext_canceled (desc->from_external_id());
           }
           else
           {
@@ -922,13 +922,13 @@ namespace we { namespace mgmt {
         }
       }
 
-      void activity_cancelled(const cmd_t & cmd)
+      void activity_canceled(const cmd_t & cmd)
       {
         const internal_id_type internal_id (cmd.dat);
         try
         {
           descriptor_ptr desc (lookup(internal_id));
-          desc->cancelled();
+          desc->canceled();
 
           if (desc->has_parent ())
           {
@@ -939,11 +939,11 @@ namespace we { namespace mgmt {
                  );
 
             descriptor_ptr parent (lookup (desc->parent()));
-            parent->child_cancelled(*desc, "TODO: child canceled reason");
+            parent->child_canceled(*desc, "TODO: child canceled reason");
 
             if (! parent->has_children ())
             {
-              post_cancelled_notification (parent->id());
+              post_canceled_notification (parent->id());
             }
             else
             {
@@ -965,8 +965,8 @@ namespace we { namespace mgmt {
             throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (*desc));
           }
 
-          if (sig_cancelled.connected())
-            sig_cancelled ( this
+          if (sig_canceled.connected())
+            sig_canceled ( this
                           , internal_id
                           , desc->activity().to_string()
                           );
@@ -1017,7 +1017,7 @@ namespace we { namespace mgmt {
           }
           else
           {
-            post_cancelled_notification (desc->id());
+            post_canceled_notification (desc->id());
           }
         }
         catch (const exception::activity_not_found&)
