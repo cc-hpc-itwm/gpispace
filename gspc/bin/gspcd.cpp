@@ -308,6 +308,7 @@ int main (int argc, char *argv[])
     gspc::ctl::session_t s;
     s.set_session_dir (session_dir);
     s.set_session_name (session);
+    s.set_bind_url (puburl);
 
     gspc::ctl::session_info_t info;
 
