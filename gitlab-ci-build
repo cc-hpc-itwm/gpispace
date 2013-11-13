@@ -55,7 +55,7 @@ log_and_maybe_send_mail ()
 
     if $send_mail
     then
-        mail -s "[CI] build of ${sha}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${to}" </dev/null
+        mail -s "[CI] build of ${sha}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${mailto}" </dev/null
     fi
 }
 
