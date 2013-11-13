@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<AgentScheduler*>(pAgent->scheduler().get());
+  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<CoallocationScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
     LOG(FATAL, "The scheduler was not properly initialized");
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
+  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
       LOG(FATAL, "The scheduler was not properly initialized");
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
+  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
       LOG(FATAL, "The scheduler was not properly initialized");
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
+  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
     LOG(FATAL, "The scheduler was not properly initialized");
@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
+  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
     LOG(FATAL, "The scheduler was not properly initialized");

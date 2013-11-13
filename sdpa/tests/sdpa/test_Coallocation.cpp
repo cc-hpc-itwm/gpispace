@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::AgentScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::AgentScheduler*>(pAgent->scheduler().get());
+  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
   if(!ptrScheduler)
   LOG(FATAL, "The scheduler was not properly initialized");
@@ -363,7 +363,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   sdpa::worker_id_list_t listFreeWorkers(ptrScheduler->getListAllocatedWorkers(jobId4));
   BOOST_CHECK(listFreeWorkers.empty());
 
-  //reinterpret_cast<SchedulerImpl*>(ptrScheduler.get())->printAllocationTable();
+  //reinterpret_cast<SchedulerBase*>(ptrScheduler.get())->printAllocationTable();
 
   // Now report that jobId0 has finished and try to assign again resources to the job 4
   ptrScheduler->releaseReservation(jobId0);

@@ -27,7 +27,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/daemon/Scheduler.hpp>
+#include <sdpa/daemon/scheduler/Scheduler.hpp>
 
 
 namespace sdpa { namespace daemon {
@@ -93,7 +93,7 @@ namespace sdpa { namespace daemon {
     }
 
     friend class boost::serialization::access;
-    friend class SchedulerImpl;
+    friend class SchedulerBase;
 
     void print()
     {

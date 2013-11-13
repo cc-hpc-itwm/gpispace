@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  SchedulerImpl.hpp
+ *       Filename:  SchedulerBase.hpp
  *
  *    Description:  Defines scheduler class
  *
@@ -15,11 +15,11 @@
  *
  * =====================================================================================
  */
-#ifndef SDPA_SCHEDULERIMPL_HPP
-#define SDPA_SCHEDULERIMPL_HPP 1
+#ifndef SDPA_SchedulerBase_HPP
+#define SDPA_SchedulerBase_HPP 1
 
 #include <boost/thread.hpp>
-#include <sdpa/daemon/Scheduler.hpp>
+#include <sdpa/daemon/scheduler/Scheduler.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
@@ -32,25 +32,23 @@
 
 namespace sdpa {
   namespace daemon {
-    class SchedulerImpl : public Scheduler
+    class SchedulerBase : public Scheduler
     {
     public:
-      typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
+      typedef sdpa::shared_ptr<SchedulerBase> ptr_t;
       typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      SchedulerImpl(sdpa::daemon::IAgent* pHandler = NULL, bool bUseRequestModel = true );
-      virtual ~SchedulerImpl();
+      SchedulerBase(sdpa::daemon::IAgent* pHandler = NULL, bool bUseRequestModel = true );
+      virtual ~SchedulerBase();
 
       virtual void schedule(const sdpa::job_id_t&);
       virtual void schedule_local(const sdpa::job_id_t&);
       virtual void schedule_remotely(const sdpa::job_id_t&);
       void delete_job(const sdpa::job_id_t&);
 
-      bool schedule_to( const sdpa::job_id_t&, const sdpa::worker_id_t& );
-      bool schedule_to( const sdpa::job_id_t&, const Worker::ptr_t& pWorker );
       void schedule_first(const sdpa::job_id_t&);
 
       void rescheduleWorkerJob( const Worker::worker_id_t&, const sdpa::job_id_t&);
@@ -143,6 +141,6 @@ namespace sdpa {
   }
 }
 
-BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::SchedulerImpl )
+BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::SchedulerBase )
 
 #endif

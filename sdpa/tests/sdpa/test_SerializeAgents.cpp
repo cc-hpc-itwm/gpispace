@@ -381,7 +381,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
   ostringstream oss;
   pAgent-> createScheduler(false);
 
-  sdpa::daemon::Scheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::AgentScheduler>(pAgent->scheduler());
+  sdpa::daemon::Scheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(pAgent->scheduler());
 
   if(!ptrScheduler)
     LOG(FATAL, "The scheduler was not properly initialized");
@@ -434,7 +434,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
   {
      std::ofstream ofs(filename.c_str());
      boost::archive::text_oarchive oa(ofs);
-     oa.register_type(static_cast<AgentScheduler*>(NULL));
+     oa.register_type(static_cast<CoallocationScheduler*>(NULL));
      oa << ptrScheduler;
   }
   catch(exception &e)
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
     // open the archive
     std::ifstream ifs(filename.c_str());
     boost::archive::text_iarchive ia(ifs);
-    ia.register_type(static_cast<AgentScheduler*>(NULL));
+    ia.register_type(static_cast<CoallocationScheduler*>(NULL));
     // restore the schedule from the archive
     ia >> pSchedRest;
     std::cout<<"Scheduler dump after serialzation: "<<std::endl;

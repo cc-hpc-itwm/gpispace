@@ -486,8 +486,7 @@ void Orchestrator::backup( std::ostream& os )
       oa.register_type(static_cast<JobFSM*>(NULL));
       backupJobManager(oa);
 
-      oa.register_type(static_cast<SchedulerOrch*>(NULL));
-      //oa.register_type(static_cast<SchedulerImpl*>(NULL));
+      //oa.register_type(static_cast<SimpleScheduler*>(NULL));
       backupScheduler(oa);
 
       oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
@@ -510,8 +509,7 @@ void Orchestrator::recover( std::istream& is )
       // restore the schedule from the archive
       recoverJobManager(ia);
 
-      ia.register_type(static_cast<SchedulerOrch*>(NULL));
-      //ia.register_type(static_cast<SchedulerImpl*>(NULL));
+      //ia.register_type(static_cast<SimpleScheduler*>(NULL));
       recoverScheduler(ia);
 
       // should ignore the workflow engine recovery,

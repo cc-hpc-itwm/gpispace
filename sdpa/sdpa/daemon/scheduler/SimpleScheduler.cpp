@@ -1,0 +1,111 @@
+// tiberiu.rotaru@itwm.fraunhofer.de
+#include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
+
+using namespace sdpa::daemon;
+using namespace sdpa::events;
+using namespace std;
+
+SimpleScheduler::SimpleScheduler(sdpa::daemon::IAgent* pCommHandler,  bool bUseReqModel):
+       SchedulerBase(pCommHandler, bUseReqModel),
+       SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name()+"::Scheduler":"Scheduler")
+{}
+
+SimpleScheduler::~SimpleScheduler()
+{
+  try
+  {
+      stop();
+  }
+  catch (std::exception const & ex)
+  {
+      SDPA_LOG_ERROR("could not stop SimpleScheduler: " << ex.what());
+  }
+}
+
+void SimpleScheduler::assignJobsToWorkers()
+{
+  lock_type lock(mtx_);
+  sdpa::worker_id_list_t listAvailWorkers;
+
+  if(!schedulingAllowed())
+    return;
+
+  // get the list of workers that are not full
+  getListNotFullWorkers(listAvailWorkers);
+
+  // check if there are jobs that can already be scheduled on these workers
+  JobQueue nonmatching_jobs_queue;
+
+  // iterate over all jobs and see if there is one that prefers
+  while(schedulingAllowed() && !listAvailWorkers.empty())
+  {
+    sdpa::job_id_t jobId(nextJobToSchedule());
+    sdpa::worker_id_t matchingWorkerId;
+
+    try {
+      job_requirements_t job_reqs(ptr_comm_handler_->getJobRequirements(jobId));
+      matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
+    }
+    catch( const NoJobRequirements& ex ) { // no requirements are specified
+      // we have an empty list of requirements then!
+      matchingWorkerId = listAvailWorkers.front();
+      listAvailWorkers.erase(listAvailWorkers.begin());
+    }
+
+    if( !matchingWorkerId.empty() ) { // matching found
+        LOG(INFO, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
+
+        // serve the same job to all reserved workers!!!!
+        ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
+    }
+    else { // put it back into the common queue
+        nonmatching_jobs_queue.push(jobId);
+    }
+  }
+
+  while(!nonmatching_jobs_queue.empty())
+      schedule_first(nonmatching_jobs_queue.pop_back());
+}
+
+void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
+{
+  if(bStopRequested)
+  {
+      SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
+      return;
+  }
+
+  ostringstream os;
+  if(!ptr_comm_handler_)
+  {
+      SDPA_LOG_ERROR("Invalid communication handler. ");
+      stop();
+      return;
+  }
+
+  try {
+
+      Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
+      std::string status = pJob->getStatus();
+      if( !pJob->completed()) {
+          pJob->Reschedule(ptr_comm_handler_); // put the job back into the pending state
+      }
+  }
+  catch(JobNotFoundException const &ex)
+  {
+    SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
+  }
+  catch(const std::exception& ex) {
+    SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+  }
+}
+
+void SimpleScheduler::releaseReservation(const sdpa::job_id_t& jobId) {LOG(WARN, "Not implemented!");}
+void SimpleScheduler::workerFinished(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
+void SimpleScheduler::workerFailed(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
+void SimpleScheduler::workerCanceled(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
+bool SimpleScheduler::allPartialResultsCollected(const job_id_t& jid) {LOG(WARN, "Not implemented!"); return false;}
+bool SimpleScheduler::groupFinished(const sdpa::job_id_t& jid) {LOG(WARN, "Not implemented!"); return false;}
+
+bool SimpleScheduler::postRequest( bool ) { return false; }
+void SimpleScheduler::checkRequestPosted() { /*do nothing*/ }

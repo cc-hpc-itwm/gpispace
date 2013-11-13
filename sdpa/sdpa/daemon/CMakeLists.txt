@@ -7,10 +7,11 @@ set (srcs
   JobEventHandlers.cpp
   JobImpl.cpp
   JobManager.cpp
-  SchedulerImpl.cpp
+  scheduler/SchedulerBase.cpp
+  scheduler/CoallocationScheduler.cpp
+  scheduler/SimpleScheduler.cpp
   Worker.cpp
   WorkerManager.cpp
-
   agent/Agent.cpp
   orchestrator/Orchestrator.cpp
   )

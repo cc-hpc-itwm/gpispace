@@ -758,8 +758,8 @@ void Agent::backup( std::ostream& ofs )
     oa.register_type(static_cast<JobFSM*>(NULL));
     backupJobManager(oa);
 
-    oa.register_type(static_cast<AgentScheduler*>(NULL));
-    //oa.register_type(static_cast<SchedulerImpl*>(NULL));
+    oa.register_type(static_cast<CoallocationScheduler*>(NULL));
+    //oa.register_type(static_cast<SchedulerBase*>(NULL));
     backupScheduler(oa);
 
     /*oa.register_type(static_cast<T*>(NULL));
@@ -780,8 +780,8 @@ void Agent::recover( std::istream& ifs )
     ia.register_type(static_cast<JobFSM*>(NULL));
     recoverJobManager(ia);
 
-    ia.register_type(static_cast<AgentScheduler*>(NULL));
-    //ia.register_type(static_cast<SchedulerImpl*>(NULL));
+    ia.register_type(static_cast<CoallocationScheduler*>(NULL));
+    //ia.register_type(static_cast<SchedulerBase*>(NULL));
     recoverScheduler(ia);
 
     // should ignore the workflow engine,

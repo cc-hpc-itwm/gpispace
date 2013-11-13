@@ -19,6 +19,7 @@
 #define SDPA_AGENT_HPP 1
 
 #include <sdpa/daemon/DaemonFSM.hpp>
+#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
 namespace sdpa {
   namespace daemon {
@@ -86,10 +87,9 @@ namespace sdpa {
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
-
         void createScheduler(bool bUseReqModel)
         {
-          ptr_scheduler_ = Scheduler::ptr_t (new SchedulerImpl (this, bUseReqModel));
+          ptr_scheduler_ = Scheduler::ptr_t (new CoallocationScheduler(this, bUseReqModel));
         }
 
       private:
