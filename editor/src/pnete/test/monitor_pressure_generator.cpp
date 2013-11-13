@@ -57,7 +57,7 @@ struct activity
       _state = NotificationEvent::STATE_FAILED;
       break;
     case 2:
-      _state = NotificationEvent::STATE_CANCELLED;
+      _state = NotificationEvent::STATE_CANCELED;
       break;
     }
 

@@ -54,7 +54,7 @@ namespace fhg
       {
         switch (state_)
         {
-        case sdpa::daemon::NotificationEvent::STATE_CANCELLED:
+        case sdpa::daemon::NotificationEvent::STATE_CANCELED:
         case sdpa::daemon::NotificationEvent::STATE_FAILED:
         case sdpa::daemon::NotificationEvent::STATE_FINISHED:
           duration (now - timestamp());

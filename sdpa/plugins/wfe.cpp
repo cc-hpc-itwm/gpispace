@@ -366,7 +366,7 @@ public:
         task.state = wfe_task_t::CANCELED;
         error_message = task.error_message;
 
-        emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELLED);
+        emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELED);
       }
       else
       {
