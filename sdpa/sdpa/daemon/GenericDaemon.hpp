@@ -145,7 +145,7 @@ namespace sdpa {
       virtual bool cancel(const id_type & id, const reason_type& reason);
       virtual bool finished(const id_type & id, const result_type& result);
       virtual bool failed( const id_type& wfId, const result_type& res, int errc, std::string const& reason);
-      virtual bool cancelled(const id_type& id);
+      virtual bool canceled(const id_type& id);
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);

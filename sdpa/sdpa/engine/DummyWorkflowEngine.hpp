@@ -160,7 +160,7 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
 
         // if no activity left, declare the workflow canceled
         if(bAllActFinished)
-                pIAgent_->cancelled(workflowId);
+                pIAgent_->canceled(workflowId);
 
         return true;
       }

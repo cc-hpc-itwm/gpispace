@@ -332,7 +332,7 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
 
           case CANCELED:
               SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" was canceled!");
-              pGenericDaemon_->cancelled(we_result.jobId);
+              pGenericDaemon_->canceled(we_result.jobId);
               break;
 
           default:
