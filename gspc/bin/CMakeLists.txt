@@ -72,7 +72,7 @@ add_executable (gspc-kvs gspc-kvs.cpp)
 target_link_libraries (gspc-kvs
   libgspc
   fhg-util
-  we-dev
+  pnet
   ${UTIL_LIBRARIES}
   ${FhgLog_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}
@@ -88,7 +88,7 @@ add_executable (gspcd gspcd.cpp)
 target_link_libraries (gspcd
   libgspc
   fhg-util
-  we-dev
+  pnet
   ${UTIL_LIBRARIES}
   ${FhgLog_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}
