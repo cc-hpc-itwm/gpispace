@@ -44,7 +44,7 @@ namespace we
                          , const int error_code
                          , const std::string & reason
                          ) = 0;
-      virtual bool cancelled(const id_type & id) = 0;
+      virtual bool canceled(const id_type & id) = 0;
 
       virtual ~basic_layer() {}
 

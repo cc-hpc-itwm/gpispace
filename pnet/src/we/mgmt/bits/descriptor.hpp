@@ -64,7 +64,7 @@ namespace we
                           , int error_code
                           , std::string const& error_message
                           );
-        void child_cancelled (descriptor const&, std::string const& /*reason*/);
+        void child_canceled (descriptor const&, std::string const& /*reason*/);
 
         descriptor extract (id_type const&);
 
@@ -72,7 +72,7 @@ namespace we
        int execute (policy::execution_policy*);
         void finished();
         void failed();
-        void cancelled();
+        void canceled();
 
         std::size_t failure_counter() const;
         int error_code() const;

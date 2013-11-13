@@ -407,7 +407,7 @@ namespace fhg
             blocks[sdpa::daemon::NotificationEvent::STATE_STARTED];
             blocks[sdpa::daemon::NotificationEvent::STATE_FINISHED];
             blocks[sdpa::daemon::NotificationEvent::STATE_FAILED];
-            blocks[sdpa::daemon::NotificationEvent::STATE_CANCELLED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_CANCELED];
           }
         };
 
@@ -690,7 +690,7 @@ namespace fhg
           case event::STATE_STARTED: return "started";
           case event::STATE_FINISHED: return "finished";
           case event::STATE_FAILED: return "failed";
-          case event::STATE_CANCELLED: return "cancelled";
+          case event::STATE_CANCELED: return "canceled";
           }
         }
       }

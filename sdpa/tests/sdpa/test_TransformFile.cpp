@@ -129,7 +129,7 @@ void MyFixture::run_client()
 		nTrials = 0;
 		while( job_status.find("Finished") == std::string::npos &&
 			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
+			   job_status.find("Canceled") == std::string::npos)
 		{
 			try {
 				job_status = ptrCli->queryJob(job_id_user);

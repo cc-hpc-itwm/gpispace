@@ -104,8 +104,8 @@ namespace we
         void set_ ## _name (bool value = true)
 
         FLAG (suspended);
-        FLAG (cancelling);
-        FLAG (cancelled);
+        FLAG (canceling);
+        FLAG (canceled);
         FLAG (failed);
         FLAG (finished);
 #undef FLAG

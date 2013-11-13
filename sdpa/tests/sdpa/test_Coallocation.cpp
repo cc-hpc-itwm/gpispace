@@ -81,7 +81,7 @@ struct MyFixture
   boost::thread m_threadClient;
 };
 
-/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+/*returns: 0 job finished, 1 job failed, 2 job canceled, other value if failures occurred */
 int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
   typedef boost::posix_time::ptime time_type;
@@ -155,7 +155,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
       else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
       {
           LOG(WARN, "The job has been canceled!");
-          job_status="Cancelled";
+          job_status="Canceled";
           exit_code = 2;
       }
       else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
@@ -185,7 +185,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
   if( job_status != std::string("Finished") &&
     job_status != std::string("Failed")   &&
-    job_status != std::string("Cancelled") )
+    job_status != std::string("Canceled") )
   {
     LOG(ERROR, "Unexpected status, leave now ...");
     return exit_code;

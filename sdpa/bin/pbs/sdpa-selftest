@@ -121,8 +121,8 @@ for ((i=0 ; i < $walltime ; ++i)) ; do
         $log --error "job has failed"
         job_state=1
         break
-    elif echo "$job_status" | grep -q -i -e 'cancelled' ; then
-        $log --error "job has been cancelled"
+    elif echo "$job_status" | grep -q -i -e 'canceled' ; then
+        $log --error "job has been canceled"
         job_state=2
         break
     fi

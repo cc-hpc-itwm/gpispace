@@ -24,7 +24,7 @@ namespace fhg
         {
           PENDING = 0
         , DONE = 1
-        , CANCELLED = 2
+        , CANCELED = 2
         };
 
       typedef boost::recursive_mutex mutex_type;
@@ -77,7 +77,7 @@ namespace fhg
         lock_type lck(m_mutex);
         if (state == PENDING)
         {
-          state = CANCELLED;
+          state = CANCELED;
         }
         termination_condition.notify_all();
       }
@@ -93,7 +93,7 @@ namespace fhg
           catch (...)
           {
             lock_type lck(m_mutex);
-            state = CANCELLED;
+            state = CANCELED;
             termination_condition.notify_all();
             throw;
           }

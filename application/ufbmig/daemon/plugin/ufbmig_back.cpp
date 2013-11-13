@@ -570,7 +570,7 @@ public:
     lock_type lock (m_job_list_mutex);
     if (m_job_list.size())
     {
-      MLOG(INFO, "CANCELLING running workflows");
+      MLOG(INFO, "CANCELING running workflows");
       BOOST_FOREACH(job::info_t const & j, m_job_list)
       {
         if (! job::is_done(j))

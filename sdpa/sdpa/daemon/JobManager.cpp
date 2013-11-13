@@ -189,11 +189,11 @@ void JobManager::resubmitResults(IAgent* pComm)
 
       case sdpa::status::CANCELED:
         {
-          sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(),
+          sdpa::events::CancelJobAckEvent::Ptr pEvtJobCanceled( new sdpa::events::CancelJobAckEvent( pComm->name(),
                                                                                                     pJob->owner(),
                                                                                                     pJob->id()));
 
-          pComm->sendEventToMaster(pEvtJobCancelled);
+          pComm->sendEventToMaster(pEvtJobCanceled);
         }
         break;
 
