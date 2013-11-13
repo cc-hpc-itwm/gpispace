@@ -56,6 +56,7 @@ log_or_send_mail ()
     ci_url="http://gitlab-ci.hpc.devnet.itwm.fhg.de/projects/1/builds/${sha}"
     diff_url="http://gitlab.hpc.devnet.itwm.fhg.de/top/gpispace/commit/${sha}"
     author=$(git log -n 1 --pretty="%aN <%aE>")
+    project="GPI-Space"
 
     header="Build report for commit ${short_sha} to ${branch} on host ${myhost}:"
     header_length=$(echo -n "$header" | wc -c)
@@ -63,7 +64,7 @@ log_or_send_mail ()
 
     if $send_mail
     then
-        mail -s "[CI] GPI-Space: commit ${short_sha} to ${branch}: ${msg}" -r "${author}" "${mailto}"
+        mail -s "[CI] ${project}: commit ${short_sha} to ${branch}: ${msg}" -r "${author}" "${mailto}"
     else
         cat
     fi <<EOF
