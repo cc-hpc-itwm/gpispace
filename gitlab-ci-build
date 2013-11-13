@@ -57,7 +57,7 @@ log_and_maybe_send_mail ()
 
     if $send_mail
     then
-        echo "for details visit: ${url}" | mail -s "[CI] GPI-Space: commit ${sha}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${mailto}"
+        echo "for details visit: ${url}" | mail -s "[CI] GPI-Space: commit ${short_sha}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${mailto}"
     fi
 }
 
