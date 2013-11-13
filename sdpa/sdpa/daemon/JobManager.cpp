@@ -68,7 +68,7 @@ Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFound
     throw JobNotFoundException( job_id );
 }
 
-void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
+void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, const job_requirements_t& job_req_list ) throw(JobNotAddedException)
 {
   lock_type lock(mtx_);
   job_map_t::iterator it;
@@ -78,9 +78,11 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) th
   pair<sdpa::job_id_t, Job::ptr_t> job_pair(job_id, pJob);
 
   ret_pair =  job_map_.insert(job_pair);
+  if(!ret_pair.second)
+     throw JobNotAddedException(job_id);
 
-  if(! ret_pair.second)
-    throw JobNotAddedException(job_id);
+  if(!job_req_list.empty())
+    job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 
 void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)

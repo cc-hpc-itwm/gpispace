@@ -83,8 +83,8 @@ namespace sdpa {
       GenericDaemon(const std::string name = "orchestrator_0",
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
                     unsigned int cap = 10000,
-                    unsigned int rank = 0
-                   , const std::string& guiUrl = ""
+                    unsigned int rank = 0,
+                    const std::string& guiUrl = ""
                    );
 
       SDPA_DECLARE_LOGGER();
@@ -139,6 +139,8 @@ namespace sdpa {
       virtual void perform_ConfigOkEvent() = 0;
       virtual void perform_ConfigNokEvent() = 0;
 
+      Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
+      void addJob(const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList = job_requirements_t());
     protected:
 
       // stages
@@ -239,8 +241,8 @@ namespace sdpa {
       virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) const;
       const Worker::ptr_t& findWorker(const Worker::worker_id_t&) const;
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
-      virtual void serveJob(const Worker::worker_id_t&, const job_id_t&);
-      virtual void serveJob(Reservation&);
+      void serveJob(const Worker::worker_id_t&, const job_id_t&);
+      void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
       virtual void requestJob(const MasterInfo&);
       virtual void addWorker( const Worker::worker_id_t& workerId,
                               unsigned int cap,
@@ -256,11 +258,9 @@ namespace sdpa {
       std::string gen_id() { return sdpa::JobId ().str (); }
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
-    public:
-      // scheduler
-      Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
+      virtual bool hasJobs() { return (jobManager()->getNumberOfJobs()>0); }
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
-    protected:
+
       virtual void createScheduler(bool bUseReqModel) = 0;
       virtual void schedule(const sdpa::job_id_t& job);
       virtual void reschedule(const sdpa::job_id_t& job);

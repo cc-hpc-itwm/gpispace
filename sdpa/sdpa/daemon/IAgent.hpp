@@ -28,9 +28,7 @@
 #include <sdpa/util/Config.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/daemon/JobManager.hpp>
-#include <sdpa/daemon/Worker.hpp>
-#include <sdpa/JobId.hpp>
-#include <sdpa/daemon/Reservation.hpp>
+#include <sdpa/daemon/scheduler/Reservation.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 namespace sdpa {
@@ -49,28 +47,26 @@ namespace sdpa {
     virtual void requestRegistration(const MasterInfo& masterInfo) = 0;
     virtual void requestJob(const MasterInfo& masterInfo) = 0;
 
-    virtual JobManager::ptr_t jobManager() const = 0;
-
-    virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const = 0;
+    virtual const sdpa::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const = 0;
     virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const = 0;
     virtual void deleteJob(const sdpa::job_id_t& ) = 0;
+    virtual bool hasJobs() = 0;
 
     virtual const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
 
     virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
 
-    virtual void activityFailed( const Worker::worker_id_t& worker_id
+    virtual void activityFailed( const sdpa::worker_id_t& worker_id
                                  , const job_id_t& jobId
                                  , const std::string& result
                                  , const int error_code
                                  , const std::string& reason
                                  ) = 0;
 
-    virtual void activityFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
-    virtual void activityCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id ) = 0;
+    virtual void activityFinished(const sdpa::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
+    virtual void activityCancelled(const sdpa::worker_id_t& worker_id, const job_id_t& id ) = 0;
 
     virtual const std::string& name() const = 0;
-    //virtual bool is_registered() const = 0;
     virtual sdpa::util::Config& cfg() = 0;
 
     virtual unsigned int& rank() = 0;
@@ -79,8 +75,8 @@ namespace sdpa {
     virtual void updateLastRequestTime() = 0;
     virtual bool requestsAllowed() = 0;
 
-    virtual void serveJob(const Worker::worker_id_t&, const job_id_t&) = 0;
-    virtual void serveJob(Reservation&) = 0;
+    virtual void serveJob(const sdpa::worker_id_t&, const job_id_t&) = 0;
+    virtual void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId) = 0;
 
     virtual void schedule(const sdpa::job_id_t& job) = 0;
     virtual bool hasWorkflowEngine() = 0;

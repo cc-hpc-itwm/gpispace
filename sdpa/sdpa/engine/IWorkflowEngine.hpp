@@ -22,14 +22,16 @@ class job_requirements_t
 public:
   typedef requirement_list_t::const_iterator const_iterator;
 
+  job_requirements_t() : m_requirementList(), m_scheduleData() {}
   job_requirements_t(const requirement_list_t& r_list, const schedule_data& schedule_data)
     : m_requirementList(r_list), m_scheduleData(schedule_data)
   {}
 
   void add(const requirement_t& req) {m_requirementList.push_back(req); }
 
-  long numWorkers() { return m_scheduleData.num_worker()?m_scheduleData.num_worker().get():1; }
+  long numWorkers() const { return m_scheduleData.num_worker()?m_scheduleData.num_worker().get():1; }
   const requirement_list_t& getReqList() const { return m_requirementList; }
+  bool empty() const { return m_requirementList.empty(); }
 
 private:
   requirement_list_t m_requirementList;

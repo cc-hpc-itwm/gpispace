@@ -56,8 +56,8 @@ using namespace sdpa::events;
 GenericDaemon::GenericDaemon( const std::string name,
                               const master_info_list_t arrMasterInfo,
                               unsigned int cap,
-                              unsigned int rank
-                            , std::string const &guiUrl)
+                              unsigned int rank,
+                              std::string const &guiUrl)
   : Strategy(name),
     SDPA_INIT_LOGGER(name),
     m_arrMasterInfo(arrMasterInfo),
@@ -293,6 +293,12 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
   }
 }
 
+void GenericDaemon::addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList)
+{
+  return jobManager()->addJob(jid, pJob, reqList);
+}
+
+
 //actions
 void GenericDaemon::action_configure()
 {
@@ -312,8 +318,8 @@ void GenericDaemon::action_configure()
 
   cfg().put("polling interval",             1 * 1000 * 1000);
   cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
-  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
-  cfg().put("backup_interval",              5 * 1000 * 1000); // 3s*/
+  cfg().put("registration_timeout",         1 * 1000 * 1000);  // 1s
+  cfg().put("backup_interval",              5 * 1000 * 1000);  // 5s
 
   m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
   m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
@@ -477,18 +483,16 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 }
 
 
-void GenericDaemon::serveJob(Reservation& reservation)
+void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
 
   try {
-    const Job::ptr_t& ptrJob = jobManager()->findJob(reservation.jobId());
+    const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
 
     DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
     // create a SubmitJobEvent for the job job_id serialize and attach description
-    sdpa::worker_id_list_t worker_list(reservation.getWorkerList()); // scheduler()->getListAllocatedWorkers(reservation.jobId()));
-    //LOG(TRACE, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id);
     LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
 
     BOOST_FOREACH(const worker_id_t& worker_id, worker_list)

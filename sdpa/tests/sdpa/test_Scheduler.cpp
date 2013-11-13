@@ -82,9 +82,8 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   const sdpa::job_id_t jobId1("Job1");
   sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
-  pAgent->jobManager()->addJob(jobId1, pJob1);
-  job_requirements_t jobReqs_1(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
-  pAgent->jobManager()->addJobRequirements(jobId1, jobReqs_1);
+  job_requirements_t jobReqs1(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
+  pAgent->addJob(jobId1, pJob1, jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
   ptrScheduler->schedule_remotely(jobId1);
@@ -166,10 +165,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       arrJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
-      pAgent->jobManager()->addJob(jobId, pJob);
-
       job_requirements_t jobReqs(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
-      pAgent->jobManager()->addJobRequirements(jobId, jobReqs);
+      pAgent->addJob(jobId, pJob, jobReqs);
   }
 
   // schedule all jobs now
@@ -253,8 +250,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       arrJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
-      pAgent->jobManager()->addJob(jobId, pJob);
-      pAgent->jobManager()->addJobRequirements(jobId, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+      pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -341,9 +337,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     arrJobIds.push_back(jobId);
     osstr.str("");
     sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
-    pAgent->jobManager()->addJob(jobId, pJob);
-
-    pAgent->jobManager()->addJobRequirements(jobId, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+    pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -424,8 +418,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     arrJobIds.push_back(jobId);
     osstr.str("");
     sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
-    pAgent->jobManager()->addJob(jobId, pJob);
-    pAgent->jobManager()->addJobRequirements(jobId, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+    pAgent->addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
   // schedule all jobs now

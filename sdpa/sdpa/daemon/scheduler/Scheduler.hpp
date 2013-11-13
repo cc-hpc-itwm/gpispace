@@ -25,7 +25,7 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/daemon/Reservation.hpp>
+#include <sdpa/daemon/scheduler/Reservation.hpp>
 
 namespace sdpa {
 namespace daemon {

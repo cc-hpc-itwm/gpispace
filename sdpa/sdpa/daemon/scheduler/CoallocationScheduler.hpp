@@ -12,7 +12,7 @@ namespace sdpa {
     class CoallocationScheduler : public SchedulerBase
     {
     public:
-      typedef boost::unordered_map<sdpa::job_id_t, Reservation> allocation_table_t;
+      typedef boost::unordered_map<sdpa::job_id_t, Reservation*> allocation_table_t;
 
       CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler = NULL,  bool use_request_model=true);
       virtual ~CoallocationScheduler();

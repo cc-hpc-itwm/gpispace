@@ -28,7 +28,6 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
-#include <sdpa/daemon/Reservation.hpp>
 
 namespace sdpa {
   namespace daemon {
