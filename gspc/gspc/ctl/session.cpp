@@ -274,11 +274,21 @@ namespace gspc
         return -EADDRNOTAVAIL;
       }
 
-      syslog ( LOG_USER
-             , "gspcd: session '%s' started with pid: %d"
-             , m_name.c_str ()
-             , getpid ()
-             );
+      if (isatty (STDOUT_FILENO))
+      {
+        std::cout << "gspcd: session '" << m_name
+                  << "' started with pid: " << getpid ()
+                  << " url: " << si.puburl
+                  << std::endl;
+      }
+      else
+      {
+        syslog ( LOG_USER
+               , "session '%s' started with pid: %d"
+               , m_name.c_str ()
+               , getpid ()
+               );
+      }
 
       pause ();
 
