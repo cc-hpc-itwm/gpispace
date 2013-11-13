@@ -1857,7 +1857,7 @@ function cancel ()
 
     local err
     for job in $jobs ; do
-        log "I: cancelling job $job"
+        log "I: canceling job $job"
         err=$(sdpac cancel "$job" 2>&1)
         local ec=$?
         if [ $ec -ne 0 ] ; then

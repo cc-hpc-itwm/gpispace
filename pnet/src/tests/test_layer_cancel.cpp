@@ -56,7 +56,7 @@ struct daemon_t
 
   bool cancel (const id_type & id, const std::string &)
   {
-    std::cout << "cancelling id = " << id << std::endl;
+    std::cout << "canceling id = " << id << std::endl;
     layer.cancelled (id);
     return true;
   }

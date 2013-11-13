@@ -219,7 +219,7 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
     * Cancel a workflow asynchronously.
     * This method is to be invoked by the SDPA.
     * The GWES will notifiy the SPDA about the
-    * completion of the cancelling process by calling the
+    * completion of the canceling process by calling the
     * callback method Gwes2Sdpa::cancelled.
     */
     bool cancel(const id_type& wfid, const reason_type& /* reason */)

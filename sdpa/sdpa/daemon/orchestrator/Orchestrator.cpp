@@ -208,7 +208,7 @@ void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
     sdpa::job_id_t jobId = evt.job_id();
     Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
 
-    DMLOG (TRACE, "Cancelling the pending job "<<jobId<<" ... ");
+    DMLOG (TRACE, "Canceling the pending job "<<jobId<<" ... ");
 
     sdpa::events::CancelJobEvent cae;
     pJob->CancelJob(&cae);
@@ -253,7 +253,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
                                                       , pEvt->reason() ) );
     sendEventToSlave(pCancelEvt);
 
-    // change the job status to "Cancelling"
+    // change the job status to "Canceling"
     pJob->CancelJob(pEvt);
     SDPA_LOG_DEBUG("The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
   }

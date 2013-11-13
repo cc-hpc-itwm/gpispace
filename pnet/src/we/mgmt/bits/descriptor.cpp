@@ -235,7 +235,7 @@ namespace we
       {
         lock_t lock(mutex_);
         if (! is_child (child.id()))
-          throw std::runtime_error ( "Tried to notify child cancellation '"
+          throw std::runtime_error ( "Tried to notify child cancelation '"
                                    + boost::lexical_cast<std::string>(child)
                                    + "' to '"
                                    + boost::lexical_cast<std::string>(*this)

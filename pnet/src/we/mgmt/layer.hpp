@@ -107,7 +107,7 @@ namespace we { namespace mgmt {
        *          post-conditions:
        *
        *                - the  internal   state  of  the   network  switches  to
-       *                  CANCELLING
+       *                  CANCELING
        *                - all children of the network will be terminated
        */
       bool cancel (const external_id_type&, const reason_type&);
@@ -1005,7 +1005,7 @@ namespace we { namespace mgmt {
                )
             {
               DMLOG ( TRACE
-                    , "cancelling external activity " << desc->to_external_id ()
+                    , "canceling external activity " << desc->to_external_id ()
                     << " name: " << desc->name ()
                     << " reason: " << desc->error_message ()
                     );

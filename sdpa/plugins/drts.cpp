@@ -657,7 +657,7 @@ public:
                                              )
          )
       {
-        MLOG(TRACE, "cancelling pending job: " << e->job_id());
+        MLOG(TRACE, "canceling pending job: " << e->job_id());
         send_event
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job_it->second->owner()
@@ -674,11 +674,11 @@ public:
       }
       else if (job_it->second->state() == drts::Job::FAILED)
       {
-        MLOG(TRACE, "cancelling already failed job: " << e->job_id());
+        MLOG(TRACE, "canceling already failed job: " << e->job_id());
       }
       else if (job_it->second->state() == drts::Job::CANCELED)
       {
-        MLOG(TRACE, "cancelling already cancelled job: " << e->job_id());
+        MLOG(TRACE, "canceling already cancelled job: " << e->job_id());
       }
       else
       {
