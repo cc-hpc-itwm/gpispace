@@ -45,7 +45,7 @@ typedef map_t::value_type id_pair;
 typedef boost::function<id_type()> Function_t;
 static std::string id_gen() { return dflt_id_generator::instance().next(); }
 
-enum we_status { FINISHED, FAILED, CANCELLED };
+enum we_status { FINISHED, FAILED, CANCELED };
 
 class EmptyWorkflowEngine;
 
@@ -201,7 +201,7 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
         {
           //pGenericDaemon_->canceled(workflowId);
           result_type result;
-          const we_result_t resP(workflowId, result, CANCELLED);
+          const we_result_t resP(workflowId, result, CANCELED);
           qResults.push(resP);
         }
 
@@ -330,7 +330,7 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
                                      );
               break;
 
-          case CANCELLED:
+          case CANCELED:
               SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" was canceled!");
               pGenericDaemon_->cancelled(we_result.jobId);
               break;
