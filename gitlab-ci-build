@@ -24,7 +24,7 @@ esac
 ec=$?
 if [ $ec -ne 0 ]
 then
-    echo >&2 "CONFIGURE FAILED: $ec"
+    echo >&2 "CONFIGURE FAILED: ec=$ec"
     exit $ec
 fi
 
@@ -32,7 +32,7 @@ make "${makeflags[@]}"
 ec=$?
 if [ $ec -ne 0 ]
 then
-    echo >&2 "MAKE FAILED: $ec"
+    echo >&2 "MAKE FAILED: ec=$ec"
     exit $ec
 fi
 
