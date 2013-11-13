@@ -4,6 +4,7 @@ myhost=$(hostname)
 opts=(--with-tests)
 makeflags=()
 ctestflags=()
+runtests=false
 
 case "$myhost" in
     build-*)
@@ -45,16 +46,19 @@ make "${makeflags[@]}" install
 ec=$?
 if [ $ec -ne 0 ]
 then
-    echo >&2 "INSTALL FAILED: $ec"
+    echo >&2 "INSTALL FAILED: ec=$ec"
     exit $ec
 fi
 
-cd build && ctest "${ctestflags[@]}"
-ec=$?
-if [ $ec -ne 0 ]
+if $runtests
 then
-    echo >&2 "TESTS FAILED: $ec"
-    exit $ec
+    cd build && ctest "${ctestflags[@]}"
+    ec=$?
+    if [ $ec -ne 0 ]
+    then
+        echo >&2 "TESTS FAILED: ec=$ec"
+        exit $ec
+    fi
 fi
 
 exit 0
