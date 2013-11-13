@@ -49,13 +49,15 @@ log_and_maybe_send_mail ()
     else
         msg="${@} (ec=$ec)"
     fi
-    sha=$(git rev-parse --short HEAD)
+    short_sha=$(git rev-parse --short HEAD)
+    sha=$(git rev-parse HEAD)
+    url="http://gitlab-ci.hpc.devnet.itwm.fhg.de/projects/1/builds/${sha}"
 
     echo >&2 "${msg}"
 
     if $send_mail
     then
-        mail -s "[CI] build of ${sha}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${mailto}" </dev/null
+        echo "for details visit: ${url}" | mail -s "[CI] build of ${sha}: ${msg}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${mailto}"
     fi
 }
 
