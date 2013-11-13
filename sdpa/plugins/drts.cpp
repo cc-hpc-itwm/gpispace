@@ -867,7 +867,7 @@ private:
           {
             job->set_state (drts::Job::FINISHED);
           }
-          else if (fhg::error::EXECUTION_CANCELLED == ec)
+          else if (fhg::error::EXECUTION_CANCELED == ec)
           {
             job->set_state (drts::Job::CANCELED);
           }

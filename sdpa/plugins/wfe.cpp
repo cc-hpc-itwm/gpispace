@@ -272,7 +272,7 @@ public:
         wfe_task_t *task = m_task_map.begin ()->second;
         task->state = wfe_task_t::CANCELED;
         task->error_message = "plugin shutdown";
-        task->done.notify(fhg::error::EXECUTION_CANCELLED);
+        task->done.notify(fhg::error::EXECUTION_CANCELED);
 
         m_task_map.erase (task->id);
       }
@@ -360,7 +360,7 @@ public:
 
         emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
       }
-      else if (fhg::error::EXECUTION_CANCELLED == ec)
+      else if (fhg::error::EXECUTION_CANCELED == ec)
       {
         DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
@@ -516,7 +516,7 @@ private:
 
       if (task->state != wfe_task_t::PENDING)
       {
-        task->errc = fhg::error::EXECUTION_CANCELLED;
+        task->errc = fhg::error::EXECUTION_CANCELED;
         task->error_message = "canceled";
       }
       else
@@ -531,7 +531,7 @@ private:
 
           if (task->state == wfe_task_t::CANCELED)
           {
-            task->errc = fhg::error::EXECUTION_CANCELLED;
+            task->errc = fhg::error::EXECUTION_CANCELED;
             task->error_message = "canceled";
           }
           else
