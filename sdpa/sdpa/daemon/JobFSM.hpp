@@ -112,7 +112,7 @@ namespace sdpa {
           evt.agent().schedule(evt.jobId());
         }
 
-        virtual void action_stalled_job(const MSMStalledEvent& evt)
+        virtual void action_job_stalled(const MSMStalledEvent& evt)
         {
           LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
           if(evt.ptrAgent()) {
@@ -144,7 +144,7 @@ namespace sdpa {
         a_row<  Pending,    	sdpa::events::CancelJobEvent, 		Cancelled,              &sm::action_cancel_job_from_pending >,
         a_row<  Pending,  	sdpa::events::JobFinishedEvent,         Finished,       	&sm::action_job_finished >,
         a_row<  Pending,  	sdpa::events::JobFailedEvent,           Failed,         	&sm::action_job_failed >,
-        a_row<  Pending,        MSMStalledEvent,                        Stalled,                &sm::action_stalled_job >,
+        a_row<  Pending,        MSMStalledEvent,                        Stalled,                &sm::action_job_stalled >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_row<  Stalled,	MSMResumeJobEvent,        		Running,                &sm::action_resume_job >,
         a_row<  Stalled,    	MSMRescheduleEvent,                 	Pending,                &sm::action_reschedule_job >,
@@ -153,7 +153,7 @@ namespace sdpa {
         a_row<  Running,    	sdpa::events::JobFailedEvent,           Failed,         	&sm::action_job_failed >,
         a_row<  Running,    	sdpa::events::CancelJobEvent,       	Cancelling, 		&sm::action_cancel_job >,
         a_row<  Running,    	MSMRescheduleEvent,                 	Pending,                &sm::action_reschedule_job >,
-        a_row<  Running,	MSMStalledEvent,        		Stalled,                &sm::action_stalled_job >,
+        a_row<  Running,	MSMStalledEvent,        		Stalled,                &sm::action_job_stalled >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
         a_irow< Finished,   	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
