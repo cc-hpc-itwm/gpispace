@@ -661,6 +661,8 @@ void SchedulerBase::run()
                 //SDPA_LOG_DEBUG("no worker available, put the job back into the scheduler's queue!");
                 if( !ptr_comm_handler_->canRunTasksLocally() ) {
                     pending_jobs_queue_.push(jobId);
+                    // mark the job as stalled
+                    ptr_comm_handler_->pause(jobId);
                     lock_type lock(mtx_);
                     cond_workers_registered.wait(lock);
                 }
