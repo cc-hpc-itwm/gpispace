@@ -195,6 +195,8 @@ namespace sdpa {
       virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
       virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
       virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
+      virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *);
+      virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *);
 
       // agent fsm (actions)
       virtual void action_configure();

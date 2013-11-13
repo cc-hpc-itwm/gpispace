@@ -263,3 +263,13 @@ void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent*
     sendEventToMaster(pErrorEvt);
   }
 }
+
+void GenericDaemon::handleJobStalledEvent (const sdpa::events::JobStalledEvent *pEvt)
+{
+  pause(pEvt->job_id());
+}
+
+void GenericDaemon::handleJobRunningEvent (const sdpa::events::JobRunningEvent *pEvt)
+{
+  resume(pEvt->job_id());
+}
