@@ -15,6 +15,8 @@ set (hdrs
   JobFailedEvent.hpp
   JobFinishedAckEvent.hpp
   JobFinishedEvent.hpp
+  JobRunningEvent.hpp
+  JobStalledEvent.hpp
   JobResultsReplyEvent.hpp
   JobStatusReplyEvent.hpp
   LifeSignEvent.hpp
