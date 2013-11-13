@@ -5,6 +5,9 @@ opts=(--with-tests)
 makeflags=()
 ctestflags=()
 runtests=false
+send_mail=false
+mailto=petry@itwm.fhg.de
+ec=0
 
 case "$myhost" in
     build-*)
@@ -15,6 +18,7 @@ case "$myhost" in
         export NACL_HOME=~/external_software/nacl/20110221
         export SMC_HOME=~/external_software/smc/5.0.0
         makeflags+=(-j2)
+        send_mail=true
 
         if [ "$myhost" = "build-centos6" ]
         then
@@ -34,6 +38,23 @@ case "$myhost" in
         makeflags+=(-j4)
         ;;
 esac
+
+do_send_mail ()
+{
+    if [ $ec -eq 0 ]
+    then
+        state="SUCCESS"
+    else
+        state="FAILED"
+    fi
+    sha=$(git rev-parse --short HEAD)
+    mail -s "[CI] build of ${sha}: ${state}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${to}" </dev/null
+}
+
+if $send_mail
+then
+    trap do_send_mail EXIT
+fi
 
 ./configure --prefix=$PWD/inst "${opts[@]}"
 ec=$?
