@@ -109,7 +109,7 @@ namespace we
     }
     bool layer::cancelled (const external_id_type& id)
     {
-      DLOG(TRACE, "cancelled (" << id << ")");
+      DLOG(TRACE, "canceled (" << id << ")");
 
       try
       {
@@ -118,7 +118,7 @@ namespace we
       }
       catch (const std::exception&)
       {
-        DMLOG (WARN, "tried to notify cancelled for unknown activity " << id);
+        DMLOG (WARN, "tried to notify canceled for unknown activity " << id);
 
         return false;
       }

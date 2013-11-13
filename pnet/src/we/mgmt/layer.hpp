@@ -102,7 +102,7 @@ namespace we { namespace mgmt {
        *
        *          side-effects:
        *                -  the  hierarchy   belonging  to  the  net  is
-       *                   cancelled in turn
+       *                   canceled in turn
        *
        *          post-conditions:
        *
@@ -155,14 +155,14 @@ namespace we { namespace mgmt {
                   );
 
       /**
-       * Inform the management layer that an execution has been cancelled
+       * Inform the management layer that an execution has been canceled
        *
        *          pre-conditions:
        *                  - the management layer submitted an activity to be executed with id "id"
        *                  - the management layer requested the cancellation of an activity
        *
        *          side-effects:
-       *                  - the enclosing workflow will be informed that an activity has been cancelled
+       *                  - the enclosing workflow will be informed that an activity has been canceled
        *
        *          post-conditions:
        *                  - the node belonging to this activity is removed
@@ -313,7 +313,7 @@ namespace we { namespace mgmt {
         : sig_submitted("sig_submitted")
         , sig_finished("sig_finished")
         , sig_failed("sig_failed")
-        , sig_cancelled("sig_cancelled")
+        , sig_cancelled("sig_canceled")
         , sig_executing("sig_executing")
         , internal_id_gen_(&petri_net::activity_id_generate)
       {
@@ -325,7 +325,7 @@ namespace we { namespace mgmt {
         : sig_submitted("sig_submitted")
         , sig_finished("sig_finished")
         , sig_failed("sig_failed")
-        , sig_cancelled("sig_cancelled")
+        , sig_cancelled("sig_canceled")
         , sig_executing("sig_executing")
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
@@ -515,7 +515,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(make_cmd("activity_cancelled", id, boost::bind(&layer::activity_cancelled, this, _1)));
+          cmd_q_.put(make_cmd("activity_canceled", id, boost::bind(&layer::activity_cancelled, this, _1)));
         }
         else
         {
@@ -808,7 +808,7 @@ namespace we { namespace mgmt {
           else if (desc->activity ().is_cancelled ())
           {
             DLOG ( INFO
-                 , "cancelled (" << desc->name() << ")-" << desc->id()
+                 , "canceled (" << desc->name() << ")-" << desc->id()
                  << " external-id := " << desc->from_external_id()
                  );
             ext_cancelled (desc->from_external_id());
@@ -934,12 +934,12 @@ namespace we { namespace mgmt {
           {
             DLOG ( INFO, "activity "
                  << desc->name ()
-                 << " cancelled and has a parent: reason := "
+                 << " canceled and has a parent: reason := "
                  << desc->error_message ()
                  );
 
             descriptor_ptr parent (lookup (desc->parent()));
-            parent->child_cancelled(*desc, "TODO: child cancelled reason");
+            parent->child_cancelled(*desc, "TODO: child canceled reason");
 
             if (! parent->has_children ())
             {
@@ -962,7 +962,7 @@ namespace we { namespace mgmt {
           }
           else
           {
-            throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + fhg::util::show (*desc));
+            throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (*desc));
           }
 
           if (sig_cancelled.connected())
@@ -975,7 +975,7 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found&)
         {
-          DLOG(WARN, "got cancelled notification for old activity: " << internal_id);
+          DLOG(WARN, "got canceled notification for old activity: " << internal_id);
         }
       }
 

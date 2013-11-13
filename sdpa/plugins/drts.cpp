@@ -678,7 +678,7 @@ public:
       }
       else if (job_it->second->state() == drts::Job::CANCELED)
       {
-        MLOG(TRACE, "canceling already cancelled job: " << e->job_id());
+        MLOG(TRACE, "canceling already canceled job: " << e->job_id());
       }
       else
       {

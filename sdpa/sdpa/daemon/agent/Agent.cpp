@@ -566,7 +566,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 
       if(!isTop())
       {
-        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the cancelled jobId "<<jobId<<"!");
+        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the canceled jobId "<<jobId<<"!");
         ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
                                                   , evt.from()
                                                   , ErrorEvent::SDPA_EUNKNOWN
@@ -578,7 +578,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
   }
   catch(const JobNotFoundException &ex1)
   {
-    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be cancelled! Exception occurred: "<<ex1.what());
+    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: "<<ex1.what());
   }
 }
 
@@ -664,7 +664,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
       if(!isTop())
       {
-        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the cancelled job "<<pEvt->job_id()<<"!");
+        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the canceled job "<<pEvt->job_id()<<"!");
         ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
                                                   , pEvt->from()
                                                   , ErrorEvent::SDPA_EUNKNOWN
@@ -695,7 +695,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   {
     Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
 
-    // update the job status to "Cancelled"
+    // update the job status to "Canceled"
     pJob->CancelJobAck(pEvt);
     SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
   }
@@ -731,7 +731,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   }
   else // acknowledgment comes from a worker -> inform WE that the activity was canceled
   {
-    LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
+    LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
 
     try {
       workflowEngine()->cancelled(pEvt->job_id());

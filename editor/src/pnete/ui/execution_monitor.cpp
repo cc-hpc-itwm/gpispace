@@ -181,7 +181,7 @@ namespace fhg
           case event::STATE_STARTED: return "started";
           case event::STATE_FINISHED: return "finished";
           case event::STATE_FAILED: return "failed";
-          case event::STATE_CANCELLED: return "cancelled";
+          case event::STATE_CANCELLED: return "canceled";
           }
         }
 

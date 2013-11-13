@@ -927,8 +927,8 @@ bool GenericDaemon::failed( const id_type& workflowId
  */
 bool GenericDaemon::cancelled(const id_type& workflowId)
 {
-  DMLOG (TRACE, "activity cancelled: " << workflowId);
-  // generate a JobCancelledEvent for self!
+  DMLOG (TRACE, "activity canceled: " << workflowId);
+  // generate a JobCanceledEvent for self!
 
   job_id_t job_id(workflowId);
 

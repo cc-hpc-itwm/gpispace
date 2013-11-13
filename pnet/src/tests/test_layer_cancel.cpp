@@ -83,7 +83,7 @@ struct daemon_t
 
   bool cancelled (const id_type & id)
   {
-    std::cout << "cancelled id = " << id << std::endl;
+    std::cout << "canceled id = " << id << std::endl;
     return false;
   }
 

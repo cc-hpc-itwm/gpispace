@@ -176,7 +176,7 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
     */
     bool cancelled(const id_type& activityId)
     {
-      SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" was canceled!");
 
       /**
       * Notify the SDPA that a workflow has been canceled (state
@@ -196,10 +196,10 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
           if( it->second == workflowId )
             bAllActFinished = false;
 
-        // if no activity left, declare the workflow cancelled
+        // if no activity left, declare the workflow canceled
         if(bAllActFinished)
         {
-          //pGenericDaemon_->cancelled(workflowId);
+          //pGenericDaemon_->canceled(workflowId);
           result_type result;
           const we_result_t resP(workflowId, result, CANCELLED);
           qResults.push(resP);
@@ -257,7 +257,7 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
      * This method is to be invoked by the SDPA.
      * The GWES will notifiy the SPDA about the
      * completion of the canceling process by calling the
-     * callback method Gwes2Sdpa::cancelled.
+     * callback method Gwes2Sdpa::canceled.
      */
     bool cancel(const id_type& wfid, const reason_type& reason)
     {

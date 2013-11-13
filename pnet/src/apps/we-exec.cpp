@@ -96,7 +96,7 @@ void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string 
     {
       layer_jobs.erase (id);
       we::mgmt::type::activity_t act (s);
-      std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
+      std::cerr << "job canceled: " << act.transition().name() << "-" << id << std::endl;
       encoded_result = s;
     }
   }

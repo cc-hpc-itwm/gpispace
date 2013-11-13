@@ -181,7 +181,7 @@ int main(int argc, char** argv)
 		}
 		else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 		{
-			job_status="Cancelled";
+			job_status="Canceled";
 			LOG(INFO, job_status);
 			// wait here to be notified
 		}
@@ -218,7 +218,7 @@ int main(int argc, char** argv)
 	nTrials = 0;
 	if( job_status != std::string("Finished") &&
 		job_status != std::string("Failed")   &&
-		job_status != std::string("Cancelled") )
+		job_status != std::string("Canceled") )
 	{
 		LOG(ERROR, "Unexpected status, leave now ...");
 		ptrCli->shutdown_network();

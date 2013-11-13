@@ -72,7 +72,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     	sendEventToSlave(ptrAckEvt);
     }
 
-    //put the job into the state Finished or Cancelled
+    //put the job into the state Finished or Canceled
     Job::ptr_t pJob;
     try {
     	pJob = jobManager()->findJob(pEvt->job_id());
@@ -149,7 +149,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         sendEventToSlave(evt);
     }
 
-    //put the job into the state Failed or Cancelled
+    //put the job into the state Failed or Canceled
     Job::ptr_t pJob;
     try {
         pJob = jobManager()->findJob(pEvt->job_id());
@@ -216,7 +216,7 @@ void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
   }
   catch(const JobNotFoundException &ex1)
   {
-    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be cancelled! Exception occurred: "<<ex1.what());
+    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: "<<ex1.what());
   }
 }
 
@@ -281,7 +281,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
         Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
 
-        // update the job status to "Cancelled"
+        // update the job status to "Canceled"
         pJob->CancelJobAck(pEvt);
         SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
     }

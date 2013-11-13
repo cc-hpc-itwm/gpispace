@@ -339,7 +339,7 @@ namespace test {
       }
       catch (std::out_of_range const &)
       {
-        std::cout << "cancelled [" << id << "]" << std::endl;
+        std::cout << "canceled [" << id << "]" << std::endl;
       }
       return true;
     }

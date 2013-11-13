@@ -57,7 +57,7 @@ namespace fhg
         return "module call aborted";
 
       case EXECUTION_CANCELLED:
-        return "execution cancelled";
+        return "execution canceled";
       case WALLTIME_EXCEEDED:
         return "walltime exceeded";
       case RESOURCE_LIMIT_EXCEEDED:

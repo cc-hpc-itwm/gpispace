@@ -336,7 +336,7 @@ namespace fhg
       if (deadline_.expires_at() <= deadline_timer::traits_type::now())
       {
         // The deadline has passed. The socket is closed so that any outstanding
-        // asynchronous operations are cancelled. This allows the blocked
+        // asynchronous operations are canceled. This allows the blocked
         // connect(), read_line() or write_line() functions to return.
         socket_.close();
 

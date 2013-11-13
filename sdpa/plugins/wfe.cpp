@@ -517,7 +517,7 @@ private:
       if (task->state != wfe_task_t::PENDING)
       {
         task->errc = fhg::error::EXECUTION_CANCELLED;
-        task->error_message = "cancelled";
+        task->error_message = "canceled";
       }
       else
       {
@@ -532,7 +532,7 @@ private:
           if (task->state == wfe_task_t::CANCELED)
           {
             task->errc = fhg::error::EXECUTION_CANCELLED;
-            task->error_message = "cancelled";
+            task->error_message = "canceled";
           }
           else
           {
