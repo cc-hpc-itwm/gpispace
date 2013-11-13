@@ -20,4 +20,36 @@ case "$myhost" in
         ;;
 esac
 
-./configure --prefix=$PWD/inst "${opts[@]}" && make "${makeflags[@]}" && make "${makeflags[@]}" install && cd build && ctest "${ctestflags[@]}"
+./configure --prefix=$PWD/inst "${opts[@]}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    echo >&2 "CONFIGURE FAILED: $ec"
+    exit $ec
+fi
+
+make "${makeflags[@]}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    echo >&2 "MAKE FAILED: $ec"
+    exit $ec
+fi
+
+make "${makeflags[@]}" install
+ec=$?
+if [ $ec -ne 0 ]
+then
+    echo >&2 "INSTALL FAILED: $ec"
+    exit $ec
+fi
+
+cd build && ctest "${ctestflags[@]}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    echo >&2 "TESTS FAILED: $ec"
+    exit $ec
+fi
+
+exit 0
