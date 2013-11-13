@@ -39,7 +39,7 @@ case "$myhost" in
         ;;
 esac
 
-log_and_maybe_send_mail ()
+log_or_send_mail ()
 {
     local ec="$1" ; shift
 
@@ -84,7 +84,7 @@ EOF
 ec=$?
 if [ $ec -ne 0 ]
 then
-    log_and_maybe_send_mail $ec "CONFIGURE FAILED"
+    log_or_send_mail $ec "CONFIGURE FAILED"
     exit $ec
 fi
 
@@ -92,7 +92,7 @@ make "${makeflags[@]}"
 ec=$?
 if [ $ec -ne 0 ]
 then
-    log_and_maybe_send_mail $ec "MAKE FAILED"
+    log_or_send_mail $ec "MAKE FAILED"
     exit $ec
 fi
 
@@ -100,7 +100,7 @@ make "${makeflags[@]}" install
 ec=$?
 if [ $ec -ne 0 ]
 then
-    log_and_maybe_send_mail $ec "INSTALL FAILED"
+    log_or_send_mail $ec "INSTALL FAILED"
     exit $ec
 fi
 
@@ -110,9 +110,9 @@ then
     ec=$?
     if [ $ec -ne 0 ]
     then
-        log_and_maybe_send_mail $ec "TESTS FAILED"
+        log_or_send_mail $ec "TESTS FAILED"
         exit $ec
     fi
 fi
 
-log_and_maybe_send_mail 0 "SUCCESS"
+log_or_send_mail 0 "SUCCESS"
