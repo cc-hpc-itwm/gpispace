@@ -66,25 +66,30 @@ static void short_usage ();
 static int verbose = 0;
 
 namespace {
+  enum show_flags_t
+    {
+      OMIT_KEY = 0x01
+    };
+
   struct show
   {
     show ( gspc::kvs::api_t::key_type const &key
          , gspc::kvs::api_t::value_type const &value
-         , bool omit_key
+         , int flags
          )
       : key (key)
       , value (value)
-      , omit_key (omit_key)
+      , flags (flags)
     {}
 
     gspc::kvs::api_t::key_type const &key;
     gspc::kvs::api_t::value_type const &value;
-    bool omit_key;
+    int flags;
   };
 
   std::ostream & operator << (std::ostream &os, const show &s)
   {
-    if (not s.omit_key)
+    if (0 == (s.flags & OMIT_KEY))
     {
       os << s.key << "=";
     }
@@ -111,7 +116,7 @@ int main (int argc, char *argv [], char *envp [])
   int help = 0;
   int rc = 0;
   int timeout = -1;
-  bool omit_key = false;
+  int show_flags = 0;
 
   typedef std::list<std::pair< gspc::kvs::api_t::key_type
                              , gspc::kvs::api_t::value_type
@@ -147,7 +152,7 @@ int main (int argc, char *argv [], char *envp [])
             ++help;
             break;
           case 'o':
-            omit_key = true;
+            show_flags |= OMIT_KEY;
             break;
           default:
             std::cerr << "kvs: invalid flag: " << *flag << std::endl;
@@ -166,7 +171,7 @@ int main (int argc, char *argv [], char *envp [])
     }
     else if (arg == "--omit-key")
     {
-      omit_key = true;
+      show_flags |= OMIT_KEY;
     }
     else if (arg == "--show-mask")
     {
@@ -343,7 +348,7 @@ int main (int argc, char *argv [], char *envp [])
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else if (arg == "--get-regex")
@@ -365,7 +370,7 @@ int main (int argc, char *argv [], char *envp [])
         {
           BOOST_FOREACH (key_value_list_t::value_type const &kv, values)
           {
-            std::cout << show (kv.first, kv.second, omit_key) << std::endl;
+            std::cout << show (kv.first, kv.second, show_flags) << std::endl;
           }
         }
         else
@@ -531,7 +536,7 @@ int main (int argc, char *argv [], char *envp [])
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else if (arg == "--pop")
@@ -548,7 +553,7 @@ int main (int argc, char *argv [], char *envp [])
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else if (arg == "--inc")
@@ -565,7 +570,7 @@ int main (int argc, char *argv [], char *envp [])
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else if (arg == "--dec")
@@ -582,7 +587,7 @@ int main (int argc, char *argv [], char *envp [])
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else
