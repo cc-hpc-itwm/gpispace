@@ -348,7 +348,7 @@ namespace we
       }
 
       FLAG (suspended)
-      FLAG (cancelling)
+      FLAG (canceling)
       FLAG (cancelled)
       FLAG (failed)
       FLAG (finished)

@@ -598,7 +598,7 @@ namespace we { namespace mgmt {
             descriptor_ptr desc (lookup(active_id));
             DLOG(TRACE, "extractor puts attention to activity " << active_id);
 
-            if (desc->activity().is_cancelling())
+            if (desc->activity().is_canceling())
             {
               if (!desc->has_children())
               {
@@ -997,7 +997,7 @@ namespace we { namespace mgmt {
           }
           else if (desc->sent_to_external())
           {
-            if (! (  desc->activity().is_cancelling()
+            if (! (  desc->activity().is_canceling()
                   || desc->activity().is_failed()
                   || desc->activity().is_cancelled()
                   || desc->activity().is_finished()

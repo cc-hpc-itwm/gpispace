@@ -258,7 +258,7 @@ namespace we
       void descriptor::cancel (fun_t f)
       {
         lock_t lock(mutex_);
-        activity_.set_cancelling (true);
+        activity_.set_canceling (true);
         apply_to_children (f);
       }
 

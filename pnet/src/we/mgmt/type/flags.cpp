@@ -13,7 +13,7 @@ namespace we
       std::ostream& operator<< (std::ostream& os, const flags_t& flags)
       {
         os << (flags.suspended ? "S" : "s");
-        os << (flags.cancelling ? "C" : "c");
+        os << (flags.canceling ? "C" : "c");
         os << (flags.cancelled ? "T" : "t");
         os << (flags.failed ? "F" : "f");
         os << (flags.finished ? "D" : "d");
@@ -23,7 +23,7 @@ namespace we
       bool is_alive (const flags_t& f)
       {
         return (  f.suspended
-               || f.cancelling
+               || f.canceling
                || f.cancelled
                || f.failed
                || f.finished
@@ -41,7 +41,7 @@ namespace we
       }
 
       IMPL(suspended);
-      IMPL(cancelling);
+      IMPL(canceling);
       IMPL(cancelled);
       IMPL(failed);
       IMPL(finished);
