@@ -29,7 +29,7 @@ static void long_usage (int lvl)
     << ""                                                           << std::endl
     << "   --url URL              were is the kvs daemon"           << std::endl
     << "   --timeout <ms>         timeout to wait"                  << std::endl
-    << "   --omit-key             do not print the key of results"  << std::endl
+    << "   -o|--omit-key          do not print the key of results"  << std::endl
     << "   -s|--string            drop quotes if value is a string" << std::endl
     << ""                                                           << std::endl
     << "available commands"                                         << std::endl
