@@ -314,46 +314,28 @@ int main (int argc, char *argv[])
     if (daemonize)
     {
       rc = s.daemonize_then_run (info);
-      if (0 == rc)
-      {
-        std::cout << info.puburl << std::endl;
-      }
-      else if (-EEXIST == rc)
-      {
-          std::cerr << "session '" << session << "' still running: "
-                    << "[" << info.pid << "]"
-                    << std::endl
-            ;
-          rc = EX_TEMPFAIL;
-      }
-      else
-      {
-        std::cerr << "failed to start: " << strerror (-rc) << std::endl;
-        rc = EX_UNAVAILABLE;
-      }
     }
     else
     {
       rc = s.run (info);
-      if (rc < 0)
-      {
-        if (rc == -EEXIST)
-        {
-          std::cerr << "session '" << session << "' still running: "
-                    << "[" << info.pid << "]"
-                    << std::endl
-            ;
-          return EX_TEMPFAIL;
-        }
-        else
-        {
-          std::cerr << "could not check session: "
-                    << session_dir << "/" << session
-                    << std::endl;
-          std::cerr << "please remove it manually" << std::endl;
-          return EX_IOERR;
-        }
-      }
+    }
+
+    if (0 == rc)
+    {
+      std::cout << info.puburl << std::endl;
+    }
+    else if (-EEXIST == rc)
+    {
+      std::cerr << "session '" << session << "' still running: "
+                << "[" << info.pid << "]"
+                << std::endl
+        ;
+      rc = EX_TEMPFAIL;
+    }
+    else
+    {
+      std::cerr << "failed to start: " << strerror (-rc) << std::endl;
+      rc = EX_UNAVAILABLE;
     }
   }
   else
