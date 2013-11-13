@@ -740,7 +740,6 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
     	  // mark the worker as disconnected
     	  pWorker->set_disconnected();
-    	  DMLOG (TRACE, "Reschedule the jobs of the worker "<<worker_id<<" and, afterwards, delete it!" );
     	  scheduler()->deleteWorker(worker_id);
       }
       catch (const WorkerNotFoundException& ex)
@@ -1544,12 +1543,72 @@ void GenericDaemon::activityCancelled(const Worker::worker_id_t& worker_id, cons
   }
 }
 
-void GenericDaemon::jobStalled(const job_id_t& id )
+void GenericDaemon::pause(const job_id_t& jobId)
 {
   // generate an event of type stalled for the job state machine and trigger it
   // on the action_job_stalled ->
+
   // if it's not a master job invoke trigger the same event for its state machine
   // else, if it's a master job notify the master that the job stalled
+
+  try {
+         Job::ptr_t pJob(findJob(jobId));
+         pJob->Pause(NULL);
+         if(!pJob->isMasterJob()) {
+             try {
+                 Job::ptr_t pMasterJob(findJob(pJob->parent()));
+                 pJob->Pause(this);
+
+                 // notify the master about the status of the job -> do this on action
+             }
+             catch(JobNotFoundException const &) {
+                 std::string strErr("Could not find the job  ");
+                 strErr+=jobId.str();
+                 DMLOG (ERROR, strErr);
+             }
+         }
+   }
+   catch(JobNotFoundException const &)
+   {
+       std::string strErr("Could not find the job  ");
+       strErr+=jobId.str();
+       DMLOG (ERROR, strErr);
+   }
+
+}
+
+void GenericDaemon::resume(const job_id_t& jobId)
+{
+  // generate an event of type stalled for the job state machine and trigger it
+  // on the action_job_stalled ->
+
+  // if it's not a master job invoke trigger the same event for its state machine
+  // else, if it's a master job notify the master that the job stalled
+
+  try {
+         Job::ptr_t pJob(findJob(jobId));
+         pJob->Resume(NULL);
+         if(!pJob->isMasterJob()) {
+             try {
+                 Job::ptr_t pMasterJob(findJob(pJob->parent()));
+                 pJob->Resume(this);
+
+                 // notify the master about the status of the job -> do this on action
+             }
+             catch(JobNotFoundException const &) {
+                 std::string strErr("Could not find the job  ");
+                 strErr+=jobId.str();
+                 DMLOG (ERROR, strErr);
+             }
+         }
+   }
+   catch(JobNotFoundException const &)
+   {
+       std::string strErr("Could not find the job  ");
+       strErr+=jobId.str();
+       DMLOG (ERROR, strErr);
+   }
+
 }
 
 void GenericDaemon::requestJob(const MasterInfo& masterInfo)

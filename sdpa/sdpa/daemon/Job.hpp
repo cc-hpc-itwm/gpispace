@@ -57,11 +57,7 @@ namespace sdpa {
     virtual void set_icomm(IAgent* pArgComm) = 0;
     virtual IAgent* icomm() = 0;
 
-    //virtual sdpa::worker_id_t& worker() = 0;
-
     virtual bool is_running() = 0;
-    virtual bool is_marked_for_deletion() = 0;
-    virtual bool mark_for_deletion() = 0;
 
     virtual bool isMasterJob()=0;
     virtual void setType(const job_type& )=0;
@@ -84,6 +80,8 @@ namespace sdpa {
     virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*);
     virtual void Dispatch();
     virtual void Reschedule(sdpa::daemon::IAgent*);
+    virtual void Pause(sdpa::daemon::IAgent* pAgent);
+    virtual void Resume(sdpa::daemon::IAgent* pAgent);
 
     virtual void setResult(const sdpa::job_result_t& ) =0;
     virtual sdpa::status_t getStatus() { return "Undefined"; }

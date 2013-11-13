@@ -43,9 +43,36 @@ namespace sdpa {
   namespace fsm {
     namespace bmsm {
       struct MSMDispatchEvent{};
-      struct MSMRescheduleEvent{};
+      struct MSMRescheduleEvent
+      {
+        MSMRescheduleEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& id)
+        : m_pAgent(pAgent), m_jobId(id)
+        {}
+        sdpa::daemon::IAgent& agent() const { return *m_pAgent; }
+        sdpa::job_id_t jobId() const { return m_jobId; }
+      private:
+        sdpa::daemon::IAgent* m_pAgent;
+        sdpa::job_id_t m_jobId;
+      };
+
       struct MSMStalledEvent{
-        MSMStalledEvent(const sdpa::job_id_t& jobId) : m_jobId(jobId) {}
+        MSMStalledEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId)
+          : m_pAgent(pAgent), m_jobId(jobId) {}
+        sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
+        sdpa::job_id_t jobId() const { return m_jobId; }
+      private:
+        sdpa::daemon::IAgent* m_pAgent;
+        sdpa::job_id_t m_jobId;
+      };
+
+      struct MSMResumeJobEvent
+      {
+        MSMResumeJobEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId)
+          : m_pAgent(pAgent), m_jobId(jobId) {}
+        sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
+        sdpa::job_id_t jobId() const { return m_jobId; }
+      private:
+        sdpa::daemon::IAgent* m_pAgent;
         sdpa::job_id_t m_jobId;
       };
 
@@ -74,10 +101,28 @@ namespace sdpa {
         virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ DLOG(TRACE, "JobFSM_::action_job_failed"); }
         virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ DLOG(TRACE, "JobFSM_::action_job_finished"); }
         virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&){ DLOG(TRACE, "JobFSM_::action_retrieve_job_results\n"); }
-        /*virtual void action_stalled_job()
+        virtual void action_reschedule_job(const MSMRescheduleEvent& evt)
         {
-          DLOG(TRACE, "JobFSM_::action_stalled_job");
-        }*/
+          DLOG(TRACE, "Reschedule the job "<<evt.jobId());
+          evt.agent().schedule(evt.jobId());
+        }
+
+        virtual void action_stalled_job(const MSMStalledEvent& evt)
+        {
+          LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
+          if(evt.ptrAgent()) {
+
+              // notify the master( the job owner) that the job has stalled
+          }
+        }
+
+        virtual void action_resume_job(const MSMResumeJobEvent& evt)
+        {
+          LOG(INFO, "The job "<<evt.jobId()<<" changed its status from STALLED to RUNNING");
+          if(evt.ptrAgent()) {
+               // notify the master( the job owner) that the job has stalled
+           }
+        }
 
         typedef JobFSM_ sm; // makes transition table cleaner
 
@@ -90,14 +135,14 @@ namespace sdpa {
         a_row<  Pending,  	sdpa::events::JobFinishedEvent,         Finished,       	&sm::action_job_finished >,
         a_row<  Pending,  	sdpa::events::JobFailedEvent,           Failed,         	&sm::action_job_failed >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Stalled,	MSMDispatchEvent,        		Running >,
-        _row<   Stalled,    	MSMRescheduleEvent,                 	Pending >,
+        a_row<  Stalled,	MSMResumeJobEvent,        		Running,                &sm::action_resume_job >,
+        a_row<  Stalled,    	MSMRescheduleEvent,                 	Pending,                &sm::action_reschedule_job >,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,    	sdpa::events::JobFinishedEvent,         Finished,       	&sm::action_job_finished>,
         a_row<  Running,    	sdpa::events::JobFailedEvent,           Failed,         	&sm::action_job_failed >,
         a_row<  Running,    	sdpa::events::CancelJobEvent,       	Cancelling, 		&sm::action_cancel_job >,
-        _row<   Running,    	MSMRescheduleEvent,                 	Pending >,
-        _row<  Running,	MSMStalledEvent,        		Stalled /*,                &sm::action_job_stalled*/ >,
+        a_row<  Running,    	MSMRescheduleEvent,                 	Pending,                &sm::action_reschedule_job >,
+        a_row<  Running,	MSMStalledEvent,        		Stalled,                &sm::action_stalled_job >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
         a_irow< Finished,   	sdpa::events::RetrieveJobResultsEvent,                      	&sm::action_retrieve_job_results >,
@@ -116,14 +161,18 @@ namespace sdpa {
         template <class FSM, class Event>
         void no_transition(Event const& e, FSM&, int state)
         {
-          //DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
+          DLOG(TRACE, "no transition from state "<< state << " on event " << typeid(e).name());
         }
 
+        typedef std::pair<sdpa::daemon::IAgent*, const sdpa::events::JobStatusReplyEvent::Ptr> FSMStatusQueryEvent;
+
         template <class FSM>
-        void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
+        void no_transition(FSMStatusQueryEvent const& evt, FSM&, int state)
         {
-          //DLOG(DEBUG, "process event QueryJobStatusEvent");
+           DLOG(TRACE, "process event StatusQueryEvent");
+           evt.first->sendEventToMaster (evt.second);
         }
+
       };
 
       // Pick a back-end
@@ -151,81 +200,68 @@ namespace sdpa {
 
         void start_fsm() { start(); }
 
-        //transitions
         void CancelJob(const sdpa::events::CancelJobEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
         void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
         {
           lock_type lock(mtx_);
           process_event(*pEvt);
-          /*BOOST_FOREACH(sdpa::worker_id_t& workerId, allocation_table[jobId])
-          {
-            lock_type lock_worker;
-            Worker::ptr_t ptrWorker = findWorker(workerId);
-            ptrWorker->free();
-          }
-
-          allocation_table.erase(jobId);*/
         }
 
-        void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm)
+        void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
         {
-          assert (ptr_comm);
           lock_type lock(mtx_);
           process_event(*pEvt);
 
           sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
-          //send ack to master
           ptr_comm->sendEventToMaster(pDelJobReply);
         }
 
         void JobFailed(const sdpa::events::JobFailedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
         void JobFinished(const sdpa::events::JobFinishedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
 
-        void JobStalled(const sdpa::job_id_t& jobId)
+        void Pause(sdpa::daemon::IAgent* pAgent)
         {
-          MSMStalledEvent stalledEvt(jobId);
+          MSMStalledEvent stalledEvt(pAgent, id());
           lock_type lock(mtx_);
           process_event(stalledEvt);
         }
 
+        void Resume(sdpa::daemon::IAgent* pAgent)
+        {
+          MSMResumeJobEvent resumeEvt(pAgent, id());
+          lock_type lock(mtx_);
+          process_event(resumeEvt);
+        }
+
         void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
         {
-          assert (pDaemon);
-        	// attention, no action called!
-        	lock_type const _ (mtx_);
-          process_event (*pEvt);
-
+          lock_type const _ (mtx_);
           sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
-            (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
-                                                   , pEvt->from()
-                                                   , id()
-                                                   , getStatus()
-                                                   , error_code()
-                                                   , error_message()
-                                                   )
-            );
+                                               (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
+                                                                                      , pEvt->from()
+                                                                                      , id()
+                                                                                      , getStatus()
+                                                                                      , error_code()
+                                                                                      , error_message()
+                                                                                      )
+                                               );
 
-        	pDaemon->sendEventToMaster (pStatReply);
+          process_event(FSMStatusQueryEvent(pDaemon, pStatReply));
         }
 
         void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
         {
-          assert (ptr_comm);
           lock_type lock(mtx_);
           process_event(*pEvt);
           const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
-
-          // reply the results to master
           ptr_comm->sendEventToMaster(pResReply);
         }
 
         void Reschedule(sdpa::daemon::IAgent*  pAgent)
         {
-          assert (pAgent);
-          MSMRescheduleEvent ReschedEvt;
+          MSMRescheduleEvent ReschedEvt(pAgent, id());
           lock_type lock(mtx_);
           process_event(ReschedEvt);
-          pAgent->schedule(id());
         }
 
         void Dispatch()
@@ -296,19 +332,14 @@ namespace sdpa {
         template <class Archive>
         void serialize(Archive& ar, const unsigned int)
         {
-          //ar.register_type(static_cast<sdpa::daemon::JobImpl*>(NULL));
-          //ar.register_type(static_cast<JobFSM_*>(NULL));
-
           ar & boost::serialization::base_object<JobImpl>(*this);
           ar & boost::serialization::base_object<msm::back::state_machine<JobFSM_> >(*this);
-          //ar & job_impl_;
         }
 
         friend class boost::serialization::access;
 
       private:
         mutex_type mtx_;
-
         SDPA_DECLARE_LOGGER();
       };
     }

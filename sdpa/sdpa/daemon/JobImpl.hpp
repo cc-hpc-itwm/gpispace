@@ -67,9 +67,6 @@ namespace sdpa {
       virtual void set_icomm(IAgent* pArgComm) { pComm = pArgComm; }
       virtual IAgent* icomm() { return pComm; }
 
-      virtual bool is_marked_for_deletion();
-      virtual bool mark_for_deletion();
-
       bool isMasterJob();
       void setType(const job_type& );
       virtual job_type type() { return type_;}
@@ -134,7 +131,6 @@ namespace sdpa {
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;
 
-      bool b_marked_for_del_;
       job_type type_;
       sdpa::job_result_t result_;
       int m_error_code;

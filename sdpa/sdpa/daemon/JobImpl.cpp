@@ -46,7 +46,6 @@ namespace sdpa {
         , id_(id)
         , desc_(desc)
         , parent_(parent)
-        , b_marked_for_del_(false)
         , type_(Job::WORKER)
         , result_()
         , m_error_code(0)
@@ -69,15 +68,6 @@ namespace sdpa {
 
     const sdpa::job_desc_t & JobImpl::description() const {
         return desc_;
-    }
-
-
-    bool JobImpl::is_marked_for_deletion() {
-        return b_marked_for_del_;
-    }
-
-    bool JobImpl::mark_for_deletion() {
-        return b_marked_for_del_ = true;
     }
 
     bool JobImpl::isMasterJob() {
@@ -113,7 +103,6 @@ namespace sdpa {
     void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
     {
         DLOG(TRACE, "delete job " << id());
-        b_marked_for_del_ = true;
     }
 
     void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
