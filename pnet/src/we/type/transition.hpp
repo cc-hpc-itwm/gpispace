@@ -55,27 +55,6 @@ namespace we { namespace type {
       };
     }
 
-    namespace detail
-    {
-      template <typename T>
-      struct is_internal
-      {
-        static const bool value = true;
-      };
-
-      template <>
-      struct is_internal<expression_t>
-      {
-        static const bool value = true;
-      };
-
-      template <>
-      struct is_internal<module_call_t>
-      {
-        static const bool value = false;
-      };
-    }
-
     struct transition_t
     {
     private:
@@ -117,27 +96,9 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string& name
                    , Type const& typ
-                   , const std::string& _condition = "true"
-                   )
-        : name_ (name)
-        , data_ (typ)
-        , internal_ (detail::is_internal<Type>::value)
-        , condition_(_condition)
-        , outer_to_inner_()
-        , inner_to_outer_()
-        , ports_()
-        , port_id_counter_ (0)
-        , prop_()
-        , _requirements()
-      { }
-
-      template <typename Type>
-      transition_t ( const std::string& name
-                   , Type const& typ
                    , condition::type const& _condition
                    , bool intern
                    , const we::type::property::type& prop
-                   = we::type::property::type()
                    )
         : name_ (name)
         , data_ (typ)
@@ -188,6 +149,7 @@ namespace we { namespace type {
         return _requirements;
       }
 
+    private:
       void connect_outer_to_inner ( const petri_net::place_id_type& pid
                                   , const petri_net::port_id_type& port
                                   , const we::type::property::type& prop
@@ -206,6 +168,7 @@ namespace we { namespace type {
           (inner_to_outer_t::value_type (port, std::make_pair(pid, prop)));
       }
 
+    public:
       void re_connect_inner_to_outer ( const petri_net::port_id_type& port
                                      , const petri_net::place_id_type& pid
                                      , const we::type::property::type& prop

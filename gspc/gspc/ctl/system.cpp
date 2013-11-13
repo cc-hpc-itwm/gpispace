@@ -1,11 +1,14 @@
 #include "system.hpp"
 
+#include <sys/types.h>
+#include <unistd.h> // getuid
 #include <errno.h>  // errno
 #include <stdlib.h> // getenv, abort
 #include <string.h> // strerror
 
 #include <iostream>
 
+#include <boost/format.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <fhg/util/program_info.h>
@@ -52,89 +55,107 @@ namespace gspc
     /**
        get the base directory of the installation
      */
-    std::string root_path ()
+    std::string const & root_path ()
     {
-      return s_root_path ().string ();
+      static std::string s (s_root_path ().string ());
+      return s;
     }
 
     /**
        get the 'etc' directory, containing configuration files
      */
-    std::string etc_path ()
+    std::string const & etc_path ()
     {
-      return (s_root_path () / "etc").string ();
+      static std::string s ((s_root_path () / "etc").string ());
+      return s;
     }
 
     /**
        get the 'bin' directory, containing executables
      */
-    std::string bin_path ()
+    std::string const & bin_path ()
     {
-      return (s_root_path () / "bin").string ();
+      static std::string s ((s_root_path () / "bin").string ());
+      return s;
     }
 
     /**
        get the 'lib' directory, containing runtime libraries
      */
-    std::string lib_path ()
+    std::string const & lib_path ()
     {
-      return (s_root_path () / "lib").string ();
+      static std::string s ((s_root_path () / "lib").string ());
+      return s;
     }
 
     /**
        get the 'inc' directory, containing runtime headers
      */
-    std::string inc_path ()
+    std::string const & inc_path ()
     {
-      return (s_root_path () / "include").string ();
+      static std::string s ((s_root_path () / "include").string ());
+      return s;
     }
 
     /**
        get the 'exec' directory, containing 'gspc' tools
      */
-    std::string exec_path ()
+    std::string const & exec_path ()
     {
-      return (s_root_path () / "libexec" / "gspc" / "scripts").string ();
+      static std::string s ((s_root_path () / "libexec" / "gspc" / "scripts").string ());
+      return s;
     }
 
     /**
        get the 'plugin' directory, containing gspc plugins
      */
-    std::string plugin_path ()
+    std::string const & plugin_path ()
     {
-      return (s_root_path () / "libexec" / "fhg" / "plugins").string ();
+      static std::string s ((s_root_path () / "libexec" / "fhg" / "plugins").string ());
+      return s;
     }
 
     /**
        get the user's home directory
      */
-    std::string user_home ()
+    std::string const & user_home ()
     {
-      return fhg::util::get_home_dir ();
+      static std::string s (fhg::util::get_home_dir ());
+      return s;
     }
 
     /**
        get the user's config file, i.e. ~/.gspc.rc
      */
-    std::string user_config_file ()
+    std::string const & user_config_file ()
     {
-      return (fs::path (user_home ()) / ".gspc.rc").string ();
+      static std::string s ((fs::path (user_home ()) / ".gspc.rc").string ());
+      return s;
     }
 
     /**
        get the site config file, usually <root-path>/etc/gspc.rc
      */
-    std::string site_config_file ()
+    std::string const & site_config_file ()
     {
-      return (fs::path (etc_path ()) / "gspc.rc").string ();
+      static std::string s ((fs::path (etc_path ()) / "gspc.rc").string ());
+      return s;
     }
 
     /**
        get the system config file, usually /etc/gspc.rc
      */
-    std::string system_config_file ()
+    std::string const & system_config_file ()
     {
-      return "/etc/gspc.rc";
+      static std::string s ("/etc/gspc.rc");
+      return s;
+    }
+
+    std::string const & session_directory ()
+    {
+      static std::string s
+        ((boost::format ("/tmp/gspcd-%1%") % getuid ()).str ());
+      return s;
     }
   }
 }

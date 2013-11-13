@@ -1,0 +1,94 @@
+#!/bin/bash
+myhost=$(hostname)
+
+opts=(--with-tests)
+makeflags=()
+ctestflags=()
+runtests=false
+send_mail=false
+mailto=petry@itwm.fhg.de
+ec=0
+
+case "$myhost" in
+    build-*)
+        export HWLOC_HOME=/home/projects/sdpa/external_software/hwloc/1.4.2/gcc
+        export QTDIR=~/external_software/qt/4.8.5
+        export PATH=$QTDIR/bin:$PATH
+        export BOOST_ROOT=~/external_software/boost/1.52/gcc/
+        export NACL_HOME=~/external_software/nacl/20110221
+        export SMC_HOME=~/external_software/smc/5.0.0
+        makeflags+=(-j2)
+        send_mail=true
+
+        if [ "$myhost" = "build-centos6" ]
+        then
+            export PATH="$HOME/external_software/ccache/3.1.9/lib:$PATH"
+        fi
+        ;;
+    lcs*)
+        module use /p/herc/itwm/hpc/soft/etc/modules
+        module laod soft/cmake
+        module load lib/boost
+        module load lib/hwloc
+        module load lib/qt
+        module load soft/graphviz
+        makeflags+=(-j24)
+        ;;
+    voyager)
+        makeflags+=(-j4)
+        ;;
+esac
+
+do_send_mail ()
+{
+    if [ $ec -eq 0 ]
+    then
+        state="SUCCESS"
+    else
+        state="FAILED"
+    fi
+    sha=$(git rev-parse --short HEAD)
+    mail -s "[CI] build of ${sha}: ${state}" -r "Gitlab-CI <sdpa-dev@itwm.fhg.de>" "${to}" </dev/null
+}
+
+if $send_mail
+then
+    trap do_send_mail EXIT
+fi
+
+./configure --prefix=$PWD/inst "${opts[@]}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    echo >&2 "CONFIGURE FAILED: ec=$ec"
+    exit $ec
+fi
+
+make "${makeflags[@]}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    echo >&2 "MAKE FAILED: ec=$ec"
+    exit $ec
+fi
+
+make "${makeflags[@]}" install
+ec=$?
+if [ $ec -ne 0 ]
+then
+    echo >&2 "INSTALL FAILED: ec=$ec"
+    exit $ec
+fi
+
+if $runtests
+then
+    cd build && ctest "${ctestflags[@]}"
+    ec=$?
+    if [ $ec -ne 0 ]
+    then
+        echo >&2 "TESTS FAILED: ec=$ec"
+        exit $ec
+    fi
+fi
+
+exit 0

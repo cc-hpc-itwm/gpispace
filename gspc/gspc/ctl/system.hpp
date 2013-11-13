@@ -10,57 +10,62 @@ namespace gspc
     /**
        get the base directory of the installation
      */
-    std::string root_path ();
+    std::string const & root_path ();
 
     /**
        get the 'etc' directory, containing configuration files
      */
-    std::string etc_path ();
+    std::string const & etc_path ();
 
     /**
        get the 'bin' directory, containing executables
      */
-    std::string bin_path ();
+    std::string const & bin_path ();
 
     /**
        get the 'lib' directory, containing runtime libraries
      */
-    std::string lib_path ();
+    std::string const & lib_path ();
 
     /**
        get the 'inc' directory, containing runtime headers
      */
-    std::string inc_path ();
+    std::string const & inc_path ();
 
     /**
        get the 'exec' directory, containing 'gspc' tools
      */
-    std::string exec_path ();
+    std::string const & exec_path ();
 
     /**
        get the 'plugin' directory, containing gspc plugins
      */
-    std::string plugin_path ();
+    std::string const & plugin_path ();
 
     /**
        get the user's home directory
      */
-    std::string user_home ();
+    std::string const & user_home ();
 
     /**
        get the user's config file, i.e. ~/.gspc.rc
      */
-    std::string user_config_file ();
+    std::string const & user_config_file ();
 
     /**
        get the site config file, usually <root-path>/etc/gspc.rc
      */
-    std::string site_config_file ();
+    std::string const & site_config_file ();
 
     /**
        get the system config file, usually /etc/gspc.rc
      */
-    std::string system_config_file ();
+    std::string const & system_config_file ();
+
+    /**
+       get the default gspc session directory
+     */
+    std::string const & session_directory ();
   }
 }
 

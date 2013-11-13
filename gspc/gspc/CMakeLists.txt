@@ -59,6 +59,7 @@ set (gspc_src
   ctl/config.cpp
   ctl/config_cmd.cpp
   ctl/system.cpp
+  ctl/session.cpp
 
   ctl/log.cpp
   ctl/log_cmd.cpp

@@ -41,7 +41,6 @@ namespace gspc
 
       int do_wait (key_type const &key, int mask, int timeout_in_ms) const;
 
-      std::string m_url;
       gspc::net::client_ptr_t m_client;
     };
   }

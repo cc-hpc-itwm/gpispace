@@ -1,6 +1,3 @@
-#include <fhg/util/program_info.h>
-#include <fhg/revision.hpp>
-
 #include <unistd.h>   // exit
 #include <errno.h>    // errno
 #include <string.h>   // strerror
@@ -129,15 +126,16 @@ int main (int argc, char *argv [], char *envp [])
   i = 1;
   while (i < argc)
   {
-    std::string arg = argv [i];
-    ++i;
+    std::string arg = argv [i++];
 
     if (arg.size () == 0 || arg [0] != '-')
+    {
+      --i;
       break;
+    }
 
     if (arg == "--")
     {
-      ++i;
       break;
     }
 

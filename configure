@@ -364,7 +364,7 @@ cmd=(cmake "${cmake_flags[@]}" "$src")
 print_settings
 echo "#"
 echo "# ${cmd[@]}"
-read -t 10 -n 1 -p "press any key to continue (Ctrl+C to abort)..."
+test -t 0 && read -t 10 -n 1 -p "press any key to continue (Ctrl+C to abort)..."
 echo
 
 "${cmd[@]}"
