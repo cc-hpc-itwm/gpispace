@@ -30,6 +30,7 @@ static void long_usage (int lvl)
     << "   --url URL              were is the kvs daemon"           << std::endl
     << "   --timeout <ms>         timeout to wait"                  << std::endl
     << "   --omit-key             do not print the key of results"  << std::endl
+    << "   -s|--string            drop quotes if value is a string" << std::endl
     << ""                                                           << std::endl
     << "available commands"                                         << std::endl
     << "------------------"                                         << std::endl
@@ -69,6 +70,7 @@ namespace {
   enum show_flags_t
     {
       OMIT_KEY = 0x01
+    , UNQUOTE_STRING = 0x02
     };
 
   struct show
@@ -93,7 +95,14 @@ namespace {
     {
       os << s.key << "=";
     }
-    os << pnet::type::value::show (s.value);
+    if ((s.flags & UNQUOTE_STRING) && boost::get<std::string>(&s.value) != 0)
+    {
+      os << boost::get<std::string>(s.value);
+    }
+    else
+    {
+      os << pnet::type::value::show (s.value);
+    }
     return os;
   }
 
@@ -154,6 +163,9 @@ int main (int argc, char *argv [], char *envp [])
           case 'o':
             show_flags |= OMIT_KEY;
             break;
+          case 's':
+            show_flags |= UNQUOTE_STRING;
+            break;
           default:
             std::cerr << "kvs: invalid flag: " << *flag << std::endl;
             return EX_USAGE;
@@ -172,6 +184,10 @@ int main (int argc, char *argv [], char *envp [])
     else if (arg == "--omit-key")
     {
       show_flags |= OMIT_KEY;
+    }
+    else if (arg == "--string")
+    {
+      show_flags |= UNQUOTE_STRING;
     }
     else if (arg == "--show-mask")
     {
