@@ -128,12 +128,6 @@ int main (int argc, char *argv [], char *envp [])
   {
     std::string arg = argv [i++];
 
-    if (arg.size () == 0 || arg [0] != '-')
-    {
-      --i;
-      break;
-    }
-
     if (arg == "--")
     {
       break;
@@ -255,6 +249,7 @@ int main (int argc, char *argv [], char *envp [])
     }
     else
     {
+      --i;
       break;
     }
   }
@@ -270,8 +265,6 @@ int main (int argc, char *argv [], char *envp [])
     std::cerr << "kvs: url is missing!" << std::endl;
     return EX_USAGE;
   }
-
-  --i;
 
   // parse commands
   rc = 0;
