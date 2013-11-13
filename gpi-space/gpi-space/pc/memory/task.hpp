@@ -19,7 +19,7 @@ namespace gpi
     {
       namespace task_state
       {
-        enum state {pending, executing, finished, failed, cancelled};
+        enum state {pending, executing, finished, failed, canceled};
       }
 
       class task_t : boost::noncopyable
