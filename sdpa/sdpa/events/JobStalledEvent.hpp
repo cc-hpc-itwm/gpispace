@@ -30,7 +30,7 @@ namespace sdpa
 
       virtual void handleBy (EventHandler* handler)
       {
-        //handler->handleJobStalledEvent (this);
+        handler->handleJobStalledEvent (this);
       }
 
     private:
