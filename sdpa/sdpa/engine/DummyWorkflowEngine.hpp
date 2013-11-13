@@ -69,12 +69,6 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
         pIAgent_ = pIAgent;
     }
 
- /* we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_submitted;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_finished;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_failed;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_cancelled;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_executing; */
-
     /**
      * Notify the GWES that an activity has failed
      * (state transition from "running" to "failed").
