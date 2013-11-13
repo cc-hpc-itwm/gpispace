@@ -69,7 +69,7 @@ static int verbose = 0;
 namespace {
   enum show_flags_t
     {
-      OMIT_KEY = 0x01
+      OMIT_KEY       = 0x01
     , UNQUOTE_STRING = 0x02
     };
 
