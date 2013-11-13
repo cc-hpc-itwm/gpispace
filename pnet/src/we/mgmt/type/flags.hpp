@@ -15,14 +15,14 @@ namespace we
       {
         bool suspended;
         bool canceling;
-        bool cancelled;
+        bool canceled;
         bool failed;
         bool finished;
 
         flags_t ()
           : suspended(false)
           , canceling(false)
-          , cancelled(false)
+          , canceled(false)
           , failed(false)
           , finished(false)
         { }
@@ -34,7 +34,7 @@ namespace we
         {
           ar & BOOST_SERIALIZATION_NVP(suspended);
           ar & BOOST_SERIALIZATION_NVP(canceling);
-          ar & BOOST_SERIALIZATION_NVP(cancelled);
+          ar & BOOST_SERIALIZATION_NVP(canceled);
           ar & BOOST_SERIALIZATION_NVP(failed);
           ar & BOOST_SERIALIZATION_NVP(finished);
         }
@@ -50,7 +50,7 @@ namespace we
 
       SIG (suspended);
       SIG (canceling);
-      SIG (cancelled);
+      SIG (canceled);
       SIG (failed);
       SIG (finished);
 

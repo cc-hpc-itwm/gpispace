@@ -349,7 +349,7 @@ namespace we
 
       FLAG (suspended)
       FLAG (canceling)
-      FLAG (cancelled)
+      FLAG (canceled)
       FLAG (failed)
       FLAG (finished)
 #undef FLAG

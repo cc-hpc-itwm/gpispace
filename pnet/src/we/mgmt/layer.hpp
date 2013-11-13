@@ -805,7 +805,7 @@ namespace we { namespace mgmt {
                        , desc->error_message()
                        );
           }
-          else if (desc->activity ().is_cancelled ())
+          else if (desc->activity ().is_canceled ())
           {
             DLOG ( INFO
                  , "canceled (" << desc->name() << ")-" << desc->id()
@@ -999,7 +999,7 @@ namespace we { namespace mgmt {
           {
             if (! (  desc->activity().is_canceling()
                   || desc->activity().is_failed()
-                  || desc->activity().is_cancelled()
+                  || desc->activity().is_canceled()
                   || desc->activity().is_finished()
                   )
                )

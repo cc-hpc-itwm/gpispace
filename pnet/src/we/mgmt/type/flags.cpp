@@ -14,7 +14,7 @@ namespace we
       {
         os << (flags.suspended ? "S" : "s");
         os << (flags.canceling ? "C" : "c");
-        os << (flags.cancelled ? "T" : "t");
+        os << (flags.canceled ? "T" : "t");
         os << (flags.failed ? "F" : "f");
         os << (flags.finished ? "D" : "d");
         return os;
@@ -24,7 +24,7 @@ namespace we
       {
         return (  f.suspended
                || f.canceling
-               || f.cancelled
+               || f.canceled
                || f.failed
                || f.finished
                ) == false;
@@ -42,7 +42,7 @@ namespace we
 
       IMPL(suspended);
       IMPL(canceling);
-      IMPL(cancelled);
+      IMPL(canceled);
       IMPL(failed);
       IMPL(finished);
 
