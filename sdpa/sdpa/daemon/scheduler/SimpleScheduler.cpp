@@ -65,12 +65,6 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   }
 
   ostringstream os;
-  if(!ptr_comm_handler_)
-  {
-      SDPA_LOG_ERROR("Invalid communication handler. ");
-      stop();
-      return;
-  }
 
   try {
       Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);

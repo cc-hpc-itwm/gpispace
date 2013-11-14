@@ -85,12 +85,6 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
   }
 
   ostringstream os;
-  if(!ptr_comm_handler_)
-  {
-      SDPA_LOG_ERROR("Invalid communication handler. ");
-      stop();
-      return;
-  }
 
   try
   {
@@ -166,13 +160,6 @@ void SchedulerBase::schedule_local(const sdpa::job_id_t &jobId)
   DMLOG (TRACE, "Schedule the job "<<jobId.str()<<" to the workflow engine!");
 
   id_type wf_id = jobId.str();
-
-  if( !ptr_comm_handler_ )
-  {
-    SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
-    stop();
-    return;
-  }
 
   try {
     const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
@@ -390,11 +377,6 @@ const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id
 void SchedulerBase::start()
 {
   bStopRequested = false;
-  if(!ptr_comm_handler_)
-  {
-    SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-    return;
-  }
 
   m_thread_run = boost::thread(boost::bind(&SchedulerBase::run, this));
   m_thread_feed = boost::thread(boost::bind(&SchedulerBase::feedWorkers, this));
@@ -453,13 +435,6 @@ void SchedulerBase::feedWorkers()
 
 void SchedulerBase::run()
 {
-  if(!ptr_comm_handler_)
-  {
-    SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-    stop();
-    return;
-  }
-
   while(!bStopRequested)
   {
     try
