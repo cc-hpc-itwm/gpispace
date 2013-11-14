@@ -136,7 +136,7 @@ void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
 
       // if there are allocated resources
       if(it==allocation_table_.end()) {
-          LOG(WARN, "No reservation was found for the job "<<jobId);
+          DLOG(WARN, "No reservation was found for the job "<<jobId);
           return;
       }
 
