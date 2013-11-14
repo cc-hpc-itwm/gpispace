@@ -88,6 +88,7 @@ namespace sdpa {
                     unsigned int rank = 0
                    , const boost::optional<std::string>& guiUrl = boost::none
                    );
+      virtual ~GenericDaemon() {}
 
       SDPA_DECLARE_LOGGER();
 
