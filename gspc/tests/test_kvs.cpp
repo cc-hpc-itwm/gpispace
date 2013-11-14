@@ -806,6 +806,8 @@ BOOST_AUTO_TEST_CASE (test_net_push_pop)
 
 BOOST_AUTO_TEST_CASE (test_net_many_push_pop)
 {
+  gspc::net::initialize ();
+
   int rc;
   gspc::kvs::api_t::value_type val;
   const std::string queue ("wfh");

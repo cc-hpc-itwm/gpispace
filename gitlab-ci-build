@@ -2,6 +2,15 @@
 myhost=$(hostname)
 srcdir="$(pwd)"
 
+sha="${CI_BUILD_REF}"
+branch="${CI_BUILD_REF_NAME}"
+previous="${CI_BUILD_BEFORE_SHA}"
+short_sha="${sha:0:7}"
+ci_url="http://gitlab-ci.hpc.devnet.itwm.fhg.de/projects/1/builds/${sha}"
+diff_url="http://gitlab.hpc.devnet.itwm.fhg.de/top/gpispace/commit/${sha}"
+author=$(git log -n 1 --pretty="%aN <%aE>")
+project="GPI-Space"
+
 opts=(--with-tests)
 makeflags=()
 ctestflags=()
@@ -19,6 +28,7 @@ case "$myhost" in
         export NACL_HOME=~/external_software/nacl/20110221
         export SMC_HOME=~/external_software/smc/5.0.0
         export TMPDIR=/tmp/gitlab-ci
+        export CCACHE_DIR="${TMPDIR}/.ccache"
         opts+=(--type=Debug)
         opts+=(--assert-mode=on)
         makeflags+=(-j2)
@@ -27,6 +37,7 @@ case "$myhost" in
         if [ "$myhost" = "build-centos6" ]
         then
             export PATH="$HOME/external_software/ccache/3.1.9/lib:$PATH"
+            export CCACHE_DIR=
         fi
         ;;
     lcs*)
@@ -53,14 +64,6 @@ log_or_send_mail ()
     else
         msg="${@} (ec=$ec)"
     fi
-    sha="${CI_BUILD_REF}"
-    branch="${CI_BUILD_REF_NAME}"
-    previous="${CI_BUILD_BEFORE_SHA}"
-    short_sha="${sha:0:7}"
-    ci_url="http://gitlab-ci.hpc.devnet.itwm.fhg.de/projects/1/builds/${sha}"
-    diff_url="http://gitlab.hpc.devnet.itwm.fhg.de/top/gpispace/commit/${sha}"
-    author=$(git log -n 1 --pretty="%aN <%aE>")
-    project="GPI-Space"
 
     header="Build report for commit ${short_sha} to ${branch} on host ${myhost}:"
     header_length=$(echo -n "$header" | wc -c)
@@ -100,6 +103,7 @@ fi
 
 cleanup()
 {
+    cd /
     if [ -d "${builddir}" ]
     then
         rm -rf "${builddir}"
