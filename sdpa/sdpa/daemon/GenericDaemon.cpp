@@ -1128,16 +1128,8 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
   try {
-    if( to_master_stage().get() )
-    {
-      to_master_stage()->send(pEvt);
-      DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-      // to_master_stage()->dump();
-    }
-    else
-    {
-      DMLOG (ERROR, "The master stage does not exist!");
-    }
+    to_master_stage()->send(pEvt);
+    DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
   }
   catch(const QueueFull&)
   {
