@@ -58,10 +58,6 @@ namespace daemon {
 
     virtual size_t numberOfWorkers() = 0;
     virtual void feedWorkers()= 0;
-    virtual void removeWorkers() = 0;
-
-    virtual void cancelWorkerJobs() = 0;
-    virtual void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId) = 0;
 
     virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) = 0;
     virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException) = 0;
@@ -86,7 +82,7 @@ namespace daemon {
     virtual bool groupFinished(const sdpa::job_id_t&) = 0;
     virtual void releaseReservation(const sdpa::job_id_t& jobId) = 0;
 
-    virtual void start(IAgent*) = 0;
+    virtual void start() = 0;
     virtual void stop() = 0;
     virtual void run() = 0;
     virtual void print() = 0;

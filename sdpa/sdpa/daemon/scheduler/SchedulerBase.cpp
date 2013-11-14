@@ -38,6 +38,10 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
 {
+  if (!ptr_comm_handler_)
+  {
+    throw std::runtime_error ("SchedulerBase ctor with NULL ptr_comm_handler");
+  }
 }
 
 SchedulerBase::~SchedulerBase()
@@ -77,14 +81,6 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
   if(bStopRequested)
   {
       SDPA_LOG_WARN("The scheduler is requested to stop. Job re-asignement is not anymore possible.");
-      return;
-  }
-
-  ostringstream os;
-  if(!ptr_comm_handler_)
-  {
-      SDPA_LOG_ERROR("Invalid communication handler. ");
-      stop();
       return;
   }
 
@@ -162,13 +158,6 @@ void SchedulerBase::schedule_local(const sdpa::job_id_t &jobId)
   DMLOG (TRACE, "Schedule the job "<<jobId.str()<<" to the workflow engine!");
 
   id_type wf_id = jobId.str();
-
-  if( !ptr_comm_handler_ )
-  {
-    SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
-    stop();
-    return;
-  }
 
   try {
     const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
@@ -383,17 +372,9 @@ const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id
   return ptr_worker_man_->findSubmOrAckWorker(job_id);
 }
 
-void SchedulerBase::start(IAgent* p)
+void SchedulerBase::start()
 {
-  if(p)
-    ptr_comm_handler_ = p;
-
   bStopRequested = false;
-  if(!ptr_comm_handler_)
-  {
-    SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-    return;
-  }
 
   m_thread_run = boost::thread(boost::bind(&SchedulerBase::run, this));
   m_thread_feed = boost::thread(boost::bind(&SchedulerBase::feedWorkers, this));
@@ -413,7 +394,6 @@ void SchedulerBase::stop()
     m_thread_feed.join();
 
   pending_jobs_queue_.clear();
-  cancellation_list_.clear();
   ptr_worker_man_->removeWorkers();
 }
 
@@ -453,20 +433,10 @@ void SchedulerBase::feedWorkers()
 
 void SchedulerBase::run()
 {
-  if(!ptr_comm_handler_)
-  {
-    SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-    stop();
-    return;
-  }
-
   while(!bStopRequested)
   {
     try
     {
-      if( numberOfWorkers()>0 )
-        forceOldWorkerJobsTermination();
-
       sdpa::job_id_t jobId  = pending_jobs_queue_.pop_and_wait(m_timeout);
       const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
@@ -634,52 +604,6 @@ void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sd
   {
       SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
       cpbset = sdpa::capabilities_set_t();
-  }
-}
-
-void SchedulerBase::cancelWorkerJobs()
-{
-  ptr_worker_man_->cancelWorkerJobs(this);
-}
-
-void SchedulerBase::planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId)
-{
-  cancellation_list_.push_back(sdpa::worker_job_pair_t(workerId, jobId));
-}
-
-void SchedulerBase::forceOldWorkerJobsTermination()
-{
-  // cannot recover the jobs produced by the workflow engine
-  if(ptr_comm_handler_->hasWorkflowEngine())
-  {
-    sdpa::cancellation_list_t new_cancellation_list;
-    while( !cancellation_list_.empty() )
-    {
-      worker_job_pair_t worker_job_pair = cancellation_list_.front();
-      sdpa::worker_id_t workerId = worker_job_pair.first;
-      sdpa::job_id_t jobId = worker_job_pair.second;
-
-      try {
-        SDPA_LOG_INFO("Tell the worker "<<workerId<<" to cancel the job "<<jobId);
-        Worker::ptr_t pWorker = findWorker(workerId);
-
-        CancelJobEvent::Ptr pEvtCancelJob (new CancelJobEvent(  ptr_comm_handler_->name()
-                                                                , workerId
-                                                                , jobId
-                                                                , "The master recovered after a crash!") );
-
-        ptr_comm_handler_->sendEventToSlave(pEvtCancelJob);
-      }
-      catch (const WorkerNotFoundException& ex)
-      {
-        new_cancellation_list.push_back(worker_job_pair);
-        //SDPA_LOG_WARN("Couldn't find the worker "<<workerId<<"(not registered yet)!");
-      }
-
-      cancellation_list_.pop_front();
-    }
-
-    cancellation_list_ = new_cancellation_list;
   }
 }
 

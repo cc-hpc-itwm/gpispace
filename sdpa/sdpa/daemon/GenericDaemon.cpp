@@ -61,7 +61,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_to_slave_stage_name_ (name+".net"),
 
     ptr_job_man_(new JobManager(name)),
-    //ptr_scheduler_(),
+    ptr_scheduler_(),
     ptr_workflow_engine_(NULL),
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
@@ -91,10 +91,7 @@ GenericDaemon::GenericDaemon( const std::string name,
 
 void GenericDaemon::start_agent()
 {
-  if(!scheduler())
-  {
-    createScheduler();
-  }
+  createScheduler();
 
   ptr_daemon_stage_.lock()->start();
 
@@ -161,7 +158,7 @@ void GenericDaemon::start_agent()
   }
 
   DMLOG (TRACE, "Starting the scheduler...");
-  scheduler()->start(this);
+  scheduler()->start();
 
   // start the network stage
   to_master_stage()->start();
@@ -175,41 +172,6 @@ void GenericDaemon::start_agent()
   {
     requestRegistration();
   }
-
-  scheduler()->cancelWorkerJobs();
-  eworknotreg();
-
-  reScheduleAllMasterJobs();
-}
-
-void GenericDaemon::eworknotreg()
-{
-  sdpa::worker_id_list_t workerList;
-  scheduler()->getWorkerList (workerList);
-
-  if (workerList.empty())
-  {
-    DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
-    return;
-  }
-
-  BOOST_FOREACH (const worker_id_t& workerId, workerList)
-  {
-    SDPA_LOG_INFO("Send notification to the worker "<<workerId);
-
-    ErrorEvent::Ptr const pErrEvt
-      (new ErrorEvent ( name()
-                      , ""
-                      , ErrorEvent::SDPA_EWORKERNOTREG
-                      ,  "worker notification"
-                      )
-      );
-
-    sendEventToMaster (pErrEvt);
-  }
-
-  // remove workers
-  scheduler()->removeWorkers();
 }
 
 /**
@@ -1381,24 +1343,7 @@ void GenericDaemon::requestRegistration()
 
 void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 {
-  if( scheduler() )
-  {
-    scheduler()->schedule(jobId);
-    return;
-  }
-
-  throw std::runtime_error(name() + " does not have scheduler!");
-}
-
-void GenericDaemon::reschedule(const sdpa::job_id_t& jobId)
-{
-  if( scheduler() )
-  {
-    scheduler()->rescheduleJob(jobId);
-    return;
-  }
-
-  throw std::runtime_error(name() + " does not have scheduler!");
+  scheduler()->schedule(jobId);
 }
 
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
@@ -1574,19 +1519,6 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 {
   return scheduler()->getWorkerId(r);
-}
-
-void GenericDaemon::reScheduleAllMasterJobs()
-{
-  //jobManager()->reScheduleAllMasterJobs(this);
-
-  sdpa::job_id_list_t listNotCompletedMsterJobs = jobManager()->getListNotCompletedMasterJobs(hasWorkflowEngine());
-
-  BOOST_FOREACH(const job_id_t& jobId, listNotCompletedMsterJobs)
-  {
-    DMLOG (TRACE, "Re-schedule the job"<<jobId);
-    reschedule(jobId);
-  }
 }
 
 #define PERFORM_FORWARD(METHOD,EVENT_TYPE)                \

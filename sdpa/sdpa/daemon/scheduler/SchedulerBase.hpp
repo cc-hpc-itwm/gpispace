@@ -83,19 +83,15 @@ namespace sdpa {
       virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
       virtual void feedWorkers();
-      void cancelWorkerJobs();
-      void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);
-      virtual void forceOldWorkerJobsTermination();
 
       void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
       // thread related functions
-      virtual void start(IAgent*);
+      virtual void start();
       virtual void stop();
       virtual void run();
 
       virtual void print();
-      void removeWorkers() { ptr_worker_man_->removeWorkers(); }
       void printPendingJobs() { pending_jobs_queue_.print(); }
 
       bool schedulingAllowed() { return !ptr_worker_man_->common_queue_.empty(); }
@@ -109,11 +105,9 @@ namespace sdpa {
       boost::thread m_thread_run;
       boost::thread m_thread_feed;
 
-      mutable sdpa::daemon::IAgent* ptr_comm_handler_;
+      sdpa::daemon::IAgent* ptr_comm_handler_;
       SDPA_DECLARE_LOGGER();
       boost::posix_time::time_duration m_timeout;
-
-      sdpa::cancellation_list_t cancellation_list_;
 
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;

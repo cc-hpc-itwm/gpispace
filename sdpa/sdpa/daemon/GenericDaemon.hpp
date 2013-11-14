@@ -255,8 +255,6 @@ namespace sdpa {
                               const unsigned int& rank = 0,
                               const sdpa::worker_id_t& agent_uuid  = "");
 
-      void eworknotreg();
-
       // jobs
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
@@ -270,9 +268,7 @@ namespace sdpa {
 
     protected:
       virtual void schedule(const sdpa::job_id_t& job);
-      virtual void reschedule(const sdpa::job_id_t& job);
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
-      void reScheduleAllMasterJobs();
 
       // data members
     protected:

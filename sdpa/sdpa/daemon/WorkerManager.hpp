@@ -74,8 +74,6 @@ namespace sdpa { namespace daemon {
 
     sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, sdpa::worker_id_list_t&) throw (NoWorkerFoundException);
 
-    void cancelWorkerJobs(sdpa::daemon::Scheduler*);
-    void forceOldWorkerJobsTermination();
     virtual Worker::worker_id_t getWorkerId(unsigned int r);
     void reserveWorker(const sdpa::worker_id_t&) throw (WorkerReservationFailed);
 
