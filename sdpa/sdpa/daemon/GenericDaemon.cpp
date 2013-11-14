@@ -183,41 +183,39 @@ void GenericDaemon::start_agent()
 void GenericDaemon::shutdown( )
 {
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
-  if (!m_bStopped)
+
+  BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
   {
-    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+    if (!masterInfo.name().empty() && masterInfo.is_registered())
     {
-      if (!masterInfo.name().empty() && masterInfo.is_registered())
-      {
-        sendEventToMaster
-          ( ErrorEvent::Ptr ( new ErrorEvent ( name()
-                                             , masterInfo.name()
-                                             , ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                             , "node shutdown"
-                                             )
-                            )
-          );
-      }
+      sendEventToMaster
+        ( ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                           , masterInfo.name()
+                                           , ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                           , "node shutdown"
+                                           )
+                          )
+        );
     }
-
-    ptr_scheduler_.reset();
-
-    m_bStopped 	= true;
-
-    {
-      lock_type lock (_state_machine_mutex);
-      process_event (InterruptEvent());
-    }
-
-    BOOST_FOREACH (std::string stage, _stages_to_remove)
-    {
-      seda::StageRegistry::instance().lookup (stage)->stop();
-      seda::StageRegistry::instance().remove (stage);
-    }
-
-    delete ptr_workflow_engine_;
-    ptr_workflow_engine_ = NULL;
   }
+
+  ptr_scheduler_.reset();
+
+  m_bStopped 	= true;
+
+  {
+    lock_type lock (_state_machine_mutex);
+    process_event (InterruptEvent());
+  }
+
+  BOOST_FOREACH (std::string stage, _stages_to_remove)
+  {
+    seda::StageRegistry::instance().lookup (stage)->stop();
+    seda::StageRegistry::instance().remove (stage);
+  }
+
+  delete ptr_workflow_engine_;
+  ptr_workflow_engine_ = NULL;
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
