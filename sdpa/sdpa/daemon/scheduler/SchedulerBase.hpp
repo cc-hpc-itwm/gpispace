@@ -111,8 +111,6 @@ namespace sdpa {
       SDPA_DECLARE_LOGGER();
       boost::posix_time::time_duration m_timeout;
 
-      sdpa::cancellation_list_t cancellation_list_;
-
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;
       condition_type cond_workers_registered;

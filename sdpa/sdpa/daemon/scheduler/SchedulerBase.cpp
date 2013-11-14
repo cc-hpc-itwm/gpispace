@@ -413,7 +413,6 @@ void SchedulerBase::stop()
     m_thread_feed.join();
 
   pending_jobs_queue_.clear();
-  cancellation_list_.clear();
   ptr_worker_man_->removeWorkers();
 }
 
@@ -642,8 +641,6 @@ void SchedulerBase::forceOldWorkerJobsTermination()
   // cannot recover the jobs produced by the workflow engine
   if(ptr_comm_handler_->hasWorkflowEngine())
   {
-    sdpa::cancellation_list_t new_cancellation_list;
-    cancellation_list_ = new_cancellation_list;
   }
 }
 
