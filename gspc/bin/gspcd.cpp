@@ -239,7 +239,22 @@ int main (int argc, char *argv[])
 
   if (mode == "list")
   {
-    return s_list_sessions (session_dir, verbose);
+    int ec = s_list_sessions (session_dir, verbose);
+    switch (ec)
+    {
+    case -EPERM:
+      rc = EX_NOPERM;
+      break;
+    case -ENOENT:
+      rc = EX_UNAVAILABLE;
+      break;
+    case 0:
+      rc = 0;
+      break;
+    default:
+      rc = EX_SOFTWARE;
+      break;
+    }
   }
   else if (mode == "status")
   {
