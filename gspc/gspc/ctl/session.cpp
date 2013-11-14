@@ -112,7 +112,7 @@ namespace gspc
         return -ENOTDIR;
       }
 
-      bool found_active = true;
+      bool found_active = false;
       fs::directory_iterator it (dir);
       const fs::directory_iterator end;
 
@@ -127,7 +127,7 @@ namespace gspc
           sessions.push_back (session_info);
         }
 
-        if (0 == rc) found_active = true;
+        found_active = found_active || (0 == rc);
 
         ++it;
       }
