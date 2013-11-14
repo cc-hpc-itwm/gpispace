@@ -1127,22 +1127,8 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 
 void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
-  try {
-    to_master_stage()->send(pEvt);
-    DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-  }
-  catch(const QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event. The queue is full!");
-  }
-  catch(const seda::StageNotFound& )
-  {
-    DMLOG (ERROR, "Stage "<<to_master_stage()->name()<<" not found!");
-  }
-  catch(const std::exception& ex)
-  {
-    DMLOG (WARN, "Could not send event. Exception occurred: "<<ex.what());
-  }
+  to_master_stage()->send(pEvt);
+  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
 void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
