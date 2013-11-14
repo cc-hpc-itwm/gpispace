@@ -145,7 +145,12 @@ void GenericDaemon::start_agent()
 
   if (!isTop())
   {
-    requestRegistration();
+    // try to re-register
+    lock_type lock(mtx_master_);
+    BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+    {
+      requestRegistration(masterInfo);
+    }
   }
 }
 
@@ -1302,16 +1307,6 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 
     WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank(), agent_uuid()));
     sendEventToMaster(pEvtWorkerReg);
-  }
-}
-
-void GenericDaemon::requestRegistration()
-{
-  // try to re-register
-  lock_type lock(mtx_master_);
-  BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-  {
-    requestRegistration(masterInfo);
   }
 }
 

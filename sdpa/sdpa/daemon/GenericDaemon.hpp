@@ -211,7 +211,6 @@ namespace sdpa {
       virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
 
       // registration
-      virtual void requestRegistration();
       virtual void requestRegistration(const MasterInfo& masterInfo);
       virtual void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 

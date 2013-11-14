@@ -41,7 +41,6 @@ namespace sdpa {
     virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e) = 0;
     virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e) = 0;
     virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e) = 0;
-    virtual void requestRegistration() = 0;
     virtual void requestRegistration(const MasterInfo& masterInfo) = 0;
 
     virtual const sdpa::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const = 0;
