@@ -214,25 +214,6 @@ void JobManager::resubmitResults(IAgent* pComm)
   }
 }
 
-sdpa::job_id_list_t JobManager::getListNotCompletedMasterJobs(bool bHasWfe)
-{
-  lock_type lock(mtx_);
-	sdpa::job_id_list_t listJobsNotCompleted;
-
-	for ( job_map_t::iterator it = job_map_.begin(); it != job_map_.end(); ++it )
-	{
-		sdpa::job_id_t jobId = it->first;
-		Job::ptr_t pJob = it->second;
-
-		if( ((bHasWfe && pJob->isMasterJob()) || !bHasWfe) && !pJob->completed())
-    {
-      listJobsNotCompleted.push_back(jobId);
-		}
-	}
-
-	return listJobsNotCompleted;
-}
-
 size_t JobManager::getNumberOfJobs() const
 {
   lock_type lock(mtx_);

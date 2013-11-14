@@ -637,16 +637,6 @@ void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sd
   }
 }
 
-void SchedulerBase::cancelWorkerJobs()
-{
-  ptr_worker_man_->cancelWorkerJobs(this);
-}
-
-void SchedulerBase::planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId)
-{
-  cancellation_list_.push_back(sdpa::worker_job_pair_t(workerId, jobId));
-}
-
 void SchedulerBase::forceOldWorkerJobsTermination()
 {
   // cannot recover the jobs produced by the workflow engine

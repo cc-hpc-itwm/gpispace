@@ -427,31 +427,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
   }
 }
 
-void WorkerManager::cancelWorkerJobs(sdpa::daemon::Scheduler* ptrSched)
-{
-  lock_type lock(mtx_);
-  BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
-  {
-    worker_id_t workerId = pair.first;
-    Worker::ptr_t pWorker = pair.second;
-
-    JobId jobId;
-
-    while(!pWorker->submitted().empty())
-    {
-        jobId = pWorker->submitted().pop();
-        ptrSched->planForCancellation(workerId, jobId);
-    }
-    // for all jobs that are submitted or acknowledged
-
-    while(!pWorker->acknowledged().empty())
-    {
-        jobId = pWorker->acknowledged().pop();
-        ptrSched->planForCancellation(workerId, jobId);
-    }
-  }
-}
-
 Worker::worker_id_t WorkerManager::getWorkerId(unsigned int r)
 {
   lock_type lock(mtx_);

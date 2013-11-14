@@ -54,7 +54,6 @@ namespace sdpa {
       bool slotAvailable() const;
 
       void resubmitResults(IAgent* );
-      sdpa::job_id_list_t getListNotCompletedMasterJobs(bool bHasWfe);
 
       std::string print() const;
 

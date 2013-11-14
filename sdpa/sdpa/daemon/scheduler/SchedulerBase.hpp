@@ -83,8 +83,6 @@ namespace sdpa {
       virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
       virtual void feedWorkers();
-      void cancelWorkerJobs();
-      void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);
       virtual void forceOldWorkerJobsTermination();
 
       void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }

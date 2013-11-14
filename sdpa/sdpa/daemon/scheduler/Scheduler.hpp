@@ -60,9 +60,6 @@ namespace daemon {
     virtual void feedWorkers()= 0;
     virtual void removeWorkers() = 0;
 
-    virtual void cancelWorkerJobs() = 0;
-    virtual void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId) = 0;
-
     virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) = 0;
     virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException) = 0;
     virtual void getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
