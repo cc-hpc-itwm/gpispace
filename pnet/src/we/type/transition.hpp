@@ -39,24 +39,6 @@
 #include <stdexcept>
 
 namespace we { namespace type {
-    namespace exception {
-      template <typename From>
-      struct not_connected : std::runtime_error
-      {
-        typedef From from_type;
-
-        explicit not_connected(const std::string& msg, const from_type from_)
-          : std::runtime_error (msg)
-          , from(from_)
-        {}
-
-        ~not_connected () throw ()
-        {}
-
-        const from_type from;
-      };
-    }
-
     struct transition_t
     {
     private:
