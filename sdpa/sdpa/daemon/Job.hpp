@@ -1,8 +1,6 @@
 #ifndef SDPA_JOB_HPP
 #define SDPA_JOB_HPP 1
 
-#include <sdpa/daemon/mpl.hpp>
-
 #include <sdpa/common.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>

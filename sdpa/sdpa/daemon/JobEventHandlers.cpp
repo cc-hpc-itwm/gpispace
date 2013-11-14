@@ -15,7 +15,6 @@
  *
  * =====================================================================================
  */
-#include <sdpa/daemon/mpl.hpp>
 
 #include <fhg/assert.hpp>
 #include <seda/StageRegistry.hpp>

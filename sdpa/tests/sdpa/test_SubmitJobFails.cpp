@@ -1,5 +1,4 @@
 #define BOOST_TEST_MODULE TestSubmitJobFails
-#include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>

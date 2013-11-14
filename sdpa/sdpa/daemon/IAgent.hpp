@@ -18,7 +18,6 @@
 #ifndef SDPA_ICOMM_HPP
 #define SDPA_ICOMM_HPP 1
 
-#include <sdpa/daemon/mpl.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/memory.hpp>
 

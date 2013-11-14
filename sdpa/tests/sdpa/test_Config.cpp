@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE TestConfig
-#include <sdpa/daemon/mpl.hpp>
+
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include <sstream>

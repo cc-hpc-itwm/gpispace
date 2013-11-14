@@ -1,7 +1,6 @@
 //tiberiu.rotaru@itwm.fraunhofer.de
 
 #define BOOST_TEST_MODULE TestTopologies
-#include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>

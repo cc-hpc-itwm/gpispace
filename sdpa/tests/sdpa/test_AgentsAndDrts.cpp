@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE testAgentsAndDrts
-#include <sdpa/daemon/mpl.hpp>
+
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
