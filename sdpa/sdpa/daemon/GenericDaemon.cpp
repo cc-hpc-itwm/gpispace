@@ -1486,16 +1486,23 @@ Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
   return scheduler()->getWorkerId(r);
 }
 
-#define PERFORM_FORWARD(METHOD,EVENT_TYPE)                \
-      void GenericDaemon::METHOD(const EVENT_TYPE* evt)   \
-      {                                                   \
-        lock_type lock (_state_machine_mutex);            \
-        process_event (*evt);                             \
-      }
-
-      PERFORM_FORWARD (handleWorkerRegistrationEvent, WorkerRegistrationEvent)
-      PERFORM_FORWARD (handleDeleteJobEvent, DeleteJobEvent)
-      PERFORM_FORWARD (handleSubmitJobEvent, SubmitJobEvent)
-      PERFORM_FORWARD (handleErrorEvent, ErrorEvent)
-
-#undef PERFORM_FORWARD
+void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent* evt)
+{
+  lock_type lock (_state_machine_mutex);
+  process_event (*evt);
+}
+void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
+{
+  lock_type lock (_state_machine_mutex);
+  process_event (*evt);
+}
+void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
+{
+  lock_type lock (_state_machine_mutex);
+  process_event (*evt);
+}
+void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
+{
+  lock_type lock (_state_machine_mutex);
+  process_event (*evt);
+}
