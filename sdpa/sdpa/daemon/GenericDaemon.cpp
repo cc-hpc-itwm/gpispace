@@ -410,8 +410,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
   try {
     const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
 
-    DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
-
     // create a SubmitJobEvent for the job job_id serialize and attach description
     LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
 
