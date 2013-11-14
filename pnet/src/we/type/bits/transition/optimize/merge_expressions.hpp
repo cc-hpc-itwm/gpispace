@@ -264,7 +264,7 @@ namespace we { namespace type {
             if (pid_read.find (place_id) == pid_read.end())
               {
                 const port_t & pred_out
-                  (pred.get_port (output_port_by_pid (pred, place_id).first));
+                  (pred.get_port (output_port_by_pid (pred, place_id)->first));
 
                 port_t & trans_in
                   (trans.get_port (input_port_by_pid (trans, place_id)->first));

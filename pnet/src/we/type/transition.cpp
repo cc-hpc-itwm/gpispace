@@ -39,7 +39,7 @@ namespace we
 
     // ********************************************************************* //
 
-    transition_t::port_id_with_prop_t
+    boost::optional<transition_t::port_id_with_prop_t>
     output_port_by_pid ( transition_t const& trans
                        , const petri_net::place_id_type& pid
                        )
@@ -54,8 +54,7 @@ namespace we
         }
       }
 
-      throw exception::not_connected<petri_net::place_id_type>
-        ("trans: "+trans.name()+": output port not connected by pid: "+ fhg::util::show (pid), pid);
+      return boost::none;
     }
 
     boost::optional<transition_t::port_id_with_prop_t const&>
