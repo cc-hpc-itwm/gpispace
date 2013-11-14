@@ -19,6 +19,7 @@ case "$myhost" in
         export NACL_HOME=~/external_software/nacl/20110221
         export SMC_HOME=~/external_software/smc/5.0.0
         export TMPDIR=/tmp/gitlab-ci
+        export CCACHE_DIR="${TMPDIR}/.ccache"
         opts+=(--type=Debug)
         opts+=(--assert-mode=on)
         makeflags+=(-j2)
@@ -27,6 +28,7 @@ case "$myhost" in
         if [ "$myhost" = "build-centos6" ]
         then
             export PATH="$HOME/external_software/ccache/3.1.9/lib:$PATH"
+            export CCACHE_DIR=
         fi
         ;;
     lcs*)
