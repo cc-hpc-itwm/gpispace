@@ -1343,24 +1343,12 @@ void GenericDaemon::requestRegistration()
 
 void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 {
-  if( scheduler() )
-  {
-    scheduler()->schedule(jobId);
-    return;
-  }
-
-  throw std::runtime_error(name() + " does not have scheduler!");
+  scheduler()->schedule(jobId);
 }
 
 void GenericDaemon::reschedule(const sdpa::job_id_t& jobId)
 {
-  if( scheduler() )
-  {
-    scheduler()->rescheduleJob(jobId);
-    return;
-  }
-
-  throw std::runtime_error(name() + " does not have scheduler!");
+  scheduler()->rescheduleJob(jobId);
 }
 
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
