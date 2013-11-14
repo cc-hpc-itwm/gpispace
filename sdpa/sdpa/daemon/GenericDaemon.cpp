@@ -1317,6 +1317,14 @@ void GenericDaemon::requestRegistration()
 
 void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 {
+  //! \todo This check if bogus, as there just shouldn't be some race
+  //! in a test where schedule() may be called before/after complete
+  //! construction.
+  if (!scheduler())
+  {
+    throw std::runtime_error
+      ("GenericDaemon::schedule called before start_agent() or after shutdown()!");
+  }
   scheduler()->schedule(jobId);
 }
 
