@@ -87,6 +87,8 @@ GenericDaemon::GenericDaemon( const std::string name,
   {
     DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
+
+  _stages_to_remove.push_back (name);
 }
 
 void GenericDaemon::start_agent()
@@ -142,6 +144,7 @@ void GenericDaemon::start_agent()
       (new seda::Stage (m_to_master_stage_name_, net));
 
     seda::StageRegistry::instance().insert (network_stage);
+    _stages_to_remove.push_back (m_to_master_stage_name_);
 
     ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
   }

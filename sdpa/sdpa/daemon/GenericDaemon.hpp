@@ -306,6 +306,9 @@ namespace sdpa {
 
     protected:
       boost::optional<NotificationService> m_guiService;
+
+    private:
+      std::vector<std::string> _stages_to_remove;
     };
   }
 }
