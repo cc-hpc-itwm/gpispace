@@ -297,7 +297,6 @@ namespace sdpa {
       unsigned int m_nRank;
       sdpa::worker_id_t m_strAgentUID;
 
-      bool m_bStopped;
       mutex_type mtx_subscriber_;
       mutex_type mtx_master_;
       mutex_type mtx_cpb_;

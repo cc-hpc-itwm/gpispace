@@ -65,7 +65,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     ptr_workflow_engine_(NULL),
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
-    m_bStopped(false),
     m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
                    (NotificationService (*guiUrl))
@@ -124,8 +123,6 @@ void GenericDaemon::start_agent()
       process_event (ConfigNokEvent());
     }
 
-    m_bStopped = true;
-
     LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
     throw std::runtime_error ("configuration of network failed: invalid url");
   }
@@ -154,8 +151,6 @@ void GenericDaemon::start_agent()
       lock_type lock (_state_machine_mutex);
       process_event (ConfigNokEvent());
     }
-
-    m_bStopped = true;
 
     throw;
   }
@@ -200,8 +195,6 @@ void GenericDaemon::shutdown( )
   }
 
   ptr_scheduler_.reset();
-
-  m_bStopped 	= true;
 
   {
     lock_type lock (_state_machine_mutex);
