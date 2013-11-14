@@ -1,5 +1,6 @@
 #include "util.hpp"
 
+#include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -158,7 +159,7 @@ namespace gspc
 
     static std::string s_hostname ()
     {
-      char buf [512];
+      char buf [HOST_NAME_MAX];
       int rc = gethostname (buf, sizeof(buf));
       if (0 == rc)
         return std::string (buf);
