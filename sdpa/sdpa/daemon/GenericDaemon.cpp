@@ -145,11 +145,10 @@ void GenericDaemon::start_agent()
 
   if (!isTop())
   {
-    // try to re-register
-    lock_type lock(mtx_master_);
-    BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+    lock_type lock (mtx_master_);
+    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
     {
-      requestRegistration(masterInfo);
+      requestRegistration (masterInfo);
     }
   }
 }
