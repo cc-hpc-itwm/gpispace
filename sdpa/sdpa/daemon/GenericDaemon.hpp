@@ -67,12 +67,7 @@ namespace sdpa {
       {
         virtual ~DaemonFSM_ () {}
 
-        struct Down : public boost::msm::front::state<>{};
         struct Up : public boost::msm::front::state<>{};
-
-        struct InterruptEvent {};
-        struct ConfigOkEvent {};
-        struct ConfigNokEvent {};
 
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent& ) = 0;
         virtual void action_submit_job(const sdpa::events::SubmitJobEvent& ) = 0;
