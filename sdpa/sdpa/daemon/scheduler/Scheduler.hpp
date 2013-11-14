@@ -82,7 +82,7 @@ namespace daemon {
     virtual bool groupFinished(const sdpa::job_id_t&) = 0;
     virtual void releaseReservation(const sdpa::job_id_t& jobId) = 0;
 
-    virtual void start(IAgent*) = 0;
+    virtual void start() = 0;
     virtual void stop() = 0;
     virtual void run() = 0;
     virtual void print() = 0;

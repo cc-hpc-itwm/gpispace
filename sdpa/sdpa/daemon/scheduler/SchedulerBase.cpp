@@ -383,11 +383,8 @@ const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id
   return ptr_worker_man_->findSubmOrAckWorker(job_id);
 }
 
-void SchedulerBase::start(IAgent* p)
+void SchedulerBase::start()
 {
-  if(p)
-    ptr_comm_handler_ = p;
-
   bStopRequested = false;
   if(!ptr_comm_handler_)
   {

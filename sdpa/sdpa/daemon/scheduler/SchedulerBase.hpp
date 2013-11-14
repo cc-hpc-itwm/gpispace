@@ -87,7 +87,7 @@ namespace sdpa {
       void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
       // thread related functions
-      virtual void start(IAgent*);
+      virtual void start();
       virtual void stop();
       virtual void run();
 

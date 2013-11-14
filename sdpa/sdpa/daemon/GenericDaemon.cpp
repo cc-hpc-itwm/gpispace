@@ -161,7 +161,7 @@ void GenericDaemon::start_agent()
   }
 
   DMLOG (TRACE, "Starting the scheduler...");
-  scheduler()->start(this);
+  scheduler()->start();
 
   // start the network stage
   to_master_stage()->start();
