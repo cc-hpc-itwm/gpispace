@@ -117,10 +117,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         FOREACH (const petri_net::connection_t& connection, net.connections()) {
-            switch (connection.type) {
+            switch (connection.type()) {
                 case petri_net::edge::PT: {
-                    Place *place = find(places_, connection.pid);
-                    Transition *transition = find(transitions_, connection.tid);
+                  Place *place = find(places_, connection.place_id());
+                    Transition *transition = find(transitions_, connection.transition_id());
 
                     /* Transition consumes the token on input place. */
                     transition->addInputPlace(place);
@@ -128,8 +128,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     break;
                 }
                 case petri_net::edge::PT_READ: {
-                    Place *place = find(places_, connection.pid);
-                    Transition *transition = find(transitions_, connection.tid);
+                  Place *place = find(places_, connection.place_id());
+                    Transition *transition = find(transitions_, connection.transition_id());
 
                     /* Transition takes a token and instantly puts it back. */
                     transition->addInputPlace(place);
@@ -137,8 +137,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
                     break;
                 }
                 case petri_net::edge::TP: {
-                    Transition *transition = find(transitions_, connection.tid);
-                    Place *place = find(places_, connection.pid);
+                    Transition *transition = find(transitions_, connection.transition_id());
+                    Place *place = find(places_, connection.place_id());
 
                     /* Executing the transition puts a token on output place. */
                     transition->addOutputPlace(place);
