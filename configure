@@ -175,7 +175,7 @@ general options:
 
       -h|--help : print help
         --query : query the current settings
-    --type type : set the build type
+    --type=type : set the build type
   --prefix=PATH : install prefix
 
 modify behavior:
