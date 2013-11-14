@@ -84,8 +84,6 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
       return;
   }
 
-  ostringstream os;
-
   try
   {
       // delete it from the worker's queues

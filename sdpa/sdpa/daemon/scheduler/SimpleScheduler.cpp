@@ -64,8 +64,6 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
       return;
   }
 
-  ostringstream os;
-
   try {
       Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
       if( !pJob->completed()) {
