@@ -34,7 +34,7 @@ static void long_usage (int lvl)
     << "   -h|--help              print this help"                  << std::endl
     << "   -v|--verbose           be more verbose"                  << std::endl
     << "   -f|--force             force startup"                    << std::endl
-    << "   --foreground           do not daemonize"                 << std::endl
+    << "   --nodaemon             do not daemonize"                 << std::endl
     << ""                                                           << std::endl
     << "   --url URL              were to start the gspc daemon"    << std::endl
     << "                          default: " << puburl              << std::endl
@@ -187,7 +187,7 @@ int main (int argc, char *argv[])
 
       session = argv [i++];
     }
-    else if (arg == "--foreground")
+    else if (arg == "--nodaemon")
     {
       daemonize = false;
     }
