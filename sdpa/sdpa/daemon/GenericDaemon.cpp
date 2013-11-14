@@ -191,7 +191,7 @@ void GenericDaemon::shutdown( )
         sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
     }
 
-    scheduler()->stop();
+    ptr_scheduler_.reset();
 
     m_bStopped 	= true;
 
