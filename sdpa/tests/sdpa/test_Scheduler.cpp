@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   // assign jobs to the workers
   ptrScheduler->printAllocationTable();
   BOOST_REQUIRE (ptrScheduler->schedulingAllowed());
-  ptrScheduler->schedule_remotely(jid);
+  ptrScheduler->schedule_remotely(ptrScheduler->nextJobToSchedule());
   ptrScheduler->assignJobsToWorkers();
   ptrScheduler->checkAllocations();
   ptrScheduler->printAllocationTable();
