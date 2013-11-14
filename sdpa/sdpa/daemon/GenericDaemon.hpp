@@ -171,12 +171,6 @@ namespace sdpa {
       virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *);
       virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *);
 
-      // agent fsm (actions)
-      virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
-      virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
-      virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
-      virtual void action_error_event(const sdpa::events::ErrorEvent& );
-
       // event communication
       virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout

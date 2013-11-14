@@ -220,10 +220,7 @@ void GenericDaemon::addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, c
 void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
 {
   const DeleteJobEvent& e (*evt);
-  action_delete_job (e);
-}
-void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
-{
+
   DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
 
   try{
@@ -394,10 +391,7 @@ bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
 void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
 {
   const SubmitJobEvent& e (*evt);
-  action_submit_job (e);
-}
-void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
-{
+
   DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
 
   // check if the incoming event was produced by a master to which the current agent has already registered
@@ -521,10 +515,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent* evt)
 {
   const WorkerRegistrationEvent& evtRegWorker (*evt);
-  action_register_worker (evtRegWorker);
-}
-void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
-{
+
   worker_id_t worker_id (evtRegWorker.from());
 
   // check if the worker evtRegWorker.from() has already registered!
@@ -586,10 +577,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 {
   const sdpa::events::ErrorEvent& error (*evt);
-  action_error_event (error);
-}
-void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
-{
+
   DMLOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
 
   // if it'a communication error, inspect all jobs and
