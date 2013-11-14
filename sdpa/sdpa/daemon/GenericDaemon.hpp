@@ -52,8 +52,6 @@
 
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
-#include <boost/msm/back/state_machine.hpp>
-#include <boost/msm/front/state_machine_def.hpp>
 #include <boost/thread.hpp>
 
 
@@ -61,47 +59,10 @@
 
 namespace sdpa {
   namespace daemon {
-    namespace detail
-    {
-      struct DaemonFSM_ : public boost::msm::front::state_machine_def<DaemonFSM_>
-      {
-        virtual ~DaemonFSM_ () {}
-
-        struct Down : public boost::msm::front::state<>{};
-        struct Up : public boost::msm::front::state<>{};
-
-        struct InterruptEvent {};
-        struct ConfigOkEvent {};
-        struct ConfigNokEvent {};
-
-        virtual void action_delete_job(const sdpa::events::DeleteJobEvent& ) = 0;
-        virtual void action_submit_job(const sdpa::events::SubmitJobEvent& ) = 0;
-        virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
-        virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
-
-        typedef Down initial_state;
-
-        struct transition_table : boost::mpl::vector<
-        //      Start         Event         		                      Next            Action                Guard
-        //      +-------------+---------------------------------------+---------------+---------------------+-----
-        _row<   Down,         ConfigOkEvent,                          Up>,
-        _irow<  Down,         ConfigNokEvent>,
-        _irow<  Down,         sdpa::events::ErrorEvent >,
-        //      +------------+-----------------------+----------------+--------------+-----
-        _row<   Up,           InterruptEvent,                         Down>,
-        a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &DaemonFSM_::action_register_worker>,
-        a_irow< Up,           sdpa::events::DeleteJobEvent,                           &DaemonFSM_::action_delete_job>,
-        a_irow< Up,           sdpa::events::SubmitJobEvent,                           &DaemonFSM_::action_submit_job>,
-        a_irow< Up,           sdpa::events::ErrorEvent,                               &DaemonFSM_::action_error_event>
-        >{};
-      };
-    }
-
     class GenericDaemon : public sdpa::daemon::IAgent,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
-                        , public boost::msm::back::state_machine<detail::DaemonFSM_>
     {
     public:
       typedef boost::recursive_mutex mutex_type;
@@ -114,6 +75,7 @@ namespace sdpa {
                     unsigned int rank = 0
                    , const boost::optional<std::string>& guiUrl = boost::none
                    );
+      virtual ~GenericDaemon() {}
 
       SDPA_DECLARE_LOGGER();
 
@@ -209,19 +171,12 @@ namespace sdpa {
       virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *);
       virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *);
 
-      // agent fsm (actions)
-      virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
-      virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
-      virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
-      virtual void action_error_event(const sdpa::events::ErrorEvent& );
-
       // event communication
       virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
       virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
 
       // registration
-      virtual void requestRegistration();
       virtual void requestRegistration(const MasterInfo& masterInfo);
       virtual void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 
@@ -297,7 +252,6 @@ namespace sdpa {
       unsigned int m_nRank;
       sdpa::worker_id_t m_strAgentUID;
 
-      bool m_bStopped;
       mutex_type mtx_subscriber_;
       mutex_type mtx_master_;
       mutex_type mtx_cpb_;
@@ -306,6 +260,9 @@ namespace sdpa {
 
     protected:
       boost::optional<NotificationService> m_guiService;
+
+    private:
+      std::vector<std::string> _stages_to_remove;
     };
   }
 }

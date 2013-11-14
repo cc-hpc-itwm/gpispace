@@ -65,7 +65,6 @@ GenericDaemon::GenericDaemon( const std::string name,
     ptr_workflow_engine_(NULL),
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
-    m_bStopped(false),
     m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
                    (NotificationService (*guiUrl))
@@ -87,14 +86,12 @@ GenericDaemon::GenericDaemon( const std::string name,
   {
     DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
+
+  _stages_to_remove.push_back (name);
 }
 
 void GenericDaemon::start_agent()
 {
-  createScheduler();
-
-  ptr_daemon_stage_.lock()->start();
-
   // use for now as below, later read from config file
   // TODO: move this to "property" style:
   //    dot separated
@@ -108,7 +105,13 @@ void GenericDaemon::start_agent()
   // set default configuration
   cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
 
-  DMLOG (TRACE, "Try to configure the network now ... ");
+
+  ptr_daemon_stage_.lock()->start();
+
+
+  createScheduler();
+  scheduler()->start();
+
 
   const boost::tokenizer<boost::char_separator<char> > tok
     (url(), boost::char_separator<char> (":"));
@@ -117,60 +120,36 @@ void GenericDaemon::start_agent()
 
   if (vec.empty() || vec.size() > 2)
   {
-    {
-      lock_type lock (_state_machine_mutex);
-      process_event (ConfigNokEvent());
-    }
-
-    m_bStopped = true;
-
     LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
     throw std::runtime_error ("configuration of network failed: invalid url");
   }
 
-  try
-  {
-    sdpa::com::NetworkStrategy::ptr_t net
-      ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
-                                       , name() /*name for peer*/
-                                       , fhg::com::host_t (vec[0])
-                                       , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
-                                       )
-      );
+  sdpa::com::NetworkStrategy::ptr_t net
+    ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
+                                     , name() /*name for peer*/
+                                     , fhg::com::host_t (vec[0])
+                                     , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
+                                     )
+    );
 
-    seda::Stage::Ptr network_stage
-      (new seda::Stage (m_to_master_stage_name_, net));
+  seda::Stage::Ptr network_stage
+    (new seda::Stage (m_to_master_stage_name_, net));
 
-    seda::StageRegistry::instance().insert (network_stage);
+  seda::StageRegistry::instance().insert (network_stage);
+  _stages_to_remove.push_back (m_to_master_stage_name_);
 
-    ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-  }
-  catch (...)
-  {
-    {
-      lock_type lock (_state_machine_mutex);
-      process_event (ConfigNokEvent());
-    }
+  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 
-    m_bStopped = true;
-
-    throw;
-  }
-
-  DMLOG (TRACE, "Starting the scheduler...");
-  scheduler()->start();
-
-  // start the network stage
   to_master_stage()->start();
 
-  {
-    lock_type lock (_state_machine_mutex);
-    process_event (ConfigOkEvent());
-  }
 
   if (!isTop())
   {
-    requestRegistration();
+    lock_type lock (mtx_master_);
+    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+    {
+      requestRegistration (masterInfo);
+    }
   }
 }
 
@@ -180,33 +159,32 @@ void GenericDaemon::start_agent()
 void GenericDaemon::shutdown( )
 {
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
-  if (!m_bStopped)
+
+  BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
   {
-    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
+    if (!masterInfo.name().empty() && masterInfo.is_registered())
     {
-      if( !masterInfo.name().empty() && masterInfo.is_registered() )
-        sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
+      sendEventToMaster
+        ( ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                           , masterInfo.name()
+                                           , ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                           , "node shutdown"
+                                           )
+                          )
+        );
     }
-
-    DMLOG (TRACE, "Stopping the network stage "<<m_to_master_stage_name_);
-    seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-    seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-
-    scheduler()->stop();
-
-    m_bStopped 	= true;
-
-    {
-      lock_type lock (_state_machine_mutex);
-      process_event (InterruptEvent());
-    }
-
-    seda::StageRegistry::instance().lookup(name())->stop();
-    seda::StageRegistry::instance().remove(name());
-
-    delete ptr_workflow_engine_;
-    ptr_workflow_engine_ = NULL;
   }
+
+  ptr_scheduler_.reset();
+
+  BOOST_FOREACH (std::string stage, _stages_to_remove)
+  {
+    seda::StageRegistry::instance().lookup (stage)->stop();
+    seda::StageRegistry::instance().remove (stage);
+  }
+
+  delete ptr_workflow_engine_;
+  ptr_workflow_engine_ = NULL;
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
@@ -239,8 +217,10 @@ void GenericDaemon::addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, c
 
 
 //actions
-void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
+void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
 {
+  const DeleteJobEvent& e (*evt);
+
   DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
 
   try{
@@ -258,17 +238,6 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
                                                         , "no such job"
                                                         )
                                         )
-               );
-  }
-  catch(JobNotMarkedException const &)
-  {
-    DMLOG (WARN, "Job " << e.job_id() << " not ready for deletion!");
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-                                                        , e.from()
-                                                        , ErrorEvent::SDPA_EAGAIN
-                                                        , "not ready for deletion, try again later"
-                                                        )
-                                      )
                );
   }
   catch(JobNotDeletedException const & ex)
@@ -419,8 +388,10 @@ bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
   return masterInfo.name() == name;
 }
 
-void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
+void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
 {
+  const SubmitJobEvent& e (*evt);
+
   DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
 
   // check if the incoming event was produced by a master to which the current agent has already registered
@@ -541,8 +512,10 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   }
 }
 
-void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
+void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent* evt)
 {
+  const WorkerRegistrationEvent& evtRegWorker (*evt);
+
   worker_id_t worker_id (evtRegWorker.from());
 
   // check if the worker evtRegWorker.from() has already registered!
@@ -601,8 +574,10 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
   }
 }
 
-void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
+void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 {
+  const sdpa::events::ErrorEvent& error (*evt);
+
   DMLOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
 
   // if it'a communication error, inspect all jobs and
@@ -1146,84 +1121,20 @@ void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pE
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
-  try {
-    if(ptr_daemon_stage_.lock())
-    {
-      ptr_daemon_stage_.lock()->send(pEvt);
-      DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-    }
-    else
-    {
-      DMLOG (ERROR, "Daemon stage not defined! ");
-    }
-  }
-  catch(const seda::QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event. The queue is full!");
-  }
-  catch(const seda::StageNotFound& ex)
-  {
-    DMLOG (ERROR, "Stage not found! "<<ex.what());
-  }
-  catch(const std::exception& ex)
-  {
-    DMLOG (WARN, "Could not send event. Exception occurred: "<<ex.what());
-  }
+  ptr_daemon_stage_.lock()->send(pEvt);
+  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
 void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
-  try {
-    if( to_master_stage().get() )
-    {
-      to_master_stage()->send(pEvt);
-      DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-      // to_master_stage()->dump();
-    }
-    else
-    {
-      DMLOG (ERROR, "The master stage does not exist!");
-    }
-  }
-  catch(const QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event. The queue is full!");
-  }
-  catch(const seda::StageNotFound& )
-  {
-    DMLOG (ERROR, "Stage "<<to_master_stage()->name()<<" not found!");
-  }
-  catch(const std::exception& ex)
-  {
-    DMLOG (WARN, "Could not send event. Exception occurred: "<<ex.what());
-  }
+  to_master_stage()->send(pEvt);
+  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
 void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
-  try {
-    if( to_slave_stage().get() )
-    {
-       to_slave_stage()->send(pEvt);
-      DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-    }
-    else
-    {
-      DMLOG (ERROR, "The slave stage does not exist!");
-    }
-  }
-  catch(const QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event. The queue is full!");
-  }
-  catch(const seda::StageNotFound& )
-  {
-    DMLOG (ERROR, "Stage "<<to_slave_stage()->name()<<" not found!");
-  }
-  catch(const std::exception& ex)
-  {
-    DMLOG (WARN, "Could not send event. Exception occurred: "<<ex.what());
-  }
+  to_slave_stage()->send(pEvt);
+  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
 Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
@@ -1331,18 +1242,16 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
   }
 }
 
-void GenericDaemon::requestRegistration()
-{
-  // try to re-register
-  lock_type lock(mtx_master_);
-  BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-  {
-    requestRegistration(masterInfo);
-  }
-}
-
 void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 {
+  //! \todo This check if bogus, as there just shouldn't be some race
+  //! in a test where schedule() may be called before/after complete
+  //! construction.
+  if (!scheduler())
+  {
+    throw std::runtime_error
+      ("GenericDaemon::schedule called before start_agent() or after shutdown()!");
+  }
   scheduler()->schedule(jobId);
 }
 
@@ -1520,17 +1429,3 @@ Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 {
   return scheduler()->getWorkerId(r);
 }
-
-#define PERFORM_FORWARD(METHOD,EVENT_TYPE)                \
-      void GenericDaemon::METHOD(const EVENT_TYPE* evt)   \
-      {                                                   \
-        lock_type lock (_state_machine_mutex);            \
-        process_event (*evt);                             \
-      }
-
-      PERFORM_FORWARD (handleWorkerRegistrationEvent, WorkerRegistrationEvent)
-      PERFORM_FORWARD (handleDeleteJobEvent, DeleteJobEvent)
-      PERFORM_FORWARD (handleSubmitJobEvent, SubmitJobEvent)
-      PERFORM_FORWARD (handleErrorEvent, ErrorEvent)
-
-#undef PERFORM_FORWARD
