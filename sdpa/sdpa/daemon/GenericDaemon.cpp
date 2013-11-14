@@ -185,10 +185,19 @@ void GenericDaemon::shutdown( )
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
   if (!m_bStopped)
   {
-    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
+    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
     {
-      if( !masterInfo.name().empty() && masterInfo.is_registered() )
-        sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
+      if (!masterInfo.name().empty() && masterInfo.is_registered())
+      {
+        sendEventToMaster
+          ( ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                             , masterInfo.name()
+                                             , ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                             , "node shutdown"
+                                             )
+                            )
+          );
+      }
     }
 
     ptr_scheduler_.reset();
