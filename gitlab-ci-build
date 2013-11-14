@@ -18,6 +18,7 @@ case "$myhost" in
         export NACL_HOME=~/external_software/nacl/20110221
         export SMC_HOME=~/external_software/smc/5.0.0
         opts+=(--type=Debug)
+        opts+=(--assert-mode=on)
         makeflags+=(-j2)
         send_mail=true
 
