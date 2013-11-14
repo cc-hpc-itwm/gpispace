@@ -268,7 +268,6 @@ namespace sdpa {
 
     protected:
       virtual void schedule(const sdpa::job_id_t& job);
-      virtual void reschedule(const sdpa::job_id_t& job);
       virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
 
       // data members

@@ -1346,11 +1346,6 @@ void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
   scheduler()->schedule(jobId);
 }
 
-void GenericDaemon::reschedule(const sdpa::job_id_t& jobId)
-{
-  scheduler()->rescheduleJob(jobId);
-}
-
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
 {
   lock_type lock(mtx_master_);
