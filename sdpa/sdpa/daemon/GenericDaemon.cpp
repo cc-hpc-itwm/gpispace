@@ -1488,25 +1488,17 @@ Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 
 void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent* evt)
 {
-  lock_type lock (_state_machine_mutex);
-  process_event (*evt);
   action_register_worker (*evt);
 }
 void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
 {
-  lock_type lock (_state_machine_mutex);
-  process_event (*evt);
   action_delete_job (*evt);
 }
 void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
 {
-  lock_type lock (_state_machine_mutex);
-  process_event (*evt);
   action_submit_job (*evt);
 }
 void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 {
-  lock_type lock (_state_machine_mutex);
-  process_event (*evt);
   action_error_event (*evt);
 }

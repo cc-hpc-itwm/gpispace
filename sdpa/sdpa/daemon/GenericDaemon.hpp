@@ -79,10 +79,6 @@ namespace sdpa {
         struct transition_table : boost::mpl::vector<
         //      Start         Event         		                      Next            Action                Guard
         //      +-------------+---------------------------------------+---------------+---------------------+-----
-        _irow< Up,           sdpa::events::WorkerRegistrationEvent>,
-        _irow< Up,           sdpa::events::DeleteJobEvent>,
-        _irow< Up,           sdpa::events::SubmitJobEvent>,
-        _irow< Up,           sdpa::events::ErrorEvent>
         >{};
       };
     }
