@@ -249,145 +249,145 @@ int main (int argc, char *argv[])
   switch (mode)
   {
   case MODE_LIST:
-  {
-    int ec = s_list_sessions (session_dir, verbose);
-    switch (ec)
     {
-    case -EPERM:
-      rc = EX_NOPERM;
-      break;
-    case -ENOENT:
-      rc = EX_UNAVAILABLE;
-      break;
-    case 0:
-      rc = 0;
-      break;
-    default:
-      rc = EX_SOFTWARE;
-      break;
+      int ec = s_list_sessions (session_dir, verbose);
+      switch (ec)
+      {
+      case -EPERM:
+        rc = EX_NOPERM;
+        break;
+      case -ENOENT:
+        rc = EX_UNAVAILABLE;
+        break;
+      case 0:
+        rc = 0;
+        break;
+      default:
+        rc = EX_SOFTWARE;
+        break;
+      }
     }
-  }
-  break;
+    break;
   case MODE_STATUS:
-  {
-    gspc::ctl::session_info_t info;
-    rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
-                                    , info
-                                    );
-    if (0 == rc)
     {
-      if (verbose)
+      gspc::ctl::session_info_t info;
+      rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
+                                      , info
+                                      );
+      if (0 == rc)
       {
-        std::cout << "ALIVE: " << info << std::endl;
-      }
-    }
-    else if (rc == -ECONNREFUSED)
-    {
-      if (verbose)
-      {
-        std::cout << "DEAD: " << session << std::endl;
-      }
-    }
-    else
-    {
-      if (verbose)
-      {
-        std::cout << "ERROR: " << session << ": " << strerror (-rc) << std::endl;
-      }
-    }
-  }
-  break;
-  case MODE_STOP:
-  {
-    gspc::ctl::session_info_t info;
-    rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
-                                    , info
-                                    );
-    if (0 == rc)
-    {
-      if (force)
-      {
-        kill (info.pid, SIGKILL);
         if (verbose)
         {
-          std::cerr << "sent SIGKILL to " << info.pid << std::endl;
+          std::cout << "ALIVE: " << info << std::endl;
+        }
+      }
+      else if (rc == -ECONNREFUSED)
+      {
+        if (verbose)
+        {
+          std::cout << "DEAD: " << session << std::endl;
         }
       }
       else
       {
-        kill (info.pid, SIGTERM);
         if (verbose)
         {
-          std::cerr << "sent SIGTERM to " << info.pid << std::endl;
+          std::cout << "ERROR: " << session << ": " << strerror (-rc) << std::endl;
         }
       }
     }
-    else
+    break;
+  case MODE_STOP:
     {
-      std::cerr << "no such session: " << session << std::endl;
-      rc = EX_UNAVAILABLE;
+      gspc::ctl::session_info_t info;
+      rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
+                                      , info
+                                      );
+      if (0 == rc)
+      {
+        if (force)
+        {
+          kill (info.pid, SIGKILL);
+          if (verbose)
+          {
+            std::cerr << "sent SIGKILL to " << info.pid << std::endl;
+          }
+        }
+        else
+        {
+          kill (info.pid, SIGTERM);
+          if (verbose)
+          {
+            std::cerr << "sent SIGTERM to " << info.pid << std::endl;
+          }
+        }
+      }
+      else
+      {
+        std::cerr << "no such session: " << session << std::endl;
+        rc = EX_UNAVAILABLE;
+      }
     }
-  }
-  break;
+    break;
   case MODE_URL:
-  {
-    gspc::ctl::session_info_t info;
-    rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
-                                    , info
-                                    );
-    if (0 == rc)
     {
-      std::cout << info.puburl << std::endl;
+      gspc::ctl::session_info_t info;
+      rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
+                                      , info
+                                      );
+      if (0 == rc)
+      {
+        std::cout << info.puburl << std::endl;
+      }
+      else
+      {
+        std::cerr << "no such session: " << session << std::endl;
+        rc = EX_UNAVAILABLE;
+      }
     }
-    else
-    {
-      std::cerr << "no such session: " << session << std::endl;
-      rc = EX_UNAVAILABLE;
-    }
-  }
-  break;
+    break;
   case MODE_START:
-  {
-    gspc::ctl::session_t s;
-    s.set_session_dir (session_dir);
-    s.set_session_name (session);
-    s.set_bind_url (puburl);
+    {
+      gspc::ctl::session_t s;
+      s.set_session_dir (session_dir);
+      s.set_session_name (session);
+      s.set_bind_url (puburl);
 
-    gspc::ctl::session_info_t info;
+      gspc::ctl::session_info_t info;
 
-    if (daemonize)
-    {
-      rc = s.daemonize_then_run (info);
-    }
-    else
-    {
-      rc = s.run (info);
-    }
+      if (daemonize)
+      {
+        rc = s.daemonize_then_run (info);
+      }
+      else
+      {
+        rc = s.run (info);
+      }
 
-    if (0 == rc)
-    {
-      std::cout << info.puburl << std::endl;
+      if (0 == rc)
+      {
+        std::cout << info.puburl << std::endl;
+      }
+      else if (-EEXIST == rc)
+      {
+        std::cerr << "session '" << session << "' still running: "
+                  << "[" << info.pid << "]"
+                  << std::endl
+          ;
+        rc = EX_TEMPFAIL;
+      }
+      else
+      {
+        std::cerr << "failed to start: " << strerror (-rc) << std::endl;
+        rc = EX_UNAVAILABLE;
+      }
     }
-    else if (-EEXIST == rc)
-    {
-      std::cerr << "session '" << session << "' still running: "
-                << "[" << info.pid << "]"
-                << std::endl
-        ;
-      rc = EX_TEMPFAIL;
-    }
-    else
-    {
-      std::cerr << "failed to start: " << strerror (-rc) << std::endl;
-      rc = EX_UNAVAILABLE;
-    }
-  }
-  break;
+    break;
   default:
-  {
-    std::cerr << "gspcd: mode '" << mode << "' not yet implemented" << std::endl;
-    return EX_SOFTWARE;
-  }
+    {
+      std::cerr << "gspcd: mode '" << mode << "' not yet implemented" << std::endl;
+      return EX_SOFTWARE;
+    }
   }
 
   if (rc < 0)
