@@ -643,32 +643,6 @@ void SchedulerBase::forceOldWorkerJobsTermination()
   if(ptr_comm_handler_->hasWorkflowEngine())
   {
     sdpa::cancellation_list_t new_cancellation_list;
-    while( !cancellation_list_.empty() )
-    {
-      worker_job_pair_t worker_job_pair = cancellation_list_.front();
-      sdpa::worker_id_t workerId = worker_job_pair.first;
-      sdpa::job_id_t jobId = worker_job_pair.second;
-
-      try {
-        SDPA_LOG_INFO("Tell the worker "<<workerId<<" to cancel the job "<<jobId);
-        Worker::ptr_t pWorker = findWorker(workerId);
-
-        CancelJobEvent::Ptr pEvtCancelJob (new CancelJobEvent(  ptr_comm_handler_->name()
-                                                                , workerId
-                                                                , jobId
-                                                                , "The master recovered after a crash!") );
-
-        ptr_comm_handler_->sendEventToSlave(pEvtCancelJob);
-      }
-      catch (const WorkerNotFoundException& ex)
-      {
-        new_cancellation_list.push_back(worker_job_pair);
-        //SDPA_LOG_WARN("Couldn't find the worker "<<workerId<<"(not registered yet)!");
-      }
-
-      cancellation_list_.pop_front();
-    }
-
     cancellation_list_ = new_cancellation_list;
   }
 }
