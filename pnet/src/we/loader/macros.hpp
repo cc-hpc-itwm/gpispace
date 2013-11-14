@@ -59,9 +59,6 @@
 #define WE_REGISTER_FUN_AS(fun,as)             \
         mod->add_function(as, &fun)
 
-#define WE_SET_STATE(s)\
-        mod->state (s)
-
 #define WE_MOD_INITIALIZE_END(modname)\
     }\
   }
@@ -73,12 +70,6 @@
      void DLL_PUBLIC we_mod_finalize(::we::loader::IModule *mod)\
      {\
         (void)(mod)
-
-#define WE_GET_STATE()\
-         mod->state()
-
-#define WE_CLEAR_STATE()\
-         mod->state(0)
 
 #define WE_MOD_FINALIZE_END(modname)\
      }\

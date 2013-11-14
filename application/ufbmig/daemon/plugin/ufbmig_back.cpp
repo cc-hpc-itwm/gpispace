@@ -25,6 +25,7 @@
 #include <we/type/net.hpp>
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
+#include <pnetc/type/config/op.hpp>
 
 #include <we/type/value.hpp>
 
@@ -32,6 +33,32 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+
+namespace
+{
+  std::list<pnet::type::value::value_type>
+  get ( we::mgmt::type::activity_t const & act
+      , std::string const & port
+      )
+  {
+    typedef we::mgmt::type::activity_t::output_t output_t;
+
+    std::list<pnet::type::value::value_type> tokens;
+    const petri_net::port_id_type port_id
+      (act.transition().output_port_by_name (port));
+
+    for ( output_t::const_iterator out(act.output().begin())
+        ; out != act.output().end()
+        ; ++out
+        )
+      {
+        if (out->second == port_id)
+          tokens.push_back (out->first);
+      }
+
+    return tokens;
+  }
+}
 
 namespace fs = boost::filesystem;
 
@@ -543,7 +570,7 @@ public:
     lock_type lock (m_job_list_mutex);
     if (m_job_list.size())
     {
-      MLOG(INFO, "CANCELLING running workflows");
+      MLOG(INFO, "CANCELING running workflows");
       BOOST_FOREACH(job::info_t const & j, m_job_list)
       {
         if (! job::is_done(j))
@@ -842,11 +869,11 @@ private:
   {
     try
     {
-      we::util::token::list_t output (we::util::token::get (result, "config"));
+      std::list<pnet::type::value::value_type> output (get (result, "config"));
       if (output.empty())
         throw std::runtime_error("empty list");
-      config = pnetc::type::config::config (output.front());
-      MLOG(INFO, "got config: " << config);
+      config = pnetc::type::config::from_value (output.front());
+      MLOG (INFO, "got config: " << config);
     }
     catch (std::exception const & ex)
     {

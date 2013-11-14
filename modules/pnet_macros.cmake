@@ -73,6 +73,7 @@ macro(PNET_COMPILE)
   foreach(flag ${PNET_CXXFLAGS})
     set (PNET_FLAGS ${PNET_FLAGS} --gen-cxxflags=${flag})
   endforeach()
+  set (PNET_FLAGS ${PNET_FLAGS} --gen-cxxflags="-I${CMAKE_SOURCE_DIR}/gspc")
 
   set(PNETC_ARGS ${PNET__default_flags}
                  ${PNET_FLAGS}

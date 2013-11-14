@@ -2,97 +2,288 @@
 #define SDPA_JOB_HPP 1
 
 #include <sdpa/daemon/mpl.hpp>
-#include <string>
-#include <vector>
-#include <utility>
 
+#include <sdpa/common.hpp>
+#include <sdpa/events/CancelJobAckEvent.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
+#include <sdpa/events/DeleteJobAckEvent.hpp>
+#include <sdpa/events/DeleteJobEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/JobResultsReplyEvent.hpp>
+#include <sdpa/events/JobRunningEvent.hpp>
+#include <sdpa/events/JobStalledEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
+#include <sdpa/events/QueryJobStatusEvent.hpp>
+#include <sdpa/events/RetrieveJobResultsEvent.hpp>
+#include <sdpa/events/SubmitJobAckEvent.hpp>
+#include <sdpa/job_states.hpp>
+#include <sdpa/logging.hpp>
 #include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
-#include <sdpa/util/Properties.hpp>
 
-#include <sdpa/events/SubmitJobAckEvent.hpp>
-#include <sdpa/events/JobFailedEvent.hpp>
-#include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/CancelJobAckEvent.hpp>
-#include <sdpa/events/DeleteJobEvent.hpp>
-#include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/RetrieveJobResultsEvent.hpp>
-#include <sdpa/types.hpp>
+#include <fhg/assert.hpp>
 
-#include <boost/serialization/access.hpp>
+#include <boost/msm/back/state_machine.hpp>
+#include <boost/msm/front/state_machine_def.hpp>
+#include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
+
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace sdpa {
   namespace daemon {
+    class IAgent;
+
+    // front-end: define the FSM structure
+    struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
+    {
+      virtual ~JobFSM_() {}
+
+      // The list of FSM states
+      struct Pending :        public boost::msm::front::state<>{};
+      struct Stalled :        public boost::msm::front::state<>{};
+      struct Running :        public boost::msm::front::state<>{};
+      struct Finished :       public boost::msm::front::state<>{};
+      struct Failed :         public boost::msm::front::state<>{};
+      struct Canceling : 	  public boost::msm::front::state<>{};
+      struct Canceled :      public boost::msm::front::state<>{};
+
+      struct MSMRescheduleEvent
+      {
+        MSMRescheduleEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& id)
+        : m_pAgent(pAgent), m_jobId(id)
+        {}
+        sdpa::daemon::IAgent& agent() const { return *m_pAgent; }
+        sdpa::job_id_t jobId() const { return m_jobId; }
+      private:
+        sdpa::daemon::IAgent* m_pAgent;
+        sdpa::job_id_t m_jobId;
+      };
+      struct MSMStalledEvent{
+        MSMStalledEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId, const sdpa::worker_id_t& jobOwner)
+          : m_pAgent(pAgent), m_jobId(jobId), m_jobOwner (jobOwner) {}
+        sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
+        sdpa::job_id_t jobId() const { return m_jobId; }
+        sdpa::worker_id_t jobOwner() const { return m_jobOwner; }
+      private:
+        sdpa::daemon::IAgent* m_pAgent;
+        sdpa::job_id_t m_jobId;
+        sdpa::worker_id_t m_jobOwner;
+      };
+      struct MSMResumeJobEvent
+      {
+        MSMResumeJobEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId, const sdpa::worker_id_t& jobOwner)
+          : m_pAgent(pAgent), m_jobId(jobId), m_jobOwner (jobOwner)  {}
+        sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
+        sdpa::job_id_t jobId() const { return m_jobId; }
+        sdpa::worker_id_t jobOwner() const { return m_jobOwner; }
+      private:
+        sdpa::daemon::IAgent* m_pAgent;
+        sdpa::job_id_t m_jobId;
+        sdpa::worker_id_t m_jobOwner;
+      };
+
+      // the initial state of the JobFSM SM. Must be defined
+      typedef Pending initial_state;
+
+      virtual void action_delete_job(const sdpa::events::DeleteJobEvent&) = 0;
+      virtual void action_job_failed(const sdpa::events::JobFailedEvent&) = 0;
+      virtual void action_job_finished(const sdpa::events::JobFinishedEvent&) = 0;
+      virtual void action_reschedule_job(const MSMRescheduleEvent& evt);
+      virtual void action_job_stalled(const MSMStalledEvent& evt);
+      virtual void action_resume_job(const MSMResumeJobEvent& evt);
+
+      typedef JobFSM_ sm; // makes transition table cleaner
+
+      struct transition_table : boost::mpl::vector
+        <
+        //      Start       Event                                       Next        		Action                Guard
+        //      +---------------+-------------------------------------------+------------------+---------------------+-----
+        _row<   Pending,    	MSMResumeJobEvent,           				Running >,
+        _row<   Pending,    	sdpa::events::CancelJobEvent, 				Canceled>,
+        a_row<  Pending,  	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished >,
+        a_row<  Pending,  	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
+        a_row<  Pending,        MSMStalledEvent,                        Stalled,                &sm::action_job_stalled >,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_row<   Stalled,	    MSMResumeJobEvent,        					Running, &sm::action_resume_job >,
+        a_row<   Stalled,    	MSMRescheduleEvent,                 		Pending, &sm::action_reschedule_job >,
+        //      +---------------+-------------------------------------------+------------------+---------------------+-----
+        a_row<  Running,    	sdpa::events::JobFinishedEvent,             Finished,       	&sm::action_job_finished>,
+        a_row<  Running,    	sdpa::events::JobFailedEvent,               Failed,         	&sm::action_job_failed >,
+        _row<   Running,    	sdpa::events::CancelJobEvent,       		Canceling>,
+        a_row<   Running,    	MSMRescheduleEvent,                 		Pending, &sm::action_reschedule_job >,
+        a_row<   Running,	    MSMStalledEvent,        					Stalled, &sm::action_job_stalled >,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Finished,   	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
+        _irow<  Finished,   	sdpa::events::RetrieveJobResultsEvent>,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Failed,     	sdpa::events::DeleteJobEvent,                                   &sm::action_delete_job >,
+        _irow<  Failed,     	sdpa::events::RetrieveJobResultsEvent>,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        _row<   Canceling, 	sdpa::events::CancelJobAckEvent,     		Canceled>,
+        a_row<  Canceling, 	sdpa::events::JobFinishedEvent,      		Canceled, 			&sm::action_job_finished>,
+        a_row<  Canceling, 	sdpa::events::JobFailedEvent,               Canceled, 			&sm::action_job_failed>,
+        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        a_irow< Canceled,  	sdpa::events::DeleteJobEvent,                                	&sm::action_delete_job >,
+        _irow<  Canceled,  	sdpa::events::RetrieveJobResultsEvent>
+        >{};
+
+      //! \note This table refers to the order in which states are
+      //! first seen in the state machine definition. This is hacky
+      //! and should be removed / done via visitors.
+      sdpa::status::code state_code (size_t state)
+      {
+        static sdpa::status::code const state_codes[] =
+          { sdpa::status::PENDING
+          , sdpa::status::STALLED
+          , sdpa::status::RUNNING
+          , sdpa::status::FINISHED
+          , sdpa::status::FAILED
+          , sdpa::status::CANCELING
+          , sdpa::status::CANCELED
+          };
+        fhg_assert ( state < sizeof (state_codes) / sizeof (*state_codes)
+                   , "index shall be valid"
+                   );
+        return state_codes[state];
+      }
+      template <class FSM, class Event>
+        void no_transition(Event const& e, FSM&, int state)
+      {
+        DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
+      }
+
+      typedef std::pair<sdpa::daemon::IAgent*, const sdpa::events::JobStatusReplyEvent::Ptr> FSMStatusQueryEvent;
+
+      template <class FSM>
+        void no_transition(FSMStatusQueryEvent const& evt, FSM&, int state);
+    };
+
 
     class IAgent;
-    class GenericDaemon;
-    /**
-     * The interface to the generic job description we keep around in all
-     * components.
-     */
-    class Job /*: public sdpa::util::Properties */
+    class Job : public boost::msm::back::state_machine<JobFSM_>
     {
     public:
-    //typedef sdpa::shared_ptr<Job> ptr_t;
-    typedef Job* ptr_t;
+      typedef Job* ptr_t;
 
-    enum job_type {MASTER, LOCAL, WORKER, TMP};
+      enum job_type {MASTER, LOCAL, WORKER, TMP};
 
-    virtual ~Job() {}
+      typedef boost::unordered_map<sdpa::job_id_t, Job::ptr_t> job_list_t;
+      typedef boost::recursive_mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> lock_type;
 
-    virtual const job_id_t & id() const = 0;
-    virtual const job_id_t & parent() const = 0;
-    virtual const job_desc_t & description() const = 0;
-    virtual const sdpa::job_result_t& result() const = 0;
+      Job ( const sdpa::job_id_t id
+          , const sdpa::job_desc_t desc
+          , const sdpa::job_id_t &parent
+          );
 
-    virtual int error_code() const = 0;
-    virtual std::string const & error_message() const = 0;
+      const sdpa::job_id_t& id() const;
+      const sdpa::job_id_t& parent() const;
+      const sdpa::job_desc_t& description() const;
+      const sdpa::job_result_t& result() const { return result_; }
 
-    virtual Job & error_code(int) = 0;
-    virtual Job & error_message(std::string const &) = 0;
+      int error_code() const {return m_error_code;}
+      std::string const & error_message () const { return m_error_message;}
 
-    virtual void set_icomm(IAgent* pArgComm) = 0;
-    virtual IAgent* icomm() = 0;
+      Job& error_code(int ec)
+      {
+        m_error_code = ec;
+        return *this;
+      }
 
-    virtual bool is_running() = 0;
+      Job& error_message(std::string const &msg)
+      {
+        m_error_message = msg;
+        return *this;
+      }
 
-    virtual bool isMasterJob()=0;
-    virtual void setType(const job_type& )=0;
-    virtual job_type type()=0;
+      bool isMasterJob();
+      void setType(const job_type& );
+      job_type type() { return type_;}
 
-    virtual std::string print_info() = 0;
+      void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
+      sdpa::worker_id_t owner() { return m_owner; }
 
-    virtual unsigned long& walltime() = 0;
+      sdpa::status::code getStatus()
+      {
+        return state_code (*current_state());
+      }
 
-    virtual void set_owner(const sdpa::worker_id_t& owner) = 0;
-    virtual sdpa::worker_id_t owner() = 0;
+      bool completed()
+      {
+        return sdpa::status::is_terminal (getStatus());
+      }
+      bool is_running()
+      {
+        return sdpa::status::is_running (getStatus());
+      }
 
-    //transitions
-    virtual void CancelJob(const sdpa::events::CancelJobEvent*);
-    virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*);
-    virtual void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IAgent*);
-    virtual void JobFailed(const sdpa::events::JobFailedEvent*);
-    virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
-    virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IAgent* );
-    virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*);
-    virtual void Dispatch();
-    virtual void Reschedule(sdpa::daemon::IAgent*);
-    virtual void Pause(sdpa::daemon::IAgent* pAgent);
-    virtual void Resume(sdpa::daemon::IAgent* pAgent);
+      unsigned long &walltime() { return walltime_;}
 
-    virtual void setResult(const sdpa::job_result_t& ) =0;
-    virtual sdpa::status_t getStatus() { return "Undefined"; }
-    virtual bool completed() = 0;
+      // job FSM actions
+      virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
+      virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
+      virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive&, const unsigned int /* file version */){}
-  };
+      void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
+
+      std::string print_info()
+      {
+        std::ostringstream os;
+        os<<std::endl;
+        os<<"id: "<<id_<<std::endl;
+        os<<"type: "<<type_<<std::endl;
+        os<<"status: "<<getStatus()<<std::endl;
+        os<<"parent: "<<parent_<<std::endl;
+        os<<"error-code: " << m_error_code << std::endl;
+        os<<"error-message: \"" << m_error_message << "\"" << std::endl;
+        //os<<"description: "<<desc_<<std::endl;
+
+        return os.str();
+      }
+
+      //transitions
+      void CancelJob(const sdpa::events::CancelJobEvent* pEvt)
+      {lock_type lock(mtx_); process_event(*pEvt);}
+      void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
+      {lock_type lock(mtx_); process_event(*pEvt);}
+      void JobFailed(const sdpa::events::JobFailedEvent* pEvt)
+      {lock_type lock(mtx_); process_event(*pEvt);}
+      void JobFinished(const sdpa::events::JobFinishedEvent* pEvt)
+      {lock_type lock(mtx_); process_event(*pEvt);}
+
+      void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm);
+      void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon );
+      void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm);
+      void Reschedule(sdpa::daemon::IAgent*  pAgent);
+
+      void Dispatch();
+      void Pause(sdpa::daemon::IAgent*);
+      void Resume(sdpa::daemon::IAgent*);
+
+    protected:
+      SDPA_DECLARE_LOGGER();
+
+      mutex_type mtx_;
+
+    private:
+      sdpa::job_id_t id_;
+      sdpa::job_desc_t desc_;
+      sdpa::job_id_t parent_;
+
+      job_type type_;
+      sdpa::job_result_t result_;
+      int m_error_code;
+      std::string m_error_message;
+      unsigned long walltime_;
+
+      sdpa::worker_id_t m_owner;
+    };
 }}
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
 
 #endif

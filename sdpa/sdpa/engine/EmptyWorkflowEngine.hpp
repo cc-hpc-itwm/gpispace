@@ -33,12 +33,6 @@
 #include <map>
 #include <boost/thread.hpp>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <boost/function.hpp>
@@ -51,7 +45,7 @@ typedef map_t::value_type id_pair;
 typedef boost::function<id_type()> Function_t;
 static std::string id_gen() { return dflt_id_generator::instance().next(); }
 
-enum we_status { FINISHED, FAILED, CANCELLED };
+enum we_status { FINISHED, FAILED, CANCELED };
 
 class EmptyWorkflowEngine;
 
@@ -67,15 +61,6 @@ public:
     }
 
     friend class EmptyWorkflowEngine;
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & jobId;
-      ar & status;
-      ar & result;
-    }
-
 
    public:
     sdpa::job_id_t jobId;
@@ -189,9 +174,9 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-    bool cancelled(const id_type& activityId)
+    bool canceled(const id_type& activityId)
     {
-      SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" was canceled!");
 
       /**
       * Notify the SDPA that a workflow has been canceled (state
@@ -211,12 +196,12 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
           if( it->second == workflowId )
             bAllActFinished = false;
 
-        // if no activity left, declare the workflow cancelled
+        // if no activity left, declare the workflow canceled
         if(bAllActFinished)
         {
-          //pGenericDaemon_->cancelled(workflowId);
+          //pGenericDaemon_->canceled(workflowId);
           result_type result;
-          const we_result_t resP(workflowId, result, CANCELLED);
+          const we_result_t resP(workflowId, result, CANCELED);
           qResults.push(resP);
         }
 
@@ -271,8 +256,8 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
      * Cancel a workflow asynchronously.
      * This method is to be invoked by the SDPA.
      * The GWES will notifiy the SPDA about the
-     * completion of the cancelling process by calling the
-     * callback method Gwes2Sdpa::cancelled.
+     * completion of the canceling process by calling the
+     * callback method Gwes2Sdpa::canceled.
      */
     bool cancel(const id_type& wfid, const reason_type& reason)
     {
@@ -345,23 +330,15 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
                                      );
               break;
 
-          case CANCELLED:
+          case CANCELED:
               SDPA_LOG_INFO("Notify the agent "<<pGenericDaemon_->name()<<" that the job "<<we_result.jobId.str()<<" was canceled!");
-              pGenericDaemon_->cancelled(we_result.jobId);
+              pGenericDaemon_->canceled(we_result.jobId);
               break;
 
           default:
               SDPA_LOG_ERROR("Invalid status for the the job "<<we_result.jobId.str()<<"!");
         }
       }
-    }
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & boost::serialization::base_object<we::mgmt::basic_layer>(*this);
-      ar & map_Act2Wf_Ids_;
-      ar & qResults;
     }
 
   public:
@@ -379,31 +356,5 @@ class EmptyWorkflowEngine : public we::mgmt::basic_layer {
     mutable mutex_type mtx_stop;
     boost::condition_variable_any cond_stop;
 };
-
-
-namespace boost { namespace serialization {
-template<class Archive>
-inline void save_construct_data(
-    Archive & ar, const EmptyWorkflowEngine* t, const unsigned int
-){
-    // save data required to construct instance
-    ar << t->pGenericDaemon_;
-}
-
-template<class Archive>
-inline void load_construct_data(
-    Archive & ar, EmptyWorkflowEngine* t, const unsigned int
-){
-    // retrieve data from archive required to construct new instance
-    sdpa::daemon::GenericDaemon *pGenericDaemon;
-    ar >> pGenericDaemon;
-
-    // invoke inplace constructor to initialize instance of my_class
-    ::new(t)EmptyWorkflowEngine(pGenericDaemon, id_gen);
-}
-}} // namespace ...
-
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(we::mgmt::basic_layer)
 
 #endif //EMPTY_WORKFLOW_ENGINE_HPP

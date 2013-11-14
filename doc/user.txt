@@ -16,9 +16,9 @@ within GPI-Space.
 
 GPI-Space consists of three main components:
 
-* the ((distributed runtime system,DRTS)),
-* the ((workflow engine,WE)) and
-* the ((virtual memory layer,VM)).
+* the distributed runtime system,
+* the workflow engine and
+* the virtual memory layer.
 
 Installation
 ------------
@@ -191,6 +191,3 @@ Transition:: In a Petri net: Placeholder for an action, drawn as a
 
 Petri net:: A bipartite directed graph. The members of the two node
   sets are called places and transitions.
-
-Index
------

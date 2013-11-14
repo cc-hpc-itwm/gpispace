@@ -34,7 +34,7 @@ int main (int ac, char **av)
     {
       expr::eval::context out;
 
-      loader[mod_name].call ("selftest", expr::eval::context(), out);
+      loader[mod_name].call ("selftest", 0, expr::eval::context(), out);
     }
     catch (const std::exception &ex)
     {

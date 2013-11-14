@@ -6,21 +6,9 @@ using namespace std;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
-CoallocationScheduler::CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler,  bool use_request_model)
-  : SchedulerBase(pCommHandler, use_request_model),
-    SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name()+"::Scheduler":"Scheduler")
+CoallocationScheduler::CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler)
+  : SchedulerBase(pCommHandler)
 {}
-
-CoallocationScheduler::~CoallocationScheduler()
-{
-  try {
-      LOG(TRACE, "destructing CoallocationScheduler");
-      stop();
-  }
-  catch (std::exception const & ex) {
-      LOG(ERROR, "could not stop CoallocationScheduler: " << ex.what());
-  }
-}
 
 void CoallocationScheduler::assignJobsToWorkers()
 {

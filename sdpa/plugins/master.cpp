@@ -9,19 +9,10 @@ namespace drts
     , m_last_recv(boost::posix_time::from_time_t(0))
     , m_last_send(boost::posix_time::from_time_t(0))
     , m_last_job_recv(boost::posix_time::from_time_t(0))
-    , m_last_job_rqst(boost::posix_time::from_time_t(0))
-      //    , m_last_job_rqst(boost::posix_time::microsec_clock::universal_time())
 
     , m_num_send(0)
     , m_num_recv(0)
     , m_num_jobs_recv(0)
-    , m_num_jobs_rqst(0)
-
-    , m_polling(false)
-    , m_poll_backoff_counter(0)
-    , m_min_poll_interval(boost::posix_time::milliseconds(10))
-    , m_cur_poll_interval(m_min_poll_interval)
-    , m_max_poll_interval(boost::posix_time::seconds(60))
   {}
 
   void Master::update_recv()
@@ -43,37 +34,5 @@ namespace drts
     lock_type lock(m_stats_mutex);
     ++m_num_jobs_recv;
     m_last_job_recv = boost::posix_time::microsec_clock::universal_time();
-
-    reset_poll_rate();
-  }
-
-  void Master::job_requested()
-  {
-    lock_type lock(m_stats_mutex);
-    ++m_num_jobs_rqst;
-    m_last_job_rqst = boost::posix_time::microsec_clock::universal_time();
-
-    decrease_poll_rate();
-  }
-
-  void Master::decrease_poll_rate ()
-  {
-    if (m_cur_poll_interval < m_max_poll_interval)
-    {
-      m_cur_poll_interval +=
-        boost::posix_time::milliseconds((int)(std::exp((double)m_poll_backoff_counter/3.0)));
-      if (m_cur_poll_interval > m_max_poll_interval)
-        m_cur_poll_interval = m_max_poll_interval;
-      ++m_poll_backoff_counter;
-    }
-  }
-
-  void Master::reset_poll_rate ()
-  {
-    if (is_polling())
-    {
-      m_cur_poll_interval = m_min_poll_interval;
-      m_poll_backoff_counter = 0;
-    }
   }
 }

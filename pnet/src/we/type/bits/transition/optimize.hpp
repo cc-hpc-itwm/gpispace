@@ -80,7 +80,7 @@ namespace we
 
                 const bool trans_modified
                   ( boost::apply_visitor
-                    ( simplify_expression_sequences(trans.port_names(PORT_OUT))
+                    ( simplify_expression_sequences(port_names(trans, PORT_OUT))
                     , trans.data()
                     )
                   );
@@ -173,7 +173,7 @@ namespace we
                                )
           | (  opts.simplify_expression_sequences()
             && boost::apply_visitor
-               ( visitor::simplify_expression_sequences (t.port_names(PORT_OUT))
+               ( visitor::simplify_expression_sequences (port_names(t, PORT_OUT))
                , t.data()
                )
             )

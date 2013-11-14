@@ -18,15 +18,28 @@ namespace gspc
     static std::string KVS_SERVICE = "/service/kvs";
 
     kvs_net_frontend_t::kvs_net_frontend_t (std::string const &url)
-      : m_url (url)
-      , m_client ()
+      : m_client ()
     {
       boost::system::error_code ec;
-      m_client = gspc::net::dial (m_url, ec);
+      m_client = gspc::net::dial (url, ec);
       if (not m_client)
       {
         throw boost::system::system_error (ec);
       }
+    }
+
+    static int s_get_error (gspc::net::frame const &f)
+    {
+      if (f.get_command () == "ERROR")
+      {
+        boost::system::error_code ec = gspc::net::make_error_code (f);
+        if (ec)
+        {
+          return -ec.value ();
+        }
+      }
+
+      return 0;
     }
 
     static void throw_if_error ( std::string const &service
@@ -89,7 +102,9 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      throw_if_error (rpc, rply);
+      rc = s_get_error (rply);
+      if (rc != 0)
+        return rc;
 
       rply_body = rply.get_body ();
 

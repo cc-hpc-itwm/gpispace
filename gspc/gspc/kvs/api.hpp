@@ -1,6 +1,7 @@
 #ifndef GSPC_KVS_API_HPP
 #define GSPC_KVS_API_HPP
 
+#include <errno.h>
 #include <list>
 #include <utility>
 #include <string>
@@ -42,6 +43,28 @@ namespace gspc
       int get_regex ( std::string const &
                     , std::list<std::pair<key_type, value_type> > &
                     ) const;
+
+      template <typename T>
+      int get (key_type const &key, T &t) const
+      {
+        value_type val;
+        int rc;
+
+        rc = this->get (key, val);
+        if (0 == rc)
+        {
+          try
+          {
+            t = boost::get<T>(val);
+          }
+          catch (boost::bad_get const &)
+          {
+            return -EINVAL;
+          }
+        }
+
+        return rc;
+      }
 
       int del (key_type const &key);
       int del_regex (std::string const &regex);

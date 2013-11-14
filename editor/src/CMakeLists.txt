@@ -13,7 +13,7 @@ set (PROJECT_CONTACT     "Bernd Lörwald <bernd.loerwald@itwm.fraunhofer.de>")
 include (SDPAFindBoost)
 find_package (FhgLog REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
-find_package (Qt4 4.7.1 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
+find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
 find_package (UTIL REQUIRED QUIET)
 find_package (FhgKernel REQUIRED QUIET)
 find_package (SDPA REQUIRED QUIET)
@@ -23,6 +23,7 @@ include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
                       ${FhgLog_INCLUDE_DIR}
                       ${UTIL_INCLUDE_DIR}
                       ${CMAKE_SOURCE_DIR}/sdpa
+                      ${CMAKE_SOURCE_DIR}/gspc
                       ${CMAKE_SOURCE_DIR}/pnet/src
                       ${FhgKernel_INCLUDE_DIR}
                       ${CMAKE_SOURCE_DIR} # to have sdpa plugins in sdpa/plugins, not plugins/

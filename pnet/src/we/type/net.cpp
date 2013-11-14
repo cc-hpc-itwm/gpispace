@@ -286,7 +286,6 @@ namespace petri_net
     {
       stack_out.push (std::make_pair (transition_id, pid));
       // TODO: get port and remove place from there
-      // transition_t::port_id_t portId = transition->transition().input_port_by_pid(place_.id()).first;
     }
 
     while (!stack_out.empty())
@@ -549,10 +548,11 @@ namespace petri_net
       const std::list<pnet::type::value::value_type>::iterator&
         token (pos_and_distance.first);
 
-      act.add_input (std::make_pair ( *token
-                                    , transition.outer_to_inner (pid)
-                                    )
-                    );
+      act.add_input
+        (std::make_pair ( *token
+                        , transition.outer_to_inner().at (pid).first
+                        )
+        );
 
       if (!is_read_connection (tid, pid))
       {
@@ -574,4 +574,4 @@ namespace petri_net
 
     return act;
   }
-} // namespace petri_net
+}

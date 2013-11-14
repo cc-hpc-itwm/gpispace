@@ -18,30 +18,25 @@
 
 #include <fhg/assert.hpp>
 
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
-#include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <cassert>
 #include <sdpa/capability.hpp>
 
-#include <sdpa/daemon/NotificationService.hpp>
-
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler, bool bUseRequestModel )
+SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
   : ptr_worker_man_(new WorkerManager())
   , bStopRequested(false)
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
-  , m_bUseRequestModel(bUseRequestModel)
-
 {
 }
 
@@ -65,21 +60,16 @@ SchedulerBase::~SchedulerBase()
   }
 }
 
+
 void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
-                                const unsigned int& capacity,
+                                const boost::optional<unsigned int>& capacity,
                                 const capabilities_set_t& cpbset,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
-  try {
-    ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
-    cond_workers_registered.notify_all();
-    cond_feed_workers.notify_one();
-  }
-  catch( const WorkerAlreadyExistException& ex)
-  {
-    throw ex;
-  }
+  ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
+  cond_workers_registered.notify_all();
+  cond_feed_workers.notify_one();
 }
 
 void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
@@ -163,104 +153,6 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id ) throw (
       throw ex;
   }
 }
-
-/*
-        Schedule a job locally, send the job to WE
-*/
-/*
-void SchedulerBase::schedule_local(const sdpa::job_id_t &jobId)
-{
-  DMLOG (TRACE, "Schedule the job "<<jobId.str()<<" to the workflow engine!");
-
-  id_type wf_id = jobId.str();
-
-  if( !ptr_comm_handler_ )
-  {
-    SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
-    stop();
-    return;
-  }
-
-  try {
-    const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-
-    // Should set the workflow_id here, or send it together with the workflow description
-    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
-    DMLOG (TRACE, "Submit the workflow attached to the job "<<jobId<<" to WE. ");
-    pJob->Dispatch();
-    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
-
-    if(pJob->description().empty() )
-    {
-    	SDPA_LOG_ERROR("Empty Workflow!");
-        // declare job as failed
-    	JobFailedEvent::Ptr pEvtJobFailed
-    	      (new JobFailedEvent( sdpa::daemon::WE
-    	                         , ptr_comm_handler_->name()
-    	                         , jobId
-    	                         , ""
-    	                         )
-    	      );
-
-    	pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    	pEvtJobFailed->error_message() = "The job has an empty workflow attached!";
-    	ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-    }
-
-    ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
-  }
-  catch(const NoWorkflowEngine& ex)
-  {
-    SDPA_LOG_ERROR("No workflow engine!");
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
-                         , ptr_comm_handler_->name()
-                         , jobId
-                         , result
-                         )
-      );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "no workflow engine attached!";
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-  catch(const JobNotFoundException& ex)
-  {
-    SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
-                         , ptr_comm_handler_->name()
-                         , jobId
-                         , result
-                         )
-      );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "job could not be found";
-
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-  catch (std::exception const & ex)
-  {
-    SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
-
-    //send a JobFailed event
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
-                         , ptr_comm_handler_->name()
-                         , jobId
-                         , result
-                         )
-      );
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = ex.what();
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-}*/
 
 /*
         Schedule a job locally, send the job to WE
@@ -478,24 +370,12 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 
 const Worker::ptr_t& SchedulerBase::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
-  try {
-    return ptr_worker_man_->findWorker(worker_id);
-  }
-  catch(WorkerNotFoundException)
-  {
-    throw WorkerNotFoundException(worker_id);
-  }
+  return ptr_worker_man_->findWorker(worker_id);
 }
 
 const Worker::worker_id_t& SchedulerBase::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
-  try {
-    return ptr_worker_man_->findWorker(job_id);
-  }
-  catch(const NoWorkerFoundException& ex)
-  {
-    throw ex;
-  }
+  return ptr_worker_man_->findWorker(job_id);
 }
 
 const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
@@ -535,58 +415,6 @@ void SchedulerBase::stop()
   pending_jobs_queue_.clear();
   cancellation_list_.clear();
   ptr_worker_man_->removeWorkers();
-}
-
-bool SchedulerBase::postRequest(const MasterInfo& masterInfo, bool force)
-{
-  if(!ptr_comm_handler_)
-  {
-    SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-    stop();
-    return false;
-  }
-
-  bool bReqPosted = false;
-
-  if(force || ( !ptr_comm_handler_->isTop()  &&  masterInfo.is_registered() ) )
-  {
-    bool bReqAllowed = ptr_comm_handler_->requestsAllowed();
-    if(!bReqAllowed)
-    {
-      SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" is not allowed to post job requests!");
-    }
-
-    if( force || bReqAllowed )
-    {
-      ptr_comm_handler_->requestJob(masterInfo);
-      //SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
-      bReqPosted = true;
-    }
-  }
-
-  return bReqPosted;
-}
-
-void SchedulerBase::checkRequestPosted()
-{
-  BOOST_FOREACH(sdpa::MasterInfo masterInfo, ptr_comm_handler_->getListMasterInfo())
-  {
-    if( !masterInfo.is_registered() )
-    {
-      MLOG (TRACE, "I am not registered yet...");
-
-      const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-      boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-      ptr_comm_handler_->requestRegistration(masterInfo);
-    }
-    else
-    {
-      // post job request if number_of_jobs() < #registered workers +1
-      if( useRequestModel() )
-        postRequest(masterInfo);
-    }
-  }
 }
 
 void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
@@ -636,8 +464,6 @@ void SchedulerBase::run()
   {
     try
     {
-      checkRequestPosted(); // eventually, post a request to the master
-
       if( numberOfWorkers()>0 )
         forceOldWorkerJobsTermination();
 
@@ -652,23 +478,11 @@ void SchedulerBase::run()
             schedule_remotely(jobId);
         }
         else {
-            // just for testing
-            if(ptr_comm_handler_->canRunTasksLocally()) {
-                DLOG(TRACE, "I have no workers, but I'm able to execute myself the job "<<jobId.str()<<" ...");
-                execute(jobId);
-            }
-            else {
-                //SDPA_LOG_DEBUG("no worker available, put the job back into the scheduler's queue!");
-                if( !ptr_comm_handler_->canRunTasksLocally() ) {
-                    pending_jobs_queue_.push(jobId);
-                    // mark the job as stalled
-                    ptr_comm_handler_->pause(jobId);
-                    lock_type lock(mtx_);
-                    cond_workers_registered.wait(lock);
-                }
-                else
-                execute(jobId);
-            }
+          pending_jobs_queue_.push(jobId);
+          // mark the job as stalled
+          ptr_comm_handler_->pause(jobId);
+          lock_type lock(mtx_);
+          cond_workers_registered.wait(lock);
         } // else fail
       }
       else // it's a master job
@@ -693,105 +507,6 @@ void SchedulerBase::run()
         MLOG(ERROR, "exception in scheduler thread: " << ex.what());
         throw;
     }
-  }
-}
-
-namespace
-{
-  enum ExecutionState
-  {
-    ACTIVITY_FINISHED,
-    ACTIVITY_FAILED,
-    ACTIVITY_CANCELLED,
-  };
-  typedef std::pair<ExecutionState, result_type> execution_result_t;
-}
-
-void SchedulerBase::execute(const sdpa::job_id_t& jobId)
-{
-  MLOG(TRACE, "executing activity: "<< jobId);
-  const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-  id_type act_id = pJob->id().str();
-
-  execution_result_t result;
-  encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!
-
-  if( !ptr_comm_handler_ )
-  {
-    // the comments indicate that the code is old (nre)
-    // why does it still exist?
-    // why don't we just have an assert(ptr_comm_handler_)?
-
-    LOG(ERROR, "nre scheduler does not have a comm-handler!");
-    result_type output_fail;
-    ptr_comm_handler_->activityFailed ( ""
-                                      , jobId
-                                      , enc_act
-                                      , fhg::error::UNEXPECTED_ERROR
-                                      , "scheduler does not have a"
-                                      " communication handler"
-                                      );
-    return;
-  }
-
-  try
-  {
-    pJob->Dispatch();
-    //result = m_worker_.execute(enc_act, pJob->walltime());
-    boost::this_thread::sleep(boost::posix_time::milliseconds(2));
-    result = std::make_pair(ACTIVITY_FINISHED, enc_act);
-  }
-  catch( const boost::thread_interrupted &)
-  {
-    std::string errmsg("could not execute activity: interrupted");
-    SDPA_LOG_ERROR(errmsg);
-    result = std::make_pair(ACTIVITY_FAILED, enc_act);
-  }
-  catch (const std::exception &ex)
-  {
-    std::string errmsg("could not execute activity: ");
-    errmsg += std::string(ex.what());
-    SDPA_LOG_ERROR(errmsg);
-    result = std::make_pair(ACTIVITY_FAILED, enc_act);
-  }
-
-  // check the result state and invoke the NRE's callbacks
-  if( result.first == ACTIVITY_FINISHED )
-  {
-    DLOG(TRACE, "activity finished: " << act_id);
-    // notify the gui
-    // and then, the workflow engine
-    ptr_comm_handler_->activityFinished("", jobId, result.second);
-  }
-  else if( result.first == ACTIVITY_FAILED )
-  {
-    DLOG(TRACE, "activity failed: " << act_id);
-    // notify the gui
-    // and then, the workflow engine
-    ptr_comm_handler_->activityFailed ( ""
-                                      , jobId
-                                      , result.second
-                                      , fhg::error::UNEXPECTED_ERROR
-                                      , "scheduler could not dispatch job"
-                                      );
-  }
-  else if( result.first == ACTIVITY_CANCELLED )
-  {
-    DLOG(TRACE, "activity cancelled: " << act_id);
-
-    // notify the gui
-    // and then, the workflow engine
-    ptr_comm_handler_->activityCancelled("", jobId);
-  }
-  else
-  {
-    SDPA_LOG_ERROR("Invalid status of the executed activity received from the worker!");
-    ptr_comm_handler_->activityFailed ( ""
-                                      , jobId
-                                      , result.second
-                                      , fhg::error::UNEXPECTED_ERROR
-                                      , "invalid job state received"
-                                      );
   }
 }
 

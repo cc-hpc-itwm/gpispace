@@ -18,27 +18,27 @@
 #ifndef SDPA_ORCHESTRATORTOR_HPP
 #define SDPA_ORCHESTRATORTOR_HPP 1
 
-#include <sdpa/daemon/DaemonFSM.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
 
 namespace sdpa {
   namespace daemon {
-
-    template <typename T> struct OrchestratorFactory;
-
-    class Orchestrator : public sdpa::fsm::bmsm::DaemonFSM
+    class Orchestrator : public GenericDaemon
     {
       public:
       typedef sdpa::shared_ptr<Orchestrator> ptr_t;
       SDPA_DECLARE_LOGGER();
 
-      Orchestrator( const std::string &name = ""
-                    , const std::string& url = ""
-                    , unsigned int cap = 10000 )
-      : DaemonFSM( name, sdpa::master_info_list_t(), cap /*, NULL*/),
+      Orchestrator (const std::string &name, const std::string& url)
+      : GenericDaemon ( name, sdpa::master_info_list_t() /*, NULL*/),
         SDPA_INIT_LOGGER(name),
         url_(url)
       {}
+
+			static Orchestrator::ptr_t create
+        (const std::string& name, const std::string& url);
+			static Orchestrator::ptr_t create_with_start_called
+        (const std::string& name, const std::string& url);
 
       void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
       void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
@@ -46,32 +46,18 @@ namespace sdpa {
       void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
       void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
 
-      void handleRetrieveJobResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
-
       const std::string url() const {return url_;}
       bool isTop() { return true; }
 
       void cancelPendingJob(const sdpa::events::CancelJobEvent& evt);
 
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<DaemonFSM>(*this);
-        ar & url_; //boost::serialization::make_nvp("url_", url_);
-      }
-
-      friend class boost::serialization::access;
-      template <typename T> friend struct OrchestratorFactory;
-
       template <typename T>
       void notifySubscribers(const T& ptrEvt);
 
       private:
-      void createScheduler(bool bUseReqModel)
+      virtual void createScheduler()
       {
-        DLOG(TRACE, "creating orchestrator scheduler...");
-        Scheduler::ptr_t ptrSched( new SimpleScheduler(this, bUseReqModel) );
-        ptr_scheduler_ = ptrSched;
+        ptr_scheduler_ = Scheduler::ptr_t (new SimpleScheduler (this));
       }
 
       std::string url_;

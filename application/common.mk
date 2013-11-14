@@ -5,98 +5,94 @@ endif
 
 ###############################################################################
 
-SHELL = /bin/bash
+SHELL := /bin/bash
 MAKEFLAGS += -r
 
 ###############################################################################
 
 ifndef TEE
-  TEE = $(shell which tee 2>/dev/null)
+  TEE := $(shell which tee 2>/dev/null)
 endif
 
 ifndef CMD_DOT
-  CMD_DOT = $(shell which dot 2>/dev/null)
+  CMD_DOT := $(shell which dot 2>/dev/null)
 endif
 
 ifndef RM
-  RM = $(shell which rm 2>/dev/null)
-endif
-
-ifndef TOUCH
-  TOUCH = $(shell which touch 2>/dev/null)
+  RM := $(shell which rm 2>/dev/null)
 endif
 
 ifndef XMLLINT
-  XMLLINT = $(shell which xmllint 2>/dev/null)
+  XMLLINT := $(shell which xmllint 2>/dev/null)
 endif
 
 ###############################################################################
 
 ifndef SDPA_INCLUDE
-  SDPA_INCLUDE = $(SDPA_HOME)/include
+  SDPA_INCLUDE := $(SDPA_HOME)/include
 endif
 
 ifndef SDPA_BIN
-  SDPA_BIN = $(SDPA_HOME)/bin
+  SDPA_BIN := $(SDPA_HOME)/bin
 endif
 
 ifndef SDPA_XML_LIB
-  SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
+  SDPA_XML_LIB := $(SDPA_HOME)/share/sdpa/xml/lib
 endif
 
 ifndef SDPA_LIBEXEC
-  SDPA_LIBEXEC = $(SDPA_HOME)/libexec
+  SDPA_LIBEXEC := $(SDPA_HOME)/libexec
 endif
 
 ifndef SDPA_XML_SCHEMA
-  SDPA_XML_SCHEMA = $(SDPA_HOME)/share/sdpa/xml/xsd/pnet.xsd
+  SDPA_XML_SCHEMA := $(SDPA_HOME)/share/sdpa/xml/xsd/pnet.xsd
 endif
 
 ###############################################################################
 
 ifndef PNETC
-  PNETC = $(SDPA_BIN)/pnetc
+  PNETC := $(SDPA_BIN)/pnetc
 endif
 
 ifndef PNET2DOT
-  PNET2DOT = $(SDPA_BIN)/pnet2dot
+  PNET2DOT := $(SDPA_BIN)/pnet2dot
 endif
 
 ifndef PNETPUT
-  PNETPUT = $(SDPA_BIN)/pnetput
+  PNETPUT := $(SDPA_BIN)/pnetput
 endif
 
 ifndef PNETV
-  PNETV = $(SDPA_BIN)/pnetv
+  PNETV := $(SDPA_BIN)/pnetv
 endif
 
 ifndef WE_EXEC_CMD
-  WE_EXEC_CMD = $(SDPA_BIN)/we-exec
+  WE_EXEC_CMD := $(SDPA_BIN)/we-exec
 endif
 
 ifndef WE_EXEC_WORKER
-  WE_EXEC_WORKER = 2
+  WE_EXEC_WORKER := 2
 endif
 
 ifndef WE_EXEC_OUTPUT
-  WE_EXEC_OUTPUT = /dev/null
+  WE_EXEC_OUTPUT := /dev/null
 endif
 
 ifndef SDPA
-  SDPA = $(SDPA_BIN)/sdpa
+  SDPA := $(SDPA_BIN)/sdpa
 endif
 
 ###############################################################################
 
 ifndef BUILDDIR
-  BUILDDIR = $(CURDIR)
+  BUILDDIR := $(CURDIR)
 endif
 
 ifndef XML
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable XML)
   else
-    XML = $(CURDIR)/$(MAIN).xpnet
+    XML := $(CURDIR)/$(MAIN).xpnet
   endif
 endif
 
@@ -104,7 +100,7 @@ ifndef DEP_XML
   ifndef XML
     $(error variable XML undefined but needed to derive variable DEP_XML)
   else
-    DEP_XML = $(BUILDDIR)/$(MAIN).xpnet.d
+    DEP_XML := $(BUILDDIR)/$(MAIN).xpnet.d
   endif
 endif
 
@@ -112,7 +108,7 @@ ifndef NET
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable NET)
   else
-    NET = $(BUILDDIR)/$(MAIN).pnet
+    NET := $(BUILDDIR)/$(MAIN).pnet
   endif
 endif
 
@@ -120,7 +116,7 @@ ifndef NET_NOINLINE
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable NET_NOINLINE)
   else
-    NET_NOINLINE = $(BUILDDIR)/$(MAIN).noinline.pnet
+    NET_NOINLINE := $(BUILDDIR)/$(MAIN).noinline.pnet
   endif
 endif
 
@@ -128,7 +124,7 @@ ifndef NET_VERIFICATION
   ifndef NET
     $(error variable NET undefined but needed to derive variable NET_VERIFICATION)
   else
-    NET_VERIFICATION = $(NET).verification
+    NET_VERIFICATION := $(NET).verification
   endif
 endif
 
@@ -136,7 +132,7 @@ ifndef NET_VALIDATION
   ifndef XML
     $(error variable XML undefined but needed to derive variable NET_VALIDATION)
   else
-    NET_VALIDATION = $(NET).validation
+    NET_VALIDATION := $(NET).validation
   endif
 endif
 
@@ -144,7 +140,7 @@ ifndef PUT
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable PUT)
   else
-    PUT = $(NET).put
+    PUT := $(NET).put
   endif
 endif
 
@@ -152,7 +148,7 @@ ifndef GEN
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable GEN)
   else
-    GEN = $(BUILDDIR)/gen
+    GEN := $(BUILDDIR)/gen
   endif
 endif
 
@@ -160,7 +156,7 @@ ifndef OUT
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable OUT)
   else
-    OUT = $(BUILDDIR)/$(MAIN).out
+    OUT := $(BUILDDIR)/$(MAIN).out
   endif
 endif
 
@@ -168,7 +164,7 @@ ifndef DOT
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable DOT)
   else
-    DOT = $(BUILDDIR)/$(MAIN).dot
+    DOT := $(BUILDDIR)/$(MAIN).dot
   endif
 endif
 
@@ -176,7 +172,7 @@ ifndef DOT_NOINLINE
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable DOT_NOINLINE)
   else
-    DOT_NOINLINE = $(BUILDDIR)/$(MAIN).noinline.dot
+    DOT_NOINLINE := $(BUILDDIR)/$(MAIN).noinline.dot
   endif
 endif
 
@@ -184,7 +180,7 @@ ifndef PS
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable PS)
   else
-    PS = $(BUILDDIR)/$(MAIN).ps
+    PS := $(BUILDDIR)/$(MAIN).ps
   endif
 endif
 
@@ -192,7 +188,7 @@ ifndef PS_NOINLINE
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable PS_NOINLINE)
   else
-    PS_NOINLINE = $(BUILDDIR)/$(MAIN).noinline.ps
+    PS_NOINLINE := $(BUILDDIR)/$(MAIN).noinline.ps
   endif
 endif
 
@@ -200,7 +196,7 @@ ifndef SVG
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable SVG)
   else
-    SVG = $(BUILDDIR)/$(MAIN).svg
+    SVG := $(BUILDDIR)/$(MAIN).svg
   endif
 endif
 
@@ -208,7 +204,7 @@ ifndef SVG_NOINLINE
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable SVG_NOINLINE)
   else
-    SVG_NOINLINE = $(BUILDDIR)/$(MAIN).noinline.svg
+    SVG_NOINLINE := $(BUILDDIR)/$(MAIN).noinline.svg
   endif
 endif
 
@@ -216,7 +212,7 @@ ifndef DESTDIR
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable DESTDIR)
   else
-    DESTDIR = $(SDPA_LIBEXEC)/apps/$(MAIN)
+    DESTDIR := $(SDPA_LIBEXEC)/apps/$(MAIN)
   endif
 endif
 
@@ -224,7 +220,7 @@ ifndef LIB_DESTDIR
   ifndef DESTDIR
     $(error variable DESTDIR undefined but needed to derive variable LIB_DESTDIR)
   else
-    LIB_DESTDIR = $(DESTDIR)/modules
+    LIB_DESTDIR := $(DESTDIR)/modules
   endif
 endif
 
@@ -252,7 +248,7 @@ PNETC_NOINLINE += $(PNETC)
 PNETC_NOINLINE += --no-inline true
 PNETC_NOINLINE += --synthesize-virtual-places true
 
-PNETC_LIST_DEPENDENCIES = $(PNETC) --list-dependencies /dev/stdout
+PNETC_LIST_DEPENDENCIES := $(PNETC) --list-dependencies /dev/stdout
 
 PNETPUT += $(addprefix -p ,$(PUT_PORT))
 PNETPUT += $(PNETPUT_OPTS)
@@ -263,7 +259,7 @@ PNETV += $(PNETV_OPTS)
 pathify = $(subst $() ,:,$(1))
 
 ifneq "$(CXXLIBRARYPATHS)" ""
-  WE_EXEC = LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARYPATHS))
+  WE_EXEC := LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARYPATHS))
 endif
 WE_EXEC += $(WE_EXEC_ENV)
 WE_EXEC += $(WE_EXEC_CMD)
@@ -304,7 +300,7 @@ endif
 
 ###############################################################################
 
-$(DEP_XML): $(XML) $(BUILDDIR)
+$(DEP_XML): $(XML) | $(BUILDDIR)
 	$(PNETC) -i $(XML) -o /dev/null -MP -MT '$(DEP_XML)' -MM $@
 
 ifneq "$(wildcard $(DEP_XML))" ""
@@ -351,19 +347,8 @@ endif
 
 ###############################################################################
 
-ifeq "$(TOUCH)" ""
-
-$(GEN): $(DEP_XML) $(XML) $(DEP)
-	$(warning Missing 'touch'. Most probably some timestamps will be wrong.)
-	$(PNETC) -i $(XML) -o /dev/null -g $@
-
-else
-
 $(GEN): $(DEP_XML) $(XML) $(DEP)
 	$(PNETC) -i $(XML) -o /dev/null -g $@
-	$(TOUCH) $@
-
-endif
 
 lib: $(GEN)
 	$(MAKE) -C $(GEN)
@@ -494,7 +479,7 @@ help:
 .PHONY: showconfig
 
 showconfig:
-	@echo "*** Needed parameters:"
+	@echo "*** Necessary parameters:"
 	@echo
 	@echo "SDPA_HOME = $(SDPA_HOME)"
 	@echo
@@ -506,7 +491,6 @@ showconfig:
 	@echo "TEE     = $(TEE)"
 	@echo "CMD_DOT = $(CMD_DOT)"
 	@echo "RM      = $(RM)"
-	@echo "TOUCH   = $(TOUCH)"
 	@echo "XMLLINT = $(XMLLINT)"
 	@echo
 	@echo "*** GPI-Space paths and files:"

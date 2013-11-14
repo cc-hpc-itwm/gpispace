@@ -10,7 +10,7 @@ int get_answer ()
   return ++ans;
 }
 
-static void answer ( void * state
+static void answer ( gspc::drts::context *
                    , const expr::eval::context& input
                    , expr::eval::context& output
                    )
@@ -20,7 +20,6 @@ static void answer ( void * state
 
 WE_MOD_INITIALIZE_START (answer);
 {
-  mod->state((void*)(0x42));
   the_answer = 42;
   WE_REGISTER_FUN (answer);
 }

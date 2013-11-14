@@ -105,7 +105,8 @@ namespace test {
       {
         try
         {
-          module::call (daemon.loader(), act, mod);
+          //!\todo pass a real gspc::drts::context
+          module::call (daemon.loader(), 0, act, mod);
           daemon.layer().finished (id, act.to_string());
         }
         catch (std::exception const & ex)
@@ -264,7 +265,7 @@ namespace test {
         del_mapping (id);
 
         // inform layer
-        mgmt_layer_.cancelled (mapped_id);
+        mgmt_layer_.canceled (mapped_id);
         return true;
       }
       catch (std::exception const &ex)
@@ -292,7 +293,7 @@ namespace test {
                       , act.output()
                       )
         {
-          std::cout << act.transition().name_of_port (top.second)
+          std::cout << act.transition().get_port (top.second).name()
                     << " => " << pnet::type::value::show (top.first) << std::endl;
         }
       }
@@ -326,7 +327,7 @@ namespace test {
       return true;
     }
 
-    bool cancelled(const id_type & id)
+    bool canceled(const id_type & id)
     {
       try
       {
@@ -334,11 +335,11 @@ namespace test {
         del_mapping (id);
 
         // inform layer
-        mgmt_layer_.cancelled (mapped_id);
+        mgmt_layer_.canceled (mapped_id);
       }
       catch (std::out_of_range const &)
       {
-        std::cout << "cancelled [" << id << "]" << std::endl;
+        std::cout << "canceled [" << id << "]" << std::endl;
       }
       return true;
     }

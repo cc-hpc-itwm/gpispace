@@ -1,12 +1,10 @@
-#include <fhg/util/program_info.h>
-#include <fhg/revision.hpp>
-
 #include <unistd.h>   // exit
 #include <errno.h>    // errno
 #include <string.h>   // strerror
 #include <sysexits.h> // exit codes
 #include <stdlib.h>   // system
 
+#include <iomanip>
 #include <string>
 #include <iostream>
 
@@ -31,7 +29,8 @@ static void long_usage (int lvl)
     << ""                                                           << std::endl
     << "   --url URL              were is the kvs daemon"           << std::endl
     << "   --timeout <ms>         timeout to wait"                  << std::endl
-    << "   --omit-key             do not print the key of results"  << std::endl
+    << "   -o|--omit-key          do not print the key of results"  << std::endl
+    << "   -s|--string            drop quotes if value is a string" << std::endl
     << ""                                                           << std::endl
     << "available commands"                                         << std::endl
     << "------------------"                                         << std::endl
@@ -65,43 +64,68 @@ static void long_usage (int lvl)
 }
 
 static void short_usage ();
+static int verbose = 0;
 
 namespace {
+  enum show_flags_t
+    {
+      OMIT_KEY       = 0x01
+    , UNQUOTE_STRING = 0x02
+    };
+
   struct show
   {
     show ( gspc::kvs::api_t::key_type const &key
          , gspc::kvs::api_t::value_type const &value
-         , bool omit_key
+         , int flags
          )
       : key (key)
       , value (value)
-      , omit_key (omit_key)
+      , flags (flags)
     {}
 
     gspc::kvs::api_t::key_type const &key;
     gspc::kvs::api_t::value_type const &value;
-    bool omit_key;
+    int flags;
   };
 
   std::ostream & operator << (std::ostream &os, const show &s)
   {
-    if (not s.omit_key)
+    if (0 == (s.flags & OMIT_KEY))
     {
       os << s.key << "=";
     }
-    os << pnet::type::value::show (s.value);
+    if ((s.flags & UNQUOTE_STRING) && boost::get<std::string>(&s.value) != 0)
+    {
+      os << boost::get<std::string>(s.value);
+    }
+    else
+    {
+      os << pnet::type::value::show (s.value);
+    }
     return os;
+  }
+
+  int log_error (std::string const &tag, int ec)
+  {
+    if (verbose && ec < 0)
+    {
+      std::cerr << tag << " failed [" << -ec << "]: "
+                << strerror (-ec)
+                << std::endl;
+    }
+
+    return ec;
   }
 }
 
 int main (int argc, char *argv [], char *envp [])
 {
   int i;
-  int verbose = 0;
   int help = 0;
   int rc = 0;
   int timeout = -1;
-  bool omit_key = false;
+  int show_flags = 0;
 
   typedef std::list<std::pair< gspc::kvs::api_t::key_type
                              , gspc::kvs::api_t::value_type
@@ -116,15 +140,10 @@ int main (int argc, char *argv [], char *envp [])
   i = 1;
   while (i < argc)
   {
-    std::string arg = argv [i];
-    ++i;
-
-    if (arg.size () == 0 || arg [0] != '-')
-      break;
+    std::string arg = argv [i++];
 
     if (arg == "--")
     {
-      ++i;
       break;
     }
 
@@ -140,6 +159,12 @@ int main (int argc, char *argv [], char *envp [])
             break;
           case 'h':
             ++help;
+            break;
+          case 'o':
+            show_flags |= OMIT_KEY;
+            break;
+          case 's':
+            show_flags |= UNQUOTE_STRING;
             break;
           default:
             std::cerr << "kvs: invalid flag: " << *flag << std::endl;
@@ -158,7 +183,11 @@ int main (int argc, char *argv [], char *envp [])
     }
     else if (arg == "--omit-key")
     {
-      omit_key = true;
+      show_flags |= OMIT_KEY;
+    }
+    else if (arg == "--string")
+    {
+      show_flags |= UNQUOTE_STRING;
     }
     else if (arg == "--show-mask")
     {
@@ -171,16 +200,27 @@ int main (int argc, char *argv [], char *envp [])
       std::string mask (argv [i]);
       ++i;
 
+      std::ios_base::fmtflags oldflags = std::cout.flags ();
+
+      std::cout << std::hex << std::setfill ('0') << std::showbase;
+
       if      (mask == "push" || mask == "popable")
-        std::cout << (gspc::kvs::api_t::E_PUSH | gspc::kvs::api_t::E_POPABLE)<< std::endl;
+        std::cout << std::setw (2)
+                  << (gspc::kvs::api_t::E_PUSH | gspc::kvs::api_t::E_POPABLE)
+                  << std::endl
+          ;
       else if (mask == "pop")
-        std::cout << gspc::kvs::api_t::E_POP << std::endl;
+        std::cout << std::setw (2)
+                  << gspc::kvs::api_t::E_POP << std::endl;
       else if (mask == "put")
-        std::cout << gspc::kvs::api_t::E_PUT << std::endl;
+        std::cout << std::setw (2)
+                  << gspc::kvs::api_t::E_PUT << std::endl;
       else if (mask == "del")
-        std::cout << gspc::kvs::api_t::E_DEL << std::endl;
+        std::cout << std::setw (2)
+                  << gspc::kvs::api_t::E_DEL << std::endl;
       else if (mask == "exist")
-        std::cout << gspc::kvs::api_t::E_EXIST << std::endl;
+        std::cout << std::setw (2)
+                  << gspc::kvs::api_t::E_EXIST << std::endl;
       else
       {
         std::cerr << "kvs: invalid event mask: " << mask << std::endl;
@@ -188,6 +228,7 @@ int main (int argc, char *argv [], char *envp [])
                   << std::endl;
         return EX_DATAERR;
       }
+      std::cout.flags (oldflags);
 
       return 0;
     }
@@ -229,6 +270,7 @@ int main (int argc, char *argv [], char *envp [])
     }
     else
     {
+      --i;
       break;
     }
   }
@@ -244,8 +286,6 @@ int main (int argc, char *argv [], char *envp [])
     std::cerr << "kvs: url is missing!" << std::endl;
     return EX_USAGE;
   }
-
-  --i;
 
   // parse commands
   rc = 0;
@@ -308,11 +348,7 @@ int main (int argc, char *argv [], char *envp [])
         return EX_USAGE;
       }
 
-      rc = kvs->put (kv_list);
-      if (rc != 0 && verbose > 0)
-      {
-        std::cerr << "kvs: put failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("put", kvs->put (kv_list));
     }
     else if (arg == "--get")
     {
@@ -324,15 +360,11 @@ int main (int argc, char *argv [], char *envp [])
 
       gspc::kvs::api_t::key_type key (argv [i++]);
       pnet::type::value::value_type val;
-      rc = kvs->get (key, val);
-      if (0 != rc && verbose > 0)
-      {
-        std::cerr << "kvs: get failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("get", kvs->get (key, val));
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else if (arg == "--get-regex")
@@ -346,11 +378,7 @@ int main (int argc, char *argv [], char *envp [])
       std::string regex (argv [i++]);
       key_value_list_t values;
 
-      rc = kvs->get_regex (regex, values);
-      if (0 != rc && verbose > 0)
-      {
-        std::cerr << "kvs: get-regex failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("get-regex", kvs->get_regex (regex, values));
 
       if (0 == rc)
       {
@@ -358,7 +386,7 @@ int main (int argc, char *argv [], char *envp [])
         {
           BOOST_FOREACH (key_value_list_t::value_type const &kv, values)
           {
-            std::cout << show (kv.first, kv.second, omit_key) << std::endl;
+            std::cout << show (kv.first, kv.second, show_flags) << std::endl;
           }
         }
         else
@@ -377,11 +405,7 @@ int main (int argc, char *argv [], char *envp [])
 
       gspc::kvs::api_t::key_type key (argv [i++]);
 
-      rc = kvs->del (key);
-      if (0 != rc && verbose > 0)
-      {
-        std::cerr << "kvs: del failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("del", kvs->del (key));
     }
     else if (arg == "--del-regex")
     {
@@ -393,11 +417,7 @@ int main (int argc, char *argv [], char *envp [])
 
       std::string regex (argv [i++]);
 
-      rc = kvs->del_regex (regex);
-      if (0 != rc && verbose > 0)
-      {
-        std::cerr << "kvs: del-regex failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("del-regex", kvs->del_regex (regex));
     }
     else if (arg == "--set-ttl")
     {
@@ -419,11 +439,7 @@ int main (int argc, char *argv [], char *envp [])
         return EX_USAGE;
       }
 
-      rc = kvs->set_ttl (key, ttl);
-      if (0 != rc && verbose > 0)
-      {
-        std::cerr << "kvs: set-ttl failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("set-ttl", kvs->set_ttl (key, ttl));
     }
     else if (arg == "--set-ttl-regex")
     {
@@ -445,11 +461,7 @@ int main (int argc, char *argv [], char *envp [])
         return EX_USAGE;
       }
 
-      rc = kvs->set_ttl_regex (regex, ttl);
-      if (0 != rc && verbose > 0)
-      {
-        std::cerr << "kvs: set-ttl-regex failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("set-ttl-regex", kvs->set_ttl_regex (regex, ttl));
     }
     else if (arg == "--push")
     {
@@ -477,12 +489,7 @@ int main (int argc, char *argv [], char *envp [])
         return EX_DATAERR;
       }
 
-      rc = kvs->push (key, val);
-      if (rc != 0 && verbose > 0)
-      {
-        std::cerr << "kvs: push to '" << key << "' failed: " << strerror (-rc)
-                  << std::endl;
-      }
+      rc = log_error ("push", kvs->push (key, val));
     }
     else if (arg == "--wait")
     {
@@ -525,18 +532,10 @@ int main (int argc, char *argv [], char *envp [])
         }
       }
 
-      rc = kvs->wait (key, mask, timeout);
-      if (rc == -ETIME || rc == -EAGAIN)
-      {
-        rc = EX_TEMPFAIL;
-      }
-      else if (rc & mask)
+      rc = log_error ("wait", kvs->wait (key, mask, timeout));
+      if (rc >= 0 && (rc & mask))
       {
         rc = 0;
-      }
-      else
-      {
-        rc = EX_SOFTWARE;
       }
     }
     else if (arg == "--try-pop")
@@ -549,16 +548,11 @@ int main (int argc, char *argv [], char *envp [])
 
       gspc::kvs::api_t::key_type key = argv [i++];
       pnet::type::value::value_type val;
-      rc = kvs->try_pop (key, val);
-
-      if (rc != 0 && verbose > 0)
-      {
-        std::cerr << "kvs: try-pop failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("pop", kvs->try_pop (key, val));
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else if (arg == "--pop")
@@ -571,16 +565,11 @@ int main (int argc, char *argv [], char *envp [])
 
       gspc::kvs::api_t::key_type key = argv [i++];
       pnet::type::value::value_type val;
-      rc = kvs->pop (key, val, timeout);
-
-      if (rc != 0 && verbose > 0)
-      {
-        std::cerr << "kvs: pop failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("pop", kvs->pop (key, val, timeout));
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else if (arg == "--inc")
@@ -593,16 +582,11 @@ int main (int argc, char *argv [], char *envp [])
 
       gspc::kvs::api_t::key_type key = argv [i++];
       int val;
-      rc = kvs->counter_increment (key, val);
-
-      if (rc != 0 && verbose > 0)
-      {
-        std::cerr << "kvs: inc failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("inc", kvs->counter_increment (key, val));
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else if (arg == "--dec")
@@ -615,16 +599,11 @@ int main (int argc, char *argv [], char *envp [])
 
       gspc::kvs::api_t::key_type key = argv [i++];
       int val;
-      rc = kvs->counter_decrement (key, val);
-
-      if (rc != 0 && verbose > 0)
-      {
-        std::cerr << "kvs: dec failed: " << strerror (-rc) << std::endl;
-      }
+      rc = log_error ("dec", kvs->counter_decrement (key, val));
 
       if (0 == rc)
       {
-        std::cout << show (key, val, omit_key) << std::endl;
+        std::cout << show (key, val, show_flags) << std::endl;
       }
     }
     else
@@ -635,7 +614,7 @@ int main (int argc, char *argv [], char *envp [])
     }
   }
 
-  if (rc == -ETIME || rc == -EAGAIN)
+  if (rc == -ETIME || rc == -EAGAIN || rc == -ECONNREFUSED)
   {
     return EX_TEMPFAIL;
   }

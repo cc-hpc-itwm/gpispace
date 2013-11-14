@@ -311,13 +311,11 @@ cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.sta
 # config values (gpi_compat plugin)
 cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
 
-# config values (gui plugin)
-cfg="$cfg -s plugin.gui.url=$gui"
-
 # config values (wfe plugin)
+cfg="$cfg -s plugin.wfe.gui_url=$gui"
 cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
 
-plugins=(numa logc gui kvs progress netd wfe drts)
+plugins=(numa logc kvs progress netd wfe drts)
 if [ x"$gpi_enabled" == x"true" ] ; then
     plugins+=(gpi gpi_compat)
 fi

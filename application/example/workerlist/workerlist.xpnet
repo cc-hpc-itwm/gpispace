@@ -16,15 +16,14 @@
       <defun>
         <in  name="trigger" type="control"/>
         <out name="worker_info" type="worker_info"/>
-        <module name="workerlist" function="run (worker_info)">
+        <module name="workerlist" function="run (worker_info)" pass_context="true">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fhg/util/join.hpp"/>
-          <cinclude href="fhg/plugins/drts_info.hpp"/>
           <code><![CDATA[
             MLOG (INFO, "run ()");
 
             std::list<std::string> wlist =
-              gspc::drts::info::worker_list ();
+              _pnetc_context->worker_list ();
 
             if (wlist.empty())
             {
@@ -43,7 +42,7 @@
 
               MLOG ( INFO
                    , "hostname of first worker: "
-                   << gspc::drts::info::worker_to_hostname (wlist.front ())
+                   << _pnetc_context->worker_to_hostname (wlist.front ())
                    );
             }
 

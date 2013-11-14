@@ -6,7 +6,7 @@
 
 namespace sdpa
 {
-  struct status
+  namespace status
   {
     enum code
       {
@@ -19,28 +19,23 @@ namespace sdpa
       , PENDING
       , SUSPENDED
       , RUNNING
+      , STALLED
+      , CANCELING
 
       , UNKNOWN
       };
 
-    typedef std::map<std::string, int> job_state_map_t;
-
-    static job_state_map_t job_state_map()
+    inline bool is_running (code c)
     {
-      job_state_map_t m;
-
-      m["SDPA::Unknown"]   = UNKNOWN;
-      m["SDPA::Pending"]   = PENDING;
-      m["SDPA::Suspended"] = SUSPENDED;
-      m["SDPA::Running"]   = RUNNING;
-      m["SDPA::Finished"]  = FINISHED;
-      m["SDPA::Failed"]    = FAILED;
-      m["SDPA::Canceled"]  = CANCELED;
-
-      return m;
+      return c == RUNNING;
     }
 
-    static std::string show(int code)
+    inline bool is_terminal (code c)
+    {
+      return c == FINISHED || c == FAILED || c == CANCELED;
+    }
+
+    inline std::string show(int code)
     {
       switch (code)
       {
@@ -56,21 +51,15 @@ namespace sdpa
         return "SDPA::Failed";
       case CANCELED:
         return "SDPA::Canceled";
+      case CANCELING:
+        return "SDPA::Canceling";
       case UNKNOWN:
         return "SDPA::Unknown";
+      case STALLED:
+        return "SDPA::Stalled";
       default:
         return "Strange job state";
       }
-    }
-
-    static int read(std::string const &state)
-    {
-      static const job_state_map_t m(job_state_map());
-      job_state_map_t::const_iterator it;
-
-      it = m.find(state);
-      if (it == m.end()) return UNKNOWN;
-      else               return it->second;
     }
   };
 }

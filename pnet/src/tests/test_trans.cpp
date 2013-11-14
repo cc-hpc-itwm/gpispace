@@ -70,8 +70,9 @@ int main (int, char **)
          ${pair.bid}   := ${store.bid}                         ; \
          ${pair.vid}   := ${vid}                                 "
       )
-    , "!bitset_is_element (${store.seen}, ${vid})"
+    , condition::type ("!bitset_is_element (${store.seen}, ${vid})")
     , true
+    , we::type::property::type()
     );
 
   pnet::type::signature::structure_type sig_pair_fields;
@@ -129,7 +130,10 @@ int main (int, char **)
   }
   // ************************************ //
 
-  transition_t tnet ("tnet", net);
+  transition_t tnet ("tnet", net
+                    , condition::type ("true")
+                    , true, we::type::property::type()
+                    );
   tnet.add_port
     (we::type::port_t ("vid", we::type::PORT_IN, std::string ("long"), pid_vid));
   tnet.add_port
@@ -157,7 +161,9 @@ int main (int, char **)
     }
   }
 
-  transition_t t1 ("t1", we::type::module_call_t ("m", "f"));
+  transition_t t1 ("t1", we::type::module_call_t ("m", "f")
+                  , condition::type ("true"), false, we::type::property::type()
+                  );
 
   t1.add_port
     (we::type::port_t ("i", we::type::PORT_IN, std::string ("long")));
@@ -179,7 +185,9 @@ int main (int, char **)
   std::cout << "i (out) = " << t1.output_port_by_name ("i") << std::endl;
   std::cout << "t1.p0 = " << t1.get_port (t1.input_port_by_name ("i")) << std::endl;
 
-  transition_t t2 ("t2", we::type::expression_t ("true"));
+  transition_t t2 ("t2", we::type::expression_t ("true")
+                  , condition::type ("true"), true, we::type::property::type()
+                  );
   t2.add_port
     (we::type::port_t ("i", we::type::PORT_IN, std::string ("long")));
   t2.add_port

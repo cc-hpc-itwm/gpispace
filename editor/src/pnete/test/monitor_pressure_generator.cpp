@@ -6,7 +6,6 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 
-#include <sdpa/daemon/Observable.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 
 #include <we/mgmt/type/activity.hpp>
@@ -22,18 +21,24 @@ struct activity
     : _id ((boost::format ("%1%") % ++id_counter).str())
     , _workers()
     , _state (NotificationEvent::STATE_STARTED)
-    , _act (we::type::transition_t ("activity-" + _id, we::type::expression_t()))
+    , _act (we::type::transition_t ( "activity-" + _id
+                                   , we::type::expression_t()
+                                   , condition::type ("true")
+                                   , true
+                                   , we::type::property::type()
+                                   )
+           )
   {
     _workers.push_back (worker);
   }
 
-  void send_out_notification ( NotificationService* service_a
-                             , NotificationService* service_b
+  void send_out_notification ( const NotificationService* service_a
+                             , const NotificationService* service_b
                              ) const
   {
     const NotificationEvent event (_workers, _id, _state, _act);
-    service_a->update (event);
-    service_b->update (event);
+    service_a->notify (event);
+    service_b->notify (event);
   }
 
   bool next_state()
@@ -52,7 +57,7 @@ struct activity
       _state = NotificationEvent::STATE_FAILED;
       break;
     case 2:
-      _state = NotificationEvent::STATE_CANCELLED;
+      _state = NotificationEvent::STATE_CANCELED;
       break;
     }
 
@@ -88,12 +93,10 @@ int main(int ac, char **av)
   const int worker_count (ac >= 4 ? atoi (av[3]) : 1);
   const int duration (ac >= 5 ? 1000 / atoi (av[4]) : 1);
 
-  NotificationService service_a
-    ("service_a", (boost::format ("localhost:%1%") % port_a).str());
-  NotificationService service_b
-    ("service_b", (boost::format ("localhost:%1%") % port_b).str());
-  service_a.open();
-  service_b.open();
+  const NotificationService service_a
+    ((boost::format ("localhost:%1%") % port_a).str());
+  const NotificationService service_b
+    ((boost::format ("localhost:%1%") % port_b).str());
 
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);

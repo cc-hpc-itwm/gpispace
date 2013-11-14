@@ -85,7 +85,7 @@ namespace we
               ; ++top
               )
           {
-            context.bind_ref ( _transition.name_of_port (top->second)
+            context.bind_ref ( _transition.get_port (top->second).name()
                              , top->first
                              );
           }
@@ -104,8 +104,8 @@ namespace we
         void set_ ## _name (bool value = true)
 
         FLAG (suspended);
-        FLAG (cancelling);
-        FLAG (cancelled);
+        FLAG (canceling);
+        FLAG (canceled);
         FLAG (failed);
         FLAG (finished);
 #undef FLAG

@@ -1,15 +1,165 @@
 #include "Job.hpp"
 
-using namespace sdpa::daemon;
+#include <sdpa/daemon/GenericDaemon.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
+#include <sdpa/events/DeleteJobAckEvent.hpp>
+#include <sdpa/events/JobResultsReplyEvent.hpp>
+#include <sdpa/events/JobResultsReplyEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
 
-void Job::CancelJob(const sdpa::events::CancelJobEvent*) { }
-void Job::CancelJobAck(const sdpa::events::CancelJobAckEvent*) { }
-void Job::DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IAgent*) { }
-void Job::JobFailed(const sdpa::events::JobFailedEvent*) { }
-void Job::JobFinished(const sdpa::events::JobFinishedEvent*) { }
-void Job::Pause(sdpa::daemon::IAgent* pAgent) {}
-void Job::Resume(sdpa::daemon::IAgent* pAgent) {}
-void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IAgent* ) { }
-void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IAgent*) { }
-void Job::Dispatch() { }
-void Job::Reschedule(sdpa::daemon::IAgent*) {};
+using namespace std;
+using namespace sdpa::events;
+
+namespace sdpa {
+  namespace daemon {
+    void JobFSM_::action_reschedule_job(const MSMRescheduleEvent& evt)
+    {
+      DLOG(TRACE, "Reschedule the job "<<evt.jobId());
+      evt.agent().schedule(evt.jobId());
+    }
+
+    void JobFSM_::action_job_stalled(const MSMStalledEvent& evt)
+    {
+      LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
+      if(evt.ptrAgent()) {
+        // notify the the job owner that the job has subtasks that are stalling
+        sdpa::events::JobStalledEvent::Ptr pEvt(new sdpa::events::JobStalledEvent(evt.ptrAgent()->name(), evt.jobOwner(), evt.jobId()));
+        evt.ptrAgent()->sendEventToMaster(pEvt);
+      }
+    }
+
+    void JobFSM_::action_resume_job(const MSMResumeJobEvent& evt)
+    {
+      LOG(INFO, "The job "<<evt.jobId()<<" changed its status from STALLED to RUNNING");
+      if(evt.ptrAgent()) {
+        // notify the the job owner that the job makes progress
+        sdpa::events::JobRunningEvent::Ptr pEvt(new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
+                                                                                 , evt.jobOwner()
+                                                                                 , evt.jobId()
+                                                                                 ));
+        evt.ptrAgent()->sendEventToMaster(pEvt);
+      }
+    }
+
+    template <class FSM>
+      void JobFSM_::no_transition(FSMStatusQueryEvent const& evt, FSM&, int state)
+    {
+      DLOG(DEBUG, "process event StatusQueryEvent");
+      evt.first->sendEventToMaster (evt.second);
+    }
+
+    Job::Job(const sdpa::job_id_t id,
+                     const sdpa::job_desc_t desc,
+                     const sdpa::job_id_t &parent)
+        : SDPA_INIT_LOGGER("Job")
+        , id_(id)
+        , desc_(desc)
+        , parent_(parent)
+        , type_(Job::WORKER)
+        , result_()
+        , m_error_code(0)
+        , m_error_message()
+        , walltime_(2592000) // walltime in seconds: one month by default
+    {
+      start();
+    }
+
+    const sdpa::job_id_t & Job::id() const {
+        return id_;
+    }
+
+    const sdpa::job_id_t & Job::parent() const {
+        return parent_;
+    }
+
+    const sdpa::job_desc_t & Job::description() const {
+        return desc_;
+    }
+
+
+    bool Job::isMasterJob() {
+        return type_ == Job::MASTER;
+    }
+
+    void Job::setType(const job_type& type) {
+        type_ = type;
+    }
+
+    void Job::action_delete_job(const sdpa::events::DeleteJobEvent& e)
+    {
+    }
+
+    void Job::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
+    {
+        setResult(evt.result());
+    }
+
+    void Job::action_job_failed(const sdpa::events::JobFailedEvent& evt )
+    {
+        setResult(evt.result());
+        error_code(evt.error_code());
+        error_message(evt.error_message());
+    }
+
+    void Job::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
+    {
+      lock_type lock(mtx_);
+      process_event(*pEvt);
+
+      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
+      ptr_comm->sendEventToMaster(pDelJobReply);
+    }
+
+    void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
+    {
+      assert (pDaemon);
+      // attention, no action called!
+      lock_type const _ (mtx_);
+      process_event (*pEvt);
+
+      sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
+        (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
+                                               , pEvt->from()
+                                               , id()
+                                               , getStatus()
+                                               , error_code()
+                                               , error_message()
+                                               )
+        );
+
+      process_event (FSMStatusQueryEvent (pDaemon, pStatReply));
+    }
+
+    void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
+    {
+      lock_type lock(mtx_);
+      process_event(*pEvt);
+      const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
+      ptr_comm->sendEventToMaster(pResReply);
+    }
+
+    void Job::Reschedule(sdpa::daemon::IAgent*  pAgent)
+    {
+      lock_type lock(mtx_);
+      process_event(MSMRescheduleEvent (pAgent, id()));
+    }
+
+    void Job::Pause(sdpa::daemon::IAgent* pAgent)
+    {
+      lock_type lock(mtx_);
+      process_event (MSMStalledEvent (pAgent, id(), owner()));
+    }
+
+    void Job::Resume (sdpa::daemon::IAgent* pAgent)
+    {
+      lock_type lock(mtx_);
+      process_event (MSMResumeJobEvent (pAgent, id(), owner()));
+    }
+
+    void Job::Dispatch()
+    {
+      lock_type lock(mtx_);
+      process_event (MSMResumeJobEvent (NULL, id(), owner()));
+    }
+}}

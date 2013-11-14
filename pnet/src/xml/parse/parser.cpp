@@ -1014,6 +1014,9 @@ namespace xml
         const std::string name (required ("module_type", node, "name", state));
         const std::string signature
           (required ("module_type", node, "function", state));
+        const boost::optional<bool> pass_context
+          (fhg::util::boost::fmap<std::string, bool>
+          (fhg::util::read_bool, optional (node, "pass_context")));
         const util::position_type pod (state.position (node));
         const boost::tuple
           < std::string
@@ -1096,6 +1099,7 @@ namespace xml
           , ldflags
           , cxxflags
           , links
+          , pass_context
           ).make_reference_id();
       }
 

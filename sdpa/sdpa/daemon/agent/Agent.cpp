@@ -18,19 +18,12 @@
 
 #include <sdpa/daemon/agent/Agent.hpp>
 
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <fhg/assert.hpp>
 
 namespace sdpa {
   using namespace events;
   namespace daemon {
-
-void Agent::action_configure()
-{
-  GenericDaemon::action_configure();
-
-  cfg().put("nmax_ext_job_req", 10U);
-}
 
 void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
@@ -200,6 +193,7 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
       sendEventToMaster(pEvtJobFinished);
     }
 
+    if (m_guiService)
     {
       std::list<std::string> workers; workers.push_back (name());
       const we::mgmt::type::activity_t act (pJob->description());
@@ -210,7 +204,7 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
         , act
         );
 
-      gui_service()->notify (evt);
+      m_guiService->notify (evt);
     }
 
     BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
@@ -446,6 +440,7 @@ bool Agent::failed( const id_type& wfid
     if(!isSubscriber(pJob->owner()))
       sendEventToMaster(pEvtJobFailed);
 
+    if (m_guiService)
     {
       std::list<std::string> workers; workers.push_back (name());
       const we::mgmt::type::activity_t act (pJob->description());
@@ -456,7 +451,7 @@ bool Agent::failed( const id_type& wfid
         , act
         );
 
-      gui_service()->notify (evt);
+      m_guiService->notify (evt);
     }
 
     BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
@@ -503,14 +498,14 @@ bool Agent::failed( const id_type& wfid
 void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
   if(hasWorkflowEngine())
-    workflowEngine()->cancelled(evt.job_id ());
+    workflowEngine()->canceled(evt.job_id ());
 
   try
   {
     sdpa::job_id_t jobId = evt.job_id();
     Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
 
-    DMLOG (TRACE, "Cancelling the pending job "<<jobId<<" ... ");
+    DMLOG (TRACE, "Canceling the pending job "<<jobId<<" ... ");
 
     sdpa::events::CancelJobEvent cae;
     pJob->CancelJob(&cae);
@@ -527,7 +522,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 
       if(!isTop())
       {
-        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the cancelled jobId "<<jobId<<"!");
+        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the canceled jobId "<<jobId<<"!");
         ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
                                                   , evt.from()
                                                   , ErrorEvent::SDPA_EUNKNOWN
@@ -539,7 +534,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
   }
   catch(const JobNotFoundException &ex1)
   {
-    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be cancelled! Exception occurred: "<<ex1.what());
+    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: "<<ex1.what());
   }
 }
 
@@ -588,7 +583,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
     if (pEvt->from () == sdpa::daemon::WE)
     {
-      workflowEngine()->cancelled (pEvt->job_id ());
+      workflowEngine()->canceled (pEvt->job_id ());
     }
 
     return;
@@ -607,7 +602,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
                                                           , pEvt->reason() ) );
       sendEventToSlave(pCancelEvt);
 
-      // change the job status to "Cancelling"
+      // change the job status to "Canceling"
       pJob->CancelJob(pEvt);
       SDPA_LOG_DEBUG("The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
@@ -625,7 +620,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
       if(!isTop())
       {
-        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the cancelled job "<<pEvt->job_id()<<"!");
+        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the canceled job "<<pEvt->job_id()<<"!");
         ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
                                                   , pEvt->from()
                                                   , ErrorEvent::SDPA_EUNKNOWN
@@ -656,7 +651,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   {
     Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
 
-    // update the job status to "Cancelled"
+    // update the job status to "Canceled"
     pJob->CancelJobAck(pEvt);
     SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
   }
@@ -664,7 +659,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   {
     LOG(WARN, "could not find job: " << ex.what());
 
-    workflowEngine()->cancelled (pEvt->job_id ());
+    workflowEngine()->canceled (pEvt->job_id ());
 
     return;
   }
@@ -692,7 +687,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   }
   else // acknowledgment comes from a worker -> inform WE that the activity was canceled
   {
-    LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
+    LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
     id_type actId = pEvt->job_id();
     Worker::worker_id_t worker_id = pEvt->from();
 
@@ -701,7 +696,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
     try {
         if(bTaskGroupComputed) {
-            workflowEngine()->cancelled(pEvt->job_id());
+            workflowEngine()->canceled(pEvt->job_id());
         }
     }
     catch (std::exception const & ex)
@@ -745,55 +740,5 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     }
   }
 }
-
-void Agent::backup( std::ostream& ofs )
-{
-  try {
-    //std::string strArchiveName(name()+".bkp");
-    //SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
-
-    boost::archive::text_oarchive oa(ofs);
-    oa.register_type(static_cast<JobManager*>(NULL));
-    oa.register_type(static_cast<JobImpl*>(NULL));
-    oa.register_type(static_cast<JobFSM*>(NULL));
-    backupJobManager(oa);
-
-    oa.register_type(static_cast<CoallocationScheduler*>(NULL));
-    //oa.register_type(static_cast<SchedulerBase*>(NULL));
-    backupScheduler(oa);
-
-    /*oa.register_type(static_cast<T*>(NULL));
-    oa << ptr_workflow_engine_;*/
-    oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
-  }
-  catch(std::exception &e) {
-    std::cout <<"Exception occurred: "<< e.what() << std::endl;
-  }
 }
-
-void Agent::recover( std::istream& ifs )
-{
-  try {
-    boost::archive::text_iarchive ia(ifs);
-    ia.register_type(static_cast<JobManager*>(NULL));
-    ia.register_type(static_cast<JobImpl*>(NULL));
-    ia.register_type(static_cast<JobFSM*>(NULL));
-    recoverJobManager(ia);
-
-    ia.register_type(static_cast<CoallocationScheduler*>(NULL));
-    //ia.register_type(static_cast<SchedulerBase*>(NULL));
-    recoverScheduler(ia);
-
-    // should ignore the workflow engine,
-    // since it is not always possible to recover it
-
-    /*ia.register_type(static_cast<T*>(NULL));
-    ia >> ptr_workflow_engine_;*/
-    ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
-    SDPA_LOG_INFO("The list of recoverd masters is: ");
-  }
-  catch(std::exception &e) {
-    std::cout <<"Exception occurred: " << e.what() << std::endl;
-  }
 }
-}}

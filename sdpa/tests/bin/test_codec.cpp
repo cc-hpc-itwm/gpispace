@@ -569,35 +569,5 @@ int main(int, char **)
     }
   }
 
-  {
-    std::clog << "testing RequestJobEvent...";
-    RequestJobEvent e("foo", "bar", "last-job-0");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
-
-    if (RequestJobEvent *e2 = dynamic_cast<RequestJobEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->last_job_id() != e.last_job_id()
-      )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a RequestJobEvent!" << std::endl;
-    }
-  }
-
   return errcount;
 }

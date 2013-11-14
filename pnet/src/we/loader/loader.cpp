@@ -153,7 +153,7 @@ namespace we {
         try
         {
           expr::eval::context out;
-          (*(m->second)).call ("selftest", expr::eval::context(), out);
+          (*(m->second)).call ("selftest", 0, expr::eval::context(), out);
         }
         catch (FunctionNotFound const &)
         {

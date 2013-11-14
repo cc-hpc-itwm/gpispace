@@ -1,0 +1,120 @@
+#!/bin/bash
+myhost=$(hostname)
+
+opts=(--with-tests)
+makeflags=()
+ctestflags=()
+runtests=false
+send_mail=false
+mailto=sdpa-dev@itwm.fhg.de
+ec=0
+
+case "$myhost" in
+    build-*)
+        export HWLOC_HOME=/home/projects/sdpa/external_software/hwloc/1.4.2/gcc
+        export QTDIR=~/external_software/qt/4.8.5
+        export PATH=$QTDIR/bin:$PATH
+        export BOOST_ROOT=~/external_software/boost/1.52/gcc/
+        export NACL_HOME=~/external_software/nacl/20110221
+        export SMC_HOME=~/external_software/smc/5.0.0
+        makeflags+=(-j2)
+        send_mail=true
+
+        if [ "$myhost" = "build-centos6" ]
+        then
+            export PATH="$HOME/external_software/ccache/3.1.9/lib:$PATH"
+        fi
+        ;;
+    lcs*)
+        module use /p/herc/itwm/hpc/soft/etc/modules
+        module laod soft/cmake
+        module load lib/boost
+        module load lib/hwloc
+        module load lib/qt
+        module load soft/graphviz
+        makeflags+=(-j24)
+        ;;
+    voyager)
+        makeflags+=(-j4)
+        ;;
+esac
+
+log_or_send_mail ()
+{
+    local ec="$1" ; shift
+
+    if [ $ec -eq 0 ]
+    then
+        msg="${@}"
+    else
+        msg="${@} (ec=$ec)"
+    fi
+    sha="${CI_BUILD_REF}"
+    branch="${CI_BUILD_REF_NAME}"
+    previous="${CI_BUILD_BEFORE_SHA}"
+    short_sha="${sha:0:7}"
+    ci_url="http://gitlab-ci.hpc.devnet.itwm.fhg.de/projects/1/builds/${sha}"
+    diff_url="http://gitlab.hpc.devnet.itwm.fhg.de/top/gpispace/commit/${sha}"
+    author=$(git log -n 1 --pretty="%aN <%aE>")
+    project="GPI-Space"
+
+    header="Build report for commit ${short_sha} to ${branch} on host ${myhost}:"
+    header_length=$(echo -n "$header" | wc -c)
+    ruler=$(printf "%${header_length}s" | tr ' ' '=')
+
+    if $send_mail
+    then
+        mail -s "[CI] ${project}: commit ${short_sha} to ${branch}: ${msg}" -r "${author}" "${mailto}"
+    else
+        cat
+    fi <<EOF
+${header}
+${ruler}
+
+     author: ${author}
+     branch: ${branch}
+      state: ${msg}
+       host: ${myhost}
+     commit: ${sha}
+   previous: ${previous}
+    details: ${ci_url}
+       diff: ${diff_url}
+EOF
+}
+
+./configure --prefix=$PWD/inst "${opts[@]}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    log_or_send_mail $ec "CONFIGURE FAILED"
+    exit $ec
+fi
+
+make "${makeflags[@]}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    log_or_send_mail $ec "MAKE FAILED"
+    exit $ec
+fi
+
+make "${makeflags[@]}" install
+ec=$?
+if [ $ec -ne 0 ]
+then
+    log_or_send_mail $ec "INSTALL FAILED"
+    exit $ec
+fi
+
+if $runtests
+then
+    cd build && ctest "${ctestflags[@]}"
+    ec=$?
+    if [ $ec -ne 0 ]
+    then
+        log_or_send_mail $ec "TESTS FAILED"
+        exit $ec
+    fi
+fi
+
+log_or_send_mail 0 "SUCCESS"

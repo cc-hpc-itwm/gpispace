@@ -14,7 +14,6 @@ namespace we
       , path_ (a_path)
       , handle_(0)
       , call_table_()
-      , state_(0)
     {
       open (a_path, flags);
     }
@@ -52,21 +51,8 @@ namespace we
     {
       return path_;
     }
-    void* Module::state()
-    {
-      return state_;
-    }
-    const void* Module::state() const
-    {
-      return state_;
-    }
-    void* Module::state (void* new_state)
-    {
-      void* old_state (state_);
-      state_ = new_state;
-      return old_state;
-    }
     void Module::call ( const std::string& function
+                      , gspc::drts::context *info
                       , const expr::eval::context& input
                       , expr::eval::context& output
                       )
@@ -82,7 +68,7 @@ namespace we
       }
       else
       {
-        (*(fun->second.first))(state(), input, output);
+        (*(fun->second.first))(info, input, output);
       }
     }
     void Module::add_function (const std::string& name, WrapperFunction f)

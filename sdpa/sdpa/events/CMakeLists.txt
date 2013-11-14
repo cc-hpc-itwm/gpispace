@@ -22,7 +22,6 @@ set (hdrs
   LifeSignEvent.hpp
   MgmtEvent.hpp
   QueryJobStatusEvent.hpp
-  RequestJobEvent.hpp
   RetrieveJobResultsEvent.hpp
   RunJobEvent.hpp
   SDPAEvent.hpp

@@ -1,6 +1,7 @@
 #include "util.hpp"
 
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <stdexcept>
 #include <iterator>
@@ -153,6 +154,22 @@ namespace gspc
       {
         host_port = host_port + ":" + port;
       }
+    }
+
+    static std::string s_hostname ()
+    {
+      char buf [512];
+      int rc = gethostname (buf, sizeof(buf));
+      if (0 == rc)
+        return std::string (buf);
+      else
+        return "localhost";
+    }
+
+    std::string const &hostname ()
+    {
+      static std::string h (s_hostname ());
+      return h;
     }
   }
 }

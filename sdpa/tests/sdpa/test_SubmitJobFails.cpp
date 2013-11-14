@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE TestSubmitJobFails
 #include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include "tests_config.hpp"
@@ -17,7 +17,6 @@ using namespace seda;
 const int NMAXTRIALS = 3;
 
 namespace po = boost::program_options;
-#define NO_GUI ""
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
@@ -92,7 +91,7 @@ void MyFixture::run_client()
 	nTrials = 0;
 	while( job_status.find("Finished") == std::string::npos &&
 		   job_status.find("Failed") == std::string::npos &&
-		   job_status.find("Cancelled") == std::string::npos)
+		   job_status.find("Canceled") == std::string::npos)
 	{
 		try {
 			job_status = ptrCli->queryJob(job_id_user);
@@ -196,7 +195,7 @@ void MyFixture::run_client_cancel_failed_job()
 	nTrials = 0;
 	while( job_status.find("Finished") == std::string::npos &&
 		   job_status.find("Failed") == std::string::npos &&
-		   job_status.find("Cancelled") == std::string::npos)
+		   job_status.find("Canceled") == std::string::npos)
 	{
 		try {
 			job_status = ptrCli->queryJob(job_id_user);
@@ -274,18 +273,15 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure1 )
 {
 	LOG( INFO, "***** testSubmitJobFailure1 *****"<<std::endl);
 
-	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, 10);
-	ptrOrch->start_agent(true);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAggMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgg, arrAggMasterInfo, 100 );
-	ptrAgg->start_agent(true);
+	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_0", addrAgg, arrAggMasterInfo);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
@@ -309,18 +305,15 @@ BOOST_AUTO_TEST_CASE( testSubmitJobFailure2 )
 {
 	LOG( INFO, "***** testSubmitJobFailure2 *****"<<std::endl);
 
-	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, 10);
-	ptrOrch->start_agent(true);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	sdpa::master_info_list_t arrAggMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgg, arrAggMasterInfo, 100 );
-	ptrAgg->start_agent(true);
+	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_0", addrAgg, arrAggMasterInfo);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);

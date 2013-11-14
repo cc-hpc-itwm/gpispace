@@ -6,6 +6,7 @@
 #include <gspc/net.hpp>
 #include <gspc/kvs/kvs.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/util/read.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
@@ -51,6 +52,14 @@ namespace gspc
     service_t::~service_t ()
     {
       m_on_change_connection.disconnect ();
+      delete m_kvs;
+      m_kvs = 0;
+    }
+
+    gspc::kvs::api_t & service_t::api ()
+    {
+      assert (m_kvs);
+      return *m_kvs;
     }
 
     void service_t::setup_rpc_handler ()

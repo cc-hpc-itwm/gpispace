@@ -19,7 +19,7 @@
 #include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -29,14 +29,11 @@
 
 const int NMAXTRIALS=5;
 const int NWORKERS=5;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;
 
 using namespace std;
-
-#define NO_GUI ""
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
@@ -81,7 +78,7 @@ struct MyFixture
 	boost::thread m_threadClient;
 };
 
-/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+/*returns: 0 job finished, 1 job failed, 2 job canceled, other value if failures occurred */
 int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
 	typedef boost::posix_time::ptime time_type;
@@ -155,7 +152,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 			{
 				LOG(WARN, "The job has been canceled!");
-				job_status="Cancelled";
+				job_status="Canceled";
 				exit_code = 2;
 			}
 			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
@@ -185,7 +182,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
   	if( job_status != std::string("Finished") &&
   		job_status != std::string("Failed")   &&
-  		job_status != std::string("Cancelled") )
+  		job_status != std::string("Canceled") )
   	{
   		LOG(ERROR, "Unexpected status, leave now ...");
   		return exit_code;
@@ -262,8 +259,6 @@ BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoallocCommonCpb )
 
 	const int NWORKERS=5;
 
-	//guiUrl
-	string guiUrl   	= "";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
@@ -279,8 +274,7 @@ BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoallocCommonCpb )
 	osstr<<"client_"<<testNb;
 	std::string cliName(osstr.str());
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create(orchName, addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called(orchName, addrOrch);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
 
@@ -288,9 +282,7 @@ BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoallocCommonCpb )
 	osstr<<"agent_"<<testNb;
 	std::string agentName(osstr.str());
 
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false);
-
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called(agentName, addrAgent, arrAgentMasterInfo);
 	boost::thread drts_thread[NWORKERS];
 	sdpa::shared_ptr<fhg::core::kernel_t> drts[NWORKERS];
 
@@ -341,85 +333,6 @@ BOOST_AUTO_TEST_CASE( TestStopRestartDrtsCoallocCommonCpb )
 		drts_thread_new.join();
 
 	ptrAgent->shutdown();
-	ptrOrch->shutdown();
-}
-
-BOOST_AUTO_TEST_CASE( TestStopRestarAgentCoallocRealWfe )
-{
-	LOG( INFO, "***** TestStopRestarAgentCoallocRealWfe *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-	typedef void OrchWorkflowEngine;
-	m_strWorkflow = read_workflow("workflows/coallocation_test.pnet");
-
-	ostringstream osstr;
-	osstr<<"orchestrator_"<<testNb;
-	std::string orchName(osstr.str());
-
-	osstr.str("");
-	osstr<<"client_"<<testNb;
-	std::string cliName(osstr.str());
-
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create(orchName, addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
-
-	osstr.str("");
-	osstr<<"agent_"<<testNb;
-	std::string agentName(osstr.str());
-
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false);
-
-	boost::thread drts_thread[NWORKERS];
-	sdpa::shared_ptr<fhg::core::kernel_t> drts[NWORKERS];
-
-	ostringstream oss; int i;
-	for(i=0;i<2;i++)
-	{
-		oss<<"drts_"<<testNb<<"_"<<i;
-		drts[i] = createDRTSWorker(oss.str(), agentName, "A", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
-		drts_thread[i] = boost::thread( &fhg::core::kernel_t::run, drts[i] );
-		oss.str("");
-	}
-
-	for(i=2;i<NWORKERS;i++)
-	{
-		oss<<"drts_"<<testNb<<"_"<<i;
-		drts[i] = createDRTSWorker(oss.str(), agentName, "B", TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH, kvs_host(), kvs_port());
-		drts_thread[i] = boost::thread( &fhg::core::kernel_t::run, drts[i] );
-		oss.str("");
-	}
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, orchName, cliName));
-
-	sleep(2);
-	LOG( INFO, "Shutdown the agent");
-  const std::string strBackupAgent (ptrAgent->last_backup());
-  ptrAgent->shutdown();
-	ptrAgent.reset();
-
-	LOG( INFO, "Re-start the agent. The recovery string is "<<strBackupAgent);
-	sdpa::daemon::Agent::ptr_t ptrAgentNew = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgentNew->start_agent(false, strBackupAgent);
-
-	if(threadClient.joinable())
-		threadClient.join();
-
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	for(i=0;i<NWORKERS;i++)
-	{
-		drts[i]->stop();
-		if(drts_thread[i].joinable())
-			drts_thread[i].join();
-	}
-
-	ptrAgentNew->shutdown();
 	ptrOrch->shutdown();
 }
 

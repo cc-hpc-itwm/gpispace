@@ -4,7 +4,7 @@
 #include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
@@ -13,7 +13,6 @@
 #include <boost/shared_array.hpp>
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 const int NAGENTS = 1;
 
 const int BUNCH_SIZE = 1;
@@ -21,8 +20,6 @@ const int BUNCH_SIZE = 1;
 namespace po = boost::program_options;
 
 using namespace std;
-
-#define NO_GUI ""
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
@@ -266,7 +263,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 			}
 			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 			{
-				job_status="Cancelled";
+				job_status="Canceled";
 				exit_code = 2;
 			}
 			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
@@ -293,7 +290,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
   	if( job_status != std::string("Finished") &&
   		job_status != std::string("Failed")   &&
-  		job_status != std::string("Cancelled") )
+  		job_status != std::string("Canceled") )
   	{
   		LOG(ERROR, "Unexpected status, leave now ...");
   		return exit_code;
@@ -325,8 +322,6 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 
 	LOG( DEBUG, "testPathOneDrts");
 
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
@@ -337,8 +332,7 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create Orchestrator with an Dummy workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	//LOG( DEBUG, "Create the Agent ...");
 	boost::shared_array<sdpa::daemon::Agent::ptr_t> arrAgents( new sdpa::daemon::Agent::ptr_t[NAGENTS] );
@@ -349,17 +343,14 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 		ostringstream oss;
 		oss<<"agent_"<<k;
 
-		arrAgents[k] = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create( oss.str(),
+		arrAgents[k] = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create_with_start_called( oss.str(),
 																			  	addrAgent,
-																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)),
-																			  	MAX_CAP );
+																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)));
 
 		// the master is the previous created agent
 		strMaster = oss.str();
 	}
 
-	for(int k=0; k<NAGENTS; k++)
-		arrAgents[k]->start_agent(false);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", strMaster, "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
@@ -394,8 +385,6 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 
 	LOG( DEBUG, "testMultipleMastersOneDrts");
 
-	//guiUrl
-	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 		= "127.0.0.1";
@@ -407,8 +396,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create Orchestrator with an Dummy workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
 	//LOG( DEBUG, "Create the Agent ...");
 	//sdpa::daemon::Agent::ptr_t arrAgents[NAGENTS];
@@ -425,15 +413,11 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 		if(k!=NAGENTS-1)
 			ossDrtsMasterInfo<<",";
 
-		arrAgents[k] = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create( oss.str(),
+		arrAgents[k] = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create_with_start_called( oss.str(),
 																			  	addrAgent,
-																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)),
-																			  	MAX_CAP );
+																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)));
 
 	}
-
-	for(int k=0; k<NAGENTS; k++)
-		arrAgents[k]->start_agent(false);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", ossDrtsMasterInfo.str(), "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);

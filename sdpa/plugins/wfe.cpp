@@ -1,9 +1,8 @@
 #include "wfe.hpp"
-#include "observable.hpp"
-#include "drts_info_impl.hpp"
 #include <errno.h>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
+#include <sdpa/daemon/NotificationService.hpp>
 
 #include <list>
 #include <map>
@@ -29,6 +28,7 @@
 #include <fhg/plugin/capability.hpp>
 
 #include <gspc/net.hpp>
+#include <gspc/drts.hpp>
 
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
@@ -70,6 +70,7 @@ namespace
     wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
       : loader (module_loader)
       , task (target)
+      , context (task.workers)
     {}
 
     virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
@@ -93,7 +94,7 @@ namespace
     {
       try
       {
-        module::call (loader, act, mod);
+        module::call (loader, &context, act, mod);
       }
       catch (std::exception const &ex)
       {
@@ -129,6 +130,7 @@ namespace
   private:
     we::loader::loader& loader;
     wfe_task_t& task;
+    gspc::drts::context context;
   };
 
   struct search_path_appender
@@ -160,7 +162,6 @@ namespace
 
 class WFEImpl : FHG_PLUGIN
               , public wfe::WFE
-              , public observe::Observable
 {
   typedef boost::mutex mutex_type;
   typedef boost::lock_guard<mutex_type> lock_type;
@@ -228,11 +229,21 @@ public:
       , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
       );
 
+    _notification_service = boost::none;
+
+    const std::string url (fhg_kernel()->get ("gui_url", ""));
+    if (not url.empty())
+    {
+      _notification_service = sdpa::daemon::NotificationService (url);
+    }
+
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
+    _notification_service = boost::none;
+
     gspc::net::unhandle ("/service/wfe/unload-modules");
     gspc::net::unhandle ("/service/wfe/current-job");
     gspc::net::unhandle ("/service/wfe/search-path/get");
@@ -261,7 +272,7 @@ public:
         wfe_task_t *task = m_task_map.begin ()->second;
         task->state = wfe_task_t::CANCELED;
         task->error_message = "plugin shutdown";
-        task->done.notify(fhg::error::EXECUTION_CANCELLED);
+        task->done.notify(fhg::error::EXECUTION_CANCELED);
 
         m_task_map.erase (task->id);
       }
@@ -278,9 +289,13 @@ public:
                  , sdpa::daemon::NotificationEvent::state_t state
                  )
   {
-    emit ( sdpa::daemon::NotificationEvent
+    if (_notification_service)
+    {
+      _notification_service->notify
+        ( sdpa::daemon::NotificationEvent
            (task.workers, task.id, state, task.activity, task.meta)
-         );
+        );
+    }
   }
 
 
@@ -345,13 +360,13 @@ public:
 
         emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
       }
-      else if (fhg::error::EXECUTION_CANCELLED == ec)
+      else if (fhg::error::EXECUTION_CANCELED == ec)
       {
         DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
         error_message = task.error_message;
 
-        emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELLED);
+        emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELED);
       }
       else
       {
@@ -501,8 +516,8 @@ private:
 
       if (task->state != wfe_task_t::PENDING)
       {
-        task->errc = fhg::error::EXECUTION_CANCELLED;
-        task->error_message = "cancelled";
+        task->errc = fhg::error::EXECUTION_CANCELED;
+        task->error_message = "canceled";
       }
       else
       {
@@ -510,16 +525,14 @@ private:
         {
           wfe_exec_context ctxt (*m_loader, *task);
 
-          gspc::drts::info::set_worker_list (task->workers);
-
           task->activity.inject_input();
           task->activity.execute (&ctxt);
           task->activity.collect_output();
 
           if (task->state == wfe_task_t::CANCELED)
           {
-            task->errc = fhg::error::EXECUTION_CANCELLED;
-            task->error_message = "cancelled";
+            task->errc = fhg::error::EXECUTION_CANCELED;
+            task->error_message = "canceled";
           }
           else
           {
@@ -566,6 +579,8 @@ private:
   boost::shared_ptr<boost::thread> m_worker;
 
   bool m_auto_unload;
+
+  boost::optional<sdpa::daemon::NotificationService> _notification_service;
 };
 
 EXPORT_FHG_PLUGIN( wfe

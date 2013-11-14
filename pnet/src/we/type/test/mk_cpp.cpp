@@ -15,6 +15,7 @@ int main (int argc, char** argv)
   using pnet::type::signature::structured_type;
   using pnet::type::signature::show;
   using pnet::type::signature::cpp::header;
+  using pnet::type::signature::cpp::header_op;
   using pnet::type::signature::cpp::impl;
 
   structure_type f;
@@ -32,6 +33,7 @@ int main (int argc, char** argv)
 
   std::string fheader;
   std::string fimpl;
+  std::string fheader_op;
 
   desc.add_options()
     ( "help,h"
@@ -39,11 +41,15 @@ int main (int argc, char** argv)
     )
     ( "header,H"
     , po::value<std::string>(&fheader)->default_value (fheader)
-    , "filename for header"
+    , "filename for struct definition header"
+    )
+    ( "header-op,O"
+    , po::value<std::string>(&fheader_op)->default_value (fheader_op)
+    , "filename for operations header"
     )
     ( "impl,I"
     , po::value<std::string>(&fimpl)->default_value (fimpl)
-    , "filename for implementation"
+    , "filename for operations implementation"
     );
 
   po::variables_map vm;
@@ -73,6 +79,19 @@ int main (int argc, char** argv)
 
     h << header (p) << std::endl;
     h << header (l) << std::endl;
+  }
+
+  if (!fheader_op.empty())
+  {
+    std::ofstream h (fheader_op.c_str());
+
+    if (!h)
+    {
+      throw std::runtime_error ("Could not open " + fheader_op);
+    }
+
+    h << header_op (p) << std::endl;
+    h << header_op (l) << std::endl;
   }
 
   if (!fimpl.empty())

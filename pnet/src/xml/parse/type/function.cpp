@@ -1118,7 +1118,6 @@ namespace xml
         const path_t prefix (state.path_to_cpp());
         const path_t file (prefix / "Makefile");
 
-        const std::string path_type ("pnetc/type/");
         const std::string path_op ("pnetc/op/");
 
         const std::string file_global_cxxflags ("Makefile.CXXFLAGS");
@@ -1148,7 +1147,7 @@ namespace xml
         stream << "  $(warning !!! Try to set BOOST_ROOT in the environment!)"
                                                                    << std::endl;
         stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  BOOST_ROOT = /usr"                            << std::endl;
+        stream << "  BOOST_ROOT := /usr"                           << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CXX"                                     << std::endl;
@@ -1160,7 +1159,7 @@ namespace xml
         stream << "    $(error Neither SDPA_INCLUDE nor SDPA_HOME are set)"
                                                                    << std::endl;
         stream << "  else"                                         << std::endl;
-        stream << "    SDPA_INCLUDE = $(SDPA_HOME)/include"        << std::endl;
+        stream << "    SDPA_INCLUDE := $(SDPA_HOME)/include"       << std::endl;
         stream << "  endif"                                        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
@@ -1169,15 +1168,15 @@ namespace xml
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
-        stream << "  CP = $(shell which cp 2>/dev/null)"           << std::endl;
+        stream << "  CP := $(shell which cp 2>/dev/null)"          << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef MKDIR"                                   << std::endl;
-        stream << "  MKDIR = $(shell which mkdir 2>/dev/null)"     << std::endl;
+        stream << "  MKDIR := $(shell which mkdir 2>/dev/null)"    << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef RM"                                      << std::endl;
-        stream << "  RM = $(shell which rm 2>/dev/null) -f"        << std::endl;
+        stream << "  RM := $(shell which rm 2>/dev/null) -f"       << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
@@ -1230,9 +1229,10 @@ namespace xml
 
         BOOST_FOREACH (const std::string& tname, structnames)
         {
-          const std::string obj (path_type + tname + ".o");
-          const std::string obj_cpp (path_type + tname + ".cpp");
-          const std::string dep (path_type + tname + ".d");
+          const std::string path_type ("pnetc/type/");
+          const std::string obj (path_type + tname + "/op.o");
+          const std::string obj_cpp (path_type + tname + "/op.cpp");
+          const std::string dep (path_type + tname + "/op.d");
 
           stream << "####"                                         << std::endl;
           stream << "#### struct " << tname                        << std::endl;
@@ -1630,9 +1630,12 @@ namespace xml
           class include : public fhg::util::ostream::modifier
           {
           public:
-            include (const std::string& tname)
+            include ( const std::string& tname
+                    , std::string const& suffix
+                    )
               : _tname (tname)
               , _inc()
+              , _suffix (suffix)
             {
               namespace value = pnet::type::value;
 
@@ -1652,7 +1655,7 @@ namespace xml
             {
               if (!pnet::type::signature::is_literal (_tname))
               {
-                os << fhg::util::cpp::include ("pnetc/type/" + _tname + ".hpp");
+                os << fhg::util::cpp::include ("pnetc/type/" + _tname + _suffix);
               }
               else
               {
@@ -1678,6 +1681,7 @@ namespace xml
             boost::unordered_map< std::string
                                 , std::set<std::string>
                                 > _inc;
+            std::string const _suffix;
           };
         };
 
@@ -1732,7 +1736,7 @@ namespace xml
             else
             {
               os << "::pnetc::type::" << _port.type <<  "::" << _port.type <<  " " << _port.name
-                 << " (_pnetc_input.value (\"" << _port.name << "\"));";
+                 << " (::pnetc::type::" << _port.type << "::from_value (_pnetc_input.value (\"" << _port.name << "\")));";
             }
 
             return os;
@@ -1757,7 +1761,7 @@ namespace xml
             }
           else
             {
-              os << "::pnetc::type::" << port.type << "::value"
+              os << "::pnetc::type::" << port.type << "::to_value"
                  << " (" << port.name << ")"
                 ;
             }
@@ -1793,6 +1797,11 @@ namespace xml
 
           fhg::util::first_then<std::string> sep (" ", ", ");
 
+          if (mod.pass_context ())
+          {
+            s << sep << "gspc::drts::context *_pnetc_context";
+          }
+
           BOOST_FOREACH (const port_with_type& port, ports_const)
           {
             s << sep << "const " << mk_type (port.type) << "& " << port.name
@@ -1823,6 +1832,7 @@ namespace xml
                     , const ports_with_type_type & ports_mutable
                     , const ports_with_type_type & ports_out
                     , const boost::optional<port_with_type> & port_return
+                    , boost::unordered_set<std::string> const& types
                     )
         {
           namespace block = fhg::util::cpp::block;
@@ -1833,12 +1843,18 @@ namespace xml
           fhg::util::indenter indent;
 
           s << cpp::include ("pnetc/op/" + mod.name() + "/" + file_hpp.string());
+
+          BOOST_FOREACH (std::string const& tname, types)
+          {
+            s << include (tname, "/op.hpp");
+          }
+
           s << ns::open (indent, "pnetc");
           s << ns::open (indent, "op");
           s << ns::open (indent, mod.name());
 
           s << indent << "static void " << mod.function();
-          s << deeper (indent) << "( void *";
+          s << deeper (indent) << "( gspc::drts::context *_pnetc_context";
           s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
           s << deeper (indent) << ", expr::eval::context& _pnetc_output";
           s << deeper (indent) << ")";
@@ -1868,7 +1884,7 @@ namespace xml
 
             if (!pnet::type::signature::is_literal ((*port_return).type))
             {
-              s << "::pnetc::type::" << (*port_return).type << "::value"
+              s << "::pnetc::type::" << (*port_return).type << "::to_value"
                 << " ("
                 ;
             }
@@ -1879,6 +1895,11 @@ namespace xml
             ;
 
           fhg::util::first_then<std::string> sep ("", ", ");
+
+          if (mod.pass_context ())
+          {
+            s << sep << "_pnetc_context";
+          }
 
           BOOST_FOREACH (const port_with_type& port, ports_const)
           {
@@ -2089,6 +2110,7 @@ namespace xml
                           , ports_mutable
                           , ports_out
                           , port_return
+                          , types
                           );
 
               const fun_info_type fun_info ( mod.function()
@@ -2114,9 +2136,13 @@ namespace xml
               stream << cpp_util::include_guard::open
                 ("PNETC_OP_" + mod.name() + "_" + mod.function());
 
+              if (mod.pass_context ())
+              {
+                stream << cpp_util::include ("gspc/drts/context_fwd.hpp");
+              }
               BOOST_FOREACH (const std::string& tname, types)
               {
-                stream << include (tname);
+                stream << include (tname, ".hpp");
               }
 
               stream << ns::open (indent, "pnetc");
@@ -2152,6 +2178,16 @@ namespace xml
 
               stream << cpp_util::include
                 ("pnetc/op/" + mod.name() + "/" + file_hpp);
+
+              BOOST_FOREACH (const std::string& tname, types)
+              {
+                stream << include (tname, "/op.hpp");
+              }
+
+              if (mod.pass_context ())
+              {
+                stream << cpp_util::include ("gspc/drts/context.hpp");
+              }
 
               BOOST_FOREACH (const std::string& inc, mod.cincludes())
               {
@@ -2259,19 +2295,18 @@ namespace xml
               const pnet::type::signature::signature_type sig
                 (structure.signature());
 
+              stream << "// " << pnet::type::signature::show (sig) << std::endl;
+
               stream << fhg::util::cpp::include_guard::open
                 ("PNETC_TYPE_" + structure.name());
 
               const boost::unordered_set<std::string> names
                 (pnet::type::signature::names (sig));
 
+
               BOOST_FOREACH (const std::string& tname, names)
               {
-                if (!pnet::type::signature::is_literal (tname))
-                {
-                  stream <<
-                    fhg::util::cpp::include ("pnetc/type/" + tname + ".hpp");
-                }
+                stream << include (tname, ".hpp");
               }
 
               stream << pnet::type::signature::cpp::header_signature (sig)
@@ -2284,7 +2319,8 @@ namespace xml
               const boost::filesystem::path file
                 ( prefix
                 / "pnetc/type"
-                / (structure.name() + ".cpp")
+                / structure.name()
+                / "op.hpp"
                 );
 
               util::check_no_change_fstream stream (state, file);
@@ -2295,8 +2331,45 @@ namespace xml
               stream << "// defined in " << structure.position_of_definition()
                      << std::endl;
 
+              stream << fhg::util::cpp::include_guard::open
+                ("PNETC_TYPE_" + structure.name() + "_OP");
+
               stream << fhg::util::cpp::include ( "pnetc/type/"
                                                 + structure.name() + ".hpp"
+                                                );
+
+              BOOST_FOREACH ( const std::string& tname
+                            , pnet::type::signature::names (sig)
+                            )
+              {
+                stream << include (tname, "/op.hpp");
+              }
+
+              stream << pnet::type::signature::cpp::header_op_signature (sig)
+                     << std::endl;
+
+              stream << fhg::util::cpp::include_guard::close();
+            }
+
+            {
+              const boost::filesystem::path file
+                ( prefix
+                / "pnetc/type"
+                / structure.name()
+                / "op.cpp"
+                );
+
+              util::check_no_change_fstream stream (state, file);
+
+              const pnet::type::signature::signature_type sig
+                (structure.signature());
+
+              stream << "// defined in " << structure.position_of_definition()
+                     << std::endl
+                     << std::endl;
+
+              stream << fhg::util::cpp::include ( "pnetc/type/"
+                                                + structure.name() + "/op.hpp"
                                                 );
 
               stream << pnet::type::signature::cpp::impl_signature (sig)

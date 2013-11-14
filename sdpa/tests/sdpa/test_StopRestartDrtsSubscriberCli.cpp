@@ -2,7 +2,7 @@
 #include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
@@ -22,12 +22,9 @@ using namespace seda;
 
 
 const int NMAXTRIALS = 10;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;
-
-#define NO_GUI ""
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
@@ -78,7 +75,7 @@ struct MyFixture
 };
 
 
-/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+/*returns: 0 job finished, 1 job failed, 2 job canceled, other value if failures occurred */
 int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
 	typedef boost::posix_time::ptime time_type;
@@ -152,7 +149,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 			{
 				LOG(WARN, "The job has been canceled!");
-				job_status="Cancelled";
+				job_status="Canceled";
 				exit_code = 2;
 			}
 			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
@@ -182,7 +179,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
   	if( job_status != std::string("Finished") &&
   		job_status != std::string("Failed")   &&
-  		job_status != std::string("Cancelled") )
+  		job_status != std::string("Canceled") )
   	{
   		LOG(ERROR, "Unexpected status, leave now ...");
   		return exit_code;
@@ -261,8 +258,6 @@ BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
 {
     LOG( DEBUG, "testStopRestartDrtsRealWE");
-    //guiUrl
-    string guiUrl           = "";
     string workerUrl        = "127.0.0.1:5500";
     string addrOrch         = "127.0.0.1";
     string addrAgent        = "127.0.0.1";
@@ -272,12 +267,10 @@ BOOST_AUTO_TEST_CASE( testStopRestartDrtsRealWE)
     m_strWorkflow = read_workflow("workflows/transform_file.pnet");
     //LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-    sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-    ptrOrch->start_agent(false);
+    sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
     sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-    ptrAgent->start_agent(false);
+    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
 
     sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
     boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);

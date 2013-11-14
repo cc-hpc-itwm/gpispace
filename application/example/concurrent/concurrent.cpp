@@ -17,7 +17,7 @@
 typedef std::map<unsigned int, unsigned long> call_cnt_map_t ;
 static call_cnt_map_t call_cnt_map;
 
-static void fun ( void *
+static void fun ( gspc::drts::context *
                 , const expr::eval::context& input
                 , expr::eval::context& output
                 )
@@ -33,7 +33,7 @@ static void fun ( void *
 }
 
 static unsigned long call_cnt_A = 0;
-static void A ( void *
+static void A ( gspc::drts::context *
               , const expr::eval::context& input
               , expr::eval::context& output
               )
@@ -48,7 +48,7 @@ static void A ( void *
 }
 
 static unsigned long call_cnt_B = 0;
-static void B ( void *
+static void B ( gspc::drts::context *
               , const expr::eval::context & input
               , expr::eval::context & output
               )
@@ -63,7 +63,7 @@ static void B ( void *
 }
 
 static unsigned long call_cnt_C = 0;
-static void C ( void *
+static void C ( gspc::drts::context *
               , const expr::eval::context & input
               , expr::eval::context & output
               )
@@ -78,7 +78,7 @@ static void C ( void *
 }
 
 static unsigned long call_cnt_D = 0;
-static void D ( void *
+static void D ( gspc::drts::context *
               , const expr::eval::context & input
               , expr::eval::context & output
               )
@@ -92,7 +92,7 @@ static void D ( void *
   output.bind ("done", pnet::type::value::value_type(we::type::literal::control()));
 }
 
-static void finalize ( void *
+static void finalize ( gspc::drts::context *
                      , const expr::eval::context &
                      , expr::eval::context & output
                      )

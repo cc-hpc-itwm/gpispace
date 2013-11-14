@@ -14,15 +14,15 @@ namespace we
       struct flags_t
       {
         bool suspended;
-        bool cancelling;
-        bool cancelled;
+        bool canceling;
+        bool canceled;
         bool failed;
         bool finished;
 
         flags_t ()
           : suspended(false)
-          , cancelling(false)
-          , cancelled(false)
+          , canceling(false)
+          , canceled(false)
           , failed(false)
           , finished(false)
         { }
@@ -33,8 +33,8 @@ namespace we
         void serialize (Archive & ar, const unsigned int)
         {
           ar & BOOST_SERIALIZATION_NVP(suspended);
-          ar & BOOST_SERIALIZATION_NVP(cancelling);
-          ar & BOOST_SERIALIZATION_NVP(cancelled);
+          ar & BOOST_SERIALIZATION_NVP(canceling);
+          ar & BOOST_SERIALIZATION_NVP(canceled);
           ar & BOOST_SERIALIZATION_NVP(failed);
           ar & BOOST_SERIALIZATION_NVP(finished);
         }
@@ -49,8 +49,8 @@ namespace we
       void set_ ## _name (flags_t&, bool)
 
       SIG (suspended);
-      SIG (cancelling);
-      SIG (cancelled);
+      SIG (canceling);
+      SIG (canceled);
       SIG (failed);
       SIG (finished);
 

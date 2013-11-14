@@ -39,12 +39,10 @@ namespace daemon {
     static Agent::ptr_t create( const std::string& name,
                                 const std::string& url,
                                 const sdpa::master_info_list_t& arrMasterNames,
-                                const unsigned int capacity,
-                                bool  bCanRunTasksLocally = false,
                                 const unsigned int rank = 0,
-                                const std::string& appGuiUrl = "" )
+                                const boost::optional<std::string>& appGuiUrl = boost::none )
     {
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
       pAgent->createWorkflowEngine<T>();
 
       seda::Stage::Ptr daemon_stage (new seda::Stage( name
@@ -58,6 +56,17 @@ namespace daemon {
 
       return pAgent;
     }
+
+    static Agent::ptr_t create_with_start_called( const std::string& name,
+                                                const std::string& url,
+                                                const sdpa::master_info_list_t& arrMasterNames,
+                                                const unsigned int rank = 0,
+                                                const boost::optional<std::string>& appGuiUrl = boost::none )
+    {
+      Agent::ptr_t pAgent (create (name, url, arrMasterNames, rank, appGuiUrl));
+      pAgent->start_agent();
+      return pAgent;
+    }
   };
 
   template <>
@@ -66,13 +75,11 @@ namespace daemon {
     static Agent::ptr_t create( const std::string& name,
                                 const std::string& url,
                                 const sdpa::master_info_list_t& arrMasterNames,
-                                const unsigned int capacity,
-                                bool  bCanRunTasksLocally = false,
                                 const unsigned int rank = 0,
-                                const std::string& appGuiUrl = "" )
+                                const boost::optional<std::string>& appGuiUrl = boost::none )
     {
       LOG( DEBUG, "Create Agent "<<name<<" with no workflow engine" );
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, bCanRunTasksLocally, rank, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
 
       seda::Stage::Ptr daemon_stage (new seda::Stage( name
                                                     , pAgent
@@ -83,6 +90,17 @@ namespace daemon {
       pAgent->setStage(daemon_stage);
       seda::StageRegistry::instance().insert(daemon_stage);
 
+      return pAgent;
+    }
+
+    static Agent::ptr_t create_with_start_called( const std::string& name,
+                                                const std::string& url,
+                                                const sdpa::master_info_list_t& arrMasterNames,
+                                                const unsigned int rank = 0,
+                                                const boost::optional<std::string>& appGuiUrl = boost::none )
+    {
+      Agent::ptr_t pAgent (create (name, url, arrMasterNames, rank, appGuiUrl));
+      pAgent->start_agent();
       return pAgent;
     }
   };

@@ -43,10 +43,7 @@ namespace gspc
 
       if (host == "*")
       {
-        host = host_name (ec);
-
-        if (ec)
-          return endpoint_type ();
+        host = "0";
       }
 
       if (port == "*")

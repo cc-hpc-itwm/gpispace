@@ -21,14 +21,10 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/scheduler/Scheduler.hpp>
 
+#include <boost/optional.hpp>
 
 namespace sdpa { namespace daemon {
   class WorkerManager  {
@@ -50,7 +46,7 @@ namespace sdpa { namespace daemon {
     const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
     void addWorker( const Worker::worker_id_t& workerId,
-                unsigned int capacity,
+                boost::optional<unsigned int> capacity,
                 const capabilities_set_t& cpbset = capabilities_set_t(),
                 const unsigned int& agent_rank = 0,
                 const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
@@ -63,7 +59,6 @@ namespace sdpa { namespace daemon {
     virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
     const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-    worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
 
     void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
 
@@ -86,14 +81,7 @@ namespace sdpa { namespace daemon {
 
     bool has_job(const sdpa::job_id_t& job_id);
 
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & worker_map_;
-    }
-
-    friend class boost::serialization::access;
-    friend class SchedulerBase;
+    friend class SchedulerBase; // SchedulerBase::schedule_first()
 
     void print()
     {

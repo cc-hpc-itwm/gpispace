@@ -59,6 +59,7 @@ set (gspc_src
   ctl/config.cpp
   ctl/config_cmd.cpp
   ctl/system.cpp
+  ctl/session.cpp
 
   ctl/log.cpp
   ctl/log_cmd.cpp
@@ -79,3 +80,17 @@ set_target_properties (libgspc.shared
 
 install (TARGETS libgspc ARCHIVE DESTINATION lib COMPONENT libraries)
 install (TARGETS libgspc.shared LIBRARY DESTINATION lib COMPONENT runtime-libraries)
+
+install (FILES
+  drts.hpp
+
+  DESTINATION include/gspc
+  COMPONENT sdk
+)
+install (FILES
+  drts/context_fwd.hpp
+  drts/context.hpp
+
+  DESTINATION include/gspc/drts
+  COMPONENT sdk
+)

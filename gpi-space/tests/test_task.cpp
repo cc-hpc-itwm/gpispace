@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE ( simple_task_cancel )
   task.execute ();
   task.wait ();
 
-  BOOST_CHECK_EQUAL (task.get_state(), task_state::cancelled);
+  BOOST_CHECK_EQUAL (task.get_state(), task_state::canceled);
   BOOST_CHECK_EQUAL (executed, 0);
 }
 

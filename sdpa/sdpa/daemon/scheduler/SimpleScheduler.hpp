@@ -4,17 +4,12 @@
 
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 
-using namespace sdpa::events;
-using namespace std;
-
 namespace sdpa {
   namespace daemon {
     class SimpleScheduler : public SchedulerBase {
 
     public:
-    SimpleScheduler(sdpa::daemon::IAgent* pCommHandler = NULL,  bool bUseReqModel = true);
-
-    virtual ~SimpleScheduler();
+    SimpleScheduler(sdpa::daemon::IAgent*);
 
     void assignJobsToWorkers();
     void rescheduleJob(const sdpa::job_id_t& job_id );
@@ -24,18 +19,6 @@ namespace sdpa {
     void workerCanceled(const worker_id_t& wid, const job_id_t& jid);
     bool allPartialResultsCollected(const job_id_t& jid);
     bool groupFinished(const sdpa::job_id_t& jid);
-
-    bool postRequest( bool );
-    void checkRequestPosted();
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & boost::serialization::base_object<SchedulerBase>(*this);
-    }
-
-    private:
-      SDPA_DECLARE_LOGGER();
     };
   }
 }

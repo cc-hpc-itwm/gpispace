@@ -5,19 +5,9 @@
 #include <sstream>
 #include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
-#include <sdpa/logging.hpp>
 
 using namespace sdpa;
 using boost::property_tree::ptree;
-
-struct MyFixture
-{
-	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testConfig"){}
-	~MyFixture(){}
-	 SDPA_DECLARE_LOGGER();
-};
-
-BOOST_FIXTURE_TEST_SUITE( test_PropTree, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testWriteIni )
 {
@@ -59,6 +49,3 @@ BOOST_AUTO_TEST_CASE( testGetPropVal )
 	double x = propTree.get<double>("calculation parameters.stuff");
 	std::cout<<"Stuff = "<<x;
 }
-
-BOOST_AUTO_TEST_SUITE_END()
-

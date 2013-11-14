@@ -6,7 +6,9 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
 
+#include <boost/optional.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/optional.hpp>
 
 namespace sdpa
 {
@@ -25,7 +27,7 @@ namespace sdpa
       WorkerRegistrationEvent
         ( const address_t& a_from
         , const address_t& a_to
-        , const unsigned int& capacity = 2
+        , const boost::optional<unsigned int>& capacity = boost::none
         , const capabilities_set_t& cpbset = capabilities_set_t()
         , const unsigned int& agent_rank = 0
         , const sdpa::worker_id_t& agent_uuid = ""
@@ -42,7 +44,7 @@ namespace sdpa
         return "WorkerRegistrationEvent";
       }
 
-      const unsigned int& capacity() const
+      const boost::optional<unsigned int>& capacity() const
       {
         return capacity_;
       }
@@ -65,7 +67,7 @@ namespace sdpa
       }
 
     private:
-      unsigned int capacity_;
+      boost::optional<unsigned int> capacity_;
       capabilities_set_t cpbset_;
       unsigned int rank_;
       sdpa::worker_id_t agent_uuid_;

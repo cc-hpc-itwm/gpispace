@@ -24,7 +24,7 @@ namespace gpi
             set_state (task_state::failed);
           }
           break;
-        case task_state::cancelled:
+        case task_state::canceled:
           break;
         case task_state::executing:
           throw std::runtime_error ("task already executing: " + get_name());
@@ -38,7 +38,7 @@ namespace gpi
       {
         if (get_state() == task_state::pending)
         {
-          set_state (task_state::cancelled);
+          set_state (task_state::canceled);
         }
       }
 

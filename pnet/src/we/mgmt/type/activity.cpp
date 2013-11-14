@@ -168,23 +168,10 @@ namespace we
                           , _child.output()
                           )
               {
-                try
-                  {
-                    parent.put_value
-                      ( _child.transition().inner_to_outer (top.second)
-                      , top.first
-                      );
-                  }
-                catch (const we::type::exception::not_connected<petri_net::port_id_type>&)
-                  {
-                    std::cerr << "W: transition generated output, but port is not connected:"
-                              << " trans=\"" << _child.transition().name() << "\""
-                              << " port="
-                              << _child.transition().name_of_port (top.second)
-                              << "(" << top.second << ")"
-                              << " token=" << pnet::type::value::show (top.first)
-                              << std::endl;
-                  }
+                parent.put_value
+                  ( _child.transition().inner_to_outer().at (top.second).first
+                  , top.first
+                  );
               }
           }
 
@@ -361,8 +348,8 @@ namespace we
       }
 
       FLAG (suspended)
-      FLAG (cancelling)
-      FLAG (cancelled)
+      FLAG (canceling)
+      FLAG (canceled)
       FLAG (failed)
       FLAG (finished)
 #undef FLAG
@@ -424,7 +411,7 @@ namespace we
                 )
               {
                 context.bind_ref
-                  ( _activity.transition().name_of_port (top->second)
+                  ( _activity.transition().get_port (top->second).name()
                   , top->first
                   );
               }
@@ -588,7 +575,7 @@ namespace we
                 os << ", ";
               }
 
-            os << transition().name_of_port (top.second)
+            os << transition().get_port (top.second).name()
                << "=(" << pnet::type::value::show (top.first)
                << ", " << top.second << ")";
           }

@@ -33,12 +33,6 @@
 #include <map>
 #include <boost/thread.hpp>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <boost/function.hpp>
 
@@ -74,12 +68,6 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
     {
         pIAgent_ = pIAgent;
     }
-
- /* we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_submitted;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_finished;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_failed;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_cancelled;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_executing; */
 
     /**
      * Notify the GWES that an activity has failed
@@ -148,9 +136,9 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-    bool cancelled(const id_type& activityId)
+    bool canceled(const id_type& activityId)
     {
-      SDPA_LOG_DEBUG("The activity " << activityId<<" was cancelled!");
+      SDPA_LOG_DEBUG("The activity " << activityId<<" was canceled!");
 
       /**
       * Notify the SDPA that a workflow has been canceled (state
@@ -170,9 +158,9 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
                 if( it->second == workflowId )
                         bAllActFinished = false;
 
-        // if no activity left, declare the workflow cancelled
+        // if no activity left, declare the workflow canceled
         if(bAllActFinished)
-                pIAgent_->cancelled(workflowId);
+                pIAgent_->canceled(workflowId);
 
         return true;
       }
@@ -225,8 +213,8 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
     * Cancel a workflow asynchronously.
     * This method is to be invoked by the SDPA.
     * The GWES will notifiy the SPDA about the
-    * completion of the cancelling process by calling the
-    * callback method Gwes2Sdpa::cancelled.
+    * completion of the canceling process by calling the
+    * callback method Gwes2Sdpa::canceled.
     */
     bool cancel(const id_type& wfid, const reason_type& /* reason */)
     {
@@ -249,13 +237,6 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
       return true;
     }
 
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
-    {
-      ar & boost::serialization::base_object<we::mgmt::basic_layer>(*this);
-      ar & map_Act2Wf_Ids_;
-    }
-
     void print() {
       for( map_t::iterator it = map_Act2Wf_Ids_.begin(); it != map_Act2Wf_Ids_.end(); it++ )
         std::cout<<it->second<<" -> "<<it->first<<std::endl;
@@ -273,32 +254,5 @@ class DummyWorkflowEngine : public we::mgmt::basic_layer {
     mutex_type mtx_;
     Function_t fct_id_gen_;
 };
-
-
-namespace boost { namespace serialization {
-template<class Archive>
-inline void save_construct_data(
-    Archive & ar, const DummyWorkflowEngine* t, const unsigned int
-){
-    // save data required to construct instance
-    ar << t->pIAgent_;
-}
-
-template<class Archive>
-inline void load_construct_data(
-    Archive & ar, DummyWorkflowEngine* t, const unsigned int
-){
-    // retrieve data from archive required to construct new instance
-        sdpa::daemon::GenericDaemon *pIAgent;
-    ar >> pIAgent;
-
-    // invoke inplace constructor to initialize instance of my_class
-    ::new(t)DummyWorkflowEngine(pIAgent, id_gen_f);
-}
-}} // namespace ...
-
-
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(we::mgmt::basic_layer)
 
 #endif //DUMMY_WORKFLOW_ENGINE_HPP

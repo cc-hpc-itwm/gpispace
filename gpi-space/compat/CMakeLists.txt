@@ -1,6 +1,7 @@
 find_package (FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
+include_directories ("${CMAKE_SOURCE_DIR}/gspc")
 include_directories ("${CMAKE_SOURCE_DIR}/pnet/src")
 
 set (srcs

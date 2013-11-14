@@ -9,8 +9,6 @@
 
 #include <we/type/net.hpp>
 
-#include <we/type/bits/transition/optimize/is_associated.hpp>
-
 #include <rewrite/validprefix.hpp>
 
 #include <stack>
@@ -24,14 +22,32 @@ namespace we { namespace type {
     {
       // ******************************************************************* //
 
+      inline boost::optional<const petri_net::place_id_type&>
+      input_pid_by_port_id ( const transition_t& trans
+                           , const petri_net::port_id_type& port_id
+                           )
+      {
+        BOOST_FOREACH ( transition_t::outer_to_inner_t::value_type const& p
+                      , trans.outer_to_inner()
+                      )
+        {
+          if (p.second.first == port_id)
+          {
+            return p.first;
+          }
+        }
+
+        return boost::none;
+      }
+
       inline boost::optional<const we::type::port_t>
-      input_port_by_pid ( const transition_t & trans
-                        , const petri_net::place_id_type & pid
-                        )
+      minput_port_by_pid ( const transition_t & trans
+                         , const petri_net::place_id_type & pid
+                         )
       {
         try
           {
-            return trans.get_port (trans.input_port_by_pid (pid).first);
+            return trans.get_port (input_port_by_pid (trans, pid).first);
           }
         catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
           {
@@ -247,10 +263,10 @@ namespace we { namespace type {
             if (pid_read.find (place_id) == pid_read.end())
               {
                 const port_t & pred_out
-                  (pred.get_port (pred.output_port_by_pid (place_id).first));
+                  (pred.get_port (output_port_by_pid (pred, place_id).first));
 
                 port_t & trans_in
-                  (trans.get_port (trans.input_port_by_pid (place_id).first));
+                  (trans.get_port (input_port_by_pid (trans, place_id).first));
 
                 expression.rename (trans_in.name(), pred_out.name());
 
@@ -259,14 +275,14 @@ namespace we { namespace type {
             else
               {
                 const boost::optional<const port_t>
-                  maybe_pred_in (input_port_by_pid (pred, place_id));
+                  maybe_pred_in (minput_port_by_pid (pred, place_id));
 
                 if (maybe_pred_in)
                   {
                     const port_t & pred_in (*maybe_pred_in);
 
                     port_t & trans_in
-                      (trans.get_port (trans.input_port_by_pid (place_id).first));
+                      (trans.get_port (input_port_by_pid (trans, place_id).first));
 
                     expression.rename (trans_in.name(), pred_in.name());
 
@@ -334,7 +350,8 @@ namespace we { namespace type {
               {
                 pred.add_port (p.second);
 
-                const petri_net::place_id_type pid (trans.inner_to_outer (p.first));
+                const petri_net::place_id_type pid
+                  (trans.inner_to_outer().at (p.first).first);
 
                 connection_t connection (net.get_connection_out (tid_trans, pid));
 
@@ -347,37 +364,33 @@ namespace we { namespace type {
                 pred.add_connection (p.second.name(), pid, p.second.property());
               }
             else
+            {
+              const boost::optional<const petri_net::place_id_type&> pid
+                (input_pid_by_port_id (trans, p.first));
+
+              if (pid && pid_read.find (*pid) != pid_read.end())
               {
-                try
-                  {
-                    const petri_net::place_id_type pid
-                      (trans.input_pid_by_port_id (p.first));
+                if (not minput_port_by_pid (pred, *pid))
+                {
+                  pred.add_port (p.second);
 
-                    if (pid_read.find (pid) != pid_read.end())
-                      {
-                        if (not input_port_by_pid (pred, pid))
-                          {
-                            pred.add_port (p.second);
+                  connection_t const connection
+                    (net.get_connection_in (tid_trans, *pid));
 
-                            connection_t connection (net.get_connection_in (tid_trans, pid));
+                  net.delete_edge_in (tid_trans, *pid);
 
-                            net.delete_edge_in (tid_trans, pid);
+                  net.add_connection (connection_t ( connection.type
+                                                   , tid_pred
+                                                   , connection.pid
+                                                   )
+                                     );
 
-                            connection.tid = tid_pred;
-
-                            net.add_connection (connection);
-
-                            pred.add_connection
-                              (pid, p.second.name(), p.second.property())
-                              ;
-                          }
-                      }
-                  }
-                catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
-                  {
-                    // do nothing, the port was not connected
-                  }
+                  pred.add_connection
+                    (*pid, p.second.name(), p.second.property())
+                    ;
+                }
               }
+            }
           }
       }
 
@@ -399,7 +412,8 @@ namespace we { namespace type {
         {
           if (p.second.is_output())
           {
-            const petri_net::place_id_type pid (trans.inner_to_outer (p.first));
+            const petri_net::place_id_type pid
+              (trans.inner_to_outer().at (p.first).first);
 
             namespace prop = we::type::property::traverse;
 
@@ -410,7 +424,7 @@ namespace we { namespace type {
 
             if (  net.out_of_place (pid).empty()
                && stack.empty()
-               && !is_associated (trans_parent, pid)
+               && !get_port_by_associated_pid (trans_parent, pid)
                )
             {
               to_erase.push (pair_type (p.first, pid));

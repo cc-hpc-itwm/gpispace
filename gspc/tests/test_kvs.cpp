@@ -434,6 +434,36 @@ BOOST_AUTO_TEST_CASE (test_impl_many_push_pop)
   BOOST_REQUIRE_EQUAL (rc, 0);
 }
 
+BOOST_AUTO_TEST_CASE (test_global_kvs)
+{
+  static const size_t NUM = 50;
+
+  int rc;
+  gspc::kvs::api_t::value_type val;
+
+  for (size_t i = 0 ; i < NUM ; ++i)
+  {
+    rc = gspc::kvs::initialize ("inproc://");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = gspc::kvs::get ().get ("foo", val);
+    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+
+    rc = gspc::kvs::get ().put ("foo", "bar");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = gspc::kvs::get ().get ("foo", val);
+    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL ("bar", boost::get<std::string>(val));
+
+    rc = gspc::kvs::get ().del ("foo");
+    BOOST_REQUIRE_EQUAL (rc, 0);
+
+    rc = gspc::kvs::shutdown ();
+    BOOST_REQUIRE_EQUAL (rc, 0);
+  }
+}
+
 BOOST_AUTO_TEST_CASE (test_net_start_stop)
 {
   gspc::net::initialize ();

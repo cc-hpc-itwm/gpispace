@@ -43,7 +43,7 @@ namespace
 // ************************************************************************* //
 
 static void
-generic_filter ( void * state
+generic_filter ( gspc::drts::context * state
 	       , const expr::eval::context & input
 	       , expr::eval::context & output
 	       , boost::function <void (void *, const long &)> filter_impl
@@ -113,7 +113,7 @@ static void unblank_impl (void * ptr, const long & num)
     }
 }
 
-static void unblank ( void * state
+static void unblank ( gspc::drts::context * state
                     , const expr::eval::context & input
                     , expr::eval::context & output
                     )
@@ -157,7 +157,7 @@ static void clip_impl (void * ptr, const long & num
    }
 }
 
-static void clip ( void * state
+static void clip ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -197,7 +197,7 @@ static void trap_impl (void * ptr, const long & num
    }
 }
 
-static void trap ( void * state
+static void trap ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -286,7 +286,7 @@ static void bandpass_impl ( void * ptr, const long & num
     delete[] filterarray;
 }
 
-static void bandpass ( void * state
+static void bandpass ( gspc::drts::context * state
 		     , const expr::eval::context & input
 		     , expr::eval::context & output
 		     )
@@ -369,7 +369,7 @@ static void frac_impl (void * ptr, const long & num)
     delete[] filterarray;
 }
 
-static void frac ( void * state
+static void frac ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -418,7 +418,7 @@ static void tpow_impl (void * ptr, const long & num,
     delete[] filterarray;
 }
 
-static void tpow ( void * state
+static void tpow ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -430,7 +430,7 @@ static void tpow ( void * state
 
 // ************************************************************************* //
 
-static void execW ( void * state
+static void execW ( gspc::drts::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )

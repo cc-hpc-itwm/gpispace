@@ -18,7 +18,7 @@
 #ifndef SDPA_AGENT_HPP
 #define SDPA_AGENT_HPP 1
 
-#include <sdpa/daemon/DaemonFSM.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
 namespace sdpa {
@@ -26,23 +26,21 @@ namespace sdpa {
 
     template <typename T> struct AgentFactory;
 
-    class Agent : public sdpa::fsm::bmsm::DaemonFSM
+    class Agent : public GenericDaemon
     {
       public:
         typedef sdpa::shared_ptr<Agent > ptr_t;
         SDPA_DECLARE_LOGGER();
 
-        Agent(const std::string& name = "",
-              const std::string& url = "",
-              const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
-              unsigned int cap = 10000,
-              bool bCanRunTasksLocally = false,
-              int rank = -1,
-              const std::string& guiUrl = "")
-          : DaemonFSM( name, arrMasterNames, cap, rank, guiUrl),
+        Agent ( const std::string& name
+              , const std::string& url
+              , const sdpa::master_info_list_t arrMasterNames
+              , int rank
+              , const boost::optional<std::string>& guiUrl
+              )
+          : GenericDaemon( name, arrMasterNames, rank, guiUrl),
           SDPA_INIT_LOGGER(name),
-          url_(url),
-          m_bCanRunTasksLocally(bCanRunTasksLocally)
+          url_(url)
         {
           if(rank>=0)
           {
@@ -53,8 +51,6 @@ namespace sdpa {
             addCapability(properCpb);
           }
         }
-
-        void action_configure();
 
         void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
         void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
@@ -69,33 +65,18 @@ namespace sdpa {
 
         const std::string url() const {return url_;}
 
-        template <class Archive>
-        void serialize(Archive& ar, const unsigned int)
-        {
-          ar & boost::serialization::base_object<DaemonFSM>(*this);
-          ar & url_; //boost::serialization::make_nvp("url_", url_);
-          ar & m_bCanRunTasksLocally;
-        }
-
-        bool canRunTasksLocally() { return m_bCanRunTasksLocally; }
-        virtual void backup( std::ostream& );
-        virtual void recover( std::istream& );
-
-        friend class boost::serialization::access;
         template <typename T> friend struct AgentFactory;
 
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
-        void createScheduler(bool bUseReqModel)
+        virtual void createScheduler()
         {
-          ptr_scheduler_ = Scheduler::ptr_t (new CoallocationScheduler(this, bUseReqModel));
+          ptr_scheduler_ = Scheduler::ptr_t (new CoallocationScheduler (this));
         }
 
       private:
         std::string url_;
-
-        bool m_bCanRunTasksLocally;
       };
   }
 }

@@ -22,7 +22,7 @@ namespace gspc
       }
 
       service_t ();
-      virtual ~service_t ();
+      ~service_t ();
 
       explicit
       service_t (std::string const &url);
@@ -31,6 +31,8 @@ namespace gspc
                        , gspc::net::frame const &rqst
                        , gspc::net::user_ptr user
                        );
+
+      api_t & api ();
     private:
       struct waiting_t
       {
@@ -93,7 +95,7 @@ namespace gspc
       gspc::net::frame
       encode_error_code (gspc::net::frame const &rqst, int rc);
 
-      boost::shared_ptr<api_t> m_kvs;
+      api_t *m_kvs;
       rpc_table_t m_rpc_table;
 
       mutable boost::shared_mutex m_waiting_mtx;

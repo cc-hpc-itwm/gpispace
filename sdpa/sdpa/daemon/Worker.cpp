@@ -9,7 +9,7 @@ using namespace sdpa;
 using namespace sdpa::daemon;
 
 Worker::Worker(	const worker_id_t& name,
-				const unsigned int& cap,
+				const boost::optional<unsigned int>& cap,
 				const unsigned int& rank,
 				const sdpa::worker_id_t& agent_uuid,
 				const location_t &location)

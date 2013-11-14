@@ -5,22 +5,9 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SimpleScheduler::SimpleScheduler(sdpa::daemon::IAgent* pCommHandler,  bool bUseReqModel):
-       SchedulerBase(pCommHandler, bUseReqModel),
-       SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name()+"::Scheduler":"Scheduler")
+SimpleScheduler::SimpleScheduler(sdpa::daemon::IAgent* pCommHandler)
+  : SchedulerBase (pCommHandler)
 {}
-
-SimpleScheduler::~SimpleScheduler()
-{
-  try
-  {
-      stop();
-  }
-  catch (std::exception const & ex)
-  {
-      SDPA_LOG_ERROR("could not stop SimpleScheduler: " << ex.what());
-  }
-}
 
 void SimpleScheduler::assignJobsToWorkers()
 {
@@ -86,9 +73,7 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   }
 
   try {
-
       Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
-      std::string status = pJob->getStatus();
       if( !pJob->completed()) {
           pJob->Reschedule(ptr_comm_handler_); // put the job back into the pending state
       }
@@ -102,12 +87,9 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   }
 }
 
-void SimpleScheduler::releaseReservation(const sdpa::job_id_t& jobId) {LOG(WARN, "Not implemented!");}
-void SimpleScheduler::workerFinished(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
-void SimpleScheduler::workerFailed(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
-void SimpleScheduler::workerCanceled(const worker_id_t& wid, const job_id_t& jid) {LOG(WARN, "Not implemented!");}
-bool SimpleScheduler::allPartialResultsCollected(const job_id_t& jid) {LOG(WARN, "Not implemented!"); return false;}
-bool SimpleScheduler::groupFinished(const sdpa::job_id_t& jid) {LOG(WARN, "Not implemented!"); return false;}
-
-bool SimpleScheduler::postRequest( bool ) { return false; }
-void SimpleScheduler::checkRequestPosted() { /*do nothing*/ }
+void SimpleScheduler::releaseReservation(const sdpa::job_id_t& jobId) { throw std::runtime_error ("Not implemented!");}
+void SimpleScheduler::workerFinished(const worker_id_t& wid, const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
+void SimpleScheduler::workerFailed(const worker_id_t& wid, const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
+void SimpleScheduler::workerCanceled(const worker_id_t& wid, const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
+bool SimpleScheduler::allPartialResultsCollected(const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
+bool SimpleScheduler::groupFinished(const sdpa::job_id_t& jid) { throw std::runtime_error ("Not implemented!");}

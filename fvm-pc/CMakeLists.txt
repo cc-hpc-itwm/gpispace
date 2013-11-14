@@ -37,6 +37,7 @@ endif()
 include (SDPAFindBoost)
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
+include_directories (${CMAKE_SOURCE_DIR}/gspc)
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 
 find_package (FhgLog REQUIRED QUIET)

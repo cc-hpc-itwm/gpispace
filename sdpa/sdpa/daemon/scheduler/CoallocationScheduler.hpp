@@ -4,9 +4,6 @@
 
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 
-using namespace sdpa::events;
-using namespace std;
-
 namespace sdpa {
   namespace daemon {
     class CoallocationScheduler : public SchedulerBase
@@ -14,8 +11,7 @@ namespace sdpa {
     public:
       typedef boost::unordered_map<sdpa::job_id_t, Reservation*> allocation_table_t;
 
-      CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler = NULL,  bool use_request_model=true);
-      virtual ~CoallocationScheduler();
+      CoallocationScheduler(sdpa::daemon::IAgent*);
 
       void assignJobsToWorkers();
       void rescheduleJob(const sdpa::job_id_t& job_id );
@@ -34,16 +30,7 @@ namespace sdpa {
       bool allPartialResultsCollected(const job_id_t& jid);
       bool groupFinished(const sdpa::job_id_t& jid);
 
-      friend class boost::serialization::access;
-
-      template <class Archive>
-      void serialize(Archive& ar, const unsigned int /* file_version */)
-      {
-        ar & boost::serialization::base_object<SchedulerBase>(*this);
-      }
-
     private:
-      SDPA_DECLARE_LOGGER();
       mutable mutex_type mtx_alloc_table_;
       allocation_table_t allocation_table_;
   };

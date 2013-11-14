@@ -19,7 +19,17 @@ namespace gspc
       std::string url_maker<tcp>::make (tcp::endpoint const &ep)
       {
         std::ostringstream oss;
-        oss << "tcp://" << ep;
+
+        oss << "tcp://";
+
+        if (ep.address ().is_unspecified ())
+        {
+          oss << gspc::net::hostname () << ":" << ep.port ();
+        }
+        else
+        {
+          oss << ep;
+        }
         return oss.str ();
       }
 

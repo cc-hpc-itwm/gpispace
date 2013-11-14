@@ -19,7 +19,7 @@
 #include <sdpa/daemon/mpl.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
@@ -27,14 +27,11 @@
 #include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;
 
 using namespace std;
-
-#define NO_GUI ""
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
@@ -133,7 +130,7 @@ void MyFixture::run_client()
 		nTrials = 0;
 		while( job_status.find("Finished") == std::string::npos &&
 			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
+			   job_status.find("Canceled") == std::string::npos)
 		{
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
@@ -198,32 +195,39 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testTransformFile1 )
 {
-	LOG( DEBUG, "***** testTranformFile *****"<<std::endl);
-	//guiUrl
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-	typedef void OrchWorkflowEngine;
-
 	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( INFO, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch
+    ( sdpa::daemon::Orchestrator::create_with_start_called
+      ("orchestrator_0", addrOrch)
+    );
 
-	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
-	ptrAgent->start_agent(false);
+	sdpa::daemon::Agent::ptr_t ptrAgent
+    ( sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called
+      ( "agent_0"
+      , addrAgent
+      , sdpa::master_info_list_t (1, sdpa::MasterInfo("orchestrator_0"))
+      )
+    );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0
+    ( createDRTSWorker ( "drts_0"
+                       , "agent_0"
+                       , ""
+                       , TESTS_TRANSFORM_FILE_MODULES_PATH
+                       , kvs_host()
+                       , kvs_port()
+                       )
+    );
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread drts_0_thread (&fhg::core::kernel_t::run, drts_0);
+
+	boost::thread threadClient (boost::bind (&MyFixture::run_client, this));
 
 	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
 	drts_0_thread.join();
@@ -233,8 +237,6 @@ BOOST_AUTO_TEST_CASE( testTransformFile1 )
 	ptrOrch->shutdown();
 
 	// tr [a-z] [A-Z] < in.txt > out.txt.expected
-
-	LOG( DEBUG, "The test case testTransformFile terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

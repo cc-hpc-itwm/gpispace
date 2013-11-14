@@ -1,11 +1,9 @@
 # tiberiu.rotaru@itwm.fraunhofer.de
 
 set (srcs
-  DaemonFSM.cpp
   GenericDaemon.cpp
   Job.cpp
   JobEventHandlers.cpp
-  JobImpl.cpp
   JobManager.cpp
   scheduler/SchedulerBase.cpp
   scheduler/CoallocationScheduler.cpp

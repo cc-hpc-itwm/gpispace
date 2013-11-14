@@ -56,8 +56,8 @@ struct daemon_t
 
   bool cancel (const id_type & id, const std::string &)
   {
-    std::cout << "cancelling id = " << id << std::endl;
-    layer.cancelled (id);
+    std::cout << "canceling id = " << id << std::endl;
+    layer.canceled (id);
     return true;
   }
 
@@ -81,9 +81,9 @@ struct daemon_t
     return false;
   }
 
-  bool cancelled (const id_type & id)
+  bool canceled (const id_type & id)
   {
-    std::cout << "cancelled id = " << id << std::endl;
+    std::cout << "canceled id = " << id << std::endl;
     return false;
   }
 
@@ -99,6 +99,9 @@ int main ()
     we::type::transition_t mod_call
       ( "module call"
       , we::type::module_call_t ("m", "f")
+      , condition::type ("true")
+      , false
+      , we::type::property::type()
       );
     we::mgmt::type::activity_t act (mod_call);
     layer.submit (generate_id(), act, we::type::user_data ());
@@ -111,6 +114,9 @@ int main ()
     we::type::transition_t expr
       ( "expression"
       , we::type::expression_t ("${out} := 3L")
+      , condition::type ("true")
+      , true
+      , we::type::property::type()
       );
     we::mgmt::type::activity_t act (expr);
     layer.submit (generate_id(), act, we::type::user_data ());

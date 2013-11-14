@@ -19,7 +19,7 @@ namespace fhg
     {
       T x;
       std::istringstream i (showed);
-      i.setf (flags);
+      i.flags (flags);
       i >> x;
       if (i.fail ())
       {

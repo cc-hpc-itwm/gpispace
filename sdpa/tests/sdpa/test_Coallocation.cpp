@@ -17,10 +17,10 @@
  */
 #define BOOST_TEST_MODULE testCoallocation
 #include <sdpa/daemon/mpl.hpp>
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -29,15 +29,12 @@
 #include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
-const int MAX_CAP = 100;
 static int testNb = 0;
 
 namespace po = boost::program_options;
 
 using namespace std;
 using namespace sdpa::daemon;
-
-#define NO_GUI ""
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
@@ -84,7 +81,7 @@ struct MyFixture
   boost::thread m_threadClient;
 };
 
-/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+/*returns: 0 job finished, 1 job failed, 2 job canceled, other value if failures occurred */
 int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
   typedef boost::posix_time::ptime time_type;
@@ -158,7 +155,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
       else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
       {
           LOG(WARN, "The job has been canceled!");
-          job_status="Cancelled";
+          job_status="Canceled";
           exit_code = 2;
       }
       else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
@@ -188,7 +185,7 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
   if( job_status != std::string("Finished") &&
     job_status != std::string("Failed")   &&
-    job_status != std::string("Cancelled") )
+    job_status != std::string("Canceled") )
   {
     LOG(ERROR, "Unexpected status, leave now ...");
     return exit_code;
@@ -270,9 +267,9 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   ostringstream oss;
 
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
 
-  pAgent-> createScheduler(false);
+  pAgent->createScheduler();
 
   sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
@@ -295,17 +292,17 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   // create a number of jobs
   const sdpa::job_id_t jobId0("Job0");
-  sdpa::daemon::Job::ptr_t pJob0(new JobFSM(jobId0, "description 0"));
+  sdpa::daemon::Job::ptr_t pJob0(new Job(jobId0, "description 0", sdpa::job_id_t()));
   job_requirements_t jobReqs0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
   pAgent->addJob(jobId0, pJob0, jobReqs0);
 
   const sdpa::job_id_t jobId1("Job1");
-  sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+  sdpa::daemon::Job::ptr_t pJob1(new Job(jobId1, "description 1", sdpa::job_id_t()));
   job_requirements_t jobReqs1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
   pAgent->addJob(jobId1, pJob1, jobReqs1);
 
   const sdpa::job_id_t jobId2("Job2");
-  sdpa::daemon::Job::ptr_t pJob2(new JobFSM(jobId2, "description 2"));
+  sdpa::daemon::Job::ptr_t pJob2(new Job(jobId2, "description 2", sdpa::job_id_t()));
   job_requirements_t jobReqs2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
   pAgent->addJob(jobId2, pJob2, jobReqs2);
 
@@ -344,7 +341,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
 
   // try now to schedule a job requiring 2 resources of type "A"
   const sdpa::job_id_t jobId4("Job4");
-  sdpa::daemon::Job::ptr_t pJob4(new JobFSM(jobId4, "description 4"));
+  sdpa::daemon::Job::ptr_t pJob4(new Job(jobId4, "description 4", sdpa::job_id_t()));
   job_requirements_t jobReqs4(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(2, 100));
   pAgent->addJob(jobId4, pJob4, jobReqs4);
 
@@ -378,8 +375,6 @@ BOOST_AUTO_TEST_CASE( testCoallocationWorkflow )
 
   const int NWORKERS=5;
 
-  //guiUrl
-  string guiUrl   	= "";
   string workerUrl 	= "127.0.0.1:5500";
   string addrOrch 	= "127.0.0.1";
   string addrAgent 	= "127.0.0.1";
@@ -400,12 +395,10 @@ BOOST_AUTO_TEST_CASE( testCoallocationWorkflow )
   osstr<<"agent_"<<testNb;
   std::string agentName(osstr.str());
 
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create(orchName, addrOrch, MAX_CAP);
-  ptrOrch->start_agent(false);
+  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called(orchName, addrOrch);
 
   sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo(orchName));
-  sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create(agentName, addrAgent, arrAgentMasterInfo, MAX_CAP );
-  ptrAgent->start_agent(false);
+  sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called(agentName, addrAgent, arrAgentMasterInfo);
 
   boost::thread drts_thread[NWORKERS];
   sdpa::shared_ptr<fhg::core::kernel_t> drts[NWORKERS];

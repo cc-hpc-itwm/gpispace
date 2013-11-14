@@ -2,6 +2,7 @@
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
+include_directories (${CMAKE_SOURCE_DIR}/gspc)
 
 include (FindThreads)
 if (CMAKE_USE_PTHREADS_INIT)
@@ -185,8 +186,10 @@ install (FILES
 )
 install (FILES
   we/type/value/poke.hpp
-  we/type/value/show.hpp
   we/type/value/read.hpp
+  we/type/value/show.hpp
+  we/type/value/to_value.hpp
+  we/type/value/wrap.hpp
   DESTINATION include/we/type/value
   COMPONENT sdk
 )
@@ -289,17 +292,17 @@ add_executable (mk_cpp we/type/test/mk_cpp.cpp)
 target_link_libraries (mk_cpp pnet ${Boost_LIBRARIES})
 
 add_custom_command (
-  OUTPUT sig.hpp sig.cpp
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig.hpp -I sig.cpp
+  OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig_struct.hpp -O sig_op.hpp -I sig_op.cpp
   DEPENDS mk_cpp
 )
 
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
-add_library (sig ${CMAKE_CURRENT_BINARY_DIR}/sig.cpp)
+add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
 
 fhg_add_test (we/type/test/sig.cpp
   PROJECT test_we
-  LINK_LIBRARIES sig pnet
+  LINK_LIBRARIES sig_op pnet
 )
 
 if (BUILD_TESTING)

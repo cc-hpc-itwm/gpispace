@@ -33,11 +33,8 @@ namespace we
       const std::string &name() const;
       const std::string &path() const;
 
-      void* state();
-      const void* state() const;
-      void* state (void*);
-
       void call ( const std::string& f
+                , gspc::drts::context *context
                 , const expr::eval::context& in
                 , expr::eval::context& out
                 );
@@ -52,7 +49,6 @@ namespace we
       std::string path_;
       void* handle_;
       boost::unordered_map<std::string, parameterized_function_t> call_table_;
-      void *state_;
     };
   }
 }

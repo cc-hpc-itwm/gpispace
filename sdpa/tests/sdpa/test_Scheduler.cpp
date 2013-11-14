@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE TestScheduler
-#include <sdpa/daemon/JobFSM.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
@@ -30,7 +30,6 @@
 #include <seda/StageRegistry.hpp>
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <boost/pointer_cast.hpp>
@@ -42,7 +41,6 @@ using namespace sdpa::daemon;
 
 const int NWORKERS = 12;
 const int NJOBS    = 4;
-const int MAX_CAP  = 100;
 
 const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
@@ -65,10 +63,8 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
-
-  ostringstream oss;
-  pAgent-> createScheduler(false);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
+  pAgent->createScheduler();
 
   sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<CoallocationScheduler*>(pAgent->scheduler().get());
 
@@ -81,7 +77,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   ptrScheduler->addWorker(worker_A, 1, cpbSetA);
 
   const sdpa::job_id_t jobId1("Job1");
-  sdpa::daemon::Job::ptr_t pJob1(new JobFSM(jobId1, "description 1"));
+  sdpa::daemon::Job::ptr_t pJob1(new Job(jobId1, "description 1", sdpa::job_id_t()));
   job_requirements_t jobReqs1(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
   pAgent->addJob(jobId1, pJob1, jobReqs1);
 
@@ -128,10 +124,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
-
-  ostringstream oss;
-  pAgent-> createScheduler(false);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
+  pAgent->createScheduler();
 
   sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
@@ -164,7 +158,9 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       sdpa::job_id_t jobId(osstr.str());
       arrJobIds.push_back(jobId);
       osstr.str("");
-      sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
+      sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
+      pAgent->addJob(jobId, pJob);
+
       job_requirements_t jobReqs(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
       pAgent->addJob(jobId, pJob, jobReqs);
   }
@@ -212,10 +208,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
-
-  ostringstream oss;
-  pAgent-> createScheduler(false);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
+  pAgent->createScheduler();
 
   sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
@@ -249,7 +243,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       sdpa::job_id_t jobId(osstr.str());
       arrJobIds.push_back(jobId);
       osstr.str("");
-      sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
+      sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
       pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
@@ -294,10 +288,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
-
-  ostringstream oss;
-  pAgent-> createScheduler(false);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
+  pAgent->createScheduler();
 
   sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
@@ -336,7 +328,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     sdpa::job_id_t jobId(osstr.str());
     arrJobIds.push_back(jobId);
     osstr.str("");
-    sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
+    sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
     pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
@@ -381,10 +373,8 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   string addrAg = "127.0.0.1";
   sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo,  MAX_CAP);
-
-  ostringstream oss;
-  pAgent-> createScheduler(false);
+  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
+  pAgent->createScheduler();
 
   sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
 
@@ -417,7 +407,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     sdpa::job_id_t jobId(osstr.str());
     arrJobIds.push_back(jobId);
     osstr.str("");
-    sdpa::daemon::Job::ptr_t pJob(new JobFSM(jobId, ""));
+    sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
     pAgent->addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 

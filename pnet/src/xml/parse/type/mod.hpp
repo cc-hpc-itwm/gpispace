@@ -47,6 +47,7 @@ namespace xml
                     , const std::list<std::string>& ldflags
                     , const std::list<std::string>& cxxflags
                     , const std::list<link_type>& links
+                    , const boost::optional<bool> &pass_context
                     );
 
         const std::string& name() const;
@@ -60,6 +61,7 @@ namespace xml
         const std::list<std::string>& ldflags() const;
         const std::list<std::string>& cxxflags() const;
         const std::list<link_type>& links() const;
+        bool pass_context () const;
 
         bool operator== (const module_type&) const;
 
@@ -83,6 +85,7 @@ namespace xml
         std::list<std::string> _ldflags;
         std::list<std::string> _cxxflags;
         std::list<link_type> _links;
+        boost::optional<bool> _pass_context;
       };
 
       std::size_t hash_value (const module_type&);
