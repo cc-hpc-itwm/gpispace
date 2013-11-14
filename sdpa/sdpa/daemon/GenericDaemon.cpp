@@ -217,6 +217,10 @@ void GenericDaemon::addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, c
 
 
 //actions
+void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
+{
+  action_delete_job (*evt);
+}
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 {
   DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
@@ -386,6 +390,10 @@ bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
   return masterInfo.name() == name;
 }
 
+void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
+{
+  action_submit_job (*evt);
+}
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
   DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
@@ -508,6 +516,10 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   }
 }
 
+void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent* evt)
+{
+  action_register_worker (*evt);
+}
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
   worker_id_t worker_id (evtRegWorker.from());
@@ -568,6 +580,10 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
   }
 }
 
+void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
+{
+  action_error_event (*evt);
+}
 void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 {
   DMLOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
@@ -1484,21 +1500,4 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 {
   return scheduler()->getWorkerId(r);
-}
-
-void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent* evt)
-{
-  action_register_worker (*evt);
-}
-void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
-{
-  action_delete_job (*evt);
-}
-void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
-{
-  action_submit_job (*evt);
-}
-void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
-{
-  action_error_event (*evt);
 }
