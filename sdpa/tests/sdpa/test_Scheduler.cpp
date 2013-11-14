@@ -58,6 +58,7 @@ struct MyFixture
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
+/*
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
@@ -119,6 +120,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   else
     LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, despite the fact is is the only one having the required  capability, which is incorrect");
 }
+*/
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
@@ -159,10 +161,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       arrJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
-      pAgent->addJob(jobId, pJob);
-
-      job_requirements_t jobReqs(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
-      pAgent->addJob(jobId, pJob, jobReqs);
+      //pAgent->addJob(jobId, pJob, requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
+      pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
   // schedule all jobs now
