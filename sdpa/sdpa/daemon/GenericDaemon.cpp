@@ -106,10 +106,10 @@ void GenericDaemon::start_agent()
   cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
 
 
-  createScheduler();
-
   ptr_daemon_stage_.lock()->start();
 
+
+  createScheduler();
   scheduler()->start();
 
 
