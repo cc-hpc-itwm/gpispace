@@ -122,28 +122,21 @@ void GenericDaemon::start_agent()
     throw std::runtime_error ("configuration of network failed: invalid url");
   }
 
-  try
-  {
-    sdpa::com::NetworkStrategy::ptr_t net
-      ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
-                                       , name() /*name for peer*/
-                                       , fhg::com::host_t (vec[0])
-                                       , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
-                                       )
-      );
+  sdpa::com::NetworkStrategy::ptr_t net
+    ( new sdpa::com::NetworkStrategy ( name() /*fallback stage = agent*/
+                                     , name() /*name for peer*/
+                                     , fhg::com::host_t (vec[0])
+                                     , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
+                                     )
+    );
 
-    seda::Stage::Ptr network_stage
-      (new seda::Stage (m_to_master_stage_name_, net));
+  seda::Stage::Ptr network_stage
+    (new seda::Stage (m_to_master_stage_name_, net));
 
-    seda::StageRegistry::instance().insert (network_stage);
-    _stages_to_remove.push_back (m_to_master_stage_name_);
+  seda::StageRegistry::instance().insert (network_stage);
+  _stages_to_remove.push_back (m_to_master_stage_name_);
 
-    ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-  }
-  catch (...)
-  {
-    throw;
-  }
+  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 
   DMLOG (TRACE, "Starting the scheduler...");
   scheduler()->start();
