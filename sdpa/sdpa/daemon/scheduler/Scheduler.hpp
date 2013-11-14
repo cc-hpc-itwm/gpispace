@@ -58,7 +58,6 @@ namespace daemon {
 
     virtual size_t numberOfWorkers() = 0;
     virtual void feedWorkers()= 0;
-    virtual void removeWorkers() = 0;
 
     virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) = 0;
     virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException) = 0;

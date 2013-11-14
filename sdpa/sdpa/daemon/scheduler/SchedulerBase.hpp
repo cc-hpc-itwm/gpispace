@@ -92,7 +92,6 @@ namespace sdpa {
       virtual void run();
 
       virtual void print();
-      void removeWorkers() { ptr_worker_man_->removeWorkers(); }
       void printPendingJobs() { pending_jobs_queue_.print(); }
 
       bool schedulingAllowed() { return !ptr_worker_man_->common_queue_.empty(); }
