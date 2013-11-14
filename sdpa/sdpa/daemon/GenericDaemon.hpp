@@ -52,8 +52,6 @@
 
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
-#include <boost/msm/back/state_machine.hpp>
-#include <boost/msm/front/state_machine_def.hpp>
 #include <boost/thread.hpp>
 
 
@@ -63,23 +61,14 @@ namespace sdpa {
   namespace daemon {
     namespace detail
     {
-      struct DaemonFSM_ : public boost::msm::front::state_machine_def<DaemonFSM_>
+      struct DaemonFSM_
       {
         virtual ~DaemonFSM_ () {}
-
-        struct Up : public boost::msm::front::state<>{};
 
         virtual void action_delete_job(const sdpa::events::DeleteJobEvent& ) = 0;
         virtual void action_submit_job(const sdpa::events::SubmitJobEvent& ) = 0;
         virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
         virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
-
-        typedef Up initial_state;
-
-        struct transition_table : boost::mpl::vector<
-        //      Start         Event         		                      Next            Action                Guard
-        //      +-------------+---------------------------------------+---------------+---------------------+-----
-        >{};
       };
     }
 
@@ -87,7 +76,6 @@ namespace sdpa {
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
-                        , public boost::msm::back::state_machine<detail::DaemonFSM_>
     {
     public:
       typedef boost::recursive_mutex mutex_type;
