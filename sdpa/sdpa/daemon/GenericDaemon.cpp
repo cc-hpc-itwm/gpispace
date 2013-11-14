@@ -177,36 +177,6 @@ void GenericDaemon::start_agent()
   }
 }
 
-void GenericDaemon::eworknotreg()
-{
-  sdpa::worker_id_list_t workerList;
-  scheduler()->getWorkerList (workerList);
-
-  if (workerList.empty())
-  {
-    DMLOG (TRACE, "The worker list is empty. No worker to be notified exist!");
-    return;
-  }
-
-  BOOST_FOREACH (const worker_id_t& workerId, workerList)
-  {
-    SDPA_LOG_INFO("Send notification to the worker "<<workerId);
-
-    ErrorEvent::Ptr const pErrEvt
-      (new ErrorEvent ( name()
-                      , ""
-                      , ErrorEvent::SDPA_EWORKERNOTREG
-                      ,  "worker notification"
-                      )
-      );
-
-    sendEventToMaster (pErrEvt);
-  }
-
-  // remove workers
-  scheduler()->removeWorkers();
-}
-
 /**
  * Shutdown an agent
  */
@@ -1569,19 +1539,6 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
 {
   return scheduler()->getWorkerId(r);
-}
-
-void GenericDaemon::reScheduleAllMasterJobs()
-{
-  //jobManager()->reScheduleAllMasterJobs(this);
-
-  sdpa::job_id_list_t listNotCompletedMsterJobs = jobManager()->getListNotCompletedMasterJobs(hasWorkflowEngine());
-
-  BOOST_FOREACH(const job_id_t& jobId, listNotCompletedMsterJobs)
-  {
-    DMLOG (TRACE, "Re-schedule the job"<<jobId);
-    reschedule(jobId);
-  }
 }
 
 #define PERFORM_FORWARD(METHOD,EVENT_TYPE)                \
