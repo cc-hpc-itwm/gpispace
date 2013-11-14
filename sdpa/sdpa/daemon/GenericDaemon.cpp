@@ -191,10 +191,6 @@ void GenericDaemon::shutdown( )
         sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
     }
 
-    DMLOG (TRACE, "Stopping the network stage "<<m_to_master_stage_name_);
-    seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-    seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-
     scheduler()->stop();
 
     m_bStopped 	= true;
@@ -204,8 +200,11 @@ void GenericDaemon::shutdown( )
       process_event (InterruptEvent());
     }
 
-    seda::StageRegistry::instance().lookup(name())->stop();
-    seda::StageRegistry::instance().remove(name());
+    BOOST_FOREACH (std::string stage, _stages_to_remove)
+    {
+      seda::StageRegistry::instance().lookup (stage)->stop();
+      seda::StageRegistry::instance().remove (stage);
+    }
 
     delete ptr_workflow_engine_;
     ptr_workflow_engine_ = NULL;
