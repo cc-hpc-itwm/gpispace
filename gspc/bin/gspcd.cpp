@@ -38,7 +38,10 @@ static void long_usage (int lvl)
     << ""                                                           << std::endl
     << "   --url URL              were to start the gspc daemon"    << std::endl
     << "                          default: " << puburl              << std::endl
+    << ""                                                           << std::endl
     << "   --session NAME         set the session name to use"      << std::endl
+    << "   --session-dir DIR      path to the directory where"      << std::endl
+    << "                          sessions are located: " << gspc::ctl::session_directory () << std::endl
     << ""                                                           << std::endl
     << "available commands"                                         << std::endl
     << ""                                                           << std::endl
@@ -186,6 +189,16 @@ int main (int argc, char *argv[])
       }
 
       session = argv [i++];
+    }
+    else if (arg == "--session-dir")
+    {
+      if (i == argc)
+      {
+        std::cerr << "gspcd: missing argument to --session-dir" << std::endl;
+        return EX_USAGE;
+      }
+
+      session_dir = argv [i++];
     }
     else if (arg == "--nodaemon")
     {
