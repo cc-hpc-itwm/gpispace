@@ -92,10 +92,6 @@ GenericDaemon::GenericDaemon( const std::string name,
 
 void GenericDaemon::start_agent()
 {
-  createScheduler();
-
-  ptr_daemon_stage_.lock()->start();
-
   // use for now as below, later read from config file
   // TODO: move this to "property" style:
   //    dot separated
@@ -109,6 +105,10 @@ void GenericDaemon::start_agent()
   // set default configuration
   cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
 
+
+  createScheduler();
+
+  ptr_daemon_stage_.lock()->start();
 
   scheduler()->start();
 
