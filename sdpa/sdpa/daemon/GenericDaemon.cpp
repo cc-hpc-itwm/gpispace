@@ -1297,7 +1297,7 @@ void GenericDaemon::pause(const job_id_t& jobId)
          if(!pJob->isMasterJob()) {
              try {
                  Job::ptr_t pMasterJob(findJob(pJob->parent()));
-                 pJob->Pause(this);
+                 pMasterJob->Pause(this);
 
                  // notify the master about the status of the job -> do this on action
              }
@@ -1331,7 +1331,7 @@ void GenericDaemon::resume(const job_id_t& jobId)
          if(!pJob->isMasterJob()) {
              try {
                  Job::ptr_t pMasterJob(findJob(pJob->parent()));
-                 pJob->Resume(this);
+                 pMasterJob->Resume(this);
 
                  // notify the master about the status of the job -> do this on action
              }
