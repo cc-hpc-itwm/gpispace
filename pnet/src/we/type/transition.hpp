@@ -273,6 +273,7 @@ namespace we { namespace type {
       }
 
       // UNSAFE: does not check for multiple connections! Use with care!
+      //! \todo remove
       void UNSAFE_re_associate_port ( const petri_net::place_id_type& pid_old
                                     , const petri_net::place_id_type& pid_new
                                     )
