@@ -45,14 +45,15 @@ namespace we { namespace type {
                          , const petri_net::place_id_type & pid
                          )
       {
-        try
-          {
-            return trans.get_port (input_port_by_pid (trans, pid).first);
-          }
-        catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
-          {
-            return boost::none;
-          }
+        boost::optional<transition_t::port_id_with_prop_t const&> pwp
+          (input_port_by_pid (trans, pid));
+
+        if (pwp)
+        {
+          return trans.get_port (pwp->first);
+        }
+
+        return boost::none;
       }
 
       // ******************************************************************* //
@@ -266,7 +267,7 @@ namespace we { namespace type {
                   (pred.get_port (output_port_by_pid (pred, place_id).first));
 
                 port_t & trans_in
-                  (trans.get_port (input_port_by_pid (trans, place_id).first));
+                  (trans.get_port (input_port_by_pid (trans, place_id)->first));
 
                 expression.rename (trans_in.name(), pred_out.name());
 
@@ -282,7 +283,7 @@ namespace we { namespace type {
                     const port_t & pred_in (*maybe_pred_in);
 
                     port_t & trans_in
-                      (trans.get_port (input_port_by_pid (trans, place_id).first));
+                      (trans.get_port (input_port_by_pid (trans, place_id)->first));
 
                     expression.rename (trans_in.name(), pred_in.name());
 

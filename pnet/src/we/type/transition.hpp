@@ -368,7 +368,7 @@ namespace we { namespace type {
     transition_t::port_id_with_prop_t
     output_port_by_pid (transition_t const&, const petri_net::place_id_type&);
 
-    transition_t::port_id_with_prop_t const&
+    boost::optional<transition_t::port_id_with_prop_t const&>
     input_port_by_pid (transition_t const&, const petri_net::place_id_type&);
 
     boost::unordered_set<std::string>
