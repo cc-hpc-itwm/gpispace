@@ -238,17 +238,6 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
                                         )
                );
   }
-  catch(JobNotMarkedException const &)
-  {
-    DMLOG (WARN, "Job " << e.job_id() << " not ready for deletion!");
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-                                                        , e.from()
-                                                        , ErrorEvent::SDPA_EAGAIN
-                                                        , "not ready for deletion, try again later"
-                                                        )
-                                      )
-               );
-  }
   catch(JobNotDeletedException const & ex)
   {
     DMLOG (WARN, "Job " << e.job_id() << " could not be deleted!");

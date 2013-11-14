@@ -109,12 +109,6 @@ namespace daemon {
 		virtual ~JobNotDeletedException() throw() {}
 	};
 
-	class JobNotMarkedException : public JobException {
-		public:
-		JobNotMarkedException( const sdpa::job_id_t& job_id) : JobException("Job not marked for deletion!", job_id) {}
-		virtual ~JobNotMarkedException() throw() {}
-	};
-
 	class NoJobRequirements : public JobException {
 		public:
 		NoJobRequirements( const sdpa::job_id_t& job_id) : JobException("No preferences set for this job!", job_id) {}
