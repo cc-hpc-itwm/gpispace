@@ -463,9 +463,6 @@ void SchedulerBase::run()
   {
     try
     {
-      if( numberOfWorkers()>0 )
-        forceOldWorkerJobsTermination();
-
       sdpa::job_id_t jobId  = pending_jobs_queue_.pop_and_wait(m_timeout);
       const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
@@ -633,14 +630,6 @@ void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sd
   {
       SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
       cpbset = sdpa::capabilities_set_t();
-  }
-}
-
-void SchedulerBase::forceOldWorkerJobsTermination()
-{
-  // cannot recover the jobs produced by the workflow engine
-  if(ptr_comm_handler_->hasWorkflowEngine())
-  {
   }
 }
 
