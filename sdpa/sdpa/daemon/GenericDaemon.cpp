@@ -109,10 +109,9 @@ void GenericDaemon::start_agent()
   // set default configuration
   cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
 
-  DMLOG (TRACE, "Starting the scheduler...");
+
   scheduler()->start();
 
-  DMLOG (TRACE, "Try to configure the network now ... ");
 
   const boost::tokenizer<boost::char_separator<char> > tok
     (url(), boost::char_separator<char> (":"));
@@ -141,8 +140,8 @@ void GenericDaemon::start_agent()
 
   ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 
-  // start the network stage
   to_master_stage()->start();
+
 
   if (!isTop())
   {
