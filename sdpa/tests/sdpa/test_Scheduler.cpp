@@ -450,8 +450,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
   // assign jobs to the workers
   ptrScheduler->printAllocationTable();
-  sdpa::job_id_t jid(ptrScheduler->getNextJobToSchedule());
-  BOOST_REQUIRE (!jid.str().empty());
+  BOOST_REQUIRE (ptrScheduler->schedulingAllowed());
   ptrScheduler->schedule_remotely(jid);
   ptrScheduler->assignJobsToWorkers();
   ptrScheduler->checkAllocations();
