@@ -120,7 +120,16 @@ int main (int argc, char *argv[])
   int force = 0;
   bool daemonize = true;
 
-  std::string mode ("start");
+  enum gspcd_mode_t
+  {
+    MODE_START
+  , MODE_STOP
+  , MODE_STATUS
+  , MODE_LIST
+  , MODE_URL
+  };
+
+  gspcd_mode_t mode = MODE_START;
   std::string session ("default");
   std::string session_dir (gspc::ctl::session_directory ());
   puburl = "tcp://" + gspc::net::hostname () + ":*";
@@ -206,23 +215,23 @@ int main (int argc, char *argv[])
     }
     else if (arg == "list" || arg == "list-sessions")
     {
-      mode = "list";
+      mode = MODE_LIST;
     }
     else if (arg == "start")
     {
-      mode = "start";
+      mode = MODE_START;
     }
     else if (arg == "stop")
     {
-      mode = "stop";
+      mode = MODE_STOP;
     }
     else if (arg == "status")
     {
-      mode = "status";
+      mode = MODE_STATUS;
     }
     else if (arg == "url")
     {
-      mode = "url";
+      mode = MODE_URL;
     }
     else
     {
@@ -237,7 +246,9 @@ int main (int argc, char *argv[])
     return 0;
   }
 
-  if (mode == "list")
+  switch (mode)
+  {
+  case MODE_LIST:
   {
     int ec = s_list_sessions (session_dir, verbose);
     switch (ec)
@@ -256,7 +267,8 @@ int main (int argc, char *argv[])
       break;
     }
   }
-  else if (mode == "status")
+  break;
+  case MODE_STATUS:
   {
     gspc::ctl::session_info_t info;
     rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
@@ -284,7 +296,8 @@ int main (int argc, char *argv[])
       }
     }
   }
-  else if (mode == "stop")
+  break;
+  case MODE_STOP:
   {
     gspc::ctl::session_info_t info;
     rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
@@ -315,7 +328,8 @@ int main (int argc, char *argv[])
       rc = EX_UNAVAILABLE;
     }
   }
-  else if (mode == "url")
+  break;
+  case MODE_URL:
   {
     gspc::ctl::session_info_t info;
     rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
@@ -331,7 +345,8 @@ int main (int argc, char *argv[])
       rc = EX_UNAVAILABLE;
     }
   }
-  else if (mode == "start")
+  break;
+  case MODE_START:
   {
     gspc::ctl::session_t s;
     s.set_session_dir (session_dir);
@@ -367,10 +382,12 @@ int main (int argc, char *argv[])
       rc = EX_UNAVAILABLE;
     }
   }
-  else
+  break;
+  default:
   {
     std::cerr << "gspcd: mode '" << mode << "' not yet implemented" << std::endl;
     return EX_SOFTWARE;
+  }
   }
 
   if (rc < 0)
