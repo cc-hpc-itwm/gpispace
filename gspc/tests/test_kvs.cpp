@@ -387,11 +387,21 @@ BOOST_AUTO_TEST_CASE (test_impl_many_push_pop)
                 << std::endl
         ;
 
-      kvs.get (queue, val);
-      std::cerr << "wfh: queue content: "
-                << pnet::type::value::show (val)
-                << std::endl
-        ;
+      rc = kvs.get (queue, val);
+      if (rc == 0)
+      {
+        std::cerr << "wfh: queue content: "
+                  << pnet::type::value::show (val)
+                  << std::endl
+          ;
+      }
+      else
+      {
+        std::cerr << "wfh: could not get queue content: "
+                  << strerror (-rc)
+                  << std::endl
+          ;
+      }
 
       break;
     }

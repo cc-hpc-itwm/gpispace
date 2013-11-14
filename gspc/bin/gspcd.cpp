@@ -120,7 +120,16 @@ int main (int argc, char *argv[])
   int force = 0;
   bool daemonize = true;
 
-  std::string mode ("start");
+  enum gspcd_mode_t
+  {
+    MODE_START
+  , MODE_STOP
+  , MODE_STATUS
+  , MODE_LIST
+  , MODE_URL
+  };
+
+  gspcd_mode_t mode = MODE_START;
   std::string session ("default");
   std::string session_dir (gspc::ctl::session_directory ());
   puburl = "tcp://" + gspc::net::hostname () + ":*";
@@ -206,23 +215,23 @@ int main (int argc, char *argv[])
     }
     else if (arg == "list" || arg == "list-sessions")
     {
-      mode = "list";
+      mode = MODE_LIST;
     }
     else if (arg == "start")
     {
-      mode = "start";
+      mode = MODE_START;
     }
     else if (arg == "stop")
     {
-      mode = "stop";
+      mode = MODE_STOP;
     }
     else if (arg == "status")
     {
-      mode = "status";
+      mode = MODE_STATUS;
     }
     else if (arg == "url")
     {
-      mode = "url";
+      mode = MODE_URL;
     }
     else
     {
@@ -237,140 +246,148 @@ int main (int argc, char *argv[])
     return 0;
   }
 
-  if (mode == "list")
+  switch (mode)
   {
-    int ec = s_list_sessions (session_dir, verbose);
-    switch (ec)
+  case MODE_LIST:
     {
-    case -EPERM:
-      rc = EX_NOPERM;
-      break;
-    case -ENOENT:
-      rc = EX_UNAVAILABLE;
-      break;
-    case 0:
-      rc = 0;
-      break;
-    default:
-      rc = EX_SOFTWARE;
-      break;
-    }
-  }
-  else if (mode == "status")
-  {
-    gspc::ctl::session_info_t info;
-    rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
-                                    , info
-                                    );
-    if (0 == rc)
-    {
-      if (verbose)
+      int ec = s_list_sessions (session_dir, verbose);
+      switch (ec)
       {
-        std::cout << "ALIVE: " << info << std::endl;
+      case -EPERM:
+        rc = EX_NOPERM;
+        break;
+      case -ENOENT:
+        rc = EX_UNAVAILABLE;
+        break;
+      case 0:
+        rc = 0;
+        break;
+      default:
+        rc = EX_SOFTWARE;
+        break;
       }
     }
-    else if (rc == -ECONNREFUSED)
+    break;
+  case MODE_STATUS:
     {
-      if (verbose)
+      gspc::ctl::session_info_t info;
+      rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
+                                      , info
+                                      );
+      if (0 == rc)
       {
-        std::cout << "DEAD: " << session << std::endl;
-      }
-    }
-    else
-    {
-      if (verbose)
-      {
-        std::cout << "ERROR: " << session << ": " << strerror (-rc) << std::endl;
-      }
-    }
-  }
-  else if (mode == "stop")
-  {
-    gspc::ctl::session_info_t info;
-    rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
-                                    , info
-                                    );
-    if (0 == rc)
-    {
-      if (force)
-      {
-        kill (info.pid, SIGKILL);
         if (verbose)
         {
-          std::cerr << "sent SIGKILL to " << info.pid << std::endl;
+          std::cout << "ALIVE: " << info << std::endl;
+        }
+      }
+      else if (rc == -ECONNREFUSED)
+      {
+        if (verbose)
+        {
+          std::cout << "DEAD: " << session << std::endl;
         }
       }
       else
       {
-        kill (info.pid, SIGTERM);
         if (verbose)
         {
-          std::cerr << "sent SIGTERM to " << info.pid << std::endl;
+          std::cout << "ERROR: " << session << ": " << strerror (-rc) << std::endl;
         }
       }
     }
-    else
+    break;
+  case MODE_STOP:
     {
-      std::cerr << "no such session: " << session << std::endl;
-      rc = EX_UNAVAILABLE;
+      gspc::ctl::session_info_t info;
+      rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
+                                      , info
+                                      );
+      if (0 == rc)
+      {
+        if (force)
+        {
+          kill (info.pid, SIGKILL);
+          if (verbose)
+          {
+            std::cerr << "sent SIGKILL to " << info.pid << std::endl;
+          }
+        }
+        else
+        {
+          kill (info.pid, SIGTERM);
+          if (verbose)
+          {
+            std::cerr << "sent SIGTERM to " << info.pid << std::endl;
+          }
+        }
+      }
+      else
+      {
+        std::cerr << "no such session: " << session << std::endl;
+        rc = EX_UNAVAILABLE;
+      }
     }
-  }
-  else if (mode == "url")
-  {
-    gspc::ctl::session_info_t info;
-    rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
-                                    , info
-                                    );
-    if (0 == rc)
+    break;
+  case MODE_URL:
     {
-      std::cout << info.puburl << std::endl;
+      gspc::ctl::session_info_t info;
+      rc = gspc::ctl::session_t::info ( boost::filesystem::path (session_dir) / session
+                                      , info
+                                      );
+      if (0 == rc)
+      {
+        std::cout << info.puburl << std::endl;
+      }
+      else
+      {
+        std::cerr << "no such session: " << session << std::endl;
+        rc = EX_UNAVAILABLE;
+      }
     }
-    else
+    break;
+  case MODE_START:
     {
-      std::cerr << "no such session: " << session << std::endl;
-      rc = EX_UNAVAILABLE;
-    }
-  }
-  else if (mode == "start")
-  {
-    gspc::ctl::session_t s;
-    s.set_session_dir (session_dir);
-    s.set_session_name (session);
-    s.set_bind_url (puburl);
+      gspc::ctl::session_t s;
+      s.set_session_dir (session_dir);
+      s.set_session_name (session);
+      s.set_bind_url (puburl);
 
-    gspc::ctl::session_info_t info;
+      gspc::ctl::session_info_t info;
 
-    if (daemonize)
-    {
-      rc = s.daemonize_then_run (info);
-    }
-    else
-    {
-      rc = s.run (info);
-    }
+      if (daemonize)
+      {
+        rc = s.daemonize_then_run (info);
+      }
+      else
+      {
+        rc = s.run (info);
+      }
 
-    if (0 == rc)
-    {
-      std::cout << info.puburl << std::endl;
+      if (0 == rc)
+      {
+        std::cout << info.puburl << std::endl;
+      }
+      else if (-EEXIST == rc)
+      {
+        std::cerr << "session '" << session << "' still running: "
+                  << "[" << info.pid << "]"
+                  << std::endl
+          ;
+        rc = EX_TEMPFAIL;
+      }
+      else
+      {
+        std::cerr << "failed to start: " << strerror (-rc) << std::endl;
+        rc = EX_UNAVAILABLE;
+      }
     }
-    else if (-EEXIST == rc)
+    break;
+  default:
     {
-      std::cerr << "session '" << session << "' still running: "
-                << "[" << info.pid << "]"
-                << std::endl
-        ;
-      rc = EX_TEMPFAIL;
+      std::cerr << "gspcd: mode '" << mode << "' not yet implemented" << std::endl;
+      return EX_SOFTWARE;
     }
-    else
-    {
-      std::cerr << "failed to start: " << strerror (-rc) << std::endl;
-      rc = EX_UNAVAILABLE;
-    }
-  }
-  else
-  {
-    std::cerr << "gspcd: mode '" << mode << "' not yet implemented" << std::endl;
-    return EX_SOFTWARE;
   }
 
   if (rc < 0)

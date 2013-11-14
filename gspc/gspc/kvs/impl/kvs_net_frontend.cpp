@@ -42,28 +42,6 @@ namespace gspc
       return 0;
     }
 
-    static void throw_if_error ( std::string const &service
-                               , gspc::net::frame const &f
-                               )
-    {
-      if (f.get_command () == "ERROR")
-      {
-        boost::system::error_code ec = gspc::net::make_error_code (f);
-        if (ec)
-        {
-          throw std::runtime_error
-            ((boost::format
-             ( "'%1%' failed: %2% [%3%]: %4%")
-             % service
-             % ec.message ()
-             % ec.value ()
-             % f.get_body ()
-             ).str ()
-            );
-        }
-      }
-    }
-
     int kvs_net_frontend_t::request ( std::string const &rpc
                                     , std::string const &rqst_body
                                     , std::string &rply_body

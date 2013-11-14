@@ -1,5 +1,6 @@
 #!/bin/bash
 myhost=$(hostname)
+srcdir="$(pwd)"
 
 opts=(--with-tests)
 makeflags=()
@@ -17,6 +18,7 @@ case "$myhost" in
         export BOOST_ROOT=~/external_software/boost/1.52/gcc/
         export NACL_HOME=~/external_software/nacl/20110221
         export SMC_HOME=~/external_software/smc/5.0.0
+        export TMPDIR=/tmp/gitlab-ci
         opts+=(--type=Debug)
         opts+=(--assert-mode=on)
         makeflags+=(-j2)
@@ -84,7 +86,28 @@ ${ruler}
 EOF
 }
 
-./configure --prefix=$PWD/inst "${opts[@]}"
+if [ -n "${TMPDIR}" -a ! -d "${TMPDIR}" ]
+then
+    mkdir -p "${TMPDIR}"
+fi
+builddir=$(mktemp -d)
+ec=$?
+if [ $ec -ne 0 ]
+then
+    log_or_send_mail $ec "MKTEMP FAILED"
+    exit $ec
+fi
+
+cleanup()
+{
+    if [ -d "${builddir}" ]
+    then
+        rm -rf "${builddir}"
+    fi
+}
+trap cleanup EXIT
+
+cd "${builddir}" && "${srcdir}/configure" --prefix=$PWD/inst "${opts[@]}"
 ec=$?
 if [ $ec -ne 0 ]
 then
