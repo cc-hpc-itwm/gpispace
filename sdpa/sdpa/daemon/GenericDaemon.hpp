@@ -59,19 +59,6 @@
 
 namespace sdpa {
   namespace daemon {
-    namespace detail
-    {
-      struct DaemonFSM_
-      {
-        virtual ~DaemonFSM_ () {}
-
-        virtual void action_delete_job(const sdpa::events::DeleteJobEvent& ) = 0;
-        virtual void action_submit_job(const sdpa::events::SubmitJobEvent& ) = 0;
-        virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
-        virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
-      };
-    }
-
     class GenericDaemon : public sdpa::daemon::IAgent,
                           public seda::Strategy,
                           public sdpa::events::EventHandler,
