@@ -175,11 +175,6 @@ void GenericDaemon::start_agent()
   {
     requestRegistration();
   }
-
-  scheduler()->cancelWorkerJobs();
-  eworknotreg();
-
-  reScheduleAllMasterJobs();
 }
 
 void GenericDaemon::eworknotreg()
