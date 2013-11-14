@@ -105,7 +105,7 @@ namespace sdpa {
       boost::thread m_thread_run;
       boost::thread m_thread_feed;
 
-      mutable sdpa::daemon::IAgent* ptr_comm_handler_;
+      sdpa::daemon::IAgent* ptr_comm_handler_;
       SDPA_DECLARE_LOGGER();
       boost::posix_time::time_duration m_timeout;
 
