@@ -1134,15 +1134,8 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
 void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
   try {
-    if( to_slave_stage().get() )
-    {
-       to_slave_stage()->send(pEvt);
-      DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-    }
-    else
-    {
-      DMLOG (ERROR, "The slave stage does not exist!");
-    }
+    to_slave_stage()->send(pEvt);
+    DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
   }
   catch(const QueueFull&)
   {
