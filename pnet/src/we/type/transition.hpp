@@ -36,6 +36,8 @@
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <stdexcept>
+
 namespace we { namespace type {
     namespace exception {
       template <typename From>
@@ -287,7 +289,15 @@ namespace we { namespace type {
             }
           }
 
-        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), pid_old);
+        throw std::runtime_error
+          ( ( boost::format ("called UNSAFE_re_associate and it failed."
+                            " trans '%1%', pid_old '%2%'"
+                            )
+            % name()
+            % fhg::util::show (pid_old)
+            )
+          . str()
+          );
       }
 
       const we::type::property::type& prop (void) const { return prop_; }
