@@ -1121,22 +1121,8 @@ void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pE
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
-  try {
-    ptr_daemon_stage_.lock()->send(pEvt);
-    DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-  }
-  catch(const seda::QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event. The queue is full!");
-  }
-  catch(const seda::StageNotFound& ex)
-  {
-    DMLOG (ERROR, "Stage not found! "<<ex.what());
-  }
-  catch(const std::exception& ex)
-  {
-    DMLOG (WARN, "Could not send event. Exception occurred: "<<ex.what());
-  }
+  ptr_daemon_stage_.lock()->send(pEvt);
+  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
 void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
