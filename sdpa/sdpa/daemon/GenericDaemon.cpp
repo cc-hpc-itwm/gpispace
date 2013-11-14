@@ -61,7 +61,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_to_slave_stage_name_ (name+".net"),
 
     ptr_job_man_(new JobManager(name)),
-    //ptr_scheduler_(),
+    ptr_scheduler_(),
     ptr_workflow_engine_(NULL),
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
@@ -91,10 +91,7 @@ GenericDaemon::GenericDaemon( const std::string name,
 
 void GenericDaemon::start_agent()
 {
-  if(!scheduler())
-  {
-    createScheduler();
-  }
+  createScheduler();
 
   ptr_daemon_stage_.lock()->start();
 
