@@ -11,7 +11,6 @@
   }                                                                     \
 
 CHECK_SHOW (PENDING,  "SDPA::Pending")
-CHECK_SHOW (SUSPENDED, "SDPA::Suspended")
 CHECK_SHOW (RUNNING, "SDPA::Running")
 CHECK_SHOW (FINISHED, "SDPA::Finished")
 CHECK_SHOW (FAILED, "SDPA::Failed")

@@ -15,9 +15,8 @@ namespace sdpa
       , FAILED
       , CANCELED
 
-      // non-terminal states
+        // non-terminal states
       , PENDING
-      , SUSPENDED
       , RUNNING
       , STALLED
       , CANCELING
@@ -41,8 +40,6 @@ namespace sdpa
       {
       case PENDING:
         return "SDPA::Pending";
-      case SUSPENDED:
-        return "SDPA::Suspended";
       case RUNNING:
         return "SDPA::Running";
       case FINISHED:
