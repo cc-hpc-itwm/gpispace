@@ -118,11 +118,6 @@ void GenericDaemon::start_agent()
 
   if (vec.empty() || vec.size() > 2)
   {
-    {
-      lock_type lock (_state_machine_mutex);
-      process_event (ConfigNokEvent());
-    }
-
     LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
     throw std::runtime_error ("configuration of network failed: invalid url");
   }
@@ -147,11 +142,6 @@ void GenericDaemon::start_agent()
   }
   catch (...)
   {
-    {
-      lock_type lock (_state_machine_mutex);
-      process_event (ConfigNokEvent());
-    }
-
     throw;
   }
 
@@ -160,11 +150,6 @@ void GenericDaemon::start_agent()
 
   // start the network stage
   to_master_stage()->start();
-
-  {
-    lock_type lock (_state_machine_mutex);
-    process_event (ConfigOkEvent());
-  }
 
   if (!isTop())
   {
@@ -195,11 +180,6 @@ void GenericDaemon::shutdown( )
   }
 
   ptr_scheduler_.reset();
-
-  {
-    lock_type lock (_state_machine_mutex);
-    process_event (InterruptEvent());
-  }
 
   BOOST_FOREACH (std::string stage, _stages_to_remove)
   {

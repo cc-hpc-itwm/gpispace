@@ -79,16 +79,11 @@ namespace sdpa {
         virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& ) = 0;
         virtual void action_error_event(const sdpa::events::ErrorEvent& ) = 0;
 
-        typedef Down initial_state;
+        typedef Up initial_state;
 
         struct transition_table : boost::mpl::vector<
         //      Start         Event         		                      Next            Action                Guard
         //      +-------------+---------------------------------------+---------------+---------------------+-----
-        _row<   Down,         ConfigOkEvent,                          Up>,
-        _irow<  Down,         ConfigNokEvent>,
-        _irow<  Down,         sdpa::events::ErrorEvent >,
-        //      +------------+-----------------------+----------------+--------------+-----
-        _row<   Up,           InterruptEvent,                         Down>,
         a_irow< Up,           sdpa::events::WorkerRegistrationEvent,                  &DaemonFSM_::action_register_worker>,
         a_irow< Up,           sdpa::events::DeleteJobEvent,                           &DaemonFSM_::action_delete_job>,
         a_irow< Up,           sdpa::events::SubmitJobEvent,                           &DaemonFSM_::action_submit_job>,
