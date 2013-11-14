@@ -693,19 +693,6 @@ void SchedulerBase::setLastTimeServed(const worker_id_t& wid, const sdpa::util::
   ptr_worker_man_->setLastTimeServed(wid, servTime);
 }
 
-sdpa::job_id_t SchedulerBase::getNextJobToSchedule()
-{
-  sdpa::job_id_t jobId("");
-  try {
-      jobId = pending_jobs_queue_.pop();
-  }
-  catch( QueueEmpty& ex)
-  {
-      LOG(WARN, "there is no job to be scheduled");
-  }
-  return jobId;
-}
-
 void SchedulerBase::schedule_first(const sdpa::job_id_t& jid)
 {
   ptr_worker_man_->common_queue_.push_front(jid);
