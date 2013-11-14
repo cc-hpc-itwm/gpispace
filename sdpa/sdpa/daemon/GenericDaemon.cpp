@@ -1122,15 +1122,8 @@ void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pE
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
   try {
-    if(ptr_daemon_stage_.lock())
-    {
-      ptr_daemon_stage_.lock()->send(pEvt);
-      DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-    }
-    else
-    {
-      DMLOG (ERROR, "Daemon stage not defined! ");
-    }
+    ptr_daemon_stage_.lock()->send(pEvt);
+    DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
   }
   catch(const seda::QueueFull&)
   {
