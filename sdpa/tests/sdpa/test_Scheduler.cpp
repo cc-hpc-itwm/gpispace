@@ -58,7 +58,6 @@ struct MyFixture
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
-/*
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
@@ -120,7 +119,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   else
     LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, despite the fact is is the only one having the required  capability, which is incorrect");
 }
-*/
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
