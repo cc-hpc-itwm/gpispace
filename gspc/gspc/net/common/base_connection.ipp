@@ -36,8 +36,7 @@ namespace gspc
       template <class Proto>
       base_connection<Proto>::~base_connection ()
       {
-        if (m_socket.is_open ())
-          stop ();
+        stop ();
       }
 
       template <class Proto>
@@ -73,10 +72,8 @@ namespace gspc
       template <class Proto>
       void base_connection<Proto>::stop ()
       {
-        {
-          //  unique_lock lock (m_shutting_down_mutex);
-          m_shutting_down = true;
-        }
+        unique_lock lock (m_shutting_down_mutex);
+        m_shutting_down = true;
 
         boost::system::error_code ec;
         m_socket.cancel (ec);
@@ -156,8 +153,15 @@ namespace gspc
 
               if (not is_heartbeat (m_frame))
               {
-                int error = this->m_frame_handler.handle_frame (this, m_frame);
-                if (error < 0)
+                {
+                  unique_lock _ (m_shutting_down_mutex);
+                  if (m_shutting_down)
+                  {
+                    return;
+                  }
+                }
+
+                if (this->m_frame_handler.handle_frame (this, m_frame) < 0)
                 {
                   return;
                 }
