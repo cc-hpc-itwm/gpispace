@@ -41,8 +41,6 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
   const std::string workflow
     (utils::require_and_read_file ("workflows/atomic.pnet"));
 
-
-	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
