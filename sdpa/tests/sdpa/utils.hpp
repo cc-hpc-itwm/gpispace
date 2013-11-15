@@ -33,7 +33,7 @@ namespace utils
     return os.str();
   }
 
-  struct drts_worker
+  struct drts_worker : boost::noncopyable
   {
     drts_worker ( std::string name
                 , std::string master
