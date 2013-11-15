@@ -91,7 +91,7 @@ namespace gspc
         m_buffers.push_back (new buffer_t (2097152));
       }
 
-      set_state (PROCESS_CREATED);
+      m_handler->onStateChange (m_proc_id, m_state);
     }
 
     process_t::process_t ( proc_t id
@@ -126,7 +126,7 @@ namespace gspc
         ++env_entry;
       }
 
-      set_state (PROCESS_CREATED);
+      m_handler->onStateChange (m_proc_id, m_state);
     }
 
     process_t::~process_t ()
