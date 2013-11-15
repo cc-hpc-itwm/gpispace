@@ -65,8 +65,6 @@ struct MyFixture
   }
 
   std::string m_strWorkflow;
-
-  boost::thread m_threadClient;
 };
 
 void MyFixture::run_client()
