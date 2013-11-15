@@ -363,6 +363,8 @@ namespace utils
         shutdown_on_exit _ (ptrCli);
 
         const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
+        //! \todo There should not be a requirement for this!
+        boost::this_thread::sleep (boost::posix_time::seconds (1));
         cancel_job (ptrCli, job_id_user);
         wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
         retrieve_job_results (ptrCli, job_id_user);
