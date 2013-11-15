@@ -28,7 +28,6 @@
 #include "kvs_setup_fixture.hpp"
 
 const int NMAXTRIALS=5;
-static int testNb = 0;
 
 namespace po = boost::program_options;
 
@@ -98,7 +97,7 @@ void MyFixture::run_client()
 	config.parse_command_line(cav);
 
 	std::ostringstream osstr;
-	osstr<<"sdpac_"<<testNb++;
+	osstr<<"sdpac_0";
 
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
 	ptrCli->configure_network( config );
