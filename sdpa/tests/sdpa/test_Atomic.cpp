@@ -36,8 +36,6 @@ BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 BOOST_AUTO_TEST_CASE( testAtomicExecution )
 {
-	LOG( DEBUG, "***** test_Atomic *****"<<std::endl);
-
   const std::string workflow
     (utils::require_and_read_file ("workflows/atomic.pnet"));
 
@@ -83,6 +81,4 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	BOOST_REQUIRE_EQUAL( nCounterVal - nInitial
                      , 2 * boost::lexical_cast<int> (TESTS_N_ATOMIC_TASKS)
                      );
-
-	LOG( DEBUG, "The test case test_Atomic terminated!");
 }
