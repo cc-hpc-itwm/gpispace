@@ -178,7 +178,6 @@ void run_client (std::string workflow)
 	ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
 	ptrCli->configure_network( config );
 
-		int nTrials = 0;
 		const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
     wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
     retrieve_job_results (ptrCli, job_id_user);
