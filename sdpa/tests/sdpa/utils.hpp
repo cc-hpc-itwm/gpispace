@@ -54,6 +54,7 @@ namespace utils
       {
         _thread.join();
       }
+      _kernel->unload_all();
     }
 
     sdpa::shared_ptr<fhg::core::kernel_t> _kernel;
