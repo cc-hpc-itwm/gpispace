@@ -137,5 +137,20 @@ namespace gspc
     {
       return detail::get_io_singleton ().service ();
     }
+
+    initializer::initializer ()
+    {
+      ::gspc::net::initialize ();
+    }
+
+    initializer::initializer (const size_t nthread)
+    {
+      ::gspc::net::initialize (nthread);
+    }
+
+    initializer::~initializer ()
+    {
+      ::gspc::net::shutdown ();
+    }
   }
 }

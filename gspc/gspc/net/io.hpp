@@ -11,6 +11,16 @@ namespace gspc
     void initialize (const size_t nthread);
     void shutdown ();
 
+    struct initializer
+    {
+      initializer ();
+
+      explicit
+      initializer (const size_t nthread);
+
+      ~initializer ();
+    };
+
     boost::asio::io_service & io ();
   }
 }
