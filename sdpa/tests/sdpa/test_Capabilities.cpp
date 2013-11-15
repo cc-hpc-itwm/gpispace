@@ -50,7 +50,6 @@ struct MyFixture
   }
 
   void run_client();
-  sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName, const std::string& cpbList, const std::string& strWfePath );
 
   string read_workflow(string strFileName)
   {
