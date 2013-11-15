@@ -221,7 +221,8 @@ namespace
 
 BOOST_AUTO_TEST_CASE( testInotifyExecution )
 {
-	m_strWorkflow = read_workflow("workflows/inotify.pnet");
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/inotify.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
@@ -242,7 +243,8 @@ BOOST_AUTO_TEST_CASE( testInotifyExecution )
                                       )
                         );
 
-  run_client();
+  utils::client::submit_job_and_wait_for_termination
+    (workflow, "sdpac", orchestrator);
 
   keep_on_touching = false;
   if (toucher.joinable())
