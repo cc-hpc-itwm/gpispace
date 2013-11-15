@@ -63,6 +63,45 @@ sdpa::job_id_t submit_job
   throw retried_too_often ("submit_job");
 }
 
+sdpa::status::code query_job_status
+  (sdpa::client::ClientApi::ptr_t client, const sdpa::job_id_t& id)
+{
+  LOG (DEBUG, "Query status for job " << id);
+
+  sdpa::client::job_info_t info;
+  for (int i (0); i < NMAXTRIALS; ++i)
+  {
+		try
+    {
+			return client->queryJob (id, info);
+		}
+		catch (const sdpa::client::ClientException& ex)
+		{
+      LOG (DEBUG, ex.what());
+		}
+  }
+
+  throw retried_too_often ("query_job_status");
+}
+
+template<typename Duration>
+void wait_for_job_termination ( sdpa::client::ClientApi::ptr_t client
+                              , const sdpa::job_id_t& id
+                              , Duration sleep_duration
+                              )
+{
+  LOG (DEBUG, "Waiting for termination of job " << id);
+
+  for ( bool terminated
+          (sdpa::status::is_terminal (query_job_status (client, id)))
+      ; !terminated
+      ;
+      )
+  {
+    boost::this_thread::sleep (sleep_duration);
+    terminated = sdpa::status::is_terminal (query_job_status (client, id));
+  }
+}
 
 
 void run_client (std::string workflow)
@@ -85,35 +124,7 @@ void run_client (std::string workflow)
 
 		int nTrials = 0;
 		const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
-
-		std::string job_status = ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-		nTrials = 0;
-		while(  job_status.find("Finished") == std::string::npos &&
-			      job_status.find("Failed") == std::string::npos &&
-			      job_status.find("Canceled") == std::string::npos )
-		{
-			try {
-				job_status = ptrCli->queryJob(job_id_user);
-				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-			}
-			catch(const sdpa::client::ClientException& cliExc)
-			{
-				if(nTrials++ > NMAXTRIALS)
-				{
-					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
-
-					ptrCli->shutdown_network();
-					ptrCli.reset();
-					return;
-				}
-
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-			}
-		}
+    wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
 
 		nTrials = 0;
 
