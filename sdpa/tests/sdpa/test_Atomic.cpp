@@ -27,6 +27,8 @@
 #include <tests/sdpa/CreateDrtsWorker.hpp>
 #include "kvs_setup_fixture.hpp"
 
+#include <utils.hpp>
+
 const int NMAXTRIALS=5;
 
 namespace po = boost::program_options;
@@ -52,17 +54,7 @@ struct MyFixture
 
 	string read_workflow(string strFileName)
 	{
-		ifstream f(strFileName.c_str());
-		ostringstream os;
-		os.str("");
-
-		BOOST_REQUIRE (f.is_open());
-
-    char c;
-    while (f.get(c)) os<<c;
-    f.close();
-
-		return os.str();
+		return utils::require_and_read_file (strFileName);
 	}
 
 	std::string m_strWorkflow;
