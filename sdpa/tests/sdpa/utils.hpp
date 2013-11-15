@@ -5,9 +5,12 @@
 
 #include <sdpa/client/ClientApi.hpp>
 
-#include <string>
+#include <boost/test/unit_test.hpp>
+#include <boost/thread.hpp>
+
 #include <fstream>
 #include <sstream>
+#include <string>
 
 namespace utils
 {
