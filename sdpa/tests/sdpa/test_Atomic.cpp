@@ -160,12 +160,8 @@ struct shutdown_on_exit
 
 void run_client (std::string workflow)
 {
-  sdpa::client::ClientApi::ptr_t ptrCli;
-  shutdown_on_exit _ (ptrCli);
-
   try
   {
-
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -175,8 +171,10 @@ void run_client (std::string workflow)
 	std::ostringstream osstr;
 	osstr<<"sdpac_0";
 
-	ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
+  sdpa::client::ClientApi::ptr_t ptrCli
+    (sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" ));
 	ptrCli->configure_network( config );
+  shutdown_on_exit _ (ptrCli);
 
 		const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
     wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
