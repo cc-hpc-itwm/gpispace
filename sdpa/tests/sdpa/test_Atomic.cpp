@@ -188,36 +188,6 @@ void run_client ( std::string workflow
   }
 }
 
-BOOST_AUTO_TEST_CASE( testModiFile )
-{
-	const char* filename = "test.txt";
-	FILE * pFile = fopen(filename,"r");
-
-	if(!pFile) // file does not exist, create it
-	{
-		pFile = fopen(filename,"w");
-    fprintf(pFile, "%d\n", 0);
-		fclose(pFile);
-	}
-	else
-	{
-		int i = 0;
-		if (1 == fscanf(pFile, "%d", &i))
-		{
-		  fclose(pFile);
-		  pFile = fopen(filename,"w");
-		  ++i;
-		  fprintf(pFile, "%d\n", i);
-		  fclose(pFile);
-		}
-		else
-		{
-		  fclose(pFile);
-		  throw std::runtime_error("testModiFile: could not read old state");
-		}
-	}
-}
-
 BOOST_AUTO_TEST_CASE( testAtomicExecution )
 {
 	LOG( DEBUG, "***** test_Atomic *****"<<std::endl);
