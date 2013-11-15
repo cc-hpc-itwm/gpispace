@@ -85,19 +85,6 @@ namespace utils
   struct drts_worker : boost::noncopyable
   {
     drts_worker ( std::string name
-                , std::string master
-                , std::string capabilities
-                , std::string modules_path
-                , std::string kvs_host
-                , std::string kvs_port
-                )
-      : _kernel ( createDRTSWorker
-                  (name, master, capabilities, modules_path, kvs_host, kvs_port)
-                )
-      , _thread (&fhg::core::kernel_t::run, _kernel)
-    {
-    }
-    drts_worker ( std::string name
                 , const agent<we::mgmt::layer>& master
                 , std::string capabilities
                 , std::string modules_path
