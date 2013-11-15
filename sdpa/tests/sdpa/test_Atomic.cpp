@@ -17,16 +17,15 @@
  */
 #define BOOST_TEST_MODULE testAtomic
 
-#include <boost/test/unit_test.hpp>
-#include <boost/lexical_cast.hpp>
-#include "tests_config.hpp"
-#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
-#include <tests/sdpa/CreateDrtsWorker.hpp>
 #include "kvs_setup_fixture.hpp"
-
+#include "tests_config.hpp"
 #include <utils.hpp>
+
+#include <sdpa/daemon/agent/AgentFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+
+#include <boost/lexical_cast.hpp>
+#include <boost/test/unit_test.hpp>
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
