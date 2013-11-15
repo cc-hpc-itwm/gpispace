@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "A,B", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, read_workflow("workflows/atomic.pnet")));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, utils::require_and_read_file ("workflows/atomic.pnet")));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
