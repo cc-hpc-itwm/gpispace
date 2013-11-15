@@ -4,9 +4,6 @@
 #include "tests_config.hpp"
 #include <utils.hpp>
 
-#include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-
 #include <boost/lexical_cast.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -25,20 +22,15 @@ BOOST_AUTO_TEST_CASE (testAtomicExecution)
     ofs << nInitial << std::endl;
   }
 
-  const sdpa::daemon::Orchestrator::ptr_t ptrOrch
-    ( sdpa::daemon::Orchestrator::create_with_start_called
-      ("orchestrator_0", "127.0.0.1")
-    );
+  {
+    const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
 
-	const sdpa::daemon::Agent::ptr_t ptrAgent
-    ( sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called
+    const utils::agent<we::mgmt::layer> agent
       ( "agent_0"
       , "127.0.0.1"
       , sdpa::master_info_list_t (1, sdpa::MasterInfo ("orchestrator_0"))
-      )
-    );
+      );
 
-  {
     const utils::drts_worker worker_0
       ( "drts_0", "agent_0"
       , "ATOMIC"
@@ -55,9 +47,6 @@ BOOST_AUTO_TEST_CASE (testAtomicExecution)
     utils::client::submit_job_and_wait_for_termination
       (workflow, "sdpac", "orchestrator_0");
   }
-
-	ptrAgent->shutdown();
-	ptrOrch->shutdown();
 
 	int nCounterVal (0);
 	{

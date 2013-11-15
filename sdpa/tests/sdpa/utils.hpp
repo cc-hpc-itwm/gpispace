@@ -6,6 +6,8 @@
 #include <CreateDrtsWorker.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
+#include <sdpa/daemon/agent/AgentFactory.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
 
@@ -59,6 +61,37 @@ namespace utils
 
     sdpa::shared_ptr<fhg::core::kernel_t> _kernel;
     boost::thread _thread;
+  };
+
+  template<typename WFE> struct agent : boost::noncopyable
+  {
+    agent ( const std::string& name
+          , const std::string& url
+          , const sdpa::master_info_list_t& masters
+          , const unsigned int rank = 0
+          , const boost::optional<std::string>& gui_url = boost::none
+          )
+      : _ ( sdpa::daemon::AgentFactory<WFE>::create_with_start_called
+            (name, url, masters, rank, gui_url)
+          )
+    {}
+    ~agent()
+    {
+      _->shutdown();
+    }
+    sdpa::daemon::Agent::ptr_t _;
+  };
+
+  struct orchestrator : boost::noncopyable
+  {
+    orchestrator (const std::string& name, const std::string& url)
+      : _ (sdpa::daemon::Orchestrator::create_with_start_called (name, url))
+    {}
+    ~orchestrator()
+    {
+      _->shutdown();
+    }
+    sdpa::daemon::Orchestrator::ptr_t _;
   };
 
   namespace client
