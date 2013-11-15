@@ -39,7 +39,6 @@ struct MyFixture
 {
 	MyFixture()
 			: m_nITER(1)
-			, m_sleep_interval(1000000)
 	{
 		m_strWorkflow = read_workflow("workflows/capabilities.pnet");
 	}
@@ -68,7 +67,6 @@ struct MyFixture
 	}
 
 	int m_nITER;
-	int m_sleep_interval ;
 	std::string m_strWorkflow;
 
 	boost::thread m_threadClient;
