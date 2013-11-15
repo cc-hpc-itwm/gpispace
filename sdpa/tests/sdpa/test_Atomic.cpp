@@ -37,6 +37,34 @@ using namespace std;
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
+struct retried_too_often : public std::runtime_error
+{
+  retried_too_often (std::string what)
+    : std::runtime_error ("RETRIED TOO OFTEN: " + what)
+  {}
+};
+
+sdpa::job_id_t submit_job
+  (sdpa::client::ClientApi::ptr_t client, std::string workflow)
+{
+  LOG (DEBUG, "Submitting the following test workflow: \n" << workflow);
+  for (int i (0); i < NMAXTRIALS; ++i)
+  {
+		try
+    {
+			return client->submitJob (workflow);
+		}
+		catch (const sdpa::client::ClientException& ex)
+		{
+      LOG (DEBUG, ex.what());
+		}
+  }
+
+  throw retried_too_often ("submit_job");
+}
+
+
+
 void run_client (std::string workflow)
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
@@ -54,22 +82,18 @@ void run_client (std::string workflow)
 		int nTrials = 0;
 		sdpa::job_id_t job_id_user;
 
-		try {
+    try
+    {
+      job_id_user = submit_job (ptrCli, workflow);
+    }
+    catch (const retried_too_often& ex)
+    {
+      LOG (DEBUG, ex.what());
 
-			LOG( DEBUG, "Submitting the following test workflow: \n"<<workflow);
-			job_id_user = ptrCli->submitJob(workflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-		}
+      ptrCli->shutdown_network();
+      ptrCli.reset();
+      return;
+    }
 
 		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
