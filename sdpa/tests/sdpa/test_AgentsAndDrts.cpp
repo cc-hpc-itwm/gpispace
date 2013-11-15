@@ -168,92 +168,56 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts1 )
 
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts2 )
 {
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
-	typedef void OrchWorkflowEngine;
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1");
+  const utils::agent<we::mgmt::layer> agent_0
+    ("agent_0", "127.0.0.1", orchestrator);
+  const utils::agent<we::mgmt::layer> agent_1
+    ("agent_1", "127.0.0.1", agent_0);
 
-	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+  const utils::drts_worker worker_0
+    ( "drts_0", agent_1
+    , ""
+    , TESTS_TRANSFORM_FILE_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called( "orchestrator_0", addrOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called( "agent_0", addrAgent, arrAgentMasterInfo);
-
-	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called( "agent_00", addrAgent, arrAgMaster);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( createDRTSWorker("drts_00", "agent_00", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_00_thread = boost::thread( &fhg::core::kernel_t::run, drts_00 );
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_00->stop();
-	drts_00_thread.join();
-	drts_00->unload_all();
-
-	ptrAg00->shutdown();
-
-	ptrAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+  utils::client::submit_job_and_wait_for_termination
+    (workflow, "sdpac", orchestrator);
 }
 
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts3 )
 {
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
-	typedef void OrchWorkflowEngine;
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1");
+  const utils::agent<we::mgmt::layer> agent_0
+    ("agent_0", "127.0.0.1", orchestrator);
+  const utils::agent<we::mgmt::layer> agent_1
+    ("agent_1", "127.0.0.1", agent_0);
+  const utils::agent<we::mgmt::layer> agent_2
+    ("agent_2", "127.0.0.1", agent_0);
 
-	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+  const utils::drts_worker worker_0
+    ( "drts_0", agent_1
+    , ""
+    , TESTS_TRANSFORM_FILE_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
+  const utils::drts_worker worker_1
+    ( "drts_1", agent_2
+    , ""
+    , TESTS_TRANSFORM_FILE_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
-
-	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_00", addrAgent, arrAgMaster);
-
-	sdpa::daemon::Agent::ptr_t ptrAg01 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_01", addrAgent, arrAgMaster);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( createDRTSWorker("drts_00", "agent_00", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()));
-	boost::thread drts_00_thread = boost::thread(&fhg::core::kernel_t::run, drts_00);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_01( createDRTSWorker("drts_01", "agent_01", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()));
-	boost::thread drts_01_thread = boost::thread(&fhg::core::kernel_t::run, drts_01);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_00->stop();
-	drts_00_thread.join();
-	drts_00->unload_all();
-
-	drts_01->stop();
-	drts_01_thread.join();
-	drts_01->unload_all();
-
-	ptrAg00->shutdown();
-	ptrAg01->shutdown();
-
-	ptrAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+  utils::client::submit_job_and_wait_for_termination
+    (workflow, "sdpac", orchestrator);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
