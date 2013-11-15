@@ -37,17 +37,6 @@ using namespace std;
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
-struct MyFixture
-{
-	MyFixture()
-	{
-	}
-
-	~MyFixture()
-	{
-	}
-};
-
 void run_client (std::string workflow)
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
@@ -146,8 +135,6 @@ void run_client (std::string workflow)
     ptrCli.reset();
 }
 
-BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
-
 BOOST_AUTO_TEST_CASE( testModiFile )
 {
 	const char* filename = "test.txt";
@@ -245,5 +232,3 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 
 	LOG( DEBUG, "The test case test_Atomic terminated!");
 }
-
-BOOST_AUTO_TEST_SUITE_END()
