@@ -67,6 +67,10 @@ sdpa::job_id_t submit_job
 
 void run_client (std::string workflow)
 {
+  sdpa::client::ClientApi::ptr_t ptrCli;
+  try
+  {
+
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -76,24 +80,13 @@ void run_client (std::string workflow)
 	std::ostringstream osstr;
 	osstr<<"sdpac_0";
 
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
+	ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
 	ptrCli->configure_network( config );
 
 		int nTrials = 0;
 		sdpa::job_id_t job_id_user;
 
-    try
-    {
-      job_id_user = submit_job (ptrCli, workflow);
-    }
-    catch (const retried_too_often& ex)
-    {
-      LOG (DEBUG, ex.what());
-
-      ptrCli->shutdown_network();
-      ptrCli.reset();
-      return;
-    }
+    job_id_user = submit_job (ptrCli, workflow);
 
 		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
@@ -157,6 +150,19 @@ void run_client (std::string workflow)
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
+
+  }
+  catch (const retried_too_often& ex)
+  {
+    LOG (DEBUG, ex.what());
+
+    if (ptrCli)
+    {
+      ptrCli->shutdown_network();
+    }
+    ptrCli.reset();
+    return;
+  }
 }
 
 BOOST_AUTO_TEST_CASE( testModiFile )
