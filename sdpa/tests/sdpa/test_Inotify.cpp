@@ -150,7 +150,7 @@ void MyFixture::run_client()
 				boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 				const char* file("inotify_test.txt");
-				std::ifstream ifs("file");
+				std::ifstream ifs(file);
 				if(!ifs.good())
 				{
 				  ofstream ofs(file);
