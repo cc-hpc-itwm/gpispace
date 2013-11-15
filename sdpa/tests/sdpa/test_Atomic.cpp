@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_Atomic.cpp
- *
- *    Description:  test all components, each with a real gwes, using a real user client
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #define BOOST_TEST_MODULE testAtomic
 
 #include "kvs_setup_fixture.hpp"
@@ -29,7 +12,7 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-BOOST_AUTO_TEST_CASE( testAtomicExecution )
+BOOST_AUTO_TEST_CASE (testAtomicExecution)
 {
   const std::string workflow
     (utils::require_and_read_file ("workflows/atomic.pnet"));
