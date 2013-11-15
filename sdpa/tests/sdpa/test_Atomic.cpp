@@ -86,8 +86,6 @@ void MyFixture::run_client()
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
 	ptrCli->configure_network( config );
 
-	for( int k=0; k<1; k++ )
-	{
 		int nTrials = 0;
 		sdpa::job_id_t job_id_user;
 
@@ -107,8 +105,6 @@ void MyFixture::run_client()
 				return;
 			}
 		}
-
-		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
 
 		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
@@ -169,7 +165,6 @@ void MyFixture::run_client()
 			ptrCli.reset();
 			return;
 		}
-	}
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
