@@ -48,16 +48,26 @@ namespace utils
     std::string _name; std::string name() const { return _name; }
   };
 
+  template<typename WFE> struct agent;
+
+  typedef std::vector<boost::reference_wrapper<const utils::agent<we::mgmt::layer> > >
+    agents_t;
+
+  namespace
+  {
+    sdpa::master_info_list_t assemble_master_info_list (const agents_t& masters);
+  }
+
   template<typename WFE> struct agent : boost::noncopyable
   {
     agent ( const std::string& name
           , const std::string& url
-          , const sdpa::master_info_list_t& masters
+          , const agents_t& masters
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
       : _ ( sdpa::daemon::AgentFactory<WFE>::create_with_start_called
-            (name, url, masters, rank, gui_url)
+            (name, url, assemble_master_info_list (masters), rank, gui_url)
           )
       , _name (name)
     {}
@@ -97,8 +107,6 @@ namespace utils
     std::string _name; std::string name() const { return _name; }
   };
 
-  typedef std::vector<boost::reference_wrapper<const utils::agent<we::mgmt::layer> > >
-    agents_t;
   namespace
   {
     std::string assemble_string (const agents_t& masters)
@@ -111,6 +119,21 @@ namespace utils
         result += agent.name() + ",";
       }
       return result.substr (0, result.size() - 1);
+    }
+  }
+
+  namespace
+  {
+    sdpa::master_info_list_t assemble_master_info_list (const agents_t& masters)
+    {
+      sdpa::master_info_list_t result;
+      BOOST_FOREACH ( const utils::agent<we::mgmt::layer>& agent
+                    , masters
+                    )
+      {
+        result.push_back (sdpa::MasterInfo (agent.name()));
+      }
+      return result;
     }
   }
 
