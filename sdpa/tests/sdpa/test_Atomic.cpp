@@ -168,10 +168,14 @@ void run_client ( std::string workflow
     sdpa::client::config_t config (sdpa::client::ClientApi::config());
     config.parse_command_line (command_line);
 
-  sdpa::client::ClientApi::ptr_t ptrCli
-    (sdpa::client::ClientApi::create( config, client_name, client_name+".apps.client.out" ));
-	ptrCli->configure_network( config );
-  shutdown_on_exit _ (ptrCli);
+    sdpa::client::ClientApi::ptr_t ptrCli
+      ( sdpa::client::ClientApi::create ( config
+                                        , client_name
+                                        , client_name + ".apps.client.out"
+                                        )
+      );
+    ptrCli->configure_network( config );
+    shutdown_on_exit _ (ptrCli);
 
 		const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
     wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
