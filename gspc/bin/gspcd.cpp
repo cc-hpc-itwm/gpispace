@@ -132,7 +132,7 @@ int main (int argc, char *argv[])
   gspcd_mode_t mode = MODE_START;
   std::string session ("default");
   std::string session_dir (gspc::ctl::session_directory ());
-  puburl = "tcp://" + gspc::net::hostname () + ":*";
+  puburl = "tcp://*:*";
 
   i = 1;
   while (i < argc)
