@@ -35,8 +35,7 @@ namespace gspc
       template <class Proto>
       base_server<Proto>::~base_server ()
       {
-        if (m_acceptor.is_open ())
-          stop ();
+        stop ();
       }
 
       template <class Proto>
@@ -59,19 +58,12 @@ namespace gspc
         m_acceptor.cancel (ec);
         m_acceptor.close (ec);
 
-        if (m_new_connection)
-        {
-          m_new_connection->stop ();
-        }
-
         {
           unique_lock lock (m_active_connections_mtx);
-          while (not m_active_connections.empty ())
-          {
-            m_active_connections.begin ()->second->stop ();
-            m_active_connections.erase (m_active_connections.begin ());
-          }
+          m_active_connections.clear ();
         }
+
+        m_new_connection.reset ();
 
         return 0;
       }
@@ -130,6 +122,8 @@ namespace gspc
         }
         else
         {
+          assert (m_new_connection);
+
           {
             unique_lock lock (m_active_connections_mtx);
             m_active_connections.insert
