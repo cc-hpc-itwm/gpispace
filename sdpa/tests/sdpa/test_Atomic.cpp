@@ -41,7 +41,6 @@ struct MyFixture
 {
 	MyFixture()
 	{
-		m_strWorkflow = read_workflow("workflows/capabilities.pnet");
 	}
 
 	~MyFixture()
@@ -56,8 +55,6 @@ struct MyFixture
 	{
 		return utils::require_and_read_file (strFileName);
 	}
-
-	std::string m_strWorkflow;
 };
 
 void MyFixture::run_client (std::string workflow)
@@ -198,9 +195,6 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	string addrAgent 	= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
-
-	m_strWorkflow = read_workflow("workflows/atomic.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
   const std::string atomic_file ("atomic_test.txt");
 
