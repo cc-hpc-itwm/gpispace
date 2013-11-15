@@ -48,11 +48,9 @@ struct MyFixture
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
 	}
-
-	void run_client (std::string workflow);
 };
 
-void MyFixture::run_client (std::string workflow)
+void run_client (std::string workflow)
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
@@ -215,7 +213,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "A,B", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, workflow));
+	boost::thread threadClient = boost::thread(boost::bind(&run_client, workflow));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
