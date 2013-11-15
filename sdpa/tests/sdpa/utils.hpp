@@ -11,6 +11,7 @@
 
 #include <fhg/plugin/core/kernel.hpp>
 
+#include <boost/ref.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 
@@ -96,6 +97,23 @@ namespace utils
     std::string _name; std::string name() const { return _name; }
   };
 
+  typedef std::vector<boost::reference_wrapper<const utils::agent<we::mgmt::layer> > >
+    agents_t;
+  namespace
+  {
+    std::string assemble_string (const agents_t& masters)
+    {
+      std::string result;
+      BOOST_FOREACH ( const utils::agent<we::mgmt::layer>& agent
+                    , masters
+                    )
+      {
+        result += agent.name() + ",";
+      }
+      return result.substr (0, result.size() - 1);
+    }
+  }
+
   struct drts_worker : boost::noncopyable
   {
     drts_worker ( std::string name
@@ -107,6 +125,19 @@ namespace utils
                 )
       : _kernel ( createDRTSWorker
                   (name, master.name(), capabilities, modules_path, kvs_host, kvs_port)
+                )
+      , _thread (&fhg::core::kernel_t::run, _kernel)
+    {
+    }
+    drts_worker ( std::string name
+                , const agents_t& masters
+                , std::string capabilities
+                , std::string modules_path
+                , std::string kvs_host
+                , std::string kvs_port
+                )
+      : _kernel ( createDRTSWorker
+                  (name, assemble_string (masters), capabilities, modules_path, kvs_host, kvs_port)
                 )
       , _thread (&fhg::core::kernel_t::run, _kernel)
     {
