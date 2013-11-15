@@ -37,7 +37,6 @@ BOOST_GLOBAL_FIXTURE (KVSSetup);
 struct MyFixture
 {
 	MyFixture()
-			: m_nITER(1)
 	{
     m_strWorkflow = read_workflow("workflows/capabilities.pnet");
   }
@@ -65,7 +64,6 @@ struct MyFixture
     return os.str();
   }
 
-  int m_nITER;
   std::string m_strWorkflow;
 
   boost::thread m_threadClient;
@@ -85,7 +83,7 @@ void MyFixture::run_client()
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
 	ptrCli->configure_network( config );
 
-	for( int k=0; k<m_nITER; k++ )
+	for( int k=0; k<1; k++ )
 	{
 		int nTrials = 0;
 		sdpa::job_id_t job_id_user;
