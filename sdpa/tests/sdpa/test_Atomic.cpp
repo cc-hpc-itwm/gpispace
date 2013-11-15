@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE (testAtomicExecution)
       );
 
     utils::client::submit_job_and_wait_for_termination
-      (workflow, "sdpac", orchestrator.name());
+      (workflow, "sdpac", orchestrator);
   }
 
 	int nCounterVal (0);

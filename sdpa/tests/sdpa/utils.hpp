@@ -245,11 +245,11 @@ namespace utils
 
     void submit_job_and_wait_for_termination ( std::string workflow
                                              , std::string client_name
-                                             , std::string orchestrator_name
+                                             , const orchestrator& orch
                                              )
     {
       std::vector<std::string> command_line;
-      command_line.push_back ("--orchestrator=" + orchestrator_name);
+      command_line.push_back ("--orchestrator=" + orch.name());
 
       try
       {
