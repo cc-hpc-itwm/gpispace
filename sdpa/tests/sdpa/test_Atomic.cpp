@@ -50,11 +50,6 @@ struct MyFixture
 	}
 
 	void run_client (std::string workflow);
-
-	string read_workflow(string strFileName)
-	{
-		return utils::require_and_read_file (strFileName);
-	}
 };
 
 void MyFixture::run_client (std::string workflow)
