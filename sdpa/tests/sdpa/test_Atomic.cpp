@@ -158,19 +158,18 @@ struct shutdown_on_exit
   sdpa::client::ClientApi::ptr_t& _client;
 };
 
-void run_client
-  (std::string workflow, std::vector<std::string> command_line)
+void run_client ( std::string workflow
+                , std::vector<std::string> command_line
+                , std::string client_name
+                )
 {
   try
   {
     sdpa::client::config_t config (sdpa::client::ClientApi::config());
     config.parse_command_line (command_line);
 
-	std::ostringstream osstr;
-	osstr<<"sdpac_0";
-
   sdpa::client::ClientApi::ptr_t ptrCli
-    (sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" ));
+    (sdpa::client::ClientApi::create( config, client_name, client_name+".apps.client.out" ));
 	ptrCli->configure_network( config );
   shutdown_on_exit _ (ptrCli);
 
@@ -251,7 +250,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	std::vector<std::string> cav;
 	cav.push_back("--orchestrator=orchestrator_0");
 
-	boost::thread threadClient = boost::thread(boost::bind(&run_client, workflow, cav));
+	boost::thread threadClient = boost::thread(boost::bind(&run_client, workflow, cav, "sdpac"));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
