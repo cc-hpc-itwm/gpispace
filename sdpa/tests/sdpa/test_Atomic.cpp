@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 
   const std::string atomic_file ("atomic_test.txt");
 
-  int nInitial (0);
+  const int nInitial (0);
   {
     std::ofstream ofs (atomic_file.c_str ());
     ofs << nInitial << std::endl;
@@ -75,21 +75,16 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
 
-	int nCounterVal=0;
+	int nCounterVal (0);
 	{
 		std::ifstream ifs (atomic_file.c_str());
-		BOOST_CHECK (ifs.good());
-		ifs>>nCounterVal;
+		BOOST_REQUIRE (ifs.good());
+		ifs >> nCounterVal;
 	}
 
-	LOG(INFO, "Intial value was "<<nInitial);
-	LOG(INFO, "The counter value now is: "<<nCounterVal);
-
-	nCounterVal-=nInitial;
-
-	const int nTasks (boost::lexical_cast<int> (TESTS_N_ATOMIC_TASKS));
-
-	BOOST_CHECK((nCounterVal==2*nTasks));
+	BOOST_REQUIRE_EQUAL( nCounterVal - nInitial
+                     , 2 * boost::lexical_cast<int> (TESTS_N_ATOMIC_TASKS)
+                     );
 
 	LOG( DEBUG, "The test case test_Atomic terminated!");
 }
