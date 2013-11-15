@@ -28,11 +28,7 @@
 
 #include <utils.hpp>
 
-namespace po = boost::program_options;
-
-using namespace std;
-
-BOOST_GLOBAL_FIXTURE (KVSSetup);
+BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE( testAtomicExecution )
 {
@@ -88,7 +84,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 		ifs >> nCounterVal;
 	}
 
-	BOOST_REQUIRE_EQUAL( nCounterVal - nInitial
-                     , 2 * boost::lexical_cast<int> (TESTS_N_ATOMIC_TASKS)
-                     );
+	BOOST_REQUIRE_EQUAL ( nCounterVal - nInitial
+                      , 2 * boost::lexical_cast<int> (TESTS_N_ATOMIC_TASKS)
+                      );
 }
