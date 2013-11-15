@@ -28,24 +28,24 @@ BOOST_AUTO_TEST_CASE (testAtomicExecution)
     const utils::agent<we::mgmt::layer> agent
       ( "agent_0"
       , "127.0.0.1"
-      , sdpa::master_info_list_t (1, sdpa::MasterInfo ("orchestrator_0"))
+      , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
       );
 
     const utils::drts_worker worker_0
-      ( "drts_0", "agent_0"
+      ( "drts_0", agent.name()
       , "ATOMIC"
       , TESTS_EXAMPLE_ATOMIC_MODULES_PATH
       , kvs_host(), kvs_port()
       );
     const utils::drts_worker worker_1
-      ("drts_1", "agent_0"
+      ( "drts_1", agent.name()
       , "A,B"
       , TESTS_EXAMPLE_ATOMIC_MODULES_PATH
       , kvs_host(), kvs_port()
       );
 
     utils::client::submit_job_and_wait_for_termination
-      (workflow, "sdpac", "orchestrator_0");
+      (workflow, "sdpac", orchestrator.name());
   }
 
 	int nCounterVal (0);
