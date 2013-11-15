@@ -158,10 +158,10 @@ struct shutdown_on_exit
   sdpa::client::ClientApi::ptr_t& _client;
 };
 
-void run_client ( std::string workflow
-                , std::vector<std::string> command_line
-                , std::string client_name
-                )
+void submit_job_and_wait_for_termination ( std::string workflow
+                                         , std::vector<std::string> command_line
+                                         , std::string client_name
+                                         )
 {
   try
   {
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	std::vector<std::string> cav;
 	cav.push_back("--orchestrator=orchestrator_0");
 
-	boost::thread threadClient = boost::thread(boost::bind(&run_client, workflow, cav, "sdpac"));
+	boost::thread threadClient = boost::thread(boost::bind(&submit_job_and_wait_for_termination, workflow, cav, "sdpac"));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
