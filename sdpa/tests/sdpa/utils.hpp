@@ -63,6 +63,20 @@ namespace utils
     boost::thread _thread;
   };
 
+  struct orchestrator : boost::noncopyable
+  {
+    orchestrator (const std::string& name, const std::string& url)
+      : _ (sdpa::daemon::Orchestrator::create_with_start_called (name, url))
+      , _name (name)
+    {}
+    ~orchestrator()
+    {
+      _->shutdown();
+    }
+    sdpa::daemon::Orchestrator::ptr_t _;
+    std::string _name; std::string name() const { return _name; }
+  };
+
   template<typename WFE> struct agent : boost::noncopyable
   {
     agent ( const std::string& name
@@ -76,25 +90,25 @@ namespace utils
           )
       , _name (name)
     {}
+    agent ( const std::string& name
+          , const std::string& url
+          , const orchestrator& orchestrator
+          , const unsigned int rank = 0
+          , const boost::optional<std::string>& gui_url = boost::none
+          )
+      : _ ( sdpa::daemon::AgentFactory<WFE>::create_with_start_called
+            (name, url
+            , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
+            , rank, gui_url
+            )
+          )
+      , _name (name)
+    {}
     ~agent()
     {
       _->shutdown();
     }
     sdpa::daemon::Agent::ptr_t _;
-    std::string _name; std::string name() const { return _name; }
-  };
-
-  struct orchestrator : boost::noncopyable
-  {
-    orchestrator (const std::string& name, const std::string& url)
-      : _ (sdpa::daemon::Orchestrator::create_with_start_called (name, url))
-      , _name (name)
-    {}
-    ~orchestrator()
-    {
-      _->shutdown();
-    }
-    sdpa::daemon::Orchestrator::ptr_t _;
     std::string _name; std::string name() const { return _name; }
   };
 

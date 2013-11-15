@@ -26,10 +26,7 @@ BOOST_AUTO_TEST_CASE (testAtomicExecution)
     const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
 
     const utils::agent<we::mgmt::layer> agent
-      ( "agent_0"
-      , "127.0.0.1"
-      , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
-      );
+      ("agent_0", "127.0.0.1", orchestrator);
 
     const utils::drts_worker worker_0
       ( "drts_0", agent.name()
