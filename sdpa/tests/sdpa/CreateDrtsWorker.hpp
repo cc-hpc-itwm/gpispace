@@ -2,6 +2,10 @@
 #ifndef CREATE_DRTS_WORKER_HPP
 #define CREATE_DRTS_WORKER_HPP 1
 
+#include "tests_config.hpp"
+
+#include <sdpa/memory.hpp>
+
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
