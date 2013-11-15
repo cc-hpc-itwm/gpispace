@@ -39,9 +39,6 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
   const std::string workflow
     (utils::require_and_read_file ("workflows/atomic.pnet"));
 
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
   const std::string atomic_file ("atomic_test.txt");
 
   const int nInitial (0);
@@ -50,16 +47,40 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
     ofs << nInitial << std::endl;
   }
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
+  const sdpa::daemon::Orchestrator::ptr_t ptrOrch
+    ( sdpa::daemon::Orchestrator::create_with_start_called
+      ("orchestrator_0", "127.0.0.1")
+    );
 
-	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
+	const sdpa::daemon::Agent::ptr_t ptrAgent
+    ( sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called
+      ( "agent_0"
+      , "127.0.0.1"
+      , sdpa::master_info_list_t (1, sdpa::MasterInfo ("orchestrator_0"))
+      )
+    );
 
   {
-    const utils::drts_worker worker_0 ("drts_0", "agent_0", "ATOMIC", TESTS_EXAMPLE_ATOMIC_MODULES_PATH,  kvs_host(), kvs_port());
-    const utils::drts_worker worker_1 ("drts_1", "agent_0", "A,B", TESTS_EXAMPLE_ATOMIC_MODULES_PATH,  kvs_host(), kvs_port());
+    const utils::drts_worker worker_0
+      ( "drts_0", "agent_0"
+      , "ATOMIC"
+      , TESTS_EXAMPLE_ATOMIC_MODULES_PATH
+      , kvs_host(), kvs_port()
+      );
+    const utils::drts_worker worker_1
+      ("drts_1", "agent_0"
+      , "A,B"
+      , TESTS_EXAMPLE_ATOMIC_MODULES_PATH
+      , kvs_host(), kvs_port()
+      );
 
-    boost::thread threadClient = boost::thread(boost::bind(&utils::client::submit_job_and_wait_for_termination, workflow, "sdpac", "orchestrator_0"));
+    boost::thread threadClient
+      ( boost::bind ( &utils::client::submit_job_and_wait_for_termination
+                    , workflow
+                    , "sdpac"
+                    , "orchestrator_0"
+                    )
+      );
 
     if (threadClient.joinable())
     {
