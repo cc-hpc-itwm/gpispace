@@ -17,6 +17,7 @@
  */
 #define BOOST_TEST_MODULE testAgentsAndDrts
 
+#include <utils.hpp>
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
@@ -146,37 +147,23 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts1 )
 {
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
-	typedef void OrchWorkflowEngine;
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1");
+  const utils::agent<we::mgmt::layer> agent
+    ("agent_0", "127.0.0.1", orchestrator);
 
-	m_strWorkflow = read_workflow("workflows/transform_file.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+  const utils::drts_worker worker_0
+    ( "drts_0", agent
+    , ""
+    , TESTS_TRANSFORM_FILE_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
-
-	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
-
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "", TESTS_TRANSFORM_FILE_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-	drts_0->unload_all();
-
-	ptrAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+  utils::client::submit_job_and_wait_for_termination
+    (workflow, "sdpac", orchestrator);
 }
 
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts2 )
