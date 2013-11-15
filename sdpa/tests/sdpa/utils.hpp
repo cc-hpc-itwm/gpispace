@@ -74,6 +74,20 @@ namespace utils
           )
       , _name (name)
     {}
+    agent ( const std::string& name
+          , const std::string& url
+          , const agent<WFE>& master
+          , const unsigned int rank = 0
+          , const boost::optional<std::string>& gui_url = boost::none
+          )
+      : _ ( sdpa::daemon::AgentFactory<WFE>::create_with_start_called
+            (name, url
+            , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
+            , rank, gui_url
+            )
+          )
+      , _name (name)
+    {}
     ~agent()
     {
       _->shutdown();
