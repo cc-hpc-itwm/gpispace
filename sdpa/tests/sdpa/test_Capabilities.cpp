@@ -21,152 +21,17 @@
 #include "tests_config.hpp"
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/client/ClientApi.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <tests/sdpa/CreateDrtsWorker.hpp>
 #include "kvs_setup_fixture.hpp"
 
-const int NMAXTRIALS=5;
+#include <utils.hpp>
 
 namespace po = boost::program_options;
 
 using namespace std;
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
-
-struct MyFixture
-{
-	MyFixture()
-	{
-    m_strWorkflow = read_workflow("workflows/capabilities.pnet");
-  }
-
-  ~MyFixture()
-  {
-    seda::StageRegistry::instance().stopAll();
-    seda::StageRegistry::instance().clear();
-  }
-
-  void run_client();
-
-  string read_workflow(string strFileName)
-  {
-    ifstream f(strFileName.c_str());
-    ostringstream os;
-    os.str("");
-
-    BOOST_REQUIRE (f.is_open());
-
-    char c;
-    while (f.get(c)) os<<c;
-    f.close();
-
-    return os.str();
-  }
-
-  std::string m_strWorkflow;
-};
-
-void MyFixture::run_client()
-{
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	config.parse_command_line(cav);
-
-	std::ostringstream osstr;
-	osstr<<"sdpac_0";
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
-	ptrCli->configure_network( config );
-
-		int nTrials = 0;
-		sdpa::job_id_t job_id_user;
-
-		try {
-
-			LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
-			job_id_user = ptrCli->submitJob(m_strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-		}
-
-		std::string job_status = ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-		nTrials = 0;
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Canceled") == std::string::npos)
-		{
-			try {
-				job_status = ptrCli->queryJob(job_id_user);
-				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-			}
-			catch(const sdpa::client::ClientException& cliExc)
-			{
-				if(nTrials++ > NMAXTRIALS)
-				{
-					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
-
-					ptrCli->shutdown_network();
-					ptrCli.reset();
-					return;
-				}
-
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-			}
-		}
-
-		nTrials = 0;
-
-		try {
-				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-				ptrCli->retrieveResults(job_id_user);
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
-		}
-
-		nTrials = 0;
-
-		try {
-			LOG( DEBUG, "User: delete the job "<<job_id_user);
-			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
-		}
-
-	ptrCli->shutdown_network();
-    ptrCli.reset();
-}
-
-BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( Test1 )
 {
@@ -177,7 +42,8 @@ BOOST_AUTO_TEST_CASE( Test1 )
 
   typedef void OrchWorkflowEngine;
 
-  m_strWorkflow = read_workflow("workflows/capabilities.pnet");
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/capabilities.pnet"));
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
@@ -194,7 +60,7 @@ BOOST_AUTO_TEST_CASE( Test1 )
   sdpa::shared_ptr<fhg::core::kernel_t> drts_2( createDRTSWorker("drts_2", "agent_0", "A", TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH,  kvs_host(), kvs_port()) );
   boost::thread drts_2_thread = boost::thread( &fhg::core::kernel_t::run, drts_2 );
 
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+  boost::thread threadClient = boost::thread(boost::bind(&utils::client::submit_job_and_wait_for_termination, workflow, "sdpac", "orchestrator_0"));
 
   if(threadClient.joinable())
     threadClient.join();
@@ -227,7 +93,8 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 
   typedef void OrchWorkflowEngine;
 
-  m_strWorkflow = read_workflow("workflows/capabilities_no_mandatory.pnet");
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/capabilities_no_mandatory.pnet"));
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
 
@@ -244,7 +111,7 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
   sdpa::shared_ptr<fhg::core::kernel_t> drts_2( createDRTSWorker("drts_2", "agent_1", "", TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH,  kvs_host(), kvs_port()) );
   boost::thread drts_2_thread = boost::thread( &fhg::core::kernel_t::run, drts_2 );
 
-  boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+  boost::thread threadClient = boost::thread(boost::bind(&utils::client::submit_job_and_wait_for_termination, workflow, "sdpac", "orchestrator_0"));
 
   if(threadClient.joinable())
     threadClient.join();
@@ -267,5 +134,3 @@ BOOST_AUTO_TEST_CASE( testCapabilities_NoMandatoryReq )
 
   LOG( INFO, "The test case Test2 terminated!");
 }
-
-BOOST_AUTO_TEST_SUITE_END()
