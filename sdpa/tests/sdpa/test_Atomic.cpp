@@ -61,24 +61,18 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( createDRTSWorker("drts_0", "agent_0", "ATOMIC", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
+  {
+    const utils::drts_worker worker_0 ("drts_0", "agent_0", "ATOMIC", TESTS_EXAMPLE_ATOMIC_MODULES_PATH,  kvs_host(), kvs_port());
+    const utils::drts_worker worker_1 ("drts_1", "agent_0", "A,B", TESTS_EXAMPLE_ATOMIC_MODULES_PATH,  kvs_host(), kvs_port());
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "A,B", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
+    boost::thread threadClient = boost::thread(boost::bind(&utils::client::submit_job_and_wait_for_termination, workflow, "sdpac", "orchestrator_0"));
 
-	boost::thread threadClient = boost::thread(boost::bind(&utils::client::submit_job_and_wait_for_termination, workflow, "sdpac", "orchestrator_0"));
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts_0->stop();
-	drts_0_thread.join();
-	drts_0->unload_all();
-
-	drts_1->stop();
-	drts_1_thread.join();
-	drts_1->unload_all();
+    if (threadClient.joinable())
+    {
+      threadClient.join();
+    }
+    LOG( INFO, "The client thread joined the main thread!" );
+  }
 
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();
