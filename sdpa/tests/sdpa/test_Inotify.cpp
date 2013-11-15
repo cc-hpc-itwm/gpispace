@@ -149,13 +149,6 @@ void MyFixture::run_client()
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
 				boost::this_thread::sleep(boost::posix_time::seconds(3));
-
-				const char* file("inotify_test.txt");
-				std::ifstream ifs(file);
-				if(!ifs.good())
-				{
-				  ofstream ofs(file);
-				}
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -210,6 +203,22 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
+namespace
+{
+  void touch_file_until_flag_set (bool* keep_on, std::string filename)
+  {
+    while (*keep_on)
+    {
+      std::ifstream ifs (filename.c_str());
+      if(!ifs.good())
+      {
+        std::ofstream ofs (filename.c_str());
+      }
+      boost::this_thread::sleep (boost::posix_time::milliseconds (50));
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE( testInotifyExecution )
 {
 	m_strWorkflow = read_workflow("workflows/inotify.pnet");
@@ -226,7 +235,20 @@ BOOST_AUTO_TEST_CASE( testInotifyExecution )
     , kvs_host(), kvs_port()
     );
 
+  bool keep_on_touching (true);
+  boost::thread toucher ( boost::bind ( &touch_file_until_flag_set
+                                      , &keep_on_touching
+                                      , "inotify_test.txt"
+                                      )
+                        );
+
   run_client();
+
+  keep_on_touching = false;
+  if (toucher.joinable())
+  {
+    toucher.join();
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
