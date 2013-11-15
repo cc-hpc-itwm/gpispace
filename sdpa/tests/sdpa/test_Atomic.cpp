@@ -50,7 +50,7 @@ struct MyFixture
 		seda::StageRegistry::instance().clear();
 	}
 
-	void run_client();
+	void run_client (std::string workflow);
 
 	string read_workflow(string strFileName)
 	{
@@ -60,7 +60,7 @@ struct MyFixture
 	std::string m_strWorkflow;
 };
 
-void MyFixture::run_client()
+void MyFixture::run_client (std::string workflow)
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
@@ -79,8 +79,8 @@ void MyFixture::run_client()
 
 		try {
 
-			LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
-			job_id_user = ptrCli->submitJob(m_strWorkflow);
+			LOG( DEBUG, "Submitting the following test workflow: \n"<<workflow);
+			job_id_user = ptrCli->submitJob(workflow);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "A,B", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this, read_workflow("workflows/atomic.pnet")));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
