@@ -225,7 +225,6 @@ set (tests
   test_JobId.cpp
   test_Scheduler.cpp
   test_LostAgentRegistrationAck.cpp
-  test_AgentsAndDrts.cpp
   test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
   test_Topologies.cpp
