@@ -177,7 +177,7 @@ void GenericDaemon::shutdown( )
 
   ptr_scheduler_.reset();
 
-  BOOST_FOREACH (std::string stage, _stages_to_remove)
+  BOOST_REVERSE_FOREACH (std::string stage, _stages_to_remove)
   {
     seda::StageRegistry::instance().lookup (stage)->stop();
     seda::StageRegistry::instance().remove (stage);
