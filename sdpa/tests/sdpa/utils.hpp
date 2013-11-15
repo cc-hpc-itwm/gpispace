@@ -3,7 +3,11 @@
 #ifndef SDPA_TEST_UTILS_HPP
 #define SDPA_TEST_UTILS_HPP
 
+#include <CreateDrtsWorker.hpp>
+
 #include <sdpa/client/ClientApi.hpp>
+
+#include <fhg/plugin/core/kernel.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
@@ -26,6 +30,35 @@ namespace utils
 
     return os.str();
   }
+
+  struct drts_worker
+  {
+    drts_worker ( std::string name
+                , std::string master
+                , std::string capabilities
+                , std::string modules_path
+                , std::string kvs_host
+                , std::string kvs_port
+                )
+      : _kernel ( createDRTSWorker
+                  (name, master, capabilities, modules_path, kvs_host, kvs_port)
+                )
+      , _thread (&fhg::core::kernel_t::run, _kernel)
+    {
+    }
+
+    ~drts_worker()
+    {
+      _kernel->stop();
+      if (_thread.joinable())
+      {
+        _thread.join();
+      }
+    }
+
+    sdpa::shared_ptr<fhg::core::kernel_t> _kernel;
+    boost::thread _thread;
+  };
 
   namespace client
   {
