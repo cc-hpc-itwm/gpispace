@@ -84,9 +84,7 @@ void run_client (std::string workflow)
 	ptrCli->configure_network( config );
 
 		int nTrials = 0;
-		sdpa::job_id_t job_id_user;
-
-    job_id_user = submit_job (ptrCli, workflow);
+		const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
 
 		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
