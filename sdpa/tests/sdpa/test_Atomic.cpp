@@ -103,6 +103,25 @@ void wait_for_job_termination ( sdpa::client::ClientApi::ptr_t client
   }
 }
 
+sdpa::client::result_t retrieve_job_results
+  (sdpa::client::ClientApi::ptr_t client, const sdpa::job_id_t& id)
+{
+  LOG (DEBUG, "Retrieving results of job " << id);
+
+  for (int i (0); i < NMAXTRIALS; ++i)
+  {
+		try
+    {
+			return client->retrieveResults (id);
+		}
+		catch (const sdpa::client::ClientException& ex)
+		{
+      LOG (DEBUG, ex.what());
+		}
+  }
+
+  throw retried_too_often ("retrieve_job_results");
+}
 
 void run_client (std::string workflow)
 {
@@ -125,22 +144,7 @@ void run_client (std::string workflow)
 		int nTrials = 0;
 		const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
     wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
-
-		nTrials = 0;
-
-		try {
-				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-				ptrCli->retrieveResults(job_id_user);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-
-			LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
-		}
+    retrieve_job_results (ptrCli, job_id_user);
 
 		nTrials = 0;
 
