@@ -29,13 +29,13 @@ BOOST_AUTO_TEST_CASE (testAtomicExecution)
       ("agent_0", "127.0.0.1", orchestrator);
 
     const utils::drts_worker worker_0
-      ( "drts_0", agent.name()
+      ( "drts_0", agent
       , "ATOMIC"
       , TESTS_EXAMPLE_ATOMIC_MODULES_PATH
       , kvs_host(), kvs_port()
       );
     const utils::drts_worker worker_1
-      ( "drts_1", agent.name()
+      ( "drts_1", agent
       , "A,B"
       , TESTS_EXAMPLE_ATOMIC_MODULES_PATH
       , kvs_host(), kvs_port()
