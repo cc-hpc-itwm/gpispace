@@ -328,7 +328,7 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
   return sdpa::status::show (queryJob (jid, info));
 }
 
-int Client::queryJob(const job_id_t &jid, job_info_t &info)
+sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
 {
   clear_reply();
   MLOG(DEBUG,"querying status of job: " << jid);

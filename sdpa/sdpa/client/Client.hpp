@@ -23,6 +23,7 @@
 #include <sdpa/client/exceptions.hpp>
 #include <sdpa/client/job_info.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/job_states.hpp>
 
 #include <sdpa/client/generated/ClientFsm_sm.h>
 
@@ -69,7 +70,7 @@ namespace sdpa { namespace client {
     job_id_t submitJob(const job_desc_t &) throw (ClientException);
     void cancelJob(const job_id_t &) throw (ClientException);
     std::string queryJob(const job_id_t &) throw (ClientException);
-    int queryJob(const job_id_t &, job_info_t &);
+    status::code queryJob(const job_id_t &, job_info_t &);
     void deleteJob(const job_id_t &) throw (ClientException);
     result_t retrieveResults(const job_id_t &) throw (ClientException);
 
