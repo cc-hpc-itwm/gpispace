@@ -8,7 +8,7 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-BOOST_AUTO_TEST_CASE (testPathOneDrts)
+BOOST_AUTO_TEST_CASE (chained_agents)
 {
 	// O
 	// |
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE (testPathOneDrts)
     (workflow, "sdpac", orchestrator);
 }
 
-BOOST_AUTO_TEST_CASE (testMultipleMastersOneDrts)
+BOOST_AUTO_TEST_CASE (drts_worker_with_multiple_master_agents)
 {
   // O-+-\
   // | | |
@@ -71,6 +71,45 @@ BOOST_AUTO_TEST_CASE (testMultipleMastersOneDrts)
 
   const utils::drts_worker worker_0
     ( "drts_0", agents
+    , ""
+    , TESTS_TRANSFORM_FILE_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
+
+  utils::client::submit_job_and_wait_for_termination
+    (workflow, "sdpac", orchestrator);
+}
+
+BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
+{
+  // O-\
+  // | |
+  // A A
+  // | |
+  // A-/
+  // |
+  // W
+
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1");
+
+  const utils::agent<we::mgmt::layer> agent_0
+    ("agent_0", "127.0.0.1:7700", orchestrator);
+  const utils::agent<we::mgmt::layer> agent_1
+    ("agent_1", "127.0.0.1:7701", orchestrator);
+
+  utils::agents_t agents;
+  agents.push_back (boost::cref (agent_0));
+  agents.push_back (boost::cref (agent_1));
+
+  const utils::agent<we::mgmt::layer> agent_2
+    ("agent_2", "127.0.0.1:7702", agents);
+
+  const utils::drts_worker worker_0
+    ( "drts_0", agent_2
     , ""
     , TESTS_TRANSFORM_FILE_MODULES_PATH
     , kvs_host(), kvs_port()

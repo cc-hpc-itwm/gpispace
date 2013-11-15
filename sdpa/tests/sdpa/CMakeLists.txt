@@ -228,7 +228,6 @@ set (tests
   test_AgentsAndDrts.cpp
   test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
-  test_MultipleMasters.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
   test_TransformFile.cpp
