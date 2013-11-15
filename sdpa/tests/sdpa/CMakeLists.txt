@@ -220,7 +220,6 @@ set (tests
   test_StopRestartAgentsCoalloc.cpp
   test_Inotify.cpp
   test_CancelJob.cpp
-  test_Config.cpp
   test_SynchronizedQueue.cpp
   test_JobId.cpp
   test_Scheduler.cpp
