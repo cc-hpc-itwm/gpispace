@@ -142,9 +142,27 @@ void delete_job (sdpa::client::ClientApi::ptr_t client, const sdpa::job_id_t& id
   throw retried_too_often ("delete_job");
 }
 
+struct shutdown_on_exit
+{
+  shutdown_on_exit (sdpa::client::ClientApi::ptr_t& client)
+    : _client (client)
+  {}
+  ~shutdown_on_exit()
+  {
+    if (client)
+    {
+      client->shutdown_network();
+    }
+  }
+
+  sdpa::client::ClientApi::ptr_t& _client;
+};
+
 void run_client (std::string workflow)
 {
   sdpa::client::ClientApi::ptr_t ptrCli;
+  shutdown_on_exit _ (ptrCli);
+
   try
   {
 
@@ -165,21 +183,10 @@ void run_client (std::string workflow)
     wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
     retrieve_job_results (ptrCli, job_id_user);
     delete_job (ptrCli, job_id_user);
-
-	ptrCli->shutdown_network();
-    ptrCli.reset();
-
   }
   catch (const retried_too_often& ex)
   {
     LOG (DEBUG, ex.what());
-
-    if (ptrCli)
-    {
-      ptrCli->shutdown_network();
-    }
-    ptrCli.reset();
-    return;
   }
 }
 
