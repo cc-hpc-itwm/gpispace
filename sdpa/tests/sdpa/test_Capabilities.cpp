@@ -39,10 +39,7 @@ struct MyFixture
 	MyFixture()
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
-			, m_arrAggMasterInfo(1, sdpa::MasterInfo("orchestrator_0"))
 	{
-		LOG(DEBUG, "Fixture's constructor called ...");
-
     m_strWorkflow = read_workflow("workflows/capabilities.pnet");
   }
 
@@ -73,11 +70,6 @@ struct MyFixture
   int m_nITER;
   int m_sleep_interval ;
   std::string m_strWorkflow;
-
-  sdpa::master_info_list_t m_arrAggMasterInfo;
-
-  std::stringstream sstrOrch;
-  std::stringstream sstrAgg;
 
   boost::thread m_threadClient;
 };
