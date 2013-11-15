@@ -46,8 +46,6 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-	typedef void OrchWorkflowEngine;
-
   const std::string atomic_file ("atomic_test.txt");
 
   int nInitial (0);
