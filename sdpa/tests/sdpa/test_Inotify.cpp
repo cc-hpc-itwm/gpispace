@@ -19,6 +19,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include "tests_config.hpp"
+#include <utils.hpp>
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
@@ -211,37 +212,21 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testInotifyExecution )
 {
-	LOG( DEBUG, "***** test_INotify *****"<<std::endl);
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgent 	= "127.0.0.1";
-
-	typedef void OrchWorkflowEngine;
-
 	m_strWorkflow = read_workflow("workflows/inotify.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::Orchestrator::create_with_start_called("orchestrator_0", addrOrch);
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1");
+  const utils::agent<we::mgmt::layer> agent
+    ("agent_0", "127.0.0.1", orchestrator);
 
-	sdpa::master_info_list_t arrAgentMasterInfo(1, sdpa::MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called("agent_0", addrAgent, arrAgentMasterInfo);
+  const utils::drts_worker worker_0
+    ( "drts_0", agent
+    , "ATOMIC"
+    , TESTS_EXAMPLE_INOTIFY_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
 
-	sdpa::shared_ptr<fhg::core::kernel_t> drts( createDRTSWorker("drts_0", "agent_0", "", TESTS_EXAMPLE_INOTIFY_MODULES_PATH, kvs_host(), kvs_port()) );
-	boost::thread drts_thread = boost::thread( &fhg::core::kernel_t::run, drts );
-
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread!" );
-
-	drts->stop();
-	drts_thread.join();
-	drts->unload_all();
-
-	ptrAgent->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( DEBUG, "The test case test_INotify terminated!");
+  run_client();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
