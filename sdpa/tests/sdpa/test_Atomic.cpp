@@ -45,8 +45,6 @@ struct MyFixture
 
 	~MyFixture()
 	{
-		seda::StageRegistry::instance().stopAll();
-		seda::StageRegistry::instance().clear();
 	}
 };
 
