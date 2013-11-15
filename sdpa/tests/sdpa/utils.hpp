@@ -155,12 +155,14 @@ namespace utils
       };
     }
 
-    void submit_job_and_wait_for_termination
-      ( std::string workflow
-      , std::vector<std::string> command_line
-      , std::string client_name
-      )
+    void submit_job_and_wait_for_termination ( std::string workflow
+                                             , std::string client_name
+                                             , std::string orchestrator_name
+                                             )
     {
+      std::vector<std::string> command_line;
+      command_line.push_back ("--orchestrator=" + orchestrator_name);
+
       try
       {
         sdpa::client::config_t config (sdpa::client::ClientApi::config());

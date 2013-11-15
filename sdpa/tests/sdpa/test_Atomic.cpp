@@ -67,10 +67,7 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_1( createDRTSWorker("drts_1", "agent_0", "A,B", TESTS_EXAMPLE_ATOMIC_MODULES_PATH, kvs_host(), kvs_port()) );
 	boost::thread drts_1_thread = boost::thread( &fhg::core::kernel_t::run, drts_1 );
 
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-
-	boost::thread threadClient = boost::thread(boost::bind(&utils::client::submit_job_and_wait_for_termination, workflow, cav, "sdpac"));
+	boost::thread threadClient = boost::thread(boost::bind(&utils::client::submit_job_and_wait_for_termination, workflow, "sdpac", "orchestrator_0"));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread!" );
