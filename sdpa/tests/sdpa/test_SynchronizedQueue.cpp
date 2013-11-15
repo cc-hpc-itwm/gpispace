@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestWorker
+#define BOOST_TEST_MODULE SynchronizedQueue
 
 #include <sdpa/sdpa/daemon/SynchronizedQueue.hpp>
 

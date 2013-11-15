@@ -221,7 +221,7 @@ set (tests
   test_Inotify.cpp
   test_CancelJob.cpp
   test_Config.cpp
-  test_Worker.cpp
+  test_SynchronizedQueue.cpp
   test_JobId.cpp
   test_Scheduler.cpp
   test_LostAgentRegistrationAck.cpp
