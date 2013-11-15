@@ -48,11 +48,6 @@ struct MyFixture
 
   ~MyFixture()
   {
-    LOG(INFO, "Fixture's destructor called ...");
-
-    sstrOrch.str("");
-    sstrAgg.str("");
-
     seda::StageRegistry::instance().stopAll();
     seda::StageRegistry::instance().clear();
   }
