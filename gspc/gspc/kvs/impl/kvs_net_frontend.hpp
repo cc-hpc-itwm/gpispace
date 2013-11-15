@@ -1,6 +1,8 @@
 #ifndef GSPC_KVS_NET_FRONTEND_HPP
 #define GSPC_KVS_NET_FRONTEND_HPP
 
+#include <boost/thread/mutex.hpp>
+
 #include <gspc/kvs/api.hpp>
 #include <gspc/net/client_fwd.hpp>
 
@@ -42,6 +44,7 @@ namespace gspc
       int do_wait (key_type const &key, int mask, int timeout_in_ms) const;
 
       gspc::net::client_ptr_t m_client;
+      mutable boost::mutex m_mutex;
     };
   }
 }
