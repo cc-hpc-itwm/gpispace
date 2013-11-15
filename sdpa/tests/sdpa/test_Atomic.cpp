@@ -74,19 +74,8 @@ BOOST_AUTO_TEST_CASE( testAtomicExecution )
       , kvs_host(), kvs_port()
       );
 
-    boost::thread threadClient
-      ( boost::bind ( &utils::client::submit_job_and_wait_for_termination
-                    , workflow
-                    , "sdpac"
-                    , "orchestrator_0"
-                    )
-      );
-
-    if (threadClient.joinable())
-    {
-      threadClient.join();
-    }
-    LOG( INFO, "The client thread joined the main thread!" );
+    utils::client::submit_job_and_wait_for_termination
+      (workflow, "sdpac", "orchestrator_0");
   }
 
 	ptrAgent->shutdown();
