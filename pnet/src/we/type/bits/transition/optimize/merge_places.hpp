@@ -53,7 +53,7 @@ namespace we { namespace type {
               ( connection_t
                 ( is_read ? petri_net::edge::PT_READ : connection.type()
                 , connection.transition_id()
-                , connection.place_id()
+                , pid_A
                 )
               );
 
