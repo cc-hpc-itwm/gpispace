@@ -17,7 +17,6 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/types.hpp>
-#include <sdpa/client/ClientActions.hpp>
 
 #include <sdpa/client/types.hpp>
 #include <sdpa/client/exceptions.hpp>
@@ -31,7 +30,7 @@
 #include <fhg/util/thread/queue.hpp>
 
 namespace sdpa { namespace client {
-  class Client : public ClientActions, public seda::Strategy {
+  class Client : public seda::Strategy {
   public:
     typedef sdpa::shared_ptr<Client> ptr_t;
     typedef fhg::thread::queue<seda::IEvent::Ptr, std::list> event_queue_t;

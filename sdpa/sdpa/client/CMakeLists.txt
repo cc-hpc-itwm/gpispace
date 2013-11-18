@@ -14,7 +14,6 @@ set (srcs
 
 set (hdrs
   Client.hpp
-  ClientActions.hpp
   ClientEvents.hpp
   exceptions.hpp
   types.hpp
