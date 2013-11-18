@@ -78,12 +78,7 @@ namespace sdpa { namespace client {
     void action_configure(const config_t &);
     void action_shutdown();
 
-    void action_subscribe(const seda::IEvent::Ptr&);
-    void action_submit(const seda::IEvent::Ptr&);
-    void action_cancel(const seda::IEvent::Ptr&);
-    void action_query(const seda::IEvent::Ptr&);
-    void action_retrieve(const seda::IEvent::Ptr&);
-    void action_delete(const seda::IEvent::Ptr&);
+    void forward_to_output_stage (const seda::IEvent::Ptr&) const;
 
     void action_store_reply(const seda::IEvent::Ptr &);
 

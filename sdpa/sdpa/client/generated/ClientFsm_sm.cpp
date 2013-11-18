@@ -275,7 +275,7 @@ namespace sdpa
             context.clearState();
             try
             {
-                ctxt.action_cancel(evt);
+                ctxt.forward_to_output_stage (evt);
                 context.setState(EndStateName);
             }
             catch (...)
@@ -317,7 +317,7 @@ namespace sdpa
             context.clearState();
             try
             {
-                ctxt.action_delete(evt);
+                ctxt.forward_to_output_stage (evt);
                 context.setState(EndStateName);
             }
             catch (...)
@@ -380,7 +380,7 @@ namespace sdpa
             context.clearState();
             try
             {
-                ctxt.action_query(evt);
+                ctxt.forward_to_output_stage (evt);
                 context.setState(EndStateName);
             }
             catch (...)
@@ -422,7 +422,7 @@ namespace sdpa
             context.clearState();
             try
             {
-                ctxt.action_retrieve(evt);
+                ctxt.forward_to_output_stage (evt);
                 context.setState(EndStateName);
             }
             catch (...)
@@ -485,7 +485,7 @@ namespace sdpa
             context.clearState();
             try
             {
-                ctxt.action_submit(evt);
+                ctxt.forward_to_output_stage (evt);
                 context.setState(EndStateName);
             }
             catch (...)
@@ -527,7 +527,7 @@ namespace sdpa
             context.clearState();
             try
             {
-                ctxt.action_subscribe(evt);
+                ctxt.forward_to_output_stage (evt);
                 context.setState(EndStateName);
             }
             catch (...)

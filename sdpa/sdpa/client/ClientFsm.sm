@@ -71,37 +71,37 @@ Configured
   Submit(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_submit(evt);
+      forward_to_output_stage (evt);
     }
-    
+
    Subscribe(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_subscribe(evt);
+      forward_to_output_stage (evt);
     }
 
   Cancel(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_cancel(evt);
+      forward_to_output_stage (evt);
     }
 
   Query(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_query(evt);
+      forward_to_output_stage (evt);
     }
 
   Retrieve(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_retrieve(evt);
+      forward_to_output_stage (evt);
     }
 
   Delete(evt: const seda::IEvent::Ptr &)
     nil
     {
-      action_delete(evt);
+      forward_to_output_stage (evt);
     }
 
   Shutdown

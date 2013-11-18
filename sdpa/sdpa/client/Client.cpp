@@ -426,34 +426,9 @@ void Client::action_shutdown_network()
   seda::StageRegistry::instance().remove(output_stage_);
 }
 
-void Client::action_subscribe(const seda::IEvent::Ptr &e)
+void Client::forward_to_output_stage (const seda::IEvent::Ptr& event) const
 {
-  seda::StageRegistry::instance().lookup(output_stage_)->send(e);
-}
-
-void Client::action_submit(const seda::IEvent::Ptr &e)
-{
-  seda::StageRegistry::instance().lookup(output_stage_)->send(e);
-}
-
-void Client::action_cancel(const seda::IEvent::Ptr &e)
-{
-  seda::StageRegistry::instance().lookup(output_stage_)->send(e);
-}
-
-void Client::action_query(const seda::IEvent::Ptr &e)
-{
-  seda::StageRegistry::instance().lookup(output_stage_)->send(e);
-}
-
-void Client::action_retrieve(const seda::IEvent::Ptr &e)
-{
-  seda::StageRegistry::instance().lookup(output_stage_)->send(e);
-}
-
-void Client::action_delete(const seda::IEvent::Ptr &e)
-{
-  seda::StageRegistry::instance().lookup(output_stage_)->send(e);
+  seda::StageRegistry::instance().lookup (output_stage_)->send (event);
 }
 
 void Client::action_store_reply(const seda::IEvent::Ptr &reply)
