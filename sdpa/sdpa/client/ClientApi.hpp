@@ -17,15 +17,6 @@ namespace sdpa { namespace client {
       return Client::config();
     }
 
-    static ClientApi::ptr_t create_with_configured_network
-      ( const config_t &cfg
-      , const std::string &name_prefix="sdpac"
-      , const std::string &output_stage="sdpa.apps.client.out"
-      )
-    {
-      return ClientApi::ptr_t (new ClientApi(cfg, name_prefix, output_stage));
-    }
-
     ClientApi ( const config_t &cfg
               , const std::string &name_prefix="sdpac"
               , const std::string &output_stage="sdpa.apps.client.out"
