@@ -255,12 +255,11 @@ namespace utils
     {
       LOG (DEBUG, "Query status for job " << id);
 
-      sdpa::client::job_info_t info;
       for (int i (0); i < NMAXTRIALS; ++i)
       {
         try
         {
-          return c->queryJob (id, info);
+          return c->queryJob (id);
         }
         catch (const sdpa::client::ClientException& ex)
         {
