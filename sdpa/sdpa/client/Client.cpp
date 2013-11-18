@@ -133,31 +133,10 @@ void Client::start(const config_t & config) throw (ClientException)
   if (orchestrator_.empty())
   {
     client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
-  }
-  else
-  {
-    client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
+    throw ClientException ("no orchestrator specified!");
   }
 
-  try
-  {
-    seda::IEvent::Ptr reply(wait_for_reply((timeout_t)(-1)));
-    if (dynamic_cast<ConfigOK*>(reply.get()))
-    {
-    }
-    else if (ConfigNOK *cfg_nok = dynamic_cast<ConfigNOK*>(reply.get()))
-    {
-      throw ClientException(cfg_nok->reason());
-    }
-    else
-    {
-      throw ClientException("startup failed (got unexpected event: " + reply->str() + ")");
-    }
-  }
-  catch (const Timedout &)
-  {
-    throw ApiCallFailed("start", "this call should never timeout!");
-  }
+  client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
 }
 
 void Client::shutdown() throw (ClientException)
