@@ -24,6 +24,13 @@ namespace sdpa { namespace client {
       return ClientApi::ptr_t (new ClientApi(cfg, name_prefix, output_stage));
     }
 
+    ClientApi ( const config_t &cfg
+              , const std::string &name_prefix="sdpac"
+              , const std::string &output_stage="sdpa.apps.client.out"
+              )
+      : pimpl (Client::create(cfg, name_prefix, output_stage))
+    {}
+
     ~ClientApi() {
       try
       {
@@ -100,12 +107,6 @@ namespace sdpa { namespace client {
       pimpl->action_shutdown_network();
     }
   private:
-    ClientApi ( const config_t &cfg
-              , const std::string &name_prefix="sdpac"
-              , const std::string &output_stage="sdpa.apps.client.out"
-              )
-      : pimpl (Client::create(cfg, name_prefix, output_stage))
-    {}
 
     Client::ptr_t pimpl;
   };
