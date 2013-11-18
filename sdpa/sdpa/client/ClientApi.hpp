@@ -26,7 +26,6 @@ namespace sdpa { namespace client {
     }
 
     ~ClientApi() {
-      pimpl->action_shutdown_network();
       try
       {
         pimpl->shutdown();

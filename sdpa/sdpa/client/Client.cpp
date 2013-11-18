@@ -409,14 +409,10 @@ void Client::action_configure(const config_t &cfg)
 
 void Client::action_shutdown()
 {
-  action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
-}
-
-void Client::action_shutdown_network()
-{
   _output_stage->stop();
   _output_stage.reset();
   seda::StageRegistry::instance().remove (_output_stage_name);
+  action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
 }
 
 void Client::forward_to_output_stage (const seda::IEvent::Ptr& event) const
