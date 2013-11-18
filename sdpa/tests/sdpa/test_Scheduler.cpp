@@ -467,15 +467,13 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   std::string strBackupOrch;
   std::ostringstream oss;
 
-  sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
+  m_pAgent->createScheduler();
+   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
 
-  pAgent->createScheduler();
+   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
+   BOOST_REQUIRE(ptrScheduler);
 
-  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
-
-  if(!ptrScheduler)
-  LOG(FATAL, "The scheduler was not properly initialized");
+   ptrScheduler->setTestingMode(true);
 
   // add a couple of workers
   for( int k=0; k<NWORKERS; k++ )
@@ -495,17 +493,17 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   const sdpa::job_id_t jobId0("Job0");
   sdpa::daemon::Job::ptr_t pJob0(new sdpa::daemon::Job(jobId0, "description 0", sdpa::job_id_t()));
   job_requirements_t jobReqs0(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(4, 100));
-  pAgent->addJob(jobId0, pJob0, jobReqs0);
+  m_pAgent->addJob(jobId0, pJob0, jobReqs0);
 
   const sdpa::job_id_t jobId1("Job1");
   sdpa::daemon::Job::ptr_t pJob1(new sdpa::daemon::Job(jobId1, "description 1", sdpa::job_id_t()));
   job_requirements_t jobReqs1(requirement_list_t(1, requirement_t(WORKER_CPBS[1], true)), schedule_data(4, 100));
-  pAgent->addJob(jobId1, pJob1, jobReqs1);
+  m_pAgent->addJob(jobId1, pJob1, jobReqs1);
 
   const sdpa::job_id_t jobId2("Job2");
   sdpa::daemon::Job::ptr_t pJob2(new sdpa::daemon::Job(jobId2, "description 2", sdpa::job_id_t()));
   job_requirements_t jobReqs2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
-  pAgent->addJob(jobId2, pJob2, jobReqs2);
+  m_pAgent->addJob(jobId2, pJob2, jobReqs2);
 
   ptrScheduler->schedule_remotely(jobId0);
   ptrScheduler->schedule_remotely(jobId1);
@@ -544,7 +542,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   const sdpa::job_id_t jobId4("Job4");
   sdpa::daemon::Job::ptr_t pJob4(new sdpa::daemon::Job(jobId4, "description 4", sdpa::job_id_t()));
   job_requirements_t jobReqs4(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(2, 100));
-  pAgent->addJob(jobId4, pJob4, jobReqs4);
+  m_pAgent->addJob(jobId4, pJob4, jobReqs4);
 
   ptrScheduler->schedule_remotely(jobId4);
 
