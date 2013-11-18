@@ -49,7 +49,6 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   : seda::Strategy(a_name)
   , name_(a_name)
   , _output_stage_name (output_stage)
-  , fsm_(*this)
   , timeout_(5000U)
   , my_location_("127.0.0.1:0")
 {}

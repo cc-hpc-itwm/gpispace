@@ -24,8 +24,6 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
 
-#include <sdpa/client/generated/ClientFsm_sm.h>
-
 #include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
@@ -101,7 +99,6 @@ namespace sdpa { namespace client {
     event_queue_t m_incoming_events;
 
     seda::Stage::Ptr client_stage_;
-    ClientContext fsm_;
 
     // config variables
     timeout_t timeout_;
