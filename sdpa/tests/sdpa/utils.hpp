@@ -495,6 +495,64 @@ namespace utils
         BOOST_FAIL (ex.what());
       }
     }
+
+    void submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
+      ( std::string workflow
+      , std::string client_name
+      , const orchestrator& orch
+      )
+    {
+      std::vector<std::string> command_line;
+      command_line.push_back ("--orchestrator=" + orch.name());
+
+      boost::optional<sdpa::job_id_t> job_id_user;
+
+      try
+      {
+        sdpa::client::config_t config (sdpa::client::ClientApi::config());
+        config.parse_command_line (command_line);
+
+        sdpa::client::ClientApi::ptr_t ptrCli
+          ( sdpa::client::ClientApi::create ( config
+                                            , client_name
+                                            , client_name + ".apps.client.out"
+                                            )
+          );
+        ptrCli->configure_network( config );
+        shutdown_on_exit _ (ptrCli);
+
+        job_id_user = submit_job (ptrCli, workflow);
+      }
+      catch (const retried_too_often& ex)
+      {
+        BOOST_FAIL (ex.what());
+      }
+
+      try
+      {
+        sdpa::client::config_t config (sdpa::client::ClientApi::config());
+        config.parse_command_line (command_line);
+
+        sdpa::client::ClientApi::ptr_t ptrCli
+          ( sdpa::client::ClientApi::create ( config
+                                            , client_name + "-2"
+                                            , client_name + "-2.apps.client.out"
+                                            )
+          );
+        ptrCli->configure_network( config );
+        shutdown_on_exit _ (ptrCli);
+
+        const sdpa::status::code state
+          (wait_for_status_change (ptrCli, *job_id_user));
+        BOOST_REQUIRE (sdpa::status::is_terminal (state));
+        retrieve_job_results (ptrCli, *job_id_user);
+        delete_job (ptrCli, *job_id_user);
+      }
+      catch (const retried_too_often& ex)
+      {
+        BOOST_FAIL (ex.what());
+      }
+    }
   }
 }
 
