@@ -247,7 +247,6 @@ namespace sdpa
             context.clearState();
             try
             {
-                ctxt.action_config_ok();
                 ctxt.action_store_reply(evt);
                 context.setState(ClientFsm::Configured);
             }

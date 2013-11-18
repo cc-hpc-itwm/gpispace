@@ -50,7 +50,6 @@ Configuring
   ConfigOk(evt: const seda::IEvent::Ptr &)
     Configured
     {
-      action_config_ok();
       action_store_reply(evt);
     }
 

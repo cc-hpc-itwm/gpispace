@@ -413,11 +413,6 @@ void Client::action_configure_network(const config_t &cfg)
   output->start ();
 }
 
-
-void Client::action_config_ok()
-{
-}
-
 void Client::action_config_nok()
 {
 }
