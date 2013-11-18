@@ -60,17 +60,8 @@ namespace gspc
 
         void run (boost::shared_ptr<boost::asio::io_service> my_io)
         {
-          try
-          {
-            assert (my_io);
-            my_io->run ();
-          }
-          catch (std::exception const &ex)
-          {
-            // handle error somehow
-            std::cerr << "gspc: global io error: " << ex.what () << std::endl;
-            throw;
-          }
+          assert (my_io);
+          my_io->run ();
         }
 
         void stop ()
