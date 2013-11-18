@@ -141,7 +141,7 @@ void Client::start(const config_t & config) throw (ClientException)
     else if (ConfigNOK *cfg_nok = dynamic_cast<ConfigNOK*>(reply.get()))
     {
       MLOG(ERROR, "configuration had errors: " << cfg_nok->reason());
-      throw ConfigError(cfg_nok->reason());
+      throw ClientException(cfg_nok->reason());
     }
     else
     {

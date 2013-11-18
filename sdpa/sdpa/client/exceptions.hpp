@@ -41,17 +41,6 @@ namespace sdpa { namespace client {
     std::string reason_;
   };
 
-  class ConfigError : public ClientException
-  {
-  public:
-    explicit
-    ConfigError(const std::string &a_reason)
-      : ClientException(a_reason)
-    { }
-
-    virtual ~ConfigError() throw() { }
-  };
-
   class Timedout : public ClientException
   {
   public:
