@@ -89,42 +89,6 @@ namespace pnet
       {
         return lv;
       }
-
-      template<typename T, typename C>
-        class wrapped_comparator
-      {
-      public:
-        wrapped_comparator ( C const& comparator
-                           , boost::function<T (value_type const&)> const& cast
-                           )
-          : _comparator (comparator)
-          , _cast (cast)
-        {}
-        bool operator() (value_type const& l, value_type const& r) const
-        {
-          return _comparator (_cast (l), _cast (r));
-        }
-      private:
-        C const& _comparator;
-        boost::function<T (value_type const&)> const& _cast;
-      };
-
-      template<typename T, typename C>
-        inline std::set<value_type, wrapped_comparator<T, C> >
-        wrap ( std::set<T, C> const& sT
-             , boost::function<T (value_type const&)> const& cast
-             )
-      {
-        std::set<value_type, wrapped_comparator<T, C> >
-          sv (wrapped_comparator<T, C> (sT.key_comp(), cast));
-
-        BOOST_FOREACH (T const& x, sT)
-        {
-          sv.insert (to_value (x));
-        }
-
-        return sv;
-      }
     }
   }
 }

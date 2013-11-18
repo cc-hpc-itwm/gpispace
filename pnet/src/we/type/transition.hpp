@@ -36,25 +36,9 @@
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <stdexcept>
+
 namespace we { namespace type {
-    namespace exception {
-      template <typename From>
-      struct not_connected : std::runtime_error
-      {
-        typedef From from_type;
-
-        explicit not_connected(const std::string& msg, const from_type from_)
-          : std::runtime_error (msg)
-          , from(from_)
-        {}
-
-        ~not_connected () throw ()
-        {}
-
-        const from_type from;
-      };
-    }
-
     struct transition_t
     {
     private:
@@ -271,6 +255,7 @@ namespace we { namespace type {
       }
 
       // UNSAFE: does not check for multiple connections! Use with care!
+      //! \todo remove
       void UNSAFE_re_associate_port ( const petri_net::place_id_type& pid_old
                                     , const petri_net::place_id_type& pid_new
                                     )
@@ -287,7 +272,15 @@ namespace we { namespace type {
             }
           }
 
-        throw exception::not_connected<petri_net::place_id_type>("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), pid_old);
+        throw std::runtime_error
+          ( ( boost::format ("called UNSAFE_re_associate and it failed."
+                            " trans '%1%', pid_old '%2%'"
+                            )
+            % name()
+            % fhg::util::show (pid_old)
+            )
+          . str()
+          );
       }
 
       const we::type::property::type& prop (void) const { return prop_; }
@@ -365,10 +358,10 @@ namespace we { namespace type {
 
     // ********************************************************************* //
 
-    transition_t::port_id_with_prop_t
+    boost::optional<transition_t::port_id_with_prop_t>
     output_port_by_pid (transition_t const&, const petri_net::place_id_type&);
 
-    transition_t::port_id_with_prop_t const&
+    boost::optional<transition_t::port_id_with_prop_t const&>
     input_port_by_pid (transition_t const&, const petri_net::place_id_type&);
 
     boost::unordered_set<std::string>

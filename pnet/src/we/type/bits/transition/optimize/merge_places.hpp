@@ -44,24 +44,23 @@ namespace we { namespace type {
           {
             const petri_net::transition_id_type& tid_trans_out_B (stack.top());
 
-            connection_t connection
+            connection_t const connection
               (net.get_connection_in (tid_trans_out_B, pid_B));
 
             net.delete_edge_in (tid_trans_out_B, pid_B);
 
-            connection.pid = pid_A;
-
-            if (is_read)
-              {
-                connection.type = petri_net::edge::PT_READ;
-              }
-
-            net.add_connection (connection);
+            net.add_connection
+              ( connection_t
+                ( is_read ? petri_net::edge::PT_READ : connection.type()
+                , connection.transition_id()
+                , pid_A
+                )
+              );
 
             transition_t trans_out_B (net.get_transition (tid_trans_out_B));
 
             transition_t::port_id_with_prop_t port_id_with_prop
-              (input_port_by_pid (trans_out_B, pid_B));
+              (*input_port_by_pid (trans_out_B, pid_B));
 
             trans_out_B.re_connect_outer_to_inner
               ( pid_B
@@ -87,19 +86,22 @@ namespace we { namespace type {
           {
             const petri_net::transition_id_type& tid_trans_in_B (stack.top());
 
-            connection_t connection
+            connection_t const connection
               (net.get_connection_out (tid_trans_in_B, pid_B));
 
             net.delete_edge_out (tid_trans_in_B, pid_B);
 
-            connection.pid = pid_A;
-
-            net.add_connection (connection);
+            net.add_connection
+              ( connection_t ( connection.type()
+                             , connection.transition_id()
+                             , pid_A
+                             )
+              );
 
             transition_t trans_in_B (net.get_transition (tid_trans_in_B));
 
             transition_t::port_id_with_prop_t port_id_with_prop
-              (output_port_by_pid (trans_in_B, pid_B));
+              (*output_port_by_pid (trans_in_B, pid_B));
 
             trans_in_B.re_connect_inner_to_outer
               ( port_id_with_prop.first

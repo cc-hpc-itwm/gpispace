@@ -153,7 +153,7 @@ namespace pnet
                             ) const
             {
               os << fhg::util::deeper (indent)
-                  << (first ? ':' : ',') << ' ' << name <<  "()";
+                 << (first ? ':' : ',') << ' ' << name <<  "()";
 
               first = false;
             }
