@@ -9,6 +9,7 @@ namespace sdpa {
     class SimpleScheduler : public SchedulerBase {
 
     public:
+    typedef sdpa::shared_ptr<SimpleScheduler> ptr_t;
     SimpleScheduler(sdpa::daemon::IAgent*);
 
     void assignJobsToWorkers();
