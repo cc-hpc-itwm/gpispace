@@ -68,7 +68,7 @@ struct MyFixture
 
 
 /*returns: 0 job finished, 1 job failed, 2 job canceled, other value if failures occurred */
-int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli,  bool& bForceExit  )
+int subscribe_and_wait ( const std::string &job_id, sdpa::client::ClientApi& ptrCli,  bool& bForceExit  )
 {
 	typedef boost::posix_time::ptime time_type;
 	time_type poll_start = boost::posix_time::microsec_clock::local_time();
@@ -84,7 +84,7 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
 		{
 			try
 			{
-				ptrCli->subscribe(job_id);
+				ptrCli.subscribe(job_id);
 				bSubscribed = true;
 			}
 			catch(...)
@@ -123,7 +123,7 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
   				LOG(INFO, "Re-trying ...");
   			}
 
-			seda::IEvent::Ptr reply( ptrCli->waitForNotification(1000000) );
+			seda::IEvent::Ptr reply( ptrCli.waitForNotification(1000000) );
 
 			// check event type
 			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
@@ -216,7 +216,7 @@ public:
 		std::ostringstream osstr;
 		osstr<<"sdpac_"<<testNb++;
 
-		sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create_with_configured_network( config, osstr.str(), osstr.str()+".apps.client.out" );
+		sdpa::client::ClientApi ptrCli (config, osstr.str(), osstr.str()+".apps.client.out" );
 
 		int nTrials = 0;
 		sdpa::job_id_t job_id_user;
@@ -224,7 +224,7 @@ public:
 		try {
 
 			LOG( DEBUG, "Submitting new workflow ...");
-			job_id_user = ptrCli->submitJob(strWorkflow_);
+			job_id_user = ptrCli.submitJob(strWorkflow_);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
