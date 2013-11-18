@@ -322,10 +322,10 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
   }
 }
 
-std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
+sdpa::status::code Client::queryJob(const job_id_t &jid) throw (ClientException)
 {
   job_info_t info;
-  return sdpa::status::show (queryJob (jid, info));
+  return queryJob (jid, info);
 }
 
 sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)

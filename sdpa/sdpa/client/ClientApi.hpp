@@ -72,7 +72,7 @@ namespace sdpa { namespace client {
       return pimpl->cancelJob(jid);
     }
 
-    std::string queryJob(const job_id_t &jid) throw (ClientException)
+    status::code queryJob(const job_id_t &jid) throw (ClientException)
     {
       return pimpl->queryJob(jid);
     }
