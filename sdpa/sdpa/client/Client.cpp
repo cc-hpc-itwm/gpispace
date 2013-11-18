@@ -60,21 +60,7 @@ Client::~Client()
 
 void Client::perform(const seda::IEvent::Ptr &event)
 {
-  if (dynamic_cast<se::SubmitJobAckEvent*>(event.get())) {
-    action_store_reply (event);
-  } else if (dynamic_cast<se::SubscribeAckEvent*>(event.get())) {
-    action_store_reply (event);
-  } else if (dynamic_cast<se::JobStatusReplyEvent*>(event.get())) {
-    action_store_reply (event);
-  } else if (dynamic_cast<se::CancelJobAckEvent*>(event.get())) {
-    action_store_reply (event);
-  } else if (dynamic_cast<se::JobResultsReplyEvent*>(event.get())) {
-    action_store_reply (event);
-  } else if (dynamic_cast<se::DeleteJobAckEvent*>(event.get())) {
-    action_store_reply (event);
-  } else if (dynamic_cast<se::ErrorEvent*>(event.get())) {
-    action_store_reply (event);
-  }
+  m_incoming_events.put (event);
 }
 
 void Client::start(const config_t & config) throw (ClientException)
@@ -358,14 +344,4 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
   {
     throw ApiCallFailed("retrieveResults");
   }
-}
-
-void Client::forward_to_output_stage (const seda::IEvent::Ptr& event) const
-{
-  _output_stage->send (event);
-}
-
-void Client::action_store_reply(const seda::IEvent::Ptr &reply)
-{
-  m_incoming_events.put (reply);
 }

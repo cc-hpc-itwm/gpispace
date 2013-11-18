@@ -72,11 +72,6 @@ namespace sdpa { namespace client {
     void deleteJob(const job_id_t &) throw (ClientException);
     result_t retrieveResults(const job_id_t &) throw (ClientException);
 
-    // Action implementations
-    void forward_to_output_stage (const seda::IEvent::Ptr&) const;
-
-    void action_store_reply(const seda::IEvent::Ptr &);
-
     typedef unsigned long long timeout_t;
     seda::IEvent::Ptr wait_for_reply() throw (Timedout);
     seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
