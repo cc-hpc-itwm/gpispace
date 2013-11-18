@@ -114,21 +114,6 @@ int main(int argc, char** argv)
 
 
 
-	/*
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	std::ostringstream oss;
-	oss<<"--orchestrator="<<orch;
-	cav.push_back(oss.str());
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
-	sdpa::job_id_t job_id_user;
-
-	*/
-
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
