@@ -443,12 +443,12 @@ namespace utils
         config.parse_command_line (command_line);
 
         sdpa::client::ClientApi::ptr_t ptrCli
-          ( sdpa::client::ClientApi::create ( config
-                                            , client_name
-                                            , client_name + ".apps.client.out"
-                                            )
+          ( sdpa::client::ClientApi::create_with_configured_network
+            ( config
+            , client_name
+            , client_name + ".apps.client.out"
+            )
           );
-        ptrCli->configure_network( config );
         shutdown_on_exit _ (ptrCli);
 
         function (ptrCli);

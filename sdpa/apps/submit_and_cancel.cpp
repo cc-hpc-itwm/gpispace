@@ -115,8 +115,7 @@ int main(int argc, char** argv)
 	cav.push_back(oss.str());
 	config.parse_command_line(cav);
 
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create_with_configured_network( config );
 	sdpa::job_id_t job_id_user;
 
 	int nTrials = 0;

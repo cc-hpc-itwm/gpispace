@@ -413,14 +413,6 @@ int main (int argc, char **argv) {
 
   try
   {
-    std::string client_api_name ("sdpac-");
-    {
-      client_api_name +=
-        boost::uuids::to_string (boost::uuids::random_generator()());
-    }
-
-    sdpa::client::ClientApi::ptr_t api
-      (sdpa::client::ClientApi::create (cfg, client_api_name));
     if (cfg.is_set("version"))
     {
       std::cerr << fhg::project_info ("GPI-Space Client");
@@ -484,15 +476,14 @@ int main (int argc, char **argv) {
     LOG(INFO, fhg::project_summary() << " (" << fhg::project_version() << ")");
     LOG(INFO, "***************************************************");
 
-    try
+    std::string client_api_name ("sdpac-");
     {
-      api->configure_network(cfg);
+      client_api_name +=
+        boost::uuids::to_string (boost::uuids::random_generator()());
     }
-    catch (const std::exception &ex)
-    {
-      std::cerr << "E: network connection could not be set up: " << ex.what() << std::endl;
-      return NETWORK_ERROR;
-    }
+
+    sdpa::client::ClientApi::ptr_t api
+      (sdpa::client::ClientApi::create_with_configured_network (cfg, client_api_name));
 
     if (command == "submit")
     {

@@ -216,8 +216,7 @@ public:
 		std::ostringstream osstr;
 		osstr<<"sdpac_"<<testNb++;
 
-		sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
-		ptrCli->configure_network( config );
+		sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create_with_configured_network( config, osstr.str(), osstr.str()+".apps.client.out" );
 
 		int nTrials = 0;
 		sdpa::job_id_t job_id_user;
