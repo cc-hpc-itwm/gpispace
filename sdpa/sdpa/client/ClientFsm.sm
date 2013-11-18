@@ -30,7 +30,6 @@ Unconfigured
   Start(cfg: const sdpa::client::config_t &)
     Configuring
     {
-      action_configure(cfg);
     }
 
   Shutdown

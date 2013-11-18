@@ -103,6 +103,7 @@ void Client::perform(const seda::IEvent::Ptr &event)
 void Client::start(const config_t & config) throw (ClientException)
 {
   fsm_.Start (config);
+  action_configure (config);
 
   try
   {

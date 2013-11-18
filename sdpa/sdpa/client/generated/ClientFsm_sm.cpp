@@ -204,7 +204,6 @@ namespace sdpa
             context.clearState();
             try
             {
-                ctxt.action_configure(cfg);
                 context.setState(ClientFsm::Configuring);
             }
             catch (...)
