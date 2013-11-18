@@ -62,35 +62,31 @@ Client::~Client()
 void Client::perform(const seda::IEvent::Ptr &event)
 {
   if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
-    fsm_.Submit(event);
+    forward_to_output_stage (event);
   } else if (dynamic_cast<se::SubmitJobAckEvent*>(event.get())) {
-    fsm_.SubmitAck(event);
+    action_store_reply (event);
   } else if (dynamic_cast<se::SubscribeEvent*>(event.get())) {
-    fsm_.Subscribe(event);
+    forward_to_output_stage (event);
   } else if (dynamic_cast<se::SubscribeAckEvent*>(event.get())) {
-    fsm_.SubscribeAck(event);
+    action_store_reply (event);
   } else if (dynamic_cast<se::QueryJobStatusEvent*>(event.get())) {
-    fsm_.Query(event);
+    forward_to_output_stage (event);
   } else if (dynamic_cast<se::JobStatusReplyEvent*>(event.get())) {
-    fsm_.StatusReply(event);
+    action_store_reply (event);
   } else if (dynamic_cast<se::CancelJobEvent*>(event.get())) {
-    fsm_.Cancel(event);
+    forward_to_output_stage (event);
   } else if (dynamic_cast<se::CancelJobAckEvent*>(event.get())) {
-    fsm_.CancelAck(event);
+    action_store_reply (event);
   } else if (dynamic_cast<se::RetrieveJobResultsEvent*>(event.get())) {
-    fsm_.Retrieve(event);
+    forward_to_output_stage (event);
   } else if (dynamic_cast<se::JobResultsReplyEvent*>(event.get())) {
-    fsm_.Results(event);
+    action_store_reply (event);
   } else if (dynamic_cast<se::DeleteJobEvent*>(event.get())) {
-    fsm_.Delete(event);
+    forward_to_output_stage (event);
   } else if (dynamic_cast<se::DeleteJobAckEvent*>(event.get())) {
-    fsm_.DeleteAck(event);
+    action_store_reply (event);
   } else if (dynamic_cast<se::ErrorEvent*>(event.get())) {
-    fsm_.Error(event);
-  }
-  else
-  {
-    fsm_.Unknown(event);
+    action_store_reply (event);
   }
 }
 
