@@ -241,14 +241,9 @@ namespace utils
     {
       LOG (DEBUG, "Waiting for termination of job " << id);
 
-      for ( bool terminated
-            (sdpa::status::is_terminal (query_job_status (c, id)))
-          ; !terminated
-          ;
-          )
+      while (!sdpa::status::is_terminal (query_job_status (c, id)))
       {
         boost::this_thread::sleep (sleep_duration);
-        terminated = sdpa::status::is_terminal (query_job_status (c, id));
       }
     }
 
