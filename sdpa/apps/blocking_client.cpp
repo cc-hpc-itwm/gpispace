@@ -17,6 +17,8 @@
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
+#include <fhg/assert.hpp>
+
 namespace bfs = boost::filesystem;
 
 //using namespace sdpa::daemon;
@@ -161,32 +163,36 @@ int main(int argc, char** argv)
 	ptrCli->subscribe(job_id_user);
 
 	LOG( DEBUG, "The client successfully subscribed for orchestrator notifications ...");
-	std::string job_status;
+  sdpa::status::code job_status (sdpa::status::UNKNOWN);
 	try
 	{
-		seda::IEvent::Ptr reply(ptrCli->waitForNotification(100000));
-		// check event type
-		if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
-		{
-			job_status="Finished";
-			LOG(INFO, job_status);
+    seda::IEvent::Ptr event (c->waitForNotification (100000));
 
-			// wait here to be notified
-		}
-		else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
-		{
-			job_status="Failed";
-			LOG(INFO, job_status);
-			// wait here to be notified
-		}
-		else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
-		{
-			job_status="Canceled";
-			LOG(INFO, job_status);
-			// wait here to be notified
-		}
-		else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
-		{
+    if ( sdpa::events::JobFinishedEvent* evt
+       = dynamic_cast<sdpa::events::JobFinishedEvent*> (event.get())
+       )
+    {
+      fhg_assert (evt->job_id() == id);
+      job_status = sdpa::status::FINISHED;
+    }
+    else if ( sdpa::events::JobFailedEvent* evt
+            = dynamic_cast<sdpa::events::JobFailedEvent*> (event.get())
+            )
+    {
+      fhg_assert (evt->job_id() == id);
+      job_status = sdpa::status::FAILED;
+    }
+    else if ( sdpa::events::CancelJobAckEvent* evt
+            = dynamic_cast<sdpa::events::CancelJobAckEvent*> (event.get())
+            )
+    {
+      fhg_assert (evt->job_id() == id);
+      job_status = sdpa::status::CANCELED;
+    }
+    else if ( sdpa::events::ErrorEvent* evt
+            = dynamic_cast<sdpa::events::ErrorEvent*>(event.get())
+            )
+    {
 			LOG(ERROR, "error during subscription: reason := "
 						+ err->reason()
 						+ " code := "
@@ -213,12 +219,10 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+	LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<sdpa::status::show (job_status));
 
 	nTrials = 0;
-	if( job_status != std::string("Finished") &&
-		job_status != std::string("Failed")   &&
-		job_status != std::string("Canceled") )
+	if(!sdpa::status::is_terminal (job_status))
 	{
 		LOG(ERROR, "Unexpected status, leave now ...");
 		ptrCli->shutdown_network();
