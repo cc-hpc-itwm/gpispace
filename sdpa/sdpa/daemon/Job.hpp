@@ -151,15 +151,10 @@ namespace sdpa {
         return state_codes[state];
       }
       template <class FSM, class Event>
-        void no_transition(Event const& e, FSM&, int state)
+      void no_transition(Event const& e, FSM&, int state)
       {
         DLOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
       }
-
-      typedef std::pair<sdpa::daemon::IAgent*, const sdpa::events::JobStatusReplyEvent::Ptr> FSMStatusQueryEvent;
-
-      template <class FSM>
-        void no_transition(FSMStatusQueryEvent const& evt, FSM&, int state);
     };
 
 

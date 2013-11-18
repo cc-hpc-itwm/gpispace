@@ -42,13 +42,6 @@ namespace sdpa {
       }
     }
 
-    template <class FSM>
-      void JobFSM_::no_transition(FSMStatusQueryEvent const& evt, FSM&, int state)
-    {
-      DLOG(DEBUG, "process event StatusQueryEvent");
-      evt.first->sendEventToMaster (evt.second);
-    }
-
     Job::Job(const sdpa::job_id_t id,
                      const sdpa::job_desc_t desc,
                      const sdpa::job_id_t &parent)
@@ -128,7 +121,7 @@ namespace sdpa {
                                                )
         );
 
-      process_event (FSMStatusQueryEvent (pDaemon, pStatReply));
+      pDaemon->sendEventToMaster (pStatReply);
     }
 
     void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
