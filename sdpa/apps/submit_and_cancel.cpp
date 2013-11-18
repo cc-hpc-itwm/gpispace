@@ -133,7 +133,6 @@ int main(int argc, char** argv)
 			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
-			ptrCli.reset();
 			return -1;
 		}
 	}
@@ -164,7 +163,6 @@ int main(int argc, char** argv)
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 				ptrCli->shutdown_network();
-				ptrCli.reset();
 				return -1;
 			}
 
@@ -188,7 +186,6 @@ int main(int argc, char** argv)
                   LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
                   ptrCli->shutdown_network();
-                  ptrCli.reset();
                   return -1;
           }
 
@@ -209,7 +206,6 @@ int main(int argc, char** argv)
             LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
             ptrCli->shutdown_network();
-            ptrCli.reset();
             return -1;
           }
 

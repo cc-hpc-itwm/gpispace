@@ -140,7 +140,6 @@ int main(int argc, char** argv)
 			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
-			ptrCli.reset();
 			return -1;
 		}
 	}
@@ -185,14 +184,12 @@ int main(int argc, char** argv)
 						);
 
 			ptrCli->shutdown_network();
-			ptrCli.reset();
 			return -1;
 		}
 		else
 		{
 			LOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
 			ptrCli->shutdown_network();
-			ptrCli.reset();
 			return -1;
 		}
 	}
@@ -200,7 +197,6 @@ int main(int argc, char** argv)
 	{
 		LOG(ERROR, "Timeout expired!");
 		ptrCli->shutdown_network();
-		ptrCli.reset();
 		return -1;
 	}
 
@@ -211,7 +207,6 @@ int main(int argc, char** argv)
 	{
 		LOG(ERROR, "Unexpected status, leave now ...");
 		ptrCli->shutdown_network();
-		ptrCli.reset();
 		return -1;
 	}
 
@@ -231,7 +226,6 @@ int main(int argc, char** argv)
 			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 			ptrCli->shutdown_network();
-			ptrCli.reset();
 			return -1;
 		}
 
