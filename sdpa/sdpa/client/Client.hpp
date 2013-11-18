@@ -85,9 +85,6 @@ namespace sdpa { namespace client {
     void action_configure_network(const config_t &);
     void action_shutdown_network();
 
-    const std::string &input_stage() const { return client_stage_->name(); }
-    const std::string &output_stage() const { return _output_stage_name; }
-
     typedef unsigned long long timeout_t;
     seda::IEvent::Ptr wait_for_reply() throw (Timedout);
     seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
