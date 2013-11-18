@@ -65,8 +65,6 @@ void Client::perform(const seda::IEvent::Ptr &event)
     fsm_.ConfigOk(event);
   } else if (dynamic_cast<ConfigNOK*>(event.get())) {
     fsm_.ConfigNok(event);
-  } else if (StartUp * startup = dynamic_cast<StartUp*>(event.get())) {
-    fsm_.Start(startup->config());
   } else if (dynamic_cast<Shutdown*>(event.get())) {
     fsm_.Shutdown();
   } else if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
@@ -104,7 +102,7 @@ void Client::perform(const seda::IEvent::Ptr &event)
 
 void Client::start(const config_t & config) throw (ClientException)
 {
-  client_stage_->send(seda::IEvent::Ptr(new StartUp(config)));
+  fsm_.Start (config);
 
   try
   {

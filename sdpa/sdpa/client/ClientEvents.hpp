@@ -5,18 +5,6 @@
 #include <sdpa/client/types.hpp>
 
 namespace sdpa { namespace client {
-  class StartUp : public seda::IEvent
-  {
-    public:
-      explicit
-      StartUp(const config_t &a_config) : config_(a_config) {}
-      std::string str() const { return "StartUp"; }
-
-      const config_t &config() const { return config_; }
-    private:
-      config_t config_;
-  };
-
   class Shutdown : public seda::IEvent
   {
     public:
