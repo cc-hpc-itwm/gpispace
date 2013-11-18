@@ -35,6 +35,9 @@
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/get_pointer.hpp>
+#include <utils.hpp>
+
+#include "kvs_setup_fixture.hpp"
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -48,29 +51,35 @@ typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;
 
 struct MyFixture
 {
-    MyFixture() { FHGLOG_SETUP();}
+    MyFixture()
+    : m_pAgent(sdpa::daemon::AgentFactory<void>::create("agent", "127.0.0.1", sdpa::master_info_list_t()))
+    {
+      FHGLOG_SETUP();
+    }
+
     ~MyFixture()
     {
-        seda::StageRegistry::instance().stopAll();
-        seda::StageRegistry::instance().clear();
+      m_pAgent->shutdown();
     }
+
+    sdpa::daemon::Agent::ptr_t m_pAgent;
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
+BOOST_GLOBAL_FIXTURE (KVSSetup)
+
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
-  string addrAg = "127.0.0.1";
-  sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-  pAgent->createScheduler();
 
-  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<CoallocationScheduler*>(pAgent->scheduler().get());
+  m_pAgent->createScheduler();
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
 
-  if(!ptrScheduler)
-    LOG(FATAL, "The scheduler was not properly initialized");
+  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
+  BOOST_REQUIRE(ptrScheduler);
 
+  ptrScheduler->setTestingMode(true);
   sdpa::worker_id_t worker_A("worker_A");
 
   sdpa::capabilities_set_t cpbSetA;
@@ -79,7 +88,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   const sdpa::job_id_t jobId1("Job1");
   sdpa::daemon::Job::ptr_t pJob1(new Job(jobId1, "description 1", sdpa::job_id_t()));
   job_requirements_t jobReqs1(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
-  pAgent->addJob(jobId1, pJob1, jobReqs1);
+  m_pAgent->addJob(jobId1, pJob1, jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
   ptrScheduler->schedule_remotely(jobId1);
@@ -122,16 +131,14 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
-  string addrAg = "127.0.0.1";
-  sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-  pAgent->createScheduler();
+  LOG(INFO, "testLoadBalancing");
+  m_pAgent->createScheduler();
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
 
-  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
+  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
+  BOOST_REQUIRE(ptrScheduler);
 
-  if(!ptrScheduler)
-      LOG(FATAL, "The scheduler was not properly initialized");
-
+  ptrScheduler->setTestingMode(true);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -159,8 +166,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       arrJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
-      //pAgent->addJob(jobId, pJob, requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
-      pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+      //m_pAgent->addJob(jobId, pJob, requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
+      m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -191,7 +198,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       ptrScheduler->releaseReservation(jobId);
   }
 
-  ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+  ptrScheduler->assignJobsToWorkers();
+  ptrScheduler->checkAllocations();
 
   workerList.clear();
   ptrScheduler->getListNotAllocatedWorkers(workerList);
@@ -203,18 +211,13 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
   LOG(INFO, "Test the load-balancing when a worker joins later ...");
+  m_pAgent->createScheduler();
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
 
-  string addrAg = "127.0.0.1";
-  sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-  pAgent->createScheduler();
+  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
+  BOOST_REQUIRE(ptrScheduler);
 
-  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
-
-  if(!ptrScheduler)
-      LOG(FATAL, "The scheduler was not properly initialized");
-
-
+  ptrScheduler->setTestingMode(true);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -242,7 +245,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       arrJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
-      pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+      m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -279,21 +282,17 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   BOOST_CHECK(!jobId.str().empty());
 }
 
-
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
   LOG(INFO, "Test the load-balancing when a worker gains a capability later ...");
 
-  string addrAg = "127.0.0.1";
-  sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-  pAgent->createScheduler();
+  m_pAgent->createScheduler();
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
 
-  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
+  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
+  BOOST_REQUIRE(ptrScheduler);
 
-  if(!ptrScheduler)
-    LOG(FATAL, "The scheduler was not properly initialized");
-
+  ptrScheduler->setTestingMode(true);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -327,7 +326,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     arrJobIds.push_back(jobId);
     osstr.str("");
     sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
-    pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+    m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -369,16 +368,13 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
   LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
 
-  string addrAg = "127.0.0.1";
-  sdpa::master_info_list_t arrAgentMasterInfo;
-  sdpa::daemon::Agent::ptr_t pAgent = sdpa::daemon::AgentFactory<void>::create("agent_007", addrAg, arrAgentMasterInfo);
-  pAgent->createScheduler();
+  m_pAgent->createScheduler();
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
 
-  sdpa::daemon::CoallocationScheduler* ptrScheduler = dynamic_cast<sdpa::daemon::CoallocationScheduler*>(pAgent->scheduler().get());
+  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
+  BOOST_REQUIRE(ptrScheduler);
 
-  if(!ptrScheduler)
-    LOG(FATAL, "The scheduler was not properly initialized");
-
+  ptrScheduler->setTestingMode(true);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -406,7 +402,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     arrJobIds.push_back(jobId);
     osstr.str("");
     sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
-    pAgent->addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+    m_pAgent->addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -431,9 +427,15 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
   sdpa::job_id_t oldJobId(jobId);
 
+  LOG(DEBUG, "The worker "<<lastWorkerId<<" has the job "<<jobId<<" assigned");
+
   // and now simply delete the last worker !
   LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
   ptrScheduler->rescheduleWorkerJob(lastWorkerId, jobId);
+
+  ptrScheduler->schedule_remotely(jobId);
+  BOOST_CHECK (ptrScheduler->schedulingAllowed());
+
   LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
   ptrScheduler->deleteWorker(lastWorkerId);
   sdpa::worker_id_list_t listW = ptrScheduler->getListAllocatedWorkers(jobId);
@@ -442,14 +444,9 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  // add now, add again the last worker
   ptrScheduler->addWorker(lastWorkerId, 1, cpbSet);
 
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
-  // assign jobs to the workers
-  ptrScheduler->printAllocationTable();
-  BOOST_REQUIRE (ptrScheduler->schedulingAllowed());
-  ptrScheduler->schedule_remotely(ptrScheduler->nextJobToSchedule());
   ptrScheduler->assignJobsToWorkers();
   ptrScheduler->checkAllocations();
   ptrScheduler->printAllocationTable();
