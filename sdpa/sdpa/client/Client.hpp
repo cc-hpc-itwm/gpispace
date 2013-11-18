@@ -75,8 +75,6 @@ namespace sdpa { namespace client {
     result_t retrieveResults(const job_id_t &) throw (ClientException);
 
     // Action implementations
-    void action_shutdown();
-
     void forward_to_output_stage (const seda::IEvent::Ptr&) const;
 
     void action_store_reply(const seda::IEvent::Ptr &);
