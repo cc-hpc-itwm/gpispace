@@ -386,11 +386,6 @@ void Client::action_configure(const config_t &cfg)
     my_location_ = cfg.get<std::string>("location");
   }
 
-  if (cfg.is_set("network.enable"))
-  {
-    action_configure_network(cfg);
-  }
-
   if (orchestrator_.empty())
   {
     client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
