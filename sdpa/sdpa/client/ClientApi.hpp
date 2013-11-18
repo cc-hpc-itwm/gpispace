@@ -23,9 +23,7 @@ namespace sdpa { namespace client {
       , const std::string &output_stage="sdpa.apps.client.out"
       )
     {
-      ClientApi::ptr_t ptr (new ClientApi(cfg, name_prefix, output_stage));
-      ptr->configure_network (cfg);
-      return ptr;
+      return ClientApi::ptr_t (new ClientApi(cfg, name_prefix, output_stage));
     }
 
     ClientApi ( const config_t &cfg
@@ -33,7 +31,9 @@ namespace sdpa { namespace client {
               , const std::string &output_stage="sdpa.apps.client.out"
               )
       : pimpl (Client::create(cfg, name_prefix, output_stage))
-    {}
+    {
+      pimpl->action_configure_network (cfg);
+    }
 
     ~ClientApi() {
       pimpl->action_shutdown_network();
@@ -100,11 +100,6 @@ namespace sdpa { namespace client {
     result_t retrieveResults(const job_id_t &jid) throw (ClientException)
     {
       return pimpl->retrieveResults(jid);
-    }
-
-    void configure_network(const config_t &config)
-    {
-      pimpl->action_configure_network(config);
     }
 
   private:
