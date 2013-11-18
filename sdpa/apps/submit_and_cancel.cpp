@@ -115,14 +115,14 @@ int main(int argc, char** argv)
 	cav.push_back(oss.str());
 	config.parse_command_line(cav);
 
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create_with_configured_network( config );
+	sdpa::client::ClientApi ptrCli (config);
 	sdpa::job_id_t job_id_user;
 
 	int nTrials = 0;
 	try {
 
 		LOG( DEBUG, "Submitting the workflow "<<strWorkflow);
-		job_id_user = ptrCli->submitJob(strWorkflow);
+		job_id_user = ptrCli.submitJob(strWorkflow);
 		LOG( DEBUG, "Got the job id "<<job_id_user);
 	}
 	catch(const sdpa::client::ClientException& cliExc)
@@ -136,18 +136,18 @@ int main(int argc, char** argv)
 	}
 
 	boost::this_thread::sleep(boost::posix_time::microseconds(5000000)); //50ms
-	ptrCli->cancelJob(job_id_user);
+	ptrCli.cancelJob(job_id_user);
 	//LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 	std::cout<<std::endl;
 
-	std::string job_status = ptrCli->queryJob(job_id_user);
+	std::string job_status = ptrCli.queryJob(job_id_user);
 	nTrials = 0;
 	while( job_status.find("Finished") 	== std::string::npos &&
 		   job_status.find("Failed") 	== std::string::npos &&
 		   job_status.find("Canceled") == std::string::npos )
 	{
 		try {
-			job_status = ptrCli->queryJob(job_id_user);
+			job_status = ptrCli.queryJob(job_id_user);
 			//LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 			std::cout<<".";
 			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
 	nTrials = 0;
 	try {
           LOG( INFO, "Retrieve results of the job "<<job_id_user);
-          ptrCli->retrieveResults(job_id_user);
+          ptrCli.retrieveResults(job_id_user);
           boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 	nTrials = 0;
 	try {
 		LOG( INFO, "Delete the user job "<<job_id_user);
-		ptrCli->deleteJob(job_id_user);
+		ptrCli.deleteJob(job_id_user);
 		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
