@@ -305,6 +305,73 @@ namespace utils
       throw retried_too_often ("cancel_job");
     }
 
+    void subscribe (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+    {
+      LOG (DEBUG, "Subscribe to job " << id);
+
+      for (int i (0); i < NMAXTRIALS; ++i)
+      {
+        try
+        {
+          return c->subscribe (id);
+        }
+        catch (const sdpa::client::ClientException& ex)
+        {
+          LOG (DEBUG, ex.what());
+        }
+      }
+
+      throw retried_too_often ("subscribe");
+    }
+
+    //! \note This duplicates behavior from apps/blocking_client.cpp,
+    //! which should probably go into ClientApi.
+    sdpa::status::code wait_for_status_change
+      (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+    {
+      subscribe (c, id);
+
+      seda::IEvent::Ptr event (c->waitForNotification());
+
+      if ( sdpa::events::JobFinishedEvent* evt
+         = dynamic_cast<sdpa::events::JobFinishedEvent*> (event.get())
+         )
+      {
+        BOOST_REQUIRE (evt->job_id() == id);
+        return sdpa::status::FINISHED;
+      }
+      else if ( sdpa::events::JobFailedEvent* evt
+              = dynamic_cast<sdpa::events::JobFailedEvent*> (event.get())
+              )
+      {
+        BOOST_REQUIRE (evt->job_id() == id);
+        return sdpa::status::FAILED;
+      }
+      else if ( sdpa::events::CancelJobAckEvent* evt
+              = dynamic_cast<sdpa::events::CancelJobAckEvent*> (event.get())
+              )
+      {
+        BOOST_REQUIRE (evt->job_id() == id);
+        return sdpa::status::CANCELED;
+      }
+      else if ( sdpa::events::ErrorEvent* evt
+              = dynamic_cast<sdpa::events::ErrorEvent*>(event.get())
+              )
+      {
+        throw std::runtime_error
+          ( "got error event: reason := "
+          + evt->reason()
+          + " code := "
+          + boost::lexical_cast<std::string> (evt->error_code())
+          );
+      }
+      else
+      {
+        throw std::runtime_error
+          ("invalid event after subscription to client");
+      }
+    }
+
     namespace
     {
       struct shutdown_on_exit
@@ -384,6 +451,42 @@ namespace utils
         boost::this_thread::sleep (boost::posix_time::seconds (1));
         cancel_job (ptrCli, job_id_user);
         wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
+        retrieve_job_results (ptrCli, job_id_user);
+        delete_job (ptrCli, job_id_user);
+      }
+      catch (const retried_too_often& ex)
+      {
+        BOOST_FAIL (ex.what());
+      }
+    }
+
+    void submit_job_and_wait_for_termination_as_subscriber
+      ( std::string workflow
+      , std::string client_name
+      , const orchestrator& orch
+      )
+    {
+      std::vector<std::string> command_line;
+      command_line.push_back ("--orchestrator=" + orch.name());
+
+      try
+      {
+        sdpa::client::config_t config (sdpa::client::ClientApi::config());
+        config.parse_command_line (command_line);
+
+        sdpa::client::ClientApi::ptr_t ptrCli
+          ( sdpa::client::ClientApi::create ( config
+                                            , client_name
+                                            , client_name + ".apps.client.out"
+                                            )
+          );
+        ptrCli->configure_network( config );
+        shutdown_on_exit _ (ptrCli);
+
+        const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
+        const sdpa::status::code state
+          (wait_for_status_change (ptrCli, job_id_user));
+        BOOST_REQUIRE (sdpa::status::is_terminal (state));
         retrieve_job_results (ptrCli, job_id_user);
         delete_job (ptrCli, job_id_user);
       }
