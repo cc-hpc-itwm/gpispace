@@ -35,7 +35,7 @@ if (NOT TARGET sdpac)
 
 else()
   set(SDPA_FOUND true)
-  set(SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa ${CMAKE_SOURCE_DIR}/sdpa/ext/smc)
+  set(SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
   set(SDPA_LIBRARY_DIR "")
   set(SDPA_LIBRARY sdpa-daemon)
 endif()

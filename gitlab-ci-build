@@ -27,7 +27,6 @@ case "$myhost" in
         export PATH=$QTDIR/bin:$PATH
         export BOOST_ROOT=~/external_software/boost/1.52/gcc/
         export NACL_HOME=~/external_software/nacl/20110221
-        export SMC_HOME=~/external_software/smc/5.0.0
         export BASE_BUILD_DIR=/tmp/gitlab-ci
         opts+=(--type=Debug)
         opts+=(--assert-mode=on)
